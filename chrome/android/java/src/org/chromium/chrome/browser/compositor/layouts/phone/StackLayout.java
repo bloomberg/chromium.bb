@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -246,6 +247,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         startMarginAnimation(false);
         startYOffsetAnimation(false);
         finishScrollStacks();
+
+        // TODO(twellington): Add a proper tab selection animation rather than disabling the current
+        //                    animation.
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            onUpdateAnimation(System.currentTimeMillis(), true);
+        }
     }
 
     @Override
@@ -346,6 +353,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         mStacks[getTabStackIndex(id)].tabCreated(time, id);
         startMarginAnimation(false);
         uiPreemptivelySelectTabModel(newIsIncognito);
+
+        // TODO(twellington): Add a proper tab creation animation rather than disabling the current
+        //                    animation.
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            onUpdateAnimation(System.currentTimeMillis(), true);
+        }
     }
 
     @Override

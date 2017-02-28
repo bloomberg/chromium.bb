@@ -246,6 +246,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
     private BottomSheet mBottomSheet;
+    private FadingBackgroundView mFadingBackgroundView;
 
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
@@ -351,15 +352,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mBottomSheet.setTabModelSelector(mTabModelSelector);
             mBottomSheet.setFullscreenManager(mFullscreenManager);
 
-            final FadingBackgroundView fadingView =
-                    (FadingBackgroundView) findViewById(R.id.fading_focus_target);
+            mFadingBackgroundView = (FadingBackgroundView) findViewById(R.id.fading_focus_target);
             mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
                 @Override
                 public void onTransitionPeekToHalf(float transitionFraction) {
-                    fadingView.setViewAlpha(transitionFraction);
+                    mFadingBackgroundView.setViewAlpha(transitionFraction);
                 }
             });
-            fadingView.addObserver(mBottomSheet);
+            mFadingBackgroundView.addObserver(mBottomSheet);
         }
         ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
     }
@@ -618,6 +618,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public BottomSheet getBottomSheet() {
         return mBottomSheet;
+    }
+
+    /**
+     * @return The View used to obscure content and bring focus to a foreground view.
+     */
+    public FadingBackgroundView getFadingBackgroundView() {
+        return mFadingBackgroundView;
     }
 
     /**

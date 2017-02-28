@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.physicalweb.PhysicalWebDiagnosticsPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
@@ -34,7 +35,9 @@ public class NativePageFactory {
     static class NativePageBuilder {
         protected NativePage buildNewTabPage(ChromeActivity activity, Tab tab,
                 TabModelSelector tabModelSelector) {
-            if (tab.isIncognito()) {
+            if (FeatureUtilities.isChromeHomeEnabled() && !tab.isIncognito()) {
+                return new ChromeHomeNewTabPage(activity, tab, tabModelSelector);
+            } else if (tab.isIncognito()) {
                 return new IncognitoNewTabPage(activity);
             } else {
                 return new NewTabPage(activity, new TabShim(tab), tabModelSelector);

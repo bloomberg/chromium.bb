@@ -34,8 +34,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
-import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
-import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -58,17 +56,13 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.concurrent.TimeUnit;
-
-import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
 /**
  * Provides functionality when the user interacts with the NTP.
@@ -76,16 +70,6 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 public class NewTabPage
         implements NativePage, InvalidationAwareThumbnailProvider, TemplateUrlServiceObserver {
     private static final String TAG = "NewTabPage";
-
-    // UMA enum constants. CTA means the "click-to-action" icon.
-    private static final String LOGO_SHOWN_UMA_NAME = "NewTabPage.LogoShown";
-    private static final int STATIC_LOGO_SHOWN = 0;
-    private static final int CTA_IMAGE_SHOWN = 1;
-
-    private static final String LOGO_CLICK_UMA_NAME = "NewTabPage.LogoClick";
-    private static final int STATIC_LOGO_CLICKED = 0;
-    private static final int CTA_IMAGE_CLICKED = 1;
-    private static final int ANIMATED_LOGO_CLICKED = 2;
 
     // Key for the scroll position data that may be stored in a navigation entry.
     private static final String NAVIGATION_ENTRY_SCROLL_POSITION_KEY = "NewTabPageScrollPosition";
@@ -105,8 +89,6 @@ public class NewTabPage
     private TabObserver mTabObserver;
     private LogoBridge mLogoBridge;
     private boolean mSearchProviderHasLogo;
-    private String mOnLogoClickUrl;
-    private String mAnimatedLogoUrl;
     private FakeboxDelegate mFakeboxDelegate;
     private SnippetsBridge mSnippetsBridge;
 
@@ -256,46 +238,6 @@ public class NewTabPage
                     mFakeboxDelegate.requestUrlFocusFromFakebox(pastedText);
                 }
             }
-        }
-
-        @Override
-        public void onLogoClicked(boolean isAnimatedLogoShowing) {
-            if (mIsDestroyed) return;
-
-            if (!isAnimatedLogoShowing && mAnimatedLogoUrl != null) {
-                RecordHistogram.recordSparseSlowlyHistogram(LOGO_CLICK_UMA_NAME, CTA_IMAGE_CLICKED);
-                mNewTabPageView.showLogoLoadingView();
-                mLogoBridge.getAnimatedLogo(new LogoBridge.AnimatedLogoCallback() {
-                    @Override
-                    public void onAnimatedLogoAvailable(BaseGifImage animatedLogoImage) {
-                        if (mIsDestroyed) return;
-                        mNewTabPageView.playAnimatedLogo(animatedLogoImage);
-                    }
-                }, mAnimatedLogoUrl);
-            } else if (mOnLogoClickUrl != null) {
-                RecordHistogram.recordSparseSlowlyHistogram(LOGO_CLICK_UMA_NAME,
-                        isAnimatedLogoShowing ? ANIMATED_LOGO_CLICKED : STATIC_LOGO_CLICKED);
-                mTab.loadUrl(new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));
-            }
-        }
-
-        @Override
-        public void getSearchProviderLogo(final LogoObserver logoObserver) {
-            if (mIsDestroyed) return;
-            LogoObserver wrapperCallback = new LogoObserver() {
-                @Override
-                public void onLogoAvailable(Logo logo, boolean fromCache) {
-                    if (mIsDestroyed) return;
-                    mOnLogoClickUrl = logo != null ? logo.onClickUrl : null;
-                    mAnimatedLogoUrl = logo != null ? logo.animatedLogoUrl : null;
-                    if (logo != null) {
-                        RecordHistogram.recordSparseSlowlyHistogram(LOGO_SHOWN_UMA_NAME,
-                                logo.animatedLogoUrl == null ? STATIC_LOGO_SHOWN : CTA_IMAGE_SHOWN);
-                    }
-                    logoObserver.onLogoAvailable(logo, fromCache);
-                }
-            };
-            mLogoBridge.getCurrentLogo(wrapperCallback);
         }
 
         @Override

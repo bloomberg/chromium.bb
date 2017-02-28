@@ -17,6 +17,8 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 /**
  * This view is used to obscure content and bring focus to a foreground view (i.e. the Chrome Home
  * bottom sheet or the omnibox suggestions).
+ *
+ * If the view is disabled, then its alpha will be set to 0f and it will not receive touch events.
  */
 public class FadingBackgroundView extends View implements View.OnClickListener {
     /**
@@ -64,11 +66,21 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
      * @param alpha The desired alpha for this view.
      */
     public void setViewAlpha(float alpha) {
-        if (MathUtils.areFloatsEqual(alpha, getAlpha())) return;
+        if (!isEnabled() || MathUtils.areFloatsEqual(alpha, getAlpha())) return;
 
         setAlpha(alpha);
 
         if (mOverlayAnimator != null) mOverlayAnimator.cancel();
+    }
+
+    @Override
+    public void setEnabled(boolean isEnabled) {
+        super.setEnabled(isEnabled);
+
+        if (!isEnabled) {
+            if (mOverlayAnimator != null) mOverlayAnimator.cancel();
+            setAlpha(0f);
+        }
     }
 
     /**

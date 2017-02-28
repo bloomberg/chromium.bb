@@ -24,7 +24,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.widget.LoadingView;
 
 import java.lang.ref.WeakReference;
@@ -67,7 +67,7 @@ public class LogoView extends FrameLayout implements OnClickListener {
      */
     private float mTransitionAmount;
 
-    private NewTabPageManager mManager;
+    private Delegate mDelegate;
 
     private final Property<LogoView, Float> mTransitionProperty =
             new Property<LogoView, Float>(Float.class, "") {
@@ -86,6 +86,28 @@ public class LogoView extends FrameLayout implements OnClickListener {
             }
         }
     };
+
+    /**
+     * Handles tasks for the {@link LogoView} shown on an NTP.
+     */
+    public interface Delegate {
+        /**
+         * Called when the user clicks on the logo.
+         * @param isAnimatedLogoShowing Whether the animated GIF logo is playing.
+         */
+        void onLogoClicked(boolean isAnimatedLogoShowing);
+
+        /**
+         * Gets the default search provider's logo and calls logoObserver with the result.
+         * @param logoObserver The callback to notify when the logo is available.
+         */
+        void getSearchProviderLogo(LogoObserver logoObserver);
+
+        /**
+         * Should be called when the owning class is destroyed.
+         */
+        void destroy();
+    }
 
     /**
      * Constructor used to inflate a LogoView from XML.
@@ -115,10 +137,10 @@ public class LogoView extends FrameLayout implements OnClickListener {
     }
 
     /**
-     * Sets the NewTabPageManager to notify when the logo is pressed.
+     * Sets the {@link Delegate} to notify when the logo is pressed.
      */
-    public void setMananger(NewTabPageManager manager) {
-        mManager = manager;
+    public void setDelegate(Delegate delegate) {
+        mDelegate = delegate;
     }
 
     /**
@@ -321,8 +343,8 @@ public class LogoView extends FrameLayout implements OnClickListener {
 
     @Override
     public void onClick(View view) {
-        if (view == this && mManager != null && !isTransitioning()) {
-            mManager.onLogoClicked(isAnimatedLogoShowing());
+        if (view == this && mDelegate != null && !isTransitioning()) {
+            mDelegate.onLogoClicked(isAnimatedLogoShowing());
         }
     }
 }

@@ -53,8 +53,6 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.base.DeviceFormFactor;
 
-import jp.tomorrowkey.android.gifplayer.BaseGifImage;
-
 /**
  * The native new tab page, represented by some basic data such as title and url, and an Android
  * View that displays the page.
@@ -101,6 +99,7 @@ public class NewTabPageView
 
     private ChromeActivity mActivity;
     private NewTabPageManager mManager;
+    private LogoView.Delegate mLogoDelegate;
     private TileGroup.Delegate mTileGroupDelegate;
     private TileGroup mTileGroup;
     private UiConfig mUiConfig;
@@ -147,18 +146,6 @@ public class NewTabPageView
          * @param pastedText Text to paste in the omnibox after it's been focused. May be null.
          */
         void focusSearchBox(boolean beginVoiceSearch, String pastedText);
-
-        /**
-         * Called when the user clicks on the logo.
-         * @param isAnimatedLogoShowing Whether the animated GIF logo is playing.
-         */
-        void onLogoClicked(boolean isAnimatedLogoShowing);
-
-        /**
-         * Gets the default search provider's logo and calls logoObserver with the result.
-         * @param logoObserver The callback to notify when the logo is available.
-         */
-        void getSearchProviderLogo(LogoObserver logoObserver);
 
         /**
          * @return whether the {@link NewTabPage} associated with this manager is the current page
@@ -246,6 +233,7 @@ public class NewTabPageView
 
         mSearchProviderLogoView =
                 (LogoView) mNewTabPageLayout.findViewById(R.id.search_provider_logo);
+        mLogoDelegate = new LogoDelegateImpl(tab, mSearchProviderLogoView);
         mSearchBoxView = mNewTabPageLayout.findViewById(R.id.search_box);
         mNoSearchLogoSpacer = mNewTabPageLayout.findViewById(R.id.no_search_logo_spacer);
 
@@ -507,11 +495,11 @@ public class NewTabPageView
      * Loads the search provider logo (e.g. Google doodle), if any.
      */
     private void loadSearchProviderLogo() {
-        mManager.getSearchProviderLogo(new LogoObserver() {
+        mLogoDelegate.getSearchProviderLogo(new LogoObserver() {
             @Override
             public void onLogoAvailable(Logo logo, boolean fromCache) {
                 if (logo == null && fromCache) return;
-                mSearchProviderLogoView.setMananger(mManager);
+                mSearchProviderLogoView.setDelegate(mLogoDelegate);
                 mSearchProviderLogoView.updateLogo(logo);
                 mSnapshotTileGridChanged = true;
             }
@@ -567,20 +555,6 @@ public class NewTabPageView
         if (disable == mDisableUrlFocusChangeAnimations) return;
         mDisableUrlFocusChangeAnimations = disable;
         if (!disable) onUrlFocusAnimationChanged();
-    }
-
-    /**
-     * Shows a progressbar indicating the animated logo is being downloaded.
-     */
-    void showLogoLoadingView() {
-        mSearchProviderLogoView.showLoadingView();
-    }
-
-    /**
-     * Starts playing the given animated GIF logo.
-     */
-    void playAnimatedLogo(BaseGifImage gifImage) {
-        mSearchProviderLogoView.playAnimatedLogo(gifImage);
     }
 
     /**
