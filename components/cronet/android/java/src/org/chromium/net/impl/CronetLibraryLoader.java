@@ -25,9 +25,9 @@ public class CronetLibraryLoader {
     private static final String LIBRARY_NAME = "cronet";
     private static final String TAG = CronetLibraryLoader.class.getSimpleName();
     // Has library loading commenced?  Setting guarded by sLoadLock.
-    private static volatile boolean sInitStarted = false;
+    private static volatile boolean sLibraryLoaded = false;
     // Has ensureMainThreadInitialized() completed?  Only accessed on main thread.
-    private static boolean sMainThreadInitDone = false;
+    private static volatile boolean sMainThreadInitDone = false;
 
     /**
      * Ensure that native library is loaded and initialized. Can be called from
@@ -36,38 +36,41 @@ public class CronetLibraryLoader {
     public static void ensureInitialized(
             final Context applicationContext, final CronetEngineBuilderImpl builder) {
         synchronized (sLoadLock) {
-            if (sInitStarted) {
-                return;
-            }
-            sInitStarted = true;
-            ContextUtils.initApplicationContext(applicationContext);
-            if (builder.libraryLoader() != null) {
-                builder.libraryLoader().loadLibrary(LIBRARY_NAME);
-            } else {
-                System.loadLibrary(LIBRARY_NAME);
-            }
-            ContextUtils.initApplicationContextForNative();
-            String implVersion = ImplVersion.getCronetVersion();
-            if (!implVersion.equals(nativeGetCronetVersion())) {
-                throw new RuntimeException(String.format("Expected Cronet version number %s, "
-                                + "actual version number %s.",
-                        implVersion, nativeGetCronetVersion()));
-            }
-            Log.i(TAG, "Cronet version: %s, arch: %s", implVersion, System.getProperty("os.arch"));
-            // Init native Chromium CronetEngine on Main UI thread.
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    ensureInitializedOnMainThread(applicationContext);
+            if (!sLibraryLoaded) {
+                ContextUtils.initApplicationContext(applicationContext);
+                if (builder.libraryLoader() != null) {
+                    builder.libraryLoader().loadLibrary(LIBRARY_NAME);
+                } else {
+                    System.loadLibrary(LIBRARY_NAME);
                 }
-            };
-            // Run task immediately or post it to the UI thread.
-            if (Looper.getMainLooper() == Looper.myLooper()) {
-                task.run();
-            } else {
-                // The initOnMainThread will complete on the main thread prior
-                // to other tasks posted to the main thread.
-                new Handler(Looper.getMainLooper()).post(task);
+                ContextUtils.initApplicationContextForNative();
+                String implVersion = ImplVersion.getCronetVersion();
+                if (!implVersion.equals(nativeGetCronetVersion())) {
+                    throw new RuntimeException(String.format("Expected Cronet version number %s, "
+                                    + "actual version number %s.",
+                            implVersion, nativeGetCronetVersion()));
+                }
+                Log.i(TAG, "Cronet version: %s, arch: %s", implVersion,
+                        System.getProperty("os.arch"));
+                sLibraryLoaded = true;
+            }
+
+            if (!sMainThreadInitDone) {
+                // Init native Chromium CronetEngine on Main UI thread.
+                Runnable task = new Runnable() {
+                    @Override
+                    public void run() {
+                        ensureInitializedOnMainThread(applicationContext);
+                    }
+                };
+                // Run task immediately or post it to the UI thread.
+                if (Looper.getMainLooper() == Looper.myLooper()) {
+                    task.run();
+                } else {
+                    // The initOnMainThread will complete on the main thread prior
+                    // to other tasks posted to the main thread.
+                    new Handler(Looper.getMainLooper()).post(task);
+                }
             }
         }
     }
@@ -78,7 +81,7 @@ public class CronetLibraryLoader {
      * main thread native MessageLoop is initialized.
      */
     static void ensureInitializedOnMainThread(Context context) {
-        assert sInitStarted;
+        assert sLibraryLoaded;
         assert Looper.getMainLooper() == Looper.myLooper();
         if (sMainThreadInitDone) {
             return;
