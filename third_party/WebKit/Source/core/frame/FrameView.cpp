@@ -1975,6 +1975,13 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded() {
       continue;
 
     PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
+
+    // This method can be called during layout at which point the ancestor
+    // overflow layer may not be set yet. We can safely skip such cases as we
+    // will revisit this method during compositing inputs update.
+    if (!layer->ancestorOverflowLayer())
+      continue;
+
     StickyConstraintsMap constraintsMap = layer->ancestorOverflowLayer()
                                               ->getScrollableArea()
                                               ->stickyConstraintsMap();

@@ -13,6 +13,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
+#include "core/paint/PaintLayer.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntSize.h"
@@ -137,6 +138,30 @@ TEST_P(FrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
   EXPECT_FALSE(document().view()->isVisuallyNonEmpty());
   document().view()->incrementVisuallyNonEmptyPixelCount(IntSize(65536, 65536));
   EXPECT_TRUE(document().view()->isVisuallyNonEmpty());
+}
+
+// This test addresses http://crbug.com/696173, in which a call to
+// FrameView::updateLayersAndCompositingAfterScrollIfNeeded during layout caused
+// a crash as the code was incorrectly assuming that the ancestor overflow layer
+// would always be valid.
+TEST_P(FrameViewTest, ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
+  document().body()->setInnerHTML(
+      "<style>.container { height: 200%; }"
+      "#sticky { position: sticky; top: 0; height: 50px; }</style>"
+      "<div class='container'><div id='sticky'></div></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  LayoutBoxModelObject* sticky = toLayoutBoxModelObject(
+      document().getElementById("sticky")->layoutObject());
+
+  // Deliberately invalidate the ancestor overflow layer. This approximates
+  // http://crbug.com/696173, in which the ancestor overflow layer can be null
+  // during layout.
+  sticky->layer()->updateAncestorOverflowLayer(nullptr);
+
+  // This call should not crash.
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 100), ProgrammaticScroll);
 }
 
 TEST_P(FrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
