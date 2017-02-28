@@ -45,11 +45,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Initializes the widget.
   void InitAsBubble(gfx::NativeView parent, int initial_apps_page);
 
-  // Initializes the widget as a frameless window, not a bubble.
-  void InitAsFramelessWindow(gfx::NativeView parent,
-                             int initial_apps_page,
-                             gfx::Rect bounds);
-
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
 
   void SetAnchorPoint(const gfx::Point& anchor_point);

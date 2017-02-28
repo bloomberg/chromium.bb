@@ -98,6 +98,7 @@ test("app_list_presenter_unittests") {
     "//ui/aura:test_support",
     "//ui/base",
     "//ui/gl:test_support",
+    "//ui/views:test_support",
     "//ui/wm:wm",
 
     # Temporary dependency to fix compile flake in http://crbug.com/611898.

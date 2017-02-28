@@ -47,9 +47,6 @@ const char kAshDisableScreenOrientationLock[] =
 const char kAshDisableTouchExplorationMode[] =
     "ash-disable-touch-exploration-mode";
 
-// Enables fullscreen app list if Ash is in maximize mode.
-const char kAshEnableFullscreenAppList[] = "ash-enable-fullscreen-app-list";
-
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";

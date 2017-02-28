@@ -15,6 +15,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/window_util.h"
 
@@ -43,8 +44,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
             int current_apps_page) override {
     init_called_ = true;
     view_ = view;
-    view->InitAsFramelessWindow(container_, current_apps_page,
-                                gfx::Rect(100, 50, 300, 200));
+    view->InitAsBubble(container_, current_apps_page);
   }
   void OnShown(int64_t display_id) override { on_shown_called_ = true; }
   void OnDismissed() override { on_dismissed_called_ = true; }
@@ -61,6 +61,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   bool on_shown_called_ = false;
   bool on_dismissed_called_ = false;
   bool update_bounds_called_ = false;
+  views::TestViewsDelegate views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
 };

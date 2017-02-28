@@ -1271,9 +1271,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"gesture-editing", IDS_FLAGS_GESTURE_EDITING_NAME,
      IDS_FLAGS_GESTURE_EDITING_DESCRIPTION, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureEditing)},
-    {"enable-fullscreen-app-list", IDS_FLAGS_FULLSCREEN_APP_LIST_NAME,
-     IDS_FLAGS_FULLSCREEN_APP_LIST_DESCRIPTION, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableFullscreenAppList)},
 #endif  // OS_CHROMEOS
     {"enable-simple-cache-backend", IDS_FLAGS_SIMPLE_CACHE_BACKEND_NAME,
      IDS_FLAGS_SIMPLE_CACHE_BACKEND_DESCRIPTION,

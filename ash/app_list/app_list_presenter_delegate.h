@@ -68,8 +68,6 @@ class ASH_EXPORT AppListPresenterDelegate
 
   // ShellObserver overrides:
   void OnOverviewModeStarting() override;
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
 
   // WmShelfObserver overrides:
   void OnShelfIconPositionsChanged() override;

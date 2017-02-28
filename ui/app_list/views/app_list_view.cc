@@ -229,25 +229,6 @@ void AppListView::InitAsBubble(gfx::NativeView parent, int initial_apps_page) {
                       base::Time::Now() - start_time);
 }
 
-void AppListView::InitAsFramelessWindow(gfx::NativeView parent,
-                                        int initial_apps_page,
-                                        gfx::Rect bounds) {
-  set_color(kContentsBackgroundColor);
-  InitContents(parent, initial_apps_page);
-  overlay_view_ = new AppListOverlayView(0 /* no corners */);
-  AddChildView(overlay_view_);
-
-  views::Widget* widget = new views::Widget();
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.parent = parent;
-  params.delegate = this;
-  widget->Init(params);
-  widget->SetBounds(bounds);
-
-  InitChildWidgets();
-}
-
 void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
   GetBubbleFrameView()->bubble_border()->set_arrow(arrow);
   SizeToContents();  // Recalcuates with new border.

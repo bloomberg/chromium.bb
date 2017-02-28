@@ -24,7 +24,6 @@ ASH_EXPORT extern const char kAshDeveloperShortcuts[];
 ASH_EXPORT extern const char kAshDisableMaximizeModeWindowBackdrop[];
 ASH_EXPORT extern const char kAshDisableScreenOrientationLock[];
 ASH_EXPORT extern const char kAshDisableTouchExplorationMode[];
-ASH_EXPORT extern const char kAshEnableFullscreenAppList[];
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_EXPORT extern const char kAshEnableDockedWindows[];
