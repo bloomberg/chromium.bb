@@ -317,6 +317,38 @@ void MapperMogaPro(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   mapped->axesLength = AXIS_INDEX_COUNT;
 }
 
+void MapperSamsung_EI_GP20(const blink::WebGamepad& input,
+                           blink::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = NullButton();
+
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[15];
+
+  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = input.axes[0];
+  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = input.axes[1];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[2];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[3];
+
+  mapped->buttonsLength = BUTTON_INDEX_COUNT;
+  mapped->axesLength = AXIS_INDEX_COUNT;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -335,6 +367,7 @@ struct MappingData {
     {"046d", "c21d", MapperXInputStyleGamepad},  // Logitech F310
     {"046d", "c21e", MapperXInputStyleGamepad},  // Logitech F510
     {"046d", "c21f", MapperXInputStyleGamepad},  // Logitech F710
+    {"04e8", "a000", MapperSamsung_EI_GP20},     // Samsung Gamepad EI-GP20
     {"054c", "0268", MapperPlaystationSixAxis},  // Playstation SIXAXIS
     {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
     {"054c", "09cc", MapperDualshock4},          // Dualshock 4 (PS4 Slim)
