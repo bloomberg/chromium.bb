@@ -56,6 +56,7 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SchemeRegistry.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
@@ -247,7 +248,7 @@ void ServiceWorkerContainer::registerServiceWorkerImpl(
               WebURLRequest::RequestContextServiceWorker, scriptURL) &&
           csp->allowWorkerContextFromSource(
               scriptURL, ResourceRequest::RedirectStatus::NoRedirect,
-              ContentSecurityPolicy::SendReport))) {
+              SecurityViolationReportingPolicy::Report))) {
       callbacks->onError(WebServiceWorkerError(
           WebServiceWorkerError::ErrorTypeSecurity,
           String(

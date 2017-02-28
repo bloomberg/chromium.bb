@@ -39,6 +39,7 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -135,7 +136,6 @@ class PLATFORM_EXPORT FetchContext
 
   virtual void addResourceTiming(const ResourceTimingInfo&);
   virtual bool allowImage(bool, const KURL&) const { return false; }
-  enum class SecurityViolationReportingPolicy { SuppressReporting, Report };
   virtual ResourceRequestBlockedReason canRequest(
       Resource::Type,
       const ResourceRequest&,

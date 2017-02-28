@@ -18,6 +18,7 @@
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 
 namespace blink {
 
@@ -105,7 +106,7 @@ void HttpEquiv::processHttpEquivRefresh(Document& document,
   UseCounter::count(document, UseCounter::MetaRefresh);
   if (!document.contentSecurityPolicy()->allowInlineScript(
           element, KURL(), "", OrdinalNumber(), "",
-          ContentSecurityPolicy::SuppressReport)) {
+          SecurityViolationReportingPolicy::SuppressReporting)) {
     UseCounter::count(document,
                       UseCounter::MetaRefreshWhenCSPBlocksInlineScript);
   }
@@ -124,7 +125,7 @@ void HttpEquiv::processHttpEquivSetCookie(Document& document,
   UseCounter::count(document, UseCounter::MetaSetCookie);
   if (!document.contentSecurityPolicy()->allowInlineScript(
           element, KURL(), "", OrdinalNumber(), "",
-          ContentSecurityPolicy::SuppressReport)) {
+          SecurityViolationReportingPolicy::SuppressReporting)) {
     UseCounter::count(document,
                       UseCounter::MetaSetCookieWhenCSPBlocksInlineScript);
   }

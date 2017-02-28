@@ -57,6 +57,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
@@ -318,7 +319,7 @@ static bool codeGenerationCheckCallbackInMainThread(
     if (ContentSecurityPolicy* policy =
             toDocument(executionContext)->contentSecurityPolicy())
       return policy->allowEval(ScriptState::from(context),
-                               ContentSecurityPolicy::SendReport,
+                               SecurityViolationReportingPolicy::Report,
                                ContentSecurityPolicy::WillThrowException);
   }
   return false;

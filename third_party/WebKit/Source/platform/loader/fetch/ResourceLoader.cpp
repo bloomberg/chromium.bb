@@ -38,6 +38,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/NetworkInstrumentation.h"
 #include "platform/network/ResourceError.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebData.h"
@@ -48,7 +49,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -175,8 +175,8 @@ bool ResourceLoader::willFollowRedirect(
         m_resource->options(),
         /* Don't send security violation reports for unused preloads */
         (m_resource->isUnusedPreload()
-             ? FetchContext::SecurityViolationReportingPolicy::SuppressReporting
-             : FetchContext::SecurityViolationReportingPolicy::Report),
+             ? SecurityViolationReportingPolicy::SuppressReporting
+             : SecurityViolationReportingPolicy::Report),
         FetchRequest::UseDefaultOriginRestrictionForType);
     if (blockedReason != ResourceRequestBlockedReason::None) {
       cancelForRedirectAccessCheckError(newRequest.url(), blockedReason);
@@ -267,9 +267,8 @@ ResourceRequestBlockedReason ResourceLoader::canAccessResponse(
       resource->getType(), resource->resourceRequest(), response.url(),
       resource->options(),
       /* Don't send security violation reports for unused preloads */
-      (unusedPreload
-           ? FetchContext::SecurityViolationReportingPolicy::SuppressReporting
-           : FetchContext::SecurityViolationReportingPolicy::Report),
+      (unusedPreload ? SecurityViolationReportingPolicy::SuppressReporting
+                     : SecurityViolationReportingPolicy::Report),
       FetchRequest::UseDefaultOriginRestrictionForType);
   if (blockedReason != ResourceRequestBlockedReason::None)
     return blockedReason;

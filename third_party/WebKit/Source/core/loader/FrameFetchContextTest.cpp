@@ -47,6 +47,7 @@
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
@@ -165,18 +166,17 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
   }
 
   ResourceRequestBlockedReason canRequest() {
-    return canRequestInternal(
-        FetchContext::SecurityViolationReportingPolicy::Report);
+    return canRequestInternal(SecurityViolationReportingPolicy::Report);
   }
 
   ResourceRequestBlockedReason canRequestPreload() {
     return canRequestInternal(
-        FetchContext::SecurityViolationReportingPolicy::SuppressReporting);
+        SecurityViolationReportingPolicy::SuppressReporting);
   }
 
  private:
   ResourceRequestBlockedReason canRequestInternal(
-      FetchContext::SecurityViolationReportingPolicy reportingPolicy) {
+      SecurityViolationReportingPolicy reportingPolicy) {
     KURL inputURL(ParsedURLString, "http://example.com/");
     ResourceRequest resourceRequest(inputURL);
     return fetchContext->canRequest(

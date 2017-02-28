@@ -294,8 +294,8 @@ bool CSPDirectiveList::allowRequestWithoutIntegrity(
     WebURLRequest::RequestContext context,
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  if (reportingStatus == ContentSecurityPolicy::SendReport)
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  if (reportingPolicy == SecurityViolationReportingPolicy::Report)
     return checkRequestWithoutIntegrityAndReportViolation(context, url,
                                                           redirectStatus);
   return denyIfEnforcingPolicy() || checkRequestWithoutIntegrity(context);
@@ -505,9 +505,9 @@ bool CSPDirectiveList::allowJavaScriptURLs(
     Element* element,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+    SecurityViolationReportingPolicy reportingPolicy) const {
   SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
-  if (reportingStatus == ContentSecurityPolicy::SendReport) {
+  if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
     return checkInlineAndReportViolation(
         directive,
         "Refused to execute JavaScript URL because it violates the following "
@@ -522,9 +522,9 @@ bool CSPDirectiveList::allowInlineEventHandlers(
     Element* element,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+    SecurityViolationReportingPolicy reportingPolicy) const {
   SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
-  if (reportingStatus == ContentSecurityPolicy::SendReport) {
+  if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
     return checkInlineAndReportViolation(
         operativeDirective(m_scriptSrc.get()),
         "Refused to execute inline event handler because it violates the "
@@ -540,7 +540,7 @@ bool CSPDirectiveList::allowInlineScript(
     const String& contextURL,
     const String& nonce,
     const WTF::OrdinalNumber& contextLine,
-    ContentSecurityPolicy::ReportingStatus reportingStatus,
+    SecurityViolationReportingPolicy reportingPolicy,
     const String& content) const {
   SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
   if (isMatchingNoncePresent(directive, nonce))
@@ -550,7 +550,7 @@ bool CSPDirectiveList::allowInlineScript(
       allowDynamic()) {
     return true;
   }
-  if (reportingStatus == ContentSecurityPolicy::SendReport) {
+  if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
     return checkInlineAndReportViolation(
         directive,
         "Refused to execute inline script because it violates the following "
@@ -566,12 +566,12 @@ bool CSPDirectiveList::allowInlineStyle(
     const String& contextURL,
     const String& nonce,
     const WTF::OrdinalNumber& contextLine,
-    ContentSecurityPolicy::ReportingStatus reportingStatus,
+    SecurityViolationReportingPolicy reportingPolicy,
     const String& content) const {
   SourceListDirective* directive = operativeDirective(m_styleSrc.get());
   if (isMatchingNoncePresent(directive, nonce))
     return true;
-  if (reportingStatus == ContentSecurityPolicy::SendReport) {
+  if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
     return checkInlineAndReportViolation(
         directive,
         "Refused to apply inline style because it violates the following "
@@ -584,9 +584,9 @@ bool CSPDirectiveList::allowInlineStyle(
 
 bool CSPDirectiveList::allowEval(
     ScriptState* scriptState,
-    ContentSecurityPolicy::ReportingStatus reportingStatus,
+    SecurityViolationReportingPolicy reportingPolicy,
     ContentSecurityPolicy::ExceptionStatus exceptionStatus) const {
-  if (reportingStatus == ContentSecurityPolicy::SendReport) {
+  if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
     return checkEvalAndReportViolation(
         operativeDirective(m_scriptSrc.get()),
         "Refused to evaluate a string as JavaScript because 'unsafe-eval' is "
@@ -601,8 +601,8 @@ bool CSPDirectiveList::allowPluginType(
     const String& type,
     const String& typeAttribute,
     const KURL& url,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkMediaTypeAndReportViolation(
                    m_pluginTypes.get(), type, typeAttribute,
                    "Refused to load '" + url.elidedString() + "' (MIME type '" +
@@ -617,12 +617,12 @@ bool CSPDirectiveList::allowScriptFromSource(
     const String& nonce,
     ParserDisposition parserDisposition,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+    SecurityViolationReportingPolicy reportingPolicy) const {
   if (isMatchingNoncePresent(operativeDirective(m_scriptSrc.get()), nonce))
     return true;
   if (parserDisposition == NotParserInserted && allowDynamic())
     return true;
-  return reportingStatus == ContentSecurityPolicy::SendReport
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    operativeDirective(m_scriptSrc.get()), url,
                    ContentSecurityPolicy::DirectiveType::ScriptSrc,
@@ -634,10 +634,10 @@ bool CSPDirectiveList::allowScriptFromSource(
 bool CSPDirectiveList::allowObjectFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+    SecurityViolationReportingPolicy reportingPolicy) const {
   if (url.protocolIsAbout())
     return true;
-  return reportingStatus == ContentSecurityPolicy::SendReport
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    operativeDirective(m_objectSrc.get()), url,
                    ContentSecurityPolicy::DirectiveType::ObjectSrc,
@@ -649,7 +649,7 @@ bool CSPDirectiveList::allowObjectFromSource(
 bool CSPDirectiveList::allowFrameFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+    SecurityViolationReportingPolicy reportingPolicy) const {
   if (url.protocolIsAbout())
     return true;
 
@@ -660,7 +660,7 @@ bool CSPDirectiveList::allowFrameFromSource(
   SourceListDirective* whichDirective = operativeDirective(
       m_frameSrc.get(), operativeDirective(m_childSrc.get()));
 
-  return reportingStatus == ContentSecurityPolicy::SendReport
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    whichDirective, url,
                    ContentSecurityPolicy::DirectiveType::FrameSrc,
@@ -671,8 +671,8 @@ bool CSPDirectiveList::allowFrameFromSource(
 bool CSPDirectiveList::allowImageFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    operativeDirective(m_imgSrc.get()), url,
                    ContentSecurityPolicy::DirectiveType::ImgSrc, redirectStatus)
@@ -684,10 +684,10 @@ bool CSPDirectiveList::allowStyleFromSource(
     const KURL& url,
     const String& nonce,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+    SecurityViolationReportingPolicy reportingPolicy) const {
   if (isMatchingNoncePresent(operativeDirective(m_styleSrc.get()), nonce))
     return true;
-  return reportingStatus == ContentSecurityPolicy::SendReport
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    operativeDirective(m_styleSrc.get()), url,
                    ContentSecurityPolicy::DirectiveType::StyleSrc,
@@ -699,8 +699,8 @@ bool CSPDirectiveList::allowStyleFromSource(
 bool CSPDirectiveList::allowFontFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    operativeDirective(m_fontSrc.get()), url,
                    ContentSecurityPolicy::DirectiveType::FontSrc,
@@ -712,8 +712,8 @@ bool CSPDirectiveList::allowFontFromSource(
 bool CSPDirectiveList::allowMediaFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    operativeDirective(m_mediaSrc.get()), url,
                    ContentSecurityPolicy::DirectiveType::MediaSrc,
@@ -725,8 +725,8 @@ bool CSPDirectiveList::allowMediaFromSource(
 bool CSPDirectiveList::allowManifestFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    operativeDirective(m_manifestSrc.get()), url,
                    ContentSecurityPolicy::DirectiveType::ManifestSrc,
@@ -738,8 +738,8 @@ bool CSPDirectiveList::allowManifestFromSource(
 bool CSPDirectiveList::allowConnectToSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    operativeDirective(m_connectSrc.get()), url,
                    ContentSecurityPolicy::DirectiveType::ConnectSrc,
@@ -751,8 +751,8 @@ bool CSPDirectiveList::allowConnectToSource(
 bool CSPDirectiveList::allowFormAction(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    m_formAction.get(), url,
                    ContentSecurityPolicy::DirectiveType::FormAction,
@@ -763,9 +763,9 @@ bool CSPDirectiveList::allowFormAction(
 bool CSPDirectiveList::allowBaseURI(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+    SecurityViolationReportingPolicy reportingPolicy) const {
   bool result =
-      reportingStatus == ContentSecurityPolicy::SendReport
+      reportingPolicy == SecurityViolationReportingPolicy::Report
           ? checkSourceAndReportViolation(
                 m_baseURI.get(), url,
                 ContentSecurityPolicy::DirectiveType::BaseURI, redirectStatus)
@@ -783,7 +783,7 @@ bool CSPDirectiveList::allowBaseURI(
 bool CSPDirectiveList::allowWorkerFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+    SecurityViolationReportingPolicy reportingPolicy) const {
   // 'worker-src' overrides 'child-src', which overrides the default
   // sources. So, we do this nested set of calls to 'operativeDirective()' to
   // grab 'worker-src' if it exists, 'child-src' if it doesn't, and 'defaut-src'
@@ -791,7 +791,7 @@ bool CSPDirectiveList::allowWorkerFromSource(
   SourceListDirective* whichDirective = operativeDirective(
       m_workerSrc.get(), operativeDirective(m_childSrc.get()));
 
-  return reportingStatus == ContentSecurityPolicy::SendReport
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
                    whichDirective, url,
                    ContentSecurityPolicy::DirectiveType::WorkerSrc,
@@ -802,8 +802,8 @@ bool CSPDirectiveList::allowWorkerFromSource(
 bool CSPDirectiveList::allowAncestors(
     LocalFrame* frame,
     const KURL& url,
-    ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
+    SecurityViolationReportingPolicy reportingPolicy) const {
+  return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkAncestorsAndReportViolation(m_frameAncestors.get(), frame,
                                                 url)
              : checkAncestors(m_frameAncestors.get(), frame);

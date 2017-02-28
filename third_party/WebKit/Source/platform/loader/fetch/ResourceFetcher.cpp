@@ -45,13 +45,13 @@
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 using blink::WebURLRequest;
 
@@ -489,8 +489,8 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::prepareRequest(
       request.options(),
       /* Don't send security violation reports for speculative preloads */
       request.isSpeculativePreload()
-          ? FetchContext::SecurityViolationReportingPolicy::SuppressReporting
-          : FetchContext::SecurityViolationReportingPolicy::Report,
+          ? SecurityViolationReportingPolicy::SuppressReporting
+          : SecurityViolationReportingPolicy::Report,
       request.getOriginRestriction());
   if (blockedReason != ResourceRequestBlockedReason::None) {
     DCHECK(!substituteData.forceSynchronousLoad());
@@ -1502,7 +1502,7 @@ void ResourceFetcher::emulateLoadStartedForInspector(
   FetchRequest request(resourceRequest, initiatorName, resource->options());
   context().canRequest(resource->getType(), resource->lastResourceRequest(),
                        resource->lastResourceRequest().url(), request.options(),
-                       FetchContext::SecurityViolationReportingPolicy::Report,
+                       SecurityViolationReportingPolicy::Report,
                        request.getOriginRestriction());
   requestLoadStarted(resource->identifier(), resource, request,
                      ResourceLoadingFromCache);

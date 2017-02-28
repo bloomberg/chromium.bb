@@ -35,6 +35,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/WTFString.h"
@@ -60,30 +61,34 @@ class CORE_EXPORT MixedContentChecker final {
   DISALLOW_NEW();
 
  public:
-  enum ReportingStatus { SendReport, SuppressReport };
   static bool shouldBlockFetch(LocalFrame*,
                                WebURLRequest::RequestContext,
                                WebURLRequest::FrameType,
                                ResourceRequest::RedirectStatus,
                                const KURL&,
-                               ReportingStatus = SendReport);
+                               SecurityViolationReportingPolicy =
+                                   SecurityViolationReportingPolicy::Report);
   static bool shouldBlockFetch(LocalFrame* frame,
                                const ResourceRequest& request,
                                const KURL& url,
-                               ReportingStatus status = SendReport) {
+                               SecurityViolationReportingPolicy status =
+                                   SecurityViolationReportingPolicy::Report) {
     return shouldBlockFetch(frame, request.requestContext(),
                             request.frameType(), request.redirectStatus(), url,
                             status);
   }
 
-  static bool shouldBlockWebSocket(LocalFrame*,
-                                   const KURL&,
-                                   ReportingStatus = SendReport);
+  static bool shouldBlockWebSocket(
+      LocalFrame*,
+      const KURL&,
+      SecurityViolationReportingPolicy =
+          SecurityViolationReportingPolicy::Report);
 
   static bool isMixedContent(SecurityOrigin*, const KURL&);
   static bool isMixedFormAction(LocalFrame*,
                                 const KURL&,
-                                ReportingStatus = SendReport);
+                                SecurityViolationReportingPolicy =
+                                    SecurityViolationReportingPolicy::Report);
 
   static void checkMixedPrivatePublic(LocalFrame*,
                                       const AtomicString& resourceIPAddress);

@@ -58,6 +58,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "v8/include/v8.h"
 #include "wtf/Assertions.h"
 
@@ -138,7 +139,7 @@ void LocalWindowProxy::initialize() {
     // FIXME: Can this be removed when CSP moves to browser?
     ContentSecurityPolicy* csp = frame()->document()->contentSecurityPolicy();
     context->AllowCodeGenerationFromStrings(
-        csp->allowEval(0, ContentSecurityPolicy::SuppressReport));
+        csp->allowEval(0, SecurityViolationReportingPolicy::SuppressReporting));
     context->SetErrorMessageForCodeGenerationFromStrings(
         v8String(isolate(), csp->evalDisabledErrorMessage()));
   } else {

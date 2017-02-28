@@ -39,6 +39,7 @@
 #include "core/frame/DOMTimer.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 
 namespace blink {
 
@@ -51,10 +52,9 @@ static bool isAllowed(ScriptState* scriptState,
     Document* document = static_cast<Document*>(executionContext);
     if (!document->frame())
       return false;
-    if (isEval &&
-        !document->contentSecurityPolicy()->allowEval(
-            scriptState, ContentSecurityPolicy::SendReport,
-            ContentSecurityPolicy::WillNotThrowException))
+    if (isEval && !document->contentSecurityPolicy()->allowEval(
+                      scriptState, SecurityViolationReportingPolicy::Report,
+                      ContentSecurityPolicy::WillNotThrowException))
       return false;
     return true;
   }
@@ -65,7 +65,8 @@ static bool isAllowed(ScriptState* scriptState,
       return false;
     ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy();
     if (isEval && policy &&
-        !policy->allowEval(scriptState, ContentSecurityPolicy::SendReport,
+        !policy->allowEval(scriptState,
+                           SecurityViolationReportingPolicy::Report,
                            ContentSecurityPolicy::WillNotThrowException))
       return false;
     return true;

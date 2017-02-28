@@ -36,6 +36,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
+#include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/Platform.h"
 #include "v8/include/v8.h"
 #include "wtf/CurrentTime.h"
@@ -159,9 +160,8 @@ ImageResource* ImageResource::fetch(FetchRequest& request,
           request.options(),
           /* Don't send security violation reports for speculative preloads */
           request.isSpeculativePreload()
-              ? FetchContext::SecurityViolationReportingPolicy::
-                    SuppressReporting
-              : FetchContext::SecurityViolationReportingPolicy::Report,
+              ? SecurityViolationReportingPolicy::SuppressReporting
+              : SecurityViolationReportingPolicy::Report,
           request.getOriginRestriction());
       if (blockReason == ResourceRequestBlockedReason::None)
         fetcher->context().sendImagePing(requestURL);

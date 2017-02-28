@@ -751,18 +751,13 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       frame()->script().shouldBypassMainWorldCSP() ||
       options.contentSecurityPolicyOption == DoNotCheckContentSecurityPolicy;
 
-  ContentSecurityPolicy::ReportingStatus cspReporting =
-      (reportingPolicy == SecurityViolationReportingPolicy::SuppressReporting)
-          ? ContentSecurityPolicy::SuppressReport
-          : ContentSecurityPolicy::SendReport;
-
   if (m_document) {
     DCHECK(m_document->contentSecurityPolicy());
     if (!shouldBypassMainWorldCSP &&
         !m_document->contentSecurityPolicy()->allowRequest(
             resourceRequest.requestContext(), url,
             options.contentSecurityPolicyNonce, options.integrityMetadata,
-            options.parserDisposition, redirectStatus, cspReporting))
+            options.parserDisposition, redirectStatus, reportingPolicy))
       return ResourceRequestBlockedReason::CSP;
   }
 
@@ -815,12 +810,8 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
   // Check for mixed content. We do this second-to-last so that when folks block
   // mixed content with a CSP policy, they don't get a warning. They'll still
   // get a warning in the console about CSP blocking the load.
-  MixedContentChecker::ReportingStatus mixedContentReporting =
-      (reportingPolicy == SecurityViolationReportingPolicy::SuppressReporting)
-          ? MixedContentChecker::SuppressReport
-          : MixedContentChecker::SendReport;
   if (MixedContentChecker::shouldBlockFetch(frame(), resourceRequest, url,
-                                            mixedContentReporting))
+                                            reportingPolicy))
     return ResourceRequestBlockedReason::MixedContent;
 
   // Let the client have the final say into whether or not the load should

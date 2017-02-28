@@ -1367,6 +1367,7 @@ component("platform") {
     "weborigin/SecurityOriginHash.h",
     "weborigin/SecurityPolicy.cpp",
     "weborigin/SecurityPolicy.h",
+    "weborigin/SecurityViolationReportingPolicy.h",
     "weborigin/Suborigin.cpp",
     "weborigin/Suborigin.h",
     "weborigin/URLSecurityOriginMap.h",
