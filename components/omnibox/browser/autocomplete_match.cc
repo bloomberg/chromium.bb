@@ -4,7 +4,9 @@
 
 #include "components/omnibox/browser/autocomplete_match.h"
 
-#include "base/i18n/time_formatting.h"
+#include <algorithm>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -12,7 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -545,10 +547,10 @@ void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
-                                             const base::Time& value) {
-  RecordAdditionalInfo(property,
-                       base::UTF16ToUTF8(
-                           base::TimeFormatShortDateAndTime(value)));
+                                             base::Time value) {
+  RecordAdditionalInfo(
+      property, base::StringPrintf("%d hours ago",
+                                   (base::Time::Now() - value).InHours()));
 }
 
 std::string AutocompleteMatch::GetAdditionalInfo(

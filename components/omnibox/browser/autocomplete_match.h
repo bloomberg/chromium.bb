@@ -258,8 +258,7 @@ struct AutocompleteMatch {
   void RecordAdditionalInfo(const std::string& property,
                             const std::string& value);
   void RecordAdditionalInfo(const std::string& property, int value);
-  void RecordAdditionalInfo(const std::string& property,
-                            const base::Time& value);
+  void RecordAdditionalInfo(const std::string& property, base::Time value);
 
   // Returns the value recorded for |property| in the |additional_info|
   // dictionary.  Returns the empty string if no such value exists.
