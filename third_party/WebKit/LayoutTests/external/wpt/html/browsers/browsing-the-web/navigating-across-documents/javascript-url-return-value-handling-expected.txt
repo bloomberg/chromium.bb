@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Test that javascript: evaluation only performs a navigation to the
-  result when the result is a string value. 
-Harness: the test ran to completion.
-
