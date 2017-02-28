@@ -11,5 +11,8 @@ package org.chromium.components.background_task_scheduler;
 public final class TaskIds {
     public static final int TEST = 0x00008378;
 
+    public static final int GCM_BACKGROUND_TASK_JOB_ID = 1;
+    public static final int NOTIFICATION_SERVICE_JOB_ID = 21;
+
     private TaskIds() {}
 }

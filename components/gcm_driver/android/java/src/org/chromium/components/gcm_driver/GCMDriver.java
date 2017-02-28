@@ -6,7 +6,6 @@ package org.chromium.components.gcm_driver;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Bundle;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -15,8 +14,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class is the Java counterpart to the C++ GCMDriverAndroid class.
@@ -115,41 +112,16 @@ public class GCMDriver {
     }
 
     // The caller of this function is responsible for ensuring the browser process is initialized.
-    public static void onMessageReceived(String appId, String senderId, Bundle extras) {
-        // TODO(johnme): Store message and redeliver later if Chrome is killed before delivery.
+    public static void dispatchMessage(GCMMessage message) {
         ThreadUtils.assertOnUiThread();
+
         if (sInstance == null) {
-            // Change of behaviour, throw exception instead of failing silently with Log.e.
             throw new RuntimeException("Failed to instantiate GCMDriver.");
         }
-        final String bundleSubtype = "subtype";
-        final String bundleSenderId = "from";
-        final String bundleCollapseKey = "collapse_key";
-        final String bundleRawData = "rawData";
-        final String bundleGcmplex = "com.google.ipc.invalidation.gcmmplex.";
 
-        String collapseKey = extras.getString(bundleCollapseKey);  // May be null.
-        byte[] rawData = extras.getByteArray(bundleRawData);  // May be null.
-
-        List<String> dataKeysAndValues = new ArrayList<String>();
-        for (String key : extras.keySet()) {
-            // TODO(johnme): Check there aren't other keys that we need to exclude.
-            if (key.equals(bundleSubtype) || key.equals(bundleSenderId)
-                    || key.equals(bundleCollapseKey) || key.equals(bundleRawData)
-                    || key.startsWith(bundleGcmplex)) {
-                continue;
-            }
-            Object value = extras.get(key);
-            if (!(value instanceof String)) {
-                continue;
-            }
-            dataKeysAndValues.add(key);
-            dataKeysAndValues.add((String) value);
-        }
-
-        sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid,
-                appId, senderId, collapseKey, rawData,
-                dataKeysAndValues.toArray(new String[dataKeysAndValues.size()]));
+        sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid, message.getAppId(),
+                message.getSenderId(), message.getCollapseKey(), message.getRawData(),
+                message.getDataKeysAndValuesArray());
     }
 
     @VisibleForTesting

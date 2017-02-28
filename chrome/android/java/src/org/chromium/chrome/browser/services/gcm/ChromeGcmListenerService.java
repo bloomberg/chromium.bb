@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.services.gcm;
 
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -16,7 +18,11 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.TaskIds;
+import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.gcm_driver.GCMDriver;
+import org.chromium.components.gcm_driver.GCMMessage;
 
 /**
  * Receives Downstream messages and status of upstream messages from GCM.
@@ -31,7 +37,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
     }
 
     @Override
-    public void onMessageReceived(String from, Bundle data) {
+    public void onMessageReceived(final String from, final Bundle data) {
         boolean hasCollapseKey = !TextUtils.isEmpty(data.getString("collapse_key"));
         GcmUma.recordDataMessageReceived(getApplicationContext(), hasCollapseKey);
 
@@ -40,7 +46,24 @@ public class ChromeGcmListenerService extends GcmListenerService {
             AndroidGcmController.get(this).onMessageReceived(data);
             return;
         }
-        pushMessageReceived(from, data);
+
+        final Context applicationContext = getApplicationContext();
+
+        // Dispatch the message to the GCM Driver for native features.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                GCMMessage message = null;
+                try {
+                    message = new GCMMessage(from, data);
+                } catch (IllegalArgumentException e) {
+                    Log.e(TAG, "Received an invalid GCM Message", e);
+                    return;
+                }
+
+                scheduleOrDispatchMessageToDriver(applicationContext, message);
+            }
+        });
     }
 
     @Override
@@ -63,28 +86,50 @@ public class ChromeGcmListenerService extends GcmListenerService {
         GcmUma.recordDeletedMessages(getApplicationContext());
     }
 
-    private void pushMessageReceived(final String from, final Bundle data) {
-        final String bundleSubtype = "subtype";
-        if (!data.containsKey(bundleSubtype)) {
-            Log.w(TAG, "Received push message with no subtype");
-            return;
+    /**
+     * Either schedules |message| to be dispatched through the Job Scheduler, which we use on
+     * Android N and beyond, or immediately dispatches the message on other versions of Android.
+     * Must be called on the UI thread both for the BackgroundTaskScheduler and for dispatching
+     * the |message| to the GCMDriver.
+     */
+    static void scheduleOrDispatchMessageToDriver(Context context, GCMMessage message) {
+        ThreadUtils.assertOnUiThread();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Bundle extras = message.toBundle();
+
+            // TODO(peter): Add UMA for measuring latency introduced by the BackgroundTaskScheduler.
+            TaskInfo backgroundTask = TaskInfo.createOneOffTask(TaskIds.GCM_BACKGROUND_TASK_JOB_ID,
+                                                      GCMBackgroundTask.class, 0 /* immediately */)
+                                              .setExtras(extras)
+                                              .build();
+
+            BackgroundTaskSchedulerFactory.getScheduler().schedule(context, backgroundTask);
+
+        } else {
+            dispatchMessageToDriver(context, message);
         }
-        final String appId = data.getString(bundleSubtype);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            @SuppressFBWarnings("DM_EXIT")
-            public void run() {
-                try {
-                    ChromeBrowserInitializer.getInstance(getApplicationContext())
-                        .handleSynchronousStartup();
-                    GCMDriver.onMessageReceived(appId, from, data);
-                } catch (ProcessInitException e) {
-                    Log.e(TAG, "ProcessInitException while starting the browser process");
-                    // Since the library failed to initialize nothing in the application
-                    // can work, so kill the whole application not just the activity.
-                    System.exit(-1);
-                }
-            }
-        });
+    }
+
+    /**
+     * To be called when a GCM message is ready to be dispatched. Will initialise the native code
+     * of the browser process, and forward the message to the GCM Driver. Must be called on the UI
+     * thread.
+     */
+    @SuppressFBWarnings("DM_EXIT")
+    static void dispatchMessageToDriver(Context applicationContext, GCMMessage message) {
+        ThreadUtils.assertOnUiThread();
+
+        try {
+            ChromeBrowserInitializer.getInstance(applicationContext).handleSynchronousStartup();
+            GCMDriver.dispatchMessage(message);
+
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "ProcessInitException while starting the browser process");
+
+            // Since the library failed to initialize nothing in the application can work, so kill
+            // the whole application as opposed to just this service.
+            System.exit(-1);
+        }
     }
 }

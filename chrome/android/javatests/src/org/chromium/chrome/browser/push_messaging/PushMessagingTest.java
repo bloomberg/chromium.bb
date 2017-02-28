@@ -30,6 +30,7 @@ import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.components.gcm_driver.GCMDriver;
+import org.chromium.components.gcm_driver.GCMMessage;
 import org.chromium.components.gcm_driver.instance_id.FakeInstanceIDWithSubtype;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -293,10 +294,14 @@ public class PushMessagingTest
             @Override
             public void run() {
                 Context context = getInstrumentation().getTargetContext().getApplicationContext();
+
                 Bundle extras = new Bundle();
+                extras.putString("subtype", appId);
+
+                GCMMessage message = new GCMMessage(senderId, extras);
                 try {
                     ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
-                    GCMDriver.onMessageReceived(appId, senderId, extras);
+                    GCMDriver.dispatchMessage(message);
                 } catch (ProcessInitException e) {
                     fail("Chrome browser failed to initialize.");
                 }

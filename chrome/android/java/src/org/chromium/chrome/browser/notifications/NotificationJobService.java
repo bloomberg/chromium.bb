@@ -20,10 +20,6 @@ import org.chromium.base.ThreadUtils;
  */
 @TargetApi(Build.VERSION_CODES.N)
 public class NotificationJobService extends JobService {
-    // We don't need to distinguish between jobs sent to this service, so we can reuse one job id.
-    // But it ought to be distinct from job ids used with other JobService classes in our code.
-    static final int JOB_ID = 21;
-
     static PersistableBundle getJobExtrasFromIntent(Intent intent) {
         PersistableBundle bundle = new PersistableBundle();
         bundle.putString(NotificationConstants.EXTRA_NOTIFICATION_ID,
