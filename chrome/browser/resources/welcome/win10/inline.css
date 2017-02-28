@@ -15,6 +15,7 @@ body {
 
 a {
   color: var(--google-blue-500);
+  cursor: pointer;
   text-decoration: none;
 }
 

@@ -104,14 +104,14 @@ void WelcomeWin10Handler::HandleGetPinnedToTaskbarState(
   }
 
   // Only wait for a small amount of time for the result. If the timer fires,
-  // it will be assumed that Chrome is pinned to the taskbar. This is to make
-  // sure the instructions are never displayed in case it was impossible to
-  // determine the pinned state.
+  // it will be assumed that Chrome isn't pinned to the taskbar. This is to make
+  // sure the instructions are displayed in case it was impossible to determine
+  // the pinned state.
   constexpr base::TimeDelta kPinnedToTaskbarTimeout =
       base::TimeDelta::FromMilliseconds(200);
   timer_.Start(FROM_HERE, kPinnedToTaskbarTimeout,
                base::Bind(&WelcomeWin10Handler::OnIsPinnedToTaskbarDetermined,
-                          base::Unretained(this), true, true));
+                          base::Unretained(this), true, false));
 }
 
 void WelcomeWin10Handler::HandleSetDefaultBrowser(const base::ListValue* args) {
