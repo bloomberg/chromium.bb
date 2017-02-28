@@ -18,6 +18,8 @@
 Polymer({
   is: 'settings-downloads-page',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /**
      * Preferences state.
@@ -32,14 +34,34 @@ Polymer({
      * @type {!DownloadsPageVisibility}
      */
     pageVisibility: Object,
+
+    /** @private */
+    autoOpenDownloads_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  /** @private {?settings.DownloadsBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  attached: function() {
+    this.browserProxy_ = settings.DownloadsBrowserProxyImpl.getInstance();
+
+    this.addWebUIListener('auto-open-downloads-changed', function(autoOpen) {
+      this.autoOpenDownloads_ = autoOpen;
+    }.bind(this));
+
+    this.browserProxy_.initializeDownloads();
   },
 
   /** @private */
   selectDownloadLocation_: function() {
-    chrome.send('selectDownloadLocation');
+    this.browserProxy_.selectDownloadLocation();
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /**
    * @param {string} path
    * @return {string} The download location string that is suitable to display
@@ -56,5 +78,10 @@ Polymer({
     path = path.replace(/\//g, ' \u203a ');
     return path;
   },
-// </if>
+  // </if>
+
+  /** @private */
+  onClearAutoOpenFileTypesTap_: function() {
+    this.browserProxy_.resetAutoOpenFileTypes();
+  },
 });

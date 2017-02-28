@@ -557,6 +557,30 @@ TEST_F('CrSettingsAppearanceFontsPageTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsDownloadsPageTest() {}
+
+CrSettingsDownloadsPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/downloads_page/downloads_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'downloads_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsDownloadsPageTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#if !defined(OS_CHROMEOS)');
 /**
  * Test fixture for chrome/browser/resources/settings/default_browser_page/.

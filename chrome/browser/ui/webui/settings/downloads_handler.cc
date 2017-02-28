@@ -36,6 +36,10 @@ void DownloadsHandler::RegisterMessages() {
       "initializeDownloads",
       base::Bind(&DownloadsHandler::HandleInitialize, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "resetAutoOpenFileTypes",
+      base::Bind(&DownloadsHandler::HandleResetAutoOpenFileTypes,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "selectDownloadLocation",
       base::Bind(&DownloadsHandler::HandleSelectDownloadLocation,
                  base::Unretained(this)));
@@ -66,6 +70,15 @@ void DownloadsHandler::SendAutoOpenDownloadsToJavascript() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("auto-open-downloads-changed"),
                          base::FundamentalValue(auto_open_downloads));
+}
+
+void DownloadsHandler::HandleResetAutoOpenFileTypes(
+    const base::ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
+  content::DownloadManager* manager =
+      content::BrowserContext::GetDownloadManager(profile_);
+  if (manager)
+    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
 }
 
 void DownloadsHandler::HandleSelectDownloadLocation(

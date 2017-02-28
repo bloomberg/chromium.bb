@@ -74,6 +74,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"back", IDS_ACCNAME_BACK},
     {"basicPageTitle", IDS_SETTINGS_BASIC},
     {"cancel", IDS_CANCEL},
+    {"clear", IDS_SETTINGS_CLEAR},
     {"close", IDS_CLOSE},
     {"confirm", IDS_CONFIRM},
     {"controlledByExtension", IDS_SETTINGS_CONTROLLED_BY_EXTENSION},
@@ -698,7 +699,8 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
       {"changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION},
       {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
       {"disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE},
-  };
+      {"openFileTypesAutomatically",
+       IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY}};
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }

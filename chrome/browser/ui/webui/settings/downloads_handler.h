@@ -39,6 +39,9 @@ class DownloadsHandler : public SettingsPageUIHandler,
 
   void SendAutoOpenDownloadsToJavascript();
 
+  // Resets the list of filetypes that are auto-opened after download.
+  void HandleResetAutoOpenFileTypes(const base::ListValue* args);
+
   // Callback for the "selectDownloadLocation" message. This will prompt the
   // user for a destination folder using platform-specific APIs.
   void HandleSelectDownloadLocation(const base::ListValue* args);

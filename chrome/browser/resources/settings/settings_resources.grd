@@ -533,6 +533,12 @@
       <structure name="IDR_SETTINGS_DIRECTION_DELEGATE_JS"
                  file="direction_delegate.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_DOWNLOADS_BROWSER_PROXY_HTML"
+                 file="downloads_page/downloads_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DOWNLOADS_BROWSER_PROXY_JS"
+                 file="downloads_page/downloads_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_HTML"
                  file="downloads_page/downloads_page.html"
                  type="chrome_html"
