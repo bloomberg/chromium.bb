@@ -74,32 +74,10 @@ bool isPositionInTextArea(const Position& position) {
   return isHTMLTextAreaElement(textControl);
 }
 
-static bool isSpellCheckingEnabledFor(const Position& position) {
-  if (position.isNull())
-    return false;
-  if (TextControlElement* textControl = enclosingTextControl(position)) {
-    if (isHTMLInputElement(textControl)) {
-      HTMLInputElement& input = toHTMLInputElement(*textControl);
-      // TODO(tkent): The following password type check should be done in
-      // HTMLElement::spellcheck(). crbug.com/371567
-      if (input.type() == InputTypeNames::password)
-        return false;
-      if (!input.isFocusedElementInDocument())
-        return false;
-    }
-  }
-  if (HTMLElement* element =
-          Traversal<HTMLElement>::firstAncestorOrSelf(*position.anchorNode())) {
-    if (element->isSpellCheckingEnabled())
-      return true;
-  }
-  return false;
-}
-
 static bool isSpellCheckingEnabledFor(const VisibleSelection& selection) {
   if (selection.isNone())
     return false;
-  return isSpellCheckingEnabledFor(selection.start());
+  return SpellChecker::isSpellCheckingEnabledAt(selection.start());
 }
 
 static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range) {
@@ -601,9 +579,9 @@ static void addMarker(Document* document,
   DCHECK_GE(location, 0);
   const EphemeralRange& rangeToMark =
       calculateCharacterSubrange(checkingRange, location, length);
-  if (!isSpellCheckingEnabledFor(rangeToMark.startPosition()))
+  if (!SpellChecker::isSpellCheckingEnabledAt(rangeToMark.startPosition()))
     return;
-  if (!isSpellCheckingEnabledFor(rangeToMark.endPosition()))
+  if (!SpellChecker::isSpellCheckingEnabledAt(rangeToMark.endPosition()))
     return;
   document->markers().addMarker(rangeToMark.startPosition(),
                                 rangeToMark.endPosition(), type, description);
@@ -929,7 +907,7 @@ void SpellChecker::respondToChangedSelection(
   }
 
   TRACE_EVENT0("blink", "SpellChecker::respondToChangedSelection");
-  if (!isSpellCheckingEnabledFor(oldSelectionStart))
+  if (!isSpellCheckingEnabledAt(oldSelectionStart))
     return;
 
   // When spell checking is off, existing markers disappear after the selection
@@ -1241,6 +1219,26 @@ std::pair<String, int> SpellChecker::findFirstMisspelling(const Position& start,
     totalLengthProcessed += currentLength;
   }
   return std::make_pair(firstFoundItem, firstFoundOffset);
+}
+
+// static
+bool SpellChecker::isSpellCheckingEnabledAt(const Position& position) {
+  if (position.isNull())
+    return false;
+  if (TextControlElement* textControl = enclosingTextControl(position)) {
+    if (isHTMLInputElement(textControl)) {
+      HTMLInputElement& input = toHTMLInputElement(*textControl);
+      // TODO(tkent): The following password type check should be done in
+      // HTMLElement::spellcheck(). crbug.com/371567
+      if (input.type() == InputTypeNames::password)
+        return false;
+      if (!input.isFocusedElementInDocument())
+        return false;
+    }
+  }
+  HTMLElement* element =
+      Traversal<HTMLElement>::firstAncestorOrSelf(*position.anchorNode());
+  return element && element->isSpellCheckingEnabled();
 }
 
 }  // namespace blink

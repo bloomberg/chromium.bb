@@ -58,6 +58,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   SpellCheckerClient& spellCheckerClient() const;
   TextCheckerClient& textChecker() const;
 
+  static bool isSpellCheckingEnabledAt(const Position&);
   bool isSpellCheckingEnabled() const;
   void toggleSpellCheckingEnabled();
   void ignoreSpelling();
