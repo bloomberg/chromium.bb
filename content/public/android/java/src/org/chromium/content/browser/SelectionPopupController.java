@@ -261,6 +261,11 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                     mWebContents.paste();
                     mWebContents.dismissTextHandles();
                 }
+
+                @Override
+                public boolean canPaste() {
+                    return SelectionPopupController.this.canPaste();
+                }
             };
             Context windowContext = mWindowAndroid.getContext().get();
             if (windowContext == null) return null;
