@@ -244,6 +244,8 @@ component("web") {
     "WebSettingsImpl.h",
     "WebSharedWorkerImpl.cpp",
     "WebSharedWorkerImpl.h",
+    "WebSharedWorkerReportingProxyImpl.cpp",
+    "WebSharedWorkerReportingProxyImpl.h",
     "WebSpeechGrammar.cpp",
     "WebSpeechRecognitionHandle.cpp",
     "WebSpeechRecognitionResult.cpp",

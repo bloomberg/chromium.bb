@@ -36,13 +36,13 @@
 #include <memory>
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
-#include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebSharedWorkerClient.h"
+#include "web/WebSharedWorkerReportingProxyImpl.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -60,34 +60,15 @@ class WorkerInspectorProxy;
 class WorkerScriptLoader;
 
 // This class is used by the worker process code to talk to the SharedWorker
-// implementation.
-// It can't use it directly since it uses WebKit types, so this class converts
-// the data types.  When the SharedWorker object wants to call
-// WorkerReportingProxy, this class will convert to Chrome data types first and
-// then call the supplied WebCommonWorkerClient.
-class WebSharedWorkerImpl final : public WorkerReportingProxy,
-                                  public WebFrameClient,
+// implementation. This is basically accessed on the main thread, but some
+// methods must be called from a worker thread. Such methods are suffixed with
+// *OnWorkerThread or have header comments.
+class WebSharedWorkerImpl final : public WebFrameClient,
                                   public WebSharedWorker,
                                   public WebDevToolsAgentClient,
                                   private WorkerLoaderProxyProvider {
  public:
   explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
-
-  // WorkerReportingProxy methods:
-  void countFeature(UseCounter::Feature) override;
-  void countDeprecation(UseCounter::Feature) override;
-  void reportException(const WTF::String&,
-                       std::unique_ptr<SourceLocation>,
-                       int exceptionId) override;
-  void reportConsoleMessage(MessageSource,
-                            MessageLevel,
-                            const String& message,
-                            SourceLocation*) override;
-  void postMessageToPageInspector(const WTF::String&) override;
-  void didEvaluateWorkerScript(bool success) override {}
-  void didCloseWorkerGlobalScope() override;
-  void willDestroyWorkerGlobalScope() override {}
-  void didTerminateWorkerThread() override;
 
   // WebFrameClient methods to support resource loading thru the 'shadow page'.
   WebApplicationCacheHost* createApplicationCacheHost(
@@ -126,6 +107,12 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
                                const WebString& method,
                                const WebString& message) override;
 
+  // Callback methods for WebSharedWorkerReportingProxyImpl.
+  void countFeature(UseCounter::Feature);
+  void postMessageToPageInspector(const String& message);
+  void didCloseWorkerGlobalScope();
+  void didTerminateWorkerThread();
+
  private:
   ~WebSharedWorkerImpl() override;
 
@@ -141,15 +128,10 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
   void didReceiveScriptLoaderResponse();
   void onScriptLoaderFinished();
 
-  void connectTask(WebMessagePortChannelUniquePtr);
-
-  // Tasks that are run on the main thread.
-  void didCloseWorkerGlobalScopeOnMainThread();
-  void didTerminateWorkerThreadOnMainThread();
-
-  void postMessageToPageInspectorOnMainThread(const String& message);
+  void connectTaskOnWorkerThread(WebMessagePortChannelUniquePtr);
 
   // WorkerLoaderProxyProvider
+  // postTaskToLoader() must be called from a worker thread.
   void postTaskToLoader(const WebTraceLocation&,
                         std::unique_ptr<WTF::CrossThreadClosure>) override;
   void postTaskToWorkerGlobalScope(
@@ -164,7 +146,6 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
   Persistent<WebLocalFrameImpl> m_mainFrame;
   bool m_askedToTerminate;
 
-  // This one is bound to and used only on the main thread.
   std::unique_ptr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
   Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
@@ -172,6 +153,7 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
   // Owned by the main thread, but will be accessed by the worker.
   CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
+  Persistent<WebSharedWorkerReportingProxyImpl> m_reportingProxy;
   std::unique_ptr<WorkerThread> m_workerThread;
 
   WebSharedWorkerClient* m_client;
