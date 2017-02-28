@@ -65,6 +65,7 @@
 
   _cancelButton.reset([[UIButton buttonWithType:UIButtonTypeCustom] retain]);
   [_cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
+  [_cancelButton setAccessibilityIdentifier:@"cancel"];
   [_cancelButton addTarget:self
                     action:@selector(didTapCancel:)
           forControlEvents:UIControlEventTouchUpInside];

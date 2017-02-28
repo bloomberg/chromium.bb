@@ -17,9 +17,11 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
@@ -1005,6 +1007,50 @@ bool IsCertificateCleared() {
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
       performAction:grey_tap()];
+}
+
+// Verifies that the Settings UI registers keyboard commands when presented, but
+// not when it itslef presents something.
+- (void)testSettingsKeyboardCommands {
+  // Open Settings.
+  [ChromeEarlGreyUI openToolsMenu];
+  [[EarlGrey selectElementWithMatcher:SettingsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify that the Settings register keyboard commands.
+  MainController* mainController = chrome_test_util::GetMainController();
+  BrowserViewController* bvc =
+      [[mainController browserViewInformation] currentBVC];
+  UIViewController* settings = bvc.presentedViewController;
+  GREYAssertNotNil(settings.keyCommands,
+                   @"Settings should register key commands when presented.");
+
+  // Present the Sign-in UI.
+  id<GREYMatcher> matcher =
+      grey_allOf(grey_accessibilityID(kSettingsSignInCellId),
+                 grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+  // Wait for UI to finish loading the Sign-in screen.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Verify that the Settings register keyboard commands.
+  GREYAssertNil(settings.keyCommands,
+                @"Settings should not register key commands when presented.");
+
+  // Dismiss the Sign-in UI.
+  id<GREYMatcher> cancelButton =
+      grey_allOf(grey_accessibilityID(@"cancel"),
+                 grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
+  [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
+  // Wait for UI to finish closing the Sign-in screen.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Verify that the Settings register keyboard commands.
+  GREYAssertNotNil(settings.keyCommands,
+                   @"Settings should register key commands when presented.");
 }
 
 @end

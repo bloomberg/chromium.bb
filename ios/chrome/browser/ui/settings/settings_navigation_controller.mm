@@ -542,6 +542,9 @@ initWithRootViewController:(UIViewController*)rootViewController
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
+  if ([self presentedViewController]) {
+    return nil;
+  }
   base::WeakNSObject<SettingsNavigationController> weakSelf(self);
   return @[
     [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
