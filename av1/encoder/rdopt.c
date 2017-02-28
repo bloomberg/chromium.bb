@@ -1088,7 +1088,7 @@ int64_t av1_highbd_block_error_c(const tran_low_t *coeff,
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-#if !CONFIG_PVQ
+#if !CONFIG_PVQ || CONFIG_VAR_TX
 /* The trailing '0' is a terminator which is used inside av1_cost_coeffs() to
  * decide whether to include cost of a trailing EOB node or not (i.e. we
  * can skip this if the last coefficient in this transform block, e.g. the

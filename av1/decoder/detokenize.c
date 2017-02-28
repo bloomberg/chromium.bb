@@ -19,7 +19,7 @@
 #endif  // CONFIG_ANS
 #include "av1/common/blockd.h"
 
-#if !CONFIG_PVQ
+#if !CONFIG_PVQ || CONFIG_VAR_TX
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/idct.h"
@@ -546,7 +546,7 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
 #endif  // CONFIG_PALETTE_THROUGHPUT
 #endif  // CONFIG_PALETTE
 
-#if !CONFIG_PVQ
+#if !CONFIG_PVQ || CONFIG_VAR_TX
 int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
                             const SCAN_ORDER *sc, int x, int y, TX_SIZE tx_size,
                             TX_TYPE tx_type, int16_t *max_scan_line,

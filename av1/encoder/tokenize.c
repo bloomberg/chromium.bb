@@ -320,7 +320,7 @@ struct tokenize_b_args {
   int this_rate;
 };
 
-#if !CONFIG_PVQ
+#if !CONFIG_PVQ || CONFIG_VAR_TX
 static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
                           BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
   struct tokenize_b_args *const args = arg;
@@ -441,7 +441,7 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
 }
 #endif  // CONFIG_PALETTE
 
-#if !CONFIG_PVQ
+#if !CONFIG_PVQ || CONFIG_VAR_TX
 #if CONFIG_PALETTE && CONFIG_PALETTE_THROUGHPUT
 void tokenize_palette_b(int plane, int block, int blk_row, int blk_col,
                         BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {

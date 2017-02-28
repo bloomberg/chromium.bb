@@ -127,7 +127,7 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
   }
 #endif
 }
-#if !CONFIG_PVQ
+#if !CONFIG_PVQ || CONFIG_VAR_TX
 int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
                     int block, int coeff_ctx, TX_SIZE tx_size,
                     const int16_t *scan, const int16_t *nb,

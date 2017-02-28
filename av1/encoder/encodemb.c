@@ -665,10 +665,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
 #if CONFIG_PVQ
   int tx_width_pixels, tx_height_pixels;
-  int i, j;
+  int j;
 #endif
 #if CONFIG_VAR_TX
-  int i;
   int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
 #endif
   dst = &pd->dst
@@ -710,6 +709,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
 #if CONFIG_VAR_TX
+  int i;
   for (i = 0; i < tx_size_wide_unit[tx_size]; ++i) a[i] = a[0];
 
   for (i = 0; i < tx_size_high_unit[tx_size]; ++i) l[i] = l[0];
@@ -734,8 +734,10 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   // but av1_inv_txfm_add_*x*() also does addition of predicted image to
   // inverse transformed image,
   // pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
-  for (j = 0; j < tx_height_pixels; j++)
+  for (j = 0; j < tx_height_pixels; j++) {
+    int i;
     for (i = 0; i < tx_width_pixels; i++) dst[j * pd->dst.stride + i] = 0;
+  }
 #endif
 
   // inverse transform parameters
