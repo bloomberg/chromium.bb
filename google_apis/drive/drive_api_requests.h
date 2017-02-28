@@ -82,7 +82,7 @@ struct MultipartHttpResponse {
 
 // Splits multipart |response| into |parts|. Each part must be HTTP sub-response
 // of drive batch request. |content_type| is a value of Content-Type response
-// header. Returns true on succcess.
+// header. Returns true on success.
 bool ParseMultipartResponse(const std::string& content_type,
                             const std::string& response,
                             std::vector<MultipartHttpResponse>* parts);

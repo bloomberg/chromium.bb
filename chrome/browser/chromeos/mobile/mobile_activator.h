@@ -294,7 +294,7 @@ class MobileActivator
   // True if activation process has been terminated.
   bool terminated_;
   // True if an asynchronous activation request was dispatched to Shill
-  // but the succcess or failure of the request is yet unknown.
+  // but the success or failure of the request is yet unknown.
   bool pending_activation_request_;
   // Connection retry counter.
   int connection_retry_count_;

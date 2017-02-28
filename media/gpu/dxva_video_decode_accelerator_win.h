@@ -361,7 +361,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Checks if the resolution, bitrate etc of the stream changed. We do this
   // by keeping track of the SPS/PPS frames and if they change we assume
   // that the configuration changed.
-  // Returns S_OK or S_FALSE on succcess.
+  // Returns S_OK or S_FALSE on success.
   // The |config_changed| parameter is set to true if we detect a change in the
   // stream.
   HRESULT CheckConfigChanged(IMFSample* sample, bool* config_changed);

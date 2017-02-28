@@ -64,7 +64,7 @@ class GCM_EXPORT MCSClient {
   // Any change made to this enum should have corresponding change in the
   // GetMessageSendStatusString(...) function in mcs_client.cc.
   enum MessageSendStatus {
-    // Message was queued succcessfully.
+    // Message was queued successfully.
     QUEUED,
     // Message was sent to the server and the ACK was received.
     SENT,
