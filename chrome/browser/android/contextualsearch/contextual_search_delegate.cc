@@ -69,7 +69,6 @@ const char kDoPreventPreloadValue[] = "1";
 const int kSurroundingSizeForUI = 60;
 
 // The version of the Contextual Cards API that we want to invoke.
-const int kContextualCardsNoIntegration = 0;
 const int kContextualCardsBarIntegration = 1;
 const int kContextualCardsSingleAction = 2;
 const int kContextualCardsUrlActions = 3;
@@ -232,9 +231,7 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
 
-  int contextual_cards_version = kContextualCardsNoIntegration;
-  if (field_trial_->IsContextualCardsBarIntegrationEnabled())
-    contextual_cards_version = kContextualCardsBarIntegration;
+  int contextual_cards_version = kContextualCardsBarIntegration;
   if (base::FeatureList::IsEnabled(
           chrome::android::kContextualSearchSingleActions)) {
     contextual_cards_version = kContextualCardsSingleAction;
@@ -527,13 +524,11 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     }
   }
 
-  if (field_trial_->IsContextualCardsBarIntegrationEnabled()) {
-    // Contextual Cards V1 Integration.
-    // Get the basic Bar data for Contextual Cards integration directly
-    // from the root.
-    dict->GetString(kContextualSearchCaption, caption);
-    dict->GetString(kContextualSearchThumbnail, thumbnail_url);
-  }
+  // Contextual Cards V1 Integration.
+  // Get the basic Bar data for Contextual Cards integration directly
+  // from the root.
+  dict->GetString(kContextualSearchCaption, caption);
+  dict->GetString(kContextualSearchThumbnail, thumbnail_url);
 
   if (base::FeatureList::IsEnabled(
           chrome::android::kContextualSearchSingleActions)) {

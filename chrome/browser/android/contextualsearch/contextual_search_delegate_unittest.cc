@@ -43,8 +43,6 @@ class ContextualSearchDelegateTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableContextualSearchContextualCardsBarIntegration);
     request_context_ =
         new net::TestURLRequestContextGetter(io_message_loop_.task_runner());
     template_url_service_.reset(CreateTemplateURLService());

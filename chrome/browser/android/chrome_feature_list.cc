@@ -111,7 +111,7 @@ const base::Feature kChromeHomeFeature{"ChromeHome",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchSingleActions{
-    "ContextualSearchSingleActions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextualSearchSingleActions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCustomFeedbackUi{"CustomFeedbackUi",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

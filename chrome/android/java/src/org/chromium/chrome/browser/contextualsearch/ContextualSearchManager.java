@@ -698,14 +698,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         boolean receivedCaptionOrThumbnail = !TextUtils.isEmpty(caption)
                 || !TextUtils.isEmpty(thumbnailUrl);
 
-        if (ContextualSearchFieldTrial.shouldHideContextualCardsData()) {
-            // Clear the thumbnail URL and caption so that they are not displayed in the bar. This
-            // is used to determine the CTR on contextual searches where we would have shown
-            // contextual cards data had it not been disabled via a field trial.
-            thumbnailUrl = "";
-            caption = "";
-        }
-
         mSearchPanel.onSearchTermResolved(message, thumbnailUrl, quickActionUri,
                 quickActionCategory);
         if (!TextUtils.isEmpty(caption)) {
@@ -720,11 +712,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 mSearchPanel.getSearchBarControl().getQuickActionControl().hasQuickAction();
         boolean receivedContextualCardsEntityData = !quickActionShown && receivedCaptionOrThumbnail;
 
-        if (ContextualSearchFieldTrial.isContextualCardsBarIntegrationEnabled()) {
-            ContextualSearchUma.logContextualCardsDataShown(receivedContextualCardsEntityData);
-            mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
-                    receivedContextualCardsEntityData);
-        }
+        ContextualSearchUma.logContextualCardsDataShown(receivedContextualCardsEntityData);
+        mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
+                receivedContextualCardsEntityData);
 
         if (ContextualSearchFieldTrial.isContextualSearchSingleActionsEnabled()) {
             ContextualSearchUma.logQuickActionShown(quickActionShown, quickActionCategory);
@@ -993,11 +983,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         @Override
         public void onContentViewCreated(ContentViewCore contentViewCore) {
             // TODO(donnd): Consider moving to OverlayPanelContent.
-            if (mPolicy.isContextualSearchJsApiEnabled()) {
                 // Enable the Contextual Search JavaScript API between our service and the new view.
-                nativeEnableContextualSearchJsApiForOverlay(
-                        mNativeContextualSearchManagerPtr, contentViewCore.getWebContents());
-            }
+            nativeEnableContextualSearchJsApiForOverlay(
+                    mNativeContextualSearchManagerPtr, contentViewCore.getWebContents());
 
             // TODO(mdjones): Move SearchContentViewDelegate ownership to panel.
             mSearchContentViewDelegate.setOverlayPanelContentViewCore(contentViewCore);
@@ -1287,13 +1275,13 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     @Override
     public void handleMetricsForWouldSuppressTap(ContextualSearchHeuristics tapHeuristics) {
         mHeuristics = tapHeuristics;
-        if (ContextualSearchFieldTrial.isQuickAnswersEnabled()) {
-            // TODO(donnd): QuickAnswersHeuristic is getting added to TapSuppressionHeuristics and
-            // and getting considered in TapSuppressionHeuristics#shouldSuppressTap(). It should
-            // be a part of ContextualSearchHeuristics for logging purposes but not for suppression.
-            mQuickAnswersHeuristic = new QuickAnswersHeuristic();
-            mHeuristics.add(mQuickAnswersHeuristic);
-        }
+
+        // TODO(donnd): QuickAnswersHeuristic is getting added to TapSuppressionHeuristics and
+        // and getting considered in TapSuppressionHeuristics#shouldSuppressTap(). It should
+        // be a part of ContextualSearchHeuristics for logging purposes but not for suppression.
+        mQuickAnswersHeuristic = new QuickAnswersHeuristic();
+        mHeuristics.add(mQuickAnswersHeuristic);
+
         mSearchPanel.getPanelMetrics().setResultsSeenExperiments(mHeuristics);
         mSearchPanel.getPanelMetrics().setRankerLogExperiments(mHeuristics);
     }

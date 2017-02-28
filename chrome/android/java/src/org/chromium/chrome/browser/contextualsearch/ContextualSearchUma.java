@@ -1021,20 +1021,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs the duration since a recent scroll.
-     * @param durationSinceRecentScrollMs The amount of time since the most recent scroll.
-     * @param wasSearchContentViewSeen If the panel was opened.
-     */
-    public static void logRecentScrollDuration(
-            int durationSinceRecentScrollMs, boolean wasSearchContentViewSeen) {
-        String histogram = wasSearchContentViewSeen ? "Search.ContextualSearchRecentScrollSeen"
-                                                    : "Search.ContextualSearchRecentScrollNotSeen";
-        if (durationSinceRecentScrollMs < 1000) {
-            RecordHistogram.recordCount1000Histogram(histogram, durationSinceRecentScrollMs);
-        }
-    }
-
-    /**
      * Log whether the UX was suppressed by a recent scroll.
      * @param wasSuppressed Whether showing the UX was suppressed by a recent scroll.
      */

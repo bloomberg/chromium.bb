@@ -9,14 +9,10 @@ package org.chromium.chrome.browser.contextualsearch;
  * Handles logging of results seen and activation.
  */
 public class RecentScrollTapSuppression extends ContextualSearchHeuristic {
-    // TODO(twellington): Use this condition rather than an experiment threshold for suppression
-    // once feature is enabled by default.
     private static final int DEFAULT_RECENT_SCROLL_SUPPRESSION_DURATION_MS = 300;
 
-    private final int mExperimentThresholdMs;
     private final int mDurationSinceRecentScrollMs;
     private final boolean mIsConditionSatisfied;
-    private final boolean mIsEnabled;
 
     /**
      * Constructs a Tap suppression heuristic that handles a Tap after a recent scroll.
@@ -34,46 +30,18 @@ public class RecentScrollTapSuppression extends ContextualSearchHeuristic {
             mDurationSinceRecentScrollMs = 0;
         }
 
-        mExperimentThresholdMs = ContextualSearchFieldTrial.getRecentScrollSuppressionDurationMs();
-
-        // If the configured threshold is 0, then suppression is not enabled.
-        mIsEnabled = mExperimentThresholdMs > 0;
-
-        int conditionThreshold = mIsEnabled ? mExperimentThresholdMs
-                : DEFAULT_RECENT_SCROLL_SUPPRESSION_DURATION_MS;
         mIsConditionSatisfied = mDurationSinceRecentScrollMs > 0
-                && mDurationSinceRecentScrollMs < conditionThreshold;
+                && mDurationSinceRecentScrollMs < DEFAULT_RECENT_SCROLL_SUPPRESSION_DURATION_MS;
     }
 
     @Override
     protected boolean isConditionSatisfiedAndEnabled() {
-        return mIsEnabled && mIsConditionSatisfied;
+        return mIsConditionSatisfied;
     }
 
     @Override
     protected void logConditionState() {
-        if (mIsEnabled) {
-            ContextualSearchUma.logRecentScrollSuppression(mIsConditionSatisfied);
-        }
-    }
-
-    @Override
-    protected void logResultsSeen(boolean wasSearchContentViewSeen, boolean wasActivatedByTap) {
-        if (wasActivatedByTap && mDurationSinceRecentScrollMs > 0
-                && ContextualSearchFieldTrial.isRecentScrollCollectionEnabled()) {
-            ContextualSearchUma.logRecentScrollDuration(
-                    mDurationSinceRecentScrollMs, wasSearchContentViewSeen);
-        }
-    }
-
-    @Override
-    protected boolean shouldAggregateLogForTapSuppression() {
-        return true;
-    }
-
-    @Override
-    protected boolean isConditionSatisfiedForAggregateLogging() {
-        return !mIsEnabled && mIsConditionSatisfied;
+        ContextualSearchUma.logRecentScrollSuppression(mIsConditionSatisfied);
     }
 
     @Override

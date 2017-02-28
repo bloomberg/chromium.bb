@@ -60,17 +60,6 @@ public class ContextualSearchFieldTrial {
     @VisibleForTesting
     static final String ENABLE_SERVER_CONTROLLED_ONEBOX = "enable_server_controlled_onebox";
 
-    /** Hide Contextual Cards data.*/
-    private static final String HIDE_CONTEXTUAL_CARDS_DATA = "hide_contextual_cards_data";
-
-    // Quick Answers.
-    private static final String ENABLE_QUICK_ANSWERS = "enable_quick_answers";
-
-    // Enables collection of recent scroll seen/unseen histograms.
-    // TODO(donnd): remove all supporting code once short-lived data collection is done.
-    private static final String ENABLE_RECENT_SCROLL_COLLECTION = "enable_recent_scroll_collection";
-    // Set non-zero to establish an recent scroll suppression threshold for taps.
-    private static final String RECENT_SCROLL_DURATION_MS = "recent_scroll_duration_ms";
     // TODO(donnd): remove all supporting code once short-lived data collection is done.
     private static final String SCREEN_TOP_SUPPRESSION_DPS = "screen_top_suppression_dps";
     private static final String ENABLE_BAR_OVERLAP_COLLECTION = "enable_bar_overlap_collection";
@@ -100,14 +89,9 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsKeyboardLanguagesForTranslationDisabled;
     private static Boolean sIsEnglishTargetTranslationEnabled;
     private static Boolean sIsServerControlledOneboxEnabled;
-    private static Boolean sIsQuickAnswersEnabled;
-    private static Boolean sIsRecentScrollCollectionEnabled;
-    private static Integer sRecentScrollDurationMs;
     private static Integer sScreenTopSuppressionDps;
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
-    private static Boolean sShouldHideContextualCardsData;
-    private static Boolean sIsContextualCardsBarIntegrationEnabled;
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabDisabled;
     private static Boolean sContextualSearchSingleActionsEnabled;
@@ -302,38 +286,6 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether showing "quick answers" in the Bar is enabled.
-     */
-    static boolean isQuickAnswersEnabled() {
-        if (sIsQuickAnswersEnabled == null) {
-            sIsQuickAnswersEnabled = getBooleanParam(ENABLE_QUICK_ANSWERS);
-        }
-        return sIsQuickAnswersEnabled.booleanValue();
-    }
-
-    /**
-     * @return Whether collecting metrics for tap triggering after a scroll is enabled.
-     */
-    static boolean isRecentScrollCollectionEnabled() {
-        if (sIsRecentScrollCollectionEnabled == null) {
-            sIsRecentScrollCollectionEnabled = getBooleanParam(ENABLE_RECENT_SCROLL_COLLECTION);
-        }
-        return sIsRecentScrollCollectionEnabled.booleanValue();
-    }
-
-    /**
-     * Gets the duration to use for suppressing Taps after a recent scroll, or {@code 0} if no
-     * suppression is configured.
-     * @return The period of time after a scroll when tap triggering is suppressed.
-     */
-    static int getRecentScrollSuppressionDurationMs() {
-        if (sRecentScrollDurationMs == null) {
-            sRecentScrollDurationMs = getIntParamValueOrDefault(RECENT_SCROLL_DURATION_MS, 0);
-        }
-        return sRecentScrollDurationMs.intValue();
-    }
-
-    /**
      * Gets a Y value limit that will suppress a Tap near the top of the screen.
      * Any Y value less than the limit will suppress the Tap trigger.
      * @return The Y value triggering limit in DPs, a value of zero will not limit.
@@ -374,22 +326,6 @@ public class ContextualSearchFieldTrial {
             sIsAmpAsSeparateTabDisabled = getBooleanParam(DISABLE_AMP_AS_SEPARATE_TAB);
         }
         return sIsAmpAsSeparateTabDisabled;
-    }
-
-    // TODO(donnd): Remove once bar-integration is fully landed if still unused (native only).
-    static boolean isContextualCardsBarIntegrationEnabled() {
-        if (sIsContextualCardsBarIntegrationEnabled == null) {
-            sIsContextualCardsBarIntegrationEnabled = getBooleanParam(
-                    ChromeSwitches.CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION);
-        }
-        return sIsContextualCardsBarIntegrationEnabled;
-    }
-
-    static boolean shouldHideContextualCardsData() {
-        if (sShouldHideContextualCardsData == null) {
-            sShouldHideContextualCardsData = getBooleanParam(HIDE_CONTEXTUAL_CARDS_DATA);
-        }
-        return sShouldHideContextualCardsData;
     }
 
     /**

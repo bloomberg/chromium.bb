@@ -889,10 +889,6 @@ const char kEnableAccessibilityTabSwitcher[] =
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
 
-// Enables Contextual Search UI integration with Contextual Cards data.
-const char kEnableContextualSearchContextualCardsBarIntegration[] =
-    "cs-contextual-cards-bar-integration";
-
 // Enables chrome hosted mode for Android.
 const char kEnableHostedMode[] = "enable-hosted-mode";
 

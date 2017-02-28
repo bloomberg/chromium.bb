@@ -845,12 +845,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION, kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
                                switches::kDisableContextualSearch)},
-    {"cs-contextual-cards-bar-integration",
-     IDS_FLAGS_CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION,
-     IDS_FLAGS_CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION_DESCRIPTION,
-     kOsAndroid,
-     SINGLE_VALUE_TYPE(
-         switches::kEnableContextualSearchContextualCardsBarIntegration)},
     {"cs-contextual-cards-single-actions",
      IDS_FLAGS_CONTEXTUAL_SEARCH_SINGLE_ACTIONS,
      IDS_FLAGS_CONTEXTUAL_SEARCH_SINGLE_ACTIONS_DESCRIPTION, kOsAndroid,

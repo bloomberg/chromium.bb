@@ -91,9 +91,6 @@ class ContextualSearchFieldTrial {
   bool is_decode_mentions_disabled_cached_;
   bool is_decode_mentions_disabled_;
 
-  bool is_contextual_cards_bar_integration_enabled_cached_;
-  bool is_contextual_cards_bar_integration_enabled_;
-
   bool is_contextual_cards_version_cached_;
   int contextual_cards_version_;
 

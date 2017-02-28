@@ -397,14 +397,6 @@ class ContextualSearchPolicy {
     }
 
     /**
-     * @return Whether Contextual Search should enable its JavaScript API in the overlay panel.
-     */
-    boolean isContextualSearchJsApiEnabled() {
-        // Quick answers requires the JS API.
-        return ContextualSearchFieldTrial.isQuickAnswersEnabled();
-    }
-
-    /**
      * @return Whether the given URL is used for Accelerated Mobile Pages by Google.
      */
     boolean isAmpUrl(String url) {
