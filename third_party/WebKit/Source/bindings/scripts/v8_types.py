@@ -605,17 +605,16 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
     if (native_array_element_type.is_interface_type and
         native_array_element_type.name != 'Dictionary'):
         this_cpp_type = None
-        ref_ptr_type = 'Member'
         expression_format = 'toMemberNativeArray<{native_array_element_type}>({v8_value}, {index}, {isolate}, exceptionState)'
     else:
-        ref_ptr_type = None
         this_cpp_type = native_array_element_type.cpp_type
         if native_array_element_type.is_dictionary or native_array_element_type.is_union_type:
             vector_type = 'HeapVector'
         else:
             vector_type = 'Vector'
         expression_format = 'toImplArray<%s<{cpp_type}>>({v8_value}, {index}, {isolate}, exceptionState)' % vector_type
-    expression = expression_format.format(native_array_element_type=native_array_element_type.name, cpp_type=this_cpp_type, index=index, ref_ptr_type=ref_ptr_type, v8_value=v8_value, isolate=isolate)
+    expression = expression_format.format(native_array_element_type=native_array_element_type.name, cpp_type=this_cpp_type,
+                                          index=index, v8_value=v8_value, isolate=isolate)
     return expression
 
 
