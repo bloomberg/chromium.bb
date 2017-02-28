@@ -34,10 +34,10 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "v8/include/v8.h"
 #include "wtf/Compiler.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/TypeTraits.h"
-#include <v8.h>
 
 namespace blink {
 

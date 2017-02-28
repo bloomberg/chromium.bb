@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/RetainedObjectInfo.h"
 #include "platform/heap/Handle.h"
-#include <v8-profiler.h>
+#include "v8/include/v8-profiler.h"
 
 namespace blink {
 

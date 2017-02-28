@@ -31,6 +31,8 @@
 #ifndef V8PerContextData_h
 #define V8PerContextData_h
 
+#include <memory>
+
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/V0CustomElementBinding.h"
 #include "bindings/core/v8/V8GlobalValueMap.h"
@@ -38,13 +40,12 @@
 #include "core/CoreExport.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/gin_embedders.h"
+#include "v8/include/v8.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

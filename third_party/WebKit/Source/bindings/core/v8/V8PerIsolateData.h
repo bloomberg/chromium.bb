@@ -26,8 +26,8 @@
 #ifndef V8PerIsolateData_h
 #define V8PerIsolateData_h
 
-#include <v8.h>
 #include <memory>
+
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
@@ -37,6 +37,7 @@
 #include "gin/public/isolate_holder.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "platform/heap/Handle.h"
+#include "v8/include/v8.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"

@@ -9,10 +9,10 @@
 #include "bindings/core/v8/SerializationTag.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/CoreExport.h"
+#include "v8/include/v8.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
-#include <v8.h>
 
 namespace blink {
 

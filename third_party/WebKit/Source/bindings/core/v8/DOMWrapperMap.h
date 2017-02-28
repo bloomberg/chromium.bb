@@ -31,13 +31,14 @@
 #ifndef DOMWrapperMap_h
 #define DOMWrapperMap_h
 
+#include <utility>
+
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "v8/include/v8-util.h"
+#include "v8/include/v8.h"
 #include "wtf/Compiler.h"
 #include "wtf/HashMap.h"
-#include <utility>
-#include <v8-util.h>
-#include <v8.h>
 
 namespace blink {
 

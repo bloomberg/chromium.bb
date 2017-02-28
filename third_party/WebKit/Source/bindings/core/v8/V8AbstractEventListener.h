@@ -37,7 +37,7 @@
 #include "core/CoreExport.h"
 #include "core/events/EventListener.h"
 #include "platform/heap/SelfKeepAlive.h"
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

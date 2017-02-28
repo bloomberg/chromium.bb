@@ -35,10 +35,10 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "v8/include/v8.h"
 #include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
-#include <v8.h>
 
 namespace blink {
 

@@ -16,7 +16,7 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

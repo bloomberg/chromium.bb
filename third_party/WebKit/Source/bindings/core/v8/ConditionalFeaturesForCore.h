@@ -5,9 +5,9 @@
 #ifndef ConditionalFeaturesForCore_h
 #define ConditionalFeaturesForCore_h
 
-#include <v8.h>
 #include "core/CoreExport.h"
 #include "platform/feature_policy/FeaturePolicy.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 

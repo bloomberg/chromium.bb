@@ -31,15 +31,16 @@
 #ifndef SerializedScriptValue_h
 #define SerializedScriptValue_h
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/Transferables.h"
 #include "core/CoreExport.h"
+#include "v8/include/v8.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

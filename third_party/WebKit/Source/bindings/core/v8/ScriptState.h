@@ -5,13 +5,14 @@
 #ifndef ScriptState_h
 #define ScriptState_h
 
+#include <memory>
+
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/CoreExport.h"
+#include "v8/include/v8-debug.h"
+#include "v8/include/v8.h"
 #include "wtf/RefCounted.h"
-#include <memory>
-#include <v8-debug.h>
-#include <v8.h>
 
 namespace blink {
 

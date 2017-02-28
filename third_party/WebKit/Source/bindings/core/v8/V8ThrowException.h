@@ -27,9 +27,9 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ExceptionCode.h"
+#include "v8/include/v8.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
-#include <v8.h>
 
 namespace blink {
 

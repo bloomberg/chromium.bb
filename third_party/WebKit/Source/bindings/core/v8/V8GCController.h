@@ -33,9 +33,9 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "v8/include/v8-profiler.h"
+#include "v8/include/v8.h"
 #include "wtf/Allocator.h"
-#include <v8-profiler.h>
-#include <v8.h>
 
 namespace blink {
 

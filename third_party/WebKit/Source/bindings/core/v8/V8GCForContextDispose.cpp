@@ -32,9 +32,9 @@
 
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "public/platform/Platform.h"
+#include "v8/include/v8.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
-#include <v8.h>
 
 namespace blink {
 

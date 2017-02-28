@@ -31,11 +31,12 @@
 #ifndef ScopedPersistent_h
 #define ScopedPersistent_h
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
+#include "v8/include/v8.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

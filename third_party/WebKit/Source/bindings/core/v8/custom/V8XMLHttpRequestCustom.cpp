@@ -43,7 +43,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

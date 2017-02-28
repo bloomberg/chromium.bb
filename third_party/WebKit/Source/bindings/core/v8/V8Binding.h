@@ -48,9 +48,9 @@
 #include "bindings/core/v8/V8ValueCache.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "v8/include/v8.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringView.h"
-#include <v8.h>
 
 namespace blink {
 

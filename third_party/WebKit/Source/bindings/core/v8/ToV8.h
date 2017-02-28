@@ -8,6 +8,8 @@
 // ToV8() provides C++ -> V8 conversion. Note that ToV8() can return an empty
 // handle. Call sites must check IsEmpty() before using return value.
 
+#include <utility>
+
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/IDLDictionaryBase.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -16,9 +18,8 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "v8/include/v8.h"
 #include "wtf/Forward.h"
-#include <utility>
-#include <v8.h>
 
 namespace blink {
 

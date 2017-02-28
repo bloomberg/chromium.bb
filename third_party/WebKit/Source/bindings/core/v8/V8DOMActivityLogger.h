@@ -31,10 +31,11 @@
 #ifndef V8DOMActivityLogger_h
 #define V8DOMActivityLogger_h
 
-#include "core/CoreExport.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
-#include <v8.h>
+
+#include "core/CoreExport.h"
+#include "v8/include/v8.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 

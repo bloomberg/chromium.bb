@@ -30,6 +30,8 @@
 
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -48,8 +50,7 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
-#include <memory>
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

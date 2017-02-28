@@ -30,10 +30,9 @@
 
 #include "bindings/core/v8/WindowProxy.h"
 
-#include <v8-debug.h>
-#include <v8.h>
 #include <algorithm>
 #include <utility>
+
 #include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -68,6 +67,8 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "v8/include/v8-debug.h"
+#include "v8/include/v8.h"
 #include "wtf/Assertions.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"

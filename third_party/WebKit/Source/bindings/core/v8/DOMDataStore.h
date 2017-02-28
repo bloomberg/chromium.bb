@@ -31,16 +31,17 @@
 #ifndef DOMDataStore_h
 #define DOMDataStore_h
 
+#include <memory>
+
 #include "bindings/core/v8/DOMWrapperMap.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "v8/include/v8.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

@@ -31,14 +31,15 @@
 #ifndef DOMWrapperWorld_h
 #define DOMWrapperWorld_h
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "v8/include/v8.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

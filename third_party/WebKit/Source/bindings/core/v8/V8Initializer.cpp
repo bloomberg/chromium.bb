@@ -25,9 +25,8 @@
 
 #include "bindings/core/v8/V8Initializer.h"
 
-#include <v8-debug.h>
-#include <v8-profiler.h>
 #include <memory>
+
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/RejectedPromises.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
@@ -61,6 +60,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
+#include "v8/include/v8-debug.h"
+#include "v8/include/v8-profiler.h"
 #include "wtf/AddressSanitizer.h"
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"

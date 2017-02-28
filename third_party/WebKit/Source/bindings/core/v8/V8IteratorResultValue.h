@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8.h"
 #include "core/CoreExport.h"
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

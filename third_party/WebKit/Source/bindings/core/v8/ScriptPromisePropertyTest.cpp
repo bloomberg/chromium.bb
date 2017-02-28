@@ -4,6 +4,8 @@
 
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 
+#include <memory>
+
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -18,10 +20,9 @@
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

@@ -36,9 +36,9 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
+#include "v8/include/v8.h"
 #include "wtf/Compiler.h"
 #include "wtf/text/AtomicString.h"
-#include <v8.h>
 
 namespace blink {
 

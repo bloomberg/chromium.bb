@@ -5,8 +5,8 @@
 #ifndef ConditionalFeatures_h
 #define ConditionalFeatures_h
 
-#include <v8.h>
 #include "core/CoreExport.h"
+#include "v8/include/v8.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

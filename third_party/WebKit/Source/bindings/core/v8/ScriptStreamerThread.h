@@ -5,12 +5,13 @@
 #ifndef ScriptStreamerThread_h
 #define ScriptStreamerThread_h
 
+#include <memory>
+
 #include "core/CoreExport.h"
 #include "public/platform/WebThread.h"
+#include "v8/include/v8.h"
 #include "wtf/Functional.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

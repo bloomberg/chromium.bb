@@ -31,8 +31,8 @@
 #ifndef RetainedObjectInfo_h
 #define RetainedObjectInfo_h
 
+#include "v8/include/v8-profiler.h"
 #include "wtf/Allocator.h"
-#include <v8-profiler.h>
 
 namespace blink {
 

@@ -8,8 +8,8 @@
 #include "bindings/core/v8/ToV8.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "v8/include/v8.h"
 #include "wtf/text/WTFString.h"
-#include <v8.h>
 
 namespace blink {
 

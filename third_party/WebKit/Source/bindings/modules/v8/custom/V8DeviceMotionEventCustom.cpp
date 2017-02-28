@@ -27,7 +27,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "modules/device_orientation/DeviceMotionData.h"
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 
