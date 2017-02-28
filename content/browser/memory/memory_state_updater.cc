@@ -147,15 +147,24 @@ void MemoryStateUpdater::InitializeParameters() {
   static constexpr char kMemoryCoordinatorV0Trial[] = "MemoryCoordinatorV0";
   std::map<std::string, std::string> params;
   variations::GetVariationParams(kMemoryCoordinatorV0Trial, &params);
+  // TODO(bashi): Renaming (throttled -> warning, suspended -> critical) is
+  // ongoing. Get variation parameters from both until server-side change
+  // is done. crbug.com/696844
   SetIntVariationParameter(params, "expected_renderer_size",
                            &expected_renderer_size_);
   SetIntVariationParameter(params, "new_renderers_until_throttled",
                            &new_renderers_until_throttled_);
+  SetIntVariationParameter(params, "new_renderers_until_warning",
+                           &new_renderers_until_throttled_);
   SetIntVariationParameter(params, "new_renderers_until_suspended",
+                           &new_renderers_until_suspended_);
+  SetIntVariationParameter(params, "new_renderers_until_critical",
                            &new_renderers_until_suspended_);
   SetIntVariationParameter(params, "new_renderers_back_to_normal",
                            &new_renderers_back_to_normal_);
   SetIntVariationParameter(params, "new_renderers_back_to_throttled",
+                           &new_renderers_back_to_throttled_);
+  SetIntVariationParameter(params, "new_renderers_back_to_warning",
                            &new_renderers_back_to_throttled_);
   SetSecondsVariationParameter(params, "minimum_transition_period",
                                &minimum_transition_period_);
