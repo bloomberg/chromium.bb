@@ -128,18 +128,18 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
     @Override
     public void cancelDownload(String downloadGuid, boolean isOffTheRecord,
             boolean isNotificationDismissed) {
-        nativeCancelDownload(mNativeOfflinePageDownloadBridge, downloadGuid);
+        cancelDownload(downloadGuid);
     }
 
     @Override
     public void pauseDownload(String downloadGuid, boolean isOffTheRecord) {
-        nativePauseDownload(mNativeOfflinePageDownloadBridge, downloadGuid);
+        pauseDownload(downloadGuid);
     }
 
     @Override
     public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
         if (hasUserGesture) {
-            nativeResumeDownload(mNativeOfflinePageDownloadBridge, item.getId());
+            resumeDownload(item.getId());
         }
     }
 
@@ -179,6 +179,21 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
                 : new AsyncTabCreationParams(params, componentName);
         final TabDelegate tabDelegate = new TabDelegate(false);
         tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI, Tab.INVALID_TAB_ID);
+    }
+
+    @Override
+    public void pauseDownload(String guid) {
+        nativePauseDownload(mNativeOfflinePageDownloadBridge, guid);
+    }
+
+    @Override
+    public void resumeDownload(String guid) {
+        nativeResumeDownload(mNativeOfflinePageDownloadBridge, guid);
+    }
+
+    @Override
+    public void cancelDownload(String guid) {
+        nativeCancelDownload(mNativeOfflinePageDownloadBridge, guid);
     }
 
     /**

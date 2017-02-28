@@ -536,17 +536,17 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public void cancel() {
-            assert false;
+            mBackendProvider.getOfflinePageBridge().cancelDownload(getId());
         }
 
         @Override
         public void pause() {
-            assert false;
+            mBackendProvider.getOfflinePageBridge().pauseDownload(getId());
         }
 
         @Override
         public void resume() {
-            assert false;
+            mBackendProvider.getOfflinePageBridge().resumeDownload(getId());
         }
 
         @Override
@@ -573,12 +573,14 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public boolean isComplete() {
-            return true;
+            return mItem.getDownloadState()
+                    == org.chromium.components.offlinepages.downloads.DownloadState.COMPLETE;
         }
 
         @Override
         public boolean isPaused() {
-            return false;
+            return mItem.getDownloadState()
+                    == org.chromium.components.offlinepages.downloads.DownloadState.PAUSED;
         }
     }
 }

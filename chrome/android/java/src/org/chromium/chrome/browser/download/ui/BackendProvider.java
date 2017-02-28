@@ -58,6 +58,15 @@ public interface BackendProvider {
         /** See {@link OfflinePageDownloadBridge#openItem}. */
         void openItem(String guid, @Nullable ComponentName componentName);
 
+        /** See {@link OfflinePageDownloadBridge#pauseDownload} */
+        void pauseDownload(String guid);
+
+        /** See {@link OfflinePageDownloadBridge#resumeDownload} */
+        void resumeDownload(String guid);
+
+        /** See {@link OfflinePageDownloadBridge#cancelDownload} */
+        void cancelDownload(String guid);
+
         /** See {@link OfflinePageDownloadBridge#deleteItem}. */
         void deleteItem(String guid);
 

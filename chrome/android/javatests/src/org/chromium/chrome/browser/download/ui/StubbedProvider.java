@@ -142,8 +142,16 @@ public class StubbedProvider implements BackendProvider {
             });
         }
 
-        @Override public void openItem(String guid, ComponentName componentName) { }
-        @Override public void destroy() { }
+        @Override
+        public void openItem(String guid, ComponentName componentName) {}
+        @Override
+        public void pauseDownload(String guid) {}
+        @Override
+        public void resumeDownload(String guid) {}
+        @Override
+        public void cancelDownload(String guid) {}
+        @Override
+        public void destroy() {}
     }
 
     /** Stubs out all attempts to get thumbnails for files. */
