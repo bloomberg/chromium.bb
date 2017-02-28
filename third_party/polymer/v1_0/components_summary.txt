@@ -12,9 +12,9 @@ Tree link: https://github.com/PolymerElements/iron-a11y-announcer/tree/v1.0.5
 
 Name: iron-a11y-keys
 Repository: https://github.com/PolymerElements/iron-a11y-keys.git
-Tree: v1.0.6
-Revision: aa9374f069b942dfabcaabb587cbb00b0dd28c63
-Tree link: https://github.com/PolymerElements/iron-a11y-keys/tree/v1.0.6
+Tree: v1.0.7
+Revision: 7830e675c3d0df6e7a7377d64fc3d6e6ae0e65a5
+Tree link: https://github.com/PolymerElements/iron-a11y-keys/tree/v1.0.7
 
 Name: iron-a11y-keys-behavior
 Repository: https://github.com/PolymerElements/iron-a11y-keys-behavior.git

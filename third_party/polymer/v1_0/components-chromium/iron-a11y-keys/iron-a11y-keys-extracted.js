@@ -97,7 +97,7 @@ practices](http://www.w3.org/TR/wai-aria-practices/#slider):
                     on-keys-pressed="increment"></iron-a11y-keys>
     <iron-a11y-keys target="[[target]]" keys="home"
                     on-keys-pressed="setMin"></iron-a11y-keys>
-    <iron-a11y-keys target=""[[target]] keys="end"
+    <iron-a11y-keys target="[[target]]" keys="end"
                     on-keys-pressed="setMax"></iron-a11y-keys>
 
 The `target` properties must evaluate to a node. See the basic usage

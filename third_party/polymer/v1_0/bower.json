@@ -5,7 +5,7 @@
     "font-roboto": "PolymerElements/font-roboto#1.0.1",
     "iron-a11y-announcer": "PolymerElements/iron-a11y-announcer#1.0.5",
     "iron-a11y-keys-behavior": "PolymerElements/iron-a11y-keys-behavior#1.1.9",
-    "iron-a11y-keys": "PolymerElements/iron-a11y-keys#1.0.6",
+    "iron-a11y-keys": "PolymerElements/iron-a11y-keys#1.0.7",
     "iron-autogrow-textarea": "PolymerElements/iron-autogrow-textarea#1.0.13",
     "iron-behaviors": "PolymerElements/iron-behaviors#1.0.17",
     "iron-checked-element-behavior": "PolymerElements/iron-checked-element-behavior#1.0.5",
