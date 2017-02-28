@@ -102,7 +102,8 @@ void NetLogObserver::OnAddURLRequestEntry(const net::NetLogEntry& entry) {
       info->request_headers_text = request_line + request_headers.ToString();
       break;
     }
-    case net::NetLogEventType::HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS: {
+    case net::NetLogEventType::HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS:
+    case net::NetLogEventType::HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS: {
       std::unique_ptr<base::Value> event_params(entry.ParametersToValue());
       net::SpdyHeaderBlock request_headers;
 

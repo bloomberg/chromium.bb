@@ -30,7 +30,7 @@ struct ResourceResponse;
 // As NetLogObserver shares live data with objects that live on the IO Thread,
 // it must also reside on the IO Thread.  Only OnAddEntry can be called from
 // other threads.
-class NetLogObserver : public net::NetLog::ThreadSafeObserver {
+class CONTENT_EXPORT NetLogObserver : public net::NetLog::ThreadSafeObserver {
   typedef ResourceDevToolsInfo ResourceInfo;
 
  public:
