@@ -1252,8 +1252,6 @@ split_static_library("ui") {
       "views/select_file_dialog_extension.h",
       "views/select_file_dialog_extension_factory.cc",
       "views/select_file_dialog_extension_factory.h",
-      "webui/cast/cast_ui.cc",
-      "webui/cast/cast_ui.h",
     ]
     deps += [
       "//chrome/browser/chromeos",
@@ -2415,8 +2413,6 @@ split_static_library("ui") {
       "passwords/manage_passwords_icon.cc",
       "passwords/manage_passwords_icon.h",
       "web_contents_sizer.mm",
-      "webui/cast/cast_ui.cc",
-      "webui/cast/cast_ui.h",
     ]
     deps += [
       "//chrome/app/nibs:localizer_table",
@@ -3062,8 +3058,6 @@ split_static_library("ui") {
       "views/settings_reset_prompt_dialog.h",
       "views/uninstall_view.cc",
       "views/uninstall_view.h",
-      "webui/cast/cast_ui.cc",
-      "webui/cast/cast_ui.h",
       "webui/conflicts_ui.cc",
       "webui/conflicts_ui.h",
       "webui/welcome_win10_handler.cc",
@@ -3434,6 +3428,12 @@ split_static_library("ui") {
         # correct.
         "views/toolbar/media_router_action_platform_delegate_views.cc",
         "views/toolbar/media_router_action_platform_delegate_views.h",
+      ]
+    }
+    if (is_chromeos || is_mac || is_win) {
+      sources += [
+        "webui/cast/cast_ui.cc",
+        "webui/cast/cast_ui.h",
       ]
     }
     deps += [

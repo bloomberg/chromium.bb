@@ -2116,7 +2116,6 @@ test("browser_tests") {
         "../browser/ui/ash/shelf_browsertest.cc",
         "../browser/ui/ash/system_tray_client_browsertest.cc",
         "../browser/ui/ash/system_tray_delegate_chromeos_browsertest_chromeos.cc",
-        "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
         "../browser/ui/ash/volume_controller_browsertest.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
       ]
@@ -2127,6 +2126,10 @@ test("browser_tests") {
 
       if (enable_app_list) {
         deps += [ ":test_support_applist_ash" ]
+      }
+
+      if (enable_media_router) {
+        sources += [ "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc" ]
       }
     }
     if (use_aura || toolkit_views) {
@@ -2166,13 +2169,15 @@ test("browser_tests") {
           "../browser/ui/views/frame/browser_non_client_frame_view_browsertest.cc",
           "../browser/ui/views/frame/browser_view_browsertest.cc",
           "../browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc",
-          "../browser/ui/views/media_router/media_router_ui_browsertest.cc",
           "../browser/ui/views/passwords/password_dialog_view_browsertest.cc",
           "../browser/ui/views/task_manager_view_browsertest.cc",
           "../browser/ui/views/toolbar/browser_actions_container_browsertest.cc",
           "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
           "../browser/ui/views/web_dialog_view_browsertest.cc",
         ]
+        if (enable_media_router) {
+          sources += [ "../browser/ui/views/media_router/media_router_ui_browsertest.cc" ]
+        }
       }
     }
 
@@ -3696,8 +3701,6 @@ test("unit_tests") {
       "../browser/ui/toolbar/component_toolbar_actions_factory_unittest.cc",
       "../browser/ui/toolbar/mock_component_toolbar_actions_factory.cc",
       "../browser/ui/toolbar/mock_component_toolbar_actions_factory.h",
-      "../browser/ui/toolbar/mock_media_router_action_controller.cc",
-      "../browser/ui/toolbar/mock_media_router_action_controller.h",
       "../browser/ui/toolbar/recent_tabs_builder_test_helper.cc",
       "../browser/ui/toolbar/recent_tabs_builder_test_helper.h",
       "../browser/ui/toolbar/recent_tabs_sub_menu_model_unittest.cc",
@@ -3990,8 +3993,6 @@ test("unit_tests") {
       "../browser/extensions/webstore_inline_installer_unittest.cc",
       "../browser/extensions/webstore_installer_unittest.cc",
       "../browser/extensions/zipfile_installer_unittest.cc",
-      "../browser/media/cast_remoting_sender_unittest.cc",
-      "../browser/media/cast_transport_host_filter_unittest.cc",
       "../browser/media_galleries/chromeos/mtp_device_object_enumerator_unittest.cc",
       "../browser/metrics/extensions_metrics_provider_unittest.cc",
       "../browser/notifications/extension_welcome_notification_unittest.cc",
@@ -4142,6 +4143,12 @@ test("unit_tests") {
         "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc",
+      ]
+    }
+    if (enable_media_router) {
+      sources += [
+        "../browser/media/cast_remoting_sender_unittest.cc",
+        "../browser/media/cast_transport_host_filter_unittest.cc",
       ]
     }
   }
@@ -4405,6 +4412,8 @@ test("unit_tests") {
         "../browser/ui/toolbar/media_router_action_controller_unittest.cc",
         "../browser/ui/toolbar/media_router_action_unittest.cc",
         "../browser/ui/toolbar/media_router_contextual_menu_unittest.cc",
+        "../browser/ui/toolbar/mock_media_router_action_controller.cc",
+        "../browser/ui/toolbar/mock_media_router_action_controller.h",
         "../browser/ui/webui/media_router/cast_modes_with_media_sources_unittest.cc",
         "../browser/ui/webui/media_router/media_cast_mode_unittest.cc",
         "../browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc",

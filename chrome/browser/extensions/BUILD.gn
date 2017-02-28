@@ -829,7 +829,6 @@ static_library("extensions") {
     "//chrome/app/theme:theme_resources",
     "//chrome/app/vector_icons",
     "//chrome/browser/devtools",
-    "//chrome/browser/media/router",
     "//chrome/common",
     "//chrome/common/extensions/api:api_registration",
     "//chrome/common/extensions/api:extensions_features",
@@ -928,6 +927,10 @@ static_library("extensions") {
     "//ui/strings",
     "//url",
   ]
+
+  if (enable_media_router) {
+    deps += [ "//chrome/browser/media/router" ]
+  }
 
   if (!is_chromeos) {
     sources += [ "chrome_kiosk_delegate.cc" ]

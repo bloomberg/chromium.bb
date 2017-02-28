@@ -1304,10 +1304,12 @@ void RenderViewContextMenu::AppendPrintItem() {
 }
 
 void RenderViewContextMenu::AppendMediaRouterItem() {
+#if defined(ENABLE_MEDIA_ROUTER)
   if (media_router::MediaRouterEnabled(browser_context_)) {
     menu_model_.AddItemWithStringId(IDC_ROUTE_MEDIA,
                                     IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   }
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 void RenderViewContextMenu::AppendRotationItems() {
@@ -2149,6 +2151,7 @@ bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
 }
 
 bool RenderViewContextMenu::IsRouteMediaEnabled() const {
+#if defined(ENABLE_MEDIA_ROUTER)
   if (!media_router::MediaRouterEnabled(browser_context_))
     return false;
 
@@ -2168,6 +2171,9 @@ bool RenderViewContextMenu::IsRouteMediaEnabled() const {
   const web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
   return !manager || !manager->IsDialogActive();
+#else
+  return false;
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {

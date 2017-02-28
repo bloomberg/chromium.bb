@@ -1692,8 +1692,6 @@ split_static_library("browser") {
       "guest_view/web_view/context_menu_content_type_web_view.h",
       "media/capture_access_handler_base.cc",
       "media/capture_access_handler_base.h",
-      "media/cast_transport_host_filter.cc",
-      "media/cast_transport_host_filter.h",
       "media/extension_media_access_handler.cc",
       "media/extension_media_access_handler.h",
       "media/webrtc/desktop_capture_access_handler.cc",
@@ -1868,6 +1866,12 @@ split_static_library("browser") {
       "sync_file_system/task_logger.cc",
       "sync_file_system/task_logger.h",
     ]
+    if (enable_media_router) {
+      sources += [
+        "media/cast_transport_host_filter.cc",
+        "media/cast_transport_host_filter.h",
+      ]
+    }
     public_deps += [ "//chrome/browser/extensions" ]
     allow_circular_includes_from += [ "//chrome/browser/extensions" ]
     deps += [

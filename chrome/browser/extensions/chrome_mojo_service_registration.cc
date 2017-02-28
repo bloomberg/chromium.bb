@@ -14,8 +14,8 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/media_router_feature.h"  // nogncheck
+#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"  // nogncheck
 #endif
 
 namespace extensions {

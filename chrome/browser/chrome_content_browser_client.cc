@@ -322,7 +322,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
-#include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -341,6 +340,10 @@
 #include "extensions/common/permissions/socket_permission.h"
 #include "extensions/common/switches.h"
 #endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/media/cast_transport_host_filter.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && defined(ENABLE_MEDIA_ROUTER)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
@@ -1158,7 +1161,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   host->AddFilter(new ChromeRenderMessageFilter(
       id, profile, host->GetStoragePartition()->GetServiceWorkerContext()));
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(ENABLE_MEDIA_ROUTER)
   host->AddFilter(new cast::CastTransportHostFilter);
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
