@@ -10,12 +10,16 @@ namespace fake_server {
 
 SessionsHierarchy::SessionsHierarchy() {}
 
+SessionsHierarchy::SessionsHierarchy(const SessionsHierarchy& other) = default;
+
+SessionsHierarchy::SessionsHierarchy(
+    std::initializer_list<std::multiset<std::string>> windows)
+    : windows_(windows) {}
+
 SessionsHierarchy::~SessionsHierarchy() {}
 
 void SessionsHierarchy::AddWindow(const std::string& tab) {
-  SessionsHierarchy::Window window;
-  window.insert(tab);
-  windows_.insert(window);
+  windows_.insert({tab});
 }
 
 void SessionsHierarchy::AddWindow(const std::multiset<std::string>& tabs) {

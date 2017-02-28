@@ -23,11 +23,19 @@
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/driver/sync_client.h"
+#include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
@@ -36,9 +44,10 @@ using sync_datatype_helper::test;
 namespace sessions_helper {
 
 bool GetLocalSession(int index, const sync_sessions::SyncedSession** session) {
-  return ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-      test()->GetProfile(index))->GetOpenTabsUIDelegate()->
-          GetLocalSession(session);
+  return ProfileSyncServiceFactory::GetInstance()
+      ->GetForProfile(test()->GetProfile(index))
+      ->GetOpenTabsUIDelegate()
+      ->GetLocalSession(session);
 }
 
 bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
@@ -85,21 +94,64 @@ bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
 }
 
 bool OpenTab(int index, const GURL& url) {
-  DVLOG(1) << "Opening tab: " << url.spec() << " using profile "
-           << index << ".";
-  chrome::ShowSingletonTab(test()->GetBrowser(index), url);
-  return WaitForTabsToLoad(index, std::vector<GURL>(1, url));
+  DVLOG(1) << "Opening tab: " << url.spec() << " using browser " << index
+           << ".";
+  return OpenTabAtIndex(index, 0, url);
+}
+
+bool OpenTabAtIndex(int index, int tab_index, const GURL& url) {
+  chrome::AddTabAt(test()->GetBrowser(index), url, tab_index, true);
+  return WaitForTabsToLoad(index, {url});
 }
 
 bool OpenMultipleTabs(int index, const std::vector<GURL>& urls) {
   Browser* browser = test()->GetBrowser(index);
   for (std::vector<GURL>::const_iterator it = urls.begin();
        it != urls.end(); ++it) {
-    DVLOG(1) << "Opening tab: " << it->spec() << " using profile " << index
+    DVLOG(1) << "Opening tab: " << it->spec() << " using browser " << index
              << ".";
     chrome::ShowSingletonTab(browser, *it);
   }
   return WaitForTabsToLoad(index, urls);
+}
+
+void MoveTab(int from_index, int to_index, int tab_index) {
+  content::WebContents* detached_contents =
+      test()
+          ->GetBrowser(from_index)
+          ->tab_strip_model()
+          ->DetachWebContentsAt(tab_index);
+
+  TabStripModel* target_strip = test()->GetBrowser(to_index)->tab_strip_model();
+  target_strip->InsertWebContentsAt(target_strip->count(), detached_contents,
+                                    TabStripModel::ADD_ACTIVE);
+}
+
+bool NavigateTab(int index, const GURL& url) {
+  chrome::NavigateParams params(test()->GetBrowser(index), url,
+                                ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::CURRENT_TAB;
+
+  ui_test_utils::NavigateToURL(&params);
+  return WaitForTabsToLoad(index, {url});
+}
+
+void NavigateTabBack(int index) {
+  test()
+      ->GetBrowser(index)
+      ->tab_strip_model()
+      ->GetWebContentsAt(0)
+      ->GetController()
+      .GoBack();
+}
+
+void NavigateTabForward(int index) {
+  test()
+      ->GetBrowser(index)
+      ->tab_strip_model()
+      ->GetWebContentsAt(0)
+      ->GetController()
+      .GoForward();
 }
 
 namespace {
@@ -199,15 +251,6 @@ bool GetLocalWindows(int index, ScopedWindowMap* local_windows) {
   return true;
 }
 
-bool OpenTabAndGetLocalWindows(int index,
-                               const GURL& url,
-                               ScopedWindowMap* local_windows) {
-  if (!OpenTab(index, url)) {
-    return false;
-  }
-  return GetLocalWindows(index, local_windows);
-}
-
 bool CheckInitialState(int index) {
   if (0 != GetNumWindows(index))
     return false;
@@ -226,20 +269,20 @@ int GetNumWindows(int index) {
 
 int GetNumForeignSessions(int index) {
   SyncedSessionVector sessions;
-  if (!ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          test()->GetProfile(index))->
-          GetOpenTabsUIDelegate()->GetAllForeignSessions(
-              &sessions)) {
+  if (!ProfileSyncServiceFactory::GetInstance()
+           ->GetForProfile(test()->GetProfile(index))
+           ->GetOpenTabsUIDelegate()
+           ->GetAllForeignSessions(&sessions)) {
     return 0;
   }
   return sessions.size();
 }
 
 bool GetSessionData(int index, SyncedSessionVector* sessions) {
-  if (!ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          test()->GetProfile(index))->
-          GetOpenTabsUIDelegate()->GetAllForeignSessions(
-              sessions)) {
+  if (!ProfileSyncServiceFactory::GetInstance()
+           ->GetForProfile(test()->GetProfile(index))
+           ->GetOpenTabsUIDelegate()
+           ->GetAllForeignSessions(sessions)) {
     return false;
   }
   SortSyncedSessions(sessions);
@@ -345,9 +388,8 @@ bool WindowsMatch(const SessionWindowMap& win1, const ScopedWindowMap& win2) {
   return WindowsMatchImpl(win1, win2);
 }
 
-bool CheckForeignSessionsAgainst(
-    int index,
-    const std::vector<ScopedWindowMap>& windows) {
+bool CheckForeignSessionsAgainst(int index,
+                                 const std::vector<ScopedWindowMap>& windows) {
   SyncedSessionVector sessions;
 
   if (!GetSessionData(index, &sessions)) {
@@ -357,8 +399,9 @@ bool CheckForeignSessionsAgainst(
 
   for (size_t w_index = 0; w_index < windows.size(); ++w_index) {
     // Skip the client's local window
-    if (static_cast<int>(w_index) == index)
+    if (static_cast<int>(w_index) == index) {
       continue;
+    }
 
     size_t s_index = 0;
 
