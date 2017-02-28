@@ -23,6 +23,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ChromeBackupAgent.java",
   "java/src/org/chromium/chrome/browser/ChromeBackupWatcher.java",
   "java/src/org/chromium/chrome/browser/ChromeFeatureList.java",
+  "java/src/org/chromium/chrome/browser/AppHooks.java",
   "java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java",
   "java/src/org/chromium/chrome/browser/ChromeStrictMode.java",
   "java/src/org/chromium/chrome/browser/ChromeSwitches.java",

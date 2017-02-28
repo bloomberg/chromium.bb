@@ -14,7 +14,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
@@ -149,8 +149,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
     @Override
     public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
         if (isMainFrame) mTab.didFinishPageLoad();
-        PolicyAuditor auditor =
-                ((ChromeApplication) mTab.getApplicationContext()).getPolicyAuditor();
+        PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
         auditor.notifyAuditEvent(
                 mTab.getApplicationContext(), AuditEvent.OPEN_URL_SUCCESS, validatedUrl, "");
     }
@@ -170,8 +169,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
     }
 
     private void recordErrorInPolicyAuditor(String failingUrl, String description, int errorCode) {
-        PolicyAuditor auditor =
-                ((ChromeApplication) mTab.getApplicationContext()).getPolicyAuditor();
+        PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
         auditor.notifyAuditEvent(mTab.getApplicationContext(), AuditEvent.OPEN_URL_FAILURE,
                 failingUrl, description);
         if (errorCode == BLOCKED_BY_ADMINISTRATOR) {
@@ -283,8 +281,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
         mTab.updateFullscreenEnabledState();
 
-        PolicyAuditor auditor =
-                ((ChromeApplication) mTab.getApplicationContext()).getPolicyAuditor();
+        PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
         auditor.notifyCertificateFailure(
                 PolicyAuditor.nativeGetCertificateFailure(mTab.getWebContents()),
                 mTab.getApplicationContext());

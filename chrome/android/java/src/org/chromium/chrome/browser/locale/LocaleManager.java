@@ -11,7 +11,7 @@ import android.content.SharedPreferences;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchEnginePreference;
@@ -70,8 +70,7 @@ public class LocaleManager {
     public static LocaleManager getInstance() {
         assert ThreadUtils.runningOnUiThread();
         if (sInstance == null) {
-            sInstance = ((ChromeApplication) ContextUtils.getApplicationContext())
-                    .createLocaleManager();
+            sInstance = AppHooks.get().createLocaleManager();
         }
         return sInstance;
     }

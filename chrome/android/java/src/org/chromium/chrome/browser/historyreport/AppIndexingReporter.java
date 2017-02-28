@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.historyreport;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 
 /** Base class for reporting entities to App Indexing. */
 public class AppIndexingReporter {
@@ -14,8 +13,7 @@ public class AppIndexingReporter {
 
     public static AppIndexingReporter getInstance() {
         if (sInstance == null) {
-            sInstance = ((ChromeApplication) ContextUtils.getApplicationContext())
-                                .createAppIndexingReporter();
+            sInstance = AppHooks.get().createAppIndexingReporter();
         }
         return sInstance;
     }

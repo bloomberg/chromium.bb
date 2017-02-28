@@ -35,7 +35,7 @@ import android.util.Pair;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
@@ -304,10 +304,8 @@ public class AccountManagementFragment extends PreferenceFragment
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Activity activity = getActivity();
-                ((ChromeApplication) (activity.getApplicationContext()))
-                        .createGoogleActivityController()
-                        .openWebAndAppActivitySettings(activity,
-                                ChromeSigninController.get(activity).getSignedInAccountName());
+                AppHooks.get().createGoogleActivityController().openWebAndAppActivitySettings(
+                        activity, ChromeSigninController.get(activity).getSignedInAccountName());
                 RecordUserAction.record("Signin_AccountSettings_GoogleActivityControlsClicked");
                 return true;
             }

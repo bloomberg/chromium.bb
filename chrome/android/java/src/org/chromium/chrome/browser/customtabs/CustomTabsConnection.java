@@ -39,6 +39,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
@@ -151,13 +152,13 @@ public class CustomTabsConnection {
 
     /**
      * @return The unique instance of ChromeCustomTabsConnection.
+     * TODO(estevenson): Remove Application param.
      */
     @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     public static CustomTabsConnection getInstance(Application application) {
         if (sInstance.get() == null) {
-            ChromeApplication chromeApplication = (ChromeApplication) application;
-            chromeApplication.initCommandLine();
-            sInstance.compareAndSet(null, chromeApplication.createCustomTabsConnection());
+            ((ChromeApplication) application).initCommandLine();
+            sInstance.compareAndSet(null, AppHooks.get().createCustomTabsConnection());
         }
         return sInstance.get();
     }

@@ -754,8 +754,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (syncController != null && syncController.isSyncingUrlsWithKeystorePassphrase()) {
             assert syncService != null;
-            mContextReporter = ((ChromeApplication) getApplicationContext()).createGsaHelper()
-                    .getContextReporter(this);
+            mContextReporter = AppHooks.get().createGsaHelper().getContextReporter(this);
 
             if (mSyncStateChangedListener != null) {
                 syncService.removeSyncStateChangedListener(mSyncStateChangedListener);

@@ -17,7 +17,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.InstallerDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -52,8 +52,7 @@ public class WebApkInstaller {
 
     private WebApkInstaller(long nativePtr) {
         mNativePointer = nativePtr;
-        ChromeApplication application = (ChromeApplication) ContextUtils.getApplicationContext();
-        mGooglePlayWebApkInstallDelegate = application.getGooglePlayWebApkInstallDelegate();
+        mGooglePlayWebApkInstallDelegate = AppHooks.get().getGooglePlayWebApkInstallDelegate();
     }
 
     @CalledByNative

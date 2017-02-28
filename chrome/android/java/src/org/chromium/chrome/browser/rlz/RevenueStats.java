@@ -9,7 +9,7 @@ import android.content.SharedPreferences;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,9 +29,7 @@ public class RevenueStats {
      */
     public static RevenueStats getInstance() {
         if (sInstance.get() == null) {
-            ChromeApplication application =
-                    (ChromeApplication) ContextUtils.getApplicationContext();
-            sInstance.compareAndSet(null, application.createRevenueStatsInstance());
+            sInstance.compareAndSet(null, AppHooks.get().createRevenueStatsInstance());
         }
         return sInstance.get();
     }

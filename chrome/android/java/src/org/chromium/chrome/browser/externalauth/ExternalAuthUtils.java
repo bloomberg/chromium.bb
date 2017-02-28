@@ -17,13 +17,12 @@ import android.text.TextUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -51,9 +50,7 @@ public class ExternalAuthUtils {
      */
     public static ExternalAuthUtils getInstance() {
         if (sInstance.get() == null) {
-            ChromeApplication application =
-                    (ChromeApplication) ContextUtils.getApplicationContext();
-            sInstance.compareAndSet(null, application.createExternalAuthUtils());
+            sInstance.compareAndSet(null, AppHooks.get().createExternalAuthUtils());
         }
         return sInstance.get();
     }

@@ -23,7 +23,7 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
@@ -337,8 +337,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
                 webContents, mTab.getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND, url);
         boolean success = tabCreator.createsTabsAsynchronously() || createdSuccessfully;
         if (success && disposition == WindowOpenDisposition.NEW_POPUP) {
-            PolicyAuditor auditor =
-                    ((ChromeApplication) mTab.getApplicationContext()).getPolicyAuditor();
+            PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyAuditEvent(mTab.getApplicationContext(),
                     AuditEvent.OPEN_POPUP_URL_SUCCESS, url, "");
         }

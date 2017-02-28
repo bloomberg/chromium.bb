@@ -13,7 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.GooglePlayInstallState;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -79,8 +79,8 @@ public class ChromeWebApkHost {
             return;
         }
 
-        ChromeApplication application = (ChromeApplication) ContextUtils.getApplicationContext();
-        GooglePlayWebApkInstallDelegate delegate = application.getGooglePlayWebApkInstallDelegate();
+        GooglePlayWebApkInstallDelegate delegate =
+                AppHooks.get().getGooglePlayWebApkInstallDelegate();
         if (delegate == null) {
             sGooglePlayInstallState = GooglePlayInstallState.DISABLED_OTHER;
             return;

@@ -224,13 +224,11 @@ public class DeferredStartupHandler {
             }
         });
 
-        final ChromeApplication application = (ChromeApplication) mAppContext;
-
         mDeferredTasks.add(new Runnable() {
             @Override
             public void run() {
                 // Starts syncing with GSA.
-                application.createGsaHelper().startSync();
+                AppHooks.get().createGsaHelper().startSync();
             }
         });
 

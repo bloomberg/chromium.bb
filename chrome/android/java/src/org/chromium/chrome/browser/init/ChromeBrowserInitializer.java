@@ -31,6 +31,7 @@ import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -377,7 +378,7 @@ public class ChromeBrowserInitializer {
         if (mNativeInitializationComplete) return;
         // The policies are used by browser startup, so we need to register the policy providers
         // before starting the browser process.
-        mApplication.registerPolicyProviders(CombinedPolicyProvider.get());
+        AppHooks.get().registerPolicyProviders(CombinedPolicyProvider.get());
 
         SpeechRecognition.initialize(mApplication);
     }

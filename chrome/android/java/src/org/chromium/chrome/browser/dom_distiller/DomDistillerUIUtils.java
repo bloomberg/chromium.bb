@@ -12,7 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
@@ -60,8 +60,7 @@ public final class DomDistillerUIUtils {
         if (activity == null) return;
 
         if (sFeedbackReporter == null) {
-            ChromeApplication application = (ChromeApplication) activity.getApplication();
-            sFeedbackReporter = application.createFeedbackReporter();
+            sFeedbackReporter = AppHooks.get().createFeedbackReporter();
         }
         FeedbackCollector.create(activity, Profile.getLastUsedProfile(), url,
                 new FeedbackCollector.FeedbackResult() {

@@ -38,9 +38,9 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.FrozenNativePage;
@@ -432,8 +432,7 @@ public class Tab
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
         public void onSSLStateUpdated(Tab tab) {
-            PolicyAuditor auditor =
-                    ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
+            PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyCertificateFailure(
                     PolicyAuditor.nativeGetCertificateFailure(getWebContents()),
                     getApplicationContext());

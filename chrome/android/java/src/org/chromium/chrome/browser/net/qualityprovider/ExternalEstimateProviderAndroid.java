@@ -9,7 +9,7 @@ import android.content.Context;
 import org.chromium.base.NonThreadSafe;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 
 /**
  * This class provides a base class implementation and may be overridden on operating systems that
@@ -30,8 +30,7 @@ public class ExternalEstimateProviderAndroid {
 
     @CalledByNative
     private static ExternalEstimateProviderAndroid create(Context context, long nativePtr) {
-        return ((ChromeApplication) context)
-                .createExternalEstimateProviderAndroid(nativePtr);
+        return AppHooks.get().createExternalEstimateProviderAndroid(nativePtr);
     }
 
     /**

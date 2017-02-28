@@ -15,7 +15,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -41,8 +41,7 @@ public class HelpAndFeedback {
     public static HelpAndFeedback getInstance(Context context) {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
-            sInstance = ((ChromeApplication) context.getApplicationContext())
-                    .createHelpAndFeedback();
+            sInstance = AppHooks.get().createHelpAndFeedback();
         }
         return sInstance;
     }

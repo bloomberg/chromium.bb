@@ -6,12 +6,11 @@ package org.chromium.chrome.browser.preferences;
 
 import android.Manifest;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -41,9 +40,7 @@ public class LocationSettings {
     public static LocationSettings getInstance() {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
-            ChromeApplication application =
-                    (ChromeApplication) ContextUtils.getApplicationContext();
-            sInstance = application.createLocationSettings();
+            sInstance = AppHooks.get().createLocationSettings();
         }
         return sInstance;
     }

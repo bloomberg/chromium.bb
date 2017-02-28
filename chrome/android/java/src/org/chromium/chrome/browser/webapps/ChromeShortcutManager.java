@@ -11,7 +11,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 
 import java.util.List;
 
@@ -28,8 +28,7 @@ public class ChromeShortcutManager {
     /* Returns the singleton instance of ChromeShortcutManager, creating it if needed. */
     public static ChromeShortcutManager getInstance() {
         if (sInstance == null) {
-            sInstance = ((ChromeApplication) ContextUtils.getApplicationContext())
-                                .createChromeShortcutManager();
+            sInstance = AppHooks.get().createChromeShortcutManager();
         }
         return sInstance;
     }

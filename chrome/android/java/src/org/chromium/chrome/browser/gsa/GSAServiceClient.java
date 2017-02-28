@@ -27,7 +27,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 
 import java.util.List;
 
@@ -177,8 +177,7 @@ public class GSAServiceClient {
         mHandler = new IncomingHandler();
         mMessenger = new Messenger(mHandler);
         mConnection = new GSAServiceConnection();
-        mGsaHelper = ((ChromeApplication) mContext.getApplicationContext())
-                .createGsaHelper();
+        mGsaHelper = AppHooks.get().createGsaHelper();
     }
 
     /**

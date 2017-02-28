@@ -14,10 +14,8 @@ import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageFilter;
 import com.google.android.gms.nearby.messages.MessageListener;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ChromeApplication;
-
+import org.chromium.chrome.browser.AppHooks;
 
 /**
  * The Client that harvests URLs from BLE signals.
@@ -70,8 +68,7 @@ public class PhysicalWebBleClient {
      */
     public static PhysicalWebBleClient getInstance() {
         if (sInstance == null) {
-            sInstance = ((ChromeApplication) ContextUtils.getApplicationContext())
-                    .createPhysicalWebBleClient();
+            sInstance = AppHooks.get().createPhysicalWebBleClient();
         }
         return sInstance;
     }

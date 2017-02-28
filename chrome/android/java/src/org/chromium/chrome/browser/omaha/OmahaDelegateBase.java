@@ -9,7 +9,7 @@ import android.content.pm.ApplicationInfo;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 
 import java.util.UUID;
 
@@ -53,6 +53,6 @@ public abstract class OmahaDelegateBase extends OmahaDelegate {
 
     @Override
     protected RequestGenerator createRequestGenerator(Context context) {
-        return ((ChromeApplication) context.getApplicationContext()).createOmahaRequestGenerator();
+        return AppHooks.get().createOmahaRequestGenerator();
     }
 }

@@ -80,7 +80,7 @@ public class ChromeActivitySessionTracker {
         assert !mIsStarted;
 
         ApplicationStatus.registerApplicationStateListener(createApplicationStateListener());
-        mVariationsSession = mApplication.createVariationsSession();
+        mVariationsSession = AppHooks.get().createVariationsSession();
     }
 
     /**

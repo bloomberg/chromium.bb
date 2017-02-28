@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.media;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 
 /**
  * Utilities for persisting fullscreen video on Chrome exit.
@@ -23,9 +22,7 @@ public class VideoPersister {
     public static VideoPersister getInstance() {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
-            ChromeApplication application =
-                    (ChromeApplication) ContextUtils.getApplicationContext();
-            sInstance = application.createVideoPersister();
+            sInstance = AppHooks.get().createVideoPersister();
         }
         return sInstance;
     }

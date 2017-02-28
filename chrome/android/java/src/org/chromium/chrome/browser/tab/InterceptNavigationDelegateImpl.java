@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.tab;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -51,8 +51,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     public InterceptNavigationDelegateImpl(ExternalNavigationHandler externalNavHandler, Tab tab) {
         mTab = tab;
         mExternalNavHandler = externalNavHandler;
-        mAuthenticatorHelper = ((ChromeApplication) mTab.getApplicationContext())
-                .createAuthenticatorNavigationInterceptor(mTab);
+        mAuthenticatorHelper = AppHooks.get().createAuthenticatorNavigationInterceptor(mTab);
     }
 
     public boolean shouldIgnoreNewTab(String url, boolean incognito) {

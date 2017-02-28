@@ -16,7 +16,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -103,8 +103,7 @@ public class InstantAppsHandler {
     public static InstantAppsHandler getInstance() {
         synchronized (INSTANCE_LOCK) {
             if (sInstance == null) {
-                Context appContext = ContextUtils.getApplicationContext();
-                sInstance = ((ChromeApplication) appContext).createInstantAppsHandler();
+                sInstance = AppHooks.get().createInstantAppsHandler();
             }
         }
         return sInstance;

@@ -14,7 +14,7 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 
 /**
  * This class provides a base class implementation of a data use observer that is external to
@@ -89,7 +89,7 @@ public class ExternalDataUseObserver {
 
     @CalledByNative
     private static ExternalDataUseObserver create(Context context, long nativePtr) {
-        return ((ChromeApplication) context).createExternalDataUseObserver(nativePtr);
+        return AppHooks.get().createExternalDataUseObserver(nativePtr);
     }
 
     /**
