@@ -606,6 +606,9 @@ void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
                  prefetch_manager_, url, prediction.subresource_urls));
+
+  if (observer_)
+    observer_->OnPrefetchingStarted(url);
 }
 
 void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
@@ -625,6 +628,9 @@ void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::MaybeRemovePrefetch,
                  prefetch_manager_, url));
+
+  if (observer_)
+    observer_->OnPrefetchingStopped(url);
 }
 
 void ResourcePrefetchPredictor::OnPrefetchingFinished(
@@ -675,15 +681,22 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
 void ResourcePrefetchPredictor::OnMainFrameResponse(
     const URLRequestSummary& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (initialization_state_ != INITIALIZED)
-    return;
+  DCHECK_EQ(INITIALIZED, initialization_state_);
 
-  StopPrefetching(response.navigation_id.main_frame_url);
+  NavigationMap::iterator nav_it =
+      inflight_navigations_.find(response.navigation_id);
+  if (nav_it != inflight_navigations_.end()) {
+    // To match an URL in StartPrefetching().
+    StopPrefetching(nav_it->second->initial_url);
+  } else {
+    StopPrefetching(response.navigation_id.main_frame_url);
+  }
 }
 
 void ResourcePrefetchPredictor::OnMainFrameRedirect(
     const URLRequestSummary& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(INITIALIZED, initialization_state_);
 
   const GURL& main_frame_url = response.navigation_id.main_frame_url;
   std::unique_ptr<PageRequestSummary> summary;
@@ -715,6 +728,7 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
 void ResourcePrefetchPredictor::OnSubresourceResponse(
     const URLRequestSummary& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(INITIALIZED, initialization_state_);
 
   NavigationMap::const_iterator nav_it =
         inflight_navigations_.find(response.navigation_id);
@@ -728,6 +742,7 @@ void ResourcePrefetchPredictor::OnSubresourceResponse(
 void ResourcePrefetchPredictor::OnNavigationComplete(
     const NavigationID& nav_id_without_timing_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(INITIALIZED, initialization_state_);
 
   NavigationMap::iterator nav_it =
       inflight_navigations_.find(nav_id_without_timing_info);
@@ -903,10 +918,16 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
 
   for (auto it = inflight_prefetches_.begin();
        it != inflight_prefetches_.end();) {
-    if (time_now - it->second > max_navigation_age)
+    base::TimeDelta prefetch_age = time_now - it->second;
+    if (prefetch_age > max_navigation_age) {
+      // It goes to the last bucket meaning that the duration was unlimited.
+      UMA_HISTOGRAM_TIMES(
+          internal::kResourcePrefetchPredictorPrefetchingDurationHistogram,
+          prefetch_age);
       it = inflight_prefetches_.erase(it);
-    else
+    } else {
       ++it;
+    }
   }
 
   // Remove old prefetches that haven't been claimed.

@@ -429,13 +429,17 @@ class TestObserver {
   // De-registers itself from |predictor_| on destruction.
   virtual ~TestObserver();
 
+  virtual void OnPredictorInitialized() {}
+
   virtual void OnNavigationLearned(
       size_t url_visit_count,
       const ResourcePrefetchPredictor::PageRequestSummary& summary) {}
 
-  virtual void OnPrefetchingFinished(const GURL& main_frame_url) {}
+  virtual void OnPrefetchingStarted(const GURL& main_frame_url) {}
 
-  virtual void OnPredictorInitialized() {}
+  virtual void OnPrefetchingStopped(const GURL& main_frame_url) {}
+
+  virtual void OnPrefetchingFinished(const GURL& main_frame_url) {}
 
  protected:
   // |predictor| must be non-NULL and has to outlive the TestObserver.
