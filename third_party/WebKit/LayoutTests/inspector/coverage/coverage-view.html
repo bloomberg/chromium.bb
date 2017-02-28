@@ -21,7 +21,8 @@ async function test()
         var url = InspectorTest.formatters.formatAsURL(data.url);
         if (url.endsWith("-test.js") || url.endsWith(".html"))
             continue;
-        InspectorTest.addResult(`${url} used: ${data.usedSize} unused: ${data.unusedSize} total: ${data.size}`);
+        var type = Coverage.CoverageListView._typeToString(data.type);
+        InspectorTest.addResult(`${url} ${type} used: ${data.usedSize} unused: ${data.unusedSize} total: ${data.size}`);
     }
     InspectorTest.completeTest();
 }
