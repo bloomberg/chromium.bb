@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/containers/small_map.h"
+#include "base/memory/ptr_util.h"
 #include "ui/display/util/edid_parser.h"
 
 #if !defined(DRM_FORMAT_YV12)
@@ -28,8 +29,10 @@ namespace {
 static const size_t kDefaultCursorWidth = 64;
 static const size_t kDefaultCursorHeight = 64;
 
-bool IsCrtcInUse(uint32_t crtc,
-                 const ScopedVector<HardwareDisplayControllerInfo>& displays) {
+bool IsCrtcInUse(
+    uint32_t crtc,
+    const std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>&
+        displays) {
   for (size_t i = 0; i < displays.size(); ++i) {
     if (crtc == displays[i]->crtc()->crtc_id)
       return true;
@@ -41,10 +44,12 @@ bool IsCrtcInUse(uint32_t crtc,
 // Return a CRTC compatible with |connector| and not already used in |displays|.
 // If there are multiple compatible CRTCs, the one that supports the majority of
 // planes will be returned.
-uint32_t GetCrtc(int fd,
-                 drmModeConnector* connector,
-                 drmModeRes* resources,
-                 const ScopedVector<HardwareDisplayControllerInfo>& displays) {
+uint32_t GetCrtc(
+    int fd,
+    drmModeConnector* connector,
+    drmModeRes* resources,
+    const std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>&
+        displays) {
   ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(fd));
   std::vector<ScopedDrmPlanePtr> planes;
   for (uint32_t i = 0; i < plane_resources->count_planes; i++)
@@ -218,11 +223,11 @@ HardwareDisplayControllerInfo::HardwareDisplayControllerInfo(
 HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() {
 }
 
-ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
-    int fd) {
+std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>
+GetAvailableDisplayControllerInfos(int fd) {
   ScopedDrmResourcesPtr resources(drmModeGetResources(fd));
   DCHECK(resources) << "Failed to get DRM resources";
-  ScopedVector<HardwareDisplayControllerInfo> displays;
+  std::vector<std::unique_ptr<HardwareDisplayControllerInfo>> displays;
 
   std::vector<ScopedDrmConnectorPtr> available_connectors;
   std::vector<ScopedDrmConnectorPtr::element_type*> connectors;
@@ -270,7 +275,7 @@ ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
     size_t index = std::find(connectors.begin(), connectors.end(), c.get()) -
                    connectors.begin();
     DCHECK_LT(index, connectors.size());
-    displays.push_back(new HardwareDisplayControllerInfo(
+    displays.push_back(base::MakeUnique<HardwareDisplayControllerInfo>(
         std::move(c), std::move(crtc), index));
   }
 

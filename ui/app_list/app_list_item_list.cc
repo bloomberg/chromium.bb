@@ -25,18 +25,16 @@ void AppListItemList::RemoveObserver(AppListItemListObserver* observer) {
 }
 
 AppListItem* AppListItemList::FindItem(const std::string& id) {
-  for (size_t i = 0; i < app_list_items_.size(); ++i) {
-    AppListItem* item = app_list_items_[i];
+  for (const auto& item : app_list_items_) {
     if (item->id() == id)
-      return item;
+      return item.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 bool AppListItemList::FindItemIndex(const std::string& id, size_t* index) {
   for (size_t i = 0; i < app_list_items_.size(); ++i) {
-    AppListItem* item = app_list_items_[i];
-    if (item->id() == id) {
+    if (app_list_items_[i]->id() == id) {
       *index = i;
       return true;
     }
@@ -50,17 +48,15 @@ void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
   if (from_index == to_index)
     return;
 
-  AppListItem* target_item = app_list_items_[from_index];
+  auto target_item = std::move(app_list_items_[from_index]);
   DVLOG(2) << "MoveItem: " << from_index << " -> " << to_index << " ["
            << target_item->position().ToDebugString() << "]";
-
   // Remove the target item
-  app_list_items_.weak_erase(app_list_items_.begin() + from_index);
+  app_list_items_.erase(app_list_items_.begin() + from_index);
 
   // Update the position
-  AppListItem* prev = to_index > 0 ? app_list_items_[to_index - 1] : NULL;
-  AppListItem* next =
-      to_index < item_count() ? app_list_items_[to_index] : NULL;
+  AppListItem* prev = to_index > 0 ? item_at(to_index - 1) : nullptr;
+  AppListItem* next = to_index < item_count() ? item_at(to_index) : nullptr;
   CHECK_NE(prev, next);
   syncer::StringOrdinal new_position;
   if (!prev) {
@@ -83,9 +79,11 @@ void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
            << " -> " << new_position.ToDebugString();
 
   // Insert the item and notify observers.
-  app_list_items_.insert(app_list_items_.begin() + to_index, target_item);
+  app_list_items_.insert(app_list_items_.begin() + to_index,
+                         std::move(target_item));
+  AppListItem* item = item_at(to_index);
   for (auto& observer : observers_)
-    observer.OnListItemMoved(from_index, to_index, target_item);
+    observer.OnListItemMoved(from_index, to_index, item);
 }
 
 void AppListItemList::SetItemPosition(AppListItem* item,
@@ -96,12 +94,12 @@ void AppListItemList::SetItemPosition(AppListItem* item,
     LOG(ERROR) << "SetItemPosition: Not in list: " << item->id().substr(0, 8);
     return;
   }
-  DCHECK(app_list_items_[from_index] == item);
+  DCHECK(item_at(from_index) == item);
   if (!new_position.IsValid()) {
     size_t last_index = app_list_items_.size() - 1;
     if (from_index == last_index)
       return;  // Already last item, do nothing.
-    new_position = app_list_items_[last_index]->position().CreateAfter();
+    new_position = item_at(last_index)->position().CreateAfter();
   }
   // First check if the order would remain the same, in which case just update
   // the position.
@@ -112,13 +110,15 @@ void AppListItemList::SetItemPosition(AppListItem* item,
     return;
   }
   // Remove the item and get the updated to index.
-  app_list_items_.weak_erase(app_list_items_.begin() + from_index);
-  to_index = GetItemSortOrderIndex(new_position, item->id());
-  DVLOG(2) << "SetItemPosition: " << item->id().substr(0, 8) << " -> "
+  auto target_item = std::move(app_list_items_[from_index]);
+  app_list_items_.erase(app_list_items_.begin() + from_index);
+  to_index = GetItemSortOrderIndex(new_position, target_item->id());
+  DVLOG(2) << "SetItemPosition: " << target_item->id().substr(0, 8) << " -> "
            << new_position.ToDebugString() << " From: " << from_index
            << " To: " << to_index;
-  item->set_position(new_position);
-  app_list_items_.insert(app_list_items_.begin() + to_index, item);
+  target_item->set_position(new_position);
+  app_list_items_.insert(app_list_items_.begin() + to_index,
+                         std::move(target_item));
   for (auto& observer : observers_)
     observer.OnListItemMoved(from_index, to_index, item);
 }
@@ -157,25 +157,27 @@ syncer::StringOrdinal AppListItemList::CreatePositionBefore(
     index = nitems;
   } else {
     for (index = 0; index < nitems; ++index) {
-      if (!app_list_items_[index]->position().LessThan(position))
+      if (!item_at(index)->position().LessThan(position))
         break;
     }
   }
   if (index == 0)
-    return app_list_items_[0]->position().CreateBefore();
+    return item_at(0)->position().CreateBefore();
   if (index == nitems)
-    return app_list_items_[nitems - 1]->position().CreateAfter();
-  return app_list_items_[index - 1]->position().CreateBetween(
-      app_list_items_[index]->position());
+    return item_at(nitems - 1)->position().CreateAfter();
+  return item_at(index - 1)->position().CreateBetween(
+      item_at(index)->position());
 }
 
 AppListItem* AppListItemList::AddItem(std::unique_ptr<AppListItem> item_ptr) {
   AppListItem* item = item_ptr.get();
-  CHECK(std::find(app_list_items_.begin(), app_list_items_.end(), item)
-        == app_list_items_.end());
+  CHECK(std::find_if(app_list_items_.cbegin(), app_list_items_.cend(),
+                     [item](const std::unique_ptr<AppListItem>& item_p) {
+                       return item_p.get() == item;
+                     }) == app_list_items_.cend());
   EnsureValidItemPosition(item);
   size_t index = GetItemSortOrderIndex(item->position(), item->id());
-  app_list_items_.insert(app_list_items_.begin() + index, item_ptr.release());
+  app_list_items_.insert(app_list_items_.begin() + index, std::move(item_ptr));
   for (auto& observer : observers_)
     observer.OnListItemAdded(index, item);
 
@@ -203,11 +205,11 @@ std::unique_ptr<AppListItem> AppListItemList::RemoveItem(
 
 std::unique_ptr<AppListItem> AppListItemList::RemoveItemAt(size_t index) {
   CHECK_LT(index, item_count());
-  AppListItem* item = app_list_items_[index];
-  app_list_items_.weak_erase(app_list_items_.begin() + index);
+  auto item = std::move(app_list_items_[index]);
+  app_list_items_.erase(app_list_items_.begin() + index);
   for (auto& observer : observers_)
-    observer.OnListItemRemoved(index, item);
-  return base::WrapUnique<AppListItem>(item);
+    observer.OnListItemRemoved(index, item.get());
+  return item;
 }
 
 void AppListItemList::DeleteItemAt(size_t index) {
@@ -223,7 +225,7 @@ void AppListItemList::EnsureValidItemPosition(AppListItem* item) {
   if (nitems == 0) {
     position = syncer::StringOrdinal::CreateInitialOrdinal();
   } else {
-    position = app_list_items_[nitems - 1]->position().CreateAfter();
+    position = item_at(nitems - 1)->position().CreateAfter();
   }
   item->set_position(position);
 }
@@ -233,9 +235,9 @@ size_t AppListItemList::GetItemSortOrderIndex(
     const std::string& id) {
   DCHECK(position.IsValid());
   for (size_t index = 0; index < app_list_items_.size(); ++index) {
-    if (position.LessThan(app_list_items_[index]->position()) ||
-        (position.Equals(app_list_items_[index]->position()) &&
-         (id < app_list_items_[index]->id()))) {
+    if (position.LessThan(item_at(index)->position()) ||
+        (position.Equals(item_at(index)->position()) &&
+         (id < item_at(index)->id()))) {
       return index;
     }
   }
@@ -249,23 +251,24 @@ void AppListItemList::FixItemPosition(size_t index) {
   DCHECK_GT(index, 0u);
   // Update the position of |index| and any necessary subsequent items.
   // First, find the next item that has a different position.
-  AppListItem* prev = app_list_items_[index - 1];
+  AppListItem* prev = item_at(index - 1);
   size_t last_index = index + 1;
   for (; last_index < nitems; ++last_index) {
-    if (!app_list_items_[last_index]->position().Equals(prev->position()))
+    if (!item_at(last_index)->position().Equals(prev->position()))
       break;
   }
-  AppListItem* last = last_index < nitems ? app_list_items_[last_index] : NULL;
+  AppListItem* last = last_index < nitems ? item_at(last_index) : nullptr;
   for (size_t i = index; i < last_index; ++i) {
-    AppListItem* cur = app_list_items_[i];
+    AppListItem* cur = item_at(i);
     if (last)
       cur->set_position(prev->position().CreateBetween(last->position()));
     else
       cur->set_position(prev->position().CreateAfter());
     prev = cur;
   }
+  AppListItem* item = item_at(index);
   for (auto& observer : observers_)
-    observer.OnListItemMoved(index, index, app_list_items_[index]);
+    observer.OnListItemMoved(index, index, item);
 }
 
 }  // namespace app_list

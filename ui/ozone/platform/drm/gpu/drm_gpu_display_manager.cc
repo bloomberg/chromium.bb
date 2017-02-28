@@ -75,9 +75,8 @@ std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
   const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
   size_t device_index = 0;
   for (const auto& drm : devices) {
-    ScopedVector<HardwareDisplayControllerInfo> display_infos =
-        GetAvailableDisplayControllerInfos(drm->get_fd());
-    for (auto* display_info : display_infos) {
+    auto display_infos = GetAvailableDisplayControllerInfos(drm->get_fd());
+    for (const auto& display_info : display_infos) {
       auto it = std::find_if(
           old_displays.begin(), old_displays.end(),
           DisplayComparator(drm, display_info->crtc()->crtc_id,
@@ -89,7 +88,7 @@ std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
         displays_.push_back(base::MakeUnique<DrmDisplay>(screen_manager_, drm));
       }
       params_list.push_back(
-          displays_.back()->Update(display_info, device_index));
+          displays_.back()->Update(display_info.get(), device_index));
     }
     device_index++;
   }

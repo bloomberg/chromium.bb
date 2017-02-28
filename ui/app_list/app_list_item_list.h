@@ -9,9 +9,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
 #include "ui/app_list/app_list_export.h"
@@ -57,11 +57,11 @@ class APP_LIST_EXPORT AppListItemList {
 
   AppListItem* item_at(size_t index) {
     DCHECK_LT(index, app_list_items_.size());
-    return app_list_items_[index];
+    return app_list_items_[index].get();
   }
   const AppListItem* item_at(size_t index) const {
     DCHECK_LT(index, app_list_items_.size());
-    return app_list_items_[index];
+    return app_list_items_[index].get();
   }
   size_t item_count() const { return app_list_items_.size(); }
 
@@ -108,7 +108,7 @@ class APP_LIST_EXPORT AppListItemList {
   // previous item's position. |index| must be > 0.
   void FixItemPosition(size_t index);
 
-  ScopedVector<AppListItem> app_list_items_;
+  std::vector<std::unique_ptr<AppListItem>> app_list_items_;
   base::ObserverList<AppListItemListObserver, true> observers_;
   std::string highlighted_id_;
 

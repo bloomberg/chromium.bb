@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
@@ -109,10 +109,14 @@ class TextRunList {
     return logical_to_visual_[index];
   }
 
-  const ScopedVector<TextRunHarfBuzz>& runs() const { return runs_; }
+  const std::vector<std::unique_ptr<TextRunHarfBuzz>>& runs() const {
+    return runs_;
+  }
 
   // Adds the new |run| to the run list.
-  void add(TextRunHarfBuzz* run) { runs_.push_back(run); }
+  void Add(std::unique_ptr<TextRunHarfBuzz> run) {
+    runs_.push_back(std::move(run));
+  }
 
   // Reset the run list.
   void Reset();
@@ -132,7 +136,7 @@ class TextRunList {
 
  private:
   // Text runs in logical order.
-  ScopedVector<TextRunHarfBuzz> runs_;
+  std::vector<std::unique_ptr<TextRunHarfBuzz>> runs_;
 
   // Maps visual run indices to logical run indices and vice versa.
   std::vector<int32_t> visual_to_logical_;

@@ -6,12 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -122,9 +123,9 @@ class MixerTest : public testing::Test {
   void SetUp() override {
     results_.reset(new AppListModel::SearchResults);
 
-    providers_.push_back(new TestSearchProvider("app"));
-    providers_.push_back(new TestSearchProvider("omnibox"));
-    providers_.push_back(new TestSearchProvider("webstore"));
+    providers_.push_back(base::MakeUnique<TestSearchProvider>("app"));
+    providers_.push_back(base::MakeUnique<TestSearchProvider>("omnibox"));
+    providers_.push_back(base::MakeUnique<TestSearchProvider>("webstore"));
 
     is_voice_query_ = false;
 
@@ -134,9 +135,9 @@ class MixerTest : public testing::Test {
     size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 1.0);
     size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 0.5);
 
-    mixer_->AddProviderToGroup(apps_group_id, providers_[0]);
-    mixer_->AddProviderToGroup(omnibox_group_id, providers_[1]);
-    mixer_->AddProviderToGroup(webstore_group_id, providers_[2]);
+    mixer_->AddProviderToGroup(apps_group_id, providers_[0].get());
+    mixer_->AddProviderToGroup(omnibox_group_id, providers_[1].get());
+    mixer_->AddProviderToGroup(webstore_group_id, providers_[2].get());
   }
 
   void RunQuery() {
@@ -163,9 +164,9 @@ class MixerTest : public testing::Test {
   }
 
   Mixer* mixer() { return mixer_.get(); }
-  TestSearchProvider* app_provider() { return providers_[0]; }
-  TestSearchProvider* omnibox_provider() { return providers_[1]; }
-  TestSearchProvider* webstore_provider() { return providers_[2]; }
+  TestSearchProvider* app_provider() { return providers_[0].get(); }
+  TestSearchProvider* omnibox_provider() { return providers_[1].get(); }
+  TestSearchProvider* webstore_provider() { return providers_[2].get(); }
 
   // Sets whether test runs should be treated as a voice query.
   void set_is_voice_query(bool is_voice_query) {
@@ -183,7 +184,7 @@ class MixerTest : public testing::Test {
 
   bool is_voice_query_;
 
-  ScopedVector<TestSearchProvider> providers_;
+  std::vector<std::unique_ptr<TestSearchProvider>> providers_;
 
   DISALLOW_COPY_AND_ASSIGN(MixerTest);
 };

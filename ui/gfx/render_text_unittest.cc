@@ -3434,7 +3434,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemeCases) {
     test_api()->EnsureLayout();
     internal::TextRunList* run_list = GetHarfBuzzRunList();
     ASSERT_EQ(1U, run_list->size());
-    internal::TextRunHarfBuzz* run = run_list->runs()[0];
+    internal::TextRunHarfBuzz* run = run_list->runs()[0].get();
 
     auto first_grapheme_bounds = run->GetGraphemeBounds(render_text, 0);
     EXPECT_EQ(first_grapheme_bounds, run->GetGraphemeBounds(render_text, 1));
@@ -3613,7 +3613,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_NonExistentFont) {
   test_api()->EnsureLayout();
   internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
-  internal::TextRunHarfBuzz* run = run_list->runs()[0];
+  internal::TextRunHarfBuzz* run = run_list->runs()[0].get();
   ShapeRunWithFont(render_text->text(), Font("TheFontThatDoesntExist", 13),
                    FontRenderParams(), run);
 }

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/search_result.h"
 
@@ -126,7 +127,7 @@ Mixer::~Mixer() {
 }
 
 size_t Mixer::AddGroup(size_t max_results, double multiplier) {
-  groups_.push_back(new Group(max_results, multiplier));
+  groups_.push_back(base::MakeUnique<Group>(max_results, multiplier));
   return groups_.size() - 1;
 }
 
@@ -144,7 +145,7 @@ void Mixer::MixAndPublish(bool is_voice_query,
 
   // Add results from each group. Limit to the maximum number of results in each
   // group.
-  for (const Group* group : groups_) {
+  for (const auto& group : groups_) {
     const size_t num_results =
         std::min(group->results().size(), group->max_results());
     results.insert(results.end(), group->results().begin(),
@@ -162,7 +163,7 @@ void Mixer::MixAndPublish(bool is_voice_query,
     // We didn't get enough results. Insert all the results again, and this
     // time, do not limit the maximum number of results from each group. (This
     // will result in duplicates, which will be removed by RemoveDuplicates.)
-    for (const Group* group : groups_) {
+    for (const auto& group : groups_) {
       results.insert(results.end(), group->results().begin(),
                      group->results().end());
     }
@@ -238,7 +239,7 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 
 void Mixer::FetchResults(bool is_voice_query,
                          const KnownResults& known_results) {
-  for (auto* group : groups_)
+  for (const auto& group : groups_)
     group->FetchResults(is_voice_query, known_results);
 }
 

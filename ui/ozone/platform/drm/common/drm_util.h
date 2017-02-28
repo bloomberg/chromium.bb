@@ -7,9 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
@@ -45,8 +47,8 @@ class HardwareDisplayControllerInfo {
 
 // Looks-up and parses the native display configurations returning all available
 // displays.
-ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
-    int fd);
+std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>
+GetAvailableDisplayControllerInfos(int fd);
 
 bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
 

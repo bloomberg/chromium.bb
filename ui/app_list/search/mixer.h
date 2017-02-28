@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/history_types.h"
@@ -65,7 +65,7 @@ class APP_LIST_EXPORT Mixer {
   typedef std::vector<Mixer::SortData> SortedResults;
 
   class Group;
-  typedef ScopedVector<Group> Groups;
+  typedef std::vector<std::unique_ptr<Group>> Groups;
 
   // Publishes the given |new_results| to |ui_results|, deleting any existing
   // results that are not in |new_results|. Results that already exist in
