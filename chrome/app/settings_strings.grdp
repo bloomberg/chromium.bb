@@ -2026,6 +2026,9 @@
     No sites added
   </message>
 
+  <message name="IDS_SETTINGS_ADD_SITE_EXCEPTION_PLACEHOLDER" desc="Placeholder text shown before the user starts typing a new content settings exception for a site." >
+    [*.]example.com
+  </message>
   <message name="IDS_SETTINGS_ADD_SITE_LINK" desc="Link text to show (to open the Add Site dialog)">
     Add site exception
   </message>
