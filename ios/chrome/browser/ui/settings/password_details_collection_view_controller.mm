@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
@@ -296,7 +297,22 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
     textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
   }
   return view;
-};
+}
+
+- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
+                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
+  UICollectionViewCell* cell =
+      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
+
+  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
+  if (type == ItemTypeDelete) {
+    MDCCollectionViewTextCell* textCell =
+        base::mac::ObjCCastStrict<MDCCollectionViewTextCell>(cell);
+    textCell.textLabel.textColor = [[MDCPalette cr_redPalette] tint500];
+  }
+
+  return cell;
+}
 
 #pragma mark - UICollectionViewDelegate
 
