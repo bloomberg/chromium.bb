@@ -244,8 +244,10 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   }
 
   void StartInstance() {
-    if (arc_session_manager()->profile() != profile())
-      arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+    if (arc_session_manager()->profile() != profile()) {
+      arc_session_manager()->SetProfile(profile());
+      arc_session_manager()->StartPreferenceHandler();
+    }
     app_instance_observer()->OnInstanceReady();
   }
 

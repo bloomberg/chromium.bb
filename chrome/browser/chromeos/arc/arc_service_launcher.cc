@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/arc/print/arc_print_service.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/chromeos/arc/tts/arc_tts_service.h"
@@ -141,6 +143,25 @@ void ArcServiceLauncher::Initialize() {
 
 void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   DCHECK(arc_service_manager_);
+  DCHECK(arc_session_manager_);
+  // TODO(hidehiko): DCHECK(!arc_session_manager_->IsAllowed()) here.
+  // Do not expect it in real use case, but it is used for testing.
+  // Because the ArcService instances tied to the old profile is kept,
+  // and ones tied to the new profile are added, which is unexpected situation.
+  // For compatibility, call Shutdown() here in case |profile| is not
+  // allowed for ARC.
+  arc_session_manager_->Shutdown();
+
+  if (!IsArcAllowedForProfile(profile))
+    return;
+
+  // TODO(khmel): Move this to IsArcAllowedForProfile.
+  if (policy_util::IsArcDisabledForEnterprise() &&
+      policy_util::IsAccountManaged(profile)) {
+    VLOG(2) << "Enterprise users are not supported in ARC.";
+    return;
+  }
+
   // List in lexicographical order
   arc_service_manager_->AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(
       arc_service_manager_->arc_bridge_service(),
@@ -161,7 +182,8 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
         chromeos::ArcKioskAppService::Get(profile)));
   }
 
-  arc_session_manager_->OnPrimaryUserProfilePrepared(profile);
+  arc_session_manager_->SetProfile(profile);
+  arc_session_manager_->StartPreferenceHandler();
 }
 
 void ArcServiceLauncher::Shutdown() {

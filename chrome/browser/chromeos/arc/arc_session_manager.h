@@ -121,13 +121,25 @@ class ArcSessionManager : public ArcSessionObserver,
   // has different meaning. Clean this up.
   bool IsAllowed() const;
 
-  void OnPrimaryUserProfilePrepared(Profile* profile);
   void Shutdown();
+
+  // Sets the |profile|, and sets up Profile related fields in this instance.
+  // IsArcAllowedForProfile() must return true for the given |profile|.
+  void SetProfile(Profile* profile);
 
   Profile* profile() { return profile_; }
   const Profile* profile() const { return profile_; }
 
   State state() const { return state_; }
+
+  // Starts observing Google Play Store enabled preference change.
+  // Also, based on its initial value, this may start ArcSession, or may start
+  // removing the data, as initial state.
+  // In addition, this triggers to show ArcAuthNotification, if necessary.
+  // Note that this must be called after SetProfile().
+  // TODO(hidehiko): Extract preference related code into a class to split the
+  // dependencty.
+  void StartPreferenceHandler();
 
   // Adds or removes observers.
   void AddObserver(Observer* observer);
@@ -235,8 +247,6 @@ class ArcSessionManager : public ArcSessionObserver,
   void OnAndroidManagementPassed();
   void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
-  void FetchAuthCode();
-  void PrepareContextForAuthCodeRequest();
 
   void StartArcAndroidManagementCheck();
   void MaybeReenableArc();

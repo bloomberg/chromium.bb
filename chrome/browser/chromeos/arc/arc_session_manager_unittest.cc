@@ -214,6 +214,10 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
         profile()->GetProfileUserName(), "1234567890"));
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
+
+    ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+              arc_session_manager()->state());
+    ASSERT_TRUE(arc_session_manager()->IsSessionStopped());
   }
 
  private:
@@ -221,22 +225,20 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
 };
 
 TEST_F(ArcSessionManagerTest, PrefChangeTriggersService) {
-  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
+  ASSERT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->StartPreferenceHandler();
 
-  PrefService* const pref = profile()->GetPrefs();
-  ASSERT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-
-  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-
-  pref->SetBoolean(prefs::kArcEnabled, true);
+  SetArcPlayStoreEnabledForProfile(profile(), true);
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
 
-  pref->SetBoolean(prefs::kArcEnabled, false);
+  SetArcPlayStoreEnabledForProfile(profile(), false);
 
   ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
 
@@ -244,42 +246,12 @@ TEST_F(ArcSessionManagerTest, PrefChangeTriggersService) {
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, BaseWorkflow) {
-  ASSERT_TRUE(arc_session_manager()->IsSessionStopped());
-  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
-  EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
+TEST_F(ArcSessionManagerTest, PrefChangeTriggersService_Restart) {
+  // Sets the Google Play Store preference at beginning.
+  SetArcPlayStoreEnabledForProfile(profile(), true);
 
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-
-  // By default ARC is not enabled.
-  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  base::RunLoop().RunUntilIdle();
-
-  // Setting profile and pref initiates a code fetching process.
-  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
-            arc_session_manager()->state());
-
-  // TODO(hidehiko): Verify state transition from SHOWING_TERMS_OF_SERVICE ->
-  // CHECKING_ANDROID_MANAGEMENT, when we extract ArcSessionManager.
-  arc_session_manager()->StartArc();
-
-  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
-  EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
-
-  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  ASSERT_TRUE(arc_session_manager()->IsSessionRunning());
-
-  arc_session_manager()->Shutdown();
-  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-  ASSERT_TRUE(arc_session_manager()->IsSessionStopped());
-
-  // Send profile and don't provide a code.
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->StartPreferenceHandler();
 
   // Setting profile initiates a code fetching process.
   ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
@@ -296,58 +268,92 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, CancelFetchingDisablesArc) {
-  PrefService* const pref = profile()->GetPrefs();
+TEST_F(ArcSessionManagerTest, BaseWorkflow) {
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
 
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  pref->SetBoolean(prefs::kArcEnabled, true);
+  arc_session_manager()->SetProfile(profile());
+
+  // By default ARC is not enabled.
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  // Enables ARC. First time, ToS negotiation should start.
+  arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
-
   ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
 
+  // TODO(hidehiko): Verify state transition from SHOWING_TERMS_OF_SERVICE ->
+  // CHECKING_ANDROID_MANAGEMENT, when we extract ArcSessionManager.
+  arc_session_manager()->StartArc();
+
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
+
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  ASSERT_TRUE(arc_session_manager()->IsSessionRunning());
+
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, CancelFetchingDisablesArc) {
+  SetArcPlayStoreEnabledForProfile(profile(), true);
+
+  // Starts ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+
+  // Emulate to cancel the ToS UI (e.g. closing the window).
   arc_session_manager()->CancelAuthCode();
+
+  // Google Play Store enabled preference should be set to false, too.
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+
+  // Emulate the preference handling.
+  arc_session_manager()->RequestDisable();
 
   // Wait until data is removed.
   ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
-
-  ASSERT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
   arc_session_manager()->Shutdown();
 }
 
 TEST_F(ArcSessionManagerTest, CloseUIKeepsArcEnabled) {
-  PrefService* const pref = profile()->GetPrefs();
-
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  pref->SetBoolean(prefs::kArcEnabled, true);
+  // Starts ARC.
+  SetArcPlayStoreEnabledForProfile(profile(), true);
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
-
+  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
   arc_session_manager()->StartArc();
-
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
+  // When ARC is properly started, closing UI should be no-op.
   arc_session_manager()->CancelAuthCode();
-  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  ASSERT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
 
   // Correctly stop service.
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, SignInStatus) {
+TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   PrefService* const prefs = profile()->GetPrefs();
 
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
   EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
-  prefs->SetBoolean(prefs::kArcEnabled, true);
+  ASSERT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
 
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
+  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
 
   // Emulate to accept the terms of service.
@@ -355,23 +361,32 @@ TEST_F(ArcSessionManagerTest, SignInStatus) {
   arc_session_manager()->StartArc();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
+
+  // Here, provisining is not yet completed, so kArcSignedIn should be false.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
   EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
+
+  // Emulate successful provisioning.
   arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_TRUE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
+}
+
+TEST_F(ArcSessionManagerTest, Provisioning_Restart) {
+  // Set up the situation that provisioning is successfully done in the
+  // previous session.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
 
   // Second start, no fetching code is expected.
-  arc_session_manager()->Shutdown();
-  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-  EXPECT_TRUE(arc_session_manager()->IsSessionStopped());
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
 
@@ -388,75 +403,26 @@ TEST_F(ArcSessionManagerTest, SignInStatus) {
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, DisabledForDeviceLocalAccount) {
-  PrefService* const prefs = profile()->GetPrefs();
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
-  prefs->SetBoolean(prefs::kArcEnabled, true);
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  arc_session_manager()->StartArc();
-  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-
-  // Create device local account and set it as active.
-  const std::string email = "device-local-account@fake-email.com";
-  TestingProfile::Builder profile_builder;
-  profile_builder.SetProfileName(email);
-  std::unique_ptr<TestingProfile> device_local_profile(profile_builder.Build());
-  const AccountId account_id(AccountId::FromUserEmail(email));
-  GetFakeUserManager()->AddPublicAccountUser(account_id);
-
-  // Remove |profile_| to set the device local account be the primary account.
-  GetFakeUserManager()->RemoveUserFromList(
-      multi_user_util::GetAccountIdFromProfile(profile()));
-  GetFakeUserManager()->LoginUser(account_id);
-
-  // Check that user without GAIA account can't use ARC.
-  device_local_profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  arc_session_manager()->OnPrimaryUserProfilePrepared(
-      device_local_profile.get());
-  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-
-  // Correctly stop service.
-  arc_session_manager()->Shutdown();
-}
-
-TEST_F(ArcSessionManagerTest, DisabledForNonPrimaryProfile) {
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  arc_session_manager()->StartArc();
-  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-
-  // Create a second profile and set it as the active profile.
-  const std::string email = "test@example.com";
-  TestingProfile::Builder profile_builder;
-  profile_builder.SetProfileName(email);
-  std::unique_ptr<TestingProfile> second_profile(profile_builder.Build());
-  const AccountId account_id(AccountId::FromUserEmail(email));
-  GetFakeUserManager()->AddUser(account_id);
-  GetFakeUserManager()->SwitchActiveUser(account_id);
-  second_profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-
-  // Check that non-primary user can't use ARC.
-  EXPECT_FALSE(chromeos::ProfileHelper::IsPrimaryProfile(second_profile.get()));
-  EXPECT_FALSE(ArcAppListPrefs::Get(second_profile.get()));
-
-  arc_session_manager()->Shutdown();
-}
-
-TEST_F(ArcSessionManagerTest, RemoveDataFolder) {
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
-
-  // Starting session manager with prefs::kArcEnabled off does not automatically
-  // remove Android's data folder.
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  EXPECT_FALSE(
+TEST_F(ArcSessionManagerTest, RemoveDataDir) {
+  // Emulate the situation where the initial Google Play Store enabled
+  // preference is false for managed user, i.e., data dir is being removed at
+  // beginning.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RemoveArcData();
+  EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-  EXPECT_EQ(ArcSessionManager::State::STOPPED,
+  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
             arc_session_manager()->state());
+
   // Enable ARC. Data is removed asyncronously. At this moment session manager
   // should be in REMOVING_DATA_DIR state.
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  // Data should still not be removed.
+  arc_session_manager()->RequestEnable();
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
+            arc_session_manager()->state());
+  // Wait until data is removed.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
@@ -474,39 +440,40 @@ TEST_F(ArcSessionManagerTest, RemoveDataFolder) {
   // Request should persist.
   ASSERT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+}
 
-  // Emulate next sign-in. Data should be removed first and ARC started after.
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+TEST_F(ArcSessionManagerTest, RemoveDataDir_Restart) {
+  // Emulate second sign-in. Data should be removed first and ARC started after.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcDataRemoveRequested, true);
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-
   ASSERT_TRUE(
       WaitForDataRemoved(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE));
-
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-
-  arc_session_manager()->StartArc();
-  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, RemoveDataFolder_Managed) {
+TEST_F(ArcSessionManagerTest, RemoveDataDir_Managed) {
   // Set ARC to be managed and disabled.
   profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
                                                      new base::Value(false));
 
   // Starting session manager with prefs::kArcEnabled off in a managed profile
   // does automatically remove Android's data folder.
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->StartPreferenceHandler();
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
 }
 
 TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
   arc_session_manager()->StartArc();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
@@ -557,10 +524,11 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
     prefs->SetManagedPref(prefs::kArcLocationServiceEnabled,
                           location_service_pref_value().DeepCopy());
   }
-
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
 
   // Terms of Service are skipped if both ArcBackupRestoreEnabled and
   // ArcLocationServiceEnabled are managed.
@@ -622,8 +590,8 @@ class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
 };
 
 TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Replace chrome::AttemptUserExit() for testing.
@@ -709,7 +677,8 @@ class ArcSessionOobeOptInNegotiatorTest
           prefs::kArcEnabled, new base::FundamentalValue(true));
     }
 
-    arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+    arc_session_manager()->SetProfile(profile());
+    arc_session_manager()->StartPreferenceHandler();
   }
 
   void TearDown() override {
@@ -756,9 +725,9 @@ class ArcSessionOobeOptInNegotiatorTest
   }
 
   void Show() override {
-    // To match ArcTermsOfServiceScreenHandler logic where prefs::kArcEnabled is
-    // set to true on showing UI.
-    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+    // To match ArcTermsOfServiceScreenHandler logic where Google Play Store
+    // enabled preferencee is set to true on showing UI.
+    SetArcPlayStoreEnabledForProfile(profile(), true);
   }
 
   void Hide() override {}

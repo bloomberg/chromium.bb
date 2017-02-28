@@ -386,21 +386,15 @@ bool ArcSessionManager::IsAllowed() const {
   return profile_ != nullptr;
 }
 
-void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
+void ArcSessionManager::SetProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile && profile != profile_);
+  DCHECK(IsArcAllowedForProfile(profile));
 
+  // TODO(hidehiko): Remove this condition, and following Shutdown().
+  // Do not expect that SetProfile() is called for various Profile instances.
+  // At the moment, it is used for testing purpose.
+  DCHECK(profile != profile_);
   Shutdown();
-
-  if (!IsArcAllowedForProfile(profile))
-    return;
-
-  // TODO(khmel): Move this to IsArcAllowedForProfile.
-  if (policy_util::IsArcDisabledForEnterprise() &&
-      policy_util::IsAccountManaged(profile)) {
-    VLOG(2) << "Enterprise users are not supported in ARC.";
-    return;
-  }
 
   profile_ = profile;
 
@@ -417,53 +411,24 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
       !IsArcKioskMode()) {
     DCHECK(!support_host_);
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
-    support_host_->SetArcManaged(
-        IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
     support_host_->AddObserver(this);
   }
 
   DCHECK_EQ(State::NOT_INITIALIZED, state_);
   SetState(State::STOPPED);
 
-  context_.reset(new ArcAuthContext(profile_));
+  context_ = base::MakeUnique<ArcAuthContext>(profile_);
 
   if (!g_disable_ui_for_testing ||
       g_enable_check_android_management_for_testing) {
     ArcAndroidManagementChecker::StartClient();
   }
 
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kArcEnabled,
-      base::Bind(&ArcSessionManager::OnOptInPreferenceChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
-
   // Chrome may be shut down before completing ARC data removal.
   // In such a case, start removing the data now.
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
     VLOG(1) << "ARC data removal requested in previous session.";
     RemoveArcData();
-  }
-
-  if (IsArcPlayStoreEnabledForProfile(profile_)) {
-    VLOG(1) << "ARC is already enabled.";
-    DCHECK(!enable_requested_);
-    RequestEnable();
-  } else {
-    if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_)) {
-      // All users that can disable ARC by themselves will have the
-      // |kARcDataRemoveRequested| pref set, so we don't need to eagerly remove
-      // the data for that case.
-      // For managed users, the preference can change when the Profile object is
-      // not alive, so we still need to check it here in case it was disabled to
-      // ensure that the data is deleted in case it was disabled between
-      // launches.
-      VLOG(1) << "ARC is initially disabled for managed profile. "
-              << "Removing data.";
-      RemoveArcData();
-    }
-    PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
-    OnIsSyncingChanged();
   }
 }
 
@@ -511,6 +476,46 @@ void ArcSessionManager::StopArc() {
   ShutdownSession();
   if (support_host_)
     support_host_->Close();
+}
+
+void ArcSessionManager::StartPreferenceHandler() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile_);
+
+  // Start observing Google Play Store enabled preference.
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kArcEnabled,
+      base::Bind(&ArcSessionManager::OnOptInPreferenceChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  // Set initial managed state to ArcSupportHost to update the message.
+  if (support_host_) {
+    support_host_->SetArcManaged(
+        IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
+  }
+
+  // Update the state based on the initial Google Play Store enabled value.
+  if (IsArcPlayStoreEnabledForProfile(profile_)) {
+    VLOG(1) << "ARC is already enabled.";
+    DCHECK(!enable_requested_);
+    RequestEnable();
+  } else {
+    if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_)) {
+      // All users that can disable ARC by themselves will have the
+      // |kARcDataRemoveRequested| pref set, so we don't need to eagerly remove
+      // the data for that case.
+      // For managed users, the preference can change when the Profile object is
+      // not alive, so we still need to check it here in case it was disabled to
+      // ensure that the data is deleted in case it was disabled between
+      // launches.
+      VLOG(1) << "ARC is initially disabled for managed profile. "
+              << "Removing data.";
+      RemoveArcData();
+    }
+    PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
+    OnIsSyncingChanged();
+  }
 }
 
 void ArcSessionManager::OnOptInPreferenceChanged() {

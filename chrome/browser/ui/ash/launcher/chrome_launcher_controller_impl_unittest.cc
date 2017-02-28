@@ -2136,15 +2136,9 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
   SendListOfArcApps();
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 
-  // Disable/Enable ARC should persist pin state.
+  // Opt-Out/Opt-In remove item from the shelf.
   launcher_controller_->PinAppWithID(arc_app_id);
   EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
-  arc::ArcSessionManager::Get()->Shutdown();
-  EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
-  arc::ArcSessionManager::Get()->OnPrimaryUserProfilePrepared(profile());
-  EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
-
-  // Opt-Out/Opt-In remove item from the shelf.
   EnableArc(false);
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
   EnableArc(true);

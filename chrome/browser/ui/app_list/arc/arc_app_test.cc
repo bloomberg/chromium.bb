@@ -86,7 +86,8 @@ void ArcAppTest::SetUp(Profile* profile) {
           base::Bind(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
   arc::ArcSessionManager::DisableUIForTesting();
-  arc_session_manager_->OnPrimaryUserProfilePrepared(profile_);
+  arc_session_manager_->SetProfile(profile_);
+  arc_session_manager_->StartPreferenceHandler();
 
   arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
   DCHECK(arc_app_list_pref_);
