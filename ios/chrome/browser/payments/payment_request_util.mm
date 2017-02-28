@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/payments/payment_request_util.h"
 
+#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -19,15 +20,17 @@
 
 namespace payment_request_util {
 
-NSString* NameLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
+NSString* GetNameLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
   return base::SysUTF16ToNSString(
       profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
                        GetApplicationContext()->GetApplicationLocale()));
 }
 
-NSString* AddressLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
-  // Name, company, and country are not included in the shipping address label.
+NSString* GetAddressLabelFromAutofillProfile(
+    autofill::AutofillProfile* profile) {
+  // Name and country are not included in the shipping address label.
   std::vector<autofill::ServerFieldType> label_fields;
+  label_fields.push_back(autofill::COMPANY_NAME);
   label_fields.push_back(autofill::ADDRESS_HOME_LINE1);
   label_fields.push_back(autofill::ADDRESS_HOME_LINE2);
   label_fields.push_back(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY);
@@ -36,19 +39,24 @@ NSString* AddressLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
   label_fields.push_back(autofill::ADDRESS_HOME_ZIP);
   label_fields.push_back(autofill::ADDRESS_HOME_SORTING_CODE);
 
-  return base::SysUTF16ToNSString(profile->ConstructInferredLabel(
+  base::string16 label = profile->ConstructInferredLabel(
       label_fields, label_fields.size(),
-      GetApplicationContext()->GetApplicationLocale()));
+      GetApplicationContext()->GetApplicationLocale());
+  return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
 }
 
-NSString* PhoneNumberLabelFromAutofillProfile(
+NSString* GetPhoneNumberLabelFromAutofillProfile(
     autofill::AutofillProfile* profile) {
-  return base::SysUTF16ToNSString(profile->GetInfo(
-      autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
-      GetApplicationContext()->GetApplicationLocale()));
+  base::string16 label = profile->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
+  return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
 }
 
-web::PaymentAddress PaymentAddressFromAutofillProfile(
+NSString* GetEmailLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
+  base::string16 label = profile->GetRawInfo(autofill::EMAIL_ADDRESS);
+  return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
+}
+
+web::PaymentAddress GetPaymentAddressFromAutofillProfile(
     autofill::AutofillProfile* profile) {
   web::PaymentAddress address;
   address.country = profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY);

@@ -8,17 +8,18 @@
 
 #import "base/mac/foundation_util.h"
 #include "components/grit/components_scaled_resources.h"
+#import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/storage_switch_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/account_control_item.h"
@@ -250,6 +251,29 @@ const CGFloat kHorizontalImageFixedSize = 40;
   priceItem4.notification = @"Should get clipped too";
   priceItem4.price = @"USD $1,000,000,000.00";
   [model addItem:priceItem4 toSectionWithIdentifier:SectionIdentifierPayments];
+
+  AutofillProfileItem* profileItem1 = [[[AutofillProfileItem alloc]
+      initWithType:ItemTypePaymentsDynamicHeight] autorelease];
+  profileItem1.name = @"Profile Name gets wrapped if it's too long";
+  profileItem1.address = @"Profile Address also gets wrapped if it's too long";
+  profileItem1.phoneNumber = @"123-456-7890";
+  profileItem1.email = @"foo@bar.com";
+  profileItem1.notification = @"Some fields are missing";
+  [model addItem:profileItem1
+      toSectionWithIdentifier:SectionIdentifierPayments];
+  AutofillProfileItem* profileItem2 = [[[AutofillProfileItem alloc]
+      initWithType:ItemTypePaymentsDynamicHeight] autorelease];
+  profileItem1.name = @"All fields are optional";
+  profileItem2.phoneNumber = @"123-456-7890";
+  profileItem2.notification = @"Some fields are missing";
+  [model addItem:profileItem2
+      toSectionWithIdentifier:SectionIdentifierPayments];
+  AutofillProfileItem* profileItem3 = [[[AutofillProfileItem alloc]
+      initWithType:ItemTypePaymentsDynamicHeight] autorelease];
+  profileItem3.address = @"All fields are optional";
+  profileItem3.email = @"foo@bar.com";
+  [model addItem:profileItem3
+      toSectionWithIdentifier:SectionIdentifierPayments];
 
   // Account cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountCell];

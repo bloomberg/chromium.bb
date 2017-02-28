@@ -10,8 +10,8 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
-#import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_view_controller_actions.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
@@ -30,9 +30,11 @@
 #error "This file requires ARC support."
 #endif
 
-using payment_request_util::NameLabelFromAutofillProfile;
-using payment_request_util::AddressLabelFromAutofillProfile;
-using payment_request_util::PhoneNumberLabelFromAutofillProfile;
+namespace {
+using ::payment_request_util::GetNameLabelFromAutofillProfile;
+using ::payment_request_util::GetAddressLabelFromAutofillProfile;
+using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
+}  // namespace
 
 NSString* const kShippingAddressSelectionCollectionViewID =
     @"kShippingAddressSelectionCollectionViewID";
@@ -62,7 +64,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PaymentRequest* _paymentRequest;
 
   // The currently selected item. May be nil.
-  __weak ShippingAddressItem* _selectedItem;
+  __weak AutofillProfileItem* _selectedItem;
 }
 
 @end
@@ -128,12 +130,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierShippingAddress];
 
   for (const auto& shippingAddress : _paymentRequest->shipping_profiles()) {
-    ShippingAddressItem* item =
-        [[ShippingAddressItem alloc] initWithType:ItemTypeShippingAddress];
+    AutofillProfileItem* item =
+        [[AutofillProfileItem alloc] initWithType:ItemTypeShippingAddress];
     item.accessibilityTraits |= UIAccessibilityTraitButton;
-    item.name = NameLabelFromAutofillProfile(shippingAddress);
-    item.address = AddressLabelFromAutofillProfile(shippingAddress);
-    item.phoneNumber = PhoneNumberLabelFromAutofillProfile(shippingAddress);
+    item.name = GetNameLabelFromAutofillProfile(shippingAddress);
+    item.address = GetAddressLabelFromAutofillProfile(shippingAddress);
+    item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(shippingAddress);
     if (_paymentRequest->selected_shipping_profile() == shippingAddress) {
       item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
       _selectedItem = item;
@@ -211,8 +213,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
 
     // Update the newly selected cell.
-    ShippingAddressItem* newlySelectedItem =
-        base::mac::ObjCCastStrict<ShippingAddressItem>(item);
+    AutofillProfileItem* newlySelectedItem =
+        base::mac::ObjCCastStrict<AutofillProfileItem>(item);
     newlySelectedItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
     [self reconfigureCellsForItems:@[ newlySelectedItem ]
            inSectionWithIdentifier:SectionIdentifierShippingAddress];

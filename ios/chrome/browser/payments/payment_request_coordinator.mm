@@ -200,7 +200,7 @@ class FullCardRequester
             card.billing_address_id(), _paymentRequest->billing_profiles());
     if (address) {
       paymentResponse.details.billing_address =
-          payment_request_util::PaymentAddressFromAutofillProfile(address);
+          payment_request_util::GetPaymentAddressFromAutofillProfile(address);
     }
   }
 
@@ -357,7 +357,8 @@ class FullCardRequester
   _pendingShippingAddress = shippingAddress;
 
   web::PaymentAddress address =
-      payment_request_util::PaymentAddressFromAutofillProfile(shippingAddress);
+      payment_request_util::GetPaymentAddressFromAutofillProfile(
+          shippingAddress);
   [_delegate paymentRequestCoordinator:self didSelectShippingAddress:address];
 }
 

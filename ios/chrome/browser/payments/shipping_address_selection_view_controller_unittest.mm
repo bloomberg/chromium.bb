@@ -9,8 +9,8 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
-#import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
@@ -76,16 +76,16 @@ TEST_F(ShippingAddressSelectionViewControllerTest, TestModel) {
   id item = GetCollectionViewItem(0, 0);
   EXPECT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
 
-  // The next two items should be of type ShippingAddressItem. The first one
+  // The next two items should be of type AutofillProfileItem. The first one
   // should appear to be selected.
   item = GetCollectionViewItem(0, 1);
-  ASSERT_TRUE([item isMemberOfClass:[ShippingAddressItem class]]);
-  ShippingAddressItem* shipping_address_item = item;
+  ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
+  AutofillProfileItem* shipping_address_item = item;
   EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark,
             shipping_address_item.accessoryType);
 
   item = GetCollectionViewItem(0, 2);
-  EXPECT_TRUE([item isMemberOfClass:[ShippingAddressItem class]]);
+  EXPECT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
   shipping_address_item = item;
   EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             shipping_address_item.accessoryType);

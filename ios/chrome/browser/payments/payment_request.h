@@ -57,7 +57,7 @@ class PaymentRequest {
   // Returns the available autofill profiles for this user to be used as
   // shipping profiles.
   const std::vector<autofill::AutofillProfile*>& shipping_profiles() const {
-    return profiles_;
+    return shipping_profiles_;
   }
 
   // Returns the currently selected shipping profile for this PaymentRequest
@@ -72,9 +72,26 @@ class PaymentRequest {
   }
 
   // Returns the available autofill profiles for this user to be used as
+  // contact profiles.
+  const std::vector<autofill::AutofillProfile*>& contact_profiles() const {
+    return contact_profiles_;
+  }
+
+  // Returns the currently selected contact profile for this PaymentRequest
+  // flow if there is one. Returns nullptr if there is no selected profile.
+  autofill::AutofillProfile* selected_contact_profile() const {
+    return selected_contact_profile_;
+  }
+
+  // Sets the currently selected contact profile for this PaymentRequest flow.
+  void set_selected_contact_profile(autofill::AutofillProfile* profile) {
+    selected_contact_profile_ = profile;
+  }
+
+  // Returns the available autofill profiles for this user to be used as
   // billing profiles.
   const std::vector<autofill::AutofillProfile*>& billing_profiles() const {
-    return profiles_;
+    return shipping_profiles_;
   }
 
   // Returns the available autofill credit cards for this user that match a
@@ -134,14 +151,19 @@ class PaymentRequest {
   // once and owned here. Whenever profiles are requested a vector of pointers
   // to these copies are returned.
   std::vector<std::unique_ptr<autofill::AutofillProfile>> profile_cache_;
-  std::vector<autofill::AutofillProfile*> profiles_;
+
+  std::vector<autofill::AutofillProfile*> shipping_profiles_;
   autofill::AutofillProfile* selected_shipping_profile_;
+
+  std::vector<autofill::AutofillProfile*> contact_profiles_;
+  autofill::AutofillProfile* selected_contact_profile_;
 
   // Credit cards returnd by the Data Manager may change due to (e.g.)
   // sync events, meaning PaymentRequest may outlive them. Therefore, credit
   // cards are fetched once and owned here. Whenever credit cards are requested
   // a vector of pointers to these copies are returned.
   std::vector<std::unique_ptr<autofill::CreditCard>> credit_card_cache_;
+
   std::vector<autofill::CreditCard*> credit_cards_;
   autofill::CreditCard* selected_credit_card_;
 
