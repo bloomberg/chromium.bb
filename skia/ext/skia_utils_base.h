@@ -5,9 +5,12 @@
 #ifndef SKIA_EXT_SKIA_UTILS_BASE_H_
 #define SKIA_EXT_SKIA_UTILS_BASE_H_
 
-#include "base/pickle.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
-#include "third_party/skia/include/core/SkSurfaceProps.h"
+
+namespace base {
+class Pickle;
+class PickleIterator;
+}
 
 namespace skia {
 
@@ -35,10 +38,6 @@ SK_API bool WriteSkFontIdentity(
 // Return true if str can be written into the request pickle.
 SK_API bool WriteSkFontStyle(base::Pickle* pickle, SkFontStyle style);
 
-// Determine the default pixel geometry (for LCD) by querying the font host
-SK_API SkPixelGeometry ComputeDefaultPixelGeometry();
-
 }  // namespace skia
 
 #endif  // SKIA_EXT_SKIA_UTILS_BASE_H_
-
