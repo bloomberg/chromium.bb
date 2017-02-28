@@ -17,10 +17,9 @@ using content::BrowserThread;
 
 namespace {
 
-bool ShouldShowDialog(const net::CryptoModule* module) {
+bool ShouldShowDialog(PK11SlotInfo* slot) {
   // The wincx arg is unused since we don't call PK11_SetIsLoggedInFunc.
-  return (PK11_NeedLogin(module->os_module_handle()) &&
-          !PK11_IsLoggedIn(module->os_module_handle(), NULL /* wincx */));
+  return (PK11_NeedLogin(slot) && !PK11_IsLoggedIn(slot, NULL /* wincx */));
 }
 
 // Basically an asynchronous implementation of NSS's PK11_DoPassword.
@@ -28,7 +27,7 @@ bool ShouldShowDialog(const net::CryptoModule* module) {
 // GotPassword for what is yet unimplemented.
 class SlotUnlocker {
  public:
-  SlotUnlocker(const net::CryptoModuleList& modules,
+  SlotUnlocker(std::vector<crypto::ScopedPK11Slot> modules,
                chrome::CryptoModulePasswordReason reason,
                const net::HostPortPair& server,
                gfx::NativeWindow parent,
@@ -41,7 +40,7 @@ class SlotUnlocker {
   void Done();
 
   size_t current_;
-  net::CryptoModuleList modules_;
+  std::vector<crypto::ScopedPK11Slot> modules_;
   chrome::CryptoModulePasswordReason reason_;
   net::HostPortPair server_;
   gfx::NativeWindow parent_;
@@ -49,13 +48,13 @@ class SlotUnlocker {
   PRBool retry_;
 };
 
-SlotUnlocker::SlotUnlocker(const net::CryptoModuleList& modules,
+SlotUnlocker::SlotUnlocker(std::vector<crypto::ScopedPK11Slot> modules,
                            chrome::CryptoModulePasswordReason reason,
                            const net::HostPortPair& server,
                            gfx::NativeWindow parent,
                            const base::Closure& callback)
     : current_(0),
-      modules_(modules),
+      modules_(std::move(modules)),
       reason_(reason),
       server_(server),
       parent_(parent),
@@ -70,11 +69,8 @@ void SlotUnlocker::Start() {
   for (; current_ < modules_.size(); ++current_) {
     if (ShouldShowDialog(modules_[current_].get())) {
       ShowCryptoModulePasswordDialog(
-          modules_[current_]->GetTokenName(),
-          retry_,
-          reason_,
-          server_.host(),
-          parent_,
+          PK11_GetTokenName(modules_[current_].get()), retry_, reason_,
+          server_.host(), parent_,
           base::Bind(&SlotUnlocker::GotPassword, base::Unretained(this)));
       return;
     }
@@ -95,8 +91,8 @@ void SlotUnlocker::GotPassword(const std::string& password) {
   }
 
   // TODO(mattm): handle protectedAuthPath
-  SECStatus rv = PK11_CheckUserPassword(modules_[current_]->os_module_handle(),
-                                        password.c_str());
+  SECStatus rv =
+      PK11_CheckUserPassword(modules_[current_].get(), password.c_str());
   if (rv == SECWouldBlock) {
     // Incorrect password.  Try again.
     retry_ = PR_TRUE;
@@ -123,7 +119,7 @@ void SlotUnlocker::Done() {
 
 namespace chrome {
 
-void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
+void UnlockSlotsIfNecessary(std::vector<crypto::ScopedPK11Slot> modules,
                             chrome::CryptoModulePasswordReason reason,
                             const net::HostPortPair& server,
                             gfx::NativeWindow parent,
@@ -131,7 +127,8 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < modules.size(); ++i) {
     if (ShouldShowDialog(modules[i].get())) {
-      (new SlotUnlocker(modules, reason, server, parent, callback))->Start();
+      (new SlotUnlocker(std::move(modules), reason, server, parent, callback))
+          ->Start();
       return;
     }
   }
@@ -143,10 +140,10 @@ void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
                                const net::HostPortPair& server,
                                gfx::NativeWindow parent,
                                const base::Closure& callback) {
-  net::CryptoModuleList modules;
-  modules.push_back(net::CryptoModule::CreateFromHandle(
-      cert->os_cert_handle()->slot));
-  UnlockSlotsIfNecessary(modules, reason, server, parent, callback);
+  std::vector<crypto::ScopedPK11Slot> modules;
+  modules.push_back(
+      crypto::ScopedPK11Slot(PK11_ReferenceSlot(cert->os_cert_handle()->slot)));
+  UnlockSlotsIfNecessary(std::move(modules), reason, server, parent, callback);
 }
 
 }  // namespace chrome

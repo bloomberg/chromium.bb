@@ -20,8 +20,6 @@ namespace net {
 
 class CryptoModule;
 
-typedef std::vector<scoped_refptr<CryptoModule> > CryptoModuleList;
-
 class NET_EXPORT CryptoModule
     : public base::RefCountedThreadSafe<CryptoModule> {
  public:

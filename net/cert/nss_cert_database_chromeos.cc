@@ -61,8 +61,9 @@ crypto::ScopedPK11Slot NSSCertDatabaseChromeOS::GetSystemSlot() const {
   return crypto::ScopedPK11Slot();
 }
 
-void NSSCertDatabaseChromeOS::ListModules(CryptoModuleList* modules,
-                                          bool need_rw) const {
+void NSSCertDatabaseChromeOS::ListModules(
+    std::vector<crypto::ScopedPK11Slot>* modules,
+    bool need_rw) const {
   NSSCertDatabase::ListModules(modules, need_rw);
 
   size_t pre_size = modules->size();

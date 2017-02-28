@@ -140,7 +140,7 @@ crypto::ScopedPK11Slot NSSCertDatabase::GetPrivateSlot() const {
   return crypto::ScopedPK11Slot(PK11_ReferenceSlot(private_slot_.get()));
 }
 
-void NSSCertDatabase::ListModules(CryptoModuleList* modules,
+void NSSCertDatabase::ListModules(std::vector<crypto::ScopedPK11Slot>* modules,
                                   bool need_rw) const {
   modules->clear();
 
@@ -157,7 +157,8 @@ void NSSCertDatabase::ListModules(CryptoModuleList* modules,
 
   PK11SlotListElement* slot_element = PK11_GetFirstSafe(slot_list.get());
   while (slot_element) {
-    modules->push_back(CryptoModule::CreateFromHandle(slot_element->slot));
+    modules->push_back(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(slot_element->slot)));
     slot_element = PK11_GetNextSafe(slot_list.get(), slot_element,
                                     PR_FALSE);  // restart
   }

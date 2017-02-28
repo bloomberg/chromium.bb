@@ -30,9 +30,6 @@ class TaskRunner;
 
 namespace net {
 
-class CryptoModule;
-typedef std::vector<scoped_refptr<CryptoModule> > CryptoModuleList;
-
 // Provides functions to manipulate the NSS certificate stores.
 // Forwards notifications about certificate changes to the global CertDatabase
 // singleton.
@@ -146,8 +143,8 @@ class NET_EXPORT NSSCertDatabase {
 
   // Get all modules.
   // If |need_rw| is true, only writable modules will be returned.
-  // TODO(mattm): come up with better alternative to CryptoModuleList.
-  virtual void ListModules(CryptoModuleList* modules, bool need_rw) const;
+  virtual void ListModules(std::vector<crypto::ScopedPK11Slot>* modules,
+                           bool need_rw) const;
 
   // Import certificates and private keys from PKCS #12 blob into the module.
   // If |is_extractable| is false, mark the private key as being unextractable
