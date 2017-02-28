@@ -172,7 +172,7 @@ FontPlatformData* FontCache::getFontPlatformData(
     foundResult = result || !addResult.isNewEntry;
   }
 
-  if (!foundResult && alternateFontName != AlternateFontName::NoAlternate &&
+  if (!foundResult && alternateFontName == AlternateFontName::AllowAlternate &&
       creationParams.creationType() == CreateFontByFamily) {
     // We were unable to find a font. We have a small set of fonts that we alias
     // to other names, e.g., Arial/Helvetica, Courier/Courier New, etc. Try
@@ -296,12 +296,21 @@ PassRefPtr<SimpleFontData> FontCache::fontDataFromFontPlatformData(
   return gFontDataCache->get(platformData, shouldRetain, subpixelAscentDescent);
 }
 
-bool FontCache::isPlatformFontAvailable(const FontDescription& fontDescription,
-                                        const AtomicString& family) {
+bool FontCache::isPlatformFamilyMatchAvailable(
+    const FontDescription& fontDescription,
+    const AtomicString& family) {
   return getFontPlatformData(
       fontDescription,
       FontFaceCreationParams(adjustFamilyNameToAvoidUnsupportedFonts(family)),
       AlternateFontName::NoAlternate);
+}
+
+bool FontCache::isPlatformFontUniqueNameMatchAvailable(
+    const FontDescription& fontDescription,
+    const AtomicString& uniqueFontName) {
+  return getFontPlatformData(fontDescription,
+                             FontFaceCreationParams(uniqueFontName),
+                             AlternateFontName::LocalUniqueFace);
 }
 
 String FontCache::firstAvailableOrFirst(const String& families) {

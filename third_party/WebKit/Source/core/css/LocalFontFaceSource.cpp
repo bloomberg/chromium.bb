@@ -13,16 +13,14 @@ namespace blink {
 
 bool LocalFontFaceSource::isLocalFontAvailable(
     const FontDescription& fontDescription) {
-  return FontCache::fontCache()->isPlatformFontAvailable(fontDescription,
-                                                         m_fontName);
+  return FontCache::fontCache()->isPlatformFontUniqueNameMatchAvailable(
+      fontDescription, m_fontName);
 }
 
 PassRefPtr<SimpleFontData> LocalFontFaceSource::createFontData(
     const FontDescription& fontDescription) {
-  // We don't want to check alternate font family names here, so pass true as
-  // the checkingAlternateName parameter.
   RefPtr<SimpleFontData> fontData = FontCache::fontCache()->getFontData(
-      fontDescription, m_fontName, AlternateFontName::NoAlternate);
+      fontDescription, m_fontName, AlternateFontName::LocalUniqueFace);
   m_histograms.record(fontData.get());
   return fontData.release();
 }

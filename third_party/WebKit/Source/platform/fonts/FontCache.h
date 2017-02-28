@@ -69,7 +69,12 @@ class SimpleFontData;
 
 enum ShouldRetain { Retain, DoNotRetain };
 enum PurgeSeverity { PurgeIfNeeded, ForcePurge };
-enum class AlternateFontName { AllowAlternate, NoAlternate, LastResort };
+enum class AlternateFontName {
+  AllowAlternate,
+  NoAlternate,
+  LocalUniqueFace,
+  LastResort
+};
 
 class PLATFORM_EXPORT FontCache {
   friend class FontCachePurgePreventer;
@@ -101,7 +106,22 @@ class PLATFORM_EXPORT FontCache {
   PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&,
                                                        ShouldRetain = Retain);
   SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
-  bool isPlatformFontAvailable(const FontDescription&, const AtomicString&);
+
+  // Should be used in determining whether family names listed in font-family:
+  // ... are available locally. Only returns true if family name matches.
+  bool isPlatformFamilyMatchAvailable(const FontDescription&,
+                                      const AtomicString& family);
+
+  // Should be used in determining whether the <abc> argument to local in
+  // @font-face { ... src: local(<abc>) } are available locally, which should
+  // match Postscript name or full font name. Compare
+  // https://drafts.csswg.org/css-fonts-3/#src-desc
+  // TODO crbug.com/627143 complete this and actually look at the right
+  // namerecords.
+  bool isPlatformFontUniqueNameMatchAvailable(
+      const FontDescription&,
+      const AtomicString& uniqueFontName);
+
   static String firstAvailableOrFirst(const String&);
 
   // Returns the ShapeCache instance associated with the given cache key.

@@ -347,6 +347,20 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
     FontWeight variantWeight;
     FontStretch variantStretch;
 
+    // TODO: crbug.com/627143 LocalFontFaceSource.cpp, which implements
+    // retrieving src: local() font data uses getFontData, which in turn comes
+    // here, to retrieve fonts from the cache and specifies the argument to
+    // local() as family name. So we do not match by full font name or
+    // postscript name as the spec says:
+    // https://drafts.csswg.org/css-fonts-3/#src-desc
+
+    // Prevent one side effect of the suffix translation below where when
+    // matching local("Roboto Regular") it tries to find the closest match even
+    // though that can be a bold font in case of Roboto Bold.
+    if (alternateFontName == AlternateFontName::LocalUniqueFace) {
+      return nullptr;
+    }
+
     if (alternateFontName == AlternateFontName::LastResort) {
       if (!tf)
         return nullptr;

@@ -152,15 +152,15 @@ void CSSFontSelector::willUseRange(const FontDescription& fontDescription,
     face->willUseRange(fontDescription, rangeSet);
 }
 
-bool CSSFontSelector::isPlatformFontAvailable(
+bool CSSFontSelector::isPlatformFamilyMatchAvailable(
     const FontDescription& fontDescription,
     const AtomicString& passedFamily) {
   AtomicString family = familyNameFromSettings(m_genericFontFamilySettings,
                                                fontDescription, passedFamily);
   if (family.isEmpty())
     family = passedFamily;
-  return FontCache::fontCache()->isPlatformFontAvailable(fontDescription,
-                                                         family);
+  return FontCache::fontCache()->isPlatformFamilyMatchAvailable(fontDescription,
+                                                                family);
 }
 
 void CSSFontSelector::updateGenericFontFamilySettings(Document& document) {

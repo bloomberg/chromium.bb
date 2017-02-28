@@ -60,8 +60,8 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void willUseRange(const FontDescription&,
                     const AtomicString& familyName,
                     const FontDataForRangeSet&) override;
-  bool isPlatformFontAvailable(const FontDescription&,
-                               const AtomicString& family);
+  bool isPlatformFamilyMatchAvailable(const FontDescription&,
+                                      const AtomicString& family);
 
   void fontFaceInvalidated();
 

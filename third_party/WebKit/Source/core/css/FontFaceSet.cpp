@@ -427,8 +427,8 @@ bool FontFaceSet::check(const String& fontString,
     return true;
   for (const FontFamily* f = &font.getFontDescription().family(); f;
        f = f->next()) {
-    if (fontSelector->isPlatformFontAvailable(font.getFontDescription(),
-                                              f->family()))
+    if (fontSelector->isPlatformFamilyMatchAvailable(font.getFontDescription(),
+                                                     f->family()))
       return true;
   }
   return false;
