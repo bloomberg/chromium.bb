@@ -572,11 +572,6 @@ void StyleEngine::collectScopedStyleFeaturesTo(RuleFeatureSet& features) const {
     document().scopedStyleResolver()->collectFeaturesTo(
         features, visitedSharedStyleSheetContents);
   for (TreeScope* treeScope : m_activeTreeScopes) {
-    // When creating StyleResolver, dirty treescopes might not be processed.
-    // So some active treescopes might not have a scoped style resolver.
-    // In this case, we should skip collectFeatures for the treescopes without
-    // scoped style resolvers. When invoking updateActiveStyleSheets,
-    // the treescope's features will be processed.
     if (ScopedStyleResolver* resolver = treeScope->scopedStyleResolver())
       resolver->collectFeaturesTo(features, visitedSharedStyleSheetContents);
   }
