@@ -2232,7 +2232,7 @@ static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   assert(bs == xd->mi[0]->mbmi.sb_type);
 
-  if (xd->lossless[0]) {
+  if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
     choose_smallest_tx_size(cpi, x, rd_stats, ref_best_rd, bs);
   } else if (cpi->sf.tx_size_search_method == USE_LARGESTALL) {
     choose_largest_tx_size(cpi, x, rd_stats, ref_best_rd, bs);
