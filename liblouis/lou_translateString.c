@@ -3581,7 +3581,7 @@ insertEmphasesAt(const int at)
 
 	/*   symbol bits   */
 	for(i = 4; i >= 0; i--)
-		if(transNoteBuffer[at] & (TRANSNOTE_MASK << ((i - 5) * 4)))
+		if(transNoteBuffer[at] & (TRANSNOTE_MASK << (i * 4)))
 			insertEmphasisSymbol(
 				transNoteBuffer, at, emph6Rule + i, TRANSNOTE_SYMBOL << (i * 4));
 	for(i = 4; i >= 0; i--)
