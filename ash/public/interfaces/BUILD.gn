@@ -7,7 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "accelerator_controller.mojom",
-    "ash_window_type.mojom",
     "cast_config.mojom",
     "constants.mojom",
     "locale.mojom",
