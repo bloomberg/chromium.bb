@@ -18,7 +18,7 @@ class WebContents;
 }
 
 namespace gfx {
-enum class VectorIconId;
+struct VectorIcon;
 }
 
 // This model provides data (icon ids and tooltip) for the content setting icons
@@ -72,9 +72,9 @@ class ContentSettingImageModel {
  protected:
   ContentSettingImageModel();
 
-  void set_icon_by_vector_id(gfx::VectorIconId id, gfx::VectorIconId badge_id) {
-    icon_id_ = id;
-    icon_badge_id_ = badge_id;
+  void set_icon(const gfx::VectorIcon& icon, const gfx::VectorIcon& badge) {
+    icon_ = &icon;
+    icon_badge_ = &badge;
   }
 
   void set_visible(bool visible) { is_visible_ = visible; }
@@ -86,8 +86,8 @@ class ContentSettingImageModel {
  private:
   bool is_visible_;
 
-  gfx::VectorIconId icon_id_;
-  gfx::VectorIconId icon_badge_id_;
+  const gfx::VectorIcon* icon_;
+  const gfx::VectorIcon* icon_badge_;
   int explanatory_string_id_;
   base::string16 tooltip_;
 

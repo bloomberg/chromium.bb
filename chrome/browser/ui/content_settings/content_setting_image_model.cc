@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -15,16 +16,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 
 using content::WebContents;
 
@@ -100,30 +99,29 @@ namespace {
 
 struct ContentSettingsImageDetails {
   ContentSettingsType type;
-  gfx::VectorIconId icon_id;
+  const gfx::VectorIcon& icon;
   int blocked_tooltip_id;
   int blocked_explanatory_text_id;
   int accessed_tooltip_id;
 };
 
 const ContentSettingsImageDetails kImageDetails[] = {
-    {CONTENT_SETTINGS_TYPE_COOKIES, gfx::VectorIconId::COOKIE,
-     IDS_BLOCKED_COOKIES_TITLE, 0, IDS_ACCESSED_COOKIES_TITLE},
-    {CONTENT_SETTINGS_TYPE_IMAGES, gfx::VectorIconId::IMAGE,
-     IDS_BLOCKED_IMAGES_TITLE, 0, 0},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, gfx::VectorIconId::CODE,
-     IDS_BLOCKED_JAVASCRIPT_TITLE, 0, 0},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, gfx::VectorIconId::EXTENSION,
-     IDS_BLOCKED_PLUGINS_MESSAGE, IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT, 0},
-    {CONTENT_SETTINGS_TYPE_POPUPS, gfx::VectorIconId::WEB,
-     IDS_BLOCKED_POPUPS_TOOLTIP, IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT, 0},
-    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, gfx::VectorIconId::MIXED_CONTENT,
+    {CONTENT_SETTINGS_TYPE_COOKIES, kCookieIcon, IDS_BLOCKED_COOKIES_TITLE, 0,
+     IDS_ACCESSED_COOKIES_TITLE},
+    {CONTENT_SETTINGS_TYPE_IMAGES, kImageIcon, IDS_BLOCKED_IMAGES_TITLE, 0, 0},
+    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, kCodeIcon, IDS_BLOCKED_JAVASCRIPT_TITLE,
+     0, 0},
+    {CONTENT_SETTINGS_TYPE_PLUGINS, kExtensionIcon, IDS_BLOCKED_PLUGINS_MESSAGE,
+     IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT, 0},
+    {CONTENT_SETTINGS_TYPE_POPUPS, kWebIcon, IDS_BLOCKED_POPUPS_TOOLTIP,
+     IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT, 0},
+    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, kMixedContentIcon,
      IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT, 0, 0},
-    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, gfx::VectorIconId::EXTENSION,
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, kExtensionIcon,
      IDS_BLOCKED_PPAPI_BROKER_TITLE, 0, IDS_ALLOWED_PPAPI_BROKER_TITLE},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-     gfx::VectorIconId::FILE_DOWNLOAD, IDS_BLOCKED_DOWNLOAD_TITLE,
-     IDS_BLOCKED_DOWNLOADS_EXPLANATION, IDS_ALLOWED_DOWNLOAD_TITLE},
+    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, kFileDownloadIcon,
+     IDS_BLOCKED_DOWNLOAD_TITLE, IDS_BLOCKED_DOWNLOADS_EXPLANATION,
+     IDS_ALLOWED_DOWNLOAD_TITLE},
 };
 
 // The ordering of the models here influences the order in which icons are
@@ -272,13 +270,13 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     explanation_id = 0;
   }
   set_visible(true);
-  gfx::VectorIconId badge_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+  const gfx::VectorIcon* badge_id = &gfx::kNoneIcon;
   if (type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER)
-    badge_id = gfx::VectorIconId::WARNING_BADGE;
+    badge_id = &kWarningBadgeIcon;
   else if (content_settings->IsContentBlocked(type))
-    badge_id = gfx::VectorIconId::BLOCKED_BADGE;
+    badge_id = &kBlockedBadgeIcon;
 
-  set_icon_by_vector_id(image_details->icon_id, badge_id);
+  set_icon(image_details->icon, *badge_id);
   set_explanatory_string_id(explanation_id);
   DCHECK(tooltip_id);
   set_tooltip(l10n_util::GetStringUTF16(tooltip_id));
@@ -311,9 +309,7 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   usages_state.GetDetailedInfo(nullptr, &state_flags);
   bool allowed =
       !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
-  set_icon_by_vector_id(gfx::VectorIconId::MY_LOCATION,
-                        allowed ? gfx::VectorIconId::VECTOR_ICON_NONE
-                                : gfx::VectorIconId::BLOCKED_BADGE);
+  set_icon(kMyLocationIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(allowed
                                             ? IDS_GEOLOCATION_ALLOWED_TOOLTIP
                                             : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
@@ -351,13 +347,11 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
   int id = IDS_CAMERA_BLOCKED;
   if (state & (TabSpecificContentSettings::MICROPHONE_BLOCKED |
                TabSpecificContentSettings::CAMERA_BLOCKED)) {
-    set_icon_by_vector_id(gfx::VectorIconId::VIDEOCAM,
-                          gfx::VectorIconId::BLOCKED_BADGE);
+    set_icon(ui::kVideocamIcon, kBlockedBadgeIcon);
     if (is_mic)
       id = is_cam ? IDS_MICROPHONE_CAMERA_BLOCKED : IDS_MICROPHONE_BLOCKED;
   } else {
-    set_icon_by_vector_id(gfx::VectorIconId::VIDEOCAM,
-                          gfx::VectorIconId::VECTOR_ICON_NONE);
+    set_icon(ui::kVideocamIcon, gfx::kNoneIcon);
     id = IDS_CAMERA_ACCESSED;
     if (is_mic)
       id = is_cam ? IDS_MICROPHONE_CAMERA_ALLOWED : IDS_MICROPHONE_ACCESSED;
@@ -422,8 +416,7 @@ void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
   if (!content_settings || !content_settings->IsSubresourceBlocked())
     return;
 
-  set_icon_by_vector_id(gfx::VectorIconId::SUBRESOURCE_FILTER_ACTIVE,
-                        gfx::VectorIconId::BLOCKED_BADGE);
+  set_icon(kSubresourceFilterActiveIcon, kBlockedBadgeIcon);
   set_explanatory_string_id(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE);
   set_tooltip(
       l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE));
@@ -463,8 +456,7 @@ void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
 
 ContentSettingRPHImageModel::ContentSettingRPHImageModel()
     : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-  set_icon_by_vector_id(gfx::VectorIconId::PROTOCOL_HANDLER,
-                        gfx::VectorIconId::VECTOR_ICON_NONE);
+  set_icon(ui::kProtocolHandlerIcon, gfx::kNoneIcon);
   set_tooltip(l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
 }
 
@@ -511,9 +503,7 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
   usages_state.GetDetailedInfo(nullptr, &state_flags);
   bool allowed =
       !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
-  set_icon_by_vector_id(gfx::VectorIconId::MIDI,
-                        allowed ? gfx::VectorIconId::VECTOR_ICON_NONE
-                                : gfx::VectorIconId::BLOCKED_BADGE);
+  set_icon(ui::kMidiIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(allowed
                                             ? IDS_MIDI_SYSEX_ALLOWED_TOOLTIP
                                             : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
@@ -529,13 +519,13 @@ gfx::Image ContentSettingImageModel::GetIcon(SkColor nearby_text_color) const {
 #endif
 
   return gfx::Image(
-      gfx::CreateVectorIconWithBadge(icon_id_, 16, icon_color, icon_badge_id_));
+      gfx::CreateVectorIconWithBadge(*icon_, 16, icon_color, *icon_badge_));
 }
 
 ContentSettingImageModel::ContentSettingImageModel()
     : is_visible_(false),
-      icon_id_(gfx::VectorIconId::VECTOR_ICON_NONE),
-      icon_badge_id_(gfx::VectorIconId::VECTOR_ICON_NONE),
+      icon_(&gfx::kNoneIcon),
+      icon_badge_(&gfx::kNoneIcon),
       explanatory_string_id_(0) {}
 
 // static
@@ -587,9 +577,9 @@ size_t ContentSettingImageModel::GetContentSettingImageModelIndexForTesting(
 #if defined(OS_MACOSX)
 bool ContentSettingImageModel::UpdateFromWebContentsAndCheckIfIconChanged(
     content::WebContents* web_contents) {
-  gfx::VectorIconId old_icon = icon_id_;
-  gfx::VectorIconId old_badge_icon = icon_badge_id_;
+  const gfx::VectorIcon* old_icon = icon_;
+  const gfx::VectorIcon* old_badge_icon = icon_badge_;
   UpdateFromWebContents(web_contents);
-  return old_icon != icon_id_ && old_badge_icon != icon_badge_id_;
+  return old_icon != icon_ && old_badge_icon != icon_badge_;
 }
 #endif
