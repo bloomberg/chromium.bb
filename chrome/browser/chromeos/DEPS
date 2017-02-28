@@ -15,7 +15,4 @@ include_rules = [
   "+media/mojo/interfaces",  # For platform verification mojom interface.
   "+mojo/edk/embedder",
   "+ui/ozone/public",
-
-  # Other libraries.
-  "+third_party/libjingle",
 ]

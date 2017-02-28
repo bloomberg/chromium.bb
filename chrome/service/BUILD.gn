@@ -63,7 +63,7 @@ static_library("service") {
     "//net",
     "//printing",
     "//skia",
-    "//third_party/libjingle",
+    "//third_party/webrtc_overrides",
   ]
 
   if (use_cups && !is_chromeos) {

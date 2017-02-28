@@ -23,7 +23,7 @@ include_rules = [
   "+services",
   "-storage/browser",
   "+third_party/hyphen/hyphen.h",
-  "+third_party/libjingle",
+  "+third_party/webrtc_overrides",
   "+v8/include",
   "+v8/src/third_party/vtune",
 ]

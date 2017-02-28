@@ -182,7 +182,7 @@ static_library("protocol") {
 
   public_deps = [
     "//remoting/proto",
-    "//third_party/libjingle",
+    "//third_party/webrtc_overrides",
   ]
   deps = [
     "//base",
@@ -236,7 +236,7 @@ static_library("protocol") {
       ]
     }
 
-    deps += [ "//third_party/libjingle/webrtc:libjingle_webrtc" ]
+    deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
   }
 
   if (enable_remoting_host) {

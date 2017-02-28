@@ -63,7 +63,6 @@ include_rules = [
   "+third_party/angle",
   "+third_party/boringssl/src/include",
   "+third_party/flac",
-  "+third_party/libjingle",
   "+third_party/mozilla",
   "+third_party/ocmock",
   "+third_party/re2",

@@ -473,7 +473,6 @@ target(link_target_type, "renderer") {
     "//third_party/WebKit/public:mojo_bindings",
     "//third_party/boringssl",
     "//third_party/icu",
-    "//third_party/libjingle",
     "//third_party/libyuv",
     "//third_party/webrtc/api/audio_codecs:builtin_audio_decoder_factory",
     "//third_party/widevine/cdm:headers",
@@ -717,7 +716,6 @@ target(link_target_type, "renderer") {
 
     deps += [
       "//crypto",
-      "//third_party/libjingle/webrtc:libjingle_webrtc",
       "//third_party/libvpx",
       "//third_party/opus",
       "//third_party/webrtc/api:libjingle_peerconnection",
@@ -734,6 +732,7 @@ target(link_target_type, "renderer") {
       "//third_party/webrtc/pc:rtc_pc",
       "//third_party/webrtc/stats",
       "//third_party/webrtc/system_wrappers",
+      "//third_party/webrtc_overrides:init_webrtc",
     ]
     if (rtc_use_h264) {
       deps += [ "//third_party/openh264:encoder" ]

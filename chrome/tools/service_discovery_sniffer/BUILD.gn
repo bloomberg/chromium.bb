@@ -21,6 +21,6 @@ executable("service_discovery_sniffer") {
   ]
 
   if (enable_webrtc) {
-    deps += [ "//third_party/libjingle/webrtc:libjingle_webrtc" ]
+    deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
   }
 }

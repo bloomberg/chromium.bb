@@ -1,8 +1,12 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
+group("webrtc_overrides") {
+  public_deps = [
+    ":webrtc",
+  ]
+}
 
 config("jingle_unexported_configs") {
   include_dirs = [
@@ -33,7 +37,7 @@ group("jingle_deps") {
   ]
 }
 
-static_library("libjingle") {
+static_library("webrtc") {
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -50,7 +54,6 @@ static_library("libjingle") {
     "//third_party/webrtc/p2p:rtc_p2p",
   ]
 
-  # From libjingle_common.gypi's conditions list.
   if (is_win) {
     cflags = [ "/wd4005" ]
   }
@@ -64,7 +67,7 @@ static_library("libjingle") {
   } else {
     # Otherwise, we just add the field_trial which redirects to base.
     sources = [
-      "../webrtc_overrides/field_trial.cc",
+      "field_trial.cc",
     ]
   }
 
@@ -75,5 +78,48 @@ static_library("libjingle") {
   public_configs = [
     ":jingle_public_configs",
     "//third_party/webrtc:common_inherited_config",
+  ]
+}
+
+static_library("init_webrtc") {
+  sources = [
+    "init_webrtc.cc",
+    "init_webrtc.h",
+  ]
+  configs += [
+    ":jingle_unexported_configs",
+    "//third_party/webrtc:common_config",
+  ]
+  public_configs = [
+    ":jingle_public_configs",
+    "//third_party/webrtc:common_inherited_config",
+  ]
+  public_deps = [
+    ":libjingle_webrtc_common",
+  ]
+}
+
+source_set("libjingle_webrtc_common") {
+  configs += [
+    ":jingle_unexported_configs",
+    "//third_party/webrtc:common_config",
+  ]
+  public_configs = [
+    ":jingle_public_configs",
+    "//third_party/webrtc:common_inherited_config",
+  ]
+
+  deps = [
+    ":webrtc",
+    "//third_party/libsrtp",
+    "//third_party/usrsctp",
+    "//third_party/webrtc/api:libjingle_peerconnection",
+    "//third_party/webrtc/media:rtc_media",
+    "//third_party/webrtc/media:rtc_media_base",
+    "//third_party/webrtc/modules/media_file",
+    "//third_party/webrtc/modules/video_capture",
+    "//third_party/webrtc/pc:rtc_pc",
+    "//third_party/webrtc/system_wrappers",
+    "//third_party/webrtc/voice_engine",
   ]
 }
