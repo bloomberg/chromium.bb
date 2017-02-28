@@ -66,7 +66,17 @@ BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     : LauncherItemController(extension_misc::kChromeAppId,
                              std::string(),
                              launcher_controller),
-      shelf_model_(shelf_model) {}
+      shelf_model_(shelf_model) {
+  // Tag all open browser windows with the appropriate shelf id property. This
+  // associates each window with the shelf item for the active web contents.
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (IsBrowserRepresentedInBrowserList(browser) &&
+        browser->tab_strip_model()->GetActiveWebContents()) {
+      SetShelfIDForBrowserWindowContents(
+          browser, browser->tab_strip_model()->GetActiveWebContents());
+    }
+  }
+}
 
 BrowserShortcutLauncherItemController::
     ~BrowserShortcutLauncherItemController() {}
@@ -279,10 +289,12 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     return false;
 
   // v1 App popup windows with a valid app id have their own icon.
-  if (browser->is_app() && browser->is_type_popup() &&
-      ash::WmShell::Get()->shelf_delegate()->GetShelfIDForAppID(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name())) > 0)
+  ash::ShelfDelegate* delegate = ash::WmShell::Get()->shelf_delegate();
+  if (browser->is_app() && browser->is_type_popup() && delegate &&
+      delegate->GetShelfIDForAppID(web_app::GetExtensionIdFromApplicationName(
+          browser->app_name())) > 0) {
     return false;
+  }
 
   // Settings browsers have their own icon.
   if (IsSettingsBrowser(browser))

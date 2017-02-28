@@ -2151,9 +2151,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
 }
 
 // Check that the window's ShelfID property matches that of the active tab.
-// TODO(https://crbug.com/694941): Disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
-                       DISABLED_MatchingShelfIDandActiveTab) {
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
