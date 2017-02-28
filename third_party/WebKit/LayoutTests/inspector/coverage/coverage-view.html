@@ -2,38 +2,28 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="coverage-test.js"></script>
 <script src="resources/coverage.js"></script>
 
 <link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
 
 <script>
-
-var initialize_CoverageTest = function() {
-    InspectorTest.preloadModule("coverage");
-}
-
 async function test()
 {
-    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
-    InspectorTest.addSniffer(coverageView._listView, "update", displayResults);
-
-    UI.viewManager.showView("coverage");
-    coverageView._toggleRecording(true);
+    InspectorTest.startCoverage();
     await InspectorTest.evaluateInPagePromise("performActions()");
-    coverageView._toggleRecording(false);
+    await InspectorTest.stopCoverage();
 
-    function displayResults()
-    {
-        var dataGrid = coverageView._listView._dataGrid;
-        for (var child of dataGrid.rootNode().children) {
-            var data = child._coverageInfo;
-            var url = InspectorTest.formatters.formatAsURL(data.url);
-            if (url.endsWith("-test.js") || url.endsWith(".html"))
-                continue;
-            InspectorTest.addResult(`${url} used: ${data.usedSize} unused: ${data.unusedSize} total: ${data.size}`);
-        }
-        InspectorTest.completeTest();
+    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+    var dataGrid = coverageView._listView._dataGrid;
+    for (var child of dataGrid.rootNode().children) {
+        var data = child._coverageInfo;
+        var url = InspectorTest.formatters.formatAsURL(data.url);
+        if (url.endsWith("-test.js") || url.endsWith(".html"))
+            continue;
+        InspectorTest.addResult(`${url} used: ${data.usedSize} unused: ${data.unusedSize} total: ${data.size}`);
     }
+    InspectorTest.completeTest();
 }
 
 </script>

@@ -14,12 +14,9 @@ var initialize_Coverage = function() {
 
 async function test()
 {
-    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
-
-    coverageView._toggleRecording(true);
-    UI.viewManager.showView("coverage");
-    coverageView._toggleRecording(false);
-    await InspectorTest.addSnifferPromise(Coverage.CoverageView.prototype, "_updateGutter");
+    InspectorTest.startCoverage();
+    await InspectorTest.evaluateInPagePromise("performActions()");
+    await InspectorTest.stopCoverage();
     await InspectorTest.sourceDecorated("highlight-in-source.css");
 
     var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),

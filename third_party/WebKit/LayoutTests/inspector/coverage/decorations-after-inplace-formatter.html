@@ -3,67 +3,36 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../http/tests/inspector/sources-test.js"></script>
+<script src="coverage-test.js"></script>
 
 <link rel="stylesheet" type="text/css" href="resources/decorations-after-inplace-formatter.css">
+
 <script>
-
-var initialize_CoverageTest = function() {
-    InspectorTest.preloadModule("coverage");
-}
-
-function test()
+async function test()
 {
-    var scriptFormatter;
+    InspectorTest.startCoverage();
+    await InspectorTest.evaluateInPagePromise("performActions()");
+    await InspectorTest.stopCoverage();
+    await UI.inspectorView.showPanel("sources");
+    var formatter = await inplaceFormatter();
+    await InspectorTest.sourceDecorated("decorations-after-inplace-formatter.css");
+    var decoratorPromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "decorate");
+    formatter._formatSourceInPlace();
+    await decoratorPromise;
 
-    var tracker = self.runtime.sharedInstance(Coverage.CoverageView);
-    InspectorTest.addSniffer(Coverage.CoverageView.prototype, "_updateGutter", onTracingFinished);
+    var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
+                                         e => e.parentElement.previousSibling.textContent);
+    InspectorTest.addResult("Formatted line numbers of rules that were not used:");
+    InspectorTest.addResult(lines);
+    InspectorTest.completeTest();
 
-    tracker._toggleRecording(true);
-    UI.viewManager.showView("coverage");
-    tracker._toggleRecording(false);
-
-    function onTracingFinished()
+    async function inplaceFormatter()
     {
-        UI.inspectorView.showPanel("sources").then(formatterSetup);
-    }
-    function formatterSetup()
-    {
-        inplaceFormatter().then(function(sf) {
-            scriptFormatter = sf;
-            showSource();
-        });
-    }
-    function showSource()
-    {
-        InspectorTest.addSniffer(Coverage.CoverageView.LineDecorator.prototype, "decorate", formatSource);
-        InspectorTest.showScriptSource("decorations-after-inplace-formatter.css");
-    }
-
-    function formatSource(frame) 
-    {
-        InspectorTest.addSniffer(Coverage.CoverageView.LineDecorator.prototype, "decorate", uiSourceCodeScriptFormatted);
-        scriptFormatter._formatSourceInPlace();
-    }
-
-    function uiSourceCodeScriptFormatted()
-    {
-        var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
-                                                e => e.parentElement.previousSibling.textContent);
-
-        InspectorTest.addResult("Formatted line numbers of rules that were not used:");
-        InspectorTest.addResult(lines);   
-        InspectorTest.completeTest();
-    }
-
-    function inplaceFormatter()
-    {
-        return self.runtime.allInstances(Sources.SourcesView.EditorAction).then(function(editorActions) {
-            for (var i = 0; i < editorActions.length; ++i) {
-                if (editorActions[i] instanceof Sources.InplaceFormatterEditorAction)
-                    return editorActions[i];
-            }
-            return null;
-        });
+        var editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
+        for (var i = 0; i < editorActions.length; ++i) {
+            if (editorActions[i] instanceof Sources.InplaceFormatterEditorAction)
+                return editorActions[i];
+        }
     }
 }
 </script>
