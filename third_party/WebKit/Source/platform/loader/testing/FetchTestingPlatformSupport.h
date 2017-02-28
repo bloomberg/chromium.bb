@@ -5,9 +5,9 @@
 #ifndef FetchTestingPlatformSupport_h
 #define FetchTestingPlatformSupport_h
 
+#include <memory>
 #include "platform/heap/Persistent.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include <memory>
 
 namespace blink {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/FetchTestingPlatformSupport.h"
+#include "platform/loader/testing/FetchTestingPlatformSupport.h"
 
-#include "platform/loader/fetch/MockFetchContext.h"
+#include <memory>
+#include "platform/loader/testing/MockFetchContext.h"
 #include "platform/network/ResourceError.h"
 #include "platform/testing/weburl_loader_mock_factory_impl.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
-#include <memory>
 
 namespace blink {
 
