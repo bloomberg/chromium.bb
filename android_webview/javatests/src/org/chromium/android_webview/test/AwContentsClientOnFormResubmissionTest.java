@@ -8,8 +8,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.os.Message;
 import android.support.test.filters.SmallTest;
-
-import org.apache.http.util.EncodingUtils;
+import android.util.Base64;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
@@ -101,7 +100,7 @@ public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
     protected void doReload() throws Throwable {
         String url = mServer.setResponse("/form", LOAD_RESPONSE, null);
         String postData = "content=blabla";
-        byte[] data = EncodingUtils.getBytes(postData, "BASE64");
+        byte[] data = Base64.encode(postData.getBytes("UTF-8"), Base64.DEFAULT);
         postUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url, data);
         assertEquals(0, mContentsClient.getResubmissions());
         assertEquals("Load", getTitleOnUiThread(mAwContents));
