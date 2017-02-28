@@ -1747,6 +1747,39 @@ VisiblePosition nextSentencePosition(const VisiblePosition& c) {
   return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
 
+EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range) {
+  DCHECK(range.isNotNull());
+  const VisiblePosition& visibleEnd =
+      createVisiblePosition(range.endPosition());
+  DCHECK(visibleEnd.isNotNull());
+  const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
+  // TODO(xiaochengh): |sentenceEnd < range.endPosition()| is possible,
+  // which would trigger a DCHECK in EphemeralRange's constructor if we return
+  // it directly. However, this shouldn't happen and needs to be fixed.
+  return EphemeralRange(
+      range.startPosition(),
+      sentenceEnd.isNotNull() && sentenceEnd > range.endPosition()
+          ? sentenceEnd
+          : range.endPosition());
+}
+
+EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range) {
+  DCHECK(range.isNotNull());
+  const VisiblePosition& visibleStart =
+      createVisiblePosition(range.startPosition());
+  DCHECK(visibleStart.isNotNull());
+  const Position& sentenceStart =
+      startOfSentence(visibleStart).deepEquivalent();
+  // TODO(xiaochengh): |sentenceStart > range.startPosition()| is possible,
+  // which would trigger a DCHECK in EphemeralRange's constructor if we return
+  // it directly. However, this shouldn't happen and needs to be fixed.
+  return expandEndToSentenceBoundary(EphemeralRange(
+      sentenceStart.isNotNull() && sentenceStart < range.startPosition()
+          ? sentenceStart
+          : range.startPosition(),
+      range.endPosition()));
+}
+
 static bool nodeIsUserSelectAll(const Node* node) {
   return node && node->layoutObject() &&
          node->layoutObject()->style()->userSelect() == SELECT_ALL;

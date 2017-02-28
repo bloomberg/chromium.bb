@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "platform/text/TextDirection.h"
@@ -180,6 +181,8 @@ CORE_EXPORT VisiblePositionInFlatTree
 endOfSentence(const VisiblePositionInFlatTree&);
 VisiblePosition previousSentencePosition(const VisiblePosition&);
 VisiblePosition nextSentencePosition(const VisiblePosition&);
+EphemeralRange expandEndToSentenceBoundary(const EphemeralRange&);
+EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange&);
 
 // lines
 // TODO(yosin) Return values of |VisiblePosition| version of |startOfLine()|
