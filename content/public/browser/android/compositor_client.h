@@ -16,7 +16,7 @@ class CONTENT_EXPORT CompositorClient {
   virtual void UpdateLayerTreeHost() {}
 
   // The compositor has completed swapping a frame.
-  virtual void OnSwapBuffersCompleted(int pending_swap_buffers) {}
+  virtual void DidSwapFrame(int pending_frames) {}
 
  protected:
   CompositorClient() {}

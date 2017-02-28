@@ -110,9 +110,9 @@ void ContentViewRenderView::UpdateLayerTreeHost() {
   // Compositor related classes.
 }
 
-void ContentViewRenderView::OnSwapBuffersCompleted(int pending_swap_buffers) {
+void ContentViewRenderView::DidSwapFrame(int pending_frames) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentViewRenderView_onSwapBuffersCompleted(env, java_obj_);
+  Java_ContentViewRenderView_didSwapFrame(env, java_obj_);
 }
 
 void ContentViewRenderView::InitCompositor() {

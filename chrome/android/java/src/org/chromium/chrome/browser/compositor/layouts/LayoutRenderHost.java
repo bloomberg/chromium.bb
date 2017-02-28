@@ -26,7 +26,7 @@ public interface LayoutRenderHost {
     /**
      * Indicates that a previously rendered frame has been swapped to the OS.
      */
-    void onSwapBuffersCompleted(int pendingSwapBuffersCount);
+    void didSwapFrame(int pendingFrameCount);
 
     /**
      * Indicates that the rendering surface has just been created.

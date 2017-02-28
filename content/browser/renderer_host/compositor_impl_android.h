@@ -154,9 +154,9 @@ class CONTENT_EXPORT CompositorImpl
   // Whether we need to update animations on the next composite.
   bool needs_animate_;
 
-  // The number of SwapBuffer calls that have not returned and ACK'd from
+  // The number of SubmitFrame calls that have not returned and ACK'd from
   // the GPU thread.
-  unsigned int pending_swapbuffers_;
+  unsigned int pending_frames_;
 
   size_t num_successive_context_creation_failures_;
 

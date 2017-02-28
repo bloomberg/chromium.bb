@@ -334,7 +334,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       client_(client),
       root_window_(root_window),
       needs_animate_(false),
-      pending_swapbuffers_(0U),
+      pending_frames_(0U),
       num_successive_context_creation_failures_(0),
       compositor_frame_sink_request_pending_(false),
       weak_factory_(this) {
@@ -467,7 +467,7 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->SetVisible(false);
     host_->ReleaseCompositorFrameSink();
     has_compositor_frame_sink_ = false;
-    pending_swapbuffers_ = 0;
+    pending_frames_ = 0;
     display_.reset();
   } else {
     host_->SetVisible(true);
@@ -645,7 +645,7 @@ void CompositorImpl::InitializeDisplay(
     scoped_refptr<cc::ContextProvider> context_provider) {
   DCHECK(compositor_frame_sink_request_pending_);
 
-  pending_swapbuffers_ = 0;
+  pending_frames_ = 0;
   num_successive_context_creation_failures_ = 0;
 
   if (context_provider) {
@@ -700,20 +700,20 @@ bool CompositorImpl::SupportsETC1NonPowerOfTwo() const {
 
 void CompositorImpl::DidSubmitCompositorFrame() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidSubmitCompositorFrame");
-  pending_swapbuffers_++;
+  pending_frames_++;
 }
 
 void CompositorImpl::DidReceiveCompositorFrameAck() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidReceiveCompositorFrameAck");
-  DCHECK_GT(pending_swapbuffers_, 0U);
-  pending_swapbuffers_--;
-  client_->OnSwapBuffersCompleted(pending_swapbuffers_);
+  DCHECK_GT(pending_frames_, 0U);
+  pending_frames_--;
+  client_->DidSwapFrame(pending_frames_);
 }
 
 void CompositorImpl::DidLoseCompositorFrameSink() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidLoseCompositorFrameSink");
   has_compositor_frame_sink_ = false;
-  client_->OnSwapBuffersCompleted(0);
+  client_->DidSwapFrame(0);
 }
 
 void CompositorImpl::DidCommit() {

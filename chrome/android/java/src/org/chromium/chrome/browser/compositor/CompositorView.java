@@ -297,7 +297,7 @@ public class CompositorView
     }
 
     @CalledByNative
-    private void onSwapBuffersCompleted(int pendingSwapBuffersCount) {
+    private void didSwapFrame(int pendingFrameCount) {
         // Clear the color used to cover the uninitialized surface.
         if (getBackground() != null) {
             postDelayed(new Runnable() {
@@ -308,7 +308,7 @@ public class CompositorView
             }, mFramePresentationDelay);
         }
 
-        mRenderHost.onSwapBuffersCompleted(pendingSwapBuffersCount);
+        mRenderHost.didSwapFrame(pendingFrameCount);
     }
 
     /**

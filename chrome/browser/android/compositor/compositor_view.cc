@@ -122,9 +122,9 @@ void CompositorView::UpdateLayerTreeHost() {
   Java_CompositorView_onCompositorLayout(env, obj_);
 }
 
-void CompositorView::OnSwapBuffersCompleted(int pending_swap_buffers) {
+void CompositorView::DidSwapFrame(int pending_frames) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CompositorView_onSwapBuffersCompleted(env, obj_, pending_swap_buffers);
+  Java_CompositorView_didSwapFrame(env, obj_, pending_frames);
 }
 
 ui::UIResourceProvider* CompositorView::GetUIResourceProvider() {

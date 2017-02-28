@@ -85,7 +85,7 @@ public class CompositorViewHolder extends FrameLayout
 
     private boolean mContentOverlayVisiblity = true;
 
-    private int mPendingSwapBuffersCount;
+    private int mPendingFrameCount;
 
     private final ArrayList<Invalidator.Client> mPendingInvalidations =
             new ArrayList<>();
@@ -583,13 +583,13 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public void onSurfaceCreated() {
-        mPendingSwapBuffersCount = 0;
+        mPendingFrameCount = 0;
         flushInvalidation();
     }
 
     @Override
-    public void onSwapBuffersCompleted(int pendingSwapBuffersCount) {
-        TraceEvent.instant("onSwapBuffersCompleted");
+    public void didSwapFrame(int pendingFrameCount) {
+        TraceEvent.instant("didSwapFrame");
 
         // Wait until the second frame to turn off the placeholder background on
         // tablets so the tab strip has time to start drawing.
@@ -605,9 +605,9 @@ public class CompositorViewHolder extends FrameLayout
 
         mHasDrawnOnce = true;
 
-        mPendingSwapBuffersCount = pendingSwapBuffersCount;
+        mPendingFrameCount = pendingFrameCount;
 
-        if (!mSkipInvalidation || pendingSwapBuffersCount == 0) flushInvalidation();
+        if (!mSkipInvalidation || pendingFrameCount == 0) flushInvalidation();
         mSkipInvalidation = !mSkipInvalidation;
     }
 
@@ -953,7 +953,7 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public void deferInvalidate(Client client) {
-        if (mPendingSwapBuffersCount <= 0) {
+        if (mPendingFrameCount <= 0) {
             client.doInvalidate();
         } else if (!mPendingInvalidations.contains(client)) {
             mPendingInvalidations.add(client);

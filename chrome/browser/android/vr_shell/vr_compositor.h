@@ -39,10 +39,6 @@ class VrCompositor : public content::CompositorClient {
   void SurfaceChanged(jobject surface);
   void SetLayer(content::WebContents* web_contents);
 
-  // CompositorClient implementation:
-  void UpdateLayerTreeHost() override;
-  void OnSwapBuffersCompleted(int pending_swap_buffers) override;
-
  private:
   void RestoreLayer();
 

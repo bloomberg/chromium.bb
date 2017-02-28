@@ -48,7 +48,7 @@ class ContentViewRenderView : public CompositorClient {
 
   // CompositorClient implementation
   void UpdateLayerTreeHost() override;
-  void OnSwapBuffersCompleted(int pending_swap_buffers) override;
+  void DidSwapFrame(int pending_frames) override;
 
  private:
   ~ContentViewRenderView() override;

@@ -25,10 +25,6 @@ VrCompositor::~VrCompositor() {
   RestoreLayer();
 }
 
-void VrCompositor::UpdateLayerTreeHost() {}
-
-void VrCompositor::OnSwapBuffersCompleted(int pending_swap_buffers) {}
-
 void VrCompositor::SetLayer(content::WebContents* web_contents) {
   RestoreLayer();
   if (!web_contents) {
