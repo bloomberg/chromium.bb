@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 29: Uncaught TypeError: handler is not a function
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: handler is not a function
+FAIL Dispatching idle callbacks should be able to be suspended and then resumed assert_true: idle callback should've been called by now expected true got false
+Harness: the test ran to completion.
+

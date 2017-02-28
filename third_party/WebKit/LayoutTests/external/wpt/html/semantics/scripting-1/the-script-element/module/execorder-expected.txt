@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS Unordered module script execution (parsed, unordered #1) 
+PASS Unordered module script execution (parsed, unordered #2) 
+PASS Unordered module script execution (dynamic, unordered #1) 
+PASS Unordered module script execution (dynamic, unordered #2) 
+FAIL Interlaced module/non-module script execution (parsed, async-ordered) assert_equals: Inline module-typed script element should have fired third expected 3 but got 1
+PASS Interlaced module/non-module script execution (dynamic, async-ordered) 
+Harness: the test ran to completion.
+

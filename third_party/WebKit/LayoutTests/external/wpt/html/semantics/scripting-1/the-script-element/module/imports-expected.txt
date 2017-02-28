@@ -1,0 +1,11 @@
+CONSOLE ERROR: line 13: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 22: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 39: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 1325: Uncaught Error: Tried to create a test with file_is_test
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+CONSOLE ERROR: line 1325: Uncaught Error: Tried to create a test with file_is_test
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token import
+This is a testharness.js-based test.
+FAIL html-script-module-imports Uncaught SyntaxError: Unexpected token import
+Harness: the test ran to completion.
+

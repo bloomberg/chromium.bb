@@ -1,0 +1,17 @@
+This is a testharness.js-based test.
+PASS Returning a string must not cancel the event: CustomEvent, non-cancelable 
+PASS Returning a string must not cancel the event: CustomEvent, cancelable 
+PASS Returning null with a real iframe unloading 
+PASS Returning undefined with a real iframe unloading 
+FAIL Returning  with a real iframe unloading assert_equals: canceled expected true but got false
+PASS Returning false with a real iframe unloading 
+FAIL Returning true with a real iframe unloading assert_equals: canceled expected true but got false
+FAIL Returning 0 with a real iframe unloading assert_equals: canceled expected true but got false
+PASS Returning null with a real iframe unloading; setting returnValue to foo 
+PASS Returning undefined with a real iframe unloading; setting returnValue to foo 
+FAIL Returning  with a real iframe unloading; setting returnValue to foo assert_equals: canceled expected true but got false
+FAIL Returning false with a real iframe unloading; setting returnValue to foo assert_equals: returnValue expected "foo" but got "false"
+FAIL Returning true with a real iframe unloading; setting returnValue to foo assert_equals: canceled expected true but got false
+FAIL Returning 0 with a real iframe unloading; setting returnValue to foo assert_equals: canceled expected true but got false
+Harness: the test ran to completion.
+
