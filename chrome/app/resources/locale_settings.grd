@@ -204,7 +204,7 @@
 
       <!-- The URL for the the Welcome to Chrome page shown on first run. -->
       <message name="IDS_WELCOME_PAGE_URL" translateable="false">
-        http://tools.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
+        https://www.google.com/intl/[GRITLANGCODE]/chrome/browser/welcome.html
       </message>
 
       <!-- The language dependent download view size. -->
