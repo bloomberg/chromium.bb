@@ -49,11 +49,6 @@ class EmbeddedAshService : public service_manager::Service {
 
 }  // namespace
 
-// TODO(rockot): Remove this.
-const char* GetAshServiceName() {
-  return "ash";
-}
-
 std::unique_ptr<service_manager::Service> CreateEmbeddedAshService(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   return base::MakeUnique<EmbeddedAshService>(task_runner);

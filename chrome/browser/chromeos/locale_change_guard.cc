@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/pref_names.h"
@@ -72,8 +72,7 @@ void LocaleChangeGuard::ConnectToLocaleNotificationController() {
   if (!connector)
     return;
 
-  connector->BindInterface(ash_util::GetAshServiceName(),
-                           &notification_controller_);
+  connector->BindInterface(ash::mojom::kServiceName, &notification_controller_);
 }
 
 void LocaleChangeGuard::RevertLocaleChange() {

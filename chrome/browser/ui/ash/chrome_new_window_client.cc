@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
 #include "ash/content/keyboard_overlay/keyboard_overlay_view.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -61,8 +61,7 @@ Browser* ChromeNewWindowClient::GetActiveBrowser() {
 ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash_util::GetAshServiceName(),
-                           &new_window_controller_);
+  connector->BindInterface(ash::mojom::kServiceName, &new_window_controller_);
 
   // Register this object as the client interface implementation.
   ash::mojom::NewWindowClientAssociatedPtrInfo ptr_info;

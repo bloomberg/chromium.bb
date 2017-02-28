@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -151,7 +151,7 @@ CastConfigClientMediaRouter::CastConfigClientMediaRouter() : binding_(this) {
   // client.
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash_util::GetAshServiceName(), &cast_config_);
+      ->BindInterface(ash::mojom::kServiceName, &cast_config_);
 
   // Register this object as the client interface implementation.
   ash::mojom::CastConfigClientAssociatedPtrInfo ptr_info;

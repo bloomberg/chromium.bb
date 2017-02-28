@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/vpn_list.mojom.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -46,7 +46,7 @@ ash::mojom::VpnListPtr ConnectToVpnList() {
   ash::mojom::VpnListPtr vpn_list;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash_util::GetAshServiceName(), &vpn_list);
+      ->BindInterface(ash::mojom::kServiceName, &vpn_list);
   return vpn_list;
 }
 

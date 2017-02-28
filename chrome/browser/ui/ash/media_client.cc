@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/media_client.h"
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -132,7 +132,7 @@ MediaClient::MediaClient() : binding_(this), weak_ptr_factory_(this) {
 
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash_util::GetAshServiceName(), &media_controller_);
+  connector->BindInterface(ash::mojom::kServiceName, &media_controller_);
 
   // Register this object as the client interface implementation.
   ash::mojom::MediaClientAssociatedPtrInfo ptr_info;

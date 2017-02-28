@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/ash/volume_controller.h"
 
 #include "ash/public/interfaces/accelerator_controller.mojom.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -42,7 +42,7 @@ VolumeController::VolumeController() : binding_(this) {
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   ash::mojom::AcceleratorControllerPtr accelerator_controller_ptr;
-  connector->BindInterface(ash_util::GetAshServiceName(),
+  connector->BindInterface(ash::mojom::kServiceName,
                            &accelerator_controller_ptr);
 
   // Register this object as the volume controller.

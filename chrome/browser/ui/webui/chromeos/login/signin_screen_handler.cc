@@ -12,6 +12,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
@@ -62,7 +63,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -336,7 +336,7 @@ SigninScreenHandler::SigninScreenHandler(
 
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash_util::GetAshServiceName(), &touch_view_manager_ptr_);
+      ->BindInterface(ash::mojom::kServiceName, &touch_view_manager_ptr_);
   touch_view_manager_ptr_->AddObserver(
       touch_view_binding_.CreateInterfacePtrAndBind());
 }

@@ -20,10 +20,6 @@ class Accelerator;
 
 namespace ash_util {
 
-// Returns the name of the ash service depending on whether the browser is
-// running in classic ash or mash.
-const char* GetAshServiceName();
-
 // Creates an in-process Service instance of which can host common ash
 // interfaces.
 std::unique_ptr<service_manager::Service> CreateEmbeddedAshService(

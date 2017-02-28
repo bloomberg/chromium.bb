@@ -85,7 +85,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -218,6 +217,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
+#include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -3245,7 +3245,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     content::ServiceInfo info;
     info.factory = base::Bind(&ash_util::CreateEmbeddedAshService,
                               base::ThreadTaskRunnerHandle::Get());
-    services->insert(std::make_pair("ash", info));
+    services->insert(std::make_pair(ash::mojom::kServiceName, info));
   }
 #endif  // OS_CHROMEOS
 }

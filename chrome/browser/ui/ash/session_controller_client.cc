@@ -8,13 +8,13 @@
 #include <utility>
 
 #include "ash/public/cpp/session_types.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
@@ -246,7 +246,7 @@ void SessionControllerClient::OnSessionStateChanged() {
 void SessionControllerClient::ConnectToSessionControllerAndSetClient() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash_util::GetAshServiceName(), &session_controller_);
+      ->BindInterface(ash::mojom::kServiceName, &session_controller_);
 
   // Set as |session_controller_|'s client.
   session_controller_->SetClient(binding_.CreateInterfacePtrAndBind());

@@ -26,6 +26,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/autoclick/mus/autoclick_application.h"  // nogncheck
 #include "ash/mus/window_manager_application.h"  // nogncheck
+#include "ash/public/interfaces/constants.mojom.h"    // nogncheck
 #include "ash/touch_hud/mus/touch_hud_application.h"  // nogncheck
 #endif
 
@@ -84,7 +85,7 @@ std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
   }
 
 #if defined(OS_CHROMEOS)
-  if (name == "ash")
+  if (name == ash::mojom::kServiceName)
     return base::WrapUnique(new ash::mus::WindowManagerApplication);
   if (name == "accessibility_autoclick")
     return base::WrapUnique(new ash::autoclick::AutoclickApplication);

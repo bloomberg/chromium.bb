@@ -9,6 +9,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -205,8 +206,7 @@ void SetWallpaper(const gfx::ImageSkia& image,
       return;
 
     ash::mojom::WallpaperControllerPtr wallpaper_controller;
-    connector->BindInterface(ash_util::GetAshServiceName(),
-                             &wallpaper_controller);
+    connector->BindInterface(ash::mojom::kServiceName, &wallpaper_controller);
     // TODO(crbug.com/655875): Optimize ash wallpaper transport; avoid sending
     // large bitmaps over Mojo; use shared memory like BitmapUploader, etc.
     wallpaper_controller->SetWallpaper(*image.bitmap(), layout);
@@ -888,7 +888,7 @@ WallpaperManager::WallpaperManager()
   if (connection && connection->GetConnector()) {
     // Connect to the wallpaper controller interface in the ash service.
     ash::mojom::WallpaperControllerPtr wallpaper_controller_ptr;
-    connection->GetConnector()->BindInterface(ash_util::GetAshServiceName(),
+    connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
                                               &wallpaper_controller_ptr);
     // Register this object as the wallpaper picker.
     wallpaper_controller_ptr->SetWallpaperPicker(

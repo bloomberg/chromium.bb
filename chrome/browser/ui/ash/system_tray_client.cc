@@ -7,6 +7,7 @@
 #include "ash/common/login_status.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -86,7 +87,7 @@ ash::mojom::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
 SystemTrayClient::SystemTrayClient() : binding_(this) {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash_util::GetAshServiceName(), &system_tray_);
+      ->BindInterface(ash::mojom::kServiceName, &system_tray_);
   // Register this object as the client interface implementation.
   system_tray_->SetClient(binding_.CreateInterfacePtrAndBind());
 

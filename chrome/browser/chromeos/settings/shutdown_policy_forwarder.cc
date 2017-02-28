@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/settings/shutdown_policy_forwarder.h"
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -25,7 +25,7 @@ void ShutdownPolicyForwarder::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
   ash::mojom::ShutdownControllerPtr shutdown_controller;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash_util::GetAshServiceName(), &shutdown_controller);
+      ->BindInterface(ash::mojom::kServiceName, &shutdown_controller);
 
   // Forward the setting to ash.
   shutdown_controller->SetRebootOnShutdown(reboot_on_shutdown);
