@@ -2001,7 +2001,6 @@ void Document::updateStyleAndLayoutTree() {
   unsigned startElementCount = styleEngine().styleForElementCount();
 
   InspectorInstrumentation::willRecalculateStyle(this);
-  PerformanceMonitor::willRecalculateStyle(this);
 
   DocumentAnimations::updateAnimationTimingIfNeeded(*this);
   evaluateMediaQueryListIfNeeded();
@@ -2047,7 +2046,6 @@ void Document::updateStyleAndLayoutTree() {
   assertLayoutTreeUpdated(*this);
 #endif
   InspectorInstrumentation::didRecalculateStyle(this);
-  PerformanceMonitor::didRecalculateStyle(this);
 }
 
 void Document::updateActiveStyle() {

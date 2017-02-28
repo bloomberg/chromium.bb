@@ -35,7 +35,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PerformanceMonitor.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "core/loader/resource/ScriptResource.h"
@@ -540,12 +540,12 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(
     }
     v8::MicrotasksScope microtasksScope(isolate,
                                         v8::MicrotasksScope::kRunMicrotasks);
-    PerformanceMonitor::willExecuteScript(context);
+    InspectorInstrumentation::willExecuteScript(context);
     ThreadDebugger::willExecuteScript(isolate,
                                       script->GetUnboundScript()->GetId());
     result = script->Run(isolate->GetCurrentContext());
     ThreadDebugger::didExecuteScript(isolate);
-    PerformanceMonitor::didExecuteScript(context);
+    InspectorInstrumentation::didExecuteScript(context);
   }
 
   CHECK(!isolate->IsDead());
@@ -659,13 +659,13 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
   CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
-  PerformanceMonitor::willCallFunction(context);
+  InspectorInstrumentation::willCallFunction(context);
   ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   CHECK(!isolate->IsDead());
   ThreadDebugger::didExecuteScript(isolate);
-  PerformanceMonitor::didCallFunction(context, function);
+  InspectorInstrumentation::didCallFunction(context, function);
   if (!depth)
     TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
   return result;

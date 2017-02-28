@@ -17,6 +17,7 @@ namespace blink {
 class PerformanceMonitorTest : public ::testing::Test {
  protected:
   void SetUp() override;
+  void TearDown() override;
   LocalFrame* frame() const { return m_pageHolder->document().frame(); }
   ExecutionContext* executionContext() const {
     return &m_pageHolder->document();
@@ -29,7 +30,7 @@ class PerformanceMonitorTest : public ::testing::Test {
   }
 
   void willExecuteScript(ExecutionContext* executionContext) {
-    m_monitor->alwaysWillExecuteScript(executionContext);
+    m_monitor->willExecuteScript(executionContext);
   }
 
   // scheduler::TaskTimeObserver implementation
@@ -60,6 +61,10 @@ void PerformanceMonitorTest::SetUp() {
   m_anotherPageHolder = DummyPageHolder::create(IntSize(400, 300));
   m_anotherPageHolder->document().setURL(
       KURL(KURL(), "https://iframed.com/bar"));
+}
+
+void PerformanceMonitorTest::TearDown() {
+  m_monitor->shutdown();
 }
 
 String PerformanceMonitorTest::frameContextURL() {

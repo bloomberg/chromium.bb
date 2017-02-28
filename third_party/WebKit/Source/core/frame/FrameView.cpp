@@ -54,7 +54,6 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Location.h"
 #include "core/frame/PageScaleConstraintsSet.h"
-#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/Settings.h"
@@ -1175,7 +1174,7 @@ void FrameView::layout() {
   Document* document = m_frame->document();
   TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData",
                      InspectorLayoutEvent::beginData(this));
-  PerformanceMonitor::willUpdateLayout(document);
+  InspectorInstrumentation::willUpdateLayout(document);
 
   performPreLayoutTasks();
 
@@ -1319,7 +1318,6 @@ void FrameView::layout() {
   TRACE_EVENT_END1("devtools.timeline", "Layout", "endData",
                    InspectorLayoutEvent::endData(rootForThisLayout));
   InspectorInstrumentation::didUpdateLayout(m_frame.get());
-  PerformanceMonitor::didUpdateLayout(document);
 
   m_nestedLayoutCount--;
   if (m_nestedLayoutCount)

@@ -69,22 +69,23 @@ class CORE_EXPORT PerformanceMonitor final
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
-  // Instrumenting methods.
-  static void willExecuteScript(ExecutionContext*);
-  static void didExecuteScript(ExecutionContext*);
-  static void willCallFunction(ExecutionContext*);
-  static void didCallFunction(ExecutionContext*, v8::Local<v8::Function>);
-  static void willUpdateLayout(Document*);
-  static void didUpdateLayout(Document*);
-  static void willRecalculateStyle(Document*);
-  static void didRecalculateStyle(Document*);
-  static void documentWriteFetchScript(Document*);
   static void reportGenericViolation(ExecutionContext*,
                                      Violation,
                                      const String& text,
                                      double time,
                                      std::unique_ptr<SourceLocation>);
   static double threshold(ExecutionContext*, Violation);
+
+  // Instrumenting methods.
+  void willExecuteScript(ExecutionContext*);
+  void didExecuteScript();
+  void willCallFunction(ExecutionContext*);
+  void didCallFunction(ExecutionContext*, v8::Local<v8::Function>);
+  void willUpdateLayout();
+  void didUpdateLayout();
+  void willRecalculateStyle(Document*);
+  void didRecalculateStyle();
+  void documentWriteFetchScript(Document*);
 
   // Direct API for core.
   void subscribe(Violation, double threshold, Client*);
@@ -105,14 +106,6 @@ class CORE_EXPORT PerformanceMonitor final
 
   void updateInstrumentation();
 
-  void alwaysWillExecuteScript(ExecutionContext*);
-  void alwaysDidExecuteScript();
-  void alwaysWillCallFunction(ExecutionContext*);
-  void alwaysDidCallFunction(ExecutionContext*, v8::Local<v8::Function>);
-  void willUpdateLayout();
-  void didUpdateLayout();
-  void willRecalculateStyle();
-  void didRecalculateStyle();
   void innerReportGenericViolation(ExecutionContext*,
                                    Violation,
                                    const String& text,

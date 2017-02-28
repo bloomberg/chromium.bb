@@ -350,6 +350,8 @@ def generate_param_name(param_type):
 
 
 def agent_class_name(agent):
+    if agent == "Performance":
+        return "PerformanceMonitor"
     return "Inspector%sAgent" % agent
 
 
@@ -363,6 +365,8 @@ def include_header(name):
 
 
 def include_inspector_header(name):
+    if name == "PerformanceMonitor":
+        return include_header("core/frame/" + name)
     return include_header("core/inspector/" + name)
 
 

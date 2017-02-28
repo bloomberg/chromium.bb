@@ -137,7 +137,10 @@ class XMLHttpRequest;
     [DOMDebugger]
     void didFireWebGLErrorOrWarning(Element*, const String& message);
 
-    [Page]
+    [Performance]
+    void willUpdateLayout(Document*);
+
+    [Page, Performance]
     void didUpdateLayout(LocalFrame*);
 
     [Page]
@@ -318,10 +321,10 @@ class XMLHttpRequest;
     [Log]
     void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
 
-    [Network]
+    [Network, Performance]
     void willRecalculateStyle([Keep] Document*);
 
-    [Page, Network]
+    [Page, Network, Performance]
     void didRecalculateStyle(Document*);
 
     [Page]
@@ -329,6 +332,21 @@ class XMLHttpRequest;
 
     [Page]
     void didRunJavaScriptDialog(LocalFrame* frame, bool result);
+
+    [Performance]
+    void willExecuteScript([Keep] ExecutionContext*);
+
+    [Performance]
+    void didExecuteScript(ExecutionContext*);
+
+    [Performance]
+    void willCallFunction([Keep] ExecutionContext*);
+
+    [Performance]
+    void didCallFunction([Keep] ExecutionContext*, v8::Local<v8::Function>);
+
+    [Performance]
+    void documentWriteFetchScript([Keep] Document*);
 }
 
 interface InspectorOverrides {
