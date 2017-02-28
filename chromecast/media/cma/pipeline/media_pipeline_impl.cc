@@ -32,25 +32,19 @@ namespace media {
 namespace {
 
 // Buffering parameters when load_type is kLoadTypeUrl.
-constexpr base::TimeDelta kLowBufferThresholdURL(
+const base::TimeDelta kLowBufferThresholdURL(
     base::TimeDelta::FromMilliseconds(2000));
-constexpr base::TimeDelta kHighBufferThresholdURL(
+const base::TimeDelta kHighBufferThresholdURL(
     base::TimeDelta::FromMilliseconds(6000));
 
 // Buffering parameters when load_type is kLoadTypeMediaSource.
-constexpr base::TimeDelta kLowBufferThresholdMediaSource(
+const base::TimeDelta kLowBufferThresholdMediaSource(
     base::TimeDelta::FromMilliseconds(0));
-constexpr base::TimeDelta kHighBufferThresholdMediaSource(
+const base::TimeDelta kHighBufferThresholdMediaSource(
     base::TimeDelta::FromMilliseconds(300));
 
-// Buffering parameters when load_type is kLoadTypeCommunication.
-constexpr base::TimeDelta kLowBufferThresholdCommunication(
-    base::TimeDelta::FromMilliseconds(0));
-constexpr base::TimeDelta kHighBufferThresholdCommunication(
-    base::TimeDelta::FromMilliseconds(20));
-
 // Interval between two updates of the media time.
-constexpr base::TimeDelta kTimeUpdateInterval(
+const base::TimeDelta kTimeUpdateInterval(
     base::TimeDelta::FromMilliseconds(250));
 
 // Interval between two updates of the statistics is equal to:
@@ -129,9 +123,6 @@ void MediaPipelineImpl::Initialize(
     if (load_type == kLoadTypeMediaSource) {
       low_threshold = kLowBufferThresholdMediaSource;
       high_threshold = kHighBufferThresholdMediaSource;
-    } else if (load_type == kLoadTypeCommunication) {
-      low_threshold = kLowBufferThresholdCommunication;
-      high_threshold = kHighBufferThresholdCommunication;
     }
     scoped_refptr<BufferingConfig> buffering_config(
         new BufferingConfig(low_threshold, high_threshold));

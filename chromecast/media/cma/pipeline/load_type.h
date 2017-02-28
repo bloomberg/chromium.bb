@@ -12,7 +12,6 @@ enum LoadType {
   kLoadTypeURL,
   kLoadTypeMediaSource,
   kLoadTypeMediaStream,
-  kLoadTypeCommunication,
 };
 
 }  // namespace media

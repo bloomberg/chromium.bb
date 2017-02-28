@@ -65,14 +65,11 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
     StreamMixerAlsaInput::Delegate* delegate,
     int input_samples_per_second,
     bool primary,
-    const std::string& device_id,
     StreamMixerAlsa* mixer)
     : delegate_(delegate),
       input_samples_per_second_(input_samples_per_second),
       primary_(primary),
-      device_id_(device_id),
       mixer_(mixer),
-      filter_group_(nullptr),
       mixer_task_runner_(mixer_->task_runner()),
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       resample_ratio_(1.0),
@@ -88,14 +85,14 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
       zeroed_frames_(0),
       is_underflowing_(false),
       weak_factory_(this) {
-  LOG(INFO) << "Create " << device_id_ << " (" << this << ")";
+  LOG(INFO) << "Create " << this;
   DCHECK(delegate_);
   DCHECK(mixer_);
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 StreamMixerAlsaInputImpl::~StreamMixerAlsaInputImpl() {
-  LOG(INFO) << "Destroy " << device_id_ << " (" << this << ")";
+  LOG(INFO) << "Destroy " << this;
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
 }
 
@@ -105,10 +102,6 @@ int StreamMixerAlsaInputImpl::input_samples_per_second() const {
 
 bool StreamMixerAlsaInputImpl::primary() const {
   return primary_;
-}
-
-std::string StreamMixerAlsaInputImpl::device_id() const {
-  return device_id_;
 }
 
 bool StreamMixerAlsaInputImpl::IsDeleting() const {
@@ -132,14 +125,6 @@ void StreamMixerAlsaInputImpl::Initialize(
   mixer_rendering_delay_ = mixer_rendering_delay;
   fade_out_frames_total_ = NormalFadeFrames();
   fade_frames_remaining_ = NormalFadeFrames();
-}
-
-void StreamMixerAlsaInputImpl::set_filter_group(FilterGroup* filter_group) {
-  filter_group_ = filter_group;
-}
-
-FilterGroup* StreamMixerAlsaInputImpl::filter_group() {
-  return filter_group_;
 }
 
 void StreamMixerAlsaInputImpl::PreventDelegateCalls() {
@@ -441,6 +426,7 @@ int StreamMixerAlsaInputImpl::NormalFadeFrames() {
 
 void StreamMixerAlsaInputImpl::FadeIn(::media::AudioBus* dest, int frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << "Fading in, " << fade_frames_remaining_ << " frames remaining";
   float fade_in_frames = mixer_->output_samples_per_second() * kFadeMs /
                          base::Time::kMillisecondsPerSecond;
   for (int f = 0; f < frames && fade_frames_remaining_; ++f) {
@@ -453,6 +439,7 @@ void StreamMixerAlsaInputImpl::FadeIn(::media::AudioBus* dest, int frames) {
 
 void StreamMixerAlsaInputImpl::FadeOut(::media::AudioBus* dest, int frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << "Fading out, " << fade_frames_remaining_ << " frames remaining";
   int f = 0;
   for (; f < frames && fade_frames_remaining_; ++f) {
     float fade_multiplier =
@@ -528,7 +515,7 @@ void StreamMixerAlsaInputImpl::SetPaused(bool paused) {
 
 void StreamMixerAlsaInputImpl::SetVolumeMultiplier(float multiplier) {
   RUN_ON_MIXER_THREAD(SetVolumeMultiplier, multiplier);
-  LOG(INFO) << device_id_ << "(" << this << "): stream volume = " << multiplier;
+  LOG(INFO) << this << ": stream volume = " << multiplier;
   DCHECK(!IsDeleting());
   if (multiplier > 1.0f)
     multiplier = 1.0f;

@@ -6,7 +6,6 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_MEDIA_PIPELINE_BACKEND_ALSA_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -42,7 +41,6 @@ class MediaPipelineBackendAlsa : public MediaPipelineBackend {
   int64_t GetCurrentPts() override;
 
   bool Primary() const;
-  std::string DeviceId() const;
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() const;
 
  private:
