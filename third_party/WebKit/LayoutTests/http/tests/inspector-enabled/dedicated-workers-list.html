@@ -29,25 +29,31 @@ function handleLoad()
 
 function test()
 {
+    var workerCount = 0;
+    var observer = {
+        targetAdded(target) {
+            if (!InspectorTest.isDedicatedWorker(target))
+                return;
+            workerCount++;
+            InspectorTest.addResult("Added worker: " + workerCount);
+            if (workerCount === 2) {
+                InspectorTest.addResult("Done.");
+                InspectorTest.completeTest();
+            }
+        },
+
+        targetRemoved() {
+        }
+    };
+
     InspectorTest.TargetAgent.setAutoAttach(false, false, didDisableWorkerInspection);
     // Debugger should not crash when autoconnecting is immediately followed by termination.
 
     function didDisableWorkerInspection()
     {
-        InspectorTest.addSniffer(SDK.SubTargetsManager.prototype, "_attachedToTarget", workerCreated, true);
+        SDK.targetManager.observeTargets(observer);
         InspectorTest.TargetAgent.setAutoAttach(true, true);
         InspectorTest.addResult("Worker inspection enabled");
-    }
-
-    var workerCount = 0;
-    function workerCreated()
-    {
-        workerCount++;
-        InspectorTest.addResult("Added worker: " + workerCount);
-        if (workerCount === 2) {
-            InspectorTest.addResult("Done.");
-            InspectorTest.completeTest();
-        }
     }
 };
 
