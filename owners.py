@@ -128,6 +128,11 @@ class Database(object):
     # Set of files which have already been read.
     self.read_files = set()
 
+    # Set of files which were included from other files. Files are processed
+    # differently depending on whether they are regular owners files or
+    # being included from another file.
+    self._included_files = {}
+
   def reviewers_for(self, files, author):
     """Returns a suggested set of reviewers that will cover the files.
 
@@ -251,48 +256,39 @@ class Database(object):
               'per-file globs cannot span directories or use escapes: "%s"' %
               line)
         relative_glob_string = self.os_path.relpath(full_glob_string, self.root)
-        self._add_entry(relative_glob_string, directive, 'per-file line',
-                        owners_path, lineno, '\n'.join(comment))
+        self._add_entry(relative_glob_string, directive, owners_path,
+                        lineno, '\n'.join(comment))
         continue
 
       if line.startswith('set '):
         raise SyntaxErrorInOwnersFile(owners_path, lineno,
             'unknown option: "%s"' % line[4:].strip())
 
-      self._add_entry(dirpath, line, 'line', owners_path, lineno,
+      self._add_entry(dirpath, line, owners_path, lineno,
                       ' '.join(comment))
 
-  def _add_entry(self, path, directive,
-                 line_type, owners_path, lineno, comment):
+  def _add_entry(self, owned_paths, directive, owners_path, lineno, comment):
     if directive == 'set noparent':
-      self._stop_looking.add(path)
+      self._stop_looking.add(owned_paths)
     elif directive.startswith('file:'):
-      owners_file = self._resolve_include(directive[5:], owners_path)
-      if not owners_file:
+      include_file = self._resolve_include(directive[5:], owners_path)
+      if not include_file:
         raise SyntaxErrorInOwnersFile(owners_path, lineno,
             ('%s does not refer to an existing file.' % directive[5:]))
 
-      self._read_owners(owners_file)
-
-      dirpath = self.os_path.dirname(owners_file)
-      for key in self._owners_to_paths:
-        if not dirpath in self._owners_to_paths[key]:
-          continue
-        self._owners_to_paths[key].add(path)
-
-      if dirpath in self._paths_to_owners:
-        self._paths_to_owners.setdefault(path, set()).update(
-            self._paths_to_owners[dirpath])
-
+      included_owners = self._read_just_the_owners(include_file)
+      for owner in included_owners:
+        self._owners_to_paths.setdefault(owner, set()).add(owned_paths)
+        self._paths_to_owners.setdefault(owned_paths, set()).add(owner)
     elif self.email_regexp.match(directive) or directive == EVERYONE:
       self.comments.setdefault(directive, {})
-      self.comments[directive][path] = comment
-      self._owners_to_paths.setdefault(directive, set()).add(path)
-      self._paths_to_owners.setdefault(path, set()).add(directive)
+      self.comments[directive][owned_paths] = comment
+      self._owners_to_paths.setdefault(directive, set()).add(owned_paths)
+      self._paths_to_owners.setdefault(owned_paths, set()).add(directive)
     else:
       raise SyntaxErrorInOwnersFile(owners_path, lineno,
-          ('%s is not a "set" directive, file include, "*", '
-           'or an email address: "%s"' % (line_type, directive)))
+          ('"%s" is not a "set noparent", file include, "*", '
+           'or an email address.' % (directive,)))
 
   def _resolve_include(self, path, start):
     if path.startswith('//'):
@@ -307,6 +303,35 @@ class Database(object):
       return None
 
     return include_path
+
+  def _read_just_the_owners(self, include_file):
+    if include_file in self._included_files:
+      return self._included_files[include_file]
+
+    owners = set()
+    self._included_files[include_file] = owners
+    lineno = 0
+    for line in self.fopen(self.os_path.join(self.root, include_file)):
+      lineno += 1
+      line = line.strip()
+      if (line.startswith('#') or line == '' or
+              line.startswith('set noparent') or
+              line.startswith('per-file')):
+        continue
+
+      if self.email_regexp.match(line) or line == EVERYONE:
+        owners.add(line)
+        continue
+      if line.startswith('file:'):
+        sub_include_file = self._resolve_include(line[5:], include_file)
+        sub_owners = self._read_just_the_owners(sub_include_file)
+        owners.update(sub_owners)
+        continue
+
+      raise SyntaxErrorInOwnersFile(include_file, lineno,
+          ('"%s" is not a "set noparent", file include, "*", '
+           'or an email address.' % (line,)))
+    return owners
 
   def _covering_set_of_owners_for(self, files, author):
     dirs_remaining = set(self._enclosing_dir_with_owners(f) for f in files)

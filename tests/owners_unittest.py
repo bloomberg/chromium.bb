@@ -284,6 +284,19 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.files['/content/baz/OWNERS'] = owners_file(file='//chrome/gpu/OWNERS')
     self.assert_files_not_covered_by(['content/qux/foo.cc'], [ken], [])
 
+  def test_file_include_different_filename(self):
+    # This tests that a file named something other than OWNERS is not treated
+    # like OWNERS; we want to make sure that ken and peter don't become owners
+    # for /content, and that other owners for content still work.
+    self.files['/content/baz/OWNERS'] = owners_file(file='//content/BAZ_OWNERS')
+    self.files['/content/BAZ_OWNERS'] = owners_file([ken, peter])
+    self.assert_files_not_covered_by(
+        ['content/baz/baz.cc', 'content/qux/foo.cc'],
+        [ken], ['content/qux/foo.cc'])
+    self.assert_files_not_covered_by(
+        ['content/baz/baz.cc', 'content/qux/foo.cc'],
+        [ken, john], [])
+
   def test_file_include_recursive_loop(self):
     self.files['/content/baz/OWNERS'] = owners_file(brett,
         file='//content/qux/OWNERS')
