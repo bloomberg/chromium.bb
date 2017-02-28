@@ -332,8 +332,8 @@ TestSync::AsyncEchoCallback BindAsyncEchoCallback(Func func) {
   return base::Bind(&CallAsyncEchoCallback<Func>, func);
 }
 
-// TestSync and TestSyncMaster exercise Router and MultiplexRouter,
-// respectively.
+// TestSync (without associated interfaces) and TestSyncMaster (with associated
+// interfaces) exercise MultiplexRouter with different configurations.
 using InterfaceTypes = testing::Types<TestSync, TestSyncMaster>;
 TYPED_TEST_CASE(SyncMethodCommonTest, InterfaceTypes);
 

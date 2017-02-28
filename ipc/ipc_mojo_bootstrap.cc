@@ -385,8 +385,9 @@ class ChannelAssociatedGroupController
 
     void SignalSyncMessageEvent() {
       controller_->lock_.AssertAcquired();
-      EnsureSyncMessageEventExists();
-      sync_message_event_->Signal();
+
+      if (sync_message_event_)
+        sync_message_event_->Signal();
     }
 
     MessageWrapper PopSyncMessage(uint32_t id) {
@@ -489,9 +490,11 @@ class ChannelAssociatedGroupController
 
       {
         base::AutoLock locker(controller_->lock_);
-        EnsureSyncMessageEventExists();
-        if (!sync_messages_.empty())
-          SignalSyncMessageEvent();
+        if (!sync_message_event_) {
+          sync_message_event_.reset(new MojoEvent);
+          if (peer_closed_ || !sync_messages_.empty())
+            SignalSyncMessageEvent();
+        }
       }
 
       sync_watcher_.reset(new mojo::SyncHandleWatcher(

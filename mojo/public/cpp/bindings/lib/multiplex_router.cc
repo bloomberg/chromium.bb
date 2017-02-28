@@ -111,8 +111,10 @@ class MultiplexRouter::InterfaceEndpoint
     if (event_signalled_)
       return;
 
-    EnsureEventMessagePipeExists();
     event_signalled_ = true;
+    if (!sync_message_event_sender_.is_valid())
+      return;
+
     MojoResult result =
         WriteMessageRaw(sync_message_event_sender_.get(), nullptr, 0, nullptr,
                         0, MOJO_WRITE_MESSAGE_FLAG_NONE);
@@ -125,12 +127,14 @@ class MultiplexRouter::InterfaceEndpoint
     if (!event_signalled_)
       return;
 
-    DCHECK(sync_message_event_receiver_.is_valid());
+    event_signalled_ = false;
+    if (!sync_message_event_receiver_.is_valid())
+      return;
+
     MojoResult result =
         ReadMessageRaw(sync_message_event_receiver_.get(), nullptr, nullptr,
                        nullptr, nullptr, MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
     DCHECK_EQ(MOJO_RESULT_OK, result);
-    event_signalled_ = false;
   }
 
   // ---------------------------------------------------------------------------
@@ -203,27 +207,25 @@ class MultiplexRouter::InterfaceEndpoint
 
     {
       MayAutoLock locker(&router_->lock_);
-      EnsureEventMessagePipeExists();
 
-      auto iter = router_->sync_message_tasks_.find(id_);
-      if (iter != router_->sync_message_tasks_.end() && !iter->second.empty())
-        SignalSyncMessageEvent();
+      if (!sync_message_event_sender_.is_valid()) {
+        MojoResult result =
+            CreateMessagePipe(nullptr, &sync_message_event_sender_,
+                              &sync_message_event_receiver_);
+        DCHECK_EQ(MOJO_RESULT_OK, result);
+
+        if (event_signalled_) {
+          // Reset the flag so that SignalSyncMessageEvent() will actually
+          // signal using the newly-created message pipe.
+          event_signalled_ = false;
+          SignalSyncMessageEvent();
+        }
+      }
     }
 
     sync_watcher_.reset(new SyncHandleWatcher(
         sync_message_event_receiver_.get(), MOJO_HANDLE_SIGNAL_READABLE,
         base::Bind(&InterfaceEndpoint::OnHandleReady, base::Unretained(this))));
-  }
-
-  void EnsureEventMessagePipeExists() {
-    router_->AssertLockAcquired();
-
-    if (sync_message_event_receiver_.is_valid())
-      return;
-
-    MojoResult result = CreateMessagePipe(nullptr, &sync_message_event_sender_,
-                                          &sync_message_event_receiver_);
-    DCHECK_EQ(MOJO_RESULT_OK, result);
   }
 
   // ---------------------------------------------------------------------------
@@ -581,8 +583,11 @@ void MultiplexRouter::ResumeIncomingMethodCallProcessing() {
 
   for (auto iter = endpoints_.begin(); iter != endpoints_.end(); ++iter) {
     auto sync_iter = sync_message_tasks_.find(iter->first);
-    if (sync_iter != sync_message_tasks_.end() && !sync_iter->second.empty())
+    if (iter->second->peer_closed() ||
+        (sync_iter != sync_message_tasks_.end() &&
+         !sync_iter->second.empty())) {
       iter->second->SignalSyncMessageEvent();
+    }
   }
 
   ProcessTasks(NO_DIRECT_CLIENT_CALLS, nullptr);
@@ -926,16 +931,13 @@ void MultiplexRouter::LockAndCallProcessTasks() {
 void MultiplexRouter::UpdateEndpointStateMayRemove(
     InterfaceEndpoint* endpoint,
     EndpointStateUpdateType type) {
-  switch (type) {
-    case ENDPOINT_CLOSED:
-      endpoint->set_closed();
-      break;
-    case PEER_ENDPOINT_CLOSED:
-      endpoint->set_peer_closed();
-      // If the interface endpoint is performing a sync watch, this makes sure
-      // it is notified and eventually exits the sync watch.
-      endpoint->SignalSyncMessageEvent();
-      break;
+  if (type == ENDPOINT_CLOSED) {
+    endpoint->set_closed();
+  } else {
+    endpoint->set_peer_closed();
+    // If the interface endpoint is performing a sync watch, this makes sure
+    // it is notified and eventually exits the sync watch.
+    endpoint->SignalSyncMessageEvent();
   }
   if (endpoint->closed() && endpoint->peer_closed())
     endpoints_.erase(endpoint->id());
