@@ -402,6 +402,7 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
   use_blend_equation_advanced_coherent_ =
       context_caps.blend_equation_advanced_coherent;
   use_occlusion_query_ = context_caps.occlusion_query;
+  use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
 
   InitializeSharedObjects();
 }
@@ -417,6 +418,8 @@ GLRenderer::~GLRenderer() {
 }
 
 bool GLRenderer::CanPartialSwap() {
+  if (use_swap_with_bounds_)
+    return false;
   auto* context_provider = output_surface_->context_provider();
   return context_provider->ContextCapabilities().post_sub_buffer;
 }
@@ -2591,7 +2594,9 @@ void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_frame.size = surface_size;
-  if (use_partial_swap_) {
+  if (use_swap_with_bounds_) {
+    output_frame.content_bounds = current_frame()->root_content_bounds;
+  } else if (use_partial_swap_) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport).
     swap_buffer_rect_.Intersect(gfx::Rect(surface_size));

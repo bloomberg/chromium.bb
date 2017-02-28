@@ -93,7 +93,8 @@ void OverlayProcessor::ProcessForOverlays(
     const RenderPassFilterList& render_pass_background_filters,
     OverlayCandidateList* candidates,
     CALayerOverlayList* ca_layer_overlays,
-    gfx::Rect* damage_rect) {
+    gfx::Rect* damage_rect,
+    std::vector<gfx::Rect>* content_bounds) {
 #if defined(OS_ANDROID)
   // Be sure to send out notifications, regardless of whether we get to
   // processing for overlays or not.  If we don't, then we should notify that
@@ -120,7 +121,8 @@ void OverlayProcessor::ProcessForOverlays(
 
   // Only if that fails, attempt hardware overlay strategies.
   for (const auto& strategy : strategies_) {
-    if (!strategy->Attempt(resource_provider, render_pass, candidates))
+    if (!strategy->Attempt(resource_provider, render_pass, candidates,
+                           content_bounds))
       continue;
 
     UpdateDamageRect(candidates, damage_rect);

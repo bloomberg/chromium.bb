@@ -14,6 +14,7 @@
 #include "cc/output/overlay_strategy_fullscreen.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
+#include "cc/output/overlay_strategy_underlay_cast.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace display_compositor {
@@ -67,6 +68,9 @@ CompositorOverlayCandidateValidatorOzone::
     } else if (strategy_name == "underlay") {
       strategies_instantiators_.push_back(
           base::Bind(MakeOverlayStrategy<cc::OverlayStrategyUnderlay>));
+    } else if (strategy_name == "cast") {
+      strategies_instantiators_.push_back(
+          base::Bind(MakeOverlayStrategy<cc::OverlayStrategyUnderlayCast>));
     } else {
       LOG(WARNING) << "Unrecognized overlay strategy " << strategy_name;
     }

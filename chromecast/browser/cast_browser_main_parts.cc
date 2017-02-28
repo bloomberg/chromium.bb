@@ -236,7 +236,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
   { switches::kIgnoreGpuBlacklist, ""},
 #elif defined(ARCH_CPU_ARM_FAMILY)
 #if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
-  { switches::kEnableHardwareOverlays, "" },
+  {switches::kEnableHardwareOverlays, "cast"},
 #endif
 #endif
 #endif  // defined(OS_LINUX)

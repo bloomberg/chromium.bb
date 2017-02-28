@@ -116,8 +116,11 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
   }
 
   if (frame.sub_buffer_rect) {
+    DCHECK(frame.content_bounds.empty());
     context_provider_->ContextSupport()->PartialSwapBuffers(
         *frame.sub_buffer_rect);
+  } else if (!frame.content_bounds.empty()) {
+    context_provider_->ContextSupport()->SwapWithBounds(frame.content_bounds);
   } else {
     context_provider_->ContextSupport()->Swap();
   }

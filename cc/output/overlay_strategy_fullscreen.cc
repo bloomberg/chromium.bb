@@ -21,9 +21,11 @@ OverlayStrategyFullscreen::OverlayStrategyFullscreen(
 
 OverlayStrategyFullscreen::~OverlayStrategyFullscreen() {}
 
-bool OverlayStrategyFullscreen::Attempt(ResourceProvider* resource_provider,
-                                        RenderPass* render_pass,
-                                        OverlayCandidateList* candidate_list) {
+bool OverlayStrategyFullscreen::Attempt(
+    ResourceProvider* resource_provider,
+    RenderPass* render_pass,
+    OverlayCandidateList* candidate_list,
+    std::vector<gfx::Rect>* content_bounds) {
   QuadList* quad_list = &render_pass->quad_list;
   // First quad of quad_list is the top most quad.
   auto front = quad_list->begin();

@@ -81,6 +81,7 @@ class CC_EXPORT DirectRenderer {
     const ScopedResource* current_texture = nullptr;
 
     gfx::Rect root_damage_rect;
+    std::vector<gfx::Rect> root_content_bounds;
     gfx::Size device_viewport_size;
 
     gfx::Transform projection_matrix;

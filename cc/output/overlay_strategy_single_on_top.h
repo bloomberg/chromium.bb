@@ -20,7 +20,8 @@ class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
 
   bool Attempt(ResourceProvider* resource_provider,
                RenderPass* render_pass,
-               OverlayCandidateList* candidate_list) override;
+               OverlayCandidateList* candidate_list,
+               std::vector<gfx::Rect>* content_bounds) override;
 
  private:
   bool TryOverlay(QuadList* quad_list,

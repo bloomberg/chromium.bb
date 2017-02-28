@@ -308,7 +308,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       resource_provider_, root_render_pass, render_pass_filters_,
       render_pass_background_filters_, &current_frame()->overlay_list,
       &current_frame()->ca_layer_overlay_list,
-      &current_frame()->root_damage_rect);
+      &current_frame()->root_damage_rect,
+      &current_frame()->root_content_bounds);
 
   // We can skip all drawing if the damage rect is now empty.
   bool skip_drawing_root_render_pass =

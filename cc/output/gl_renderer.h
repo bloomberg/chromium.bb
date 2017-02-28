@@ -337,6 +337,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool use_sync_query_ = false;
   bool use_blend_equation_advanced_ = false;
   bool use_blend_equation_advanced_coherent_ = false;
+  bool use_occlusion_query_ = false;
+  bool use_swap_with_bounds_ = false;
 
   // Some overlays require that content is copied from a render pass into an
   // overlay resource. This means the GLRenderer needs its own ResourcePool.
@@ -355,7 +357,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   BoundGeometry bound_geometry_;
   ColorLUTCache color_lut_cache_;
 
-  bool use_occlusion_query_;
   unsigned offscreen_stencil_renderbuffer_id_ = 0;
   gfx::Size offscreen_stencil_renderbuffer_size_;
 

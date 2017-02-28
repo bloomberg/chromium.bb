@@ -28,7 +28,8 @@ class CC_EXPORT OverlayProcessor {
     // |render_passes|.
     virtual bool Attempt(ResourceProvider* resource_provider,
                          RenderPass* render_pass,
-                         OverlayCandidateList* candidates) = 0;
+                         OverlayCandidateList* candidates,
+                         std::vector<gfx::Rect>* content_bounds) = 0;
   };
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
@@ -48,7 +49,8 @@ class CC_EXPORT OverlayProcessor {
       const RenderPassFilterList& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
-      gfx::Rect* damage_rect);
+      gfx::Rect* damage_rect,
+      std::vector<gfx::Rect>* content_bounds);
 
  protected:
   StrategyList strategies_;

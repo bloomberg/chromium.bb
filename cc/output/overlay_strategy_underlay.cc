@@ -20,7 +20,8 @@ OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::Attempt(ResourceProvider* resource_provider,
                                       RenderPass* render_pass,
-                                      OverlayCandidateList* candidate_list) {
+                                      OverlayCandidateList* candidate_list,
+                                      std::vector<gfx::Rect>* content_bounds) {
   QuadList& quad_list = render_pass->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
     OverlayCandidate candidate;

@@ -216,6 +216,8 @@ cc_component("cc") {
     "output/overlay_strategy_single_on_top.h",
     "output/overlay_strategy_underlay.cc",
     "output/overlay_strategy_underlay.h",
+    "output/overlay_strategy_underlay_cast.cc",
+    "output/overlay_strategy_underlay_cast.h",
     "output/program_binding.cc",
     "output/program_binding.h",
     "output/render_surface_filters.cc",
