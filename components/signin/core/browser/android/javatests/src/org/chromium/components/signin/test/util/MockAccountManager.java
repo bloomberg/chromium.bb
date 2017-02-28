@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The MockAccountManager helps out if you want to mock out all calls to the Android AccountManager.
@@ -47,7 +44,7 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     protected final Context mContext;
 
-    private final Set<AccountHolder> mAccounts;
+    private final Set<AccountHolder> mAccounts = new HashSet<>();
 
     // Tracks the number of in-progress getAccountsByType() tasks so that tests can wait for
     // their completion.
@@ -57,17 +54,10 @@ public class MockAccountManager implements AccountManagerDelegate {
     public MockAccountManager(Context context, Context testContext, Account... accounts) {
         mContext = context;
         mGetAccountsTaskCounter = new ZeroCounter();
-        mAccounts = new HashSet<AccountHolder>();
         if (accounts != null) {
             for (Account account : accounts) {
                 mAccounts.add(AccountHolder.create().account(account).alwaysAccept(true).build());
             }
-        }
-    }
-
-    private static class SingleThreadedExecutor extends ThreadPoolExecutor {
-        public SingleThreadedExecutor() {
-            super(1, 1, 1, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>());
         }
     }
 
@@ -76,23 +66,13 @@ public class MockAccountManager implements AccountManagerDelegate {
         if (!AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(type)) {
             throw new IllegalArgumentException("Invalid account type: " + type);
         }
-        if (mAccounts == null) {
-            return new Account[0];
-        } else {
-            ArrayList<Account> validAccounts = new ArrayList<Account>();
-            for (AccountHolder ah : mAccounts) {
-                if (type.equals(ah.getAccount().type)) {
-                    validAccounts.add(ah.getAccount());
-                }
+        ArrayList<Account> validAccounts = new ArrayList<>();
+        for (AccountHolder ah : mAccounts) {
+            if (type.equals(ah.getAccount().type)) {
+                validAccounts.add(ah.getAccount());
             }
-
-            Account[] accounts = new Account[validAccounts.size()];
-            int i = 0;
-            for (Account account : validAccounts) {
-                accounts[i++] = account;
-            }
-            return accounts;
         }
+        return validAccounts.toArray(new Account[0]);
     }
 
     @Override
