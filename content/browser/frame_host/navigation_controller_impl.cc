@@ -39,7 +39,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -904,11 +903,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // All committed entries should have nonempty content state so WebKit doesn't
   // get confused when we go back to them (see the function for details).
-  if (!params.page_state.IsValid()) {
-    // Temporarily generate a minidump to diagnose https://crbug.com/568703.
-    base::debug::DumpWithoutCrashing();
-    NOTREACHED() << "Shouldn't see an empty PageState at commit.";
-  }
+  DCHECK(params.page_state.IsValid()) << "Shouldn't see an empty PageState.";
   NavigationEntryImpl* active_entry = GetLastCommittedEntry();
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);

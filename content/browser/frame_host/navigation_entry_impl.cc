@@ -9,7 +9,6 @@
 #include <queue>
 #include <utility>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -66,11 +65,7 @@ void RecursivelyGenerateFrameEntries(
   page_state.top = state;
   std::string data;
   EncodePageState(page_state, &data);
-  if (data.empty()) {
-    // Temporarily generate a minidump to diagnose https://crbug.com/568703.
-    base::debug::DumpWithoutCrashing();
-    NOTREACHED() << "Shouldn't generate an empty PageState.";
-  }
+  DCHECK(!data.empty()) << "Shouldn't generate an empty PageState.";
   node->frame_entry->SetPageState(PageState::CreateFromEncodedData(data));
 
   // Don't pass the file list to subframes, since that would result in multiple

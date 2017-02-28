@@ -4614,11 +4614,7 @@ void WebContentsImpl::UpdateStateForFrame(RenderFrameHost* render_frame_host,
   if (page_state == frame_entry->page_state())
     return;  // Nothing to update.
 
-  if (!page_state.IsValid()) {
-    // Temporarily generate a minidump to diagnose https://crbug.com/568703.
-    base::debug::DumpWithoutCrashing();
-    NOTREACHED() << "Shouldn't set an empty PageState.";
-  }
+  DCHECK(page_state.IsValid()) << "Shouldn't set an empty PageState.";
 
   // The document_sequence_number and item_sequence_number recorded in the
   // FrameNavigationEntry should not differ from the one coming with the update,
