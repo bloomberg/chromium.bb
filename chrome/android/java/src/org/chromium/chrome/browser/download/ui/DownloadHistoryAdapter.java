@@ -585,6 +585,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
                 DownloadHistoryItemWrapper existingWrapper = mOfflinePageItems.get(index);
                 existingWrapper.replaceItem(item);
+                // Re-add the file mapping once it finishes downloading. This accounts for the
+                // backend creating Offline Pages with a null file path, then updating it after the
+                // download starts. Doing it once after completion instead of at every update
+                // is a compromise that prevents us from rapidly and repeatedly updating the map
+                // with the same info is progress is reported.
+                if (item.getDownloadState()
+                        == org.chromium.components.offlinepages.downloads.DownloadState.COMPLETE) {
+                    mFilePathsToItemsMap.addItem(existingWrapper);
+                }
+
                 updateDisplayedItems();
             }
 
