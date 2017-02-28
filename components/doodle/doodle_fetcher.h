@@ -29,7 +29,7 @@ class DoodleFetcher {
   // Fetches a doodle asynchronously. The |callback| is called with a
   // DoodleState indicating whether the request succeded in fetching a doodle.
   // If a fetch is already running, the callback will be queued and invoked with
-  // result from the next completed request.
+  // the result from the next completed request.
   virtual void FetchDoodle(FinishedCallback callback) = 0;
 };
 

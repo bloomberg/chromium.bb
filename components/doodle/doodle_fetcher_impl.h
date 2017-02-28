@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/clock.h"
 #include "components/doodle/doodle_fetcher.h"
 #include "components/doodle/doodle_types.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -24,7 +25,6 @@
 class GoogleURLTracker;
 
 namespace base {
-class Clock;
 class DictionaryValue;
 class Value;
 }
@@ -91,7 +91,7 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
   ParseJSONCallback json_parsing_callback_;
   GoogleURLTracker* google_url_tracker_;
 
-  // Allow for an injectable tick clock for testing.
+  // Allow for an injectable clock for testing.
   std::unique_ptr<base::Clock> clock_;
 
   std::vector<FinishedCallback> callbacks_;

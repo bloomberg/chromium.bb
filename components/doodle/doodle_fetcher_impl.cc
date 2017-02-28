@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
-#include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -130,14 +129,14 @@ void DoodleFetcherImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
   std::unique_ptr<base::DictionaryValue> config =
       base::DictionaryValue::From(std::move(json));
   if (!config.get()) {
-    DLOG(WARNING) << "Doodle JSON is not valid";
+    DLOG(WARNING) << "Doodle JSON is not valid.";
     RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::nullopt);
     return;
   }
 
   const base::DictionaryValue* ddljson = nullptr;
   if (!config->GetDictionary("ddljson", &ddljson)) {
-    DLOG(WARNING) << "Doodle JSON reponse did not contain 'ddljson' key.";
+    DLOG(WARNING) << "Doodle JSON response did not contain 'ddljson' key.";
     RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::nullopt);
     return;
   }
@@ -159,6 +158,8 @@ void DoodleFetcherImpl::OnJsonParseFailed(const std::string& error_message) {
 base::Optional<DoodleConfig> DoodleFetcherImpl::ParseDoodle(
     const base::DictionaryValue& ddljson) const {
   DoodleConfig doodle;
+  // The |large_image| field is required (it's the "default" representation for
+  // the doodle).
   if (!ParseImage(ddljson, "large_image", &doodle.large_image)) {
     return base::nullopt;
   }

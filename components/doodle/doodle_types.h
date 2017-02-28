@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOODLE_DOODLE_TYPES_H_
 #define COMPONENTS_DOODLE_DOODLE_TYPES_H_
 
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace doodle {
@@ -32,6 +33,9 @@ struct DoodleImage {
   DoodleImage();
   ~DoodleImage();
 
+  bool operator==(const DoodleImage& other) const;
+  bool operator!=(const DoodleImage& other) const;
+
   GURL url;
   int height;
   int width;
@@ -48,11 +52,14 @@ struct DoodleConfig {
   DoodleConfig(const DoodleConfig& config);  // = default;
   ~DoodleConfig();
 
+  // Checks whether this config is "equivalent" to the other. This compares all
+  // fields for equality, except for |expiry_date|.
+  bool IsEquivalent(const DoodleConfig& other) const;
+
   DoodleType doodle_type;
   std::string alt_text;
   std::string interactive_html;
 
-  base::Time expiry_date;
   GURL search_url;
   GURL target_url;
   GURL fullpage_interactive_url;
@@ -60,6 +67,11 @@ struct DoodleConfig {
   DoodleImage large_image;
   DoodleImage large_cta_image;
   DoodleImage transparent_large_image;
+
+  // TODO(treib,fhorschig): Don't expose this? Clients don't care about it.
+  base::Time expiry_date;
+
+  // Copying and assignment allowed.
 };
 
 }  // namespace doodle
