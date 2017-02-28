@@ -685,6 +685,7 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'chell-paladin',
         'gale-paladin',
+        'kip-paladin',
         'lakitu_next-paladin',
         'loonix-paladin',
         'peach_pi-paladin',
@@ -2144,7 +2145,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'glados',
       'guado_moblab',
       'kevin',
-      'kip',
       'lakitu',
       'leon',
       'link',
