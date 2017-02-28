@@ -109,8 +109,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (_pending) {
     StatusItem* statusItem = [[StatusItem alloc] initWithType:ItemTypeSpinner];
-    statusItem.text =
-        l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_CHECKING_LABEL);
+    statusItem.text = l10n_util::GetNSString(IDS_PAYMENTS_CHECKING_OPTION);
     [model addItem:statusItem
         toSectionWithIdentifier:SectionIdentifierShippingAddress];
     return;
@@ -146,8 +145,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   PaymentsTextItem* addShippingAddress =
       [[PaymentsTextItem alloc] initWithType:ItemTypeAddShippingAddress];
-  addShippingAddress.text = l10n_util::GetNSString(
-      IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_ADD_BUTTON);
+  addShippingAddress.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
   addShippingAddress.image = NativeImage(IDR_IOS_PAYMENTS_ADD);
   addShippingAddress.accessibilityTraits |= UIAccessibilityTraitButton;
   [model addItem:addShippingAddress

@@ -102,8 +102,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (self.pending) {
     StatusItem* statusItem = [[StatusItem alloc] initWithType:ItemTypeSpinner];
-    statusItem.text =
-        l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_CHECKING_LABEL);
+    statusItem.text = l10n_util::GetNSString(IDS_PAYMENTS_CHECKING_OPTION);
     [model addItem:statusItem
         toSectionWithIdentifier:SectionIdentifierShippingOption];
     return;

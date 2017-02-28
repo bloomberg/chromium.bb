@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
+  <message name="IDS_PAYMENTS_TITLE" desc="Title of the dialog that presents a request for payment for some good or service [Desktop and iOS only].">
+    Your Payment
+  </message>
   <message name="IDS_PAYMENTS_NAME_FIELD_IN_CONTACT_DETAILS" desc="The label for text input field containing the full name of a person. [CHAR-LIMIT=32]" formatter_data="android_java">
     Name
   </message>
@@ -22,7 +25,7 @@
   <message name="IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to edit their contact information, such as the user's full name, an email address or a phone number." formatter_data="android_java">
     Edit contact info
   </message>
-  <message name="IDS_PAYMENTS_ADD_CARD" desc="The title of the dialog for user to add new payment card." formatter_data="android_java">
+  <message name="IDS_PAYMENTS_ADD_CARD_LABEL" desc="The title of the dialog for user to add new payment card." formatter_data="android_java">
     Add card
   </message>
   <message name="IDS_PAYMENTS_ADD_BILLING_ADDRESS" desc="The title of the dialog for user to add billing address to payment card." formatter_data="android_java">
@@ -78,6 +81,12 @@
   </message>
   <message name="IDS_PAYMENTS_ADD_CONTACT" desc="Text on a button that lets a user add new contact details, like the user's full name, an email address or a phone number." formatter_data="android_java">
     Add contact info
+  </message>
+  <message name="IDS_PAYMENTS_ADD_CARD" desc="Text on a button that lets a user add new payment card." formatter_data="android_java">
+    Add card
+  </message>
+  <message name="IDS_PAYMENTS_ADD_ADDRESS" desc="Text on a button that lets a user add new address." formatter_data="android_java">
+    Add address
   </message>
   <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified." formatter_data="android_java">
     Checking

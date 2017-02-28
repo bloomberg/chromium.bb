@@ -67,8 +67,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    [self setTitle:l10n_util::GetNSString(
-                       IDS_IOS_PAYMENT_REQUEST_METHOD_SELECTION_TITLE)];
+    [self
+        setTitle:l10n_util::GetNSString(IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL)];
 
     // Set up leading (return) button.
     UIBarButtonItem* returnButton =
@@ -119,8 +119,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   PaymentsTextItem* addPaymentMethod =
       [[PaymentsTextItem alloc] initWithType:ItemTypeAddMethod];
-  addPaymentMethod.text =
-      l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_ADD_METHOD_BUTTON);
+  addPaymentMethod.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD);
   addPaymentMethod.image = NativeImage(IDR_IOS_PAYMENTS_ADD);
   addPaymentMethod.accessibilityTraits |= UIAccessibilityTraitButton;
   [model addItem:addPaymentMethod

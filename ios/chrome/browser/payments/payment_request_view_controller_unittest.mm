@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/page_info_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
@@ -68,7 +69,7 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
 TEST_F(PaymentRequestViewControllerTest, TestModel) {
   CreateController();
   CheckController();
-  CheckTitleWithId(IDS_IOS_PAYMENT_REQUEST_TITLE);
+  CheckTitleWithId(IDS_PAYMENTS_TITLE);
 
   [GetPaymentRequestViewController() loadModel];
 

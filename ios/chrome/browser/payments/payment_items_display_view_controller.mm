@@ -65,8 +65,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                       payButtonEnabled:(BOOL)payButtonEnabled {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    [self setTitle:l10n_util::GetNSString(
-                       IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TITLE)];
+    [self setTitle:l10n_util::GetNSString(IDS_PAYMENTS_ORDER_SUMMARY_LABEL)];
 
     // Set up leading (return) button.
     UIBarButtonItem* returnButton =
@@ -79,9 +78,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     // Set up trailing (pay) button.
     _payButton = [[MDCFlatButton alloc] init];
-    [_payButton
-        setTitle:l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_PAY_BUTTON)
-        forState:UIControlStateNormal];
+    [_payButton setTitle:l10n_util::GetNSString(IDS_PAYMENTS_PAY_BUTTON)
+                forState:UIControlStateNormal];
     [_payButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                           forState:UIControlStateNormal];
     [_payButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2]];
@@ -146,7 +144,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   payments::CurrencyFormatter* currencyFormatter =
       _paymentRequest->GetOrCreateCurrencyFormatter();
   totalItem.price = SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-      IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TOTAL_FORMAT,
+      IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
       currencyFormatter->Format(base::UTF16ToASCII(
           _paymentRequest->payment_details().total.amount.value))));

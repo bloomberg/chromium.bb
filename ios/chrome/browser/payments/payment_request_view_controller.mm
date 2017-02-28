@@ -113,7 +113,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    [self setTitle:l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TITLE)];
+    [self setTitle:l10n_util::GetNSString(IDS_PAYMENTS_TITLE)];
 
     // Set up leading (cancel) button.
     _cancelButton = [[UIBarButtonItem alloc]
@@ -131,9 +131,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     // Set up trailing (pay) button.
     _payButton = [[MDCFlatButton alloc] init];
-    [_payButton
-        setTitle:l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_PAY_BUTTON)
-        forState:UIControlStateNormal];
+    [_payButton setTitle:l10n_util::GetNSString(IDS_PAYMENTS_PAY_BUTTON)
+                forState:UIControlStateNormal];
     [_payButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                           forState:UIControlStateNormal];
     [_payButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2]];
@@ -289,7 +288,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     CollectionViewTextItem* paymentTitle =
         [[CollectionViewTextItem alloc] initWithType:ItemTypePaymentTitle];
     paymentTitle.text =
-        l10n_util::GetNSString(IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL);
+        l10n_util::GetNSString(IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME);
     [model setHeader:paymentTitle
         forSectionWithIdentifier:SectionIdentifierPayment];
 
@@ -307,7 +306,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [CollectionViewDetailItem alloc] initWithType:ItemTypeAddPaymentMethod];
     paymentMethodItem = addPaymentMethodItem;
     addPaymentMethodItem.text =
-        l10n_util::GetNSString(IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL);
+        l10n_util::GetNSString(IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME);
     addPaymentMethodItem.detailText = [l10n_util::GetNSString(IDS_ADD)
         uppercaseStringWithLocale:[NSLocale currentLocale]];
     addPaymentMethodItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -402,17 +401,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)fillPaymentSummaryItem:(PriceItem*)item
                withPaymentItem:(web::PaymentItem)paymentItem
          withTotalValueChanged:(BOOL)totalValueChanged {
-  item.item = l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TOTAL_HEADER);
+  item.item =
+      base::SysUTF16ToNSString(_paymentRequest->payment_details().total.label);
   payments::CurrencyFormatter* currencyFormatter =
       _paymentRequest->GetOrCreateCurrencyFormatter();
   item.price = SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-      IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TOTAL_FORMAT,
+      IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
       currencyFormatter->Format(base::UTF16ToASCII(paymentItem.amount.value))));
-  item.notification =
-      totalValueChanged
-          ? l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TOTAL_UPDATED_LABEL)
-          : nil;
+  item.notification = totalValueChanged
+                          ? l10n_util::GetNSString(IDS_PAYMENTS_UPDATED_LABEL)
+                          : nil;
 }
 
 - (void)fillShippingAddressItem:(AutofillProfileItem*)item

@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -28,7 +29,7 @@ class PaymentRequestErrorViewControllerTest
 TEST_F(PaymentRequestErrorViewControllerTest, TestModel) {
   CreateController();
   CheckController();
-  CheckTitleWithId(IDS_IOS_PAYMENT_REQUEST_TITLE);
+  CheckTitleWithId(IDS_PAYMENTS_TITLE);
 
   [GetPaymentRequestErrorViewController() loadModel];
 

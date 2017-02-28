@@ -51,7 +51,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)init {
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    [self setTitle:l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TITLE)];
+    [self setTitle:l10n_util::GetNSString(IDS_PAYMENTS_TITLE)];
 
     // Set up trailing (ok) button.
     _okButton =
