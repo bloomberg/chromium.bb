@@ -61,6 +61,11 @@ void NGInlineNode::PrepareLayout() {
   ShapeText();
 }
 
+void NGInlineNode::InvalidatePrepareLayout() {
+  text_content_ = String();
+  items_.clear();
+}
+
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
 // NGInlineNode object. Collects LayoutText items, merging them up into the
 // parent LayoutInline where possible, and joining all text content in a single
@@ -248,12 +253,37 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace*, NGBreakToken*) {
 
 void NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
                                 NGLineBuilder* line_builder) {
-  PrepareLayout();
+  if (!IsPrepareLayoutFinished())
+    PrepareLayout();
 
   if (text_content_.isEmpty())
     return;
 
   NGTextLayoutAlgorithm(this, constraint_space).LayoutInline(line_builder);
+}
+
+MinAndMaxContentSizes NGInlineNode::ComputeMinAndMaxContentSizes() {
+  // Compute the max of inline sizes of all line boxes with 0 available inline
+  // size. This gives the min-content, the width where lines wrap at every break
+  // opportunity.
+  NGWritingMode writing_mode =
+      FromPlatformWritingMode(BlockStyle()->getWritingMode());
+  NGConstraintSpace* constraint_space =
+      NGConstraintSpaceBuilder(writing_mode)
+          .SetTextDirection(BlockStyle()->direction())
+          .SetAvailableSize({LayoutUnit(), NGSizeIndefinite})
+          .ToConstraintSpace(writing_mode);
+  NGLineBuilder line_builder(this, constraint_space);
+  LayoutInline(constraint_space, &line_builder);
+  MinAndMaxContentSizes sizes;
+  sizes.min_content = line_builder.MaxInlineSize();
+
+  // max-content is the width without any line wrapping.
+  // TODO(kojii): Implement hard breaks (<br> etc.) to break.
+  for (const auto& item : items_)
+    sizes.max_content += item.InlineSize();
+
+  return sizes;
 }
 
 NGInlineNode* NGInlineNode::NextSibling() {

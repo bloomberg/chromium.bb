@@ -35,6 +35,8 @@ class CORE_EXPORT NGLineBuilder final
     return *constraint_space_;
   }
 
+  LayoutUnit MaxInlineSize() const { return max_inline_size_; }
+
   // Returns if the current items fit on a line.
   bool CanFitOnLine() const;
 

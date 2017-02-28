@@ -22,6 +22,7 @@ class ComputedStyle;
 class LayoutBlockFlow;
 class LayoutObject;
 class LayoutUnit;
+struct MinAndMaxContentSizes;
 class NGConstraintSpace;
 class NGLayoutInlineItem;
 class NGLayoutInlineItemRange;
@@ -29,7 +30,8 @@ class NGLayoutInlineItemsBuilder;
 class NGLayoutResult;
 class NGLineBuilder;
 
-// Represents an inline node to be laid out.
+// Represents an anonymous block box to be laid out, that contains consecutive
+// inline nodes and their descendants.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
   NGInlineNode(LayoutObject* start_inline, const ComputedStyle* block_style);
@@ -42,9 +44,13 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineNode* NextSibling() override;
   LayoutObject* GetLayoutObject() override;
 
-  // Prepare inline and text content for layout. Must be called before
-  // calling the Layout method.
-  void PrepareLayout();
+  // Computes the value of min-content and max-content for this anonymous block
+  // box. min-content is the inline size when lines wrap at every break
+  // opportunity, and max-content is when lines do not wrap at all.
+  MinAndMaxContentSizes ComputeMinAndMaxContentSizes();
+
+  // Instruct to re-compute |PrepareLayout| on the next layout.
+  void InvalidatePrepareLayout();
 
   const String& Text() const { return text_content_; }
   String Text(unsigned start_offset, unsigned end_offset) const {
@@ -66,6 +72,12 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
  protected:
   NGInlineNode();  // This constructor is only for testing.
+
+  // Prepare inline and text content for layout. Must be called before
+  // calling the Layout method.
+  void PrepareLayout();
+  bool IsPrepareLayoutFinished() const { return !items_.isEmpty(); }
+
   void CollectInlines(LayoutObject* start, LayoutObject* last);
   void CollectInlines(LayoutObject* start,
                       LayoutObject* last,

@@ -324,18 +324,26 @@ NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes() const {
   // TODO: handle floats & orthogonal children.
   for (NGLayoutInputNode* node = node_->FirstChild(); node;
        node = node->NextSibling()) {
-    Optional<MinAndMaxContentSizes> child_minmax;
+    MinAndMaxContentSizes child_sizes;
     if (node->Type() == NGLayoutInputNode::kLegacyInline) {
-      // TODO(kojii): Implement when there are inline children.
-      return child_minmax;
-    }
-    NGBlockNode* block_child = toNGBlockNode(node);
-    if (NeedMinAndMaxContentSizesForContentContribution(block_child->Style())) {
-      child_minmax = block_child->ComputeMinAndMaxContentSizes();
-    }
+      // From |NGBlockLayoutAlgorithm| perspective, we can handle |NGInlineNode|
+      // almost the same as |NGBlockNode|, because an |NGInlineNode| includes
+      // all inline nodes following |node| and their descendants, and produces
+      // an anonymous box that contains all line boxes.
+      // |NextSibling| returns the next block sibling, or nullptr, skipping all
+      // following inline siblings and descendants.
+      child_sizes = toNGInlineNode(node)->ComputeMinAndMaxContentSizes();
+    } else {
+      Optional<MinAndMaxContentSizes> child_minmax;
+      NGBlockNode* block_child = toNGBlockNode(node);
+      if (NeedMinAndMaxContentSizesForContentContribution(
+              block_child->Style())) {
+        child_minmax = block_child->ComputeMinAndMaxContentSizes();
+      }
 
-    MinAndMaxContentSizes child_sizes =
-        ComputeMinAndMaxContentContribution(block_child->Style(), child_minmax);
+      child_sizes = ComputeMinAndMaxContentContribution(block_child->Style(),
+                                                        child_minmax);
+    }
 
     sizes.min_content = std::max(sizes.min_content, child_sizes.min_content);
     sizes.max_content = std::max(sizes.max_content, child_sizes.max_content);
@@ -518,6 +526,9 @@ void NGBlockLayoutAlgorithm::LayoutInlineChildren(NGInlineNode* current_child) {
   // inline/block. We need to detect the case and setup appropriately; e.g.,
   // constraint space, margin collapsing, next siblings, etc.
   NGLineBuilder line_builder(current_child, space_for_current_child_);
+  // TODO(kojii): Need to determine when to invalidate PrepareLayout() more
+  // efficiently than "everytime".
+  current_child->InvalidatePrepareLayout();
   current_child->LayoutInline(space_for_current_child_, &line_builder);
   // TODO(kojii): The wrapper fragment should not be needed.
   NGFragmentBuilder wrapper_fragment_builder(NGPhysicalFragment::kFragmentBox,

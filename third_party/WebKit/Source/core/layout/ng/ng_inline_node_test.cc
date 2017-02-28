@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_inline_node.h"
 
+#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -54,13 +55,25 @@ class NGInlineNodeForTest : public NGInlineNode {
     is_bidi_enabled_ = true;
     NGInlineNode::SegmentText();
   }
+
+  using NGInlineNode::ShapeText;
 };
 
-class NGInlineNodeTest : public ::testing::Test {
+class NGInlineNodeTest : public RenderingTest {
  protected:
   void SetUp() override {
+    RenderingTest::SetUp();
     style_ = ComputedStyle::create();
     style_->font().update(nullptr);
+  }
+
+  void setAhemToStyle() {
+    // Get Ahem from document. Loading "Ahem.woff" using |createTestFont| fails
+    // on linux_chromium_asan_rel_ng.
+    loadAhem();
+    setBodyInnerHTML("<div id=t style='font:10px Ahem'></div>");
+    LayoutObject* layout_object = getLayoutObjectByElementId("t");
+    style_->setFont(layout_object->style()->font());
   }
 
   void CreateLine(NGInlineNode* node,
@@ -191,6 +204,7 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
   style->setLineHeight(Length(1, Fixed));
+  style->font().update(nullptr);
   NGInlineNodeForTest* node = CreateBidiIsolateNode(style.get());
   Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
@@ -200,6 +214,33 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   TEST_TEXT_FRAGMENT(fragments[2], node, 4u, 14u, 15u, TextDirection::kLtr);
   TEST_TEXT_FRAGMENT(fragments[3], node, 2u, 7u, 13u, TextDirection::kRtl);
   TEST_TEXT_FRAGMENT(fragments[4], node, 8u, 22u, 28u, TextDirection::kLtr);
+}
+
+TEST_F(NGInlineNodeTest, MinAndMaxContentSizes) {
+  setAhemToStyle();
+  NGInlineNodeForTest* node = new NGInlineNodeForTest(style_.get());
+  node->Append("AB CDE", style_.get());
+  node->ShapeText();
+  MinAndMaxContentSizes sizes = node->ComputeMinAndMaxContentSizes();
+  // TODO(kojii): min_content should be 20, but is 30 until NGLineBuilder
+  // implements trailing spaces correctly.
+  EXPECT_EQ(30, sizes.min_content);
+  EXPECT_EQ(60, sizes.max_content);
+}
+
+TEST_F(NGInlineNodeTest, MinAndMaxContentSizesElementBoundary) {
+  setAhemToStyle();
+  NGInlineNodeForTest* node = new NGInlineNodeForTest(style_.get());
+  node->Append("A B", style_.get());
+  node->Append("C D", style_.get());
+  node->ShapeText();
+  MinAndMaxContentSizes sizes = node->ComputeMinAndMaxContentSizes();
+  // |min_content| should be the width of "BC" because there is an element
+  // boundary between "B" and "C" but no break opportunities.
+  // TODO(kojii): min_content should be 20, but is 30 until NGLineBuilder
+  // implements trailing spaces correctly.
+  EXPECT_EQ(30, sizes.min_content);
+  EXPECT_EQ(60, sizes.max_content);
 }
 
 }  // namespace blink
