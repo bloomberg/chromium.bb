@@ -135,6 +135,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
@@ -198,6 +199,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      */
     private static final String ACTION_CLOSE_TABS =
             "com.google.android.apps.chrome.ACTION_CLOSE_TABS";
+
+    private static final String LAST_BACKGROUNDED_TIME_MS_PREF =
+            "ChromeTabbedActivity.BackgroundTimeMs";
+    private static final String NTP_LAUNCH_DELAY_IN_MINS_PARAM = "delay_in_mins";
 
     /** The task id of the activity that tabs were merged into. */
     private static int sMergedInstanceTaskId;
@@ -538,6 +543,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mTabModelSelectorImpl.saveState();
         StartupMetrics.getInstance().recordHistogram(true);
         mActivityStopMetrics.onStopWithNative(this);
+
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(LAST_BACKGROUNDED_TIME_MS_PREF, System.currentTimeMillis())
+                .apply();
     }
 
     @Override
@@ -560,7 +570,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         try {
             TraceEvent.begin("ChromeTabbedActivity.onNewIntentWithNative");
 
-            super.onNewIntentWithNative(intent);
+            if (!maybeLaunchNtpFromIntent(intent)) super.onNewIntentWithNative(intent);
+
             if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS)) {
                 handleDebugIntent(intent);
             }
@@ -695,6 +706,52 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         }
     }
 
+    /**
+     * Determines if the intent should trigger an NTP and launches it if applicable.
+     *
+     * @param intent The intent to check whether an NTP should be triggered.
+     * @return Whether an NTP was triggered as a result of this intent.
+     */
+    private boolean maybeLaunchNtpFromIntent(Intent intent) {
+        if (intent == null || !TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN)) {
+            return false;
+        }
+        if (!mIntentHandler.isIntentUserVisible()) return false;
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY)) {
+            return false;
+        }
+
+        int ntpLaunchDelayInMins = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY, NTP_LAUNCH_DELAY_IN_MINS_PARAM, -1);
+        if (ntpLaunchDelayInMins == -1) {
+            Log.e(TAG, "No NTP launch delay specified despite enabled field trial");
+            return false;
+        }
+
+        long lastBackgroundedTimeMs =
+                ContextUtils.getAppSharedPreferences().getLong(LAST_BACKGROUNDED_TIME_MS_PREF, -1);
+        if (lastBackgroundedTimeMs == -1) return false;
+
+        long backgroundDurationMinutes = TimeUnit.MINUTES.convert(
+                System.currentTimeMillis() - lastBackgroundedTimeMs, TimeUnit.MILLISECONDS);
+
+        if (backgroundDurationMinutes < ntpLaunchDelayInMins) {
+            Log.i(TAG, "Not launching NTP due to inactivity, background time: %d, launch delay: %d",
+                    backgroundDurationMinutes, ntpLaunchDelayInMins);
+            return false;
+        }
+
+        PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
+            @Override
+            public void run() {
+                createInitialTab();
+            }
+        }, INITIAL_TAB_CREATION_TIMEOUT_MS);
+
+        return true;
+    }
+
     @Override
     public void initializeState() {
         // This method goes through 3 steps:
@@ -739,6 +796,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     // TODO(mthiesse): Improve startup when started from a VR intent. Right now
                     // we launch out of VR, partially load out of VR, then switch into VR.
                     mVrShellDelegate.enterVRIfNecessary();
+                } else if (maybeLaunchNtpFromIntent(getIntent())) {
+                    mIntentWithEffect = true;
                 } else if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(intent);
                 }

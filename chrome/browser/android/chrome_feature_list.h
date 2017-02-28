@@ -29,6 +29,7 @@ extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPCondensedLayoutFeature;
 extern const base::Feature kNTPCondensedTileLayoutFeature;
 extern const base::Feature kNTPFakeOmniboxTextFeature;
+extern const base::Feature kNTPLaunchAfterInactivity;
 extern const base::Feature kNTPOfflinePagesFeature;
 extern const base::Feature NTPShowGoogleGInOmniboxFeature;
 extern const base::Feature kNTPSuggestionsStandaloneUIFeature;
