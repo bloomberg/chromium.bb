@@ -9,11 +9,11 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/feedback/anonymizer_tool.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
 #include "system_log_uploader.h"
 
@@ -94,9 +93,10 @@ void SystemLogDelegate::LoadSystemLogs(
     const LogUploadCallback& upload_callback) {
   // Run ReadFiles() in the thread that interacts with the file system and
   // return system logs to |upload_callback| on the current thread.
-  base::PostTaskAndReplyWithResult(content::BrowserThread::GetBlockingPool(),
-                                   FROM_HERE, base::Bind(&ReadFiles),
-                                   upload_callback);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&ReadFiles), upload_callback);
 }
 
 std::unique_ptr<policy::UploadJob> SystemLogDelegate::CreateUploadJob(
