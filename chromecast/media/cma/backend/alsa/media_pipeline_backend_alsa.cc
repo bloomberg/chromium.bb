@@ -98,6 +98,10 @@ bool MediaPipelineBackendAlsa::Primary() const {
           MediaPipelineDeviceParams::kAudioStreamSoundEffects);
 }
 
+std::string MediaPipelineBackendAlsa::DeviceId() const {
+  return params_.device_id;
+}
+
 const scoped_refptr<base::SingleThreadTaskRunner>&
 MediaPipelineBackendAlsa::GetTaskRunner() const {
   return static_cast<TaskRunnerImpl*>(params_.task_runner)->runner();

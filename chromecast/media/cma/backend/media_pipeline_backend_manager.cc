@@ -45,6 +45,7 @@ MediaPipelineBackendManager::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params,
     int stream_type) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << "Creating a " << params.device_id << " stream.";
   std::unique_ptr<MediaPipelineBackend> backend_ptr(
       new MediaPipelineBackendWrapper(
           base::WrapUnique(

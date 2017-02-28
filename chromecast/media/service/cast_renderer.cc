@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/base/video_mode_switcher.h"
 #include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
@@ -17,6 +18,7 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
@@ -92,7 +94,20 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
       (load_type == kLoadTypeMediaStream)
           ? MediaPipelineDeviceParams::kModeIgnorePts
           : MediaPipelineDeviceParams::kModeSyncPts;
-  MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get());
+  std::string device_id = audio_device_id_;
+  if (device_id == "")
+    device_id = ::media::AudioDeviceDescription::kDefaultDeviceId;
+
+  MediaPipelineDeviceParams params(
+      sync_type, MediaPipelineDeviceParams::kAudioStreamNormal, device_id,
+      backend_task_runner_.get());
+
+  if (audio_device_id_ == kTtsAudioDeviceId ||
+      audio_device_id_ ==
+          ::media::AudioDeviceDescription::kCommunicationsDeviceId) {
+    load_type = kLoadTypeCommunication;
+  }
+
   std::unique_ptr<MediaPipelineBackend> backend =
       backend_factory_->CreateBackend(params, audio_device_id_);
 

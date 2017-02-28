@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
+#include "chromecast/public/media/media_pipeline_device_params.h"
 
 namespace chromecast {
 namespace media {
@@ -50,7 +51,8 @@ class StreamMixerAlsaInput {
   // exist.
   StreamMixerAlsaInput(Delegate* delegate,
                        int samples_per_second,
-                       bool primary);
+                       bool primary,
+                       const std::string& device_id);
   // Removes this input from the mixer, destroying the mixer if there are no
   // remaining inputs.
   ~StreamMixerAlsaInput();

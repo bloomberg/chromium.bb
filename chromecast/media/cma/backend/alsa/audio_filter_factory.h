@@ -15,7 +15,12 @@ namespace media {
 class AudioFilterFactory {
  public:
   // FilterType specifies the usage of the created filter.
-  enum FilterType { PRE_LOOPBACK_FILTER, POST_LOOPBACK_FILTER };
+  enum FilterType {
+    MEDIA_AUDIO_FILTER = 0,
+    TTS_AUDIO_FILTER,
+    COMMUNICATION_AUDIO_FILTER,
+    ALARM_AUDIO_FILTER,
+  };
 
   // Creates a new AudioFilterInterface.
   static std::unique_ptr<AudioFilterInterface> MakeAudioFilter(

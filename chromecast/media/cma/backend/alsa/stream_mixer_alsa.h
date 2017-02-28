@@ -28,6 +28,7 @@ class AudioBus;
 namespace chromecast {
 namespace media {
 class AlsaWrapper;
+class FilterGroup;
 
 // Mixer implementation. The mixer has one or more input queues; these can be
 // added/removed at any time. When an input source pushes frames to an input
@@ -67,6 +68,11 @@ class StreamMixerAlsa {
     // precedence for sample rates and will dictate when data is polled.
     virtual bool primary() const = 0;
 
+    // Returns a string describing the content type class.
+    // Should be from chromecast/media/base/audio_device_ids.h
+    // or media/audio/audio_device_description.h
+    virtual std::string device_id() const = 0;
+
     // Returns true if PrepareToDelete() has been called.
     virtual bool IsDeleting() const = 0;
 
@@ -74,6 +80,12 @@ class StreamMixerAlsa {
     // input can correctly determine the mixer's output sample rate.
     virtual void Initialize(const MediaPipelineBackendAlsa::RenderingDelay&
                                 mixer_rendering_delay) = 0;
+
+    // Sets and gets the FilterGroup the InputQueue matches.
+    // This is determined at creation to save time matching the InputQueue
+    // to a FilterGroup every time it needs to be mixed.
+    virtual void set_filter_group(FilterGroup* filter_group) = 0;
+    virtual FilterGroup* filter_group() = 0;
 
     // Returns the maximum number of frames that can be read from this input
     // stream without filling with zeros. This should return 0 if the queue is
@@ -195,10 +207,11 @@ class StreamMixerAlsa {
 
   void WriteFrames();
   bool TryWriteFrames();
-  void WriteMixedPcm(const ::media::AudioBus& mixed, int frames,
-      bool is_silence);
+  void WriteMixedPcm(std::vector<uint8_t>* interleaved, int frames);
   void UpdateRenderingDelay(int newly_pushed_frames);
+  size_t InterleavedSize(int frames);
   ssize_t BytesPerOutputFormatSample();
+  void ResizeBuffersIfNecessary(int chunk_size);
 
   static bool single_threaded_for_test_;
 
@@ -229,25 +242,14 @@ class StreamMixerAlsa {
   std::vector<std::unique_ptr<InputQueue>> inputs_;
   std::vector<std::unique_ptr<InputQueue>> ignored_inputs_;
   MediaPipelineBackendAlsa::RenderingDelay rendering_delay_;
-  // Buffer to write final interleaved data before sending to snd_pcm_writei().
-  std::vector<uint8_t> interleaved_;
-
-  // Buffers that hold audio data while it is mixed, before it is passed to the
-  // ALSA layer. These are kept as members of this class to minimize copies and
-  // allocations.
-  std::unique_ptr<::media::AudioBus> temp_;
-  std::unique_ptr<::media::AudioBus> mixed_;
 
   std::unique_ptr<base::Timer> retry_write_frames_timer_;
 
   int check_close_timeout_;
   std::unique_ptr<base::Timer> check_close_timer_;
 
+  std::vector<std::unique_ptr<FilterGroup>> filter_groups_;
   std::vector<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
-
-  std::unique_ptr<AudioFilterInterface> pre_loopback_filter_;
-  std::unique_ptr<AudioFilterInterface> post_loopback_filter_;
-  int silence_frames_filtered_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsa);
 };

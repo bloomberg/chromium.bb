@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/cma/backend/alsa/mock_alsa_wrapper.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 #include "media/base/vector_math.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -126,13 +127,17 @@ std::unique_ptr<::media::AudioBus> GetTestData(size_t index) {
 
 class MockInputQueue : public StreamMixerAlsa::InputQueue {
  public:
-  explicit MockInputQueue(int samples_per_second)
+  explicit MockInputQueue(int samples_per_second,
+                          const std::string& device_id =
+                              ::media::AudioDeviceDescription::kDefaultDeviceId)
       : paused_(true),
         samples_per_second_(samples_per_second),
         max_read_size_(kTestMaxReadSize),
         multiplier_(1.0),
         primary_(true),
-        deleting_(false) {
+        deleting_(false),
+        device_id_(device_id),
+        filter_group_(nullptr) {
     ON_CALL(*this, GetResampledData(_, _)).WillByDefault(
         testing::Invoke(this, &MockInputQueue::DoGetResampledData));
     ON_CALL(*this, VolumeScaleAccumulate(_, _, _, _)).WillByDefault(
@@ -151,6 +156,9 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
   MOCK_METHOD1(Initialize,
                void(const MediaPipelineBackendAlsa::RenderingDelay&
                         mixer_rendering_delay));
+  std::string device_id() const override { return device_id_; }
+  void set_filter_group(FilterGroup* group) override { filter_group_ = group; }
+  FilterGroup* filter_group() override { return filter_group_; }
   int MaxReadSize() override { return max_read_size_; }
   MOCK_METHOD2(GetResampledData, void(::media::AudioBus* dest, int frames));
   MOCK_METHOD4(
@@ -214,6 +222,9 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
   float multiplier_;
   bool primary_;
   bool deleting_;
+  const std::string device_id_;
+  FilterGroup* filter_group_;
+
   std::unique_ptr<::media::AudioBus> data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputQueue);
@@ -488,6 +499,48 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperly) {
         new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond));
     inputs.back()->SetPaused(false);
   }
+
+  StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
+    mixer->AddInput(base::WrapUnique(inputs[i]));
+  }
+
+  // Poll the inputs for data.
+  const int kNumFrames = 32;
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    inputs[i]->SetData(GetTestData(i));
+    EXPECT_CALL(*inputs[i], GetResampledData(_, kNumFrames));
+    EXPECT_CALL(*inputs[i], VolumeScaleAccumulate(_, _, kNumFrames, _))
+        .Times(kNumChannels);
+    EXPECT_CALL(*inputs[i], AfterWriteFrames(_));
+  }
+
+  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kNumFrames)).Times(1);
+  mixer->WriteFramesForTest();
+
+  // Mix the inputs manually.
+  auto expected = GetMixedAudioData(inputs);
+
+  // Get the actual stream rendered to ALSA, and compare it against the
+  // expected stream. The stream should match exactly.
+  auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
+  actual->FromInterleaved(&(mock_alsa()->data()[0]), kNumFrames,
+                          kBytesPerSample);
+  CompareAudioData(*expected, *actual);
+}
+
+TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsWithDifferentIdsMixProperly) {
+  // Create a group of input streams.
+  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
+  inputs.push_back(new testing::StrictMock<MockInputQueue>(
+      kTestSamplesPerSecond,
+      ::media::AudioDeviceDescription::kDefaultDeviceId));
+  inputs.back()->SetPaused(false);
+  inputs.push_back(new testing::StrictMock<MockInputQueue>(
+      kTestSamplesPerSecond,
+      ::media::AudioDeviceDescription::kCommunicationsDeviceId));
+  inputs.back()->SetPaused(false);
 
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   for (size_t i = 0; i < inputs.size(); ++i) {
