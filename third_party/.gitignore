@@ -193,6 +193,7 @@
 /win_toolchain/files
 /wix
 /xdg-utils
+/xstream/lib/*.jar
 /xulrunner-sdk
 /yasm/binaries
 /yasm/generate_files.xml

@@ -769,6 +769,16 @@ hooks = [
                '-l', 'third_party/objenesis'
     ],
   },
+  {
+    'name': 'xstream',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-robolectric',
+               '-l', 'third_party/xstream'
+    ],
+  },
   # Downloads the VR Services and Daydream Home APKs used for VR testing on
   # Android.
   {
