@@ -150,20 +150,22 @@ cc::CompositorFrame CreateDelegatedFrame(float scale_factor,
   return frame;
 }
 
-TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
+// http://crbug.com/696919
+#if defined(OS_WIN)
+#define MAYBE_VisibilityTest DISABLED_VisibilityTest
+#define MAYBE_SwapCompositorFrame DISABLED_SwapCompositorFrame
+#else
+#define MAYBE_VisibilityTest VisibilityTest
+#define MAYBE_SwapCompositorFrame SwapCompositorFrame
+#endif
+
+TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_VisibilityTest) {
   view_->Show();
   ASSERT_TRUE(view_->IsShowing());
 
   view_->Hide();
   ASSERT_FALSE(view_->IsShowing());
 }
-
-// http://crbug.com/696919
-#if defined(OS_WIN)
-#define MAYBE_SwapCompositorFrame DISABLED_SwapCompositorFrame
-#else
-#define MAYBE_SwapCompositorFrame SwapCompositorFrame
-#endif
 
 // Verify that OnSwapCompositorFrame behavior is correct when a delegated
 // frame is received from a renderer process.
