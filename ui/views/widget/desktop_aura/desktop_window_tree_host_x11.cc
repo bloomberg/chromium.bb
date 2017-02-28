@@ -206,7 +206,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       has_pointer_(false),
       has_window_focus_(false),
       has_pointer_focus_(false),
-      modal_dialog_xid_(0),
+      modal_dialog_counter_(0),
       close_widget_factory_(this),
       weak_factory_(this) {}
 
@@ -2337,19 +2337,17 @@ gfx::Rect DesktopWindowTreeHostX11::ToPixelRect(
   return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
-XID DesktopWindowTreeHostX11::GetModalDialog() {
-  return modal_dialog_xid_;
-}
-
 std::unique_ptr<base::Closure>
-    DesktopWindowTreeHostX11::DisableEventListening(XID dialog) {
-  DCHECK(dialog);
-  DCHECK(!modal_dialog_xid_);
-  modal_dialog_xid_ = dialog;
-  // ScopedWindowTargeter is used to temporarily replace the event-targeter
-  // with NullEventTargeter to make |dialog| modal.
-  targeter_for_modal_.reset(new aura::ScopedWindowTargeter(window(),
-      std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter)));
+DesktopWindowTreeHostX11::DisableEventListening() {
+  // Allows to open multiple file-pickers. See https://crbug.com/678982
+  modal_dialog_counter_++;
+  if (modal_dialog_counter_ == 1) {
+    // ScopedWindowTargeter is used to temporarily replace the event-targeter
+    // with NullEventTargeter to make |dialog| modal.
+    targeter_for_modal_.reset(new aura::ScopedWindowTargeter(
+        window(),
+        std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter)));
+  }
 
   return base::MakeUnique<base::Closure>(base::Bind(
       &DesktopWindowTreeHostX11::EnableEventListening,
@@ -2357,9 +2355,9 @@ std::unique_ptr<base::Closure>
 }
 
 void DesktopWindowTreeHostX11::EnableEventListening() {
-  DCHECK(modal_dialog_xid_);
-  modal_dialog_xid_ = 0;
-  targeter_for_modal_.reset();
+  DCHECK_GT(modal_dialog_counter_, 0UL);
+  if (!--modal_dialog_counter_)
+    targeter_for_modal_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

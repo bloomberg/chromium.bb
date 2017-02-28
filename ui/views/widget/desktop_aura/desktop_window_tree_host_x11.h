@@ -85,11 +85,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   static void CleanUpWindowList(void (*func)(aura::Window* window));
 
   // Disables event listening to make |dialog| modal.
-  std::unique_ptr<base::Closure> DisableEventListening(XID dialog);
-
-  // Returns XID of dialog currently displayed. When it returns 0,
-  // there is no dialog on the host window.
-  XID GetModalDialog();
+  std::unique_ptr<base::Closure> DisableEventListening();
 
  protected:
   // Overridden from DesktopWindowTreeHost:
@@ -430,7 +426,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 
-  XID modal_dialog_xid_;
+  uint32_t modal_dialog_counter_;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
   base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_;

@@ -175,8 +175,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
       std::unique_ptr<base::Closure> callback =
           views::DesktopWindowTreeHostX11::GetHostForXID(
               host->GetAcceleratedWidget())
-              ->DisableEventListening(
-                  GDK_WINDOW_XID(gtk_widget_get_window(dialog)));
+              ->DisableEventListening();
       // OnFilePickerDestroy() is called when |dialog| destroyed, which allows
       // to invoke the callback function to re-enable event handling on the
       // owning window.
