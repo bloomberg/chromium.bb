@@ -20,7 +20,7 @@ DomRepeatEvent.prototype.model;
 Polymer({
   is: 'site-data',
 
-  behaviors: [CookieTreeBehavior],
+  behaviors: [CookieTreeBehavior, I18nBehavior],
 
   properties: {
     /**
