@@ -24,11 +24,11 @@ namespace blink {
 
 TestDictionary::TestDictionary() {
   setDoubleOrStringMember(DoubleOrString::fromDouble(3.14));
-  setEnumMember(String("foo"));
+  setEnumMember("foo");
   setLongMember(1);
-  setOtherDoubleOrStringMember(DoubleOrString::fromString(String("default string value")));
+  setOtherDoubleOrStringMember(DoubleOrString::fromString("default string value"));
   setRestrictedDoubleMember(3.14);
-  setStringOrNullMember(String("default string value"));
+  setStringOrNullMember("default string value");
   setStringSequenceMember(Vector<String>());
   setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
   setTestInterfaceSequenceMember(HeapVector<Member<TestInterfaceImplementation>>());

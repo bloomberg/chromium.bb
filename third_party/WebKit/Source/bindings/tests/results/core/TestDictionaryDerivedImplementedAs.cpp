@@ -14,7 +14,7 @@
 namespace blink {
 
 TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs() {
-  setDerivedStringMemberWithDefault(String("default string value"));
+  setDerivedStringMemberWithDefault("default string value");
 }
 
 TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs() {}

@@ -5506,7 +5506,7 @@ static void voidMethodDefaultByteStringArgMethod(const v8::FunctionCallbackInfo<
     if (exceptionState.hadException())
       return;
   } else {
-    defaultByteStringArg = String("foo");
+    defaultByteStringArg = "foo";
   }
 
   impl->voidMethodDefaultByteStringArg(defaultByteStringArg);
@@ -5521,7 +5521,7 @@ static void voidMethodDefaultStringArgMethod(const v8::FunctionCallbackInfo<v8::
     if (!defaultStringArg.prepare())
       return;
   } else {
-    defaultStringArg = String("foo");
+    defaultStringArg = "foo";
   }
 
   impl->voidMethodDefaultStringArg(defaultStringArg);
@@ -5681,7 +5681,7 @@ static void voidMethodDefaultDoubleOrStringArgsMethod(const v8::FunctionCallback
     if (exceptionState.hadException())
       return;
   } else {
-    defaultStringArg.setString(String("foo"));
+    defaultStringArg.setString("foo");
   }
   if (!info[2]->IsUndefined()) {
     V8DoubleOrString::toImpl(info.GetIsolate(), info[2], defaultNullArg, UnionTypeConversionMode::Nullable, exceptionState);

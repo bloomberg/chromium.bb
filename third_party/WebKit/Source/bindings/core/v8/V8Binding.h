@@ -405,6 +405,19 @@ inline v8::Local<v8::String> v8String(v8::Isolate* isolate,
       .ToLocalChecked();
 }
 
+// As above, for string literals. The compiler doesn't optimize away the is8Bit
+// and sharedImpl checks for string literals in the StringView version.
+inline v8::Local<v8::String> v8String(v8::Isolate* isolate,
+                                      const char* string) {
+  DCHECK(isolate);
+  if (!string || string[0] == '\0')
+    return v8::String::Empty(isolate);
+  return v8::String::NewFromOneByte(isolate,
+                                    reinterpret_cast<const uint8_t*>(string),
+                                    v8::NewStringType::kNormal, strlen(string))
+      .ToLocalChecked();
+}
+
 inline v8::Local<v8::Value> v8StringOrNull(v8::Isolate* isolate,
                                            const AtomicString& string) {
   if (string.isNull())
@@ -426,6 +439,19 @@ inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate,
              isolate, reinterpret_cast<const uint16_t*>(string.characters16()),
              v8::NewStringType::kInternalized,
              static_cast<int>(string.length()))
+      .ToLocalChecked();
+}
+
+// As above, for string literals. The compiler doesn't optimize away the is8Bit
+// check for string literals in the StringView version.
+inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate,
+                                            const char* string) {
+  DCHECK(isolate);
+  if (!string || string[0] == '\0')
+    return v8::String::Empty(isolate);
+  return v8::String::NewFromOneByte(
+             isolate, reinterpret_cast<const uint8_t*>(string),
+             v8::NewStringType::kInternalized, strlen(string))
       .ToLocalChecked();
 }
 

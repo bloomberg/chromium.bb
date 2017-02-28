@@ -649,7 +649,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "enumMember"), v8String(isolate, impl.enumMember()))))
       return false;
   } else {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "enumMember"), v8String(isolate, String("foo")))))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "enumMember"), v8String(isolate, "foo"))))
       return false;
   }
 
@@ -695,7 +695,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "otherDoubleOrStringMember"), ToV8(impl.otherDoubleOrStringMember(), creationContext, isolate))))
       return false;
   } else {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "otherDoubleOrStringMember"), ToV8(DoubleOrString::fromString(String("default string value")), creationContext, isolate))))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "otherDoubleOrStringMember"), ToV8(DoubleOrString::fromString("default string value"), creationContext, isolate))))
       return false;
   }
 
@@ -732,7 +732,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringOrNullMember"), v8String(isolate, impl.stringOrNullMember()))))
       return false;
   } else {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringOrNullMember"), v8String(isolate, String("default string value")))))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringOrNullMember"), v8String(isolate, "default string value"))))
       return false;
   }
 

@@ -525,7 +525,10 @@ class IdlLiteral(object):
 
     def __str__(self):
         if self.idl_type == 'DOMString':
-            return 'String("%s")' % self.value
+            if self.value:
+                return '"%s"' % self.value
+            else:
+                return 'WTF::emptyString'
         if self.idl_type == 'integer':
             return '%d' % self.value
         if self.idl_type == 'float':
