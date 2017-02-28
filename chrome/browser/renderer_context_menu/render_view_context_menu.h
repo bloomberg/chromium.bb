@@ -82,6 +82,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
  protected:
   Profile* GetProfile();
+  Browser* GetBrowser() const;
 
   // Returns a (possibly truncated) version of the current selection text
   // suitable for putting in the title of a menu item.
@@ -203,8 +204,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
                            const blink::WebMediaPlayerAction& action);
   void PluginActionAt(const gfx::Point& location,
                       const blink::WebPluginAction& action);
-
-  Browser* GetBrowser() const;
 
   // Returns a list of registered ProtocolHandlers that can handle the clicked
   // on URL.
