@@ -109,12 +109,16 @@ void setScriptableObjectProperty(
 void V8HTMLEmbedElement::namedPropertyGetterCustom(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
+  UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                    UseCounter::HTMLEmbedElementGetter);
   getScriptableObjectProperty<V8HTMLEmbedElement>(name, info);
 }
 
 void V8HTMLObjectElement::namedPropertyGetterCustom(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
+  UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                    UseCounter::HTMLObjectElementGetter);
   getScriptableObjectProperty<V8HTMLObjectElement>(name, info);
 }
 
@@ -122,6 +126,8 @@ void V8HTMLEmbedElement::namedPropertySetterCustom(
     const AtomicString& name,
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
+  UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                    UseCounter::HTMLEmbedElementSetter);
   setScriptableObjectProperty<V8HTMLEmbedElement>(name, value, info);
 }
 
@@ -129,6 +135,8 @@ void V8HTMLObjectElement::namedPropertySetterCustom(
     const AtomicString& name,
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
+  UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                    UseCounter::HTMLObjectElementSetter);
   setScriptableObjectProperty<V8HTMLObjectElement>(name, value, info);
 }
 

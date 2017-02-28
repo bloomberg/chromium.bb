@@ -1466,6 +1466,10 @@ class CORE_EXPORT UseCounter {
     SVGInCanvas2D = 1835,
     SVGInWebGL = 1836,
     SelectionFuncionsChangeFocus = 1837,
+    HTMLObjectElementGetter = 1838,
+    HTMLObjectElementSetter = 1839,
+    HTMLEmbedElementGetter = 1840,
+    HTMLEmbedElementSetter = 1841,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
