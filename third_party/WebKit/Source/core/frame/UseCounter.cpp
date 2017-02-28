@@ -31,9 +31,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/page/Page.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -1173,11 +1173,11 @@ void UseCounter::didCommitLoad(KURL url) {
 void UseCounter::count(const Frame* frame, Feature feature) {
   if (!frame)
     return;
-  FrameHost* host = frame->host();
-  if (!host)
+  Page* page = frame->page();
+  if (!page)
     return;
 
-  host->useCounter().count(feature);
+  page->useCounter().count(feature);
 }
 
 void UseCounter::count(const Document& document, Feature feature) {
@@ -1185,13 +1185,10 @@ void UseCounter::count(const Document& document, Feature feature) {
 }
 
 bool UseCounter::isCounted(Document& document, Feature feature) {
-  Frame* frame = document.frame();
-  if (!frame)
+  Page* page = document.page();
+  if (!page)
     return false;
-  FrameHost* host = frame->host();
-  if (!host)
-    return false;
-  return host->useCounter().hasRecordedMeasurement(feature);
+  return page->useCounter().hasRecordedMeasurement(feature);
 }
 
 bool UseCounter::isCounted(CSSPropertyID unresolvedProperty) {
@@ -1204,17 +1201,14 @@ void UseCounter::addObserver(Observer* observer) {
 }
 
 bool UseCounter::isCounted(Document& document, const String& string) {
-  Frame* frame = document.frame();
-  if (!frame)
-    return false;
-  FrameHost* host = frame->host();
-  if (!host)
+  Page* page = document.page();
+  if (!page)
     return false;
 
   CSSPropertyID unresolvedProperty = unresolvedCSSPropertyID(string);
   if (unresolvedProperty == CSSPropertyInvalid)
     return false;
-  return host->useCounter().isCounted(unresolvedProperty);
+  return page->useCounter().isCounted(unresolvedProperty);
 }
 
 void UseCounter::count(ExecutionContext* context, Feature feature) {

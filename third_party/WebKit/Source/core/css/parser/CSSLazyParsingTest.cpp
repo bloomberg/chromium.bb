@@ -8,7 +8,7 @@
 #include "core/css/parser/CSSLazyParsingState.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "core/frame/FrameHost.h"
+#include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"
 #include "platform/testing/HistogramTester.h"
@@ -139,7 +139,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
 
     EXPECT_EQ(&dummyHolder->document(),
               m_cachedContents->singleOwnerDocument());
-    UseCounter& useCounter1 = dummyHolder->document().frameHost()->useCounter();
+    UseCounter& useCounter1 = dummyHolder->document().page()->useCounter();
     EXPECT_TRUE(useCounter1.isCounted(CSSPropertyBackgroundColor));
     EXPECT_FALSE(useCounter1.isCounted(CSSPropertyColor));
 
@@ -163,7 +163,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   rule2->properties();
   EXPECT_TRUE(hasParsedProperties(rule2));
 
-  UseCounter& useCounter2 = dummyHolder2->document().frameHost()->useCounter();
+  UseCounter& useCounter2 = dummyHolder2->document().page()->useCounter();
   EXPECT_TRUE(sheet2);
   EXPECT_TRUE(useCounter2.isCounted(CSSPropertyColor));
   EXPECT_FALSE(useCounter2.isCounted(CSSPropertyBackgroundColor));

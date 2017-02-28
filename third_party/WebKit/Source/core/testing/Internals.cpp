@@ -3089,13 +3089,13 @@ ScriptPromise Internals::observeUseCounter(ScriptState* scriptState,
     return promise;
   }
 
-  Frame* frame = document->frame();
-  if (!frame || !frame->host()) {
+  Page* page = document->page();
+  if (!page) {
     resolver->reject();
     return promise;
   }
 
-  frame->host()->useCounter().addObserver(
+  page->useCounter().addObserver(
       new UseCounterObserverImpl(resolver, useCounterFeature));
   return promise;
 }

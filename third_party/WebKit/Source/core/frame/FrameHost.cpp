@@ -74,14 +74,6 @@ const Page& FrameHost::page() const {
   return *m_page;
 }
 
-UseCounter& FrameHost::useCounter() {
-  return m_page->useCounter();
-}
-
-const UseCounter& FrameHost::useCounter() const {
-  return m_page->useCounter();
-}
-
 float FrameHost::deviceScaleFactorDeprecated() const {
   return m_page->deviceScaleFactor();
 }

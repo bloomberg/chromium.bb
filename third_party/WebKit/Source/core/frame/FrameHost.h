@@ -49,7 +49,6 @@ class Page;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class TopDocumentRootScrollerController;
-class UseCounter;
 class VisualViewport;
 
 // FrameHost is the set of global data shared between multiple frames
@@ -72,9 +71,6 @@ class CORE_EXPORT FrameHost final
 
   Page& page();
   const Page& page() const;
-
-  UseCounter& useCounter();
-  const UseCounter& useCounter() const;
 
   // Corresponds to pixel density of the device where this Page is
   // being displayed. In multi-monitor setups this can vary between pages.
