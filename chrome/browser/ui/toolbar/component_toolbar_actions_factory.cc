@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/common/feature_switch.h"
 
 #if defined(ENABLE_MEDIA_ROUTER)
 #include "chrome/browser/ui/toolbar/media_router_action.h"
@@ -59,10 +58,6 @@ ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
     const std::string& action_id,
     Browser* browser,
     ToolbarActionsBar* bar) {
-  // This is currently behind the extension-action-redesign flag, as it is
-  // designed for the new toolbar.
-  DCHECK(extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
-
   // Add component toolbar actions here.
   // This current design means that the ComponentToolbarActionsFactory is aware
   // of all actions. Since we should *not* have an excessive amount of these

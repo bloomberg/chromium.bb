@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "extensions/common/feature_switch.h"
 
 // static
 const char MockComponentToolbarActionsFactory::kActionIdForTesting[] =
@@ -21,10 +20,7 @@ MockComponentToolbarActionsFactory::~MockComponentToolbarActionsFactory() {}
 
 std::set<std::string>
 MockComponentToolbarActionsFactory::GetInitialComponentIds() {
-  std::set<std::string> ids;
-  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
-    ids.insert(kActionIdForTesting);
-  return ids;
+  return {kActionIdForTesting};
 }
 
 std::unique_ptr<ToolbarActionViewController>
