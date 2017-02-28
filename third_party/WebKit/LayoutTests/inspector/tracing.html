@@ -15,20 +15,13 @@ div#test {
 function initialize_TracingManagerClient()
 {
 
-InspectorTest.TracingManagerClient = function(tracingManager, callback)
+InspectorTest.TracingManagerClient = function(callback)
 {
-    this._tracingManager = tracingManager;
     this._completionCallback = callback;
     this._tracingModel = InspectorTest.createTracingModel();
 }
 
 InspectorTest.TracingManagerClient.prototype = {
-    tracingStarted: function()
-    {
-        this._tracingModel.reset();
-        InspectorTest.evaluateInPage("doWork()", this._tracingManager.stop.bind(this._tracingManager));
-    },
-
     traceEventsCollected: function(events)
     {
         this._tracingModel.addEvents(events);
@@ -54,13 +47,13 @@ function doWork()
 
 function test()
 {
-    var tracingClient = new InspectorTest.TracingManagerClient(InspectorTest.tracingManager, runEventsSanityCheck);
-    InspectorTest.tracingManager.start(tracingClient, "", "", onTracingStarted);
-
-    function onTracingStarted(error)
-    {
-        InspectorTest.addResult("Tracing started (error: " + JSON.stringify(error) + ")");
-    }
+    var tracingClient = new InspectorTest.TracingManagerClient(runEventsSanityCheck);
+    var tracingManager = InspectorTest.tracingManager;
+    tracingManager.start(tracingClient, "", "").then(() => {
+        InspectorTest.addResult("Tracing started");
+        tracingClient._tracingModel.reset();
+        InspectorTest.evaluateInPage("doWork()", tracingManager.stop.bind(tracingManager));
+    });
 
     function runEventsSanityCheck(tracingModel)
     {

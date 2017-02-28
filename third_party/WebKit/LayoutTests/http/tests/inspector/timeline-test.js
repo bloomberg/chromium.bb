@@ -90,10 +90,11 @@ InspectorTest.invokeWithTracing = function(functionName, callback, additionalCat
     var timelinePanel = UI.panels.timeline;
     var timelineController = InspectorTest.timelineController();
     timelinePanel._timelineController = timelineController;
-    timelineController._startRecordingWithCategories(categories, enableJSSampling, tracingStarted);
+    timelineController._startRecordingWithCategories(categories, enableJSSampling).then(tracingStarted);
 
     function tracingStarted()
     {
+        timelinePanel._recordingStarted();
         InspectorTest.callFunctionInPageAsync(functionName).then(onPageActionsDone);
     }
 
@@ -144,7 +145,7 @@ InspectorTest.runWhenTimelineIsReady = function(callback)
 InspectorTest.startTimeline = function(callback)
 {
     var panel = UI.panels.timeline;
-    InspectorTest.addSniffer(panel, "recordingStarted", callback);
+    InspectorTest.addSniffer(panel, "_recordingStarted", callback);
     panel._toggleRecording();
 };
 

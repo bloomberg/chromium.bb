@@ -10,7 +10,7 @@ function test()
     var panel = UI.panels.timeline;
 
     var callbackBarrier = new CallbackBarrier();
-    InspectorTest.addSniffer(panel, "recordingStarted", recordingStarted);
+    InspectorTest.addSniffer(panel, "_recordingStarted", recordingStarted);
     InspectorTest.runWhenTimelineIsReady(callbackBarrier.createCallback());
 
     UI.viewManager.showView("console");
