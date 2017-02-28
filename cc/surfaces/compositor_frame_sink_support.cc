@@ -79,16 +79,6 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
                  weak_factory_.GetWeakPtr()));
 }
 
-void CompositorFrameSinkSupport::Require(const LocalSurfaceId& local_surface_id,
-                                         const SurfaceSequence& sequence) {
-  surface_manager_->RequireSequence(SurfaceId(frame_sink_id_, local_surface_id),
-                                    sequence);
-}
-
-void CompositorFrameSinkSupport::Satisfy(const SurfaceSequence& sequence) {
-  surface_manager_->SatisfySequence(sequence);
-}
-
 void CompositorFrameSinkSupport::UpdateSurfaceReferences(
     const SurfaceId& last_surface_id,
     const LocalSurfaceId& local_surface_id) {

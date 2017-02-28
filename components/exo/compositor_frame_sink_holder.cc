@@ -41,15 +41,6 @@ void CompositorFrameSinkHolder::SetNeedsBeginFrame(bool needs_begin_frame) {
   OnNeedsBeginFrames(needs_begin_frame);
 }
 
-void CompositorFrameSinkHolder::Satisfy(const cc::SurfaceSequence& sequence) {
-  frame_sink_->Satisfy(sequence);
-}
-
-void CompositorFrameSinkHolder::Require(const cc::SurfaceId& id,
-                                        const cc::SurfaceSequence& sequence) {
-  frame_sink_->Require(id.local_surface_id(), sequence);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // cc::mojom::MojoCompositorFrameSinkClient overrides:
 

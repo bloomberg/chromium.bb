@@ -47,9 +47,6 @@ class CompositorFrameSinkHolder
 
   void SetNeedsBeginFrame(bool needs_begin_frame);
 
-  void Satisfy(const cc::SurfaceSequence& sequence);
-  void Require(const cc::SurfaceId& id, const cc::SurfaceSequence& sequence);
-
   // Overridden from cc::mojom::MojoCompositorFrameSinkClient:
   void DidReceiveCompositorFrameAck() override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;

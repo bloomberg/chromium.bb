@@ -50,9 +50,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame);
-  void Require(const LocalSurfaceId& local_surface_id,
-               const SurfaceSequence& sequence);
-  void Satisfy(const SurfaceSequence& sequence);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
   void ForceReclaimResources();
 

@@ -30,9 +30,6 @@ class CompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void EvictFrame() override;
-  void Require(const cc::LocalSurfaceId& local_surface_id,
-               const cc::SurfaceSequence& sequence) override;
-  void Satisfy(const cc::SurfaceSequence& sequence) override;
 
   // Overridden from cc::CompositorFrameSinkSupportClient:
   void DidReceiveCompositorFrameAck() override;

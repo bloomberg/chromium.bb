@@ -45,15 +45,6 @@ void CompositorFrameSink::EvictFrame() {
   support_.EvictFrame();
 }
 
-void CompositorFrameSink::Require(const cc::LocalSurfaceId& local_surface_id,
-                                  const cc::SurfaceSequence& sequence) {
-  support_.Require(local_surface_id, sequence);
-}
-
-void CompositorFrameSink::Satisfy(const cc::SurfaceSequence& sequence) {
-  support_.Satisfy(sequence);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // cc::CompositorFrameSinkSupportClient overrides:
 

@@ -52,15 +52,6 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
-void GpuCompositorFrameSink::Require(const cc::LocalSurfaceId& local_surface_id,
-                                     const cc::SurfaceSequence& sequence) {
-  support_->Require(local_surface_id, sequence);
-}
-
-void GpuCompositorFrameSink::Satisfy(const cc::SurfaceSequence& sequence) {
-  support_->Satisfy(sequence);
-}
-
 void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
   if (client_)
     client_->DidReceiveCompositorFrameAck();

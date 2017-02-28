@@ -38,16 +38,6 @@ interface MojoCompositorFrameSink {
   // Notify that the surface is no longer in use (and is okay to be evicted) so
   // that its resources gets returned in time.
   EvictFrame();
-
-  // TODO(staraz): Delete Require() and Satisfy() once surface references
-  // (CL 2541683004) are ready.
-  // Add the provided |sequence| as a destruction dependency of the
-  // surface associated with the provided |local_surface_id|.
-  Require(cc.mojom.LocalSurfaceId local_surface_id,
-          cc.mojom.SurfaceSequence sequence);
-
-  // Mark the sequence as satisfied and garbage collect surfaces.
-  Satisfy(cc.mojom.SurfaceSequence sequence);
 };
 
 interface MojoCompositorFrameSinkClient {

@@ -89,16 +89,6 @@ void GpuRootCompositorFrameSink::SubmitCompositorFrame(
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
-void GpuRootCompositorFrameSink::Require(
-    const cc::LocalSurfaceId& local_surface_id,
-    const cc::SurfaceSequence& sequence) {
-  support_->Require(local_surface_id, sequence);
-}
-
-void GpuRootCompositorFrameSink::Satisfy(const cc::SurfaceSequence& sequence) {
-  support_->Satisfy(sequence);
-}
-
 void GpuRootCompositorFrameSink::RequestCopyOfSurface(
     std::unique_ptr<cc::CopyOutputRequest> request) {
   support_->RequestCopyOfSurface(std::move(request));
