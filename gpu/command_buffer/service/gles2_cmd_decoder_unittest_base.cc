@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
+#include "gpu/test_message_loop_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/init/gl_factory.h"
@@ -90,7 +91,7 @@ void NormalizeInitState(gpu::gles2::GLES2DecoderTestBase::InitState* init) {
 const uint32_t kMaxColorAttachments = 16;
 const uint32_t kMaxDrawBuffers = 16;
 
-}  // namespace Anonymous
+}  // namespace
 
 namespace gpu {
 namespace gles2 {
@@ -123,7 +124,8 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       cached_depth_mask_(true),
       cached_stencil_front_mask_(static_cast<GLuint>(-1)),
       cached_stencil_back_mask_(static_cast<GLuint>(-1)),
-      shader_language_version_(100) {
+      shader_language_version_(100),
+      message_loop_(test::GetMessageLoopTypeForGpu()) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 

@@ -108,6 +108,7 @@ static_library("test_support") {
     "command_buffer/client/gles2_interface_stub.h",
     "command_buffer/service/error_state_mock.cc",
     "command_buffer/service/gles2_cmd_decoder_mock.cc",
+    "test_message_loop_type.h",
   ]
 
   public_deps = [
@@ -119,6 +120,9 @@ static_library("test_support") {
     "//testing/gtest",
     "//ui/gl:gl_unittest_utils",
   ]
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 test("gl_tests") {

@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gpu_service_test.h"
 
 #include "gpu/command_buffer/service/test_helper.h"
+#include "gpu/test_message_loop_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_implementation.h"
@@ -16,8 +17,10 @@
 namespace gpu {
 namespace gles2 {
 
-GpuServiceTest::GpuServiceTest() : ran_setup_(false), ran_teardown_(false) {
-}
+GpuServiceTest::GpuServiceTest()
+    : ran_setup_(false),
+      ran_teardown_(false),
+      message_loop_(test::GetMessageLoopTypeForGpu()) {}
 
 GpuServiceTest::~GpuServiceTest() {
   DCHECK(ran_teardown_);
