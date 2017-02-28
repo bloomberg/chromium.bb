@@ -17,9 +17,7 @@ var gStatsWhitelist = new Map();
  * @private
  */
 var kRTCRTPStreamStats = new RTCStats_(null, {
-  // TODO(hbos): As soon as |ssrc| has changed into a number, change to
-  // 'number'. https://bugs.chromium.org/p/webrtc/issues/detail?id=7065, 7066
-  ssrc: 'any',
+  ssrc: 'number',
   associateStatsId: 'string',
   isRemote: 'boolean',
   mediaType: 'string',
@@ -40,10 +38,13 @@ var kRTCRTPStreamStats = new RTCStats_(null, {
  */
 var kRTCCodecStats = new RTCStats_(null, {
   payloadType: 'number',
+  mimeType: 'string',
+  // TODO(hbos): As soon as |codec| has been renamed |mimeType| in the webrtc
+  // repo, remove this line. https://bugs.webrtc.org/7061
   codec: 'string',
   clockRate: 'number',
   channels: 'number',
-  parameters: 'string',
+  sdpFmtpLine: 'string',
   implementation: 'string',
 });
 gStatsWhitelist.set('codec', kRTCCodecStats);
