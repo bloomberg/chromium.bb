@@ -12,8 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -56,7 +55,6 @@ void CheckAndResolveInputMethodIDs(
 // Checks whether each language is supported, replacing locales with variants
 // if they are available. Must be called on a thread that allows IO.
 std::string CheckAndResolveLocales(const std::string& languages) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   if (languages.empty())
     return languages;
   std::vector<std::string> values = base::SplitString(
@@ -237,12 +235,11 @@ void InputMethodSyncer::MergeSyncedPrefs() {
       AddSupportedInputMethodValues(preferred_languages_.GetValue(),
                                     preferred_languages_syncable,
                                     prefs::kLanguagePreferredLanguages));
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&CheckAndResolveLocales, languages),
-      base::Bind(&InputMethodSyncer::FinishMerge,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&InputMethodSyncer::FinishMerge, weak_factory_.GetWeakPtr()));
 }
 
 std::string InputMethodSyncer::AddSupportedInputMethodValues(
