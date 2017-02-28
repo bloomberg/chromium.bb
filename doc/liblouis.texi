@@ -2238,8 +2238,11 @@ tests:
 When testing very specific opcode combinations it is sometimes tedious
 to create specific test tables just for that. Hence the YAML tests
 allow for specification of table definitions inline. Instead of
-referring to a table by name you just define the table inline as
-follows:
+referring to a table by name you just define the table inline by using
+what the YAML spec calls a
+@url{http://www.yaml.org/spec/1.2/spec.html#id2795688,Literal Style
+Block}. Start the definition with a @samp{|}, then list the opcodes
+with an indentation. The inline table ends when the indentation ends.
 
 @example
 table: |
@@ -2254,7 +2257,7 @@ tests:
 Sometimes you maintain multiple tables which are very similar and
 basically contain the same test data. Instead of copying the YAML test
 and changing the table name you can also define multiple tables. This
-will cause the YAML tests to be checked against both tables:
+will cause the YAML tests to be checked against both tables.
 
 @example
 table: nl-NL
