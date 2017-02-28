@@ -101,6 +101,14 @@ suite('history-toolbar', function() {
     assertTrue(notice.hidden);
   });
 
+  test('menu promo hides when drawer is opened', function() {
+    app.showMenuPromo_ = true;
+    app.hasDrawer_ = true;
+    Polymer.dom.flush();
+    MockInteractions.tap(toolbar.$['main-toolbar'].$$('#menuButton'));
+    assertFalse(app.showMenuPromo_);
+  });
+
   teardown(function() {
     registerMessageCallback('queryHistory', this, function() {});
   });

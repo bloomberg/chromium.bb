@@ -88,7 +88,6 @@ Polymer({
     'history-checkbox-select': 'checkboxSelected',
     'history-close-drawer': 'closeDrawer_',
     'history-view-changed': 'historyViewChanged_',
-    'opened-changed': 'onOpenedChanged_',
     'unselect-all': 'unselectAll',
   },
 
@@ -158,15 +157,7 @@ Polymer({
     var drawer = /** @type {!CrDrawerElement} */ (this.$.drawer.get());
     drawer.align = document.documentElement.dir == 'ltr' ? 'left' : 'right';
     drawer.toggle();
-  },
-
-  /**
-   * @param {!CustomEvent} e
-   * @private
-   */
-  onOpenedChanged_: function(e) {
-    if (e.detail.value)
-      this.showMenuPromo_ = false;
+    this.showMenuPromo_ = false;
   },
 
   /**
