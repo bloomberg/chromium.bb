@@ -91,11 +91,11 @@ Platform specific notes:
 Copy the binaries into your chromium checkout (under
 `src/buildtools/(win|linux64|mac)/clang-format(.exe?)`). For each binary, you'll
 need to run upload_to_google_storage.py according to the instructions in
-[README.txt](/buildtools/clang_format/README.txt). This will upload the binary
-into a publicly accessible google storage bucket, and update `.sha1` file in
-your Chrome checkout. You'll check in the `.sha1` file (but NOT the clang-format
-binary) into source control. In order to be able to upload, you'll need write
-permission to the bucket -- see the prerequisites.
+[README.txt](https://chromium.googlesource.com/chromium/buildtools/+/master/clang_format/README.txt).
+This will upload the binary into a publicly accessible google storage bucket,
+and update `.sha1` file in your Chrome checkout. You'll check in the `.sha1`
+file (but NOT the clang-format binary) into source control. In order to be able
+to upload, you'll need write permission to the bucket -- see the prerequisites.
 
 ## Copy the helper scripts and update README.chromium
 
