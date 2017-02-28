@@ -60,7 +60,7 @@
     "paper-toggle-button": "PolymerElements/paper-toggle-button#1.3.0",
     "paper-toolbar": "PolymerElements/paper-toolbar#1.1.6",
     "paper-tooltip": "PolymerElements/paper-tooltip#1.1.3",
-    "polymer": "Polymer/polymer#1.6.1",
+    "polymer": "Polymer/polymer#1.8.1",
     "web-animations-js": "web-animations/web-animations-js#2.2.2"
   }
 }

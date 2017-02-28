@@ -73,7 +73,15 @@ c._ready();
 this._finishDistribute();
 },
 _readySelf: function () {
-this._doBehavior('ready');
+for (var i = 0, b; i < this.behaviors.length; i++) {
+b = this.behaviors[i];
+if (b.ready) {
+b.ready.call(this);
+}
+}
+if (this.ready) {
+this.ready();
+}
 this._readied = true;
 if (this._attachedPending) {
 this._attachedPending = false;
@@ -686,7 +694,7 @@ return;
 }
 var nativeCloneNode = Element.prototype.cloneNode;
 var nativeImportNode = Document.prototype.importNode;
-Polymer.Base.extend(DomApi.prototype, {
+Polymer.Base.mixin(DomApi.prototype, {
 _lazyDistribute: function (host) {
 if (host.shadyRoot && host.shadyRoot._distributionClean) {
 host.shadyRoot._distributionClean = false;
@@ -1150,7 +1158,7 @@ var DomApi = Polymer.DomApi;
 if (!Settings.useShadow) {
 return;
 }
-Polymer.Base.extend(DomApi.prototype, {
+Polymer.Base.mixin(DomApi.prototype, {
 querySelectorAll: function (selector) {
 return TreeApi.arrayCopy(this.node.querySelectorAll(selector));
 },
@@ -1260,7 +1268,7 @@ forwardProperties([
 'nextElementSibling',
 'previousElementSibling'
 ]);
-}());Polymer.Base.extend(Polymer.dom, {
+}());Polymer.Base.mixin(Polymer.dom, {
 _flushGuard: 0,
 _FLUSH_MAX: 100,
 _needsTakeRecords: !Polymer.Settings.useNativeCustomElements,
@@ -1561,7 +1569,7 @@ enableShadowAttributeTracking: function () {
 if (Settings.useShadow) {
 var baseSetup = DomApi.EffectiveNodesObserver.prototype._setup;
 var baseCleanup = DomApi.EffectiveNodesObserver.prototype._cleanup;
-Polymer.Base.extend(DomApi.EffectiveNodesObserver.prototype, {
+Polymer.Base.mixin(DomApi.EffectiveNodesObserver.prototype, {
 _setup: function () {
 if (!this._observer) {
 var self = this;
@@ -1623,7 +1631,7 @@ DomApi.DistributedNodesObserver = function (domApi) {
 DomApi.EffectiveNodesObserver.call(this, domApi);
 };
 DomApi.DistributedNodesObserver.prototype = Object.create(DomApi.EffectiveNodesObserver.prototype);
-Polymer.Base.extend(DomApi.DistributedNodesObserver.prototype, {
+Polymer.Base.mixin(DomApi.DistributedNodesObserver.prototype, {
 _setup: function () {
 },
 _cleanup: function () {
@@ -1635,7 +1643,7 @@ return this.domApi.getDistributedNodes();
 }
 });
 if (Settings.useShadow) {
-Polymer.Base.extend(DomApi.DistributedNodesObserver.prototype, {
+Polymer.Base.mixin(DomApi.DistributedNodesObserver.prototype, {
 _setup: function () {
 if (!this._observer) {
 var root = this.domApi.getOwnerRoot();
@@ -1712,10 +1720,6 @@ TreeApi.Logical.saveChildNodes(c);
 TreeApi.Logical.saveChildNodes(c.parentNode);
 }
 this.shadyRoot.host = this;
-},
-get domHost() {
-var root = Polymer.dom(this).getOwnerRoot();
-return root && root.host;
 },
 distributeContent: function (updateInsertionPoints) {
 if (this.shadyRoot) {
@@ -1903,6 +1907,15 @@ _elementAdd: function () {
 _elementRemove: function () {
 }
 });
+var domHostDesc = {
+get: function () {
+var root = Polymer.dom(this).getOwnerRoot();
+return root && root.host;
+},
+configurable: true
+};
+Object.defineProperty(Polymer.Base, 'domHost', domHostDesc);
+Polymer.BaseDescriptors.domHost = domHostDesc;
 function distributeNodeInto(child, insertionPoint) {
 insertionPoint._distributedNodes.push(child);
 var points = child._destinationInsertionPoints;
