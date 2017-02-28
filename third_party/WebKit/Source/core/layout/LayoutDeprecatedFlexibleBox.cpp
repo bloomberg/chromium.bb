@@ -1184,7 +1184,8 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator,
     LayoutUnit blockLeftEdge = destBlock.logicalLeftOffsetForLine(
         lastVisibleLine->y(), DoNotIndentText);
     lastVisibleLine->placeEllipsis(ellipsisStr, leftToRight, blockLeftEdge,
-                                   blockRightEdge, LayoutUnit(totalWidth));
+                                   blockRightEdge, LayoutUnit(totalWidth),
+                                   LayoutUnit(), false);
     destBlock.setHasMarkupTruncation(true);
   }
 }

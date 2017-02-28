@@ -273,7 +273,8 @@ class InlineFlowBox : public InlineBox {
                               LayoutUnit blockRightEdge,
                               LayoutUnit ellipsisWidth,
                               LayoutUnit& truncatedWidth,
-                              bool&) override;
+                              bool&,
+                              LayoutUnit logicalLeftOffset) override;
 
   bool hasTextChildren() const { return m_hasTextChildren; }
   bool hasTextDescendants() const { return m_hasTextDescendants; }

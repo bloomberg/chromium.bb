@@ -1466,7 +1466,8 @@ LayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr,
                                            LayoutUnit blockRightEdge,
                                            LayoutUnit ellipsisWidth,
                                            LayoutUnit& truncatedWidth,
-                                           bool& foundBox) {
+                                           bool& foundBox,
+                                           LayoutUnit logicalLeftOffset) {
   LayoutUnit result(-1);
   // We iterate over all children, the foundBox variable tells us when we've
   // found the box containing the ellipsis.  All boxes after that one in the
@@ -1482,8 +1483,8 @@ LayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr,
 
   while (box) {
     LayoutUnit currResult = box->placeEllipsisBox(
-        ltr, LayoutUnit(visibleLeftEdge), LayoutUnit(visibleRightEdge),
-        ellipsisWidth, truncatedWidth, foundBox);
+        ltr, visibleLeftEdge, visibleRightEdge, ellipsisWidth, truncatedWidth,
+        foundBox, logicalLeftOffset);
     if (currResult != -1 && result == -1)
       result = currResult;
 

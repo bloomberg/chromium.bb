@@ -111,33 +111,42 @@ LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,
                                         bool ltr,
                                         LayoutUnit blockLeftEdge,
                                         LayoutUnit blockRightEdge,
-                                        LayoutUnit ellipsisWidth) {
-  // Create an ellipsis box.
-  EllipsisBox* ellipsisBox = new EllipsisBox(
-      getLineLayoutItem(), ellipsisStr, this, ellipsisWidth, logicalHeight(),
-      location(), !prevRootBox(), isHorizontal());
+                                        LayoutUnit ellipsisWidth,
+                                        LayoutUnit logicalLeftOffset,
+                                        bool foundBox) {
+  // Create an ellipsis box if we don't already have one. If we already have one
+  // we're just
+  // here to blank out (truncate) the text boxes.
+  if (!foundBox) {
+    EllipsisBox* ellipsisBox = new EllipsisBox(
+        getLineLayoutItem(), ellipsisStr, this, ellipsisWidth, logicalHeight(),
+        location(), !prevRootBox(), isHorizontal());
 
-  if (!gEllipsisBoxMap)
-    gEllipsisBoxMap = new EllipsisBoxMap();
-  gEllipsisBoxMap->insert(this, ellipsisBox);
-  setHasEllipsisBox(true);
+    if (!gEllipsisBoxMap)
+      gEllipsisBoxMap = new EllipsisBoxMap();
+    gEllipsisBoxMap->insert(this, ellipsisBox);
+    setHasEllipsisBox(true);
+  }
 
   // FIXME: Do we need an RTL version of this?
+  LayoutUnit adjustedLogicalLeft = logicalLeftOffset + logicalLeft();
   if (ltr &&
-      (logicalLeft() + logicalWidth() + ellipsisWidth) <= blockRightEdge) {
-    ellipsisBox->setLogicalLeft(logicalLeft() + logicalWidth());
+      (adjustedLogicalLeft + logicalWidth() + ellipsisWidth) <=
+          blockRightEdge) {
+    if (hasEllipsisBox())
+      ellipsisBox()->setLogicalLeft(logicalLeft() + logicalWidth());
     return logicalWidth() + ellipsisWidth;
   }
 
   // Now attempt to find the nearest glyph horizontally and place just to the
   // right (or left in RTL) of that glyph.  Mark all of the objects that
   // intersect the ellipsis box as not painting (as being truncated).
-  bool foundBox = false;
   LayoutUnit truncatedWidth;
   LayoutUnit position =
       placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge, ellipsisWidth,
-                       truncatedWidth, foundBox);
-  ellipsisBox->setLogicalLeft(position);
+                       truncatedWidth, foundBox, logicalLeftOffset);
+  if (hasEllipsisBox())
+    ellipsisBox()->setLogicalLeft(position);
   return truncatedWidth;
 }
 
@@ -146,13 +155,17 @@ LayoutUnit RootInlineBox::placeEllipsisBox(bool ltr,
                                            LayoutUnit blockRightEdge,
                                            LayoutUnit ellipsisWidth,
                                            LayoutUnit& truncatedWidth,
-                                           bool& foundBox) {
-  LayoutUnit result =
-      InlineFlowBox::placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge,
-                                      ellipsisWidth, truncatedWidth, foundBox);
+                                           bool& foundBox,
+                                           LayoutUnit logicalLeftOffset) {
+  LayoutUnit result = InlineFlowBox::placeEllipsisBox(
+      ltr, blockLeftEdge, blockRightEdge, ellipsisWidth, truncatedWidth,
+      foundBox, logicalLeftOffset);
   if (result == -1) {
-    result = ltr ? blockRightEdge - ellipsisWidth : blockLeftEdge;
-    truncatedWidth = blockRightEdge - blockLeftEdge;
+    result = ltr ? std::max<LayoutUnit>(
+                       LayoutUnit(),
+                       blockRightEdge - ellipsisWidth - logicalLeftOffset)
+                 : blockLeftEdge - logicalLeftOffset;
+    truncatedWidth = blockRightEdge - blockLeftEdge - logicalLeftOffset;
   }
   return result;
 }

@@ -112,14 +112,17 @@ class RootInlineBox : public InlineFlowBox {
                            bool ltr,
                            LayoutUnit blockLeftEdge,
                            LayoutUnit blockRightEdge,
-                           LayoutUnit ellipsisWidth);
+                           LayoutUnit ellipsisWidth,
+                           LayoutUnit logicalLeftOffset,
+                           bool foundBox);
   // Return the position of the EllipsisBox or -1.
   LayoutUnit placeEllipsisBox(bool ltr,
                               LayoutUnit blockLeftEdge,
                               LayoutUnit blockRightEdge,
                               LayoutUnit ellipsisWidth,
                               LayoutUnit& truncatedWidth,
-                              bool& foundBox) final;
+                              bool& foundBox,
+                              LayoutUnit logicalLeftOffset) final;
 
   using InlineBox::hasEllipsisBox;
   EllipsisBox* ellipsisBox() const;

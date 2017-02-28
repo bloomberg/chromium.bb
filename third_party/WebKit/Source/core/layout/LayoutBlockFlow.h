@@ -940,6 +940,11 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                       const BidiStatus& endLineStatus);
   void deleteEllipsisLineBoxes();
   void checkLinesForTextOverflow();
+  void tryPlacingEllipsisOnAtomicInlines(RootInlineBox*,
+                                         LayoutUnit blockRightEdge,
+                                         LayoutUnit blockLeftEdge,
+                                         LayoutUnit width,
+                                         const AtomicString&);
   void markLinesDirtyInBlockRange(LayoutUnit logicalTop,
                                   LayoutUnit logicalBottom,
                                   RootInlineBox* highest = nullptr);

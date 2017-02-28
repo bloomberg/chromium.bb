@@ -311,23 +311,31 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
                                            LayoutUnit visibleRightEdge,
                                            LayoutUnit ellipsisWidth,
                                            LayoutUnit& truncatedWidth,
-                                           bool& foundBox) {
+                                           bool& foundBox,
+                                           LayoutUnit logicalLeftOffset) {
   if (foundBox) {
     setTruncation(cFullTruncation);
     return LayoutUnit(-1);
   }
+
+  // Criteria for full truncation:
+  // LTR: the left edge of the ellipsis is to the left of our text run.
+  // RTL: the right edge of the ellipsis is to the right of our text run.
+  LayoutUnit adjustedLogicalLeft = logicalLeftOffset + logicalLeft();
 
   // For LTR this is the left edge of the box, for RTL, the right edge in parent
   // coordinates.
   LayoutUnit ellipsisX = flowIsLTR ? visibleRightEdge - ellipsisWidth
                                    : visibleLeftEdge + ellipsisWidth;
 
-  // Criteria for full truncation:
-  // LTR: the left edge of the ellipsis is to the left of our text run.
-  // RTL: the right edge of the ellipsis is to the right of our text run.
-  bool ltrFullTruncation = flowIsLTR && ellipsisX <= logicalLeft();
+  if (isLeftToRightDirection() == flowIsLTR && !flowIsLTR &&
+      logicalLeftOffset < 0)
+    ellipsisX -= logicalLeftOffset;
+
+  bool ltrFullTruncation = flowIsLTR && ellipsisX <= adjustedLogicalLeft;
   bool rtlFullTruncation =
-      !flowIsLTR && ellipsisX >= logicalLeft() + logicalWidth();
+      !flowIsLTR &&
+      ellipsisX > adjustedLogicalLeft + logicalWidth() + ellipsisWidth;
   if (ltrFullTruncation || rtlFullTruncation) {
     // Too far.  Just set full truncation, but return -1 and let the ellipsis
     // just be placed at the edge of the box.
@@ -336,8 +344,9 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
     return LayoutUnit(-1);
   }
 
-  bool ltrEllipsisWithinBox = flowIsLTR && (ellipsisX < logicalRight());
-  bool rtlEllipsisWithinBox = !flowIsLTR && (ellipsisX > logicalLeft());
+  bool ltrEllipsisWithinBox =
+      flowIsLTR && ellipsisX < adjustedLogicalLeft + logicalWidth();
+  bool rtlEllipsisWithinBox = !flowIsLTR && ellipsisX > adjustedLogicalLeft;
   if (ltrEllipsisWithinBox || rtlEllipsisWithinBox) {
     foundBox = true;
 
@@ -350,14 +359,15 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
       // ellipsis.
       LayoutUnit visibleBoxWidth =
           visibleRightEdge - visibleLeftEdge - ellipsisWidth;
-      ellipsisX = flowIsLTR ? logicalLeft() + visibleBoxWidth
+      ellipsisX = flowIsLTR ? adjustedLogicalLeft + visibleBoxWidth
                             : logicalRight() - visibleBoxWidth;
     }
 
     // The box's width includes partial glyphs, so respect that when placing
     // the ellipsis.
     int offset = offsetForPosition(ellipsisX);
-    if (offset == 0 && ltr == flowIsLTR) {
+    // Full truncation is only necessary when we're flowing left-to-right.
+    if (flowIsLTR && offset == 0 && ltr == flowIsLTR) {
       // No characters should be laid out.  Set ourselves to full truncation and
       // place the ellipsis at the min of our start and the ellipsis edge.
       setTruncation(cFullTruncation);
@@ -386,7 +396,8 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
     truncatedWidth += widthOfVisibleText + ellipsisWidth;
     if (flowIsLTR)
       return logicalLeft() + widthOfVisibleText;
-    return logicalRight() - widthOfVisibleText - ellipsisWidth;
+    LayoutUnit result = logicalRight() - widthOfVisibleText - ellipsisWidth;
+    return result;
   }
   truncatedWidth += logicalWidth();
   return LayoutUnit(-1);
