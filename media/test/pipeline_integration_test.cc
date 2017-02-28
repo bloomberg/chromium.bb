@@ -737,8 +737,6 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     EXPECT_CALL(*this, OnDurationChange()).Times(AnyNumber());
     EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
     EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
-    EXPECT_CALL(*this, OnVideoAverageKeyframeDistanceUpdate())
-        .Times(AnyNumber());
 
     source->set_demuxer_failure_cb(base::Bind(
         &PipelineIntegrationTest::OnStatusCallback, base::Unretained(this)));

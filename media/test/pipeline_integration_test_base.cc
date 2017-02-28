@@ -53,6 +53,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       last_video_frame_color_space_(COLOR_SPACE_UNSPECIFIED),
       current_duration_(kInfiniteDuration) {
   ResetVideoHash();
+  EXPECT_CALL(*this, OnVideoAverageKeyframeDistanceUpdate()).Times(AnyNumber());
 }
 
 PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
