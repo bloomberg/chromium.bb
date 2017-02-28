@@ -179,11 +179,6 @@
     <!-- Bookmark widget colors -->
     <color name="bookmark_widget_pressed_highlight">#1D000000</color>
 
-    <!-- Physical Web colors -->
-    <color name="physical_web_header_color">#333</color>
-    <color name="physical_web_url_color">#969696</color>
-    <color name="physical_web_url_description_color">#646464</color>
-
     <!-- Physical Web diagnostics colors -->
     <color name="physical_web_diags_success_color">#00933b</color>
     <color name="physical_web_diags_failure_color">#f90101</color>
