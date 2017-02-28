@@ -725,9 +725,17 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
             GURL(embedded_test_server()->GetURL("bar.com", "/title2.html")));
 }
 
+#if defined(OS_WIN)
+#define MAYBE_VerifyRequestContextTypeForFrameTree \
+  DISABLED_VerifyRequestContextTypeForFrameTree
+#else
+#define MAYBE_VerifyRequestContextTypeForFrameTree \
+  VerifyRequestContextTypeForFrameTree
+#endif
+
 // Checks that the RequestContextType value is properly set.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       VerifyRequestContextTypeForFrameTree) {
+                       MAYBE_VerifyRequestContextTypeForFrameTree) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
   GURL b_url(embedded_test_server()->GetURL(
