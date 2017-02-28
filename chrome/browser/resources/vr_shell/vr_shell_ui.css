@@ -75,7 +75,7 @@ html {
   width: 512px;
 }
 
-.round-button .button {
+.round-button {
   background-color: #eee;
   background-position: center;
   background-repeat: no-repeat;
@@ -88,7 +88,7 @@ html {
   width: 96px;
 }
 
-.round-button .caption {
+.button-caption {
   color: white;
   font-size: 24px;
   max-width: 192px;
@@ -99,16 +99,16 @@ html {
   white-space: nowrap;
 }
 
-#back .button,
-#forward .button {
+#back-button,
+#forward-button {
   background-image: url(../../../../ui/webui/resources/images/vr_back.svg);
 }
 
-#reload .button {
+#reload-button {
   background-image: url(../../../../ui/webui/resources/images/vr_reload.svg);
 }
 
-#forward .button {
+#forward-button {
   transform: scaleX(-1);
 }
 

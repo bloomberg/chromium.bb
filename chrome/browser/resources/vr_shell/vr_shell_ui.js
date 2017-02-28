@@ -139,7 +139,9 @@ var vrShellUi = (function() {
       let pixelHeight = Math.ceil(rect.bottom) - pixelY;
 
       let element = new api.UiElement(pixelX, pixelY, pixelWidth, pixelHeight);
-      element.setSize(pixelWidth / 1000, pixelHeight / 1000);
+      this.sizeX = pixelWidth / 1000;
+      this.sizeY = pixelHeight / 1000;
+      element.setSize(this.sizeX, this.sizeY);
 
       // Pull additional custom properties from CSS.
       let style = window.getComputedStyle(domElement);
@@ -150,32 +152,62 @@ var vrShellUi = (function() {
           this.translationX, this.translationY, this.translationZ);
 
       this.uiElementId = ui.addElement(element);
-      this.uiAnimationId = -1;
       this.domElement = domElement;
     }
   };
 
-  class RoundButton extends DomUiElement {
-    constructor(domId, callback) {
-      super(domId);
+  class Button {
+    constructor(domId, callback, parentId) {
+      let captionId = domId + '-caption';
+      this.button = document.querySelector(domId);
+      this.caption = document.querySelector(captionId);
 
-      let button = this.domElement.querySelector('.button');
-      button.addEventListener('mouseenter', this.onMouseEnter.bind(this));
-      button.addEventListener('mouseleave', this.onMouseLeave.bind(this));
-      button.addEventListener('click', callback);
+      // Create an invisible parent, from which the button will hover.
+      let backing = new api.UiElement(0, 0, 0, 0);
+      backing.setParentId(parentId);
+      backing.setVisible(false);
+      this.backingElementId = ui.addElement(backing);
+
+      this.buttonElement = new DomUiElement(domId);
+      let update = new api.UiElementUpdate();
+      update.setParentId(this.backingElementId);
+      ui.updateElement(this.buttonElement.uiElementId, update);
+
+      this.captionElement = new DomUiElement(captionId);
+      update = new api.UiElementUpdate();
+      update.setParentId(this.buttonElement.uiElementId);
+      update.setTranslation(0, -this.captionElement.sizeY / 2, 0);
+      update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
+      ui.updateElement(this.captionElement.uiElementId, update);
+
+      this.button.addEventListener('mouseenter', this.onMouseEnter.bind(this));
+      this.button.addEventListener('mouseleave', this.onMouseLeave.bind(this));
+      this.button.addEventListener('click', callback);
+    }
+
+    setTranslation(x, y, z) {
+      let update = new api.UiElementUpdate();
+      update.setTranslation(x, y, z);
+      ui.updateElement(this.backingElementId, update);
+    }
+
+    setVisible(visible) {
+      let update = new api.UiElementUpdate();
+      update.setVisible(visible);
+      ui.updateElement(this.buttonElement.uiElementId, update);
+      update = new api.UiElementUpdate();
+      update.setVisible(visible);
+      ui.updateElement(this.captionElement.uiElementId, update);
     }
 
     configure(buttonOpacity, captionOpacity, distanceForward) {
-      let button = this.domElement.querySelector('.button');
-      let caption = this.domElement.querySelector('.caption');
-      button.style.opacity = buttonOpacity;
-      caption.style.opacity = captionOpacity;
-      let anim = new api.Animation(this.uiElementId, ANIM_DURATION);
+      this.button.style.opacity = buttonOpacity;
+      this.caption.style.opacity = captionOpacity;
+
+      let anim =
+          new api.Animation(this.buttonElement.uiElementId, ANIM_DURATION);
       anim.setTranslation(0, 0, distanceForward);
-      if (this.uiAnimationId >= 0) {
-        ui.removeAnimation(this.uiAnimationId);
-      }
-      this.uiAnimationId = ui.addAnimation(anim);
+      ui.addAnimation(anim);
       ui.flush();
     }
 
@@ -195,19 +227,19 @@ var vrShellUi = (function() {
       this.buttons = [];
       let descriptors = [
         [
-          '#back',
+          '#back-button',
           function() {
             api.doAction(api.Action.HISTORY_BACK, {});
           }
         ],
         [
-          '#reload',
+          '#reload-button',
           function() {
             api.doAction(api.Action.RELOAD, {});
           }
         ],
         [
-          '#forward',
+          '#forward-button',
           function() {
             api.doAction(api.Action.HISTORY_FORWARD, {});
           }
@@ -218,24 +250,19 @@ var vrShellUi = (function() {
       /** @const */ var BUTTON_Z = -1;
       /** @const */ var BUTTON_SPACING = 0.11;
 
-      let startPosition = -BUTTON_SPACING * (descriptors.length / 2.0 - 0.5);
-      for (let i = 0; i < descriptors.length; i++) {
-        // Use an invisible parent to simplify Z-axis movement on hover.
-        let position = new api.UiElement(0, 0, 0, 0);
-        position.setVisible(false);
-        position.setTranslation(
-            startPosition + i * BUTTON_SPACING, BUTTON_Y, BUTTON_Z);
-        let id = ui.addElement(position);
+      let controls = new api.UiElement(0, 0, 0, 0);
+      controls.setVisible(false);
+      controls.setTranslation(0, BUTTON_Y, BUTTON_Z);
+      this.controlsId = ui.addElement(controls);
 
+      let startPosition = -BUTTON_SPACING * (descriptors.length / 2.0 - 0.5);
+
+      for (let i = 0; i < descriptors.length; i++) {
         let domId = descriptors[i][0];
         let callback = descriptors[i][1];
-        let element = new RoundButton(domId, callback);
-        this.buttons.push(element);
-
-        let update = new api.UiElementUpdate();
-        update.setParentId(id);
-        update.setVisible(false);
-        ui.updateElement(element.uiElementId, update);
+        let button = new Button(domId, callback, this.controlsId);
+        button.setTranslation(startPosition + i * BUTTON_SPACING, 0, 0);
+        this.buttons.push(button);
       }
     }
 
@@ -246,9 +273,7 @@ var vrShellUi = (function() {
 
     configure() {
       for (let i = 0; i < this.buttons.length; i++) {
-        let update = new api.UiElementUpdate();
-        update.setVisible(this.enabled);
-        ui.updateElement(this.buttons[i].uiElementId, update);
+        this.buttons[i].setVisible(this.enabled);
       }
     }
   };
@@ -270,7 +295,7 @@ var vrShellUi = (function() {
       let update = new api.UiElementUpdate();
       update.setVisible(false);
       update.setSize(0.25, 0.1);
-      update.setTranslation(0, -1.5, -1.5);
+      update.setTranslation(0, -1.0, -1.0);
       update.setRotation(1, 0, 0, -0.8);
       ui.updateElement(this.uiElement.uiElementId, update);
     }
