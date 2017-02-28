@@ -74,9 +74,7 @@ class APIBinding {
       v8::Isolate* isolate,
       const AvailabilityCallback& is_available);
 
-  // Returns the JS interface to use when registering hooks with legacy custom
-  // bindings.
-  v8::Local<v8::Object> GetJSHookInterface(v8::Local<v8::Context> context);
+  APIBindingHooks* hooks() { return binding_hooks_.get(); }
 
  private:
   // Initializes the object_template_ for this API. Called lazily when the

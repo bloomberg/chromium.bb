@@ -152,6 +152,10 @@ var tests = [
       });
     });
   },
+  function testBrowserActionWithCustomSendRequest() {
+    // browserAction.setIcon uses a custom hook that calls sendRequest().
+    chrome.browserAction.setIcon({path: 'icon.png'}, chrome.test.succeed);
+  },
 ];
 
 chrome.test.getConfig(config => {

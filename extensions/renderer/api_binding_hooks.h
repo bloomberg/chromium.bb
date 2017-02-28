@@ -63,7 +63,8 @@ class APIBindingHooks {
                                    std::vector<v8::Local<v8::Value>>*,
                                    const APITypeReferenceMap&)>;
 
-  explicit APIBindingHooks(const binding::RunJSFunctionSync& run_js);
+  APIBindingHooks(const std::string& api_name,
+                  const binding::RunJSFunctionSync& run_js);
   ~APIBindingHooks();
 
   // Register a custom binding to handle requests.
@@ -76,21 +77,22 @@ class APIBindingHooks {
                         v8::Global<v8::String> resource_name);
 
   // Initializes JS hooks within a context.
-  void InitializeInContext(v8::Local<v8::Context> context,
-                           const std::string& api_name);
+  void InitializeInContext(v8::Local<v8::Context> context);
 
   // Looks for any custom hooks associated with the given request, and, if any
   // are found, runs them. Returns the result of running the hooks, if any.
-  RequestResult RunHooks(const std::string& api_name,
-                         const std::string& method_name,
+  RequestResult RunHooks(const std::string& method_name,
                          v8::Local<v8::Context> context,
                          const APISignature* signature,
                          std::vector<v8::Local<v8::Value>>* arguments,
                          const APITypeReferenceMap& type_refs);
 
   // Returns a JS interface that can be used to register hooks.
-  v8::Local<v8::Object> GetJSHookInterface(const std::string& api_name,
-                                           v8::Local<v8::Context> context);
+  v8::Local<v8::Object> GetJSHookInterface(v8::Local<v8::Context> context);
+
+  // Gets the custom-set JS callback for the given method, if one exists.
+  v8::Local<v8::Function> GetCustomJSCallback(const std::string& method_name,
+                                              v8::Local<v8::Context> context);
 
  private:
   // Updates the |arguments| by running |function| and settings arguments to the
@@ -111,6 +113,9 @@ class APIBindingHooks {
   // The name of the JS resource for the hooks. Used to create a ScriptOrigin
   // to make exception stack traces more readable.
   v8::Global<v8::String> js_resource_name_;
+
+  // The name of the associated API.
+  std::string api_name_;
 
   // We use synchronous JS execution here because at every point we execute JS,
   // it's in direct response to JS calling in. There should be no reason that

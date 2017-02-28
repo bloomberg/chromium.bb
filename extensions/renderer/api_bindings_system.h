@@ -24,7 +24,7 @@ class ListValue;
 }
 
 namespace extensions {
-class APIRequestHandler;
+class APIBindingHooks;
 
 // A class encompassing the necessary pieces to construct the JS entry points
 // for Extension APIs. Designed to be used on a single thread, but safe between
@@ -54,7 +54,7 @@ class APIBindingsSystem {
       v8::Local<v8::Context> context,
       v8::Isolate* isolate,
       const APIBinding::AvailabilityCallback& is_available,
-      v8::Local<v8::Object>* hooks_interface_out);
+      APIBindingHooks** hooks_out);
 
   // Responds to the request with the given |request_id|, calling the callback
   // with |response|. If |error| is non-empty, sets the last error.
@@ -82,6 +82,9 @@ class APIBindingsSystem {
   // storage.StorageArea).
   void RegisterCustomType(const std::string& type_name,
                           const CustomTypeHandler& function);
+
+  APIRequestHandler* request_handler() { return &request_handler_; }
+  APITypeReferenceMap* type_reference_map() { return &type_reference_map_; }
 
  private:
   // Creates a new APIBinding for the given |api_name|.

@@ -33,12 +33,12 @@ v8::Local<v8::Object> APIBindingsSystem::CreateAPIInstance(
     v8::Local<v8::Context> context,
     v8::Isolate* isolate,
     const APIBinding::AvailabilityCallback& is_available,
-    v8::Local<v8::Object>* hooks_interface_out) {
+    APIBindingHooks** hooks_out) {
   std::unique_ptr<APIBinding>& binding = api_bindings_[api_name];
   if (!binding)
     binding = CreateNewAPIBinding(api_name);
-  if (hooks_interface_out)
-    *hooks_interface_out = binding->GetJSHookInterface(context);
+  if (hooks_out)
+    *hooks_out = binding->hooks();
   return binding->CreateInstance(context, isolate, is_available);
 }
 
@@ -65,7 +65,7 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
     hooks = std::move(iter->second);
     binding_hooks_.erase(iter);
   } else {
-    hooks = base::MakeUnique<APIBindingHooks>(call_js_sync_);
+    hooks = base::MakeUnique<APIBindingHooks>(api_name, call_js_sync_);
   }
 
   return base::MakeUnique<APIBinding>(
@@ -113,7 +113,7 @@ APIBindingHooks* APIBindingsSystem::GetHooksForAPI(
       << "Hook registration must happen before creating any binding instances.";
   std::unique_ptr<APIBindingHooks>& hooks = binding_hooks_[api_name];
   if (!hooks)
-    hooks = base::MakeUnique<APIBindingHooks>(call_js_sync_);
+    hooks = base::MakeUnique<APIBindingHooks>(api_name, call_js_sync_);
   return hooks.get();
 }
 

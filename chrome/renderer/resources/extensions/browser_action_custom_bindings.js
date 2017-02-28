@@ -4,11 +4,12 @@
 
 // Custom binding for the browserAction API.
 
-var binding = require('binding').Binding.create('browserAction');
+var binding = apiBridge || require('binding').Binding.create('browserAction');
 
 var setIcon = require('setIcon').setIcon;
 var getExtensionViews = requireNative('runtime').GetExtensionViews;
-var sendRequest = require('sendRequest').sendRequest;
+var sendRequest = apiBridge ?
+    apiBridge.sendRequest.bind(apiBridge) : require('sendRequest').sendRequest;
 var lastError = require('lastError');
 
 binding.registerCustomHook(function(bindingsAPI) {
@@ -16,7 +17,9 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
     setIcon(details, function(args) {
-      sendRequest(this.name, [args, callback], this.definition.parameters);
+      sendRequest('browserAction.setIcon',
+                  [args, callback],
+                  apiBridge ? undefined : this.definition.parameters);
     }.bind(this));
   });
 
@@ -34,4 +37,5 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

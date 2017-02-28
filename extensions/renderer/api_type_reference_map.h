@@ -33,6 +33,15 @@ class APITypeReferenceMap {
   const ArgumentSpec* GetSpec(const std::string& name) const;
 
   // Adds the |signature| to the map under the given |name|. |name| is expected
+  // to be fully qualified with the API and method name, e.g. tabs.create.
+  void AddAPIMethodSignature(const std::string& name,
+                             std::unique_ptr<APISignature> signature);
+
+  // Returns the signature for the given |name|. |name| is expected
+  // to be fully qualified with the API and method name, e.g. tabs.create.
+  const APISignature* GetAPIMethodSignature(const std::string& name) const;
+
+  // Adds the |signature| to the map under the given |name|. |name| is expected
   // to be fully qualified with API, type, and method (e.g.
   // storage.StorageArea.get).
   void AddTypeMethodSignature(const std::string& name,
@@ -50,7 +59,7 @@ class APITypeReferenceMap {
   InitializeTypeCallback initialize_type_;
 
   std::map<std::string, std::unique_ptr<ArgumentSpec>> type_refs_;
-
+  std::map<std::string, std::unique_ptr<APISignature>> api_methods_;
   std::map<std::string, std::unique_ptr<APISignature>> type_methods_;
 
   DISALLOW_COPY_AND_ASSIGN(APITypeReferenceMap);

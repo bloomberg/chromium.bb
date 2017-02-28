@@ -25,6 +25,8 @@ namespace extensions {
 
 namespace {
 
+const char kBindingName[] = "test";
+
 // Function spec; we use single quotes for readability and then replace them.
 const char kFunctions[] =
     "[{"
@@ -180,14 +182,14 @@ class APIBindingUnittest : public APIBindingTest {
 
   void InitializeBinding() {
     if (!binding_hooks_) {
-      binding_hooks_ =
-          base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync());
+      binding_hooks_ = base::MakeUnique<APIBindingHooks>(
+          kBindingName, binding::RunJSFunctionSync());
     }
     event_handler_ = base::MakeUnique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         base::Bind(&OnEventListenersChanged));
     binding_ = base::MakeUnique<APIBinding>(
-        "test", binding_functions_.get(), binding_types_.get(),
+        kBindingName, binding_functions_.get(), binding_types_.get(),
         binding_events_.get(), binding_properties_.get(), create_custom_type_,
         std::move(binding_hooks_), &type_refs_, request_handler_.get(),
         event_handler_.get());
@@ -667,7 +669,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
 
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
                  v8::Local<v8::Context> context,
@@ -710,7 +712,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
 TEST_F(APIBindingUnittest, TestJSCustomHook) {
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -762,7 +764,7 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
 TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -823,7 +825,7 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
 
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(run_js_and_allow_error));
+      kBindingName, base::Bind(run_js_and_allow_error));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -865,7 +867,7 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
 TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -926,7 +928,7 @@ TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
   };
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(run_js_and_expect_error));
+      kBindingName, base::Bind(run_js_and_expect_error));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -969,7 +971,7 @@ TEST_F(APIBindingUnittest,
 
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
                  v8::Local<v8::Context> context,
@@ -1032,7 +1034,7 @@ TEST_F(APIBindingUnittest,
 TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();

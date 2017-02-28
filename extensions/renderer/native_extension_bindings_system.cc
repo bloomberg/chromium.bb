@@ -179,15 +179,16 @@ v8::Local<v8::Object> CreateRootBinding(
     const std::string& name,
     APIBindingsSystem* bindings_system,
     v8::Local<v8::Function> get_internal_api) {
-  v8::Local<v8::Object> hooks_interface;
+  APIBindingHooks* hooks = nullptr;
   v8::Local<v8::Object> binding_object = bindings_system->CreateAPIInstance(
       name, context, context->GetIsolate(),
-      base::Bind(&IsAPIMethodAvailable, script_context), &hooks_interface);
+      base::Bind(&IsAPIMethodAvailable, script_context), &hooks);
 
   gin::Handle<APIBindingBridge> bridge_handle = gin::CreateHandle(
       context->GetIsolate(),
-      new APIBindingBridge(context, binding_object, hooks_interface,
-                           script_context->GetExtensionID(),
+      new APIBindingBridge(bindings_system->type_reference_map(),
+                           bindings_system->request_handler(), hooks, context,
+                           binding_object, script_context->GetExtensionID(),
                            script_context->GetContextTypeDescription(),
                            base::Bind(&CallJsFunction)));
   v8::Local<v8::Value> native_api_bridge = bridge_handle.ToV8();

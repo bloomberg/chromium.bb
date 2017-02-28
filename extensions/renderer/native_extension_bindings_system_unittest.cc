@@ -474,6 +474,49 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
       last_params().arguments.Equals(ListValueFromString("[50]").get()));
 }
 
+TEST_F(NativeExtensionBindingsSystemUnittest, TestSendRequestHook) {
+  // Custom binding code. This basically utilizes the interface in binding.js in
+  // order to test backwards compatibility.
+  const char kCustomBinding[] =
+      "apiBridge.registerCustomHook((api) => {\n"
+      "  api.apiFunctions.setHandleRequest('queryState',\n"
+      "                                    (time, callback) => {\n"
+      "    apiBridge.sendRequest('idle.queryState', [time, callback]);\n"
+      "  });\n"
+      "});\n";
+
+  source_map()->RegisterModule("idle", kCustomBinding);
+
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", ItemType::EXTENSION, {"idle"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  {
+    // Call the function correctly.
+    const char kCallIdleQueryState[] =
+        "(function() { chrome.idle.queryState(30, function() {}); });";
+
+    v8::Local<v8::Function> call_idle_query_state =
+        FunctionFromString(context, kCallIdleQueryState);
+    RunFunctionOnGlobal(call_idle_query_state, context, 0, nullptr);
+  }
+  EXPECT_EQ(extension->id(), last_params().extension_id);
+  EXPECT_EQ("idle.queryState", last_params().name);
+  EXPECT_EQ(extension->url(), last_params().source_url);
+  EXPECT_TRUE(last_params().has_callback);
+  EXPECT_TRUE(
+      last_params().arguments.Equals(ListValueFromString("[30]").get()));
+}
+
 // Tests that we can notify the browser as event listeners are added or removed.
 // Note: the notification logic is tested more thoroughly in the APIEventHandler
 // unittests.

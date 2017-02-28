@@ -30,6 +30,24 @@ const ArgumentSpec* APITypeReferenceMap::GetSpec(
   return iter == type_refs_.end() ? nullptr : iter->second.get();
 }
 
+void APITypeReferenceMap::AddAPIMethodSignature(
+    const std::string& name,
+    std::unique_ptr<APISignature> signature) {
+  DCHECK(api_methods_.find(name) == api_methods_.end())
+      << "Cannot re-register signature for: " << name;
+  api_methods_[name] = std::move(signature);
+}
+
+const APISignature* APITypeReferenceMap::GetAPIMethodSignature(
+    const std::string& name) const {
+  auto iter = api_methods_.find(name);
+  if (iter == api_methods_.end()) {
+    initialize_type_.Run(name);
+    iter = api_methods_.find(name);
+  }
+  return iter == api_methods_.end() ? nullptr : iter->second.get();
+}
+
 void APITypeReferenceMap::AddTypeMethodSignature(
     const std::string& name,
     std::unique_ptr<APISignature> signature) {
