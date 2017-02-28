@@ -351,6 +351,9 @@ bool DownloadRequestCore::OnResponseStarted(
 
     if (!headers->GetMimeType(&create_info->original_mime_type))
       create_info->original_mime_type.clear();
+
+    create_info->accept_range =
+        headers->HasHeaderValue("Accept-Ranges", "bytes");
   }
 
   // Blink verifies that the requester of this download is allowed to set a

@@ -5,24 +5,17 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_job.h"
+#include "content/browser/download/mock_download_item_impl.h"
 #include "content/browser/download/mock_download_job.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::NiceMock;
+
 namespace content {
-
-class MockDownloadJobManager : public DownloadJob::Manager {
- public:
-  MockDownloadJobManager() = default;
-  ~MockDownloadJobManager() = default;
-
-  MOCK_METHOD1(OnSavingStarted, void(DownloadJob* download_job));
-  MOCK_METHOD1(SetDangerType, void(DownloadDangerType));
-  MOCK_METHOD2(OnDownloadInterrupted,
-               void(DownloadJob* download_job, DownloadInterruptReason reason));
-  MOCK_METHOD1(OnDownloadComplete, void(DownloadJob* download_job));
-};
 
 // Test for DownloadJob base class functionalities.
 class DownloadJobTest : public testing::Test {
@@ -31,22 +24,20 @@ class DownloadJobTest : public testing::Test {
   ~DownloadJobTest() override = default;
 
   void SetUp() override {
-    download_job_manager_ = base::MakeUnique<MockDownloadJobManager>();
-    EXPECT_TRUE(download_job_manager_.get());
-    download_job_ = base::MakeUnique<MockDownloadJob>();
+    item_delegate_ = base::MakeUnique<DownloadItemImplDelegate>();
+    download_item_ =
+        base::MakeUnique<NiceMock<MockDownloadItemImpl>>(item_delegate_.get());
+    download_job_ = base::MakeUnique<MockDownloadJob>(download_item_.get());
   }
 
-  std::unique_ptr<MockDownloadJobManager> download_job_manager_;
+  content::TestBrowserThreadBundle browser_threads_;
+  std::unique_ptr<DownloadItemImplDelegate> item_delegate_;
+  std::unique_ptr<MockDownloadItemImpl> download_item_;
   std::unique_ptr<MockDownloadJob> download_job_;
 };
 
-TEST_F(DownloadJobTest, AttachAndDetach) {
-  // Ensure the manager should be valid only between attach and detach call.
-  EXPECT_FALSE(download_job_->manager());
-  download_job_->OnAttached(download_job_manager_.get());
-  EXPECT_TRUE(download_job_->manager());
-  download_job_->OnBeforeDetach();
-  EXPECT_FALSE(download_job_->manager());
+TEST_F(DownloadJobTest, Pause) {
+  DCHECK(download_job_->download_item());
 }
 
 }  // namespace content

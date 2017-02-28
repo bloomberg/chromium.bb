@@ -14,15 +14,20 @@
 
 namespace content {
 
+class DownloadItemImpl;
+
 class MockDownloadJob : public DownloadJob {
  public:
-  MockDownloadJob();
+  explicit MockDownloadJob(DownloadItemImpl* download_item);
   ~MockDownloadJob() override;
 
+  DownloadItemImpl* download_item() { return download_item_; }
+
   // DownloadJob implementation.
+  MOCK_METHOD0(Start, void());
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(Pause, void());
-  MOCK_METHOD0(Resume, void());
+  MOCK_METHOD1(Resume, void(bool));
   MOCK_CONST_METHOD0(CanOpen, bool());
   MOCK_CONST_METHOD0(CanResume, bool());
   MOCK_CONST_METHOD0(CanShowInFolder, bool());

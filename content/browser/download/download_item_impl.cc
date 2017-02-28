@@ -40,6 +40,8 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
+#include "content/browser/download/download_job_factory.h"
+#include "content/browser/download/download_job_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
@@ -240,7 +242,6 @@ DownloadItemImpl::DownloadItemImpl(
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const net::NetLogWithSource& net_log)
     : is_save_package_download_(true),
-      request_handle_(std::move(request_handle)),
       guid_(base::ToUpperASCII(base::GenerateGUID())),
       download_id_(download_id),
       target_path_(path),
@@ -254,6 +255,7 @@ DownloadItemImpl::DownloadItemImpl(
       current_path_(path),
       net_log_(net_log),
       weak_ptr_factory_(this) {
+  job_ = base::MakeUnique<DownloadJobImpl>(this, std::move(request_handle));
   delegate_->Attach();
   Init(true /* actively downloading */, SRC_SAVE_PAGE_AS);
 }
@@ -350,7 +352,7 @@ void DownloadItemImpl::Pause() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Ignore irrelevant states.
-  if (is_paused_)
+  if (IsPaused())
     return;
 
   switch (state_) {
@@ -363,15 +365,15 @@ void DownloadItemImpl::Pause() {
     case RESUMING_INTERNAL:
       // No active request.
       // TODO(asanka): In the case of RESUMING_INTERNAL, consider setting
-      // is_paused_ even if there's no request currently associated with this
-      // DII. When a request is assigned (due to a resumption, for example) we
-      // can honor the is_paused_ setting.
+      // |DownloadJob::is_paused_| even if there's no request currently
+      // associated with this DII. When a request is assigned (due to a
+      // resumption, for example) we can honor the |DownloadJob::is_paused_|
+      // setting.
       return;
 
     case IN_PROGRESS_INTERNAL:
     case TARGET_PENDING_INTERNAL:
-      request_handle_->PauseRequest();
-      is_paused_ = true;
+      job_->Pause();
       UpdateObservers();
       return;
 
@@ -395,10 +397,10 @@ void DownloadItemImpl::Resume() {
 
     case TARGET_PENDING_INTERNAL:
     case IN_PROGRESS_INTERNAL:
-      if (!is_paused_)
+      if (!IsPaused())
         return;
-      request_handle_->ResumeRequest();
-      is_paused_ = false;
+      if (job_)
+        job_->Resume(true);
       UpdateObservers();
       return;
 
@@ -486,7 +488,7 @@ DownloadInterruptReason DownloadItemImpl::GetLastReason() const {
 }
 
 bool DownloadItemImpl::IsPaused() const {
-  return is_paused_;
+  return job_ ? job_->is_paused() : false;
 }
 
 bool DownloadItemImpl::IsTemporary() const {
@@ -507,7 +509,7 @@ bool DownloadItemImpl::CanResume() const {
     case TARGET_PENDING_INTERNAL:
     case TARGET_RESOLVED_INTERNAL:
     case IN_PROGRESS_INTERNAL:
-      return is_paused_;
+      return IsPaused();
 
     case INTERRUPTED_INTERNAL: {
       ResumeMode resume_mode = GetResumeMode();
@@ -701,7 +703,7 @@ bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
 }
 
 int64_t DownloadItemImpl::CurrentSpeed() const {
-  if (is_paused_)
+  if (IsPaused())
     return 0;
   return bytes_per_sec_;
 }
@@ -780,9 +782,9 @@ WebContents* DownloadItemImpl::GetWebContents() const {
   // paths that might be used by DownloadItems created from history import.
   // Currently such items have null request_handle_s, where other items
   // (regular and SavePackage downloads) have actual objects off the pointer.
-  if (request_handle_)
-    return request_handle_->GetWebContents();
-  return NULL;
+  if (job_)
+    return job_->GetWebContents();
+  return nullptr;
 }
 
 void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type) {
@@ -887,7 +889,7 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
   // We won't auto-restart if we've used up our attempts or the
   // download has been paused by user action.
   bool user_action_required =
-      (auto_resume_count_ >= kMaxAutoResumeAttempts || is_paused_);
+      (auto_resume_count_ >= kMaxAutoResumeAttempts || IsPaused());
 
   switch(last_reason_) {
     case DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
@@ -1180,15 +1182,15 @@ void DownloadItemImpl::Start(
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
 
   download_file_ = std::move(file);
-  request_handle_ = std::move(req_handle);
+  job_ = DownloadJobFactory::CreateJob(this, std::move(req_handle),
+                                       new_create_info);
   destination_error_ = DOWNLOAD_INTERRUPT_REASON_NONE;
 
   if (state_ == CANCELLED_INTERNAL) {
     // The download was in the process of resuming when it was cancelled. Don't
     // proceed.
     ReleaseDownloadFile(true);
-    if (request_handle_)
-      request_handle_->CancelRequest();
+    job_->Cancel(true);
     return;
   }
 
@@ -1239,14 +1241,18 @@ void DownloadItemImpl::Start(
   }
 
   // Successful download start.
-  DCHECK(download_file_.get());
-  DCHECK(request_handle_.get());
+  DCHECK(download_file_);
+  DCHECK(job_);
 
   if (state_ == RESUMING_INTERNAL)
     UpdateValidatorsOnResumption(new_create_info);
 
   TransitionTo(TARGET_PENDING_INTERNAL);
 
+  job_->Start();
+}
+
+void DownloadItemImpl::StartDownload() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFile::Initialize,
@@ -1643,8 +1649,8 @@ void DownloadItemImpl::InterruptWithPartialState(
     SetHashState(std::move(hash_state));
   }
 
-  if (request_handle_)
-    request_handle_->CancelRequest();
+  if (job_)
+    job_->Cancel(false);
 
   if (reason == DOWNLOAD_INTERRUPT_REASON_USER_CANCELED ||
       reason == DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN) {
@@ -1784,9 +1790,10 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
       DCHECK(current_path_.DirName() == target_path_.DirName())
           << "Current output directory must match target directory.";
       DCHECK(download_file_) << "Output file must be owned by download item.";
-      DCHECK(request_handle_) << "Download source must be active.";
-      DCHECK(!is_paused_) << "At the time a download enters IN_PROGRESS state, "
-                             "it must not be paused.";
+      DCHECK(job_) << "Must have active download job.";
+      DCHECK(!job_->is_paused())
+          << "At the time a download enters IN_PROGRESS state, "
+             "it must not be paused.";
       break;
 
     case COMPLETING_INTERNAL:
@@ -1954,8 +1961,9 @@ void DownloadItemImpl::ResumeInterruptedDownload(
                            ? INITIATED_BY_MANUAL_RESUMPTION
                            : INITIATED_BY_AUTOMATIC_RESUMPTION);
   delegate_->ResumeInterruptedDownload(std::move(download_params), GetId());
-  // Just in case we were interrupted while paused.
-  is_paused_ = false;
+
+  if (job_)
+    job_->Resume(false);
 }
 
 // static

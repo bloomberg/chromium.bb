@@ -520,16 +520,6 @@ void DownloadManagerImpl::AddUrlDownloader(
     url_downloaders_.push_back(std::move(downloader));
 }
 
-void DownloadManagerImpl::RemoveUrlDownloader(UrlDownloader* downloader) {
-  for (auto ptr = url_downloaders_.begin(); ptr != url_downloaders_.end();
-       ++ptr) {
-    if (ptr->get() == downloader) {
-      url_downloaders_.erase(ptr);
-      return;
-    }
-  }
-}
-
 // static
 DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
     std::unique_ptr<net::URLRequest> url_request,
@@ -714,6 +704,24 @@ DownloadItem* DownloadManagerImpl::GetDownloadByGuid(const std::string& guid) {
   DCHECK(guid == base::ToUpperASCII(guid));
   return base::ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
                                                      : nullptr;
+}
+
+void DownloadManagerImpl::OnUrlDownloaderStarted(
+    std::unique_ptr<DownloadCreateInfo> download_create_info,
+    std::unique_ptr<ByteStreamReader> stream_reader,
+    const DownloadUrlParameters::OnStartedCallback& callback) {
+  StartDownload(std::move(download_create_info), std::move(stream_reader),
+                callback);
+}
+
+void DownloadManagerImpl::OnUrlDownloaderStopped(UrlDownloader* downloader) {
+  for (auto ptr = url_downloaders_.begin(); ptr != url_downloaders_.end();
+       ++ptr) {
+    if (ptr->get() == downloader) {
+      url_downloaders_.erase(ptr);
+      return;
+    }
+  }
 }
 
 void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {

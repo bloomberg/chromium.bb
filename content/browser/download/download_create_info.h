@@ -110,6 +110,9 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // For continuing a download, the ETag of the file.
   std::string etag;
 
+  // If "Accept-Ranges:bytes" header presents in the response header.
+  bool accept_range;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);
 };

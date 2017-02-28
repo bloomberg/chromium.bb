@@ -28,6 +28,7 @@
 namespace content {
 class DownloadFile;
 class DownloadItemImplDelegate;
+class DownloadJob;
 
 // See download_item.h for usage.
 class CONTENT_EXPORT DownloadItemImpl
@@ -232,6 +233,8 @@ class CONTENT_EXPORT DownloadItemImpl
       std::unique_ptr<crypto::SecureHash> hash_state) override;
 
  private:
+  friend class DownloadJob;
+
   // Fine grained states of a download.
   //
   // New downloads can be created in the following states:
@@ -395,6 +398,9 @@ class CONTENT_EXPORT DownloadItemImpl
   // this is.
   void Init(bool active, DownloadType download_type);
 
+  // Start a series of events that result in the file being downloaded.
+  void StartDownload();
+
   // Callback from file thread when we initialize the DownloadFile.
   void OnDownloadFileInitialized(DownloadInterruptReason result);
 
@@ -505,10 +511,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // TODO(rdsmith): Replace with a generalized enum for "download source".
   const bool is_save_package_download_ = false;
 
-  // The handle to the request information.  Used for operations outside the
-  // download system.
-  std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
-
   std::string guid_;
 
   uint32_t download_id_ = kInvalidId;
@@ -598,9 +600,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // Our delegate.
   DownloadItemImplDelegate* delegate_ = nullptr;
 
-  // In progress downloads may be paused by the user, we note it here.
-  bool is_paused_ = false;
-
   // A flag for indicating if the download should be opened at completion.
   bool open_when_complete_ = false;
 
@@ -683,6 +682,8 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Net log to use for this download.
   const net::NetLogWithSource net_log_;
+
+  std::unique_ptr<DownloadJob> job_;
 
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 

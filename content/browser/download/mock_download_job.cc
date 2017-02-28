@@ -6,7 +6,8 @@
 
 namespace content {
 
-MockDownloadJob::MockDownloadJob() = default;
+MockDownloadJob::MockDownloadJob(DownloadItemImpl* download_item)
+    : DownloadJob(download_item) {}
 
 MockDownloadJob::~MockDownloadJob() = default;
 

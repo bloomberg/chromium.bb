@@ -21,17 +21,30 @@
 namespace content {
 class ByteStreamReader;
 struct DownloadCreateInfo;
-class DownloadManagerImpl;
 
 class UrlDownloader : public net::URLRequest::Delegate,
                       public DownloadRequestCore::Delegate {
  public:
+  // Implemented by the owner of UrlDownloader, functions need to be called on
+  // UI thread.
+  class Delegate {
+   public:
+    // Called after response is handled and the byte stream is established.
+    virtual void OnUrlDownloaderStarted(
+        std::unique_ptr<DownloadCreateInfo> download_create_info,
+        std::unique_ptr<ByteStreamReader> stream_reader,
+        const DownloadUrlParameters::OnStartedCallback& callback) = 0;
+
+    // Called after the connection is cannceled or finished.
+    virtual void OnUrlDownloaderStopped(UrlDownloader* downloader) = 0;
+  };
+
   UrlDownloader(std::unique_ptr<net::URLRequest> request,
-                base::WeakPtr<DownloadManagerImpl> manager);
+                base::WeakPtr<Delegate> delegate);
   ~UrlDownloader() override;
 
   static std::unique_ptr<UrlDownloader> BeginDownload(
-      base::WeakPtr<DownloadManagerImpl> download_manager,
+      base::WeakPtr<UrlDownloader::Delegate> delegate,
       std::unique_ptr<net::URLRequest> request,
       const Referrer& referrer);
 
@@ -67,7 +80,9 @@ class UrlDownloader : public net::URLRequest::Delegate,
   void Destroy();
 
   std::unique_ptr<net::URLRequest> request_;
-  base::WeakPtr<DownloadManagerImpl> manager_;
+
+  // Live on UI thread, post task to call |delegate_| functions.
+  base::WeakPtr<Delegate> delegate_;
   DownloadRequestCore core_;
 
   base::WeakPtrFactory<UrlDownloader> weak_ptr_factory_;

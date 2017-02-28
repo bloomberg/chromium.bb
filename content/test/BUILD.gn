@@ -31,6 +31,8 @@ static_library("test_support") {
   sources = [
     "../browser/download/mock_download_file.cc",
     "../browser/download/mock_download_file.h",
+    "../browser/download/mock_download_item_impl.cc",
+    "../browser/download/mock_download_item_impl.h",
     "../browser/download/mock_download_job.cc",
     "../browser/download/mock_download_job.h",
     "../browser/media/session/mock_media_session_observer.cc",
@@ -1051,6 +1053,7 @@ test("content_unittests") {
     "../browser/download/download_job_unittest.cc",
     "../browser/download/download_manager_impl_unittest.cc",
     "../browser/download/download_request_core_unittest.cc",
+    "../browser/download/parallel_download_job_unittest.cc",
     "../browser/download/rate_estimator_unittest.cc",
     "../browser/download/save_package_unittest.cc",
     "../browser/fileapi/copy_or_move_file_validator_unittest.cc",
