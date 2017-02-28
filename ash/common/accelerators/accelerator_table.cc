@@ -184,10 +184,10 @@ const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 //      notification to be shown to the user. This is to prevent duplication of
 //      same notification.
 //    - The ID of the localized notification message to give the users telling
-//      them about the deprecation (Add one in |ash_chromeos_strings.grdp|.
-//      Search for the comment <!-- Deprecated Accelerators Messages -->).
+//      them about the deprecation (Add one in |ash_strings.grd|. Search for
+//      the comment <!-- Deprecated Accelerators Messages -->).
 //    - The IDs of the localized old and new shortcut text to be used to fill
-//      the notification text. Also found in |ash_chromeos_strings.grdp|.
+//      the notification text. Also found in |ash_strings.grd|.
 //    - {true or false} whether the deprecated accelerator is still enabled (we
 //      don't disable a deprecated accelerator abruptly).
 // 5- Don't forget to update the keyboard overlay. Find 'shortcut' in the file

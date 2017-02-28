@@ -405,11 +405,620 @@ Press Ctrl+Alt+Z to disable.
         Toggle window overview
       </message>
 
-      <!-- ChromeOS-specific strings -->
-      <if expr="chromeos">
-        <part file="ash_chromeos_strings.grdp" />
-      </if>
+      <!-- Device types -->
+      <message name="IDS_ASH_CHROMEBASE" desc="The device name for a Chromebase (versus say Chromebox)">
+        Chromebase
+      </message>
+      <message name="IDS_ASH_CHROMEBIT" desc="The device name for a Chromebit (versus say Chromebox)">
+        Chromebit
+      </message>
+      <message name="IDS_ASH_CHROMEBOOK" desc="The device name for a Chromebook (versus say Chromebox)">
+        Chromebook
+      </message>
+      <message name="IDS_ASH_CHROMEBOX" desc="The device name for a Chromebox (versus say Chromebook)">
+        Chromebox
+      </message>
+      <message name="IDS_ASH_CHROMEDEVICE" desc="The device name for a generic Chrome device">
+        Chrome device
+      </message>
 
+      <!-- Status tray charging strings. -->
+      <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
+        Low-power charger connected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE" desc="The message body of a notification indicating that a low-current USB charger has been connected.">
+        Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on. Consider using the official charger.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT" desc="The message body of a notification indicating that a low-current USB charger has been connected, short version.">
+        Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHARGING_FROM_DUAL_ROLE_TITLE" desc="The message title of a notification indicating that the device is being charged by a connected dual-role USB Type-C device.">
+        Charging from <ph name="POWER_SOURCE">$1<ex>USB-C device (left port)</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHARGING_DUAL_ROLE_DEVICE_TITLE" desc="The message title of a notification indicating that the device is charging the connected USB Type-C device.">
+        Charging <ph name="POWER_SOURCE">$1<ex>USB-C device (left port)</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CHARGING_DUAL_ROLE_DEVICES_TITLE" desc="The message title of a notification indicating that the device is charging multiple connected USB Type-C devices.">
+        Charging connected USB-C devices
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DUAL_ROLE_MESSAGE" desc="The message body of a notification, which indicates that the user can click the notification to see and change which device is being used as a power source.">
+        Click for more options
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_LEFT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the left side of this device.">
+        USB-C device (left port)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_RIGHT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the right side of this device.">
+        USB-C device (right port)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_BACK" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the back of this device.">
+        USB-C device (rear port)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_FRONT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the front of this device.">
+        USB-C device (front port)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_LEFT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
+        USB-C device (left side front port)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_LEFT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
+        USB-C device (left side back port)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_RIGHT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
+        USB-C device (right side front port)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_RIGHT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
+        USB-C device (right side back port)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_BACK_LEFT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the left.">
+        USB-C device (left port in the back)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_BACK_RIGHT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the right.">
+        USB-C device (right port in the back)
+      </message>
+      <message name="IDS_ASH_POWER_SOURCE_PORT_UNKNOWN" desc="The text referring to the device to charge from, when its port location cannot be determined.">
+        USB-C device
+      </message>
+
+      <message name="IDS_CHARGER_REPLACEMENT_ACCESSIBILITY_NOTIFICATION" desc="The notification string used in accessibility to tell user to contact Google for replacing the possible bad charger.">
+        You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.
+      </message>
+
+      <!-- Status Tray Network strings -->
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
+        Network
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED" desc="The label used when a network connection is connected.">
+        Connected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING" desc="The label used when a network connection is connecting.">
+        Connecting...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header.">
+        Private network
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_BUILT_IN_PROVIDER" desc="The name of the built-in VPN provider that supports OpenVPN and L2TP over IPsec.">
+        OpenVPN / L2TP
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECT" desc="Message on button that disconnects from the current VPN.">
+        Disconnect
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_MONITORED" desc="The label used when a VPN connection may be monitored.">
+        Connection may be monitored
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
+        Wi-Fi
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_INFO" desc="The accessible text for the network info button.">
+        Network info
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
+        IP address
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_IPV6" desc="The label for the IP address of the network:">
+        IPv6 address
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
+        Network settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS" desc="The label used in the proxy settings entry in the network dialog in the login screen.">
+        Proxy settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY" desc="The label used for tell users that this technology is disabled by the administrator">
+        This network setting is disabled by the administrator.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ENABLE_WIFI" desc="The label used for the item to enable wifi.">
+        Enable Wi-Fi
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISABLE_WIFI" desc="The label used for the item to disable wifi.">
+        Disable Wi-Fi
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_OTHER_WIFI" desc="The label used for the item to display other Wi-Fi networks.">
+        Join other...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI" desc="The accessible text for the badge in the detailed network list indicating that the respective network's configuration may be controlled by an extension.">
+        The extension "<ph name="EXTENSION_NAME">$1<ex>Nexus S</ex></ph>" can help connect to this network.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_TURN_ON_WIFI" desc="The label used for the item to turn on Wi-Fi networks.">
+        Turn Wi-Fi on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable mobile networks.">
+        Enable mobile data
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISABLE_MOBILE" desc="The label used for the item to disable mobile networks.">
+        Disable mobile data
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SETUP_MOBILE" desc="The label used for the item to setup mobile network when no SIM card in installed.">
+        Set up mobile data
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_OTHER_MOBILE" desc="The label used for the item to display other mobile networks.">
+        Mobile ...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT" desc="In the network popup bubble, the text of the top-up URL link.">
+        View mobile account
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE" desc="Notification shown when a Bluetooth adapter is discoverable.">
+        Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME">$1<ex>Chromebook</ex></ph>" with address <ph name="ADDRESS">$2<ex>01:23:45:67:89:0A</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISPLAY_PINCODE" desc="Bluetooth pairing message typically shown on a request from a 2.0 device that has a keyboard.">
+        Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE">$2<ex>123456</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISPLAY_PASSKEY" desc="Bluetooth pairing message typically shown on a request from a device that has a keyboard.">
+        Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY">$2<ex>123456</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CONFIRM_PASSKEY" desc="Bluetooth pairing message typically shown on a request from a device that has a display.">
+        Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY">$2<ex>123456</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_AUTHORIZE_PAIRING" desc="Bluetooth pairing message typically shown on a request from a device without input or display.">
+        Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ACCEPT" desc="Message on button to accept Bluetooth pairing request.">
+        Accept
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_REJECT" desc="Message on button to reject Bluetooth pairing request.">
+        Reject
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED" desc="Notification shown when a new device is paired with the computer.">
+        Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" has been paired and is now available to all users. You may remove this pairing using Settings.
+      </message>
+
+      <!-- Ash multi-user warning dialog -->
+      <message name="IDS_DESKTOP_CASTING_ACTIVE_TITLE" desc="The title for the dialog which tells the user that desktop casting is in progress, asking if the casting should be stopped before switching - or - the switch should be aborted.">
+        Stop screen sharing?
+      </message>
+      <message name="IDS_DESKTOP_CASTING_ACTIVE_MESSAGE" desc="The message for the dialog which tells the user that desktop casting is in progress, asking if the casting should be stopped before switching - or - the switch should be aborted.">
+        Screen sharing will stop when you switch to another user. Do you want to continue?
+      </message>
+      <message name="IDS_DESKTOP_CASTING_ACTIVE_BUTTON_SWITCH_USER" desc="The button label for the dialog which tells the user that desktop casting is in progress. By selecting this button the casting will be stopped and the user will get switched.">
+        Yes
+      </message>
+      <message name="IDS_DESKTOP_CASTING_ACTIVE_BUTTON_ABORT_USER_SWITCH" desc="The button label for the dialog which tells the user that desktop casting is in progress. By selecting this button the user switch will be cancelled.">
+        No
+      </message>
+
+      <!-- Status tray screen capture strings. -->
+      <message name="IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP" desc="label used for screen capture stop button">
+        Stop
+      </message>
+
+      <!-- Status tray media recording state strings. -->
+      <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO" desc="label used to indicate that the microphone is used by a background user">
+        Microphone is in use.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO" desc="label used to indicate that the camera is used by a background user">
+        Camera is in use.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO_VIDEO" desc="label used to indicate that the camera and microphone are used by a background user">
+        Camera and microphone are in use.
+      </message>
+
+      <!-- Status tray screen share strings. -->
+      <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP" desc="label used for screen sharing stop button">
+        Stop
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED" desc="label for screen sharing notification">
+        Sharing control of your screen via Remote Assistance.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED_NAME" desc="label for screen sharing notification with name">
+        Sharing control of your screen with <ph name="HELPER_NAME">$1<ex>Walder Frey</ex></ph> via Remote Assistance.
+      </message>
+
+      <!-- Status tray audio strings. -->
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_FRONT_MIC" desc="label used for front microphone">
+        Front microphone
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_HEADPHONE" desc="label used for audio headphone device">
+        Headphone
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_SPEAKER" desc="label used for internal audio speaker">
+        Speaker (internal)
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_MIC" desc="label used for internal microphone">
+        Microphone (internal)
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_REAR_MIC" desc="label used for rear microphone">
+        Rear microphone
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_USB_DEVICE" desc="label used for usb audio device">
+        <ph name="device_name">$1<ex>Headphone</ex></ph> (USB)
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_BLUETOOTH_DEVICE" desc="label used for bluetooth audio device">
+        <ph name="device_name">$1<ex>Headphone</ex></ph> (Bluetooth)
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_HDMI_DEVICE" desc="label used for hdmi audio device">
+        <ph name="device_name">$1<ex>Speaker</ex></ph> (HDMI/DP)
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_MIC_JACK_DEVICE" desc="label used for mic jack device">
+        Mic jack
+      </message>
+
+      <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">
+        Set wallpaper...
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_TRACING" desc="The status tray item indicating that performance tracing is running.">
+        Performance tracing enabled
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BRIGHTNESS" desc="The accessible text for the brightness slider.">
+        Brightness
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO" desc="The label used in audio detailed page bottom header of ash tray pop up.">
+        Audio settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT" desc="The label used in audio detailed page for audio output section of ash tray pop up.">
+        Output
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT" desc="The label used in audio detailed page for audio input section of ash tray pop up.">
+        Input
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
+        Mirroring to <ph name="DISPLAY_NAME">$1</ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT" desc="The label used in the tray to show that mirror mode is exiting.">
+        Exiting mirror mode
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED" desc="The label used in the tray to show that the current status is extended.">
+        Extending screen to <ph name="DISPLAY_NAME">$1</ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED" desc="The text of the notification to show when a display is removed.">
+        Removed display <ph name="DISPLAY_NAME">$1</ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL" desc="The label used in the tray to show that the current status is mirroring and the device doesn't have the internal display.">
+        Mirroring
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL" desc="The label used in the tray to show that the current status is extended and the device doesn't have the internal display.">
+        Extending screen
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
+        <ph name="DISPLAY_NAME">$1</ph> resolution was changed to <ph name="RESOLUTION">$2</ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED" desc="The label used in the tray to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution.">
+        <ph name="DISPLAY_NAME">$1</ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>2560x1600</ex></ph>. The resolution was changed to <ph name="FALLBACK_RESOLUTION">$3<ex>1920x1200</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED" desc="The label used in the tray to notify that the display rotation settings has changed.">
+        <ph name="DISPLAY_NAME">$1</ph> was rotated to <ph name="ROTATION">$2</ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME" desc="Label used to show a display name with annotation (like screen resolution or overscan info).">
+        <ph name="DISPLAY_NAME">$1</ph> (<ph name="ANNOTATION">$2</ph>)
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION_OVERSCAN" desc="Label used to describe that the system notice that this display device may have overscan area.">
+        overscan
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION" desc="The default value of display orientation option item.">
+        0&#x00B0;
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90" desc="The value of display orientation option item: 90-degree rotated">
+        90&#x00B0;
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180" desc="The value of display orientation option item: 180-degree rotated">
+        180&#x00B0;
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270" desc="The value of display orientation option item: 270-degree rotated">
+        270&#x00B0;
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED" desc="The title of the notification indicating that the system is in unified desktop mode.">
+        Unified desktop mode
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED_EXITING" desc="The title of the notification indicating that the system is exiting unified desktop mode.">
+        Exiting unified desktop mode
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED" desc="The label used for the tray item to indicate caps lock is on and to toggle caps lock by the click.">
+        CAPS LOCK is on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_DISABLED" desc="The label used for the tray item to indicate caps lock is on and to toggle caps lock by the click.">
+        CAPS LOCK is off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
+        Search
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH_OR_SHIFT" desc="The shortcut text used for the caps lock tray item.">
+        Search or Shift
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
+        Alt+Search
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH_OR_SHIFT" desc="The shortcut text used for the caps lock tray item.">
+        Alt+Search or Shift
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH" desc="The message shown on a bubble when caps lock is turned on.">
+    CAPS LOCK is on.
+    Press Alt+Search or Shift to cancel.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH" desc="The message shown on a bubble when caps lock is turned on.">
+    CAPS LOCK is on.
+    Press Search or Shift to cancel.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when an IME is enabled">
+        Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>.
+    Press Shift + Alt to switch.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when a third party IME is enabled">
+        Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>*(<ph name="BEGIN_LINK">&lt;a target="_blank" href="$2"&gt;</ph>3rd party<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>).
+    Press Shift + Alt to switch.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
+        Battery full
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT" desc="The label in the tray dialog to show the remaining battery power as a percent.">
+        <ph name="percentage">{0,number,percent}<ex>56%</ex></ph> remaining
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL" desc="The label in the tray dialog to show a time estimate until the battery is fully charged.">
+        <ph name="time">$1<ex>2h 53m</ex></ph> until full
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING" desc="The label in the tray dialog indicating that the time to charge or discharge the battery is being calculated.">
+        Calculating...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is empty.">
+        <ph name="time">$1<ex>2:53</ex></ph> left
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is fully charged.">
+        <ph name="time">$1<ex>2:53</ex></ph> until full
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE" desc="The label in the tray dialog to indicate that battery charging is unreliable.">
+        Low-power charger
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE" desc="The message used by accessibility to show battery is fully charged.">
+        Battery is full.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE" desc="The message used by accessibility to show battery is discharging.">
+        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE" desc="The message used by accessibility to show battery is being charged.">
+        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full and charging.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time in short message.">
+        Calculating battery time.
+      </message>
+      <message name= "IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE" desc="The message used by accessibility to read remaining battery time until empty.">
+        Time left until battery is empty, <ph name="time_left">$1<ex>1 hour and 15 minutes</ex></ph>
+      </message>
+      <message name= "IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE" desc="The message used by accessibility to read the estimated time until full.">
+        Time remaining until battery is fully charged, <ph name="time_remaining">$1<ex>1 hour and 15 minutes</ex></ph>
+      </message>
+      <message name = "IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE" desc="The message used by accessibility to read battery time, which includes both non-zero hours and minutes.">
+        <ph name="hour">$1<ex> 1 hour</ex></ph> and <ph name="minute">$2<ex>15 minutes</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE_ACCESSIBLE" desc="The message used by accessibility to indicate that battery charging is unreliable.">
+        Plugged in to a low-power charger. Battery charging may not be reliable.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BUBBLE_SESSION_LENGTH_LIMIT" desc="Tray bubble item shown to inform the user that the session length is limited.">
+        Session ends in <ph name="session_time_remaining">$1<ex>4 minutes 23 seconds</ex></ph>.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT" desc="Notification shown to inform the user that the session length is limited.">
+        Session ends in <ph name="session_time_remaining">$1<ex>4 minutes 23 seconds</ex></ph>. You will be signed out.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO" desc="The text shown in the tray menu when rotation is set to auto and the user can enable the rotation lock by tapping.">
+        Enable rotation lock
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED" desc="The text shown in the tray menu when rotation is set to locked and tapping will disable the lock.">
+        Disable rotation lock
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_DISABLED" desc="The text shown in the tray menu when the virtual keyboard is disabled.">
+        On-screen keyboard disabled
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_ENABLED" desc="The text shown in the tray menu when the virtual keyboard is enabled.">
+        On-screen keyboard enabled
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ENABLE_KEYBOARD" desc="A button label in the tray menu to enable the keyboard.">
+        Enable on-screen keyboard
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISABLE_KEYBOARD" desc="A button label in the tray menu to disable the keyboard.">
+        Disable on-screen keyboard
+      </message>
+
+      <!-- Status tray networking strings. -->
+      <message name="IDS_ASH_STATUS_TRAY_MOBILE_SCANNING" desc="Message when scanning for mobile networks">
+        Searching for mobile networks...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ETHERNET" desc="The ethernet network device.">
+        Ethernet
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
+        Initializing...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING" desc="Message for the network tray tooltip and network list when activating a network.">
+        Activating <ph name="NAME">$1<ex>YBH Cellular</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and network list when connected to a network.">
+        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and network list when connecting to a network.">
+        Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_RECONNECTING" desc="Message for the network tray tooltip and network list when reconnecting to a network.">
+        Reconnecting to <ph name="NAME">$1<ex>Company VPN</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE" desc="Message for the network list to activate the network.">
+        Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING" desc="Message for the network list when activating a network.">
+        <ph name="NAME">$1<ex>YBH Cellular</ex></ph>: Activating...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING" desc="Message for the network list when connecting to a network.">
+        <ph name="NAME">$1<ex>GoogleGuest</ex></ph>: Connecting...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_RECONNECTING" desc="Message for the network list when reconnecting to a network.">
+        <ph name="NAME">$1<ex>Company VPN</ex></ph>: Reconnecting...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network list when no network is connected.">
+        No network
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED" desc="Tooltip in network list when no network is prohibited by policy.">
+        This network is disabled by your administrator.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED_OTHER" desc="Tooltip in network list for joining other network when connecting unmanaged network is prohibited">
+        Connecting to other networks is disabled by your administrator.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
+        No network information available
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS" desc="The message to display in the network list when no mobile networks are available.">
+        No mobile network available
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
+        VPN disconnected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned on.">
+        Wi-Fi is turned on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned off.">
+        Wi-Fi is turned off.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
+        Searching for Wi-Fi networks...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_MOBILE" desc="The label used in the tray popup to separate mobile networks.">
+        Mobile data
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI" desc="The label used in the tray popup to separate Wi-Fi networks.">
+        Wi-Fi
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_TETHER" desc="The label used in the tray popup to separate Instant Tethering networks.">
+        Instant Tethering
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ADD_CONNECTION" desc="Title for control to add a new network connection." >
+        Add connection
+      </message>
+
+      <message name="IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME" desc="The accessible text for virtual keyboard icon in status tray.">
+        Show on-screen keyboard
+      </message>
+      <message name="IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING" desc="An error message to show that the system failed to enter the mirroring mode.">
+        Could not mirror displays since no supported resolutions found. Entered extended desktop instead.
+      </message>
+      <message name="IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING" desc="An error message to show that the system failed to enter the extended desktop mode or unknown status. Please translate the parenthesized text.">
+        This monitor isn't getting along with your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> (the monitor is not supported).
+      </message>
+      <message name="IDS_ASH_DISPLAY_FAILURE_SEND_FEEDBACK" desc="Button text below error report to allow user to send feedback report.">
+        Send feedback
+      </message>
+      <message name="IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED" desc="A message used to explain that mirroring with more than two displays is not supported.">
+        Mirroring with more than two displays is not supported.
+      </message>
+      <message name="IDS_ASH_DISPLAY_RESOLUTION_CHANGE_ACCEPT" desc="A button label shown in the notification for the resolution change to accept the change">
+        Accept
+      </message>
+      <message name="IDS_ASH_DISPLAY_RESOLUTION_CHANGE_REVERT" desc="A button label shown in the notification for the resolution change to revert the change">
+        Revert
+      </message>
+      <message name="IDS_ASH_DISPLAY_RESOLUTION_TIMEOUT" desc="A message for to notify the user about the timeout of display resolution change.">
+        Reverting to old resolution in <ph name="TIMEOUT_SECONDS">$1</ph>
+      </message>
+      <message name="IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT" desc="The text of the notification when a peripheral device is in low battery condition.">
+        Battery low (<ph name="percentage">$1<ex>56</ex></ph>%)
+      </message>
+      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS" desc="The title of the notification when a screenshot was taken.">
+        Screenshot taken
+      </message>
+      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_DISABLED" desc="The title of the notification when taking a screenshot failed because screenshots are disabled.">
+        Screenshots disabled
+      </message>
+      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_FAIL" desc="The title of the notification when taking a screenshot failed.">
+        An error occurred
+      </message>
+      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS" desc="The text of the notification when a screenshot was taken. If clicked, the screenshot file is displayed in the Files app.">
+        Show in folder
+      </message>
+      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_DISABLED" desc="The text of the notification when taking a screenshot failed because screenshots are disabled by administrator policy.">
+        The ability to take screenshots has been disabled by your administrator.
+      </message>
+      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL" desc="The text of the notification when taking a screenshot failed.">
+        Failed to save screenshot
+      </message>
+      <message name="IDS_ASH_SIGN_OUT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut in chrome-os.">
+        Press Ctrl+Shift+Q twice to sign out.
+      </message>
+      <message name="IDS_ASH_SIGN_OUT_WARNING_POPUP_TEXT_ACCESSIBLE" desc="The message used by accessibility to indicate the content of the popup when the user preses the exit shortcut in chrome-os.">
+        Press Control Shift Q twice to sign out.
+      </message>
+      <message name="IDS_ASH_LOGOUT_CONFIRMATION_TITLE" desc="Dialog title for the logout confirmation dialog.">
+        Exiting session
+      </message>
+      <message name="IDS_ASH_LOGOUT_CONFIRMATION_WARNING" desc="The text for the logout confirmation dialog.">
+        You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT">$1<ex>5 seconds</ex></ph>.
+      </message>
+      <message name="IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW" desc="The text for the logout confirmation dialog with no time left.">
+        You will be signed out now.
+      </message>
+      <message name="IDS_ASH_LOGOUT_CONFIRMATION_BUTTON" desc="The text for okay button of the logout confirmation dialog.">
+        Sign out now
+      </message>
+
+      <!-- HaTS Strings -->
+      <message name="IDS_ASH_HATS_NOTIFICATION_TITLE" desc="The title of the notification for Happiness Tracking Survey.">
+        Help us improve Chromebooks
+      </message>
+      <message name="IDS_ASH_HATS_NOTIFICATION_BODY" desc="The body of the notification for Happiness Tracking Survey.">
+        Let us know how we’re doing by answering a few questions.
+      </message>
+      <message name="IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON" desc="The title of the button in the notification for Happiness Tracking Survey to take the said survey.">
+        Take survey
+      </message>
+      <message name="IDS_ASH_IME_MENU_ACCESSIBLE_NAME" desc="The accessible text for opt-in IME menu icon in status tray.">
+        IME menu button
+      </message>
+
+      <!-- Quick Unlock Strings -->
+       <message name="IDS_ASH_QUICK_UNLOCK_NOTIFICATION_TITLE" desc="The title of the notification for Quick Unlock feature notification.">
+        QU Feature notification title here
+      </message>
+      <message name="IDS_ASH_QUICK_UNLOCK_NOTIFICATION_BODY" desc="The body of the notification for Quick Unlock feature notification.">
+        QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here.
+      </message>
+
+      <!-- Deprecated Accelerators Messages -->
+      <!-- Shortcut keys MUST be connected with pluses (e.g. Ctrl+Shift+L). -->
+      <message name="IDS_SHORTCUT_LOCK_SCREEN_OLD" desc="the old deprecated shortcut to lock the screen.">
+        Ctrl+Shift+L
+      </message>
+      <message name="IDS_SHORTCUT_LOCK_SCREEN_NEW" desc="the new shortcut to lock the screen.">
+        Search+L
+      </message>
+      <message name="IDS_SHORTCUT_TASK_MANAGER_OLD" desc="the old deprecated shortcut to open the task manager.">
+        Shift+Esc
+      </message>
+      <message name="IDS_SHORTCUT_TASK_MANAGER_NEW" desc="the new shortcut to open the task manager.">
+        Search+Esc
+      </message>
+      <message name="IDS_DEPRECATED_LOCK_SCREEN_MSG"
+               desc="Notification message to tell users about the deprecation of Ctrl+Shift+L shortcut to lock the screen.">
+        The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+L</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Ctrl+Shift+L</ex></ph>.
+      </message>
+      <message name="IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG"
+               desc="Notification message to tell users about the deprecation of Shift+ESC shortcut to show the task manager.">
+        The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+Esc</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Shift+Esc</ex></ph>.
+      </message>
+
+      <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
+      <message name="IDS_HIGH_CONTRAST_ACCEL_MSG"
+               desc="Notification message to tell users that they just pressed the Search+Shift+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
+        High Contrast Mode enabled. Press Search+Shift+H again to toggle it off.
+      </message>
     </messages>
   </release>
 </grit>
