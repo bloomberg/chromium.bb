@@ -61,4 +61,25 @@
             '</div>'
         ].join('')),
         'B element should not spread beyond DIV');
+
+    test(() => {
+      assert_not_equals(window.internals, undefined,
+                        'This test requires clipboard access');
+
+      assert_selection(
+        [
+            '<div contenteditable>',
+                'one two three<b>\u00A0four|</b>',
+            '</div>'
+        ].join(''),
+        selection => {
+          selection.setClipboardData('one');
+          selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                'one two three<b>\u00A0four</b>one|',
+            '</div>'
+        ].join(''));
+    }, 'Pasting at style boundary does not crash or produce empty style span(s)');
 </script>
