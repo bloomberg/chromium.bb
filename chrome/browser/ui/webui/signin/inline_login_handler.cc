@@ -54,6 +54,7 @@ void InlineLoginHandler::RegisterMessages() {
 }
 
 void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
+  AllowJavascript();
   content::WebContents* contents = web_ui()->GetWebContents();
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartitionForSite(
@@ -233,9 +234,7 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   params.SetBoolean("readOnlyEmail", !read_only_email.empty());
 
   SetExtraInitParams(params);
-
-  web_ui()->CallJavascriptFunctionUnsafe("inline.login.loadAuthExtension",
-                                         params);
+  CallJavascriptFunction("inline.login.loadAuthExtension", params);
 }
 
 void InlineLoginHandler::HandleCompleteLoginMessage(
@@ -267,7 +266,7 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   chrome::Navigate(&params);
 
-  web_ui()->CallJavascriptFunctionUnsafe("inline.login.closeDialog");
+  CloseDialogFromJavascript();
 }
 
 void InlineLoginHandler::HandleNavigationButtonClicked(
@@ -286,4 +285,9 @@ void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
 
   // Does nothing if user manager is not showing.
   UserManagerProfileDialog::HideDialog();
+}
+
+void InlineLoginHandler::CloseDialogFromJavascript() {
+  if (IsJavascriptAllowed())
+    CallJavascriptFunction("inline.login.closeDialog");
 }

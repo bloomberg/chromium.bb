@@ -27,6 +27,7 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
   ~InlineLoginHandlerImpl() override;
 
   using InlineLoginHandler::web_ui;
+  using InlineLoginHandler::CloseDialogFromJavascript;
 
   base::WeakPtr<InlineLoginHandlerImpl> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

@@ -132,7 +132,8 @@ void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
     }
   }
   if (handler)
-    handler->web_ui()->CallJavascriptFunctionUnsafe("inline.login.closeDialog");
+    handler->CloseDialogFromJavascript();
+
   UserManager::Hide();
 }
 

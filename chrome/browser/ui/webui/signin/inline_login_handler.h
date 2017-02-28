@@ -35,6 +35,11 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
     kDesktopAuthMode = 2
   };
 
+  // Closes the dialog by calling the |inline.login.closeDialog| Javascript
+  // function.
+  // Does nothing if calling Javascript functions is not allowed.
+  void CloseDialogFromJavascript();
+
  private:
   // Record correspond sign in user action for an access point.
   void RecordSigninUserActionForAccessPoint(
