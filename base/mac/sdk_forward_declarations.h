@@ -142,6 +142,10 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 
 @class CIQRCodeFeature;
 
+@interface NSView (YosemiteSDK)
+- (BOOL)isAccessibilitySelectorAllowed:(SEL)selector;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_10
 
 // Once Chrome no longer supports OSX 10.10.2, everything within this
@@ -149,11 +153,11 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 #if !defined(MAC_OS_X_VERSION_10_10_3) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10_3
 
-@interface NSEvent (YosemiteSDK)
+@interface NSEvent (Yosemite_3_SDK)
 @property(readonly) NSInteger stage;
 @end
 
-@interface NSView (YosemiteSDK)
+@interface NSView (Yosemite_3_SDK)
 - (void)setPressureConfiguration:(NSPressureConfiguration*)aConfiguration;
 @end
 
