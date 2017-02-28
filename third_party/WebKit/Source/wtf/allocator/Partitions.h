@@ -31,12 +31,12 @@
 #ifndef Partitions_h
 #define Partitions_h
 
+#include <string.h>
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/synchronization/spin_lock.h"
+#include "base/allocator/partition_allocator/spin_lock.h"
 #include "wtf/Assertions.h"
 #include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
-#include <string.h>
 
 namespace WTF {
 

@@ -5,13 +5,13 @@
 #ifndef WTF_SpinLock_h
 #define WTF_SpinLock_h
 
+#include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/macros.h"
-#include "base/synchronization/spin_lock.h"
 
 namespace WTF {
 
-// WTF::SpinLock is base::SpinLock. See base/synchronization/spin_lock.h for
-// documentation.
+// WTF::SpinLock is base::SpinLock. See
+// base/allocator/partition_allocator/spin_lock.h for documentation.
 using SpinLock = base::subtle::SpinLock;
 
 }  // namespace WTF
