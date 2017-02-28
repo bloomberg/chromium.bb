@@ -20,8 +20,8 @@ def _css_build(out_folder, input_files, output_files):
   in_paths = map(lambda f: os.path.join(out_path, f), input_files)
   out_paths = map(lambda f: os.path.join(out_path, f), output_files)
 
-  node.RunNode([node_modules.PathToPolymerCssBuild(), '-f'] + in_paths +
-               ['-o'] + out_paths)
+  args = ['--no-inline-includes', '-f'] + in_paths + ['-o'] + out_paths
+  node.RunNode([node_modules.PathToPolymerCssBuild()] + args)
 
 
 def main():

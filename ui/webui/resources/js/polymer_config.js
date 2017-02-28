@@ -6,6 +6,7 @@ if (typeof Polymer == 'undefined') {
   Polymer = {
     dom: 'shadow',
     lazyRegister: true,
+    preserveStyleIncludes: true,  // Only matters when using polymer-css-build.
     useNativeCSSProperties: true,
   };
 } else {
