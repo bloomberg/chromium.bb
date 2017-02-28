@@ -300,6 +300,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                                 + "Using the full URL instead.");
             }
 
+            if (mOrigin != null && mOrigin.equals(origin)) return;
             mOrigin = origin;
             mFavicon = null;
             mPageMediaImage = null;

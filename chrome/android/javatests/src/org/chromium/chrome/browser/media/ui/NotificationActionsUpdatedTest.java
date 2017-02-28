@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -29,7 +28,7 @@ import java.util.Set;
  */
 public class NotificationActionsUpdatedTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int NOTIFICATION_ID = R.id.media_playback_notification;
-    private static final String SIMPLE_PAGE_URL = "/content/test/data/simple_page.html";
+    private static final String SIMPLE_PAGE_URL = "/simple_page.html";
 
     private Tab mTab;
     private EmbeddedTestServer mTestServer;
@@ -83,7 +82,7 @@ public class NotificationActionsUpdatedTest extends ChromeActivityTestCaseBase<C
         simulateMediaSessionStateChanged(mTab, true, false);
         assertActionsMatch(buildActions());
 
-        simulateInPageNavigation(mTab, mTestServer.getURL(SIMPLE_PAGE_URL));
+        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL + "#some-anchor"));
         assertActionsMatch(buildActions());
     }
 
@@ -143,16 +142,6 @@ public class NotificationActionsUpdatedTest extends ChromeActivityTestCaseBase<C
                     assertEquals(expectedActions, observedActions);
                 }
             });
-    }
-
-    private void simulateInPageNavigation(final Tab tab, final String url) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.loadUrl(new LoadUrlParams(url + "#some-anchor"));
-            }
-        });
-        getInstrumentation().waitForIdleSync();
     }
 
     private void ensureTestServer() {
