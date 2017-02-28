@@ -11,6 +11,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_status.h"
 
 CommonNameMismatchHandler::CommonNameMismatchHandler(
@@ -37,7 +38,36 @@ void CommonNameMismatchHandler::CheckSuggestedUrl(
 
   check_url_callback_ = callback;
 
-  url_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::HEAD, this);
+  // Create traffic annotation tag.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("ssl_name_mismatch_lookup", R"(
+        semantics {
+          sender: "SSL Name Mismatch Handler"
+          description:
+            "If Chromium cannot make a secure connection to a site, this can "
+            "be because the site is misconfigured. The site may be serving a "
+            "security certificate intended for another site. If the SSL Common "
+            "Name Mismatch Handling feature is enabled, Chromium will try to "
+            "detect if one of the domains listed in the site's certificate is "
+            "available by issuing requests to those domains. If the response "
+            "indicates that an alternative site for which the certificate is "
+            "valid is available, Chromium will automatically redirect the user "
+            "to the alternative site."
+          trigger: "Resource load."
+          data: "An HTTP HEAD request to the alternative site."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can disable this feature by command line flag "
+            "'--disable-feature=SSLCommonNameMismatchHandling'."
+          policy_exception_justification:
+            "Not implemented."
+        })");
+
+  url_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::HEAD, this,
+                                         traffic_annotation);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
   url_fetcher_->SetRequestContext(request_context_.get());
 
