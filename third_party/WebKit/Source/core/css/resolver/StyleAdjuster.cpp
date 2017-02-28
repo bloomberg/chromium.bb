@@ -340,14 +340,16 @@ static void adjustStyleForDisplay(ComputedStyle& style,
       style.getWritingMode() != layoutParentStyle.getWritingMode())
     style.setDisplay(EDisplay::InlineBlock);
 
-  // After performing the display mutation, check table rows. We do not honor
-  // position: relative table rows. This has been established for position:
-  // relative in CSS2.1 (and caused a crash in containingBlock() on some sites).
+  // We do not honor position: relative or sticky for table rows, headers, and
+  // footers. This is correct for position: relative in CSS2.1 (and caused a
+  // crash in containingBlock() on some sites) and position: sticky is defined
+  // as following position: relative behavior for table elements. It is
+  // incorrect for CSS3.
   if ((style.display() == EDisplay::TableHeaderGroup ||
        style.display() == EDisplay::TableRowGroup ||
        style.display() == EDisplay::TableFooterGroup ||
        style.display() == EDisplay::TableRow) &&
-      style.position() == EPosition::kRelative)
+      style.hasInFlowPosition())
     style.setPosition(EPosition::kStatic);
 
   // Cannot support position: sticky for table columns and column groups because
