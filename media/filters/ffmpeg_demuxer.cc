@@ -22,6 +22,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/audio/sample_rates.h"
@@ -845,7 +847,13 @@ FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<MediaLog>& media_log)
     : host_(NULL),
       task_runner_(task_runner),
-      blocking_thread_("FFmpegDemuxer"),
+      // FFmpeg has no asynchronous API, so we use base::WaitableEvents inside
+      // the BlockingUrlProtocol to handle hops to the render thread for network
+      // reads and seeks.
+      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          base::TaskTraits().MayBlock().WithBaseSyncPrimitives().WithPriority(
+              base::TaskPriority::USER_BLOCKING))),
+      stopped_(false),
       pending_read_(false),
       data_source_(data_source),
       media_log_(media_log),
@@ -866,6 +874,12 @@ FFmpegDemuxer::~FFmpegDemuxer() {
   // NOTE: This class is not destroyed on |task_runner|, so we must ensure that
   // there are no outstanding WeakPtrs by the time we reach here.
   DCHECK(!weak_factory_.HasWeakPtrs());
+
+  // There may be outstanding tasks in the blocking pool which are trying to use
+  // these members, so release them in sequence with any outstanding calls. The
+  // earlier call to Abort() on |data_source_| prevents further access to it.
+  blocking_task_runner_->DeleteSoon(FROM_HERE, url_protocol_.release());
+  blocking_task_runner_->DeleteSoon(FROM_HERE, glue_.release());
 }
 
 std::string FFmpegDemuxer::GetDisplayName() const {
@@ -899,9 +913,8 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   format_context->max_analyze_duration = 60 * AV_TIME_BASE;
 
   // Open the AVFormatContext using our glue layer.
-  CHECK(blocking_thread_.Start());
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.task_runner().get(), FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&FFmpegGlue::OpenContext, base::Unretained(glue_.get())),
       base::Bind(&FFmpegDemuxer::OnOpenContextDone, weak_factory_.GetWeakPtr(),
                  status_cb));
@@ -911,7 +924,7 @@ void FFmpegDemuxer::AbortPendingReads() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If Stop() has been called, then drop this call.
-  if (!blocking_thread_.IsRunning())
+  if (stopped_)
     return;
 
   // This should only be called after the demuxer has been initialized.
@@ -929,7 +942,7 @@ void FFmpegDemuxer::AbortPendingReads() {
   data_source_->Abort();
 
   // Aborting the read may cause EOF to be marked, undo this.
-  blocking_thread_.task_runner()->PostTask(
+  blocking_task_runner_->PostTask(
       FROM_HERE, base::Bind(&UnmarkEndOfStream, glue_->format_context()));
   pending_read_ = false;
 
@@ -949,12 +962,6 @@ void FFmpegDemuxer::Stop() {
   data_source_->Stop();
   url_protocol_->Abort();
 
-  // This will block until all tasks complete. Note that after this returns it's
-  // possible for reply tasks (e.g., OnReadFrameDone()) to be queued on this
-  // thread. Each of the reply task methods must check whether we've stopped the
-  // thread and drop their results on the floor.
-  blocking_thread_.Stop();
-
   for (const auto& stream : streams_) {
     if (stream)
       stream->Stop();
@@ -963,7 +970,9 @@ void FFmpegDemuxer::Stop() {
   data_source_ = NULL;
 
   // Invalidate WeakPtrs on |task_runner_|, destruction may happen on another
-  // thread.
+  // thread. We don't need to wait for any outstanding tasks since they will all
+  // fail to return after invalidating WeakPtrs.
+  stopped_ = true;
   weak_factory_.InvalidateWeakPtrs();
   cancel_pending_seek_factory_.InvalidateWeakPtrs();
 }
@@ -1022,7 +1031,7 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
 
   pending_seek_cb_ = cb;
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.task_runner().get(), FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&av_seek_frame, glue_->format_context(), seeking_stream->index,
                  ConvertToTimeBase(seeking_stream->time_base, seek_time),
                  // Always seek to a timestamp <= to the desired timestamp.
@@ -1159,7 +1168,7 @@ static int CalculateBitrate(AVFormatContext* format_context,
 void FFmpegDemuxer::OnOpenContextDone(const PipelineStatusCB& status_cb,
                                       bool result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!blocking_thread_.IsRunning()) {
+  if (stopped_) {
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": bad state";
     status_cb.Run(PIPELINE_ERROR_ABORT);
     return;
@@ -1173,20 +1182,17 @@ void FFmpegDemuxer::OnOpenContextDone(const PipelineStatusCB& status_cb,
 
   // Fully initialize AVFormatContext by parsing the stream a little.
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.task_runner().get(),
-      FROM_HERE,
-      base::Bind(&avformat_find_stream_info,
-                 glue_->format_context(),
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&avformat_find_stream_info, glue_->format_context(),
                  static_cast<AVDictionary**>(NULL)),
       base::Bind(&FFmpegDemuxer::OnFindStreamInfoDone,
-                 weak_factory_.GetWeakPtr(),
-                 status_cb));
+                 weak_factory_.GetWeakPtr(), status_cb));
 }
 
 void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
                                          int result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!blocking_thread_.IsRunning() || !data_source_) {
+  if (stopped_ || !data_source_) {
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": bad state";
     status_cb.Run(PIPELINE_ERROR_ABORT);
     return;
@@ -1606,7 +1612,7 @@ void FFmpegDemuxer::OnSeekFrameDone(int result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK(!pending_seek_cb_.is_null());
 
-  if (!blocking_thread_.IsRunning()) {
+  if (stopped_) {
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": bad state";
     base::ResetAndReturn(&pending_seek_cb_).Run(PIPELINE_ERROR_ABORT);
     return;
@@ -1692,8 +1698,8 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Make sure we have work to do before reading.
-  if (!blocking_thread_.IsRunning() || !StreamsHaveAvailableCapacity() ||
-      pending_read_ || !pending_seek_cb_.is_null()) {
+  if (stopped_ || !StreamsHaveAvailableCapacity() || pending_read_ ||
+      !pending_seek_cb_.is_null()) {
     return;
   }
 
@@ -1705,11 +1711,9 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
 
   pending_read_ = true;
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.task_runner().get(),
-      FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&av_read_frame, glue_->format_context(), packet_ptr),
-      base::Bind(&FFmpegDemuxer::OnReadFrameDone,
-                 weak_factory_.GetWeakPtr(),
+      base::Bind(&FFmpegDemuxer::OnReadFrameDone, weak_factory_.GetWeakPtr(),
                  base::Passed(&packet)));
 }
 
@@ -1718,7 +1722,7 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   DCHECK(pending_read_);
   pending_read_ = false;
 
-  if (!blocking_thread_.IsRunning() || !pending_seek_cb_.is_null())
+  if (stopped_ || !pending_seek_cb_.is_null())
     return;
 
   // Consider the stream as ended if:

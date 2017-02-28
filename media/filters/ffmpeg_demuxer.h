@@ -32,7 +32,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/threading/thread.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decoder_buffer_queue.h"
@@ -295,8 +297,12 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Thread on which all blocking FFmpeg operations are executed.
-  base::Thread blocking_thread_;
+  // Task runner on which all blocking FFmpeg operations are executed; retrieved
+  // from base::TaskScheduler.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  // Indicates if Stop() has been called.
+  bool stopped_;
 
   // Tracks if there's an outstanding av_read_frame() operation.
   //

@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decrypt_config.h"
@@ -85,6 +86,8 @@ class FFmpegDemuxerTest : public testing::Test {
   virtual ~FFmpegDemuxerTest() {
     if (demuxer_)
       demuxer_->Stop();
+    demuxer_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   void CreateDemuxer(const std::string& name) {
@@ -101,7 +104,7 @@ class FFmpegDemuxerTest : public testing::Test {
         &FFmpegDemuxerTest::OnMediaTracksUpdated, base::Unretained(this));
 
     demuxer_.reset(new FFmpegDemuxer(
-        message_loop_.task_runner(), data_source_.get(),
+        base::ThreadTaskRunnerHandle::Get(), data_source_.get(),
         encrypted_media_init_data_cb, tracks_updated_cb, new MediaLog()));
   }
 
@@ -188,9 +191,8 @@ class FFmpegDemuxerTest : public testing::Test {
                 buffer->discard_padding().first);
       EXPECT_EQ(read_expectation.is_key_frame, buffer->is_key_frame());
     }
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     OnReadDoneCalled(read_expectation.size, read_expectation.timestamp_us);
-    message_loop_.task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
@@ -239,11 +241,12 @@ class FFmpegDemuxerTest : public testing::Test {
   }
 
   // Fixture members.
+
+  base::test::ScopedTaskScheduler task_scheduler_;
   std::unique_ptr<FileDataSource> data_source_;
   std::unique_ptr<FFmpegDemuxer> demuxer_;
   StrictMock<MockDemuxerHost> host_;
   std::unique_ptr<MediaTracks> media_tracks_;
-  base::MessageLoop message_loop_;
 
   AVFormatContext* format_context() {
     return demuxer_->glue_->format_context();
