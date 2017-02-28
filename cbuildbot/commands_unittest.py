@@ -35,7 +35,7 @@ from chromite.scripts import pushimage
 site_config = config_lib.GetConfig()
 
 
-class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
+class RunBuildScriptTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test RunBuildScript in a variety of cases."""
 
   def _assertRunBuildScript(self, in_chroot=False, error=None, raises=None,
@@ -60,22 +60,24 @@ class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
       osutils.SafeMakedirs(os.path.join(buildroot, 'chroot', 'tmp'))
 
     # Run the command, throwing an exception if it fails.
-    with cros_build_lib_unittest.RunCommandMock() as m:
-      cmd = ['example', 'command']
-      sudo_cmd = ['sudo', '--'] + cmd
-      returncode = 1 if raises else 0
-      m.AddCmdResult(cmd, returncode=returncode, side_effect=WriteError)
-      m.AddCmdResult(sudo_cmd, returncode=returncode, side_effect=WriteError)
-      with mock.patch.object(path_util, 'ToChrootPath',
-                             side_effect=lambda x: x):
-        with cros_test_lib.LoggingCapturer():
-          # If the script failed, the exception should be raised and printed.
-          if raises:
-            self.assertRaises(raises, commands.RunBuildScript, buildroot,
-                              cmd, enter_chroot=in_chroot, **kwargs)
-          else:
-            commands.RunBuildScript(buildroot, cmd, enter_chroot=in_chroot,
-                                    **kwargs)
+    cmd = ['example', 'command']
+    sudo_cmd = ['sudo', '--'] + cmd
+    returncode = 1 if raises else 0
+    self.rc.AddCmdResult(cmd, returncode=returncode,
+                         side_effect=WriteError)
+    self.rc.AddCmdResult(sudo_cmd, returncode=returncode,
+                         side_effect=WriteError)
+
+    self.PatchObject(path_util, 'ToChrootPath', side_effect=lambda x: x)
+
+    with cros_test_lib.LoggingCapturer():
+      # If the script failed, the exception should be raised and printed.
+      if raises:
+        self.assertRaises(raises, commands.RunBuildScript, buildroot,
+                          cmd, enter_chroot=in_chroot, **kwargs)
+      else:
+        commands.RunBuildScript(buildroot, cmd, enter_chroot=in_chroot,
+                                **kwargs)
 
   def testSuccessOutsideChroot(self):
     """Test executing a command outside the chroot."""

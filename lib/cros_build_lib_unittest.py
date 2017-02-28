@@ -145,6 +145,14 @@ class RunCommandTestCase(cros_test_lib.MockTestCase):
     self.assertCommandCalled = self.rc.assertCommandCalled
     self.assertCommandContains = self.rc.assertCommandContains
 
+    # These ENV variables affect RunCommand behavior, hide them.
+    self._old_envs = {e: os.environ.pop(e) for e in constants.ENV_PASSTHRU
+                      if e in os.environ}
+
+  def tearDown(self):
+    # Restore hidden ENVs.
+    os.environ.update(self._old_envs)
+
 
 class RunCommandTempDirTestCase(RunCommandTestCase,
                                 cros_test_lib.TempDirTestCase):
@@ -236,6 +244,10 @@ class TestRunCommand(cros_test_lib.MockTestCase):
   """Tests of RunCommand functionality."""
 
   def setUp(self):
+    # These ENV variables affect RunCommand behavior, hide them.
+    self._old_envs = {e: os.environ.pop(e) for e in constants.ENV_PASSTHRU
+                      if e in os.environ}
+
     # Get the original value for SIGINT so our signal() mock can return the
     # correct thing.
     self._old_sigint = signal.getsignal(signal.SIGINT)
@@ -252,6 +264,10 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self.signal_mock = self.PatchObject(signal, 'signal')
     self.getsignal_mock = self.PatchObject(signal, 'getsignal')
     self.PatchObject(cros_signals, 'SignalModuleUsable', return_value=True)
+
+  def tearDown(self):
+    # Restore hidden ENVs.
+    os.environ.update(self._old_envs)
 
   @contextlib.contextmanager
   def _MockChecker(self, cmd, **kwargs):

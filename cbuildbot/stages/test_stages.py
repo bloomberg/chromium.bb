@@ -576,4 +576,4 @@ class ChromiteTestStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     """Run the cros-signing unittests."""
-    commands.RunChromiteTests(self._build_root, network=True)
+    commands.RunChromiteTests(self._build_root, network=False)

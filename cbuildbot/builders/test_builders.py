@@ -119,4 +119,5 @@ class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
 
   def RunTestStages(self):
     """Run something after sync/reexec."""
+    self._RunStage(build_stages.InitSDKStage)
     self._RunStage(test_stages.ChromiteTestStage)
