@@ -494,12 +494,24 @@ base::Time ChunkDemuxer::GetTimelineOffset() const {
 std::vector<DemuxerStream*> ChunkDemuxer::GetAllStreams() {
   base::AutoLock auto_lock(lock_);
   std::vector<DemuxerStream*> result;
+  // Put enabled streams at the beginning of the list so that
+  // MediaResource::GetFirstStream returns the enabled stream if there is one.
+  // TODO(servolk): Revisit this after media track switching is supported.
   for (const auto& stream : audio_streams_) {
     if (stream->enabled())
       result.push_back(stream.get());
   }
   for (const auto& stream : video_streams_) {
     if (stream->enabled())
+      result.push_back(stream.get());
+  }
+  // Put disabled streams at the end of the vector.
+  for (const auto& stream : audio_streams_) {
+    if (!stream->enabled())
+      result.push_back(stream.get());
+  }
+  for (const auto& stream : video_streams_) {
+    if (!stream->enabled())
       result.push_back(stream.get());
   }
   return result;

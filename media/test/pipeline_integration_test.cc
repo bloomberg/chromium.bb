@@ -1059,6 +1059,53 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+TEST_F(PipelineIntegrationTest, ReinitRenderersWhileAudioTrackIsDisabled) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+  Play();
+
+  // These get triggered every time playback is resumed.
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(320, 240)))
+      .Times(AnyNumber());
+  EXPECT_CALL(*this, OnVideoOpacityChange(true)).Times(AnyNumber());
+
+  // Disable the audio track.
+  std::vector<MediaTrack::Id> track_ids;
+  pipeline_->OnEnabledAudioTracksChanged(track_ids);
+  // pipeline.Suspend() releases renderers and pipeline.Resume() recreates and
+  // reinitializes renderers while the audio track is disabled.
+  ASSERT_TRUE(Suspend());
+  ASSERT_TRUE(Resume(TimestampMs(100)));
+  // Now re-enable the audio track, playback should continue successfully.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH)).Times(1);
+  track_ids.push_back("2");
+  pipeline_->OnEnabledAudioTracksChanged(track_ids);
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
+
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, ReinitRenderersWhileVideoTrackIsDisabled) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
+  Play();
+
+  // These get triggered every time playback is resumed.
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(320, 240)))
+      .Times(AnyNumber());
+  EXPECT_CALL(*this, OnVideoOpacityChange(true)).Times(AnyNumber());
+
+  // Disable the video track.
+  pipeline_->OnSelectedVideoTrackChanged(base::nullopt);
+  // pipeline.Suspend() releases renderers and pipeline.Resume() recreates and
+  // reinitializes renderers while the video track is disabled.
+  ASSERT_TRUE(Suspend());
+  ASSERT_TRUE(Resume(TimestampMs(100)));
+  // Now re-enable the video track, playback should continue successfully.
+  pipeline_->OnSelectedVideoTrackChanged(MediaTrack::Id("1"));
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
+
+  Stop();
+}
+
 TEST_F(PipelineIntegrationTest, PipelineStoppedWhileAudioRestartPending) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
   Play();

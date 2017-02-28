@@ -1037,8 +1037,16 @@ base::Time FFmpegDemuxer::GetTimelineOffset() const {
 std::vector<DemuxerStream*> FFmpegDemuxer::GetAllStreams() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   std::vector<DemuxerStream*> result;
+  // Put enabled streams at the beginning of the list so that
+  // MediaResource::GetFirstStream returns the enabled stream if there is one.
+  // TODO(servolk): Revisit this after media track switching is supported.
   for (const auto& stream : streams_) {
     if (stream && stream->enabled())
+      result.push_back(stream.get());
+  }
+  // And include disabled streams at the end of the list.
+  for (const auto& stream : streams_) {
+    if (stream && !stream->enabled())
       result.push_back(stream.get());
   }
   return result;
