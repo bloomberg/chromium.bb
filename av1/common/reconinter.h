@@ -541,6 +541,8 @@ static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
 
 #if CONFIG_MOTION_VAR
 const uint8_t *av1_get_obmc_mask(int length);
+void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                      int mi_row, int mi_col);
 void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int mi_row, int mi_col,
                                      uint8_t *above[MAX_MB_PLANE],

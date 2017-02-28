@@ -1960,6 +1960,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   if (mbmi->sb_type >= BLOCK_8X8 && !has_second_ref(mbmi))
     mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
 #endif  // CONFIG_WARPED_MOTION
+#if CONFIG_MOTION_VAR
+  av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
+#endif
 
 #if CONFIG_SUPERTX
   if (!supertx_enabled) {
