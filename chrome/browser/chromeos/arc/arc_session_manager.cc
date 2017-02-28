@@ -450,8 +450,18 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
     DCHECK(!enable_requested_);
     RequestEnable();
   } else {
-    VLOG(1) << "ARC is initially disabled. Removing data.";
-    RemoveArcData();
+    if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_)) {
+      // All users that can disable ARC by themselves will have the
+      // |kARcDataRemoveRequested| pref set, so we don't need to eagerly remove
+      // the data for that case.
+      // For managed users, the preference can change when the Profile object is
+      // not alive, so we still need to check it here in case it was disabled to
+      // ensure that the data is deleted in case it was disabled between
+      // launches.
+      VLOG(1) << "ARC is initially disabled for managed profile. "
+              << "Removing data.";
+      RemoveArcData();
+    }
     PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
     OnIsSyncingChanged();
   }

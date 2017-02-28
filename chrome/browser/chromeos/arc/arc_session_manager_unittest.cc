@@ -229,7 +229,7 @@ TEST_F(ArcSessionManagerTest, PrefChangeTriggersService) {
 
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
 
-  ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
+  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 
   pref->SetBoolean(prefs::kArcEnabled, true);
   base::RunLoop().RunUntilIdle();
@@ -254,7 +254,7 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
 
   // By default ARC is not enabled.
-  ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
+  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
   base::RunLoop().RunUntilIdle();
@@ -445,22 +445,18 @@ TEST_F(ArcSessionManagerTest, DisabledForNonPrimaryProfile) {
 
 TEST_F(ArcSessionManagerTest, RemoveDataFolder) {
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
-  // Starting session manager with prefs::kArcEnabled off automatically removes
-  // Android's data folder.
+
+  // Starting session manager with prefs::kArcEnabled off does not automatically
+  // remove Android's data folder.
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
+  EXPECT_EQ(ArcSessionManager::State::STOPPED,
             arc_session_manager()->state());
   // Enable ARC. Data is removed asyncronously. At this moment session manager
   // should be in REMOVING_DATA_DIR state.
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  EXPECT_TRUE(
-      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
-            arc_session_manager()->state());
-  // Wait until data is removed.
-  base::RunLoop().RunUntilIdle();
+  // Data should still not be removed.
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
@@ -468,7 +464,7 @@ TEST_F(ArcSessionManagerTest, RemoveDataFolder) {
   arc_session_manager()->StartArc();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
-  // Now request to remove data and stop session manager.
+  // Request to remove data and stop session manager.
   arc_session_manager()->RemoveArcData();
   ASSERT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
@@ -494,6 +490,18 @@ TEST_F(ArcSessionManagerTest, RemoveDataFolder) {
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, RemoveDataFolder_Managed) {
+  // Set ARC to be managed and disabled.
+  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
+                                                     new base::Value(false));
+
+  // Starting session manager with prefs::kArcEnabled off in a managed profile
+  // does automatically remove Android's data folder.
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
 }
 
 TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
@@ -733,18 +741,6 @@ class ArcSessionOobeOptInNegotiatorTest
     base::RunLoop().RunUntilIdle();
   }
 
-  void MaybeWaitForDataRemoved() {
-    // In case of managed user we no need to wait data removal because
-    // ArcSessionManager is initialized with arc.enabled = true already and
-    // request to remove ARC data is not issued.
-    if (IsManagedUser())
-      return;
-
-    DCHECK_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
-              ArcSessionManager::Get()->state());
-    ArcDataRemovedWaiter().Wait();
-  }
-
   chromeos::ArcTermsOfServiceScreenView* view() { return this; }
 
  private:
@@ -779,7 +775,6 @@ INSTANTIATE_TEST_CASE_P(ArcSessionOobeOptInNegotiatorTestImpl,
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
   view()->Show();
-  MaybeWaitForDataRemoved();
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
   ReportResult(true);
@@ -789,7 +784,6 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
   view()->Show();
-  MaybeWaitForDataRemoved();
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
   ReportResult(false);
@@ -800,7 +794,6 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
   view()->Show();
-  MaybeWaitForDataRemoved();
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
   CloseLoginDisplayHost();
