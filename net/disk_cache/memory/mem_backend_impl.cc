@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/cache_util.h"
 #include "net/disk_cache/memory/mem_entry_impl.h"
@@ -284,8 +285,10 @@ void MemBackendImpl::OnExternalCacheHit(const std::string& key) {
 }
 
 size_t MemBackendImpl::EstimateMemoryUsage() const {
-  // TODO(xunjieli): Implement this. crbug.com/669108.
-  return 0;
+  // Entries in lru_list_ will be counted by EMU but not in entries_ since
+  // they're pointers.
+  return base::trace_event::EstimateMemoryUsage(lru_list_) +
+         base::trace_event::EstimateMemoryUsage(entries_);
 }
 
 void MemBackendImpl::EvictIfNeeded() {
