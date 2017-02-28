@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "components/cronet/stale_host_resolver.h"
+#include "net/base/address_family.h"
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
@@ -80,6 +81,11 @@ const char kStaleDnsAllowOtherNetwork[] = "allow_other_network";
 // See explanation of format in net/dns/mapped_host_resolver.h.
 const char kHostResolverRulesFieldTrialName[] = "HostResolverRules";
 const char kHostResolverRules[] = "host_resolver_rules";
+
+// Disable IPv6. This should almost never be necessary because the network stack
+// has IPv6 detection logic. Please do not turn on this option without first
+// reporting a bug. See http://crbug.com/696569 for the currently known issue.
+const char kDisableIPv6[] = "disable_ipv6";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
@@ -209,6 +215,7 @@ void ParseAndSetExperimentalOptions(
   bool async_dns_enable = false;
   bool stale_dns_enable = false;
   bool host_resolver_rules_enable = false;
+  bool disable_ipv6 = false;
   StaleHostResolver::StaleOptions stale_dns_options;
   std::string host_resolver_rules_string;
 
@@ -247,19 +254,24 @@ void ParseAndSetExperimentalOptions(
         kHostResolverRules, &host_resolver_rules_string);
   }
 
-  if (async_dns_enable || stale_dns_enable || host_resolver_rules_enable) {
+  dict->GetBoolean(kDisableIPv6, &disable_ipv6);
+
+  if (async_dns_enable || stale_dns_enable || host_resolver_rules_enable ||
+      disable_ipv6) {
     if (net_log == nullptr) {
-      CHECK(false) << "AsyncDNS, StaleDNS, and HostResolverRules experiments "
-                   << "require NetLog.";
+      CHECK(false) << "All DNS-related experiments require NetLog.";
     }
     std::unique_ptr<net::HostResolver> host_resolver;
     if (stale_dns_enable) {
+      DCHECK(!disable_ipv6);
       host_resolver.reset(new StaleHostResolver(
           net::HostResolver::CreateDefaultResolverImpl(net_log),
           stale_dns_options));
     } else {
       host_resolver = net::HostResolver::CreateDefaultResolver(net_log);
     }
+    if (disable_ipv6)
+      host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
     if (async_dns_enable)
       host_resolver->SetDnsClientEnabled(true);
     if (host_resolver_rules_enable) {

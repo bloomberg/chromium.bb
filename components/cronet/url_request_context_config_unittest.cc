@@ -51,7 +51,9 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
       "\"AsyncDNS\":{\"enable\":true},"
       "\"HostResolverRules\":{\"host_resolver_rules\":"
-      "\"MAP * 127.0.0.1\"}}",
+      "\"MAP * 127.0.0.1\"},"
+      // See http://crbug.com/696569.
+      "\"disable_ipv6\":true}",
       // Data reduction proxy key.
       "",
       // Data reduction proxy.
@@ -110,6 +112,10 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
 
   // Check AsyncDNS resolver is enabled.
   EXPECT_TRUE(context->host_resolver()->GetDnsConfigAsValue());
+
+  // Check IPv6 is disabled.
+  EXPECT_EQ(net::ADDRESS_FAMILY_IPV4,
+            context->host_resolver()->GetDefaultAddressFamily());
 
   net::HostResolver::RequestInfo info(net::HostPortPair("abcde", 80));
   net::AddressList addresses;
