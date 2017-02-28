@@ -394,6 +394,10 @@ class CC_EXPORT LayerImpl {
     return is_drawn_render_surface_layer_list_member_;
   }
 
+  bool IsDrawnScrollbar() {
+    return ToScrollbarLayer() && is_drawn_render_surface_layer_list_member_;
+  }
+
   void set_may_contain_video(bool yes) { may_contain_video_ = yes; }
   bool may_contain_video() const { return may_contain_video_; }
 

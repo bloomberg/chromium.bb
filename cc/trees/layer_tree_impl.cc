@@ -1929,32 +1929,26 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
   }
 }
 
-static bool IsScrollableOrDrawnScrollbarLayer(LayerImpl* layer) {
-  return layer->scrollable() ||
-         (layer->ToScrollbarLayer() &&
-          layer->is_drawn_render_surface_layer_list_member());
-}
-
-struct FindScrollingLayerOrScrollbarLayerFunctor {
+struct FindScrollingLayerOrDrawnScrollbarFunctor {
   bool operator()(LayerImpl* layer) const {
-    return IsScrollableOrDrawnScrollbarLayer(layer);
+    return layer->scrollable() || layer->IsDrawnScrollbar();
   }
 };
 
 LayerImpl*
-LayerTreeImpl::FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
+LayerTreeImpl::FindFirstScrollingLayerOrDrawnScrollbarThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
   FindClosestMatchingLayerState state;
   LayerImpl* root_layer = layer_list_.empty() ? nullptr : layer_list_[0];
   FindClosestMatchingLayer(screen_space_point, root_layer,
-                           FindScrollingLayerOrScrollbarLayerFunctor(), &state);
+                           FindScrollingLayerOrDrawnScrollbarFunctor(), &state);
   return state.closest_match;
 }
 
 struct HitTestVisibleScrollableOrTouchableFunctor {
   bool operator()(LayerImpl* layer) const {
-    return layer->is_drawn_render_surface_layer_list_member() ||
-           IsScrollableOrDrawnScrollbarLayer(layer) ||
+    return layer->scrollable() ||
+           layer->is_drawn_render_surface_layer_list_member() ||
            !layer->touch_event_handler_region().IsEmpty();
   }
 };

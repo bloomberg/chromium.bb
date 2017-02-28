@@ -162,15 +162,10 @@ bool IsScrolledBy(LayerImpl* child, LayerImpl* ancestor) {
     return false;
 
   auto* property_trees = child->layer_tree_impl()->property_trees();
-  auto ancestor_scroll_id =
-      property_trees->layer_id_to_scroll_node_index.find(ancestor->id());
-  if (ancestor_scroll_id == property_trees->layer_id_to_scroll_node_index.end())
-    return false;
-
   ScrollTree& scroll_tree = property_trees->scroll_tree;
   for (ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
        scroll_node; scroll_node = scroll_tree.parent(scroll_node)) {
-    if (scroll_node->id == ancestor_scroll_id->second)
+    if (scroll_node->id == ancestor->scroll_tree_index())
       return true;
   }
   return false;
@@ -2634,28 +2629,6 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   return active_tree_->LayerById(impl_scroll_node->owning_layer_id);
 }
 
-static bool IsClosestScrollAncestor(LayerImpl* child,
-                                    LayerImpl* scroll_ancestor) {
-  DCHECK(scroll_ancestor);
-  if (!child)
-    return false;
-
-  auto* property_trees = child->layer_tree_impl()->property_trees();
-  auto ancestor_scroll_id =
-      property_trees->layer_id_to_scroll_node_index.find(scroll_ancestor->id());
-  if (ancestor_scroll_id == property_trees->layer_id_to_scroll_node_index.end())
-    return false;
-
-  ScrollTree& scroll_tree = property_trees->scroll_tree;
-  ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
-  for (; scroll_tree.parent(scroll_node);
-       scroll_node = scroll_tree.parent(scroll_node)) {
-    if (scroll_node->scrollable)
-      return scroll_node->id == ancestor_scroll_id->second;
-  }
-  return false;
-}
-
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
     ScrollState* scroll_state,
     LayerImpl* scrolling_layer_impl,
@@ -2729,11 +2702,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
         active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
     if (layer_impl) {
-      LayerImpl* scroll_layer_impl =
-          active_tree_->FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
-              device_viewport_point);
-      if (scroll_layer_impl &&
-          !IsClosestScrollAncestor(layer_impl, scroll_layer_impl)) {
+      if (!IsInitialScrollHitTestReliable(layer_impl, device_viewport_point)) {
         scroll_status.thread = SCROLL_UNKNOWN;
         scroll_status.main_thread_scrolling_reasons =
             MainThreadScrollingReason::kFailedHitTest;
@@ -2757,6 +2726,46 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   }
 
   return ScrollBeginImpl(scroll_state, scrolling_layer_impl, type);
+}
+
+// Some initial scroll tests are known to be unreliable and require falling
+// back to main thread scrolling.
+bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
+    LayerImpl* layer_impl,
+    const gfx::PointF& device_viewport_point) {
+  LayerImpl* first_scrolling_layer_or_drawn_scrollbar =
+      active_tree_->FindFirstScrollingLayerOrDrawnScrollbarThatIsHitByPoint(
+          device_viewport_point);
+  if (!first_scrolling_layer_or_drawn_scrollbar)
+    return true;
+
+  ScrollNode* closest_scroll_node = nullptr;
+  auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
+  for (; scroll_tree.parent(scroll_node);
+       scroll_node = scroll_tree.parent(scroll_node)) {
+    if (scroll_node->scrollable) {
+      closest_scroll_node = scroll_node;
+      break;
+    }
+  }
+  if (!closest_scroll_node)
+    return false;
+
+  // If |first_scrolling_layer_or_drawn_scrollbar| is scrollable, it will
+  // create a scroll node. If this scroll node corresponds to first scrollable
+  // ancestor along the scroll tree for |layer_impl|, the hit test has not
+  // escaped to other areas of the scroll tree and is reliable.
+  if (first_scrolling_layer_or_drawn_scrollbar->scrollable()) {
+    return closest_scroll_node->id ==
+           first_scrolling_layer_or_drawn_scrollbar->scroll_tree_index();
+  }
+
+  // If |first_scrolling_layer_or_drawn_scrollbar| is not scrollable, it must
+  // be a drawn scrollbar. These hit tests require falling back to main-thread
+  // scrolling.
+  DCHECK(first_scrolling_layer_or_drawn_scrollbar->IsDrawnScrollbar());
+  return false;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(

@@ -657,6 +657,7 @@ class CC_EXPORT LayerTreeHostImpl
       ScrollState* scroll_state,
       LayerImpl* scrolling_layer_impl,
       InputHandler::ScrollInputType type);
+  bool IsInitialScrollHitTestReliable(LayerImpl* layer, const gfx::PointF&);
   void DistributeScrollDelta(ScrollState* scroll_state);
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
