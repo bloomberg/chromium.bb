@@ -95,14 +95,10 @@ void NavigationManagerImpl::SetSessionController(
 }
 
 void NavigationManagerImpl::InitializeSession(NSString* window_name,
-                                              NSString* opener_id,
-                                              BOOL opened_by_dom,
-                                              int opener_navigation_index) {
+                                              BOOL opened_by_dom) {
   SetSessionController([[CRWSessionController alloc]
          initWithWindowName:window_name
-                   openerId:opener_id
                 openedByDOM:opened_by_dom
-      openerNavigationIndex:opener_navigation_index
                browserState:browser_state_]);
 }
 

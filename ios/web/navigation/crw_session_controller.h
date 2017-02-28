@@ -43,8 +43,6 @@ struct Referrer;
 @property(nonatomic, readonly, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 @property(nonatomic, assign) NSTimeInterval lastVisitedTimestamp;
-@property(nonatomic, readonly, copy) NSString* openerId;
-@property(nonatomic, readonly, assign) NSInteger openerNavigationIndex;
 
 // The list of CRWSessionEntries in |_entries|'s NavigationItemImpls.
 @property(nonatomic, readonly) web::NavigationItemList items;

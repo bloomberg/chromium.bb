@@ -37,11 +37,6 @@
   // the incremental merging of the two classes.
   web::NavigationManagerImpl* _navigationManager;
 
-  NSString* _openerId;  // Id of tab who opened this tab, empty/nil if none.
-  // Navigation index of the tab which opened this tab. Do not rely on the
-  // value of this member variable to indicate whether or not this tab has
-  // an opener, as both 0 and -1 are used as navigationIndex values.
-  NSInteger _openerNavigationIndex;
   // Identifies the index of the current navigation in the CRWSessionEntry
   // array.
   NSInteger _currentNavigationIndex;
@@ -94,9 +89,7 @@
 // Expose setters for serialization properties.  These are exposed in a category
 // in SessionStorageBuilder, and will be removed as ownership of
 // their backing ivars moves to NavigationManagerImpl.
-@property(nonatomic, readwrite, copy) NSString* openerId;
 @property(nonatomic, readwrite, getter=isOpenedByDOM) BOOL openedByDOM;
-@property(nonatomic, readwrite, assign) NSInteger openerNavigationIndex;
 @property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
 
 // Removes all entries after currentNavigationIndex_.
@@ -124,22 +117,16 @@
 @synthesize entries = _entries;
 @synthesize windowName = _windowName;
 @synthesize lastVisitedTimestamp = _lastVisitedTimestamp;
-@synthesize openerId = _openerId;
 @synthesize openedByDOM = _openedByDOM;
-@synthesize openerNavigationIndex = _openerNavigationIndex;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
-- (id)initWithWindowName:(NSString*)windowName
-                openerId:(NSString*)openerId
-             openedByDOM:(BOOL)openedByDOM
-   openerNavigationIndex:(NSInteger)openerIndex
-            browserState:(web::BrowserState*)browserState {
+- (instancetype)initWithWindowName:(NSString*)windowName
+                       openedByDOM:(BOOL)openedByDOM
+                      browserState:(web::BrowserState*)browserState {
   self = [super init];
   if (self) {
     self.windowName = windowName;
-    _openerId = [openerId copy];
     _openedByDOM = openedByDOM;
-    _openerNavigationIndex = openerIndex;
     _browserState = browserState;
     _entries = [NSMutableArray array];
     _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
@@ -152,13 +139,12 @@
   return self;
 }
 
-- (id)initWithNavigationItems:
-          (std::vector<std::unique_ptr<web::NavigationItem>>)items
-                 currentIndex:(NSUInteger)currentIndex
-                 browserState:(web::BrowserState*)browserState {
+- (instancetype)initWithNavigationItems:
+                    (std::vector<std::unique_ptr<web::NavigationItem>>)items
+                           currentIndex:(NSUInteger)currentIndex
+                           browserState:(web::BrowserState*)browserState {
   self = [super init];
   if (self) {
-    _openerId = nil;
     _browserState = browserState;
 
     // Create entries array from list of navigations.
@@ -187,9 +173,7 @@
 
 - (id)copyWithZone:(NSZone*)zone {
   CRWSessionController* copy = [[[self class] alloc] init];
-  copy->_openerId = [_openerId copy];
   copy->_openedByDOM = _openedByDOM;
-  copy->_openerNavigationIndex = _openerNavigationIndex;
   copy.windowName = self.windowName;
   copy->_currentNavigationIndex = _currentNavigationIndex;
   copy->_previousNavigationIndex = _previousNavigationIndex;

@@ -178,6 +178,14 @@ class TabInfoBarObserver;
 // data.
 NSString* const kTabIDKey = @"TabID";
 
+// The key under which the opener Tab ID is stored in the WebState's
+// serializable user data.
+NSString* const kOpenerIDKey = @"OpenerID";
+
+// The key under which the opener navigation index is stored in the WebState's
+// serializable user data.
+NSString* const kOpenerNavigationIndexKey = @"OpenerNavigationIndex";
+
 // Name of histogram for recording the state of the tab when the renderer is
 // terminated.
 const char kRendererTerminationStateHistogram[] =
@@ -497,15 +505,18 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                        openedByDOM:(BOOL)openedByDOM
                              model:(TabModel*)parentModel
                       browserState:(ios::ChromeBrowserState*)browserState {
-  NSInteger openerIndex = -1;
-  if ([opener navigationManager]) {
-    NavigationManagerImpl* openerNavManager = [opener navigationManager];
-    openerIndex = openerNavManager->GetLastCommittedItemIndex();
-  }
   std::unique_ptr<web::WebStateImpl> webState(
       new web::WebStateImpl(browserState));
-  webState->GetNavigationManagerImpl().InitializeSession(
-      windowName, opener.tabId, openedByDOM, openerIndex);
+  webState->GetNavigationManagerImpl().InitializeSession(windowName,
+                                                         openedByDOM);
+  if ([opener navigationManager]) {
+    web::SerializableUserDataManager* userDataManager =
+        web::SerializableUserDataManager::FromWebState(webState.get());
+    userDataManager->AddSerializableData(opener.tabId, kOpenerIDKey);
+    userDataManager->AddSerializableData(
+        @([opener navigationManager]->GetLastCommittedItemIndex()),
+        kOpenerNavigationIndexKey);
+  }
 
   return [self initWithWebState:std::move(webState) model:parentModel];
 }
@@ -797,6 +808,27 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     userDataManager->AddSerializableData(tabID, kTabIDKey);
   }
   return base::mac::ObjCCastStrict<NSString>(tabID);
+}
+
+- (NSString*)openerID {
+  DCHECK(self.webState);
+  web::SerializableUserDataManager* userDataManager =
+      web::SerializableUserDataManager::FromWebState(self.webState);
+  id<NSCoding> openerID =
+      userDataManager->GetValueForSerializationKey(kOpenerIDKey);
+  return base::mac::ObjCCastStrict<NSString>(openerID);
+}
+
+- (NSInteger)openerNavigationIndex {
+  DCHECK(self.webState);
+  web::SerializableUserDataManager* userDataManager =
+      web::SerializableUserDataManager::FromWebState(self.webState);
+  id<NSCoding> openerNavigationIndex =
+      userDataManager->GetValueForSerializationKey(kOpenerNavigationIndexKey);
+  if (!openerNavigationIndex)
+    return -1;
+  return base::mac::ObjCCastStrict<NSNumber>(openerNavigationIndex)
+      .integerValue;
 }
 
 - (web::WebState*)webState {

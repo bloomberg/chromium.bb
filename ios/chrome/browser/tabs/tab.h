@@ -116,8 +116,14 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, readonly) NSString* urlDisplayString;
 @property(nonatomic, readonly) NSString* windowName;
 
-// ID associated with this tab, from the SessionManager.
+// ID associated with this tab.
 @property(nonatomic, readonly) NSString* tabId;
+
+// ID of the opener of this tab.
+@property(nonatomic, readonly) NSString* openerID;
+
+// NavigationIndex of the opener of this tab.
+@property(nonatomic, readonly) NSInteger openerNavigationIndex;
 
 // |YES| if snapshot overlay should load from the grey image cache.
 @property(nonatomic, assign) BOOL useGreyImageCache;

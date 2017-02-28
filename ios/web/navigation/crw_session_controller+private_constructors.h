@@ -21,19 +21,16 @@ class NavigationItem;
 // web/, these methods can go back into session_controller.h. crbug.com/318974
 @interface CRWSessionController (PrivateConstructors)
 // Initializes a session controller, supplying a unique textual identifier for
-// the window, or nil. |opener| is the tab id of the parent tab. It may be
-// nil or empty if there is no parent.
-- (id)initWithWindowName:(NSString*)windowName
-                openerId:(NSString*)opener
-             openedByDOM:(BOOL)openedByDOM
-   openerNavigationIndex:(NSInteger)openerIndex
-            browserState:(web::BrowserState*)browserState;
+// the window, or nil.
+- (instancetype)initWithWindowName:(NSString*)windowName
+                       openedByDOM:(BOOL)openedByDOM
+                      browserState:(web::BrowserState*)browserState;
 
 // Initializes a session controller, supplying a list of NavigationItem objects
 // and the current index in the navigation history.
-- (id)initWithNavigationItems:(web::ScopedNavigationItemList)items
-                 currentIndex:(NSUInteger)currentIndex
-                 browserState:(web::BrowserState*)browserState;
+- (instancetype)initWithNavigationItems:(web::ScopedNavigationItemList)items
+                           currentIndex:(NSUInteger)currentIndex
+                           browserState:(web::BrowserState*)browserState;
 @end
 
 #endif  // IOS_WEB_NAVIGATION_CRW_SESSION_CONTROLLER_PRIVATE_CONSTRUCTORS_H_

@@ -22,9 +22,7 @@
 // NavigationManagerImpl;
 @interface CRWSessionController (ExposedForSerialization)
 @property(nonatomic, readwrite, retain) NSString* tabId;
-@property(nonatomic, readwrite, copy) NSString* openerId;
 @property(nonatomic, readwrite, getter=isOpenedByDOM) BOOL openedByDOM;
-@property(nonatomic, readwrite, assign) NSInteger openerNavigationIndex;
 @property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
 @property(nonatomic, readwrite, retain)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
@@ -42,10 +40,7 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
       [[CRWSessionStorage alloc] init];
   CRWSessionController* session_controller =
       navigation_manager->GetSessionController();
-  serialized_navigation_manager.openerID = session_controller.openerId;
   serialized_navigation_manager.openedByDOM = session_controller.openedByDOM;
-  serialized_navigation_manager.openerNavigationIndex =
-      session_controller.openerNavigationIndex;
   serialized_navigation_manager.windowName = session_controller.windowName;
   serialized_navigation_manager.currentNavigationIndex =
       session_controller.currentNavigationIndex;
@@ -88,9 +83,7 @@ void SessionStorageBuilder::ExtractSessionState(
       [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
                                                currentIndex:current_index
                                                browserState:nullptr]);
-  [session_controller setOpenerId:storage.openerID];
   [session_controller setOpenedByDOM:storage.openedByDOM];
-  [session_controller setOpenerNavigationIndex:storage.openerNavigationIndex];
   [session_controller setWindowName:storage.windowName];
   [session_controller
       setPreviousNavigationIndex:storage.previousNavigationIndex];

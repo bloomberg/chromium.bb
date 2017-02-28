@@ -48,9 +48,7 @@ BOOL SessionStoragesAreEqual(CRWSessionStorage* session1,
   NSArray* items1 = session1.itemStorages;
   NSArray* items2 = session2.itemStorages;
   return ItemStorageListsAreEqual(items1, items2) &&
-         [session1.openerID isEqual:session2.openerID] &&
          session1.openedByDOM == session2.openedByDOM &&
-         session1.openerNavigationIndex == session2.openerNavigationIndex &&
          [session1.windowName isEqual:session2.windowName] &&
          session1.currentNavigationIndex == session2.currentNavigationIndex &&
          session1.previousNavigationIndex == session2.previousNavigationIndex &&
@@ -64,9 +62,7 @@ class CRWNSessionStorageTest : public PlatformTest {
   CRWNSessionStorageTest()
       : session_storage_([[CRWSessionStorage alloc] init]) {
     // Set up |session_storage_|.
-    [session_storage_ setOpenerID:@"openerID"];
     [session_storage_ setOpenedByDOM:YES];
-    [session_storage_ setOpenerNavigationIndex:2];
     [session_storage_ setWindowName:@"windowName"];
     [session_storage_ setCurrentNavigationIndex:4];
     [session_storage_ setPreviousNavigationIndex:3];

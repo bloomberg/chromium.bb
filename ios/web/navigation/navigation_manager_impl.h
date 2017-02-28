@@ -67,14 +67,8 @@ class NavigationManagerImpl : public NavigationManager {
   void SetSessionController(CRWSessionController* session_controller);
 
   // Initializes a new session history, supplying a unique |window_name| for the
-  // window (or nil). |opener_id| is the id of opener, or nil if there is none.
-  // |opened_by_dom| is YES if the page was opened by DOM.
-  // |opener_index| is the navigation index of the opener, or -1 if there is
-  // none.
-  void InitializeSession(NSString* window_name,
-                         NSString* opener_id,
-                         BOOL opened_by_dom,
-                         int opener_navigation_index);
+  // window (or nil). |opened_by_dom| is YES if the page was opened by DOM.
+  void InitializeSession(NSString* window_name, BOOL opened_by_dom);
 
   // Replace the session history with a new one, where |items| is the
   // complete set of navigation items in the new history, and |current_index|

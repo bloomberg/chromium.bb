@@ -49,9 +49,7 @@ class CRWSessionControllerTest : public PlatformTest {
   void SetUp() override {
     session_controller_.reset(
         [[CRWSessionController alloc] initWithWindowName:@"test window"
-                                                openerId:@"opener"
                                              openedByDOM:NO
-                                   openerNavigationIndex:0
                                             browserState:&browser_state_]);
   }
 
@@ -66,7 +64,6 @@ class CRWSessionControllerTest : public PlatformTest {
 
 TEST_F(CRWSessionControllerTest, InitWithWindowName) {
   EXPECT_NSEQ(@"test window", [session_controller_ windowName]);
-  EXPECT_NSEQ(@"opener", [session_controller_ openerId]);
   EXPECT_FALSE([session_controller_ isOpenedByDOM]);
   EXPECT_EQ(0U, [[session_controller_ entries] count]);
   EXPECT_EQ(nil, [session_controller_ currentEntry]);
@@ -514,9 +511,7 @@ TEST_F(CRWSessionControllerTest, InsertState) {
   // Create source session controller with 1 committed entry.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithWindowName:nil
-                                              openerId:nil
                                            openedByDOM:NO
-                                 openerNavigationIndex:0
                                           browserState:&browser_state_]);
   [other_session_controller setWindowName:@"test-window"];
   [other_session_controller
@@ -568,9 +563,7 @@ TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
   // Create empty source session controller.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithWindowName:nil
-                                              openerId:nil
                                            openedByDOM:NO
-                                 openerNavigationIndex:0
                                           browserState:&browser_state_]);
   [other_session_controller setWindowName:@"test-window"];
 
@@ -596,9 +589,7 @@ TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
   // pending entry.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithWindowName:nil
-                                              openerId:nil
                                            openedByDOM:NO
-                                 openerNavigationIndex:0
                                           browserState:&browser_state_]);
   [other_session_controller setWindowName:@"test-window"];
   [other_session_controller
@@ -657,9 +648,7 @@ TEST_F(CRWSessionControllerTest,
   // Create source session controller with 1 committed entry.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
       [[CRWSessionController alloc] initWithWindowName:nil
-                                              openerId:nil
                                            openedByDOM:NO
-                                 openerNavigationIndex:0
                                           browserState:&browser_state_]);
   [other_session_controller setWindowName:@"test-window"];
   [other_session_controller
@@ -746,7 +735,6 @@ TEST_F(CRWSessionControllerTest, CreateWithNavList) {
   CRWSessionEntry* current_entry = controller.get().currentEntry;
   EXPECT_EQ(current_entry.navigationItem->GetURL(),
             GURL("http://www.yahoo.com"));
-  EXPECT_EQ([[controller openerId] length], 0UL);
 }
 
 // Tests index of previous navigation entry.

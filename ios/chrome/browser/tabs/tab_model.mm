@@ -121,13 +121,11 @@ void CleanCertificatePolicyCache(
 // checking the associated Tab tabId (should be removed once the opener
 // is passed to the insertTab:atIndex: and replaceTab:withTab: methods).
 Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
-  NSString* opener_id =
-      [tab navigationManager]->GetSessionController().openerId;
-  if (!opener_id)
+  if (!tab.openerID)
     return nullptr;
 
   for (Tab* currentTab in tabs) {
-    if ([opener_id isEqualToString:currentTab.tabId])
+    if ([tab.openerID isEqualToString:currentTab.tabId])
       return currentTab;
   }
 

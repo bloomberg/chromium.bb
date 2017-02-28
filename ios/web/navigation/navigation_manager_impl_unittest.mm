@@ -34,9 +34,7 @@ class NavigationManagerTest : public PlatformTest {
     manager_->SetBrowserState(&browser_state_);
     controller_.reset([[CRWSessionController alloc]
            initWithWindowName:nil
-                     openerId:nil
                   openedByDOM:NO
-        openerNavigationIndex:0
                  browserState:&browser_state_]);
     manager_->SetSessionController(controller_.get());
   }

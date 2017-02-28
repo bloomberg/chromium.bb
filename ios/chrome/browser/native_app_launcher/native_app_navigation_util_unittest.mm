@@ -22,7 +22,7 @@ class NativeAppNavigationUtilsTest : public web::WebTest {
     // for setting up NavigationManager entries.
     std::unique_ptr<web::WebStateImpl> web_state(
         new web::WebStateImpl(GetBrowserState()));
-    web_state->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
+    web_state->GetNavigationManagerImpl().InitializeSession(nil, NO);
     web_state->SetWebUsageEnabled(true);
     web_state_.reset(web_state.release());
   }

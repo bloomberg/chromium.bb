@@ -44,8 +44,8 @@ class SessionWindowIOSTest : public PlatformTest {
                                NSString* opener,
                                BOOL openedByDOM) const {
     WebStateImpl* webState = new WebStateImpl(chrome_browser_state_.get());
-    webState->GetNavigationManagerImpl().InitializeSession(window_name, opener,
-                                                           openedByDOM, 0);
+    webState->GetNavigationManagerImpl().InitializeSession(window_name,
+                                                           openedByDOM);
     return webState;
   }
 
@@ -84,11 +84,7 @@ TEST_F(SessionWindowIOSTest, CodingEncoding) {
 
   std::unique_ptr<WebStateImpl> webState1(
       CreateWebState(windowName1, nil, YES));
-  NSString* openerId1 =
-      webState1->GetNavigationManagerImpl().GetSessionController().openerId;
   std::unique_ptr<WebStateImpl> webState2(CreateWebState(windowName2, nil, NO));
-  NSString* openerId2 =
-      webState2->GetNavigationManagerImpl().GetSessionController().openerId;
   [sessionWindow addSerializedSessionStorage:webState1->BuildSessionStorage()];
   [sessionWindow addSerializedSessionStorage:webState2->BuildSessionStorage()];
 
@@ -107,12 +103,10 @@ TEST_F(SessionWindowIOSTest, CodingEncoding) {
   ASSERT_EQ(2U, sessions.count);
   CRWSessionStorage* unarchivedSession1 = sessions[0];
   EXPECT_NSEQ(windowName1, unarchivedSession1.windowName);
-  EXPECT_NSEQ(openerId1, unarchivedSession1.openerID);
   EXPECT_TRUE(unarchivedSession1.openedByDOM);
 
   CRWSessionStorage* unarchivedSession2 = sessions[1];
   EXPECT_NSEQ(windowName2, unarchivedSession2.windowName);
-  EXPECT_NSEQ(openerId2, unarchivedSession2.openerID);
   EXPECT_FALSE(unarchivedSession2.openedByDOM);
 }
 

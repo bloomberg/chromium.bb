@@ -26,6 +26,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/serializable_user_data_manager.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_thread.h"
@@ -70,8 +71,7 @@ using web::WebStateImpl;
 
   auto webStateImpl = base::MakeUnique<WebStateImpl>(browserState);
   webStateImpl->SetWebController(webControllerMock);
-  webStateImpl->GetNavigationManagerImpl().InitializeSession(windowName,
-                                                             @"opener", NO, -1);
+  webStateImpl->GetNavigationManagerImpl().InitializeSession(windowName, NO);
   [webStateImpl->GetNavigationManagerImpl().GetSessionController()
       setLastVisitedTimestamp:lastVisitedTimestamp];
 
@@ -161,8 +161,16 @@ class TabModelTest : public PlatformTest {
                                                NSString* opener,
                                                NSInteger index) {
     auto webState = base::MakeUnique<WebStateImpl>(chrome_browser_state_.get());
-    webState->GetNavigationManagerImpl().InitializeSession(windowName, opener,
-                                                           NO, index);
+    webState->GetNavigationManagerImpl().InitializeSession(windowName, NO);
+    if ([opener length] != 0) {
+      // Duplicate code from Tab initializer. Will be removed once the code
+      // is rewritten to remove the use of internal ios/web/ API (see issue
+      // http://crbug.com/620465 for progress).
+      web::SerializableUserDataManager* userDataManager =
+          web::SerializableUserDataManager::FromWebState(webState.get());
+      userDataManager->AddSerializableData(opener, @"OpenerID");
+      userDataManager->AddSerializableData(@(index), @"OpenerNavigationIndex");
+    }
     return webState;
   }
 

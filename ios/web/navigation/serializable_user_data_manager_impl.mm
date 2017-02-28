@@ -59,8 +59,11 @@ std::unique_ptr<SerializableUserData> SerializableUserData::Create() {
 }
 
 SerializableUserDataImpl::SerializableUserDataImpl()
-    : data_([[NSDictionary alloc] init]),
-      legacy_key_conversions_(@{@"tabId" : @"TabID"}) {}
+    : data_(@{}), legacy_key_conversions_(@{
+        @"tabId" : @"TabID",
+        @"openerId" : @"OpenerID",
+        @"openerNavigationIndex" : @"OpenerNavigationIndex"
+      }) {}
 
 SerializableUserDataImpl::~SerializableUserDataImpl() {}
 
