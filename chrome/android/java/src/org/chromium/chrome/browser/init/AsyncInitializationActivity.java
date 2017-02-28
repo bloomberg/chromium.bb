@@ -57,7 +57,8 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private Bundle mSavedInstanceState;
     private int mCurrentOrientation = Surface.ROTATION_0;
     private boolean mDestroyed;
-    private NativeInitializationController mNativeInitializationController;
+    private final NativeInitializationController mNativeInitializationController =
+            new NativeInitializationController(this);
     private MemoryUma mMemoryUma;
     private long mLastUserInteractionTime;
     private boolean mIsTablet;
@@ -113,17 +114,17 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
     @Override
     public final void setContentViewAndLoadLibrary() {
+        // Unless it was called before (due to delaying all browser startup on purpose),
         // setContentView inflating the decorView and the basic UI hierarhcy as stubs.
         // This is done here before kicking long running I/O because inflation includes accessing
         // resource files(xmls etc) even if we are inflating views defined by the framework. If this
         // operation gets blocked because other long running I/O are running, we delay onCreate(),
         // onStart() and first draw consequently.
 
-        setContentView();
+        if (!shouldDelayBrowserStartup()) setContentView();
         if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
 
         // Kick off long running IO tasks that can be done in parallel.
-        mNativeInitializationController = new NativeInitializationController(this);
         mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
     }
 
@@ -242,7 +243,22 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mOnCreateTimestampUptimeMs = SystemClock.uptimeMillis();
         mSavedInstanceState = savedInstanceState;
 
-        ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
+        if (shouldDelayBrowserStartup()) {
+            // Handle on UI inflation here if the browser startup is going to be delayed, since
+            // we still need to initialize UI.
+            setContentView();
+        } else {
+            ChromeBrowserInitializer.getInstance(
+                    getApplicationContext()).handlePreNativeStartup(this);
+        }
+    }
+
+    /**
+     * @return Whether the browser startup should be delayed. Note that changing this return value
+     *         will have direct impact on startup performance.
+     */
+    protected boolean shouldDelayBrowserStartup() {
+        return false;
     }
 
     /**
