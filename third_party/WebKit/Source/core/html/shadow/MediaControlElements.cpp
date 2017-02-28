@@ -770,6 +770,13 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event) {
 
   double time = value().toDouble();
 
+  double duration = mediaElement().duration();
+  // Workaround for floating point error - it's possible for this element's max
+  // attribute to be rounded to a value slightly higher than the duration. If
+  // this happens and scrubber is dragged near the max, seek to duration.
+  if (time > duration)
+    time = duration;
+
   // FIXME: This will need to take the timeline offset into consideration
   // once that concept is supported, see https://crbug.com/312699
   if (mediaElement().seekable()->contain(time))

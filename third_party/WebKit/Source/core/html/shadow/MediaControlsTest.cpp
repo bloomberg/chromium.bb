@@ -13,6 +13,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html/shadow/MediaControlElementTypes.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
@@ -38,7 +39,7 @@ class MockVideoWebMediaPlayer : public WebMediaPlayer {
   void setRate(double) override{};
   void setVolume(double) override{};
   WebTimeRanges buffered() const override { return WebTimeRanges(); };
-  WebTimeRanges seekable() const override { return WebTimeRanges(); };
+  WebTimeRanges seekable() const override { return m_seekable; };
   void setSinkId(const WebString& sinkId,
                  const WebSecurityOrigin&,
                  WebSetSinkIdCallbacks*) override{};
@@ -63,6 +64,8 @@ class MockVideoWebMediaPlayer : public WebMediaPlayer {
   size_t audioDecodedByteCount() const override { return 0; };
   size_t videoDecodedByteCount() const override { return 0; };
   void paint(WebCanvas*, const WebRect&, PaintFlags&) override{};
+
+  WebTimeRanges m_seekable;
 };
 
 class MockWebRemotePlaybackClient : public WebRemotePlaybackClient {
@@ -173,6 +176,10 @@ class MediaControlsTest : public ::testing::Test {
   void simulateLoadedMetadata() { m_mediaControls->onLoadedMetadata(); }
 
   MediaControls& mediaControls() { return *m_mediaControls; }
+  MockVideoWebMediaPlayer* webMediaPlayer() {
+    return static_cast<MockVideoWebMediaPlayer*>(
+        mediaControls().mediaElement().webMediaPlayer());
+  }
   Document& document() { return m_pageHolder->document(); }
 
  private:
@@ -393,6 +400,39 @@ TEST_F(MediaControlsTest, DownloadButtonNotDisplayedHLS) {
   testing::runPendingTasks();
   simulateLoadedMetadata();
   EXPECT_FALSE(isElementVisible(*downloadButton));
+}
+
+TEST_F(MediaControlsTest, TimelineSeekToRoundedEnd) {
+  ensureLayout();
+
+  MediaControlTimelineElement* timeline =
+      static_cast<MediaControlTimelineElement*>(getElementByShadowPseudoId(
+          mediaControls(), "-webkit-media-controls-timeline"));
+  ASSERT_NE(nullptr, timeline);
+
+  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
+  testing::runPendingTasks();
+
+  // Tests the case where the real length of the video, |exactDuration|, gets
+  // rounded up slightly to |roundedUpDuration| when setting the timeline's
+  // |max| attribute (crbug.com/695065).
+  double exactDuration = 596.586667;
+  double roundedUpDuration = 596.587;
+
+  WebTimeRange timeRange(0.0, exactDuration);
+  webMediaPlayer()->m_seekable.assign(&timeRange, 1);
+  mediaControls().mediaElement().durationChanged(exactDuration,
+                                                 false /* requestSeek */);
+  simulateLoadedMetadata();
+
+  // Simulate a click slightly past the end of the track of the timeline's
+  // underlying <input type="range">. This would set the |value| to the |max|
+  // attribute, which can be slightly rounded relative to the duration.
+  timeline->setValueAsNumber(roundedUpDuration, ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(roundedUpDuration, timeline->valueAsNumber());
+  EXPECT_EQ(0.0, mediaControls().mediaElement().currentTime());
+  timeline->dispatchInputEvent();
+  EXPECT_EQ(exactDuration, mediaControls().mediaElement().currentTime());
 }
 
 }  // namespace blink
