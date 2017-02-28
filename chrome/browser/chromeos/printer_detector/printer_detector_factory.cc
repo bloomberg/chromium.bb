@@ -41,7 +41,8 @@ PrinterDetectorFactory::~PrinterDetectorFactory() {
 
 KeyedService* PrinterDetectorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new PrinterDetector(Profile::FromBrowserContext(context));
+  return PrinterDetector::Create(Profile::FromBrowserContext(context))
+      .release();
 }
 
 bool PrinterDetectorFactory::ServiceIsCreatedWithBrowserContext() const {

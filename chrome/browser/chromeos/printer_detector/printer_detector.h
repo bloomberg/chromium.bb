@@ -5,21 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTER_DETECTOR_PRINTER_DETECTOR_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTER_DETECTOR_PRINTER_DETECTOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "device/usb/usb_service.h"
 
-class Notification;
 class NotificationUIManager;
 class Profile;
-
-namespace device {
-class UsbDevice;
-}
 
 namespace chromeos {
 
@@ -32,47 +25,19 @@ namespace chromeos {
 // that support the printer. Clicking the notification launches webstore_widget
 // app for the printer.
 // The notification is shown only for active user's profile.
-class PrinterDetector : public KeyedService,
-                        public device::UsbService::Observer {
+class PrinterDetector : public KeyedService {
  public:
-  enum class ButtonCommand {
-    SETUP,
-    CANCEL_SETUP,
-    CLOSE,
-    GET_HELP,
-  };
+  static std::unique_ptr<PrinterDetector> Create(Profile* profile);
+  ~PrinterDetector() override {}
 
-  explicit PrinterDetector(Profile* profile);
-  ~PrinterDetector() override;
-
-  void ShowUSBPrinterSetupNotification(scoped_refptr<device::UsbDevice> device);
-  void ClickOnNotificationButton(int button_index);
+ protected:
+  PrinterDetector() = default;
 
  private:
   friend class PrinterDetectorAppSearchEnabledTest;
 
-  void SetNotificationUIManagerForTesting(NotificationUIManager* manager);
-
-  // KeyedService override:
-  void Shutdown() override;
-
-  // UsbService::observer override:
-  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
-
-  // Initializes the printer detector.
-  void Initialize();
-
-  void OnSetUpUSBPrinterStarted();
-  void OnSetUpUSBPrinterDone();
-  void OnSetUpUSBPrinterError();
-
-  std::unique_ptr<Notification> notification_;
-  ButtonCommand command_ = ButtonCommand::SETUP;
-
-  Profile* profile_;
-  NotificationUIManager* notification_ui_manager_;
-  ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
-  base::WeakPtrFactory<PrinterDetector> weak_ptr_factory_;
+  virtual void SetNotificationUIManagerForTesting(
+      NotificationUIManager* manager) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterDetector);
 };

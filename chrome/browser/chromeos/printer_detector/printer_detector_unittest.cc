@@ -52,8 +52,7 @@ const char kPrinterAppNotFoundDelegateIDTemplate[] =
 
 std::unique_ptr<KeyedService> CreatePrinterDetector(
     content::BrowserContext* context) {
-  return std::unique_ptr<KeyedService>(
-      new chromeos::PrinterDetector(Profile::FromBrowserContext(context)));
+  return PrinterDetector::Create(Profile::FromBrowserContext(context));
 }
 
 }  // namespace
@@ -140,6 +139,7 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   device::MockDeviceClient device_client_;
   std::unique_ptr<TestingProfile> profile_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PrinterDetectorAppSearchEnabledTest);
 };
 
