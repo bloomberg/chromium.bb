@@ -618,8 +618,6 @@ bool LoadSymbols(const string& obj_file,
   module->SetLoadAddress(loading_addr);
   info->set_loading_addr(loading_addr, obj_file);
 
-  Word debug_section_type =
-      elf_header->e_machine == EM_MIPS ? SHT_MIPS_DWARF : SHT_PROGBITS;
   const Shdr* sections =
       GetOffset<ElfClass, Shdr>(elf_header, elf_header->e_shoff);
   const Shdr* section_names = sections + elf_header->e_shstrndx;
@@ -675,9 +673,19 @@ bool LoadSymbols(const string& obj_file,
 
     // Look for DWARF debugging information, and load it if present.
     const Shdr* dwarf_section =
-      FindElfSectionByName<ElfClass>(".debug_info", debug_section_type,
+      FindElfSectionByName<ElfClass>(".debug_info", SHT_PROGBITS,
                                      sections, names, names_end,
                                      elf_header->e_shnum);
+
+    // .debug_info section type is SHT_PROGBITS for mips on pnacl toolchains,
+    // but MIPS_DWARF for regular gnu toolchains, so both need to be checked
+    if (elf_header->e_machine == EM_MIPS && !dwarf_section) {
+      dwarf_section =
+        FindElfSectionByName<ElfClass>(".debug_info", SHT_MIPS_DWARF,
+                                       sections, names, names_end,
+                                       elf_header->e_shnum);
+    }
+
     if (dwarf_section) {
       found_debug_info_section = true;
       found_usable_info = true;
@@ -752,9 +760,19 @@ bool LoadSymbols(const string& obj_file,
     // Dwarf Call Frame Information (CFI) is actually independent from
     // the other DWARF debugging information, and can be used alone.
     const Shdr* dwarf_cfi_section =
-        FindElfSectionByName<ElfClass>(".debug_frame", debug_section_type,
+        FindElfSectionByName<ElfClass>(".debug_frame", SHT_PROGBITS,
                                        sections, names, names_end,
                                        elf_header->e_shnum);
+
+    // .debug_frame section type is SHT_PROGBITS for mips on pnacl toolchains,
+    // but MIPS_DWARF for regular gnu toolchains, so both need to be checked
+    if (elf_header->e_machine == EM_MIPS && !dwarf_cfi_section) {
+      dwarf_cfi_section =
+          FindElfSectionByName<ElfClass>(".debug_frame", SHT_MIPS_DWARF,
+                                        sections, names, names_end,
+                                        elf_header->e_shnum);
+    }
+
     if (dwarf_cfi_section) {
       // Ignore the return value of this function; even without call frame
       // information, the other debugging information could be perfectly
