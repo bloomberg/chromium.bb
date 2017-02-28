@@ -65,12 +65,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   TextAffinity affinity() const { return m_affinity; }
 
-  // TODO(yosin): To make |VisibleSelection| as immutable object, we should
-  // get rid of |setBase()| and |setExtent()| by replacing them with
-  // |createVisibleSelection()|.
-  void setBase(const VisiblePositionTemplate<Strategy>&);
-  void setExtent(const VisiblePositionTemplate<Strategy>&);
-
   SelectionTemplate<Strategy> asSelection() const;
   PositionTemplate<Strategy> base() const { return m_base; }
   PositionTemplate<Strategy> extent() const { return m_extent; }
@@ -116,7 +110,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   // True if base() <= extent().
   bool isBaseFirst() const { return m_baseIsFirst; }
   bool isDirectional() const { return m_isDirectional; }
-  void setIsDirectional(bool isDirectional) { m_isDirectional = isDirectional; }
 
   void appendTrailingWhitespace();
 

@@ -136,22 +136,6 @@ SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::asSelection()
       .build();
 }
 
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setBase(
-    const VisiblePositionTemplate<Strategy>& visiblePosition) {
-  DCHECK(visiblePosition.isValid());
-  m_base = visiblePosition.deepEquivalent();
-  validate();
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setExtent(
-    const VisiblePositionTemplate<Strategy>& visiblePosition) {
-  DCHECK(visiblePosition.isValid());
-  m_extent = visiblePosition.deepEquivalent();
-  validate();
-}
-
 EphemeralRange firstEphemeralRangeOf(const VisibleSelection& selection) {
   if (selection.isNone())
     return EphemeralRange();
