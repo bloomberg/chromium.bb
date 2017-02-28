@@ -181,11 +181,6 @@ int CertVerifyProcOpenSSL::VerifyInternal(
     CertVerifyResult* verify_result) {
   crypto::EnsureOpenSSLInit();
 
-  if (!cert->VerifyNameMatch(hostname,
-                             &verify_result->common_name_fallback_used)) {
-    verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
-  }
-
   bssl::UniquePtr<X509_STORE_CTX> ctx(X509_STORE_CTX_new());
 
   std::unique_ptr<STACK_OF(X509), ShallowX509StackDeleter> intermediates(

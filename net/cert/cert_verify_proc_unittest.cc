@@ -884,7 +884,7 @@ TEST(CertVerifyProcTest, IntranetHostsRejected) {
   dummy_result.is_issued_by_known_root = true;
   scoped_refptr<CertVerifyProc> verify_proc =
       new MockCertVerifyProc(dummy_result);
-  error = verify_proc->Verify(cert.get(), "intranet", std::string(), 0, NULL,
+  error = verify_proc->Verify(cert.get(), "webmail", std::string(), 0, nullptr,
                               CertificateList(), &verify_result);
   EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_NON_UNIQUE_NAME);
@@ -893,7 +893,7 @@ TEST(CertVerifyProcTest, IntranetHostsRejected) {
   dummy_result.Reset();
   dummy_result.is_issued_by_known_root = false;
   verify_proc = make_scoped_refptr(new MockCertVerifyProc(dummy_result));
-  error = verify_proc->Verify(cert.get(), "intranet", std::string(), 0, NULL,
+  error = verify_proc->Verify(cert.get(), "webmail", std::string(), 0, nullptr,
                               CertificateList(), &verify_result);
   EXPECT_THAT(error, IsOk());
   EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_NON_UNIQUE_NAME);
@@ -1712,33 +1712,20 @@ INSTANTIATE_TEST_CASE_P(VerifyTrustedEE,
                         CertVerifyProcWeakDigestTest,
                         testing::ValuesIn(kVerifyTrustedEETestData));
 
-// For the list of valid hostnames, see
-// net/cert/data/ssl/certificates/subjectAltName_sanity_check.pem
-struct CertVerifyProcNameData {
-  const char* hostname;
-  bool valid;  // Whether or not |hostname| matches a subjectAltName.
-};
-
-// Test fixture for verifying certificate names. These tests are run for each
-// of the CertVerify implementations.
-class CertVerifyProcNameTest : public CertVerifyProcInternalTest {
- public:
-  CertVerifyProcNameTest() {}
-  virtual ~CertVerifyProcNameTest() {}
-
+// Test fixture for verifying certificate names.
+class CertVerifyProcNameTest : public ::testing::Test {
  protected:
   void VerifyCertName(const char* hostname, bool valid) {
-    CertificateList cert_list = CreateCertificateListFromFile(
-        GetTestCertsDirectory(), "subjectAltName_sanity_check.pem",
-        X509Certificate::FORMAT_AUTO);
-    ASSERT_EQ(1U, cert_list.size());
-    scoped_refptr<X509Certificate> cert(cert_list[0]);
-
-    ScopedTestRoot scoped_root(cert.get());
+    scoped_refptr<X509Certificate> cert(ImportCertFromFile(
+        GetTestCertsDirectory(), "subjectAltName_sanity_check.pem"));
+    ASSERT_TRUE(cert);
+    CertVerifyResult result;
+    result.is_issued_by_known_root = false;
+    scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
 
     CertVerifyResult verify_result;
-    int error = Verify(cert.get(), hostname, 0, NULL, CertificateList(),
-                       &verify_result);
+    int error = verify_proc->Verify(cert.get(), hostname, std::string(), 0,
+                                    nullptr, CertificateList(), &verify_result);
     if (valid) {
       EXPECT_THAT(error, IsOk());
       EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_COMMON_NAME_INVALID);
@@ -1750,74 +1737,69 @@ class CertVerifyProcNameTest : public CertVerifyProcInternalTest {
 };
 
 // Don't match the common name
-TEST_P(CertVerifyProcNameTest, DontMatchCommonName) {
+TEST_F(CertVerifyProcNameTest, DontMatchCommonName) {
   VerifyCertName("127.0.0.1", false);
 }
 
 // Matches the iPAddress SAN (IPv4)
-TEST_P(CertVerifyProcNameTest, MatchesIpSanIpv4) {
+TEST_F(CertVerifyProcNameTest, MatchesIpSanIpv4) {
   VerifyCertName("127.0.0.2", true);
 }
 
 // Matches the iPAddress SAN (IPv6)
-TEST_P(CertVerifyProcNameTest, MatchesIpSanIpv6) {
+TEST_F(CertVerifyProcNameTest, MatchesIpSanIpv6) {
   VerifyCertName("FE80:0:0:0:0:0:0:1", true);
 }
 
 // Should not match the iPAddress SAN
-TEST_P(CertVerifyProcNameTest, DoesntMatchIpSanIpv6) {
+TEST_F(CertVerifyProcNameTest, DoesntMatchIpSanIpv6) {
   VerifyCertName("[FE80:0:0:0:0:0:0:1]", false);
 }
 
 // Compressed form matches the iPAddress SAN (IPv6)
-TEST_P(CertVerifyProcNameTest, MatchesIpSanCompressedIpv6) {
+TEST_F(CertVerifyProcNameTest, MatchesIpSanCompressedIpv6) {
   VerifyCertName("FE80::1", true);
 }
 
 // IPv6 mapped form should NOT match iPAddress SAN
-TEST_P(CertVerifyProcNameTest, DoesntMatchIpSanIPv6Mapped) {
+TEST_F(CertVerifyProcNameTest, DoesntMatchIpSanIPv6Mapped) {
   VerifyCertName("::127.0.0.2", false);
 }
 
 // Matches the dNSName SAN
-TEST_P(CertVerifyProcNameTest, MatchesDnsSan) {
+TEST_F(CertVerifyProcNameTest, MatchesDnsSan) {
   VerifyCertName("test.example", true);
 }
 
 // Matches the dNSName SAN (trailing . ignored)
-TEST_P(CertVerifyProcNameTest, MatchesDnsSanTrailingDot) {
+TEST_F(CertVerifyProcNameTest, MatchesDnsSanTrailingDot) {
   VerifyCertName("test.example.", true);
 }
 
 // Should not match the dNSName SAN
-TEST_P(CertVerifyProcNameTest, DoesntMatchDnsSan) {
+TEST_F(CertVerifyProcNameTest, DoesntMatchDnsSan) {
   VerifyCertName("www.test.example", false);
 }
 
 // Should not match the dNSName SAN
-TEST_P(CertVerifyProcNameTest, DoesntMatchDnsSanInvalid) {
+TEST_F(CertVerifyProcNameTest, DoesntMatchDnsSanInvalid) {
   VerifyCertName("test..example", false);
 }
 
 // Should not match the dNSName SAN
-TEST_P(CertVerifyProcNameTest, DoesntMatchDnsSanTwoTrailingDots) {
+TEST_F(CertVerifyProcNameTest, DoesntMatchDnsSanTwoTrailingDots) {
   VerifyCertName("test.example..", false);
 }
 
 // Should not match the dNSName SAN
-TEST_P(CertVerifyProcNameTest, DoesntMatchDnsSanLeadingAndTrailingDot) {
+TEST_F(CertVerifyProcNameTest, DoesntMatchDnsSanLeadingAndTrailingDot) {
   VerifyCertName(".test.example.", false);
 }
 
 // Should not match the dNSName SAN
-TEST_P(CertVerifyProcNameTest, DoesntMatchDnsSanTrailingDot) {
+TEST_F(CertVerifyProcNameTest, DoesntMatchDnsSanTrailingDot) {
   VerifyCertName(".test.example", false);
 }
-
-INSTANTIATE_TEST_CASE_P(VerifyName,
-                        CertVerifyProcNameTest,
-                        testing::ValuesIn(kAllCertVerifiers),
-                        VerifyProcTypeToName);
 
 // Tests that CertVerifyProc records a histogram correctly when a
 // certificate chaining to a private root contains the TLS feature

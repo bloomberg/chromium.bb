@@ -991,10 +991,6 @@ int VerifyWithGivenFlags(X509Certificate* cert,
   // Perform hostname verification independent of SecTrustEvaluate. In order to
   // do so, mask off any reported name errors first.
   verify_result->cert_status &= ~CERT_STATUS_COMMON_NAME_INVALID;
-  if (!cert->VerifyNameMatch(hostname,
-                             &verify_result->common_name_fallback_used)) {
-    verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
-  }
 
   // TODO(wtc): Suppress CERT_STATUS_NO_REVOCATION_MECHANISM for now to be
   // compatible with Windows, which in turn implements this behavior to be

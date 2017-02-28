@@ -209,7 +209,7 @@ SUBJECT_NAME="req_punycode_dn" \
 
 ## Reject intranet hostnames in "publicly" trusted certs
 # 365 * 3 = 1095
-SUBJECT_NAME="req_dn" \
+SUBJECT_NAME="req_intranet_dn" \
   try openssl req -x509 -days 1095 \
     -config ../scripts/ee.cnf -newkey rsa:2048 -text \
     -out ../certificates/reject_intranet_hosts.pem
