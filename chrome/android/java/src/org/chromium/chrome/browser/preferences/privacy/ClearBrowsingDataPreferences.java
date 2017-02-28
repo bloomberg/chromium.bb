@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
@@ -275,6 +276,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         } else {
             PrefServiceBridge.getInstance().clearBrowsingData(this, dataTypes, timePeriod);
         }
+
+        // Clear all reported entities.
+        AppIndexingReporter.getInstance().clearHistory();
     }
 
     private void dismissProgressDialog() {
