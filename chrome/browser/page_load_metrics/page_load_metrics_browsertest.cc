@@ -146,7 +146,7 @@ class TimingUpdatedObserver : public content::BrowserMessageFilter {
   ~TimingUpdatedObserver() override {}
 
   std::unique_ptr<base::RunLoop> run_loop_;
-  int matching_fields_;  // A bitvector composed from ExpectedTimingFields.
+  int matching_fields_ = 0;  // A bitvector composed from ExpectedTimingFields.
   bool matched_timing_update_ = false;
   int match_document_write_block_reload_ = 0;
 };
