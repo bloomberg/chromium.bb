@@ -1122,6 +1122,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/DateDividedAdapter.java",
   "java/src/org/chromium/chrome/browser/widget/DualControlLayout.java",
   "java/src/org/chromium/chrome/browser/widget/EmptyAlertEditText.java",
+  "java/src/org/chromium/chrome/browser/widget/EmptyBottomSheetObserver.java",
   "java/src/org/chromium/chrome/browser/widget/FadingBackgroundView.java",
   "java/src/org/chromium/chrome/browser/widget/FadingShadow.java",
   "java/src/org/chromium/chrome/browser/widget/FadingShadowView.java",

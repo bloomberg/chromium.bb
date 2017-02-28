@@ -18,8 +18,7 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
  * This view is used to obscure content and bring focus to a foreground view (i.e. the Chrome Home
  * bottom sheet or the omnibox suggestions).
  */
-public class FadingBackgroundView extends View implements View.OnClickListener,
-        BottomSheetObserver {
+public class FadingBackgroundView extends View implements View.OnClickListener {
     /**
      * An interface for listening to events on the fading view.
      */
@@ -165,21 +164,4 @@ public class FadingBackgroundView extends View implements View.OnClickListener,
     public void onClick(View view) {
         for (FadingViewObserver o : mObservers) o.onFadingViewClick();
     }
-
-    @Override
-    public void onTransitionPeekToHalf(float transitionFraction) {
-        setViewAlpha(transitionFraction);
-    }
-
-    @Override
-    public void onSheetOffsetChanged(float heightFraction) {}
-
-    @Override
-    public void onSheetOpened() {}
-
-    @Override
-    public void onSheetClosed() {}
-
-    @Override
-    public void onLoadUrl(String url) {}
 }

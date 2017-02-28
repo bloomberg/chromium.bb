@@ -131,6 +131,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.chrome.browser.widget.EmptyBottomSheetObserver;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.ContentVideoView;
@@ -350,9 +351,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mBottomSheet.setTabModelSelector(mTabModelSelector);
             mBottomSheet.setFullscreenManager(mFullscreenManager);
 
-            FadingBackgroundView fadingView =
+            final FadingBackgroundView fadingView =
                     (FadingBackgroundView) findViewById(R.id.fading_focus_target);
-            mBottomSheet.addObserver(fadingView);
+            mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+                @Override
+                public void onTransitionPeekToHalf(float transitionFraction) {
+                    fadingView.setViewAlpha(transitionFraction);
+                }
+            });
             fadingView.addObserver(mBottomSheet);
         }
         ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
