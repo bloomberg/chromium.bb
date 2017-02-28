@@ -359,9 +359,9 @@ void SystemTrayClient::HandleUpdateAvailable() {
   // Get the Chrome update severity.
   ash::mojom::UpdateSeverity severity = GetUpdateSeverity(detector);
 
-  // Flash updates are elevated severity unless the Chrome severity is higher.
+  // Flash updates are low severity unless the Chrome severity is higher.
   if (flash_update_available_)
-    severity = std::max(severity, ash::mojom::UpdateSeverity::ELEVATED);
+    severity = std::max(severity, ash::mojom::UpdateSeverity::LOW);
 
   system_tray_->ShowUpdateIcon(severity, detector->is_factory_reset_required());
 }
