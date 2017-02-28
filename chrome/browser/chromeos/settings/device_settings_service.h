@@ -132,6 +132,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // load the device settings.
   void Load();
 
+  // Synchronously pulls the public key and loads the device settings.
+  void LoadImmediately();
+
   // Stores a policy blob to session_manager. The result of the operation is
   // reported through |callback|. If successful, the updated device settings are
   // present in policy_data() and device_settings() when the callback runs.
@@ -196,10 +199,15 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   void StartNextOperation();
 
   // Updates status, policy data and owner key from a finished operation.
-  // Starts the next pending operation if available.
   void HandleCompletedOperation(const base::Closure& callback,
                                 SessionManagerOperation* operation,
                                 Status status);
+
+  // Same as HandleCompletedOperation(), but also starts the next pending
+  // operation if available.
+  void HandleCompletedAsyncOperation(const base::Closure& callback,
+                                     SessionManagerOperation* operation,
+                                     Status status);
 
   // Updates status and invokes the callback immediately.
   void HandleError(Status status, const base::Closure& callback);

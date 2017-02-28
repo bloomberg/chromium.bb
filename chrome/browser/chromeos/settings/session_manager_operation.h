@@ -74,6 +74,9 @@ class SessionManagerOperation {
   // Starts a load operation.
   void StartLoading();
 
+  // Synchronous load operation.
+  void LoadImmediately();
+
   // Reports the result status of the operation. Once this gets called, the
   // operation should not perform further processing or trigger callbacks.
   void ReportResult(DeviceSettingsService::Status status);
@@ -89,6 +92,8 @@ class SessionManagerOperation {
 
   bool force_key_load_ = false;
 
+  bool force_immediate_load_ = false;
+
  private:
   // Loads the owner key from disk. Must be run on a thread that can do I/O.
   static scoped_refptr<ownership::PublicKey> LoadPublicKey(
@@ -101,6 +106,9 @@ class SessionManagerOperation {
 
   // Triggers a device settings load.
   void RetrieveDeviceSettings();
+
+  // Same as RetrieveDeviceSettings, but loads synchronously.
+  void BlockingRetrieveDeviceSettings();
 
   // Validates device settings after retrieval from session_manager.
   void ValidateDeviceSettings(const std::string& policy_blob);
@@ -131,8 +139,11 @@ class LoadSettingsOperation : public SessionManagerOperation {
  public:
   // Creates a new load operation.  If |cloud_validations| is true, signature
   // validation and other cloud-specific checks are performed.
+  // If |force_immediate_load| is true, load happens synchronously on Run()
+  // call.
   LoadSettingsOperation(bool force_key_load,
                         bool cloud_validations,
+                        bool force_immediate_load,
                         const Callback& callback);
   ~LoadSettingsOperation() override;
 

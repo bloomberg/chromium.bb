@@ -34,8 +34,10 @@
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
+#include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -52,6 +54,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -135,13 +138,6 @@ class UserImageManagerTest : public LoginManagerTest,
 
   // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
-    // Set up fake install attributes.
-    std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-        base::MakeUnique<chromeos::StubInstallAttributes>();
-    attributes->SetEnterprise("fake-domain", "fake-id");
-    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
-        attributes.release());
-
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
 
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
@@ -583,13 +579,26 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
                                    public policy::CloudPolicyStore::Observer {
  protected:
   UserImageManagerPolicyTest()
-      : fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {
-  }
+      : owner_key_util_(new ownership::MockOwnerKeyUtil()),
+        fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {}
 
   // UserImageManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
+    device_policy_.Build();
+    OwnerSettingsServiceChromeOSFactory::GetInstance()
+        ->SetOwnerKeyUtilForTesting(owner_key_util_);
+    owner_key_util_->SetPublicKeyFromPrivateKey(
+        *device_policy_.GetSigningKey());
+    fake_session_manager_client_->set_device_policy(device_policy_.GetBlob());
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
+
+    // Set up fake install attributes.
+    std::unique_ptr<chromeos::StubInstallAttributes> attributes =
+        base::MakeUnique<chromeos::StubInstallAttributes>();
+    attributes->SetEnterprise("fake-domain", "fake-id");
+    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
+        attributes.release());
     UserImageManagerTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -648,6 +657,8 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   }
 
   policy::UserPolicyBuilder user_policy_;
+  policy::DevicePolicyBuilder device_policy_;
+  scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
   FakeSessionManagerClient* fake_session_manager_client_;
 
   std::unique_ptr<gfx::ImageSkia> policy_image_;

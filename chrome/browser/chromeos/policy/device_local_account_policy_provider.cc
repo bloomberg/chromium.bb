@@ -45,7 +45,8 @@ DeviceLocalAccountPolicyProvider::~DeviceLocalAccountPolicyProvider() {
 std::unique_ptr<DeviceLocalAccountPolicyProvider>
 DeviceLocalAccountPolicyProvider::Create(
     const std::string& user_id,
-    DeviceLocalAccountPolicyService* device_local_account_policy_service) {
+    DeviceLocalAccountPolicyService* device_local_account_policy_service,
+    bool force_immediate_load) {
   DeviceLocalAccount::Type type;
   if (!device_local_account_policy_service ||
       !IsDeviceLocalAccountUser(user_id, &type)) {
@@ -89,6 +90,9 @@ DeviceLocalAccountPolicyProvider::Create(
       new DeviceLocalAccountPolicyProvider(user_id,
                                            device_local_account_policy_service,
                                            std::move(chrome_policy_overrides)));
+  // In case of restore-after-restart broker should already be initialized.
+  if (force_immediate_load && provider->GetBroker())
+    provider->GetBroker()->LoadImmediately();
   return provider;
 }
 

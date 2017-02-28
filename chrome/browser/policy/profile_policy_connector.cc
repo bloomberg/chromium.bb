@@ -60,7 +60,8 @@ void ProfilePolicyConnector::Init(
     const user_manager::User* user,
     SchemaRegistry* schema_registry,
     ConfigurationPolicyProvider* configuration_policy_provider,
-    const CloudPolicyStore* policy_store) {
+    const CloudPolicyStore* policy_store,
+    bool force_immediate_load) {
   configuration_policy_provider_ = configuration_policy_provider;
   policy_store_ = policy_store;
 
@@ -108,7 +109,7 @@ void ProfilePolicyConnector::Init(
     // the user supplied is not a device-local account user.
     special_user_policy_provider_ = DeviceLocalAccountPolicyProvider::Create(
         user->GetAccountId().GetUserEmail(),
-        connector->GetDeviceLocalAccountPolicyService());
+        connector->GetDeviceLocalAccountPolicyService(), force_immediate_load);
   }
   if (special_user_policy_provider_) {
     special_user_policy_provider_->Init(schema_registry);

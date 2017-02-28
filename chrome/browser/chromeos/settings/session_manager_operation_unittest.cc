@@ -108,6 +108,7 @@ class SessionManagerOperationTest : public testing::Test {
 TEST_F(SessionManagerOperationTest, LoadNoPolicyNoKey) {
   LoadSettingsOperation op(
       false /* force_key_load */, true /* cloud_validations */,
+      false /* force_immediate_load */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 
@@ -128,6 +129,7 @@ TEST_F(SessionManagerOperationTest, LoadOwnerKey) {
   owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
   LoadSettingsOperation op(
       false /* force_key_load */, true /* cloud_validations */,
+      false /* force_immediate_load */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 
@@ -146,6 +148,30 @@ TEST_F(SessionManagerOperationTest, LoadPolicy) {
   device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
   LoadSettingsOperation op(
       false /* force_key_load */, true /* cloud_validations */,
+      false /* force_immediate_load */,
+      base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
+                 base::Unretained(this)));
+
+  EXPECT_CALL(*this,
+              OnOperationCompleted(&op, DeviceSettingsService::STORE_SUCCESS));
+  op.Start(&device_settings_test_helper_, owner_key_util_, NULL);
+  device_settings_test_helper_.Flush();
+  Mock::VerifyAndClearExpectations(this);
+
+  ASSERT_TRUE(op.policy_data().get());
+  EXPECT_EQ(policy_.policy_data().SerializeAsString(),
+            op.policy_data()->SerializeAsString());
+  ASSERT_TRUE(op.device_settings().get());
+  EXPECT_EQ(policy_.payload().SerializeAsString(),
+            op.device_settings()->SerializeAsString());
+}
+
+TEST_F(SessionManagerOperationTest, LoadImmediately) {
+  owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
+  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
+  LoadSettingsOperation op(
+      false /* force_key_load */, true /* cloud_validations */,
+      true /* force_immediate_load */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 
@@ -169,6 +195,7 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
   device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
   LoadSettingsOperation op(
       false /* force_key_load */, true /* cloud_validations */,
+      false /* force_immediate_load */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 

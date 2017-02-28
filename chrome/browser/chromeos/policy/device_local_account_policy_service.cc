@@ -164,6 +164,10 @@ void DeviceLocalAccountPolicyBroker::Initialize() {
   store_->Load();
 }
 
+void DeviceLocalAccountPolicyBroker::LoadImmediately() {
+  store_->LoadImmediately();
+}
+
 bool DeviceLocalAccountPolicyBroker::HasInvalidatorForTest() const {
   return invalidator_ != nullptr;
 }

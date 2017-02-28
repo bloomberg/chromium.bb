@@ -151,7 +151,8 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
       new ProfilePolicyConnector());
 
   if (test_providers_.empty()) {
-    connector->Init(user, schema_registry, policy_provider, policy_store);
+    connector->Init(user, schema_registry, policy_provider, policy_store,
+                    force_immediate_load);
   } else {
     PolicyServiceImpl::Providers providers;
     providers.push_back(test_providers_.front());

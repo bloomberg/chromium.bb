@@ -123,6 +123,7 @@
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -439,6 +440,8 @@ ProfileImpl::ProfileImpl(
       policy::SchemaRegistryServiceFactory::CreateForContext(
           this, connector->GetChromeSchema(), connector->GetSchemaRegistry());
 #if defined(OS_CHROMEOS)
+  if (force_immediate_policy_load)
+    chromeos::DeviceSettingsService::Get()->LoadImmediately();
   configuration_policy_provider_ =
       policy::UserPolicyManagerFactoryChromeOS::CreateForProfile(
           this, force_immediate_policy_load, sequenced_task_runner);

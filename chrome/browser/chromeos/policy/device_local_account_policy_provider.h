@@ -39,9 +39,12 @@ class DeviceLocalAccountPolicyProvider
   // Factory function to create and initialize a provider for |user_id|. Returns
   // NULL if |user_id| is not a device-local account or user policy isn't
   // applicable for user_id's user type.
+  // If |force_immediate_load| is true then policy is loaded synchronously on
+  // creation.
   static std::unique_ptr<DeviceLocalAccountPolicyProvider> Create(
       const std::string& user_id,
-      DeviceLocalAccountPolicyService* service);
+      DeviceLocalAccountPolicyService* service,
+      bool force_immediate_load);
 
   // ConfigurationPolicyProvider:
   bool IsInitializationComplete(PolicyDomain domain) const override;

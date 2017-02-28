@@ -129,13 +129,27 @@ void DeviceSettingsService::Load() {
   EnqueueLoad(false);
 }
 
+void DeviceSettingsService::LoadImmediately() {
+  bool request_key_load = true;
+  bool cloud_validations = true;
+  if (device_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD) {
+    request_key_load = false;
+    cloud_validations = false;
+  }
+  std::unique_ptr<SessionManagerOperation> operation(new LoadSettingsOperation(
+      request_key_load, cloud_validations, true /*force_immediate_load*/,
+      base::Bind(&DeviceSettingsService::HandleCompletedOperation,
+                 weak_factory_.GetWeakPtr(), base::Closure())));
+  operation->Start(session_manager_client_, owner_key_util_, public_key_);
+}
+
 void DeviceSettingsService::Store(
     std::unique_ptr<em::PolicyFetchResponse> policy,
     const base::Closure& callback) {
   // On Active Directory managed devices policy is written only by authpolicyd.
   CHECK(device_mode_ != policy::DEVICE_MODE_ENTERPRISE_AD);
   Enqueue(linked_ptr<SessionManagerOperation>(new StoreSettingsOperation(
-      base::Bind(&DeviceSettingsService::HandleCompletedOperation,
+      base::Bind(&DeviceSettingsService::HandleCompletedAsyncOperation,
                  weak_factory_.GetWeakPtr(), callback),
       std::move(policy))));
 }
@@ -233,8 +247,8 @@ void DeviceSettingsService::EnqueueLoad(bool request_key_load) {
     cloud_validations = false;
   }
   linked_ptr<SessionManagerOperation> operation(new LoadSettingsOperation(
-      request_key_load, cloud_validations,
-      base::Bind(&DeviceSettingsService::HandleCompletedOperation,
+      request_key_load, cloud_validations, false /*force_immediate_load*/,
+      base::Bind(&DeviceSettingsService::HandleCompletedAsyncOperation,
                  weak_factory_.GetWeakPtr(), base::Closure())));
   Enqueue(operation);
 }
@@ -254,12 +268,23 @@ void DeviceSettingsService::StartNextOperation() {
   }
 }
 
-void DeviceSettingsService::HandleCompletedOperation(
+void DeviceSettingsService::HandleCompletedAsyncOperation(
     const base::Closure& callback,
     SessionManagerOperation* operation,
     Status status) {
   DCHECK_EQ(operation, pending_operations_.front().get());
+  HandleCompletedOperation(callback, operation, status);
+  // Only remove the pending operation here, so new operations triggered by
+  // any of the callbacks above are queued up properly.
+  pending_operations_.pop_front();
 
+  StartNextOperation();
+}
+
+void DeviceSettingsService::HandleCompletedOperation(
+    const base::Closure& callback,
+    SessionManagerOperation* operation,
+    Status status) {
   store_status_ = status;
   if (status == STORE_SUCCESS) {
     policy_data_ = std::move(operation->policy_data());
@@ -298,12 +323,6 @@ void DeviceSettingsService::HandleCompletedOperation(
   // filter self-triggered updates.
   if (!callback.is_null())
     callback.Run();
-
-  // Only remove the pending operation here, so new operations triggered by any
-  // of the callbacks above are queued up properly.
-  pending_operations_.pop_front();
-
-  StartNextOperation();
 }
 
 void DeviceSettingsService::HandleError(Status status,

@@ -64,7 +64,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
 TEST_F(ProfilePolicyConnectorTest, IsManagedForManagedUsers) {
   ProfilePolicyConnector connector;
   connector.Init(nullptr /* user */, &schema_registry_,
-                 cloud_policy_manager_.get(), &cloud_policy_store_);
+                 cloud_policy_manager_.get(), &cloud_policy_store_, false);
   EXPECT_FALSE(connector.IsManaged());
   EXPECT_EQ(connector.GetManagementDomain(), "");
 
@@ -82,7 +82,7 @@ TEST_F(ProfilePolicyConnectorTest, IsManagedForManagedUsers) {
 TEST_F(ProfilePolicyConnectorTest, IsProfilePolicy) {
   ProfilePolicyConnector connector;
   connector.Init(nullptr /* user */, &schema_registry_,
-                 cloud_policy_manager_.get(), &cloud_policy_store_);
+                 cloud_policy_manager_.get(), &cloud_policy_store_, false);
 
   // No policy is set initially.
   EXPECT_FALSE(connector.IsProfilePolicy(autofill::prefs::kAutofillEnabled));
