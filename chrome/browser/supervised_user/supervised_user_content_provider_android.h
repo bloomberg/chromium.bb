@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_CONTENT_PROVIDER_ANDROID_H_
 
 #include <jni.h>
+#include <memory>
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 
@@ -37,6 +39,19 @@ class SupervisedUserContentProvider {
   static bool Register(JNIEnv* env);
 
  private:
+  class UrlFilterObserver : public SupervisedUserServiceObserver {
+   public:
+    UrlFilterObserver(JNIEnv* env,
+                      const base::android::ScopedJavaGlobalRef<jobject>&
+                          java_content_provider);
+
+    ~UrlFilterObserver() override;
+
+   private:
+    void OnURLFilterChanged() override;
+    base::android::ScopedJavaGlobalRef<jobject> java_content_provider_;
+  };
+
   void OnQueryComplete(
       base::android::ScopedJavaGlobalRef<jobject> query_reply_jobj,
       SupervisedUserURLFilter::FilteringBehavior behavior,
@@ -47,6 +62,7 @@ class SupervisedUserContentProvider {
       bool sent_ok);
   Profile* profile_;
   base::android::ScopedJavaGlobalRef<jobject> java_content_provider_;
+  std::unique_ptr<UrlFilterObserver> url_filter_observer_;
 
   base::WeakPtrFactory<SupervisedUserContentProvider> weak_factory_;
 
