@@ -451,3 +451,96 @@ def ClassifyFailure(stage, log_content):
   else:
     logging.debug('Missing handler for stage %s', stage)
     return None
+
+# Extracts block, success, task, notes.
+STATUS_LOG_RE = re.compile(
+    r'(?P<block>START|END)?\s*(?P<success>GOOD|FAIL)?\s*----\s+'
+    r'(?P<task>\S+)\s+timestamp=\d+\s+localtime=\w+ \d+ \d\d:\d\d:\d\d\s*'
+    r'(?P<notes>.*)')
+
+
+def ExtractLabStatusParts(line):
+  """Given a status.log lines, extract the parts we care about.
+
+  This means the start/end of a block, success/failure, and what was being done.
+
+  Args:
+    line: One line of a status.log log file from the lab.
+
+  Returns:
+    (block, result, task, notes), or None
+  """
+  result = STATUS_LOG_RE.search(line.strip())
+
+  if not result:
+    return None
+
+  # Any of these values are allowed to be None.
+  return (result.group('block'), result.group('success'),
+          result.group('task'), result.group('notes'))
+
+
+def HandleRepairStatus(line_parts):
+  """Given turn line_parts into a set of notes about the repair job.
+
+  Args:
+    line_parts: Iterable of ExtractLabStatusParts() results.
+
+  Returns:
+    Set of single word strings which describe a given repair job.
+  """
+  repair_notes = set()
+
+  noop = True  # Did this repair job perform any actual repair?
+
+  for _, result, task, notes in line_parts:
+    # If we get no failures, other than the servo connection, we did no repair
+    # work.
+    if result not in (None, 'GOOD') and task != 'verify.servod':
+      noop = False
+
+    # If we ran the repair.usb task, we tried to do a USB based repair.
+    if task == 'repair.usb':
+      repair_notes.add('USB')
+
+    if (result == 'FAIL' and task == 'verify.ssh' and
+        notes.startswith('No answer to ping')):
+      repair_notes.add('NetworkWasDown')
+
+  if noop:
+    repair_notes.add('NoRepairNeeded')
+
+  return repair_notes
+
+
+def ClassifyLabJobStatusResult(log_content):
+  """Given a repair log, classify the type of repair.
+
+  Args:
+    log_content: Iterator yielding the status.log lines.
+
+  Returns:
+    String summary of data extracted from log.
+  """
+  # Parse into parts.
+  # Throw away the ones we couldn't parse, since they don't matter.
+  line_parts = [ExtractLabStatusParts(l) for l in log_content]
+  line_parts = [l for l in line_parts if l]
+
+  # If we have no lines, or the last one isn't the Job END.
+  if not line_parts or line_parts[-1][0] != 'END':
+    return 'JOB: Unable to parse job status.log.'
+
+  # Extract the final result for the job.
+  _block, result, task, _notes = line_parts[-1]
+
+  repair_notes = set()
+
+  if task == 'repair':
+    repair_notes |= HandleRepairStatus(line_parts)
+
+  if not repair_notes:
+    repair_notes.add('No details extracted.')
+
+  # Example output: repair: SUCCESS: USB
+  return '%s: %s: %s' % (task, result, ', '.join(sorted(repair_notes)))
