@@ -148,6 +148,11 @@ void insertTextDuringCompositionWithEvents(
   switch (compositionType) {
     case TypingCommand::TextCompositionType::TextCompositionUpdate:
     case TypingCommand::TextCompositionType::TextCompositionConfirm:
+      // Calling |TypingCommand::insertText()| with empty text will result in an
+      // incorrect ending selection. We need to delete selection first.
+      // https://crbug.com/693481
+      if (text.isEmpty())
+        TypingCommand::deleteSelection(*frame.document(), 0);
       TypingCommand::insertText(*frame.document(), text, options,
                                 compositionType, isIncrementalInsertion);
       break;

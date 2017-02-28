@@ -4,6 +4,7 @@
 
 #include "core/editing/InputMethodController.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
@@ -15,9 +16,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -1169,7 +1170,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForDelete) {
   // Delete the existing composition.
   document().setTitle(emptyString);
   controller().setComposition("", underlines, 0, 0);
-  EXPECT_STREQ("beforeinput.data:;input.data:;compositionend.data:;",
+  EXPECT_STREQ("beforeinput.data:;input.data:null;compositionend.data:;",
                document().title().utf8().data());
 }
 
@@ -1223,7 +1224,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
   document().setTitle(emptyString);
   document().updateStyleAndLayout();
   controller().commitText("", underlines, 1);
-  EXPECT_STREQ("beforeinput.data:;input.data:;compositionend.data:;",
+  EXPECT_STREQ("beforeinput.data:;input.data:null;compositionend.data:;",
                document().title().utf8().data());
 }
 
@@ -1407,6 +1408,23 @@ TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
                    .computeVisibleSelectionInDOMTreeDeprecated()
                    .start()
                    .computeOffsetInContainerNode());
+}
+
+TEST_F(InputMethodControllerTest, SetEmptyCompositionShouldNotMoveCaret) {
+  HTMLTextAreaElement* textarea =
+      toHTMLTextAreaElement(insertHTMLElement("<textarea id='txt'>", "txt"));
+
+  textarea->setValue("abc\n");
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+
+  Vector<CompositionUnderline> underlines;
+  underlines.push_back(CompositionUnderline(0, 3, Color(255, 0, 0), false, 0));
+  controller().setComposition(String("def"), underlines, 0, 3);
+  controller().setComposition(String(""), underlines, 0, 3);
+  controller().commitText(String("def"), underlines, 0);
+
+  EXPECT_STREQ("abc\ndef", textarea->value().utf8().data());
 }
 
 }  // namespace blink
