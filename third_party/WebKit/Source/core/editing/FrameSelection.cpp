@@ -255,15 +255,19 @@ void FrameSelection::didSetSelectionDeprecated(SetSelectionOptions options,
   // Always clear the x position used for vertical arrow navigation.
   // It will be restored by the vertical arrow navigation code if necessary.
   m_xPosForVerticalArrowNavigation = NoXPosForVerticalArrowNavigation();
+
   // TODO(yosin): Can we move this to at end of this function?
   // This may dispatch a synchronous focus-related events.
-  selectFrameElementInParentIfFullySelected();
-  if (!isAvailable() || document() != currentDocument) {
-    // editing/selection/selectallchildren-crash.html and
-    // editing/selection/longpress-selection-in-iframe-removed-crash.html
-    // reach here.
-    return;
+  if (!(options & DoNotSetFocus)) {
+    selectFrameElementInParentIfFullySelected();
+    if (!isAvailable() || document() != currentDocument) {
+      // editing/selection/selectallchildren-crash.html and
+      // editing/selection/longpress-selection-in-iframe-removed-crash.html
+      // reach here.
+      return;
+    }
   }
+
   EUserTriggered userTriggered = selectionOptionsToUserTriggered(options);
   notifyLayoutObjectOfSelectionChange(userTriggered);
   if (userTriggered == UserTriggered) {

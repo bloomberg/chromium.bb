@@ -25,6 +25,26 @@ test(() => {
   let selection = getSelection();
   selection.removeAllRanges();
   let range = document.createRange();
+  let text = document.querySelector('p').firstChild;
+  range.setStart(text, 1);
+  range.setEnd(text, 2);
+
+  selection.addRange(range);
+  assert_equals(selection.anchorNode, text);
+  assert_equals(selection.anchorOffset, 1);
+  assert_equals(selection.focusNode, text);
+  assert_equals(selection.focusOffset, 2);
+
+  text.parentNode.contentEditable = true;
+  range.setStart(text, 0);
+  assert_equals(selection.anchorOffset, 0);
+  assert_not_equals(document.activeElement, text.parentNode);
+}, 'Mutation of Range after adding it to Selection should not focus on editable anchor.');
+
+test(() => {
+  let selection = getSelection();
+  selection.removeAllRanges();
+  let range = document.createRange();
   range.selectNode(document.body);
   selection.addRange(range);
   assert_equals(selection.rangeCount, 1);

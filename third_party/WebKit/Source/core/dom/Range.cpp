@@ -48,6 +48,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "core/svg/SVGSVGElement.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/geometry/FloatQuad.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -1782,13 +1783,15 @@ void Range::updateSelectionIfAddedToSelection() {
   DCHECK(startContainer()->document() == ownerDocument());
   DCHECK(endContainer()->isConnected());
   DCHECK(endContainer()->document() == ownerDocument());
-  bool didSet = selection.setSelectionDeprecated(SelectionInDOMTree::Builder()
-                                                     .collapse(startPosition())
-                                                     .extend(endPosition())
-                                                     .build());
+  EventDispatchForbiddenScope noEvents;
+  selection.setSelection(SelectionInDOMTree::Builder()
+                             .collapse(startPosition())
+                             .extend(endPosition())
+                             .build(),
+                         FrameSelection::CloseTyping |
+                             FrameSelection::ClearTypingStyle |
+                             FrameSelection::DoNotSetFocus);
   selection.cacheRangeOfDocument(this);
-  if (didSet)
-    selection.didSetSelectionDeprecated();
 }
 
 void Range::removeFromSelectionIfInDifferentRoot(Document& oldDocument) {
