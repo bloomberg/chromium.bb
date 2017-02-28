@@ -135,7 +135,7 @@ static void fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,
     av1_fwd_idtx_c(src_diff, coeff, diff_stride, 32, tx_type);
   else
 #endif
-    av1_fht32x32_c(src_diff, coeff, diff_stride, tx_type);
+    av1_fht32x32(src_diff, coeff, diff_stride, tx_type);
 }
 
 #if CONFIG_TX64X64
