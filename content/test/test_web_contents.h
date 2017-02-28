@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <list>
+#include <map>
 #include <string>
 
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -17,6 +19,11 @@
 
 class GURL;
 class Referrer;
+class SkBitmap;
+
+namespace gfx {
+class Size;
+}
 
 namespace content {
 
@@ -73,6 +80,12 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                          int item_sequence_number,
                                          int document_sequence_number);
   const std::string& GetSaveFrameHeaders() override;
+  bool HasPendingDownloadImage(const GURL& url) override;
+  bool TestDidDownloadImage(
+      const GURL& url,
+      int http_status_code,
+      const std::vector<SkBitmap>& bitmaps,
+      const std::vector<gfx::Size>& original_bitmap_sizes) override;
 
   // True if a cross-site navigation is pending.
   bool CrossProcessNavigationPending();
@@ -161,6 +174,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   int expect_set_history_offset_and_length_history_offset_;
   int expect_set_history_offset_and_length_history_length_;
   std::string save_frame_headers_;
+  // Map keyed by image URL. Values are <id, callback> pairs.
+  std::map<GURL, std::list<std::pair<int, ImageDownloadCallback>>>
+      pending_image_downloads_;
 };
 
 }  // namespace content

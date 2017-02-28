@@ -6,11 +6,17 @@
 #define CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
 
 #include <string>
+#include <vector>
 
 #include "content/public/browser/site_instance.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
+class SkBitmap;
+
+namespace gfx {
+class Size;
+}
 
 namespace content {
 
@@ -124,6 +130,18 @@ class WebContentsTester {
   // Returns headers that were passed in the previous SaveFrameWithHeaders(...)
   // call.
   virtual const std::string& GetSaveFrameHeaders() = 0;
+
+  // Returns whether a download request triggered via DownloadImage() is in
+  // progress for |url|.
+  virtual bool HasPendingDownloadImage(const GURL& url) = 0;
+
+  // Simulates a request completion for DownloadImage(). For convenience, it
+  // returns whether an actual download associated to |url| was pending.
+  virtual bool TestDidDownloadImage(
+      const GURL& url,
+      int http_status_code,
+      const std::vector<SkBitmap>& bitmaps,
+      const std::vector<gfx::Size>& original_bitmap_sizes) = 0;
 };
 
 }  // namespace content
