@@ -208,10 +208,10 @@ float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
     GlyphBuffer* glyphBuffer,
     const TextRun& textRun) const {
   DCHECK(!hasVerticalOffsets());
+  DCHECK_NE(glyphBuffer->type(), GlyphBuffer::Type::TextIntercepts);
 
   float advance = 0;
 
-  unsigned characterIndex = 0;
   for (unsigned i = 0; i < m_results.size(); ++i) {
     const auto& wordResult = isLeftToRightDirection(textRun.direction())
                                  ? m_results[i]
@@ -228,16 +228,11 @@ float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
               float totalAdvance) -> bool {
             DCHECK(!glyphData.offset.height());
 
-            if (!isSkipInkException(
-                    *glyphBuffer, textRun,
-                    characterIndex + glyphData.characterIndex)) {
-              glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
-                               totalAdvance + glyphData.offset.width());
-            }
+            glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
+                             totalAdvance + glyphData.offset.width());
             return true;
           });
     }
-    characterIndex += wordResult->m_numCharacters;
   }
 
   ASSERT(!glyphBuffer->hasVerticalOffsets());
@@ -249,8 +244,9 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
                                          const TextRun& textRun,
                                          unsigned from,
                                          unsigned to) const {
-  // Fast path: full run with no vertical offsets
-  if (!from && to == textRun.length() && !hasVerticalOffsets())
+  // Fast path: full run with no vertical offsets, no text intercepts.
+  if (!from && to == textRun.length() && !hasVerticalOffsets() &&
+      glyphBuffer->type() != GlyphBuffer::Type::TextIntercepts)
     return fillFastHorizontalGlyphBuffer(glyphBuffer, textRun);
 
   float advance = 0;
