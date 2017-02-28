@@ -1112,6 +1112,9 @@ def GeneralTemplates(site_config, ge_build_config):
       vm_tests=[],
       vm_tests_override=None,
       hw_tests=[],
+      paygen=False,
+      upload_hw_test_artifacts=False,
+      image_test=False,
   )
 
   # An anchor of Laktiu' test customizations.

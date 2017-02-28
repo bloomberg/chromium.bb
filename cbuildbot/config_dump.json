@@ -14571,6 +14571,7 @@
         "important": false,
         "manifest": "official.xml",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
     "loonix-chromium-pfq": {
@@ -14581,6 +14582,7 @@
         "chrome_sdk": false,
         "important": false,
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -14597,6 +14599,7 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -14610,6 +14613,7 @@
         "image_test": false,
         "prebuilts": "public",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -14626,6 +14630,7 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -14646,17 +14651,12 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "chrome_internal"
         ],
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "loonix-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "loonix"
-        ]
     },
     "loonix-pre-cq": {
         "_template": "pre_cq",
@@ -14669,6 +14669,7 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "chrome_internal"
         ],
@@ -14685,7 +14686,9 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "paygen": false,
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -14696,6 +14699,7 @@
         ],
         "manifest": "official.xml",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
     "loonix-tot-chrome-pfq-informational-gn": {
@@ -14705,6 +14709,7 @@
         ],
         "manifest": "official.xml",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
     "loonix-tot-chromium-pfq-informational": {
@@ -14713,6 +14718,7 @@
             "loonix"
         ],
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -14724,6 +14730,7 @@
             "loonix"
         ],
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -14740,6 +14747,7 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "chrome_internal"
         ]
