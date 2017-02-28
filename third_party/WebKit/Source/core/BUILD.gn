@@ -1351,6 +1351,7 @@ source_set("unit_tests") {
     "paint/PaintControllerPaintTest.cpp",
     "paint/PaintControllerPaintTest.h",
     "paint/PaintInfoTest.cpp",
+    "paint/PaintInvalidationTest.cpp",
     "paint/PaintLayerClipperTest.cpp",
     "paint/PaintLayerPainterTest.cpp",
     "paint/PaintLayerScrollableAreaTest.cpp",

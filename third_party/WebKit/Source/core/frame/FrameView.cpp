@@ -835,8 +835,7 @@ void FrameView::recalcOverflowAfterStyleChange() {
     return;
 
   // If the visualViewport supplies scrollbars, we won't get a paint
-  // invalidation from computeScrollbarExistence so we need to force one
-  // TODO(bokan): We should avoid computeScrollbarExistence otherwise.
+  // invalidation from computeScrollbarExistence so we need to force one.
   if (visualViewportSuppliesScrollbars())
     layoutViewItem.setMayNeedPaintInvalidation();
 
