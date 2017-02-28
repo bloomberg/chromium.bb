@@ -153,16 +153,17 @@ class WebURLRequest {
     PreviewsStateLast = PreviewsOff
   };
 
-  // Indicates which types of ServiceWorkers should skip handling this request.
-  enum class SkipServiceWorker {
-    // Request can be handled both by a controlling same-origin worker and
-    // a cross-origin foreign fetch service worker.
-    None,
-    // Request should not be handled by a same-origin controlling worker,
-    // but can be intercepted by a foreign fetch service worker.
-    Controlling,
-    // Request should skip all possible service workers.
-    All
+  // Indicates which service workers will receive fetch events for this request.
+  enum class ServiceWorkerMode {
+    // Relevant local and foreign service workers will get a fetch or
+    // foreignfetch event for this request.
+    All,
+    // Only relevant foreign service workers will get a foreignfetch event for
+    // this request.
+    Foreign,
+    // Neither local nor foreign service workers will get events for this
+    // request.
+    None
   };
 
   enum class LoadingIPCType {
@@ -273,9 +274,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool useStreamOnResponse() const;
   BLINK_PLATFORM_EXPORT void setUseStreamOnResponse(bool);
 
-  // True if the request should not be handled by the ServiceWorker.
-  BLINK_PLATFORM_EXPORT SkipServiceWorker skipServiceWorker() const;
-  BLINK_PLATFORM_EXPORT void setSkipServiceWorker(SkipServiceWorker);
+  // The service worker mode indicating which service workers should get events
+  // for this request.
+  BLINK_PLATFORM_EXPORT ServiceWorkerMode getServiceWorkerMode() const;
+  BLINK_PLATFORM_EXPORT void setServiceWorkerMode(ServiceWorkerMode);
 
   // True if corresponding AppCache group should be resetted.
   BLINK_PLATFORM_EXPORT bool shouldResetAppCache() const;

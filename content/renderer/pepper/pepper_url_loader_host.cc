@@ -260,10 +260,10 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   web_request.setRequestorProcessID(renderer_ppapi_host_->GetPluginPID());
   // The requests from the plugins with private permission which can bypass same
   // origin must skip the ServiceWorker.
-  web_request.setSkipServiceWorker(
+  web_request.setServiceWorkerMode(
       host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE)
-          ? WebURLRequest::SkipServiceWorker::All
-          : WebURLRequest::SkipServiceWorker::None);
+          ? WebURLRequest::ServiceWorkerMode::None
+          : WebURLRequest::ServiceWorkerMode::All);
 
   WebAssociatedURLLoaderOptions options;
   if (has_universal_access_) {

@@ -101,10 +101,11 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
 };
 
 // No-CORS requests are allowed for all these contexts, and plugin contexts with
-// private permission when we set skipServiceWorker flag in PepperURLLoaderHost.
+// private permission when we set ServiceWorkerMode to None in
+// PepperURLLoaderHost.
 bool IsNoCORSAllowedContext(
     WebURLRequest::RequestContext context,
-    WebURLRequest::SkipServiceWorker skipServiceWorker) {
+    WebURLRequest::ServiceWorkerMode serviceWorkerMode) {
   switch (context) {
     case WebURLRequest::RequestContextAudio:
     case WebURLRequest::RequestContextVideo:
@@ -116,7 +117,7 @@ bool IsNoCORSAllowedContext(
     case WebURLRequest::RequestContextSharedWorker:
       return true;
     case WebURLRequest::RequestContextPlugin:
-      return skipServiceWorker == WebURLRequest::SkipServiceWorker::All;
+      return serviceWorkerMode == WebURLRequest::ServiceWorkerMode::None;
     default:
       return false;
   }
@@ -248,7 +249,7 @@ void DocumentThreadableLoader::start(const ResourceRequest& request) {
         break;
       case AllowCrossOriginRequests:
         SECURITY_CHECK(IsNoCORSAllowedContext(m_requestContext,
-                                              request.skipServiceWorker()));
+                                              request.getServiceWorkerMode()));
         newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
         break;
     }
@@ -264,7 +265,7 @@ void DocumentThreadableLoader::start(const ResourceRequest& request) {
   // We assume that ServiceWorker is skipped for sync requests and unsupported
   // protocol requests by content/ code.
   if (m_async &&
-      request.skipServiceWorker() == WebURLRequest::SkipServiceWorker::None &&
+      request.getServiceWorkerMode() == WebURLRequest::ServiceWorkerMode::All &&
       SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
           request.url().protocol()) &&
       m_document->fetcher()->isControlledByServiceWorker()) {
@@ -279,8 +280,8 @@ void DocumentThreadableLoader::start(const ResourceRequest& request) {
       // is currently safe because of http://crbug.com/604084 the
       // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
       // handled a request.
-      m_fallbackRequestForServiceWorker.setSkipServiceWorker(
-          WebURLRequest::SkipServiceWorker::Controlling);
+      m_fallbackRequestForServiceWorker.setServiceWorkerMode(
+          WebURLRequest::ServiceWorkerMode::Foreign);
     }
     loadRequest(newRequest, m_resourceLoaderOptions);
     return;
@@ -374,15 +375,15 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
     prepareCrossOriginRequest(crossOriginRequest);
     loadRequest(crossOriginRequest, crossOriginOptions);
   } else {
-    // Explicitly set the SkipServiceWorker flag here. Although the page is not
-    // controlled by a SW at this point, a new SW may be controlling the page
-    // when this request gets sent later. We should not send the actual request
-    // to the SW. https://crbug.com/604583
+    // Explicitly set the ServiceWorkerMode to None here. Although the page is
+    // not controlled by a SW at this point, a new SW may be controlling the
+    // page when this request gets sent later. We should not send the actual
+    // request to the SW. https://crbug.com/604583
     // Similarly we don't want any requests that could involve a CORS preflight
     // to get intercepted by a foreign fetch service worker, even if we have the
     // result of the preflight cached already. https://crbug.com/674370
-    crossOriginRequest.setSkipServiceWorker(
-        WebURLRequest::SkipServiceWorker::All);
+    crossOriginRequest.setServiceWorkerMode(
+        WebURLRequest::ServiceWorkerMode::None);
 
     bool shouldForcePreflight =
         request.isExternalRequest() ||

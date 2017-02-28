@@ -59,7 +59,7 @@ RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
-SkipServiceWorker GetSkipServiceWorkerForWebURLRequest(
+ServiceWorkerMode GetServiceWorkerModeForWebURLRequest(
     const blink::WebURLRequest& request);
 
 // Generates a WebURLError based on |reason|.

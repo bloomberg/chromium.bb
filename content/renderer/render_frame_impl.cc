@@ -4280,15 +4280,15 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
     provider_id = provider->provider_id();
     // If the provider does not have a controller at this point, the renderer
     // expects the request to never be handled by a controlling service worker,
-    // so set the SkipServiceWorker flag here. Otherwise, a service worker that
-    // is in the process of becoming the controller (i.e., via claim()) on the
-    // browser-side could handle the request and break the assumptions of the
-    // renderer.
+    // so set the ServiceWorkerMode to skip local workers here. Otherwise, a
+    // service worker that is in the process of becoming the controller (i.e.,
+    // via claim()) on the browser-side could handle the request and break
+    // the assumptions of the renderer.
     if (!provider->IsControlledByServiceWorker() &&
-        request.skipServiceWorker() !=
-            blink::WebURLRequest::SkipServiceWorker::All) {
-      request.setSkipServiceWorker(
-          blink::WebURLRequest::SkipServiceWorker::Controlling);
+        request.getServiceWorkerMode() !=
+            blink::WebURLRequest::ServiceWorkerMode::None) {
+      request.setServiceWorkerMode(
+          blink::WebURLRequest::ServiceWorkerMode::Foreign);
     }
   }
 
@@ -6278,8 +6278,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   BeginNavigationParams begin_navigation_params(
       GetWebURLRequestHeaders(info.urlRequest), load_flags,
       info.urlRequest.hasUserGesture(),
-      info.urlRequest.skipServiceWorker() !=
-          blink::WebURLRequest::SkipServiceWorker::None,
+      info.urlRequest.getServiceWorkerMode() !=
+          blink::WebURLRequest::ServiceWorkerMode::All,
       GetRequestContextTypeForWebURLRequest(info.urlRequest),
       GetMixedContentContextTypeForWebURLRequest(info.urlRequest),
       initiator_origin);

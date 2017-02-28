@@ -557,7 +557,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   // for the service worker navigation preload request.
   request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
   request.priority = original_request->priority();
-  request.skip_service_worker = SkipServiceWorker::ALL;
+  request.service_worker_mode = ServiceWorkerMode::NONE;
   request.do_not_prompt_for_login = true;
   request.render_frame_id = original_info->GetRenderFrameID();
   request.is_main_frame = original_info->IsMainFrame();

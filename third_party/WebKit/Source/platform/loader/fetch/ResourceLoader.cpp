@@ -326,8 +326,8 @@ void ResourceLoader::didReceiveResponse(
     if (m_resource->options().corsEnabled == IsCORSEnabled &&
         response.wasFallbackRequiredByServiceWorker()) {
       ResourceRequest request = m_resource->lastResourceRequest();
-      DCHECK_EQ(request.skipServiceWorker(),
-                WebURLRequest::SkipServiceWorker::None);
+      DCHECK_EQ(request.getServiceWorkerMode(),
+                WebURLRequest::ServiceWorkerMode::All);
       // This code handles the case when a regular controlling service worker
       // doesn't handle a cross origin request. When this happens we still want
       // to give foreign fetch a chance to handle the request, so only skip the
@@ -340,8 +340,7 @@ void ResourceLoader::didReceiveResponse(
         handleError(ResourceError::cancelledError(response.url()));
         return;
       }
-      request.setSkipServiceWorker(
-          WebURLRequest::SkipServiceWorker::Controlling);
+      request.setServiceWorkerMode(WebURLRequest::ServiceWorkerMode::Foreign);
       restart(request);
       return;
     }

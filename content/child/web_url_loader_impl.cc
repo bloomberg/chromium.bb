@@ -571,8 +571,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       ConvertWebKitPriorityToNetPriority(request.getPriority());
   resource_request->appcache_host_id = request.appCacheHostID();
   resource_request->should_reset_appcache = request.shouldResetAppCache();
-  resource_request->skip_service_worker =
-      GetSkipServiceWorkerForWebURLRequest(request);
+  resource_request->service_worker_mode =
+      GetServiceWorkerModeForWebURLRequest(request);
   resource_request->fetch_request_mode =
       GetFetchRequestModeForWebURLRequest(request);
   resource_request->fetch_credentials_mode =
@@ -667,8 +667,8 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   WebURLRequest new_request = PopulateURLRequestForRedirect(
       request_, redirect_info,
       info.was_fetched_via_service_worker
-          ? blink::WebURLRequest::SkipServiceWorker::None
-          : blink::WebURLRequest::SkipServiceWorker::All);
+          ? blink::WebURLRequest::ServiceWorkerMode::All
+          : blink::WebURLRequest::ServiceWorkerMode::None);
 
   bool follow = client_->willFollowRedirect(new_request, response);
   if (!follow) {
@@ -1162,7 +1162,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
 WebURLRequest WebURLLoaderImpl::PopulateURLRequestForRedirect(
     const blink::WebURLRequest& request,
     const net::RedirectInfo& redirect_info,
-    blink::WebURLRequest::SkipServiceWorker skip_service_worker) {
+    blink::WebURLRequest::ServiceWorkerMode service_worker_mode) {
   // TODO(darin): We lack sufficient information to construct the actual
   // request that resulted from the redirect.
   WebURLRequest new_request(redirect_info.new_url);
@@ -1172,7 +1172,7 @@ WebURLRequest WebURLLoaderImpl::PopulateURLRequestForRedirect(
   new_request.setUseStreamOnResponse(request.useStreamOnResponse());
   new_request.setRequestContext(request.getRequestContext());
   new_request.setFrameType(request.getFrameType());
-  new_request.setSkipServiceWorker(skip_service_worker);
+  new_request.setServiceWorkerMode(service_worker_mode);
   new_request.setShouldResetAppCache(request.shouldResetAppCache());
   new_request.setFetchRequestMode(request.getFetchRequestMode());
   new_request.setFetchCredentialsMode(request.getFetchCredentialsMode());

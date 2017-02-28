@@ -100,7 +100,7 @@ ResourceRequest createAccessControlPreflightRequest(
                                       AtomicString(request.httpMethod()));
   preflightRequest.setPriority(request.priority());
   preflightRequest.setRequestContext(request.requestContext());
-  preflightRequest.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
+  preflightRequest.setServiceWorkerMode(WebURLRequest::ServiceWorkerMode::None);
 
   if (request.isExternalRequest()) {
     preflightRequest.setHTTPHeaderField(

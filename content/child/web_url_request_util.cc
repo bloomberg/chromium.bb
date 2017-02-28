@@ -485,16 +485,16 @@ blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
       request.getRequestContext(), block_mixed_plugin_content);
 }
 
-STATIC_ASSERT_ENUM(SkipServiceWorker::NONE,
-                   WebURLRequest::SkipServiceWorker::None);
-STATIC_ASSERT_ENUM(SkipServiceWorker::CONTROLLING,
-                   WebURLRequest::SkipServiceWorker::Controlling);
-STATIC_ASSERT_ENUM(SkipServiceWorker::ALL,
-                   WebURLRequest::SkipServiceWorker::All);
+STATIC_ASSERT_ENUM(ServiceWorkerMode::NONE,
+                   WebURLRequest::ServiceWorkerMode::None);
+STATIC_ASSERT_ENUM(ServiceWorkerMode::FOREIGN,
+                   WebURLRequest::ServiceWorkerMode::Foreign);
+STATIC_ASSERT_ENUM(ServiceWorkerMode::ALL,
+                   WebURLRequest::ServiceWorkerMode::All);
 
-SkipServiceWorker GetSkipServiceWorkerForWebURLRequest(
+ServiceWorkerMode GetServiceWorkerModeForWebURLRequest(
     const blink::WebURLRequest& request) {
-  return static_cast<SkipServiceWorker>(request.skipServiceWorker());
+  return static_cast<ServiceWorkerMode>(request.getServiceWorkerMode());
 }
 
 blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,

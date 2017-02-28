@@ -145,7 +145,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
     ForeignFetchRequestHandler::InitializeHandler(
         request_.get(), context_wrapper(), &blob_storage_context_,
         helper_->mock_render_process_id(), kMockProviderId,
-        SkipServiceWorker::NONE, FETCH_REQUEST_MODE_CORS,
+        ServiceWorkerMode::ALL, FETCH_REQUEST_MODE_CORS,
         FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
         resource_type, REQUEST_CONTEXT_TYPE_FETCH,
         REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr,

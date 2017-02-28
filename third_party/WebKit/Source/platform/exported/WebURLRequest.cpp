@@ -303,13 +303,13 @@ void WebURLRequest::setUseStreamOnResponse(bool useStreamOnResponse) {
   m_resourceRequest->setUseStreamOnResponse(useStreamOnResponse);
 }
 
-WebURLRequest::SkipServiceWorker WebURLRequest::skipServiceWorker() const {
-  return m_resourceRequest->skipServiceWorker();
+WebURLRequest::ServiceWorkerMode WebURLRequest::getServiceWorkerMode() const {
+  return m_resourceRequest->getServiceWorkerMode();
 }
 
-void WebURLRequest::setSkipServiceWorker(
-    WebURLRequest::SkipServiceWorker skipServiceWorker) {
-  m_resourceRequest->setSkipServiceWorker(skipServiceWorker);
+void WebURLRequest::setServiceWorkerMode(
+    WebURLRequest::ServiceWorkerMode serviceWorkerMode) {
+  m_resourceRequest->setServiceWorkerMode(serviceWorkerMode);
 }
 
 bool WebURLRequest::shouldResetAppCache() const {

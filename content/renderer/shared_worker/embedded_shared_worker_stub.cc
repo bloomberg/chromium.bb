@@ -96,17 +96,17 @@ class WebServiceWorkerNetworkProviderImpl
     request.setExtraData(extra_data.release());
     // If the provider does not have a controller at this point, the renderer
     // expects subresource requests to never be handled by a controlling service
-    // worker, so set the SkipServiceWorker flag here. Otherwise, a service
-    // worker that is in the process of becoming the controller (i.e., via
-    // claim()) on the browser-side could handle the request and break the
-    // assumptions of the renderer.
+    // worker, so set the ServiceWorkerMode to skip local workers here.
+    // Otherwise, a service worker that is in the process of becoming the
+    // controller (i.e., via claim()) on the browser-side could handle the
+    // request and break the assumptions of the renderer.
     if (request.getRequestContext() !=
             blink::WebURLRequest::RequestContextSharedWorker &&
         !provider->IsControlledByServiceWorker() &&
-        request.skipServiceWorker() !=
-            blink::WebURLRequest::SkipServiceWorker::All) {
-      request.setSkipServiceWorker(
-          blink::WebURLRequest::SkipServiceWorker::Controlling);
+        request.getServiceWorkerMode() !=
+            blink::WebURLRequest::ServiceWorkerMode::None) {
+      request.setServiceWorkerMode(
+          blink::WebURLRequest::ServiceWorkerMode::Foreign);
     }
   }
 

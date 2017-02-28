@@ -29,8 +29,8 @@ namespace content {
 class AssociatedResourceFetcherImpl : public AssociatedResourceFetcher {
  public:
   // AssociatedResourceFetcher implementation:
-  void SetSkipServiceWorker(
-      blink::WebURLRequest::SkipServiceWorker skip_service_worker) override;
+  void SetServiceWorkerMode(
+      blink::WebURLRequest::ServiceWorkerMode service_worker_mode) override;
   void SetCachePolicy(blink::WebCachePolicy policy) override;
   void SetLoaderOptions(
       const blink::WebAssociatedURLLoaderOptions& options) override;

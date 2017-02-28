@@ -1258,7 +1258,7 @@ bool ResourceFetcher::startLoad(Resource* resource) {
   // https://w3c.github.io/webappsec-suborigins/.
   SecurityOrigin* sourceOrigin = context().getSecurityOrigin();
   if (sourceOrigin && sourceOrigin->hasSuborigin())
-    request.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
+    request.setServiceWorkerMode(WebURLRequest::ServiceWorkerMode::None);
 
   ResourceLoader* loader = ResourceLoader::create(this, resource);
   if (resource->shouldBlockLoadEvent())

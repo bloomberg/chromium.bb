@@ -173,10 +173,10 @@ ResourceRequest FrameLoader::resourceRequestForReload(
     request.setURL(overrideURL);
     request.clearHTTPReferrer();
   }
-  request.setSkipServiceWorker(frameLoadType ==
+  request.setServiceWorkerMode(frameLoadType ==
                                        FrameLoadTypeReloadBypassingCache
-                                   ? WebURLRequest::SkipServiceWorker::All
-                                   : WebURLRequest::SkipServiceWorker::None);
+                                   ? WebURLRequest::ServiceWorkerMode::None
+                                   : WebURLRequest::ServiceWorkerMode::All);
   return request;
 }
 

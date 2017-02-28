@@ -82,7 +82,7 @@ WebURLRequest WebURLLoaderMock::ServeRedirect(
   newRequest.setUseStreamOnResponse(request.useStreamOnResponse());
   newRequest.setRequestContext(request.getRequestContext());
   newRequest.setFrameType(request.getFrameType());
-  newRequest.setSkipServiceWorker(request.skipServiceWorker());
+  newRequest.setServiceWorkerMode(request.getServiceWorkerMode());
   newRequest.setShouldResetAppCache(request.shouldResetAppCache());
   newRequest.setFetchRequestMode(request.getFetchRequestMode());
   newRequest.setFetchCredentialsMode(request.getFetchCredentialsMode());

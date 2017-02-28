@@ -217,13 +217,14 @@ class PLATFORM_EXPORT ResourceRequest final {
     m_useStreamOnResponse = useStreamOnResponse;
   }
 
-  // Indicates which types of ServiceWorkers should skip handling this request.
-  WebURLRequest::SkipServiceWorker skipServiceWorker() const {
-    return m_skipServiceWorker;
+  // The service worker mode indicating which service workers should get events
+  // for this request.
+  WebURLRequest::ServiceWorkerMode getServiceWorkerMode() const {
+    return m_serviceWorkerMode;
   }
-  void setSkipServiceWorker(
-      WebURLRequest::SkipServiceWorker skipServiceWorker) {
-    m_skipServiceWorker = skipServiceWorker;
+  void setServiceWorkerMode(
+      WebURLRequest::ServiceWorkerMode serviceWorkerMode) {
+    m_serviceWorkerMode = serviceWorkerMode;
   }
 
   // True if corresponding AppCache group should be resetted.
@@ -337,7 +338,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool m_downloadToFile : 1;
   bool m_useStreamOnResponse : 1;
   bool m_shouldResetAppCache : 1;
-  WebURLRequest::SkipServiceWorker m_skipServiceWorker;
+  WebURLRequest::ServiceWorkerMode m_serviceWorkerMode;
   ResourceLoadPriority m_priority;
   int m_intraPriorityValue;
   int m_requestorID;
@@ -388,7 +389,7 @@ struct CrossThreadResourceRequestData {
   bool m_reportUploadProgress;
   bool m_hasUserGesture;
   bool m_downloadToFile;
-  WebURLRequest::SkipServiceWorker m_skipServiceWorker;
+  WebURLRequest::ServiceWorkerMode m_serviceWorkerMode;
   bool m_useStreamOnResponse;
   bool m_shouldResetAppCache;
   ResourceLoadPriority m_priority;

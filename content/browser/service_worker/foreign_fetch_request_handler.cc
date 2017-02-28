@@ -70,7 +70,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
     storage::BlobStorageContext* blob_storage_context,
     int process_id,
     int provider_id,
-    SkipServiceWorker skip_service_worker,
+    ServiceWorkerMode service_worker_mode,
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
@@ -87,7 +87,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
     return;
   }
 
-  if (skip_service_worker == SkipServiceWorker::ALL)
+  if (service_worker_mode == ServiceWorkerMode::NONE)
     return;
 
   if (!initiated_in_secure_context)
