@@ -7,6 +7,14 @@ cr.define('options', function() {
   var PageManager = cr.ui.pageManager.PageManager;
 
   /**
+   * Maximum time to wait after the page is fully loaded before we start to
+   * load polymer elements.
+   * @type {number}
+   * @const
+   */
+  var POLYMER_LOAD_TIMEOUT_MS = 5000;
+
+  /**
    * QuickUnlockConfigureOverlay class
    * Dialog that allows users to configure screen lock.
    * @constructor
@@ -30,6 +38,14 @@ cr.define('options', function() {
       $('screen-lock-done').onclick = function() {
         QuickUnlockConfigureOverlay.dismiss();
       };
+
+      window.addEventListener('load', function() {
+        // Setting a timeout here to avoid racing with some browsertests,
+        // this should be here for only a short period of time as
+        // md-settings are launching soon.
+        setTimeout(
+            this.ensurePolymerIsLoaded_.bind(this), POLYMER_LOAD_TIMEOUT_MS);
+      }.bind(this));
     },
 
     /** @override */

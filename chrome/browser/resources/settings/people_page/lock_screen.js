@@ -89,11 +89,8 @@ Polymer({
 
   /** @override */
   attached: function() {
-    // currentRouteChanged is not called during the initial navigation. If the
-    // user navigates directly to the lockScreen page, we still want to show the
-    // password prompt page.
-    this.currentRouteChanged(settings.Route.LOCK_SCREEN,
-        settings.Route.LOCK_SCREEN);
+    if (this.shouldAskForPassword_(settings.getCurrentRoute()))
+      this.$.passwordPrompt.open();
     this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
   },
 
@@ -113,7 +110,7 @@ Polymer({
           }.bind(this));
     }
 
-    if (newRoute == settings.Route.LOCK_SCREEN && !this.setModes_) {
+    if (this.shouldAskForPassword_(newRoute)) {
       this.$.passwordPrompt.open();
     } else if (newRoute != settings.Route.FINGERPRINT &&
         oldRoute != settings.Route.FINGERPRINT) {
@@ -142,8 +139,7 @@ Polymer({
 
   /** @private */
   onSetModesChanged_: function() {
-    if (settings.getCurrentRoute() == settings.Route.LOCK_SCREEN &&
-        !this.setModes_) {
+    if (this.shouldAskForPassword_(settings.getCurrentRoute())) {
       this.$.setupPin.close();
       this.$.passwordPrompt.open();
     }
@@ -200,5 +196,14 @@ Polymer({
   /** @private */
   onEditFingerprints_: function() {
     settings.navigateTo(settings.Route.FINGERPRINT);
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @return {boolean} Whether the password dialog should be shown.
+   * @private
+   */
+  shouldAskForPassword_: function(route) {
+    return route == settings.Route.LOCK_SCREEN && !this.setModes_;
   },
 });
