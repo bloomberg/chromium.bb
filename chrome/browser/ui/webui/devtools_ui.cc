@@ -23,6 +23,7 @@
 #include "content/public/common/user_agent.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -239,8 +240,32 @@ void DevToolsDataSource::StartRemoteDataRequest(
         new base::RefCountedStaticMemory(kHttpNotFound, strlen(kHttpNotFound)));
     return;
   }
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(url, net::URLFetcher::GET, this).release();
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("devtools_hard_coded_data_source", R"(
+        semantics {
+          sender: "Developer Tools Remote Data Request From Google"
+          description:
+            "This service fetches Chrome DevTools front-end files from the "
+            "cloud for the remote debugging scenario."
+          trigger:
+            "When user attaches to mobile phone for debugging."
+          data: "None"
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting: "This feature cannot be disabled by settings."
+          policy {
+            DeveloperToolsDisabled {
+              policy_options {mode: MANDATORY}
+              value: True
+            }
+          }
+        })");
+  net::URLFetcher* fetcher = net::URLFetcher::Create(url, net::URLFetcher::GET,
+                                                     this, traffic_annotation)
+                                 .release();
   pending_[fetcher] = callback;
   fetcher->SetRequestContext(request_context_.get());
   fetcher->Start();
@@ -254,8 +279,37 @@ void DevToolsDataSource::StartCustomDataRequest(
         new base::RefCountedStaticMemory(kHttpNotFound, strlen(kHttpNotFound)));
     return;
   }
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(url, net::URLFetcher::GET, this).release();
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("devtools_free_data_source", R"(
+        semantics {
+          sender: "Developer Tools Remote Data Request"
+          description:
+            "This service fetches Chrome DevTools front-end files from the "
+            "cloud for the remote debugging scenario. This can only happen if "
+            "a URL was passed on the commandline via flag "
+            "'--custom-devtools-frontend'. This URL overrides the default "
+            "fetching from a Google website, see "
+            "devtools_hard_coded_data_source."
+          trigger:
+            "When command line flag --custom-devtools-frontend is specified "
+            "and DevTools is opened."
+          data: "None"
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting: "This feature cannot be disabled by settings."
+          policy {
+            DeveloperToolsDisabled {
+              policy_options {mode: MANDATORY}
+              DeveloperToolsDisabled: True
+            }
+          }
+        })");
+  net::URLFetcher* fetcher = net::URLFetcher::Create(url, net::URLFetcher::GET,
+                                                     this, traffic_annotation)
+                                 .release();
   pending_[fetcher] = callback;
   fetcher->SetRequestContext(request_context_.get());
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
