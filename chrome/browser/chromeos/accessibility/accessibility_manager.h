@@ -37,6 +37,7 @@ namespace chromeos {
 class AccessibilityExtensionLoader;
 class AccessibilityHighlightManager;
 class SelectToSpeakEventHandler;
+class SwitchAccessEventHandler;
 
 enum AccessibilityNotificationType {
   ACCESSIBILITY_MANAGER_SHUTDOWN,
@@ -420,6 +421,9 @@ class AccessibilityManager
       select_to_speak_event_handler_;
 
   std::unique_ptr<AccessibilityExtensionLoader> switch_access_loader_;
+
+  std::unique_ptr<chromeos::SwitchAccessEventHandler>
+      switch_access_event_handler_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

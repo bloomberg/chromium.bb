@@ -9,15 +9,11 @@
 
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/chromeos/accessibility/event_handler_common.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/process_manager.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/events/event.h"
@@ -32,26 +28,6 @@ bool SpokenFeedbackEventRewriterDelegate::IsSpokenFeedbackEnabled() const {
 bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
     const ui::KeyEvent& key_event,
     bool capture) {
-  if (!chromeos::AccessibilityManager::Get())
-    return false;
-
-  content::BrowserContext* context = ProfileManager::GetActiveUserProfile();
-  if (!context)
-    return false;
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
-          extension_misc::kChromeVoxExtensionId);
-  if (!extension)
-    return false;
-
-  extensions::ExtensionHost* host =
-      extensions::ProcessManager::Get(context)
-          ->GetBackgroundHostForExtension(extension->id());
-  if (!host)
-    return false;
-
-  content::RenderViewHost* rvh = host->render_view_host();
 
   // Always capture the Search key.
   capture |= key_event.IsCommandDown();
@@ -63,6 +39,11 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
   if (key_event.GetDomKey() == ui::DomKey::TAB)
     capture = false;
 
+  extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
+      extension_misc::kChromeVoxExtensionId);
+  if (!host)
+    return false;
+
   // Listen for any unhandled keyboard events from ChromeVox's background page
   // when capturing keys to reinject.
   if (capture)
@@ -71,8 +52,7 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
     host->host_contents()->SetDelegate(nullptr);
 
   // Forward all key events to ChromeVox's background page.
-  const content::NativeWebKeyboardEvent web_event(key_event);
-  rvh->GetWidget()->ForwardKeyboardEvent(web_event);
+  chromeos::ForwardKeyToExtension(key_event, host);
 
   if ((key_event.key_code() >= ui::VKEY_F1) &&
       (key_event.key_code() <= ui::VKEY_F12))
