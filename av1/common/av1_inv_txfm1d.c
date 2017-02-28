@@ -15,20 +15,23 @@
 
 void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
                       int32_t size, int8_t bit) {
-  const int32_t maxValue = (1 << (bit - 1)) - 1;
-  const int32_t minValue = -(1 << (bit - 1));
+  const int64_t maxValue = (1LL << (bit - 1)) - 1;
+  const int64_t minValue = -(1LL << (bit - 1));
 
   for (int i = 0; i < size; ++i) {
     if (buf[i] < minValue || buf[i] > maxValue) {
-      int buf_bit = get_max_bit(abs(buf[i])) + 1;
-      printf("======== %s %d overflow ========\n", __FILE__, __LINE__);
-      printf("stage: %d node: %d\n", stage, i);
-      printf("bit: %d buf_bit: %d buf[i]: %d\n", bit, buf_bit, buf[i]);
-      printf("input:\n");
+      fprintf(stderr, "Error: coeffs contain out-of-range values\n");
+      fprintf(stderr, "stage: %d\n", stage);
+      fprintf(stderr, "node: %d\n", i);
+      fprintf(stderr, "allowed range: [%d;%d]\n", minValue, maxValue);
+      fprintf(stderr, "coeffs: ");
+
+      fprintf(stderr, "[");
       for (int j = 0; j < size; j++) {
-        printf("%d,", input[j]);
+        if (j > 0) fprintf(stderr, ", ");
+        fprintf(stderr, "%d", input[j]);
       }
-      printf("\n");
+      fprintf(stderr, "]\n");
       assert(0);
     }
   }
