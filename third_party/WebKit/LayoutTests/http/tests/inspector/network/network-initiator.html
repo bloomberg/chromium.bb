@@ -4,18 +4,6 @@
 <script src="../network-test.js"></script>
 <script>
 
-/*function addClassToDiv()
-{
-    // We need to setTimeout, to make sure that style recalculation scheduling
-    // is really triggered by adding a class to the div.
-    window.setTimeout(addClassToDivStep2, 0);
-}
-
-function addClassToDivStep2()
-{
-    document.getElementById("div-without-class").className = "image-background-2";
-}*/
-
 function loadData()
 {
     var iframe = document.createElement("iframe");
@@ -27,24 +15,8 @@ var test = function()
 {
     step2();
 
-    /*function step1()
-    {
-        InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
-        InspectorTest.evaluateInPage("addClassToDiv()", step2);
-    }
-
-    function onRequest(event)
-    {
-        var request = event.data;
-        if (/size=300/.test(request.url))
-            step2();
-    }*/
-
     function step2()
     {
-        //if (InspectorTest.findRequestsByURLPattern(/size=300/).length === 0)
-        //    return;
-
         InspectorTest.addConsoleSniffer(step3);
         InspectorTest.evaluateInPage("loadData()");
     }
@@ -77,8 +49,6 @@ var test = function()
 
         dumpInitiator("initiator.css");
         dumpInitiator("size=100");
-        //dumpInitiator("size=200");
-        //dumpInitiator("size=300");
         dumpInitiator("size=400");
         dumpInitiator("style.css");
         dumpInitiator("empty.html");

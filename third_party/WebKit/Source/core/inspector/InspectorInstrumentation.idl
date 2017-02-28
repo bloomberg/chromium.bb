@@ -150,9 +150,6 @@ class XMLHttpRequest;
     void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
 
     [Network]
-    void didScheduleStyleRecalculation([Keep] Document*);
-
-    [Network]
     void applyUserAgentOverride(LocalFrame*, String* userAgent);
 
     [Network]
@@ -321,10 +318,10 @@ class XMLHttpRequest;
     [Log]
     void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
 
-    [Network, Performance]
+    [Performance]
     void willRecalculateStyle([Keep] Document*);
 
-    [Page, Network, Performance]
+    [Page, Performance]
     void didRecalculateStyle(Document*);
 
     [Page]

@@ -158,12 +158,6 @@ class CORE_EXPORT InspectorNetworkAgent final
   void willDestroyResource(Resource*);
 
   void applyUserAgentOverride(String* userAgent);
-
-  // FIXME: InspectorNetworkAgent should not be aware of style recalculation.
-  void willRecalculateStyle(Document*);
-  void didRecalculateStyle();
-  void didScheduleStyleRecalculation(Document*);
-
   void frameScheduledNavigation(LocalFrame*, double);
   void frameClearedScheduledNavigation(LocalFrame*);
   void frameScheduledClientNavigation(LocalFrame*);
@@ -278,10 +272,6 @@ class CORE_EXPORT InspectorNetworkAgent final
   FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
   HashSet<String> m_framesWithScheduledNavigation;
   HashSet<String> m_framesWithScheduledClientNavigation;
-
-  // FIXME: InspectorNetworkAgent should now be aware of style recalculation.
-  std::unique_ptr<protocol::Network::Initiator> m_styleRecalculationInitiator;
-  bool m_isRecalculatingStyle;
 
   HeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;
   HeapHashSet<Member<XMLHttpRequest>> m_replayXHRsToBeDeleted;

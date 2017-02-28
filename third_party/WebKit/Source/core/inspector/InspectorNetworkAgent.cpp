@@ -1046,22 +1046,6 @@ void InspectorNetworkAgent::applyUserAgentOverride(String* userAgent) {
     *userAgent = userAgentOverride;
 }
 
-void InspectorNetworkAgent::willRecalculateStyle(Document*) {
-  DCHECK(!m_isRecalculatingStyle);
-  m_isRecalculatingStyle = true;
-}
-
-void InspectorNetworkAgent::didRecalculateStyle() {
-  m_isRecalculatingStyle = false;
-  m_styleRecalculationInitiator = nullptr;
-}
-
-void InspectorNetworkAgent::didScheduleStyleRecalculation(Document* document) {
-  if (!m_styleRecalculationInitiator)
-    m_styleRecalculationInitiator =
-        buildInitiatorObject(document, FetchInitiatorInfo());
-}
-
 std::unique_ptr<protocol::Network::Initiator>
 InspectorNetworkAgent::buildInitiatorObject(
     Document* document,
@@ -1095,9 +1079,6 @@ InspectorNetworkAgent::buildInitiatorObject(
           document->scriptableDocumentParser()->lineNumber().zeroBasedInt());
     return initiatorObject;
   }
-
-  if (m_isRecalculatingStyle && m_styleRecalculationInitiator)
-    return m_styleRecalculationInitiator->clone();
 
   return protocol::Network::Initiator::create()
       .setType(protocol::Network::Initiator::TypeEnum::Other)
@@ -1565,7 +1546,6 @@ InspectorNetworkAgent::InspectorNetworkAgent(InspectedFrames* inspectedFrames)
       m_resourcesData(NetworkResourcesData::create(maximumTotalBufferSize,
                                                    maximumResourceBufferSize)),
       m_pendingRequest(nullptr),
-      m_isRecalculatingStyle(false),
       m_removeFinishedReplayXHRTimer(
           TaskRunnerHelper::get(TaskType::UnspecedLoading,
                                 inspectedFrames->root()),
