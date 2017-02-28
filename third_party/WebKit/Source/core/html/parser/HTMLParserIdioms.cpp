@@ -398,7 +398,7 @@ String extractCharset(const String& value) {
   return "";
 }
 
-enum Mode {
+enum class MetaAttribute {
   None,
   Charset,
   Pragma,
@@ -407,7 +407,7 @@ enum Mode {
 WTF::TextEncoding encodingFromMetaAttributes(
     const HTMLAttributeList& attributes) {
   bool gotPragma = false;
-  Mode mode = None;
+  MetaAttribute mode = MetaAttribute::None;
   String charset;
 
   for (const auto& htmlAttribute : attributes) {
@@ -420,16 +420,17 @@ WTF::TextEncoding encodingFromMetaAttributes(
     } else if (charset.isEmpty()) {
       if (threadSafeMatch(attributeName, charsetAttr)) {
         charset = attributeValue;
-        mode = Charset;
+        mode = MetaAttribute::Charset;
       } else if (threadSafeMatch(attributeName, contentAttr)) {
         charset = extractCharset(attributeValue);
         if (charset.length())
-          mode = Pragma;
+          mode = MetaAttribute::Pragma;
       }
     }
   }
 
-  if (mode == Charset || (mode == Pragma && gotPragma))
+  if (mode == MetaAttribute::Charset ||
+      (mode == MetaAttribute::Pragma && gotPragma))
     return WTF::TextEncoding(stripLeadingAndTrailingHTMLSpaces(charset));
 
   return WTF::TextEncoding();
