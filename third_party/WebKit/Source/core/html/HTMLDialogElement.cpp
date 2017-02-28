@@ -28,7 +28,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/UseCounter.h"
@@ -42,13 +42,16 @@ using namespace HTMLNames;
 // This function chooses the focused element when show() or showModal() is
 // invoked, as described in their spec.
 static void setFocusForDialog(HTMLDialogElement* dialog) {
-  Element* focusableDescendant = 0;
-  Node* next = 0;
-  for (Node* node = dialog->firstChild(); node; node = next) {
-    if (isHTMLDialogElement(*node))
-      next = NodeTraversal::nextSkippingChildren(*node, dialog);
-    else
-      next = NodeTraversal::next(*node, dialog);
+  Element* focusableDescendant = nullptr;
+  Node* next = nullptr;
+
+  // TODO(kochi): How to find focusable element inside Shadow DOM is not
+  // currently specified.  This may change at any time.
+  // See crbug/383230 and https://github.com/whatwg/html/issue/2393 .
+  for (Node* node = FlatTreeTraversal::firstChild(*dialog); node; node = next) {
+    next = isHTMLDialogElement(*node)
+               ? FlatTreeTraversal::nextSkippingChildren(*node, dialog)
+               : FlatTreeTraversal::next(*node, dialog);
 
     if (!node->isElementNode())
       continue;
