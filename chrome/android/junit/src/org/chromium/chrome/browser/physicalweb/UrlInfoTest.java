@@ -4,24 +4,28 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.support.test.filters.SmallTest;
-
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
+
 /**
  * Tests for {@link UrlInfo}.
  */
-public class UrlInfoTest extends TestCase {
+@RunWith(BlockJUnit4ClassRunner.class)
+public class UrlInfoTest {
     private static final String URL = "https://example.com";
+    private static final double EPSILON = .001;
     UrlInfo mReferenceUrlInfo = null;
     JSONObject mReferenceJsonObject = null;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws JSONException {
         mReferenceUrlInfo = new UrlInfo(URL, 99.5, 42)
                 .setHasBeenDisplayed()
                 .setDeviceAddress("00:11:22:33:AA:BB");
@@ -35,16 +39,16 @@ public class UrlInfoTest extends TestCase {
                 + "}");
     }
 
-    @SmallTest
+    @Test
     public void testJsonSerializeWorks() throws JSONException {
         assertEquals(mReferenceJsonObject.toString(), mReferenceUrlInfo.jsonSerialize().toString());
     }
 
-    @SmallTest
+    @Test
     public void testJsonDeserializeWorks() throws JSONException {
         UrlInfo urlInfo = UrlInfo.jsonDeserialize(mReferenceJsonObject);
         assertEquals(mReferenceUrlInfo.getUrl(), urlInfo.getUrl());
-        assertEquals(mReferenceUrlInfo.getDistance(), urlInfo.getDistance());
+        assertEquals(mReferenceUrlInfo.getDistance(), urlInfo.getDistance(), EPSILON);
         assertEquals(mReferenceUrlInfo.getScanTimestamp(), urlInfo.getScanTimestamp());
         assertEquals(mReferenceUrlInfo.getDeviceAddress(), urlInfo.getDeviceAddress());
         assertEquals(mReferenceUrlInfo.hasBeenDisplayed(), urlInfo.hasBeenDisplayed());
