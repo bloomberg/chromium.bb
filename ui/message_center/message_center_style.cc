@@ -45,4 +45,9 @@ gfx::ImageSkia GetCloseIcon() {
                                gfx::kChromeIconGrey);
 }
 
+gfx::ImageSkia GetSettingsIcon() {
+  return gfx::CreateVectorIcon(kNotificationSettingsButtonIcon,
+                               gfx::kChromeIconGrey);
+}
+
 }  // namespace message_center

@@ -36,6 +36,7 @@ class ArcCustomNotificationItem : public ArcNotificationItem {
       mojom::ArcNotificationDataPtr data) override;
 
   void CloseFromCloseButton();
+  void OpenSettingsFromSettingsButton();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

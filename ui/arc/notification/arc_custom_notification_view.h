@@ -43,14 +43,15 @@ class ArcCustomNotificationView
 
  private:
   class ContentViewDelegate;
-  class CloseButton;
+  class ControlButton;
   class EventForwarder;
+  class SettingsButton;
   class SlideHelper;
 
-  void CreateFloatingCloseButton();
+  void CreateFloatingControlButtons();
   void SetSurface(exo::NotificationSurface* surface);
   void UpdatePreferredSize();
-  void UpdateCloseButtonVisiblity();
+  void UpdateControlButtonsVisiblity();
   void UpdatePinnedState();
   void UpdateSnapshot();
   void AttachSurface();
@@ -101,13 +102,15 @@ class ArcCustomNotificationView
   // when a slide is in progress and restore the surface when it finishes.
   std::unique_ptr<SlideHelper> slide_helper_;
 
-  // A close button on top of NotificationSurface. Needed because the
+  // A control buttons on top of NotificationSurface. Needed because the
   // aura::Window of NotificationSurface is added after hosting widget's
-  // RootView thus standard notification close button is always below
+  // RootView thus standard notification control buttons are always below
   // it.
-  std::unique_ptr<views::Widget> floating_close_button_widget_;
+  std::unique_ptr<views::Widget> floating_control_buttons_widget_;
 
-  views::ImageButton* floating_close_button_ = nullptr;
+  views::View* control_buttons_view_ = nullptr;
+  views::ImageButton* close_button_ = nullptr;
+  views::ImageButton* settings_button_ = nullptr;
 
   // Protects from call loops between Layout and OnWindowBoundsChanged.
   bool in_layout_ = false;

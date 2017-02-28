@@ -143,6 +143,7 @@ const int kContextMessageLineLimit = 1;
 
 // Icons.
 MESSAGE_CENTER_EXPORT gfx::ImageSkia GetCloseIcon();
+MESSAGE_CENTER_EXPORT gfx::ImageSkia GetSettingsIcon();
 
 // Around notifications ////////////////////////////////////////////////////////
 

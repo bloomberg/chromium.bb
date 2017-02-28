@@ -11,6 +11,8 @@ aggregate_vector_icons("message_center_vector_icons") {
   icon_directory = "vector_icons"
 
   icons = [
+    "notification_settings_button.1x.icon",
+    "notification_settings_button.icon",
     "notification_close_button.1x.icon",
     "notification_close_button.icon",
   ]
