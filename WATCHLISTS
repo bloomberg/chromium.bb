@@ -281,6 +281,9 @@
     'chrome_elf': {
       'filepath': 'chrome_elf',
     },
+    'chrome_grc': {
+      'filepath': 'services/resource_coordinator',
+    },
     'chrome_views': {
       'filepath': 'chrome/browser/ui/views',
     },
@@ -1813,6 +1816,7 @@
                                  'rsleevi+watch@chromium.org'],
     'chrome_elf': ['caitkp+watch@chromium.org',
                    'pennymac+watch@chromium.org'],
+    'chrome_grc': ['chrome-grc-reviews@chromium.org'],
     'chrome_views': ['tfarina@chromium.org'],
     'chromecast': ['alokp+watch@chromium.org',
                    'halliwell+watch@chromium.org',
