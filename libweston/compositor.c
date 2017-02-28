@@ -2510,9 +2510,14 @@ weston_output_finish_frame(struct weston_output *output,
 	 * the deadline given by repaint_msec? In that case we delay until
 	 * the deadline of the next frame, to give clients a more predictable
 	 * timing of the repaint cycle to lock on. */
-	if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID && msec_rel < 0)
-		timespec_add_nsec(&output->next_repaint, &output->next_repaint,
-				  refresh_nsec);
+	if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID &&
+	    msec_rel < 0) {
+		while (timespec_sub_to_nsec(&output->next_repaint, &now) < 0) {
+			timespec_add_nsec(&output->next_repaint,
+					  &output->next_repaint,
+					  refresh_nsec);
+		}
+	}
 
 out:
 	output->repaint_status = REPAINT_SCHEDULED;
