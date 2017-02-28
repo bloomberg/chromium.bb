@@ -67,6 +67,11 @@ class CORE_EXPORT NGConstraintSpace final
   // Formatting Context.
   bool IsNewFormattingContext() const { return is_new_fc_; }
 
+  // Whether the fragment produced from layout should be anonymous, (e.g. it
+  // may be a column in a multi-column layout). In such cases it shouldn't have
+  // any borders or padding.
+  bool IsAnonymous() const { return is_anonymous_; }
+
   // Whether exceeding the AvailableSize() triggers the presence of a scrollbar
   // for the indicated direction.
   // If exceeded the current layout should be aborted and invoked again with a
@@ -136,6 +141,7 @@ class CORE_EXPORT NGConstraintSpace final
                     bool is_block_direction_triggers_scrollbar,
                     NGFragmentationType block_direction_fragmentation_type,
                     bool is_new_fc,
+                    bool is_anonymous,
                     const NGMarginStrut& margin_strut,
                     const NGLogicalOffset& bfc_offset,
                     const std::shared_ptr<NGExclusions>& exclusions,
@@ -164,6 +170,8 @@ class CORE_EXPORT NGConstraintSpace final
   // Whether the current constraint space is for the newly established
   // formatting Context
   unsigned is_new_fc_ : 1;
+
+  unsigned is_anonymous_ : 1;
 
   unsigned writing_mode_ : 3;
   unsigned direction_ : 1;

@@ -34,13 +34,14 @@ bool IsContainingBlockForAbsoluteDescendant(
 }  // namespace
 
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
+    const NGConstraintSpace& container_space,
     const ComputedStyle& container_style,
     NGFragmentBuilder* container_builder)
     : container_style_(container_style), container_builder_(container_builder) {
   NGWritingMode writing_mode(
       FromPlatformWritingMode(container_style_.getWritingMode()));
 
-  NGBoxStrut borders = ComputeBorders(container_style_);
+  NGBoxStrut borders = ComputeBorders(container_space, container_style_);
   container_border_offset_ =
       NGLogicalOffset{borders.inline_start, borders.block_start};
   container_border_physical_offset_ =

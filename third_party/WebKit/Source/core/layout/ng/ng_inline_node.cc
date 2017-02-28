@@ -241,7 +241,7 @@ void NGInlineNode::ShapeText() {
   }
 }
 
-RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace*) {
+RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace*, NGBreakToken*) {
   ASSERT_NOT_REACHED();
   return nullptr;
 }

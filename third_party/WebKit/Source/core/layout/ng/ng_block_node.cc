@@ -8,6 +8,7 @@
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -86,8 +87,8 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
 // included from a compilation unit that lacks the ComputedStyle definition.
 NGBlockNode::~NGBlockNode() {}
 
-RefPtr<NGLayoutResult> NGBlockNode::Layout(
-    NGConstraintSpace* constraint_space) {
+RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
+                                           NGBreakToken* break_token) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout()) {
     DCHECK(layout_box_);
@@ -95,9 +96,9 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(
     return layout_result_;
   }
 
-  layout_result_ =
-      NGBlockLayoutAlgorithm(this, constraint_space, CurrentBreakToken())
-          .Layout();
+  layout_result_ = NGBlockLayoutAlgorithm(this, constraint_space,
+                                          toNGBlockBreakToken(break_token))
+                       .Layout();
 
   CopyFragmentDataToLayoutBox(*constraint_space);
   return layout_result_;
@@ -207,11 +208,6 @@ void NGBlockNode::SetFirstChild(NGLayoutInputNode* child) {
   first_child_ = child;
 }
 
-NGBreakToken* NGBlockNode::CurrentBreakToken() const {
-  return layout_result_ ? layout_result_->PhysicalFragment()->BreakToken()
-                        : nullptr;
-}
-
 DEFINE_TRACE(NGBlockNode) {
   visitor->trace(next_sibling_);
   visitor->trace(first_child_);
@@ -255,8 +251,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   layout_box_->setWidth(fragment->Width());
   layout_box_->setHeight(fragment->Height());
-  NGBoxStrut border_and_padding =
-      ComputeBorders(Style()) + ComputePadding(constraint_space, Style());
+  NGBoxStrut border_and_padding = ComputeBorders(constraint_space, Style()) +
+                                  ComputePadding(constraint_space, Style());
   LayoutUnit intrinsic_logical_height =
       layout_box_->style()->isHorizontalWritingMode()
           ? fragment->HeightOverflow()

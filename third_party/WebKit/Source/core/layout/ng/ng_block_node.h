@@ -34,7 +34,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   ~NGBlockNode() override;
 
-  RefPtr<NGLayoutResult> Layout(NGConstraintSpace* constraint_space) override;
+  RefPtr<NGLayoutResult> Layout(NGConstraintSpace* constraint_space,
+                                NGBreakToken* break_token = nullptr) override;
   NGLayoutInputNode* NextSibling() override;
   LayoutObject* GetLayoutObject() override;
 
@@ -52,11 +53,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   void SetNextSibling(NGLayoutInputNode*);
   void SetFirstChild(NGLayoutInputNode*);
-
-  NGBreakToken* CurrentBreakToken() const;
-  bool IsLayoutFinished() const {
-    return layout_result_ && !layout_result_->PhysicalFragment()->BreakToken();
-  }
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -56,8 +56,8 @@ LayoutUnit ResolveInlineLength(
   // computing it as an optimization and to simplify the code below.
   NGBoxStrut border_and_padding;
   if (type != LengthResolveType::kMarginBorderPaddingSize) {
-    border_and_padding =
-        ComputeBorders(style) + ComputePadding(constraint_space, style);
+    border_and_padding = ComputeBorders(constraint_space, style) +
+                         ComputePadding(constraint_space, style);
   }
   switch (length.type()) {
     case Auto:
@@ -138,8 +138,8 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
   // computing it as an optimization and to simplify the code below.
   NGBoxStrut border_and_padding;
   if (type != LengthResolveType::kMarginBorderPaddingSize) {
-    border_and_padding =
-        ComputeBorders(style) + ComputePadding(constraint_space, style);
+    border_and_padding = ComputeBorders(constraint_space, style) +
+                         ComputePadding(constraint_space, style);
   }
   switch (length.type()) {
     case FillAvailable: {
@@ -199,7 +199,7 @@ MinAndMaxContentSizes ComputeMinAndMaxContentContribution(
   if (inline_size.isAuto()) {
     CHECK(min_and_max.has_value());
     NGBoxStrut border_and_padding =
-        ComputeBorders(style) + ComputePadding(*space, style);
+        ComputeBorders(*space, style) + ComputePadding(*space, style);
     computed_sizes.min_content =
         min_and_max->min_content + border_and_padding.InlineSum();
     computed_sizes.max_content =
@@ -354,7 +354,13 @@ NGBoxStrut ComputeMargins(const NGConstraintSpace& constraint_space,
   return physical_dim.ConvertToLogical(writing_mode, direction);
 }
 
-NGBoxStrut ComputeBorders(const ComputedStyle& style) {
+NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
+                          const ComputedStyle& style) {
+  // If we are producing an anonymous fragment (e.g. a column) we shouldn't
+  // have any borders.
+  if (constraint_space.IsAnonymous())
+    return NGBoxStrut();
+
   NGBoxStrut borders;
   borders.inline_start = LayoutUnit(style.borderStartWidth());
   borders.inline_end = LayoutUnit(style.borderEndWidth());
@@ -365,6 +371,11 @@ NGBoxStrut ComputeBorders(const ComputedStyle& style) {
 
 NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
                           const ComputedStyle& style) {
+  // If we are producing an anonymous fragment (e.g. a column) we shouldn't
+  // have any padding.
+  if (constraint_space.IsAnonymous())
+    return NGBoxStrut();
+
   // We don't need these for padding computations
   MinAndMaxContentSizes empty_sizes;
   // Padding always gets computed relative to the inline size:

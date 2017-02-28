@@ -4,11 +4,13 @@
 
 #include "core/layout/ng/ng_fragment_builder.h"
 
+#include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -18,7 +20,10 @@ NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
     : type_(type),
       writing_mode_(kHorizontalTopBottom),
       direction_(TextDirection::kLtr),
-      node_(node) {}
+      node_(node),
+      did_break_(false) {
+  child_break_tokens_ = new HeapVector<Member<NGBreakToken>>();
+}
 
 NGFragmentBuilder& NGFragmentBuilder::SetWritingMode(
     NGWritingMode writing_mode) {
@@ -76,6 +81,10 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox)
       << "Only box fragments can have children";
 
+  // Update if we have fragmented in this flow.
+  did_break_ |= child->IsBox() && !child->BreakToken()->IsFinished();
+
+  child_break_tokens_->push_back(child->BreakToken());
   children_.push_back(std::move(child));
   offsets_.push_back(child_offset);
 
@@ -157,9 +166,6 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox);
   DCHECK_EQ(offsets_.size(), children_.size());
 
-  auto* break_token = break_token_.get();
-  break_token_ = nullptr;
-
   NGPhysicalSize physical_size = size_.ConvertToPhysical(writing_mode_);
 
   for (size_t i = 0; i < children_.size(); ++i) {
@@ -170,6 +176,15 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   Vector<Persistent<NGFloatingObject>> positioned_floats;
   positioned_floats.reserveCapacity(positioned_floats_.size());
+
+  Persistent<NGBreakToken> break_token;
+  if (did_break_) {
+    break_token =
+        new NGBlockBreakToken(toNGBlockNode(node_.get()), used_block_size_,
+                              *child_break_tokens_.get());
+  } else {
+    break_token = new NGBlockBreakToken(node_.get());
+  }
 
   for (size_t i = 0; i < positioned_floats_.size(); ++i) {
     Persistent<NGFloatingObject>& floating_object = positioned_floats_[i];

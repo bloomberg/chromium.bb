@@ -104,7 +104,8 @@ CORE_EXPORT NGBoxStrut ComputeMargins(const NGConstraintSpace&,
                                       const NGWritingMode writing_mode,
                                       const TextDirection direction);
 
-CORE_EXPORT NGBoxStrut ComputeBorders(const ComputedStyle&);
+CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
+                                      const ComputedStyle&);
 
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);

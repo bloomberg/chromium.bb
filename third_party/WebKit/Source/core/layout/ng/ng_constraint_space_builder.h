@@ -44,6 +44,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
 
   NGConstraintSpaceBuilder& SetFragmentationType(NGFragmentationType);
   NGConstraintSpaceBuilder& SetIsNewFormattingContext(bool is_new_fc);
+  NGConstraintSpaceBuilder& SetIsAnonymous(bool is_anonymous);
 
   NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut);
 
@@ -80,6 +81,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   unsigned is_block_direction_triggers_scrollbar_ : 1;
   unsigned fragmentation_type_ : 2;
   unsigned is_new_fc_ : 1;
+  unsigned is_anonymous_ : 1;
   unsigned text_direction_ : 1;
 
   NGMarginStrut margin_strut_;

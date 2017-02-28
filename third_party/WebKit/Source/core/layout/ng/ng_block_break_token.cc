@@ -17,11 +17,7 @@ NGBlockBreakToken::NGBlockBreakToken(
   child_break_tokens_.swap(child_break_tokens);
 }
 
-NGBlockBreakToken::NGBlockBreakToken(NGBlockNode* node)
+NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode* node)
     : NGBreakToken(kBlockBreakToken, kFinished, node) {}
-
-NGBlockBreakToken::NGBlockBreakToken(NGBlockNode* node, LayoutUnit break_offset)
-    : NGBreakToken(kBlockBreakToken, kUnfinished, node),
-      break_offset_(break_offset) {}
 
 }  // namespace blink

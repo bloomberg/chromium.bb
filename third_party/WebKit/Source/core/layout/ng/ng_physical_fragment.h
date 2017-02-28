@@ -33,6 +33,8 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
   enum NGFragmentType { kFragmentBox = 0, kFragmentText = 1 };
 
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
+  bool IsBox() const { return Type() == NGFragmentType::kFragmentBox; }
+  bool IsText() const { return Type() == NGFragmentType::kFragmentText; }
 
   // Override RefCounted's deref() to ensure operator delete is called on the
   // appropriate subclass type.

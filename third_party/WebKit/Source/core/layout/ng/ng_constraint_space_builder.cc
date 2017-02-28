@@ -23,6 +23,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       is_block_direction_triggers_scrollbar_(false),
       fragmentation_type_(parent_space->BlockFragmentationType()),
       is_new_fc_(parent_space->IsNewFormattingContext()),
+      is_anonymous_(false),
       text_direction_(static_cast<unsigned>(parent_space->Direction())),
       bfc_offset_(parent_space->bfc_offset_),
       exclusions_(parent_space->Exclusions()) {}
@@ -38,6 +39,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
       is_block_direction_triggers_scrollbar_(false),
       fragmentation_type_(kFragmentNone),
       is_new_fc_(false),
+      is_anonymous_(false),
       text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
       exclusions_(new NGExclusions()) {}
 
@@ -129,6 +131,12 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsNewFormattingContext(
   return *this;
 }
 
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsAnonymous(
+    bool is_anonymous) {
+  is_anonymous_ = is_anonymous;
+  return *this;
+}
+
 NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
     NGWritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
@@ -183,7 +191,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        margin_strut, bfc_offset, exclusions, clearance_offset);
+        is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset);
   }
   return new NGConstraintSpace(
       out_writing_mode, static_cast<TextDirection>(text_direction_),
@@ -193,7 +201,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      margin_strut, bfc_offset, exclusions, clearance_offset);
+      is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset);
 }
 
 }  // namespace blink

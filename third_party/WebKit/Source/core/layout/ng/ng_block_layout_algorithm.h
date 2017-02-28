@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
-#include "core/layout/ng/ng_column_mapper.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "core/layout/ng/ng_units.h"
@@ -22,7 +21,6 @@ class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
 class NGInlineNode;
 class NGLayoutResult;
-class NGPhysicalFragment;
 
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
@@ -35,7 +33,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param break_token The break token from which the layout should start.
   NGBlockLayoutAlgorithm(NGBlockNode* node,
                          NGConstraintSpace* space,
-                         NGBreakToken* break_token = nullptr);
+                         NGBlockBreakToken* break_token = nullptr);
 
   Optional<MinAndMaxContentSizes> ComputeMinAndMaxContentSizes() const override;
   RefPtr<NGLayoutResult> Layout() override;
@@ -51,48 +49,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Layout inline children.
   void LayoutInlineChildren(NGInlineNode*);
 
-  // Proceed to the next sibling that still needs layout.
-  //
-  // @param child_fragment The newly created fragment for the current child.
-  // @return true if we can continue to lay out, or false if we need to abort
-  // due to a fragmentainer break.
-  bool ProceedToNextUnfinishedSibling(NGPhysicalFragment* child_fragment);
-
-  // Set a break token which contains enough information to be able to resume
-  // layout in the next fragmentainer.
-  void SetPendingBreakToken(NGBlockBreakToken*);
-
-  // Check if we have a pending break token set. Once we have set a pending
-  // break token, we cannot set another one. First we need to abort layout in
-  // the current fragmentainer and resume in the next one.
-  bool HasPendingBreakToken() const;
-
-  // Final adjusstments before fragment creation. We need to prevent the
+  // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break
   // token if we're out of space.
   void FinalizeForFragmentation();
-
-  // Return the break token, if any, at which we resumed layout after a
-  // previous break.
-  NGBlockBreakToken* CurrentBlockBreakToken() const;
-
-  // Return the block offset of the previous break, in the fragmented flow
-  // coordinate space, relatively to the start edge of this block.
-  LayoutUnit PreviousBreakOffset() const;
-
-  // Return the offset of the potential next break, in the fragmented flow
-  // coordinate space, relatively to the start edge of this block.
-  LayoutUnit NextBreakOffset() const;
-
-  // Get the amount of block space left in the current fragmentainer for the
-  // child that is about to be laid out.
-  LayoutUnit SpaceAvailableForCurrentChild() const;
-
-  LayoutUnit BorderEdgeForCurrentChild() const {
-    // TODO(mstensho): Need to take care of margin collapsing somehow. We
-    // should at least attempt to estimate what the top margin is going to be.
-    return content_size_;
-  }
 
   // Calculates logical offset for the current fragment using either
   // {@code content_size_} when the fragment doesn't know it's offset
@@ -128,17 +88,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   Persistent<NGConstraintSpace> constraint_space_;
 
   // The break token from which we are currently resuming layout.
-  Persistent<NGBreakToken> break_token_;
+  Persistent<NGBlockBreakToken> break_token_;
 
   std::unique_ptr<NGFragmentBuilder> builder_;
   Persistent<NGConstraintSpaceBuilder> space_builder_;
   Persistent<NGConstraintSpace> space_for_current_child_;
   Persistent<NGLayoutInputNode> current_child_;
-
-  // Mapper from the fragmented flow coordinate space coordinates to visual
-  // coordinates. Only set on fragmentation context roots, such as multicol
-  // containers. Keeps track of the current fragmentainer.
-  Persistent<NGColumnMapper> fragmentainer_mapper_;
 
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;

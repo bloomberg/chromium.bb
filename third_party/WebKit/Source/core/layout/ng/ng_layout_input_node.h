@@ -11,6 +11,7 @@
 namespace blink {
 
 class LayoutObject;
+class NGBreakToken;
 class NGConstraintSpace;
 class NGLayoutResult;
 
@@ -25,7 +26,7 @@ class CORE_EXPORT NGLayoutInputNode
   virtual ~NGLayoutInputNode(){};
 
   // Performs layout on this input node, will return the layout result.
-  virtual RefPtr<NGLayoutResult> Layout(NGConstraintSpace*) = 0;
+  virtual RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*) = 0;
 
   // Returns the next sibling.
   virtual NGLayoutInputNode* NextSibling() = 0;

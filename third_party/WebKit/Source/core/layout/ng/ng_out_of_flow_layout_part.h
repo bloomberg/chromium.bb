@@ -30,7 +30,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   STACK_ALLOCATED();
 
  public:
-  NGOutOfFlowLayoutPart(const ComputedStyle& container_style,
+  NGOutOfFlowLayoutPart(const NGConstraintSpace& contianer_space,
+                        const ComputedStyle& container_style,
                         NGFragmentBuilder* container_builder);
   void Run();
 

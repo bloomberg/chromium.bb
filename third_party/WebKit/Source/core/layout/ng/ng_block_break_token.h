@@ -26,11 +26,7 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
                     HeapVector<Member<NGBreakToken>>& child_break_tokens);
 
   // Creates a break token for a node which cannot produce any more fragments.
-  explicit NGBlockBreakToken(NGBlockNode* node);
-
-  // TODO(ikilpatrick): Remove this constructor and break_offset once we've
-  // switched to new multi-col approach.
-  NGBlockBreakToken(NGBlockNode* node, LayoutUnit break_offset);
+  explicit NGBlockBreakToken(NGLayoutInputNode* node);
 
   // Represents the amount of block size used in previous fragments.
   //
@@ -51,16 +47,12 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
     return child_break_tokens_;
   }
 
-  // TODO(ikilpatrick): Remove this accessor.
-  LayoutUnit BreakOffset() const { return break_offset_; }
-
   DEFINE_INLINE_VIRTUAL_TRACE() {
     NGBreakToken::trace(visitor);
     visitor->trace(child_break_tokens_);
   }
 
  private:
-  LayoutUnit break_offset_;
   LayoutUnit used_block_size_;
   HeapVector<Member<NGBreakToken>> child_break_tokens_;
 };

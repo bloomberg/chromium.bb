@@ -364,7 +364,9 @@ TEST_F(NGLengthUtilsTest, testBorders) {
   style_->setBorderLeftStyle(BorderStyleSolid);
   style_->setWritingMode(WritingMode::kVerticalLr);
 
-  NGBoxStrut borders = ComputeBorders(*style_);
+  NGConstraintSpace* constraint_space(ConstructConstraintSpace(200, 300));
+
+  NGBoxStrut borders = ComputeBorders(*constraint_space, *style_);
 
   EXPECT_EQ(LayoutUnit(4), borders.block_start);
   EXPECT_EQ(LayoutUnit(3), borders.inline_end);
