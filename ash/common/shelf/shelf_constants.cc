@@ -15,6 +15,8 @@ const int kWorkspaceAreaAutoHideInset = 5;
 const int kShelfAutoHideSize = 3;
 const int kShelfItemInset = 3;
 const SkColor kShelfDefaultBaseColor = SK_ColorBLACK;
+const int kShelfButtonSize = 48;
+const int kShelfButtonSpacing = 16;
 const SkColor kShelfButtonActivatedHighlightColor =
     SkColorSetA(SK_ColorWHITE, 100);
 const SkColor kShelfInkDropBaseColor = SK_ColorWHITE;
@@ -27,8 +29,6 @@ const int kAppListButtonRadius = kOverflowButtonSize / 2;
 
 int GetShelfConstant(ShelfConstant shelf_constant) {
   const int kShelfSize[] = {47, 48, 48};
-  const int kShelfButtonSpacing[] = {10, 16, 16};
-  const int kShelfButtonSize[] = {44, 48, 48};
   const int kShelfInsetsForAutoHide[] = {3, 0, 0};
 
   // TODO(estade): clean this up --- remove unneeded constants and reduce
@@ -37,10 +37,6 @@ int GetShelfConstant(ShelfConstant shelf_constant) {
   switch (shelf_constant) {
     case SHELF_SIZE:
       return kShelfSize[mode];
-    case SHELF_BUTTON_SPACING:
-      return kShelfButtonSpacing[mode];
-    case SHELF_BUTTON_SIZE:
-      return kShelfButtonSize[mode];
     case SHELF_INSETS_FOR_AUTO_HIDE:
       return kShelfInsetsForAutoHide[mode];
   }

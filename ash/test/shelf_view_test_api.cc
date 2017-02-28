@@ -135,14 +135,6 @@ gfx::Size ShelfViewTestAPI::GetPreferredSize() {
   return shelf_view_->GetPreferredSize();
 }
 
-int ShelfViewTestAPI::GetButtonSize() {
-  return GetShelfConstant(SHELF_BUTTON_SIZE);
-}
-
-int ShelfViewTestAPI::GetButtonSpacing() {
-  return GetShelfConstant(SHELF_BUTTON_SPACING);
-}
-
 int ShelfViewTestAPI::GetMinimumDragDistance() const {
   return ShelfView::kMinimumDragDistance;
 }

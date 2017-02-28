@@ -9,7 +9,10 @@
 #include "base/macros.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/controls/button/custom_button.h"
-#include "ui/views/controls/image_view.h"
+
+namespace views {
+class ImageView;
+}
 
 namespace ash {
 class InkDropButtonListener;

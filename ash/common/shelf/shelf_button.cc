@@ -7,25 +7,19 @@
 #include <algorithm>
 
 #include "ash/common/ash_constants.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/events/event_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -53,10 +47,8 @@ const int kInkDropLargeSize = 60;
 
 // Padding from the edge of the shelf to the application icon when the shelf
 // is horizontally and vertically aligned, respectively.
-const int kIconPaddingHorizontal = 5;
-const int kIconPaddingHorizontalMD = 7;
-const int kIconPaddingVertical = 6;
-const int kIconPaddingVerticalMD = 8;
+const int kIconPaddingHorizontal = 7;
+const int kIconPaddingVertical = 8;
 
 // Paints an activity indicator on |canvas| whose |size| is specified in DIP.
 void PaintIndicatorOnCanvas(gfx::Canvas* canvas, const gfx::Size& size) {
@@ -257,11 +249,9 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
       state_(STATE_NORMAL),
       destroyed_flag_(nullptr) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  if (ash::MaterialDesignController::IsShelfMaterial()) {
-    SetInkDropMode(InkDropMode::ON);
-    set_ink_drop_base_color(kShelfInkDropBaseColor);
-    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
-  }
+  SetInkDropMode(InkDropMode::ON);
+  set_ink_drop_base_color(kShelfInkDropBaseColor);
+  set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
 
   const gfx::ShadowValue kShadows[] = {
       gfx::ShadowValue(gfx::Vector2d(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
@@ -403,11 +393,8 @@ void ShelfButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
   WmShelf* wm_shelf = shelf_view_->wm_shelf();
   const bool is_horizontal_shelf = wm_shelf->IsHorizontalAlignment();
-  const int icon_pad = ash::MaterialDesignController::IsShelfMaterial()
-                           ? (is_horizontal_shelf ? kIconPaddingHorizontalMD
-                                                  : kIconPaddingVerticalMD)
-                           : (is_horizontal_shelf ? kIconPaddingHorizontal
-                                                  : kIconPaddingVertical);
+  const int icon_pad =
+      is_horizontal_shelf ? kIconPaddingHorizontal : kIconPaddingVertical;
   int x_offset = is_horizontal_shelf ? 0 : icon_pad;
   int y_offset = is_horizontal_shelf ? icon_pad : 0;
 
@@ -545,33 +532,18 @@ void ShelfButton::UpdateState() {
 }
 
 void ShelfButton::UpdateBar() {
-  if (state_ & STATE_HIDDEN) {
-    bar_->SetVisible(false);
-    return;
-  }
+  bool draw_bar = !(state_ & STATE_HIDDEN) &&
+                  (state_ & STATE_ACTIVE || state_ & STATE_ATTENTION ||
+                   state_ & STATE_RUNNING);
 
-  int bar_id = 0;
-  if (state_ & (STATE_ACTIVE))
-    bar_id = IDR_ASH_SHELF_UNDERLINE_ACTIVE;
-  else if (state_ & STATE_ATTENTION)
-    bar_id = IDR_ASH_SHELF_UNDERLINE_ATTENTION;
-  else if (state_ & STATE_RUNNING)
-    bar_id = IDR_ASH_SHELF_UNDERLINE_RUNNING;
-
-  if (bar_id != 0) {
+  if (draw_bar) {
     WmShelf* wm_shelf = shelf_view_->wm_shelf();
     gfx::ImageSkia image;
-    if (ash::MaterialDesignController::IsShelfMaterial()) {
-      if (wm_shelf->IsVisible()) {
-        gfx::Size size(GetShelfConstant(SHELF_BUTTON_SIZE),
-                       GetShelfConstant(SHELF_SIZE));
-        gfx::Canvas canvas(size, kIndicatorCanvasScale, true /* is_opaque */);
-        PaintIndicatorOnCanvas(&canvas, size);
-        image = gfx::ImageSkia(canvas.ExtractImageRep());
-      }
-    } else {
-      ResourceBundle* rb = &ResourceBundle::GetSharedInstance();
-      image = *rb->GetImageNamed(bar_id).ToImageSkia();
+    if (wm_shelf->IsVisible()) {
+      gfx::Size size(kShelfButtonSize, GetShelfConstant(SHELF_SIZE));
+      gfx::Canvas canvas(size, kIndicatorCanvasScale, true /* is_opaque */);
+      PaintIndicatorOnCanvas(&canvas, size);
+      image = gfx::ImageSkia(canvas.ExtractImageRep());
     }
     ShelfAlignment shelf_alignment = wm_shelf->GetAlignment();
     if (!wm_shelf->IsHorizontalAlignment()) {
@@ -598,7 +570,8 @@ void ShelfButton::UpdateBar() {
     }
     bar_->SchedulePaint();
   }
-  bar_->SetVisible(bar_id != 0 && state_ != STATE_NORMAL);
+
+  bar_->SetVisible(draw_bar);
 }
 
 }  // namespace ash

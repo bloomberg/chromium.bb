@@ -630,10 +630,9 @@ class ShelfViewTest : public AshTestBase {
     int drop_index = 1;
     gfx::Point drop_point =
         test_api_->GetButton(drop_index)->GetBoundsInScreen().CenterPoint();
-    int item_width = test_api_for_overflow.GetButtonSize();
     // To insert at |drop_index|, more smaller x-axis value of |drop_point|
     // should be used.
-    gfx::Point modified_drop_point(drop_point.x() - item_width / 4,
+    gfx::Point modified_drop_point(drop_point.x() - kShelfButtonSize / 4,
                                    drop_point.y());
     generator.MoveMouseTo(modified_drop_point);
     test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
@@ -1596,8 +1595,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
 
   int ripped_index = test_for_overflow_view.GetLastVisibleIndex();
   gfx::Size bubble_size = test_for_overflow_view.GetPreferredSize();
-  int item_width = test_for_overflow_view.GetButtonSize() +
-                   test_for_overflow_view.GetButtonSpacing();
+  int item_width = kShelfButtonSize + kShelfButtonSpacing;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
   ShelfButton* button = test_for_overflow_view.GetButton(ripped_index);
@@ -1649,7 +1647,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   test_api_->ShowOverflowBubble();
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
-  int item_width = test_api_->GetButtonSize() + test_api_->GetButtonSpacing();
+  int item_width = kShelfButtonSize + kShelfButtonSpacing;
   OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
   OverflowBubbleViewTestAPI bubble_view_api(bubble_view);
 

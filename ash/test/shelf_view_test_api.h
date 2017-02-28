@@ -96,12 +96,6 @@ class ShelfViewTestAPI {
   // Returns the preferred size of |shelf_view_|.
   gfx::Size GetPreferredSize();
 
-  // Returns the button size.
-  int GetButtonSize();
-
-  // Returns the button space size.
-  int GetButtonSpacing();
-
   // Returns minimum distance before drag starts.
   int GetMinimumDragDistance() const;
 

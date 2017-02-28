@@ -786,11 +786,9 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
 
   int x = 0;
   int y = 0;
-  int button_size = GetShelfConstant(SHELF_BUTTON_SIZE);
-  int button_spacing = GetShelfConstant(SHELF_BUTTON_SPACING);
 
-  int w = wm_shelf_->PrimaryAxisValue(button_size, width());
-  int h = wm_shelf_->PrimaryAxisValue(height(), button_size);
+  int w = wm_shelf_->PrimaryAxisValue(kShelfButtonSize, width());
+  int h = wm_shelf_->PrimaryAxisValue(height(), kShelfButtonSize);
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
@@ -798,8 +796,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
     }
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    x = wm_shelf_->PrimaryAxisValue(x + w + button_spacing, x);
-    y = wm_shelf_->PrimaryAxisValue(y, y + h + button_spacing);
+    x = wm_shelf_->PrimaryAxisValue(x + w + kShelfButtonSpacing, x);
+    y = wm_shelf_->PrimaryAxisValue(y, y + h + kShelfButtonSpacing);
   }
 
   if (is_overflow_mode()) {
@@ -812,8 +810,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
   x = wm_shelf_->PrimaryAxisValue(end_position, 0);
   y = wm_shelf_->PrimaryAxisValue(0, end_position);
   for (int i = view_model_->view_size() - 1; i >= first_panel_index; --i) {
-    x = wm_shelf_->PrimaryAxisValue(x - w - button_spacing, x);
-    y = wm_shelf_->PrimaryAxisValue(y, y - h - button_spacing);
+    x = wm_shelf_->PrimaryAxisValue(x - w - kShelfButtonSpacing, x);
+    y = wm_shelf_->PrimaryAxisValue(y, y - h - kShelfButtonSpacing);
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
     end_position = wm_shelf_->PrimaryAxisValue(x, y);
   }
@@ -824,7 +822,7 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
       wm_shelf_->PrimaryAxisValue(
           view_model_->ideal_bounds(last_button_index).right(),
           view_model_->ideal_bounds(last_button_index).bottom()) +
-      button_spacing;
+      kShelfButtonSpacing;
   int reserved_icon_space = available_size * kReservedNonPanelIconProportion;
   if (last_icon_position < reserved_icon_space)
     end_position = last_icon_position;
@@ -836,7 +834,7 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
                 wm_shelf_->PrimaryAxisValue(height(), h)));
 
   last_visible_index_ =
-      DetermineLastVisibleIndex(end_position - button_spacing);
+      DetermineLastVisibleIndex(end_position - kShelfButtonSpacing);
   last_hidden_index_ = DetermineFirstVisiblePanelIndex(end_position) - 1;
   bool show_overflow = last_visible_index_ < last_button_index ||
                        last_hidden_index_ >= first_panel_index;
@@ -892,8 +890,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
     if (last_visible_index_ >= 0) {
       // Add more space between last visible item and overflow button.
       // Without this, two buttons look too close compared with other items.
-      x = wm_shelf_->PrimaryAxisValue(x + button_spacing, x);
-      y = wm_shelf_->PrimaryAxisValue(y, y + button_spacing);
+      x = wm_shelf_->PrimaryAxisValue(x + kShelfButtonSpacing, x);
+      y = wm_shelf_->PrimaryAxisValue(y, y + kShelfButtonSpacing);
     }
 
     // Set all hidden panel icon positions to be on the overflow button.

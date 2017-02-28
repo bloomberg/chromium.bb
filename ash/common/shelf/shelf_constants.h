@@ -15,12 +15,6 @@ enum ShelfConstant {
   // width when the shelf is vertical).
   SHELF_SIZE,
 
-  // Size of the space between buttons on the shelf.
-  SHELF_BUTTON_SPACING,
-
-  // Size allocated for each app button on the shelf.
-  SHELF_BUTTON_SIZE,
-
   // Insets allocated for shelf when it is auto hidden.
   SHELF_INSETS_FOR_AUTO_HIDE
 };
@@ -46,6 +40,12 @@ ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 // The default base color of the shelf to which different alpha values are
 // applied based on the desired shelf opacity level.
 ASH_EXPORT extern const SkColor kShelfDefaultBaseColor;
+
+// Size allocated for each app button on the shelf.
+ASH_EXPORT extern const int kShelfButtonSize;
+
+// Size of the space between buttons on the shelf.
+ASH_EXPORT extern const int kShelfButtonSpacing;
 
 // Highlight color used for shelf button activated states.
 // TODO(bruthig|mohsen): Use of this color is temporary. Draw the active state
