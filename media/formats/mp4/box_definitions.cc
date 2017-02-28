@@ -1068,7 +1068,10 @@ bool TrackFragmentHeader::Parse(BoxReader* reader) {
   // the wild don't set it.
   //
   //  RCHECK((flags & 0x020000) && !(flags & 0x1));
-  RCHECK(!(reader->flags() & 0x1));
+  RCHECK_MEDIA_LOGGED(!(reader->flags() & 0x1), reader->media_log(),
+                      "TFHD base-data-offset not allowed by MSE. See "
+                      "https://www.w3.org/TR/mse-byte-stream-format-isobmff/"
+                      "#movie-fragment-relative-addressing");
 
   if (reader->flags() & 0x2) {
     RCHECK(reader->Read4(&sample_description_index));
