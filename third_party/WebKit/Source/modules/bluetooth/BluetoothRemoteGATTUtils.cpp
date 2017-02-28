@@ -16,35 +16,4 @@ DOMDataView* BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(
   return DOMDataView::create(domBuffer, 0, wtfVector.size());
 }
 
-// static
-DOMException* BluetoothRemoteGATTUtils::CreateDOMException(ExceptionType type) {
-  switch (type) {
-    case ExceptionType::kGATTServerDisconnected:
-      return DOMException::create(
-          NetworkError,
-          "GATT Server disconnected while performing a GATT operation.");
-
-    case ExceptionType::kGATTServerNotConnected:
-      return DOMException::create(
-          NetworkError,
-          "GATT Server is disconnected. Cannot perform GATT operations.");
-
-    case ExceptionType::kInvalidCharacteristic:
-      return DOMException::create(
-          InvalidStateError,
-          "Characteristic is no longer valid. Remember to retrieve the "
-          "characteristic again after reconnecting.");
-
-    case ExceptionType::kInvalidDescriptor:
-      return DOMException::create(
-          InvalidStateError,
-          "Descriptor is no longer valid. Remember to retrieve the "
-          "Descriptor again after reconnecting.");
-
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
 }  // namespace blink

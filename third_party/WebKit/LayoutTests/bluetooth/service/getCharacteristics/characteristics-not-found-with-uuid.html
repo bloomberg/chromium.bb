@@ -6,7 +6,8 @@
 'use strict';
 promise_test(() => {
   let expected = new DOMException(
-    'No Characteristics with specified UUID found in Service.',
+    'No Characteristics matching UUID ' + battery_level.uuid + ' found in Service with UUID ' +
+      heart_rate.uuid + '.',
     'NotFoundError');
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({

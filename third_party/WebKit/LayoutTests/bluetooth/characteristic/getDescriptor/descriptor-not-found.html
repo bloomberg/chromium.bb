@@ -4,6 +4,7 @@
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
+ let descriptorUUID = '00002906-0000-1000-8000-00805f9b34fb';
 promise_test(() => {
    return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
     .then(() => requestDeviceWithKeyDown({
@@ -12,11 +13,12 @@ promise_test(() => {
     .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
     .then(service => service.getCharacteristic('measurement_interval'))
     .then(characteristic => {
-      assert_promise_rejects_with_message(
+      return assert_promise_rejects_with_message(
         // Valid Range is not present in this characteristic
-        characteristic.getDescriptor(2906),
+        characteristic.getDescriptor(descriptorUUID),
         new DOMException(
-          'No Descriptors with specified UUID found in Characteristic.',
+          'No Descriptors matching UUID ' + descriptorUUID +
+          ' found in Characteristic with UUID ' + measurement_interval.uuid + '.',
           'NotFoundError'));
     })
 }, 'Request for absent descriptor. Reject with NotFoundError.');

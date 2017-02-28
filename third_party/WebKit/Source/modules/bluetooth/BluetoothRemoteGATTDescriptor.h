@@ -67,6 +67,8 @@ class BluetoothRemoteGATTDescriptor final
                           const Vector<uint8_t>&,
                           mojom::blink::WebBluetoothResult);
 
+  DOMException* createInvalidDescriptorError();
+
   mojom::blink::WebBluetoothRemoteGATTDescriptorPtr m_descriptor;
   Member<BluetoothRemoteGATTCharacteristic> m_characteristic;
   Member<DOMDataView> m_value;

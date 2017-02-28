@@ -67,7 +67,7 @@ void BluetoothRemoteGATTServer::ConnectCallback(
     setConnected(true);
     resolver->resolve(this);
   } else {
-    resolver->reject(BluetoothError::take(resolver, result));
+    resolver->reject(BluetoothError::createDOMException(result));
   }
 }
 
@@ -96,6 +96,7 @@ void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState) {
 // Callback that allows us to resolve the promise with a single service or
 // with a vector owning the services.
 void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
+    const String& requestedServiceUUID,
     mojom::blink::WebBluetoothGATTQueryQuantity quantity,
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
@@ -131,7 +132,14 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
     }
     resolver->resolve(gattServices);
   } else {
-    resolver->reject(BluetoothError::take(resolver, result));
+    if (result == mojom::blink::WebBluetoothResult::SERVICE_NOT_FOUND) {
+      resolver->reject(BluetoothError::createDOMException(
+          BluetoothErrorCode::ServiceNotFound, "No Services matching UUID " +
+                                                   requestedServiceUUID +
+                                                   " found in Device."));
+    } else {
+      resolver->reject(BluetoothError::createDOMException(result));
+    }
   }
 }
 
@@ -187,7 +195,8 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServicesImpl(
       device()->id(), quantity, servicesUUID,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTServer::GetPrimaryServicesCallback,
-                    wrapPersistent(this), quantity, wrapPersistent(resolver))));
+                    wrapPersistent(this), servicesUUID, quantity,
+                    wrapPersistent(resolver))));
   return promise;
 }
 

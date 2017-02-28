@@ -18,18 +18,6 @@
 
 namespace blink {
 
-namespace {
-
-const char kGATTServerDisconnected[] =
-    "GATT Server disconnected while retrieving characteristics.";
-const char kGATTServerNotConnected[] =
-    "GATT Server is disconnected. Cannot retrieve characteristics.";
-const char kInvalidService[] =
-    "Service is no longer valid. Remember to retrieve the service again after "
-    "reconnecting.";
-
-}  // namespace
-
 BluetoothRemoteGATTService::BluetoothRemoteGATTService(
     mojom::blink::WebBluetoothRemoteGATTServicePtr service,
     bool isPrimary,
@@ -48,6 +36,7 @@ DEFINE_TRACE(BluetoothRemoteGATTService) {
 // or with a vector owning the characteristics.
 void BluetoothRemoteGATTService::GetCharacteristicsCallback(
     const String& serviceInstanceId,
+    const String& requestedCharacteristicUUID,
     mojom::blink::WebBluetoothGATTQueryQuantity quantity,
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
@@ -59,8 +48,9 @@ void BluetoothRemoteGATTService::GetCharacteristicsCallback(
 
   // If the device is disconnected, reject.
   if (!device()->gatt()->RemoveFromActiveAlgorithms(resolver)) {
-    resolver->reject(
-        DOMException::create(NetworkError, kGATTServerDisconnected));
+    resolver->reject(BluetoothError::createDOMException(
+        mojom::blink::WebBluetoothResult::
+            GATT_SERVER_DISCONNECTED_WHILE_RETRIEVING_CHARACTERISTICS));
     return;
   }
 
@@ -85,7 +75,14 @@ void BluetoothRemoteGATTService::GetCharacteristicsCallback(
     }
     resolver->resolve(gattCharacteristics);
   } else {
-    resolver->reject(BluetoothError::take(resolver, result));
+    if (result == mojom::blink::WebBluetoothResult::CHARACTERISTIC_NOT_FOUND) {
+      resolver->reject(BluetoothError::createDOMException(
+          BluetoothErrorCode::CharacteristicNotFound,
+          "No Characteristics matching UUID " + requestedCharacteristicUUID +
+              " found in Service with UUID " + uuid() + "."));
+    } else {
+      resolver->reject(BluetoothError::createDOMException(result));
+    }
   }
 }
 
@@ -131,12 +128,18 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(
   if (!device()->gatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
-        DOMException::create(NetworkError, kGATTServerNotConnected));
+        BluetoothError::createDOMException(
+            mojom::blink::WebBluetoothResult::
+                GATT_SERVER_NOT_CONNECTED_CANNOT_RETRIEVE_CHARACTERISTICS));
   }
 
   if (!device()->isValidService(m_service->instance_id)) {
     return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError, kInvalidService));
+        scriptState, BluetoothError::createDOMException(
+                         BluetoothErrorCode::InvalidService,
+                         "Service with UUID " + m_service->uuid +
+                             " is no longer valid. Remember to retrieve "
+                             "the service again after reconnecting."));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -148,8 +151,8 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(
       m_service->instance_id, quantity, characteristicsUUID,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTService::GetCharacteristicsCallback,
-                    wrapPersistent(this), m_service->instance_id, quantity,
-                    wrapPersistent(resolver))));
+                    wrapPersistent(this), m_service->instance_id,
+                    characteristicsUUID, quantity, wrapPersistent(resolver))));
 
   return promise;
 }

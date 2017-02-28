@@ -56,6 +56,7 @@ class BluetoothRemoteGATTService final
  private:
   void GetCharacteristicsCallback(
       const String& serviceInstanceId,
+      const String& requestedCharacteristicUUID,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       ScriptPromiseResolver*,
       mojom::blink::WebBluetoothResult,

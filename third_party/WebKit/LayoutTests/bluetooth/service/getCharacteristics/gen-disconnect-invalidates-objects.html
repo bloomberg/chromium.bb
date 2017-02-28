@@ -26,7 +26,8 @@ promise_test(() => {
       let promises = Promise.resolve();
       for (let characteristic of characteristics) {
         let error = new DOMException(
-          'Characteristic is no longer valid. Remember to retrieve the ' +
+          'Characteristic with UUID ' + characteristic.uuid +
+          ' is no longer valid. Remember to retrieve the ' +
           'characteristic again after reconnecting.',
           'InvalidStateError');
         promises = promises.then(() =>

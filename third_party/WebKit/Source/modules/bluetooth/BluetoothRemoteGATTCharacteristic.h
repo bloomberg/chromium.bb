@@ -118,12 +118,15 @@ class BluetoothRemoteGATTCharacteristic final
                                    const String& descriptorUUID = String());
 
   void GetDescriptorsCallback(
+      const String& requestedDescriptorUUID,
       const String& characteristicInstanceId,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       ScriptPromiseResolver*,
       mojom::blink::WebBluetoothResult,
       Optional<Vector<mojom::blink::WebBluetoothRemoteGATTDescriptorPtr>>
           descriptors);
+
+  DOMException* createInvalidCharacteristicError();
 
   mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr m_characteristic;
   Member<BluetoothRemoteGATTService> m_service;

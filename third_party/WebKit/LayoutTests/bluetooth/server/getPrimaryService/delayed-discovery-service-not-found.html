@@ -13,7 +13,7 @@ promise_test(() => {
     .then(gattServer => {
       return assert_promise_rejects_with_message(
         gattServer.getPrimaryService('battery_service'),
-        new DOMException('No Services with specified UUID found in Device.',
+        new DOMException('No Services matching UUID ' + battery_service.uuid + ' found in Device.',
                          'NotFoundError'));
     });
 }, 'Request for absent service. Must reject with NotFoundError even when the ' +

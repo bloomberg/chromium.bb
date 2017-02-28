@@ -26,7 +26,8 @@ promise_test(() => {
       let promises = Promise.resolve();
       for (let service of services) {
         let error = new DOMException(
-          'Service is no longer valid. Remember to retrieve the service ' +
+          'Service with UUID ' + service.uuid +
+          ' is no longer valid. Remember to retrieve the service ' +
           'again after reconnecting.',
           'InvalidStateError');
         promises = promises.then(() =>

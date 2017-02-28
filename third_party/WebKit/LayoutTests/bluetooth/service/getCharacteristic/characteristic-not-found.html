@@ -14,7 +14,8 @@ promise_test(() => {
     .then(service => assert_promise_rejects_with_message(
       service.getCharacteristic('battery_level'),
       new DOMException(
-        'No Characteristics with specified UUID found in Service.',
+        'No Characteristics matching UUID ' + battery_level.uuid + ' found in Service with UUID ' +
+          generic_access.uuid + '.',
         'NotFoundError')));
 }, 'Request for absent characteristic. Reject with NotFoundError.');
 </script>

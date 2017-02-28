@@ -12,7 +12,7 @@ promise_test(() => {
     .then(device => device.gatt.connect())
     .then(gattServer => assert_promise_rejects_with_message(
       gattServer.getPrimaryServices('glucose'),
-      new DOMException('No Services with specified UUID found in Device.',
+      new DOMException('No Services matching UUID ' + glucose.uuid + ' found in Device.',
                        'NotFoundError')));
 }, 'Request for absent service. Reject with NotFoundError.');
 </script>

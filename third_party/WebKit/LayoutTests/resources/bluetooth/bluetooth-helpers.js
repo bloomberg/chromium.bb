@@ -64,6 +64,11 @@ var client_characteristic_configuration = {
   name: 'gatt.client_characteristic_configuration',
   uuid: '00002902-0000-1000-8000-00805f9b34fb'
 };
+var measurement_interval = {
+  alias: 0x2a21,
+  name: 'measurement_interval',
+  uuid: '00002a21-0000-1000-8000-00805f9b34fb'
+};
 
 // The following tests make sure the Web Bluetooth implementation
 // responds correctly to the different types of errors the

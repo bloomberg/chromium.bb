@@ -72,6 +72,7 @@ class BluetoothRemoteGATTServer final
   void ConnectCallback(ScriptPromiseResolver*,
                        mojom::blink::WebBluetoothResult);
   void GetPrimaryServicesCallback(
+      const String& requestedServiceUUID,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       ScriptPromiseResolver*,
       mojom::blink::WebBluetoothResult,

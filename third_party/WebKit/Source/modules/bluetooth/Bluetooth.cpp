@@ -150,7 +150,7 @@ void Bluetooth::RequestDeviceCallback(
         getBluetoothDeviceRepresentingDevice(std::move(device), resolver);
     resolver->resolve(bluetoothDevice);
   } else {
-    resolver->reject(BluetoothError::take(resolver, result));
+    resolver->reject(BluetoothError::createDOMException(result));
   }
 }
 
