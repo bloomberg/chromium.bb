@@ -136,4 +136,24 @@ TEST_F(LayoutTreeBuilderTraversalTest, displayContentsChildrenNested) {
             LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*last));
 }
 
+TEST_F(LayoutTreeBuilderTraversalTest, limits) {
+  const char* const html =
+      "<div></div>"
+      "<div style='display: contents'></div>"
+      "<div style='display: contents'>"
+      "<div style='display: contents'>"
+      "</div>"
+      "</div>"
+      "<div id='shouldNotBeFound'></div>";
+
+  setupSampleHTML(html);
+
+  Element* first = document().querySelector("div");
+
+  EXPECT_TRUE(first->layoutObject());
+  LayoutObject* nextSibling =
+      LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*first, 2);
+  EXPECT_FALSE(nextSibling);  // Should not overrecurse
+}
+
 }  // namespace blink

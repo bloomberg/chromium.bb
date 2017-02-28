@@ -250,7 +250,7 @@ static LayoutObject* nextSiblingLayoutObjectInternal(Node* node,
           pseudoAwareFirstChild(*sibling), limit);
       if (layoutObject)
         return layoutObject;
-      if (!limit)
+      if (limit == -1)
         return nullptr;
     }
 
@@ -270,7 +270,7 @@ LayoutObject* LayoutTreeBuilderTraversal::nextSiblingLayoutObject(
     return sibling;
 
   Node* parent = LayoutTreeBuilderTraversal::parent(node);
-  while (limit && parent && hasDisplayContentsStyle(*parent)) {
+  while (limit != -1 && parent && hasDisplayContentsStyle(*parent)) {
     if (LayoutObject* sibling =
             nextSiblingLayoutObjectInternal(nextSibling(*parent), limit))
       return sibling;
@@ -296,7 +296,7 @@ static LayoutObject* previousSiblingLayoutObjectInternal(Node* node,
           pseudoAwareLastChild(*sibling), limit);
       if (layoutObject)
         return layoutObject;
-      if (!limit)
+      if (limit == -1)
         return nullptr;
     }
 
@@ -316,7 +316,7 @@ LayoutObject* LayoutTreeBuilderTraversal::previousSiblingLayoutObject(
     return sibling;
 
   Node* parent = LayoutTreeBuilderTraversal::parent(node);
-  while (limit && parent && hasDisplayContentsStyle(*parent)) {
+  while (limit != -1 && parent && hasDisplayContentsStyle(*parent)) {
     if (LayoutObject* sibling = previousSiblingLayoutObjectInternal(
             previousSibling(*parent), limit))
       return sibling;
