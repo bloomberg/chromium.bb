@@ -15,7 +15,7 @@ function test()
         {
             InspectorTest.addResult("Target added: " + target.name() + "; type: " + InspectorTest.describeTargetType(target));
             if (InspectorTest.isDedicatedWorker(target)) {
-                var serviceWorkerManager = SDK.targetManager.mainTarget().serviceWorkerManager;
+                var serviceWorkerManager = SDK.targetManager.mainTarget().model(SDK.ServiceWorkerManager);
                 // Allow agents to do rountrips.
                 InspectorTest.deprecatedRunAfterPendingDispatches(function() {
                     for (var registration of serviceWorkerManager.registrations().valuesArray()) {
