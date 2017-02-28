@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.BottomSheet;
+import org.chromium.chrome.browser.widget.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -60,10 +61,13 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         UiConfig uiConfig = new UiConfig(mRecyclerView);
 
+        // This mAdapter does not fetch until later requested, when the sheet is opened.
         NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager,
                 /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),
                 mContextMenuManager, mTileGroupDelegate);
         mRecyclerView.setAdapter(adapter);
+
+        activity.getBottomSheet().addObserver(new BottomSheetObserverImpl(adapter));
     }
 
     @Override
@@ -118,5 +122,32 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         if (snippetsBridge != null) delegate.addDestructionObserver(snippetsBridge);
 
         return delegate;
+    }
+
+    // TODO(dgn): Extract for public usage if it turns out that implementing a single method from
+    // the interface becomes common.
+    private static class BottomSheetObserverImpl implements BottomSheetObserver {
+        private final NewTabPageAdapter mAdapter;
+
+        public BottomSheetObserverImpl(NewTabPageAdapter adapter) {
+            mAdapter = adapter;
+        }
+
+        @Override
+        public void onSheetOpened() {
+            mAdapter.refreshSuggestions();
+        }
+
+        @Override
+        public void onSheetClosed() {}
+
+        @Override
+        public void onLoadUrl(String url) {}
+
+        @Override
+        public void onSheetOffsetChanged(float heightFraction) {}
+
+        @Override
+        public void onTransitionPeekToHalf(float transitionFraction) {}
     }
 }

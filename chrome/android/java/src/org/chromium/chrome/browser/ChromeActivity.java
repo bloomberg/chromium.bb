@@ -890,6 +890,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 ForcedSigninProcessor.checkCanSignIn(ChromeActivity.this);
             }
         });
+        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                if (isActivityDestroyed() || mBottomSheet == null) return;
+                mBottomSheet.initializeDefaultContent();
+            }
+        });
     }
 
     /**

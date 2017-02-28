@@ -391,6 +391,14 @@ public class BottomSheet
         mBottomSheetContentContainer.addView(mPlaceholder, placeHolderParams);
     }
 
+    /** Initialise the default bottom sheet content. */
+    public void initializeDefaultContent() {
+        assert mSheetContent == null;
+        mSuggestionsContent = new SuggestionsBottomSheetContent(
+                mTabModelSelector.getCurrentTab().getActivity(), this, mTabModelSelector);
+        showContent(mSuggestionsContent);
+    }
+
     @Override
     public int loadUrl(LoadUrlParams params, boolean incognito) {
         for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
@@ -450,11 +458,6 @@ public class BottomSheet
      * A notification that the sheet is exiting the peek state into one that shows content.
      */
     private void onSheetOpened() {
-        if (mSuggestionsContent == null) {
-            mSuggestionsContent = new SuggestionsBottomSheetContent(
-                    mTabModelSelector.getCurrentTab().getActivity(), this, mTabModelSelector);
-        }
-
         showContent(mSuggestionsContent);
 
         for (BottomSheetObserver o : mObservers) o.onSheetOpened();

@@ -175,6 +175,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         return mRoot.getItemCount();
     }
 
+    /** Resets suggestions, pulling the current state as known by the backend. */
+    public void refreshSuggestions() {
+        // The NTP Tiles already update when changes occurs, they don't need to be explicitly reset,
+        // unlike the cards.
+        mSections.refreshSuggestions();
+    }
+
     public int getAboveTheFoldPosition() {
         if (mAboveTheFoldView == null) return RecyclerView.NO_POSITION;
 

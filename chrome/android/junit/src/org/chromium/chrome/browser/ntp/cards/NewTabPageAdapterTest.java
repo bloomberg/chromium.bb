@@ -903,7 +903,7 @@ public class NewTabPageAdapterTest {
 
         // On Sign in, we should reset the sections, bring back suggestions instead of the All
         // Dismissed item.
-        mAdapter.getSectionListForTesting().onFullRefreshRequired();
+        mAdapter.getSectionListForTesting().refreshSuggestions();
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         signinObserver.onSignedIn();
         // Adapter content:
@@ -989,7 +989,9 @@ public class NewTabPageAdapterTest {
 
     private void reloadNtp() {
         mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), makeUiConfig(),
-                mOfflinePageBridge, mock(ContextMenuManager.class), /* tileGroupDelegate = */ null);
+                mOfflinePageBridge, mock(ContextMenuManager.class), /* tileGroupDelegate =
+                */ null);
+        mAdapter.refreshSuggestions();
     }
 
     private void assertArticlesEqual(List<SnippetArticle> articles, int start, int end) {

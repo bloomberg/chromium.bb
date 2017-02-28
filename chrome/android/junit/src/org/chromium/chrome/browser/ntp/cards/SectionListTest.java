@@ -97,6 +97,7 @@ public class SectionListTest {
         List<SnippetArticle> suggestions2 = registerCategory(mSuggestionSource, CATEGORY2, 4);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        sectionList.refreshSuggestions();
 
         bindViewHolders(sectionList);
 
@@ -131,6 +132,7 @@ public class SectionListTest {
         List<SnippetArticle> suggestions2 = registerCategory(mSuggestionSource, CATEGORY2, 4);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        sectionList.refreshSuggestions();
 
         bindViewHolders(sectionList, 0, 5); // Bind until after the third item from |suggestions1|.
 
@@ -226,6 +228,7 @@ public class SectionListTest {
                 new CategoryInfoBuilder(CATEGORY2).withViewAllAction().build(), 3);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        sectionList.refreshSuggestions();
         bindViewHolders(sectionList);
 
         assertThat(sectionList.getSectionForTesting(CATEGORY1)
@@ -246,6 +249,7 @@ public class SectionListTest {
                 new CategoryInfoBuilder(CATEGORY2).withViewAllAction().build(), 3);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        sectionList.refreshSuggestions();
         bindViewHolders(sectionList);
 
         ArgumentCaptor<DestructionObserver> argument =
@@ -271,6 +275,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 1);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        sectionList.refreshSuggestions();
         SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
         assertFalse(articles.getHeaderItemForTesting().isVisible());
     }
@@ -281,6 +286,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        sectionList.refreshSuggestions();
         SuggestionsSection section = sectionList.getSectionForTesting(CATEGORY1);
         assertTrue(section.getHeaderItemForTesting().isVisible());
     }
@@ -292,6 +298,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        sectionList.refreshSuggestions();
         SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
         assertTrue(articles.getHeaderItemForTesting().isVisible());
     }

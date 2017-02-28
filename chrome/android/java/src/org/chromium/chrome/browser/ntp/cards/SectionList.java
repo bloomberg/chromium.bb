@@ -42,7 +42,6 @@ public class SectionList
         mUiDelegate.getSuggestionsSource().setObserver(this);
         mUiDelegate.getMetricsReporter().setRanker(mSuggestionsRanker);
         mOfflinePageBridge = offlinePageBridge;
-        resetSections(/* alwaysAllowEmptySections = */ false);
 
         mUiDelegate.addDestructionObserver(new DestructionObserver() {
             @Override
@@ -183,6 +182,14 @@ public class SectionList
 
     @Override
     public void onFullRefreshRequired() {
+        refreshSuggestions();
+    }
+
+    /**
+     * Resets all the sections, getting the current list of categories and the associated
+     * suggestions from the backend.
+     */
+    public void refreshSuggestions() {
         resetSections(/* alwaysAllowEmptySections = */false);
     }
 

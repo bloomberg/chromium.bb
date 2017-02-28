@@ -81,6 +81,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 mAdapter = new NewTabPageAdapter(mUiDelegate, aboveTheFold, mUiConfig,
                         OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
                         /* contextMenuManager = */ null, /* tileGroupDelegate = */ null);
+                mAdapter.refreshSuggestions();
                 mRecyclerView.setAdapter(mAdapter);
             }
         });
