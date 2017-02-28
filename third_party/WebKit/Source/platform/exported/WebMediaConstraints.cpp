@@ -30,11 +30,11 @@
 
 #include "public/platform/WebMediaConstraints.h"
 
+#include <math.h>
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
-#include <math.h>
 
 namespace blink {
 
@@ -73,7 +73,7 @@ void maybeEmitNamedBoolean(StringBuilder& builder,
 }  // namespace
 
 class WebMediaConstraintsPrivate final
-    : public RefCounted<WebMediaConstraintsPrivate> {
+    : public ThreadSafeRefCounted<WebMediaConstraintsPrivate> {
  public:
   static PassRefPtr<WebMediaConstraintsPrivate> create();
   static PassRefPtr<WebMediaConstraintsPrivate> create(
