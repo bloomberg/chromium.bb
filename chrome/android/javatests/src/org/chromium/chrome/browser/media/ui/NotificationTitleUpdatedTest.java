@@ -24,6 +24,7 @@ import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.common.MediaMetadata;
@@ -36,7 +37,8 @@ import org.chromium.net.test.EmbeddedTestServer;
 @RetryOnFailure
 public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int NOTIFICATION_ID = R.id.media_playback_notification;
-    private static final String SIMPLE_PAGE_URL = "/simple_page.html";
+    private static final String SIMPLE_PAGE_URL_1 = "/content/test/data/title1.html";
+    private static final String SIMPLE_PAGE_URL_2 = "/content/test/data/title2.html";
 
     private Tab mTab;
     private EmbeddedTestServer mTestServer;
@@ -163,14 +165,27 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
     }
 
     @SmallTest
-    public void testMediaMetadataPersistsAfterInPageNavigation() throws Throwable {
+    public void testMediaMetadataResetsAfterSameOriginNavigation() throws Throwable {
         ensureTestServer();
-        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL));
+        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL_1));
         simulateMediaSessionStateChanged(mTab, true, false);
         simulateMediaSessionMetadataChanged(mTab, new MediaMetadata("title2", "", ""));
         assertTitleMatches("title2");
 
-        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL + "#some-anchor"));
+        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL_2));
+        simulateUpdateTitle(mTab, "title3");
+        assertTitleMatches("title3");
+    }
+
+    @SmallTest
+    public void testMediaMetadataPersistsAfterInPageNavigation() throws Throwable {
+        ensureTestServer();
+        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL_1));
+        simulateMediaSessionStateChanged(mTab, true, false);
+        simulateMediaSessionMetadataChanged(mTab, new MediaMetadata("title2", "", ""));
+        assertTitleMatches("title2");
+
+        simulateInPageNavigation(mTab, mTestServer.getURL(SIMPLE_PAGE_URL_1));
         assertTitleMatches("title2");
     }
 
@@ -252,6 +267,16 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
                     assertEquals(title, observedText);
                 }
             });
+    }
+
+    private void simulateInPageNavigation(final Tab tab, final String url) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                tab.loadUrl(new LoadUrlParams(url + "#some-anchor"));
+            }
+        });
+        getInstrumentation().waitForIdleSync();
     }
 
     private void ensureTestServer() {
