@@ -294,11 +294,14 @@ void NotificationView::Layout() {
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
 
   if (settings_button_view_) {
-    gfx::Size settings_size(settings_button_view_->GetPreferredSize());
-    settings_button_view_->SetBounds(content_width - settings_size.width(),
-                                     bottom_y - settings_size.height(),
-                                     settings_size.width(),
-                                     settings_size.height());
+    const gfx::Size settings_size(settings_button_view_->GetPreferredSize());
+    const int marginFromRight =
+        settings_size.width() +
+        (close_button_ ? close_button_->GetPreferredSize().width() : 0);
+    gfx::Rect settings_rect(insets.left() + content_width - marginFromRight,
+                            GetContentsBounds().y(), settings_size.width(),
+                            settings_size.height());
+    settings_button_view_->SetBoundsRect(settings_rect);
   }
 
   // Close button.
@@ -514,18 +517,11 @@ void NotificationView::CreateOrUpdateSettingsButtonView(
   if (!settings_button_view_ && notification.delegate() &&
       notification.delegate()->ShouldDisplaySettingsButton()) {
     PaddedButton* settings = new PaddedButton(this);
-    settings->SetPadding(-kNotificationSettingsPadding,
-                         kNotificationSettingsPadding);
-    settings->SetNormalImage(IDR_NOTIFICATION_SETTINGS_BUTTON_ICON);
-    settings->SetHoveredImage(IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_HOVER);
-    settings->SetPressedImage(IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_PRESSED);
-    settings->set_animate_on_state_change(false);
+    settings->SetImage(views::Button::STATE_NORMAL, GetSettingsIcon());
     settings->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
     settings->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-    settings->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
     settings_button_view_ = settings;
     AddChildView(settings_button_view_);
   }
@@ -685,17 +681,8 @@ void NotificationView::CreateOrUpdateActionButtonViews(
 void NotificationView::CreateOrUpdateCloseButtonView(
     const Notification& notification) {
   if (!notification.pinned() && !close_button_) {
-    // TODO(yhanada): Make PaddedButton class support new type of icons after
-    // changing the icon of the settings button.
-    close_button_ = base::MakeUnique<views::ImageButton>(this);
-    close_button_->SetFocusForPlatform();
-    close_button_->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
+    close_button_ = base::MakeUnique<PaddedButton>(this);
     close_button_->SetImage(views::Button::STATE_NORMAL, GetCloseIcon());
-    close_button_->SetBorder(views::CreateEmptyBorder(
-        kControlButtonPaddingFromBorder, kControlButtonPaddingFromBorder,
-        kControlButtonPaddingFromBorder, kControlButtonPaddingFromBorder));
-    close_button_->set_animate_on_state_change(false);
     close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
     close_button_->SetTooltipText(l10n_util::GetStringUTF16(

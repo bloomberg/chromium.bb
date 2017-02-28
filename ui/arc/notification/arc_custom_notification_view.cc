@@ -20,6 +20,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/custom_notification_view.h"
+#include "ui/message_center/views/padded_button.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -179,33 +180,19 @@ class ArcCustomNotificationView::ContentViewDelegate
   DISALLOW_COPY_AND_ASSIGN(ContentViewDelegate);
 };
 
-class ArcCustomNotificationView::ControlButton : public views::ImageButton {
+class ArcCustomNotificationView::ControlButton
+    : public message_center::PaddedButton {
  public:
   explicit ControlButton(ArcCustomNotificationView* owner)
-      : views::ImageButton(owner), owner_(owner) {
-    set_background(
-        views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
-    SetFocusForPlatform();
-    SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        message_center::kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
-
-    // The sizes below are in DIPs.
-    SetBorder(views::CreateEmptyBorder(
-        message_center::kControlButtonPaddingFromBorder,
-        message_center::kControlButtonPaddingFromBorder,
-        message_center::kControlButtonPaddingFromBorder,
-        message_center::kControlButtonPaddingFromBorder));
-
-    set_animate_on_state_change(false);
-  }
+      : message_center::PaddedButton(owner), owner_(owner) {}
 
   void OnFocus() override {
-    views::ImageButton::OnFocus();
+    message_center::PaddedButton::OnFocus();
     owner_->UpdateControlButtonsVisiblity();
   }
 
   void OnBlur() override {
-    views::ImageButton::OnBlur();
+    message_center::PaddedButton::OnBlur();
     owner_->UpdateControlButtonsVisiblity();
   }
 
