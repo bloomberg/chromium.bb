@@ -687,7 +687,11 @@ void MergeOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     extensions::WarningSet* conflicting_extensions,
-    const net::NetLogWithSource* net_log) {
+    const net::NetLogWithSource* net_log,
+    bool* request_headers_modified) {
+  DCHECK(request_headers_modified);
+  *request_headers_modified = false;
+
   EventResponseDeltas::const_iterator delta;
 
   // Here we collect which headers we have removed or set to new values
@@ -784,6 +788,7 @@ void MergeOnBeforeSendHeadersResponses(
       }
       net_log->AddEvent(net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
                         base::Bind(&NetLogModificationCallback, delta->get()));
+      *request_headers_modified = true;
     } else {
       conflicting_extensions->insert(
           extensions::Warning::CreateRequestHeaderConflictWarning(
@@ -1051,7 +1056,11 @@ void MergeOnHeadersReceivedResponses(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url,
     extensions::WarningSet* conflicting_extensions,
-    const net::NetLogWithSource* net_log) {
+    const net::NetLogWithSource* net_log,
+    bool* response_headers_modified) {
+  DCHECK(response_headers_modified);
+  *response_headers_modified = false;
+
   EventResponseDeltas::const_iterator delta;
 
   // Here we collect which headers we have removed or added so far due to
@@ -1117,6 +1126,7 @@ void MergeOnHeadersReceivedResponses(
       }
       net_log->AddEvent(net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
                         CreateNetLogExtensionIdCallback(delta->get()));
+      *response_headers_modified = true;
     } else {
       conflicting_extensions->insert(
           extensions::Warning::CreateResponseHeaderConflictWarning(

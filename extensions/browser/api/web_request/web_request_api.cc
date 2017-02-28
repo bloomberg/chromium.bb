@@ -87,6 +87,19 @@ namespace web_request = api::web_request;
 
 namespace {
 
+// Describes the action taken by the Web Request API for a given stage of a web
+// request.
+// These values are written to logs.  New enum values can be added, but existing
+// enum values must never be renumbered or deleted and reused.
+enum RequestAction {
+  CANCEL = 0,
+  REDIRECT = 1,
+  MODIFY_REQUEST_HEADERS = 2,
+  MODIFY_RESPONSE_HEADERS = 3,
+  SET_AUTH_CREDENTIALS = 4,
+  MAX
+};
+
 const char kWebRequestEventPrefix[] = "webRequest.";
 
 // List of all the webRequest events.
@@ -128,6 +141,12 @@ const char* GetRequestStageAsString(
   }
   NOTREACHED();
   return "Not reached";
+}
+
+void LogRequestAction(RequestAction action) {
+  DCHECK_NE(RequestAction::MAX, action);
+  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequestAction", action,
+                            RequestAction::MAX);
 }
 
 bool IsWebRequestEvent(const std::string& event_name) {
@@ -1800,6 +1819,8 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
       base::Time::Now() - blocked_request.blocking_time;
   request_time_tracker_->IncrementTotalBlockTime(request_id, block_time);
 
+  bool request_headers_modified = false;
+  bool response_headers_modified = false;
   bool credentials_set = false;
 
   deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
@@ -1817,17 +1838,15 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
-        blocked_request.response_deltas,
-        blocked_request.request_headers,
-        &warnings,
-        blocked_request.net_log);
+        blocked_request.response_deltas, blocked_request.request_headers,
+        &warnings, blocked_request.net_log, &request_headers_modified);
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(
         blocked_request.request->url(), blocked_request.response_deltas,
         blocked_request.original_response_headers.get(),
         blocked_request.override_response_headers, blocked_request.new_url,
-        &warnings, blocked_request.net_log);
+        &warnings, blocked_request.net_log, &response_headers_modified);
   } else if (blocked_request.event == kOnAuthRequired) {
     CHECK(blocked_request.callback.is_null());
     CHECK(!blocked_request.auth_callback.is_null());
@@ -1850,12 +1869,28 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
                    browser_context, warnings));
   }
 
-  if (canceled) {
+  const bool redirected =
+      blocked_request.new_url && !blocked_request.new_url->is_empty();
+
+  if (canceled)
     request_time_tracker_->SetRequestCanceled(request_id);
-  } else if (blocked_request.new_url &&
-             !blocked_request.new_url->is_empty()) {
+  else if (redirected)
     request_time_tracker_->SetRequestRedirected(request_id);
-  }
+
+  // Log UMA metrics. Note: We are not necessarily concerned with the final
+  // action taken. Instead we are interested in how frequently the different
+  // actions are used by extensions. Hence multiple actions may be logged for a
+  // single delta execution.
+  if (canceled)
+    LogRequestAction(RequestAction::CANCEL);
+  if (redirected)
+    LogRequestAction(RequestAction::REDIRECT);
+  if (request_headers_modified)
+    LogRequestAction(RequestAction::MODIFY_REQUEST_HEADERS);
+  if (response_headers_modified)
+    LogRequestAction(RequestAction::MODIFY_RESPONSE_HEADERS);
+  if (credentials_set)
+    LogRequestAction(RequestAction::SET_AUTH_CREDENTIALS);
 
   // This triggers onErrorOccurred if canceled is true.
   int rv = canceled ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
