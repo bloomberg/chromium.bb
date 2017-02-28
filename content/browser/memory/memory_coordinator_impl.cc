@@ -8,8 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
-#include "base/process/process_metrics.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/memory/memory_monitor.h"
@@ -40,62 +38,6 @@ mojom::MemoryState ToMojomMemoryState(base::MemoryState state) {
       NOTREACHED();
       return mojom::MemoryState::UNKNOWN;
   }
-}
-
-void RecordMetricsOnStateChange(base::MemoryState prev_state,
-                                base::MemoryState next_state,
-                                base::TimeDelta duration,
-                                size_t total_private_mb) {
-#define RECORD_METRICS(transition)                                             \
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Coordinator.TotalPrivate." transition, \
-                                total_private_mb);                             \
-  UMA_HISTOGRAM_CUSTOM_TIMES("Memory.Coordinator.StateDuration." transition,   \
-                             duration, base::TimeDelta::FromSeconds(30),       \
-                             base::TimeDelta::FromHours(24), 50);
-
-  if (prev_state == base::MemoryState::NORMAL) {
-    switch (next_state) {
-      case base::MemoryState::THROTTLED:
-        RECORD_METRICS("NormalToThrottled");
-        break;
-      case base::MemoryState::SUSPENDED:
-        RECORD_METRICS("NormalToSuspended");
-        break;
-      case base::MemoryState::UNKNOWN:
-      case base::MemoryState::NORMAL:
-        NOTREACHED();
-        break;
-    }
-  } else if (prev_state == base::MemoryState::THROTTLED) {
-    switch (next_state) {
-      case base::MemoryState::NORMAL:
-        RECORD_METRICS("ThrottledToNormal");
-        break;
-      case base::MemoryState::SUSPENDED:
-        RECORD_METRICS("ThrottledToSuspended");
-        break;
-      case base::MemoryState::UNKNOWN:
-      case base::MemoryState::THROTTLED:
-        NOTREACHED();
-        break;
-    }
-  } else if (prev_state == base::MemoryState::SUSPENDED) {
-    switch (next_state) {
-      case base::MemoryState::NORMAL:
-        RECORD_METRICS("SuspendedToNormal");
-        break;
-      case base::MemoryState::THROTTLED:
-        RECORD_METRICS("SuspendedToThrottled");
-        break;
-      case base::MemoryState::UNKNOWN:
-      case base::MemoryState::SUSPENDED:
-        NOTREACHED();
-        break;
-    }
-  } else {
-    NOTREACHED();
-  }
-#undef RECORD_METRICS
 }
 
 }  // namespace
@@ -243,22 +185,7 @@ base::MemoryState MemoryCoordinatorImpl::GetChildMemoryState(
 
 void MemoryCoordinatorImpl::RecordMemoryPressure(
     base::MemoryPressureMonitor::MemoryPressureLevel level) {
-  DCHECK(GetGlobalMemoryState() != base::MemoryState::UNKNOWN);
-  int state = static_cast<int>(GetGlobalMemoryState());
-  switch (level) {
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Memory.Coordinator.StateOnModerateNotificationReceived",
-          state, base::kMemoryStateMax);
-      break;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Memory.Coordinator.StateOnCriticalNotificationReceived",
-          state, base::kMemoryStateMax);
-      break;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-      NOTREACHED();
-  }
+  // TODO(bashi): Record memory pressure level.
 }
 
 base::MemoryState MemoryCoordinatorImpl::GetGlobalMemoryState() const {
@@ -325,7 +252,6 @@ bool MemoryCoordinatorImpl::ChangeStateIfNeeded(base::MemoryState prev_state,
   if (prev_state == next_state)
     return false;
 
-  base::TimeTicks prev_last_state_change = last_state_change_;
   last_state_change_ = base::TimeTicks::Now();
   current_state_ = next_state;
 
@@ -333,8 +259,6 @@ bool MemoryCoordinatorImpl::ChangeStateIfNeeded(base::MemoryState prev_state,
                "MemoryCoordinatorImpl::ChangeStateIfNeeded", "prev",
                MemoryStateToString(prev_state), "next",
                MemoryStateToString(next_state));
-  RecordStateChange(prev_state, next_state,
-                    last_state_change_ - prev_last_state_change);
   NotifyStateToClients();
   NotifyStateToChildren();
   return true;
@@ -429,35 +353,6 @@ void MemoryCoordinatorImpl::NotifyStateToChildren() {
   // whether this state transition is valid.
   for (auto& iter : children())
     SetChildMemoryState(iter.first, current_state_);
-}
-
-void MemoryCoordinatorImpl::RecordStateChange(MemoryState prev_state,
-                                              MemoryState next_state,
-                                              base::TimeDelta duration) {
-  size_t total_private_kb = 0;
-
-  // TODO(bashi): On MacOS we can't get process metrics for child processes and
-  // therefore can't calculate the total private memory.
-#if !defined(OS_MACOSX)
-  auto browser_metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
-  base::WorkingSetKBytes working_set;
-  browser_metrics->GetWorkingSetKBytes(&working_set);
-  total_private_kb += working_set.priv;
-
-  for (auto& iter : children()) {
-    auto* render_process_host = GetRenderProcessHost(iter.first);
-    if (!render_process_host ||
-        render_process_host->GetHandle() == base::kNullProcessHandle)
-      continue;
-    auto metrics = base::ProcessMetrics::CreateProcessMetrics(
-        render_process_host->GetHandle());
-    metrics->GetWorkingSetKBytes(&working_set);
-    total_private_kb += working_set.priv;
-  }
-#endif
-
-  RecordMetricsOnStateChange(prev_state, next_state, duration,
-                             total_private_kb / 1024);
 }
 
 MemoryCoordinatorImpl::ChildInfo::ChildInfo() {}

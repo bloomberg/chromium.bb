@@ -7,7 +7,6 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "content/browser/memory/memory_coordinator_impl.h"
 #include "jni/MemoryMonitorAndroid_jni.h"
 
@@ -75,25 +74,6 @@ static void OnTrimMemory(JNIEnv* env,
                          jint level) {
   DCHECK(level >= 0 && level <= kTrimMemoryLevelMax);
   auto* coordinator = MemoryCoordinatorImpl::GetInstance();
-
-  auto state = coordinator->GetGlobalMemoryState();
-  switch (state) {
-    case base::MemoryState::NORMAL:
-      UMA_HISTOGRAM_ENUMERATION("Memory.Coordinator.TrimMemoryLevel.Normal",
-                                level, kTrimMemoryLevelMax);
-      break;
-    case base::MemoryState::THROTTLED:
-      UMA_HISTOGRAM_ENUMERATION("Memory.Coordinator.TrimMemoryLevel.Throttled",
-                                level, kTrimMemoryLevelMax);
-      break;
-    case base::MemoryState::SUSPENDED:
-      UMA_HISTOGRAM_ENUMERATION("Memory.Coordinator.TrimMemoryLevel.Suspended",
-                                level, kTrimMemoryLevelMax);
-      break;
-    case base::MemoryState::UNKNOWN:
-      NOTREACHED();
-      break;
-  }
 
   if (level >= kTrimMemoryRunningCritical) {
     coordinator->ForceSetGlobalState(base::MemoryState::SUSPENDED,
