@@ -131,16 +131,16 @@ class PixelIntegrationTest(
     # This property actually comes off the class, not 'self'.
     tab = self.tab
     tab.Navigate(url, script_to_evaluate_on_commit=test_harness_script)
-    tab.action_runner.WaitForJavaScriptCondition2(
+    tab.action_runner.WaitForJavaScriptCondition(
       'domAutomationController._finished', timeout=300)
-    if not tab.EvaluateJavaScript2('domAutomationController._succeeded'):
+    if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
       self.fail('page indicated test failure')
     if not tab.screenshot_supported:
       self.fail('Browser does not support screenshot capture')
     screenshot = tab.Screenshot(5)
     if screenshot is None:
       self.fail('Could not capture screenshot')
-    dpr = tab.EvaluateJavaScript2('window.devicePixelRatio')
+    dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     if page.test_rect:
       screenshot = image_util.Crop(
           screenshot, page.test_rect[0] * dpr, page.test_rect[1] * dpr,

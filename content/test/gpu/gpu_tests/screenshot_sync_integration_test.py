@@ -115,7 +115,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                                      random.randint(0, 255),
                                      255)
     tab = self.tab
-    tab.EvaluateJavaScript2(
+    tab.EvaluateJavaScript(
         "window.draw({{ red }}, {{ green }}, {{ blue }});",
         red=canvasRGB.r, green=canvasRGB.g, blue=canvasRGB.b)
     screenshot = tab.Screenshot(5)

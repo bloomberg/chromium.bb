@@ -18,7 +18,7 @@ class CastPage(page.Page):
   def ChooseSink(self, tab, sink_name):
     """Chooses a specific sink in the list."""
 
-    tab.ExecuteJavaScript2("""
+    tab.ExecuteJavaScript("""
         var sinks = window.document.getElementById("media-router-container").
             shadowRoot.getElementById("sink-list").getElementsByTagName("span");
         for (var i=0; i<sinks.length; i++) {
@@ -33,7 +33,7 @@ class CastPage(page.Page):
     """Closes media router dialog."""
 
     try:
-      tab.ExecuteJavaScript2(
+      tab.ExecuteJavaScript(
           'window.document.getElementById("media-router-container").' +
           'shadowRoot.getElementById("container-header").shadowRoot.' +
           'getElementById("close-button").click();')
@@ -51,7 +51,7 @@ class CastPage(page.Page):
       if tab.url == 'chrome://media-router/':
         if self.CheckIfExistingRoute(tab, sink_name):
           self.ChooseSink(tab, sink_name)
-          tab.ExecuteJavaScript2(
+          tab.ExecuteJavaScript(
               "window.document.getElementById('media-router-container')."
               "shadowRoot.getElementById('route-details').shadowRoot."
               "getElementById('close-route-button').click();")
@@ -62,7 +62,7 @@ class CastPage(page.Page):
   def CheckIfExistingRoute(self, tab, sink_name):
     """"Checks if there is existing route for the specific sink."""
 
-    tab.ExecuteJavaScript2("""
+    tab.ExecuteJavaScript("""
         var sinks = window.document.getElementById('media-router-container').
           allSinks;
         var sink_id = null;
@@ -82,7 +82,7 @@ class CastPage(page.Page):
           }
         }""",
         sink_name=sink_name)
-    route = tab.EvaluateJavaScript2('!!window.__telemetry_route_id')
+    route = tab.EvaluateJavaScript('!!window.__telemetry_route_id')
     logging.info('Is there existing route? ' + str(route))
     return route
 
@@ -90,7 +90,7 @@ class CastPage(page.Page):
                              error_message, timeout=5):
     """Executes async javascript function and waits until it finishes."""
 
-    action_runner.ExecuteJavaScript2(script)
+    action_runner.ExecuteJavaScript(script)
     self._WaitForResult(action_runner, verify_func, error_message,
                         timeout=timeout)
 
@@ -99,7 +99,7 @@ class CastPage(page.Page):
 
     self._WaitForResult(
         action_runner,
-        lambda: tab.EvaluateJavaScript2(
+        lambda: tab.EvaluateJavaScript(
              '!!window.document.getElementById('
              '"media-router-container") &&'
              'window.document.getElementById('

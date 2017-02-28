@@ -97,9 +97,9 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       options.AppendExtraBrowserArgs('--expose-internals-for-testing')
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    tab.WaitForJavaScriptCondition2('testRunner.isDone', timeout=600)
+    tab.WaitForJavaScriptCondition('testRunner.isDone', timeout=600)
 
-    log = tab.EvaluateJavaScript2('document.getElementById("log").innerHTML')
+    log = tab.EvaluateJavaScript('document.getElementById("log").innerHTML')
 
     for line in log.splitlines():
       if line.startswith("FATAL: "):

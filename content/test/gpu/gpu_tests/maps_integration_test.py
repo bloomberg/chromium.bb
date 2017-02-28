@@ -86,7 +86,7 @@ class MapsIntegrationTest(
     return json_contents
 
   def _SpinWaitOnRAF(self, iterations, timeout=60):
-    self.tab.ExecuteJavaScript2("""
+    self.tab.ExecuteJavaScript("""
         window.__spinWaitOnRAFDone = false;
         var iterationsLeft = {{ iterations }};
 
@@ -100,7 +100,7 @@ class MapsIntegrationTest(
         }
         window.requestAnimationFrame(spin);
         """, iterations=iterations)
-    self.tab.WaitForJavaScriptCondition2(
+    self.tab.WaitForJavaScriptCondition(
         'window.__spinWaitOnRAFDone', timeout=timeout)
 
   def RunActualGpuTest(self, url, *args):
@@ -108,7 +108,7 @@ class MapsIntegrationTest(
     pixel_expectations_file = args[0]
     action_runner = tab.action_runner
     action_runner.Navigate(url)
-    action_runner.WaitForJavaScriptCondition2(
+    action_runner.WaitForJavaScriptCondition(
         'window.testDone', timeout=180)
 
     # TODO(kbr): This should not be necessary, but it's not clear if the test
@@ -122,7 +122,7 @@ class MapsIntegrationTest(
     if screenshot is None:
       self.fail('Could not capture screenshot')
 
-    dpr = tab.EvaluateJavaScript2('window.devicePixelRatio')
+    dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     print 'Maps\' devicePixelRatio is ' + str(dpr)
     # Even though the Maps test uses a fixed devicePixelRatio so that
     # it fetches all of the map tiles at the same resolution, on two
