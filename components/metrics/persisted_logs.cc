@@ -28,6 +28,8 @@ const char kLogTimestampKey[] = "timestamp";
 const char kLogDataKey[] = "data";
 
 std::string EncodeToBase64(const std::string& to_convert) {
+  // CHECK to diagnose crbug.com/695433
+  CHECK(to_convert.data());
   std::string base64_result;
   base::Base64Encode(to_convert, &base64_result);
   return base64_result;
@@ -114,7 +116,9 @@ void PersistedLogs::StageNextLog() {
 }
 
 void PersistedLogs::DiscardStagedLog() {
-  DCHECK(has_staged_log());
+  // CHECK, rather than DCHECK, to diagnose cause of crashes from the field,
+  // for crbug.com/695433.
+  CHECK(has_staged_log());
   DCHECK_LT(static_cast<size_t>(staged_log_index_), list_.size());
   list_.erase(list_.begin() + staged_log_index_);
   staged_log_index_ = -1;

@@ -185,12 +185,14 @@ void UkmService::DisableReporting() {
 }
 
 void UkmService::Flush() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (initialize_complete_)
     BuildAndStoreLog();
   persisted_logs_.PersistUnsentLogs();
 }
 
 void UkmService::Purge() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::Purge";
   persisted_logs_.Purge();
   sources_.clear();
@@ -323,6 +325,8 @@ void UkmService::OnLogUploadComplete(int response_code) {
 }
 
 void UkmService::RecordSource(std::unique_ptr<UkmSource> source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!recording_enabled_) {
     RecordDroppedSource(DroppedSourceReason::RECORDING_DISABLED);
     return;
