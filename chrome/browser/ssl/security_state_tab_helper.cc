@@ -61,30 +61,19 @@ void SecurityStateTabHelper::VisibleSecurityStateChanged() {
   DCHECK(time_of_http_warning_on_current_navigation_.is_null());
   time_of_http_warning_on_current_navigation_ = base::Time::Now();
 
-  std::string warning;
-  bool warning_is_user_visible = false;
-  switch (security_info.security_level) {
-    case security_state::HTTP_SHOW_WARNING:
-      warning =
-          "This page includes a password or credit card input in a non-secure "
-          "context. A warning has been added to the URL bar. For more "
-          "information, see https://goo.gl/zmWq3m.";
-      warning_is_user_visible = true;
-      break;
-    case security_state::NONE:
-    case security_state::DANGEROUS:
-      warning =
-          "This page includes a password or credit card input in a non-secure "
-          "context. A warning will be added to the URL bar in Chrome 56 (Jan "
-          "2017). For more information, see https://goo.gl/zmWq3m.";
-      break;
-    default:
-      return;
-  }
-
   logged_http_warning_on_current_navigation_ = true;
   web_contents()->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_WARNING, warning);
+      content::CONSOLE_MESSAGE_LEVEL_WARNING,
+      "This page includes a password or credit card input in a non-secure "
+      "context. A warning has been added to the URL bar. For more "
+      "information, see https://goo.gl/zmWq3m.");
+
+  // |warning_is_user_visible| will only be false if the user has set the flag
+  // for marking HTTP pages as Dangerous. In that case, the page will be
+  // flagged as Dangerous, but it isn't distinguished from other HTTP pages,
+  // which is why this code records it as not-user-visible.
+  bool warning_is_user_visible =
+      (security_info.security_level == security_state::HTTP_SHOW_WARNING);
 
   if (security_info.displayed_credit_card_field_on_http) {
     UMA_HISTOGRAM_BOOLEAN(

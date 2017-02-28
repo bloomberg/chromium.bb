@@ -9,10 +9,7 @@ namespace switches {
 
 // Use to opt-in to marking HTTP as non-secure.
 const char kMarkHttpAs[] = "mark-non-secure-as";
-const char kMarkHttpAsNeutral[] = "neutral";
 const char kMarkHttpAsDangerous[] = "non-secure";
-const char kMarkHttpWithPasswordsOrCcWithChip[] =
-    "show-non-secure-passwords-cc-ui";
 
 }  // namespace switches
 }  // namespace security_state

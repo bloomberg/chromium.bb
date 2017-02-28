@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
-#include "components/security_state/core/switches.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -266,10 +265,8 @@ TEST(SecurityStateTest, AlwaysWarnOnDataUrls) {
 }
 
 // Tests that password fields cause the security level to be downgraded
-// to HTTP_SHOW_WARNING when the command-line switch is set.
+// to HTTP_SHOW_WARNING.
 TEST(SecurityStateTest, PasswordFieldWarning) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMarkHttpAs, switches::kMarkHttpWithPasswordsOrCcWithChip);
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
   helper.set_displayed_password_field_on_http(true);
@@ -280,10 +277,8 @@ TEST(SecurityStateTest, PasswordFieldWarning) {
 }
 
 // Tests that password fields cause the security level to be downgraded
-// to HTTP_SHOW_WARNING on pseudo URLs when the command-line switch is set.
+// to HTTP_SHOW_WARNING on pseudo URLs.
 TEST(SecurityStateTest, PasswordFieldWarningOnPseudoUrls) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMarkHttpAs, switches::kMarkHttpWithPasswordsOrCcWithChip);
   for (const char* const url : kPseudoUrls) {
     TestSecurityStateHelper helper;
     helper.SetUrl(GURL(url));
@@ -296,10 +291,8 @@ TEST(SecurityStateTest, PasswordFieldWarningOnPseudoUrls) {
 }
 
 // Tests that credit card fields cause the security level to be downgraded
-// to HTTP_SHOW_WARNING when the command-line switch is set.
+// to HTTP_SHOW_WARNING.
 TEST(SecurityStateTest, CreditCardFieldWarning) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMarkHttpAs, switches::kMarkHttpWithPasswordsOrCcWithChip);
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
   helper.set_displayed_credit_card_field_on_http(true);
@@ -310,10 +303,8 @@ TEST(SecurityStateTest, CreditCardFieldWarning) {
 }
 
 // Tests that credit card fields cause the security level to be downgraded
-// to HTTP_SHOW_WARNING on pseudo URLs when the command-line switch is set.
+// to HTTP_SHOW_WARNING on pseudo URLs.
 TEST(SecurityStateTest, CreditCardFieldWarningOnPseudoUrls) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMarkHttpAs, switches::kMarkHttpWithPasswordsOrCcWithChip);
   for (const char* const url : kPseudoUrls) {
     TestSecurityStateHelper helper;
     helper.SetUrl(GURL(url));
@@ -358,8 +349,6 @@ TEST(SecurityStateTest, PrivateUserDataNotSetOnPseudoUrls) {
 TEST(SecurityStateTest, MarkHttpAsStatusHistogram) {
   const char* kHistogramName = "SSL.MarkHttpAsStatus";
   base::HistogramTester histograms;
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMarkHttpAs, switches::kMarkHttpWithPasswordsOrCcWithChip);
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
 

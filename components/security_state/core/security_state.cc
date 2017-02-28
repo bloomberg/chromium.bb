@@ -19,7 +19,12 @@ namespace {
 
 // Do not change or reorder this enum, and add new values at the end. It is used
 // in the MarkHttpAs histogram.
-enum MarkHttpStatus { NEUTRAL, NON_SECURE, HTTP_SHOW_WARNING, LAST_STATUS };
+enum MarkHttpStatus {
+  NEUTRAL /* deprecated */,
+  NON_SECURE,
+  HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS,
+  LAST_STATUS
+};
 
 // If |switch_or_field_trial_group| corresponds to a valid
 // MarkHttpAs group, sets |*level| and |*histogram_status| to the
@@ -29,30 +34,11 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
     bool displayed_sensitive_input_on_http,
     SecurityLevel* level,
     MarkHttpStatus* histogram_status) {
-  if (switch_or_field_trial_group == switches::kMarkHttpAsNeutral) {
-    *level = NONE;
-    *histogram_status = NEUTRAL;
-    return true;
-  }
-
-  if (switch_or_field_trial_group == switches::kMarkHttpAsDangerous) {
-    *level = DANGEROUS;
-    *histogram_status = NON_SECURE;
-    return true;
-  }
-
-  if (switch_or_field_trial_group ==
-      switches::kMarkHttpWithPasswordsOrCcWithChip) {
-    if (displayed_sensitive_input_on_http) {
-      *level = security_state::HTTP_SHOW_WARNING;
-    } else {
-      *level = NONE;
-    }
-    *histogram_status = HTTP_SHOW_WARNING;
-    return true;
-  }
-
-  return false;
+  if (switch_or_field_trial_group != switches::kMarkHttpAsDangerous)
+    return false;
+  *level = DANGEROUS;
+  *histogram_status = NON_SECURE;
+  return true;
 }
 
 SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
@@ -73,18 +59,10 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
           choice, displayed_sensitive_input_on_http, &level, &status)) {
     if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
             group, displayed_sensitive_input_on_http, &level, &status)) {
-      // If neither the command-line switch nor field trial group is set, then
-      // nonsecure defaults to neutral for iOS and HTTP_SHOW_WARNING on other
-      // platforms.
-#if defined(OS_IOS)
-      status = NEUTRAL;
-      level = NONE;
-#else
-      status = HTTP_SHOW_WARNING;
+      status = HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS;
       level = displayed_sensitive_input_on_http
                   ? security_state::HTTP_SHOW_WARNING
                   : NONE;
-#endif
     }
   }
 

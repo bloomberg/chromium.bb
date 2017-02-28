@@ -211,13 +211,8 @@ const FeatureEntry::Choice kPassiveListenersChoices[] = {
 
 const FeatureEntry::Choice kMarkHttpAsChoices[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_MARK_HTTP_AS_NEUTRAL, security_state::switches::kMarkHttpAs,
-     security_state::switches::kMarkHttpAsNeutral},
     {IDS_MARK_HTTP_AS_DANGEROUS, security_state::switches::kMarkHttpAs,
-     security_state::switches::kMarkHttpAsDangerous},
-    {IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP,
-     security_state::switches::kMarkHttpAs,
-     security_state::switches::kMarkHttpWithPasswordsOrCcWithChip}};
+     security_state::switches::kMarkHttpAsDangerous}};
 
 const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
