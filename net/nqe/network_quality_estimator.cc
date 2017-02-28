@@ -192,11 +192,12 @@ void RecordEffectiveConnectionTypeAccuracy(
     int32_t metric,
     base::TimeDelta measuring_duration,
     EffectiveConnectionType observed_effective_connection_type) {
-  const std::string histogram_name = base::StringPrintf(
-      "%s.EstimatedObservedDiff.%s.%d.%s", prefix,
-      metric >= 0 ? "Positive" : "Negative",
-      static_cast<int32_t>(measuring_duration.InSeconds()),
-      GetNameForEffectiveConnectionType(observed_effective_connection_type));
+  const std::string histogram_name =
+      base::StringPrintf("%s.EstimatedObservedDiff.%s.%d.%s", prefix,
+                         metric >= 0 ? "Positive" : "Negative",
+                         static_cast<int32_t>(measuring_duration.InSeconds()),
+                         DeprecatedGetNameForEffectiveConnectionType(
+                             observed_effective_connection_type));
 
   base::HistogramBase* histogram = base::Histogram::FactoryGet(
       histogram_name, 0, EFFECTIVE_CONNECTION_TYPE_LAST,
