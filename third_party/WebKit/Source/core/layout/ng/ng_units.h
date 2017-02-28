@@ -6,6 +6,12 @@
 #define NGUnits_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/geometry/ng_logical_size.h"
+#include "core/layout/ng/geometry/ng_physical_location.h"
+#include "core/layout/ng/geometry/ng_physical_offset.h"
+#include "core/layout/ng/geometry/ng_physical_rect.h"
+#include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
 #include "platform/text/TextDirection.h"
@@ -13,11 +19,7 @@
 
 namespace blink {
 
-class LayoutUnit;
-struct NGPhysicalOffset;
-struct NGPhysicalSize;
 struct NGBoxStrut;
-struct NGPixelSnappedPhysicalRect;
 
 #define NGSizeIndefinite LayoutUnit(-1)
 
@@ -32,143 +34,6 @@ inline std::ostream& operator<<(std::ostream& stream,
                                 const MinAndMaxContentSizes& value) {
   return stream << "(" << value.min_content << ", " << value.max_content << ")";
 }
-
-struct NGLogicalSize {
-  NGLogicalSize() {}
-  NGLogicalSize(LayoutUnit inline_size, LayoutUnit block_size)
-      : inline_size(inline_size), block_size(block_size) {}
-
-  LayoutUnit inline_size;
-  LayoutUnit block_size;
-
-  NGPhysicalSize ConvertToPhysical(NGWritingMode mode) const;
-  bool operator==(const NGLogicalSize& other) const;
-
-  bool IsEmpty() const {
-    return inline_size == LayoutUnit() || block_size == LayoutUnit();
-  }
-};
-
-inline std::ostream& operator<<(std::ostream& stream,
-                                const NGLogicalSize& value) {
-  return stream << value.inline_size << "x" << value.block_size;
-}
-
-// NGLogicalOffset is the position of a rect (typically a fragment) relative to
-// its parent rect in the logical coordinate system.
-struct NGLogicalOffset {
-  NGLogicalOffset() {}
-  NGLogicalOffset(LayoutUnit inline_offset, LayoutUnit block_offset)
-      : inline_offset(inline_offset), block_offset(block_offset) {}
-
-  LayoutUnit inline_offset;
-  LayoutUnit block_offset;
-
-  // Converts a logical offset to a physical offset. See:
-  // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
-  // PhysicalOffset will be the physical top left point of the rectangle
-  // described by offset + inner_size. Setting inner_size to 0,0 will return
-  // the same point.
-  // @param outer_size the size of the rect (typically a fragment).
-  // @param inner_size the size of the inner rect (typically a child fragment).
-  CORE_EXPORT NGPhysicalOffset
-  ConvertToPhysical(NGWritingMode,
-                    TextDirection,
-                    NGPhysicalSize outer_size,
-                    NGPhysicalSize inner_size) const;
-
-  bool operator==(const NGLogicalOffset& other) const;
-
-  NGLogicalOffset operator+(const NGLogicalOffset& other) const;
-  NGLogicalOffset& operator+=(const NGLogicalOffset& other);
-
-  NGLogicalOffset operator-(const NGLogicalOffset& other) const;
-  NGLogicalOffset& operator-=(const NGLogicalOffset& other);
-
-  bool operator>(const NGLogicalOffset& other) const;
-  bool operator>=(const NGLogicalOffset& other) const;
-
-  bool operator<(const NGLogicalOffset& other) const;
-  bool operator<=(const NGLogicalOffset& other) const;
-
-  String ToString() const;
-};
-
-CORE_EXPORT inline std::ostream& operator<<(std::ostream& os,
-                                            const NGLogicalOffset& value) {
-  return os << value.ToString();
-}
-
-// NGPhysicalOffset is the position of a rect (typically a fragment) relative to
-// its parent rect in the physical coordinate system.
-struct CORE_EXPORT NGPhysicalOffset {
-  NGPhysicalOffset() {}
-  NGPhysicalOffset(LayoutUnit left, LayoutUnit top) : left(left), top(top) {}
-
-  LayoutUnit left;
-  LayoutUnit top;
-
-  NGPhysicalOffset operator+(const NGPhysicalOffset& other) const;
-  NGPhysicalOffset& operator+=(const NGPhysicalOffset& other);
-
-  NGPhysicalOffset operator-(const NGPhysicalOffset& other) const;
-  NGPhysicalOffset& operator-=(const NGPhysicalOffset& other);
-
-  bool operator==(const NGPhysicalOffset& other) const;
-
-  String ToString() const {
-    return String::format("%dx%d", left.toInt(), top.toInt());
-  }
-};
-
-CORE_EXPORT inline std::ostream& operator<<(std::ostream& os,
-                                            const NGPhysicalOffset& value) {
-  return os << value.ToString();
-}
-
-struct CORE_EXPORT NGPhysicalSize {
-  NGPhysicalSize() {}
-  NGPhysicalSize(LayoutUnit width, LayoutUnit height)
-      : width(width), height(height) {}
-
-  LayoutUnit width;
-  LayoutUnit height;
-
-  NGLogicalSize ConvertToLogical(NGWritingMode mode) const;
-
-  bool operator==(const NGPhysicalSize& other) const;
-
-  String ToString() const {
-    return String::format("%dx%d", width.toInt(), height.toInt());
-  }
-};
-
-inline std::ostream& operator<<(std::ostream& stream,
-                                const NGPhysicalSize& value) {
-  return stream << value.ToString();
-}
-
-// NGPhysicalLocation is the position of a rect (typically a fragment) relative
-// to the root document.
-struct NGPhysicalLocation {
-  NGPhysicalLocation() {}
-  NGPhysicalLocation(LayoutUnit left, LayoutUnit top) : left(left), top(top) {}
-  LayoutUnit left;
-  LayoutUnit top;
-};
-
-struct CORE_EXPORT NGPhysicalRect {
-  NGPhysicalRect();
-  NGPhysicalRect(const NGPhysicalLocation& location, const NGPhysicalSize& size)
-      : location(location), size(size) {}
-
-  NGPhysicalLocation Location() const { return location; }
-  NGPhysicalSize Size() const { return size; }
-  NGPixelSnappedPhysicalRect SnapToDevicePixels() const;
-
-  NGPhysicalLocation location;
-  NGPhysicalSize size;
-};
 
 // TODO(glebl): move to a separate file in layout/ng/units.
 struct CORE_EXPORT NGLogicalRect {
@@ -262,12 +127,6 @@ struct CORE_EXPORT NGExclusions {
   void Add(const NGExclusion& exclusion);
 };
 
-struct NGPixelSnappedPhysicalRect {
-  int top;
-  int left;
-  int width;
-  int height;
-};
 
 // Struct to store physical dimensions, independent of writing mode and
 // direction.

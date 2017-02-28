@@ -1298,6 +1298,8 @@ source_set("unit_tests") {
     "layout/compositing/CompositingReasonFinderTest.cpp",
     "layout/line/InlineBoxTest.cpp",
     "layout/line/InlineTextBoxTest.cpp",
+    "layout/ng/geometry/ng_logical_offset_test.cc",
+    "layout/ng/geometry/ng_physical_rect_test.cc",
     "layout/ng/ng_absolute_utils_test.cc",
     "layout/ng/ng_block_child_iterator_test.cc",
     "layout/ng/ng_block_layout_algorithm_test.cc",

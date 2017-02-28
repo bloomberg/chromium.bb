@@ -10,63 +10,6 @@ namespace blink {
 
 namespace {
 
-TEST(NGUnitsTest, ConvertLogicalOffsetToPhysicalOffset) {
-  NGLogicalOffset logical_offset(LayoutUnit(20), LayoutUnit(30));
-  NGPhysicalSize outer_size(LayoutUnit(300), LayoutUnit(400));
-  NGPhysicalSize inner_size(LayoutUnit(5), LayoutUnit(65));
-  NGPhysicalOffset offset;
-
-  offset = logical_offset.ConvertToPhysical(
-      kHorizontalTopBottom, TextDirection::kLtr, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(20), offset.left);
-  EXPECT_EQ(LayoutUnit(30), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kHorizontalTopBottom, TextDirection::kRtl, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(275), offset.left);
-  EXPECT_EQ(LayoutUnit(30), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kVerticalRightLeft, TextDirection::kLtr, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(265), offset.left);
-  EXPECT_EQ(LayoutUnit(20), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kVerticalRightLeft, TextDirection::kRtl, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(265), offset.left);
-  EXPECT_EQ(LayoutUnit(315), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kSidewaysRightLeft, TextDirection::kLtr, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(265), offset.left);
-  EXPECT_EQ(LayoutUnit(20), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kSidewaysRightLeft, TextDirection::kRtl, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(265), offset.left);
-  EXPECT_EQ(LayoutUnit(315), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kVerticalLeftRight, TextDirection::kLtr, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(30), offset.left);
-  EXPECT_EQ(LayoutUnit(20), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kVerticalLeftRight, TextDirection::kRtl, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(30), offset.left);
-  EXPECT_EQ(LayoutUnit(315), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kSidewaysLeftRight, TextDirection::kLtr, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(30), offset.left);
-  EXPECT_EQ(LayoutUnit(315), offset.top);
-
-  offset = logical_offset.ConvertToPhysical(
-      kSidewaysLeftRight, TextDirection::kRtl, outer_size, inner_size);
-  EXPECT_EQ(LayoutUnit(30), offset.left);
-  EXPECT_EQ(LayoutUnit(20), offset.top);
-}
-
 // Ideally, this would be tested by NGBoxStrut::ConvertToPhysical, but
 // this has not been implemented yet.
 TEST(NGUnitsTest, ConvertPhysicalStrutToLogical) {
@@ -114,40 +57,6 @@ TEST(NGUnitsTest, ShrinkToFit) {
   sizes.min_content = LayoutUnit(200);
   sizes.max_content = LayoutUnit(300);
   EXPECT_EQ(LayoutUnit(200), sizes.ShrinkToFit(LayoutUnit(100)));
-}
-
-TEST(NGUnitsTest, SnapToDevicePixels) {
-  NGPhysicalRect rect(NGPhysicalLocation(LayoutUnit(4.5), LayoutUnit(9.5)),
-                      NGPhysicalSize(LayoutUnit(10.5), LayoutUnit(11.5)));
-  NGPixelSnappedPhysicalRect snappedRect = rect.SnapToDevicePixels();
-  EXPECT_EQ(5, snappedRect.left);
-  EXPECT_EQ(10, snappedRect.top);
-  EXPECT_EQ(10, snappedRect.width);
-  EXPECT_EQ(11, snappedRect.height);
-
-  rect = NGPhysicalRect(NGPhysicalLocation(LayoutUnit(4), LayoutUnit(9)),
-                        NGPhysicalSize(LayoutUnit(10.5), LayoutUnit(11.5)));
-  snappedRect = rect.SnapToDevicePixels();
-  EXPECT_EQ(4, snappedRect.left);
-  EXPECT_EQ(9, snappedRect.top);
-  EXPECT_EQ(11, snappedRect.width);
-  EXPECT_EQ(12, snappedRect.height);
-
-  rect = NGPhysicalRect(NGPhysicalLocation(LayoutUnit(1.3), LayoutUnit(1.6)),
-                        NGPhysicalSize(LayoutUnit(5.8), LayoutUnit(4.3)));
-  snappedRect = rect.SnapToDevicePixels();
-  EXPECT_EQ(1, snappedRect.left);
-  EXPECT_EQ(2, snappedRect.top);
-  EXPECT_EQ(6, snappedRect.width);
-  EXPECT_EQ(4, snappedRect.height);
-
-  rect = NGPhysicalRect(NGPhysicalLocation(LayoutUnit(1.6), LayoutUnit(1.3)),
-                        NGPhysicalSize(LayoutUnit(5.8), LayoutUnit(4.3)));
-  snappedRect = rect.SnapToDevicePixels();
-  EXPECT_EQ(2, snappedRect.left);
-  EXPECT_EQ(1, snappedRect.top);
-  EXPECT_EQ(5, snappedRect.width);
-  EXPECT_EQ(5, snappedRect.height);
 }
 
 }  // namespace
