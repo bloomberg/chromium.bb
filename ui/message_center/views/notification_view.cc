@@ -173,6 +173,7 @@ void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateProgressBarView(notification);
   CreateOrUpdateListItemViews(notification);
   CreateOrUpdateIconView(notification);
+  CreateOrUpdateSmallIconView(notification);
   CreateOrUpdateImageView(notification);
   CreateOrUpdateContextMessageView(notification);
   CreateOrUpdateSettingsButtonView(notification);
@@ -199,13 +200,18 @@ NotificationView::NotificationView(MessageCenterController* controller,
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(bottom_view_);
 
+  views::ImageView* small_image_view = new views::ImageView();
+  small_image_view->SetImageSize(gfx::Size(kSmallImageSize, kSmallImageSize));
+  small_image_view->set_owned_by_client();
+  small_image_view_.reset(small_image_view);
+
   CreateOrUpdateViews(notification);
 
   // Put together the different content and control views. Layering those allows
   // for proper layout logic and it also allows the close button and small
   // image to overlap the content as needed to provide large enough click and
   // touch areas (<http://crbug.com/168822> and <http://crbug.com/168856>).
-  AddChildView(small_image());
+  AddChildView(small_image_view_.get());
   CreateOrUpdateCloseButtonView(notification);
 
   SetEventTargeter(
@@ -264,6 +270,7 @@ void NotificationView::Layout() {
   MessageView::Layout();
   gfx::Insets insets = GetInsets();
   int content_width = width() - insets.width();
+  gfx::Rect content_bounds = GetContentsBounds();
 
   // Before any resizing, set or adjust the number of message lines.
   int title_lines = 0;
@@ -303,6 +310,15 @@ void NotificationView::Layout() {
                          close_size.height());
     close_button_->SetBoundsRect(close_rect);
   }
+
+  // Small icon.
+  gfx::Size small_image_size(small_image_view_->GetPreferredSize());
+  gfx::Rect small_image_rect(small_image_size);
+  small_image_rect.set_origin(gfx::Point(
+      content_bounds.right() - small_image_size.width() - kSmallImagePadding,
+      content_bounds.bottom() - small_image_size.height() -
+          kSmallImagePadding));
+  small_image_view_->SetBoundsRect(small_image_rect);
 
   bottom_view_->SetBounds(insets.left(), bottom_y,
                           content_width, bottom_height);
@@ -569,6 +585,11 @@ void NotificationView::CreateOrUpdateIconView(
 
   gfx::ImageSkia icon = notification.icon().AsImageSkia();
   icon_view_->SetImage(icon, icon.size());
+}
+
+void NotificationView::CreateOrUpdateSmallIconView(
+    const Notification& notification) {
+  small_image_view_->SetImage(notification.small_image().AsImageSkia());
 }
 
 void NotificationView::CreateOrUpdateImageView(

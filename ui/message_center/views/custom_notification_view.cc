@@ -39,8 +39,6 @@ CustomNotificationView::CustomNotificationView(
         contents_view_->background()->get_color());
   }
 
-  AddChildView(small_image());
-
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 }

@@ -19,7 +19,6 @@
 #include "ui/views/controls/slide_out_view.h"
 
 namespace views {
-class ImageView;
 class Painter;
 class ScrollView;
 }
@@ -91,7 +90,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView {
   virtual void SetDrawBackgroundAsActive(bool active);
 
   views::View* background_view() { return background_view_; }
-  views::ImageView* small_image() { return small_image_view_.get(); }
   views::ScrollView* scroller() { return scroller_; }
   MessageCenterController* controller() { return controller_; }
 
@@ -100,7 +98,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView {
   std::string notification_id_;
   NotifierId notifier_id_;
   views::View* background_view_ = nullptr;  // Owned by views hierarchy.
-  std::unique_ptr<views::ImageView> small_image_view_;
   views::ScrollView* scroller_ = nullptr;
 
   base::string16 accessible_name_;
