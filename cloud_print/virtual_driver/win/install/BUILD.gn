@@ -59,7 +59,9 @@ grit("resources") {
   visibility = [ ":*" ]
 
   source = "virtual_driver_setup_resources.grd"
+  use_qualified_include = true
 
+  # TODO(thakis): Consider removing this in favor of the default directory.
   output_dir = "$root_gen_dir/virtual_driver_setup_resources"
 
   outputs = [

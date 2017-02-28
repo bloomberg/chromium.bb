@@ -6,8 +6,8 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chromecast/app/grit/shell_resources.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "grit/shell_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromecast {

@@ -27,7 +27,7 @@
 #include "extensions/shell/common/api/shell_behavior_features.h"
 #include "extensions/shell/common/api/shell_manifest_features.h"
 #include "extensions/shell/common/api/shell_permission_features.h"
-#include "grit/app_shell_resources.h"
+#include "extensions/shell/grit/app_shell_resources.h"
 
 namespace extensions {
 
