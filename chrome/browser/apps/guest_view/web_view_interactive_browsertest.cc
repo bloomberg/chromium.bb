@@ -1129,16 +1129,8 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, Navigation_BackForwardKeys) {
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 
-// Flaky on Linux: crbug.com/678267
-#if defined(OS_LINUX)
-#define MAYBE_PointerLock_PointerLockLostWithFocus \
-  DISABLED_PointerLock_PointerLockLostWithFocus
-#else
-#define MAYBE_PointerLock_PointerLockLostWithFocus \
-  PointerLock_PointerLockLostWithFocus
-#endif
 IN_PROC_BROWSER_TEST_P(WebViewPointerLockInteractiveTest,
-                       MAYBE_PointerLock_PointerLockLostWithFocus) {
+                       PointerLock_PointerLockLostWithFocus) {
   TestHelper("testPointerLockLostWithFocus",
              "web_view/pointerlock",
              NO_TEST_SERVER);
