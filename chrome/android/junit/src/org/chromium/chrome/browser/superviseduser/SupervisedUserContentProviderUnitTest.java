@@ -278,11 +278,11 @@ public class SupervisedUserContentProviderUnitTest {
                         anyString());
 
         WebRestrictionsResult allowed = mSupervisedUserContentProvider.shouldProceed(
-                "com.google.android.gms.ui", "https://accounts.google.com/reauth");
+                "com.google.android.gms", "https://accounts.google.com/reauth");
         assertThat(allowed.shouldProceed(), is(true));
 
         WebRestrictionsResult wrongUrl = mSupervisedUserContentProvider.shouldProceed(
-                "com.google.android.gms.ui", "http://www.example.com");
+                "com.google.android.gms", "http://www.example.com");
         assertThat(wrongUrl.shouldProceed(), is(false));
 
         WebRestrictionsResult wrongCallingPackage = mSupervisedUserContentProvider.shouldProceed(

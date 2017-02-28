@@ -45,10 +45,8 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
     private static Object sEnabledLock = new Object();
     private static Object sContentProviderLock = new Object();
 
-    private static final String TAG = "SupervisedUserContent";
-
     private static final String ACCOUNTS_GOOGLE_COM = "accounts.google.com";
-    private static final String GOOGLE_PLAY_SERVICES_UI_PACKAGE = "com.google.android.gms.ui";
+    private static final String GOOGLE_PLAY_SERVICES_PACKAGE = "com.google.android.gms";
 
     // Three value "boolean" caching enabled state, null if not yet known.
     private static Boolean sEnabled;
@@ -210,7 +208,7 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
     private boolean requestIsWhitelisted(String callingPackage, String url) {
         // Always allow Google Play Services to show the reauthentication page (which is necessary
         // to fix account issues).
-        return TextUtils.equals(callingPackage, GOOGLE_PLAY_SERVICES_UI_PACKAGE)
+        return TextUtils.equals(callingPackage, GOOGLE_PLAY_SERVICES_PACKAGE)
                 && Uri.parse(url).getHost().equals(ACCOUNTS_GOOGLE_COM);
     }
 
