@@ -4,24 +4,18 @@
 
 package org.chromium.chrome.browser.omaha;
 
-import android.app.Service;
 import android.content.Context;
 
-import org.chromium.chrome.browser.omaha.OmahaClient.PostResult;
+import org.chromium.chrome.browser.omaha.OmahaBase.PostResult;
 
-/** Delegates calls out from the OmahaClient. */
+/** Delegates calls out from {@link OmahaBase}. */
 public abstract class OmahaDelegate {
-    protected final Context mContext;
     private RequestGenerator mRequestGenerator;
 
-    OmahaDelegate(Context context) {
-        mContext = context;
-    }
+    OmahaDelegate() {}
 
     /** @return Context that is used to interact with the system. */
-    Context getContext() {
-        return mContext;
-    }
+    abstract Context getContext();
 
     /** @return Whether Chrome is installed as part of the system image. */
     abstract boolean isInSystemImage();
@@ -42,37 +36,37 @@ public abstract class OmahaDelegate {
     abstract boolean isChromeBeingUsed();
 
     /**
-     * Schedules the {@link Service} to run again at the given time.
-     * @param service         Service that is doing the scheduling.
-     * @param nextTimestampMs When the service should be run again.
+     * Schedules the Omaha client to run again.
+     * @param currentTimestampMs Current time.
+     * @param nextTimestampMs    When the service should be run again.
      */
-    abstract void scheduleService(Service service, long nextTimestampMs);
+    abstract void scheduleService(long currentTimestampMs, long nextTimestampMs);
 
     /** Creates a {@link RequestGenerator}. */
     abstract RequestGenerator createRequestGenerator(Context context);
 
     /**
-     * Called when {@link OmahaClient#registerNewRequest} finishes.
+     * Called when {@link OmahaBase#registerNewRequest} finishes.
      * @param timestampRequestMs When the next active user request should be generated.
      * @param timestampPostMs    Earliest time the next POST should be allowed.
      */
     void onRegisterNewRequestDone(long timestampRequestMs, long timestampPostMs) {}
 
     /**
-     * Called when {@link OmahaClient#handlePostRequest} finishes.
+     * Called when {@link OmahaBase#handlePostRequest} finishes.
      * @param result              See {@link PostResult}.
      * @param installEventWasSent Whether or not an install event was sent.
      */
     void onHandlePostRequestDone(@PostResult int result, boolean installEventWasSent) {}
 
     /**
-     * Called when {@link OmahaClient#generateAndPostRequest} finishes.
+     * Called when {@link OmahaBase#generateAndPostRequest} finishes.
      * @param succeeded Whether or not the post was successfully received by the server.
      */
     void onGenerateAndPostRequestDone(boolean succeeded) {}
 
     /**
-     * Called when {@link OmahaClient#saveState} finishes.
+     * Called when {@link OmahaBase#saveState} finishes.
      * @param timestampRequestMs When the next active user request should be generated.
      * @param timestampPostMs    Earliest time the next POST should be allowed.
      */

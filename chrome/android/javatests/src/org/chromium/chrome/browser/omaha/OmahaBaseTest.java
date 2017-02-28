@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omaha;
 
-import android.app.Service;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.test.filters.SmallTest;
@@ -34,7 +33,7 @@ import java.util.List;
  * provides a way to hook into functions to return values that would normally be provided by the
  * system, such as whether Chrome was installed through the system image.
  */
-public class OmahaClientTest extends InstrumentationTestCase {
+public class OmahaBaseTest extends InstrumentationTestCase {
     private static class TimestampPair {
         public long timestampNextRequest;
         public long timestampNextPost;
@@ -49,6 +48,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         private final List<Integer> mPostResults = new ArrayList<Integer>();
         private final List<Boolean> mGenerateAndPostRequestResults = new ArrayList<Boolean>();
 
+        private final Context mContext;
         private final boolean mIsOnTablet;
         private final boolean mIsInForeground;
         private final boolean mIsInSystemImage;
@@ -63,13 +63,13 @@ public class OmahaClientTest extends InstrumentationTestCase {
         private TimestampPair mTimestampsOnSaveState;
 
         MockOmahaDelegate(Context context, DeviceType deviceType, InstallSource installSource) {
-            super(context);
+            mContext = context;
             mIsOnTablet = deviceType == DeviceType.TABLET;
             mIsInForeground = true;
             mIsInSystemImage = installSource == InstallSource.SYSTEM_IMAGE;
 
             mMockScheduler = new MockExponentialBackoffScheduler(OmahaBase.PREF_PACKAGE, context,
-                    OmahaClient.MS_POST_BASE_DELAY, OmahaClient.MS_POST_MAX_DELAY);
+                    OmahaBase.MS_POST_BASE_DELAY, OmahaBase.MS_POST_MAX_DELAY);
         }
 
         @Override
@@ -101,8 +101,8 @@ public class OmahaClientTest extends InstrumentationTestCase {
         }
 
         @Override
-        void scheduleService(Service service, long nextTimestamp) {
-            mNextScheduledTimestamp = nextTimestamp;
+        void scheduleService(long currentTimestampMs, long nextTimestampMs) {
+            mNextScheduledTimestamp = nextTimestampMs;
         }
 
         @Override
@@ -126,6 +126,11 @@ public class OmahaClientTest extends InstrumentationTestCase {
         void onSaveStateDone(long nextRequestTimestamp, long nextPostTimestamp) {
             mTimestampsOnSaveState = new TimestampPair(nextRequestTimestamp, nextPostTimestamp);
         }
+
+        @Override
+        Context getContext() {
+            return mContext;
+        }
     }
 
     private enum InstallSource { SYSTEM_IMAGE, ORGANIC }
@@ -136,18 +141,16 @@ public class OmahaClientTest extends InstrumentationTestCase {
 
     private AdvancedMockContext mContext;
     private MockOmahaDelegate mDelegate;
-    private MockOmahaClient mOmahaClient;
+    private MockOmahaBase mOmahaBase;
 
-    private MockOmahaClient createOmahaClient() {
-        return createOmahaClient(
+    private MockOmahaBase createOmahaBase() {
+        return createOmahaBase(
                 ServerResponse.SUCCESS, ConnectionStatus.RESPONDS, DeviceType.HANDSET);
     }
 
-    private MockOmahaClient createOmahaClient(
+    private MockOmahaBase createOmahaBase(
             ServerResponse response, ConnectionStatus status, DeviceType deviceType) {
-        MockOmahaClient omahaClient = new MockOmahaClient(mContext, response, status, deviceType);
-        omahaClient.onCreate();
-        omahaClient.restoreState(mContext);
+        MockOmahaBase omahaClient = new MockOmahaBase(mDelegate, response, status, deviceType);
         return omahaClient;
     }
 
@@ -165,18 +168,16 @@ public class OmahaClientTest extends InstrumentationTestCase {
         super.tearDown();
     }
 
-    private class MockOmahaClient extends OmahaClient {
+    private class MockOmahaBase extends OmahaBase {
         private final LinkedList<MockConnection> mMockConnections = new LinkedList<>();
 
         private final boolean mSendValidResponse;
         private final boolean mConnectionTimesOut;
         private final boolean mIsOnTablet;
 
-        public MockOmahaClient(Context context, ServerResponse serverResponse,
+        public MockOmahaBase(OmahaDelegate delegate, ServerResponse serverResponse,
                 ConnectionStatus connectionStatus, DeviceType deviceType) {
-            attachBaseContext(context);
-            setDelegateForTests(mDelegate);
-
+            super(delegate);
             mSendValidResponse = serverResponse == ServerResponse.SUCCESS;
             mConnectionTimesOut = connectionStatus == ConnectionStatus.TIMES_OUT;
             mIsOnTablet = deviceType == DeviceType.TABLET;
@@ -235,22 +236,22 @@ public class OmahaClientTest extends InstrumentationTestCase {
         mDelegate.getScheduler().setCurrentTime(now);
 
         // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.run();
 
         // A fresh install results in two requests to the Omaha server: one for the install request
         // and one for the ping request.
         assertTrue(mDelegate.mInstallEventWasSent);
         assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
         assertEquals(2, mDelegate.mGenerateAndPostRequestResults.size());
         assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
         assertTrue(mDelegate.mGenerateAndPostRequestResults.get(1));
 
         // Successful requests mean that the next scheduled event should be checking for when the
         // user is active.
-        assertEquals(now + OmahaClient.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
+        assertEquals(now + OmahaBase.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
+        checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
@@ -270,20 +271,20 @@ public class OmahaClientTest extends InstrumentationTestCase {
         editor.apply();
 
         // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.run();
 
         // Only the regular ping should have been sent.
         assertFalse(mDelegate.mInstallEventWasSent);
         assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
         assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
         assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // Successful requests mean that the next scheduled event should be checking for when the
         // user is active.
-        assertEquals(now + OmahaClient.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
+        assertEquals(now + OmahaBase.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
+        checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
@@ -301,8 +302,8 @@ public class OmahaClientTest extends InstrumentationTestCase {
         prefs.edit().putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, later).apply();
 
         // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.run();
 
         // Nothing should have been POSTed.
         assertEquals(0, mDelegate.mPostResults.size());
@@ -339,15 +340,15 @@ public class OmahaClientTest extends InstrumentationTestCase {
         editor.apply();
 
         // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.run();
 
         // Request generation code should be skipped.
         assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Should be too early to post, causing it to be rescheduled.
         assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SCHEDULED, mDelegate.mPostResults.get(0).intValue());
+        assertEquals(OmahaBase.POST_RESULT_SCHEDULED, mDelegate.mPostResults.get(0).intValue());
         assertEquals(0, mDelegate.mGenerateAndPostRequestResults.size());
 
         // The next scheduled event is the POST.  Because request generation code wasn't run, the
@@ -381,22 +382,22 @@ public class OmahaClientTest extends InstrumentationTestCase {
         editor.apply();
 
         // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.run();
 
         // Registering code shouldn't have fired.
         assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Because we didn't send an install event, only one POST should have occurred.
         assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
         assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
         assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // The next scheduled event is the request generation because there is nothing to POST.
         // A successful POST adjusts all timestamps for the current time.
         assertEquals(timeRegisterNewRequest, mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
+        checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
@@ -406,7 +407,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         final long timeGeneratedRequest = 0L;
         final long now = 10000L;
         final long timeSendNewPost = now;
-        final long timeRegisterNewRequest = timeGeneratedRequest + OmahaClient.MS_BETWEEN_REQUESTS;
+        final long timeRegisterNewRequest = timeGeneratedRequest + OmahaBase.MS_BETWEEN_REQUESTS;
 
         mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
         mDelegate.getScheduler().setCurrentTime(now);
@@ -425,16 +426,16 @@ public class OmahaClientTest extends InstrumentationTestCase {
         editor.apply();
 
         // Trigger Omaha.
-        mOmahaClient = createOmahaClient(
+        mOmahaBase = createOmahaBase(
                 ServerResponse.FAILURE, ConnectionStatus.RESPONDS, DeviceType.HANDSET);
-        mOmahaClient.run();
+        mOmahaBase.run();
 
         // Registering code shouldn't have fired.
         assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Because we didn't send an install event, only one POST should have occurred.
         assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_FAILED, mDelegate.mPostResults.get(0).intValue());
+        assertEquals(OmahaBase.POST_RESULT_FAILED, mDelegate.mPostResults.get(0).intValue());
         assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
         assertFalse(mDelegate.mGenerateAndPostRequestResults.get(0));
 
@@ -442,7 +443,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         // because no failures have happened yet.
         assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextPost,
                 mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(timeRegisterNewRequest, now + OmahaClient.MS_POST_BASE_DELAY,
+        checkTimestamps(timeRegisterNewRequest, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
@@ -450,7 +451,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
     @Feature({"Omaha"})
     public void testTimestampWithinBounds() {
         final long now = 0L;
-        final long timeRegisterNewRequest = OmahaClient.MS_BETWEEN_REQUESTS + 1;
+        final long timeRegisterNewRequest = OmahaBase.MS_BETWEEN_REQUESTS + 1;
 
         mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
         mDelegate.getScheduler().setCurrentTime(now);
@@ -464,22 +465,22 @@ public class OmahaClientTest extends InstrumentationTestCase {
         editor.apply();
 
         // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.run();
 
         // Request generation code should fire.
         assertNotNull(mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Because we didn't send an install event, only one POST should have occurred.
         assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
         assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
         assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // The next scheduled event should be the timestamp for a new request generation.
         assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextRequest,
                 mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
+        checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
@@ -490,7 +491,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         final long now = 10000L;
         final long timeSendNewPost = now;
         final long timeRegisterNewRequest =
-                timeGeneratedRequest + OmahaClient.MS_BETWEEN_REQUESTS * 5;
+                timeGeneratedRequest + OmahaBase.MS_BETWEEN_REQUESTS * 5;
 
         mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
         mDelegate.getScheduler().setCurrentTime(now);
@@ -507,23 +508,23 @@ public class OmahaClientTest extends InstrumentationTestCase {
         editor.apply();
 
         // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.run();
 
         // Registering code shouldn't have fired.
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now,
+        checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now,
                 mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Because we didn't send an install event, only one POST should have occurred.
         assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
         assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
         assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // The next scheduled event should be the registration event.
         assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextRequest,
                 mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
+        checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
@@ -585,8 +586,8 @@ public class OmahaClientTest extends InstrumentationTestCase {
             response += "<response protocol=\"3.0\" server=\"prod\">";
             response += "<daystart elapsed_seconds=\"12345\"/>";
             response += "<app appid=\"";
-            response += (isOnTablet
-                    ? MockRequestGenerator.UUID_TABLET : MockRequestGenerator.UUID_PHONE);
+            response += (isOnTablet ? MockRequestGenerator.UUID_TABLET
+                                    : MockRequestGenerator.UUID_PHONE);
             response += "\" status=\"ok\">";
             if (sendInstallEvent) {
                 response += "<event status=\"ok\"/>";
@@ -640,7 +641,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
             if (mNumTimesResponseCodeRetrieved == 0) {
                 // The output stream should now have the generated XML for the request.
                 // Check if its length is correct.
-                assertEquals("Expected OmahaClient to write out certain number of bytes",
+                assertEquals("Expected OmahaBase to write out certain number of bytes",
                         mContentLength, mOutputStream.toByteArray().length);
             }
             assertTrue("Tried to retrieve response code more than twice",

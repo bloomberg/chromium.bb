@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omaha;
 
-import android.app.Service;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 
@@ -15,13 +14,19 @@ import org.chromium.chrome.browser.ChromeApplication;
 import java.util.UUID;
 
 /** Delegates calls out from the OmahaClient. */
-public class OmahaDelegateImpl extends OmahaDelegate {
+public abstract class OmahaDelegateBase extends OmahaDelegate {
     private final ExponentialBackoffScheduler mScheduler;
+    private final Context mContext;
 
-    OmahaDelegateImpl(Context context) {
-        super(context);
+    OmahaDelegateBase(Context context) {
+        mContext = context;
         mScheduler = new ExponentialBackoffScheduler(OmahaBase.PREF_PACKAGE, context,
-                OmahaClient.MS_POST_BASE_DELAY, OmahaClient.MS_POST_MAX_DELAY);
+                OmahaBase.MS_POST_BASE_DELAY, OmahaBase.MS_POST_MAX_DELAY);
+    }
+
+    @Override
+    Context getContext() {
+        return mContext;
     }
 
     @Override
@@ -44,15 +49,6 @@ public class OmahaDelegateImpl extends OmahaDelegate {
         boolean isChromeVisible = ApplicationStatus.hasVisibleActivities();
         boolean isScreenOn = ApiCompatibilityUtils.isInteractive(getContext());
         return isChromeVisible && isScreenOn;
-    }
-
-    @Override
-    void scheduleService(Service service, long nextTimestamp) {
-        if (service instanceof OmahaClient) {
-            getScheduler().createAlarm(OmahaClient.createOmahaIntent(getContext()), nextTimestamp);
-        } else {
-            // TODO(dfalcantara): Do something here with a JobService.
-        }
     }
 
     @Override
