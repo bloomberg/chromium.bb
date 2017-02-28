@@ -19,6 +19,9 @@ DesktopPromotionSyncService::~DesktopPromotionSyncService() = default;
 // static
 void DesktopPromotionSyncService::RegisterDesktopPromotionUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kDesktopIOSPromotionEligible, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterIntegerPref(
       prefs::kDesktopIOSPromotionSMSEntryPoint, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);

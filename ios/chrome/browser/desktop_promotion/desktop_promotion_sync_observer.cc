@@ -19,7 +19,7 @@ namespace {
 // These values are written to logs.  New values can be added, but existing
 // values must never be reordered or deleted and reused.
 const char* kDesktopIOSPromotionEntrypointHistogramPrefix[] = {
-    "SavePasswordsNewBubble", "BookmarksNewBubble", "BookmarksExistingBubble",
+    "SavePasswordsNewBubble", "BookmarksNewBubble", "BookmarksFootNote",
     "HistoryPage",
 };
 
@@ -47,12 +47,18 @@ void DesktopPromotionSyncObserver::OnStateChanged(syncer::SyncService* sync) {
   desktop_metrics_logger_initiated_ = true;
   bool done_logging =
       pref_service_->GetBoolean(prefs::kDesktopIOSPromotionDone);
+  bool is_eligible =
+      pref_service_->GetBoolean(prefs::kDesktopIOSPromotionEligible);
   double last_impression =
       pref_service_->GetDouble(prefs::kDesktopIOSPromotionLastImpression);
   base::TimeDelta delta =
       base::Time::Now() - base::Time::FromDoubleT(last_impression);
   if (done_logging || delta.InDays() >= 7) {
     sync_service_->RemoveObserver(this);
+    // If the user was eligible but didn't see the promo on the last 7 days and
+    // installed Chrome then their eligiblity pref is reset to false.
+    if (delta.InDays() >= 7 && is_eligible)
+      pref_service_->SetBoolean(prefs::kDesktopIOSPromotionEligible, false);
     return;
   }
 
@@ -64,8 +70,8 @@ void DesktopPromotionSyncObserver::OnStateChanged(syncer::SyncService* sync) {
       pref_service_->GetInteger(prefs::kDesktopIOSPromotionShownEntryPoints);
 
   // Entry points are represented on the preference by integers [1..4].
-  // TODO(crbug.com/681885): Add reference to the Entry point Constants defined
-  // in the desktop code side.
+  // Entry points constants are defined on:
+  // chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h
   int entrypoint_prefixes_count =
       arraysize(kDesktopIOSPromotionEntrypointHistogramPrefix);
   for (int i = 1; i < entrypoint_prefixes_count + 1; i++) {
