@@ -90,27 +90,27 @@ typedef struct {
 /** Decodes a single vector of integers (eg, a partition within a
  *  coefficient block) encoded using PVQ
  *
- * @param [in,out] ec      range encoder
- * @param [in]     q0      scale/quantizer
- * @param [in]     n       number of coefficients in partition
- * @param [in,out] model   entropy decoder state
- * @param [in,out] adapt   adaptation context
- * @param [in,out] exg     ExQ16 expectation of decoded gain value
- * @param [in,out] ext     ExQ16 expectation of decoded theta value
- * @param [in]     ref     'reference' (prediction) vector
- * @param [out]    out     decoded partition
- * @param [out]    noref   boolean indicating absence of reference
- * @param [in]     beta    per-band activity masking beta param
- * @param [in]     robust  stream is robust to error in the reference
+ * @param [in,out] ec          range encoder
+ * @param [in]     q0          scale/quantizer
+ * @param [in]     n           number of coefficients in partition
+ * @param [in,out] model       entropy decoder state
+ * @param [in,out] adapt       adaptation context
+ * @param [in,out] exg         ExQ16 expectation of decoded gain value
+ * @param [in,out] ext         ExQ16 expectation of decoded theta value
+ * @param [in]     ref         'reference' (prediction) vector
+ * @param [out]    out         decoded partition
+ * @param [out]    noref       boolean indicating absence of reference
+ * @param [in]     beta        per-band activity masking beta param
+ * @param [in]     nodesync    stream is robust to error in the reference
  * @param [in]     is_keyframe whether we're encoding a keyframe
- * @param [in]     pli     plane index
- * @param [in]     cdf_ctx selects which cdf context to use
- * @param [in,out] skip_rest whether to skip further bands in each direction
- * @param [in]     band    index of the band being decoded
- * @param [in]     band    index of the band being decoded
- * @param [out]    skip    skip flag with range [0,1]
- * @param [in]     qm      QM with magnitude compensation
- * @param [in]     qm_inv  Inverse of QM with magnitude compensation
+ * @param [in]     pli         plane index
+ * @param [in]     cdf_ctx     selects which cdf context to use
+ * @param [in,out] skip_rest   whether to skip further bands in each direction
+ * @param [in]     band        index of the band being decoded
+ * @param [in]     band        index of the band being decoded
+ * @param [out]    skip        skip flag with range [0,1]
+ * @param [in]     qm          QM with magnitude compensation
+ * @param [in]     qm_inv      Inverse of QM with magnitude compensation
  */
 static void pvq_decode_partition(aom_reader *r,
                                  int q0,
@@ -123,7 +123,7 @@ static void pvq_decode_partition(aom_reader *r,
                                  od_coeff *out,
                                  int *noref,
                                  od_val16 beta,
-                                 int robust,
+                                 int nodesync,
                                  int is_keyframe,
                                  int pli,
                                  int cdf_ctx,
@@ -143,7 +143,6 @@ static void pvq_decode_partition(aom_reader *r,
   od_val32 gain_offset;
   od_coeff y[MAXN];
   int qg;
-  int nodesync;
   int id;
   int i;
   od_val16 ref16[MAXN];
@@ -151,9 +150,6 @@ static void pvq_decode_partition(aom_reader *r,
   theta = 0;
   gr = 0;
   gain_offset = 0;
-  /* We always use the robust bitstream for keyframes to avoid having
-     PVQ and entropy decoding depending on each other, hurting parallelism. */
-  nodesync = robust || is_keyframe;
   /* Skip is per-direction. For band=0, we can use any of the flags. */
   if (skip_rest[(band + 2) % 3]) {
     qg = 0;
@@ -278,19 +274,19 @@ static void pvq_decode_partition(aom_reader *r,
 
 /** Decodes a coefficient block (except for DC) encoded using PVQ
  *
- * @param [in,out] dec     daala decoder context
- * @param [in]     ref     'reference' (prediction) vector
- * @param [out]    out     decoded partition
- * @param [in]     q0      quantizer
- * @param [in]     pli     plane index
- * @param [in]     bs      log of the block size minus two
- * @param [in]     beta    per-band activity masking beta param
- * @param [in]     robust  stream is robust to error in the reference
+ * @param [in,out] dec         daala decoder context
+ * @param [in]     ref         'reference' (prediction) vector
+ * @param [out]    out         decoded partition
+ * @param [in]     q0          quantizer
+ * @param [in]     pli         plane index
+ * @param [in]     bs          log of the block size minus two
+ * @param [in]     beta        per-band activity masking beta param
+ * @param [in]     nodesync    stream is robust to error in the reference
  * @param [in]     is_keyframe whether we're encoding a keyframe
- * @param [out]    flags   bitmask of the per band skip and noref flags
+ * @param [out]    flags       bitmask of the per band skip and noref flags
  * @param [in]     ac_dc_coded skip flag for the block (range 0-3)
- * @param [in]     qm      QM with magnitude compensation
- * @param [in]     qm_inv  Inverse of QM with magnitude compensation
+ * @param [in]     qm          QM with magnitude compensation
+ * @param [in]     qm_inv      Inverse of QM with magnitude compensation
  */
 void od_pvq_decode(daala_dec_ctx *dec,
                    od_coeff *ref,
@@ -299,7 +295,7 @@ void od_pvq_decode(daala_dec_ctx *dec,
                    int pli,
                    int bs,
                    const od_val16 *beta,
-                   int robust,
+                   int nodesync,
                    int is_keyframe,
                    unsigned int *flags,
                    PVQ_SKIP_TYPE ac_dc_coded,
@@ -360,7 +356,7 @@ void od_pvq_decode(daala_dec_ctx *dec,
 
       pvq_decode_partition(dec->r, q, size[i],
        model, &dec->state.adapt, exg + i, ext + i, ref + off[i], out + off[i],
-       &noref[i], beta[i], robust, is_keyframe, pli,
+       &noref[i], beta[i], nodesync, is_keyframe, pli,
        (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS + bs*PVQ_MAX_PARTITIONS + i,
        &cfl, i == 0 && (i < nb_bands - 1), skip_rest, i, &skip[i],
        qm + off[i], qm_inv + off[i]);

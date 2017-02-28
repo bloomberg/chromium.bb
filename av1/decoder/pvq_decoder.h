@@ -28,7 +28,7 @@ int aom_laplace_decode_special_(aom_reader *r, unsigned decay,
  int max ACCT_STR_PARAM);
 
 void od_pvq_decode(daala_dec_ctx *dec, od_coeff *ref, od_coeff *out, int q0,
-    int pli, int bs, const od_val16 *beta, int robust, int is_keyframe,
+    int pli, int bs, const od_val16 *beta, int nodesync, int is_keyframe,
     unsigned int *flags, PVQ_SKIP_TYPE ac_dc_coded, const int16_t *qm,
     const int16_t *qm_inv);
 

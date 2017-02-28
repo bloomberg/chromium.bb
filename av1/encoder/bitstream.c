@@ -2343,7 +2343,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
           const int is_keyframe = 0;
           const int encode_flip = 0;
           const int flip = 0;
-          const int robust = 1;
+          const int nodesync = 1;
           int i;
           const int has_dc_skip = 1;
           int *exg = &adapt->pvq.pvq_exg[plane][tx_size][0];
@@ -2366,7 +2366,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                 pvq_encode_partition(
                     w, pvq->qg[i], pvq->theta[i], pvq->max_theta[i],
                     pvq->y + pvq->off[i], pvq->size[i], pvq->k[i], model, adapt,
-                    exg + i, ext + i, robust || is_keyframe,
+                    exg + i, ext + i, nodesync,
                     (plane != 0) * OD_TXSIZES * PVQ_MAX_PARTITIONS +
                         pvq->bs * PVQ_MAX_PARTITIONS + i,
                     is_keyframe, i == 0 && (i < pvq->nb_bands - 1),
