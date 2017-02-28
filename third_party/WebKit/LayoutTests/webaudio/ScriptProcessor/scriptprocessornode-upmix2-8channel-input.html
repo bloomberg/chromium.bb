@@ -2,35 +2,34 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
-<script type="text/javascript" src="../resources/scriptprocessornode-testing.js"></script>
+<script src="../resources/audit.js"></script>
+<script src="../resources/scriptprocessornode-testing-audit.js"></script>
 </head>
 
 <body>
-
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Tests upmixing a 2-channel source connected to a JavaScriptAudioNode with 8-channel input.");
+let audit = Audit.createTaskRunner();
 
-var sampleRate = 44100.0;
-var sourceChannels = 2;
-var inputChannels = 8;
-var outputChannels = 6;
+let sampleRate = 44100.0;
+let sourceChannels = 2;
+let inputChannels = 8;
+let outputChannels = 6;
 
-window.jsTestIsAsync = true;
+audit.define(
+    {
+      label: 'test',
+      description:
+          'upmix a 2-channel source ScriptProcessorNode with 8-channel output'
+    },
+    (task, should) => {
+      runJSNodeTest(should).then(() => task.done());
+      ;
+    });
 
-function runTest() {
-    if (window.testRunner)
-        testRunner.dumpAsText();
-    runJSNodeTest();
-}
-
-runTest();
-
+audit.run();
 </script>
 
 </body>
