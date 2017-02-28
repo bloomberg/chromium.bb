@@ -27,7 +27,7 @@ void CupsPrintJobNotificationManager::OnPrintJobCreated(CupsPrintJob* job) {
   if (base::ContainsKey(notification_map_, job))
     return;
   notification_map_[job] =
-      base::MakeUnique<CupsPrintJobNotification>(job, profile_);
+      base::MakeUnique<CupsPrintJobNotification>(this, job, profile_);
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobStarted(CupsPrintJob* job) {
@@ -56,6 +56,20 @@ void CupsPrintJobNotificationManager::OnPrintJobError(CupsPrintJob* job) {
 
 void CupsPrintJobNotificationManager::OnPrintJobCancelled(CupsPrintJob* job) {
   UpdateNotification(job);
+}
+
+void CupsPrintJobNotificationManager::OnPrintJobNotificationRemoved(
+    CupsPrintJobNotification* notification) {
+  // |job| might be a nullptr at this moment, so we iterate through
+  // |notification_map_| to find |notification|.
+  auto it = notification_map_.begin();
+  for (; it != notification_map_.end(); it++) {
+    if (it->second.get() == notification)
+      break;
+  }
+
+  if (it != notification_map_.end())
+    notification_map_.erase(it);
 }
 
 void CupsPrintJobNotificationManager::UpdateNotification(CupsPrintJob* job) {

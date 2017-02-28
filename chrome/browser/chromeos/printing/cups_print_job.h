@@ -62,6 +62,9 @@ class CupsPrintJob {
   void set_state(State state) { state_ = state; }
   void set_error_code(ErrorCode error_code) { error_code_ = error_code; }
 
+  // Returns true if |state_| represents a terminal state.
+  bool IsJobFinished();
+
  private:
   Printer printer_;
   int job_id_;

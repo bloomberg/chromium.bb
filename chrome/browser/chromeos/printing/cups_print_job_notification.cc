@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_notification_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -59,9 +60,12 @@ class CupsPrintJobNotificationDelegate : public NotificationDelegate {
 
 }  // namespace
 
-CupsPrintJobNotification::CupsPrintJobNotification(CupsPrintJob* print_job,
-                                                   Profile* profile)
-    : notification_id_(print_job->GetUniqueId()),
+CupsPrintJobNotification::CupsPrintJobNotification(
+    CupsPrintJobNotificationManager* manager,
+    CupsPrintJob* print_job,
+    Profile* profile)
+    : notification_manager_(manager),
+      notification_id_(print_job->GetUniqueId()),
       print_job_(print_job),
       delegate_(new CupsPrintJobNotificationDelegate(this)),
       profile_(profile) {
@@ -95,6 +99,10 @@ void CupsPrintJobNotification::CloseNotificationByUser() {
   closed_in_middle_ = true;
   g_browser_process->message_center()->RemoveNotification(GetNotificationId(),
                                                           true /* by_user */);
+  if (!print_job_ ||
+      print_job_->state() == CupsPrintJob::State::STATE_SUSPENDED) {
+    notification_manager_->OnPrintJobNotificationRemoved(this);
+  }
 }
 
 void CupsPrintJobNotification::ClickOnNotificationButton(int button_index) {
@@ -114,6 +122,7 @@ void CupsPrintJobNotification::ClickOnNotificationButton(int button_index) {
         g_browser_process->notification_ui_manager()->CancelById(
             GetNotificationId(), profile_id);
         cancelled_by_user_ = true;
+        notification_manager_->OnPrintJobNotificationRemoved(this);
       }
       break;
     case ButtonCommand::PAUSE_PRINTING:
@@ -160,6 +169,11 @@ void CupsPrintJobNotification::UpdateNotification() {
         GetNotificationId(), profile_id);
     g_browser_process->notification_ui_manager()->Add(*notification_, profile_);
   }
+
+  // |print_job_| will be deleted by CupsPrintJobManager if the job is finished
+  // and we are not supposed to get any notification update after that.
+  if (print_job_->IsJobFinished())
+    print_job_ = nullptr;
 }
 
 void CupsPrintJobNotification::UpdateNotificationTitle() {

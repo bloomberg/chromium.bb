@@ -61,14 +61,6 @@ chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
   return cpj::STATE_NONE;
 }
 
-// Returns true if |state| represents a terminal state.
-bool JobFinished(chromeos::CupsPrintJob::State state) {
-  using chromeos::CupsPrintJob;
-  return state == CupsPrintJob::State::STATE_CANCELLED ||
-         state == CupsPrintJob::State::STATE_ERROR ||
-         state == CupsPrintJob::State::STATE_DOCUMENT_DONE;
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -197,7 +189,7 @@ void CupsPrintJobManagerImpl::UpdateJobs(
       JobStateUpdated(print_job, ConvertState(job.state));
 
       // Cleanup completed jobs.
-      if (JobFinished(print_job->state())) {
+      if (print_job->IsJobFinished()) {
         jobs_.erase(entry);
       } else {
         active_jobs.push_back(key);

@@ -39,6 +39,8 @@ class CupsPrintJobNotificationManager : public CupsPrintJobManager::Observer {
   void OnPrintJobError(CupsPrintJob* job) override;
   void OnPrintJobCancelled(CupsPrintJob* job) override;
 
+  void OnPrintJobNotificationRemoved(CupsPrintJobNotification* notification);
+
  private:
   void UpdateNotification(CupsPrintJob* job);
 

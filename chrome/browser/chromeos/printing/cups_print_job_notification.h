@@ -17,6 +17,7 @@ class Profile;
 namespace chromeos {
 
 class CupsPrintJob;
+class CupsPrintJobNotificationManager;
 
 // CupsPrintJobNotification is used to update the notification of a print job
 // according to its state and respond to the user's action.
@@ -29,7 +30,9 @@ class CupsPrintJobNotification {
     GET_HELP,
   };
 
-  CupsPrintJobNotification(CupsPrintJob* print_job, Profile* profile);
+  CupsPrintJobNotification(CupsPrintJobNotificationManager* manager,
+                           CupsPrintJob* print_job,
+                           Profile* profile);
   ~CupsPrintJobNotification();
 
   void OnPrintJobStatusUpdated();
@@ -52,6 +55,7 @@ class CupsPrintJobNotification {
   base::string16 GetButtonLabel(ButtonCommand button) const;
   gfx::Image GetButtonIcon(ButtonCommand button) const;
 
+  CupsPrintJobNotificationManager* notification_manager_;
   std::unique_ptr<Notification> notification_;
   std::string notification_id_;
   CupsPrintJob* print_job_;

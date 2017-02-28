@@ -29,4 +29,10 @@ std::string CupsPrintJob::GetUniqueId(const std::string& printer_id,
   return base::StringPrintf("%s%d", printer_id.c_str(), job_id);
 }
 
+bool CupsPrintJob::IsJobFinished() {
+  return state_ == CupsPrintJob::State::STATE_CANCELLED ||
+         state_ == CupsPrintJob::State::STATE_ERROR ||
+         state_ == CupsPrintJob::State::STATE_DOCUMENT_DONE;
+}
+
 }  // namespace chromeos

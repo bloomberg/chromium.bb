@@ -122,10 +122,13 @@ void FakeCupsPrintJobManager::ChangePrintJobState(CupsPrintJob* job) {
       }
       break;
     case CupsPrintJob::State::STATE_DOCUMENT_DONE:
-      // Only for testing
-      job->set_state(CupsPrintJob::State::STATE_ERROR);
-      job->set_error_code(CupsPrintJob::ErrorCode::UNKNOWN_ERROR);
-      NotifyJobError(job);
+      // Delete |job| since it's completed.
+      for (auto iter = print_jobs_.begin(); iter != print_jobs_.end(); ++iter) {
+        if (iter->get() == job) {
+          print_jobs_.erase(iter);
+          break;
+        }
+      }
       break;
     default:
       break;
