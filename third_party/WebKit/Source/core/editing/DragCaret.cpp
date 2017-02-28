@@ -72,10 +72,6 @@ void DragCaret::setCaretPosition(const PositionWithAffinity& position) {
     document = &node->document();
     setContext(document);
   }
-  if (!m_position.isNull()) {
-    DCHECK(!m_position.isOrphan());
-    document->updateStyleAndLayoutTree();
-  }
 }
 
 void DragCaret::nodeChildrenWillBeRemoved(ContainerNode& container) {
