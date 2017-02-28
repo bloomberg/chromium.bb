@@ -1018,6 +1018,66 @@ TEST_F(LayerTreeHostImplTest, ScrollWithOverlappingNonScrollableLayer) {
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
 }
 
+TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  gfx::Size content_size = gfx::Size(360, 600);
+  gfx::Size scroll_content_size = gfx::Size(345, 3800);
+  gfx::Size scrollbar_size = gfx::Size(15, 600);
+
+  host_impl_->SetViewportSize(content_size);
+  std::unique_ptr<LayerImpl> root = LayerImpl::Create(layer_tree_impl, 1);
+  root->SetBounds(content_size);
+  root->SetPosition(gfx::PointF());
+
+  std::unique_ptr<LayerImpl> clip = LayerImpl::Create(layer_tree_impl, 2);
+  clip->SetBounds(content_size);
+  clip->SetPosition(gfx::PointF());
+
+  std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 3);
+  scroll->SetBounds(scroll_content_size);
+  scroll->SetScrollClipLayer(clip->id());
+  scroll->SetDrawsContent(true);
+
+  std::unique_ptr<SolidColorScrollbarLayerImpl> drawn_scrollbar =
+      SolidColorScrollbarLayerImpl::Create(layer_tree_impl, 4, VERTICAL, 10, 0,
+                                           false, true);
+  drawn_scrollbar->SetBounds(scrollbar_size);
+  drawn_scrollbar->SetPosition(gfx::PointF(345, 0));
+  drawn_scrollbar->SetScrollLayerId(scroll->id());
+  drawn_scrollbar->SetDrawsContent(true);
+  drawn_scrollbar->test_properties()->opacity = 1.f;
+
+  std::unique_ptr<LayerImpl> squash = LayerImpl::Create(layer_tree_impl, 5);
+  squash->SetBounds(gfx::Size(140, 300));
+  squash->SetPosition(gfx::PointF(220, 0));
+  squash->SetDrawsContent(true);
+
+  scroll->test_properties()->AddChild(std::move(drawn_scrollbar));
+  scroll->test_properties()->AddChild(std::move(squash));
+  clip->test_properties()->AddChild(std::move(scroll));
+  root->test_properties()->AddChild(std::move(clip));
+
+  layer_tree_impl->SetRootLayerForTesting(std::move(root));
+  layer_tree_impl->BuildPropertyTreesForTesting();
+  layer_tree_impl->DidBecomeActive();
+
+  // The point hits squash layer and also scrollbar layer, but because the
+  // scrollbar layer is a drawn scrollbar, we cannot scroll on the impl thread.
+  auto status = host_impl_->ScrollBegin(BeginState(gfx::Point(350, 150)).get(),
+                                        InputHandler::WHEEL);
+  EXPECT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
+  EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
+            status.main_thread_scrolling_reasons);
+
+  // The point hits the drawn scrollbar layer completely and should not scroll
+  // on the impl thread.
+  status = host_impl_->ScrollBegin(BeginState(gfx::Point(350, 500)).get(),
+                                   InputHandler::WHEEL);
+  EXPECT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
+  EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
+            status.main_thread_scrolling_reasons);
+}
+
 TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
   host_impl_->SetViewportSize(gfx::Size(100, 100));
