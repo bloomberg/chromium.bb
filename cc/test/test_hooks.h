@@ -28,6 +28,7 @@ class TestHooks : public AnimationDelegate {
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                           const BeginFrameArgs& args) {}
   virtual void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) {}
+  virtual void DidSendBeginMainFrameOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                              CommitEarlyOutReason reason) {}
   virtual void ReadyToCommitOnThread(LayerTreeHostImpl* host_impl) {}
@@ -58,6 +59,8 @@ class TestHooks : public AnimationDelegate {
                                     bool has_unfinished_animation) {}
   virtual void WillAnimateLayers(LayerTreeHostImpl* host_impl,
                                  base::TimeTicks monotonic_time) {}
+  virtual void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) {}
+  virtual void DidRequestImplSideInvalidation(LayerTreeHostImpl* host_impl) {}
 
   // Asynchronous compositor thread hooks.
   // These are called asynchronously from the LayerTreeHostImpl performing its

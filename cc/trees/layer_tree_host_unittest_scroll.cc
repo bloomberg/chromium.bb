@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
+#include "cc/base/completion_event.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/layer.h"
@@ -2069,6 +2070,176 @@ class LayerTreeHostScrollTestPropertyTreeUpdate
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestPropertyTreeUpdate);
+
+class LayerTreeHostScrollTestImplSideInvalidation
+    : public LayerTreeHostScrollTest {
+  void BeginTest() override {
+    layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
+        base::Bind(&LayerTreeHostScrollTestImplSideInvalidation::
+                       DidScrollOuterViewport,
+                   base::Unretained(this)));
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidScrollOuterViewport(const gfx::ScrollOffset& offset) {
+    // Defer responding to the main frame until an impl-side pending tree is
+    // created for the invalidation request.
+    {
+      CompletionEvent completion;
+      task_runner_provider()->ImplThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&LayerTreeHostScrollTestImplSideInvalidation::
+                         WaitForInvalidationOnImplThread,
+                     base::Unretained(this), &completion));
+      completion.Wait();
+    }
+
+    switch (++num_of_deltas_) {
+      case 1: {
+        // First set of deltas is here. The impl thread will scroll to the
+        // second case on activation, so add a delta from the main thread that
+        // takes us to the final value.
+        Layer* outer_viewport_layer =
+            layer_tree_host()->outer_viewport_scroll_layer();
+        gfx::ScrollOffset delta_to_send =
+            outer_viewport_offsets_[2] - outer_viewport_offsets_[1];
+        outer_viewport_layer->SetScrollOffset(
+            outer_viewport_layer->scroll_offset() + delta_to_send);
+      } break;
+      case 2:
+        // Let the commit abort for the second set of deltas.
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void WaitForInvalidationOnImplThread(CompletionEvent* completion) {
+    impl_side_invalidation_event_ = completion;
+    SignalCompletionIfPossible();
+  }
+
+  void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
+    invalidated_on_impl_thread_ = true;
+    SignalCompletionIfPossible();
+  }
+
+  void SignalCompletionIfPossible() {
+    if (!invalidated_on_impl_thread_ || !impl_side_invalidation_event_)
+      return;
+
+    impl_side_invalidation_event_->Signal();
+    impl_side_invalidation_event_ = nullptr;
+    invalidated_on_impl_thread_ = false;
+  }
+
+  void DidSendBeginMainFrameOnThread(LayerTreeHostImpl* host_impl) override {
+    switch (++num_of_main_frames_) {
+      case 1:
+        // Do nothing for the first BeginMainFrame.
+        break;
+      case 2:
+        // Add some more delta to the active tree state of the scroll offset and
+        // a commit to send this additional delta to the main thread.
+        host_impl->active_tree()
+            ->OuterViewportScrollLayer()
+            ->SetCurrentScrollOffset(outer_viewport_offsets_[1]);
+        host_impl->SetNeedsCommit();
+
+        // Request an impl-side invalidation to create an impl-side pending
+        // tree.
+        host_impl->RequestImplSideInvalidation();
+        break;
+      case 3:
+        // Request another impl-side invalidation so the aborted commit comes
+        // after this tree is activated.
+        host_impl->RequestImplSideInvalidation();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
+                                     CommitEarlyOutReason reason) override {
+    // The aborted main frame is bound to come after the fourth activation,
+    // since the activation should occur synchronously after the impl-side
+    // invalidation, and the main thread is released after this activation. It
+    // should leave the scroll offset unchanged.
+    EXPECT_EQ(reason, CommitEarlyOutReason::FINISHED_NO_UPDATES);
+    EXPECT_EQ(num_of_activations_, 4);
+    EXPECT_EQ(num_of_main_frames_, 3);
+    EXPECT_EQ(host_impl->active_tree()
+                  ->OuterViewportScrollLayer()
+                  ->CurrentScrollOffset(),
+              outer_viewport_offsets_[2]);
+    EndTest();
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    switch (++num_of_activations_) {
+      case 1:
+        // Now that we have the active tree, scroll a layer and ask for a commit
+        // to send a BeginMainFrame with the scroll delta to the main thread.
+        host_impl->active_tree()
+            ->OuterViewportScrollLayer()
+            ->SetCurrentScrollOffset(outer_viewport_offsets_[0]);
+        host_impl->SetNeedsCommit();
+        break;
+      case 2:
+        // The second activation is from an impl-side pending tree so the source
+        // frame number on the active tree remains unchanged, and the scroll
+        // offset on the active tree should also remain unchanged.
+        EXPECT_EQ(host_impl->active_tree()->source_frame_number(), 0);
+        EXPECT_EQ(host_impl->active_tree()
+                      ->OuterViewportScrollLayer()
+                      ->CurrentScrollOffset(),
+                  outer_viewport_offsets_[1]);
+        break;
+      case 3:
+        // The third activation is from a commit. The scroll offset on the
+        // active tree should include deltas sent from the main thread.
+        EXPECT_EQ(host_impl->active_tree()->source_frame_number(), 1);
+        EXPECT_EQ(host_impl->active_tree()
+                      ->OuterViewportScrollLayer()
+                      ->CurrentScrollOffset(),
+                  outer_viewport_offsets_[2]);
+        break;
+      case 4:
+        // The fourth activation is from an impl-side pending tree, which should
+        // leave the scroll offset unchanged.
+        EXPECT_EQ(host_impl->active_tree()->source_frame_number(), 1);
+        EXPECT_EQ(host_impl->active_tree()
+                      ->OuterViewportScrollLayer()
+                      ->CurrentScrollOffset(),
+                  outer_viewport_offsets_[2]);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void AfterTest() override {
+    EXPECT_EQ(num_of_activations_, 4);
+    EXPECT_EQ(num_of_deltas_, 2);
+    EXPECT_EQ(num_of_main_frames_, 3);
+  }
+
+  const gfx::ScrollOffset outer_viewport_offsets_[3] = {
+      gfx::ScrollOffset(20, 20), gfx::ScrollOffset(50, 50),
+      gfx::ScrollOffset(70, 70)};
+
+  // Impl thread.
+  int num_of_activations_ = 0;
+  int num_of_main_frames_ = 0;
+  bool invalidated_on_impl_thread_ = false;
+  CompletionEvent* impl_side_invalidation_event_ = nullptr;
+
+  // Main thread.
+  int num_of_deltas_ = 0;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplSideInvalidation);
 
 }  // namespace
 }  // namespace cc

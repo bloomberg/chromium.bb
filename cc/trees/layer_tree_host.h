@@ -479,6 +479,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   base::WeakPtr<InputHandler> input_handler_weak_ptr_;
 
+  scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner_;
+
  private:
   friend class LayerTreeHostSerializationTest;
 
@@ -598,8 +600,6 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   bool in_update_property_trees_ = false;
 
   MutatorHost* mutator_host_;
-
-  scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

@@ -93,10 +93,12 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       LayerTreeHostImplClient* host_impl_client,
       TaskRunnerProvider* task_runner_provider,
       TaskGraphRunner* task_graph_runner,
-      RenderingStatsInstrumentation* stats_instrumentation) {
+      RenderingStatsInstrumentation* stats_instrumentation,
+      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner) {
     return base::WrapUnique(new LayerTreeHostImplForTesting(
         test_hooks, settings, host_impl_client, task_runner_provider,
-        task_graph_runner, stats_instrumentation));
+        task_graph_runner, stats_instrumentation,
+        std::move(image_worker_task_runner)));
   }
 
  protected:
@@ -106,7 +108,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       LayerTreeHostImplClient* host_impl_client,
       TaskRunnerProvider* task_runner_provider,
       TaskGraphRunner* task_graph_runner,
-      RenderingStatsInstrumentation* stats_instrumentation)
+      RenderingStatsInstrumentation* stats_instrumentation,
+      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner)
       : LayerTreeHostImpl(settings,
                           host_impl_client,
                           task_runner_provider,
@@ -114,10 +117,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
                           task_graph_runner,
                           AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0,
-                          nullptr),
-        test_hooks_(test_hooks),
-        block_notify_ready_to_activate_for_testing_(false),
-        notify_ready_to_activate_was_blocked_(false) {}
+                          std::move(image_worker_task_runner)),
+        test_hooks_(test_hooks) {}
 
   void CreateResourceAndRasterBufferProvider(
       std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
@@ -134,6 +135,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void DidFinishImplFrame() override {
     LayerTreeHostImpl::DidFinishImplFrame();
     test_hooks_->DidFinishImplFrameOnThread(this);
+  }
+
+  void DidSendBeginMainFrame() override {
+    LayerTreeHostImpl::DidSendBeginMainFrame();
+    test_hooks_->DidSendBeginMainFrameOnThread(this);
   }
 
   void BeginMainFrameAborted(
@@ -208,6 +214,13 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     }
   }
 
+  void BlockImplSideInvalidationRequestsForTesting(bool block) override {
+    block_impl_side_invalidation_ = block;
+    if (!block_impl_side_invalidation_ && impl_side_invalidation_was_blocked_) {
+      RequestImplSideInvalidation();
+    }
+  }
+
   void ActivateSyncTree() override {
     test_hooks_->WillActivateTreeOnThread(this);
     LayerTreeHostImpl::ActivateSyncTree();
@@ -250,14 +263,33 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->NotifyTileStateChangedOnThread(this, tile);
   }
 
+  void InvalidateContentOnImplSide() override {
+    LayerTreeHostImpl::InvalidateContentOnImplSide();
+    test_hooks_->DidInvalidateContentOnImplSide(this);
+  }
+
+  void RequestImplSideInvalidation() override {
+    if (block_impl_side_invalidation_) {
+      impl_side_invalidation_was_blocked_ = true;
+      return;
+    }
+
+    impl_side_invalidation_was_blocked_ = false;
+    LayerTreeHostImpl::RequestImplSideInvalidation();
+    test_hooks_->DidRequestImplSideInvalidation(this);
+  }
+
   AnimationHost* animation_host() const {
     return static_cast<AnimationHost*>(mutator_host());
   }
 
  private:
   TestHooks* test_hooks_;
-  bool block_notify_ready_to_activate_for_testing_;
-  bool notify_ready_to_activate_was_blocked_;
+  bool block_notify_ready_to_activate_for_testing_ = false;
+  bool notify_ready_to_activate_was_blocked_ = false;
+
+  bool block_impl_side_invalidation_ = false;
+  bool impl_side_invalidation_was_blocked_ = false;
 };
 
 // Implementation of LayerTreeHost callback interface.
@@ -342,12 +374,14 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
       MutatorHost* mutator_host) {
     LayerTreeHost::InitParams params;
     params.client = client;
     params.task_graph_runner = task_graph_runner;
     params.settings = &settings;
     params.mutator_host = mutator_host;
+    params.image_worker_task_runner = std::move(image_worker_task_runner);
 
     std::unique_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, &params, mode));
@@ -377,7 +411,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
         LayerTreeHostImplForTesting::Create(
             test_hooks_, GetSettings(), host_impl_client,
             GetTaskRunnerProvider(), task_graph_runner(),
-            rendering_stats_instrumentation());
+            rendering_stats_instrumentation(), image_worker_task_runner_);
     input_handler_weak_ptr_ = host_impl->AsWeakPtr();
     return host_impl;
   }
@@ -595,7 +629,8 @@ void LayerTreeTest::DoBeginTest() {
 
   layer_tree_host_ = LayerTreeHostForTesting::Create(
       this, mode_, client_.get(), client_.get(), task_graph_runner_.get(),
-      settings_, main_task_runner, impl_task_runner, animation_host_.get());
+      settings_, main_task_runner, impl_task_runner,
+      image_worker_->task_runner(), animation_host_.get());
   ASSERT_TRUE(layer_tree_host_);
 
   main_task_runner_ =
@@ -740,6 +775,9 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
     impl_thread_.reset(new base::Thread("Compositor"));
     ASSERT_TRUE(impl_thread_->Start());
   }
+
+  image_worker_ = base::MakeUnique<base::Thread>("ImageWorker");
+  ASSERT_TRUE(image_worker_->Start());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);

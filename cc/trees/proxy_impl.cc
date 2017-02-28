@@ -434,9 +434,7 @@ void ProxyImpl::OnDrawForCompositorFrameSink(bool resourceless_software_draw) {
 
 void ProxyImpl::NeedsImplSideInvalidation() {
   DCHECK(IsImplThread());
-  // TODO(khushalsagar): Plumb this to the scheduler when
-  // https://codereview.chromium.org/2659123004/ lands. See crbug.com/686267.
-  NOTIMPLEMENTED();
+  scheduler_->SetNeedsImplSideInvalidation();
 }
 
 void ProxyImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
@@ -467,6 +465,7 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
                             base::Passed(&begin_main_frame_state)));
+  layer_tree_host_impl_->DidSendBeginMainFrame();
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }
 
@@ -556,7 +555,9 @@ void ProxyImpl::ScheduledActionInvalidateCompositorFrameSink() {
 }
 
 void ProxyImpl::ScheduledActionPerformImplSideInvalidation() {
-  NOTIMPLEMENTED();
+  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionPerformImplSideInvalidation");
+  DCHECK(IsImplThread());
+  layer_tree_host_impl_->InvalidateContentOnImplSide();
 }
 
 void ProxyImpl::SendBeginMainFrameNotExpectedSoon() {

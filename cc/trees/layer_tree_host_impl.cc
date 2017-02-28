@@ -1212,6 +1212,11 @@ void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
   NOTREACHED();
 }
 
+void LayerTreeHostImpl::BlockImplSideInvalidationRequestsForTesting(
+    bool block) {
+  NOTREACHED();
+}
+
 void LayerTreeHostImpl::ResetTreesForTesting() {
   if (active_tree_)
     active_tree_->DetachLayers();

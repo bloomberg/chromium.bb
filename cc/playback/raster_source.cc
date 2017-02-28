@@ -247,6 +247,8 @@ void RasterSource::GetDiscardableImagesInRect(
 }
 
 gfx::Rect RasterSource::GetRectForImage(ImageId image_id) const {
+  if (!display_list_)
+    return gfx::Rect();
   return display_list_->GetRectForImage(image_id);
 }
 

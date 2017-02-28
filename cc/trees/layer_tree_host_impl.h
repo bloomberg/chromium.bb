@@ -235,6 +235,7 @@ class CC_EXPORT LayerTreeHostImpl
     DISALLOW_COPY_AND_ASSIGN(FrameData);
   };
 
+  virtual void DidSendBeginMainFrame() {}
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises);
@@ -253,7 +254,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Analogous to a commit, this function is used to create a sync tree and
   // add impl-side invalidations to it.
-  void InvalidateContentOnImplSide();
+  // virtual for testing.
+  virtual void InvalidateContentOnImplSide();
 
   void SetTreeLayerFilterMutated(ElementId element_id,
                                  LayerTreeImpl* tree,
@@ -317,6 +319,10 @@ class CC_EXPORT LayerTreeHostImpl
   // called. When disabled, it calls client_->NotifyReadyToActivate()
   // immediately if any notifications had been blocked while blocking.
   virtual void BlockNotifyReadyToActivateForTesting(bool block);
+
+  // Prevents notifying the |client_| when an impl side invalidation request is
+  // made. When unblocked, the disabled request will immediately be called.
+  virtual void BlockImplSideInvalidationRequestsForTesting(bool block);
 
   // Resets all of the trees to an empty state.
   void ResetTreesForTesting();

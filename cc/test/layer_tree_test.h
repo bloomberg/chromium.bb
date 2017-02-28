@@ -149,6 +149,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl);
 
+  base::SingleThreadTaskRunner* image_worker_task_runner() const {
+    return image_worker_->task_runner().get();
+  }
+
  private:
   virtual void DispatchAddAnimationToPlayer(
       AnimationPlayer* player_to_receive_animation,
@@ -186,6 +190,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
   std::unique_ptr<base::Thread> impl_thread_;
+  std::unique_ptr<base::Thread> image_worker_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<TestTaskGraphRunner> task_graph_runner_;

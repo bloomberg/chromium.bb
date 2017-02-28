@@ -526,7 +526,8 @@ bool SchedulerStateMachine::ShouldCommit() const {
 
   // We must not finish the commit until the pending tree is free.
   if (has_pending_tree_) {
-    DCHECK(settings_.main_frame_before_activation_enabled);
+    DCHECK(settings_.main_frame_before_activation_enabled ||
+           current_pending_tree_is_impl_side_);
     return false;
   }
 

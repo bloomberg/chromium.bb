@@ -63,6 +63,9 @@ void SingleThreadProxy::Start() {
   DebugScopedSetImplThread impl(task_runner_provider_);
 
   const LayerTreeSettings& settings = layer_tree_host_->GetSettings();
+  DCHECK(settings.single_thread_proxy_scheduler ||
+         !settings.enable_checker_imaging)
+      << "Checker-imaging is not supported in synchronous single threaded mode";
   if (settings.single_thread_proxy_scheduler && !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(settings.ToSchedulerSettings());
     scheduler_settings.commit_to_active_tree = CommitToActiveTree();
@@ -425,9 +428,8 @@ void SingleThreadProxy::OnDrawForCompositorFrameSink(
 }
 
 void SingleThreadProxy::NeedsImplSideInvalidation() {
-  // TODO(khushalsagar): Plumb this to the scheduler when
-  // https://codereview.chromium.org/2659123004/ lands. See crbug.com/686267.
-  NOTIMPLEMENTED();
+  DCHECK(scheduler_on_impl_thread_);
+  scheduler_on_impl_thread_->SetNeedsImplSideInvalidation();
 }
 
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
@@ -604,6 +606,7 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
   task_runner_provider_->MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&SingleThreadProxy::BeginMainFrame,
                             weak_factory_.GetWeakPtr(), begin_frame_args));
+  layer_tree_host_impl_->DidSendBeginMainFrame();
 }
 
 void SingleThreadProxy::SendBeginMainFrameNotExpectedSoon() {
@@ -732,7 +735,19 @@ void SingleThreadProxy::ScheduledActionInvalidateCompositorFrameSink() {
 }
 
 void SingleThreadProxy::ScheduledActionPerformImplSideInvalidation() {
-  NOTIMPLEMENTED();
+  DCHECK(scheduler_on_impl_thread_);
+
+  DebugScopedSetImplThread impl(task_runner_provider_);
+  commit_blocking_task_runner_.reset(new BlockingTaskRunner::CapturePostTasks(
+      task_runner_provider_->blocking_main_thread_task_runner()));
+  layer_tree_host_impl_->InvalidateContentOnImplSide();
+
+  // Invalidations go directly to the active tree, so we synchronously call
+  // NotifyReadyToActivate to update the scheduler and LTHI state correctly.
+  // Since in single-threaded mode the scheduler will wait for a ready to draw
+  // signal from LTHI, the draw will remain blocked till the invalidated tiles
+  // are ready.
+  NotifyReadyToActivate();
 }
 
 void SingleThreadProxy::UpdateBrowserControlsState(
