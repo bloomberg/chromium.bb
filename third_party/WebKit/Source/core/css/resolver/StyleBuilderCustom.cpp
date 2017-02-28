@@ -486,6 +486,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(
   } else {
     state.style()->setTextAlign(state.parentStyle()->textAlign());
   }
+  state.style()->setTextAlignIsInherited(false);
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyTextIndent(

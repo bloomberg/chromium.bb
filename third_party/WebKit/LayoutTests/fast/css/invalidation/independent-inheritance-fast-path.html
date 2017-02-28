@@ -24,6 +24,7 @@ var independent_properties = [
     ["webkitPrintColorAdjust", ["economy", "exact"]],
     ["textTransform", ["capitalize", "uppercase", "lowercase", "none"]],
     ["webkitRtlOrdering", ["logical", "visual"]],
+    ["textAlign", ["start", "left"]],
 ];
 
 independent_properties.forEach(function(test_data)
@@ -80,6 +81,17 @@ independent_properties.forEach(function(test_data)
             assert_equals(getComputedStyle(outer)[propertyName], value2);
             assert_equals(getComputedStyle(inner)[propertyName], value1);
             assert_equals(getComputedStyle(innermost)[propertyName], value1);
+            outer.offsetTop; // Force recalc.
+
+            // Setting inner to value2 and outer to value1 should not propagate value1 to inner.
+            inner.style[propertyName] = value2;
+            outer.offsetTop; // Force recalc.
+            outer.style[propertyName] = value1;
+            assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Only outer should be recalced (2 without fast path)");
+
+            assert_equals(getComputedStyle(outer)[propertyName], value1);
+            assert_equals(getComputedStyle(inner)[propertyName], value2);
+            assert_equals(getComputedStyle(innermost)[propertyName], value2);
             outer.offsetTop; // Force recalc.
 
             // Clear for next test.
