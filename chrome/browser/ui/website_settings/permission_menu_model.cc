@@ -12,6 +12,7 @@
 #include "content/public/common/origin_util.h"
 #include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 PermissionMenuModel::PermissionMenuModel(
     Profile* profile,
@@ -61,6 +62,16 @@ PermissionMenuModel::PermissionMenuModel(
     default:
       break;
   }
+
+  // The Material UI for site settings uses comboboxes instead of menubuttons,
+  // which means the elements of the menu themselves have to be shorter, instead
+  // of simply setting a shorter label on the menubutton.
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    label = WebsiteSettingsUI::PermissionActionToUIString(
+        profile, info.type, info.setting, effective_default_setting,
+        info.source);
+  }
+
   AddCheckItem(CONTENT_SETTING_DEFAULT, label);
 
   // Notifications does not support CONTENT_SETTING_ALLOW in incognito.

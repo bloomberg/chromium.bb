@@ -173,8 +173,7 @@ base::string16 ComboboxModelAdapter::GetItemAt(int index) {
 class PermissionCombobox : public views::Combobox,
                            public views::ComboboxListener {
  public:
-  PermissionCombobox(const base::string16& text,
-                     ComboboxModelAdapter* model,
+  PermissionCombobox(ComboboxModelAdapter* model,
                      bool enabled,
                      bool use_default);
   ~PermissionCombobox() override;
@@ -191,8 +190,7 @@ class PermissionCombobox : public views::Combobox,
   ComboboxModelAdapter* model_;
 };
 
-PermissionCombobox::PermissionCombobox(const base::string16& text,
-                                       ComboboxModelAdapter* model,
+PermissionCombobox::PermissionCombobox(ComboboxModelAdapter* model,
                                        bool enabled,
                                        bool use_default)
     : views::Combobox(model), model_(model) {
@@ -335,9 +333,6 @@ void PermissionSelectorRow::InitializeComboboxView(
   combobox_model_adapter_.reset(
       new internal::ComboboxModelAdapter(menu_model_.get()));
   combobox_ = new internal::PermissionCombobox(
-      WebsiteSettingsUI::PermissionActionToUIString(
-          profile_, permission.type, permission.setting,
-          permission.default_setting, permission.source),
       combobox_model_adapter_.get(), button_enabled, true);
   combobox_->SetEnabled(button_enabled);
   combobox_->SetAccessibleName(
