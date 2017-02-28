@@ -19,9 +19,6 @@
 #include "content/public/browser/web_contents.h"
 
 namespace offline_pages {
-namespace {
-const char kDownloadUIAdapterKey[] = "download-ui-adapter";
-}
 
 PrerenderingOffliner::PrerenderingOffliner(
     content::BrowserContext* browser_context,
@@ -41,10 +38,8 @@ void PrerenderingOffliner::OnNetworkProgress(const SavePageRequest& request,
                                              int64_t bytes) {
   if (!pending_request_)
     return;
-
-  DownloadUIAdapter* ui_adapter = static_cast<DownloadUIAdapter*>(
-      offline_page_model_->GetUserData(kDownloadUIAdapterKey));
-
+  DownloadUIAdapter* ui_adapter =
+      DownloadUIAdapter::FromOfflinePageModel(offline_page_model_);
   if (!ui_adapter)
     return;
 

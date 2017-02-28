@@ -460,8 +460,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         public String getDisplayFileName() {
             String title = mItem.getTitle();
             if (TextUtils.isEmpty(title)) {
-                File path = new File(getFilePath());
-                return path.getName();
+                return getDisplayHostname();
             } else {
                 return title;
             }
@@ -484,7 +483,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public String getMimeType() {
-            return "text/plain";
+            return "text/html";
         }
 
         @Override
@@ -506,7 +505,27 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public String getStatusString() {
             Context context = ContextUtils.getApplicationContext();
-            return context.getString(R.string.download_notification_completed);
+
+            int state = mItem.getDownloadState();
+
+            if (state == org.chromium.components.offlinepages.downloads.DownloadState.COMPLETE) {
+                return context.getString(R.string.download_notification_completed);
+            }
+
+            if (state == org.chromium.components.offlinepages.downloads.DownloadState.PENDING) {
+                return context.getString(R.string.download_notification_pending);
+            }
+
+            if (state == org.chromium.components.offlinepages.downloads.DownloadState.PAUSED) {
+                return context.getString(R.string.download_notification_paused);
+            }
+
+            long bytesReceived = mItem.getDownloadProgressBytes();
+            if (bytesReceived == 0) {
+                return context.getString(R.string.download_started);
+            } else {
+                return DownloadUtils.getStringForDownloadedBytes(context, bytesReceived);
+            }
         }
 
         @Override

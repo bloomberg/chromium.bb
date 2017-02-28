@@ -16,7 +16,28 @@
 #include "components/offline_pages/core/downloads/download_ui_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 
+namespace {
+// Value of this constant doesn't matter, only its address is used.
+const char kDownloadUIAdapterKey[] = "";
+}
+
 namespace offline_pages {
+
+// static
+DownloadUIAdapter* DownloadUIAdapter::FromOfflinePageModel(
+    OfflinePageModel* model) {
+  DCHECK(model);
+  return static_cast<DownloadUIAdapter*>(
+      model->GetUserData(kDownloadUIAdapterKey));
+}
+
+// static
+void DownloadUIAdapter::AttachToOfflinePageModel(DownloadUIAdapter* adapter,
+                                                 OfflinePageModel* model) {
+  DCHECK(adapter);
+  DCHECK(model);
+  model->SetUserData(kDownloadUIAdapterKey, adapter);
+}
 
 DownloadUIAdapter::ItemInfo::ItemInfo(const OfflinePageItem& page)
     : ui_item(base::MakeUnique<DownloadUIItem>(page)),

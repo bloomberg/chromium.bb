@@ -42,10 +42,6 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace {
-const char kDownloadUIAdapterKey[] = "download-ui-adapter";
-}
-
 namespace offline_pages {
 namespace android {
 
@@ -476,8 +472,8 @@ static jlong Init(JNIEnv* env,
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   DCHECK(offline_page_model);
 
-  DownloadUIAdapter* adapter = static_cast<DownloadUIAdapter*>(
-      offline_page_model->GetUserData(kDownloadUIAdapterKey));
+  DownloadUIAdapter* adapter =
+      DownloadUIAdapter::FromOfflinePageModel(offline_page_model);
 
   if (!adapter) {
     RequestCoordinator* request_coordinator =
@@ -486,7 +482,7 @@ static jlong Init(JNIEnv* env,
     adapter = new DownloadUIAdapter(
         offline_page_model, request_coordinator,
         base::MakeUnique<DownloadUIAdapterDelegate>(offline_page_model));
-    offline_page_model->SetUserData(kDownloadUIAdapterKey, adapter);
+    DownloadUIAdapter::AttachToOfflinePageModel(adapter, offline_page_model);
   }
 
   return reinterpret_cast<jlong>(

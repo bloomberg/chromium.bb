@@ -576,7 +576,7 @@ public class DownloadUtils {
         } else if (item.isIndeterminate()) {
             // Count up the bytes.
             long bytes = info.getBytesReceived();
-            return DownloadUtils.getStringForBytes(context, BYTES_DOWNLOADED_STRINGS, bytes);
+            return DownloadUtils.getStringForDownloadedBytes(context, bytes);
         } else {
             // Count down the time.
             long msRemaining = info.getTimeRemainingInMillis();
@@ -608,6 +608,17 @@ public class DownloadUtils {
                 return item.getDownloadInfo().state() == DownloadState.INTERRUPTED;
             }
         }
+    }
+
+    /**
+     * Format the number of bytes into KB, or MB, or GB and return the corresponding string
+     * resource. Uses default download-related set of strings.
+     * @param context Context to use.
+     * @param bytes Number of bytes.
+     * @return A formatted string to be displayed.
+     */
+    public static String getStringForDownloadedBytes(Context context, long bytes) {
+        return getStringForBytes(context, BYTES_DOWNLOADED_STRINGS, bytes);
     }
 
     /**
