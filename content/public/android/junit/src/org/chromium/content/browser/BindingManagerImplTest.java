@@ -150,6 +150,11 @@ public class BindingManagerImplTest {
         public String getPackageName() {
             return null;
         }
+
+        @Override
+        public ChildProcessCreationParams getCreationParams() {
+            return null;
+        }
     }
 
     /**

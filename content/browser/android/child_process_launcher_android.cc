@@ -92,9 +92,10 @@ void StartChildProcess(
     }
   }
 
+  constexpr int param_key = 0;  // TODO(boliu): Use this.
   Java_ChildProcessLauncher_start(
-      env, base::android::GetApplicationContext(), j_argv, child_process_id,
-      j_file_infos,
+      env, base::android::GetApplicationContext(), param_key, j_argv,
+      child_process_id, j_file_infos,
       reinterpret_cast<intptr_t>(new StartChildProcessCallback(callback)));
 }
 

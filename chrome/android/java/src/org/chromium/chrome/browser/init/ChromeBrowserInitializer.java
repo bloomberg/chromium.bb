@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.browser.SpeechRecognition;
 import org.chromium.net.NetworkChangeNotifier;
@@ -310,15 +309,6 @@ public class ChromeBrowserInitializer {
             }
         });
 
-        // See crbug.com/593250. This can be removed after N SDK is released, crbug.com/592722.
-        ChildProcessCreationParams creationParams = mApplication.getChildProcessCreationParams();
-        // WebAPK uses this code path to initialize Chrome's native code, and the
-        // ChildProcessCreationParams has been set in {@link WebApkActivity}. We have to prevent
-        // resetting with a wrong parameter here. TODO(hanxi): Remove the entire if block after
-        // N SDK is released, since it breaks WebAPKs on N+.
-        if (creationParams != null && ChildProcessCreationParams.get() != null) {
-            ChildProcessCreationParams.set(creationParams);
-        }
         if (isAsync) {
             // We want to start this queue once the C++ startup tasks have run; allow the
             // C++ startup to run asynchonously, and set it up to start the Java queue once

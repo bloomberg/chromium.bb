@@ -61,6 +61,8 @@ public interface ChildProcessConnection {
 
     String getPackageName();
 
+    ChildProcessCreationParams getCreationParams();
+
     IChildProcessService getService();
 
     /**

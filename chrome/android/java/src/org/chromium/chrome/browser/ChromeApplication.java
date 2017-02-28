@@ -66,7 +66,6 @@ import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 
@@ -89,14 +88,6 @@ public class ChromeApplication extends ContentApplication {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
-    }
-
-    /**
-     * This is called during early initialization in order to set up ChildProcessLauncher
-     * for certain Chrome packaging configurations
-     */
-    public ChildProcessCreationParams getChildProcessCreationParams() {
-        return null;
     }
 
     /**

@@ -570,11 +570,7 @@ public class ChildProcessLauncher {
         synchronized (sSpareConnectionLock) {
             assert !ThreadUtils.runningOnUiThread();
             if (sSpareSandboxedConnection == null) {
-                ChildProcessCreationParams params = ChildProcessCreationParams.get();
-                if (params != null) {
-                    params = params.copy();
-                }
-
+                ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
                 sSpareConnectionStarting = true;
 
                 ChildProcessConnection.StartCallback startCallback =
@@ -632,22 +628,23 @@ public class ChildProcessLauncher {
      * always comes from the main thread).
      *
      * @param context Context used to obtain the application context.
+     * @param paramId Key used to retrieve ChildProcessCreationParams.
      * @param commandLine The child process command line argv.
      * @param filesToBeMapped File IDs, FDs, offsets, and lengths to pass through.
      * @param clientContext Arbitrary parameter used by the client to distinguish this connection.
      */
+    // TODO(boliu): All tests should use this over startForTesting.
+    @VisibleForTesting
     @CalledByNative
-    private static void start(Context context, final String[] commandLine, int childProcessId,
+    static void start(Context context, int paramId, final String[] commandLine, int childProcessId,
             FileDescriptorInfo[] filesToBeMapped, long clientContext) {
-        assert clientContext != 0;
-
         int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;
         boolean inSandbox = true;
         String processType =
                 ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
-        ChildProcessCreationParams params = ChildProcessCreationParams.get();
-        if (params != null) {
-            params = params.copy();
+        ChildProcessCreationParams params = ChildProcessCreationParams.get(paramId);
+        if (paramId != ChildProcessCreationParams.DEFAULT_ID && params == null) {
+            throw new RuntimeException("CreationParams id " + paramId + " not found");
         }
         if (ContentSwitches.SWITCH_RENDERER_PROCESS.equals(processType)) {
             callbackType = CALLBACK_FOR_RENDERER_PROCESS;
@@ -662,6 +659,7 @@ public class ChildProcessLauncher {
                 // name. In WebAPK, ChildProcessCreationParams are initialized with WebAPK's
                 // package name. Make a copy of the WebAPK's params, but replace the package with
                 // Chrome's package to use when initializing a non-renderer processes.
+                // TODO(boliu): Should fold into |paramId|. Investigate why this is needed.
                 params = new ChildProcessCreationParams(context.getPackageName(),
                         params.getIsExternalService(), params.getLibraryProcessType());
             }
@@ -697,7 +695,10 @@ public class ChildProcessLauncher {
                     : context.getPackageName();
             synchronized (sSpareConnectionLock) {
                 if (inSandbox && sSpareSandboxedConnection != null
-                        && sSpareSandboxedConnection.getPackageName().equals(packageName)) {
+                        && sSpareSandboxedConnection.getPackageName().equals(packageName)
+                        // Object identity check for getDefault should be enough. The default is
+                        // not supposed to change once set.
+                        && creationParams == ChildProcessCreationParams.getDefault()) {
                     while (sSpareConnectionStarting) {
                         try {
                             sSpareConnectionLock.wait();

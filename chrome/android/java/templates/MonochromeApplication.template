@@ -20,21 +20,15 @@ import org.chromium.content.browser.ChildProcessCreationParams;
  * glue layer and have monochrome specific code.
  */
 public class {{ monochrome_application_class }} extends {{ super_class }} {
-    private ChildProcessCreationParams mChildProcessCreationParams;
-
-    @Override
-    public ChildProcessCreationParams getChildProcessCreationParams() {
-        return mChildProcessCreationParams;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
         LibraryLoader.setNativeLibraryPreloader(new MonochromeLibraryPreloader());
         // ChildProcessCreationParams is only needed for browser process, though it is
         // created and set in all processes.
-        mChildProcessCreationParams = new ChildProcessCreationParams(getPackageName(),
-                true /* isExternalService */, LibraryProcessType.PROCESS_CHILD);
-        ChildProcessCreationParams.set(mChildProcessCreationParams);
+        ChildProcessCreationParams.registerDefault(
+            new ChildProcessCreationParams(getPackageName(),
+                                           true /* isExternalService */,
+                                           LibraryProcessType.PROCESS_CHILD));
     }
 }

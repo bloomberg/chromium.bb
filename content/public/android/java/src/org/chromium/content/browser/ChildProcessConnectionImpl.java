@@ -309,6 +309,11 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     }
 
     @Override
+    public ChildProcessCreationParams getCreationParams() {
+        return mCreationParams;
+    }
+
+    @Override
     public IChildProcessService getService() {
         synchronized (mLock) {
             return mService;

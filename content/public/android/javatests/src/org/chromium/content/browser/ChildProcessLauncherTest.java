@@ -24,6 +24,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.FileDescriptorInfo;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestHelperService;
 
@@ -451,12 +452,35 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         ChildProcessLauncher.warmUp(context); // Not on UI thread.
         assertEquals(1, allocatedChromeSandboxedConnectionsCount());
 
-        final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(context,
-                new String[0], new FileDescriptorInfo[0],
-                getDefaultChildProcessCreationParams(context.getPackageName()));
+        final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(
+                context, new String[0], new FileDescriptorInfo[0], null);
         assertEquals(1, allocatedChromeSandboxedConnectionsCount()); // Used warmup connection.
 
         ChildProcessLauncher.stop(conn.getPid());
+    }
+
+    @MediumTest
+    @Feature({"ProcessManagement"})
+    public void testCustomCreationParamDoesNotReuseWarmupConnection() {
+        // Since warmUp only uses default params.
+        Context context = getInstrumentation().getTargetContext();
+        // Check uses object identity, having the params match exactly is fine.
+        ChildProcessCreationParams.registerDefault(
+                getDefaultChildProcessCreationParams(context.getPackageName()));
+        int paramId = ChildProcessCreationParams.register(
+                getDefaultChildProcessCreationParams(context.getPackageName()));
+
+        ChildProcessLauncher.warmUp(context); // Not on UI thread.
+        assertEquals(1, allocatedChromeSandboxedConnectionsCount());
+
+        startRendererProcess(context, paramId, new FileDescriptorInfo[0]);
+        assertEquals(2, allocatedChromeSandboxedConnectionsCount()); // Warmup not used.
+
+        startRendererProcess(
+                context, ChildProcessCreationParams.DEFAULT_ID, new FileDescriptorInfo[0]);
+        assertEquals(2, allocatedChromeSandboxedConnectionsCount()); // Warmup used.
+
+        ChildProcessCreationParams.unregister(paramId);
     }
 
     private ChildProcessConnectionImpl startConnection() {
@@ -475,6 +499,14 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                     }
                 });
         return connection;
+    }
+
+    private static void startRendererProcess(
+            Context context, int paramId, FileDescriptorInfo[] filesToMap) {
+        ChildProcessLauncher.start(context, paramId,
+                new String[] {"--" + ContentSwitches.SWITCH_PROCESS_TYPE + "="
+                        + ContentSwitches.SWITCH_RENDERER_PROCESS},
+                0 /* childProcessId */, filesToMap, 0 /* clientContext */);
     }
 
     /**

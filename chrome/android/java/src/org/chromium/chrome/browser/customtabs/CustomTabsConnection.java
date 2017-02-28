@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -209,8 +208,6 @@ public class CustomTabsConnection {
             System.exit(-1);
         }
         final Context context = app.getApplicationContext();
-        final ChromeApplication chrome = (ChromeApplication) context;
-        ChildProcessCreationParams.set(chrome.getChildProcessCreationParams());
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {

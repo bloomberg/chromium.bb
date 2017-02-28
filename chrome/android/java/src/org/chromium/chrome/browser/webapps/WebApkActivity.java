@@ -8,7 +8,6 @@ import android.content.Intent;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.metrics.WebApkUma;
@@ -33,6 +32,9 @@ public class WebApkActivity extends WebappActivity {
 
     /** Indicates whether launching renderer in WebAPK process is enabled. */
     private boolean mCanLaunchRendererInWebApkProcess;
+
+    private final ChildProcessCreationParams mDefaultParams =
+            ChildProcessCreationParams.getDefault();
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -185,14 +187,13 @@ public class WebApkActivity extends WebappActivity {
      */
     private void initializeChildProcessCreationParams(boolean isForWebApk) {
         // TODO(hanxi): crbug.com/664530. WebAPKs shouldn't use a global ChildProcessCreationParams.
-        ChromeApplication chrome = (ChromeApplication) ContextUtils.getApplicationContext();
-        ChildProcessCreationParams params = chrome.getChildProcessCreationParams();
+        ChildProcessCreationParams params = mDefaultParams;
         if (isForWebApk) {
             boolean isExternalService = false;
             params = new ChildProcessCreationParams(getWebappInfo().webApkPackageName(),
                     isExternalService, LibraryProcessType.PROCESS_CHILD);
         }
-        ChildProcessCreationParams.set(params);
+        ChildProcessCreationParams.registerDefault(params);
     }
 
     @Override
