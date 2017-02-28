@@ -58,10 +58,10 @@ class SearchBoxBackground : public views::Background {
   void Paint(gfx::Canvas* canvas, views::View* view) const override {
     gfx::Rect bounds = view->GetContentsBounds();
 
-    SkPaint paint;
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(kSearchBoxBackground);
-    canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(kSearchBoxBackground);
+    canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, flags);
   }
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxBackground);

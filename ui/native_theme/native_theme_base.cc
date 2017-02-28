@@ -899,11 +899,11 @@ void NativeThemeBase::PaintProgressBar(
 }
 
 void NativeThemeBase::PaintFrameTopArea(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const FrameTopAreaExtraParams& frame_top_area) const {
-  SkPaint flags;
+  cc::PaintFlags flags;
   flags.setColor(frame_top_area.default_background_color);
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
 }

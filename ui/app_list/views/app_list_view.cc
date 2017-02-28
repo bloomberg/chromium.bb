@@ -95,10 +95,10 @@ class AppListOverlayView : public views::View {
 
   // Overridden from views::View:
   void OnPaint(gfx::Canvas* canvas) override {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(SK_ColorWHITE);
-    canvas->DrawRoundRect(GetContentsBounds(), corner_radius_, paint);
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(SK_ColorWHITE);
+    canvas->DrawRoundRect(GetContentsBounds(), corner_radius_, flags);
   }
 
  private:

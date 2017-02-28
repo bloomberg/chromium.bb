@@ -266,14 +266,6 @@ class GFX_EXPORT Canvas {
   // Draws the given rectangle with the given |flags| parameters.
   void DrawRect(const RectF& rect, const cc::PaintFlags& flags);
 
-  // Draw the given point with the given |flags| parameters.
-  // DEPRECATED in favor of the RectF version below.
-  // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawPoint(const Point& p, const cc::PaintFlags& flags);
-
-  // Draw the given point with the given |flags| parameters.
-  void DrawPoint(const PointF& p, const cc::PaintFlags& flags);
-
   // Draws a single pixel line with the specified color.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)

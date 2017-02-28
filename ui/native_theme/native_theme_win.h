@@ -127,10 +127,11 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   // Update the locally cached set of system colors.
   void UpdateSystemColors();
 
-  // Painting functions that paint to SkCanvas.
-  void PaintMenuSeparator(SkCanvas* canvas, const gfx::Rect& rect) const;
-  void PaintMenuGutter(SkCanvas* canvas, const gfx::Rect& rect) const;
-  void PaintMenuBackground(SkCanvas* canvas, const gfx::Rect& rect) const;
+  // Painting functions that paint to PaintCanvas.
+  void PaintMenuSeparator(cc::PaintCanvas* canvas, const gfx::Rect& rect) const;
+  void PaintMenuGutter(cc::PaintCanvas* canvas, const gfx::Rect& rect) const;
+  void PaintMenuBackground(cc::PaintCanvas* canvas,
+                           const gfx::Rect& rect) const;
 
   // Paint directly to canvas' HDC.
   void PaintDirect(SkCanvas* destination_canvas,
@@ -143,7 +144,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   // Create a temporary HDC, paint to that, clean up the alpha values in the
   // temporary HDC, and then blit the result to canvas.  This is to work around
   // the fact that Windows XP and some classic themes give bogus alpha values.
-  void PaintIndirect(SkCanvas* destination_canvas,
+  void PaintIndirect(cc::PaintCanvas* destination_canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,

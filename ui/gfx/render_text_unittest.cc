@@ -3759,8 +3759,8 @@ TEST_P(RenderTextTest, TextDoesntClip) {
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;
 
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
+  sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRasterN32Premul(
+      kCanvasSize.width(), kCanvasSize.height());
   Canvas canvas(surface->getCanvas(), 1.0f);
   RenderText* render_text = GetRenderText();
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
@@ -3784,7 +3784,7 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     render_text->Draw(&canvas);
     ASSERT_LT(string_size.width() + kTestSize, kCanvasSize.width());
     SkPixmap pixmap;
-    surface->peekPixels(&pixmap);
+    surface->getCanvas()->peekPixels(&pixmap);
     const uint32_t* buffer = static_cast<const uint32_t*>(pixmap.addr());
     ASSERT_NE(nullptr, buffer);
     TestRectangleBuffer rect_buffer(string, buffer, kCanvasSize.width(),
@@ -3852,8 +3852,8 @@ TEST_P(RenderTextTest, TextDoesClip) {
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;
 
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
+  sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRasterN32Premul(
+      kCanvasSize.width(), kCanvasSize.height());
   Canvas canvas(surface->getCanvas(), 1.0f);
   RenderText* render_text = GetRenderText();
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
@@ -3871,7 +3871,7 @@ TEST_P(RenderTextTest, TextDoesClip) {
     render_text->Draw(&canvas);
     ASSERT_LT(string_size.width() + kTestSize, kCanvasSize.width());
     SkPixmap pixmap;
-    surface->peekPixels(&pixmap);
+    surface->getCanvas()->peekPixels(&pixmap);
     const uint32_t* buffer = static_cast<const uint32_t*>(pixmap.addr());
     ASSERT_NE(nullptr, buffer);
     TestRectangleBuffer rect_buffer(string, buffer, kCanvasSize.width(),

@@ -307,14 +307,14 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
     cc::PaintFlags highlight;
     SkColor kHighlightColor = SkColorSetA(kActiveColor, kHighlightColorAlpha);
     highlight.setColor(kHighlightColor);
-    highlight.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+    highlight.setAntiAlias(true);
     canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight);
   }
 
   // Paint the thumb of the slider.
   cc::PaintFlags flags;
   flags.setColor(current_thumb_color);
-  flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  flags.setAntiAlias(true);
 
   if (!is_active_) {
     flags.setStrokeWidth(kThumbStroke);

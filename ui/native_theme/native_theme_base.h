@@ -127,7 +127,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       const ProgressBarExtraParams& progress_bar) const;
 
   virtual void PaintFrameTopArea(
-      SkCanvas* canvas,
+      cc::PaintCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const FrameTopAreaExtraParams& frame_top_area) const;

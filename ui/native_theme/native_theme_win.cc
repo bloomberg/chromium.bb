@@ -60,7 +60,7 @@ const int kSystemColors[] = {
   COLOR_WINDOWTEXT,
 };
 
-void SetCheckerboardShader(cc::PaintFlags* flags, const RECT& align_rect) {
+void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   // Create a 2x2 checkerboard pattern using the 3D face and highlight colors.
   const SkColor face = color_utils::GetSysSkColor(COLOR_3DFACE);
   const SkColor highlight = color_utils::GetSysSkColor(COLOR_3DHILIGHT);
@@ -81,7 +81,7 @@ void SetCheckerboardShader(cc::PaintFlags* flags, const RECT& align_rect) {
   SkMatrix local_matrix;
   local_matrix.setTranslate(SkIntToScalar(align_rect.left),
                             SkIntToScalar(align_rect.top));
-  flags->setShader(
+  paint->setShader(
       SkShader::MakeBitmapShader(bitmap, SkShader::kRepeat_TileMode,
                                  SkShader::kRepeat_TileMode, &local_matrix));
 }
@@ -365,7 +365,7 @@ void NativeThemeWin::UpdateSystemColors() {
     system_colors_[kSystemColor] = color_utils::GetSysSkColor(kSystemColor);
 }
 
-void NativeThemeWin::PaintMenuSeparator(SkCanvas* canvas,
+void NativeThemeWin::PaintMenuSeparator(cc::PaintCanvas* canvas,
                                         const gfx::Rect& rect) const {
   cc::PaintFlags flags;
   flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
@@ -373,7 +373,7 @@ void NativeThemeWin::PaintMenuSeparator(SkCanvas* canvas,
   canvas->drawLine(rect.x(), position_y, rect.right(), position_y, flags);
 }
 
-void NativeThemeWin::PaintMenuGutter(SkCanvas* canvas,
+void NativeThemeWin::PaintMenuGutter(cc::PaintCanvas* canvas,
                                      const gfx::Rect& rect) const {
   cc::PaintFlags flags;
   flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
@@ -381,7 +381,7 @@ void NativeThemeWin::PaintMenuGutter(SkCanvas* canvas,
   canvas->drawLine(position_x, rect.y(), position_x, rect.bottom(), flags);
 }
 
-void NativeThemeWin::PaintMenuBackground(SkCanvas* canvas,
+void NativeThemeWin::PaintMenuBackground(cc::PaintCanvas* canvas,
                                          const gfx::Rect& rect) const {
   cc::PaintFlags flags;
   flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
@@ -660,7 +660,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   return GetAuraColor(color_id, this);
 }
 
-void NativeThemeWin::PaintIndirect(SkCanvas* destination_canvas,
+void NativeThemeWin::PaintIndirect(cc::PaintCanvas* destination_canvas,
                                    Part part,
                                    State state,
                                    const gfx::Rect& rect,
@@ -1311,11 +1311,11 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
       (system_colors_[COLOR_SCROLLBAR] != system_colors_[COLOR_WINDOW])) {
     FillRect(hdc, &rect_win, reinterpret_cast<HBRUSH>(COLOR_SCROLLBAR + 1));
   } else {
-    cc::PaintFlags flags;
+    SkPaint paint;
     RECT align_rect = gfx::Rect(extra.track_x, extra.track_y, extra.track_width,
                                 extra.track_height).ToRECT();
-    SetCheckerboardShader(&flags, align_rect);
-    canvas->drawIRect(skia::RECTToSkIRect(rect_win), flags);
+    SetCheckerboardShader(&paint, align_rect);
+    canvas->drawIRect(skia::RECTToSkIRect(rect_win), paint);
   }
   if (extra.classic_state & DFCS_PUSHED)
     InvertRect(hdc, &rect_win);
@@ -1355,13 +1355,12 @@ HRESULT NativeThemeWin::PaintSpinButton(
   return S_OK;
 }
 
-HRESULT NativeThemeWin::PaintTrackbar(
-    SkCanvas* canvas,
-    HDC hdc,
-    Part part,
-    State state,
-    const gfx::Rect& rect,
-    const TrackbarExtraParams& extra) const {
+HRESULT NativeThemeWin::PaintTrackbar(SkCanvas* canvas,
+                                      HDC hdc,
+                                      Part part,
+                                      State state,
+                                      const gfx::Rect& rect,
+                                      const TrackbarExtraParams& extra) const {
   const int part_id = extra.vertical ?
       ((part == kTrackbarTrack) ? TKP_TRACKVERT : TKP_THUMBVERT) :
       ((part == kTrackbarTrack) ? TKP_TRACK : TKP_THUMBBOTTOM);
@@ -1430,11 +1429,11 @@ HRESULT NativeThemeWin::PaintTrackbar(
 
     // If the button is pressed, draw hatching.
     if (extra.classic_state & DFCS_PUSHED) {
-      cc::PaintFlags flags;
-      SetCheckerboardShader(&flags, rect_win);
+      SkPaint paint;
+      SetCheckerboardShader(&paint, rect_win);
 
       // Fill all three pieces with the pattern.
-      canvas->drawIRect(skia::RECTToSkIRect(top_section), flags);
+      canvas->drawIRect(skia::RECTToSkIRect(top_section), paint);
 
       SkScalar left_triangle_top = SkIntToScalar(left_half.top);
       SkScalar left_triangle_right = SkIntToScalar(left_half.right);
@@ -1444,7 +1443,7 @@ HRESULT NativeThemeWin::PaintTrackbar(
       left_triangle.lineTo(left_triangle_right,
                            SkIntToScalar(left_half.bottom));
       left_triangle.close();
-      canvas->drawPath(left_triangle, flags);
+      canvas->drawPath(left_triangle, paint);
 
       SkScalar right_triangle_left = SkIntToScalar(right_half.left);
       SkScalar right_triangle_top = SkIntToScalar(right_half.top);
@@ -1455,7 +1454,7 @@ HRESULT NativeThemeWin::PaintTrackbar(
       right_triangle.lineTo(right_triangle_left,
                             SkIntToScalar(right_half.bottom));
       right_triangle.close();
-      canvas->drawPath(right_triangle, flags);
+      canvas->drawPath(right_triangle, paint);
     }
   }
   return S_OK;

@@ -281,11 +281,11 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     // Draw folder dropping preview circle.
     gfx::Point center = gfx::Point(icon_->x() + icon_->size().width() / 2,
                                    icon_->y() + icon_->size().height() / 2);
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setAntiAlias(true);
-    paint.setColor(kFolderBubbleColor);
-    canvas->DrawCircle(center, kFolderPreviewRadius, paint);
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+    flags.setColor(kFolderBubbleColor);
+    canvas->DrawCircle(center, kFolderPreviewRadius, flags);
   }
 }
 

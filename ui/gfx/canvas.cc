@@ -289,14 +289,6 @@ void Canvas::DrawRect(const RectF& rect, const cc::PaintFlags& flags) {
   canvas_->drawRect(RectFToSkRect(rect), flags);
 }
 
-void Canvas::DrawPoint(const Point& p1, const cc::PaintFlags& flags) {
-  DrawPoint(PointF(p1), flags);
-}
-
-void Canvas::DrawPoint(const PointF& p1, const cc::PaintFlags& flags) {
-  canvas_->drawPoint(SkFloatToScalar(p1.x()), SkFloatToScalar(p1.y()), flags);
-}
-
 void Canvas::DrawLine(const Point& p1, const Point& p2, SkColor color) {
   DrawLine(PointF(p1), PointF(p2), color);
 }

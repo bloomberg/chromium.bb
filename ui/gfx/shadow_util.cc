@@ -36,8 +36,8 @@ class ShadowNineboxSource : public CanvasImageSource {
 
   // CanvasImageSource overrides:
   void Draw(Canvas* canvas) override {
-    SkPaint paint;
-    paint.setLooper(CreateShadowDrawLooperCorrectBlur(shadows_));
+    cc::PaintFlags flags;
+    flags.setLooper(CreateShadowDrawLooperCorrectBlur(shadows_));
     Insets insets = -ShadowValue::GetMargin(shadows_);
     gfx::Rect bounds(size());
     bounds.Inset(insets);
@@ -49,8 +49,8 @@ class ShadowNineboxSource : public CanvasImageSource {
     // Clipping alone is not enough --- due to anti aliasing there will still be
     // some of the fill color in the rounded corners. We must make the fill
     // color transparent.
-    paint.setColor(SK_ColorTRANSPARENT);
-    canvas->sk_canvas()->drawRRect(r_rect, paint);
+    flags.setColor(SK_ColorTRANSPARENT);
+    canvas->sk_canvas()->drawRRect(r_rect, flags);
   }
 
  private:
