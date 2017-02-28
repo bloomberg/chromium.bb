@@ -34,7 +34,7 @@
 
       #existingPassphraseContainer,
       #passphraseRecoverHint {
-        align-items: flex-end;
+        align-items: center;
       }
 
       #existingPassphraseInput {
@@ -43,6 +43,8 @@
         display: inline-block;
         --paper-input-container: {
           padding: 0;
+          /* TODO(scottchen): remove margin once large font properly padded. */
+          margin-bottom: 1rem;
         };
       }
 
