@@ -73,6 +73,10 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
     MutatorHost* mutator_host = nullptr;
+
+    // The image worker task runner is used to schedule image decodes. The
+    // compositor thread may make sync calls to this thread, analogous to the
+    // raster worker threads.
     scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner;
 
     InitParams();

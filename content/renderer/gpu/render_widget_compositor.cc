@@ -240,11 +240,15 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
   params.main_task_runner = deps->GetCompositorMainThreadTaskRunner();
   params.mutator_host = mutator_host;
   if (base::TaskScheduler::GetInstance()) {
+    // The image worker thread needs to allow waiting since it makes discardable
+    // shared memory allocations which need to make synchronous calls to the
+    // IO thread.
     params.image_worker_task_runner = base::CreateSequencedTaskRunnerWithTraits(
         base::TaskTraits()
             .WithPriority(base::TaskPriority::BACKGROUND)
             .WithShutdownBehavior(
-                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
+                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+            .WithBaseSyncPrimitives());
   }
   if (!is_threaded) {
     // Single-threaded layout tests.
@@ -272,6 +276,9 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.main_frame_before_activation_enabled =
       cmd.HasSwitch(cc::switches::kEnableMainFrameBeforeActivation);
+
+  settings.enable_checker_imaging =
+      cmd.HasSwitch(cc::switches::kEnableCheckerImaging);
 
   // TODO(danakj): This should not be a setting O_O; it should change when the
   // device scale factor on LayerTreeHost changes.

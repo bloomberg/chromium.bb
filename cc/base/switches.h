@@ -19,6 +19,7 @@ namespace switches {
 CC_EXPORT extern const char kDisableThreadedAnimation[];
 CC_EXPORT extern const char kDisableCompositedAntialiasing[];
 CC_EXPORT extern const char kDisableMainFrameBeforeActivation[];
+CC_EXPORT extern const char kEnableCheckerImaging[];
 CC_EXPORT extern const char kEnableMainFrameBeforeActivation[];
 CC_EXPORT extern const char kBrowserControlsHideThreshold[];
 CC_EXPORT extern const char kBrowserControlsShowThreshold[];
