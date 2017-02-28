@@ -140,6 +140,7 @@ class ArcSettingsServiceImpl
   void SyncReportingConsent() const;
   void SyncSpokenFeedbackEnabled() const;
   void SyncTimeZone() const;
+  void SyncTimeZoneByGeolocation() const;
   void SyncUse24HourClock() const;
 
   void OnBluetoothAdapterInitialized(
@@ -222,6 +223,8 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
       SyncLocationServiceEnabled();
   } else if (pref_name == prefs::kUse24HourClock) {
     SyncUse24HourClock();
+  } else if (pref_name == prefs::kResolveTimezoneByGeolocation) {
+    SyncTimeZoneByGeolocation();
   } else if (pref_name == prefs::kWebKitDefaultFixedFontSize ||
              pref_name == prefs::kWebKitDefaultFontSize ||
              pref_name == prefs::kWebKitMinimumFontSize) {
@@ -269,6 +272,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(prefs::kAccessibilityVirtualKeyboardEnabled);
   AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
   AddPrefToObserve(prefs::kArcLocationServiceEnabled);
+  AddPrefToObserve(prefs::kResolveTimezoneByGeolocation);
   AddPrefToObserve(prefs::kUse24HourClock);
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize);
   AddPrefToObserve(prefs::kWebKitDefaultFontSize);
@@ -320,6 +324,7 @@ void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
   SyncReportingConsent();
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
+  SyncTimeZoneByGeolocation();
   SyncUse24HourClock();
 
   if (ShouldSyncBackupEnabled())
@@ -501,6 +506,19 @@ void ArcSettingsServiceImpl::SyncTimeZone() const {
   base::DictionaryValue extras;
   extras.SetString("olsonTimeZone", timezoneID);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_TIME_ZONE", extras);
+}
+
+void ArcSettingsServiceImpl::SyncTimeZoneByGeolocation() const {
+  const PrefService::Preference* pref =
+      registrar_.prefs()->FindPreference(prefs::kResolveTimezoneByGeolocation);
+  DCHECK(pref);
+  bool setTimeZoneByGeolocation = false;
+  bool value_exists = pref->GetValue()->GetAsBoolean(&setTimeZoneByGeolocation);
+  DCHECK(value_exists);
+  base::DictionaryValue extras;
+  extras.SetBoolean("autoTimeZone", setTimeZoneByGeolocation);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_AUTO_TIME_ZONE",
+                        extras);
 }
 
 void ArcSettingsServiceImpl::SyncUse24HourClock() const {
