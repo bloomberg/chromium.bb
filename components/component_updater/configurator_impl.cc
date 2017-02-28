@@ -130,7 +130,7 @@ int ConfiguratorImpl::InitialDelay() const {
 }
 
 int ConfiguratorImpl::NextCheckDelay() const {
-  return 6 * kDelayOneHour;
+  return 5 * kDelayOneHour;
 }
 
 int ConfiguratorImpl::StepDelay() const {
