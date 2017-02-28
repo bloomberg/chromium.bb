@@ -7,6 +7,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSValue.h"
+#include "core/css/CSSValueIDMappings.h"
 #include "wtf/TypeTraits.h"
 
 namespace blink {
@@ -41,7 +42,10 @@ class CORE_EXPORT CSSIdentifierValue : public CSSValue {
   }
 
   template <typename T>
-  inline T convertTo() const;  // Defined in CSSPrimitiveValueMappings.h
+  inline T convertTo()
+      const {  // Overridden for special cases in CSSPrimitiveValueMappings.h
+    return cssValueIDToPlatformEnum<T>(m_valueID);
+  }
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -51,7 +55,10 @@ class CORE_EXPORT CSSIdentifierValue : public CSSValue {
   // TODO(sashab): Remove this function, and update mapping methods to
   // specialize the create() method instead.
   template <typename T>
-  CSSIdentifierValue(T);  // Defined in CSSPrimitiveValueMappings.h
+  CSSIdentifierValue(
+      T t)  // Overriden for special cases in CSSPrimitiveValueMappings.h
+      : CSSValue(IdentifierClass),
+        m_valueID(platformEnumToCSSValueID(t)) {}
 
   CSSIdentifierValue(const Length&);
 

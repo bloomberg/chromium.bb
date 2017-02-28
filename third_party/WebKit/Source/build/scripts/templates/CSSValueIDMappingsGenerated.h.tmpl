@@ -1,0 +1,53 @@
+{% from 'macros.tmpl' import license %}
+{{license()}}
+
+#include "base/logging.h"
+#include "core/CSSValueKeywords.h"
+#include "core/ComputedStyleBaseConstants.h"
+{% for path in include_paths %}
+#include "{{path}}"
+{% endfor %}
+
+namespace blink {
+
+// TODO(shend): most enum values are stored contiguously so we just need
+// a subtraction and static_cast. This is much faster than switches.
+
+// Do not use these functions directly, use the non-generated versions
+// in CSSValueMappings.h
+
+namespace detail {
+
+template <class T>
+T cssValueIDToPlatformEnumGenerated(CSSValueID);
+
+{% for enum_name, mapping in mappings.items() %}
+template <>
+inline {{enum_name}} cssValueIDToPlatformEnumGenerated(CSSValueID v) {
+  switch (v) {
+  {% for cs_value, css_value in mapping['mapping']: %}
+    case {{css_value}}:
+      return {{enum_name}}::{{cs_value}};
+  {% endfor %}
+    default:
+      NOTREACHED();
+      return {{enum_name}}::{{mapping['default_value']}};
+  }
+}
+
+inline CSSValueID platformEnumToCSSValueIDGenerated({{enum_name}} v) {
+  switch (v) {
+  {% for cs_value, css_value in mapping['mapping']: %}
+    case {{enum_name}}::{{cs_value}}:
+      return {{css_value}};
+  {% endfor %}
+    default:
+      NOTREACHED();
+      return CSSValueNone;
+  }
+}
+
+{% endfor %}
+} // namespace detail
+
+} // namespace blink

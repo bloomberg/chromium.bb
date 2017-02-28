@@ -406,11 +406,13 @@ css_properties("make_core_generated_computed_style_base") {
     "../build/scripts/templates/ComputedStyleBase.cpp.tmpl",
     "../build/scripts/templates/ComputedStyleBase.h.tmpl",
     "../build/scripts/templates/ComputedStyleBaseConstants.h.tmpl",
+    "../build/scripts/templates/CSSValueIDMappingsGenerated.h.tmpl",
   ]
   outputs = [
     "$blink_core_output_dir/ComputedStyleBase.cpp",
     "$blink_core_output_dir/ComputedStyleBase.h",
     "$blink_core_output_dir/ComputedStyleBaseConstants.h",
+    "$blink_core_output_dir/CSSValueIDMappingsGenerated.h",
   ]
 }
 

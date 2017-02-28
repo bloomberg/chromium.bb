@@ -148,6 +148,7 @@ blink_core_sources("css") {
     "CSSUnsetValue.cpp",
     "CSSUnsetValue.h",
     "CSSValue.cpp",
+    "CSSValueIDMappings.h",
     "CSSValueList.cpp",
     "CSSValuePair.cpp",
     "CSSValuePair.h",

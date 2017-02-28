@@ -10,7 +10,7 @@ import json5_generator
 import template_expander
 import make_style_builder
 
-from name_utilities import camel_case, lower_first, upper_first_letter
+from name_utilities import camel_case, lower_first, upper_first_letter, enum_for_css_keyword
 
 
 # Temporary hard-coded list of fields that are not CSS properties.
@@ -133,12 +133,7 @@ def _create_property_field(property_):
     # From the Blink style guide: Other data members should be prefixed by "m_". [names-data-members]
     field_name = 'm_' + property_name_lower
     bits_needed = math.log(len(property_['keywords']), 2)  # TODO: implement for non-enums
-
-    # Separate the type path from the type name, if specified.
-    if property_['field_type_path']:
-        type_name = property_['field_type_path'].split('/')[-1]
-    else:
-        type_name = property_['type_name']
+    type_name = property_['type_name']
 
     # For now, the getter name should match the field name. Later, getter names
     # will start with an uppercase letter, so if they conflict with the type name,
@@ -279,7 +274,15 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'ComputedStyleBase.h': self.generate_base_computed_style_h,
             'ComputedStyleBase.cpp': self.generate_base_computed_style_cpp,
             'ComputedStyleBaseConstants.h': self.generate_base_computed_style_constants,
+            'CSSValueIDMappingsGenerated.h': self.generate_css_value_mappings,
         }
+
+        property_values = self._properties.values()
+
+        # Override the type name when field_type_path is specified
+        for property_ in property_values:
+            if property_['field_type_path']:
+                property_['type_name'] = property_['field_type_path'].split('/')[-1]
 
         # Create all the enums used by properties
         self._generated_enums = _create_enums(self._properties.values())
@@ -316,13 +319,15 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             for field in bucket:
                 self._fields.append(field)
 
+        self._include_paths = _get_include_paths(self._properties.values())
+
 
     @template_expander.use_jinja('ComputedStyleBase.h.tmpl')
     def generate_base_computed_style_h(self):
         return {
             'properties': self._properties,
             'enums': self._generated_enums,
-            'include_paths': _get_include_paths(self._properties.values()),
+            'include_paths': self._include_paths,
             'fields': self._fields,
             'expected_total_field_bytes': self._expected_total_field_bytes,
         }
@@ -343,6 +348,22 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'enums': self._generated_enums,
             'fields': self._fields,
             'expected_total_field_bytes': self._expected_total_field_bytes,
+        }
+
+    @template_expander.use_jinja('CSSValueIDMappingsGenerated.h.tmpl')
+    def generate_css_value_mappings(self):
+        mappings = {}
+
+        for property_ in self._properties.values():
+            if property_['field_template'] == 'keyword':
+                mappings[property_['type_name']] = {
+                    'default_value': 'k' + camel_case(property_['initial_keyword']),
+                    'mapping': [('k' + camel_case(k), enum_for_css_keyword(k)) for k in property_['keywords']],
+                }
+
+        return {
+            'include_paths': self._include_paths,
+            'mappings': mappings,
         }
 
 if __name__ == '__main__':
