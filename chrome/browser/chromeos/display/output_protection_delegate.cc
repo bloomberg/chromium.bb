@@ -6,9 +6,9 @@
 
 #include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
 #include "chrome/browser/chromeos/display/output_protection_controller_mus.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -16,10 +16,6 @@
 namespace chromeos {
 
 namespace {
-
-bool IsRunningInMash() {
-  return service_manager::ServiceManagerIsRemote();
-}
 
 bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64_t* display_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -106,7 +102,7 @@ bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
   if (!window)
     return false;
 
-  if (IsRunningInMash())
+  if (chrome::IsRunningInMash())
     controller_ = base::MakeUnique<OutputProtectionControllerMus>();
   else
     controller_ = base::MakeUnique<OutputProtectionControllerAsh>();
