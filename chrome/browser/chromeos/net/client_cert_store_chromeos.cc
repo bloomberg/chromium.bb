@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -81,13 +81,18 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
     password_delegate.reset(
         password_delegate_factory_.Run(request->host_and_port));
   }
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
-                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
-      base::Bind(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
-                 base::Unretained(this), base::Passed(&password_delegate),
-                 request, additional_certs, selected_certs),
-      callback);
+  if (base::WorkerPool::PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
+                     base::Unretained(this), base::Passed(&password_delegate),
+                     request, additional_certs, selected_certs),
+          callback, true)) {
+    return;
+  }
+  // If the task could not be posted, behave as if there were no certificates
+  // which requires to clear |selected_certs|.
+  selected_certs->clear();
+  callback.Run();
 }
 
 void ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
