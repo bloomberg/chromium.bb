@@ -108,7 +108,7 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context,
                              FileSystemType type,
                              const KURL& rootURL)
     : DOMFileSystemBase(context, name, type, rootURL),
-      ContextLifecycleObserver(context),
+      ContextClient(context),
       m_numberOfPendingCallbacks(0),
       m_rootEntry(DirectoryEntry::create(this, DOMFilePath::root)) {}
 
@@ -217,9 +217,9 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext,
 }
 
 DEFINE_TRACE(DOMFileSystem) {
-  DOMFileSystemBase::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_rootEntry);
+  DOMFileSystemBase::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

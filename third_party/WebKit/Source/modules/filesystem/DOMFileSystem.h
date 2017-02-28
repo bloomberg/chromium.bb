@@ -55,7 +55,7 @@ class MODULES_EXPORT DOMFileSystem final
     : public DOMFileSystemBase,
       public ScriptWrappable,
       public ActiveScriptWrappable<DOMFileSystem>,
-      public ContextLifecycleObserver {
+      public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 

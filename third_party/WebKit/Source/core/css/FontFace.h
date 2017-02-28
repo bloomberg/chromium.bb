@@ -59,7 +59,7 @@ class WebTaskRunner;
 class CORE_EXPORT FontFace : public GarbageCollectedFinalized<FontFace>,
                              public ScriptWrappable,
                              public ActiveScriptWrappable<FontFace>,
-                             public ContextLifecycleObserver {
+                             public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FontFace);
   WTF_MAKE_NONCOPYABLE(FontFace);
