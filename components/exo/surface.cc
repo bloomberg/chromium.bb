@@ -467,7 +467,7 @@ void Surface::CommitSurfaceHierarchy() {
     window_->layer()->SetBounds(
         gfx::Rect(window_->layer()->bounds().origin(), content_size_));
     cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
-    window_->layer()->SetShowSurface(
+    window_->layer()->SetShowPrimarySurface(
         cc::SurfaceInfo(surface_id, contents_surface_to_layer_scale,
                         content_size_),
         surface_reference_factory_);

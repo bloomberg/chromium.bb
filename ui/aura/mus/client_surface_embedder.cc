@@ -67,7 +67,7 @@ void ClientSurfaceEmbedder::UpdateSurface(const cc::SurfaceInfo& surface_info) {
   clip_layer_->SetBounds(
       gfx::Rect(0, 0, window_->bounds().width(), window_->bounds().height()));
 
-  surface_layer_->SetShowSurface(
+  surface_layer_->SetShowPrimarySurface(
       surface_info, make_scoped_refptr(new StubSurfaceReferenceFactory));
 }
 

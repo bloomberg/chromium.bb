@@ -28,6 +28,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_reference_factory.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1806,7 +1807,7 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
 
   // Showing surface content changes the underlying cc layer.
   before = child->cc_layer_for_testing();
-  child->SetShowSurface(
+  child->SetShowPrimarySurface(
       cc::SurfaceInfo(cc::SurfaceId(), 1.0, gfx::Size(10, 10)),
       new TestSurfaceReferenceFactory());
   EXPECT_TRUE(child->cc_layer_for_testing());
@@ -1821,12 +1822,14 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
 
 TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
+  scoped_refptr<cc::SurfaceReferenceFactory> reference_factory(
+      new TestSurfaceReferenceFactory());
 
   cc::SurfaceId surface_id(
       cc::FrameSinkId(0, 1),
       cc::LocalSurfaceId(2, base::UnguessableToken::Create()));
   cc::SurfaceInfo surface_info(surface_id, 1.0f, gfx::Size(10, 10));
-  layer->SetShowSurface(surface_info, new TestSurfaceReferenceFactory());
+  layer->SetShowPrimarySurface(surface_info, reference_factory);
 
   const auto mirror = layer->Mirror();
   auto* const cc_layer = mirror->cc_layer_for_testing();
@@ -1839,17 +1842,17 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
       cc::SurfaceId(cc::FrameSinkId(1, 2),
                     cc::LocalSurfaceId(3, base::UnguessableToken::Create()));
   cc::SurfaceInfo surface_info_2(surface_id, 2.0f, gfx::Size(20, 20));
-  layer->SetShowSurface(surface_info_2, new TestSurfaceReferenceFactory());
+  layer->SetShowPrimarySurface(surface_info_2, reference_factory);
 
-  // A new cc::Layer should be created for the mirror.
-  EXPECT_NE(cc_layer, mirror->cc_layer_for_testing());
-  surface = static_cast<cc::SurfaceLayer*>(mirror->cc_layer_for_testing());
+  // The mirror should continue to use the same cc_layer.
+  EXPECT_EQ(cc_layer, mirror->cc_layer_for_testing());
+  layer->SetShowPrimarySurface(surface_info_2, reference_factory);
 
   // Surface updates propagate to the mirror.
   EXPECT_EQ(surface_info_2, surface->primary_surface_info());
 }
 
-// Test if frame size in dip is properly calculated in SetShowSurface
+// Test if frame size in dip is properly calculated in SetShowPrimarySurface.
 TEST_F(LayerWithDelegateTest, FrameSizeInDip) {
   std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
 
@@ -1857,8 +1860,9 @@ TEST_F(LayerWithDelegateTest, FrameSizeInDip) {
       cc::FrameSinkId(0, 1),
       cc::LocalSurfaceId(2, base::UnguessableToken::Create()));
 
-  layer->SetShowSurface(cc::SurfaceInfo(surface_id, 2.0f, gfx::Size(30, 40)),
-                        new TestSurfaceReferenceFactory());
+  layer->SetShowPrimarySurface(
+      cc::SurfaceInfo(surface_id, 2.0f, gfx::Size(30, 40)),
+      new TestSurfaceReferenceFactory());
 
   EXPECT_EQ(layer->frame_size_in_dip_for_testing(), gfx::Size(15, 20));
 }
@@ -1877,7 +1881,7 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
 
   // Showing surface content changes the underlying cc layer.
   scoped_refptr<cc::Layer> before = layer->cc_layer_for_testing();
-  layer->SetShowSurface(
+  layer->SetShowPrimarySurface(
       cc::SurfaceInfo(cc::SurfaceId(), 1.0, gfx::Size(10, 10)),
       new TestSurfaceReferenceFactory());
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
@@ -2201,7 +2205,7 @@ TEST(LayerDelegateTest, DelegatedFrameDamage) {
 
   FrameDamageCheckingDelegate delegate;
   layer->set_delegate(&delegate);
-  layer->SetShowSurface(
+  layer->SetShowPrimarySurface(
       cc::SurfaceInfo(cc::SurfaceId(), 1.0, gfx::Size(10, 10)),
       new TestSurfaceReferenceFactory());
 

@@ -477,7 +477,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
       cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
       cc::SurfaceInfo surface_info(surface_id, frame_device_scale_factor,
                                    frame_size);
-      client_->DelegatedFrameHostGetLayer()->SetShowSurface(
+      client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
           surface_info, manager->reference_factory());
       current_surface_size_ = frame_size;
       current_scale_factor_ = frame_device_scale_factor;

@@ -294,9 +294,10 @@ class COMPOSITOR_EXPORT Layer
   void SetTextureFlipped(bool flipped);
   bool TextureFlipped() const;
 
-  // Begins showing content from a surface with a particular id.
-  void SetShowSurface(const cc::SurfaceInfo& surface_info,
-                      scoped_refptr<cc::SurfaceReferenceFactory> surface_ref);
+  // Begins showing content from a surface with a particular ID.
+  void SetShowPrimarySurface(
+      const cc::SurfaceInfo& surface_info,
+      scoped_refptr<cc::SurfaceReferenceFactory> surface_ref);
 
   bool has_external_content() {
     return texture_layer_.get() || surface_layer_.get();
