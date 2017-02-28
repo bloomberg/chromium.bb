@@ -6,6 +6,11 @@
 <script src="../media-controls.js"></script>
 <video controls></video>
 <script>
+// |orphanedVideo| is used to check that the setting should not be despatched
+// if the MediaControls of a video haven't been initialized.
+var orphanedVideo = document.createElement('video');
+orphanedVideo.controls = true;
+
 async_test(t => {
   var video = document.querySelector('video');
 

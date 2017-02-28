@@ -381,7 +381,8 @@ void HTMLMediaElement::onMediaControlsEnabledChange(Document* document) {
   WeakMediaElementSet& elements = *it->value;
   for (const auto& element : elements) {
     element->updateControlsVisibility();
-    element->mediaControls()->onMediaControlsEnabledChange();
+    if (element->mediaControls())
+      element->mediaControls()->onMediaControlsEnabledChange();
   }
 }
 
