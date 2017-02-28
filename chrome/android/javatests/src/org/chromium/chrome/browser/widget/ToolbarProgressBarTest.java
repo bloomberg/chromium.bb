@@ -13,7 +13,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
@@ -70,7 +69,7 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
         OnPageFinishedHelper finishHelper = observer.getOnPageFinishedHelper();
 
         ToolbarProgressBar progressBar =
-                (ToolbarProgressBar) getActivity().findViewById(R.id.progress);
+                getActivity().getToolbarManager().getToolbarLayout().getProgressBar();
 
         // Reset progress bar start count in case anything else triggered it.
         progressBar.resetStartCountForTesting();
@@ -123,7 +122,8 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                progressBar.set((ToolbarProgressBar) getActivity().findViewById(R.id.progress));
+                progressBar.set(
+                        getActivity().getToolbarManager().getToolbarLayout().getProgressBar());
                 progressBar.get().setAlphaAnimationDuration(10);
                 progressBar.get().setHidingDelay(10);
                 progressBar.get().animate().setListener(new AnimatorListener() {

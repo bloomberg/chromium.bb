@@ -11,7 +11,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout.LayoutParams;
@@ -143,27 +142,24 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     /**
      * Creates a toolbar progress bar.
      *
-     * @param context the application environment.
-     * @param attrs the xml attributes that should be used to initialize this view.
+     * @param context The application environment.
+     * @param topMargin The top margin of the progress bar.
      */
-    public ToolbarProgressBar(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public ToolbarProgressBar(Context context, int topMargin) {
+        super(context);
         setAlpha(0.0f);
+        mMarginTop = topMargin;
 
         // This tells accessibility services that progress bar changes are important enough to
         // announce to the user even when not focused.
         ViewCompat.setAccessibilityLiveRegion(this, ViewCompat.ACCESSIBILITY_LIVE_REGION_POLITE);
     }
 
-    /**
-     * Prepare the progress bar for being attached to the window.
-     * @param topMargin The progress bar's top margin.
-     */
-    public void prepareForAttach(int topMargin) {
-        LayoutParams curParams = new LayoutParams(getLayoutParams());
-        mMarginTop = topMargin;
-        curParams.topMargin = mMarginTop;
-        setLayoutParams(curParams);
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        ((ViewGroup.MarginLayoutParams) getLayoutParams()).topMargin = mMarginTop;
     }
 
     /**

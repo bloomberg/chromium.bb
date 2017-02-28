@@ -21,6 +21,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -678,6 +679,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * @return The toolbar interface that this manager handles.
      */
     public Toolbar getToolbar() {
+        return mToolbar;
+    }
+
+    /**
+     * @return The {@link ToolbarLayout} that constitutes the toolbar.
+     */
+    @VisibleForTesting
+    public ToolbarLayout getToolbarLayout() {
         return mToolbar;
     }
 

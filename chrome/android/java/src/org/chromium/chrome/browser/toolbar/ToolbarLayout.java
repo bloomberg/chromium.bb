@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
@@ -48,7 +49,7 @@ import javax.annotation.Nullable;
  * interaction that are not from Views inside Toolbar hierarchy all interactions should be done
  * through {@link Toolbar} rather than using this class directly.
  */
-abstract class ToolbarLayout extends FrameLayout implements Toolbar {
+public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected static final int BACKGROUND_TRANSITION_DURATION_MS = 400;
 
     private Invalidator mInvalidator;
@@ -103,20 +104,17 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @return The top margin of the progress bar.
      */
     protected int getProgressBarTopMargin() {
-        return mToolbarHeightWithoutShadow - mProgressBar.getLayoutParams().height;
+        return mToolbarHeightWithoutShadow
+                - getResources().getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mProgressBar = (ToolbarProgressBar) findViewById(R.id.progress);
-        if (mProgressBar != null) {
-            removeView(mProgressBar);
-            mProgressBar.prepareForAttach(getProgressBarTopMargin());
+        mProgressBar = new ToolbarProgressBar(getContext(), getProgressBarTopMargin());
 
-            if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
-        }
+        if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
 
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
@@ -221,7 +219,8 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * @return The {@link ProgressBar} this layout uses.
      */
-    ToolbarProgressBar getProgressBar() {
+    @VisibleForTesting
+    public ToolbarProgressBar getProgressBar() {
         return mProgressBar;
     }
 

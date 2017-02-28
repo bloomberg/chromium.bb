@@ -52,11 +52,6 @@
         <attr name="maxHeight" format="dimension" />
     </declare-styleable>
 
-    <declare-styleable name="ClipDrawableProgressBar">
-        <attr name="progressBarColor" format="reference|color" />
-        <attr name="backgroundColor" format="reference|color" />
-    </declare-styleable>
-
     <declare-styleable name="MaterialProgressBar">
         <attr name="colorBackground" format="reference|color" />
         <attr name="colorProgress" format="reference|color" />

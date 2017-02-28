@@ -82,10 +82,4 @@
         android:src="@drawable/btn_menu"
         android:contentDescription="@string/accessibility_toolbar_btn_menu"
         android:background="@null" />
-    <org.chromium.chrome.browser.widget.ToolbarProgressBar
-        android:id="@+id/progress"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        chrome:progressBarColor="@color/progress_bar_foreground"
-        chrome:backgroundColor="@color/progress_bar_background" />
 </org.chromium.chrome.browser.toolbar.CustomTabToolbar>
