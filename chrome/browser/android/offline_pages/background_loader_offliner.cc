@@ -268,7 +268,9 @@ void BackgroundLoaderOffliner::SavePage() {
 
   // Pass in the original URL if it's different from last committed
   // when redirects occur.
-  if (params.url != request.url())
+  if (!request.original_url().is_empty())
+    params.original_url = request.original_url();
+  else if (params.url != request.url())
     params.original_url = request.url();
 
   offline_page_model_->SavePage(

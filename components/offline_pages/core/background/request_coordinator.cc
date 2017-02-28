@@ -155,6 +155,19 @@ bool IsSingleSuccessResult(const UpdateRequestsResult* result) {
 
 }  // namespace
 
+RequestCoordinator::SavePageLaterParams::SavePageLaterParams()
+    : user_requested(true),
+      availability(RequestAvailability::ENABLED_FOR_OFFLINER) {}
+
+RequestCoordinator::SavePageLaterParams::SavePageLaterParams(
+    const SavePageLaterParams& other) {
+  url = other.url;
+  client_id = other.client_id;
+  user_requested = other.user_requested;
+  availability = other.availability;
+  original_url = other.original_url;
+}
+
 RequestCoordinator::RequestCoordinator(
     std::unique_ptr<OfflinerPolicy> policy,
     std::unique_ptr<Offliner> offliner,
@@ -194,41 +207,47 @@ RequestCoordinator::RequestCoordinator(
 
 RequestCoordinator::~RequestCoordinator() {}
 
-int64_t RequestCoordinator::SavePageLater(const GURL& url,
-                                          const ClientId& client_id,
-                                          bool user_requested,
-                                          RequestAvailability availability) {
-  DVLOG(2) << "URL is " << url << " " << __func__;
+int64_t RequestCoordinator::SavePageLater(
+    const SavePageLaterParams& save_page_later_params) {
+  DVLOG(2) << "URL is " << save_page_later_params.url << " " << __func__;
 
-  if (!OfflinePageModel::CanSaveURL(url)) {
-    DVLOG(1) << "Not able to save page for requested url: " << url;
+  if (!OfflinePageModel::CanSaveURL(save_page_later_params.url)) {
+    DVLOG(1) << "Not able to save page for requested url: "
+             << save_page_later_params.url;
     return 0L;
   }
 
   int64_t id = GenerateOfflineId();
 
   // Build a SavePageRequest.
-  offline_pages::SavePageRequest request(id, url, client_id, base::Time::Now(),
-                                         user_requested);
+  offline_pages::SavePageRequest request(
+      id, save_page_later_params.url, save_page_later_params.client_id,
+      base::Time::Now(), save_page_later_params.user_requested);
+  request.set_original_url(save_page_later_params.original_url);
 
   // If the download manager is not done with the request, put it on the
   // disabled list.
-  if (availability == RequestAvailability::DISABLED_FOR_OFFLINER)
+  if (save_page_later_params.availability ==
+      RequestAvailability::DISABLED_FOR_OFFLINER) {
     disabled_requests_.insert(id);
+  }
 
   // Put the request on the request queue.
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
-                                weak_ptr_factory_.GetWeakPtr(), availability));
+                                weak_ptr_factory_.GetWeakPtr(),
+                                save_page_later_params.availability));
 
   // Record the network quality when this request is made.
   if (network_quality_estimator_) {
     RecordSavePageLaterNetworkQuality(
-        client_id, network_quality_estimator_->GetEffectiveConnectionType());
+        save_page_later_params.client_id,
+        network_quality_estimator_->GetEffectiveConnectionType());
   }
 
   return id;
 }
+
 void RequestCoordinator::GetAllRequests(const GetRequestsCallback& callback) {
   // Get all matching requests from the request queue, send them to our
   // callback.  We bind the namespace and callback to the front of the callback

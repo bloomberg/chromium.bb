@@ -186,12 +186,11 @@ void OfflinePageUtilsTest::CreateRequests() {
   RequestCoordinator* request_coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(profile());
 
-  offline_pages::ClientId client_id;
-  client_id.name_space = kDownloadNamespace;
-  client_id.id = kTestPage3ClientId;
-  request_coordinator->SavePageLater(
-      kTestPage3Url, client_id, true,
-      RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
+  RequestCoordinator::SavePageLaterParams params;
+  params.url = kTestPage3Url;
+  params.client_id =
+      offline_pages::ClientId(kDownloadNamespace, kTestPage3ClientId);
+  request_coordinator->SavePageLater(params);
   RunUntilIdle();
 }
 

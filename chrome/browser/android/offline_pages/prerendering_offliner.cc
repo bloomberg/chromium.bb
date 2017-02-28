@@ -82,7 +82,9 @@ void PrerenderingOffliner::OnLoadPageDone(
     save_page_params.is_background = true;
     // Pass in the original URL if it is different from the last committed URL
     // when redirects occur.
-    if (save_page_params.url != request.url())
+    if (!request.original_url().is_empty())
+      save_page_params.original_url = request.original_url();
+    else if (save_page_params.url != request.url())
       save_page_params.original_url = request.url();
 
     SavePage(save_page_params, std::move(archiver),

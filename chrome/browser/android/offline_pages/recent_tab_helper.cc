@@ -392,6 +392,8 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
   save_page_params.client_id = snapshot_info->client_id;
   save_page_params.proposed_offline_id = snapshot_info->request_id;
   save_page_params.is_background = false;
+  save_page_params.original_url =
+      OfflinePageUtils::GetOriginalURLFromWebContents(web_contents());
   page_model_->SavePage(
       save_page_params, delegate_->CreatePageArchiver(web_contents()),
       base::Bind(&RecentTabHelper::SavePageCallback,

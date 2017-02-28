@@ -247,6 +247,24 @@ class RequestCoordinatorTest : public testing::Test {
 
   SavePageRequest AddRequest2();
 
+  int64_t SavePageLater() {
+    RequestCoordinator::SavePageLaterParams params;
+    params.url = kUrl1;
+    params.client_id = kClientId1;
+    params.user_requested = kUserRequested;
+    return coordinator()->SavePageLater(params);
+  }
+
+  int64_t SavePageLaterWithAvailability(
+      RequestCoordinator::RequestAvailability availability) {
+    RequestCoordinator::SavePageLaterParams params;
+    params.url = kUrl1;
+    params.client_id = kClientId1;
+    params.user_requested = kUserRequested;
+    params.availability = availability;
+    return coordinator()->SavePageLater(params);
+  }
+
   Offliner::RequestStatus last_offlining_status() const {
     return coordinator()->last_offlining_status_;
   }
@@ -273,6 +291,10 @@ class RequestCoordinatorTest : public testing::Test {
   }
 
   const base::HistogramTester& histograms() const { return histogram_tester_; }
+
+  const std::set<int64_t>& disabled_requests() {
+    return coordinator()->disabled_requests_;
+  }
 
  private:
   GetRequestsResult last_get_requests_result_;
@@ -435,10 +457,7 @@ TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithNoRequests) {
 
 TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithRequestInProgress) {
   // Start processing for this request.
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl1, kClientId1, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  EXPECT_NE(0, SavePageLater());
 
   // Ensure that the forthcoming request does not finish - we simulate it being
   // in progress by asking it to skip making the completion callback.
@@ -489,10 +508,7 @@ TEST_F(RequestCoordinatorTest, StartImmediateProcessingWhenDisconnected) {
 
 TEST_F(RequestCoordinatorTest, StartImmediateProcessingWithRequestInProgress) {
   // Start processing for this request.
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl1, kClientId1, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  EXPECT_NE(0, SavePageLater());
 
   // Disable the automatic offliner callback.
   EnableOfflinerCallback(false);
@@ -518,23 +534,30 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   coordinator()->SetInternalStartProcessingCallbackForTest(
       processing_callback());
 
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl1, kClientId1, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  // Use default values for |user_requested| and |availability|.
+  RequestCoordinator::SavePageLaterParams params;
+  params.url = kUrl1;
+  params.client_id = kClientId1;
+  params.original_url = kUrl2;
+  EXPECT_NE(0, coordinator()->SavePageLater(params));
 
   // Expect that a request got placed on the queue.
   coordinator()->queue()->GetRequests(base::Bind(
       &RequestCoordinatorTest::GetRequestsDone, base::Unretained(this)));
+
+  // Expect that the request is not added to the disabled list by default.
+  EXPECT_TRUE(disabled_requests().empty());
 
   // Wait for callbacks to finish, both request queue and offliner.
   PumpLoop();
   EXPECT_TRUE(processing_callback_called());
 
   // Check the request queue is as expected.
-  EXPECT_EQ(1UL, last_requests().size());
+  ASSERT_EQ(1UL, last_requests().size());
   EXPECT_EQ(kUrl1, last_requests().at(0)->url());
   EXPECT_EQ(kClientId1, last_requests().at(0)->client_id());
+  EXPECT_TRUE(last_requests().at(0)->user_requested());
+  EXPECT_EQ(kUrl2, last_requests().at(0)->original_url());
 
   // Expect that the scheduler got notified.
   SchedulerStub* scheduler_stub =
@@ -562,10 +585,7 @@ TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
   coordinator()->SetInternalStartProcessingCallbackForTest(
       processing_callback());
 
-  EXPECT_TRUE(
-      coordinator()->SavePageLater(
-          kUrl1, kClientId1, kUserRequested,
-          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
+  EXPECT_NE(0, SavePageLater());
 
   // Expect that a request got placed on the queue.
   coordinator()->queue()->GetRequests(base::Bind(
@@ -1031,9 +1051,12 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequest) {
 }
 
 TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {
-  int64_t request_id = coordinator()->SavePageLater(
-      kUrl1, kClientId1, kUserRequested,
+  int64_t request_id = SavePageLaterWithAvailability(
       RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER);
+
+  // Verify that the request is added to the disabled list.
+  EXPECT_FALSE(disabled_requests().empty());
+
   PumpLoop();
   EXPECT_NE(request_id, 0l);
 
@@ -1055,9 +1078,12 @@ TEST_F(RequestCoordinatorTest, EnableForOffliner) {
   // Pretend we are on low-end device so immediate start won't happen.
   SetIsLowEndDeviceForTest(true);
 
-  int64_t request_id = coordinator()->SavePageLater(
-      kUrl1, kClientId1, kUserRequested,
+  int64_t request_id = SavePageLaterWithAvailability(
       RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER);
+
+  // Verify that the request is added to the disabled list.
+  EXPECT_FALSE(disabled_requests().empty());
+
   PumpLoop();
   EXPECT_NE(request_id, 0l);
 
@@ -1125,10 +1151,7 @@ TEST_F(RequestCoordinatorTest,
   // in progress by asking it to skip making the completion callback.
   EnableOfflinerCallback(false);
 
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl1, kClientId1, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  EXPECT_NE(0, SavePageLater());
   PumpLoop();
 
   // Verify that immediate start from adding the request did happen.
@@ -1316,10 +1339,7 @@ TEST_F(RequestCoordinatorTest,
   // Turn off the callback so that the request stops before processing in
   // PumpLoop.
   EnableOfflinerCallback(false);
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl1, kClientId1, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  EXPECT_NE(0, SavePageLater());
   PumpLoop();
 
   EXPECT_TRUE(is_busy());
@@ -1332,10 +1352,7 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_FALSE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
 
   // Make a request.
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl1, kClientId1, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  EXPECT_NE(0, SavePageLater());
   PumpLoop();
 
   // Verify not immediately busy (since low-end device).
@@ -1352,10 +1369,11 @@ TEST_F(RequestCoordinatorTest,
   EnableOfflinerCallback(false);
 
   // Make another request.
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl2, kClientId2, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  RequestCoordinator::SavePageLaterParams params;
+  params.url = kUrl2;
+  params.client_id = kClientId2;
+  params.user_requested = kUserRequested;
+  EXPECT_NE(0, coordinator()->SavePageLater(params));
   PumpLoop();
 
   // Verify immediate processing did start this time.
@@ -1365,10 +1383,7 @@ TEST_F(RequestCoordinatorTest,
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
   SetNetworkConnected(false);
   EnableOfflinerCallback(false);
-  EXPECT_NE(
-      coordinator()->SavePageLater(
-          kUrl1, kClientId1, kUserRequested,
-          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
+  EXPECT_NE(0, SavePageLater());
   PumpLoop();
   EXPECT_FALSE(is_busy());
 
@@ -1392,10 +1407,7 @@ TEST_F(RequestCoordinatorTest,
   // PumpLoop.
   EnableOfflinerCallback(false);
 
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl1, kClientId1, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  EXPECT_NE(0, SavePageLater());
   PumpLoop();
   EXPECT_TRUE(is_busy());
 }
@@ -1491,10 +1503,7 @@ TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForImmediateProcessing) {
   // in progress by asking it to skip making the completion callback.
   EnableOfflinerCallback(false);
 
-  EXPECT_NE(coordinator()->SavePageLater(
-                kUrl1, kClientId1, kUserRequested,
-                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
-            0);
+  EXPECT_NE(0, SavePageLater());
 
   // Repeat the timeout for MaxCompleteTries - 1 times in order to increase the
   // completed tries on this request.

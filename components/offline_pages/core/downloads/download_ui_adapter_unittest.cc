@@ -231,9 +231,10 @@ void DownloadUIAdapterTest::PumpLoop() {
 
 int64_t DownloadUIAdapterTest::AddRequest(const GURL& url,
                                           const ClientId& client_id) {
-  return request_coordinator()->SavePageLater(
-      url, client_id, /* user_requested */ true,
-      RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
+  RequestCoordinator::SavePageLaterParams params;
+  params.url = url;
+  params.client_id = client_id;
+  return request_coordinator()->SavePageLater(params);
 }
 
 TEST_F(DownloadUIAdapterTest, InitialLoad) {

@@ -60,6 +60,28 @@ class RequestCoordinator : public KeyedService,
     DISABLED_FOR_OFFLINER,
   };
 
+  // Describes the parameters to control how to save a page when system
+  // conditions allow.
+  struct SavePageLaterParams {
+    SavePageLaterParams();
+    SavePageLaterParams(const SavePageLaterParams& other);
+
+    // The last committed URL of the page to save.
+    GURL url;
+
+    // The identification used by the client.
+    ClientId client_id;
+
+    // Whether the user requests the save action. Defaults to true.
+    bool user_requested;
+
+    // Request availability. Defaults to ENABLED_FOR_OFFLINER.
+    RequestAvailability availability;
+
+    // The original URL of the page to save. Empty if no redirect occurs.
+    GURL original_url;
+  };
+
   // Callback specifying which request IDs were actually removed.
   typedef base::Callback<void(const MultipleItemStatuses&)>
       RemoveRequestsCallback;
@@ -79,10 +101,7 @@ class RequestCoordinator : public KeyedService,
 
   // Queues |request| to later load and save when system conditions allow.
   // Returns an id if the page could be queued successfully, 0L otherwise.
-  int64_t SavePageLater(const GURL& url,
-                        const ClientId& client_id,
-                        bool user_requested,
-                        RequestAvailability availability);
+  int64_t SavePageLater(const SavePageLaterParams& save_page_later_params);
 
   // Remove a list of requests by |request_id|.  This removes requests from the
   // request queue, and cancels an in-progress prerender.

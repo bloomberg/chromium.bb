@@ -296,12 +296,11 @@ void NetErrorTabHelper::DownloadPageLaterHelper(const GURL& page_url) {
       offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
           web_contents()->GetBrowserContext());
   DCHECK(request_coordinator) << "No RequestCoordinator for SavePageLater";
-  offline_pages::ClientId client_id(
-      offline_pages::kAsyncNamespace, base::GenerateGUID());
-  request_coordinator->SavePageLater(
-      page_url, client_id, true /*user_requested*/,
-      offline_pages::RequestCoordinator::RequestAvailability::
-          ENABLED_FOR_OFFLINER);
+  offline_pages::RequestCoordinator::SavePageLaterParams params;
+  params.url = page_url;
+  params.client_id = offline_pages::ClientId(offline_pages::kAsyncNamespace,
+                                             base::GenerateGUID());
+  request_coordinator->SavePageLater(params);
 }
 #endif  // defined(OS_ANDROID)
 

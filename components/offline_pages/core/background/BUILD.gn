@@ -118,6 +118,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
+    "//sql:sql",
     "//testing/gtest",
     "//url",
   ]

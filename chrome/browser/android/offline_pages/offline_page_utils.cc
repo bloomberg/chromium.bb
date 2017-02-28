@@ -28,8 +28,8 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "url/gurl.h"
 
 namespace offline_pages {
 namespace {
@@ -243,13 +243,23 @@ void OfflinePageUtils::StartOfflinePageDownload(
   if (!request_coordinator)
     return;
 
-  ClientId client_id(kDownloadNamespace, base::GenerateGUID());
-  request_coordinator->SavePageLater(
-      url, client_id, true,
-      RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
+  RequestCoordinator::SavePageLaterParams params;
+  params.url = url;
+  params.client_id = ClientId(kDownloadNamespace, base::GenerateGUID());
+  request_coordinator->SavePageLater(params);
 
   android::OfflinePageNotificationBridge notification_bridge;
   notification_bridge.ShowDownloadingToast();
+}
+
+// static
+GURL OfflinePageUtils::GetOriginalURLFromWebContents(
+    content::WebContents* web_contents) {
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  if (!entry || entry->GetRedirectChain().size() <= 1)
+    return GURL();
+  return entry->GetRedirectChain().front();
 }
 
 }  // namespace offline_pages

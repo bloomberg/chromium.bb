@@ -15,9 +15,13 @@
 #include "components/offline_pages/core/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/core/background/request_queue_store_sql.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
+
+#define REQUEST_QUEUE_TABLE_NAME "request_queue_v1"
 
 using UpdateStatus = RequestQueueStore::UpdateStatus;
 
@@ -36,6 +40,51 @@ enum class LastResult {
   RESULT_FALSE,
   RESULT_TRUE,
 };
+
+void BuildTestStoreWithSchemaFromM57(const base::FilePath& file) {
+  sql::Connection connection;
+  ASSERT_TRUE(
+      connection.Open(file.Append(FILE_PATH_LITERAL("RequestQueue.db"))));
+  ASSERT_TRUE(connection.is_open());
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(connection.Execute(
+      "CREATE TABLE " REQUEST_QUEUE_TABLE_NAME
+      " (request_id INTEGER PRIMARY KEY NOT NULL,"
+      " creation_time INTEGER NOT NULL,"
+      " activation_time INTEGER NOT NULL DEFAULT 0,"
+      " last_attempt_time INTEGER NOT NULL DEFAULT 0,"
+      " started_attempt_count INTEGER NOT NULL,"
+      " completed_attempt_count INTEGER NOT NULL,"
+      " state INTEGER NOT NULL DEFAULT 0,"
+      " url VARCHAR NOT NULL,"
+      " client_namespace VARCHAR NOT NULL,"
+      " client_id VARCHAR NOT NULL"
+      ")"));
+
+  ASSERT_TRUE(connection.CommitTransaction());
+  sql::Statement statement(connection.GetUniqueStatement(
+      "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
+      " (request_id, creation_time, activation_time,"
+      " last_attempt_time, started_attempt_count, completed_attempt_count,"
+      " state, url, client_namespace, client_id)"
+      " VALUES "
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+
+  statement.BindInt64(0, kRequestId);
+  statement.BindInt64(1, 0);
+  statement.BindInt64(2, 0);
+  statement.BindInt64(3, 0);
+  statement.BindInt64(4, 0);
+  statement.BindInt64(5, 0);
+  statement.BindInt64(6, 0);
+  statement.BindString(7, kUrl.spec());
+  statement.BindString(8, kClientId.name_space);
+  statement.BindString(9, kClientId.id);
+  ASSERT_TRUE(statement.Run());
+  ASSERT_TRUE(connection.DoesTableExist(REQUEST_QUEUE_TABLE_NAME));
+  ASSERT_FALSE(
+      connection.DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "original_url"));
+}
 
 }  // namespace
 
@@ -155,6 +204,8 @@ void RequestQueueStoreTestBase::ResetDone(bool result) {
 class RequestQueueStoreFactory {
  public:
   virtual RequestQueueStore* BuildStore(const base::FilePath& path) = 0;
+  virtual RequestQueueStore* BuildStoreWithOldSchema(
+      const base::FilePath& path, int version) = 0;
 };
 
 // Implements a store factory for in memory store.
@@ -163,6 +214,11 @@ class RequestQueueInMemoryStoreFactory : public RequestQueueStoreFactory {
   RequestQueueStore* BuildStore(const base::FilePath& path) override {
     RequestQueueStore* store = new RequestQueueInMemoryStore();
     return store;
+  }
+
+  RequestQueueStore* BuildStoreWithOldSchema(const base::FilePath& path,
+                                             int version) override {
+    return nullptr;
   }
 };
 
@@ -174,6 +230,16 @@ class RequestQueueStoreSQLFactory : public RequestQueueStoreFactory {
         new RequestQueueStoreSQL(base::ThreadTaskRunnerHandle::Get(), path);
     return store;
   }
+
+  RequestQueueStore* BuildStoreWithOldSchema(const base::FilePath& path,
+                                             int version) override {
+    EXPECT_EQ(57, version);
+    BuildTestStoreWithSchemaFromM57(path);
+
+    RequestQueueStore* store =
+        new RequestQueueStoreSQL(base::ThreadTaskRunnerHandle::Get(), path);
+    return store;
+  }
 };
 
 // Defines a store test fixture templatized by the store factory.
@@ -181,6 +247,7 @@ template <typename T>
 class RequestQueueStoreTest : public RequestQueueStoreTestBase {
  public:
   std::unique_ptr<RequestQueueStore> BuildStore();
+  std::unique_ptr<RequestQueueStore> BuildStoreWithOldSchema(int version);
 
  protected:
   T factory_;
@@ -193,6 +260,14 @@ std::unique_ptr<RequestQueueStore> RequestQueueStoreTest<T>::BuildStore() {
   return store;
 }
 
+template <typename T>
+std::unique_ptr<RequestQueueStore>
+RequestQueueStoreTest<T>::BuildStoreWithOldSchema(int version) {
+  std::unique_ptr<RequestQueueStore> store(
+      factory_.BuildStoreWithOldSchema(temp_directory_.GetPath(), version));
+  return store;
+}
+
 // |StoreTypes| lists all factories, based on which the tests will be created.
 typedef testing::Types<RequestQueueInMemoryStoreFactory,
                        RequestQueueStoreSQLFactory>
@@ -202,6 +277,23 @@ typedef testing::Types<RequestQueueInMemoryStoreFactory,
 // Notice that in the store we are using "this->" to refer to the methods
 // defined on the |RequestQuieueStoreBaseTest| class. That's by design.
 TYPED_TEST_CASE(RequestQueueStoreTest, StoreTypes);
+
+TYPED_TEST(RequestQueueStoreTest, UpgradeFromVersion57Store) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStoreWithOldSchema(57));
+  // In-memory store does not support upgrading.
+  if (!store)
+    return;
+  this->InitializeStore(store.get());
+
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
+  ASSERT_EQ(1u, this->last_requests().size());
+  EXPECT_EQ(kRequestId, this->last_requests()[0]->request_id());
+  EXPECT_EQ(kUrl, this->last_requests()[0]->url());
+  EXPECT_EQ(GURL(), this->last_requests()[0]->original_url());
+}
 
 TYPED_TEST(RequestQueueStoreTest, GetRequestsEmpty) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
@@ -283,6 +375,7 @@ TYPED_TEST(RequestQueueStoreTest, AddRequest) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
                           kUserRequested);
+  request.set_original_url(kUrl2);
 
   store->AddRequest(request,
                     base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
@@ -340,6 +433,7 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
   SavePageRequest updated_request(kRequestId, kUrl, kClientId,
                                   new_creation_time, activation_time,
                                   kUserRequested);
+  updated_request.set_original_url(kUrl2);
   // Try to update a non-existing request.
   SavePageRequest updated_request2(kRequestId2, kUrl, kClientId,
                                    new_creation_time, activation_time,

@@ -42,26 +42,63 @@ bool CreateRequestQueueTable(sql::Connection* db) {
                       " state INTEGER NOT NULL DEFAULT 0,"
                       " url VARCHAR NOT NULL,"
                       " client_namespace VARCHAR NOT NULL,"
-                      " client_id VARCHAR NOT NULL"
+                      " client_id VARCHAR NOT NULL,"
+                      " original_url VARCHAR NOT NULL DEFAULT ''"
                       ")";
   return db->Execute(kSql);
 }
 
+bool UpgradeWithQuery(sql::Connection* db, const char* upgrade_sql) {
+  if (!db->Execute("ALTER TABLE " REQUEST_QUEUE_TABLE_NAME
+                   " RENAME TO temp_" REQUEST_QUEUE_TABLE_NAME)) {
+    return false;
+  }
+  if (!CreateRequestQueueTable(db))
+    return false;
+  if (!db->Execute(upgrade_sql))
+    return false;
+  return db->Execute("DROP TABLE IF EXISTS temp_" REQUEST_QUEUE_TABLE_NAME);
+}
+
+bool UpgradeFrom57(sql::Connection* db) {
+  const char kSql[] =
+      "INSERT INTO " REQUEST_QUEUE_TABLE_NAME
+      " (request_id, creation_time, activation_time, last_attempt_time, "
+      "started_attempt_count, completed_attempt_count, state, url, "
+      "client_namespace, client_id) "
+      "SELECT "
+      "request_id, creation_time, activation_time, last_attempt_time, "
+      "started_attempt_count, completed_attempt_count, state, url, "
+      "client_namespace, client_id "
+      "FROM temp_" REQUEST_QUEUE_TABLE_NAME;
+  return UpgradeWithQuery(db, kSql);
+}
+
 bool CreateSchema(sql::Connection* db) {
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return false;
+
+  if (!db->DoesTableExist(REQUEST_QUEUE_TABLE_NAME)) {
+    if (!CreateRequestQueueTable(db))
+      return false;
+  }
+
   // If there is not already a state column, we need to drop the old table.  We
   // are choosing to drop instead of upgrade since the feature is not yet
-  // released, so we don't use a transaction to protect existing data, or try to
-  // migrate it.
+  // released, so we don't try to migrate it.
   if (!db->DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "state")) {
     if (!db->Execute("DROP TABLE IF EXISTS " REQUEST_QUEUE_TABLE_NAME))
       return false;
   }
 
-  if (!CreateRequestQueueTable(db))
-    return false;
+  if (!db->DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "original_url")) {
+    if (!UpgradeFrom57(db))
+      return false;
+  }
 
   // TODO(fgorski): Add indices here.
-  return true;
+  return transaction.Commit();
 }
 
 // Create a save page request from a SQL result.  Expects complete rows with
@@ -83,11 +120,12 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
   const GURL url(statement.ColumnString(7));
   const ClientId client_id(statement.ColumnString(8),
                            statement.ColumnString(9));
+  const GURL original_url(statement.ColumnString(10));
 
   DVLOG(2) << "making save page request - id " << id << " url " << url
            << " client_id " << client_id.name_space << "-" << client_id.id
            << " creation time " << creation_time << " user requested "
-           << kUserRequested;
+           << kUserRequested << " original_url " << original_url;
 
   std::unique_ptr<SavePageRequest> request(new SavePageRequest(
       id, url, client_id, creation_time, activation_time, kUserRequested));
@@ -95,6 +133,7 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
   request->set_started_attempt_count(started_attempt_count);
   request->set_completed_attempt_count(completed_attempt_count);
   request->set_request_state(state);
+  request->set_original_url(original_url);
   return request;
 }
 
@@ -104,7 +143,7 @@ std::unique_ptr<SavePageRequest> GetOneRequest(sql::Connection* db,
   const char kSql[] =
       "SELECT request_id, creation_time, activation_time,"
       " last_attempt_time, started_attempt_count, completed_attempt_count,"
-      " state, url, client_namespace, client_id"
+      " state, url, client_namespace, client_id, original_url"
       " FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -132,9 +171,9 @@ ItemActionStatus Insert(sql::Connection* db, const SavePageRequest& request) {
       "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time,"
       " last_attempt_time, started_attempt_count, completed_attempt_count,"
-      " state, url, client_namespace, client_id)"
+      " state, url, client_namespace, client_id, original_url)"
       " VALUES "
-      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, request.request_id());
@@ -147,6 +186,7 @@ ItemActionStatus Insert(sql::Connection* db, const SavePageRequest& request) {
   statement.BindString(7, request.url().spec());
   statement.BindString(8, request.client_id().name_space);
   statement.BindString(9, request.client_id().id);
+  statement.BindString(10, request.original_url().spec());
 
   if (!statement.Run())
     return ItemActionStatus::STORE_ERROR;
@@ -160,7 +200,7 @@ ItemActionStatus Update(sql::Connection* db, const SavePageRequest& request) {
       "UPDATE OR IGNORE " REQUEST_QUEUE_TABLE_NAME
       " SET creation_time = ?, activation_time = ?, last_attempt_time = ?,"
       " started_attempt_count = ?, completed_attempt_count = ?, state = ?,"
-      " url = ?, client_namespace = ?, client_id = ?"
+      " url = ?, client_namespace = ?, client_id = ?, original_url = ?"
       " WHERE request_id = ?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -173,7 +213,8 @@ ItemActionStatus Update(sql::Connection* db, const SavePageRequest& request) {
   statement.BindString(6, request.url().spec());
   statement.BindString(7, request.client_id().name_space);
   statement.BindString(8, request.client_id().id);
-  statement.BindInt64(9, request.request_id());
+  statement.BindString(9, request.original_url().spec());
+  statement.BindInt64(10, request.request_id());
 
   if (!statement.Run())
     return ItemActionStatus::STORE_ERROR;
@@ -236,7 +277,7 @@ void GetRequestsSync(sql::Connection* db,
   const char kSql[] =
       "SELECT request_id, creation_time, activation_time,"
       " last_attempt_time, started_attempt_count, completed_attempt_count,"
-      " state, url, client_namespace, client_id"
+      " state, url, client_namespace, client_id, original_url"
       " FROM " REQUEST_QUEUE_TABLE_NAME;
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));

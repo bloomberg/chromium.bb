@@ -9,8 +9,7 @@
 
 #include "base/callback.h"
 #include "components/offline_pages/core/offline_page_model.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace base {
 class Time;
@@ -95,6 +94,10 @@ class OfflinePageUtils {
 
   static void StartOfflinePageDownload(content::BrowserContext* context,
                                        const GURL& url);
+
+  // Returns original URL of the given web contents. Empty URL is returned if
+  // no redirect occurred.
+  static GURL GetOriginalURLFromWebContents(content::WebContents* web_contents);
 };
 
 }  // namespace offline_pages

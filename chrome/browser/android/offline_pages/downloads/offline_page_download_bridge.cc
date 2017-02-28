@@ -85,7 +85,8 @@ content::WebContents* GetWebContentsFromJavaTab(
   return tab->web_contents();
 }
 
-void SavePageIfNotNavigatedAway(const GURL& original_url,
+void SavePageIfNotNavigatedAway(const GURL& url,
+                                const GURL& original_url,
                                 const ScopedJavaGlobalRef<jobject>& j_tab_ref) {
   content::WebContents* web_contents = GetWebContentsFromJavaTab(j_tab_ref);
   if (!web_contents)
@@ -93,8 +94,8 @@ void SavePageIfNotNavigatedAway(const GURL& original_url,
 
   // This ignores fragment differences in URLs, bails out only if tab has
   // navigated away and not just scrolled to a fragment.
-  GURL url = web_contents->GetLastCommittedURL();
-  if (!OfflinePageUtils::EqualsIgnoringFragment(url, original_url))
+  GURL current_url = web_contents->GetLastCommittedURL();
+  if (!OfflinePageUtils::EqualsIgnoringFragment(current_url, url))
     return;
 
   offline_pages::ClientId client_id;
@@ -112,9 +113,13 @@ void SavePageIfNotNavigatedAway(const GURL& original_url,
         offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
             web_contents->GetBrowserContext());
     if (request_coordinator) {
-      request_id = request_coordinator->SavePageLater(
-          url, client_id, true,
-          RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER);
+      offline_pages::RequestCoordinator::SavePageLaterParams params;
+      params.url = current_url;
+      params.client_id = client_id;
+      params.availability =
+          RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER;
+      params.original_url = original_url;
+      request_id = request_coordinator->SavePageLater(params);
     } else {
       DVLOG(1) << "SavePageIfNotNavigatedAway has no valid coordinator.";
     }
@@ -145,6 +150,7 @@ void SavePageIfNotNavigatedAway(const GURL& original_url,
 }
 
 void RequestQueueDuplicateCheckDone(
+    const GURL& url,
     const GURL& original_url,
     const ScopedJavaGlobalRef<jobject>& j_tab_ref,
     bool has_duplicates,
@@ -170,10 +176,11 @@ void RequestQueueDuplicateCheckDone(
     return;
   }
 
-  SavePageIfNotNavigatedAway(original_url, j_tab_ref);
+  SavePageIfNotNavigatedAway(url, original_url, j_tab_ref);
 }
 
-void ModelDuplicateCheckDone(const GURL& original_url,
+void ModelDuplicateCheckDone(const GURL& url,
+                             const GURL& original_url,
                              const ScopedJavaGlobalRef<jobject>& j_tab_ref,
                              bool has_duplicates,
                              const base::Time& latest_saved_time) {
@@ -193,16 +200,16 @@ void ModelDuplicateCheckDone(const GURL& original_url,
         base::TimeDelta::FromDays(7).InSeconds(), 50);
 
     OfflinePageInfoBarDelegate::Create(
-        base::Bind(&SavePageIfNotNavigatedAway, original_url, j_tab_ref),
-        original_url, web_contents);
+        base::Bind(&SavePageIfNotNavigatedAway, url, original_url, j_tab_ref),
+        url, web_contents);
     return;
   }
 
   OfflinePageUtils::CheckExistenceOfRequestsWithURL(
       Profile::FromBrowserContext(web_contents->GetBrowserContext())
           ->GetOriginalProfile(),
-      kDownloadNamespace, original_url,
-      base::Bind(&RequestQueueDuplicateCheckDone, original_url, j_tab_ref));
+      kDownloadNamespace, url, base::Bind(&RequestQueueDuplicateCheckDone, url,
+                                          original_url, j_tab_ref));
 }
 
 void ToJavaOfflinePageDownloadItemList(
@@ -371,12 +378,15 @@ void OfflinePageDownloadBridge::StartDownload(
     return;
 
   GURL url = web_contents->GetLastCommittedURL();
+  GURL original_url =
+      offline_pages::OfflinePageUtils::GetOriginalURLFromWebContents(
+          web_contents);
 
   ScopedJavaGlobalRef<jobject> j_tab_ref(env, j_tab);
 
   OfflinePageUtils::CheckExistenceOfPagesWithURL(
       tab->GetProfile()->GetOriginalProfile(), kDownloadNamespace, url,
-      base::Bind(&ModelDuplicateCheckDone, url, j_tab_ref));
+      base::Bind(&ModelDuplicateCheckDone, url, original_url, j_tab_ref));
 }
 
 void OfflinePageDownloadBridge::CancelDownload(

@@ -87,6 +87,11 @@ class SavePageRequest {
     user_requested_ = user_requested;
   }
 
+  const GURL& original_url() const { return original_url_; }
+  void set_original_url(const GURL& original_url) {
+    original_url_ = original_url;
+  }
+
  private:
   // ID of this request.
   int64_t request_id_;
@@ -120,6 +125,9 @@ class SavePageRequest {
 
   // The current state of this request
   RequestState state_;
+
+  // The original URL of the page to be offlined. Empty if no redirect occurs.
+  GURL original_url_;
 };
 
 }  // namespace offline_pages

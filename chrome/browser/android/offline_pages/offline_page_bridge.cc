@@ -466,10 +466,13 @@ void OfflinePageBridge::SavePageLater(JNIEnv* env,
       offline_pages::RequestCoordinatorFactory::GetInstance()->
           GetForBrowserContext(browser_context_);
 
-  coordinator->SavePageLater(
-      GURL(ConvertJavaStringToUTF8(env, j_url)), client_id,
-      static_cast<bool>(user_requested),
-      RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
+  RequestCoordinator::SavePageLaterParams params;
+  params.url = GURL(ConvertJavaStringToUTF8(env, j_url));
+  params.client_id = client_id;
+  params.user_requested = static_cast<bool>(user_requested);
+  params.availability =
+      RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER;
+  coordinator->SavePageLater(params);
 }
 
 ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflinePageHeaderForReload(
