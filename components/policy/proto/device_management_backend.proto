@@ -165,6 +165,19 @@ message DeviceServiceApiAccessRequest {
 
   // OAuth2 client ID to which the returned authorization code is bound.
   optional string oauth2_client_id = 2;
+
+  // Enumerates different flavors of registration.
+  enum DeviceType {
+    // Authcode will be used by Chrome OS
+    // (this is typically requested during device enrollment)
+    CHROME = 0;
+    // Authcode will be used by Android (ARC) subsystem
+    // (this is typically requested during ARC Kiosk session setup)
+    ANDROIDOS = 1;
+  };
+
+  // Device type indicates the intended use of the auth code.
+  optional DeviceType device_type = 3;
 }
 
 // Response from server to API access request.
