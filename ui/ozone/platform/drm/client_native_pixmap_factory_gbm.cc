@@ -57,6 +57,11 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
       case gfx::BufferUsage::SCANOUT:
         return format == gfx::BufferFormat::BGRX_8888 ||
                format == gfx::BufferFormat::RGBX_8888;
+      case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
+        return format == gfx::BufferFormat::BGRX_8888 ||
+               format == gfx::BufferFormat::BGRA_8888 ||
+               format == gfx::BufferFormat::RGBX_8888 ||
+               format == gfx::BufferFormat::RGBA_8888;
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT: {
 #if defined(OS_CHROMEOS)
@@ -82,6 +87,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
       gfx::BufferUsage usage) override {
     DCHECK(!handle.fds.empty());
     switch (usage) {
+      case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
 #if defined(OS_CHROMEOS)

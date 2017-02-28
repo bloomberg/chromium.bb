@@ -40,6 +40,7 @@ enum class BufferFormat {
 enum class BufferUsage {
   GPU_READ,
   SCANOUT,
+  SCANOUT_CPU_READ_WRITE,
   GPU_READ_CPU_READ_WRITE,
   // TODO(reveman): Merge this with GPU_READ_CPU_READ_WRITE when SurfaceTexture
   // backed buffers are single buffered and support it.

@@ -70,8 +70,9 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::BGRA_8888,
         gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::UYVY_422,
         gfx::BufferFormat::YVU_420,   gfx::BufferFormat::YUV_420_BIPLANAR};
-    const gfx::BufferUsage kGPUReadWriteUsages[] = {gfx::BufferUsage::GPU_READ,
-                                                    gfx::BufferUsage::SCANOUT};
+    const gfx::BufferUsage kGPUReadWriteUsages[] = {
+        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE};
     for (auto format : kGPUReadWriteFormats) {
       for (auto usage : kGPUReadWriteUsages) {
         if (IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
