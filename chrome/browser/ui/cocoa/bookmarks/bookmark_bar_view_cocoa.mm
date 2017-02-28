@@ -113,7 +113,7 @@ using bookmarks::BookmarkNode;
   return NO;
 }
 
-- (BookmarkBarTextField*)noItemTextfield {
+- (NSTextField*)noItemTextfield {
   return noItemTextfield_;
 }
 
@@ -290,19 +290,3 @@ using bookmarks::BookmarkNode;
 }
 
 @end  // @implementation BookmarkBarView
-
-@implementation BookmarkBarTextField
-
-- (NSMenu*)menu {
-  return [barView_ menu];
-}
-
-@end  // @implementation BookmarkBarTextField
-
-@implementation BookmarkBarItemContainer
-
-- (NSMenu*)menu {
-  return [barView_ menu];
-}
-
-@end  // @implementation BookmarkBarItemContainer

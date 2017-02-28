@@ -13,8 +13,6 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @class BookmarkBarController;
-@class BookmarkBarItemContainer;
-@class BookmarkBarTextField;
 
 @interface BookmarkBarView : NSView {
  @private
@@ -22,40 +20,21 @@
   CGFloat dropIndicatorPosition_;  // x position
 
   IBOutlet BookmarkBarController* controller_;
-  IBOutlet BookmarkBarTextField* noItemTextfield_;
+  IBOutlet NSTextField* noItemTextfield_;
   IBOutlet NSButton* importBookmarksButton_;
-  BookmarkBarItemContainer* noItemContainer_;
+  GTMWidthBasedTweaker* noItemContainer_;
 }
-- (BookmarkBarTextField*)noItemTextfield;
+- (NSTextField*)noItemTextfield;
 - (NSButton*)importBookmarksButton;
 - (BookmarkBarController*)controller;
 
-@property(nonatomic, assign) IBOutlet BookmarkBarItemContainer* noItemContainer;
+@property(nonatomic, assign) IBOutlet GTMWidthBasedTweaker* noItemContainer;
 @end
 
 @interface BookmarkBarView()  // TestingOrInternalAPI
 @property(nonatomic, readonly) BOOL dropIndicatorShown;
 @property(nonatomic, readonly) CGFloat dropIndicatorPosition;
 - (void)setController:(id)controller;
-@end
-
-
-// NSTextField subclass responsible for routing -menu to the BookmarBarView.
-// This is necessary when building with the 10.6 SDK because -rightMouseDown:
-// does not follow the responder chain.
-@interface BookmarkBarTextField : NSTextField {
- @private
-  IBOutlet BookmarkBarView* barView_;
-}
-@end
-
-// GTMWidthBasedTweaker subclass responsible for routing -menu to the
-// BookmarBarView. This is necessary when building with the 10.6 SDK because
-// -rightMouseDown: does not follow the responder chain.
-@interface BookmarkBarItemContainer : GTMWidthBasedTweaker {
- @private
-  IBOutlet BookmarkBarView* barView_;
-}
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_COCOA_H_
