@@ -120,14 +120,14 @@ class CORE_EXPORT SVGImage final : public Image {
   }
 
   void draw(PaintCanvas*,
-            const SkPaint&,
+            const PaintFlags&,
             const FloatRect& fromRect,
             const FloatRect& toRect,
             RespectImageOrientationEnum,
             ImageClampingMode,
             const ColorBehavior&) override;
   void drawForContainer(PaintCanvas*,
-                        const SkPaint&,
+                        const PaintFlags&,
                         const FloatSize,
                         float,
                         const FloatRect&,

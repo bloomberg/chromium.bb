@@ -338,7 +338,8 @@ void HTMLCanvasElement::didDisableAcceleration() {
   didDraw(FloatRect(0, 0, size().width(), size().height()));
 }
 
-void HTMLCanvasElement::restoreCanvasMatrixClipStack(SkCanvas* canvas) const {
+void HTMLCanvasElement::restoreCanvasMatrixClipStack(
+    PaintCanvas* canvas) const {
   if (m_context)
     m_context->restoreCanvasMatrixClipStack(canvas);
 }

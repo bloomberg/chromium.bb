@@ -50,13 +50,13 @@ class CORE_EXPORT FilterEffectBuilder final {
  public:
   FilterEffectBuilder(const FloatRect& zoomedReferenceBox,
                       float zoom,
-                      const SkPaint* fillPaint = nullptr,
-                      const SkPaint* strokePaint = nullptr);
+                      const PaintFlags* fillFlags = nullptr,
+                      const PaintFlags* strokeFlags = nullptr);
   FilterEffectBuilder(Node*,
                       const FloatRect& zoomedReferenceBox,
                       float zoom,
-                      const PaintFlags* fillPaint = nullptr,
-                      const PaintFlags* strokePaint = nullptr);
+                      const PaintFlags* fillFlags = nullptr,
+                      const PaintFlags* strokeFlags = nullptr);
 
   Filter* buildReferenceFilter(SVGFilterElement&,
                                FilterEffect* previousEffect,
@@ -73,8 +73,8 @@ class CORE_EXPORT FilterEffectBuilder final {
   Member<Node> m_targetContext;
   FloatRect m_referenceBox;
   float m_zoom;
-  const PaintFlags* m_fillPaint;
-  const PaintFlags* m_strokePaint;
+  const PaintFlags* m_fillFlags;
+  const PaintFlags* m_strokeFlags;
 };
 
 }  // namespace blink

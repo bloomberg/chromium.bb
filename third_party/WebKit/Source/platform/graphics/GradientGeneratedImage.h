@@ -47,7 +47,7 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
   bool applyShader(PaintFlags&, const SkMatrix&, const ColorBehavior&) override;
 
  protected:
-  void draw(SkCanvas*,
+  void draw(PaintCanvas*,
             const PaintFlags&,
             const FloatRect&,
             const FloatRect&,

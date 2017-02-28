@@ -25,6 +25,7 @@
 
 #include "platform/graphics/DeferredImageDecoder.h"
 
+#include <memory>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/SharedBuffer.h"
 #include "platform/WebTaskRunner.h"
@@ -33,6 +34,7 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecorder.h"
+#include "platform/graphics/paint/PaintSurface.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
@@ -44,7 +46,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -95,7 +96,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
     m_actualDecoder = decoder.get();
     m_actualDecoder->setSize(1, 1);
     m_lazyDecoder = DeferredImageDecoder::createForTesting(std::move(decoder));
-    m_surface = SkSurface::MakeRasterN32Premul(100, 100);
+    m_surface = PaintSurface::MakeRasterN32Premul(100, 100);
     ASSERT_TRUE(m_surface.get());
     m_decodeRequestCount = 0;
     m_repetitionCount = cAnimationNone;
@@ -129,7 +130,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
   // Don't own this but saves the pointer to query states.
   MockImageDecoder* m_actualDecoder;
   std::unique_ptr<DeferredImageDecoder> m_lazyDecoder;
-  sk_sp<SkSurface> m_surface;
+  sk_sp<PaintSurface> m_surface;
   int m_decodeRequestCount;
   RefPtr<SharedBuffer> m_data;
   size_t m_frameCount;

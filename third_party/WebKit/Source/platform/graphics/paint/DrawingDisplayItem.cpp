@@ -32,7 +32,12 @@ bool DrawingDisplayItem::drawsContent() const {
 
 void DrawingDisplayItem::analyzeForGpuRasterization(
     SkPictureGpuAnalyzer& analyzer) const {
-  analyzer.analyzePicture(m_record.get());
+  // TODO(enne): Need an SkPictureGpuAnalyzer on PictureRecord.
+  // This is a bit overkill to ToSkPicture a record just to get
+  // numSlowPaths.
+  if (!m_record)
+    return;
+  analyzer.analyzePicture(ToSkPicture(m_record.get()));
 }
 
 #ifndef NDEBUG
@@ -63,11 +68,10 @@ static SkBitmap recordToBitmap(const PaintRecord* record) {
   SkBitmap bitmap;
   SkRect rect = record->cullRect();
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
-  SkCanvas bitmapCanvas(bitmap);
-  PaintCanvasPassThrough canvas(&bitmapCanvas);
+  PaintCanvas canvas(bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
   canvas.translate(-rect.x(), -rect.y());
-  canvas.drawPicture(ToSkPicture(record));
+  canvas.drawPicture(record);
   return bitmap;
 }
 

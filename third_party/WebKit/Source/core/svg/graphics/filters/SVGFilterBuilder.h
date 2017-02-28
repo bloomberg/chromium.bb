@@ -80,8 +80,8 @@ class SVGFilterBuilder {
  public:
   SVGFilterBuilder(FilterEffect* sourceGraphic,
                    SVGFilterGraphNodeMap* = nullptr,
-                   const PaintFlags* fillPaint = nullptr,
-                   const PaintFlags* strokePaint = nullptr);
+                   const PaintFlags* fillFlags = nullptr,
+                   const PaintFlags* strokeFlags = nullptr);
 
   void buildGraph(Filter*, SVGFilterElement&, const FloatRect&);
 

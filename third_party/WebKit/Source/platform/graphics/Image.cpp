@@ -224,7 +224,7 @@ namespace {
 
 sk_sp<PaintShader> createPatternShader(const SkImage* image,
                                        const SkMatrix& shaderMatrix,
-                                       const SkPaint& paint,
+                                       const PaintFlags& paint,
                                        const FloatSize& spacing,
                                        SkShader::TileMode tmx,
                                        SkShader::TileMode tmy) {

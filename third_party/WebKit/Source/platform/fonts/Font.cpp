@@ -292,13 +292,13 @@ class GlyphBufferBloberizer {
   void appendRun(unsigned start,
                  unsigned count,
                  const SimpleFontData* fontData) {
-    PaintFlags flags;
-    fontData->platformData().setupPaint(&flags, m_deviceScaleFactor, m_font);
-    flags.setTextEncoding(PaintFlags::kGlyphID_TextEncoding);
+    SkPaint paint;
+    fontData->platformData().setupPaint(&paint, m_deviceScaleFactor, m_font);
+    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
     const SkTextBlobBuilder::RunBuffer& buffer =
-        m_hasVerticalOffsets ? m_builder.allocRunPos(flags, count)
-                             : m_builder.allocRunPosH(flags, count, 0);
+        m_hasVerticalOffsets ? m_builder.allocRunPos(paint, count)
+                             : m_builder.allocRunPosH(paint, count, 0);
 
     const uint16_t* glyphs = m_buffer.glyphs(start);
     const float* offsets = m_buffer.offsets(start);
@@ -362,7 +362,7 @@ void Font::drawGlyphBuffer(PaintCanvas* canvas,
 
 static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
                                        const Font* font,
-                                       const PaintFlags& flags,
+                                       const SkPaint& paint,
                                        float deviceScaleFactor,
                                        const std::tuple<float, float>& bounds,
                                        SkScalar* interceptsBuffer) {
@@ -384,7 +384,7 @@ static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
     SkScalar* offsetInterceptsBuffer = nullptr;
     if (interceptsBuffer)
       offsetInterceptsBuffer = &interceptsBuffer[numIntervals];
-    numIntervals += flags.getTextBlobIntercepts(blob.first.get(), boundsArray,
+    numIntervals += paint.getTextBlobIntercepts(blob.first.get(), boundsArray,
                                                 offsetInterceptsBuffer);
   }
   return numIntervals;
@@ -404,14 +404,15 @@ void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
   // Get the number of intervals, without copying the actual values by
   // specifying nullptr for the buffer, following the Skia allocation model for
   // retrieving text intercepts.
+  SkPaint paint(ToSkPaint(flags));
   int numIntervals = getInterceptsFromBloberizer(
-      glyphBuffer, this, flags, deviceScaleFactor, bounds, nullptr);
+      glyphBuffer, this, paint, deviceScaleFactor, bounds, nullptr);
   if (!numIntervals)
     return;
   DCHECK_EQ(numIntervals % 2, 0);
   intercepts.resize(numIntervals / 2);
 
-  getInterceptsFromBloberizer(glyphBuffer, this, flags, deviceScaleFactor,
+  getInterceptsFromBloberizer(glyphBuffer, this, paint, deviceScaleFactor,
                               bounds,
                               reinterpret_cast<SkScalar*>(intercepts.data()));
 }

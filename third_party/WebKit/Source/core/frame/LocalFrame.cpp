@@ -87,6 +87,7 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "platform/graphics/paint/PaintSurface.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/json/JSONValues.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -97,7 +98,6 @@
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebViewScheduler.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 
@@ -143,7 +143,7 @@ class DragImageBuilder {
           DoNotRespectImageOrientation) {
     context().getPaintController().endItem<EndTransformDisplayItem>(*m_builder);
     // TODO(fmalita): endRecording() should return a non-const SKP.
-    sk_sp<PaintRecord> recording(
+    sk_sp<PaintRecord> record(
         const_cast<PaintRecord*>(m_builder->endRecording().release()));
 
     // Rasterize upfront, since DragImage::create() is going to do it anyway
@@ -154,7 +154,7 @@ class DragImageBuilder {
     if (!surface)
       return nullptr;
 
-    surface->getCanvas()->drawPicture(recording);
+    record->playback(surface->getCanvas());
     RefPtr<Image> image =
         StaticBitmapImage::create(surface->makeImageSnapshot());
 

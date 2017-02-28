@@ -122,24 +122,24 @@ Vector<float> sepiaMatrix(double amount) {
 
 FilterEffectBuilder::FilterEffectBuilder(const FloatRect& zoomedReferenceBox,
                                          float zoom,
-                                         const SkPaint* fillPaint,
-                                         const SkPaint* strokePaint)
+                                         const PaintFlags* fillFlags,
+                                         const PaintFlags* strokeFlags)
     : FilterEffectBuilder(nullptr,
                           zoomedReferenceBox,
                           zoom,
-                          fillPaint,
-                          strokePaint) {}
+                          fillFlags,
+                          strokeFlags) {}
 
 FilterEffectBuilder::FilterEffectBuilder(Node* target,
                                          const FloatRect& zoomedReferenceBox,
                                          float zoom,
-                                         const PaintFlags* fillPaint,
-                                         const PaintFlags* strokePaint)
+                                         const PaintFlags* fillFlags,
+                                         const PaintFlags* strokeFlags)
     : m_targetContext(target),
       m_referenceBox(zoomedReferenceBox),
       m_zoom(zoom),
-      m_fillPaint(fillPaint),
-      m_strokePaint(strokePaint) {
+      m_fillFlags(fillFlags),
+      m_strokeFlags(strokeFlags) {
   if (m_zoom != 1)
     m_referenceBox.scale(1 / m_zoom);
 }
@@ -440,7 +440,7 @@ Filter* FilterEffectBuilder::buildReferenceFilter(
       Filter::create(m_referenceBox, filterRegion, m_zoom, unitScaling);
   if (!previousEffect)
     previousEffect = result->getSourceGraphic();
-  SVGFilterBuilder builder(previousEffect, nodeMap, m_fillPaint, m_strokePaint);
+  SVGFilterBuilder builder(previousEffect, nodeMap, m_fillFlags, m_strokeFlags);
   builder.buildGraph(result, filterElement, m_referenceBox);
   result->setLastEffect(builder.lastEffect());
   return result;

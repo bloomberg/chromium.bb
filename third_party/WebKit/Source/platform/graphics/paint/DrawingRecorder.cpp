@@ -88,7 +88,7 @@ DrawingRecorder::~DrawingRecorder() {
   }
 #endif
 
-  sk_sp<const SkPicture> picture = m_context.endRecording();
+  sk_sp<const PaintRecord> picture = m_context.endRecording();
 
 #if DCHECK_IS_ON()
   if (!RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled() &&

@@ -71,8 +71,7 @@ TEST(GraphicsContextTest, Recording) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(100, 100);
   bitmap.eraseColor(0);
-  SkCanvas bitmapCanvas(bitmap);
-  PaintCanvasPassThrough canvas(&bitmapCanvas);
+  PaintCanvas canvas(bitmap);
 
   std::unique_ptr<PaintController> paintController = PaintController::create();
   GraphicsContext context(*paintController);
@@ -101,8 +100,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(400, 400);
   bitmap.eraseColor(0);
-  SkCanvas bitmapCanvas(bitmap);
-  PaintCanvasPassThrough canvas(&bitmapCanvas);
+  PaintCanvas canvas(bitmap);
 
   Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
   Color alpha(0.0f, 0.0f, 0.0f, 0.0f);

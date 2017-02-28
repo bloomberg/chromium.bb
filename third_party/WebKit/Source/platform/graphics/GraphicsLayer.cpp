@@ -1250,8 +1250,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const PaintRecord& newRecord) {
   oldBitmap.allocPixels(
       SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
   {
-    SkCanvas bitmapCanvas(oldBitmap);
-    PaintCanvasPassThrough canvas(&bitmapCanvas);
+    PaintCanvas canvas(oldBitmap);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
     canvas.drawPicture(tracking->lastPaintedRecord.get());
@@ -1261,8 +1260,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const PaintRecord& newRecord) {
   newBitmap.allocPixels(
       SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
   {
-    SkCanvas bitmapCanvas(newBitmap);
-    PaintCanvasPassThrough canvas(&bitmapCanvas);
+    PaintCanvas canvas(newBitmap);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
     canvas.drawPicture(&newRecord);

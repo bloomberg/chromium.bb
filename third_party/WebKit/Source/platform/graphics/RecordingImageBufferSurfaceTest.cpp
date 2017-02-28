@@ -68,7 +68,7 @@ class RecordingImageBufferSurfaceTest : public Test {
  public:
   RecordingImageBufferSurface* testSurface() { return m_testSurface; }
   int createSurfaceCount() { return m_surfaceFactory->createSurfaceCount(); }
-  SkCanvas* canvas() { return m_imageBuffer->canvas(); }
+  PaintCanvas* canvas() { return m_imageBuffer->canvas(); }
 
   void expectDisplayListEnabled(bool displayListEnabled) {
     EXPECT_EQ(displayListEnabled, (bool)m_testSurface->m_currentFrame.get());
@@ -86,8 +86,8 @@ class RecordingImageBufferSurfaceTest : public Test {
 };
 
 TEST_F(RecordingImageBufferSurfaceTest, testEmptyPicture) {
-  sk_sp<SkPicture> picture = testSurface()->getRecord();
-  EXPECT_TRUE((bool)picture.get());
+  sk_sp<PaintRecord> record = testSurface()->getRecord();
+  EXPECT_TRUE(record.get());
   expectDisplayListEnabled(true);
 }
 
@@ -131,11 +131,11 @@ TEST_F(RecordingImageBufferSurfaceTest, testAnimatedWithClear) {
 
 TEST_F(RecordingImageBufferSurfaceTest, testClearRect) {
   testSurface()->getRecord();
-  SkPaint clearPaint;
-  clearPaint.setBlendMode(SkBlendMode::kClear);
+  PaintFlags clearFlags;
+  clearFlags.setBlendMode(SkBlendMode::kClear);
   canvas()->drawRect(SkRect::MakeWH(testSurface()->size().width(),
                                     testSurface()->size().height()),
-                     clearPaint);
+                     clearFlags);
   testSurface()->didDraw(FloatRect(0, 0, 1, 1));
   testSurface()->getRecord();
   expectDisplayListEnabled(true);

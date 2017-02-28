@@ -107,22 +107,24 @@ DEFINE_TRACE(SVGFilterGraphNodeMap) {
 
 SVGFilterBuilder::SVGFilterBuilder(FilterEffect* sourceGraphic,
                                    SVGFilterGraphNodeMap* nodeMap,
-                                   const PaintFlags* fillPaint,
-                                   const PaintFlags* strokePaint)
+                                   const PaintFlags* fillFlags,
+                                   const PaintFlags* strokeFlags)
     : m_nodeMap(nodeMap) {
   FilterEffect* sourceGraphicRef = sourceGraphic;
   m_builtinEffects.insert(FilterInputKeywords::getSourceGraphic(),
                           sourceGraphicRef);
   m_builtinEffects.insert(FilterInputKeywords::sourceAlpha(),
                           SourceAlpha::create(sourceGraphicRef));
-  if (fillPaint)
+  if (fillFlags) {
     m_builtinEffects.insert(
         FilterInputKeywords::fillPaint(),
-        PaintFilterEffect::create(sourceGraphicRef->getFilter(), *fillPaint));
-  if (strokePaint)
+        PaintFilterEffect::create(sourceGraphicRef->getFilter(), *fillFlags));
+  }
+  if (strokeFlags) {
     m_builtinEffects.insert(
         FilterInputKeywords::strokePaint(),
-        PaintFilterEffect::create(sourceGraphicRef->getFilter(), *strokePaint));
+        PaintFilterEffect::create(sourceGraphicRef->getFilter(), *strokeFlags));
+  }
   addBuiltinEffects();
 }
 

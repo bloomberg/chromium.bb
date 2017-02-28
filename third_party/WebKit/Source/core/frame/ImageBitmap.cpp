@@ -622,20 +622,20 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
     buffer->canvas()->translate(0, buffer->size().height());
     buffer->canvas()->scale(1, -1);
   }
-  SkPaint paint;
+  PaintFlags flags;
   if (parsedOptions.shouldScaleInput) {
     float scaleRatioX = static_cast<float>(parsedOptions.resizeWidth) /
                         parsedOptions.cropRect.width();
     float scaleRatioY = static_cast<float>(parsedOptions.resizeHeight) /
                         parsedOptions.cropRect.height();
     buffer->canvas()->scale(scaleRatioX, scaleRatioY);
-    paint.setFilterQuality(parsedOptions.resizeQuality);
+    flags.setFilterQuality(parsedOptions.resizeQuality);
   }
   buffer->canvas()->translate(dstPoint.x(), dstPoint.y());
   video->paintCurrentFrame(
       buffer->canvas(),
       IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())),
-      parsedOptions.shouldScaleInput ? &paint : nullptr);
+      parsedOptions.shouldScaleInput ? &flags : nullptr);
 
   sk_sp<SkImage> skiaImage =
       buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);

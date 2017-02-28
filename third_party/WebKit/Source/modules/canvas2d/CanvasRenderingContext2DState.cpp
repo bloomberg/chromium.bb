@@ -287,10 +287,10 @@ sk_sp<SkImageFilter> CanvasRenderingContext2DState::getFilterForOffscreenCanvas(
 
   // We can't reuse m_fillFlags and m_strokeFlags for the filter, since these
   // incorporate the global alpha, which isn't applicable here.
-  SkPaint fillFlagsForFilter;
+  PaintFlags fillFlagsForFilter;
   m_fillStyle->applyToFlags(fillFlagsForFilter);
   fillFlagsForFilter.setColor(m_fillStyle->paintColor());
-  SkPaint strokeFlagsForFilter;
+  PaintFlags strokeFlagsForFilter;
   m_strokeStyle->applyToFlags(strokeFlagsForFilter);
   strokeFlagsForFilter.setColor(m_strokeStyle->paintColor());
 
