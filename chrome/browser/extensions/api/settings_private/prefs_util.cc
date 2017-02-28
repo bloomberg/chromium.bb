@@ -478,6 +478,7 @@ std::unique_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
 #endif
 
   const Extension* extension = GetExtensionControllingPref(*pref_object);
+
   if (extension) {
     pref_object->controlled_by =
         settings_private::ControlledBy::CONTROLLED_BY_EXTENSION;
@@ -738,7 +739,15 @@ const Extension* PrefsUtil::GetExtensionControllingPref(
   if (pref_object.key == proxy_config::prefs::kProxy)
     return GetExtensionOverridingProxy(profile_);
 
-  return nullptr;
+  // If it's none of the above, attempt a more general strategy.
+  std::string extension_id =
+      ExtensionPrefValueMapFactory::GetForBrowserContext(profile_)
+          ->GetExtensionControllingPref(pref_object.key);
+  if (extension_id.empty())
+    return nullptr;
+
+  return ExtensionRegistry::Get(profile_)->GetExtensionById(
+      extension_id, ExtensionRegistry::ENABLED);
 }
 
 }  // namespace extensions
