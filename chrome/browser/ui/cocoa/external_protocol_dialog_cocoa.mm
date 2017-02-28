@@ -97,22 +97,26 @@
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id_, routing_id_);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  bool isChecked = [[alert_ suppressionButton] state] == NSOnState;
-  // Set the "don't warn me again" info.
-  if (isChecked)
-    ExternalProtocolHandler::SetBlockState(url_.scheme(), blockState, profile);
+  if (web_contents) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    bool isChecked = [[alert_ suppressionButton] state] == NSOnState;
+    // Set the "don't warn me again" info.
+    if (isChecked)
+      ExternalProtocolHandler::SetBlockState(url_.scheme(), blockState,
+                                             profile);
 
-  ExternalProtocolHandler::RecordCheckboxStateMetrics(isChecked);
-  ExternalProtocolHandler::RecordHandleStateMetrics(isChecked, blockState);
+    ExternalProtocolHandler::RecordCheckboxStateMetrics(isChecked);
+    ExternalProtocolHandler::RecordHandleStateMetrics(isChecked, blockState);
 
-  if (blockState == ExternalProtocolHandler::DONT_BLOCK) {
-    UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
-                             base::Time::Now() - creation_time_);
+    if (blockState == ExternalProtocolHandler::DONT_BLOCK) {
+      UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
+                               base::Time::Now() - creation_time_);
 
-    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_, web_contents);
+      ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_,
+                                                             web_contents);
+    }
   }
 
   [self autorelease];
