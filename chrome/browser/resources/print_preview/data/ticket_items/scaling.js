@@ -26,43 +26,17 @@ cr.define('print_preview.ticket_items', function() {
         documentInfo);
   };
 
-  /**
-   * Maximum scaling percentage
-   * @private {number}
-   * @const
-   */
-  Scaling.MAX_VAL = 200;
-
-  /**
-   * Minimum scaling percentage
-   * @private {number}
-   * @const
-   */
-  Scaling.MIN_VAL = 10;
-
   Scaling.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,
 
     /** @override */
     wouldValueBeValid: function(value) {
-      if (/[^\d]+/.test(value)) {
-        return false;
-      }
-      var scaling = parseInt(value, 10);
-      return scaling >= Scaling.MIN_VAL && scaling <= Scaling.MAX_VAL;
-    },
+      return true;
+   },
 
     /** @override */
     isValueEqual: function(value) {
       return this.getValueAsNumber() == value;
-    },
-
-    /**
-     * @param {number} The desired scaling percentage.
-     * @return {number} Nearest valid scaling percentage
-     */
-    getNearestValidValue: function(value) {
-      return Math.min(Math.max(value, Scaling.MIN_VAL), Scaling.MAX_VAL);
     },
 
     /** @override */

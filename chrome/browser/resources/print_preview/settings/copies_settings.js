@@ -119,23 +119,20 @@ cr.define('print_preview', function() {
      */
     updateState_: function() {
       if (this.isAvailable()) {
-        if (this.inputField_.value != this.copiesTicketItem_.getValue())
-          this.inputField_.value = this.copiesTicketItem_.getValue();
-
-        var currentValueGreaterThan1 = false;
-        if (this.copiesTicketItem_.isValid()) {
-          this.inputField_.classList.remove('invalid');
-          fadeOutElement(this.getChildElement('.hint'));
-          var currentValue = this.copiesTicketItem_.getValueAsNumber();
-          currentValueGreaterThan1 = currentValue > 1;
-        } else {
+        if (!this.inputField_.validity.valid) {
           this.inputField_.classList.add('invalid');
           fadeInElement(this.getChildElement('.hint'));
+          this.getChildElement('.collate-container').hidden = true;
+          this.updateUiStateInternal();
+          return;
         }
-
+        if (this.inputField_.value != this.copiesTicketItem_.getValue())
+          this.inputField_.value = this.copiesTicketItem_.getValue();
+        this.inputField_.classList.remove('invalid');
+        fadeOutElement(this.getChildElement('.hint'));
         if (!(this.getChildElement('.collate-container').hidden =
                !this.collateTicketItem_.isCapabilityAvailable() ||
-               !currentValueGreaterThan1)) {
+               this.copiesTicketItem_.getValueAsNumber() <= 1)) {
           this.getChildElement('input.collate').checked =
               this.collateTicketItem_.getValue();
         }
@@ -149,10 +146,14 @@ cr.define('print_preview', function() {
      */
     onTextfieldTimeout_: function() {
       this.textfieldTimeout_ = null;
-      var copiesVal = this.inputField_.value;
-      if (copiesVal != '') {
-        this.copiesTicketItem_.updateValue(copiesVal);
+      var newValue = (this.inputField_.validity.valid &&
+                      this.inputField_.value != '') ?
+                      this.inputField_.valueAsNumber.toString() : '';
+      if (this.copiesTicketItem_.getValue() === newValue) {
+        this.updateState_();
+        return;
       }
+      this.copiesTicketItem_.updateValue(newValue);
     },
 
     /**
@@ -189,7 +190,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onTextfieldBlur_: function() {
-      if (this.inputField_.value == '') {
+      if (this.inputField_.validity.valid && this.inputField_.value == '') {
         if (this.copiesTicketItem_.getValue() == '1') {
           // No need to update the ticket, but change the display to match.
           this.inputField_.value = '1';
