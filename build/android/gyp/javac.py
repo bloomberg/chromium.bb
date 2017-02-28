@@ -187,6 +187,9 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
       if any(p in changed_paths for p in classpath_inputs):
         changed_paths = None
 
+    if options.incremental:
+      pdb_path = options.jar_path + '.pdb'
+
     if incremental:
       # jmake is a compiler wrapper that figures out the minimal set of .java
       # files that need to be rebuilt given a set of .java files that have
@@ -198,7 +201,6 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
       # .class files are newer than their .java files, and convey to jmake which
       # sources are stale by having their .class files be missing entirely
       # (by not extracting them).
-      pdb_path = options.jar_path + '.pdb'
       javac_cmd = _ConvertToJMakeArgs(javac_cmd, pdb_path)
       if srcjars:
         _FixTempPathsInIncrementalMetadata(pdb_path, temp_dir)
@@ -264,7 +266,8 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
                '(http://crbug.com/551449).')
         os.unlink(pdb_path)
         attempt_build()
-    elif incremental:
+
+    if options.incremental and (not java_files or not incremental):
       # Make sure output exists.
       build_utils.Touch(pdb_path)
 
