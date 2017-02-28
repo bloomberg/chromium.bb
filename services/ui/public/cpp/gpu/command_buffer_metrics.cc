@@ -117,14 +117,6 @@ void RecordContextLost(ContextType type,
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.Media", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
       break;
-    case BLIMP_RENDER_COMPOSITOR_CONTEXT:
-      UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.BlimpRenderCompositor", reason,
-                                CONTEXT_LOST_REASON_MAX_ENUM);
-      break;
-    case BLIMP_RENDER_WORKER_CONTEXT:
-      UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.BlimpRenderWorker", reason,
-                                CONTEXT_LOST_REASON_MAX_ENUM);
-      break;
     case MUS_CLIENT_CONTEXT:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.MusClient", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
@@ -162,10 +154,6 @@ std::string ContextTypeToString(ContextType type) {
       return "Offscreen-For-WebGL";
     case MEDIA_CONTEXT:
       return "Media";
-    case BLIMP_RENDER_COMPOSITOR_CONTEXT:
-      return "BlimpRenderCompositor";
-    case BLIMP_RENDER_WORKER_CONTEXT:
-      return "BlimpRenderWorker";
     case MUS_CLIENT_CONTEXT:
       return "MusClientContext";
     default:

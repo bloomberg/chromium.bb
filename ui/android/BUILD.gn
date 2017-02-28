@@ -11,8 +11,6 @@ component("android") {
   output_name = "ui_android"
   sources = [
     "animation_utils.h",
-    "context_provider_factory.cc",
-    "context_provider_factory.h",
     "delegated_frame_host_android.cc",
     "delegated_frame_host_android.h",
     "display_android_manager.cc",

@@ -447,8 +447,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (using_browser_compositor_) {
     cc::FrameSinkId frame_sink_id =
         host_->AllocateFrameSinkId(false /* is_guest_view_hack */);
-    delegated_frame_host_.reset(
-        new ui::DelegatedFrameHostAndroid(&view_, this, frame_sink_id));
+    delegated_frame_host_.reset(new ui::DelegatedFrameHostAndroid(
+        &view_, CompositorImpl::GetSurfaceManager(), this, frame_sink_id));
   }
 
   host_->SetView(this);

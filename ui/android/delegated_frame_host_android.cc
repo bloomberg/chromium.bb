@@ -15,7 +15,6 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
-#include "ui/android/context_provider_factory.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/display/display.h"
@@ -53,14 +52,16 @@ void CopyOutputRequestCallback(
 
 DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
+    cc::SurfaceManager* surface_manager,
     Client* client,
     const cc::FrameSinkId& frame_sink_id)
-    : frame_sink_id_(frame_sink_id), view_(view), client_(client) {
+    : frame_sink_id_(frame_sink_id),
+      view_(view),
+      surface_manager_(surface_manager),
+      client_(client) {
   DCHECK(view_);
   DCHECK(client_);
 
-  surface_manager_ =
-      ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
   local_surface_id_allocator_.reset(new cc::LocalSurfaceIdAllocator());
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   surface_factory_ = base::WrapUnique(

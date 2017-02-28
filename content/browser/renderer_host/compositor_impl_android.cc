@@ -43,13 +43,14 @@
 #include "cc/surfaces/direct_compositor_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
+#include "cc/surfaces/frame_sink_id_allocator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
 #include "components/display_compositor/gl_helper.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/android/compositor.h"
@@ -78,7 +79,49 @@ namespace content {
 
 namespace {
 
+// The client_id used here should not conflict with the client_id generated
+// from RenderWidgetHostImpl.
+constexpr uint32_t kDefaultClientId = 0u;
+
+class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
+ public:
+  SingleThreadTaskGraphRunner() {
+    Start("CompositorTileWorker1", base::SimpleThread::Options());
+  }
+
+  ~SingleThreadTaskGraphRunner() override { Shutdown(); }
+};
+
+struct CompositorDependencies {
+  CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {}
+
+  SingleThreadTaskGraphRunner task_graph_runner;
+  cc::SurfaceManager surface_manager;
+  cc::FrameSinkIdAllocator frame_sink_id_allocator;
+
+#if defined(ENABLE_VULKAN)
+  scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider;
+#endif
+};
+
+base::LazyInstance<CompositorDependencies> g_compositor_dependencies =
+    LAZY_INSTANCE_INITIALIZER;
+
 const unsigned int kMaxDisplaySwapBuffers = 1U;
+
+#if defined(ENABLE_VULKAN)
+scoped_refptr<cc::VulkanContextProvider> GetSharedVulkanContextProvider() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVulkan)) {
+    scoped_refptr<cc::VulkanContextProvider> context_provider =
+        g_compositor_dependencies.Get().vulkan_context_provider;
+    if (!*context_provider)
+      *context_provider = cc::VulkanInProcessContextProvider::Create();
+    return *context_provider;
+  }
+  return nullptr;
+}
+#endif
 
 gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits(
     gfx::NativeWindow window) {
@@ -291,20 +334,6 @@ class VulkanOutputSurface : public cc::OutputSurface {
 
 static bool g_initialized = false;
 
-class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
- public:
-  SingleThreadTaskGraphRunner() {
-    Start("CompositorTileWorker1", base::SimpleThread::Options());
-  }
-
-  ~SingleThreadTaskGraphRunner() override {
-    Shutdown();
-  }
-};
-
-base::LazyInstance<SingleThreadTaskGraphRunner> g_task_graph_runner =
-    LAZY_INSTANCE_INITIALIZER;
-
 }  // anonymous namespace
 
 // static
@@ -320,14 +349,24 @@ void Compositor::Initialize() {
 }
 
 // static
+cc::SurfaceManager* CompositorImpl::GetSurfaceManager() {
+  return &g_compositor_dependencies.Get().surface_manager;
+}
+
+// static
+cc::FrameSinkId CompositorImpl::AllocateFrameSinkId() {
+  return g_compositor_dependencies.Get()
+      .frame_sink_id_allocator.NextFrameSinkId();
+}
+
+// static
 bool CompositorImpl::IsInitialized() {
   return g_initialized;
 }
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
-    : frame_sink_id_(
-          ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId()),
+    : frame_sink_id_(AllocateFrameSinkId()),
       resource_manager_(root_window),
       window_(NULL),
       surface_handle_(gpu::kNullSurfaceHandle),
@@ -338,9 +377,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       num_successive_context_creation_failures_(0),
       compositor_frame_sink_request_pending_(false),
       weak_factory_(this) {
-  ui::ContextProviderFactory::GetInstance()
-      ->GetSurfaceManager()
-      ->RegisterFrameSinkId(frame_sink_id_);
+  GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   DCHECK(client);
   DCHECK(root_window);
   DCHECK(root_window->GetLayer() == nullptr);
@@ -358,9 +395,7 @@ CompositorImpl::~CompositorImpl() {
   root_window_->SetLayer(nullptr);
   // Clean-up any surface references.
   SetSurface(NULL);
-  ui::ContextProviderFactory::GetInstance()
-      ->GetSurfaceManager()
-      ->InvalidateFrameSinkId(frame_sink_id_);
+  GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 ui::UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
@@ -437,7 +472,7 @@ void CompositorImpl::CreateLayerTreeHost() {
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;
-  params.task_graph_runner = g_task_graph_runner.Pointer();
+  params.task_graph_runner = &g_compositor_dependencies.Get().task_graph_runner;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.settings = &settings;
   params.mutator_host = animation_host_.get();
@@ -559,9 +594,29 @@ void CompositorImpl::HandlePendingCompositorFrameSinkRequest() {
     return;
 #endif
 
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(SYZYASAN) || defined(CYGPROFILE_INSTRUMENTATION)
+  const int64_t kGpuChannelTimeoutInSeconds = 40;
+#else
+  // The GPU watchdog timeout is 15 seconds (1.5x the kGpuTimeout value due to
+  // logic in GpuWatchdogThread). Make this slightly longer to give the GPU a
+  // chance to crash itself before crashing the browser.
+  const int64_t kGpuChannelTimeoutInSeconds = 20;
+#endif
+
+  // Start the timer first, if the result comes synchronously, we want it to
+  // stop in the callback.
+  establish_gpu_channel_timeout_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
+      this, &CompositorImpl::OnGpuChannelTimeout);
+
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
-  ContextProviderFactoryImpl::GetInstance()->RequestGpuChannelHost(base::Bind(
+  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(base::Bind(
       &CompositorImpl::OnGpuChannelEstablished, weak_factory_.GetWeakPtr()));
+}
+
+void CompositorImpl::OnGpuChannelTimeout() {
+  LOG(FATAL) << "Timed out waiting for GPU channel.";
 }
 
 #if defined(ENABLE_VULKAN)
@@ -571,8 +626,7 @@ void CompositorImpl::CreateVulkanOutputSurface() {
     return;
 
   scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider =
-      ui::ContextProviderFactory::GetInstance()
-          ->GetSharedVulkanContextProvider();
+      GetSharedVulkanContextProvider();
   if (!vulkan_context_provider)
     return;
 
@@ -587,56 +641,51 @@ void CompositorImpl::CreateVulkanOutputSurface() {
 #endif
 
 void CompositorImpl::OnGpuChannelEstablished(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-    ui::ContextProviderFactory::GpuChannelHostResult result) {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  establish_gpu_channel_timeout_.Stop();
+
   // We might end up queing multiple GpuChannel requests for the same
   // CompositorFrameSink request as the visibility of the compositor changes, so
   // the CompositorFrameSink request could have been handled already.
   if (!compositor_frame_sink_request_pending_)
     return;
 
-  switch (result) {
-    // Don't retry if we are shutting down.
-    case ui::ContextProviderFactory::GpuChannelHostResult::
-        FAILURE_FACTORY_SHUTDOWN:
-      break;
-    case ui::ContextProviderFactory::GpuChannelHostResult::
-        FAILURE_GPU_PROCESS_INITIALIZATION_FAILED:
-      HandlePendingCompositorFrameSinkRequest();
-      break;
-    case ui::ContextProviderFactory::GpuChannelHostResult::SUCCESS:
-      // We don't need the context anymore if we are invisible.
-      if (!host_->IsVisible())
-        return;
-
-      DCHECK(window_);
-      DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
-      scoped_refptr<cc::ContextProvider> context_provider =
-          ContextProviderFactoryImpl::GetInstance()
-              ->CreateDisplayContextProvider(
-                  surface_handle_,
-                  GetCompositorContextSharedMemoryLimits(root_window_),
-                  GetCompositorContextAttributes(has_transparent_background_),
-                  false /*support_locking*/, false /*automatic_flushes*/,
-                  std::move(gpu_channel_host));
-      if (!context_provider->BindToCurrentThread()) {
-        LOG(ERROR) << "Failed to init ContextProvider for compositor.";
-        LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 2)
-            << "Too many context creation failures. Giving up... ";
-        HandlePendingCompositorFrameSinkRequest();
-        break;
-      }
-
-      scoped_refptr<ui::ContextProviderCommandBuffer>
-          context_provider_command_buffer =
-              static_cast<ui::ContextProviderCommandBuffer*>(
-                  context_provider.get());
-      auto display_output_surface = base::MakeUnique<AndroidOutputSurface>(
-          std::move(context_provider_command_buffer));
-      InitializeDisplay(std::move(display_output_surface), nullptr,
-                        std::move(context_provider));
-      break;
+  if (!gpu_channel_host) {
+    HandlePendingCompositorFrameSinkRequest();
+    return;
   }
+
+  // We don't need the context anymore if we are invisible.
+  if (!host_->IsVisible())
+    return;
+
+  DCHECK(window_);
+  DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
+  constexpr bool support_locking = false;
+  constexpr bool automatic_flushes = false;
+  ui::ContextProviderCommandBuffer* shared_context = nullptr;
+  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider =
+      new ui::ContextProviderCommandBuffer(
+          std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+          gpu::GpuStreamPriority::NORMAL, surface_handle_,
+          GURL(std::string("chrome://gpu/CompositorImpl::") +
+               std::string("CompositorContextProvider")),
+          automatic_flushes, support_locking,
+          GetCompositorContextSharedMemoryLimits(root_window_),
+          GetCompositorContextAttributes(has_transparent_background_),
+          shared_context,
+          ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
+  if (!context_provider->BindToCurrentThread()) {
+    LOG(ERROR) << "Failed to init ContextProvider for compositor.";
+    LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 2)
+        << "Too many context creation failures. Giving up... ";
+    HandlePendingCompositorFrameSinkRequest();
+  }
+
+  auto display_output_surface =
+      base::MakeUnique<AndroidOutputSurface>(context_provider);
+  InitializeDisplay(std::move(display_output_surface), nullptr,
+                    std::move(context_provider));
 }
 
 void CompositorImpl::InitializeDisplay(
@@ -654,8 +703,7 @@ void CompositorImpl::InitializeDisplay(
     // TODO(danakj): Populate gpu_capabilities_ for VulkanContextProvider.
   }
 
-  cc::SurfaceManager* manager =
-      ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
+  cc::SurfaceManager* manager = GetSurfaceManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
       task_runner, display_output_surface->capabilities().max_frames_pending));
@@ -744,9 +792,8 @@ cc::FrameSinkId CompositorImpl::GetFrameSinkId() {
 
 void CompositorImpl::AddChildFrameSink(const cc::FrameSinkId& frame_sink_id) {
   if (has_compositor_frame_sink_) {
-    ui::ContextProviderFactory::GetInstance()
-        ->GetSurfaceManager()
-        ->RegisterFrameSinkHierarchy(frame_sink_id_, frame_sink_id);
+    GetSurfaceManager()->RegisterFrameSinkHierarchy(frame_sink_id_,
+                                                    frame_sink_id);
   } else {
     pending_child_frame_sink_ids_.insert(frame_sink_id);
   }
@@ -759,9 +806,8 @@ void CompositorImpl::RemoveChildFrameSink(
     pending_child_frame_sink_ids_.erase(it);
     return;
   }
-  ui::ContextProviderFactory::GetInstance()
-      ->GetSurfaceManager()
-      ->UnregisterFrameSinkHierarchy(frame_sink_id_, frame_sink_id);
+  GetSurfaceManager()->UnregisterFrameSinkHierarchy(frame_sink_id_,
+                                                    frame_sink_id);
 }
 
 bool CompositorImpl::HavePendingReadbacks() {

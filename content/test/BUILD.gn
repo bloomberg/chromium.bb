@@ -157,8 +157,6 @@ static_library("test_support") {
     "mock_background_sync_controller.h",
     "mock_google_streaming_server.cc",
     "mock_google_streaming_server.h",
-    "mock_gpu_channel_establish_factory.cc",
-    "mock_gpu_channel_establish_factory.h",
     "mock_keyboard.cc",
     "mock_keyboard.h",
     "mock_keyboard_driver_win.cc",

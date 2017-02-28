@@ -1796,8 +1796,6 @@ source_set("browser") {
       "media/capture/screen_capture_device_android.h",
       "renderer_host/compositor_impl_android.cc",
       "renderer_host/compositor_impl_android.h",
-      "renderer_host/context_provider_factory_impl_android.cc",
-      "renderer_host/context_provider_factory_impl_android.h",
       "renderer_host/ime_adapter_android.cc",
       "renderer_host/ime_adapter_android.h",
       "renderer_host/input/synthetic_gesture_target_android.cc",

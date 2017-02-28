@@ -46,8 +46,6 @@ Gpu::Gpu(service_manager::Connector* connector,
 
 Gpu::~Gpu() {
   DCHECK(IsMainThread());
-  for (const auto& callback : establish_callbacks_)
-    callback.Run(nullptr);
   shutdown_event_.Signal();
   if (gpu_channel_)
     gpu_channel_->DestroyChannel();

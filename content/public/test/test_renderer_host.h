@@ -40,7 +40,6 @@ namespace content {
 
 class BrowserContext;
 class ContentBrowserSanityChecker;
-class MockGpuChannelEstablishFactory;
 class MockRenderProcessHost;
 class MockRenderProcessHostFactory;
 class NavigationController;
@@ -180,7 +179,6 @@ class RenderViewHostTestEnabler {
   friend class RenderViewHostTestHarness;
 
 #if defined(OS_ANDROID)
-  std::unique_ptr<MockGpuChannelEstablishFactory> gpu_channel_factory_;
   std::unique_ptr<display::Screen> screen_;
 #endif
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;

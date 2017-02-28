@@ -13,8 +13,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/memory/ptr_util.h"
-#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
-#include "content/test/mock_gpu_channel_establish_factory.h"
 #else
 #include "content/browser/compositor/image_transport_factory.h"
 #endif
@@ -40,17 +38,10 @@ class OffscreenCanvasSurfaceManagerTest : public testing::Test {
  private:
   std::unique_ptr<TestBrowserThread> ui_thread_;
   base::MessageLoopForUI message_loop_;
-#if defined(OS_ANDROID)
-  MockGpuChannelEstablishFactory gpu_channel_factory_;
-#endif
 };
 
 void OffscreenCanvasSurfaceManagerTest::SetUp() {
-#if defined(OS_ANDROID)
-  ContextProviderFactoryImpl::Initialize(&gpu_channel_factory_);
-  ui::ContextProviderFactory::SetInstance(
-      ContextProviderFactoryImpl::GetInstance());
-#else
+#if !defined(OS_ANDROID)
   ImageTransportFactory::InitializeForUnitTests(
       std::unique_ptr<ImageTransportFactory>(
           new NoTransportImageTransportFactory));
@@ -59,10 +50,7 @@ void OffscreenCanvasSurfaceManagerTest::SetUp() {
 }
 
 void OffscreenCanvasSurfaceManagerTest::TearDown() {
-#if defined(OS_ANDROID)
-  ui::ContextProviderFactory::SetInstance(nullptr);
-  ContextProviderFactoryImpl::Terminate();
-#else
+#if !defined(OS_ANDROID)
   ImageTransportFactory::Terminate();
 #endif
 }

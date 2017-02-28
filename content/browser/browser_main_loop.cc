@@ -125,7 +125,6 @@
 #include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
-#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "media/base/android/media_client_android.h"
 #include "ui/android/screen_android.h"
@@ -1357,11 +1356,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GPUChannelFactory");
     if (BrowserGpuChannelHostFactory::instance()) {
-#if defined(OS_ANDROID)
-      // Clean up the references to the factory before terminating it.
-      ui::ContextProviderFactory::SetInstance(nullptr);
-      ContextProviderFactoryImpl::Terminate();
-#endif
       BrowserGpuChannelHostFactory::Terminate();
     }
   }
@@ -1451,10 +1445,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   established_gpu_channel = false;
   always_uses_gpu = ShouldStartGpuProcessOnBrowserStartup();
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-  ContextProviderFactoryImpl::Initialize(
-      BrowserGpuChannelHostFactory::instance());
-  ui::ContextProviderFactory::SetInstance(
-      ContextProviderFactoryImpl::GetInstance());
 #elif defined(USE_AURA) || defined(OS_MACOSX)
   established_gpu_channel = true;
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor() ||

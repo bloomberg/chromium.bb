@@ -39,6 +39,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
+                            cc::SurfaceManager* surface_manager,
                             Client* client,
                             const cc::FrameSinkId& frame_sink_id);
 

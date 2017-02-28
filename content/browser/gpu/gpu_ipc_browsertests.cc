@@ -183,25 +183,6 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, MAYBE_Basic) {
   EXPECT_TRUE(GetGpuChannel() != NULL);
 }
 
-// Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
-// establishes a GPU channel.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_EstablishAndTerminate EstablishAndTerminate
-#else
-#define MAYBE_EstablishAndTerminate DISABLED_EstablishAndTerminate
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       MAYBE_EstablishAndTerminate) {
-  DCHECK(!IsChannelEstablished());
-  base::RunLoop run_loop;
-  GetFactory()->EstablishGpuChannel(
-      base::Bind(&OnEstablishedGpuChannel, run_loop.QuitClosure(), nullptr));
-  GetFactory()->Terminate();
-
-  // The callback should still trigger.
-  run_loop.Run();
-}
-
 #if !defined(OS_ANDROID)
 // Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
 // establishes a GPU channel.

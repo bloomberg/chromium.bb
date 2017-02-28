@@ -31,8 +31,6 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
-#include "content/test/mock_gpu_channel_establish_factory.h"
 #include "ui/android/dummy_screen_android.h"
 #include "ui/display/screen.h"
 #endif
@@ -135,10 +133,6 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   ImageTransportFactory::InitializeForUnitTests(
       base::WrapUnique(new NoTransportImageTransportFactory));
 #else
-  gpu_channel_factory_ = base::MakeUnique<MockGpuChannelEstablishFactory>();
-  ContextProviderFactoryImpl::Initialize(gpu_channel_factory_.get());
-  ui::ContextProviderFactory::SetInstance(
-      ContextProviderFactoryImpl::GetInstance());
   if (!screen_)
     screen_.reset(ui::CreateDummyScreenAndroid());
   display::Screen::SetScreenInstance(screen_.get());
@@ -159,9 +153,6 @@ RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
   ImageTransportFactory::Terminate();
 #else
   display::Screen::SetScreenInstance(nullptr);
-  ui::ContextProviderFactory::SetInstance(nullptr);
-  ContextProviderFactoryImpl::Terminate();
-  gpu_channel_factory_.reset();
 #endif
 }
 

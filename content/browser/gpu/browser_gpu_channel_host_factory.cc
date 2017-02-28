@@ -253,8 +253,6 @@ BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
   DCHECK(IsMainThread());
   if (pending_request_.get())
     pending_request_->Cancel();
-  for (size_t n = 0; n < established_callbacks_.size(); n++)
-    established_callbacks_[n].Run(nullptr);
   shutdown_event_->Signal();
   if (gpu_channel_) {
     gpu_channel_->DestroyChannel();
