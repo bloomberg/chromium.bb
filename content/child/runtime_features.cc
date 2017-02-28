@@ -365,6 +365,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableWebVR(true);
   }
 
+  if (base::FeatureList::IsEnabled(features::kLoadingWithMojo))
+    WebRuntimeFeatures::enableLoadingWithMojo(true);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

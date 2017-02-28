@@ -102,6 +102,10 @@ const base::Feature kHeapCompaction{"HeapCompaction",
 const base::Feature kLazyParseCSS{"LazyParseCSS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use Mojo IPC for resource loading.
+const base::Feature kLoadingWithMojo{"LoadingWithMojo",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // FeatureList definition for trials to enable the download button on
 // MediaDocument.
 const base::Feature kMediaDocumentDownloadButton{

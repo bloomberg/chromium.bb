@@ -162,6 +162,10 @@ void WebRuntimeFeatures::enableLazyParseCSS(bool enable) {
   RuntimeEnabledFeatures::setLazyParseCSSEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableLoadingWithMojo(bool enable) {
+  RuntimeEnabledFeatures::setLoadingWithMojoEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableMediaCapture(bool enable) {
   RuntimeEnabledFeatures::setMediaCaptureEnabled(enable);
 }
