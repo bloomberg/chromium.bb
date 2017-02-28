@@ -59,14 +59,20 @@ void FakeOfflinePageModel::set_is_loaded(bool value) {
   is_loaded_ = value;
 }
 
-OfflinePageItem CreateDummyOfflinePageItem(int id,
-                                           const std::string& name_space) {
+OfflinePageItem CreateDummyOfflinePageItem(
+    int id,
+    const offline_pages::ClientId& client_id) {
   std::string id_string = base::IntToString(id);
   return OfflinePageItem(
-      GURL("http://dummy.com/" + id_string), id,
-      ClientId(name_space, base::GenerateGUID()),
+      GURL("http://dummy.com/" + id_string), id, client_id,
       base::FilePath::FromUTF8Unsafe("some/folder/test" + id_string + ".mhtml"),
       0, base::Time::Now());
+}
+
+OfflinePageItem CreateDummyOfflinePageItem(int id,
+                                           const std::string& name_space) {
+  return CreateDummyOfflinePageItem(id,
+                                    ClientId(name_space, base::GenerateGUID()));
 }
 
 void CaptureDismissedSuggestions(

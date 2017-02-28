@@ -39,6 +39,10 @@ class FakeOfflinePageModel : public offline_pages::StubOfflinePageModel {
 
 offline_pages::OfflinePageItem CreateDummyOfflinePageItem(
     int id,
+    const offline_pages::ClientId& client_id);
+
+offline_pages::OfflinePageItem CreateDummyOfflinePageItem(
+    int id,
     const std::string& name_space);
 
 void CaptureDismissedSuggestions(

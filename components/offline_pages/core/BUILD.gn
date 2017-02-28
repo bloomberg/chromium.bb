@@ -108,6 +108,7 @@ source_set("unit_tests") {
     ":core",
     ":switches",
     ":test_support",
+    "recent_tabs:unit_tests",
     "//base",
     "//base/test:test_support",
     "//sql:sql",

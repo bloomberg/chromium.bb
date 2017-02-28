@@ -17,6 +17,8 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
+#include "components/offline_pages/core/downloads/download_ui_adapter.h"
+#include "components/offline_pages/core/downloads/download_ui_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 
 class PrefRegistrySimple;
@@ -27,12 +29,11 @@ namespace ntp_snippets {
 // Provides recent tabs content suggestions from the offline pages model.
 class RecentTabSuggestionsProvider
     : public ContentSuggestionsProvider,
-      public offline_pages::OfflinePageModel::Observer {
+      public offline_pages::DownloadUIAdapter::Observer {
  public:
-  RecentTabSuggestionsProvider(
-      ContentSuggestionsProvider::Observer* observer,
-      offline_pages::OfflinePageModel* offline_page_model,
-      PrefService* pref_service);
+  RecentTabSuggestionsProvider(ContentSuggestionsProvider::Observer* observer,
+                               offline_pages::DownloadUIAdapter* ui_adapter,
+                               PrefService* pref_service);
   ~RecentTabSuggestionsProvider() override;
 
   // ContentSuggestionsProvider implementation.
@@ -57,47 +58,37 @@ class RecentTabSuggestionsProvider
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
-  friend class RecentTabSuggestionsProviderTest;
+  friend class RecentTabSuggestionsProviderTestNoLoad;
 
-  void GetPagesMatchingQueryCallbackForGetDismissedSuggestions(
-      const DismissedSuggestionsCallback& callback,
-      const std::vector<offline_pages::OfflinePageItem>& offline_pages) const;
-
-  // OfflinePageModel::Observer implementation.
-  void OfflinePageModelLoaded(offline_pages::OfflinePageModel* model) override;
-  void OfflinePageAdded(
-      offline_pages::OfflinePageModel* model,
-      const offline_pages::OfflinePageItem& added_page) override;
-  void OfflinePageDeleted(int64_t offline_id,
-                          const offline_pages::ClientId& client_id) override;
-
-  void GetPagesMatchingQueryCallbackForFetchRecentTabs(
-      const std::vector<offline_pages::OfflinePageItem>& offline_pages);
+  // DownloadUIAdapter::Observer implementation.
+  void ItemsLoaded() override;
+  void ItemAdded(const offline_pages::DownloadUIItem& ui_item) override;
+  void ItemUpdated(const offline_pages::DownloadUIItem& ui_item) override;
+  void ItemDeleted(const std::string& ui_item_guid) override;
 
   // Updates the |category_status_| of the |provided_category_| and notifies the
   // |observer_|, if necessary.
   void NotifyStatusChanged(CategoryStatus new_status);
 
-  // Manually requests all offline pages and updates the suggestions.
+  // Manually requests all Recent Tabs UI items and updates the suggestions.
   void FetchRecentTabs();
 
-  // Converts an OfflinePageItem to a ContentSuggestion for the
+  // Converts an DownloadUIItem to a ContentSuggestion for the
   // |provided_category_|.
-  ContentSuggestion ConvertOfflinePage(
-      const offline_pages::OfflinePageItem& offline_page) const;
+  ContentSuggestion ConvertUIItem(
+      const offline_pages::DownloadUIItem& ui_item) const;
 
   // Removes duplicates for the same URL leaving only the most recently created
   // items, returns at most |GetMaxSuggestionsCount()| ContentSuggestions
   // corresponding to the remaining items, sorted by creation time (newer
   // first).
   std::vector<ContentSuggestion> GetMostRecentlyCreatedWithoutDuplicates(
-      std::vector<const offline_pages::OfflinePageItem*> offline_page_items)
-      const;
+      std::vector<const offline_pages::DownloadUIItem*> ui_items) const;
 
   // Fires the |OnSuggestionInvalidated| event for the suggestion corresponding
   // to the given |offline_id| and deletes it from the dismissed IDs list, if
   // necessary.
-  void InvalidateSuggestion(int64_t offline_id);
+  void InvalidateSuggestion(const std::string& ui_item_guid);
 
   // Reads dismissed IDs from Prefs.
   std::set<std::string> ReadDismissedIDsFromPrefs() const;
@@ -107,7 +98,7 @@ class RecentTabSuggestionsProvider
 
   CategoryStatus category_status_;
   const Category provided_category_;
-  offline_pages::OfflinePageModel* offline_page_model_;
+  offline_pages::DownloadUIAdapter* recent_tabs_ui_adapter_;
 
   PrefService* pref_service_;
 

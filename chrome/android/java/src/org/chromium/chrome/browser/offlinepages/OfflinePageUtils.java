@@ -15,6 +15,8 @@ import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Environment;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
@@ -31,7 +33,9 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -45,7 +49,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -69,6 +75,13 @@ public class OfflinePageUtils {
     private static OfflinePageUtils sInstance;
 
     private static File sOfflineSharingDirectory;
+
+    /**
+     * Tracks the observers of ChromeActivity's TabModelSelectors. This is weak so the activity can
+     * be garbage collected without worrying about this map.  The RecentTabTracker is held here so
+     * that it can be destroyed when the ChromeActivity gets a new TabModelSelector.
+     */
+    private static Map<ChromeActivity, RecentTabTracker> sTabModelObservers = new HashMap<>();
 
     private static OfflinePageUtils getInstance() {
         if (sInstance == null) {
@@ -701,6 +714,80 @@ public class OfflinePageUtils {
         }
         // Since NetworkConnectivityManager doesn't understand the other types, call them UNKNOWN.
         return ConnectionType.CONNECTION_UNKNOWN;
+    }
+
+    /**
+     * Tracks tab creation and closure for the Recent Tabs feature.  UI needs to stop showing
+     * recent offline pages as soon as the tab is closed.  The TabModel is used to get profile
+     * information because Tab's profile is tied to the native WebContents, which may not exist at
+     * tab adding or tab closing time.
+     */
+    private static class RecentTabTracker extends TabModelSelectorTabModelObserver {
+        private TabModelSelector mTabModelSelector;
+
+        public RecentTabTracker(TabModelSelector selector) {
+            super(selector);
+            mTabModelSelector = selector;
+        }
+
+        @Override
+        public void didAddTab(Tab tab, TabModel.TabLaunchType type) {
+            Profile profile = mTabModelSelector.getModel(tab.isIncognito()).getProfile();
+            OfflinePageBridge bridge = OfflinePageBridge.getForProfile(profile);
+            if (bridge == null) return;
+            bridge.registerRecentTab(tab.getId());
+        }
+
+        @Override
+        public void didCloseTab(int tabId, boolean incognito) {
+            Profile profile = mTabModelSelector.getModel(incognito).getProfile();
+            OfflinePageBridge bridge = OfflinePageBridge.getForProfile(profile);
+            if (bridge == null) return;
+
+            // First, unregister the tab with the UI.
+            bridge.unregisterRecentTab(tabId);
+
+            // Then, delete any "Last N" offline pages as well.  This is an optimization because
+            // the UI will no longer show the page, and the page would also be cleaned up by GC
+            // given enough time.
+            ClientId clientId =
+                    new ClientId(OfflinePageBridge.LAST_N_NAMESPACE, Integer.toString(tabId));
+            List<ClientId> clientIds = new ArrayList<>();
+            clientIds.add(clientId);
+
+            bridge.deletePagesByClientId(clientIds, new Callback<Integer>() {
+                @Override
+                public void onResult(Integer result) {
+                    // Result is ignored.
+                }
+            });
+        }
+    }
+
+    /**
+     * Starts tracking the tab models in the given selector for tab addition and closure,
+     * destroying obsolete observers as necessary.
+     */
+    public static void observeTabModelSelector(
+            ChromeActivity activity, TabModelSelector tabModelSelector) {
+        RecentTabTracker previousObserver =
+                sTabModelObservers.put(activity, new RecentTabTracker(tabModelSelector));
+        if (previousObserver != null) {
+            previousObserver.destroy();
+        } else {
+            // This is the 1st time we see this activity so register a state listener with it.
+            ApplicationStatus.registerStateListenerForActivity(
+                    new ApplicationStatus.ActivityStateListener() {
+                        @Override
+                        public void onActivityStateChange(Activity activity, int newState) {
+                            if (newState == ActivityState.DESTROYED) {
+                                sTabModelObservers.remove(activity).destroy();
+                                ApplicationStatus.unregisterActivityStateListener(this);
+                            }
+                        }
+                    },
+                    activity);
+        }
     }
 
     @VisibleForTesting

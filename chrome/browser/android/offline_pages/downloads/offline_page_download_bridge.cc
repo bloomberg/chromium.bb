@@ -54,6 +54,7 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
   // DownloadUIAdapter::Delegate
   bool IsVisibleInUI(const ClientId& client_id) override;
   bool IsTemporarilyHiddenInUI(const ClientId& client_id) override;
+  void SetUIAdapter(DownloadUIAdapter* ui_adapter) override;
 
  private:
   // Not owned, cached service pointer.
@@ -73,6 +74,8 @@ bool DownloadUIAdapterDelegate::IsTemporarilyHiddenInUI(
     const ClientId& client_id) {
   return false;
 }
+
+void DownloadUIAdapterDelegate::SetUIAdapter(DownloadUIAdapter* ui_adapter) {}
 
 // TODO(dewittj): Move to Download UI Adapter.
 content::WebContents* GetWebContentsFromJavaTab(
