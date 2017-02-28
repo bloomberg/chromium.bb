@@ -49,22 +49,27 @@ class MojoDOMStorageBrowserTest : public DOMStorageBrowserTest {
     command_line->AppendSwitch(switches::kMojoLocalStorage);
   }
 
-  void Flush() {
-    // First make sure a connection to the database was set up.
-    LocalStorageContextMojo* context =
-        static_cast<DOMStorageContextWrapper*>(
-            BrowserContext::GetDefaultStoragePartition(
-                shell()->web_contents()->GetBrowserContext())
-                ->GetDOMStorageContext())
-            ->mojo_state_.get();
+  LocalStorageContextMojo* context() {
+    return static_cast<DOMStorageContextWrapper*>(
+               BrowserContext::GetDefaultStoragePartition(
+                   shell()->web_contents()->GetBrowserContext())
+                   ->GetDOMStorageContext())
+        ->mojo_state_.get();
+  }
+
+  void EnsureConnected() {
     base::RunLoop run_loop;
-    context->RunWhenConnected(run_loop.QuitClosure());
+    context()->RunWhenConnected(run_loop.QuitClosure());
     run_loop.Run();
-    // Then process any tasks that are currently queued, to ensure
+  }
+
+  void Flush() {
+    // Process any tasks that are currently queued, to ensure
     // LevelDBWrapperImpl methods get called.
     base::RunLoop().RunUntilIdle();
     // And finally flush all the now queued up changes to leveldb.
-    context->Flush();
+    context()->Flush();
+    base::RunLoop().RunUntilIdle();
   }
 };
 
@@ -86,9 +91,6 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, PRE_DataPersists) {
 // http://crbug.com/654704 PRE_ tests aren't supported on Android.
 #if defined(OS_ANDROID)
 #define MAYBE_DataPersists DISABLED_DataPersists
-#elif defined(OS_WIN) || defined(OS_LINUX)
-// Disabled on Windows and Linux due to flake (https://crbug.com/692885).
-#define MAYBE_DataPersists DISABLED_DataPersists
 #else
 #define MAYBE_DataPersists DataPersists
 #endif
@@ -105,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, SanityCheckIncognito) {
 }
 
 IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, PRE_DataPersists) {
+  EnsureConnected();
   SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
   Flush();
 }
