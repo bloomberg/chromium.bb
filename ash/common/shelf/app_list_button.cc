@@ -4,25 +4,17 @@
 
 #include "ash/common/shelf/app_list_button.h"
 
-#include "ash/common/ash_constants.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/resources/grit/ash_resources.h"
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -37,7 +29,6 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
                              WmShelf* wm_shelf)
     : views::ImageButton(nullptr),
       is_showing_app_list_(false),
-      draw_background_as_active_(false),
       background_color_(kShelfDefaultBaseColor),
       listener_(listener),
       shelf_view_(shelf_view),
@@ -45,11 +36,10 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   DCHECK(listener_);
   DCHECK(shelf_view_);
   DCHECK(wm_shelf_);
-  if (ash::MaterialDesignController::IsShelfMaterial()) {
-    SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
-    set_ink_drop_base_color(kShelfInkDropBaseColor);
-    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
-  }
+
+  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+  set_ink_drop_base_color(kShelfInkDropBaseColor);
+  set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
   SetSize(
@@ -61,19 +51,13 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 AppListButton::~AppListButton() {}
 
 void AppListButton::OnAppListShown() {
-  if (ash::MaterialDesignController::IsShelfMaterial())
-    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
-  else
-    SchedulePaint();
+  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
   wm_shelf_->UpdateAutoHideState();
 }
 
 void AppListButton::OnAppListDismissed() {
-  if (ash::MaterialDesignController::IsShelfMaterial())
-    AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
-  else
-    SchedulePaint();
+  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   is_showing_app_list_ = false;
   wm_shelf_->UpdateAutoHideState();
 }
@@ -106,13 +90,9 @@ bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
-  const bool is_material = ash::MaterialDesignController::IsShelfMaterial();
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (is_material)
-        AnimateInkDrop(views::InkDropState::HIDDEN, event);
-      else
-        SetDrawBackgroundAsActive(false);
+      AnimateInkDrop(views::InkDropState::HIDDEN, event);
       shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
       event->SetHandled();
       return;
@@ -126,16 +106,8 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       return;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (!is_material)
-        SetDrawBackgroundAsActive(true);
-      else if (!WmShell::Get()->IsApplistVisible())
+      if (!WmShell::Get()->IsApplistVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
-      ImageButton::OnGestureEvent(event);
-      break;
-    case ui::ET_GESTURE_TAP_CANCEL:
-    case ui::ET_GESTURE_TAP:
-      if (!is_material)
-        SetDrawBackgroundAsActive(false);
       ImageButton::OnGestureEvent(event);
       break;
     default:
@@ -148,19 +120,6 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
 
-  if (ash::MaterialDesignController::IsShelfMaterial()) {
-    PaintMd(canvas);
-  } else {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia& foreground_image =
-        *rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST).ToImageSkia();
-    PaintAppListButton(canvas, foreground_image);
-  }
-
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
-}
-
-void AppListButton::PaintMd(gfx::Canvas* canvas) {
   gfx::PointF circle_center(GetCenterPoint());
 
   // Paint the circular background.
@@ -187,56 +146,8 @@ void AppListButton::PaintMd(gfx::Canvas* canvas) {
   fg_flags.setStrokeWidth(thickness);
   // Make sure the center of the circle lands on pixel centers.
   canvas->DrawCircle(circle_center, radius, fg_flags);
-}
 
-void AppListButton::PaintAppListButton(gfx::Canvas* canvas,
-                                       const gfx::ImageSkia& foreground_image) {
-  int background_image_id = 0;
-
-  if (WmShell::Get()->GetAppListTargetVisibility() ||
-      draw_background_as_active_) {
-    background_image_id = IDR_AURA_LAUNCHER_BACKGROUND_PRESSED;
-  } else {
-    background_image_id = IDR_AURA_LAUNCHER_BACKGROUND_NORMAL;
-  }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia background_image =
-      *rb.GetImageNamed(background_image_id).ToImageSkia();
-  gfx::Rect background_bounds(background_image.size());
-  ShelfAlignment alignment = wm_shelf_->GetAlignment();
-  gfx::Rect contents_bounds = GetContentsBounds();
-
-  if (alignment == SHELF_ALIGNMENT_LEFT) {
-    background_bounds.set_x(contents_bounds.width() - kShelfItemInset -
-                            background_image.width());
-    background_bounds.set_y(
-        contents_bounds.y() +
-        (contents_bounds.height() - background_image.height()) / 2);
-  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-    background_bounds.set_x(kShelfItemInset);
-    background_bounds.set_y(
-        contents_bounds.y() +
-        (contents_bounds.height() - background_image.height()) / 2);
-  } else {
-    background_bounds.set_y(kShelfItemInset);
-    background_bounds.set_x(
-        contents_bounds.x() +
-        (contents_bounds.width() - background_image.width()) / 2);
-  }
-
-  canvas->DrawImageInt(background_image, background_bounds.x(),
-                       background_bounds.y());
-  gfx::Rect foreground_bounds(foreground_image.size());
-  foreground_bounds.set_x(
-      background_bounds.x() +
-      std::max(0, (background_bounds.width() - foreground_bounds.width()) / 2));
-  foreground_bounds.set_y(
-      background_bounds.y() +
-      std::max(0,
-               (background_bounds.height() - foreground_bounds.height()) / 2));
-  canvas->DrawImageInt(foreground_image, foreground_bounds.x(),
-                       foreground_bounds.y());
+  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
 
 void AppListButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -280,13 +191,6 @@ std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
 std::unique_ptr<views::InkDropMask> AppListButton::CreateInkDropMask() const {
   return base::MakeUnique<views::CircleInkDropMask>(size(), GetCenterPoint(),
                                                     kAppListButtonRadius);
-}
-
-void AppListButton::SetDrawBackgroundAsActive(bool draw_background_as_active) {
-  if (draw_background_as_active_ == draw_background_as_active)
-    return;
-  draw_background_as_active_ = draw_background_as_active;
-  SchedulePaint();
 }
 
 gfx::Point AppListButton::GetCenterPoint() const {
