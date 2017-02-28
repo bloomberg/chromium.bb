@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/linked_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,10 +30,11 @@ namespace system_indicator = api::system_indicator;
 class ExtensionIndicatorIcon : public StatusIconObserver,
                                public ExtensionActionIconFactory::Observer {
  public:
-  static ExtensionIndicatorIcon* Create(const Extension* extension,
-                                        ExtensionAction* action,
-                                        Profile* profile,
-                                        StatusTray* status_tray);
+  static std::unique_ptr<ExtensionIndicatorIcon> Create(
+      const Extension* extension,
+      ExtensionAction* action,
+      Profile* profile,
+      StatusTray* status_tray);
   ~ExtensionIndicatorIcon() override;
 
   // StatusIconObserver implementation.
@@ -56,7 +56,7 @@ class ExtensionIndicatorIcon : public StatusIconObserver,
   ExtensionActionIconFactory icon_factory_;
 };
 
-ExtensionIndicatorIcon* ExtensionIndicatorIcon::Create(
+std::unique_ptr<ExtensionIndicatorIcon> ExtensionIndicatorIcon::Create(
     const Extension* extension,
     ExtensionAction* action,
     Profile* profile,
@@ -66,10 +66,10 @@ ExtensionIndicatorIcon* ExtensionIndicatorIcon::Create(
 
   // Check if a status icon was successfully created.
   if (extension_icon->icon_)
-    return extension_icon.release();
+    return extension_icon;
 
   // We could not create a status icon.
-  return NULL;
+  return std::unique_ptr<ExtensionIndicatorIcon>();
 }
 
 ExtensionIndicatorIcon::~ExtensionIndicatorIcon() {
@@ -183,10 +183,11 @@ void SystemIndicatorManager::CreateOrUpdateIndicator(
     return;
   }
 
-  ExtensionIndicatorIcon* extension_icon = ExtensionIndicatorIcon::Create(
-      extension, extension_action, profile_, status_tray_);
+  std::unique_ptr<ExtensionIndicatorIcon> extension_icon =
+      ExtensionIndicatorIcon::Create(extension, extension_action, profile_,
+                                     status_tray_);
   if (extension_icon)
-    system_indicators_[extension->id()] = make_linked_ptr(extension_icon);
+    system_indicators_[extension->id()] = std::move(extension_icon);
 }
 
 void SystemIndicatorManager::RemoveIndicator(const std::string& extension_id) {

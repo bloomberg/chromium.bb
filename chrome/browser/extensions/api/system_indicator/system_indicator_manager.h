@@ -10,7 +10,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -68,8 +67,8 @@ class SystemIndicatorManager : public ExtensionRegistryObserver,
   // Causes the indicator for the given extension to be hidden.
   void RemoveIndicator(const std::string& extension_id);
 
-  typedef std::map<const std::string, linked_ptr<ExtensionIndicatorIcon> >
-      SystemIndicatorMap;
+  using SystemIndicatorMap =
+      std::map<const std::string, std::unique_ptr<ExtensionIndicatorIcon>>;
 
   Profile* profile_;
   StatusTray* status_tray_;
