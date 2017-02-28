@@ -201,6 +201,9 @@ content::WebUIDataSource* CreateVrShellUIHTMLSource() {
   source->AddLocalizedString("back", IDS_VR_SHELL_UI_BACK_BUTTON);
   source->AddLocalizedString("forward", IDS_VR_SHELL_UI_FORWARD_BUTTON);
   source->AddLocalizedString("reload", IDS_VR_SHELL_UI_RELOAD_BUTTON);
+  source->AddLocalizedString("newTab", IDS_VR_SHELL_NEW_TAB_BUTTON);
+  source->AddLocalizedString("newIncognitoTab",
+                             IDS_VR_SHELL_NEW_INCOGNITO_TAB_BUTTON);
 
   return source;
 }

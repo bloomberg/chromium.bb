@@ -446,7 +446,13 @@ void VrShell::DoUiAction(const UiAction action,
       int id;
       CHECK(arguments->GetInteger("id", &id));
       delegate_provider_->ShowTab(id);
-      break;
+      return;
+    }
+    case OPEN_NEW_TAB: {
+      bool incognito;
+      CHECK(arguments->GetBoolean("incognito", &incognito));
+      delegate_provider_->OpenNewTab(incognito);
+      return;
     }
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
@@ -480,9 +486,6 @@ void VrShell::DoUiAction(const UiAction action,
                                ui::PageTransition::PAGE_TRANSITION_TYPED);
       break;
     }
-    case SHOW_TAB:
-      // Not handled in Java.
-      break;
     default:
       NOTREACHED();
   }

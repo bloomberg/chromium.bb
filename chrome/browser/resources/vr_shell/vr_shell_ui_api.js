@@ -70,7 +70,8 @@ api.Action = {
   'LOAD_URL': 6,
   'OMNIBOX_CONTENT': 7,
   'SET_CONTENT_PAUSED': 8,
-  'SHOW_TAB': 9
+  'SHOW_TAB': 9,
+  'OPEN_NEW_TAB': 10
 };
 
 /**

@@ -58,6 +58,7 @@ enum UiAction {
   OMNIBOX_CONTENT,
   SET_CONTENT_PAUSED,
   SHOW_TAB,
+  OPEN_NEW_TAB,
 };
 
 class VrMetricsHelper;

@@ -36,11 +36,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 
 import java.lang.annotation.Retention;
@@ -692,6 +694,12 @@ public class VrShellDelegate {
             return;
         }
         TabModelUtils.setIndex(mActivity.getTabModelSelector().getModel(tab.isIncognito()), index);
+    }
+
+    @CalledByNative
+    private void openNewTab(boolean incognito) {
+        mActivity.getTabCreator(incognito).launchUrl(
+                UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
     }
 
     private native long nativeInit();

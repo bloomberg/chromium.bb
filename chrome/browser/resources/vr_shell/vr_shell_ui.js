@@ -735,6 +735,9 @@ var vrShellUi = (function() {
       /** @const */ var DOM_TAB_TEMPLATE_SELECTOR = '#tab-template';
       /** @const */ var DOM_TAB_CONTAINER_SELECTOR = '#tab-container';
       /** @const */ var DOM_TAB_CLIP_SELECTOR = '#tab-clip';
+      /** @const */ var DOM_NEW_TAB_BUTTON_SELECTOR = '#new-tab';
+      /** @const */ var DOM_NEW_INCOGNITO_TAB_BUTTON_SELECTOR =
+          '#new-incognito-tab';
       /** @const */ var TAB_CONTAINER_Y_OFFSET = 0.4;
       /** @const */ var TAB_CONTAINER_Z_OFFSET = -1;
 
@@ -751,6 +754,32 @@ var vrShellUi = (function() {
           0, TAB_CONTAINER_Y_OFFSET, TAB_CONTAINER_Z_OFFSET);
       positionUpdate.setVisible(false);
       ui.updateElement(this.tabContainerElement.uiElementId, positionUpdate);
+
+      // Add the new tab buttons to the native scene.
+      let buttonConfigs = [
+        {
+          selector: DOM_NEW_TAB_BUTTON_SELECTOR, x: -0.2, incognito: false
+        }, {
+          selector: DOM_NEW_INCOGNITO_TAB_BUTTON_SELECTOR,
+          x: 0.2,
+          incognito: true
+        }
+      ];
+      this.buttonElements = [];
+      buttonConfigs.forEach(function(buttonConfig) {
+        let buttonElement = new DomUiElement(buttonConfig.selector);
+        let update = new api.UiElementUpdate();
+        update.setTranslation(buttonConfig.x, 0.1, 0);
+        update.setVisible(false);
+        update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YTOP);
+        update.setParentId(this.tabContainerElement.uiElementId);
+        ui.updateElement(buttonElement.uiElementId, update);
+        buttonElement.domElement.addEventListener('click', function() {
+          api.doAction(
+              api.Action.OPEN_NEW_TAB, {'incognito': buttonConfig.incognito});
+        });
+        this.buttonElements.push(buttonElement);
+      }, this);
 
       // Calculate the width of one tab so that we can properly set the clip
       // element's width.
@@ -821,9 +850,14 @@ var vrShellUi = (function() {
     }
 
     setEnabled(enabled) {
-      let visibilityUpdate = new api.UiElementUpdate();
-      visibilityUpdate.setVisible(enabled);
-      ui.updateElement(this.tabContainerElement.uiElementId, visibilityUpdate);
+      let update = new api.UiElementUpdate();
+      update.setVisible(enabled);
+      ui.updateElement(this.tabContainerElement.uiElementId, update);
+      this.buttonElements.forEach(function(buttonElement) {
+        let update = new api.UiElementUpdate();
+        update.setVisible(enabled);
+        ui.updateElement(buttonElement.uiElementId, update);
+      }, this);
     }
   };
 

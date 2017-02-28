@@ -120,6 +120,11 @@ void VrShellDelegate::ShowTab(int id) {
   Java_VrShellDelegate_showTab(env, j_vr_shell_delegate_.obj(), id);
 }
 
+void VrShellDelegate::OpenNewTab(bool incognito) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_VrShellDelegate_openNewTab(env, j_vr_shell_delegate_.obj(), incognito);
+}
+
 void VrShellDelegate::SetDeviceProvider(
     device::GvrDeviceProvider* device_provider) {
   CHECK(!device_provider_);

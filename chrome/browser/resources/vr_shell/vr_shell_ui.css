@@ -99,6 +99,25 @@ html {
   white-space: nowrap;
 }
 
+.rect-button {
+  background-color: #eee;
+  border-radius: 6px;
+  color: black;
+  font-size: 20px;
+  line-height: 96px;
+  opacity: 0.8;
+  overflow: hidden;
+  text-align: center;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 300px;
+}
+
+.rect-button:hover {
+  opacity: 1;
+}
+
 #back-button,
 #forward-button {
   background-image: url(../../../../ui/webui/resources/images/vr_back.svg);
@@ -150,7 +169,7 @@ html {
   overflow-x: scroll;
   overflow-y: hidden;
   white-space: nowrap;
-  width: 1500px;
+  width: 1000px;
 }
 
 /* The tab clip element's width will be programmatically set to the total width
