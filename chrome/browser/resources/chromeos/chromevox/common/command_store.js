@@ -669,6 +669,9 @@ cvox.CommandStore.CMD_WHITELIST = {
                 announce: true,
                 msgId: 'braille_bottom',
                 category: 'braille'},
+  'viewGraphicAsBraille': {announce: true,
+                         msgId: 'view_graphic_as_braille',
+                         category: 'braille'},
 
   // Developer commands.
   'enableConsoleTts': {announce: false,

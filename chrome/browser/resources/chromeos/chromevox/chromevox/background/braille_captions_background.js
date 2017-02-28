@@ -90,6 +90,28 @@ cvox.BrailleCaptionsBackground.setContent = function(text, cells,
 };
 
 /**
+ * @param {ArrayBuffer} cells Braille cells shown on the display.
+ * @param {number} rows Number of rows to display.
+ * @param {number} columns Number of columns to display.
+ */
+cvox.BrailleCaptionsBackground.setImageContent = function(cells, rows,
+    columns) {
+  var self = cvox.BrailleCaptionsBackground;
+  // Convert the cells to Unicode braille pattern characters.
+  var byteBuf = new Uint8Array(cells);
+  var brailleChars = '';
+
+  for (var i = 0; i < byteBuf.length; ++i) {
+    brailleChars += String.fromCharCode(
+        self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
+  }
+
+  var groups = [['Image', brailleChars]];
+  var data = {groups: groups, rows: rows, cols: columns};
+  (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
+};
+
+/**
  * @param {string} brailleChars Braille characters shown on the display.
  * @param {string} text Text of the shown braille.
  * @param {Array<number>} brailleToText Map of Braille cells to the first
@@ -167,6 +189,6 @@ cvox.BrailleCaptionsBackground.getVirtualDisplayState = function(callback) {
       });
     });
   } else {
-    callback({available: false});
+    callback({available: false, textRowCount: 0, textColumnCount: 0});
   }
 };

@@ -57,8 +57,8 @@ cvox.BrailleDisplayManager = function(translatorManager) {
    * @type {!cvox.BrailleDisplayState}
    * @private
    */
-  this.displayState_ = {available: false, textRowCount: undefined,
-      textColumnCount: undefined};
+  this.displayState_ = {available: false, textRowCount: 0,
+      textColumnCount: 0};
   /**
    * State reported from the chrome api, reflecting a real hardware
    * display.
@@ -110,6 +110,37 @@ cvox.BrailleDisplayManager.CURSOR_DOTS_ = 1 << 6 | 1 << 7;
 
 
 /**
+ * Alpha threshold for a pixel to be possibly displayed as a raised dot when
+ * converting an image to braille, where 255 means only fully-opaque
+ * pixels can be raised (if their luminance passes the luminance threshold),
+ * and 0 means that alpha is effectively ignored and only luminance matters.
+ * @const
+ * @private
+ */
+cvox.BrailleDisplayManager.ALPHA_THRESHOLD_ = 255;
+
+
+/**
+ * Luminance threshold for a pixel to be displayed as a raised dot when
+ * converting an image to braille, on a scale of 0 (black) to 255 (white).
+ * A pixel whose luminance is less than the given threshold will be raised.
+ * @const
+ * @private
+ */
+cvox.BrailleDisplayManager.LUMINANCE_THRESHOLD_ = 128;
+
+
+/**
+ * Array mapping an index in an 8-dot braille cell, in column-first order,
+ * to its corresponding bit mask in the standard braille cell encoding.
+ * @const
+ * @private
+ */
+cvox.BrailleDisplayManager.COORDS_TO_BRAILLE_DOT_ =
+    [0x1, 0x2, 0x4, 0x40, 0x8, 0x10, 0x20, 0x80];
+
+
+/**
  * @param {!cvox.NavBraille} content Content to send to the braille display.
  * @param {!cvox.ExpandingBrailleTranslator.ExpansionType} expansionType
  *     If the text has a {@code ValueSpan}, this indicates how that part
@@ -119,6 +150,92 @@ cvox.BrailleDisplayManager.CURSOR_DOTS_ = 1 << 6 | 1 << 7;
 cvox.BrailleDisplayManager.prototype.setContent = function(
     content, expansionType) {
   this.translateContent_(content, expansionType);
+};
+
+
+/**
+ * Takes an image, in the form of a data url, and displays it in braille
+ * onto the physical braille display and the virtual braille captions display.
+ * @param {!string} imageUrl The image, in the form of a data url.
+ */
+cvox.BrailleDisplayManager.prototype.setImageContent = function(imageUrl) {
+  if (!this.displayState_.available) {
+    return;
+  }
+
+  // The number of dots in a braille cell.
+  // TODO(dmazzoni): Both multi-line braille displays we're testing with
+  // are 6-dot (2 x 3), but we should have a way to detect that via brltty.
+  var cellWidth = 2;
+  var cellHeight = 3;
+  var maxCellHeight = 4;
+
+  var rows = this.displayState_.textRowCount;
+  var columns = this.displayState_.textColumnCount;
+  var imageDataUrl = imageUrl;
+  var imgElement = document.createElement('img');
+  imgElement.src = imageDataUrl;
+  imgElement.onload = (function() {
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    canvas.width = columns * cellWidth;
+    canvas.height = rows * cellHeight;
+    context.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    var data = imageData.data;
+    var outputData = [];
+
+    // Convert image to black and white by thresholding the luminance for
+    // all opaque (non-transparent) pixels.
+    for (var i = 0; i < data.length; i += 4) {
+      var red = data[i];
+      var green = data[i + 1];
+      var blue = data[i + 2];
+      var alpha = data[i + 3];
+      var luminance =
+          0.2126 * red +
+          0.7152 * green +
+          0.0722 * blue;
+      // Show braille pin if the alpha is greater than the threshold and
+      // the luminance is less than the threshold.
+      var show = (alpha >= cvox.BrailleDisplayManager.ALPHA_THRESHOLD_ &&
+          luminance < cvox.BrailleDisplayManager.LUMINANCE_THRESHOLD_);
+      outputData.push(show);
+    }
+
+    // Convert black-and-white array to the proper encoding for Braille cells.
+    var brailleBuf = new ArrayBuffer(rows * columns);
+    var view = new Uint8Array(brailleBuf);
+    for (var i = 0; i < rows; i++) {
+      for (var j = 0; j < columns; j++) {
+        // Index in braille array
+        var brailleIndex = i * columns + j;
+        for (var cellColumn = 0; cellColumn < cellWidth; cellColumn++) {
+          for (var cellRow = 0; cellRow < cellHeight; cellRow++) {
+            var bitmapIndex =
+                (i * columns * cellHeight + j + cellRow * columns) * cellWidth
+                + cellColumn;
+            if (outputData[bitmapIndex]) {
+              view[brailleIndex] +=
+                  cvox.BrailleDisplayManager.COORDS_TO_BRAILLE_DOT_[
+                      cellColumn * maxCellHeight + cellRow];
+            }
+          }
+        }
+      }
+    }
+
+    if (this.realDisplayState_.available) {
+      chrome.brailleDisplayPrivate.writeDots(
+          brailleBuf,
+          this.displayState_.textColumnCount,
+          this.displayState_.textRowCount);
+    }
+    if (cvox.BrailleCaptionsBackground.isEnabled()) {
+      cvox.BrailleCaptionsBackground.setImageContent(
+          brailleBuf, rows, columns);
+    }
+  }).bind(this);
 };
 
 
@@ -136,8 +253,19 @@ cvox.BrailleDisplayManager.prototype.setCommandListener = function(func) {
 
 
 /**
- * @param {!cvox.BrailleDisplayState} newState Display state reported
- *     by the extension API.
+ * @return {!cvox.BrailleDisplayState} The current display state.
+ */
+cvox.BrailleDisplayManager.prototype.getDisplayState = function() {
+  return this.displayState_;
+};
+
+
+/**
+ * @param {{available: boolean, textRowCount: (number|undefined),
+ *     textColumnCount: (number|undefined)}} newState Display state reported
+ *     by the extension API. Note that the type is almost the same as
+ *     cvox.BrailleDisplayState except that the extension API allows
+ *     some fields to be undefined, while cvox.BrailleDisplayState does not.
  * @private
  */
 cvox.BrailleDisplayManager.prototype.refreshDisplayState_ = function(
@@ -154,7 +282,11 @@ cvox.BrailleDisplayManager.prototype.refreshDisplayState_ = function(
     }
     this.refresh_();
   }.bind(this);
-  this.realDisplayState_ = newState;
+  this.realDisplayState_ = {
+    available: newState.available,
+    textRowCount: newState.textRowCount || 0,
+    textColumnCount: newState.textColumnCount || 0
+  };
   if (newState.available) {
     processDisplayState(newState);
     // Update the dimensions of the virtual braille captions display to those

@@ -2355,6 +2355,9 @@
       <message desc="Describes dots on a refreshable braille display pressed with the space key. For example, dots 1 2 3 4 8 chord" name="IDS_CHROMEVOX_BRAILLE_CHORD">
         $1 chord
       </message>
+      <message desc="The description of the command that allows the user to view a graphic as a dot pattern on a refreshable braille display." name="IDS_CHROMEVOX_VIEW_GRAPHIC_AS_BRAILLE">
+        View Graphic As Braille
+      </message>
       <message desc="Spoken to describe an access key.  An access key consists of a single letter. When pressed along with a modifier (usually alt, but depends on platform), a targetted node will be activated." name="IDS_CHROMEVOX_ACCESS_KEY">
         has access key, <ph name="key">$1</ph>
       </message>

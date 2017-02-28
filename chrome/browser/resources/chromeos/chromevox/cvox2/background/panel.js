@@ -505,7 +505,9 @@ Panel.onUpdateBraille = function(data) {
   }
 
   var row1, row2;
+  // Number of rows already written.
   rowCount = 0;
+  // Number of cells already written in this row.
   var cellCount = cols;
   for (var i = 0; i < groups.length; i++) {
     if (cellCount == cols) {
@@ -535,32 +537,42 @@ Panel.onUpdateBraille = function(data) {
     bottomCell.setAttribute('data-companionIDs', i + '-textCell');
     bottomCell.className = 'unhighlighted-cell';
     if (cellCount + groups[i][1].length > cols) {
-      bottomCell.innerHTML = groups[i][1].substring(0, cols - cellCount);
-      if (rowCount == rows)
-        break;
-      rowCount++;
-      row1 = this.brailleTableElement_.insertRow(-1);
-      if (sideBySide) {
-        // Side by side.
-        row2 = this.brailleTableElement2_.insertRow(-1);
-      } else {
-        // Interleaved.
-        row2 = this.brailleTableElement_.insertRow(-1);
-      }
-      var bottomCell2 = row2.insertCell(-1);
-      bottomCell2.id = i + '-brailleCell2';
-      bottomCell2.setAttribute('data-companionIDs',
-          i + '-textCell ' + i + '-brailleCell');
-      bottomCell.setAttribute('data-companionIDs',
-          bottomCell.getAttribute('data-companionIDs') +
-          ' ' + i + '-brailleCell2');
-      topCell.setAttribute('data-companionID2',
-          bottomCell.getAttribute('data-companionIDs') +
-          ' ' + i + '-brailleCell2');
+      var brailleText = groups[i][1];
+      while (cellCount + brailleText.length > cols) {
+        // At this point we already have a bottomCell to fill, so fill it.
+        bottomCell.innerHTML = brailleText.substring(0, cols - cellCount);
+        // Update to see what we still have to fill.
+        brailleText = brailleText.substring(cols - cellCount);
+        // Make new row.
+        if (rowCount == rows)
+          break;
+        rowCount++;
+        row1 = this.brailleTableElement_.insertRow(-1);
+        if (sideBySide) {
+          // Side by side.
+          row2 = this.brailleTableElement2_.insertRow(-1);
+        } else {
+          // Interleaved.
+          row2 = this.brailleTableElement_.insertRow(-1);
+        }
+        var bottomCell2 = row2.insertCell(-1);
+        bottomCell2.id = i + '-brailleCell2';
+        bottomCell2.setAttribute('data-companionIDs',
+            i + '-textCell ' + i + '-brailleCell');
+        bottomCell.setAttribute('data-companionIDs',
+            bottomCell.getAttribute('data-companionIDs') +
+            ' ' + i + '-brailleCell2');
+        topCell.setAttribute('data-companionID2',
+            bottomCell.getAttribute('data-companionIDs') +
+            ' ' + i + '-brailleCell2');
 
-      bottomCell2.className = 'unhighlighted-cell';
-      bottomCell2.innerHTML = groups[i][1].substring(cols - cellCount);
-      cellCount = bottomCell2.innerHTML.length;
+        bottomCell2.className = 'unhighlighted-cell';
+        bottomCell = bottomCell2;
+        cellCount = 0;
+      }
+      // Fill the rest.
+      bottomCell.innerHTML = brailleText;
+      cellCount = brailleText.length;
     } else {
       bottomCell.innerHTML = groups[i][1];
       cellCount += groups[i][1].length;

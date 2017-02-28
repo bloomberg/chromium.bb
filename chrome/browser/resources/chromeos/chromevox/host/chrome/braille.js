@@ -72,6 +72,30 @@ cvox.ChromeBraille.prototype.write = function(params) {
 };
 
 
+/** @override */
+cvox.ChromeBraille.prototype.writeRawImage = function(imageDataUrl) {
+  // Do Nothing.
+};
+
+
+/** @override */
+cvox.ChromeBraille.prototype.freeze = function() {
+  // Do Nothing.
+};
+
+
+/** @override */
+cvox.ChromeBraille.prototype.thaw = function() {
+  // Do Nothing.
+};
+
+
+/** @override */
+cvox.ChromeBraille.prototype.getDisplayState = function() {
+  return {available: false, textRowCount: 0, textColumnCount: 0};
+};
+
+
 /** @private */
 cvox.ChromeBraille.prototype.updateLastContentId_ = function() {
   this.lastContentId_ = cvox.ExtensionBridge.uniqueId() + '.' +

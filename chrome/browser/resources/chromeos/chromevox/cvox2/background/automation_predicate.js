@@ -486,4 +486,14 @@ AutomationPredicate.makeHeadingPredicate = function(level) {
   };
 };
 
+/**
+ * Matches against nodes that we may be able to retrieve image data from.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.supportsImageData = AutomationPredicate.roles([
+    Role.CANVAS,
+    Role.IMAGE,
+    Role.VIDEO]);
+
 });  // goog.scope

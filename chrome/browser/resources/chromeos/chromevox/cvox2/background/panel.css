@@ -119,6 +119,10 @@ button {
   width: 100%;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 .braille-table-holder {
   flex-grow: 1;
 }

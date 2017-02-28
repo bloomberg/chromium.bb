@@ -127,6 +127,7 @@ cvox.BrailleKeyEvent.legacyKeyCodeMap_ = {
 /**
  * The state of a braille display as represented in the
  * chrome.brailleDisplayPrivate API.
- * @typedef {{available: boolean, textCellCount: (number|undefined)}}
+ * @typedef {{available: boolean, textRowCount: number,
+ *     textColumnCount: number}}
  */
 cvox.BrailleDisplayState;

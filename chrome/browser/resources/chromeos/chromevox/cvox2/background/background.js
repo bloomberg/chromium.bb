@@ -397,6 +397,10 @@ Background.prototype = {
    * @override
    */
   setCurrentRange: function(newRange) {
+    // Clear anything that was frozen on the braille display whenever
+    // the user navigates.
+    cvox.ChromeVox.braille.thaw();
+
     if (newRange && !newRange.isValid())
       return;
 

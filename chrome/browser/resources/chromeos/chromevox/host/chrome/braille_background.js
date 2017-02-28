@@ -58,12 +58,45 @@ cvox.BrailleBackground = function(opt_displayManagerForTest,
   this.inputHandler_ = opt_inputHandlerForTest ||
       new cvox.BrailleInputHandler(this.translatorManager_);
   this.inputHandler_.init();
+
+  /** @private {boolean} */
+  this.frozen_ = false;
 };
 
 
 /** @override */
 cvox.BrailleBackground.prototype.write = function(params) {
+  if (this.frozen_) {
+    return;
+  }
   this.setContent_(params, null);
+};
+
+
+/** @override */
+cvox.BrailleBackground.prototype.writeRawImage = function(imageDataUrl) {
+  if (this.frozen_) {
+    return;
+  }
+  this.displayManager_.setImageContent(imageDataUrl);
+};
+
+
+/** @override */
+cvox.BrailleBackground.prototype.freeze = function() {
+  this.frozen_ = true;
+};
+
+
+/** @override */
+cvox.BrailleBackground.prototype.thaw = function() {
+  this.frozen_ = false;
+};
+
+
+/** @override */
+cvox.BrailleBackground.prototype.getDisplayState = function() {
+  return this.displayManager_.getDisplayState();
 };
 
 

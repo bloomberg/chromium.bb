@@ -27,3 +27,29 @@ cvox.BrailleInterface = function() { };
  */
 cvox.BrailleInterface.prototype.write =
     function(params) { };
+
+/**
+ * Takes an image in the form of a data url and outputs it to a Braille
+ * display.
+ * @param {!string} imageDataUrl The image to output, in the form of a
+ * dataUrl.
+ */
+cvox.BrailleInterface.prototype.writeRawImage =
+    function(imageDataUrl) { };
+
+/**
+ * Freeze whatever is on the braille display until the next call to thaw().
+ */
+cvox.BrailleInterface.prototype.freeze = function() { };
+
+
+/**
+ * Un-freeze the braille display so that it can be written to again.
+ */
+cvox.BrailleInterface.prototype.thaw = function() { };
+
+
+/**
+ * @return {!cvox.BrailleDisplayState} The current display state.
+ */
+cvox.BrailleInterface.prototype.getDisplayState = function() { };

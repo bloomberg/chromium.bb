@@ -726,6 +726,16 @@
       }
     },
     {
+      "command": "viewGraphicAsBraille",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [71],
+          "altKey": [true]
+        }
+      }
+    },
+    {
       "command": "toggleSelection",
       "sequence": {
         "cvoxModifier": true,
