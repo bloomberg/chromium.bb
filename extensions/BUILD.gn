@@ -160,10 +160,10 @@ static_library("test_support") {
 
 repack("shell_and_test_pak") {
   sources = [
-    "$root_gen_dir/blink/devtools_resources.pak",
     "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
+    "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
     "$root_gen_dir/extensions/extensions_browser_resources_100_percent.pak",
