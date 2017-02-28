@@ -650,4 +650,33 @@ TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
             transformObject->paintProperties()->transform()->matrix());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0 }"
+      "  #outer {"
+      "    position: absolute;"
+      "    width: 100px; height: 100px; top: 50px; left: 50px;"
+      "  }"
+      "  #clip {"
+      "    position: absolute;"
+      "    clip: rect(auto auto auto -5px);"
+      "    top: 0; left: 0; right: 0; bottom: 0;"
+      "  }"
+      "</style>"
+      "<div id='outer'>"
+      "  <div id='clip'></div>"
+      "</div>");
+
+  auto* outer = document().getElementById("outer");
+  auto* clip = getLayoutObjectByElementId("clip");
+  EXPECT_EQ(FloatRect(45, 50, 105, 100),
+            clip->paintProperties()->cssClip()->clipRect().rect());
+
+  outer->setAttribute(HTMLNames::styleAttr, "height: 200px");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(FloatRect(45, 50, 105, 200),
+            clip->paintProperties()->cssClip()->clipRect().rect());
+}
+
 }  // namespace blink

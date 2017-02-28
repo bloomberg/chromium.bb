@@ -1735,6 +1735,10 @@ void LayoutBox::sizeChanged() {
       // overflowClipRect(). The border box rect's size equals the frame rect's
       // size so we trigger a paint property update when the frame rect changes.
       setNeedsPaintPropertyUpdate();
+    } else if (hasClip()) {
+      // The used value of CSS clip may depend on size of the box, e.g. for
+      // clip: rect(auto auto auto -5px).
+      setNeedsPaintPropertyUpdate();
     } else if (styleRef().hasTransform() || styleRef().hasPerspective()) {
       // Relative lengths (e.g., percentage values) in transform, perspective,
       // transform-origin, and perspective-origin can depend on the size of the
