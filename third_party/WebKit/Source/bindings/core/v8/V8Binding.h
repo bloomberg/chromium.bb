@@ -1010,10 +1010,10 @@ CORE_EXPORT v8::Local<v8::Context> toV8Context(ExecutionContext*,
                                                DOMWrapperWorld&);
 // Returns a V8 context associated with a Frame and a DOMWrapperWorld.
 // This method returns an empty context if the frame is already detached.
-CORE_EXPORT v8::Local<v8::Context> toV8Context(Frame*, DOMWrapperWorld&);
+CORE_EXPORT v8::Local<v8::Context> toV8Context(LocalFrame*, DOMWrapperWorld&);
 // Like toV8Context but also returns the context if the frame is already
 // detached.
-CORE_EXPORT v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame*,
+CORE_EXPORT v8::Local<v8::Context> toV8ContextEvenIfDetached(LocalFrame*,
                                                              DOMWrapperWorld&);
 
 // Returns the frame object of the window object associated with

@@ -4,6 +4,7 @@
 
 #include "web/WebRemoteFrameImpl.h"
 
+#include "bindings/core/v8/RemoteWindowProxy.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
@@ -21,10 +22,10 @@
 #include "public/web/WebPerformance.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebTreeScopeType.h"
+#include "v8/include/v8.h"
 #include "web/RemoteFrameOwner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include <v8/include/v8.h>
 
 namespace blink {
 
@@ -214,7 +215,9 @@ v8::Local<v8::Context> WebRemoteFrameImpl::mainWorldScriptContext() const {
 
 v8::Local<v8::Context> WebRemoteFrameImpl::deprecatedMainWorldScriptContext()
     const {
-  return toV8Context(frame(), DOMWrapperWorld::mainWorld());
+  return static_cast<RemoteWindowProxy*>(
+             frame()->windowProxy(DOMWrapperWorld::mainWorld()))
+      ->contextIfInitialized();
 }
 
 void WebRemoteFrameImpl::reload(WebFrameLoadType) {
