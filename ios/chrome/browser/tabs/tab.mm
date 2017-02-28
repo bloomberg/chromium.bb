@@ -1796,6 +1796,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [parentTabModel_ notifyTabChanged:self];
 }
 
+- (void)webStateDidChangeTitle:(web::WebState*)webState {
+  [self saveTitleToHistoryDB];
+  [parentTabModel_ notifyTabChanged:self];
+}
+
 - (void)webStateDidDismissInterstitial:(web::WebState*)webState {
   [parentTabModel_ notifyTabChanged:self];
 }
@@ -1813,12 +1818,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     return NO;
   }
   return YES;
-}
-
-- (void)webController:(CRWWebController*)webController
-       titleDidChange:(NSString*)title {
-  [self saveTitleToHistoryDB];
-  [parentTabModel_ notifyTabChanged:self];
 }
 
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url

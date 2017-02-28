@@ -88,6 +88,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Notifies the observers that navigation to error page did finish.
   void OnErrorPageNavigation(const GURL& url);
 
+  // Called when page title was changed.
+  void OnTitleChanged();
+
   // Notifies the observers that the render process was terminated.
   void OnRenderProcessGone();
 

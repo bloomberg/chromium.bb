@@ -101,6 +101,15 @@ TEST_F(WebStateObserverBridgeTest, LoadProgressChanged) {
   EXPECT_EQ(kTestLoadProgress, [observer_ changeLoadingProgressInfo]->progress);
 }
 
+// Tests |webStateDidChangeTitle:| forwarding.
+TEST_F(WebStateObserverBridgeTest, TitleWasSet) {
+  ASSERT_FALSE([observer_ titleWasSetInfo]);
+
+  bridge_->TitleWasSet();
+  ASSERT_TRUE([observer_ titleWasSetInfo]);
+  EXPECT_EQ(&test_web_state_, [observer_ titleWasSetInfo]->web_state);
+}
+
 // Tests |webState:didSubmitDocumentWithFormNamed:userInitiated:| forwarding.
 TEST_F(WebStateObserverBridgeTest, DocumentSubmitted) {
   ASSERT_FALSE([observer_ submitDocumentInfo]);

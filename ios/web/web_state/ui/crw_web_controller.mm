@@ -1019,12 +1019,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)setDelegate:(id<CRWWebDelegate>)delegate {
   _delegate.reset(delegate);
-  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
-    if ([_delegate respondsToSelector:@selector(webController:titleDidChange:)])
-      [self.nativeController setDelegate:self];
-    else
-      [self.nativeController setDelegate:nil];
-  }
+  if ([self.nativeController respondsToSelector:@selector(setDelegate:)])
+    [self.nativeController setDelegate:self];
 }
 
 - (void)dealloc {
@@ -1086,8 +1082,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 // NativeControllerDelegate method, called to inform that title has changed.
 - (void)nativeContent:(id)content titleDidChange:(NSString*)title {
-  // Responsiveness to delegate method was checked in setDelegate:.
-  [_delegate webController:self titleDidChange:title];
+  _webStateImpl->OnTitleChanged();
 }
 
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled {
@@ -1375,10 +1370,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // other platforms send this (tab sync triggers need to be compared against
   // upstream).
   self.navigationManagerImpl->OnNavigationItemChanged();
-
-  if ([_delegate respondsToSelector:@selector(webController:titleDidChange:)]) {
-    [_delegate webController:self titleDidChange:title];
-  }
+  _webStateImpl->OnTitleChanged();
 }
 
 - (BOOL)isCurrentNavigationItemPOST {
@@ -1803,15 +1795,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self didFinishWithURL:currentURL loadSuccess:loadSuccess];
 
   NSString* title = [self.nativeController title];
-  if (title)
+  if (title) {
     [self setNavigationItemTitle:title];
+  }
 
-  // If the controller handles title change notification, route those to the
-  // delegate.
-  if ([_delegate respondsToSelector:@selector(webController:titleDidChange:)]) {
-    if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
-      [self.nativeController setDelegate:self];
-    }
+  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
+    [self.nativeController setDelegate:self];
   }
 }
 

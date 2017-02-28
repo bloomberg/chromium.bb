@@ -29,6 +29,8 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   // Arguments passed to |webState:didChangeLoadingProgress:|.
   std::unique_ptr<web::TestChangeLoadingProgressInfo>
       _changeLoadingProgressInfo;
+  // Arguments passed to |webStateDidChangeTitle:|.
+  std::unique_ptr<web::TestTitleWasSetInfo> _titleWasSetInfo;
   // Arguments passed to
   // |webState:didSubmitDocumentWithFormNamed:userInitiated:|.
   std::unique_ptr<web::TestSubmitDocumentInfo> _submitDocumentInfo;
@@ -70,6 +72,10 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (web::TestChangeLoadingProgressInfo*)changeLoadingProgressInfo {
   return _changeLoadingProgressInfo.get();
+}
+
+- (web::TestTitleWasSetInfo*)titleWasSetInfo {
+  return _titleWasSetInfo.get();
 }
 
 - (web::TestSubmitDocumentInfo*)submitDocumentInfo {
@@ -141,6 +147,11 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
       base::MakeUnique<web::TestChangeLoadingProgressInfo>();
   _changeLoadingProgressInfo->web_state = webState;
   _changeLoadingProgressInfo->progress = progress;
+}
+
+- (void)webStateDidChangeTitle:(web::WebState*)webState {
+  _titleWasSetInfo = base::MakeUnique<web::TestTitleWasSetInfo>();
+  _titleWasSetInfo->web_state = webState;
 }
 
 - (void)webState:(web::WebState*)webState

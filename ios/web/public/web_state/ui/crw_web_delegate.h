@@ -125,10 +125,6 @@ class GURL;
 // or nil otherwise.
 - (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)url;
 
-// Called when the page supplies a new title.
-- (void)webController:(CRWWebController*)webController
-       titleDidChange:(NSString*)title;
-
 // Called when CRWWebController did suppress a dialog (JavaScript, HTTP
 // authentication or window.open).
 // NOTE: Called only if CRWWebController.shouldSuppressDialogs is set to YES.

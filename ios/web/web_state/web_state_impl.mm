@@ -207,6 +207,11 @@ void WebStateImpl::OnErrorPageNavigation(const GURL& url) {
     observer.DidFinishNavigation(context.get());
 }
 
+void WebStateImpl::OnTitleChanged() {
+  for (auto& observer : observers_)
+    observer.TitleWasSet();
+}
+
 void WebStateImpl::OnRenderProcessGone() {
   for (auto& observer : observers_)
     observer.RenderProcessGone();

@@ -73,6 +73,11 @@ void WebStateObserverBridge::LoadProgressChanged(double progress) {
     [observer_ webState:web_state() didChangeLoadingProgress:progress];
 }
 
+void WebStateObserverBridge::TitleWasSet() {
+  if ([observer_ respondsToSelector:@selector(webStateDidChangeTitle:)])
+    [observer_ webStateDidChangeTitle:web_state()];
+}
+
 void WebStateObserverBridge::DocumentSubmitted(const std::string& form_name,
                                                bool user_initiated) {
   SEL selector =

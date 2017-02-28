@@ -39,6 +39,9 @@ class GURL;
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress;
 
+// Invoked by WebStateObserverBridge::TitleWasSet.
+- (void)webStateDidChangeTitle:(web::WebState*)webState;
+
 // Invoked by WebStateObserverBridge::DocumentSubmitted.
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
@@ -95,6 +98,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
       web::PageLoadCompletionStatus load_completion_status) override;
   void InterstitialDismissed() override;
   void LoadProgressChanged(double progress) override;
+  void TitleWasSet() override;
   void DocumentSubmitted(const std::string& form_name,
                          bool user_initiated) override;
   void FormActivityRegistered(const std::string& form_name,

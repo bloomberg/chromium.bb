@@ -10,6 +10,7 @@
 
 #include "base/ios/ios_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/crw_session_controller.h"
@@ -990,6 +991,41 @@ TEST_F(CRWWebControllerWindowOpenTest, BlockPopup) {
   EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
   EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
   EXPECT_FALSE([delegate_ initiatedByUser]);
+};
+
+// Tests page title changes.
+typedef web::WebTestWithWebState CRWWebControllerTitleTest;
+TEST_F(CRWWebControllerTitleTest, TitleChange) {
+  // Observes and waits for TitleWasSet call.
+  class TitleObserver : public web::WebStateObserver {
+   public:
+    explicit TitleObserver(web::WebState* web_state)
+        : web::WebStateObserver(web_state) {}
+    // Returns number of times |TitleWasSet| was called.
+    int title_change_count() { return title_change_count_; }
+    // WebStateObserver overrides:
+    void TitleWasSet() override { title_change_count_++; }
+
+   private:
+    int title_change_count_ = 0;
+  };
+
+  TitleObserver observer(web_state());
+  ASSERT_EQ(0, observer.title_change_count());
+
+  // Expect TitleWasSet callback after the page is loaded.
+  LoadHtml(@"<title>Title1</title>");
+  EXPECT_EQ("Title1", base::UTF16ToUTF8(web_state()->GetTitle()));
+  EXPECT_EQ(1, observer.title_change_count());
+
+  // Expect at least one more TitleWasSet callback after changing title via
+  // JavaScript. On iOS 10 WKWebView fires 3 callbacks after JS excucution
+  // with the following title changes: "Title2", "" and "Title2".
+  // TODO(crbug.com/696104): There should be only 2 calls of TitleWasSet.
+  // Fix expecteation when WKWebView stops sending extra KVO calls.
+  ExecuteJavaScript(@"window.document.title = 'Title2';");
+  EXPECT_EQ("Title2", base::UTF16ToUTF8(web_state()->GetTitle()));
+  EXPECT_GE(observer.title_change_count(), 2);
 };
 
 // Fixture class to test WKWebView crashes.

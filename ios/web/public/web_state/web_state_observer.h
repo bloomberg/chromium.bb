@@ -85,6 +85,9 @@ class WebStateObserver {
   // loaded).
   virtual void LoadProgressChanged(double progress) {}
 
+  // Called when the title of the WebState is set.
+  virtual void TitleWasSet() {}
+
   // Called on form submission. |user_initiated| is true if the user
   // interacted with the page.
   virtual void DocumentSubmitted(const std::string& form_name,

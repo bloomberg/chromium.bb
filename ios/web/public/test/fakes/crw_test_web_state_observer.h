@@ -46,6 +46,11 @@ struct TestChangeLoadingProgressInfo {
   double progress;
 };
 
+// Arguments passed to |webStateDidChangeTitle:|.
+struct TestTitleWasSetInfo {
+  WebState* web_state;
+};
+
 // Arguments passed to |webState:didSubmitDocumentWithFormNamed:userInitiated:|.
 struct TestSubmitDocumentInfo {
   WebState* web_state;
@@ -116,6 +121,8 @@ struct TestStartLoadingInfo {
 // Arguments passed to |webState:didChangeLoadingProgress:|.
 @property(nonatomic, readonly)
     web::TestChangeLoadingProgressInfo* changeLoadingProgressInfo;
+// Arguments passed to |webStateDidChangeTitle:|.
+@property(nonatomic, readonly) web::TestTitleWasSetInfo* titleWasSetInfo;
 // Arguments passed to |webState:didSubmitDocumentWithFormNamed:userInitiated:|.
 @property(nonatomic, readonly) web::TestSubmitDocumentInfo* submitDocumentInfo;
 // Arguments passed to

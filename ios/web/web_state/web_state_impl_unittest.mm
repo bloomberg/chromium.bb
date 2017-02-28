@@ -129,6 +129,7 @@ class TestWebStateObserver : public WebStateObserver {
         page_loaded_called_with_success_(false),
         history_state_changed_called_(false),
         did_finish_navigation_called_(false),
+        title_was_set_called_(false),
         web_state_destroyed_called_(false) {}
 
   // Methods returning true if the corresponding WebStateObserver method has
@@ -154,6 +155,7 @@ class TestWebStateObserver : public WebStateObserver {
   bool did_finish_navigation_called() const {
     return did_finish_navigation_called_;
   }
+  bool title_was_set_called() const { return title_was_set_called_; }
   bool web_state_destroyed_called() const {
     return web_state_destroyed_called_;
   }
@@ -180,6 +182,7 @@ class TestWebStateObserver : public WebStateObserver {
     page_loaded_called_with_success_ =
         load_completion_status == PageLoadCompletionStatus::SUCCESS;
   }
+  void TitleWasSet() override { title_was_set_called_ = true; }
   void WebStateDestroyed() override {
     EXPECT_TRUE(web_state()->IsBeingDestroyed());
     web_state_destroyed_called_ = true;
@@ -193,6 +196,7 @@ class TestWebStateObserver : public WebStateObserver {
   bool page_loaded_called_with_success_;
   bool history_state_changed_called_;
   bool did_finish_navigation_called_;
+  bool title_was_set_called_;
   bool web_state_destroyed_called_;
 };
 
@@ -398,6 +402,11 @@ TEST_F(WebStateTest, ObserverTest) {
   EXPECT_FALSE(observer->did_finish_navigation_called());
   web_state_->OnErrorPageNavigation(GURL("http://test"));
   EXPECT_TRUE(observer->did_finish_navigation_called());
+
+  // Test that OnTitleChanged() is called.
+  EXPECT_FALSE(observer->title_was_set_called());
+  web_state_->OnTitleChanged();
+  EXPECT_TRUE(observer->title_was_set_called());
 
   // Test that WebStateDestroyed() is called.
   EXPECT_FALSE(observer->web_state_destroyed_called());
