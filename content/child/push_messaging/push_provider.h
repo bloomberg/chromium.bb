@@ -77,9 +77,8 @@ class PushProvider : public blink::WebPushProvider,
 
   void DidUnsubscribe(
       std::unique_ptr<blink::WebPushUnsubscribeCallbacks> callbacks,
-      bool is_success,
-      bool did_unsubscribe,
       blink::WebPushError::ErrorType error_type,
+      bool did_unsubscribe,
       const base::Optional<std::string>& error_message);
 
   void DidGetSubscription(
@@ -92,9 +91,8 @@ class PushProvider : public blink::WebPushProvider,
 
   void DidGetPermissionStatus(
       std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks,
-      bool is_success,
-      blink::WebPushPermissionStatus status,
-      blink::WebPushError::ErrorType error);
+      blink::WebPushError::ErrorType error_type,
+      blink::WebPushPermissionStatus status);
 
   mojom::PushMessagingPtr push_messaging_manager_;
 

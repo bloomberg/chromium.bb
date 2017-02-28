@@ -117,6 +117,11 @@ static_assert(blink::WebPushError::ErrorType::ErrorTypeNetwork ==
                       content::mojom::PushErrorType::NETWORK),
               "PushErrorType enums must match, NETWORK");
 
+static_assert(blink::WebPushError::ErrorType::ErrorTypeNone ==
+                  static_cast<blink::WebPushError::ErrorType>(
+                      content::mojom::PushErrorType::NONE),
+              "PushErrorType enums must match, NONE");
+
 static_assert(blink::WebPushError::ErrorType::ErrorTypeNotAllowed ==
                   static_cast<blink::WebPushError::ErrorType>(
                       content::mojom::PushErrorType::NOT_ALLOWED),
@@ -131,11 +136,6 @@ static_assert(blink::WebPushError::ErrorType::ErrorTypeNotSupported ==
                   static_cast<blink::WebPushError::ErrorType>(
                       content::mojom::PushErrorType::NOT_SUPPORTED),
               "PushErrorType enums must match, NOT_SUPPORTED");
-
-static_assert(blink::WebPushError::ErrorType::ErrorTypeUnknown ==
-                  static_cast<blink::WebPushError::ErrorType>(
-                      content::mojom::PushErrorType::UNKNOWN),
-              "PushErrorType enums must match, UNKNOWN");
 
 static_assert(blink::WebPushError::ErrorType::ErrorTypeInvalidState ==
                   static_cast<blink::WebPushError::ErrorType>(
@@ -270,7 +270,7 @@ EnumTraits<content::mojom::PushErrorType, blink::WebPushError::ErrorType>::
   }
 
   NOTREACHED();
-  return content::mojom::PushErrorType::UNKNOWN;
+  return content::mojom::PushErrorType::ABORT;
 }
 
 // static

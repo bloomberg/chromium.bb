@@ -643,21 +643,21 @@ void PushMessagingManager::DidUnregister(
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED:
     case PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR:
     case PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR:
-      callback.Run(true /* success */, true /* did_unsubscribe */,
-                   blink::WebPushError::ErrorTypeUnknown,
+      callback.Run(blink::WebPushError::ErrorTypeNone,
+                   true /* did_unsubscribe */,
                    base::nullopt /* error_message */);
       break;
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
-      callback.Run(true /* success */, false /* did_unsubscribe */,
-                   blink::WebPushError::ErrorTypeUnknown,
+      callback.Run(blink::WebPushError::ErrorTypeNone,
+                   false /* did_unsubscribe */,
                    base::nullopt /* error_message */);
       break;
     case PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER:
     case PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
     case PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR:
-      callback.Run(
-          false /* error */, false, blink::WebPushError::ErrorTypeAbort,
-          std::string(PushUnregistrationStatusToString(unregistration_status)));
+      callback.Run(blink::WebPushError::ErrorTypeAbort, false,
+                   std::string(PushUnregistrationStatusToString(
+                       unregistration_status)) /* error_message */);
       break;
     case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
       NOTREACHED();
@@ -811,8 +811,9 @@ void PushMessagingManager::GetPermissionStatus(
       service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
-    callback.Run(false /* error */, blink::WebPushPermissionStatusDenied,
-                 blink::WebPushError::ErrorTypeAbort);
+    // Return error: ErrorTypeAbort.
+    callback.Run(blink::WebPushError::ErrorTypeAbort,
+                 blink::WebPushPermissionStatusDenied);
     return;
   }
 
@@ -835,9 +836,9 @@ void PushMessagingManager::Core::GetPermissionStatusOnUI(
     if (!user_visible && !push_service->SupportNonVisibleMessages()) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(callback, false /* error */,
-                     blink::WebPushPermissionStatusDenied,
-                     blink::WebPushError::ErrorTypeNotSupported));
+          // Return error: ErrorTypeNotSupported.
+          base::Bind(callback, blink::WebPushError::ErrorTypeNotSupported,
+                     blink::WebPushPermissionStatusDenied));
       return;
     }
     permission_status =
@@ -846,16 +847,17 @@ void PushMessagingManager::Core::GetPermissionStatusOnUI(
     // Return prompt, so the website can't detect incognito mode.
     permission_status = blink::WebPushPermissionStatusPrompt;
   } else {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, false /* error */,
-                                       blink::WebPushPermissionStatusDenied,
-                                       blink::WebPushError::ErrorTypeAbort));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        // Return error: ErrorTypeAbort.
+        base::Bind(callback, blink::WebPushError::ErrorTypeAbort,
+                   blink::WebPushPermissionStatusDenied));
     return;
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(callback, true /* success */, permission_status,
-                 blink::WebPushError::ErrorTypeUnknown));
+      base::Bind(callback, blink::WebPushError::ErrorTypeNone,
+                 permission_status));
 }
 
 // Helper methods on both IO and UI threads, merged from

@@ -79,10 +79,10 @@ enum PushRegistrationStatus {
 enum PushErrorType {
   ABORT = 0,
   NETWORK = 1,
-  NOT_ALLOWED = 2,
-  NOT_FOUND = 3,
-  NOT_SUPPORTED = 4,
-  UNKNOWN = 5,
+  NONE = 2,
+  NOT_ALLOWED = 3,
+  NOT_FOUND = 4,
+  NOT_SUPPORTED = 5,
   INVALID_STATE = 6,
   LAST = INVALID_STATE
 };
@@ -134,12 +134,12 @@ interface PushMessaging {
                array<uint8>? p256dh,
                array<uint8>? auth);
 
-  // It returns |did_unsubscribe| if is_success is true, and returns
-  // |error_type| and |error_message| if is_success is false.
+  // We use the value of |error_type| as a flag. If |error_type| == NONE, it
+  // means no error and returns |did_unsubscribe|. Else, it means there is an
+  // error and returns |error_type| and |error_message|.
   Unsubscribe(int64 service_worker_registration_id)
-             => (bool is_success,
+             => (PushErrorType error_type,
                  bool did_unsubscribe,
-                 PushErrorType error_type,
                  string? error_message);
 
   GetSubscription(int64 service_worker_registration_id)
@@ -149,13 +149,11 @@ interface PushMessaging {
                      array<uint8>? p256dh,
                      array<uint8>? auth);
 
-  // It returns |status| if |is_success| is true and returns |error| if
-  // |is_success| is false.
+  // We use the value of |error_type| as a flag. If |error_type| == NONE, it
+  // means no error and returns |status|. Else, it means there is an error and
+  // returns |error_type|.
   GetPermissionStatus(int64 service_worker_registration_id,
                       bool user_visible)
-                     => (bool is_success,
-                         // |status| is meaningful when (is_success == true)
-                         PushPermissionStatus status,
-                         // |error| is meaningful when (is_success == false)
-                         PushErrorType error);
+                     => (PushErrorType error_type,
+                         PushPermissionStatus status);
 };

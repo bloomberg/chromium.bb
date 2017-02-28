@@ -184,13 +184,13 @@ void PushProvider::unsubscribe(
 
 void PushProvider::DidUnsubscribe(
     std::unique_ptr<blink::WebPushUnsubscribeCallbacks> callbacks,
-    bool is_success,
-    bool did_unsubscribe,
     blink::WebPushError::ErrorType error_type,
+    bool did_unsubscribe,
     const base::Optional<std::string>& error_message) {
   DCHECK(callbacks);
 
-  if (is_success) {
+  // ErrorTypeNone indicates success.
+  if (error_type == blink::WebPushError::ErrorTypeNone) {
     callbacks->onSuccess(did_unsubscribe);
   } else {
     callbacks->onError(blink::WebPushError(
@@ -260,22 +260,21 @@ void PushProvider::getPermissionStatus(
 
 void PushProvider::DidGetPermissionStatus(
     std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks,
-    bool is_success,
-    blink::WebPushPermissionStatus status,
-    blink::WebPushError::ErrorType error) {
+    blink::WebPushError::ErrorType error_type,
+    blink::WebPushPermissionStatus status) {
   DCHECK(callbacks);
-
-  if (is_success) {
+  // ErrorTypeNone indicates success.
+  if (error_type == blink::WebPushError::ErrorTypeNone) {
     callbacks->onSuccess(status);
   } else {
     std::string error_message;
-    if (error == blink::WebPushError::ErrorTypeNotSupported) {
+    if (error_type == blink::WebPushError::ErrorTypeNotSupported) {
       error_message =
           "Push subscriptions that don't enable userVisibleOnly are not "
           "supported.";
     }
-    callbacks->onError(
-        blink::WebPushError(error, blink::WebString::fromUTF8(error_message)));
+    callbacks->onError(blink::WebPushError(
+        error_type, blink::WebString::fromUTF8(error_message)));
   }
 }
 

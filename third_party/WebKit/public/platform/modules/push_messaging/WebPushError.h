@@ -13,10 +13,10 @@ struct WebPushError {
   enum ErrorType {
     ErrorTypeAbort = 0,
     ErrorTypeNetwork,
+    ErrorTypeNone,
     ErrorTypeNotAllowed,
     ErrorTypeNotFound,
     ErrorTypeNotSupported,
-    ErrorTypeUnknown,
     ErrorTypeInvalidState,
     ErrorTypeLast = ErrorTypeInvalidState
   };

@@ -19,14 +19,15 @@ DOMException* PushError::take(ScriptPromiseResolver*,
       return DOMException::create(InvalidStateError, webError.message);
     case WebPushError::ErrorTypeNetwork:
       return DOMException::create(NetworkError, webError.message);
+    case WebPushError::ErrorTypeNone:
+      NOTREACHED();
+      return DOMException::create(UnknownError, webError.message);
     case WebPushError::ErrorTypeNotAllowed:
       return DOMException::create(NotAllowedError, webError.message);
     case WebPushError::ErrorTypeNotFound:
       return DOMException::create(NotFoundError, webError.message);
     case WebPushError::ErrorTypeNotSupported:
       return DOMException::create(NotSupportedError, webError.message);
-    case WebPushError::ErrorTypeUnknown:
-      return DOMException::create(UnknownError, webError.message);
   }
   NOTREACHED();
   return DOMException::create(UnknownError);
