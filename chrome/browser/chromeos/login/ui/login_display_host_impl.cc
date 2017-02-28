@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
@@ -46,7 +47,6 @@
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/login/ui/keyboard_driven_oobe_key_handler.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -101,6 +101,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -297,6 +298,29 @@ namespace chromeos {
 
 // static
 const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
+
+// A class to handle special menu key for keyboard driven OOBE.
+class LoginDisplayHostImpl::KeyboardDrivenOobeKeyHandler
+    : public ui::EventHandler {
+ public:
+  KeyboardDrivenOobeKeyHandler() {
+    ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  }
+  ~KeyboardDrivenOobeKeyHandler() override {
+    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  }
+
+ private:
+  // ui::EventHandler
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    if (event->key_code() == ui::VKEY_F6) {
+      ash::Shell::GetInstance()->GetPrimarySystemTray()->CloseSystemBubble();
+      event->StopPropagation();
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenOobeKeyHandler);
+};
 
 // A login implementation of WidgetDelegate.
 class LoginDisplayHostImpl::LoginWidgetDelegate : public views::WidgetDelegate {

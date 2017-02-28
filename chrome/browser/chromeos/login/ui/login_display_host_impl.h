@@ -42,7 +42,6 @@ namespace chromeos {
 class ArcKioskController;
 class DemoAppLauncher;
 class FocusRingController;
-class KeyboardDrivenOobeKeyHandler;
 class WebUILoginDisplay;
 class WebUILoginView;
 
@@ -106,6 +105,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   static void DisableRestrictiveProxyCheckForTest();
 
  protected:
+  class KeyboardDrivenOobeKeyHandler;
+
   // content::NotificationObserver implementation:
   void Observe(int type,
                const content::NotificationSource& source,

@@ -903,8 +903,6 @@ source_set("chromeos") {
     "login/ui/captive_portal_window_proxy.h",
     "login/ui/input_events_blocker.cc",
     "login/ui/input_events_blocker.h",
-    "login/ui/keyboard_driven_oobe_key_handler.cc",
-    "login/ui/keyboard_driven_oobe_key_handler.h",
     "login/ui/lock_window.cc",
     "login/ui/lock_window.h",
     "login/ui/login_display.cc",
