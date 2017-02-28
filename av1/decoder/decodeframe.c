@@ -539,7 +539,7 @@ static void predict_and_reconstruct_intra_block(
   }
 }
 
-#if CONFIG_VAR_TX
+#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
 static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                   aom_reader *r, MB_MODE_INFO *const mbmi,
                                   int plane, BLOCK_SIZE plane_bsize,
@@ -597,7 +597,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 }
 #endif  // CONFIG_VAR_TX
 
-#if !CONFIG_VAR_TX || CONFIG_SUPERTX || \
+#if !CONFIG_VAR_TX || CONFIG_SUPERTX || CONFIG_COEF_INTERLEAVE || \
     (!CONFIG_VAR_TX && CONFIG_EXT_TX && CONFIG_RECT_TX)
 static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                    aom_reader *const r, int segment_id,

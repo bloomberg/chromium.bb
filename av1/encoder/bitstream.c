@@ -961,7 +961,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 }
 #endif
 #endif  // !CONFIG_PVG
-#if CONFIG_VAR_TX
+#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
 static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                             const TOKENEXTRA *const tok_end, MACROBLOCKD *xd,
                             MB_MODE_INFO *mbmi, int plane,
