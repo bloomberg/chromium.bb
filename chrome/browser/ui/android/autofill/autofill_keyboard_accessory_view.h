@@ -52,6 +52,8 @@ class AutofillKeyboardAccessoryView : public AutofillPopupView {
   void Hide() override;
   void InvalidateRow(size_t row) override;
   void UpdateBoundsAndRedrawPopup() override;
+  void NotifyAccessibilityEventForRow(ui::AXEvent event_type,
+                                      size_t row) override {}
 
  private:
   ~AutofillKeyboardAccessoryView() override;

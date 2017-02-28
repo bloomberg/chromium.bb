@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
+#include "ui/accessibility/ax_enums.h"
 
 namespace autofill {
 
@@ -29,6 +30,10 @@ class AutofillPopupView {
 
   // Refreshes the position of the popup.
   virtual void UpdateBoundsAndRedrawPopup() = 0;
+
+  // Notifies given accessibility event for the given row.
+  virtual void NotifyAccessibilityEventForRow(ui::AXEvent event_type,
+                                              size_t row) = 0;
 
   // Factory function for creating the view.
   static AutofillPopupView* Create(AutofillPopupController* controller);

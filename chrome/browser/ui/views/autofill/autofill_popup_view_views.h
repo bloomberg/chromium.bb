@@ -19,6 +19,7 @@ class AutofillPopupController;
 class AutofillPopupViewViews : public AutofillPopupBaseView,
                                public AutofillPopupView {
  public:
+  // |controller| should not be null.
   AutofillPopupViewViews(AutofillPopupController* controller,
                          views::Widget* parent_widget);
 
@@ -30,9 +31,12 @@ class AutofillPopupViewViews : public AutofillPopupBaseView,
   void Hide() override;
   void InvalidateRow(size_t row) override;
   void UpdateBoundsAndRedrawPopup() override;
+  void NotifyAccessibilityEventForRow(ui::AXEvent event_type,
+                                      size_t row) override;
 
   // views::Views implementation
   void OnPaint(gfx::Canvas* canvas) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Draw the given autofill entry in |entry_rect|.
   void DrawAutofillEntry(gfx::Canvas* canvas,
