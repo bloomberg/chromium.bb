@@ -541,12 +541,8 @@ base::FilePath GetTestPath(const std::string& file_name) {
 
 page_load_metrics::PageLoadExtraInfo GenericPageLoadExtraInfo(
     const GURL& dest_url) {
-  return page_load_metrics::PageLoadExtraInfo(
-      base::TimeDelta(), base::TimeDelta(), false,
-      page_load_metrics::UserInitiatedInfo::BrowserInitiated(), dest_url,
-      dest_url, true /* did_commit */, page_load_metrics::END_NONE,
-      page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
-      base::TimeDelta(), page_load_metrics::PageLoadMetadata());
+  return page_load_metrics::PageLoadExtraInfo::CreateForTesting(
+      dest_url, false /* started_in_foreground */);
 }
 
 }  // namespace

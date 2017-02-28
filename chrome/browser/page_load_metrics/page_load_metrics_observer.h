@@ -119,6 +119,10 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& page_end_time,
       const PageLoadMetadata& metadata);
 
+  // Simplified version of the constructor, intended for use in tests.
+  static PageLoadExtraInfo CreateForTesting(const GURL& url,
+                                            bool started_in_foreground);
+
   PageLoadExtraInfo(const PageLoadExtraInfo& other);
 
   ~PageLoadExtraInfo();

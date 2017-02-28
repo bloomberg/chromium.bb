@@ -34,6 +34,20 @@ PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;
 
 PageLoadExtraInfo::~PageLoadExtraInfo() {}
 
+// static
+PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
+    const GURL& url,
+    bool started_in_foreground) {
+  return PageLoadExtraInfo(
+      base::Optional<base::TimeDelta>() /* first_background_time */,
+      base::Optional<base::TimeDelta>() /* first_foreground_time */,
+      started_in_foreground /* started_in_foreground */,
+      UserInitiatedInfo::BrowserInitiated(), url, url, true /* did_commit */,
+      page_load_metrics::END_NONE,
+      page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
+      base::TimeDelta(), page_load_metrics::PageLoadMetadata());
+}
+
 ExtraRequestInfo::ExtraRequestInfo(bool was_cached,
                                    int64_t raw_body_bytes,
                                    bool data_reduction_proxy_used,
