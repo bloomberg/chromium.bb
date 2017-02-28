@@ -13,10 +13,38 @@
 #include "components/search_engines/template_url_parser.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+
+namespace {
+
+// Traffic annotation for RequestDelegate.
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("open_search", R"(
+      semantics {
+        sender: "Omnibox"
+        description:
+          "Web pages can include an OpenSearch description doc in their HTML. "
+          "In this case Chromium downloads and parses the file. The "
+          "corresponding search engine is added to the list in the browser "
+          "settings (chrome://settings/searchEngines)."
+        trigger:
+          "User visits a web page containing a <link rel="search"> tag."
+        data: "None"
+        destination: WEBSITE
+      }
+      policy {
+        cookies_allowed: false
+        setting: "This feature cannot be disabled in settings."
+        policy_exception_justification:
+          "Not implemented, considered not useful as this feature does not "
+          "upload any data."
+      })");
+
+}  // namespace
 
 // RequestDelegate ------------------------------------------------------------
 class TemplateURLFetcher::RequestDelegate : public net::URLFetcherDelegate {
@@ -61,8 +89,10 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     const GURL& osdd_url,
     const GURL& favicon_url,
     const URLFetcherCustomizeCallback& url_fetcher_customize_callback)
-    : url_fetcher_(
-          net::URLFetcher::Create(osdd_url, net::URLFetcher::GET, this)),
+    : url_fetcher_(net::URLFetcher::Create(osdd_url,
+                                           net::URLFetcher::GET,
+                                           this,
+                                           kTrafficAnnotation)),
       fetcher_(fetcher),
       keyword_(keyword),
       osdd_url_(osdd_url),
