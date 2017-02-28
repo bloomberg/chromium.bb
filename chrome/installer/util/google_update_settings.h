@@ -311,12 +311,11 @@ class GoogleUpdateSettings {
 
   // Returns product data for Google Update.  (Equivalent to calling
   // GetUpdateDetailForAppGuid with the app guid for Google Update itself.)
-  static bool GetUpdateDetailForGoogleUpdate(bool system_install,
-                                             ProductData* data);
+  static bool GetUpdateDetailForGoogleUpdate(ProductData* data);
 
   // Returns product data for the current product. (Equivalent to calling
   // GetUpdateDetailForApp with the app guid stored in BrowserDistribution.)
-  static bool GetUpdateDetail(bool system_install, ProductData* data);
+  static bool GetUpdateDetail(ProductData* data);
 
   // Sets |experiment_labels| as the Google Update experiment_labels value in
   // the ClientState key for this Chrome product, if appropriate. If

@@ -837,17 +837,14 @@ bool GoogleUpdateSettings::GetUpdateDetailForApp(bool system_install,
   return product_found;
 }
 
-bool GoogleUpdateSettings::GetUpdateDetailForGoogleUpdate(bool system_install,
-                                                          ProductData* data) {
-  return GetUpdateDetailForApp(system_install,
-                               google_update::kGoogleUpdateUpgradeCode,
-                               data);
+bool GoogleUpdateSettings::GetUpdateDetailForGoogleUpdate(ProductData* data) {
+  return GetUpdateDetailForApp(!InstallUtil::IsPerUserInstall(),
+                               google_update::kGoogleUpdateUpgradeCode, data);
 }
 
-bool GoogleUpdateSettings::GetUpdateDetail(bool system_install,
-                                           ProductData* data) {
-  return GetUpdateDetailForApp(system_install, install_static::GetAppGuid(),
-                               data);
+bool GoogleUpdateSettings::GetUpdateDetail(ProductData* data) {
+  return GetUpdateDetailForApp(!InstallUtil::IsPerUserInstall(),
+                               install_static::GetAppGuid(), data);
 }
 
 bool GoogleUpdateSettings::SetExperimentLabels(

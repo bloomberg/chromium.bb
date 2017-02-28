@@ -118,11 +118,8 @@ GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataBlocking() {
   google_update_metrics.last_checked =
       GoogleUpdateSettings::GetGoogleUpdateLastChecked(is_system_install);
   GoogleUpdateSettings::GetUpdateDetailForGoogleUpdate(
-      is_system_install,
       &google_update_metrics.google_update_data);
-  GoogleUpdateSettings::GetUpdateDetail(
-      is_system_install,
-      &google_update_metrics.product_data);
+  GoogleUpdateSettings::GetUpdateDetail(&google_update_metrics.product_data);
   return google_update_metrics;
 }
 
