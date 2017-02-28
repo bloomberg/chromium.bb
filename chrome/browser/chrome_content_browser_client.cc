@@ -3178,7 +3178,8 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));
   }
 #else
-  if (AreExperimentalWebPlatformFeaturesEnabled()) {
+  if (AreExperimentalWebPlatformFeaturesEnabled() &&
+      base::FeatureList::IsEnabled(features::kWebPayments)) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
     if (web_contents) {

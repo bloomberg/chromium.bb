@@ -2067,6 +2067,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-framebusting-needs-sameorigin-or-usergesture",
      IDS_FLAGS_FRAMEBUSTING_NAME, IDS_FLAGS_FRAMEBUSTING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kFramebustingNeedsSameOriginOrUserGesture)},
+    {"web-payments", IDS_FLAGS_WEB_PAYMENTS_NAME,
+     IDS_FLAGS_WEB_PAYMENTS_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebPayments)},
 #if defined(OS_ANDROID)
     {"enable-android-pay-integration-v1",
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_NAME,

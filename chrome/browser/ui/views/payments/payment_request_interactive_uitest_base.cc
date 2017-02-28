@@ -26,6 +26,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -50,6 +51,8 @@ void PaymentRequestInteractiveTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   InProcessBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+  command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                  features::kWebPayments.name);
 }
 
 void PaymentRequestInteractiveTestBase::SetUpOnMainThread() {
