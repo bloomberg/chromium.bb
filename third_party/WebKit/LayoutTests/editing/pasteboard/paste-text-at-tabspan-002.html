@@ -1,29 +1,33 @@
-<!DOCTYPE html>
-<html>
-<body style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space; ">
-<div contenteditable id="root" style="border: 2px solid red; padding: 12px; font-size: 24px">
-<span id="test">a<span class="Apple-tab-span" style="white-space:pre">			</span>z</span>
-</div>
-<script src="../editing.js"></script>
-<script src="../../resources/dump-as-markup.js"></script>
+<!doctype html>
+<head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+test(() => {
+  assert_not_equals(window.internals, undefined,
+                    'This test requires clipboard access');
 
-var test = document.getElementById('test');
-test.focus();
-window.getSelection().collapse(test, 0);
-
-if (window.testRunner)
-    testRunner.dumpEditingCallbacks();
-
-extendSelectionForwardByCharacterCommand();
-copyCommand();
-for (i = 0; i < 2; i++)
-	moveSelectionForwardByCharacterCommand();
-pasteCommand();
-typeCharacterCommand();
-
-Markup.dump('root', 'You should see a\\tax\\t\\tz below');
-
+  assert_selection(
+    [
+      '<div contenteditable>',
+        'a',
+        '<span class="Apple-tab-span" style="white-space:pre">	|		</span>',
+        'z',
+      '</div>'
+    ].join(''),
+    selection => {
+      selection.setClipboardData('a');
+      selection.document.execCommand('paste');
+    },
+    [
+      '<div contenteditable>',
+        'a',
+        '<span class="Apple-tab-span" style="white-space:pre">	</span>',
+        'a|',
+        '<span class="Apple-tab-span" style="white-space:pre">		</span>',
+        'z',
+      '</div>'
+    ].join(''));
+}, 'Paste text in tabspan');
 </script>
-</body>
-</html>
