@@ -51,9 +51,14 @@ class PickledStructBlink {
     bar_ = bar;
   }
 
+  // The |baz| field should never be serialized.
+  int baz() const { return baz_; }
+  void set_baz(int baz) { baz_ = baz; }
+
  private:
   int foo_ = 0;
   int bar_ = 0;
+  int baz_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PickledStructBlink);
 };

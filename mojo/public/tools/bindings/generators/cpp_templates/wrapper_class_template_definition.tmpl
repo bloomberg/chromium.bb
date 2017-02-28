@@ -1,12 +1,11 @@
 template <typename StructPtrType>
 {{struct.name}}Ptr {{struct.name}}::Clone() const {
-  // Use StructPtrType to prevent the compiler from trying to compile this
-  // without being asked.
-  StructPtrType rv(New());
+  return New(
 {%- for field in struct.fields %}
-  rv->{{field.name}} = mojo::Clone({{field.name}});
+      mojo::Clone({{field.name}})
+{%-   if not loop.last -%},{%- endif %}
 {%- endfor %}
-  return rv;
+  );
 }
 
 template <typename T,

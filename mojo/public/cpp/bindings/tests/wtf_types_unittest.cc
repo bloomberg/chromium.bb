@@ -158,9 +158,7 @@ TEST_F(WTFTypesTest, Serialization_WTFVectorToStlVector) {
 }
 
 TEST_F(WTFTypesTest, Serialization_PublicAPI) {
-  blink::TestWTFStructPtr input(blink::TestWTFStruct::New());
-  input->str = kHelloWorld;
-  input->integer = 42;
+  blink::TestWTFStructPtr input(blink::TestWTFStruct::New(kHelloWorld, 42));
 
   blink::TestWTFStructPtr cloned_input = input.Clone();
 

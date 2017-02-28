@@ -13,26 +13,14 @@ namespace {
 
 using WTFHashTest = testing::Test;
 
-static blink::ContainsOtherPtr MakeContainsOther(uint64_t other) {
-  blink::ContainsOtherPtr ptr = blink::ContainsOther::New();
-  ptr->other = other;
-  return ptr;
-}
-
-static blink::SimpleNestedStructPtr MakeSimpleNestedStruct(
-    blink::ContainsOtherPtr nested) {
-  blink::SimpleNestedStructPtr ptr = blink::SimpleNestedStruct::New();
-  ptr->nested = std::move(nested);
-  return ptr;
-}
-
 TEST_F(WTFHashTest, NestedStruct) {
   // Just check that this template instantiation compiles.
-  ASSERT_EQ(
-      ::mojo::internal::Hash(::mojo::internal::kHashSeed,
-                             MakeSimpleNestedStruct(MakeContainsOther(1))),
-      ::mojo::internal::Hash(::mojo::internal::kHashSeed,
-                             MakeSimpleNestedStruct(MakeContainsOther(1))));
+  ASSERT_EQ(::mojo::internal::Hash(
+                ::mojo::internal::kHashSeed,
+                blink::SimpleNestedStruct::New(blink::ContainsOther::New(1))),
+            ::mojo::internal::Hash(
+                ::mojo::internal::kHashSeed,
+                blink::SimpleNestedStruct::New(blink::ContainsOther::New(1))));
 }
 
 TEST_F(WTFHashTest, UnmappedNativeStruct) {

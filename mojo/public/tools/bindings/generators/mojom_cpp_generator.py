@@ -482,6 +482,58 @@ def ShouldInlineUnion(union):
       mojom.IsReferenceKind(field.kind) and not mojom.IsStringKind(field.kind)
            for field in union.fields)
 
+
+class StructConstructor(object):
+  """Represents a constructor for a generated struct.
+
+  Fields:
+    fields: {[Field]} All struct fields in order.
+    params: {[Field]} The fields that are passed as params.
+  """
+
+  def __init__(self, fields, params):
+    self._fields = fields
+    self._params = set(params)
+
+  @property
+  def params(self):
+    return [field for field in self._fields if field in self._params]
+
+  @property
+  def fields(self):
+    for field in self._fields:
+      yield (field, field in self._params)
+
+
+def GetStructConstructors(struct):
+  """Returns a list of constructors for a struct.
+
+  Params:
+    struct: {Struct} The struct to return constructors for.
+
+  Returns:
+    {[StructConstructor]} A list of StructConstructors that should be generated
+    for |struct|.
+  """
+  if not mojom.IsStructKind(struct):
+    raise TypeError
+  # Types that are neither copyable nor movable can't be passed to a struct
+  # constructor so only generate a default constructor.
+  if any(IsTypemappedKind(field.kind) and _current_typemap[
+      GetFullMojomNameForKind(field.kind)]["non_copyable_non_movable"]
+         for field in struct.fields):
+    return [StructConstructor(struct.fields, [])]
+
+  param_counts = [0]
+  for version in struct.versions:
+    if param_counts[-1] != version.num_fields:
+      param_counts.append(version.num_fields)
+
+  ordinal_fields = sorted(struct.fields, key=lambda field: field.ordinal)
+  return (StructConstructor(struct.fields, ordinal_fields[:param_count])
+          for param_count in param_counts)
+
+
 def GetContainerValidateParamsCtorArgs(kind):
   if mojom.IsStringKind(kind):
     expected_num_elements = 0
@@ -572,6 +624,7 @@ class Generator(generator.Generator):
     "is_typemapped_kind": IsTypemappedKind,
     "is_union_kind": mojom.IsUnionKind,
     "passes_associated_kinds": mojom.PassesAssociatedKinds,
+    "struct_constructors": GetStructConstructors,
     "stylize_method": generator.StudlyCapsToCamel,
     "under_to_camel": generator.UnderToCamel,
     "unmapped_type_for_serializer": GetUnmappedTypeForSerializer,

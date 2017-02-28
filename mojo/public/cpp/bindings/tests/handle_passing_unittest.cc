@@ -95,9 +95,7 @@ class SampleFactoryImpl : public sample::Factory {
       EXPECT_TRUE(WriteTextMessage(pipe1_.get(), text2));
     }
 
-    sample::ResponsePtr response(sample::Response::New());
-    response->x = 2;
-    response->pipe = std::move(pipe0);
+    sample::ResponsePtr response(sample::Response::New(2, std::move(pipe0)));
     callback.Run(std::move(response), text1);
 
     if (request->obj)
@@ -214,10 +212,8 @@ TEST_F(HandlePassingTest, Basic) {
   ImportedInterfaceImpl imported_impl(MakeRequest(&imported),
                                       run_loop.QuitClosure());
 
-  sample::RequestPtr request(sample::Request::New());
-  request->x = 1;
-  request->pipe = std::move(pipe1.handle0);
-  request->obj = std::move(imported);
+  sample::RequestPtr request(sample::Request::New(
+      1, std::move(pipe1.handle0), base::nullopt, std::move(imported)));
   bool got_response = false;
   std::string got_text_reply;
   base::RunLoop run_loop2;
@@ -240,8 +236,9 @@ TEST_F(HandlePassingTest, PassInvalid) {
   sample::FactoryPtr factory;
   SampleFactoryImpl factory_impl(MakeRequest(&factory));
 
-  sample::RequestPtr request(sample::Request::New());
-  request->x = 1;
+  sample::RequestPtr request(
+      sample::Request::New(1, ScopedMessagePipeHandle(), base::nullopt,
+                           imported::ImportedInterfacePtr()));
   bool got_response = false;
   std::string got_text_reply;
   base::RunLoop run_loop;

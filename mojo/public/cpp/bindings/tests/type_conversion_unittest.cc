@@ -44,12 +44,8 @@ bool AreEqualRectArrays(const std::vector<test::RectPtr>& rects1,
 template <>
 struct TypeConverter<test::RectPtr, RedmondRect> {
   static test::RectPtr Convert(const RedmondRect& input) {
-    test::RectPtr rect(test::Rect::New());
-    rect->x = input.left;
-    rect->y = input.top;
-    rect->width = input.right - input.left;
-    rect->height = input.bottom - input.top;
-    return rect;
+    return test::Rect::New(input.left, input.top, input.right - input.left,
+                           input.bottom - input.top);
   }
 };
 
@@ -68,10 +64,8 @@ struct TypeConverter<RedmondRect, test::RectPtr> {
 template <>
 struct TypeConverter<test::NamedRegionPtr, RedmondNamedRegion> {
   static test::NamedRegionPtr Convert(const RedmondNamedRegion& input) {
-    test::NamedRegionPtr region(test::NamedRegion::New());
-    region->name.emplace(input.name);
-    region->rects = ConvertTo<std::vector<test::RectPtr>>(input.rects);
-    return region;
+    return test::NamedRegion::New(
+        input.name, ConvertTo<std::vector<test::RectPtr>>(input.rects));
   }
 };
 
@@ -94,11 +88,7 @@ namespace test {
 namespace {
 
 TEST(TypeConversionTest, CustomTypeConverter) {
-  RectPtr rect(Rect::New());
-  rect->x = 10;
-  rect->y = 20;
-  rect->width = 50;
-  rect->height = 45;
+  RectPtr rect(Rect::New(10, 20, 50, 45));
 
   RedmondRect rr = rect.To<RedmondRect>();
   EXPECT_EQ(10, rr.left);

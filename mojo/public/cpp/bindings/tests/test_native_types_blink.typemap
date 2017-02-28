@@ -13,5 +13,5 @@ deps = [
 
 type_mappings = [
   "mojo.test.PickledEnum=mojo::test::PickledEnumBlink",
-  "mojo.test.PickledStruct=mojo::test::PickledStructBlink"
+  "mojo.test.PickledStruct=mojo::test::PickledStructBlink[move_only]",
 ]

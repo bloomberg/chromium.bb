@@ -13,7 +13,12 @@ class {{export_attribute}} {{struct.name}} {
   static {{constant|format_constant_declaration(nested=True)}};
 {%- endfor %}
 
-  static {{struct.name}}Ptr New();
+  template <typename... Args>
+  static {{struct.name}}Ptr New(Args&&... args) {
+    return {{struct.name}}Ptr(
+        base::in_place,
+        std::forward<Args>(args)...);
+  }
 
   template <typename U>
   static {{struct.name}}Ptr From(const U& u) {
@@ -25,7 +30,15 @@ class {{export_attribute}} {{struct.name}} {
     return mojo::TypeConverter<U, {{struct.name}}>::Convert(*this);
   }
 
-  {{struct.name}}();
+{% for constructor in struct|struct_constructors %}
+  {% if constructor.params|length == 1 %}explicit {% endif %}{{struct.name}}(
+{%-   for field in constructor.params %}
+{%-     set type = field.kind|cpp_wrapper_param_type %}
+{%-     set name = field.name %}
+      {{type}} {{name}}
+{%-     if not loop.last -%},{%- endif %}
+{%-   endfor %});
+{% endfor %}
   ~{{struct.name}}();
 
   // Clone() is a template so it is only instantiated if it is used. Thus, the

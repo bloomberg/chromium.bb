@@ -19,7 +19,7 @@ sources = [
 
 type_mappings = [
   "mojo.common.mojom.DictionaryValue=std::unique_ptr<base::DictionaryValue>[move_only,nullable_is_same_type]",
-  "mojo.common.mojom.LegacyListValue=base::ListValue",
+  "mojo.common.mojom.LegacyListValue=base::ListValue[non_copyable_non_movable]",
   "mojo.common.mojom.ListValue=std::unique_ptr<base::ListValue>[move_only,nullable_is_same_type]",
   "mojo.common.mojom.Value=std::unique_ptr<base::Value>[move_only,nullable_is_same_type]",
 ]

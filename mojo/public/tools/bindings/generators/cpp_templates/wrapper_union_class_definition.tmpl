@@ -1,8 +1,6 @@
 // static
 {{union.name}}Ptr {{union.name}}::New() {
-  {{union.name}}Ptr rv;
-  mojo::internal::StructHelper<{{union.name}}>::Initialize(&rv);
-  return rv;
+  return {{union.name}}Ptr(base::in_place);
 }
 
 {{union.name}}::{{union.name}}() {

@@ -24,28 +24,25 @@ namespace test {
 namespace {
 
 template <typename T>
-void DoExpectResult(int foo,
-                    int bar,
-                    const base::Closure& callback,
-                    const T& actual) {
+void DoExpectResult(int foo, int bar, const base::Closure& callback, T actual) {
   EXPECT_EQ(foo, actual.foo());
   EXPECT_EQ(bar, actual.bar());
   callback.Run();
 }
 
 template <typename T>
-base::Callback<void(const T&)> ExpectResult(const T& t,
-                                            const base::Closure& callback) {
+base::Callback<void(T)> ExpectResult(const T& t,
+                                     const base::Closure& callback) {
   return base::Bind(&DoExpectResult<T>, t.foo(), t.bar(), callback);
 }
 
 template <typename T>
-void DoFail(const std::string& reason, const T&) {
+void DoFail(const std::string& reason, T) {
   EXPECT_TRUE(false) << reason;
 }
 
 template <typename T>
-base::Callback<void(const T&)> Fail(const std::string& reason) {
+base::Callback<void(T)> Fail(const std::string& reason) {
   return base::Bind(&DoFail<T>, reason);
 }
 
@@ -89,9 +86,9 @@ class ChromiumPicklePasserImpl : public PicklePasser {
   ChromiumPicklePasserImpl() {}
 
   // mojo::test::PicklePasser:
-  void PassPickledStruct(const PickledStructChromium& pickle,
+  void PassPickledStruct(PickledStructChromium pickle,
                          const PassPickledStructCallback& callback) override {
-    callback.Run(pickle);
+    callback.Run(std::move(pickle));
   }
 
   void PassPickledEnum(PickledEnumChromium pickle,
@@ -105,15 +102,15 @@ class ChromiumPicklePasserImpl : public PicklePasser {
     callback.Run(std::move(container));
   }
 
-  void PassPickles(const std::vector<PickledStructChromium>& pickles,
+  void PassPickles(std::vector<PickledStructChromium> pickles,
                    const PassPicklesCallback& callback) override {
-    callback.Run(pickles);
+    callback.Run(std::move(pickles));
   }
 
   void PassPickleArrays(
-      const std::vector<std::vector<PickledStructChromium>>& pickle_arrays,
+      std::vector<std::vector<PickledStructChromium>> pickle_arrays,
       const PassPickleArraysCallback& callback) override {
-    callback.Run(pickle_arrays);
+    callback.Run(std::move(pickle_arrays));
   }
 };
 
@@ -123,9 +120,9 @@ class BlinkPicklePasserImpl : public blink::PicklePasser {
   BlinkPicklePasserImpl() {}
 
   // mojo::test::blink::PicklePasser:
-  void PassPickledStruct(const PickledStructBlink& pickle,
+  void PassPickledStruct(PickledStructBlink pickle,
                          const PassPickledStructCallback& callback) override {
-    callback.Run(pickle);
+    callback.Run(std::move(pickle));
   }
 
   void PassPickledEnum(PickledEnumBlink pickle,
@@ -139,15 +136,15 @@ class BlinkPicklePasserImpl : public blink::PicklePasser {
     callback.Run(std::move(container));
   }
 
-  void PassPickles(const WTF::Vector<PickledStructBlink>& pickles,
+  void PassPickles(WTF::Vector<PickledStructBlink> pickles,
                    const PassPicklesCallback& callback) override {
-    callback.Run(pickles);
+    callback.Run(std::move(pickles));
   }
 
   void PassPickleArrays(
-      const WTF::Vector<WTF::Vector<PickledStructBlink>>& pickle_arrays,
+      WTF::Vector<WTF::Vector<PickledStructBlink>> pickle_arrays,
       const PassPickleArraysCallback& callback) override {
-    callback.Run(pickle_arrays);
+    callback.Run(std::move(pickle_arrays));
   }
 };
 
@@ -314,19 +311,18 @@ TEST_F(PickleTest, PickleArray) {
     // deserialized intact. This ensures that the ParamTraits are actually used
     // rather than doing a byte-for-byte copy of the element data, beacuse the
     // |baz| field should never be serialized.
-    proxy->PassPickles(
-        std::move(pickles),
-        BindSimpleLambda<const std::vector<PickledStructChromium>&>(
-            [&](const std::vector<PickledStructChromium>& passed) {
-              ASSERT_EQ(2u, passed.size());
-              EXPECT_EQ(1, passed[0].foo());
-              EXPECT_EQ(2, passed[0].bar());
-              EXPECT_EQ(0, passed[0].baz());
-              EXPECT_EQ(3, passed[1].foo());
-              EXPECT_EQ(4, passed[1].bar());
-              EXPECT_EQ(0, passed[1].baz());
-              run_loop.Quit();
-            }));
+    proxy->PassPickles(std::move(pickles),
+                       BindSimpleLambda<std::vector<PickledStructChromium>>(
+                           [&](std::vector<PickledStructChromium> passed) {
+                             ASSERT_EQ(2u, passed.size());
+                             EXPECT_EQ(1, passed[0].foo());
+                             EXPECT_EQ(2, passed[0].bar());
+                             EXPECT_EQ(0, passed[0].baz());
+                             EXPECT_EQ(3, passed[1].foo());
+                             EXPECT_EQ(4, passed[1].bar());
+                             EXPECT_EQ(0, passed[1].baz());
+                             run_loop.Quit();
+                           }));
     run_loop.Run();
   }
 }
@@ -353,10 +349,9 @@ TEST_F(PickleTest, PickleArrayArray) {
     base::RunLoop run_loop;
     // Verify that the array-of-arrays serializes and deserializes properly.
     proxy->PassPickleArrays(
-        pickle_arrays,
-        BindSimpleLambda<
-            const std::vector<std::vector<PickledStructChromium>>&>(
-            [&](const std::vector<std::vector<PickledStructChromium>>& passed) {
+        std::move(pickle_arrays),
+        BindSimpleLambda<std::vector<std::vector<PickledStructChromium>>>(
+            [&](std::vector<std::vector<PickledStructChromium>> passed) {
               ASSERT_EQ(2u, passed.size());
               ASSERT_EQ(2u, passed[0].size());
               ASSERT_EQ(2u, passed[1].size());

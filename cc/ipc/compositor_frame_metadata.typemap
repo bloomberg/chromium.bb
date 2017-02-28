@@ -8,5 +8,4 @@ traits_headers = [ "//cc/ipc/compositor_frame_metadata_struct_traits.h" ]
 sources = [
   "compositor_frame_metadata_struct_traits.cc",
 ]
-type_mappings =
-    [ "cc.mojom.CompositorFrameMetadata=cc::CompositorFrameMetadata" ]
+type_mappings = [ "cc.mojom.CompositorFrameMetadata=cc::CompositorFrameMetadata[move_only]" ]

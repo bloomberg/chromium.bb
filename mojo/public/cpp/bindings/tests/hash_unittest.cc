@@ -13,25 +13,13 @@ namespace {
 
 using HashTest = testing::Test;
 
-static ContainsOtherPtr MakeContainsOther(uint64_t other) {
-  ContainsOtherPtr ptr = ContainsOther::New();
-  ptr->other = other;
-  return ptr;
-}
-
-static SimpleNestedStructPtr MakeSimpleNestedStruct(ContainsOtherPtr nested) {
-  SimpleNestedStructPtr ptr = SimpleNestedStruct::New();
-  ptr->nested = std::move(nested);
-  return ptr;
-}
-
 TEST_F(HashTest, NestedStruct) {
   // Just check that this template instantiation compiles.
   ASSERT_EQ(
       ::mojo::internal::Hash(::mojo::internal::kHashSeed,
-                             MakeSimpleNestedStruct(MakeContainsOther(1))),
+                             SimpleNestedStruct::New(ContainsOther::New(1))),
       ::mojo::internal::Hash(::mojo::internal::kHashSeed,
-                             MakeSimpleNestedStruct(MakeContainsOther(1))));
+                             SimpleNestedStruct::New(ContainsOther::New(1))));
 }
 
 TEST_F(HashTest, UnmappedNativeStruct) {

@@ -48,9 +48,9 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   void EchoCompositorFrameMetadata(
-      const CompositorFrameMetadata& c,
+      CompositorFrameMetadata c,
       const EchoCompositorFrameMetadataCallback& callback) override {
-    callback.Run(c);
+    callback.Run(std::move(c));
   }
 
   void EchoCopyOutputRequest(
@@ -357,7 +357,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   CompositorFrameMetadata output;
-  proxy->EchoCompositorFrameMetadata(input, &output);
+  proxy->EchoCompositorFrameMetadata(std::move(input), &output);
   EXPECT_EQ(device_scale_factor, output.device_scale_factor);
   EXPECT_EQ(root_scroll_offset, output.root_scroll_offset);
   EXPECT_EQ(page_scale_factor, output.page_scale_factor);

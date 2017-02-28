@@ -14,12 +14,7 @@ namespace test {
 namespace {
 
 RectPtr CreateRect() {
-  RectPtr r = Rect::New();
-  r->x = 1;
-  r->y = 2;
-  r->width = 3;
-  r->height = 4;
-  return r;
+  return Rect::New(1, 2, 3, 4);
 }
 
 using EqualsTest = testing::Test;
@@ -48,9 +43,7 @@ TEST_F(EqualsTest, Struct) {
 }
 
 TEST_F(EqualsTest, StructNested) {
-  RectPairPtr p1(RectPair::New());
-  p1->first = CreateRect();
-  p1->second = CreateRect();
+  RectPairPtr p1(RectPair::New(CreateRect(), CreateRect()));
   RectPairPtr p2(p1.Clone());
   EXPECT_TRUE(p1.Equals(p2));
   p2->second->width = 0;
@@ -60,10 +53,9 @@ TEST_F(EqualsTest, StructNested) {
 }
 
 TEST_F(EqualsTest, Array) {
-  NamedRegionPtr n1(NamedRegion::New());
-  n1->name.emplace("n1");
-  n1->rects.emplace();
-  n1->rects->push_back(CreateRect());
+  std::vector<RectPtr> rects;
+  rects.push_back(CreateRect());
+  NamedRegionPtr n1(NamedRegion::New(std::string("n1"), std::move(rects)));
   NamedRegionPtr n2(n1.Clone());
   EXPECT_TRUE(n1.Equals(n2));
 

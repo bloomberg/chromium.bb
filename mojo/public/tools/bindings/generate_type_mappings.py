@@ -107,6 +107,7 @@ def ParseTypemap(typemap):
 
     result[mojom_type] = {
         'typename': native_type,
+        'non_copyable_non_movable': 'non_copyable_non_movable' in attributes,
         'move_only': 'move_only' in attributes,
         'copyable_pass_by_value': 'copyable_pass_by_value' in attributes,
         'nullable_is_same_type': 'nullable_is_same_type' in attributes,

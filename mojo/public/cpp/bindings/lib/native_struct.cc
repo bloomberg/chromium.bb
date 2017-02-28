@@ -10,9 +10,7 @@ namespace mojo {
 
 // static
 NativeStructPtr NativeStruct::New() {
-  NativeStructPtr rv;
-  internal::StructHelper<NativeStruct>::Initialize(&rv);
-  return rv;
+  return NativeStructPtr(base::in_place);
 }
 
 NativeStruct::NativeStruct() {}

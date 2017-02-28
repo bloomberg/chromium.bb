@@ -38,22 +38,13 @@ bool g_dump_message_as_text = false;
 FooPtr MakeFoo() {
   std::string name("foopy");
 
-  BarPtr bar(Bar::New());
-  bar->alpha = 20;
-  bar->beta = 40;
-  bar->gamma = 60;
-  bar->type = Bar::Type::VERTICAL;
+  BarPtr bar(Bar::New(20, 40, 60, Bar::Type::VERTICAL));
 
   std::vector<BarPtr> extra_bars(3);
   for (size_t i = 0; i < extra_bars.size(); ++i) {
     Bar::Type type = i % 2 == 0 ? Bar::Type::VERTICAL : Bar::Type::HORIZONTAL;
-    BarPtr bar(Bar::New());
     uint8_t base = static_cast<uint8_t>(i * 100);
-    bar->alpha = base;
-    bar->beta = base + 20;
-    bar->gamma = base + 40;
-    bar->type = type;
-    extra_bars[i] = std::move(bar);
+    extra_bars[i] = Bar::New(base, base + 20, base + 40, type);
   }
 
   std::vector<uint8_t> data(10);
@@ -84,22 +75,11 @@ FooPtr MakeFoo() {
   }
 
   mojo::MessagePipe pipe;
-  FooPtr foo(Foo::New());
-  foo->name = name;
-  foo->x = 1;
-  foo->y = 2;
-  foo->a = false;
-  foo->b = true;
-  foo->c = false;
-  foo->bar = std::move(bar);
-  foo->extra_bars = std::move(extra_bars);
-  foo->data = std::move(data);
-  foo->source = std::move(pipe.handle1);
-  foo->input_streams = std::move(input_streams);
-  foo->output_streams = std::move(output_streams);
-  foo->array_of_array_of_bools = std::move(array_of_array_of_bools);
-
-  return foo;
+  return Foo::New(name, 1, 2, false, true, false, std::move(bar),
+                  std::move(extra_bars), std::move(data),
+                  std::move(pipe.handle1), std::move(input_streams),
+                  std::move(output_streams), std::move(array_of_array_of_bools),
+                  base::nullopt, base::nullopt);
 }
 
 // Check that the given |Foo| is identical to the one made by |MakeFoo()|.
