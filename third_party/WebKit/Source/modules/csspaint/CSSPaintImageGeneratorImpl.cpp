@@ -52,8 +52,10 @@ void CSSPaintImageGeneratorImpl::setDefinition(CSSPaintDefinition* definition) {
 PassRefPtr<Image> CSSPaintImageGeneratorImpl::paint(
     const LayoutObject& layoutObject,
     const IntSize& size,
-    float zoom) {
-  return m_definition ? m_definition->paint(layoutObject, size, zoom) : nullptr;
+    float zoom,
+    const CSSStyleValueVector* data) {
+  return m_definition ? m_definition->paint(layoutObject, size, zoom, data)
+                      : nullptr;
 }
 
 const Vector<CSSPropertyID>&
@@ -72,6 +74,16 @@ CSSPaintImageGeneratorImpl::customInvalidationProperties() const {
 
 bool CSSPaintImageGeneratorImpl::hasAlpha() const {
   return m_definition && m_definition->hasAlpha();
+}
+
+const Vector<CSSSyntaxDescriptor>&
+CSSPaintImageGeneratorImpl::inputArgumentTypes() const {
+  DEFINE_STATIC_LOCAL(Vector<CSSSyntaxDescriptor>, emptyVector, ());
+  return m_definition ? m_definition->inputArgumentTypes() : emptyVector;
+}
+
+bool CSSPaintImageGeneratorImpl::isImageGeneratorReady() const {
+  return m_definition;
 }
 
 DEFINE_TRACE(CSSPaintImageGeneratorImpl) {

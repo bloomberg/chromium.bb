@@ -76,9 +76,14 @@ class CSSPaintValue : public CSSImageGeneratorValue {
 
   void paintImageGeneratorReady();
 
+  bool parseInputArguments();
+
+  bool m_inputArgumentsInvalid = false;
+
   Member<CSSCustomIdentValue> m_name;
   Member<CSSPaintImageGenerator> m_generator;
   Member<Observer> m_paintImageGeneratorObserver;
+  Member<CSSStyleValueVector> m_parsedInputArguments;
   Vector<RefPtr<CSSVariableData>> m_argumentVariableData;
 };
 

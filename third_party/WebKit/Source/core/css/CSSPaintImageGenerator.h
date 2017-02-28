@@ -7,11 +7,13 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css/cssom/CSSStyleValue.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+class CSSSyntaxDescriptor;
 class Document;
 class Image;
 class LayoutObject;
@@ -47,11 +49,14 @@ class CORE_EXPORT CSSPaintImageGenerator
   // representing an invalid image if an error occurred.
   virtual PassRefPtr<Image> paint(const LayoutObject&,
                                   const IntSize&,
-                                  float zoom) = 0;
+                                  float zoom,
+                                  const CSSStyleValueVector*) = 0;
 
   virtual const Vector<CSSPropertyID>& nativeInvalidationProperties() const = 0;
   virtual const Vector<AtomicString>& customInvalidationProperties() const = 0;
   virtual bool hasAlpha() const = 0;
+  virtual const Vector<CSSSyntaxDescriptor>& inputArgumentTypes() const = 0;
+  virtual bool isImageGeneratorReady() const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

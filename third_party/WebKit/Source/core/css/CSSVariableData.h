@@ -17,7 +17,7 @@ namespace blink {
 class CSSParserTokenRange;
 class CSSSyntaxDescriptor;
 
-class CSSVariableData : public RefCounted<CSSVariableData> {
+class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   WTF_MAKE_NONCOPYABLE(CSSVariableData);
   USING_FAST_MALLOC(CSSVariableData);
 

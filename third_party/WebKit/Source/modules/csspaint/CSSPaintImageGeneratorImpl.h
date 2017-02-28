@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/css/CSSPaintImageGenerator.h"
+#include "core/css/cssom/CSSStyleValue.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
@@ -14,6 +15,7 @@
 namespace blink {
 
 class CSSPaintDefinition;
+class CSSSyntaxDescriptor;
 class Document;
 class Image;
 
@@ -26,10 +28,13 @@ class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
 
   PassRefPtr<Image> paint(const LayoutObject&,
                           const IntSize&,
-                          float zoom) final;
+                          float zoom,
+                          const CSSStyleValueVector*) final;
   const Vector<CSSPropertyID>& nativeInvalidationProperties() const final;
   const Vector<AtomicString>& customInvalidationProperties() const final;
   bool hasAlpha() const final;
+  const Vector<CSSSyntaxDescriptor>& inputArgumentTypes() const final;
+  bool isImageGeneratorReady() const final;
 
   // Should be called from the PaintWorkletGlobalScope when a javascript class
   // is registered with the same name.

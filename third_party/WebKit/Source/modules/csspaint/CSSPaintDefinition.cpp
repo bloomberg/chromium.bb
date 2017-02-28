@@ -66,9 +66,13 @@ CSSPaintDefinition::CSSPaintDefinition(
 
 CSSPaintDefinition::~CSSPaintDefinition() {}
 
-PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject,
-                                            const IntSize& size,
-                                            float zoom) {
+PassRefPtr<Image> CSSPaintDefinition::paint(
+    const LayoutObject& layoutObject,
+    const IntSize& size,
+    float zoom,
+    const CSSStyleValueVector* paintArguments) {
+  DCHECK(paintArguments);
+
   const IntSize specifiedSize = getSpecifiedSize(size, zoom);
 
   ScriptState::Scope scope(m_scriptState.get());
@@ -99,7 +103,8 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject,
   v8::Local<v8::Value> argv[] = {
       ToV8(renderingContext, m_scriptState->context()->Global(), isolate),
       ToV8(paintSize, m_scriptState->context()->Global(), isolate),
-      ToV8(styleMap, m_scriptState->context()->Global(), isolate)};
+      ToV8(styleMap, m_scriptState->context()->Global(), isolate),
+      ToV8(*paintArguments, m_scriptState->context()->Global(), isolate)};
 
   v8::Local<v8::Function> paint = m_paint.newLocal(isolate);
 
@@ -107,7 +112,7 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject,
   block.SetVerbose(true);
 
   V8ScriptRunner::callFunction(paint, m_scriptState->getExecutionContext(),
-                               instance, 3, argv, isolate);
+                               instance, WTF_ARRAY_LENGTH(argv), argv, isolate);
 
   // The paint function may have produced an error, in which case produce an
   // invalid image.

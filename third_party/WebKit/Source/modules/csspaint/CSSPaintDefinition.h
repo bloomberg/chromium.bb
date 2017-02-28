@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSSyntaxDescriptor.h"
+#include "core/css/cssom/CSSStyleValue.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
@@ -40,7 +41,10 @@ class CSSPaintDefinition final
   //
   // This may return a nullptr (representing an invalid image) if javascript
   // throws an error.
-  PassRefPtr<Image> paint(const LayoutObject&, const IntSize&, float zoom);
+  PassRefPtr<Image> paint(const LayoutObject&,
+                          const IntSize&,
+                          float zoom,
+                          const CSSStyleValueVector*);
   const Vector<CSSPropertyID>& nativeInvalidationProperties() const {
     return m_nativeInvalidationProperties;
   }

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="resources/test-runner-paint-worklet.js"></script>
+<style>
+.container {
+  width: 100px;
+  height: 100px;
+}
+
+#canvas-box-green {
+  background-image: paint(box, green);
+}
+
+#canvas-box-red {
+  background-image: paint(box, red);
+}
+
+#background {
+  background-color: yellow;
+  display: inline-block;
+}
+</style>
+</head>
+<body>
+
+<div id="background">
+  <div id="canvas-box-green" class="container"></div>
+  <div id="canvas-box-red" class="container"></div>
+</div>
+
+<script id="code" type="text/worklet">
+registerPaint('box', class {
+    static get alpha() { return true; }
+    static get inputArguments() { return ['<color>']; }
+    paint(ctx, geom, properties, args) {
+        ctx.strokeStyle = args[0].cssText;
+        ctx.lineWidth = 4;
+        ctx.strokeRect(20, 20, 60, 60);
+    }
+});
+
+</script>
+
+<script>
+  importPaintWorkletAndTerminateTestAfterAsyncPaint(document.getElementById('code').textContent);
+</script>
+</body>
+</html>
