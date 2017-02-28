@@ -147,6 +147,18 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // collection to delete unreachable surfaces.
   void RemoveSurfaceReferences(const std::vector<SurfaceReference>& references);
 
+  // Assigns |frame_sink_id| as the owner of the temporary reference to
+  // |surface_id|. If |frame_sink_id| is invalidated the temporary reference
+  // will be removed. If a surface reference has already been added from the
+  // parent to |surface_id| then this will do nothing.
+  void AssignTemporaryReference(const SurfaceId& surface_id,
+                                const FrameSinkId& owner);
+
+  // Drops the temporary reference for |surface_id|. If a surface reference has
+  // already been added from the parent to |surface_id| then this will do
+  // nothing.
+  void DropTemporaryReference(const SurfaceId& surface_id);
+
   scoped_refptr<SurfaceReferenceFactory> reference_factory() {
     return reference_factory_;
   }
@@ -195,7 +207,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   bool HasTemporaryReference(const SurfaceId& surface_id) const;
 
-  // Adds a temporary reference to |surface_id|.
+  // Adds a temporary reference to |surface_id|. The reference will not have an
+  // owner initially.
   void AddTemporaryReference(const SurfaceId& surface_id);
 
   // Removes temporary reference to |surface_id|. If |remove_range| is true then
@@ -273,8 +286,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   scoped_refptr<SurfaceReferenceFactory> reference_factory_;
 
   // A map of surfaces that have temporary references to them. The key is the
-  // SurfaceId and the value is the owner.
-  // TODO(kylechar): Use owner value.
+  // SurfaceId and the value is the owner. The owner will initially be empty and
+  // set later by AssignTemporaryReference().
   std::unordered_map<SurfaceId, base::Optional<FrameSinkId>, SurfaceIdHash>
       temporary_references_;
 

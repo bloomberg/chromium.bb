@@ -136,6 +136,20 @@ void SurfaceManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id) {
 
 void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
   valid_frame_sink_ids_.erase(frame_sink_id);
+
+  if (using_surface_references()) {
+    // Remove any temporary references owned by |frame_sink_id|.
+    std::vector<SurfaceId> temp_refs_to_clear;
+    for (auto& map_entry : temporary_references_) {
+      base::Optional<FrameSinkId>& owner = map_entry.second;
+      if (owner.has_value() && owner.value() == frame_sink_id)
+        temp_refs_to_clear.push_back(map_entry.first);
+    }
+
+    for (auto& surface_id : temp_refs_to_clear)
+      RemoveTemporaryReference(surface_id, false);
+  }
+
   GarbageCollectSurfaces();
 }
 
@@ -161,6 +175,27 @@ void SurfaceManager::RemoveSurfaceReferences(
     RemoveSurfaceReferenceImpl(reference.parent_id(), reference.child_id());
 
   GarbageCollectSurfaces();
+}
+
+void SurfaceManager::AssignTemporaryReference(const SurfaceId& surface_id,
+                                              const FrameSinkId& owner) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(lifetime_type_, LifetimeType::REFERENCES);
+
+  if (!HasTemporaryReference(surface_id))
+    return;
+
+  temporary_references_[surface_id] = owner;
+}
+
+void SurfaceManager::DropTemporaryReference(const SurfaceId& surface_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(lifetime_type_, LifetimeType::REFERENCES);
+
+  if (!HasTemporaryReference(surface_id))
+    return;
+
+  RemoveTemporaryReference(surface_id, false);
 }
 
 void SurfaceManager::GarbageCollectSurfaces() {

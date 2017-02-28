@@ -431,4 +431,82 @@ TEST_F(SurfaceManagerRefTest, SurfaceWithTemporaryReferenceIsNotDeleted) {
   EXPECT_NE(nullptr, manager().GetSurfaceForId(id2));
 }
 
+// Checks that when a temporary reference is assigned an owner, if the owner is
+// invalidated then the temporary reference is also removed.
+TEST_F(SurfaceManagerRefTest, InvalidateTempReferenceOwnerRemovesReference) {
+  // Surface |id1| should have a temporary reference on creation.
+  const SurfaceId id1 = CreateSurface(kFrameSink2, 1);
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1));
+
+  // |id1| should have a temporary reference after an owner is assigned.
+  manager().AssignTemporaryReference(id1, kFrameSink1);
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1));
+
+  // When |kFrameSink1| is invalidated the temporary reference will be removed.
+  manager().InvalidateFrameSinkId(kFrameSink1);
+  ASSERT_THAT(GetAllTempReferences(), IsEmpty());
+}
+
+// Checks that adding a surface reference clears the temporary reference and
+// ownership. Invalidating the old owner shouldn't do anything.
+TEST_F(SurfaceManagerRefTest, InvalidateHasNoEffectOnSurfaceReferences) {
+  const SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
+  AddSurfaceReference(manager().GetRootSurfaceId(), parent_id);
+
+  const SurfaceId id1 = CreateSurface(kFrameSink2, 1);
+  manager().AssignTemporaryReference(id1, kFrameSink1);
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1));
+
+  // Adding a real surface reference will remove the temporary reference.
+  AddSurfaceReference(parent_id, id1);
+  ASSERT_THAT(GetAllTempReferences(), IsEmpty());
+  ASSERT_THAT(GetReferencesFor(id1), UnorderedElementsAre(parent_id));
+
+  // When |kFrameSink1| is invalidated it shouldn't change the surface
+  // references.
+  manager().InvalidateFrameSinkId(kFrameSink1);
+  ASSERT_THAT(GetReferencesFor(id1), UnorderedElementsAre(parent_id));
+}
+
+TEST_F(SurfaceManagerRefTest, CheckDropTemporaryReferenceWorks) {
+  const SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1));
+
+  // An example of why this could happen is the window server doesn't know the
+  // owner, maybe it has crashed and been cleanup already, and asks to drop the
+  // temporary reference.
+  manager().DropTemporaryReference(id1);
+  ASSERT_THAT(GetAllTempReferences(), IsEmpty());
+}
+
+// Checks that we handle ownership and temporary references correctly when there
+// are multiple temporary references. This tests something like the parent
+// client crashing, so it's
+TEST_F(SurfaceManagerRefTest, TempReferencesWithClientCrash) {
+  const SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
+  AddSurfaceReference(manager().GetRootSurfaceId(), parent_id);
+
+  const SurfaceId id1a = CreateSurface(kFrameSink2, 1);
+  const SurfaceId id1b = CreateSurface(kFrameSink2, 2);
+
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1a, id1b));
+
+  // Assign |id1a| to |kFrameSink1|. This doesn't change the temporary
+  // reference, it just assigns as owner to it.
+  manager().AssignTemporaryReference(id1a, kFrameSink1);
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1a, id1b));
+
+  // If the parent client crashes then the CompositorFrameSink connection will
+  // be closed and the FrameSinkId invalidated. The temporary reference
+  // |kFrameSink1| owns to |id2a| will be removed.
+  manager().InvalidateFrameSinkId(kFrameSink1);
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1b));
+
+  // If the parent has crashed then the window server will have already removed
+  // it from the ServerWindow hierarchy and won't have an owner for |id2b|. The
+  // window server will ask to drop the reference instead.
+  manager().DropTemporaryReference(id1b);
+  ASSERT_THAT(GetAllTempReferences(), IsEmpty());
+}
+
 }  // namespace cc
