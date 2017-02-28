@@ -228,6 +228,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_PATHEFFECT_SUBCLASSES
 #endif
 
+#ifndef SK_DISABLE_DEFERRED_PROXIES
+#define SK_DISABLE_DEFERRED_PROXIES
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
