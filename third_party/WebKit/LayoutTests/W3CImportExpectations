@@ -51,8 +51,10 @@ external/csswg-test/css-style-attr-1 [ Skip ]
 external/csswg-test/css-syntax-3 [ Skip ]
 external/csswg-test/css-tables-3 [ Skip ]
 external/csswg-test/css-text-3/hanging-punctuation [ Skip ]
-external/csswg-test/css-text-3/i18n [ Skip ]
-external/csswg-test/css-text-3/line-break [ Skip ]
+## Owners: kojii@chromium.org
+# external/csswg-test/css-text-3/i18n [ Pass ]
+# external/csswg-test/css-text-3/line-break [ Pass ]
+external/csswg-test/css-text-3/line-breaking [ Skip ]
 ## Owners: kojii@chromium.org
 # external/csswg-test/css-text-3/overflow-wrap [ Pass ]
 external/csswg-test/css-text-3/support [ Skip ]
