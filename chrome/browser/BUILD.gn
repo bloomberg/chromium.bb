@@ -4256,6 +4256,8 @@ static_library("test_support") {
     "browsing_data/mock_browsing_data_media_license_helper.h",
     "browsing_data/mock_browsing_data_quota_helper.cc",
     "browsing_data/mock_browsing_data_quota_helper.h",
+    "browsing_data/mock_browsing_data_remover.cc",
+    "browsing_data/mock_browsing_data_remover.h",
     "browsing_data/mock_browsing_data_service_worker_helper.cc",
     "browsing_data/mock_browsing_data_service_worker_helper.h",
     "download/download_test_file_activity_observer.cc",
