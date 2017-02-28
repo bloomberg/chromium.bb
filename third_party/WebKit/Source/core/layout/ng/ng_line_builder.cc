@@ -410,9 +410,4 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
   }
 }
 
-DEFINE_TRACE(NGLineBuilder) {
-  visitor->trace(inline_box_);
-  visitor->trace(constraint_space_);
-}
-
 }  // namespace blink

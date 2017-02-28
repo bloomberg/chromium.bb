@@ -26,8 +26,9 @@ class NGLayoutInlineItem;
 // |end| can be extended multiple times before creating a line, usually until
 // |!CanFitOnLine()|.
 // |SetBreakOpportunity| can mark the last confirmed offset that can fit.
-class CORE_EXPORT NGLineBuilder final
-    : public GarbageCollectedFinalized<NGLineBuilder> {
+class CORE_EXPORT NGLineBuilder final {
+  STACK_ALLOCATED();
+
  public:
   NGLineBuilder(NGInlineNode*, const NGConstraintSpace*);
 
@@ -87,8 +88,6 @@ class CORE_EXPORT NGLineBuilder final
   // are placed.
   void CopyFragmentDataToLayoutBlockFlow();
 
-  DECLARE_VIRTUAL_TRACE();
-
  private:
   struct LineItemChunk {
     unsigned index;
@@ -140,8 +139,8 @@ class CORE_EXPORT NGLineBuilder final
                            const LineItemChunk&,
                            LineBoxData*);
 
-  Member<NGInlineNode> inline_box_;
-  Member<const NGConstraintSpace> constraint_space_;
+  Persistent<NGInlineNode> inline_box_;
+  Persistent<const NGConstraintSpace> constraint_space_;
   Vector<RefPtr<NGPhysicalFragment>, 32> fragments_;
   Vector<NGLogicalOffset, 32> offsets_;
   Vector<LineBoxData, 32> line_box_data_list_;
