@@ -8,9 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
@@ -50,8 +48,7 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
                                     public CertDatabase::Observer {
  public:
   NSSCertDatabaseChromeOSTest()
-      : scoped_task_scheduler_(base::MessageLoop::current()),
-        observer_added_(false),
+      : observer_added_(false),
         db_changed_count_(0),
         user_1_("user1"),
         user_2_("user2") {}
@@ -69,6 +66,7 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
         crypto::GetPrivateSlotForChromeOSUser(
             user_1_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
+    db_1_->SetSlowTaskRunnerForTest(base::ThreadTaskRunnerHandle::Get());
     db_1_->SetSystemSlot(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_db_.slot())));
     db_2_.reset(new NSSCertDatabaseChromeOS(
@@ -76,6 +74,7 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
         crypto::GetPrivateSlotForChromeOSUser(
             user_2_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
+    db_2_->SetSlowTaskRunnerForTest(base::ThreadTaskRunnerHandle::Get());
 
     // Add observer to CertDatabase for checking that notifications from
     // NSSCertDatabaseChromeOS are proxied to the CertDatabase.
@@ -92,8 +91,6 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
   void OnCertDBChanged() override { db_changed_count_++; }
 
  protected:
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
-
   bool observer_added_;
   int db_changed_count_;
 

@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task_runner.h"
 #include "net/base/crypto_module.h"
 #include "net/cert/x509_certificate.h"
 
@@ -49,13 +49,9 @@ void NSSCertDatabaseChromeOS::ListCerts(
 
   // base::Pased will NULL out |certs|, so cache the underlying pointer here.
   CertificateList* raw_certs = certs.get();
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .MayBlock(),
-      base::Bind(&NSSCertDatabaseChromeOS::ListCertsImpl, profile_filter_,
-                 base::Unretained(raw_certs)),
+  GetSlowTaskRunner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&NSSCertDatabaseChromeOS::ListCertsImpl,
+                            profile_filter_, base::Unretained(raw_certs)),
       base::Bind(callback, base::Passed(&certs)));
 }
 

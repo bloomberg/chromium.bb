@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_scheduler.h"
@@ -77,7 +78,9 @@ class TestCertResolveObserver : public ClientCertResolver::Observer {
 class AutoConnectHandlerTest : public testing::Test {
  public:
   AutoConnectHandlerTest()
-      : test_manager_client_(nullptr), test_service_client_(nullptr) {}
+      : test_manager_client_(nullptr),
+        test_service_client_(nullptr),
+        scoped_task_scheduler_(&message_loop_) {}
 
   void SetUp() override {
     ASSERT_TRUE(test_nssdb_.is_open());
@@ -86,6 +89,7 @@ class AutoConnectHandlerTest : public testing::Test {
     test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
+    test_nsscertdb_->SetSlowTaskRunnerForTest(message_loop_.task_runner());
 
     CertLoader::Initialize();
     CertLoader::ForceHardwareBackedForTesting();
@@ -248,6 +252,7 @@ class AutoConnectHandlerTest : public testing::Test {
   ShillServiceClient::TestInterface* test_service_client_;
   crypto::ScopedTestNSSDB test_nssdb_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
+  base::MessageLoopForUI message_loop_;
 
  private:
   base::test::ScopedTaskScheduler scoped_task_scheduler_;

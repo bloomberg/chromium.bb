@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -44,6 +45,8 @@ class PolicyCertVerifierTest : public testing::Test {
         crypto::GetPrivateSlotForChromeOSUser(
             test_nss_user_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
+    test_cert_db_->SetSlowTaskRunnerForTest(
+        base::ThreadTaskRunnerHandle::Get());
 
     cert_verifier_.reset(new PolicyCertVerifier(base::Bind(
         &PolicyCertVerifierTest::OnTrustAnchorUsed, base::Unretained(this))));
