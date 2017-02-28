@@ -26,10 +26,17 @@
       paper-spinner {
         @apply(--cr-icon-height-width);
       }
+
+      #onoff[on] {
+        color: var(--settings-toggle-color);
+      }
     </style>
 
     <div class="settings-box first">
-      <div class="start">[[getOffOnString_(bluetoothEnabled)]]</div>
+      <div id="onoff" class="start" on$="[[bluetoothEnabled]]">
+        [[getOnOffString_(bluetoothEnabled,
+          '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
+      </div>
       <paper-toggle-button id="enableBluetooth" checked="{{bluetoothEnabled}}"
           aria-label="$i18n{bluetoothToggleA11yLabel}">
       </paper-toggle-button>

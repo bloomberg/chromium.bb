@@ -348,11 +348,14 @@ Polymer({
   },
 
   /**
+   * @param {boolean} enabled
+   * @param {string} onstr
+   * @param {string} offstr
    * @return {string}
    * @private
    */
-  getOffOnString_: function() {
-    return this.i18n(this.bluetoothEnabled ? 'bluetoothOn' : 'bluetoothOff');
+  getOnOffString_: function(enabled, onstr, offstr) {
+    return enabled ? onstr : offstr;
   },
 
   /**

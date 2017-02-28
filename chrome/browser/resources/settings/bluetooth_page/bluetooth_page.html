@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
@@ -24,7 +23,8 @@
           <div class="middle">
             $i18n{bluetoothPageTitle}
             <div class="secondary" id="bluetoothSecondary">
-              [[getDescription_(bluetoothEnabled_)]]
+              [[getOnOffString_(bluetoothEnabled_,
+              '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
             </div>
           </div>
           <cr-policy-pref-indicator

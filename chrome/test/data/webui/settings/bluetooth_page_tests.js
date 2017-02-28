@@ -38,10 +38,8 @@ suite('Bluetooth', function() {
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
-      bluetoothEnabled: 'bluetoothEnabled',
-      bluetoothDisabled: 'bluetoothDisabled',
-      bluetoothOn: 'bluetoothOn',
-      bluetoothOff: 'bluetoothOff',
+      deviceOff: 'deviceOff',
+      deviceOn: 'deviceOn',
       bluetoothConnected: 'bluetoothConnected',
       bluetoothDisconnect: 'bluetoothDisconnect',
       bluetoothPair: 'bluetoothPair',

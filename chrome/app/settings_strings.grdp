@@ -312,6 +312,12 @@
     </message>
   </if>
   <if expr="chromeos">
+    <message name="IDS_SETTINGS_DEVICE_OFF" desc="In Settings pages, the label when a bluetooth, wifi, or mobile device is off (disabled).">
+      Off
+    </message>
+    <message name="IDS_SETTINGS_DEVICE_ON" desc="In Settings pages, the label when a bluetooth, wifi, or mobile device is on (enabled).">
+      On
+    </message>
     <message name="IDS_SETTINGS_RESTART" desc="Text for a button that will restart ChromeOS.">
       Restart
     </message>
@@ -502,12 +508,6 @@
     <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND" desc="Message displayed when no Bluetooth devices are found after a scan.">
       No Bluetooth devices found.
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_ENABLED" desc="Label for Bluetooth section when enabled.">
-      Enabled
-    </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_DISABLED" desc="Label for Bluetooth section when disabled.">
-      Disabled
-    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL" desc="Accessibility only label for Bluetooth enable/disable toggle .">
       Bluetooth enable
     </message>
@@ -531,12 +531,6 @@
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
       Please confirm this passkey is shown on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
-    </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_OFF" desc="In Bluetooth page, the label when Bluetooth is off (disabled).">
-      Off
-    </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_ON" desc="In Bluetooth page, the label when Bluetooth is on (enabled).">
-      On
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is already connected.">
       Connected

@@ -25,8 +25,6 @@ var bluetoothApis = bluetoothApis || {
 Polymer({
   is: 'settings-bluetooth-page',
 
-  behaviors: [I18nBehavior],
-
   properties: {
     /** Preferences state. */
     prefs: {
@@ -119,12 +117,14 @@ Polymer({
   },
 
   /**
+   * @param {boolean} enabled
+   * @param {string} onstr
+   * @param {string} offstr
    * @return {string}
    * @private
    */
-  getDescription_: function() {
-    return this.i18n(
-        this.bluetoothEnabled_ ? 'bluetoothEnabled' : 'bluetoothDisabled');
+  getOnOffString_: function(enabled, onstr, offstr) {
+    return enabled ? onstr : offstr;
   },
 
   /**
