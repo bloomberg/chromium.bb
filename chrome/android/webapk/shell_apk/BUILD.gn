@@ -6,6 +6,10 @@ import("//build/config/android/rules.gni")
 import("shell_apk_version.gni")
 
 declare_args() {
+  # The origin URL of the WebAPK. Used to generate a unique package name for
+  # WebAPK. Example: "foo.com"
+  webapk_manifest_package_origin = "template"
+
   # The browser that the WebAPK will be bound to.
   webapk_runtime_host = "com.google.android.apps.chrome"
 
@@ -44,9 +48,10 @@ declare_args() {
   webapk_version_name = "1.0"
 }
 
+shell_apk_manifest_package =
+    "org.chromium.webapk.$webapk_manifest_package_origin"
+
 shell_apk_manifest = "$target_gen_dir/shell_apk_manifest/AndroidManifest.xml"
-shell_apk_manifest_javatests =
-    "$target_gen_dir/shell_apk_manifest_javatests/AndroidManifest.xml"
 
 jinja_template("shell_apk_manifest") {
   input = "AndroidManifest.xml"
@@ -54,7 +59,7 @@ jinja_template("shell_apk_manifest") {
 
   variables = [
     "shell_apk_version=$shell_apk_version",
-    "manifest_package=org.chromium.webapk",
+    "manifest_package=$shell_apk_manifest_package",
     "runtime_host=$webapk_runtime_host",
     "start_url=$webapk_start_url",
     "name=$webapk_name",
@@ -71,33 +76,6 @@ jinja_template("shell_apk_manifest") {
     "web_manifest_url=$webapk_web_manifest_url",
     "version_code=$webapk_version_code",
     "version_name=$webapk_version_name",
-  ]
-}
-
-# Manifest for instrumentation tests. Cannot be customized via GN args.
-jinja_template("shell_apk_manifest_javatests") {
-  input = "AndroidManifest.xml"
-  output = shell_apk_manifest_javatests
-
-  variables = [
-    "shell_apk_version=$shell_apk_version",
-    "manifest_package=org.chromium.webapk.test",
-    "runtime_host=org.chromium.chrome",
-    "start_url=https://www.template.com/home_page",
-    "name=Test",
-    "short_name=Test",
-    "scope_url=https://www.template.com",
-    "display_mode=standalone",
-    "orientation=portrait",
-    "theme_color=2147483648L",  # HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
-    "background_color=2147483648L",  # HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
-    "icon_urls_and_icon_murmur2_hashes=",
-    "scope_url_scheme=https",
-    "scope_url_host=template.com",
-    "scope_url_path=/",
-    "web_manifest_url=https://www.template.com/manifest.json",
-    "version_code=1",
-    "version_name=1.0",
   ]
 }
 
@@ -125,47 +103,24 @@ android_library("webapk_java") {
   ]
 }
 
-template("webapk_tmpl") {
-  android_apk(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "android_manifest",
-                             "android_manifest_dep",
-                             "apk_name",
-                           ])
-    deps = [
-      ":webapk_java",
-    ]
-    never_incremental = true
-
-    # Force 32 bit mode on 64 bit devices.
-    native_lib_placeholders = [ "libfoo.so" ]
-
-    if (!is_java_debug) {
-      proguard_enabled = true
-      proguard_configs = [
-        "//chrome/android/java/proguard.flags",
-        "//base/android/proguard/chromium_apk.flags",
-        "//base/android/proguard/chromium_code.flags",
-      ]
-    }
-  }
-}
-
 # Template for WebAPK. When a WebAPK is generated:
 # - Android manifest is customized to the website.
 # - App icon is extracted from the website and added to the APK's resources.
-webapk_tmpl("webapk") {
+android_apk("webapk") {
   android_manifest = shell_apk_manifest
   android_manifest_dep = ":shell_apk_manifest"
-  apk_name = "webapk"
-}
-
-# WebAPK for instrumentation tests.
-webapk_tmpl("webapk_javatests") {
-  android_manifest = shell_apk_manifest_javatests
-  android_manifest_dep = ":shell_apk_manifest_javatests"
-  apk_name = "webapk_javatests"
+  apk_name = "WebApk.$webapk_manifest_package_origin"
+  deps = [
+    ":webapk_java",
+  ]
+  if (!is_java_debug) {
+    proguard_enabled = true
+    proguard_configs = [
+      "//chrome/android/java/proguard.flags",
+      "//base/android/proguard/chromium_apk.flags",
+      "//base/android/proguard/chromium_code.flags",
+    ]
+  }
 }
 
 android_library("shell_apk_javatests") {

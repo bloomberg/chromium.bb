@@ -641,7 +641,7 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     @VisibleForTesting
-    public boolean isSplashScreenVisibleForTests() {
+    boolean isSplashScreenVisibleForTests() {
         return mSplashScreen != null;
     }
 

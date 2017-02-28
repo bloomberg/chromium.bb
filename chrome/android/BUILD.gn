@@ -802,12 +802,10 @@ instrumentation_test_apk("chrome_public_test_apk") {
     ":chrome_test_java",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
-    "//chrome/android/webapk/shell_apk:webapk_javatests",
     "//third_party/android_support_test_runner:runner_java",
   ]
   additional_apks = [
     "//chrome/android/webapk/libs/runtime_library/javatests/apk_with_webapk_service:apk_with_webapk_service",
-    "//chrome/android/webapk/shell_apk:webapk_javatests",
     "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
     "//net/android:net_test_support_apk",

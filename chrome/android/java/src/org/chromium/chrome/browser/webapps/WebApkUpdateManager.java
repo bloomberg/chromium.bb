@@ -46,9 +46,6 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      */
     private static final int MAX_UPDATE_ATTEMPTS = 3;
 
-    /** Whether updates are enabled. Some tests disable updates. */
-    private static boolean sUpdatesEnabled = true;
-
     /** Data extracted from the WebAPK's launch intent and from the WebAPK's Android Manifest. */
     private WebApkInfo mInfo;
 
@@ -125,10 +122,6 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
     public boolean getHasPendingUpdateForTesting() {
         return mPendingUpdate != null;
-    }
-
-    public static void setUpdatesEnabledForTesting(boolean enabled) {
-        sUpdatesEnabled = enabled;
     }
 
     @Override
@@ -315,10 +308,6 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      */
     private boolean shouldCheckIfWebManifestUpdated(
             WebappDataStorage storage, WebApkInfo info, boolean previousUpdateSucceeded) {
-        if (!sUpdatesEnabled) {
-            return false;
-        }
-
         if (CommandLine.getInstance().hasSwitch(
                     ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP)) {
             return true;
