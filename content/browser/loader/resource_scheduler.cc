@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
@@ -371,7 +372,7 @@ class ResourceScheduler::Client {
         in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
         priority_requests_delayable_(priority_requests_delayable),
-        has_pending_start_task_(false),
+        num_skipped_scans_due_to_scheduled_start_(0),
         started_requests_since_yielding_(0),
         did_scheduler_yield_(false),
         yielding_scheduler_enabled_(yielding_scheduler_enabled),
@@ -402,7 +403,7 @@ class ResourceScheduler::Client {
       EraseInFlightRequest(request);
 
       // Removing this request may have freed up another to load.
-      ScheduleLoadAnyStartablePendingRequests(
+      LoadAnyStartablePendingRequests(
           has_html_body_ ? RequestStartTrigger::COMPLETION_POST_BODY
                          : RequestStartTrigger::COMPLETION_PRE_BODY);
     }
@@ -765,12 +766,14 @@ class ResourceScheduler::Client {
   // TODO(csharrison): Reconsider this if IPC batching becomes an easy to use
   // pattern.
   void ScheduleLoadAnyStartablePendingRequests(RequestStartTrigger trigger) {
-    if (has_pending_start_task_)
-      return;
-    has_pending_start_task_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&Client::LoadAnyStartablePendingRequests,
-                              weak_ptr_factory_.GetWeakPtr(), trigger));
+    if (num_skipped_scans_due_to_scheduled_start_ == 0) {
+      TRACE_EVENT0("loading", "ScheduleLoadAnyStartablePendingRequests");
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&Client::LoadAnyStartablePendingRequests,
+                     weak_ptr_factory_.GetWeakPtr(), trigger));
+    }
+    num_skipped_scans_due_to_scheduled_start_ += 1;
   }
 
   void ResumeIfYielded() {
@@ -803,7 +806,12 @@ class ResourceScheduler::Client {
     //     the previous request still in the list.
     // 3) We do not start the request, same as above, but StartRequest() tells
     //     us there's no point in checking any further requests.
-    has_pending_start_task_ = false;
+    TRACE_EVENT0("loading", "LoadAnyStartablePendingRequests");
+    if (num_skipped_scans_due_to_scheduled_start_ > 0) {
+      UMA_HISTOGRAM_COUNTS_1M("ResourceScheduler.NumSkippedScans.ScheduleStart",
+                              num_skipped_scans_due_to_scheduled_start_);
+    }
+    num_skipped_scans_due_to_scheduled_start_ = 0;
     RequestQueue::NetQueue::iterator request_iter =
         pending_requests_.GetNextHighestIterator();
 
@@ -851,7 +859,9 @@ class ResourceScheduler::Client {
   // be delayed.
   bool priority_requests_delayable_;
 
-  bool has_pending_start_task_;
+  // The number of LoadAnyStartablePendingRequests scans that were skipped due
+  // to smarter task scheduling around reprioritization.
+  int num_skipped_scans_due_to_scheduled_start_;
 
   // The number of started requests since the last ResumeIfYielded task was
   // run.
