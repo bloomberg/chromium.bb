@@ -109,13 +109,13 @@ float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo,
                              GlyphBuffer& glyphBuffer,
                              const GlyphData* emphasisData) const {
   float width;
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
+  CachingWordShaper shaper(*this);
   if (emphasisData) {
-    width = shaper.fillGlyphBufferForTextEmphasis(this, runInfo.run,
+    width = shaper.fillGlyphBufferForTextEmphasis(runInfo.run,
                                                   emphasisData, &glyphBuffer,
                                                   runInfo.from, runInfo.to);
   } else {
-    width = shaper.fillGlyphBuffer(this, runInfo.run, nullptr, &glyphBuffer,
+    width = shaper.fillGlyphBuffer(runInfo.run, &glyphBuffer,
                                    runInfo.from, runInfo.to);
   }
   return width;
@@ -224,9 +224,8 @@ float Font::width(const TextRun& run,
                   HashSet<const SimpleFontData*>* fallbackFonts,
                   FloatRect* glyphBounds) const {
   FontCachePurgePreventer purgePreventer;
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-  float width = shaper.width(this, run, fallbackFonts, glyphBounds);
-  return width;
+  CachingWordShaper shaper(*this);
+  return shaper.width(run, fallbackFonts, glyphBounds);
 }
 
 namespace {
@@ -439,8 +438,8 @@ FloatRect Font::selectionRectForText(const TextRun& run,
 
   FontCachePurgePreventer purgePreventer;
 
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-  CharacterRange range = shaper.getCharacterRange(this, run, from, to);
+  CachingWordShaper shaper(*this);
+  CharacterRange range = shaper.getCharacterRange(run, from, to);
 
   return pixelSnappedSelectionRect(
       FloatRect(point.x() + range.start, point.y(), range.width(), height));
@@ -450,8 +449,8 @@ int Font::offsetForPosition(const TextRun& run,
                             float xFloat,
                             bool includePartialGlyphs) const {
   FontCachePurgePreventer purgePreventer;
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-  return shaper.offsetForPosition(this, run, xFloat, includePartialGlyphs);
+  CachingWordShaper shaper(*this);
+  return shaper.offsetForPosition(run, xFloat, includePartialGlyphs);
 }
 
 ShapeCache* Font::shapeCache() const {
@@ -562,15 +561,15 @@ CharacterRange Font::getCharacterRange(const TextRun& run,
                                        unsigned from,
                                        unsigned to) const {
   FontCachePurgePreventer purgePreventer;
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-  return shaper.getCharacterRange(this, run, from, to);
+  CachingWordShaper shaper(*this);
+  return shaper.getCharacterRange(run, from, to);
 }
 
 Vector<CharacterRange> Font::individualCharacterRanges(
     const TextRun& run) const {
   FontCachePurgePreventer purgePreventer;
-  CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-  auto ranges = shaper.individualCharacterRanges(this, run);
+  CachingWordShaper shaper(*this);
+  auto ranges = shaper.individualCharacterRanges(run);
   // The shaper should return ranges.size == run.length but on some platforms
   // (OSX10.9.5) we are seeing cases in the upper end of the unicode range
   // where this is not true (see: crbug.com/620952). To catch these cases on

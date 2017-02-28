@@ -10,6 +10,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include <tuple>
 
 namespace blink {
 
@@ -56,6 +57,13 @@ class PLATFORM_EXPORT ShapeResultBuffer {
                                           float totalWidth,
                                           unsigned from,
                                           unsigned to);
+
+  struct RunFontData {
+      SimpleFontData* m_fontData;
+      size_t m_glyphCount;
+  };
+
+  Vector<RunFontData> runFontData() const;
 
  private:
   static CharacterRange getCharacterRangeInternal(

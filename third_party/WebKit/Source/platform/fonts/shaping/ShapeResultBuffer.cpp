@@ -484,4 +484,17 @@ int ShapeResultBuffer::offsetForPosition(const TextRun& run,
   return totalOffset;
 }
 
+Vector<ShapeResultBuffer::RunFontData>
+ShapeResultBuffer::runFontData() const {
+  Vector<RunFontData> fontData;
+
+  for (const auto& result : m_results) {
+    for (const auto& run : result->m_runs) {
+      fontData.push_back(RunFontData({run->m_fontData.get(),
+                                      run->m_glyphData.size()}));
+    }
+  }
+  return fontData;
+}
+
 }  // namespace blink

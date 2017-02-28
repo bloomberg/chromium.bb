@@ -208,9 +208,8 @@ class PLATFORM_EXPORT Font {
   mutable unsigned m_canShapeWordByWord : 1;
   mutable unsigned m_shapeWordByWordComputed : 1;
 
-  // For accessing buildGlyphBuffer and retrieving fonts used in rendering a
-  // node.
-  friend class InspectorCSSAgent;
+  // For m_fontDescription & m_fontFallbackList access.
+  friend class CachingWordShaper;
 };
 
 inline Font::~Font() {}

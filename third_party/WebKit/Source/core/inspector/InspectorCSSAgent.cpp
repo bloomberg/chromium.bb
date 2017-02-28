@@ -84,7 +84,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/fonts/GlyphBuffer.h"
+#include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/text/TextRun.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
@@ -1136,16 +1136,15 @@ void InspectorCSSAgent::collectPlatformFontsForLayoutObject(
     const ComputedStyle& style = layoutText->styleRef(box->isFirstLineStyle());
     const Font& font = style.font();
     TextRun run = box->constructTextRunForInspector(style);
-    TextRunPaintInfo paintInfo(run);
-    GlyphBuffer glyphBuffer;
-    font.buildGlyphBuffer(paintInfo, glyphBuffer);
-    for (unsigned i = 0; i < glyphBuffer.size(); ++i) {
-      const SimpleFontData* simpleFontData = glyphBuffer.fontDataAt(i);
+    CachingWordShaper shaper(font);
+    for (const auto& runFontData : shaper.runFontData(run)) {
+      const auto* simpleFontData = runFontData.m_fontData;
       String familyName = simpleFontData->platformData().fontFamilyName();
       if (familyName.isNull())
         familyName = "";
       fontStats->add(
-          std::make_pair(simpleFontData->isCustomFont() ? 1 : 0, familyName));
+          std::make_pair(simpleFontData->isCustomFont() ? 1 : 0, familyName),
+          runFontData.m_glyphCount);
     }
   }
 }

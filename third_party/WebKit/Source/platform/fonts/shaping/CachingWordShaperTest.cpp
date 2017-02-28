@@ -116,16 +116,16 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightFillGlyphBuffer) {
   const UChar str[] = {0x2F, 0x301, 0x2E, 0x20, 0x2E, 0x0};
   TextRun textRun(str, 5);
 
-  CachingWordShaper shaper(cache.get());
+  CachingWordShaper shaper(font);
   GlyphBuffer glyphBuffer;
-  shaper.fillGlyphBuffer(&font, textRun, fallbackFonts, &glyphBuffer, 0, 3);
+  shaper.fillGlyphBuffer(textRun, &glyphBuffer, 0, 3);
 
-  std::unique_ptr<ShapeCache> referenceCache = WTF::makeUnique<ShapeCache>();
-  CachingWordShaper referenceShaper(referenceCache.get());
+  Font referenceFont(fontDescription);
+  referenceFont.update(nullptr);
+  CachingWordShaper referenceShaper(referenceFont);
   GlyphBuffer referenceGlyphBuffer;
-  font.setCanShapeWordByWordForTesting(false);
-  referenceShaper.fillGlyphBuffer(&font, textRun, fallbackFonts,
-                                  &referenceGlyphBuffer, 0, 3);
+  referenceFont.setCanShapeWordByWordForTesting(false);
+  referenceShaper.fillGlyphBuffer(textRun, &referenceGlyphBuffer, 0, 3);
 
   ASSERT_EQ(referenceGlyphBuffer.glyphAt(0), glyphBuffer.glyphAt(0));
   ASSERT_EQ(referenceGlyphBuffer.glyphAt(1), glyphBuffer.glyphAt(1));
@@ -140,16 +140,16 @@ TEST_F(CachingWordShaperTest, CommonAccentRightToLeftFillGlyphBuffer) {
   TextRun textRun(str, 6);
   textRun.setDirection(TextDirection::kRtl);
 
-  CachingWordShaper shaper(cache.get());
+  CachingWordShaper shaper(font);
   GlyphBuffer glyphBuffer;
-  shaper.fillGlyphBuffer(&font, textRun, fallbackFonts, &glyphBuffer, 1, 6);
+  shaper.fillGlyphBuffer(textRun, &glyphBuffer, 1, 6);
 
-  std::unique_ptr<ShapeCache> referenceCache = WTF::makeUnique<ShapeCache>();
-  CachingWordShaper referenceShaper(referenceCache.get());
+  Font referenceFont(fontDescription);
+  referenceFont.update(nullptr);
+  CachingWordShaper referenceShaper(referenceFont);
   GlyphBuffer referenceGlyphBuffer;
-  font.setCanShapeWordByWordForTesting(false);
-  referenceShaper.fillGlyphBuffer(&font, textRun, fallbackFonts,
-                                  &referenceGlyphBuffer, 1, 6);
+  referenceFont.setCanShapeWordByWordForTesting(false);
+  referenceShaper.fillGlyphBuffer(textRun, &referenceGlyphBuffer, 1, 6);
 
   ASSERT_EQ(5u, referenceGlyphBuffer.size());
   ASSERT_EQ(referenceGlyphBuffer.size(), glyphBuffer.size());
@@ -169,14 +169,14 @@ TEST_F(CachingWordShaperTest, SubRunWithZeroGlyphs) {
                        0x20, 0x62, 0x61, 0x71, 0x0};
   TextRun textRun(str, 9);
 
-  CachingWordShaper shaper(cache.get());
+  CachingWordShaper shaper(font);
   FloatRect glyphBounds;
-  ASSERT_GT(shaper.width(&font, textRun, nullptr, &glyphBounds), 0);
+  ASSERT_GT(shaper.width(textRun, nullptr, &glyphBounds), 0);
 
   GlyphBuffer glyphBuffer;
-  shaper.fillGlyphBuffer(&font, textRun, fallbackFonts, &glyphBuffer, 0, 8);
+  shaper.fillGlyphBuffer(textRun, &glyphBuffer, 0, 8);
 
-  shaper.getCharacterRange(&font, textRun, 0, 8);
+  shaper.getCharacterRange(textRun, 0, 8);
 }
 
 TEST_F(CachingWordShaperTest, SegmentCJKByCharacter) {
@@ -442,27 +442,26 @@ TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList) {
   verticalMixedFont.update(nullptr);
   ASSERT_TRUE(verticalMixedFont.canShapeWordByWord());
 
-  CachingWordShaper shaper(cache.get());
+  CachingWordShaper shaper(verticalMixedFont);
   FloatRect glyphBounds;
   HashSet<const SimpleFontData*> fallbackFonts;
   ASSERT_GT(
-      shaper.width(&verticalMixedFont, textRun, &fallbackFonts, &glyphBounds),
+      shaper.width(textRun, &fallbackFonts, &glyphBounds),
       0);
   EXPECT_EQ(0u, fallbackFonts.size());
 }
 
 TEST_F(CachingWordShaperTest, GlyphBoundsWithSpaces) {
-  CachingWordShaper shaper(cache.get());
+  CachingWordShaper shaper(font);
 
   TextRun periods(reinterpret_cast<const LChar*>(".........."), 10);
   FloatRect periodsGlyphBounds;
-  float periodsWidth =
-      shaper.width(&font, periods, nullptr, &periodsGlyphBounds);
+  float periodsWidth = shaper.width(periods, nullptr, &periodsGlyphBounds);
 
   TextRun periodsAndSpaces(
       reinterpret_cast<const LChar*>(". . . . . . . . . ."), 19);
   FloatRect periodsAndSpacesGlyphBounds;
-  float periodsAndSpacesWidth = shaper.width(&font, periodsAndSpaces, nullptr,
+  float periodsAndSpacesWidth = shaper.width(periodsAndSpaces, nullptr,
                                              &periodsAndSpacesGlyphBounds);
 
   // The total width of periods and spaces should be longer than the width of
