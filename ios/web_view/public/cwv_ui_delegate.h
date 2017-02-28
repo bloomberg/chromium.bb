@@ -25,6 +25,29 @@
                      inView:(UIView*)view
         userGestureLocation:(CGPoint)location;
 
+// Instructs the delegate to show UI in response to window.alert JavaScript
+// call.
+- (void)webView:(CWVWebView*)webView
+    runJavaScriptAlertPanelWithMessage:(NSString*)message
+                               pageURL:(NSURL*)URL
+                     completionHandler:(void (^)(void))completionHandler;
+
+// Instructs the delegate to show UI in response to window.confirm JavaScript
+// call.
+- (void)webView:(CWVWebView*)webView
+    runJavaScriptConfirmPanelWithMessage:(NSString*)message
+                                 pageURL:(NSURL*)URL
+                       completionHandler:(void (^)(BOOL))completionHandler;
+
+// Instructs the delegate to show UI in response to window.prompt JavaScript
+// call.
+- (void)webView:(CWVWebView*)webView
+    runJavaScriptTextInputPanelWithPrompt:(NSString*)prompt
+                              defaultText:(NSString*)defaultText
+                                  pageURL:(NSURL*)URL
+                        completionHandler:
+                            (void (^)(NSString*))completionHandler;
+
 @end
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_UI_DELEGATE_H_

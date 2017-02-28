@@ -20,6 +20,8 @@ source_set("internal") {
     "pref_names.h",
     "web_view_browser_state.h",
     "web_view_browser_state.mm",
+    "web_view_java_script_dialog_presenter.h",
+    "web_view_java_script_dialog_presenter.mm",
     "web_view_network_delegate.cc",
     "web_view_network_delegate.h",
     "web_view_url_request_context_getter.h",

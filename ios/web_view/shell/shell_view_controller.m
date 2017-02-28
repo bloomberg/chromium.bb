@@ -15,6 +15,10 @@
 #error "This file requires ARC support."
 #endif
 
+// Externed accessibility identifier.
+NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
+    @"WebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier";
+
 @interface ShellViewController ()<CWVUIDelegate,
                                   CWVWebViewDelegate,
                                   UITextFieldDelegate>
@@ -212,6 +216,81 @@
   [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
                                             style:UIAlertActionStyleCancel
                                           handler:nil]];
+
+  [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)webView:(CWVWebView*)webView
+    runJavaScriptAlertPanelWithMessage:(NSString*)message
+                               pageURL:(NSURL*)URL
+                     completionHandler:(void (^)(void))handler {
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:nil
+                                          message:message
+                                   preferredStyle:UIAlertControllerStyleAlert];
+
+  [alert addAction:[UIAlertAction actionWithTitle:@"Ok"
+                                            style:UIAlertActionStyleDefault
+                                          handler:^(UIAlertAction* action) {
+                                            handler();
+                                          }]];
+
+  [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)webView:(CWVWebView*)webView
+    runJavaScriptConfirmPanelWithMessage:(NSString*)message
+                                 pageURL:(NSURL*)URL
+                       completionHandler:(void (^)(BOOL))handler {
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:nil
+                                          message:message
+                                   preferredStyle:UIAlertControllerStyleAlert];
+
+  [alert addAction:[UIAlertAction actionWithTitle:@"Ok"
+                                            style:UIAlertActionStyleDefault
+                                          handler:^(UIAlertAction* action) {
+                                            handler(YES);
+                                          }]];
+  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                            style:UIAlertActionStyleCancel
+                                          handler:^(UIAlertAction* action) {
+                                            handler(NO);
+                                          }]];
+
+  [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)webView:(CWVWebView*)webView
+    runJavaScriptTextInputPanelWithPrompt:(NSString*)prompt
+                              defaultText:(NSString*)defaultText
+                                  pageURL:(NSURL*)URL
+                        completionHandler:(void (^)(NSString*))handler {
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:nil
+                                          message:prompt
+                                   preferredStyle:UIAlertControllerStyleAlert];
+
+  [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
+    textField.text = defaultText;
+    textField.accessibilityIdentifier =
+        kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier;
+  }];
+
+  __weak UIAlertController* weakAlert = alert;
+  [alert addAction:[UIAlertAction
+                       actionWithTitle:@"Ok"
+                                 style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction* action) {
+                                 NSString* textInput =
+                                     weakAlert.textFields.firstObject.text;
+                                 handler(textInput);
+                               }]];
+  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                            style:UIAlertActionStyleCancel
+                                          handler:^(UIAlertAction* action) {
+                                            handler(nil);
+                                          }]];
 
   [self presentViewController:alert animated:YES completion:nil];
 }

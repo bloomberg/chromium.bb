@@ -22,6 +22,7 @@
 #import "ios/web_view/internal/cwv_website_data_store_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
+#import "ios/web_view/internal/web_view_java_script_dialog_presenter.h"
 #import "ios/web_view/public/cwv_ui_delegate.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
 #import "ios/web_view/public/cwv_web_view_delegate.h"
@@ -40,6 +41,9 @@
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   CGFloat _loadProgress;
+  // Handles presentation of JavaScript dialogs.
+  std::unique_ptr<ios_web_view::WebViewJavaScriptDialogPresenter>
+      _javaScriptDialogPresenter;
 }
 
 @end
@@ -65,6 +69,10 @@
         base::MakeUnique<web::WebStateObserverBridge>(_webState.get(), self);
     _webStateDelegate = base::MakeUnique<web::WebStateDelegateBridge>(self);
     _webState->SetDelegate(_webStateDelegate.get());
+
+    _javaScriptDialogPresenter =
+        base::MakeUnique<ios_web_view::WebViewJavaScriptDialogPresenter>(
+            self, _UIDelegate);
 
     // Initialize Translate.
     ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
@@ -155,6 +163,12 @@
   translateClient->set_translate_delegate(translateDelegate);
 }
 
+- (void)setUIDelegate:(id<CWVUIDelegate>)UIDelegate {
+  _UIDelegate = UIDelegate;
+
+  _javaScriptDialogPresenter->SetUIDelegate(_UIDelegate);
+}
+
 - (void)notifyDidUpdateWithChanges:(CRIWVWebViewUpdateType)changes {
   SEL selector = @selector(webView:didUpdateWithChanges:);
   if ([_delegate respondsToSelector:selector]) {
@@ -208,6 +222,11 @@
                        inView:params.view
           userGestureLocation:params.location];
   return YES;
+}
+
+- (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
+    (web::WebState*)webState {
+  return _javaScriptDialogPresenter.get();
 }
 
 @end
