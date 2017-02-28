@@ -7,9 +7,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/page/Page.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 
 namespace {
@@ -101,14 +101,14 @@ bool Deprecation::isSuppressed(CSSPropertyID unresolvedProperty) {
 
 void Deprecation::warnOnDeprecatedProperties(const LocalFrame* frame,
                                              CSSPropertyID unresolvedProperty) {
-  FrameHost* host = frame ? frame->host() : nullptr;
-  if (!host || host->deprecation().m_muteCount ||
-      host->deprecation().isSuppressed(unresolvedProperty))
+  Page* page = frame ? frame->page() : nullptr;
+  if (!page || page->deprecation().m_muteCount ||
+      page->deprecation().isSuppressed(unresolvedProperty))
     return;
 
   String message = deprecationMessage(unresolvedProperty);
   if (!message.isEmpty()) {
-    host->deprecation().suppress(unresolvedProperty);
+    page->deprecation().suppress(unresolvedProperty);
     ConsoleMessage* consoleMessage = ConsoleMessage::create(
         DeprecationMessageSource, WarningMessageLevel, message);
     frame->console().addMessage(consoleMessage);
@@ -141,12 +141,12 @@ void Deprecation::countDeprecation(const LocalFrame* frame,
                                    UseCounter::Feature feature) {
   if (!frame)
     return;
-  FrameHost* host = frame->host();
-  if (!host || host->deprecation().m_muteCount)
+  Page* page = frame->page();
+  if (!page || page->deprecation().m_muteCount)
     return;
 
-  if (!host->useCounter().hasRecordedMeasurement(feature)) {
-    host->useCounter().recordMeasurement(feature);
+  if (!page->useCounter().hasRecordedMeasurement(feature)) {
+    page->useCounter().recordMeasurement(feature);
     ASSERT(!deprecationMessage(feature).isEmpty());
     ConsoleMessage* consoleMessage =
         ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel,

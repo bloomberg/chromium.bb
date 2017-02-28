@@ -82,14 +82,6 @@ const UseCounter& FrameHost::useCounter() const {
   return m_page->useCounter();
 }
 
-Deprecation& FrameHost::deprecation() {
-  return m_page->deprecation();
-}
-
-const Deprecation& FrameHost::deprecation() const {
-  return m_page->deprecation();
-}
-
 float FrameHost::deviceScaleFactorDeprecated() const {
   return m_page->deviceScaleFactor();
 }

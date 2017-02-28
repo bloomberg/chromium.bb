@@ -43,7 +43,6 @@ namespace blink {
 class BrowserControls;
 class ChromeClient;
 class ConsoleMessageStorage;
-class Deprecation;
 class EventHandlerRegistry;
 class OverscrollController;
 class Page;
@@ -76,9 +75,6 @@ class CORE_EXPORT FrameHost final
 
   UseCounter& useCounter();
   const UseCounter& useCounter() const;
-
-  Deprecation& deprecation();
-  const Deprecation& deprecation() const;
 
   // Corresponds to pixel density of the device where this Page is
   // being displayed. In multi-monitor setups this can vary between pages.

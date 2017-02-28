@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "core/frame/Deprecation.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/UseCounter.h"
+#include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -352,8 +352,8 @@ class DeprecationTest : public ::testing::Test {
  public:
   DeprecationTest()
       : m_dummy(DummyPageHolder::create()),
-        m_deprecation(m_dummy->page().frameHost().deprecation()),
-        m_useCounter(m_dummy->page().frameHost().useCounter()) {}
+        m_deprecation(m_dummy->page().deprecation()),
+        m_useCounter(m_dummy->page().useCounter()) {}
 
  protected:
   LocalFrame* frame() { return &m_dummy->frame(); }
