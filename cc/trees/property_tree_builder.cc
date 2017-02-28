@@ -1163,8 +1163,7 @@ void AddScrollNodeIfNeeded(
     node.owning_layer_id = layer->id();
     node.scrollable = scrollable;
     node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
-    node.contains_non_fast_scrollable_region =
-        contains_non_fast_scrollable_region;
+    node.non_fast_scrollable_region = layer->non_fast_scrollable_region();
     gfx::Size clip_bounds;
     if (layer->scroll_clip_layer()) {
       clip_bounds = layer->scroll_clip_layer()->bounds();

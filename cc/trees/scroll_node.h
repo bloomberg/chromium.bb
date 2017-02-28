@@ -6,6 +6,7 @@
 #define CC_TREES_SCROLL_NODE_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/base/region.h"
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -37,7 +38,8 @@ struct CC_EXPORT ScrollNode {
   bool scrollable;
 
   uint32_t main_thread_scrolling_reasons;
-  bool contains_non_fast_scrollable_region;
+
+  Region non_fast_scrollable_region;
 
   // Size of the clipped area, not including non-overlay scrollbars. Overlay
   // scrollbars do not affect the clipped area.

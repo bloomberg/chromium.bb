@@ -2498,7 +2498,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     return scroll_status;
   }
 
-  if (scroll_node->contains_non_fast_scrollable_region) {
+  if (!scroll_node->non_fast_scrollable_region.IsEmpty()) {
     bool clipped = false;
     gfx::Transform inverse_screen_space_transform(
         gfx::Transform::kSkipInitialization);
@@ -2510,11 +2510,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
 
     gfx::PointF hit_test_point_in_layer_space = MathUtil::ProjectPoint(
         inverse_screen_space_transform, screen_space_point, &clipped);
-    if (!clipped &&
-        active_tree()
-            ->LayerById(scroll_node->owning_layer_id)
-            ->non_fast_scrollable_region()
-            .Contains(gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
+    if (!clipped && scroll_node->non_fast_scrollable_region.Contains(
+                        gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
       TRACE_EVENT0("cc",
                    "LayerImpl::tryScroll: Failed NonFastScrollableRegion");
       scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;

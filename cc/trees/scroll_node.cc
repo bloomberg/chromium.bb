@@ -19,7 +19,6 @@ ScrollNode::ScrollNode()
       scrollable(false),
       main_thread_scrolling_reasons(
           MainThreadScrollingReason::kNotScrollingOnMain),
-      contains_non_fast_scrollable_region(false),
       max_scroll_offset_affected_by_page_scale(false),
       scrolls_inner_viewport(false),
       scrolls_outer_viewport(false),
@@ -35,8 +34,7 @@ bool ScrollNode::operator==(const ScrollNode& other) const {
          owning_layer_id == other.owning_layer_id &&
          scrollable == other.scrollable &&
          main_thread_scrolling_reasons == other.main_thread_scrolling_reasons &&
-         contains_non_fast_scrollable_region ==
-             other.contains_non_fast_scrollable_region &&
+         non_fast_scrollable_region == other.non_fast_scrollable_region &&
          scroll_clip_layer_bounds == other.scroll_clip_layer_bounds &&
          bounds == other.bounds &&
          max_scroll_offset_affected_by_page_scale ==

@@ -306,6 +306,7 @@ void PropertyTreeManager::updateScrollAndScrollTranslationNodes(
   }
 
   compositorScrollNode.transform_id = transformNodeId;
+  // TODO(pdr): Set the scroll node's non_fast_scrolling_region value.
 
   // Blink creates a 2d transform node just for scroll offset whereas cc's
   // transform node has a special scroll offset field. To handle this we adjust
