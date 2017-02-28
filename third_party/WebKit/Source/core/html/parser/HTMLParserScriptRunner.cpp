@@ -363,6 +363,22 @@ void HTMLParserScriptRunner::pendingScriptFinished(
   // The parser is unprepared to be told, and doesn't need to be.
   if (isExecutingScript() && pendingScript->resource()->wasCanceled()) {
     pendingScript->dispose();
+
+    if (pendingScript == parserBlockingScript()) {
+      m_parserBlockingScript = nullptr;
+    } else {
+      CHECK_EQ(pendingScript, m_scriptsToExecuteAfterParsing.first());
+
+      // TODO(hiroshige): Remove this CHECK() before going to beta.
+      // This is only to make clusterfuzz to find a test case that executes
+      // this code path.
+      CHECK(false);
+
+      m_scriptsToExecuteAfterParsing.removeFirst();
+      // TODO(hiroshige): executeScriptsWaitingForParsing() should be
+      // called later at the appropriate time. https://crbug.com/696775
+    }
+
     return;
   }
 
