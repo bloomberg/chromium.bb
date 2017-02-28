@@ -13,111 +13,76 @@ namespace gfx {
 
 namespace {
 
-// Evaluate the gradient of the linear component of fn
-void SkTransferFnEvalGradientLinear(const SkColorSpaceTransferFn& fn,
-                                    float x,
-                                    float* d_fn_d_fC_at_x,
-                                    float* d_fn_d_fF_at_x) {
-  *d_fn_d_fC_at_x = x;
-  *d_fn_d_fF_at_x = 1.f;
-}
-
-// Solve for the parameters fC and fF, given the parameter fD.
+// Solve for the parameter fC, given the parameter fD, assuming fF is zero.
 void SkTransferFnSolveLinear(SkColorSpaceTransferFn* fn,
                              const float* x,
                              const float* t,
                              size_t n) {
   // If this has no linear segment, don't try to solve for one.
-  if (fn->fD <= 0) {
-    fn->fC = 1;
-    fn->fF = 0;
+  fn->fC = 1;
+  fn->fF = 0;
+  if (fn->fD <= 0)
     return;
-  }
 
-  // Let ne_lhs be the left hand side of the normal equations, and let ne_rhs
-  // be the right hand side. This is a 4x4 matrix, but we will only update the
-  // upper-left 2x2 sub-matrix.
-  SkMatrix44 ne_lhs;
-  SkVector4 ne_rhs;
-  for (int row = 0; row < 2; ++row) {
-    for (int col = 0; col < 2; ++col) {
-      ne_lhs.set(row, col, 0);
-    }
-  }
-  for (int row = 0; row < 4; ++row)
-    ne_rhs.fData[row] = 0;
+  // Because this is a linear least squares fit of a single variable, our normal
+  // equations are 1x1. Use the same framework as in SolveNonlinear, even though
+  // this is pretty trivial.
+  float ne_lhs = 0;
+  float ne_rhs = 0;
 
   // Add the contributions from each sample to the normal equations.
-  float x_linear_max = 0;
   for (size_t i = 0; i < n; ++i) {
     // Ignore points in the nonlinear segment.
     if (x[i] >= fn->fD)
       continue;
-    x_linear_max = std::max(x_linear_max, x[i]);
 
-    // Let J be the gradient of fn with respect to parameters C and F, evaluated
-    // at this point.
-    float J[2];
-    SkTransferFnEvalGradientLinear(*fn, x[i], &J[0], &J[1]);
-
-    // Let r be the residual at this point.
+    // Let J be the gradient of fn with respect to parameter C, evaluated at
+    // this point, and let r be the residual at this point.
+    float J = x[i];
     float r = t[i];
 
-    // Update the normal equations left hand side with the outer product of J
-    // with itself.
-    for (int row = 0; row < 2; ++row) {
-      for (int col = 0; col < 2; ++col) {
-        ne_lhs.set(row, col, ne_lhs.get(row, col) + J[row] * J[col]);
-      }
-      // Update the normal equations right hand side the product of J with the
-      // residual
-      ne_rhs.fData[row] += J[row] * r;
-    }
+    // Update the normal equations left and right hand sides.
+    ne_lhs += J * J;
+    ne_rhs += J * r;
   }
 
-  // If we only have a single x point at 0, that isn't enough to construct a
+  // If we only had a single x point at 0, that isn't enough to construct a
   // linear segment, so add an additional point connecting to the nonlinear
   // segment.
-  if (x_linear_max == 0) {
-    float J[2];
-    SkTransferFnEvalGradientLinear(*fn, fn->fD, &J[0], &J[1]);
+  if (ne_lhs == 0) {
+    float J = fn->fD;
     float r = SkTransferFnEval(*fn, fn->fD);
-    for (int row = 0; row < 2; ++row) {
-      for (int col = 0; col < 2; ++col) {
-        ne_lhs.set(row, col, ne_lhs.get(row, col) + J[row] * J[col]);
-      }
-      ne_rhs.fData[row] += J[row] * r;
-    }
+    ne_lhs += J * J;
+    ne_lhs += J * r;
   }
 
-  // Solve the normal equations.
-  SkMatrix44 ne_lhs_inv;
-  bool invert_result = ne_lhs.invert(&ne_lhs_inv);
-  DCHECK(invert_result);
-  SkVector4 solution = ne_lhs_inv * ne_rhs;
-
   // Update the transfer function.
-  fn->fC = solution.fData[0];
-  fn->fF = solution.fData[1];
+  fn->fC = ne_rhs / ne_lhs;
+  fn->fF = 0;
 }
 
-// Evaluate the gradient of the nonlinear component of fn
+// Evaluate the gradient of the nonlinear component of fn. This assumes that
+// |fn| maps 1 to 1, and therefore fE is implicity 1 - pow(fA + fB, fG).
 void SkTransferFnEvalGradientNonlinear(const SkColorSpaceTransferFn& fn,
                                        float x,
                                        float* d_fn_d_fA_at_x,
                                        float* d_fn_d_fB_at_x,
-                                       float* d_fn_d_fE_at_x,
                                        float* d_fn_d_fG_at_x) {
-  float base = fn.fA * x + fn.fB;
-  if (base > 0.f) {
-    *d_fn_d_fA_at_x = fn.fG * x * std::pow(base, fn.fG - 1.f);
-    *d_fn_d_fB_at_x = fn.fG * std::pow(base, fn.fG - 1.f);
-    *d_fn_d_fE_at_x = 1.f;
-    *d_fn_d_fG_at_x = std::pow(base, fn.fG) * std::log(base);
+  float Ax_plus_B = fn.fA * x + fn.fB;
+  float A_plus_B = fn.fA + fn.fB;
+  if (Ax_plus_B >= 0.f && A_plus_B >= 0.f) {
+    float Ax_plus_B_to_G = std::pow(fn.fA * x + fn.fB, fn.fG);
+    float Ax_plus_B_to_G_minus_1 = std::pow(fn.fA * x + fn.fB, fn.fG - 1.f);
+    float A_plus_B_to_G = std::pow(fn.fA + fn.fB, fn.fG);
+    float A_plus_B_to_G_minus_1 = std::pow(fn.fA + fn.fB, fn.fG - 1.f);
+    *d_fn_d_fA_at_x =
+        (x * Ax_plus_B_to_G_minus_1 - A_plus_B_to_G_minus_1) * fn.fG;
+    *d_fn_d_fB_at_x = (Ax_plus_B_to_G_minus_1 - A_plus_B_to_G_minus_1) * fn.fG;
+    *d_fn_d_fG_at_x = Ax_plus_B_to_G * std::log(Ax_plus_B) -
+                      A_plus_B_to_G * std::log(A_plus_B);
   } else {
     *d_fn_d_fA_at_x = 0.f;
     *d_fn_d_fB_at_x = 0.f;
-    *d_fn_d_fE_at_x = 0.f;
     *d_fn_d_fG_at_x = 0.f;
   }
 }
@@ -130,13 +95,11 @@ bool SkTransferFnGaussNewtonStepNonlinear(SkColorSpaceTransferFn* fn,
                                           size_t n) {
   float kEpsilon = 1.f / 1024.f;
   // Let ne_lhs be the left hand side of the normal equations, and let ne_rhs
-  // be the right hand side.
-  SkMatrix44 ne_lhs;
+  // be the right hand side. Zero the diagonal of |ne_lhs| and all of |ne_rhs|.
+  SkMatrix44 ne_lhs(SkMatrix44::kIdentity_Constructor);
   SkVector4 ne_rhs;
-  for (int row = 0; row < 4; ++row) {
-    for (int col = 0; col < 4; ++col) {
-      ne_lhs.set(row, col, 0);
-    }
+  for (int row = 0; row < 3; ++row) {
+    ne_lhs.set(row, row, 0);
     ne_rhs.fData[row] = 0;
   }
 
@@ -146,35 +109,40 @@ bool SkTransferFnGaussNewtonStepNonlinear(SkColorSpaceTransferFn* fn,
     // Ignore points in the linear segment.
     if (x[i] < fn->fD)
       continue;
+
     // Let J be the gradient of fn with respect to parameters A, B, E, and G,
     // evaulated at this point.
-    float J[4];
-    SkTransferFnEvalGradientNonlinear(*fn, x[i], &J[0], &J[1], &J[2], &J[3]);
+    float J[3];
+    SkTransferFnEvalGradientNonlinear(*fn, x[i], &J[0], &J[1], &J[2]);
+
     // Let r be the residual at this point;
     float r = t[i] - SkTransferFnEval(*fn, x[i]);
     *error_Linfty_before += std::abs(r);
+
     // Update the normal equations left hand side with the outer product of J
     // with itself.
-    for (int row = 0; row < 4; ++row) {
-      for (int col = 0; col < 4; ++col) {
+    for (int row = 0; row < 3; ++row) {
+      for (int col = 0; col < 3; ++col) {
         ne_lhs.set(row, col, ne_lhs.get(row, col) + J[row] * J[col]);
       }
+
       // Update the normal equations right hand side the product of J with the
       // residual
       ne_rhs.fData[row] += J[row] * r;
     }
   }
 
-  // Note that if fG = 1, then the normal equations will be singular (because,
-  // when fG = 1, because fA and fE are equivalent parameters).  To avoid
-  // problems, fix fE (row/column 3) in these circumstances.
+  // Note that if fG = 1, then the normal equations will be singular, because
+  // fB cancels out with itself. This could be handled better by using QR
+  // factorization instead of solving the normal equations.
   if (std::abs(fn->fG - 1) < kEpsilon) {
-    for (int row = 0; row < 4; ++row) {
-      float value = (row == 2) ? 1.f : 0.f;
-      ne_lhs.set(row, 2, value);
-      ne_lhs.set(2, row, value);
+    for (int row = 0; row < 3; ++row) {
+      float value = (row == 1) ? 1.f : 0.f;
+      ne_lhs.set(row, 1, value);
+      ne_lhs.set(1, row, value);
     }
-    ne_rhs.fData[2] = 0.f;
+    ne_rhs.fData[1] = 0.f;
+    fn->fB = 0.f;
   }
 
   // Solve the normal equations.
@@ -186,8 +154,17 @@ bool SkTransferFnGaussNewtonStepNonlinear(SkColorSpaceTransferFn* fn,
   // Update the transfer function.
   fn->fA += step.fData[0];
   fn->fB += step.fData[1];
-  fn->fE += step.fData[2];
-  fn->fG += step.fData[3];
+  fn->fG += step.fData[2];
+
+  // Clamp fA to the valid range.
+  fn->fA = std::max(fn->fA, 0.f);
+
+  // Shift fB to ensure that fA+fB > 0.
+  if (fn->fA + fn->fB < 0.f)
+    fn->fB = -fn->fA;
+
+  // Compute fE such that 1 maps to 1.
+  fn->fE = 1.f - std::pow(fn->fA + fn->fB, fn->fG);
   return true;
 }
 
@@ -238,12 +215,10 @@ bool SkTransferFnSolveNonlinear(SkColorSpaceTransferFn* fn,
   return true;
 }
 
-void SkApproximateTransferFnInternal(const float* x,
+bool SkApproximateTransferFnInternal(const float* x,
                                      const float* t,
                                      size_t n,
-                                     SkColorSpaceTransferFn* fn,
-                                     float* error,
-                                     bool* nonlinear_fit_converged) {
+                                     SkColorSpaceTransferFn* fn) {
   // First, guess at a value of fD. Assume that the nonlinear segment applies
   // to all x >= 0.1. This is generally a safe assumption (fD is usually less
   // than 0.1).
@@ -251,10 +226,10 @@ void SkApproximateTransferFnInternal(const float* x,
 
   // Do a nonlinear regression on the nonlinear segment. Use a number of guesses
   // for the initial value of fG, because not all values will converge.
-  *nonlinear_fit_converged = false;
+  bool nonlinear_fit_converged = false;
   {
     const size_t kNumInitialGammas = 4;
-    float initial_gammas[kNumInitialGammas] = {1.f, 2.f, 3.f, 0.5f};
+    float initial_gammas[kNumInitialGammas] = {2.f, 1.f, 3.f, 0.5f};
     for (size_t i = 0; i < kNumInitialGammas; ++i) {
       fn->fG = initial_gammas[i];
       fn->fA = 1;
@@ -263,15 +238,17 @@ void SkApproximateTransferFnInternal(const float* x,
       fn->fE = 0;
       fn->fF = 0;
       if (SkTransferFnSolveNonlinear(fn, x, t, n)) {
-        *nonlinear_fit_converged = true;
+        nonlinear_fit_converged = true;
         break;
       }
     }
   }
+  if (!nonlinear_fit_converged)
+    return false;
 
   // Now walk back fD from our initial guess to the point where our nonlinear
   // fit no longer fits (or all the way to 0 if it fits).
-  if (*nonlinear_fit_converged) {
+  {
     // Find the L-infinity error of this nonlinear fit (using our old fD value).
     float max_error_in_nonlinear_fit = 0;
     for (size_t i = 0; i < n; ++i) {
@@ -311,33 +288,11 @@ void SkApproximateTransferFnInternal(const float* x,
       if (x[i] > max_x_where_nonlinear_does_not_fit)
         fn->fD = std::min(fn->fD, x[i]);
     }
-  } else {
-    // If the nonlinear fit didn't converge, then try a linear fit on the full
-    // range. Note that fD must be strictly greater than 1 because the nonlinear
-    // segment starts at fD.
-    const float kEpsilon = 1.f / 256.f;
-    fn->fD = 1.f + kEpsilon;
   }
 
   // Compute the linear segment, now that we have our definitive fD.
   SkTransferFnSolveLinear(fn, x, t, n);
-
-  // If the nonlinear fit didn't converge, re-express the linear fit in
-  // canonical form as a nonlinear fit with fG as 1.
-  if (!*nonlinear_fit_converged) {
-    fn->fA = fn->fC;
-    fn->fB = fn->fF;
-    fn->fC = 1;
-    fn->fD = 0;
-    fn->fE = 0;
-    fn->fF = 0;
-    fn->fG = 1;
-  }
-
-  // Return the L-infinity error of the total approximation.
-  *error = 0.f;
-  for (size_t i = 0; i < n; ++i)
-    *error = std::max(*error, std::abs(t[i] - SkTransferFnEval(*fn, x[i])));
+  return true;
 }
 
 }  // namespace
@@ -391,13 +346,20 @@ bool SkTransferFnIsApproximatelyIdentity(const SkColorSpaceTransferFn& a) {
   return true;
 }
 
-void SkApproximateTransferFn(const float* x,
+bool SkApproximateTransferFn(const float* x,
                              const float* t,
                              size_t n,
-                             SkColorSpaceTransferFn* fn,
-                             float* error,
-                             bool* nonlinear_fit_converged) {
-  SkApproximateTransferFnInternal(x, t, n, fn, error, nonlinear_fit_converged);
+                             SkColorSpaceTransferFn* fn) {
+  if (SkApproximateTransferFnInternal(x, t, n, fn))
+    return true;
+  fn->fA = 1;
+  fn->fB = 0;
+  fn->fC = 1;
+  fn->fD = 0;
+  fn->fE = 0;
+  fn->fF = 0;
+  fn->fG = 1;
+  return false;
 }
 
 bool SkMatrixIsApproximatelyIdentity(const SkMatrix44& m) {

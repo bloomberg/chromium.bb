@@ -102,11 +102,10 @@ TEST_P(ColorSpaceTableTest, ApproximateTransferFn) {
     t.push_back(SkTransferFnEval(tr_fn, v));
   }
 
-  bool converged = false;
-  float error = 0;
   SkColorSpaceTransferFn fn_approx;
-  SkApproximateTransferFn(x.data(), t.data(), x.size(), &fn_approx, &error,
-                          &converged);
+  bool converged =
+      SkApproximateTransferFn(x.data(), t.data(), x.size(), &fn_approx);
+  EXPECT_TRUE(converged);
 
   for (size_t i = 0; i < x.size(); ++i) {
     float fn_approx_of_x = SkTransferFnEval(fn_approx, x[i]);
@@ -117,10 +116,10 @@ TEST_P(ColorSpaceTableTest, ApproximateTransferFn) {
 }
 
 ColorSpace::TransferID all_transfers[] = {
-    ColorSpace::TransferID::GAMMA22,      ColorSpace::TransferID::GAMMA24,
-    ColorSpace::TransferID::GAMMA28,      ColorSpace::TransferID::BT709,
-    ColorSpace::TransferID::SMPTE240M,    ColorSpace::TransferID::IEC61966_2_1,
-    ColorSpace::TransferID::SMPTEST428_1, ColorSpace::TransferID::LINEAR};
+    ColorSpace::TransferID::GAMMA22,   ColorSpace::TransferID::GAMMA24,
+    ColorSpace::TransferID::GAMMA28,   ColorSpace::TransferID::BT709,
+    ColorSpace::TransferID::SMPTE240M, ColorSpace::TransferID::IEC61966_2_1,
+    ColorSpace::TransferID::LINEAR};
 
 size_t all_table_sizes[] = {512, 256, 128, 64, 16, 11, 8, 7, 6, 5, 4};
 
@@ -128,6 +127,50 @@ INSTANTIATE_TEST_CASE_P(A,
                         ColorSpaceTableTest,
                         testing::Combine(testing::ValuesIn(all_transfers),
                                          testing::ValuesIn(all_table_sizes)));
+
+TEST(ColorSpace, ApproximateTransferFnBadMatch) {
+  const float kStep = 1.f / 512.f;
+  ColorSpace::TransferID transfer_ids[3] = {
+      ColorSpace::TransferID::IEC61966_2_1, ColorSpace::TransferID::GAMMA22,
+      ColorSpace::TransferID::BT709,
+  };
+  gfx::ColorSpace color_spaces[3];
+
+  // The first iteration will have a perfect match. The second will be very
+  // close. The third will converge, but with an error of ~7/256.
+  for (size_t transfers_to_use = 1; transfers_to_use <= 3; ++transfers_to_use) {
+    std::vector<float> x;
+    std::vector<float> t;
+    for (size_t c = 0; c < transfers_to_use; ++c) {
+      color_spaces[c] =
+          gfx::ColorSpace(ColorSpace::PrimaryID::BT709, transfer_ids[c]);
+      SkColorSpaceTransferFn tr_fn;
+      bool result = color_spaces[c].GetTransferFunction(&tr_fn);
+      CHECK(result);
+
+      for (float v = 0; v <= 1.f; v += kStep) {
+        x.push_back(v);
+        t.push_back(SkTransferFnEval(tr_fn, v));
+      }
+    }
+
+    SkColorSpaceTransferFn fn_approx;
+    bool converged =
+        SkApproximateTransferFn(x.data(), t.data(), x.size(), &fn_approx);
+    EXPECT_TRUE(converged);
+
+    float expected_error = 1.5f / 256.f;
+    if (transfers_to_use == 3)
+      expected_error = 8.f / 256.f;
+
+    for (size_t i = 0; i < x.size(); ++i) {
+      float fn_approx_of_x = SkTransferFnEval(fn_approx, x[i]);
+      EXPECT_NEAR(t[i], fn_approx_of_x, expected_error);
+      if (std::abs(t[i] - fn_approx_of_x) > expected_error)
+        break;
+    }
+  }
+}
 
 }  // namespace
 }  // namespace gfx

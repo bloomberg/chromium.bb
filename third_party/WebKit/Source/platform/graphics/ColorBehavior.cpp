@@ -15,9 +15,103 @@ namespace blink {
 
 namespace {
 
+// This must match ICCProfileAnalyzeResult enum in histograms.xml.
+enum ICCAnalyzeResult {
+  ICCExtractedMatrixAndAnalyticTrFn = 0,
+  ICCExtractedMatrixAndApproximatedTrFn = 1,
+  ICCFailedToApproximateTrFn = 2,
+  ICCFailedToExtractRawTrFn = 3,
+  ICCFailedToExtractMatrix = 4,
+  ICCFailedToParse = 5,
+  ICCProfileAnalyzeLast = ICCFailedToParse
+};
+
 // The output device color space is global and shared across multiple threads.
 SpinLock gTargetColorSpaceLock;
 gfx::ColorSpace* gTargetColorSpace = nullptr;
+
+ICCAnalyzeResult HistogramICCProfile(const gfx::ICCProfile& profile) {
+  std::vector<char> data = profile.GetData();
+  sk_sp<SkICC> skICC = SkICC::Make(data.data(), data.size());
+  if (!skICC)
+    return ICCFailedToParse;
+
+  SkMatrix44 toXYZD50;
+  bool toXYZD50Result = skICC->toXYZD50(&toXYZD50);
+  if (!toXYZD50Result)
+    return ICCFailedToExtractMatrix;
+
+  SkColorSpaceTransferFn fn;
+  bool isNumericalTransferFnResult = skICC->isNumericalTransferFn(&fn);
+  if (isNumericalTransferFnResult)
+    return ICCExtractedMatrixAndAnalyticTrFn;
+
+  // Analyze the numerical approximation of table-based transfer functions.
+  // This should never fail in practice, because any profile from which a
+  // primary matrix was extracted will also provide raw transfer data.
+  SkICC::Tables tables;
+  bool rawTransferFnResult = skICC->rawTransferFnData(&tables);
+  DCHECK(rawTransferFnResult);
+  if (!rawTransferFnResult)
+    return ICCFailedToExtractRawTrFn;
+
+  // Analyze the channels separately.
+  std::vector<float> xCombined;
+  std::vector<float> tCombined;
+  for (size_t c = 0; c < 3; ++c) {
+    SkICC::Channel* channels[3] = {&tables.fRed, &tables.fGreen, &tables.fBlue};
+    SkICC::Channel* channel = channels[c];
+    DCHECK_GE(channel->fCount, 2);
+    const float* data = reinterpret_cast<const float*>(
+        tables.fStorage->bytes() + channel->fOffset);
+    std::vector<float> x;
+    std::vector<float> t;
+    for (int i = 0; i < channel->fCount; ++i) {
+      float xi = i / (channel->fCount - 1.f);
+      float ti = data[i];
+      x.push_back(xi);
+      t.push_back(ti);
+      xCombined.push_back(xi);
+      tCombined.push_back(ti);
+    }
+
+    bool nonlinearFitConverged =
+        gfx::SkApproximateTransferFn(x.data(), t.data(), x.size(), &fn);
+    UMA_HISTOGRAM_BOOLEAN("Blink.ColorSpace.Destination.NonlinearFitConverged",
+                          nonlinearFitConverged);
+
+    // Record the accuracy of the fit, separating out by nonlinear and
+    // linear fits.
+    if (nonlinearFitConverged) {
+      float maxError = 0.f;
+      for (size_t i = 0; i < x.size(); ++i) {
+        float fnOfXi = gfx::SkTransferFnEval(fn, x[i]);
+        float errorAtXi = std::abs(t[i] - fnOfXi);
+        maxError = std::max(maxError, errorAtXi);
+      }
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Blink.ColorSpace.Destination.NonlinearFitError",
+          static_cast<int>(maxError * 255), 0, 127, 16);
+    }
+  }
+
+  bool combinedNonlinearFitConverged = gfx::SkApproximateTransferFn(
+      xCombined.data(), tCombined.data(), xCombined.size(), &fn);
+  if (!combinedNonlinearFitConverged)
+    return ICCFailedToApproximateTrFn;
+
+  float combinedMaxError = 0.f;
+  for (size_t i = 0; i < xCombined.size(); ++i) {
+    float fnOfXi = gfx::SkTransferFnEval(fn, xCombined[i]);
+    float errorAtXi = std::abs(tCombined[i] - fnOfXi);
+    combinedMaxError = std::max(combinedMaxError, errorAtXi);
+  }
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Blink.ColorSpace.Destination.NonlinearFitErrorCombined",
+      static_cast<int>(combinedMaxError * 255), 0, 127, 16);
+
+  return ICCExtractedMatrixAndApproximatedTrFn;
+}
 
 }  // namespace
 
@@ -36,80 +130,9 @@ void ColorBehavior::setGlobalTargetColorProfile(
   if (profile != gfx::ICCProfile()) {
     gTargetColorSpace = new gfx::ColorSpace(profile.GetColorSpace());
 
-    std::vector<char> data = profile.GetData();
-    sk_sp<SkICC> skICC = SkICC::Make(data.data(), data.size());
-    if (skICC) {
-      SkMatrix44 toXYZD50;
-      bool toXYZD50Result = skICC->toXYZD50(&toXYZD50);
-      UMA_HISTOGRAM_BOOLEAN("Blink.ColorSpace.Destination.Matrix",
-                            toXYZD50Result);
-
-      SkColorSpaceTransferFn fn;
-      bool isNumericalTransferFnResult = skICC->isNumericalTransferFn(&fn);
-      UMA_HISTOGRAM_BOOLEAN("Blink.ColorSpace.Destination.Numerical",
-                            isNumericalTransferFnResult);
-
-      // Analyze the numerical approximation of table-based transfer functions.
-      if (!isNumericalTransferFnResult) {
-        SkICC::Tables tables;
-        bool rawTransferFnResult = skICC->rawTransferFnData(&tables);
-        UMA_HISTOGRAM_BOOLEAN("Blink.ColorSpace.Destination.ExtractedRawData",
-                              rawTransferFnResult);
-        if (rawTransferFnResult) {
-          SkICC::Channel* channels[3] = {&tables.fRed, &tables.fGreen,
-                                         &tables.fBlue};
-          for (size_t c = 0; c < 3; ++c) {
-            SkICC::Channel* channel = channels[c];
-            DCHECK_GE(channel->fCount, 2);
-            const float* data = reinterpret_cast<const float*>(
-                tables.fStorage->bytes() + channel->fOffset);
-            std::vector<float> x;
-            std::vector<float> t;
-            float tMin = data[0];
-            float tMax = data[0];
-            for (int i = 0; i < channel->fCount; ++i) {
-              float xi = i / (channel->fCount - 1.f);
-              float ti = data[i];
-              x.push_back(xi);
-              t.push_back(ti);
-              tMin = std::min(tMin, ti);
-              tMax = std::max(tMax, ti);
-            }
-
-            // Record the range of the table-based transfer function. If it is
-            // found that almost all ranges are from 0 to 1, then we will bake
-            // the assumption that the range is 0 to 1 into the numerical
-            // approximation code (which will improve stability).
-            UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.ColorSpace.Destination.TMin",
-                                        static_cast<int>(tMin * 255), 0, 31, 8);
-            UMA_HISTOGRAM_CUSTOM_COUNTS(
-                "Blink.ColorSpace.Destination.OneMinusTMax",
-                static_cast<int>((1.f - tMax) * 255), 0, 31, 8);
-            bool nonlinearFitConverged = false;
-            float error = 0;
-            gfx::SkApproximateTransferFn(x.data(), t.data(), x.size(), &fn,
-                                         &error, &nonlinearFitConverged);
-
-            // Record if the numerical fit converged, or if it didn't.
-            UMA_HISTOGRAM_BOOLEAN(
-                "Blink.ColorSpace.Destination.NonlinearFitConverged",
-                nonlinearFitConverged);
-
-            // Record the accuracy of the fit, separating out by nonlinear and
-            // linear fits.
-            if (nonlinearFitConverged) {
-              UMA_HISTOGRAM_CUSTOM_COUNTS(
-                  "Blink.ColorSpace.Destination.NonlinearFitError",
-                  static_cast<int>(error * 255), 0, 127, 16);
-            } else {
-              UMA_HISTOGRAM_CUSTOM_COUNTS(
-                  "Blink.ColorSpace.Destination.LinearFitError",
-                  static_cast<int>(error * 255), 0, 127, 16);
-            }
-          }
-        }
-      }
-    }
+    ICCAnalyzeResult analyzeResult = HistogramICCProfile(profile);
+    UMA_HISTOGRAM_ENUMERATION("Blink.ColorSpace.Destination.ICCResult",
+                              analyzeResult, ICCProfileAnalyzeLast);
   }
 
   // If we do not succeed, assume sRGB.

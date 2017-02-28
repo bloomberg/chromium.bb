@@ -22,12 +22,12 @@ SkTransferFnsApproximatelyCancel(const SkColorSpaceTransferFn& a,
 bool GFX_EXPORT
 SkTransferFnIsApproximatelyIdentity(const SkColorSpaceTransferFn& fn);
 
-void GFX_EXPORT SkApproximateTransferFn(const float* x,
+// Approximates the |n| points in |x| and |t| by the transfer function |fn|.
+// Returns true if the approximation converged.
+bool GFX_EXPORT SkApproximateTransferFn(const float* x,
                                         const float* t,
                                         size_t n,
-                                        SkColorSpaceTransferFn* fn,
-                                        float* error,
-                                        bool* nonlinear_fit_converged);
+                                        SkColorSpaceTransferFn* fn);
 
 bool GFX_EXPORT SkMatrixIsApproximatelyIdentity(const SkMatrix44& m);
 
