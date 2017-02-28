@@ -1,6 +1,9 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/697111: assert failures in test added in r451938.
+crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
+
 # https://crbug.com/670105: uninvestigated test timeout caused by r435352.
 crbug.com/670105 http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
 crbug.com/670105 virtual/mojo-loading/http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
