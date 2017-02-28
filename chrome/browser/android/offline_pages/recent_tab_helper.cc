@@ -270,10 +270,11 @@ void RecentTabHelper::WasHidden() {
 
   // Return immediately if last_n is not listening to tab hidden events, if a
   // last_n snapshot is currently being saved or if the tab is closing.
-  if (!last_n_listen_to_tab_hidden_ || last_n_ongoing_snapshot_info_) {
+  if (!last_n_listen_to_tab_hidden_ || last_n_ongoing_snapshot_info_ ||
+      tab_is_closing_) {
     DVLOG(1) << "Will not snapshot for last_n (reasons: "
              << !last_n_listen_to_tab_hidden_ << ", "
-             << !!last_n_ongoing_snapshot_info_
+             << !!last_n_ongoing_snapshot_info_ << ", " << tab_is_closing_
              << ") for: " << web_contents()->GetLastCommittedURL().spec();
     return;
   }
@@ -298,6 +299,19 @@ void RecentTabHelper::WasHidden() {
       base::Bind(&RecentTabHelper::ContinueSnapshotWithIdsToPurge,
                  weak_ptr_factory_.GetWeakPtr(),
                  last_n_ongoing_snapshot_info_.get()));
+}
+
+void RecentTabHelper::WasShown() {
+  // If the tab was closing and is now being shown, the closure was reverted.
+  DVLOG_IF(0, tab_is_closing_) << "Tab is not closing anymore: "
+                               << web_contents()->GetLastCommittedURL().spec();
+  tab_is_closing_ = false;
+}
+
+void RecentTabHelper::WillCloseTab() {
+  DVLOG(1) << "Tab is now closing: "
+           << web_contents()->GetLastCommittedURL().spec();
+  tab_is_closing_ = true;
 }
 
 // TODO(carlosk): rename this to RequestSnapshot and make it return a bool

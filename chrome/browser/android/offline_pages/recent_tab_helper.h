@@ -40,6 +40,11 @@ class RecentTabHelper
   void DocumentOnLoadCompletedInMainFrame() override;
   void WebContentsDestroyed() override;
   void WasHidden() override;
+  void WasShown() override;
+
+  // Notifies that the tab of the associated WebContents will (most probably) be
+  // closed. This call is expected to always happen before the one to WasHidden.
+  void WillCloseTab();
 
   // SnapshotController::Client
   void StartSnapshot() override;
@@ -143,6 +148,10 @@ class RecentTabHelper
   // Set at each navigation to control if last_n should save snapshots of the
   // current page being loaded.
   bool last_n_listen_to_tab_hidden_ = false;
+
+  // Set to true when the tab containing the associated WebContents is in the
+  // process of being closed.
+  bool tab_is_closing_ = false;
 
   base::WeakPtrFactory<RecentTabHelper> weak_ptr_factory_;
 

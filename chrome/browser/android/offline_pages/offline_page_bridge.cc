@@ -19,6 +19,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
+#include "chrome/browser/android/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -584,6 +585,22 @@ void OfflinePageBridge::RegisterRecentTab(JNIEnv* env,
           RecentTabsUIAdapterDelegate::GetOrCreateRecentTabsUIAdapter(
               offline_page_model_, request_coordinator));
   ui_adapter_delegate->RegisterTab(tab_id);
+}
+
+void OfflinePageBridge::WillCloseTab(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_web_contents) {
+  DCHECK(j_web_contents);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  DCHECK(web_contents);
+  if (!web_contents)
+    return;
+
+  RecentTabHelper* tab_helper = RecentTabHelper::FromWebContents(web_contents);
+  if (tab_helper)
+    tab_helper->WillCloseTab();
 }
 
 void OfflinePageBridge::UnregisterRecentTab(JNIEnv* env,

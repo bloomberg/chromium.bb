@@ -128,6 +128,9 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void RegisterRecentTab(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          int tab_id);
+  void WillCloseTab(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    const base::android::JavaParamRef<jobject>& j_web_contents);
   void UnregisterRecentTab(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            int tab_id);

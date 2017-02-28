@@ -887,4 +887,31 @@ TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
   ASSERT_EQ(1U, GetAllPages().size());
 }
 
+// Checks that a closing tab doesn't trigger the creation of a snapshot. And
+// also that if the closure is reverted, a snapshot is saved upon the next hide
+// event.
+TEST_F(RecentTabHelperTest, NoSaveIfTabIsClosing) {
+  // Navigates and fully load then close and hide the tab. No snapshots are
+  // expected.
+  NavigateAndCommit(kTestPageUrl);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
+  // Note: These two next calls are always expected to happen in this order.
+  recent_tab_helper()->WillCloseTab();
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_EQ(0U, page_added_count());
+  EXPECT_EQ(0U, model_removed_count());
+  ASSERT_EQ(0U, GetAllPages().size());
+
+  // Simulates the page being restored and shown again, then hidden. At this
+  // moment a snapshot should be created.
+  recent_tab_helper()->WasShown();
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_EQ(1U, page_added_count());
+  EXPECT_EQ(0U, model_removed_count());
+  ASSERT_EQ(1U, GetAllPages().size());
+}
+
 }  // namespace offline_pages
