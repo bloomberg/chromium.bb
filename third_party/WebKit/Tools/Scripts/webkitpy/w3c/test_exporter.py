@@ -6,17 +6,18 @@ import logging
 
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.common import exportable_commits_since
+from webkitpy.w3c.wpt_github import WPTGitHub
 
 _log = logging.getLogger(__name__)
 
 
 class TestExporter(object):
 
-    def __init__(self, host, wpt_github, dry_run=False):
+    def __init__(self, host, gh_user, gh_token, dry_run=False):
         self.host = host
-        self.wpt_github = wpt_github
+        self.wpt_github = WPTGitHub(host, gh_user, gh_token)
         self.dry_run = dry_run
-        self.local_wpt = LocalWPT(self.host)
+        self.local_wpt = LocalWPT(self.host, gh_token)
         self.local_wpt.fetch()
 
     def run(self):

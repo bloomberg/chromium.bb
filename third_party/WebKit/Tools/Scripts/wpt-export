@@ -16,7 +16,6 @@ import logging
 
 from webkitpy.common.host import Host
 from webkitpy.w3c.test_exporter import TestExporter
-from webkitpy.w3c.wpt_github import WPTGitHub
 
 
 _log = logging.getLogger(__name__)
@@ -44,24 +43,23 @@ def main():
              'This will override credentials that were passed via command line or env var.')
     args = parser.parse_args()
     host = Host()
+    gh_user = args.gh_user
+    gh_token = args.gh_token
 
-    if not args.gh_user:
-        args.gh_user = host.environ.get('GH_USER')
-    if not args.gh_token:
-        args.gh_token = host.environ.get('GH_TOKEN')
+    if not gh_user:
+        gh_user = host.environ.get('GH_USER')
+    if not gh_token:
+        gh_token = host.environ.get('GH_TOKEN')
     if args.github_credentials_json:
         with open(args.github_credentials_json, 'r') as f:
             contents = json.load(f)
-            args.gh_user = contents['GH_USER']
-            args.gh_token = contents['GH_TOKEN']
+            gh_user = contents['GH_USER']
+            gh_token = contents['GH_TOKEN']
 
-    if not (args.gh_user and args.gh_token):
+    if not (gh_user and gh_token):
         parser.error('Must provide both gh_user and gh_token for GitHub.')
 
-    wpt_github = WPTGitHub(host, args.gh_user, args.gh_token)
-    test_exporter = TestExporter(host, wpt_github, dry_run=args.dry_run)
-
-    test_exporter.run()
+    TestExporter(host, gh_user, gh_token, dry_run=args.dry_run).run()
 
 
 if __name__ == '__main__':

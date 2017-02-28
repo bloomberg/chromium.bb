@@ -8,7 +8,7 @@ import logging
 
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.common import WPT_GH_REPO_URL, CHROMIUM_WPT_DIR
+from webkitpy.w3c.common import WPT_GH_REPO_URL_TEMPLATE, CHROMIUM_WPT_DIR
 
 
 _log = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ _log = logging.getLogger(__name__)
 
 class LocalWPT(object):
 
-    def __init__(self, host, path='/tmp/wpt'):
+    def __init__(self, host, gh_token=None, path='/tmp/wpt'):
         """
         Args:
             host: A Host object.
@@ -26,16 +26,19 @@ class LocalWPT(object):
         """
         self.host = host
         self.path = path
+        self.gh_token = gh_token
         self.branch_name = 'chromium-export-try'
 
     def fetch(self):
+        assert self.gh_token, 'LocalWPT.gh_token required for fetch'
         if self.host.filesystem.exists(self.path):
             _log.info('WPT checkout exists at %s, fetching latest', self.path)
             self.run(['git', 'fetch', 'origin'])
             self.run(['git', 'checkout', 'origin/master'])
         else:
-            _log.info('Cloning %s into %s', WPT_GH_REPO_URL, self.path)
-            self.host.executive.run_command(['git', 'clone', WPT_GH_REPO_URL, self.path])
+            _log.info('Cloning GitHub w3c/web-platform-tests into %s', self.path)
+            remote_url = WPT_GH_REPO_URL_TEMPLATE.format(self.gh_token)
+            self.host.executive.run_command(['git', 'clone', remote_url, self.path])
 
     def run(self, command, **kwargs):
         """Runs a command in the local WPT directory."""

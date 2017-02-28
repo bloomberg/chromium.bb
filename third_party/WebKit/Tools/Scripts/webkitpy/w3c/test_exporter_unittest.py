@@ -14,39 +14,42 @@ class TestExporterTest(unittest.TestCase):
 
     def setUp(self):
         self.host = MockHost()
-        self.wpt_github = MockWPTGitHub(pull_requests=[])
 
     def test_stops_if_more_than_one_pr_is_in_flight(self):
         host = MockHost()
-        wpt_github = MockWPTGitHub(pull_requests=[{'id': 1}, {'id': 2}])
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token')
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[{'id': 1}, {'id': 2}])
 
         # TODO: make Exception more specific
         with self.assertRaises(Exception):
-            TestExporter(host, wpt_github).run()
+            test_exporter.run()
 
     def test_if_pr_exists_merges_it(self):
         host = MockHost()
-        wpt_github = MockWPTGitHub(pull_requests=[{'number': 1, 'title': 'abc'}])
-        TestExporter(host, wpt_github).run()
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token')
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[{'number': 1, 'title': 'abc'}])
+        test_exporter.run()
 
-        self.assertIn('merge_pull_request', wpt_github.calls)
+        self.assertIn('merge_pull_request', test_exporter.wpt_github.calls)
 
     def test_merge_failure_errors_out(self):
         host = MockHost()
-        wpt_github = MockWPTGitHub(pull_requests=[{'number': 1, 'title': 'abc'}],
-                                   unsuccessful_merge=True)
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token')
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[{'number': 1, 'title': 'abc'}],
+                                                 unsuccessful_merge=True)
 
         # TODO: make Exception more specific
         with self.assertRaises(Exception):
-            TestExporter(host, wpt_github).run()
+            test_exporter.run()
 
     def test_dry_run_stops_before_creating_pr(self):
         host = MockHost()
         host.executive = MockExecutive(output='beefcafe')
-        wpt_github = MockWPTGitHub(pull_requests=[{'number': 1, 'title': 'abc'}])
-        TestExporter(host, wpt_github, dry_run=True).run()
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token', dry_run=True)
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[{'number': 1, 'title': 'abc'}])
+        test_exporter.run()
 
-        self.assertEqual(wpt_github.calls, ['in_flight_pull_requests'])
+        self.assertEqual(test_exporter.wpt_github.calls, ['in_flight_pull_requests'])
 
     def test_creates_pull_request_for_earliest_commit(self):
         host = MockHost()
@@ -65,10 +68,10 @@ class TestExporterTest(unittest.TestCase):
             return canned_git_outputs.get(args[1], '')
 
         host.executive = MockExecutive(run_command_fn=mock_command)
-        wpt_github = MockWPTGitHub(pull_requests=[])
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token')
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
+        test_exporter.run()
 
-        TestExporter(host, wpt_github).run()
-
-        self.assertEqual(wpt_github.calls, ['in_flight_pull_requests', 'create_pr'])
-        self.assertEqual(wpt_github.pull_requests_created,
+        self.assertEqual(test_exporter.wpt_github.calls, ['in_flight_pull_requests', 'create_pr'])
+        self.assertEqual(test_exporter.wpt_github.pull_requests_created,
                          [('chromium-export-try', 'older fake text', 'older fake text')])
