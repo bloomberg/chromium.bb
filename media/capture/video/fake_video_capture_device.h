@@ -18,6 +18,11 @@ namespace media {
 // on a given target OutputMode and frame rate.
 class CAPTURE_EXPORT FakeVideoCaptureDeviceMaker {
  public:
+  enum class PixelFormat {
+    I420 = media::PIXEL_FORMAT_I420,
+    Y16 = media::PIXEL_FORMAT_Y16,
+    MJPEG = media::PIXEL_FORMAT_MJPEG
+  };
   enum class DeliveryMode {
     USE_DEVICE_INTERNAL_BUFFERS,
     USE_CLIENT_PROVIDED_BUFFERS
@@ -26,7 +31,7 @@ class CAPTURE_EXPORT FakeVideoCaptureDeviceMaker {
   static void GetSupportedSizes(std::vector<gfx::Size>* supported_sizes);
 
   static std::unique_ptr<VideoCaptureDevice> MakeInstance(
-      VideoPixelFormat pixel_format,
+      PixelFormat pixel_format,
       DeliveryMode delivery_mode,
       float frame_rate);
 };
