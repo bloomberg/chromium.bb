@@ -171,6 +171,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/textureshadow/2d_array_*.html',
         ['win', 'intel', 'd3d11'], bug=666392)
 
+    # Win 10 / Intel
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
+        ['win10', 'intel', 'd3d11'], bug=483282)
+
     # Intel HD 530
     self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
         ['win', 'intel', 'd3d11'], bug=680797)
