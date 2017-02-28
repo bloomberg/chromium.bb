@@ -139,15 +139,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // SurfaceId and will never correspond to a surface.
   const SurfaceId& GetRootSurfaceId() const;
 
-  // Adds a reference from |parent_id| to |child_id|. If there is a temporary
-  // references for |child_id| then it will be removed.
-  void AddSurfaceReference(const SurfaceId& parent_id,
-                           const SurfaceId& child_id);
-
-  // Removes a reference from |parent_id| to |child_id|.
-  void RemoveSurfaceReference(const SurfaceId& parent_id,
-                              const SurfaceId& child_id);
-
   // Adds all surface references in |references|. This will remove any temporary
   // references for child surface in a surface reference.
   void AddSurfaceReferences(const std::vector<SurfaceReference>& references);
@@ -201,6 +192,16 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // Removes all surface references to or from |surface_id|. Used when the
   // surface is about to be deleted.
   void RemoveAllSurfaceReferences(const SurfaceId& surface_id);
+
+  bool HasTemporaryReference(const SurfaceId& surface_id) const;
+
+  // Adds a temporary reference to |surface_id|.
+  void AddTemporaryReference(const SurfaceId& surface_id);
+
+  // Removes temporary reference to |surface_id|. If |remove_range| is true then
+  // all temporary references to surfaces with the same FrameSinkId as
+  // |surface_id| that were added before |surface_id| will also be removed.
+  void RemoveTemporaryReference(const SurfaceId& surface_id, bool remove_range);
 
 #if DCHECK_IS_ON()
   // Recursively prints surface references starting at |surface_id| to |str|.
@@ -271,13 +272,23 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // references.
   scoped_refptr<SurfaceReferenceFactory> reference_factory_;
 
-  // SurfaceIds that have temporary references from top level root so they
-  // aren't GC'd before a real reference is added. This is basically a
-  // collection of surface ids, for example:
+  // A map of surfaces that have temporary references to them. The key is the
+  // SurfaceId and the value is the owner.
+  // TODO(kylechar): Use owner value.
+  std::unordered_map<SurfaceId, base::Optional<FrameSinkId>, SurfaceIdHash>
+      temporary_references_;
+
+  // Range tracking information for temporary references. Each map entry is an
+  // is an ordered list of SurfaceIds that have temporary references with the
+  // same FrameSinkId. A SurfaceId can be reconstructed with:
   //   SurfaceId surface_id(key, value[index]);
-  // The LocalSurfaceIds are stored in the order the surfaces are created in.
+  // The LocalSurfaceIds are stored in the order the surfaces are created in. If
+  // a reference is added to a later SurfaceId then all temporary references up
+  // to that point will be removed. This is to handle clients getting out of
+  // sync, for example the embedded client producing new SurfaceIds faster than
+  // the embedding client can use them.
   std::unordered_map<FrameSinkId, std::vector<LocalSurfaceId>, FrameSinkIdHash>
-      temp_references_;
+      temporary_reference_ranges_;
 
   std::unique_ptr<SurfaceDependencyTracker> dependency_tracker_;
 

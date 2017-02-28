@@ -111,10 +111,9 @@ class CompositorFrameSinkSupportTest : public testing::Test,
     return surface_manager().parent_to_child_refs_[surface_id];
   }
 
-  // Returns all the temporary references for the given frame sink id.
-  std::vector<LocalSurfaceId> GetTempReferences(
-      const FrameSinkId& frame_sink_id) {
-    return surface_manager().temp_references_[frame_sink_id];
+  // Returns true if there is a temporary reference for |surface_id|.
+  bool HasTemporaryReference(const SurfaceId& surface_id) {
+    return surface_manager().HasTemporaryReference(surface_id);
   }
 
   SurfaceDependencyTracker& dependency_tracker() {
@@ -197,7 +196,7 @@ TEST_F(CompositorFrameSinkSupportTest, RootSurfaceReceivesReferences) {
 
   // A surface reference from the top-level root is added and there shouldn't be
   // a temporary reference.
-  EXPECT_THAT(GetTempReferences(kDisplayFrameSink), IsEmpty());
+  EXPECT_FALSE(HasTemporaryReference(display_id_first));
   EXPECT_THAT(GetChildReferences(surface_manager().GetRootSurfaceId()),
               UnorderedElementsAre(display_id_first));
 
@@ -208,7 +207,7 @@ TEST_F(CompositorFrameSinkSupportTest, RootSurfaceReceivesReferences) {
 
   // A surface reference from the top-level root to |display_id_second| should
   // be added and the reference to |display_root_first| removed.
-  EXPECT_THAT(GetTempReferences(kDisplayFrameSink), IsEmpty());
+  EXPECT_FALSE(HasTemporaryReference(display_id_second));
   EXPECT_THAT(GetChildReferences(surface_manager().GetRootSurfaceId()),
               UnorderedElementsAre(display_id_second));
 
@@ -612,7 +611,7 @@ TEST_F(CompositorFrameSinkSupportTest,
 
   // Verify that there is no temporary reference for the child and that
   // the reference from the parent to the child still exists.
-  EXPECT_THAT(GetTempReferences(child_id.frame_sink_id()), IsEmpty());
+  EXPECT_FALSE(HasTemporaryReference(child_id));
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id));
 }
 
@@ -695,7 +694,7 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
 
   // Verify that there is no temporary reference for the child and that
   // the reference from the parent to the child still exists.
-  EXPECT_THAT(GetTempReferences(child_id1.frame_sink_id()), IsEmpty());
+  EXPECT_FALSE(HasTemporaryReference(child_id1));
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
 
   // The parent submits another CompositorFrame that depends on |child_id2|.
