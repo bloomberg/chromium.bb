@@ -392,7 +392,7 @@ class CC_EXPORT LayerTreeImpl {
   void RemoveSurfaceLayer(LayerImpl* layer);
   const LayerImplList& SurfaceLayers() const { return surface_layers_; }
 
-  LayerImpl* FindFirstScrollingLayerOrDrawnScrollbarThatIsHitByPoint(
+  LayerImpl* FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
       const gfx::PointF& screen_space_point);
 
   LayerImpl* FindLayerThatIsHitByPoint(const gfx::PointF& screen_space_point);
