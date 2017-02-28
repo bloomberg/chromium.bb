@@ -1465,6 +1465,7 @@ class CORE_EXPORT UseCounter {
     OffscreenCanvasConvertToBlob = 1834,
     SVGInCanvas2D = 1835,
     SVGInWebGL = 1836,
+    SelectionFuncionsChangeFocus = 1837,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

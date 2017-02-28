@@ -82,8 +82,13 @@ void DOMSelection::updateFrameSelection(const SelectionInDOMTree& selection,
   // TODO(tkent): Specify FrameSelection::DoNotSetFocus. crbug.com/690272
   bool didSet = frameSelection.setSelectionDeprecated(selection);
   cacheRangeIfSelectionOfDocument(newCachedRange);
-  if (didSet)
-    frameSelection.didSetSelectionDeprecated();
+  if (!didSet)
+    return;
+  Element* focusedElement = frame()->document()->focusedElement();
+  frameSelection.didSetSelectionDeprecated();
+  if (frame() && frame()->document() &&
+      focusedElement != frame()->document()->focusedElement())
+    UseCounter::count(frame(), UseCounter::SelectionFuncionsChangeFocus);
 }
 
 const VisibleSelection& DOMSelection::visibleSelection() const {
