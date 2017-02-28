@@ -32,9 +32,9 @@ class PropertyTreeManager {
   WTF_MAKE_NONCOPYABLE(PropertyTreeManager);
 
  public:
-  PropertyTreeManager(cc::PropertyTrees&, cc::Layer* rootLayer);
-
-  static constexpr int kPropertyTreeSequenceNumber = 1;
+  PropertyTreeManager(cc::PropertyTrees&,
+                      cc::Layer* rootLayer,
+                      int sequenceNumber);
 
   void setupRootTransformNode();
   void setupRootClipNode();
@@ -118,6 +118,7 @@ class PropertyTreeManager {
     int id;
   };
   Vector<BlinkEffectAndCcIdPair> m_effectStack;
+  int m_sequenceNumber;
 
 #if DCHECK_IS_ON()
   HashSet<const EffectPaintPropertyNode*> m_effectNodesConverted;

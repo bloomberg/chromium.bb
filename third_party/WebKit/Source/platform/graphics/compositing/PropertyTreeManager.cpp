@@ -33,8 +33,11 @@ static constexpr int kSecondaryRootNodeId = 1;
 }  // namespace
 
 PropertyTreeManager::PropertyTreeManager(cc::PropertyTrees& propertyTrees,
-                                         cc::Layer* rootLayer)
-    : m_propertyTrees(propertyTrees), m_rootLayer(rootLayer) {
+                                         cc::Layer* rootLayer,
+                                         int sequenceNumber)
+    : m_propertyTrees(propertyTrees),
+      m_rootLayer(rootLayer),
+      m_sequenceNumber(sequenceNumber) {
   setupRootTransformNode();
   setupRootClipNode();
   setupRootEffectNode();
@@ -191,7 +194,7 @@ int PropertyTreeManager::ensureCompositorTransformNode(
   dummyLayer->SetClipTreeIndex(kSecondaryRootNodeId);
   dummyLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
   dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
-  dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+  dummyLayer->set_property_tree_sequence_number(m_sequenceNumber);
   CompositorElementId compositorElementId =
       transformNode->compositorElementId();
   if (compositorElementId) {
@@ -244,7 +247,7 @@ int PropertyTreeManager::ensureCompositorClipNode(
   dummyLayer->SetClipTreeIndex(id);
   dummyLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
   dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
-  dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+  dummyLayer->set_property_tree_sequence_number(m_sequenceNumber);
 
   auto result = m_clipNodeMap.set(clipNode, id);
   DCHECK(result.isNewEntry);
@@ -452,7 +455,7 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   }
   m_effectStack.push_back(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 
-  dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+  dummyLayer->set_property_tree_sequence_number(m_sequenceNumber);
   dummyLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
   dummyLayer->SetClipTreeIndex(outputClipId);
   dummyLayer->SetEffectTreeIndex(effectNode.id);

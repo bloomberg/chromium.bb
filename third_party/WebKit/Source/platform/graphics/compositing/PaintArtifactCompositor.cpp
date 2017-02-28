@@ -62,6 +62,13 @@ static std::unique_ptr<JSONArray> sizeAsJSONArray(const T& size) {
   return array;
 }
 
+// cc property trees make use of a sequence number to identify when tree
+// topology changes. For now we naively increment the sequence number each time
+// we update the property trees. We should explore optimizing our management of
+// the sequence number through the use of a dirty bit or similar. See
+// http://crbug.com/692842#c4.
+static int sPropertyTreeSequenceNumber = 1;
+
 class PaintArtifactCompositor::ContentLayerClientImpl
     : public cc::ContentLayerClient {
   WTF_MAKE_NONCOPYABLE(ContentLayerClientImpl);
@@ -696,11 +703,12 @@ void PaintArtifactCompositor::update(
     m_extraDataForTesting = WTF::wrapUnique(new ExtraDataForTesting);
 
   m_rootLayer->RemoveAllChildren();
-  m_rootLayer->set_property_tree_sequence_number(
-      PropertyTreeManager::kPropertyTreeSequenceNumber);
+
+  m_rootLayer->set_property_tree_sequence_number(sPropertyTreeSequenceNumber);
 
   PropertyTreeManager propertyTreeManager(*layerTreeHost->property_trees(),
-                                          m_rootLayer.get());
+                                          m_rootLayer.get(),
+                                          sPropertyTreeSequenceNumber);
 
   Vector<PendingLayer, 0> pendingLayers;
   collectPendingLayers(paintArtifact, pendingLayers, geometryMapper);
@@ -725,8 +733,7 @@ void PaintArtifactCompositor::update(
     layer->SetElementId(pendingLayer.propertyTreeState.compositorElementId());
 
     m_rootLayer->AddChild(layer);
-    layer->set_property_tree_sequence_number(
-        PropertyTreeManager::kPropertyTreeSequenceNumber);
+    layer->set_property_tree_sequence_number(sPropertyTreeSequenceNumber);
     layer->SetTransformTreeIndex(transformId);
     layer->SetClipTreeIndex(clipId);
     layer->SetEffectTreeIndex(effectId);
@@ -742,9 +749,11 @@ void PaintArtifactCompositor::update(
 
   // Mark the property trees as having been rebuilt.
   layerTreeHost->property_trees()->sequence_number =
-      PropertyTreeManager::kPropertyTreeSequenceNumber;
+      sPropertyTreeSequenceNumber;
   layerTreeHost->property_trees()->needs_rebuild = false;
   layerTreeHost->property_trees()->ResetCachedData();
+
+  sPropertyTreeSequenceNumber++;
 }
 
 #ifndef NDEBUG

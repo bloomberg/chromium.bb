@@ -1764,4 +1764,53 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, CompositedLuminanceMask) {
   EXPECT_EQ(cc::FilterOperation::REFERENCE, maskingGroup->filters.at(0).type());
 }
 
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       UpdateProducesNewSequenceNumber) {
+  // A 90 degree clockwise rotation about (100, 100).
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(), TransformationMatrix().rotate(90),
+          FloatPoint3D(100, 100, 0), false, 0, CompositingReason3DTransform);
+
+  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
+      ClipPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      FloatRoundedRect(100, 100, 300, 200));
+
+  RefPtr<EffectPaintPropertyNode> effect =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+
+  TestPaintArtifact artifact;
+  artifact.chunk(transform, clip, effect)
+      .rectDrawing(FloatRect(0, 0, 100, 100), Color::white);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(0, 0, 100, 100), Color::gray);
+  update(artifact.build());
+
+  // Two content layers for the differentiated rect drawings and three dummy
+  // layers for each of the transform, clip and effect nodes.
+  EXPECT_EQ(5u, rootLayer()->children().size());
+  EXPECT_EQ(1, propertyTrees().sequence_number);
+  for (auto layer : rootLayer()->children()) {
+    EXPECT_EQ(1, layer->property_tree_sequence_number());
+  }
+
+  update(artifact.build());
+
+  EXPECT_EQ(5u, rootLayer()->children().size());
+  EXPECT_EQ(2, propertyTrees().sequence_number);
+  for (auto layer : rootLayer()->children()) {
+    EXPECT_EQ(2, layer->property_tree_sequence_number());
+  }
+
+  update(artifact.build());
+
+  EXPECT_EQ(5u, rootLayer()->children().size());
+  EXPECT_EQ(3, propertyTrees().sequence_number);
+  for (auto layer : rootLayer()->children()) {
+    EXPECT_EQ(3, layer->property_tree_sequence_number());
+  }
+}
+
 }  // namespace blink
