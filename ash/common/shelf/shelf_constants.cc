@@ -13,7 +13,6 @@ const int kTimeToSwitchBackgroundMs = 1000;
 const int kWorkspaceAreaVisibleInset = 2;
 const int kWorkspaceAreaAutoHideInset = 5;
 const int kShelfAutoHideSize = 3;
-const int kShelfItemInset = 3;
 const SkColor kShelfDefaultBaseColor = SK_ColorBLACK;
 const int kShelfButtonSize = 48;
 const int kShelfButtonSpacing = 16;

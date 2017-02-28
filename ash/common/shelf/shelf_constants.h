@@ -30,10 +30,6 @@ extern const int kWorkspaceAreaAutoHideInset;
 // Size of the shelf when auto-hidden.
 ASH_EXPORT extern const int kShelfAutoHideSize;
 
-// Inset between the inner edge of the shelf (towards centre of screen), and
-// the shelf items, notifications, status area etc.
-extern const int kShelfItemInset;
-
 // Animation duration for switching black shelf and dock background on and off.
 ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 

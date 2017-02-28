@@ -107,9 +107,9 @@ const int kTrayPopupInkDropCornerRadius = 2;
 
 const int kTrayPopupSystemInfoRowHeight = 40;
 
+const int kTrayPaddingFromEdgeOfShelf = 3;
+
 int GetTrayConstant(TrayConstant constant) {
-  const int kTrayItemHeightLegacy[] = {38, kTrayItemSize, kTrayItemSize};
-  const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 3};
   const int kTrayPopupItemMinHeight[] = {46, 48, 48};
   const int kTrayPopupItemMaxHeight[] = {138, 144, 144};
   // FixedSizedImageViews use the contained ImageView's width for 0 values.
@@ -126,10 +126,6 @@ int GetTrayConstant(TrayConstant constant) {
   // remaining arrays to a single constant.
   const int mode = 1;
   switch (constant) {
-    case TRAY_ITEM_HEIGHT_LEGACY:
-      return kTrayItemHeightLegacy[mode];
-    case TRAY_PADDING_FROM_EDGE_OF_SHELF:
-      return kTrayPaddingFromEdgeOfShelf[mode];
     case TRAY_POPUP_ITEM_MIN_HEIGHT:
       return kTrayPopupItemMinHeight[mode];
     case TRAY_POPUP_ITEM_MAX_HEIGHT:

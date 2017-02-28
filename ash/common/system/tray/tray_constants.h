@@ -138,14 +138,10 @@ extern const int kTrayPopupInkDropCornerRadius;
 // The height of the system info row.
 extern const int kTrayPopupSystemInfoRowHeight;
 
+// Padding between the edge of shelf and the item in status tray area.
+extern const int kTrayPaddingFromEdgeOfShelf;
+
 enum TrayConstant {
-  // A legacy height value used in non-MD calculations for applying additional
-  // borders on tray items.
-  TRAY_ITEM_HEIGHT_LEGACY,
-
-  // Padding between the edge of shelf and the item in status tray area.
-  TRAY_PADDING_FROM_EDGE_OF_SHELF,
-
   // The minimum height of the rows in the system tray menu.
   TRAY_POPUP_ITEM_MIN_HEIGHT,
 

@@ -4,9 +4,7 @@
 
 #include "ash/common/system/status_area_widget_delegate.h"
 
-#include "ash/ash_export.h"
 #include "ash/common/focus_cycler.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -14,18 +12,13 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -179,49 +172,23 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
                                                 bool extend_border_to_edge) {
-  const int shelf_size = GetShelfConstant(SHELF_SIZE);
-  const int item_height = GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY);
-  int top_edge, left_edge, bottom_edge, right_edge;
-
   // Tray views are laid out right-to-left or bottom-to-top.
-  if (MaterialDesignController::IsShelfMaterial()) {
-    const bool horizontal_alignment = IsHorizontalAlignment(alignment_);
-    const int padding = (shelf_size - item_height) / 2;
-    const int extended_padding =
-        GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF);
+  const bool horizontal_alignment = IsHorizontalAlignment(alignment_);
+  const int padding = (GetShelfConstant(SHELF_SIZE) - kTrayItemSize) / 2;
 
-    top_edge = horizontal_alignment ? padding : 0;
-    left_edge = horizontal_alignment ? 0 : padding;
-    bottom_edge = horizontal_alignment
-                      ? padding
-                      : (extend_border_to_edge ? extended_padding : 0);
-    right_edge = horizontal_alignment
-                     ? (extend_border_to_edge ? extended_padding : 0)
-                     : padding;
-  } else {
-    bool on_edge = (child == child_at(0));
-    if (IsHorizontalAlignment(alignment_)) {
-      top_edge = kShelfItemInset;
-      left_edge = 0;
-      bottom_edge = shelf_size - kShelfItemInset - item_height;
-      right_edge =
-          on_edge ? GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF) : 0;
-    } else if (alignment_ == SHELF_ALIGNMENT_LEFT) {
-      top_edge = 0;
-      left_edge = shelf_size - kShelfItemInset - item_height;
-      bottom_edge =
-          on_edge ? GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF) : 0;
-      right_edge = kShelfItemInset;
-    } else {  // SHELF_ALIGNMENT_RIGHT
-      top_edge = 0;
-      left_edge = kShelfItemInset;
-      bottom_edge =
-          on_edge ? GetTrayConstant(TRAY_PADDING_FROM_EDGE_OF_SHELF) : 0;
-      right_edge = shelf_size - kShelfItemInset - item_height;
-    }
-  }
+  const int top_edge = horizontal_alignment ? padding : 0;
+  const int left_edge = horizontal_alignment ? 0 : padding;
+  const int bottom_edge =
+      horizontal_alignment
+          ? padding
+          : (extend_border_to_edge ? kTrayPaddingFromEdgeOfShelf : 0);
+  const int right_edge =
+      horizontal_alignment
+          ? (extend_border_to_edge ? kTrayPaddingFromEdgeOfShelf : 0)
+          : padding;
   child->SetBorder(
       views::CreateEmptyBorder(top_edge, left_edge, bottom_edge, right_edge));
+
   // Layout on |child| needs to be updated based on new border value before
   // displaying; otherwise |child| will be showing with old border size.
   // Fix for crbug.com/623438.
