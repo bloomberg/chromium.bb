@@ -39,6 +39,11 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include <Security/Security.h>
+#include "net/cert/internal/trust_store_mac.h"
+#endif
+
 namespace {
 
 std::string GetUserAgent() {
@@ -229,6 +234,9 @@ bool VerifyUsingPathBuilder(
 #if defined(USE_NSS_CERTS)
   net::TrustStoreNSS trust_store_nss(trustSSL);
   trust_store.AddTrustStore(&trust_store_nss);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  net::TrustStoreMac trust_store_mac(kSecPolicyAppleSSL);
+  trust_store.AddTrustStore(&trust_store_mac);
 #else
   if (root_der_certs.empty()) {
     std::cerr << "NOTE: CertPathBuilder does not currently use OS trust "
