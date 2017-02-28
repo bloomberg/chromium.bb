@@ -340,8 +340,15 @@ class WebLocalFrame : public WebFrame {
   // Replaces the selection with the input string.
   virtual void replaceSelection(const WebString&) = 0;
   // Deletes text before and after the current cursor position, excluding the
-  // selection.
+  // selection. The lengths are supplied in UTF-16 Code Unit, not in code points
+  // or in glyphs.
   virtual void deleteSurroundingText(int before, int after) = 0;
+  // A variant of deleteSurroundingText(int, int). Major differences are:
+  // 1. The lengths are supplied in code points, not in UTF-16 Code Unit or in
+  // glyphs.
+  // 2. This method does nothing if there are one or more invalid surrogate
+  // pairs in the requested range.
+  virtual void deleteSurroundingTextInCodePoints(int before, int after) = 0;
 
   virtual void extractSmartClipData(WebRect rectInViewport,
                                     WebString& clipText,

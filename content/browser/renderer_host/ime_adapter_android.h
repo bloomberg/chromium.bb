@@ -75,6 +75,11 @@ class CONTENT_EXPORT ImeAdapterAndroid {
                              const base::android::JavaParamRef<jobject>&,
                              int before,
                              int after);
+  void DeleteSurroundingTextInCodePoints(
+      JNIEnv*,
+      const base::android::JavaParamRef<jobject>&,
+      int before,
+      int after);
   void ResetImeAdapter(JNIEnv*, const base::android::JavaParamRef<jobject>&);
   void RequestCursorUpdate(JNIEnv*, const base::android::JavaParamRef<jobject>&,
                            bool immediateRequest, bool monitorRequest);

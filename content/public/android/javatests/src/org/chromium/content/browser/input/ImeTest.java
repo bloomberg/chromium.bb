@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.input;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -261,6 +262,38 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyUpdateSelection(3, 5, 5, 2, 3);
         // Keyboard app finishes composition. We emulate this in TestInputMethodManagerWrapper.
         waitAndVerifyUpdateSelection(4, 5, 5, -1, -1);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testDeleteSurroundingTextInCodePointsWithRangeSelection() throws Throwable {
+        final String trophy = "\uD83C\uDFC6";
+        commitText("ab" + trophy + "cdef" + trophy + "gh", 1);
+        waitAndVerifyUpdateSelection(0, 12, 12, -1, -1);
+
+        setSelection(6, 8);
+        waitAndVerifyUpdateSelection(1, 6, 8, -1, -1);
+        assertTextsAroundCursor("ab" + trophy + "cd", "ef", trophy + "gh");
+
+        deleteSurroundingTextInCodePoints(2, 2);
+        waitAndVerifyUpdateSelection(2, 4, 6, -1, -1);
+        assertTextsAroundCursor("ab" + trophy, "ef", "h");
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testDeleteSurroundingTextInCodePointsWithCursorSelection() throws Throwable {
+        final String trophy = "\uD83C\uDFC6";
+        commitText("ab" + trophy + "cd" + trophy, 1);
+        waitAndVerifyUpdateSelection(0, 8, 8, -1, -1);
+
+        setSelection(4, 4);
+        waitAndVerifyUpdateSelection(1, 4, 4, -1, -1);
+        assertTextsAroundCursor("ab" + trophy, null, "cd" + trophy);
+
+        deleteSurroundingTextInCodePoints(2, 2);
+        waitAndVerifyUpdateSelection(2, 1, 1, -1, -1);
+        assertTextsAroundCursor("a", null, trophy);
     }
 
     @SmallTest
@@ -1382,6 +1415,48 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
+    public void testContentEditableEvents_DeleteSurroundingTextInCodePoints() throws Throwable {
+        focusElementAndWaitForStateUpdate("contenteditable_event");
+        waitForEventLogs("selectionchange,selectionchange");
+        clearEventLogs();
+
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
+        waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        clearEventLogs();
+
+        setSelection(2, 2);
+        waitAndVerifyUpdateSelection(1, 2, 2, -1, -1);
+        waitForEventLogs("selectionchange");
+        clearEventLogs();
+
+        deleteSurroundingTextInCodePoints(1, 1);
+        waitAndVerifyUpdateSelection(2, 1, 1, -1, -1);
+        // TODO(yabinh): It should only fire 1 input and 1 selectionchange events.
+        waitForEventLogs("keydown(229),input,input,keyup(229),selectionchange,selectionchange");
+    }
+
+    @MediumTest
+    @Feature({"TextInput"})
+    public void testInputTextEvents_DeleteSurroundingTextInCodePoints() throws Throwable {
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
+        waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        clearEventLogs();
+
+        setSelection(2, 2);
+        waitAndVerifyUpdateSelection(1, 2, 2, -1, -1);
+        waitForEventLogs("selectionchange");
+        clearEventLogs();
+
+        deleteSurroundingTextInCodePoints(1, 1);
+        waitAndVerifyUpdateSelection(2, 1, 1, -1, -1);
+        // TODO(yabinh): It should only fire 1 input and 1 selectionchange events.
+        waitForEventLogs("keydown(229),input,input,keyup(229),selectionchange,selectionchange");
+    }
+
+    @MediumTest
+    @Feature({"TextInput"})
     public void testGetCursorCapsMode() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         commitText("Hello World", 1);
@@ -1752,6 +1827,21 @@ public class ImeTest extends ContentShellTestBase {
             @Override
             public Boolean call() {
                 return connection.deleteSurroundingText(before, after);
+            }
+        });
+    }
+
+    // Note that deleteSurroundingTextInCodePoints() was introduced in Android N (Api level 24), but
+    // the Android repository used in Chrome is behind that (level 23). So this function can't be
+    // called by keyboard apps currently.
+    @TargetApi(24)
+    private boolean deleteSurroundingTextInCodePoints(final int before, final int after)
+            throws Exception {
+        final ThreadedInputConnection connection = (ThreadedInputConnection) mConnection;
+        return runBlockingOnImeThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return connection.deleteSurroundingTextInCodePoints(before, after);
             }
         });
     }

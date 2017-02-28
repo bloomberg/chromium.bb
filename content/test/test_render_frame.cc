@@ -56,6 +56,10 @@ void TestRenderFrame::DeleteSurroundingText(int before, int after) {
   OnDeleteSurroundingText(before, after);
 }
 
+void TestRenderFrame::DeleteSurroundingTextInCodePoints(int before, int after) {
+  OnDeleteSurroundingTextInCodePoints(before, after);
+}
+
 void TestRenderFrame::Unselect() {
   OnUnselect();
 }

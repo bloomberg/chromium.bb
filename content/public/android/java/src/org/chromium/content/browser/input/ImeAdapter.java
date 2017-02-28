@@ -633,6 +633,26 @@ public class ImeAdapter {
     }
 
     /**
+     * Send a request to the native counterpart to delete a given range of characters.
+     * @param beforeLength Number of code points to extend the selection by before the existing
+     *                     selection.
+     * @param afterLength Number of code points to extend the selection by after the existing
+     *                    selection.
+     * @return Whether the native counterpart of ImeAdapter received the call.
+     */
+    boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
+        mViewEmbedder.onImeEvent();
+        if (mNativeImeAdapterAndroid == 0) return false;
+        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.RawKeyDown, 0,
+                SystemClock.uptimeMillis(), COMPOSITION_KEY_CODE, 0, false, 0);
+        nativeDeleteSurroundingTextInCodePoints(
+                mNativeImeAdapterAndroid, beforeLength, afterLength);
+        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.KeyUp, 0,
+                SystemClock.uptimeMillis(), COMPOSITION_KEY_CODE, 0, false, 0);
+        return true;
+    }
+
+    /**
      * Send a request to the native counterpart to set the selection to given range.
      * @param start Selection start index.
      * @param end Selection end index.
@@ -783,6 +803,8 @@ public class ImeAdapter {
     private native void nativeSetComposingRegion(long nativeImeAdapterAndroid, int start, int end);
     private native void nativeDeleteSurroundingText(long nativeImeAdapterAndroid,
             int before, int after);
+    private native void nativeDeleteSurroundingTextInCodePoints(
+            long nativeImeAdapterAndroid, int before, int after);
     private native void nativeResetImeAdapter(long nativeImeAdapterAndroid);
     private native boolean nativeRequestTextInputStateUpdate(long nativeImeAdapterAndroid);
     private native void nativeRequestCursorUpdate(long nativeImeAdapterAndroid,

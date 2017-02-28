@@ -35,6 +35,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/state_machines/BackwardCodePointStateMachine.h"
+#include "core/editing/state_machines/ForwardCodePointStateMachine.h"
 #include "core/events/CompositionEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
@@ -183,6 +185,75 @@ AtomicString getInputModeAttribute(Element* element) {
   // TODO(dtapuska): We may wish to restrict this to a yet to be proposed
   // <contenteditable> or <richtext> element Mozilla discussed at TPAC 2016.
   return element->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+}
+
+constexpr int invalidDeletionLength = -1;
+constexpr bool isInvalidDeletionLength(const int length) {
+  return length == invalidDeletionLength;
+}
+
+int calculateBeforeDeletionLengthsInCodePoints(
+    const String& text,
+    const int beforeLengthInCodePoints,
+    const int selectionStart) {
+  DCHECK_GE(beforeLengthInCodePoints, 0);
+  DCHECK_GE(selectionStart, 0);
+  DCHECK_LE(selectionStart, static_cast<int>(text.length()));
+
+  const UChar* uText = text.characters16();
+  BackwardCodePointStateMachine backwardMachine;
+  int counter = beforeLengthInCodePoints;
+  int deletionStart = selectionStart;
+  while (counter > 0 && deletionStart > 0) {
+    const TextSegmentationMachineState state =
+        backwardMachine.feedPrecedingCodeUnit(uText[deletionStart - 1]);
+    // According to Android's InputConnection spec, we should do nothing if
+    // |text| has invalid surrogate pair in the deletion range.
+    if (state == TextSegmentationMachineState::Invalid)
+      return invalidDeletionLength;
+
+    if (backwardMachine.atCodePointBoundary())
+      --counter;
+    --deletionStart;
+  }
+  if (!backwardMachine.atCodePointBoundary())
+    return invalidDeletionLength;
+
+  const int offset = backwardMachine.getBoundaryOffset();
+  DCHECK_EQ(-offset, selectionStart - deletionStart);
+  return -offset;
+}
+
+int calculateAfterDeletionLengthsInCodePoints(const String& text,
+                                              const int afterLengthInCodePoints,
+                                              const int selectionEnd) {
+  DCHECK_GE(afterLengthInCodePoints, 0);
+  DCHECK_GE(selectionEnd, 0);
+  const int length = text.length();
+  DCHECK_LE(selectionEnd, length);
+
+  const UChar* uText = text.characters16();
+  ForwardCodePointStateMachine forwardMachine;
+  int counter = afterLengthInCodePoints;
+  int deletionEnd = selectionEnd;
+  while (counter > 0 && deletionEnd < length) {
+    const TextSegmentationMachineState state =
+        forwardMachine.feedFollowingCodeUnit(uText[deletionEnd]);
+    // According to Android's InputConnection spec, we should do nothing if
+    // |text| has invalid surrogate pair in the deletion range.
+    if (state == TextSegmentationMachineState::Invalid)
+      return invalidDeletionLength;
+
+    if (forwardMachine.atCodePointBoundary())
+      --counter;
+    ++deletionEnd;
+  }
+  if (!forwardMachine.atCodePointBoundary())
+    return invalidDeletionLength;
+
+  const int offset = forwardMachine.getBoundaryOffset();
+  DCHECK_EQ(offset, deletionEnd - selectionEnd);
+  return offset;
 }
 
 }  // anonymous namespace
@@ -902,6 +973,47 @@ void InputMethodController::deleteSurroundingText(int before, int after) {
   }
 
   setSelectionOffsets(PlainTextRange(selectionStart, selectionEnd));
+}
+
+void InputMethodController::deleteSurroundingTextInCodePoints(int before,
+                                                              int after) {
+  DCHECK_GE(before, 0);
+  DCHECK_GE(after, 0);
+  if (!editor().canEdit())
+    return;
+  const PlainTextRange selectionOffsets(getSelectionOffsets());
+  if (selectionOffsets.isNull())
+    return;
+  Element* const rootEditableElement =
+      frame().selection().rootEditableElementOrDocumentElement();
+  if (!rootEditableElement)
+    return;
+
+  const TextIteratorBehavior& behavior =
+      TextIteratorBehavior::Builder()
+          .setEmitsObjectReplacementCharacter(true)
+          .build();
+  const String& text = plainText(
+      EphemeralRange::rangeOfContents(*rootEditableElement), behavior);
+
+  // 8-bit characters are Latin-1 characters, so the deletion lengths are
+  // trivial.
+  if (text.is8Bit())
+    return deleteSurroundingText(before, after);
+
+  const int selectionStart = static_cast<int>(selectionOffsets.start());
+  const int selectionEnd = static_cast<int>(selectionOffsets.end());
+
+  const int beforeLength =
+      calculateBeforeDeletionLengthsInCodePoints(text, before, selectionStart);
+  if (isInvalidDeletionLength(beforeLength))
+    return;
+  const int afterLength =
+      calculateAfterDeletionLengthsInCodePoints(text, after, selectionEnd);
+  if (isInvalidDeletionLength(afterLength))
+    return;
+
+  return deleteSurroundingText(beforeLength, afterLength);
 }
 
 WebTextInputInfo InputMethodController::textInputInfo() const {

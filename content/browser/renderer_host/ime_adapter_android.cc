@@ -283,6 +283,17 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*,
     rfh->DeleteSurroundingText(before, after);
 }
 
+void ImeAdapterAndroid::DeleteSurroundingTextInCodePoints(
+    JNIEnv*,
+    const JavaParamRef<jobject>&,
+    int before,
+    int after) {
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(GetFocusedFrame());
+  if (rfh)
+    rfh->DeleteSurroundingTextInCodePoints(before, after);
+}
+
 bool ImeAdapterAndroid::RequestTextInputStateUpdate(
     JNIEnv* env,
     const JavaParamRef<jobject>&) {

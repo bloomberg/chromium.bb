@@ -202,6 +202,7 @@ class WEB_EXPORT WebLocalFrameImpl final
       const WebVector<WebCompositionUnderline>& underlines) override;
   void extendSelectionAndDelete(int before, int after) override;
   void deleteSurroundingText(int before, int after) override;
+  void deleteSurroundingTextInCodePoints(int before, int after) override;
   void setCaretVisible(bool) override;
   int printBegin(const WebPrintParams&,
                  const WebNode& constrainToNode) override;

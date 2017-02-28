@@ -1670,6 +1670,31 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
   EXPECT_EQ(0, info.selectionEnd);
 }
 
+TEST_F(RenderViewImplTest, OnDeleteSurroundingTextInCodePoints) {
+  // Load an HTML page consisting of an input field.
+  LoadHTML(
+      // "ab" + trophy + space + "cdef" + trophy + space + "gh".
+      "<input id=\"test1\" value=\"ab&#x1f3c6; cdef&#x1f3c6; gh\">");
+  ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
+
+  frame()->SetEditableSelectionOffsets(4, 4);
+  frame()->DeleteSurroundingTextInCodePoints(2, 2);
+  blink::WebInputMethodController* controller =
+      frame()->GetWebFrame()->inputMethodController();
+  blink::WebTextInputInfo info = controller->textInputInfo();
+  // "a" + "def" + trophy + space + "gh".
+  EXPECT_EQ(WebString::fromUTF8("adef\xF0\x9F\x8F\x86 gh"), info.value);
+  EXPECT_EQ(1, info.selectionStart);
+  EXPECT_EQ(1, info.selectionEnd);
+
+  frame()->SetEditableSelectionOffsets(1, 3);
+  frame()->DeleteSurroundingTextInCodePoints(1, 4);
+  info = controller->textInputInfo();
+  EXPECT_EQ("deh", info.value);
+  EXPECT_EQ(0, info.selectionStart);
+  EXPECT_EQ(2, info.selectionEnd);
+}
+
 // Test that the navigating specific frames works correctly.
 TEST_F(RenderViewImplTest, NavigateSubframe) {
   // Load page A.

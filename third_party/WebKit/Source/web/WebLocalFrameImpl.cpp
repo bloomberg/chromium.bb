@@ -1296,6 +1296,22 @@ void WebLocalFrameImpl::deleteSurroundingText(int before, int after) {
   frame()->inputMethodController().deleteSurroundingText(before, after);
 }
 
+void WebLocalFrameImpl::deleteSurroundingTextInCodePoints(int before,
+                                                          int after) {
+  TRACE_EVENT0("blink", "WebLocalFrameImpl::deleteSurroundingTextInCodePoints");
+  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
+    plugin->deleteSurroundingTextInCodePoints(before, after);
+    return;
+  }
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  frame()->inputMethodController().deleteSurroundingTextInCodePoints(before,
+                                                                     after);
+}
+
 void WebLocalFrameImpl::setCaretVisible(bool visible) {
   frame()->selection().setCaretVisible(visible);
 }

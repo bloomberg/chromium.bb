@@ -427,9 +427,21 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
     /**
      * @see InputConnection#deleteSurroundingTextInCodePoints(int, int)
      */
-    public boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
-        // TODO(changwan): Implement this. http://crbug.com/595525
-        return false;
+    public boolean deleteSurroundingTextInCodePoints(
+            final int beforeLength, final int afterLength) {
+        if (DEBUG_LOGS) {
+            Log.w(TAG, "deleteSurroundingTextInCodePoints [%d %d]", beforeLength, afterLength);
+        }
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mPendingAccent != 0) {
+                    finishComposingTextOnUiThread();
+                }
+                mImeAdapter.deleteSurroundingTextInCodePoints(beforeLength, afterLength);
+            }
+        });
+        return true;
     }
 
     /**

@@ -38,6 +38,7 @@ class TestRenderFrame : public RenderFrameImpl {
   void SetEditableSelectionOffsets(int start, int end);
   void ExtendSelectionAndDelete(int before, int after);
   void DeleteSurroundingText(int before, int after);
+  void DeleteSurroundingTextInCodePoints(int before, int after);
   void Unselect();
   void SetAccessibilityMode(AccessibilityMode new_mode);
   void SetCompositionFromExistingText(

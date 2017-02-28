@@ -195,8 +195,14 @@ class WebPlugin {
   // before and after the selection or caret.
   virtual void extendSelectionAndDelete(int before, int after) {}
   // Deletes text before and after the current cursor position, excluding the
-  // selection.
+  // selection. The lengths are supplied in UTF-16 Code Unit, not in code points
+  // or in glyphs.
   virtual void deleteSurroundingText(int before, int after) {}
+  // Deletes text before and after the current cursor position, excluding the
+  // selection. The lengths are supplied in code points, not in UTF-16 Code Unit
+  // or in glyphs. Do nothing if there are one or more invalid surrogate pairs
+  // in the requested range.
+  virtual void deleteSurroundingTextInCodePoints(int before, int after) {}
   // If the given position is over a link, returns the absolute url.
   // Otherwise an empty url is returned.
   virtual WebURL linkAtPosition(const WebPoint& position) const {

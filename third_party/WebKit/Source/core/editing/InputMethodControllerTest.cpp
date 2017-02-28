@@ -746,6 +746,125 @@ TEST_F(InputMethodControllerTest, DeleteSurroundingTextForMultipleNodes) {
   EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 }
 
+TEST_F(InputMethodControllerTest,
+       DeleteSurroundingTextInCodePointsWithMultiCodeTextOnTheLeft) {
+  HTMLInputElement* input =
+      toHTMLInputElement(insertHTMLElement("<input id='sample'>", "sample"));
+
+  // 'a' + "black star" + SPACE + "trophy" + SPACE + composed text (U+0E01
+  // "ka kai" + U+0E49 "mai tho").
+  // A "black star" is 1 grapheme cluster. It has 1 code point, and its length
+  // is 1 (abbreviated as [1,1,1]). A "trophy": [1,1,2]. The composed text:
+  // [1,2,2].
+  input->setValue(String::fromUTF8(
+      "a\xE2\x98\x85 \xF0\x9F\x8F\x86 \xE0\xB8\x81\xE0\xB9\x89"));
+  document().updateStyleAndLayout();
+  // The cursor is at the end of the text.
+  controller().setEditableSelectionOffsets(PlainTextRange(8, 8));
+
+  controller().deleteSurroundingTextInCodePoints(2, 0);
+  EXPECT_STREQ("a\xE2\x98\x85 \xF0\x9F\x8F\x86 ", input->value().utf8().data());
+  controller().deleteSurroundingTextInCodePoints(4, 0);
+  EXPECT_STREQ("a", input->value().utf8().data());
+
+  // 'a' + "black star" + SPACE + "trophy" + SPACE + composed text
+  input->setValue(String::fromUTF8(
+      "a\xE2\x98\x85 \xF0\x9F\x8F\x86 \xE0\xB8\x81\xE0\xB9\x89"));
+  document().updateStyleAndLayout();
+  // The cursor is at the end of the text.
+  controller().setEditableSelectionOffsets(PlainTextRange(8, 8));
+
+  // TODO(yabinh): We should only delete 1 code point instead of the entire
+  // grapheme cluster (2 code points). The root cause is that we adjust the
+  // selection by grapheme cluster in deleteSurroundingText().
+  controller().deleteSurroundingTextInCodePoints(1, 0);
+  EXPECT_STREQ("a\xE2\x98\x85 \xF0\x9F\x8F\x86 ", input->value().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest,
+       DeleteSurroundingTextInCodePointsWithMultiCodeTextOnTheRight) {
+  HTMLInputElement* input =
+      toHTMLInputElement(insertHTMLElement("<input id='sample'>", "sample"));
+
+  // 'a' + "black star" + SPACE + "trophy" + SPACE + composed text
+  input->setValue(String::fromUTF8(
+      "a\xE2\x98\x85 \xF0\x9F\x8F\x86 \xE0\xB8\x81\xE0\xB9\x89"));
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(0, 0));
+
+  controller().deleteSurroundingTextInCodePoints(0, 5);
+  EXPECT_STREQ("\xE0\xB8\x81\xE0\xB9\x89", input->value().utf8().data());
+
+  controller().deleteSurroundingTextInCodePoints(0, 1);
+  // TODO(yabinh): Same here. We should only delete 1 code point.
+  EXPECT_STREQ("", input->value().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest,
+       DeleteSurroundingTextInCodePointsWithMultiCodeTextOnBothSides) {
+  HTMLInputElement* input =
+      toHTMLInputElement(insertHTMLElement("<input id='sample'>", "sample"));
+
+  // 'a' + "black star" + SPACE + "trophy" + SPACE + composed text
+  input->setValue(String::fromUTF8(
+      "a\xE2\x98\x85 \xF0\x9F\x8F\x86 \xE0\xB8\x81\xE0\xB9\x89"));
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(3, 3));
+  controller().deleteSurroundingTextInCodePoints(2, 2);
+  EXPECT_STREQ("a\xE0\xB8\x81\xE0\xB9\x89", input->value().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, DeleteSurroundingTextInCodePointsWithImage) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>aaa"
+      "<img src='empty.png'>bbb</div>",
+      "sample");
+
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  controller().deleteSurroundingTextInCodePoints(1, 1);
+  EXPECT_STREQ("aaabb", div->innerText().utf8().data());
+  EXPECT_EQ(3u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(3u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest,
+       DeleteSurroundingTextInCodePointsWithInvalidSurrogatePair) {
+  HTMLInputElement* input =
+      toHTMLInputElement(insertHTMLElement("<input id='sample'>", "sample"));
+
+  // 'a' + high surrogate of "trophy" + "black star" + low surrogate of "trophy"
+  // + SPACE
+  const UChar uText[] = {'a', 0xD83C, 0x2605, 0xDFC6, ' ', '\0'};
+  const String& text = String(uText);
+
+  input->setValue(text);
+  document().updateStyleAndLayout();
+  // The invalid high surrogate is encoded as '\xED\xA0\xBC', and invalid low
+  // surrogate is encoded as '\xED\xBF\x86'.
+  EXPECT_STREQ("a\xED\xA0\xBC\xE2\x98\x85\xED\xBF\x86 ",
+               input->value().utf8().data());
+
+  controller().setEditableSelectionOffsets(PlainTextRange(5, 5));
+  // Delete a SPACE.
+  controller().deleteSurroundingTextInCodePoints(1, 0);
+  EXPECT_STREQ("a\xED\xA0\xBC\xE2\x98\x85\xED\xBF\x86",
+               input->value().utf8().data());
+  // Do nothing since there is an invalid surrogate in the requested range.
+  controller().deleteSurroundingTextInCodePoints(2, 0);
+  EXPECT_STREQ("a\xED\xA0\xBC\xE2\x98\x85\xED\xBF\x86",
+               input->value().utf8().data());
+
+  controller().setEditableSelectionOffsets(PlainTextRange(0, 0));
+  // Delete 'a'.
+  controller().deleteSurroundingTextInCodePoints(0, 1);
+  EXPECT_STREQ("\xED\xA0\xBC\xE2\x98\x85\xED\xBF\x86",
+               input->value().utf8().data());
+  // Do nothing since there is an invalid surrogate in the requested range.
+  controller().deleteSurroundingTextInCodePoints(0, 2);
+  EXPECT_STREQ("\xED\xA0\xBC\xE2\x98\x85\xED\xBF\x86",
+               input->value().utf8().data());
+}
+
 TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions) {
   HTMLInputElement* input =
       toHTMLInputElement(insertHTMLElement("<input id='sample'>", "sample"));

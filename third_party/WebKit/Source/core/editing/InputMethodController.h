@@ -101,6 +101,7 @@ class CORE_EXPORT InputMethodController final
                                          int end,
                                          size_t textLength) const;
   void deleteSurroundingText(int before, int after);
+  void deleteSurroundingTextInCodePoints(int before, int after);
   WebTextInputInfo textInputInfo() const;
   WebTextInputType textInputType() const;
 
