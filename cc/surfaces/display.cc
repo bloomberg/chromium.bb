@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/compositor_frame.h"
@@ -248,7 +250,10 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
+  base::ElapsedTimer aggregate_timer;
   CompositorFrame frame = aggregator_->Aggregate(current_surface_id_);
+  UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
+                          aggregate_timer.Elapsed().InMicroseconds());
 
   if (frame.render_pass_list.empty()) {
     TRACE_EVENT_INSTANT0("cc", "Empty aggregated frame.",
@@ -315,9 +320,17 @@ bool Display::DrawAndSwap() {
       DCHECK(!disable_image_filtering);
     }
 
+    base::ElapsedTimer draw_timer;
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size_);
+    if (software_renderer_) {
+      UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.Software.DrawFrameUs",
+                              draw_timer.Elapsed().InMicroseconds());
+    } else {
+      UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
+                              draw_timer.Elapsed().InMicroseconds());
+    }
   } else {
     TRACE_EVENT_INSTANT0("cc", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
