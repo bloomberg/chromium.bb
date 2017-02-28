@@ -40,7 +40,7 @@ class PaintLayerClipperTest : public ::testing::WithParamInterface<bool>,
 
 INSTANTIATE_TEST_CASE_P(All,
                         PaintLayerClipperTest,
-                        ::testing::ValuesIn({false, true}));
+                        ::testing::ValuesIn(std::vector<bool>{false, true}));
 
 TEST_P(PaintLayerClipperTest, LayoutSVGRoot) {
   setBodyInnerHTML(

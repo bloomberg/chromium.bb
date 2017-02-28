@@ -136,7 +136,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
       if (iterations > 0) {
         ui_test_utils::NavigateToURL(browser, test_url);
 
-        EXPECT_EQ(false, manager->will_show());
+        EXPECT_FALSE(manager->will_show());
         EXPECT_FALSE(manager->is_active());
 
         histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);

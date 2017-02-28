@@ -9,12 +9,11 @@
 #include <vector>
 
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/examples/example_base.h"
 #include "ui/views/examples/views_examples_export.h"
 
 namespace views {
 namespace examples {
-
-class ExampleBase;
 
 enum Operation {
   DO_NOTHING_ON_CLOSE = 0,

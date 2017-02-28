@@ -362,7 +362,7 @@ std::unique_ptr<RenderNode> InterpretContentLayer(
       n->add_child(child.release());
   }
 
-  return n;
+  return std::move(n);
 }
 
 std::unique_ptr<RenderNode> InterpretCanvasLayer(
@@ -381,7 +381,7 @@ std::unique_ptr<RenderNode> InterpretCanvasLayer(
   if (!InterpretCCData(node, n.get()))
     return nullptr;
 
-  return n;
+  return std::move(n);
 }
 
 std::unique_ptr<RenderNode> InterpretVideoLayer(
@@ -400,7 +400,7 @@ std::unique_ptr<RenderNode> InterpretVideoLayer(
   if (!InterpretCCData(node, n.get()))
     return nullptr;
 
-  return n;
+  return std::move(n);
 }
 
 std::unique_ptr<RenderNode> InterpretImageLayer(
@@ -419,7 +419,7 @@ std::unique_ptr<RenderNode> InterpretImageLayer(
   if (!InterpretCCData(node, n.get()))
     return nullptr;
 
-  return n;
+  return std::move(n);
 }
 
 std::unique_ptr<RenderNode> InterpretNode(const base::DictionaryValue& node) {
@@ -472,4 +472,3 @@ std::unique_ptr<RenderNode> BuildRenderTreeFromFile(
 
   return InterpretContentLayer(*root);
 }
-

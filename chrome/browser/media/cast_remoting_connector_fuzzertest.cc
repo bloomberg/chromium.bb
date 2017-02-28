@@ -15,6 +15,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Make sure the compiler does not try to optimize-away calls by storing their
   // results in a volatile variable.
   volatile unsigned int ignored_result;
+  (void)ignored_result;
 
   using Messaging = CastRemotingConnectorMessaging;
 

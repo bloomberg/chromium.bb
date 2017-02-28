@@ -17,13 +17,10 @@
 
 class GURL;
 class TargetPickerTableModel;
+class WebShareTargetPickerViewTest;
 
 namespace views {
 class TableView;
-}
-
-namespace {
-class WebShareTargetPickerViewTest;
 }
 
 // Dialog that presents the user with a list of share target apps. Allows the

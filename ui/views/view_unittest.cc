@@ -4833,14 +4833,14 @@ TEST_F(ViewObserverTest, ViewVisibilityChanged) {
   std::unique_ptr<View> view = NewView();
   view->SetVisible(false);
   EXPECT_EQ(view.get(), view_visibility_changed());
-  EXPECT_EQ(false, view->visible());
+  EXPECT_FALSE(view->visible());
 }
 
 TEST_F(ViewObserverTest, ViewEnabledChanged) {
   std::unique_ptr<View> view = NewView();
   view->SetEnabled(false);
   EXPECT_EQ(view.get(), view_enabled_changed());
-  EXPECT_EQ(false, view->enabled());
+  EXPECT_FALSE(view->enabled());
 }
 
 TEST_F(ViewObserverTest, ViewBoundsChanged) {

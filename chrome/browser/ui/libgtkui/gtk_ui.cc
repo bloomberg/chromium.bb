@@ -657,7 +657,7 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
             : nullptr);
   }
 
-  return gtk_border;
+  return std::move(gtk_border);
 }
 
 void GtkUi::AddWindowButtonOrderObserver(

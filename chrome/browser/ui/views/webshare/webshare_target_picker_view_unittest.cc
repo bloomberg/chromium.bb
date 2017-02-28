@@ -24,8 +24,6 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"
 
-namespace {
-
 class WebShareTargetPickerViewTest : public views::ViewsTestBase {
  public:
   WebShareTargetPickerViewTest() {}
@@ -169,5 +167,3 @@ TEST_F(WebShareTargetPickerViewTest, ChooseItemWithDoubleClick) {
   EXPECT_EQ(base::Optional<std::string>("https://appone.com/path/bits"),
             result());
 }
-
-}  // namespace

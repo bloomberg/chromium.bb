@@ -423,8 +423,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
 
-  const auto kSubframeNames = {"one", "two", "three"};
-  const auto kExpectScriptInFrameToLoad = {false, true, false};
+  const std::vector<const char*> kSubframeNames{"one", "two", "three"};
+  const std::vector<bool> kExpectScriptInFrameToLoad{false, true, false};
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
       kSubframeNames, kExpectScriptInFrameToLoad));
 
@@ -440,9 +440,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
 
-  const auto kSubframeNames = {"one", "two", "three"};
-  const auto kExpectScriptInFrameToLoadWithoutActivation = {true, true, true};
-  const auto kExpectScriptInFrameToLoadWithActivation = {false, true, false};
+  const std::vector<const char*> kSubframeNames{"one", "two", "three"};
+  const std::vector<bool> kExpectScriptInFrameToLoadWithoutActivation{
+      true, true, true};
+  const std::vector<bool> kExpectScriptInFrameToLoadWithActivation{false, true,
+                                                                   false};
 
   ui_test_utils::NavigateToURL(browser(), url_without_activation);
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
@@ -489,8 +491,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
 
-  const auto kSubframeNames = {"one", "two", "three"};
-  const auto kExpectScriptInFrameToLoad = {true, true, true};
+  const std::vector<const char*> kSubframeNames{"one", "two", "three"};
+  const std::vector<bool> kExpectScriptInFrameToLoad{true, true, true};
 
   for (const auto& url_with_activation :
        {url_with_activation_but_dns_error,
@@ -627,8 +629,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), a_url);
-  ExpectParsedScriptElementLoadedStatusInFrames({"b", "c", "d"},
-                                                {false, false, false});
+  ExpectParsedScriptElementLoadedStatusInFrames(
+      std::vector<const char*>{"b", "c", "d"}, {false, false, false});
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -640,7 +642,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       SetRulesetWithRules({testing::CreateSuffixRule("included_script.js"),
                            testing::CreateWhitelistRuleForDocument("c.com")}));
   ui_test_utils::NavigateToURL(browser(), a_url);
-  ExpectParsedScriptElementLoadedStatusInFrames({"b", "d"}, {false, true});
+  ExpectParsedScriptElementLoadedStatusInFrames(
+      std::vector<const char*>{"b", "d"}, {false, true});
 }
 
 // Tests checking how histograms are recorded. ---------------------------------

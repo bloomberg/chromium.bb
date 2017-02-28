@@ -52,7 +52,7 @@
 //
 // Dialogs listed can be shown interactively using the --dialog argument. E.g.
 //
-//   browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive \
+//   browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
 //       --dialog=FooDialogTest.InvokeDialog_name
 class TestBrowserDialog {
  protected:

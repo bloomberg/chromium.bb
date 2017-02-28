@@ -44,6 +44,15 @@ class CORE_EXPORT NetworkStateNotifier {
   USING_FAST_MALLOC(NetworkStateNotifier);
 
  public:
+  struct NetworkState {
+    static const int kInvalidMaxBandwidth = -1;
+    bool onLineInitialized = false;
+    bool onLine = true;
+    bool connectionInitialized = false;
+    WebConnectionType type = WebConnectionTypeOther;
+    double maxBandwidthMbps = kInvalidMaxBandwidth;
+  };
+
   class NetworkStateObserver {
    public:
     // Will be called on the task runner that is passed in add*Observer.
@@ -128,16 +137,6 @@ class CORE_EXPORT NetworkStateNotifier {
     Vector<NetworkStateObserver*> observers;
     Vector<size_t> zeroedObservers;  // Indices in observers that are 0.
   };
-
-  struct NetworkState {
-    static const int kInvalidMaxBandwidth = -1;
-    bool onLineInitialized = false;
-    bool onLine = true;
-    bool connectionInitialized = false;
-    WebConnectionType type = WebConnectionTypeOther;
-    double maxBandwidthMbps = kInvalidMaxBandwidth;
-  };
-  friend CrossThreadCopier<NetworkStateNotifier::NetworkState>;
 
   // This helper scope issues required notifications when mutating the state if
   // something has changed.  It's only possible to mutate the state on the main

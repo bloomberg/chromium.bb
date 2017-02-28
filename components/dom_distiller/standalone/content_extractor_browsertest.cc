@@ -125,9 +125,10 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
     const base::FilePath& db_path,
     const FileToUrlMap& file_to_url_map) {
+  base::SequencedWorkerPool* blocking_pool =
+      content::BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken());
+      blocking_pool->GetSequencedTaskRunner(blocking_pool->GetSequenceToken());
 
   // TODO(cjhopman): use an in-memory database instead of an on-disk one with
   // temporary directory.

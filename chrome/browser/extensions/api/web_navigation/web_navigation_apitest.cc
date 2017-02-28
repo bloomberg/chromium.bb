@@ -129,7 +129,7 @@ class TestNavigationListener
     auto throttle = base::MakeUnique<Throttle>();
     throttle->set_url(url);
     throttles_.push_back(throttle->AsWeakPtr());
-    return throttle;
+    return std::move(throttle);
   }
 
  private:

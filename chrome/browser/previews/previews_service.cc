@@ -29,10 +29,11 @@ void PreviewsService::Initialize(
     const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  base::SequencedWorkerPool* blocking_pool =
+      content::BrowserThread::GetBlockingPool();
   // Get the background thread to run SQLite on.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken());
+      blocking_pool->GetSequencedTaskRunner(blocking_pool->GetSequenceToken());
 
   previews_ui_service_ = base::MakeUnique<previews::PreviewsUIService>(
       previews_io_data, io_task_runner,

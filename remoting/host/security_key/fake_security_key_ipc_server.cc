@@ -130,7 +130,7 @@ std::unique_ptr<SecurityKeyIpcServer> FakeSecurityKeyIpcServerFactory::Create(
 
   ipc_server_map_[connection_id] = fake_ipc_server->AsWeakPtr();
 
-  return fake_ipc_server;
+  return std::move(fake_ipc_server);
 }
 
 base::WeakPtr<FakeSecurityKeyIpcServer>
