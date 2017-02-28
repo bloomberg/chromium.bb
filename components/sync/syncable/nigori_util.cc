@@ -246,7 +246,8 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
                                     bool encrypt_everything,
                                     sync_pb::NigoriSpecifics* nigori) {
   nigori->set_encrypt_everything(encrypt_everything);
-  static_assert(39 == MODEL_TYPE_COUNT, "update encrypted types");
+  static_assert(39 == MODEL_TYPE_COUNT,
+                "If adding an encryptable type, update handling below.");
   nigori->set_encrypt_bookmarks(encrypted_types.Has(BOOKMARKS));
   nigori->set_encrypt_preferences(encrypted_types.Has(PREFERENCES));
   nigori->set_encrypt_autofill_profile(encrypted_types.Has(AUTOFILL_PROFILE));
@@ -255,13 +256,13 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
       encrypted_types.Has(AUTOFILL_WALLET_METADATA));
   nigori->set_encrypt_themes(encrypted_types.Has(THEMES));
   nigori->set_encrypt_typed_urls(encrypted_types.Has(TYPED_URLS));
-  nigori->set_encrypt_extension_settings(
-      encrypted_types.Has(EXTENSION_SETTINGS));
   nigori->set_encrypt_extensions(encrypted_types.Has(EXTENSIONS));
   nigori->set_encrypt_search_engines(encrypted_types.Has(SEARCH_ENGINES));
   nigori->set_encrypt_sessions(encrypted_types.Has(SESSIONS));
-  nigori->set_encrypt_app_settings(encrypted_types.Has(APP_SETTINGS));
   nigori->set_encrypt_apps(encrypted_types.Has(APPS));
+  nigori->set_encrypt_app_settings(encrypted_types.Has(APP_SETTINGS));
+  nigori->set_encrypt_extension_settings(
+      encrypted_types.Has(EXTENSION_SETTINGS));
   nigori->set_encrypt_app_notifications(encrypted_types.Has(APP_NOTIFICATIONS));
   nigori->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
   nigori->set_encrypt_favicon_images(encrypted_types.Has(FAVICON_IMAGES));
@@ -279,7 +280,8 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     return ModelTypeSet::All();
 
   ModelTypeSet encrypted_types;
-  static_assert(39 == MODEL_TYPE_COUNT, "update encrypted types");
+  static_assert(39 == MODEL_TYPE_COUNT,
+                "If adding an encryptable type, update handling below.");
   if (nigori.encrypt_bookmarks())
     encrypted_types.Put(BOOKMARKS);
   if (nigori.encrypt_preferences())
@@ -294,18 +296,18 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     encrypted_types.Put(THEMES);
   if (nigori.encrypt_typed_urls())
     encrypted_types.Put(TYPED_URLS);
-  if (nigori.encrypt_extension_settings())
-    encrypted_types.Put(EXTENSION_SETTINGS);
   if (nigori.encrypt_extensions())
     encrypted_types.Put(EXTENSIONS);
   if (nigori.encrypt_search_engines())
     encrypted_types.Put(SEARCH_ENGINES);
   if (nigori.encrypt_sessions())
     encrypted_types.Put(SESSIONS);
-  if (nigori.encrypt_app_settings())
-    encrypted_types.Put(APP_SETTINGS);
   if (nigori.encrypt_apps())
     encrypted_types.Put(APPS);
+  if (nigori.encrypt_app_settings())
+    encrypted_types.Put(APP_SETTINGS);
+  if (nigori.encrypt_extension_settings())
+    encrypted_types.Put(EXTENSION_SETTINGS);
   if (nigori.encrypt_app_notifications())
     encrypted_types.Put(APP_NOTIFICATIONS);
   if (nigori.encrypt_dictionary())

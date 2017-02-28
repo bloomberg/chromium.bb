@@ -48,8 +48,7 @@ static const ModelType kStartOrder[] = {
 
 static_assert(arraysize(kStartOrder) ==
                   MODEL_TYPE_COUNT - FIRST_REAL_MODEL_TYPE,
-              "kStartOrder must have MODEL_TYPE_COUNT - "
-              "FIRST_REAL_MODEL_TYPE elements");
+              "When adding a new type, update kStartOrder.");
 
 // The amount of time we wait for association to finish. If some types haven't
 // finished association by the time, DataTypeManager is notified of the

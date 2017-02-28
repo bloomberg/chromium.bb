@@ -252,18 +252,21 @@ void SyncPrefs::SetSyncSessionsGUID(const std::string& guid) {
 }
 
 // static
-const char* SyncPrefs::GetPrefNameForDataType(ModelType data_type) {
-  switch (data_type) {
+const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
+  switch (type) {
+    case UNSPECIFIED:
+    case TOP_LEVEL_FOLDER:
+      break;
     case BOOKMARKS:
       return prefs::kSyncBookmarks;
-    case PASSWORDS:
-      return prefs::kSyncPasswords;
     case PREFERENCES:
       return prefs::kSyncPreferences;
-    case AUTOFILL:
-      return prefs::kSyncAutofill;
+    case PASSWORDS:
+      return prefs::kSyncPasswords;
     case AUTOFILL_PROFILE:
       return prefs::kSyncAutofillProfile;
+    case AUTOFILL:
+      return prefs::kSyncAutofill;
     case AUTOFILL_WALLET_DATA:
       return prefs::kSyncAutofillWallet;
     case AUTOFILL_WALLET_METADATA:
@@ -272,20 +275,18 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType data_type) {
       return prefs::kSyncThemes;
     case TYPED_URLS:
       return prefs::kSyncTypedUrls;
-    case EXTENSION_SETTINGS:
-      return prefs::kSyncExtensionSettings;
     case EXTENSIONS:
       return prefs::kSyncExtensions;
-    case APP_LIST:
-      return prefs::kSyncAppList;
-    case APP_SETTINGS:
-      return prefs::kSyncAppSettings;
-    case APPS:
-      return prefs::kSyncApps;
     case SEARCH_ENGINES:
       return prefs::kSyncSearchEngines;
     case SESSIONS:
       return prefs::kSyncSessions;
+    case APPS:
+      return prefs::kSyncApps;
+    case APP_SETTINGS:
+      return prefs::kSyncAppSettings;
+    case EXTENSION_SETTINGS:
+      return prefs::kSyncExtensionSettings;
     case APP_NOTIFICATIONS:
       return prefs::kSyncAppNotifications;
     case HISTORY_DELETE_DIRECTIVES:
@@ -300,34 +301,38 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType data_type) {
       return prefs::kSyncFaviconImages;
     case FAVICON_TRACKING:
       return prefs::kSyncFaviconTracking;
-    case SUPERVISED_USER_SETTINGS:
-      return prefs::kSyncSupervisedUserSettings;
-    case PROXY_TABS:
-      return prefs::kSyncTabs;
-    case PRIORITY_PREFERENCES:
-      return prefs::kSyncPriorityPreferences;
-    case SUPERVISED_USERS:
-      return prefs::kSyncSupervisedUsers;
-    case ARTICLES:
-      return prefs::kSyncArticles;
-    case SUPERVISED_USER_SHARED_SETTINGS:
-      return prefs::kSyncSupervisedUserSharedSettings;
-    case SUPERVISED_USER_WHITELISTS:
-      return prefs::kSyncSupervisedUserWhitelists;
     case DEVICE_INFO:
       return prefs::kSyncDeviceInfo;
+    case PRIORITY_PREFERENCES:
+      return prefs::kSyncPriorityPreferences;
+    case SUPERVISED_USER_SETTINGS:
+      return prefs::kSyncSupervisedUserSettings;
+    case SUPERVISED_USERS:
+      return prefs::kSyncSupervisedUsers;
+    case SUPERVISED_USER_SHARED_SETTINGS:
+      return prefs::kSyncSupervisedUserSharedSettings;
+    case ARTICLES:
+      return prefs::kSyncArticles;
+    case APP_LIST:
+      return prefs::kSyncAppList;
     case WIFI_CREDENTIALS:
       return prefs::kSyncWifiCredentials;
+    case SUPERVISED_USER_WHITELISTS:
+      return prefs::kSyncSupervisedUserWhitelists;
     case ARC_PACKAGE:
       return prefs::kSyncArcPackage;
     case PRINTERS:
       return prefs::kSyncPrinters;
     case READING_LIST:
       return prefs::kSyncReadingList;
-    default:
+    case PROXY_TABS:
+      return prefs::kSyncTabs;
+    case NIGORI:
+    case EXPERIMENTS:
+    case MODEL_TYPE_COUNT:
       break;
   }
-  NOTREACHED() << "Type is " << data_type;
+  NOTREACHED() << "No pref mapping for type " << ModelTypeToString(type);
   return nullptr;
 }
 

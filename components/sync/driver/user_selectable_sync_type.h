@@ -12,10 +12,12 @@ namespace user_selectable_type {
 // via checkboxes in the "Advanced Sync Preferences" dialog. Used solely for the
 // purposes of UMA histogram logging of the datatypes explicitly selected by
 // users when sync is configured on a machine. This is a subset of the sync
-// types listed in sync/base/model_type.h.
+// types listed in sync/base/model_type.h and dependent types are controlled by
+// data setup up in SyncPrefs::RegisterPrefGroups().
 //
-// Note: New sync datatypes must be added to the end of this list. Adding them
-// anywhere else will result in incorrect histogram logging.
+// Note: New sync datatypes must be added to the end of this list. The values
+// need to match the corresponding enum type in histograms.xml with the same
+// name, which also needs to be updated when changing this.
 
 // THIS ENUM IS MEANT SOLELY FOR THE PURPOSE OF HISTOGRAM LOGGING. IF YOU ARE
 // LOOKING TO MODIFY SYNC FUNCTIONALITY AND NEED A LIST OF SYNC TYPES, USE
@@ -31,36 +33,11 @@ enum UserSelectableSyncType {
   EXTENSIONS = 6,
   PROXY_TABS = 7,
   APPS = 8,
-  // TODO(petewil): There was talk of removing this from user selectable sync
-  // types.  Should we?
   SYNCED_NOTIFICATIONS = 9,
   WIFI_CREDENTIAL = 10,
-
   READING_LIST = 11,
 
-  // The datatypes below are implicitly synced, and are not exposed via user
-  // selectable checkboxes.
   // TODO(lgcheng) ARC_PACKAGE would be selectable.
-
-  // AUTOFILL_PROFILE,
-  // NIGORI,
-  // DICTIONARY
-  // SEARCH_ENGINES,
-  // APP_LIST,
-  // APP_SETTINGS,
-  // EXTENSION_SETTINGS,
-  // APP_NOTIFICATIONS,
-  // DEVICE_INFO,
-  // EXPERIMENTS,
-  // PRIORITY_PREFERENCES,
-  // SESSIONS,
-  // HISTORY_DELETE_DIRECTIVES,
-  // FAVICON_IMAGES,
-  // FAVICON_TRACKING,
-  // ARTICLE,
-  // SYNCED_NOTIFICATION_APP_INFO,
-  // ARC_PACKAGE,
-  // PRINTERS
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
   SELECTABLE_DATATYPE_COUNT = 12,

@@ -163,31 +163,26 @@ const char* kUserSelectableDataTypeNames[] = {
     "tabs",
 };
 
-static_assert(
-    39 == MODEL_TYPE_COUNT,
-    "update kUserSelectableDataTypeName to match UserSelectableTypes");
-
-void AddDefaultFieldValue(ModelType datatype,
-                          sync_pb::EntitySpecifics* specifics) {
-  if (!ProtocolTypes().Has(datatype)) {
-    NOTREACHED() << "Only protocol types have field values.";
-    return;
-  }
-  switch (datatype) {
+void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
+  switch (type) {
+    case UNSPECIFIED:
+    case TOP_LEVEL_FOLDER:
+      NOTREACHED() << "No default field value for " << ModelTypeToString(type);
+      break;
     case BOOKMARKS:
       specifics->mutable_bookmark();
-      break;
-    case PASSWORDS:
-      specifics->mutable_password();
       break;
     case PREFERENCES:
       specifics->mutable_preference();
       break;
-    case AUTOFILL:
-      specifics->mutable_autofill();
+    case PASSWORDS:
+      specifics->mutable_password();
       break;
     case AUTOFILL_PROFILE:
       specifics->mutable_autofill_profile();
+      break;
+    case AUTOFILL:
+      specifics->mutable_autofill();
       break;
     case AUTOFILL_WALLET_DATA:
       specifics->mutable_autofill_wallet();
@@ -204,9 +199,6 @@ void AddDefaultFieldValue(ModelType datatype,
     case EXTENSIONS:
       specifics->mutable_extension();
       break;
-    case NIGORI:
-      specifics->mutable_nigori();
-      break;
     case SEARCH_ENGINES:
       specifics->mutable_search_engine();
       break;
@@ -216,14 +208,8 @@ void AddDefaultFieldValue(ModelType datatype,
     case APPS:
       specifics->mutable_app();
       break;
-    case APP_LIST:
-      specifics->mutable_app_list();
-      break;
     case APP_SETTINGS:
       specifics->mutable_app_setting();
-      break;
-    case ARC_PACKAGE:
-      specifics->mutable_arc_package();
       break;
     case EXTENSION_SETTINGS:
       specifics->mutable_extension_setting();
@@ -240,18 +226,6 @@ void AddDefaultFieldValue(ModelType datatype,
     case SYNCED_NOTIFICATION_APP_INFO:
       specifics->mutable_synced_notification_app_info();
       break;
-    case DEVICE_INFO:
-      specifics->mutable_device_info();
-      break;
-    case EXPERIMENTS:
-      specifics->mutable_experiments();
-      break;
-    case PRINTERS:
-      specifics->mutable_printer();
-      break;
-    case PRIORITY_PREFERENCES:
-      specifics->mutable_priority_preference();
-      break;
     case DICTIONARY:
       specifics->mutable_dictionary();
       break;
@@ -261,6 +235,12 @@ void AddDefaultFieldValue(ModelType datatype,
     case FAVICON_TRACKING:
       specifics->mutable_favicon_tracking();
       break;
+    case DEVICE_INFO:
+      specifics->mutable_device_info();
+      break;
+    case PRIORITY_PREFERENCES:
+      specifics->mutable_priority_preference();
+      break;
     case SUPERVISED_USER_SETTINGS:
       specifics->mutable_managed_user_setting();
       break;
@@ -269,21 +249,39 @@ void AddDefaultFieldValue(ModelType datatype,
       break;
     case SUPERVISED_USER_SHARED_SETTINGS:
       specifics->mutable_managed_user_shared_setting();
-      break;
-    case SUPERVISED_USER_WHITELISTS:
-      specifics->mutable_managed_user_whitelist();
-      break;
     case ARTICLES:
       specifics->mutable_article();
+      break;
+    case APP_LIST:
+      specifics->mutable_app_list();
       break;
     case WIFI_CREDENTIALS:
       specifics->mutable_wifi_credential();
       break;
+    case SUPERVISED_USER_WHITELISTS:
+      specifics->mutable_managed_user_whitelist();
+      break;
+    case ARC_PACKAGE:
+      specifics->mutable_arc_package();
+      break;
+    case PRINTERS:
+      specifics->mutable_printer();
+      break;
     case READING_LIST:
       specifics->mutable_reading_list();
       break;
-    default:
-      NOTREACHED() << "No known extension for model type.";
+    case PROXY_TABS:
+      NOTREACHED() << "No default field value for " << ModelTypeToString(type);
+      break;
+    case NIGORI:
+      specifics->mutable_nigori();
+      break;
+    case EXPERIMENTS:
+      specifics->mutable_experiments();
+      break;
+    case MODEL_TYPE_COUNT:
+      NOTREACHED() << "No default field value for " << ModelTypeToString(type);
+      break;
   }
 }
 
@@ -341,151 +339,102 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
+  static_assert(39 == MODEL_TYPE_COUNT,
+                "When adding new protocol types, the following type lookup "
+                "logic must be updated.");
   if (specifics.has_bookmark())
     return BOOKMARKS;
-
-  if (specifics.has_password())
-    return PASSWORDS;
-
   if (specifics.has_preference())
     return PREFERENCES;
-
-  if (specifics.has_autofill())
-    return AUTOFILL;
-
+  if (specifics.has_password())
+    return PASSWORDS;
   if (specifics.has_autofill_profile())
     return AUTOFILL_PROFILE;
-
+  if (specifics.has_autofill())
+    return AUTOFILL;
   if (specifics.has_autofill_wallet())
     return AUTOFILL_WALLET_DATA;
-
   if (specifics.has_wallet_metadata())
     return AUTOFILL_WALLET_METADATA;
-
   if (specifics.has_theme())
     return THEMES;
-
   if (specifics.has_typed_url())
     return TYPED_URLS;
-
   if (specifics.has_extension())
     return EXTENSIONS;
-
-  if (specifics.has_nigori())
-    return NIGORI;
-
-  if (specifics.has_app())
-    return APPS;
-
-  if (specifics.has_app_list())
-    return APP_LIST;
-
-  if (specifics.has_arc_package())
-    return ARC_PACKAGE;
-
   if (specifics.has_search_engine())
     return SEARCH_ENGINES;
-
   if (specifics.has_session())
     return SESSIONS;
-
+  if (specifics.has_app())
+    return APPS;
   if (specifics.has_app_setting())
     return APP_SETTINGS;
-
   if (specifics.has_extension_setting())
     return EXTENSION_SETTINGS;
-
   if (specifics.has_app_notification())
     return APP_NOTIFICATIONS;
-
-  if (specifics.has_reading_list())
-    return READING_LIST;
-
   if (specifics.has_history_delete_directive())
     return HISTORY_DELETE_DIRECTIVES;
-
   if (specifics.has_synced_notification())
     return SYNCED_NOTIFICATIONS;
-
   if (specifics.has_synced_notification_app_info())
     return SYNCED_NOTIFICATION_APP_INFO;
-
-  if (specifics.has_device_info())
-    return DEVICE_INFO;
-
-  if (specifics.has_experiments())
-    return EXPERIMENTS;
-
-  if (specifics.has_priority_preference())
-    return PRIORITY_PREFERENCES;
-
-  if (specifics.has_printer())
-    return PRINTERS;
-
   if (specifics.has_dictionary())
     return DICTIONARY;
-
   if (specifics.has_favicon_image())
     return FAVICON_IMAGES;
-
   if (specifics.has_favicon_tracking())
     return FAVICON_TRACKING;
-
+  if (specifics.has_device_info())
+    return DEVICE_INFO;
+  if (specifics.has_priority_preference())
+    return PRIORITY_PREFERENCES;
   if (specifics.has_managed_user_setting())
     return SUPERVISED_USER_SETTINGS;
-
   if (specifics.has_managed_user())
     return SUPERVISED_USERS;
-
   if (specifics.has_managed_user_shared_setting())
     return SUPERVISED_USER_SHARED_SETTINGS;
-
-  if (specifics.has_managed_user_whitelist())
-    return SUPERVISED_USER_WHITELISTS;
-
   if (specifics.has_article())
     return ARTICLES;
-
+  if (specifics.has_app_list())
+    return APP_LIST;
   if (specifics.has_wifi_credential())
     return WIFI_CREDENTIALS;
+  if (specifics.has_managed_user_whitelist())
+    return SUPERVISED_USER_WHITELISTS;
+  if (specifics.has_arc_package())
+    return ARC_PACKAGE;
+  if (specifics.has_printer())
+    return PRINTERS;
+  if (specifics.has_reading_list())
+    return READING_LIST;
+  if (specifics.has_nigori())
+    return NIGORI;
+  if (specifics.has_experiments())
+    return EXPERIMENTS;
 
   return UNSPECIFIED;
 }
 
 ModelTypeSet ProtocolTypes() {
-  ModelTypeSet set = ModelTypeSet::All();
-  set.RemoveAll(ProxyTypes());
-  return set;
+  return Difference(ModelTypeSet::All(), ProxyTypes());
 }
 
 ModelTypeSet UserTypes() {
-  ModelTypeSet set;
   // TODO(sync): We should be able to build the actual enumset's internal
-  // bitset value here at compile time, rather than performing an iteration
-  // every time.
-  for (int i = FIRST_USER_MODEL_TYPE; i <= LAST_USER_MODEL_TYPE; ++i) {
-    set.Put(ModelTypeFromInt(i));
-  }
-  return set;
+  // bitset value here at compile time, instead of makes a new one each time.
+  return ModelTypeSet::FromRange(FIRST_USER_MODEL_TYPE, LAST_USER_MODEL_TYPE);
 }
 
 ModelTypeSet UserSelectableTypes() {
-  ModelTypeSet set;
-  // Although the order doesn't technically matter here, it's clearer to keep
-  // these in the same order as their definition in the ModelType enum.
-  set.Put(BOOKMARKS);
-  set.Put(PREFERENCES);
-  set.Put(PASSWORDS);
-  set.Put(AUTOFILL);
-  set.Put(THEMES);
-  set.Put(TYPED_URLS);
-  set.Put(EXTENSIONS);
-  set.Put(APPS);
+  return ModelTypeSet(BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL, THEMES,
+                      TYPED_URLS, EXTENSIONS, APPS,
 #if BUILDFLAG(ENABLE_READING_LIST)
-  set.Put(READING_LIST);
+                      READING_LIST,
 #endif
-  set.Put(PROXY_TABS);
-  return set;
+                      PROXY_TABS);
 }
 
 bool IsUserSelectableType(ModelType model_type) {
@@ -505,7 +454,12 @@ ModelTypeNameMap GetUserSelectableTypeNameMap() {
 }
 
 ModelTypeSet EncryptableUserTypes() {
+  static_assert(39 == MODEL_TYPE_COUNT,
+                "If adding an unencryptable type, remove from "
+                "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
+  // Wallet data is not encrypted since it actually originates on the server.
+  encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
   // We never encrypt history delete directives.
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
   // Synced notifications are not encrypted since the server must see changes.
@@ -533,8 +487,6 @@ ModelTypeSet EncryptableUserTypes() {
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.
   encryptable_user_types.RemoveAll(ProxyTypes());
-  // Wallet data is not encrypted since it actually originates on the server.
-  encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
   return encryptable_user_types;
 }
 
@@ -543,21 +495,14 @@ ModelTypeSet PriorityUserTypes() {
 }
 
 ModelTypeSet ControlTypes() {
-  ModelTypeSet set;
   // TODO(sync): We should be able to build the actual enumset's internal
-  // bitset value here at compile time, rather than performing an iteration
-  // every time.
-  for (int i = FIRST_CONTROL_MODEL_TYPE; i <= LAST_CONTROL_MODEL_TYPE; ++i) {
-    set.Put(ModelTypeFromInt(i));
-  }
-
-  return set;
+  // bitset value here at compile time, instead of makes a new one each time.
+  return ModelTypeSet::FromRange(FIRST_CONTROL_MODEL_TYPE,
+                                 LAST_CONTROL_MODEL_TYPE);
 }
 
 ModelTypeSet ProxyTypes() {
-  ModelTypeSet set;
-  set.Put(PROXY_TABS);
-  return set;
+  return ModelTypeSet::FromRange(FIRST_PROXY_TYPE, LAST_PROXY_TYPE);
 }
 
 bool IsControlType(ModelType model_type) {
@@ -565,8 +510,7 @@ bool IsControlType(ModelType model_type) {
 }
 
 ModelTypeSet CoreTypes() {
-  ModelTypeSet result;
-  result.PutAll(PriorityCoreTypes());
+  ModelTypeSet result = PriorityCoreTypes();
 
   // The following are low priority core types.
   result.Put(SYNCED_NOTIFICATIONS);
@@ -578,8 +522,7 @@ ModelTypeSet CoreTypes() {
 }
 
 ModelTypeSet PriorityCoreTypes() {
-  ModelTypeSet result;
-  result.PutAll(ControlTypes());
+  ModelTypeSet result = ControlTypes();
 
   // The following are non-control core types.
   result.Put(SUPERVISED_USERS);

@@ -122,8 +122,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   std::string GetSyncSessionsGUID() const;
   void SetSyncSessionsGUID(const std::string& guid);
 
-  // Maps |data_type| to its corresponding preference name.
-  static const char* GetPrefNameForDataType(ModelType data_type);
+  // Maps |type| to its corresponding preference name.
+  static const char* GetPrefNameForDataType(ModelType type);
 
 #if defined(OS_CHROMEOS)
   // Use this spare bootstrap token only when setting up sync for the first

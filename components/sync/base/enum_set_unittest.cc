@@ -77,6 +77,11 @@ TEST_F(EnumSetTest, ThreeArgConstructor) {
   EXPECT_FALSE(enums.Has(TEST_4));
 }
 
+TEST_F(EnumSetTest, DuplicatesInConstructor) {
+  EXPECT_EQ(TestEnumSet(TEST_3, TEST_1, TEST_0, TEST_3, TEST_1, TEST_3),
+            TestEnumSet(TEST_0, TEST_1, TEST_3));
+}
+
 TEST_F(EnumSetTest, All) {
   const TestEnumSet enums(TestEnumSet::All());
   EXPECT_FALSE(enums.Empty());
@@ -86,6 +91,13 @@ TEST_F(EnumSetTest, All) {
   EXPECT_TRUE(enums.Has(TEST_2));
   EXPECT_TRUE(enums.Has(TEST_3));
   EXPECT_TRUE(enums.Has(TEST_4));
+}
+
+TEST_F(EnumSetTest, FromRange) {
+  EXPECT_EQ(TestEnumSet(TEST_1, TEST_2, TEST_3),
+            TestEnumSet::FromRange(TEST_1, TEST_3));
+  EXPECT_EQ(TestEnumSet::All(), TestEnumSet::FromRange(TEST_0, TEST_4));
+  EXPECT_EQ(TestEnumSet(TEST_1), TestEnumSet::FromRange(TEST_1, TEST_1));
 }
 
 TEST_F(EnumSetTest, Put) {
@@ -100,6 +112,12 @@ TEST_F(EnumSetTest, PutAll) {
   TestEnumSet enums(TEST_3, TEST_4);
   enums.PutAll(TestEnumSet(TEST_2, TEST_3));
   EXPECT_EQ(TestEnumSet(TEST_2, TEST_3, TEST_4), enums);
+}
+
+TEST_F(EnumSetTest, PutRange) {
+  TestEnumSet enums;
+  enums.PutRange(TEST_1, TEST_3);
+  EXPECT_EQ(TestEnumSet(TEST_1, TEST_2, TEST_3), enums);
 }
 
 TEST_F(EnumSetTest, RetainAll) {

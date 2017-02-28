@@ -1518,7 +1518,9 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
       };
 
   static_assert(39 == syncer::MODEL_TYPE_COUNT,
-                "custom config histogram must be updated");
+                "If adding a user selectable type, update "
+                "UserSelectableSyncType in user_selectable_sync_type.h and "
+                "histograms.xml.");
 
   if (!sync_everything) {
     const syncer::ModelTypeSet current_types = GetPreferredDataTypes();

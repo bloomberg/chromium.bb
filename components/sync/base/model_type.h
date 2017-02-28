@@ -89,14 +89,14 @@ enum ModelType {
   APP_SETTINGS,
   // An extension setting from the extension settings API.
   EXTENSION_SETTINGS,
-  // App notifications.
-  APP_NOTIFICATIONS,  // Deprecated.
+  // App notifications. Deprecated.
+  APP_NOTIFICATIONS,
   // History delete directives.
   HISTORY_DELETE_DIRECTIVES,
-  // Synced push notifications.
-  SYNCED_NOTIFICATIONS,  // Deprecated.
-  // Synced Notification app info.
-  SYNCED_NOTIFICATION_APP_INFO,  // Deprecated.
+  // Synced push notifications. Deprecated.
+  SYNCED_NOTIFICATIONS,
+  // Synced Notification app info. Deprecated.
+  SYNCED_NOTIFICATION_APP_INFO,
   // Custom spelling dictionary.
   DICTIONARY,
   // Favicon images.
@@ -161,6 +161,9 @@ enum ModelType {
   // histograms for sync include your new type.  In this case, be sure to also
   // update the UserSelectableTypes() definition in
   // sync/syncable/model_type.cc.
+
+  // Additionally, enum SyncModelTypes and suffix SyncModelType need to be
+  // updated in histograms.xml for all new types.
   MODEL_TYPE_COUNT,
 };
 
@@ -175,9 +178,8 @@ inline ModelType ModelTypeFromInt(int i) {
   return static_cast<ModelType>(i);
 }
 
-// Used by tests outside of sync/.
-void AddDefaultFieldValue(ModelType datatype,
-                          sync_pb::EntitySpecifics* specifics);
+// Used to mark the type of EntitySpecifics that has no actual data.
+void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics);
 
 // Extract the model type of a SyncEntity protocol buffer.  ModelType is a
 // local concept: the enum is not in the protocol.  The SyncEntity's ModelType

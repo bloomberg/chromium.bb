@@ -117,21 +117,12 @@ class EnumSet {
     size_t i_;
   };
 
-  // You can construct an EnumSet with 0, 1, 2, or 3 initial values.
-
   EnumSet() {}
 
-  explicit EnumSet(E value) { Put(value); }
-
-  EnumSet(E value1, E value2) {
-    Put(value1);
-    Put(value2);
-  }
-
-  EnumSet(E value1, E value2, E value3) {
-    Put(value1);
-    Put(value2);
-    Put(value3);
+  // Recursively chain constructors. Base case is the empty pack.
+  template <class... T>
+  EnumSet(E head, T... tail) : EnumSet(tail...) {
+    Put(head);
   }
 
   // Returns an EnumSet with all possible values.
@@ -139,6 +130,13 @@ class EnumSet {
     EnumBitSet enums;
     enums.set();
     return EnumSet(enums);
+  }
+
+  // Returns an EnumSet with all the values from start to end, inclusive.
+  static EnumSet FromRange(E start, E end) {
+    EnumSet set;
+    set.PutRange(start, end);
+    return set;
   }
 
   ~EnumSet() {}
@@ -154,6 +152,16 @@ class EnumSet {
 
   // Adds all values in the given set to our set.
   void PutAll(EnumSet other) { enums_ |= other.enums_; }
+
+  // Adds all values in the given range to our set, inclusive.
+  void PutRange(E start, E end) {
+    size_t endIndexInclusive = ToIndex(end);
+    DCHECK_LE(ToIndex(start), endIndexInclusive);
+    for (size_t current = ToIndex(start); current <= endIndexInclusive;
+         ++current) {
+      enums_.set(current);
+    }
+  }
 
   // There's no real need for a Retain(E) member function.
 
