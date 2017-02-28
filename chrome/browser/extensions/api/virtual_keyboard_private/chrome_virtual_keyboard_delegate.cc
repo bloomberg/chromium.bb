@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -123,6 +124,17 @@ void ChromeVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
   // This reloads virtual keyboard even if it exists. This ensures virtual
   // keyboard gets the correct state of the hotrod keyboard through
   // chrome.virtualKeyboardPrivate.getKeyboardConfig.
+  if (keyboard::IsKeyboardEnabled())
+    ash::Shell::GetInstance()->CreateKeyboard();
+}
+
+void ChromeVirtualKeyboardDelegate::SetKeyboardRestricted(bool restricted) {
+  if (keyboard::GetKeyboardRestricted() == restricted)
+    return;
+
+  keyboard::SetKeyboardRestricted(restricted);
+
+  // Force virtual keyboard reload.
   if (keyboard::IsKeyboardEnabled())
     ash::Shell::GetInstance()->CreateKeyboard();
 }

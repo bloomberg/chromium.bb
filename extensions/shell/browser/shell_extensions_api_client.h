@@ -5,9 +5,13 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSIONS_API_CLIENT_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSIONS_API_CLIENT_H_
 
+#include <memory>
+
 #include "extensions/browser/api/extensions_api_client.h"
 
 namespace extensions {
+
+class VirtualKeyboardDelegate;
 
 class ShellExtensionsAPIClient : public ExtensionsAPIClient {
  public:
@@ -17,6 +21,8 @@ class ShellExtensionsAPIClient : public ExtensionsAPIClient {
   void AttachWebContentsHelpers(content::WebContents* web_contents) const
       override;
   AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
+  std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
+      const override;
 };
 
 }  // namespace extensions

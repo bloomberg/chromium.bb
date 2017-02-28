@@ -1221,6 +1221,7 @@ enum HistogramValue {
   AUDIO_GETMUTE,
   AUDIO_SETMUTE,
   AUDIO_GETDEVICES,
+  VIRTUALKEYBOARD_RESTRICTFEATURES,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

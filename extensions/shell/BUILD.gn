@@ -148,6 +148,8 @@ source_set("app_shell_lib") {
     "browser/shell_update_query_params_delegate.h",
     "browser/shell_url_request_context_getter.cc",
     "browser/shell_url_request_context_getter.h",
+    "browser/shell_virtual_keyboard_delegate.cc",
+    "browser/shell_virtual_keyboard_delegate.h",
     "common/shell_content_client.cc",
     "common/shell_content_client.h",
     "common/shell_extensions_client.cc",

@@ -356,6 +356,8 @@ source_set("browser_tests") {
     deps += [ "//extensions/shell:app_shell" ]
   }
   if (is_chromeos) {
+    sources += [ "api/virtual_keyboard/virtual_keyboard_apitest.cc" ]
+
     deps += [ "//chromeos" ]
   }
 }

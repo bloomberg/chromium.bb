@@ -139,7 +139,11 @@ EngineBridge.prototype = {
     this.focusedContext_ = context;
     if (this.activeEngine_)
       this.engineInstance_[this.activeEngine_].onFocus(context);
-    chrome.test.sendMessage('onFocus:' + context.type);
+    chrome.test.sendMessage('onFocus:' +
+                            context.type + ':' +
+                            context.autoComplete + ':' +
+                            context.autoCorrect + ':' +
+                            context.spellCheck);
   },
 
   /**

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -11,6 +14,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
@@ -192,6 +196,15 @@ bool ImeObserver::HasListener(const std::string& event_name) const {
 
 std::string ImeObserver::ConvertInputContextType(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
+  // This is a hack, but tricking the virtual keyboard to think the
+  // current input context is password will disable all keyboard features
+  // that are not supported in restricted keyboard mode.
+  if (keyboard::GetKeyboardRestricted() &&
+      input_context.type != ui::TEXT_INPUT_TYPE_TELEPHONE &&
+      input_context.type != ui::TEXT_INPUT_TYPE_NUMBER) {
+    return "password";
+  }
+
   std::string input_context_type = "text";
   switch (input_context.type) {
     case ui::TEXT_INPUT_TYPE_SEARCH:
@@ -221,17 +234,20 @@ std::string ImeObserver::ConvertInputContextType(
 
 bool ImeObserver::ConvertInputContextAutoCorrect(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
-  return !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
+  return !keyboard::GetKeyboardRestricted() &&
+         !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
 }
 
 bool ImeObserver::ConvertInputContextAutoComplete(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
-  return !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCOMPLETE_OFF);
+  return !keyboard::GetKeyboardRestricted() &&
+         !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCOMPLETE_OFF);
 }
 
 bool ImeObserver::ConvertInputContextSpellCheck(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
-  return !(input_context.flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF);
+  return !keyboard::GetKeyboardRestricted() &&
+         !(input_context.flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF);
 }
 
 }  // namespace ui

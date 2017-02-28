@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_VIRTUAL_KEYBOARD_PRIVATE_CHROME_VIRTUAL_KEYBOARD_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_VIRTUAL_KEYBOARD_PRIVATE_CHROME_VIRTUAL_KEYBOARD_DELEGATE_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +25,7 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool InsertText(const base::string16& text) override;
   bool OnKeyboardLoaded() override;
   void SetHotrodKeyboard(bool enable) override;
+  void SetKeyboardRestricted(bool restricted) override;
   bool LockKeyboard(bool state) override;
   bool SendKeyEvent(const std::string& type,
                     int char_value,

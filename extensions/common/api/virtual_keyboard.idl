@@ -1,0 +1,36 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The <code>chrome.virtualKeybaord</code> API is a kiosk only API used to
+// configure virtual keyboard layout and behavior in kiosk sessions.
+[platforms=("chromeos")]
+namespace virtualKeyboard {
+  callback EmptyCallback = void();
+
+  // <p>Determines whether advanced virtual keyboard features should be enabled
+  //     or not.</p>
+  // <p>On <b>Chrome 58</b> all properties are expected to have the same value.
+  //     </p>
+  dictionary FeatureRestrictions {
+    // Whether virtual keyboards can provide auto-complete.
+    boolean autoCompleteEnabled;
+    // Whether virtual keyboards can provide auto-correct.
+    boolean autoCorrectEnabled;
+    // Whether virtual keyboards can provide spell-check.
+    boolean spellCheckEnabled;
+    // Whether virtual keyboards can provide voice input.
+    boolean voiceInputEnabled;
+    // Whether virtual keyboards can provide input via handwriting
+    // recognition.
+    boolean handwritingEnabled;
+  };
+
+  interface Functions {
+    // Sets restrictions on features provided by the virtual keyboard.
+    // |restrictions|: Defines the set of enabled/disabled virtual keyboard
+    //     features.
+    void restrictFeatures(FeatureRestrictions restrictions,
+                          optional EmptyCallback callback);
+  };
+};

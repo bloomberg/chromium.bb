@@ -104,6 +104,7 @@ source_set("api") {
       "//extensions/browser/api/clipboard",
       "//extensions/browser/api/diagnostics",
       "//extensions/browser/api/networking_config",
+      "//extensions/browser/api/virtual_keyboard",
       "//extensions/browser/api/vpn_provider",
       "//extensions/browser/api/webcam_private",
     ]
