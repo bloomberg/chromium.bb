@@ -481,33 +481,33 @@ void SSLClientSocketImpl::PeerCertificateChain::Reset(STACK_OF(X509) * chain) {
 
 scoped_refptr<X509Certificate>
 SSLClientSocketImpl::PeerCertificateChain::AsOSChain() const {
-  // DER-encode the chain and convert to a platform certificate handle.
-  std::vector<std::string> chain;
-  chain.reserve(sk_X509_num(openssl_chain_.get()));
-  for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
-    X509* x = sk_X509_value(openssl_chain_.get(), i);
-    // Note: This intentionally avoids using x509_util::GetDER(), which may
-    // cache the encoded DER on |x|, as |x| is shared with the underlying
-    // socket (SSL*) this chain belongs to. As the DER will only be used
-    // once in //net, within this code, this avoids needlessly caching
-    // additional data. See https://crbug.com/642082
-    int len = i2d_X509(x, nullptr);
-    if (len < 0)
-      return nullptr;
-    std::string cert;
-    uint8_t* ptr = reinterpret_cast<uint8_t*>(base::WriteInto(&cert, len + 1));
-    len = i2d_X509(x, &ptr);
-    if (len < 0) {
-      NOTREACHED();
-      return nullptr;
-    }
-    chain.push_back(std::move(cert));
+#if defined(USE_OPENSSL_CERTS)
+  // When OSCertHandle is typedef'ed to X509, this implementation does a short
+  // cut to avoid converting back and forth between DER and the X509 struct.
+  X509Certificate::OSCertHandles intermediates;
+  for (size_t i = 1; i < sk_X509_num(openssl_chain_.get()); ++i) {
+    X509* cert = sk_X509_value(openssl_chain_.get(), i);
+    DCHECK(cert->buf);
+    intermediates.push_back(cert);
   }
-  std::vector<base::StringPiece> stringpiece_chain;
-  for (const auto& cert : chain)
-    stringpiece_chain.push_back(cert);
 
-  return X509Certificate::CreateFromDERCertChain(stringpiece_chain);
+  X509* leaf = sk_X509_value(openssl_chain_.get(), 0);
+  DCHECK(leaf->buf);
+  return X509Certificate::CreateFromHandle(leaf, intermediates);
+#else
+  // Convert the certificate chains to a platform certificate handle.
+  std::vector<base::StringPiece> der_chain;
+  der_chain.reserve(sk_X509_num(openssl_chain_.get()));
+  for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
+    X509* cert = sk_X509_value(openssl_chain_.get(), i);
+    DCHECK(cert->buf);
+    base::StringPiece der;
+    if (!x509_util::GetDER(cert, &der))
+      return nullptr;
+    der_chain.push_back(der);
+  }
+  return X509Certificate::CreateFromDERCertChain(der_chain);
+#endif
 }
 
 // static
