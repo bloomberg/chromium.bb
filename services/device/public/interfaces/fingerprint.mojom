@@ -1,0 +1,63 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module device.mojom;
+
+// This interface is ChromeOS-specific. If it is ever desired
+// to support a more general fingerprint service across more
+// platforms, the interface would need to be generalized.
+// Interface for obeserving fingerprint daemon signals.
+interface FingerprintObserver{
+  // Called when biometics device powers up or is restarted.
+  OnRestarted();
+
+  // Called whenever a user attempts a scan. |scan_result| tells whether the
+  // scan was succesful. |is_complete| tells whether enrollment is complete
+  // and now over.
+  OnScanned(uint32 scan_result, bool is_complete);
+
+  // Called to indicate a bad scan of any kind, or a succesful scan. If scan
+  // is successful, |recognized_user_ids| will equal all the enrollment IDs
+  // that match the scan.
+  OnAttempt(uint32 scan_result, array<string> recognized_user_ids);
+
+  // Called during either mode to indicate a failure. Any enrollment that was
+  // underway is thrown away and authentication will no longer be happening.
+  OnFailure();
+};
+
+// Interface for communicating with fingerprint deamon through dbus.
+interface Fingerprint {
+  // Gets all the enrollments registered with this biometric.
+  GetFingerprintsList() => (array<string> enrollments);
+
+  // Starts the biometric enrollment.
+  StartEnroll(string user_id, string label);
+
+  // Ends the current enroll.
+  CancelCurrentEnroll();
+
+  // Gets label of the enrollment.
+  GetLabel(int32 index) => (string label);
+
+  // Changes the label of the enrollment to |label|.
+  SetLabel(string label, int32 index);
+
+  // Removes the enrollment. This enrollment will no longer
+  // be able to used for authentication.
+  RemoveEnrollment(int32 index);
+
+  // Starts the biometric authentication.
+  StartAuthentication();
+
+  // Ends the current autentication.
+  EndCurrentAuthentication();
+
+  // Irreversibly destroys all enrollments registered with this biometric.
+  DestroyAllEnrollments();
+
+  // Adds fingerprint observers and notifies them when receiving signals.
+  AddFingerprintObserver(FingerprintObserver observer);
+};
+
