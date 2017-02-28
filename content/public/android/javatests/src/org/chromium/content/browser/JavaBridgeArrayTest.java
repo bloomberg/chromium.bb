@@ -21,7 +21,7 @@ import org.chromium.base.test.util.Feature;
  */
 public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
-    private class TestObject extends Controller {
+    private static class TestObject extends Controller {
         private boolean mBooleanValue;
         private int mIntValue;
         private String mStringValue;

@@ -22,7 +22,7 @@ import org.chromium.base.test.util.Feature;
  */
 public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
-    private class TestObject extends Controller {
+    private static class TestObject extends Controller {
         private final Object mObjectInstance;
         private final CustomType mCustomTypeInstance;
 

@@ -30,7 +30,7 @@ import java.util.concurrent.TimeoutException;
 @SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
 public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
-    private class TestController extends Controller {
+    private static class TestController extends Controller {
         private String mStringValue;
 
         @SuppressWarnings("unused") // Called via reflection

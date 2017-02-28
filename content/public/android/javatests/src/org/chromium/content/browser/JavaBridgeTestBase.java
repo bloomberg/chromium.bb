@@ -55,7 +55,7 @@ public class JavaBridgeTestBase extends ContentShellTestBase {
     }
 
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
-    protected class Controller {
+    protected static class Controller {
         private boolean mIsResultReady;
 
         protected synchronized void notifyResultIsReady() {

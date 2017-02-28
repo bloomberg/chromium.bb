@@ -24,7 +24,7 @@ public class JavaBridgeReturnValuesTest extends JavaBridgeTestBase {
     // An instance of this class is injected into the page to test returning
     // Java values to JavaScript.
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
-    private class TestObject extends Controller {
+    private static class TestObject extends Controller {
         private String mStringResult;
         private boolean mBooleanResult;
 

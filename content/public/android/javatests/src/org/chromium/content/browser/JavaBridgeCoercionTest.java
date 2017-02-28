@@ -28,7 +28,7 @@ import java.io.File;
  */
 public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
-    private class TestObject extends Controller {
+    private static class TestObject extends Controller {
         private Object mObjectInstance;
         private CustomType mCustomTypeInstance;
         private CustomType2 mCustomType2Instance;
@@ -161,7 +161,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     private TestObject mTestObject;
 
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
-    private class TestController extends Controller {
+    private static class TestController extends Controller {
         private boolean mBooleanValue;
 
         public synchronized void setBooleanValue(boolean x) {
