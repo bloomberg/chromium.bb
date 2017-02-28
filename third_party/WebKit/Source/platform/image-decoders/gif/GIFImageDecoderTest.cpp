@@ -236,13 +236,13 @@ TEST(GIFImageDecoderTest, badTerminator) {
   referenceDecoder->setData(referenceData.get(), true);
   EXPECT_EQ(1u, referenceDecoder->frameCount());
   ImageFrame* referenceFrame = referenceDecoder->frameBufferAtIndex(0);
-  ASSERT(referenceFrame);
+  DCHECK(referenceFrame);
 
   std::unique_ptr<ImageDecoder> testDecoder = createDecoder();
   testDecoder->setData(testData.get(), true);
   EXPECT_EQ(1u, testDecoder->frameCount());
   ImageFrame* testFrame = testDecoder->frameBufferAtIndex(0);
-  ASSERT(testFrame);
+  DCHECK(testFrame);
 
   EXPECT_EQ(hashBitmap(referenceFrame->bitmap()),
             hashBitmap(testFrame->bitmap()));

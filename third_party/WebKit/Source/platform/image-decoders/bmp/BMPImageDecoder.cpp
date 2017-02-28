@@ -91,7 +91,7 @@ bool BMPImageDecoder::decodeHelper(bool onlySize) {
 
 bool BMPImageDecoder::processFileHeader(size_t& imgDataOffset) {
   // Read file header.
-  ASSERT(!m_decodedOffset);
+  DCHECK(!m_decodedOffset);
   if (m_data->size() < sizeOfFileHeader)
     return false;
 

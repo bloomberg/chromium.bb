@@ -128,7 +128,7 @@ size_t ROBufferSegmentReader::getSomeData(const char*& data,
 
   for (size_t sizeOfBlock = m_iter.size(); sizeOfBlock != 0;
        m_positionOfBlock += sizeOfBlock, sizeOfBlock = m_iter.size()) {
-    ASSERT(m_positionOfBlock <= position);
+    DCHECK_LE(m_positionOfBlock, position);
 
     if (m_positionOfBlock + sizeOfBlock > position) {
       // |position| is in this block.

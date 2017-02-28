@@ -86,7 +86,7 @@ size_t FastSharedBufferReader::getSomeData(const char*& someData,
 void FastSharedBufferReader::getSomeDataInternal(size_t dataPosition) const {
   m_dataPosition = dataPosition;
   m_segmentLength = m_data->getSomeData(m_segment, dataPosition);
-  ASSERT(m_segmentLength);
+  DCHECK(m_segmentLength);
 }
 
 }  // namespace blink

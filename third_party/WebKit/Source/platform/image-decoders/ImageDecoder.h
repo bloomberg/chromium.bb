@@ -149,14 +149,14 @@ class PLATFORM_EXPORT ImageDecoder {
   // Image decoders that support YUV decoding must override this to
   // provide the size of each component.
   virtual IntSize decodedYUVSize(int component) const {
-    ASSERT(false);
+    NOTREACHED();
     return IntSize();
   }
 
   // Image decoders that support YUV decoding must override this to
   // return the width of each row of the memory allocation.
   virtual size_t decodedYUVWidthBytes(int component) const {
-    ASSERT(false);
+    NOTREACHED();
     return 0;
   }
 

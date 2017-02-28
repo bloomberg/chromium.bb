@@ -228,7 +228,7 @@ bool ICOImageDecoder::decodeAtIndex(size_t index) {
 
 bool ICOImageDecoder::processDirectory() {
   // Read directory.
-  ASSERT(!m_decodedOffset);
+  DCHECK(!m_decodedOffset);
   if (m_data->size() < sizeOfDirectory)
     return false;
   const uint16_t fileType = readUint16(2);
@@ -246,7 +246,7 @@ bool ICOImageDecoder::processDirectory() {
 
 bool ICOImageDecoder::processDirectoryEntries() {
   // Read directory entries.
-  ASSERT(m_decodedOffset == sizeOfDirectory);
+  DCHECK_EQ(m_decodedOffset, sizeOfDirectory);
   if ((m_decodedOffset > m_data->size()) ||
       ((m_data->size() - m_decodedOffset) <
        (m_dirEntriesCount * sizeOfDirEntry)))

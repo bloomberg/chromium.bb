@@ -528,7 +528,7 @@ class JPEGImageReader final {
             return false;  // I/O suspension.
 
           // If we've completed image output...
-          ASSERT(m_info.output_scanline == m_info.output_height);
+          DCHECK_EQ(m_info.output_scanline, m_info.output_height);
           m_state = JPEG_DONE;
         }
       // FALL THROUGH
@@ -737,18 +737,22 @@ void JPEGImageDecoder::setDecodedSize(unsigned width, unsigned height) {
 }
 
 IntSize JPEGImageDecoder::decodedYUVSize(int component) const {
-  ASSERT((component >= 0) && (component <= 2) && m_reader);
+  DCHECK_GE(component, 0);
+  DCHECK_LE(component, 2);
+  DCHECK(m_reader);
   const jpeg_decompress_struct* info = m_reader->info();
 
-  ASSERT(info->out_color_space == JCS_YCbCr);
+  DCHECK_EQ(info->out_color_space, JCS_YCbCr);
   return computeYUVSize(info, component);
 }
 
 size_t JPEGImageDecoder::decodedYUVWidthBytes(int component) const {
-  ASSERT((component >= 0) && (component <= 2) && m_reader);
+  DCHECK_GE(component, 0);
+  DCHECK_LE(component, 2);
+  DCHECK(m_reader);
   const jpeg_decompress_struct* info = m_reader->info();
 
-  ASSERT(info->out_color_space == JCS_YCbCr);
+  DCHECK_EQ(info->out_color_space, JCS_YCbCr);
   return computeYUVWidthBytes(info, component);
 }
 
@@ -793,7 +797,7 @@ void setPixel(ImageFrame& buffer,
               ImageFrame::PixelData* pixel,
               JSAMPARRAY samples,
               int column) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 // Used only for debugging with libjpeg (instead of libjpeg-turbo).
@@ -928,10 +932,10 @@ bool JPEGImageDecoder::outputScanlines() {
   // Initialize the framebuffer if needed.
   ImageFrame& buffer = m_frameBufferCache[0];
   if (buffer.getStatus() == ImageFrame::FrameEmpty) {
-    ASSERT(info->output_width ==
-           static_cast<JDIMENSION>(m_decodedSize.width()));
-    ASSERT(info->output_height ==
-           static_cast<JDIMENSION>(m_decodedSize.height()));
+    DCHECK_EQ(info->output_width,
+              static_cast<JDIMENSION>(m_decodedSize.width()));
+    DCHECK_EQ(info->output_height,
+              static_cast<JDIMENSION>(m_decodedSize.height()));
 
     if (!buffer.setSizeAndColorSpace(info->output_width, info->output_height,
                                      colorSpaceForSkImages()))
@@ -971,7 +975,7 @@ bool JPEGImageDecoder::outputScanlines() {
     case JCS_CMYK:
       return outputRows<JCS_CMYK>(m_reader.get(), buffer);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   return setFailed();

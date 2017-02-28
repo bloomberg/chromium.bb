@@ -312,7 +312,7 @@ void GIFColorMap::buildTable(blink::FastSharedBufferReader* reader) {
 
   RELEASE_ASSERT(m_position + m_colors * BYTES_PER_COLORMAP_ENTRY <=
                  reader->size());
-  ASSERT(m_colors <= MAX_COLORS);
+  DCHECK_LE(m_colors, MAX_COLORS);
   char buffer[MAX_COLORS * BYTES_PER_COLORMAP_ENTRY];
   const unsigned char* srcColormap =
       reinterpret_cast<const unsigned char*>(reader->getConsecutiveData(
@@ -441,7 +441,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
 
     switch (m_state) {
       case GIFLZW:
-        ASSERT(!m_frames.isEmpty());
+        DCHECK(!m_frames.isEmpty());
         // m_bytesToConsume is the current component size because it hasn't been
         // updated.
         m_frames.back()->addLzwBlock(currentComponentPosition,
@@ -450,7 +450,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
         break;
 
       case GIFLZWStart: {
-        ASSERT(!m_frames.isEmpty());
+        DCHECK(!m_frames.isEmpty());
         m_frames.back()->setDataSize(static_cast<unsigned char>(
             reader.getOneByte(currentComponentPosition)));
         GETN(1, GIFSubBlock);
@@ -789,7 +789,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
       }
 
       case GIFImageColormap: {
-        ASSERT(!m_frames.isEmpty());
+        DCHECK(!m_frames.isEmpty());
         m_frames.back()->localColorMap().setDefined();
         GETN(1, GIFLZWStart);
         break;
@@ -802,7 +802,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
           GETN(bytesInBlock, GIFLZW);
         else {
           // Finished parsing one frame; Process next frame.
-          ASSERT(!m_frames.isEmpty());
+          DCHECK(!m_frames.isEmpty());
           // Note that some broken GIF files do not have enough LZW blocks to
           // fully decode all rows; we treat this case as "frame complete".
           m_frames.back()->setComplete();
@@ -828,7 +828,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
 }
 
 void GIFImageReader::setRemainingBytes(size_t remainingBytes) {
-  ASSERT(remainingBytes <= m_data->size());
+  DCHECK_LE(remainingBytes, m_data->size());
   m_bytesRead = m_data->size() - remainingBytes;
 }
 
@@ -839,8 +839,8 @@ void GIFImageReader::addFrameIfNecessary() {
 
 // FIXME: Move this method to close to doLZW().
 bool GIFLZWContext::prepareToDecode() {
-  ASSERT(m_frameContext->isDataSizeDefined() &&
-         m_frameContext->isHeaderDefined());
+  DCHECK(m_frameContext->isDataSizeDefined());
+  DCHECK(m_frameContext->isHeaderDefined());
 
   // Since we use a codesize of 1 more than the datasize, we need to ensure
   // that our datasize is strictly less than the MAX_DICTIONARY_ENTRY_BITS.

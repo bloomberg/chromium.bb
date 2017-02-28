@@ -108,10 +108,10 @@ class PLATFORM_EXPORT ImageFrame final {
   // same X-coordinates on each subsequent row up to but not including
   // endY.
   void copyRowNTimes(int startX, int endX, int startY, int endY) {
-    ASSERT(startX < width());
-    ASSERT(endX <= width());
-    ASSERT(startY < height());
-    ASSERT(endY <= height());
+    DCHECK_LT(startX, width());
+    DCHECK_LE(endX, width());
+    DCHECK_LT(startY, height());
+    DCHECK_LE(endY, height());
     const int rowBytes = (endX - startX) * sizeof(PixelData);
     const PixelData* const startAddr = getAddr(startX, startY);
     for (int destY = startY + 1; destY < endY; ++destY)

@@ -199,7 +199,7 @@ bool WEBPImageDecoder::updateDemuxer() {
     return setFailed();
   }
 
-  ASSERT(m_demuxState > WEBP_DEMUX_PARSING_HEADER);
+  DCHECK_GT(m_demuxState, WEBP_DEMUX_PARSING_HEADER);
   if (!WebPDemuxGetI(m_demux, WEBP_FF_FRAME_COUNT))
     return false;  // Wait until the encoded image frame data arrives.
 
@@ -218,7 +218,7 @@ bool WEBPImageDecoder::updateDemuxer() {
       // an ANIM chunk must precede the ANMF frame chunks.
       m_repetitionCount = WebPDemuxGetI(m_demux, WEBP_FF_LOOP_COUNT);
       // Repetition count is always <= 16 bits.
-      ASSERT(m_repetitionCount == (m_repetitionCount & 0xffff));
+      DCHECK_EQ(m_repetitionCount, m_repetitionCount & 0xffff);
       if (!m_repetitionCount)
         m_repetitionCount = cAnimationLoopInfinite;
       // FIXME: Implement ICC profile support for animated images.
@@ -229,7 +229,7 @@ bool WEBPImageDecoder::updateDemuxer() {
       readColorProfile();
   }
 
-  ASSERT(isDecodedSizeAvailable());
+  DCHECK(isDecodedSizeAvailable());
 
   size_t frameCount = WebPDemuxGetI(m_demux, WEBP_FF_FRAME_COUNT);
   updateAggressivePurging(frameCount);
@@ -344,7 +344,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex) {
       buffer.getAlphaBlendSource() == ImageFrame::BlendAtopPreviousFrame &&
       buffer.requiredPreviousFrameIndex() != kNotFound) {
     ImageFrame& prevBuffer = m_frameBufferCache[frameIndex - 1];
-    ASSERT(prevBuffer.getStatus() == ImageFrame::FrameComplete);
+    DCHECK_EQ(prevBuffer.getStatus(), ImageFrame::FrameComplete);
     ImageFrame::DisposalMethod prevDisposalMethod =
         prevBuffer.getDisposalMethod();
     if (prevDisposalMethod == ImageFrame::DisposeKeep) {
@@ -385,12 +385,12 @@ size_t WEBPImageDecoder::decodeFrameCount() {
 
 void WEBPImageDecoder::initializeNewFrame(size_t index) {
   if (!(m_formatFlags & ANIMATION_FLAG)) {
-    ASSERT(!index);
+    DCHECK(!index);
     return;
   }
   WebPIterator animatedFrame;
   WebPDemuxGetFrame(m_demux, index + 1, &animatedFrame);
-  ASSERT(animatedFrame.complete == 1);
+  DCHECK_EQ(animatedFrame.complete, 1);
   ImageFrame* buffer = &m_frameBufferCache[index];
   IntRect frameRect(animatedFrame.x_offset, animatedFrame.y_offset,
                     animatedFrame.width, animatedFrame.height);
@@ -415,7 +415,7 @@ void WEBPImageDecoder::decode(size_t index) {
 
   Vector<size_t> framesToDecode = findFramesToDecode(index);
 
-  ASSERT(m_demux);
+  DCHECK(m_demux);
   for (auto i = framesToDecode.rbegin(); i != framesToDecode.rend(); ++i) {
     if ((m_formatFlags & ANIMATION_FLAG) && !initFrameBuffer(*i))
       return;
@@ -447,11 +447,11 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes,
   if (failed())
     return false;
 
-  ASSERT(isDecodedSizeAvailable());
+  DCHECK(isDecodedSizeAvailable());
 
-  ASSERT(m_frameBufferCache.size() > frameIndex);
+  DCHECK_GT(m_frameBufferCache.size(), frameIndex);
   ImageFrame& buffer = m_frameBufferCache[frameIndex];
-  ASSERT(buffer.getStatus() != ImageFrame::FrameComplete);
+  DCHECK_NE(buffer.getStatus(), ImageFrame::FrameComplete);
 
   if (buffer.getStatus() == ImageFrame::FrameEmpty) {
     if (!buffer.setSizeAndColorSpace(size().width(), size().height(),

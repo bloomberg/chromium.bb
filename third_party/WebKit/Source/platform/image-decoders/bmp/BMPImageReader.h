@@ -226,7 +226,7 @@ class PLATFORM_EXPORT BMPImageReader final {
         return readUint32(encodedPixel);
 
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 0;
     }
   }

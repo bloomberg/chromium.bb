@@ -115,7 +115,7 @@ bool BMPImageReader::decodeBMP(bool onlySize) {
     return false;
 
   // Initialize the framebuffer if needed.
-  ASSERT(m_buffer);  // Parent should set this before asking us to decode!
+  DCHECK(m_buffer);  // Parent should set this before asking us to decode!
   if (m_buffer->getStatus() == ImageFrame::FrameEmpty) {
     if (!m_buffer->setSizeAndColorSpace(m_parent->size().width(),
                                         m_parent->size().height(),
@@ -175,7 +175,7 @@ bool BMPImageReader::decodePixelData(bool nonRLE) {
 
 bool BMPImageReader::readInfoHeaderSize() {
   // Get size of info header.
-  ASSERT(m_decodedOffset == m_headerOffset);
+  DCHECK_EQ(m_decodedOffset, m_headerOffset);
   if ((m_decodedOffset > m_data->size()) ||
       ((m_data->size() - m_decodedOffset) < 4))
     return false;
@@ -211,7 +211,7 @@ bool BMPImageReader::readInfoHeaderSize() {
 
 bool BMPImageReader::processInfoHeader() {
   // Read info header.
-  ASSERT(m_decodedOffset == m_headerOffset);
+  DCHECK_EQ(m_decodedOffset, m_headerOffset);
   if ((m_decodedOffset > m_data->size()) ||
       ((m_data->size() - m_decodedOffset) < m_infoHeader.biSize) ||
       !readInfoHeader())
@@ -261,7 +261,7 @@ bool BMPImageReader::readInfoHeader() {
   if (m_isOS21x) {
     m_infoHeader.biWidth = readUint16(4);
     m_infoHeader.biHeight = readUint16(6);
-    ASSERT(!m_isInICO);  // ICO is a Windows format, not OS/2!
+    DCHECK(!m_isInICO);  // ICO is a Windows format, not OS/2!
     m_infoHeader.biBitCount = readUint16(10);
     return true;
   }
@@ -398,7 +398,7 @@ bool BMPImageReader::isInfoHeaderValid() const {
     default:
       // Some type we don't understand.  This should have been caught in
       // readInfoHeader().
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 
