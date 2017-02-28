@@ -1905,12 +1905,12 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 #if CONFIG_EXT_REFS
     if (gf_group->update_type[frame_index] == BRF_UPDATE) {
       // Boost up the allocated bits on BWDREF_FRAME
-      gf_group->rf_level[frame_index] = INTER_HIGH;
+      gf_group->rf_level[frame_index] = GF_ARF_LOW;
       gf_group->bit_allocation[frame_index] =
           target_frame_size + (target_frame_size >> 2);
     } else if (gf_group->update_type[frame_index] == LAST_BIPRED_UPDATE) {
       // Press down the allocated bits on LAST_BIPRED_UPDATE frames
-      gf_group->rf_level[frame_index] = INTER_LOW;
+      gf_group->rf_level[frame_index] = INTER_NORMAL;
       gf_group->bit_allocation[frame_index] =
           target_frame_size - (target_frame_size >> 1);
     } else if (gf_group->update_type[frame_index] == BIPRED_UPDATE) {
@@ -1972,7 +1972,7 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
             gf_group->bit_allocation[arf_pos[i]];
         gf_group->update_type[arf_pos[i]] = INTNL_OVERLAY_UPDATE;
         gf_group->bit_allocation[arf_pos[i]] = 0;
-        gf_group->rf_level[arf_pos[i]] = INTER_LOW;
+        gf_group->rf_level[arf_pos[i]] = INTER_NORMAL;
       }
     }
 #else
