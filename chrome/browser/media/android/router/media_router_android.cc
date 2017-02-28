@@ -184,15 +184,8 @@ void MediaRouterAndroid::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
     std::unique_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
-  int callback_id = message_callbacks_.Add(
-      base::MakeUnique<SendRouteMessageCallback>(callback));
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jroute_id =
-      base::android::ConvertUTF8ToJavaString(env, route_id);
-  ScopedJavaLocalRef<jbyteArray> jbyte_array =
-      base::android::ToJavaByteArray(env, &((*data)[0]), data->size());
-  Java_ChromeMediaRouter_sendBinaryMessage(env, java_media_router_, jroute_id,
-                                           jbyte_array, callback_id);
+  // Binary messaging is not supported on Android.
+  callback.Run(false);
 }
 
 void MediaRouterAndroid::AddIssue(const IssueInfo& issue_info) {
