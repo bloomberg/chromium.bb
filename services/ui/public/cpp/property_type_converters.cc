@@ -41,6 +41,9 @@ std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, gfx::Rect>::Convert(
 // static
 gfx::Rect TypeConverter<gfx::Rect, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
+  if (input.size() != 16)
+    return gfx::Rect();
+
   return gfx::Rect(
       input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3],
       input[4] << 24 | input[5] << 16 | input[6] << 8 | input[7],
@@ -66,6 +69,9 @@ std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, gfx::Size>::Convert(
 // static
 gfx::Size TypeConverter<gfx::Size, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
+  if (input.size() != 8)
+    return gfx::Size();
+
   return gfx::Size(input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3],
                    input[4] << 24 | input[5] << 16 | input[6] << 8 | input[7]);
 }
@@ -84,6 +90,9 @@ std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, int32_t>::Convert(
 // static
 int32_t TypeConverter<int32_t, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
+  if (input.size() != 4)
+    return 0;
+
   return input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3];
 }
 
@@ -105,10 +114,9 @@ std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, int64_t>::Convert(
 // static
 int64_t TypeConverter<int64_t, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
-  if (input.size() < 8) {
-    NOTREACHED();
+  if (input.size() != 8)
     return 0;
-  }
+
   return static_cast<int64_t>(input[0]) << 56 |
          static_cast<int64_t>(input[1]) << 48 |
          static_cast<int64_t>(input[2]) << 40 |

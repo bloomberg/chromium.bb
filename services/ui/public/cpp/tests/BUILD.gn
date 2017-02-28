@@ -22,6 +22,7 @@ test("mus_public_unittests") {
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
     "//testing/gtest",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
   ]
