@@ -230,50 +230,50 @@ WebInputEventResult MouseEventManager::setMousePositionAndDispatchMouseEvent(
 }
 
 WebInputEventResult MouseEventManager::dispatchMouseClickIfNeeded(
-    const MouseEventWithHitTestResults& mev) {
+    Node* target,
+    const WebMouseEvent& mouseEvent,
+    const String& canvasRegionId) {
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool contextMenuEvent =
       !RuntimeEnabledFeatures::auxclickEnabled() &&
-      mev.event().button == WebPointerProperties::Button::Right;
+      mouseEvent.button == WebPointerProperties::Button::Right;
 #if OS(MACOSX)
   // FIXME: The Mac port achieves the same behavior by checking whether the
   // context menu is currently open in WebPage::mouseEvent(). Consider merging
   // the implementations.
-  if (mev.event().button == WebPointerProperties::Button::Left &&
-      mev.event().modifiers() & WebInputEvent::Modifiers::ControlKey)
+  if (mouseEvent.button == WebPointerProperties::Button::Left &&
+      mouseEvent.modifiers() & WebInputEvent::Modifiers::ControlKey)
     contextMenuEvent = true;
 #endif
 
   WebInputEventResult clickEventResult = WebInputEventResult::NotHandled;
-  const bool shouldDispatchClickEvent =
-      m_clickCount > 0 && !contextMenuEvent && mev.innerNode() && m_clickNode &&
-      mev.innerNode()->canParticipateInFlatTree() &&
-      m_clickNode->canParticipateInFlatTree() &&
-      !(m_frame->eventHandler().selectionController().hasExtendedSelection() &&
-        isLinkSelection(mev));
+  const bool shouldDispatchClickEvent = m_clickCount > 0 && !contextMenuEvent &&
+                                        target && m_clickNode &&
+                                        target->canParticipateInFlatTree() &&
+                                        m_clickNode->canParticipateInFlatTree();
   if (shouldDispatchClickEvent) {
     Node* clickTargetNode = nullptr;
     // Updates distribution because a 'mouseup' event listener can make the
     // tree dirty at dispatchMouseEvent() invocation above.
     // Unless distribution is updated, commonAncestor would hit ASSERT.
-    if (m_clickNode == mev.innerNode()) {
+    if (m_clickNode == target) {
       clickTargetNode = m_clickNode;
       clickTargetNode->updateDistribution();
-    } else if (m_clickNode->document() == mev.innerNode()->document()) {
+    } else if (m_clickNode->document() == target->document()) {
       m_clickNode->updateDistribution();
-      mev.innerNode()->updateDistribution();
-      clickTargetNode = mev.innerNode()->commonAncestor(
+      target->updateDistribution();
+      clickTargetNode = target->commonAncestor(
           *m_clickNode, EventHandlingUtil::parentForClickEvent);
     }
     if (clickTargetNode) {
       clickEventResult = dispatchMouseEvent(
           clickTargetNode,
           !RuntimeEnabledFeatures::auxclickEnabled() ||
-                  (mev.event().button == WebPointerProperties::Button::Left)
+                  (mouseEvent.button == WebPointerProperties::Button::Left)
               ? EventTypeNames::click
               : EventTypeNames::auxclick,
-          mev.event(), mev.canvasRegionId(), nullptr);
+          mouseEvent, canvasRegionId, nullptr);
     }
   }
   return clickEventResult;
@@ -573,8 +573,8 @@ WebInputEventResult MouseEventManager::handleMousePressEvent(
 
   bool singleClick = event.event().clickCount <= 1;
 
-  m_mouseDownMayStartDrag =
-      singleClick && !isLinkSelection(event) && !isExtendingSelection(event);
+  m_mouseDownMayStartDrag = singleClick && !isSelectionOverLink(event) &&
+                            !isExtendingSelection(event);
 
   m_frame->eventHandler().selectionController().handleMousePressEvent(event);
 

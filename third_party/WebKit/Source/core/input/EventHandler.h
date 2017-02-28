@@ -305,7 +305,8 @@ class CORE_EXPORT EventHandler final
       Node* target,
       const String& canvasRegionId,
       const WebMouseEvent&,
-      const Vector<WebMouseEvent>& coalescedEvents);
+      const Vector<WebMouseEvent>& coalescedEvents,
+      bool selectionOverLink = false);
 
   // Clears drag target and related states. It is called when drag is done or
   // canceled.
