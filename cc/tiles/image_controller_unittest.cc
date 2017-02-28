@@ -266,6 +266,8 @@ class ImageControllerTest : public testing::Test {
     run_loop->Run();
   }
 
+  void ResetController() { controller_.reset(); }
+
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<WorkerTaskRunner> worker_task_runner_;
@@ -449,6 +451,7 @@ TEST_F(ImageControllerTest, QueueImageDecodeChangeControllerWithTaskQueued) {
   task_one->AllowToRun();
   task_two->AllowToRun();
   controller()->SetImageDecodeCache(nullptr);
+  ResetController();
 
   RunOrTimeout(&run_loop);
 
@@ -507,7 +510,7 @@ TEST_F(ImageControllerTest, QueueImageDecodeLockedImageControllerChange) {
   EXPECT_EQ(0, cache()->number_of_refs());
 }
 
-TEST_F(ImageControllerTest, DispatchesDecodeCallbacksAfterCacheChanged) {
+TEST_F(ImageControllerTest, DispatchesDecodeCallbacksAfterCacheReset) {
   scoped_refptr<SimpleTask> task(new SimpleTask);
   cache()->SetTaskToUse(task);
 
@@ -529,8 +532,59 @@ TEST_F(ImageControllerTest, DispatchesDecodeCallbacksAfterCacheChanged) {
   // the compositor thread. Ensure that the completion callbacks for the decode
   // is still run.
   controller()->SetImageDecodeCache(nullptr);
+  ResetController();
+
   RunOrTimeout(&run_loop1);
   RunOrTimeout(&run_loop2);
+
+  EXPECT_EQ(ImageController::ImageDecodeResult::FAILURE,
+            decode_client1.result());
+  EXPECT_EQ(ImageController::ImageDecodeResult::FAILURE,
+            decode_client2.result());
+}
+
+TEST_F(ImageControllerTest, DispatchesDecodeCallbacksAfterCacheChanged) {
+  scoped_refptr<SimpleTask> task(new SimpleTask);
+  cache()->SetTaskToUse(task);
+
+  base::RunLoop run_loop1;
+  DecodeClient decode_client1;
+  base::RunLoop run_loop2;
+  DecodeClient decode_client2;
+
+  controller()->QueueImageDecode(
+      image(),
+      base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client1),
+                 run_loop1.QuitClosure()));
+  controller()->QueueImageDecode(
+      image(),
+      base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client2),
+                 run_loop2.QuitClosure()));
+
+  // Now reset the image cache before decode completed callbacks are posted to
+  // the compositor thread. This should orphan the requests.
+  controller()->SetImageDecodeCache(nullptr);
+
+  EXPECT_EQ(0, cache()->number_of_refs());
+
+  TestableCache other_cache;
+  other_cache.SetTaskToUse(task);
+
+  controller()->SetImageDecodeCache(&other_cache);
+
+  RunOrTimeout(&run_loop1);
+  RunOrTimeout(&run_loop2);
+
+  EXPECT_EQ(2, other_cache.number_of_refs());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client1.result());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client2.result());
+
+  // Reset the controller since the order of destruction is wrong in this test
+  // (|other_cache| should outlive the controller. This is normally done via
+  // SetImageDecodeCache(nullptr) or it can be done in the dtor of the cache.)
+  ResetController();
 }
 
 }  // namespace

@@ -26,6 +26,8 @@ ImageController::ImageController(
 
 ImageController::~ImageController() {
   StopWorkerTasks();
+  for (auto& request : orphaned_decode_requests_)
+    request.callback.Run(request.id, ImageDecodeResult::FAILURE);
 }
 
 void ImageController::StopWorkerTasks() {
@@ -74,7 +76,6 @@ void ImageController::StopWorkerTasks() {
   // be posted in the run loop, but since we invalidated the weak ptrs, we need
   // to run everything manually.
   for (auto& request_to_complete : requests_needing_completion_) {
-    ImageDecodeRequestId id = request_to_complete.first;
     ImageDecodeRequest& request = request_to_complete.second;
 
     // The task (if one exists) would have run already, we just need to make
@@ -83,17 +84,13 @@ void ImageController::StopWorkerTasks() {
     if (request.task && !request.task->HasCompleted())
       request.task->DidComplete();
 
-    // Issue the callback, and unref the image immediately. This is so that any
-    // code waiting on the callback can proceed, although we're breaking the
-    // promise of having this image decoded. This is unfortunate, but it seems
-    // like the least complexity to process an image decode controller becoming
-    // nullptr.
-    // TODO(vmpstr): We can move these back to |image_decode_queue_| instead
-    // and defer completion until we get a new cache and process the request
-    // again. crbug.com/693692.
-    request.callback.Run(id, ImageDecodeResult::FAILURE);
     if (request.need_unref)
       cache_->UnrefImage(request.draw_image);
+
+    // Orphan the request so that we can still run it when a new cache is set.
+    request.task = nullptr;
+    request.need_unref = false;
+    orphaned_decode_requests_.push_back(std::move(request));
   }
   requests_needing_completion_.clear();
 
@@ -101,7 +98,6 @@ void ImageController::StopWorkerTasks() {
   // similar to the |requests_needing_completion_|, but happens at a different
   // stage in the pipeline.
   for (auto& request_pair : image_decode_queue_) {
-    ImageDecodeRequestId id = request_pair.first;
     ImageDecodeRequest& request = request_pair.second;
 
     if (request.task) {
@@ -114,11 +110,12 @@ void ImageController::StopWorkerTasks() {
       if (!request.task->HasCompleted())
         request.task->DidComplete();
     }
-    // Run the callback and unref the image.
-    // TODO(vmpstr): We can regenerate the tasks for the new cache if we get
-    // one. crbug.com/693692.
-    request.callback.Run(id, ImageDecodeResult::FAILURE);
     cache_->UnrefImage(request.draw_image);
+
+    // Orphan the request so that we can still run it when a new cache is set.
+    request.task = nullptr;
+    request.need_unref = false;
+    orphaned_decode_requests_.push_back(std::move(request));
   }
   image_decode_queue_.clear();
 }
@@ -133,6 +130,9 @@ void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
   }
 
   cache_ = cache;
+
+  if (cache_)
+    GenerateTasksForOrphanedRequests();
 }
 
 void ImageController::GetTasksForImagesAndRef(
@@ -319,6 +319,33 @@ void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
 
   // Finally run the requested callback.
   callback.Run(id, result);
+}
+
+void ImageController::GenerateTasksForOrphanedRequests() {
+  base::AutoLock hold(lock_);
+  DCHECK_EQ(0u, image_decode_queue_.size());
+  DCHECK_EQ(0u, requests_needing_completion_.size());
+  DCHECK(cache_);
+
+  for (auto& request : orphaned_decode_requests_) {
+    DCHECK(!request.task);
+    DCHECK(!request.need_unref);
+    if (request.draw_image.image()->isLazyGenerated()) {
+      // Get the task for this decode.
+      request.need_unref = cache_->GetOutOfRasterDecodeTaskForImageAndRef(
+          request.draw_image, &request.task);
+    }
+    image_decode_queue_[request.id] = std::move(request);
+  }
+
+  orphaned_decode_requests_.clear();
+  if (!image_decode_queue_.empty()) {
+    // Post a worker task.
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ImageController::ProcessNextImageDecodeOnWorkerThread,
+                   base::Unretained(this)));
+  }
 }
 
 ImageController::ImageDecodeRequest::ImageDecodeRequest() = default;
