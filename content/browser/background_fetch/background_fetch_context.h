@@ -8,12 +8,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
+class BackgroundFetchJobInfo;
+class BackgroundFetchRequestInfo;
 class BrowserContext;
-class FetchRequest;
 class ServiceWorkerContextWrapper;
 
 // The BackgroundFetchContext is the central moderator of ongoing background
@@ -27,6 +29,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   // that it can respond to service worker events such as unregister.
   BackgroundFetchContext(
       BrowserContext* browser_context,
+      StoragePartition* storage_partition,
       const scoped_refptr<ServiceWorkerContextWrapper>& context);
 
   // Init and Shutdown are for use on the UI thread when the StoragePartition is
@@ -41,12 +44,14 @@ class CONTENT_EXPORT BackgroundFetchContext
   }
 
  private:
-  void CreateRequest(const FetchRequest& fetch_request);
+  void CreateRequest(const BackgroundFetchJobInfo& job_info,
+                     std::vector<BackgroundFetchRequestInfo>& request_infos);
 
   friend class base::RefCountedThreadSafe<BackgroundFetchContext>;
   ~BackgroundFetchContext();
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  BackgroundFetchJobController background_fetch_job_controller_;
   BackgroundFetchDataManager background_fetch_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchContext);

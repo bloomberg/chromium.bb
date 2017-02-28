@@ -6,7 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
-#include "content/browser/background_fetch/fetch_request.h"
+#include "content/browser/background_fetch/background_fetch_job_info.h"
+#include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/test/test_browser_context.h"
@@ -28,9 +29,10 @@ class BackgroundFetchDataManagerTest : public testing::Test {
  protected:
   BackgroundFetchDataManagerTest()
       : helper_(base::FilePath()),
-        background_fetch_context_(
-            new BackgroundFetchContext(&browser_context_,
-                                       helper_.context_wrapper())) {}
+        background_fetch_context_(new BackgroundFetchContext(
+            &browser_context_,
+            BrowserContext::GetDefaultStoragePartition(&browser_context_),
+            helper_.context_wrapper())) {}
 
   BackgroundFetchDataManager* GetDataManager() const {
     return background_fetch_context_->GetDataManagerForTesting();
@@ -45,14 +47,45 @@ class BackgroundFetchDataManagerTest : public testing::Test {
 };
 
 TEST_F(BackgroundFetchDataManagerTest, AddRequest) {
+  // Create a BackgroundFetchJobInfo and a set of BackgroundFetchRequestInfos.
+  std::vector<BackgroundFetchRequestInfo> request_infos;
+  std::vector<std::string> request_guids;
+  for (int i = 0; i < 10; i++) {
+    BackgroundFetchRequestInfo request_info(GURL(kResource), kTag);
+    request_guids.push_back(request_info.guid());
+    request_infos.push_back(std::move(request_info));
+  }
+  BackgroundFetchJobInfo job_info(kTag, url::Origin(GURL(kOrigin)),
+                                  kServiceWorkerRegistrationId);
+
+  // Initialize a BackgroundFetchJobData with the constructed requests.
   BackgroundFetchDataManager* data_manager = GetDataManager();
-  FetchRequest request(url::Origin(GURL(kOrigin)), GURL(kResource),
-                       kServiceWorkerRegistrationId, kTag);
+  BackgroundFetchJobData* job_data =
+      data_manager->CreateRequest(job_info, request_infos);
 
-  data_manager->CreateRequest(request);
+  // Get all of the fetch requests from the BackgroundFetchJobData.
+  for (int i = 0; i < 10; i++) {
+    EXPECT_FALSE(job_data->IsComplete());
+    ASSERT_TRUE(job_data->HasRequestsRemaining());
+    const BackgroundFetchRequestInfo& request_info =
+        job_data->GetNextBackgroundFetchRequestInfo();
+    EXPECT_EQ(request_info.tag(), kTag);
+  }
 
-  // TODO(harkness) There's no output to test yet. Once there is, check that the
-  // request was actually added.
+  // At this point, all the fetches have been started, but none finished.
+  EXPECT_FALSE(job_data->HasRequestsRemaining());
+  EXPECT_FALSE(job_data->IsComplete());
+
+  // Complete all buy one of the fetch requests.
+  for (int i = 0; i < 9; i++) {
+    EXPECT_FALSE(
+        job_data->BackgroundFetchRequestInfoComplete(request_guids[i]));
+    EXPECT_FALSE(job_data->IsComplete());
+  }
+
+  // Complete the final fetch request.
+  EXPECT_FALSE(job_data->BackgroundFetchRequestInfoComplete(request_guids[9]));
+  EXPECT_TRUE(job_data->IsComplete());
 }
 
 }  // namespace content
