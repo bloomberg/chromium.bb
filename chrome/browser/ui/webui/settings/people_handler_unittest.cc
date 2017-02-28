@@ -291,6 +291,8 @@ class PeopleHandlerTest : public testing::Test {
       handler_->sync_startup_tracker_->OnStateChanged(mock_pss_);
   }
 
+  void NotifySyncStateChanged() { handler_->OnStateChanged(mock_pss_); }
+
   virtual std::string GetTestUser() {
     return std::string(kTestUser);
   }
@@ -370,6 +372,7 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, RequestStart());
 
   // We're simulating a user setting up sync, which would cause the engine to
   // kick off initialization, but not download user data types. The sync
@@ -394,6 +397,7 @@ TEST_F(PeopleHandlerTest,
   error_ = GoogleServiceAuthError::AuthErrorNone();
   // Sync engine is stopped initially, and will start up.
   EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, RequestStart());
   SetDefaultExpectationsForConfigPage();
 
   handler_->OpenSyncSetup();
@@ -431,6 +435,7 @@ TEST_F(PeopleHandlerTest,
   EXPECT_CALL(*mock_pss_, IsEngineInitialized())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, RequestStart());
   SetDefaultExpectationsForConfigPage();
   handler_->OpenSyncSetup();
 
@@ -451,6 +456,7 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, RequestStart());
 
   handler_->OpenSyncSetup();
   ExpectPageStatusChanged(PeopleHandler::kSpinnerPageStatus);
@@ -464,6 +470,14 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
   EXPECT_EQ(NULL,
             LoginUIServiceFactory::GetForProfile(
                 profile_)->current_login_ui());
+}
+
+// Tests that signals not related to user intention to configure sync don't
+// trigger sync engine start.
+TEST_F(PeopleHandlerTest, OnlyStartEngineWhenConfiguringSync) {
+  EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, RequestStart()).Times(0);
+  NotifySyncStateChanged();
 }
 
 #if !defined(OS_CHROMEOS)

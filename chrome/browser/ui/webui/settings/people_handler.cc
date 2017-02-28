@@ -662,6 +662,28 @@ void PeopleHandler::OpenSyncSetup() {
     return;
   }
 
+  // Early exit if there is already a preferences push pending sync startup.
+  if (sync_startup_tracker_)
+    return;
+
+  if (!service->IsEngineInitialized()) {
+    // Requesting the sync service to start may trigger call to PushSyncPrefs.
+    // Setting up the startup tracker beforehand correctly signals the
+    // re-entrant call to early exit.
+    sync_startup_tracker_.reset(new SyncStartupTracker(profile_, this));
+    service->RequestStart();
+
+    // See if it's even possible to bring up the sync engine - if not
+    // (unrecoverable error?), don't bother displaying a spinner that will be
+    // immediately closed because this leads to some ugly infinite UI loop (see
+    // http://crbug.com/244769).
+    if (SyncStartupTracker::GetSyncServiceState(profile_) !=
+        SyncStartupTracker::SYNC_STARTUP_ERROR) {
+      DisplaySpinner();
+    }
+    return;
+  }
+
   // User is already logged in. They must have brought up the config wizard
   // via the "Advanced..." button or through One-Click signin (cases 4-6), or
   // they are re-enabling sync after having disabled it (case 7).
@@ -770,30 +792,9 @@ void PeopleHandler::PushSyncPrefs() {
   }
 #endif
 
-  // Early exit if there is already a preferences push pending sync startup.
-  if (sync_startup_tracker_)
-    return;
-
   ProfileSyncService* service = GetSyncService();
   // The sync service may be nullptr if it has been just disabled by policy.
-  if (!service)
-    return;
-
-  if (!service->IsEngineInitialized()) {
-    // Requesting the sync service to start may trigger another reentrant call
-    // to PushSyncPrefs. Setting up the startup tracker beforehand correctly
-    // signals the re-entrant call to early exit.
-    sync_startup_tracker_.reset(new SyncStartupTracker(profile_, this));
-    service->RequestStart();
-
-    // See if it's even possible to bring up the sync engine - if not
-    // (unrecoverable error?), don't bother displaying a spinner that will be
-    // immediately closed because this leads to some ugly infinite UI loop (see
-    // http://crbug.com/244769).
-    if (SyncStartupTracker::GetSyncServiceState(profile_) !=
-        SyncStartupTracker::SYNC_STARTUP_ERROR) {
-      DisplaySpinner();
-    }
+  if (!service || !service->IsEngineInitialized()) {
     return;
   }
 
