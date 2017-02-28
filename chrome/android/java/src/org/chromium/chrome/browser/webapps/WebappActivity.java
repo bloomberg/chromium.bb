@@ -158,8 +158,8 @@ public class WebappActivity extends FullScreenActivity {
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        ScreenOrientationProvider.lockOrientation(getWindowAndroid(),
-                (byte) mWebappInfo.orientation(), this);
+        ScreenOrientationProvider.lockOrientation(
+                getWindowAndroid(), (byte) mWebappInfo.orientation());
         super.preInflationStartup();
     }
 

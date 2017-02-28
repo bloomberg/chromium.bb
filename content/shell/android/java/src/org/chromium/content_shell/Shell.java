@@ -356,13 +356,17 @@ public class Shell extends LinearLayout {
             @Override
             public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
                 super.enterFullscreenVideo(view, isVideoLoaded);
-                mContentViewRenderView.setOverlayVideoMode(true);
+                if (mContentViewRenderView != null) {
+                    mContentViewRenderView.setOverlayVideoMode(true);
+                }
             }
 
             @Override
             public void exitFullscreenVideo() {
                 super.exitFullscreenVideo();
-                mContentViewRenderView.setOverlayVideoMode(false);
+                if (mContentViewRenderView != null) {
+                    mContentViewRenderView.setOverlayVideoMode(false);
+                }
             }
         };
     }

@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
 import android.support.test.filters.MediumTest;
 
@@ -22,7 +23,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Integration tests for the feature that auto lock the orientation when a video goes fullscreen.
+ * Integration tests for the feature that auto locks the orientation when a video goes fullscreen.
+ * See also chrome layer org.chromium.chrome.browser.VideoFullscreenOrientationLockChromeTest
  */
 @CommandLineFlags.Add({ "enable-features=VideoFullscreenOrientationLock",
                         ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK })
@@ -42,6 +44,11 @@ public class VideoFullscreenOrientationLockTest extends ContentShellTestBase {
         );
     }
 
+    private boolean isScreenOrientationLocked() {
+        return getActivity().getRequestedOrientation()
+                != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+    }
+
     private boolean isScreenOrientationLandscape() throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
@@ -52,17 +59,26 @@ public class VideoFullscreenOrientationLockTest extends ContentShellTestBase {
                 .equals("true");
     }
 
-    private void waitForLandscapeOrientation() throws InterruptedException {
+    private void waitUntilLockedToLandscape() throws InterruptedException {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return isScreenOrientationLandscape();
+                    return isScreenOrientationLocked() && isScreenOrientationLandscape();
                 } catch (InterruptedException e) {
                     return false;
                 } catch (TimeoutException e) {
                     return false;
                 }
+            }
+        });
+    }
+
+    private void waitUntilUnlocked() throws InterruptedException {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !isScreenOrientationLocked();
             }
         });
     }
@@ -116,8 +132,8 @@ public class VideoFullscreenOrientationLockTest extends ContentShellTestBase {
         assertTrue(clickFullscreenButton());
         waitForContentsFullscreenState(true);
 
-        // Should be landscape now, `waitForLandscapeOrientation` will throw otherwise.
-        waitForLandscapeOrientation();
+        // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.
+        waitUntilLockedToLandscape();
 
         // Because of the fullscreen animation, the click on the exit fullscreen button will fail
         // roughly 10% of the time. Settling down the UI reduces the flake to 0%.
@@ -126,6 +142,7 @@ public class VideoFullscreenOrientationLockTest extends ContentShellTestBase {
         // Leave fullscreen by clicking back on the button.
         assertTrue(clickFullscreenButton());
         waitForContentsFullscreenState(false);
+        waitUntilUnlocked();
     }
 
     @MediumTest
@@ -142,11 +159,59 @@ public class VideoFullscreenOrientationLockTest extends ContentShellTestBase {
         assertTrue(DOMUtils.clickNode(getContentViewCore(), "fullscreen"));
         waitForContentsFullscreenState(true);
 
-        // Should be landscape now, `waitForLandscapeOrientation` will throw otherwise.
-        waitForLandscapeOrientation();
+        // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.
+        waitUntilLockedToLandscape();
 
         // Leave fullscreen from API.
         DOMUtils.exitFullscreen(getWebContents());
         waitForContentsFullscreenState(false);
+        waitUntilUnlocked();
+    }
+
+    @MediumTest
+    @Feature({"VideoFullscreenOrientationLock"})
+    public void testExitFullscreenByRemovingVideo() throws Exception {
+        if (DeviceFormFactor.isTablet(getInstrumentation().getContext())) return;
+
+        // Start playback to guarantee it's properly loaded.
+        assertTrue(DOMUtils.isMediaPaused(getWebContents(), VIDEO_ID));
+        DOMUtils.playMedia(getWebContents(), VIDEO_ID);
+        DOMUtils.waitForMediaPlay(getWebContents(), VIDEO_ID);
+
+        // Trigger requestFullscreen() via a click on a button.
+        assertTrue(DOMUtils.clickNode(getContentViewCore(), "fullscreen"));
+        waitForContentsFullscreenState(true);
+
+        // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.
+        waitUntilLockedToLandscape();
+
+        // Leave fullscreen by removing video element from page.
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                getWebContents(), "document.body.innerHTML = '';");
+        waitForContentsFullscreenState(false);
+        waitUntilUnlocked();
+    }
+
+    @MediumTest
+    @Feature({"VideoFullscreenOrientationLock"})
+    public void testExitFullscreenWithNavigation() throws Exception {
+        if (DeviceFormFactor.isTablet(getInstrumentation().getContext())) return;
+
+        // Start playback to guarantee it's properly loaded.
+        assertTrue(DOMUtils.isMediaPaused(getWebContents(), VIDEO_ID));
+        DOMUtils.playMedia(getWebContents(), VIDEO_ID);
+        DOMUtils.waitForMediaPlay(getWebContents(), VIDEO_ID);
+
+        // Trigger requestFullscreen() via a click on a button.
+        assertTrue(DOMUtils.clickNode(getContentViewCore(), "fullscreen"));
+        waitForContentsFullscreenState(true);
+
+        // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.
+        waitUntilLockedToLandscape();
+
+        // Leave fullscreen by navigating page.
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(getWebContents(), "location.reload();");
+        waitForContentsFullscreenState(false);
+        waitUntilUnlocked();
     }
 }
