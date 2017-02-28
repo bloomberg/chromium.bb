@@ -49,7 +49,6 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/FormData.h"
@@ -1921,7 +1920,7 @@ void HTMLSelectElement::provisionalSelectionChanged(unsigned listIndex) {
 void HTMLSelectElement::showPopup() {
   if (popupIsVisible())
     return;
-  if (document().frameHost()->chromeClient().hasOpenedPopup())
+  if (document().page()->chromeClient().hasOpenedPopup())
     return;
   if (!layoutObject() || !layoutObject()->isMenuList())
     return;
@@ -1929,7 +1928,7 @@ void HTMLSelectElement::showPopup() {
     return;
 
   if (!m_popup)
-    m_popup = document().frameHost()->chromeClient().openPopupMenu(
+    m_popup = document().page()->chromeClient().openPopupMenu(
         *document().frame(), *this);
   m_popupIsVisible = true;
   observeTreeMutation();

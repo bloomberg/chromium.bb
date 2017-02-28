@@ -50,7 +50,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -70,6 +69,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/PlatformLocale.h"
@@ -338,7 +338,7 @@ void HTMLInputElement::endEditing() {
 
   LocalFrame* frame = document().frame();
   frame->spellChecker().didEndEditingOnTextField(this);
-  frame->host()->chromeClient().didEndEditingOnTextField(*this);
+  frame->page()->chromeClient().didEndEditingOnTextField(*this);
 }
 
 void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement,

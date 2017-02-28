@@ -52,7 +52,6 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -63,6 +62,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EditorClient.h"
+#include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/KillRing.h"
 #include "platform/UserGestureIndicator.h"
@@ -1546,10 +1546,10 @@ static bool executePrint(LocalFrame& frame,
                          Event*,
                          EditorCommandSource,
                          const String&) {
-  FrameHost* host = frame.host();
-  if (!host)
+  Page* page = frame.page();
+  if (!page)
     return false;
-  return host->chromeClient().print(&frame);
+  return page->chromeClient().print(&frame);
 }
 
 static bool executeRedo(LocalFrame& frame,

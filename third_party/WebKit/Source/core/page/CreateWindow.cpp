@@ -28,7 +28,6 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameClient.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -56,11 +55,11 @@ static Frame* reuseExistingWindow(LocalFrame& activeFrame,
     if (Frame* frame =
             lookupFrame.findFrameForNavigation(frameName, activeFrame)) {
       if (frameName != "_self") {
-        if (FrameHost* host = frame->host()) {
-          if (host == activeFrame.host())
-            frame->page()->focusController().setFocusedFrame(frame);
+        if (Page* page = frame->page()) {
+          if (page == activeFrame.page())
+            page->focusController().setFocusedFrame(frame);
           else
-            host->chromeClient().focus();
+            page->chromeClient().focus();
         }
       }
       return frame;
@@ -74,15 +73,14 @@ static Frame* createNewWindow(LocalFrame& openerFrame,
                               const WindowFeatures& features,
                               NavigationPolicy policy,
                               bool& created) {
-  FrameHost* oldHost = openerFrame.host();
-  if (!oldHost)
+  Page* oldPage = openerFrame.page();
+  if (!oldPage)
     return nullptr;
 
-  Page* page = oldHost->chromeClient().createWindow(&openerFrame, request,
+  Page* page = oldPage->chromeClient().createWindow(&openerFrame, request,
                                                     features, policy);
   if (!page)
     return nullptr;
-  FrameHost* host = &page->frameHost();
 
   ASSERT(page->mainFrame());
   LocalFrame& frame = *toLocalFrame(page->mainFrame());
@@ -90,14 +88,14 @@ static Frame* createNewWindow(LocalFrame& openerFrame,
   if (request.frameName() != "_blank")
     frame.tree().setName(request.frameName());
 
-  host->chromeClient().setWindowFeatures(features);
+  page->chromeClient().setWindowFeatures(features);
 
   // 'x' and 'y' specify the location of the window, while 'width' and 'height'
   // specify the size of the viewport. We can only resize the window, so adjust
   // for the difference between the window size and the viewport size.
 
-  IntRect windowRect = host->chromeClient().rootWindowRect();
-  IntSize viewportSize = host->chromeClient().pageRect().size();
+  IntRect windowRect = page->chromeClient().rootWindowRect();
+  IntSize viewportSize = page->chromeClient().pageRect().size();
 
   if (features.xSet)
     windowRect.setX(features.x);
@@ -110,8 +108,8 @@ static Frame* createNewWindow(LocalFrame& openerFrame,
     windowRect.setHeight(features.height +
                          (windowRect.height() - viewportSize.height()));
 
-  host->chromeClient().setWindowRectWithAdjustment(windowRect, frame);
-  host->chromeClient().show(policy);
+  page->chromeClient().setWindowRectWithAdjustment(windowRect, frame);
+  page->chromeClient().show(policy);
 
   if (openerFrame.document()->isSandboxed(
           SandboxPropagatesToAuxiliaryBrowsingContexts))

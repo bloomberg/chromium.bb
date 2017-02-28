@@ -28,6 +28,8 @@
 
 #include "core/html/forms/InputType.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/InputTypeNames.h"
@@ -37,7 +39,6 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/fileapi/FileList.h"
-#include "core/frame/FrameHost.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -68,12 +69,12 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/json/JSONValues.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -430,8 +431,8 @@ String InputType::serialize(const Decimal&) const {
 }
 
 ChromeClient* InputType::chromeClient() const {
-  if (FrameHost* host = element().document().frameHost())
-    return &host->chromeClient();
+  if (Page* page = element().document().page())
+    return &page->chromeClient();
   return nullptr;
 }
 

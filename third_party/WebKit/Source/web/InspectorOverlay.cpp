@@ -395,7 +395,7 @@ void InspectorOverlay::scheduleUpdate() {
   FrameView* view = m_frameImpl->frameView();
   LocalFrame* frame = m_frameImpl->frame();
   if (view && frame)
-    frame->host()->chromeClient().scheduleAnimation(view);
+    frame->page()->chromeClient().scheduleAnimation(view);
 }
 
 void InspectorOverlay::rebuildOverlayPage() {
@@ -495,7 +495,7 @@ float InspectorOverlay::windowToViewportScale() const {
   LocalFrame* frame = m_frameImpl->frame();
   if (!frame)
     return 1.0f;
-  return frame->host()->chromeClient().windowToViewportScalar(1.0f);
+  return frame->page()->chromeClient().windowToViewportScalar(1.0f);
 }
 
 Page* InspectorOverlay::overlayPage() {
@@ -510,7 +510,7 @@ Page* InspectorOverlay::overlayPage() {
   fillWithEmptyClients(pageClients);
   DCHECK(!m_overlayChromeClient);
   m_overlayChromeClient = InspectorOverlayChromeClient::create(
-      m_frameImpl->frame()->host()->chromeClient(), *this);
+      m_frameImpl->frame()->page()->chromeClient(), *this);
   pageClients.chromeClient = m_overlayChromeClient.get();
   m_overlayPage = Page::create(pageClients);
 
@@ -594,7 +594,7 @@ void InspectorOverlay::reset(const IntSize& viewportSize,
                        m_frameImpl->frame()->host()->visualViewport().scale());
 
   IntRect viewportInScreen =
-      m_frameImpl->frame()->host()->chromeClient().viewportToScreen(
+      m_frameImpl->frame()->page()->chromeClient().viewportToScreen(
           IntRect(IntPoint(), viewportSize), m_frameImpl->frame()->view());
   resetData->setObject("viewportSize",
                        buildObjectForSize(viewportInScreen.size()));

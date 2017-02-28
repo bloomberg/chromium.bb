@@ -74,9 +74,6 @@ class CORE_EXPORT FrameHost final
   Page& page();
   const Page& page() const;
 
-  ChromeClient& chromeClient();
-  const ChromeClient& chromeClient() const;
-
   UseCounter& useCounter();
   const UseCounter& useCounter() const;
 

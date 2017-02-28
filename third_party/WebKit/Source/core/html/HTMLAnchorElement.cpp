@@ -27,7 +27,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -37,6 +36,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/PingLoader.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/network/NetworkHints.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebNavigationHintType.h"
@@ -177,7 +177,7 @@ bool HTMLAnchorElement::isKeyboardFocusable() const {
   if (isFocusable() && Element::supportsFocus())
     return HTMLElement::isKeyboardFocusable();
 
-  if (isLink() && !document().frameHost()->chromeClient().tabsToLinks())
+  if (isLink() && !document().page()->chromeClient().tabsToLinks())
     return false;
   return HTMLElement::isKeyboardFocusable();
 }

@@ -75,8 +75,7 @@ FloatPoint frameTranslation(const Widget* widget) {
                                            .visualViewport()
                                            .visibleRect()
                                            .location());
-      overscrollOffset =
-          rootView->page()->frameHost().chromeClient().elasticOverscroll();
+      overscrollOffset = rootView->page()->chromeClient().elasticOverscroll();
     }
   }
   return FloatPoint(

@@ -119,6 +119,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   static void platformColorsChanged();
 
+  // TODO(sashab): Remove this.
   FrameHost& frameHost() const { return *m_frameHost; }
 
   void setNeedsRecalcStyleInAllFrames();

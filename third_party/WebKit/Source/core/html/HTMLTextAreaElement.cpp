@@ -39,7 +39,6 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/events/Event.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/FormData.h"
@@ -49,6 +48,7 @@
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/LayoutTextControlMultiLine.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -300,7 +300,7 @@ void HTMLTextAreaElement::subtreeHasChanged() {
   calculateAndAdjustDirectionality();
 
   DCHECK(document().isActive());
-  document().frameHost()->chromeClient().didChangeValueInTextField(*this);
+  document().page()->chromeClient().didChangeValueInTextField(*this);
 }
 
 void HTMLTextAreaElement::handleBeforeTextInsertedEvent(

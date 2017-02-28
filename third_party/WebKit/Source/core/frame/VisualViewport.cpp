@@ -254,7 +254,7 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
   if (scale != m_scale) {
     m_scale = scale;
     valuesChanged = true;
-    frameHost().chromeClient().pageScaleFactorChanged();
+    frameHost().page().chromeClient().pageScaleFactorChanged();
     enqueueResizeEvent();
   }
 
@@ -296,8 +296,8 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta,
                                               const FloatPoint& anchor) {
   const float oldPageScale = scale();
   const float newPageScale =
-      frameHost().chromeClient().clampPageScaleFactorToLimits(magnifyDelta *
-                                                              oldPageScale);
+      frameHost().page().chromeClient().clampPageScaleFactorToLimits(
+          magnifyDelta * oldPageScale);
   if (newPageScale == oldPageScale)
     return false;
   if (!mainFrame() || !mainFrame()->view())
@@ -502,7 +502,7 @@ bool VisualViewport::scrollAnimatorEnabled() const {
 }
 
 HostWindow* VisualViewport::getHostWindow() const {
-  return &frameHost().chromeClient();
+  return &frameHost().page().chromeClient();
 }
 
 bool VisualViewport::shouldUseIntegerScrollOffset() const {

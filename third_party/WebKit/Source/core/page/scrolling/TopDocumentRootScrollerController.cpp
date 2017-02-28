@@ -198,7 +198,7 @@ void TopDocumentRootScrollerController::didUpdateCompositing() {
     return;
 
   // Let the compositor-side counterpart know about this change.
-  m_frameHost->chromeClient().registerViewportLayers();
+  m_frameHost->page().chromeClient().registerViewportLayers();
 }
 
 void TopDocumentRootScrollerController::didDisposeScrollableArea(

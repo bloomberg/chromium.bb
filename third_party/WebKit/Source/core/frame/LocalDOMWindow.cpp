@@ -537,11 +537,11 @@ void LocalDOMWindow::sendOrientationChangeEvent() {
 int LocalDOMWindow::orientation() const {
   ASSERT(RuntimeEnabledFeatures::orientationEventEnabled());
 
-  if (!frame() || !frame()->host())
+  if (!frame() || !frame()->page())
     return 0;
 
   int orientation =
-      frame()->host()->chromeClient().screenInfo().orientationAngle;
+      frame()->page()->chromeClient().screenInfo().orientationAngle;
   // For backward compatibility, we want to return a value in the range of
   // [-90; 180] instead of [0; 360[ because window.orientation used to behave
   // like that in WebKit (this is a WebKit proprietary API).
@@ -704,8 +704,8 @@ void LocalDOMWindow::print(ScriptState* scriptState) {
   if (!frame())
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
   if (scriptState &&
@@ -722,7 +722,7 @@ void LocalDOMWindow::print(ScriptState* scriptState) {
                                      UseCounter::CrossOriginWindowPrint);
 
   m_shouldPrintWhenFinishedLoading = false;
-  host->chromeClient().print(frame());
+  page->chromeClient().print(frame());
 }
 
 void LocalDOMWindow::stop() {
@@ -771,14 +771,14 @@ void LocalDOMWindow::alert(ScriptState* scriptState, const String& message) {
 
   document()->updateStyleAndLayoutTree();
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
   UseCounter::countCrossOriginIframe(*document(),
                                      UseCounter::CrossOriginWindowAlert);
 
-  host->chromeClient().openJavaScriptAlert(frame(), message);
+  page->chromeClient().openJavaScriptAlert(frame(), message);
 }
 
 bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message) {
@@ -821,14 +821,14 @@ bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message) {
 
   document()->updateStyleAndLayoutTree();
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return false;
 
   UseCounter::countCrossOriginIframe(*document(),
                                      UseCounter::CrossOriginWindowConfirm);
 
-  return host->chromeClient().openJavaScriptConfirm(frame(), message);
+  return page->chromeClient().openJavaScriptConfirm(frame(), message);
 }
 
 String LocalDOMWindow::prompt(ScriptState* scriptState,
@@ -873,12 +873,12 @@ String LocalDOMWindow::prompt(ScriptState* scriptState,
 
   document()->updateStyleAndLayoutTree();
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return String();
 
   String returnValue;
-  if (host->chromeClient().openJavaScriptPrompt(frame(), message, defaultValue,
+  if (page->chromeClient().openJavaScriptPrompt(frame(), message, defaultValue,
                                                 returnValue))
     return returnValue;
 
@@ -1098,11 +1098,11 @@ void LocalDOMWindow::setStatus(const String& string) {
   if (!frame())
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
-  host->chromeClient().setStatusbarText(m_status);
+  page->chromeClient().setStatusbarText(m_status);
 }
 
 void LocalDOMWindow::setDefaultStatus(const String& string) {
@@ -1111,11 +1111,11 @@ void LocalDOMWindow::setDefaultStatus(const String& string) {
   if (!frame())
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
-  host->chromeClient().setStatusbarText(m_defaultStatus);
+  page->chromeClient().setStatusbarText(m_defaultStatus);
 }
 
 Document* LocalDOMWindow::document() const {
@@ -1288,58 +1288,58 @@ void LocalDOMWindow::moveBy(int x, int y) const {
   if (!frame() || !frame()->isMainFrame())
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
-  IntRect windowRect = host->chromeClient().rootWindowRect();
+  IntRect windowRect = page->chromeClient().rootWindowRect();
   windowRect.saturatedMove(x, y);
   // Security check (the spec talks about UniversalBrowserWrite to disable this
   // check...)
-  host->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
+  page->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
 }
 
 void LocalDOMWindow::moveTo(int x, int y) const {
   if (!frame() || !frame()->isMainFrame())
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
-  IntRect windowRect = host->chromeClient().rootWindowRect();
+  IntRect windowRect = page->chromeClient().rootWindowRect();
   windowRect.setLocation(IntPoint(x, y));
   // Security check (the spec talks about UniversalBrowserWrite to disable this
   // check...)
-  host->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
+  page->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
 }
 
 void LocalDOMWindow::resizeBy(int x, int y) const {
   if (!frame() || !frame()->isMainFrame())
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
-  IntRect fr = host->chromeClient().rootWindowRect();
+  IntRect fr = page->chromeClient().rootWindowRect();
   IntSize dest = fr.size() + IntSize(x, y);
   IntRect update(fr.location(), dest);
-  host->chromeClient().setWindowRectWithAdjustment(update, *frame());
+  page->chromeClient().setWindowRectWithAdjustment(update, *frame());
 }
 
 void LocalDOMWindow::resizeTo(int width, int height) const {
   if (!frame() || !frame()->isMainFrame())
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
-  IntRect fr = host->chromeClient().rootWindowRect();
+  IntRect fr = page->chromeClient().rootWindowRect();
   IntSize dest = IntSize(width, height);
   IntRect update(fr.location(), dest);
-  host->chromeClient().setWindowRectWithAdjustment(update, *frame());
+  page->chromeClient().setWindowRectWithAdjustment(update, *frame());
 }
 
 int LocalDOMWindow::requestAnimationFrame(FrameRequestCallback* callback) {

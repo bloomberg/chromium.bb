@@ -42,7 +42,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/File.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -1450,7 +1449,7 @@ void HTMLCanvasElement::createLayer() {
   // frame-less HTML canvas's document is reparenting under another frame.
   // See crbug.com/683172.
   if (frame) {
-    layerTreeView = frame->host()->chromeClient().getWebLayerTreeView(frame);
+    layerTreeView = frame->page()->chromeClient().getWebLayerTreeView(frame);
     m_surfaceLayerBridge =
         WTF::wrapUnique(new CanvasSurfaceLayerBridge(this, layerTreeView));
     // Creates a placeholder layer first before Surface is created.

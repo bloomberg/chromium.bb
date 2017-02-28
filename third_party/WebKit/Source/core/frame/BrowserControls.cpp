@@ -4,11 +4,13 @@
 
 #include "core/frame/BrowserControls.h"
 
+#include <algorithm>  // for std::min and std::max
+
 #include "core/frame/FrameHost.h"
 #include "core/frame/VisualViewport.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/geometry/FloatSize.h"
-#include <algorithm>  // for std::min and std::max
 
 namespace blink {
 
@@ -86,7 +88,7 @@ void BrowserControls::setShownRatio(float shownRatio) {
     return;
 
   m_shownRatio = shownRatio;
-  m_frameHost->chromeClient().didUpdateBrowserControls();
+  m_frameHost->page().chromeClient().didUpdateBrowserControls();
 }
 
 void BrowserControls::updateConstraintsAndState(
@@ -123,7 +125,7 @@ void BrowserControls::setHeight(float height, bool shrinkViewport) {
 
   m_height = height;
   m_shrinkViewport = shrinkViewport;
-  m_frameHost->chromeClient().didUpdateBrowserControls();
+  m_frameHost->page().chromeClient().didUpdateBrowserControls();
 }
 
 }  // namespace blink

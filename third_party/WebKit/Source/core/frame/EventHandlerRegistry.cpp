@@ -213,19 +213,19 @@ void EventHandlerRegistry::notifyHasHandlersChanged(
     bool hasActiveHandlers) {
   switch (handlerClass) {
     case ScrollEvent:
-      m_frameHost->chromeClient().setHasScrollEventHandlers(frame,
-                                                            hasActiveHandlers);
+      m_frameHost->page().chromeClient().setHasScrollEventHandlers(
+          frame, hasActiveHandlers);
       break;
     case WheelEventBlocking:
     case WheelEventPassive:
-      m_frameHost->chromeClient().setEventListenerProperties(
+      m_frameHost->page().chromeClient().setEventListenerProperties(
           frame, WebEventListenerClass::MouseWheel,
           webEventListenerProperties(hasEventHandlers(WheelEventBlocking),
                                      hasEventHandlers(WheelEventPassive)));
       break;
     case TouchStartOrMoveEventBlocking:
     case TouchStartOrMoveEventPassive:
-      m_frameHost->chromeClient().setEventListenerProperties(
+      m_frameHost->page().chromeClient().setEventListenerProperties(
           frame, WebEventListenerClass::TouchStartOrMove,
           webEventListenerProperties(
               hasEventHandlers(TouchStartOrMoveEventBlocking),
@@ -233,7 +233,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(
       break;
     case TouchEndOrCancelEventBlocking:
     case TouchEndOrCancelEventPassive:
-      m_frameHost->chromeClient().setEventListenerProperties(
+      m_frameHost->page().chromeClient().setEventListenerProperties(
           frame, WebEventListenerClass::TouchEndOrCancel,
           webEventListenerProperties(
               hasEventHandlers(TouchEndOrCancelEventBlocking),

@@ -28,7 +28,6 @@
 
 #include "core/frame/Screen.h"
 
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -68,17 +67,17 @@ int Screen::width() const {
 }
 
 unsigned Screen::colorDepth() const {
-  if (!frame() || !frame()->host())
+  if (!frame() || !frame()->page())
     return 0;
   return static_cast<unsigned>(
-      frame()->host()->chromeClient().screenInfo().depth);
+      frame()->page()->chromeClient().screenInfo().depth);
 }
 
 unsigned Screen::pixelDepth() const {
   if (!frame())
     return 0;
   return static_cast<unsigned>(
-      frame()->host()->chromeClient().screenInfo().depth);
+      frame()->page()->chromeClient().screenInfo().depth);
 }
 
 int Screen::availLeft() const {

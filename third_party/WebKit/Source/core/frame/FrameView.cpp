@@ -4020,7 +4020,7 @@ void FrameView::updateScrollOffset(const ScrollOffset& offset,
 void FrameView::didChangeScrollOffset() {
   frame().loader().client()->didChangeScrollOffset();
   if (frame().isMainFrame())
-    frame().host()->chromeClient().mainFrameScrollOffsetChanged();
+    frame().page()->chromeClient().mainFrameScrollOffsetChanged();
 }
 
 void FrameView::clearScrollAnchor() {
@@ -4935,7 +4935,7 @@ void FrameView::beginLifecycleUpdates() {
   // The compositor will "defer commits" for the main frame until we
   // explicitly request them.
   if (frame().isMainFrame())
-    frame().host()->chromeClient().beginLifecycleUpdates();
+    frame().page()->chromeClient().beginLifecycleUpdates();
 }
 
 void FrameView::setInitialViewportSize(const IntSize& viewportSize) {

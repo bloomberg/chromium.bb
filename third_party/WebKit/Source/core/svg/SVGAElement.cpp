@@ -30,7 +30,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -199,7 +198,7 @@ bool SVGAElement::isMouseFocusable() const {
 bool SVGAElement::isKeyboardFocusable() const {
   if (isFocusable() && Element::supportsFocus())
     return SVGElement::isKeyboardFocusable();
-  if (isLink() && !document().frameHost()->chromeClient().tabsToLinks())
+  if (isLink() && !document().page()->chromeClient().tabsToLinks())
     return false;
   return SVGElement::isKeyboardFocusable();
 }

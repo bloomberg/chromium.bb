@@ -2525,9 +2525,8 @@ void Document::shutdown() {
   if (m_focusedElement.get()) {
     Element* oldFocusedElement = m_focusedElement;
     m_focusedElement = nullptr;
-    if (frameHost())
-      frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement,
-                                                     nullptr);
+    if (page())
+      page()->chromeClient().focusedNodeChanged(oldFocusedElement, nullptr);
   }
   m_sequentialFocusNavigationStartingPoint = nullptr;
 
@@ -3574,7 +3573,7 @@ ViewportDescription Document::viewportDescription() const {
 
 void Document::updateViewportDescription() {
   if (frame() && frame()->isMainFrame()) {
-    frameHost()->chromeClient().dispatchViewportPropertiesDidChange(
+    page()->chromeClient().dispatchViewportPropertiesDidChange(
         viewportDescription());
   }
 }
@@ -4139,9 +4138,10 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
                                            newFocusedElement);
   }
 
-  if (!focusChangeBlocked && frameHost())
-    frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement,
-                                                   m_focusedElement.get());
+  if (!focusChangeBlocked && page()) {
+    page()->chromeClient().focusedNodeChanged(oldFocusedElement,
+                                              m_focusedElement.get());
+  }
 
 SetFocusedElementDone:
   updateStyleAndLayoutTree();

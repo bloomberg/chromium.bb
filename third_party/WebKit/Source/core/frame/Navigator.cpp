@@ -25,13 +25,13 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/NavigatorID.h"
 #include "core/frame/Settings.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/Language.h"
 
 namespace blink {
@@ -76,12 +76,12 @@ bool Navigator::cookieEnabled() const {
 Vector<String> Navigator::languages() {
   Vector<String> languages;
 
-  if (!frame() || !frame()->host()) {
+  if (!frame() || !frame()->page()) {
     languages.push_back(defaultLanguage());
     return languages;
   }
 
-  String acceptLanguages = frame()->host()->chromeClient().acceptLanguages();
+  String acceptLanguages = frame()->page()->chromeClient().acceptLanguages();
   acceptLanguages.split(',', languages);
 
   // Sanitizing tokens. We could do that more extensively but we should assume
