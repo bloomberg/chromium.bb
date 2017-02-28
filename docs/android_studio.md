@@ -78,7 +78,7 @@ includes `R.java`).
 * Import Android style settings:
     * Help -&gt; Find Action -&gt; "Code Style" (settings) -&gt; Java -&gt;
       Manage -&gt; Import
-        * Select `third_party/android_platform/development/ide/intellij/codestyles/AndroidStyle.xml`
+        * Select `tools/android/android_studio/ChromiumStyle.xml`
 * Turn on automatic import:
     * Help -&gt; Find Action -&gt; "Auto Import"
         * Tick all the boxes under "Java" and change the dropdown to "All".
