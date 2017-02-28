@@ -3341,7 +3341,8 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'lumpy-chrome-pfq': {
           'afdo_generate': True,
           # Disable hugepages before collecting AFDO profile.
-          'useflags': append_useflags(['-transparent_hugepage']),
+          # Use gcc to build Chrome to get profile for x86-32 boards.
+          'useflags': append_useflags(['-transparent_hugepage', '-clang']),
           'hw_tests': ([hw_test_list.AFDORecordTest()] +
                        hw_test_list.SharedPoolPFQ()),
       },

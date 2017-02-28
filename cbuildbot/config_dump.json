@@ -15192,6 +15192,7 @@
         ],
         "manifest": "official.xml",
         "useflags": [
+            "-clang",
             "-transparent_hugepage",
             "chrome_internal"
         ]
