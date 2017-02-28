@@ -49,8 +49,6 @@
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/cross_device_promo.h"
-#include "chrome/browser/signin/cross_device_promo_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -1634,13 +1632,6 @@ void ProfileManager::UpdateLastUser(Profile* last_active) {
     ProfileAttributesEntry* entry;
     if (GetProfileAttributesStorage().
             GetProfileAttributesWithPath(last_active->GetPath(), &entry)) {
-#if !defined(OS_CHROMEOS)
-      // Incognito Profiles don't have ProfileKeyedServices.
-      if (!last_active->IsOffTheRecord()) {
-        CrossDevicePromoFactory::GetForProfile(last_active)->
-            MaybeBrowsingSessionStarted(entry->GetActiveTime());
-      }
-#endif
       entry->SetActiveTimeToNow();
     }
   }

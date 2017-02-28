@@ -32,8 +32,6 @@ static_library("browser") {
     "child_account_info_fetcher_android.h",
     "child_account_info_fetcher_impl.cc",
     "child_account_info_fetcher_impl.h",
-    "device_activity_fetcher.cc",
-    "device_activity_fetcher.h",
     "gaia_cookie_manager_service.cc",
     "gaia_cookie_manager_service.h",
     "profile_identity_provider.cc",

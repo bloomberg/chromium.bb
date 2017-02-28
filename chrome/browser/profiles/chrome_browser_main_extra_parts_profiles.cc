@@ -115,10 +115,6 @@
 #endif
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-#include "chrome/browser/signin/cross_device_promo_factory.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/printer_detector/printer_detector_factory.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
@@ -216,9 +212,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   CookieSettingsFactory::GetInstance();
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  CrossDevicePromoFactory::GetInstance();
-#endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ExtensionWelcomeNotificationFactory::GetInstance();
 #endif
