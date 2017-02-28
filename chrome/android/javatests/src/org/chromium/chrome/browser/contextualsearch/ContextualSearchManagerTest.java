@@ -111,6 +111,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private ContextualSearchSelectionController mSelectionController;
     private EmbeddedTestServer mTestServer;
 
+    private float mDpToPx;
+
     // State for an individual test.
     FakeSlowResolveSearch mLatestSlowResolveSearch;
 
@@ -155,6 +157,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         filter.addDataScheme("market");
         mActivityMonitor = getInstrumentation().addMonitor(
                 filter, new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
+
+        mDpToPx = getActivity().getResources().getDisplayMetrics().density;
     }
 
     @Override
@@ -969,17 +973,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Generate a click in the panel's bar.
+     * Generate a click in the middle of panel's bar.
      * TODO(donnd): Replace this method with panelBarClick since this appears to be unreliable.
-     * @barHeight The vertical position where the click should take place as a percentage
-     *            of the screen size.
      */
-    private void clickPanelBar(float barPositionVertical) {
+    private void clickPanelBar() {
         View root = getActivity().getWindow().getDecorView().getRootView();
-        float w = root.getWidth();
-        float h = root.getHeight();
-        float tapX = w / 2f;
-        float tapY = h * barPositionVertical;
+        float tapX = ((mPanel.getOffsetX() + mPanel.getWidth()) / 2f) * mDpToPx;
+        float tapY = (mPanel.getOffsetY() + (mPanel.getBarContainerHeight() / 2f)) * mDpToPx;
 
         TouchCommon.singleClickView(root, (int) tapX, (int) tapY);
     }
@@ -988,7 +988,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * Taps the peeking bar to expand the panel
      */
     private void tapPeekingBarToExpandAndAssert() throws InterruptedException {
-        clickPanelBar(0.95f);
+        clickPanelBar();
         waitForPanelToExpand();
     }
 
@@ -2875,7 +2875,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         });
 
         // Tap on the portion of the bar that should trigger the quick action intent to be fired.
-        clickPanelBar(0.95f);
+        clickPanelBar();
 
         // Assert that an intent was fired.
         assertEquals(1, mActivityMonitor.getHits());
@@ -2900,7 +2900,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         });
 
         // Tap on the portion of the bar that should trigger the quick action.
-        clickPanelBar(0.95f);
+        clickPanelBar();
 
         // Assert that the URL was loaded.
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), testUrl);
