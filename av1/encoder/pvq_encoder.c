@@ -221,8 +221,7 @@ int od_vector_is_null(const od_coeff *x, int len) {
 }
 
 static double od_pvq_rate(int qg, int icgr, int theta, int ts,
- const od_adapt_ctx *adapt, const od_coeff *y0, int k, int n,
- int is_keyframe, int pli, int speed) {
+  const od_adapt_ctx *adapt, const od_coeff *y0, int k, int n, int speed) {
   double rate;
   if (k == 0) rate = 0;
   else if (speed > 0) {
@@ -264,11 +263,6 @@ static double od_pvq_rate(int qg, int icgr, int theta, int ts,
   if (qg > 0 && theta >= 0) {
     /* Approximate cost of entropy-coding theta */
     rate += .9*OD_LOG2(ts);
-    /* Adding a cost to using the H/V pred because it's going to be off
-       most of the time. Cost is optimized on subset1, while making
-       sure we don't hurt the checkerboard image too much.
-       FIXME: Do real RDO instead of this arbitrary cost. */
-    if (is_keyframe && pli == 0) rate += 6;
     if (qg == icgr) rate -= .5;
   }
   return rate;
@@ -405,7 +399,7 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
   dist = gain_weight*cg*cg*OD_CGAIN_SCALE_2;
   best_dist = dist;
   best_cost = dist + pvq_norm_lambda*od_pvq_rate(0, 0, -1, 0, adapt, NULL, 0,
-   n, is_keyframe, pli, speed);
+    n, speed);
   noref = 1;
   best_k = 0;
   *itheta = -1;
@@ -432,7 +426,7 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
       best_dist *= OD_CGAIN_SCALE_2;
     }
     best_cost = best_dist + pvq_norm_lambda*od_pvq_rate(0, icgr, 0, 0, adapt,
-     NULL, 0, n, is_keyframe, pli, speed);
+     NULL, 0, n, speed);
     best_qtheta = 0;
     *itheta = 0;
     *max_theta = 0;
@@ -538,7 +532,7 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
       dist *= OD_CGAIN_SCALE_2;
       /* Do approximate RDO. */
       cost = dist + pvq_norm_lambda*od_pvq_rate(i, icgr, j, ts, adapt, y_tmp,
-       k, n, is_keyframe, pli, speed);
+       k, n, speed);
       if (cost < best_cost) {
         best_cost = cost;
         best_dist = dist;
@@ -581,7 +575,7 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
       dist *= OD_CGAIN_SCALE_2;
       /* Do approximate RDO. */
       cost = dist + pvq_norm_lambda*od_pvq_rate(i, 0, -1, 0, adapt, y_tmp, k,
-       n, is_keyframe, pli, speed);
+       n, speed);
       if (cost <= best_cost) {
         best_cost = cost;
         best_dist = dist;
