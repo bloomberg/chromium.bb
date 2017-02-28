@@ -6,7 +6,7 @@
 #define IOS_WEB_WEB_STATE_UI_CRW_CONTEXT_MENU_CONTROLLER_H_
 
 #import <Foundation/Foundation.h>
-#import <Webkit/Webkit.h>
+#import <WebKit/WebKit.h>
 
 #import "ios/web/public/block_types.h"
 

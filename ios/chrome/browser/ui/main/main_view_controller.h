@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_MAIN_MAIN_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_MAIN_MAIN_VIEW_CONTROLLER_H_
 
-#import <UIKit/UIKIt.h>
+#import <UIKit/UIKit.h>
 
 // A UIViewController that provides a property to maintain a single child view
 // controller.
