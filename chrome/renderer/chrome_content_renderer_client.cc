@@ -366,6 +366,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
     thread->GetRemoteInterfaces()->GetInterface(&module_event_sink_);
 
+    // Rebind the ModuleEventSink so that it can be accessed on the IO thread.
+    module_event_sink_.Bind(module_event_sink_.PassInterface(),
+                            thread->GetIOTaskRunner());
+
     // It is safe to pass an unretained pointer to |module_event_sink_|, as it
     // is owned by the process singleton ChromeContentRendererClient, which is
     // leaked.

@@ -226,7 +226,8 @@ void ModuleDatabase::RemoveLoadAddressById(
   // This handles the special case of removing the max element in O(1), as
   // FindLoadAddressIndexById processes the elements in reverse order.
   size_t i = FindLoadAddressIndexById(module_id, *load_addresses);
-  RemoveLoadAddressByIndex(i, load_addresses);
+  if (i != kInvalidIndex)
+    RemoveLoadAddressByIndex(i, load_addresses);
 }
 
 // static
