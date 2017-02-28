@@ -41,8 +41,11 @@ bool LocationBar::IsBookmarkStarHiddenByExtension() const {
 base::string16 LocationBar::GetExtensionName(
     const GURL& url,
     content::WebContents* web_contents) {
-  CHECK(web_contents);
-  if (!url.SchemeIs(extensions::kExtensionScheme))
+  // On ChromeOS, this function can be called using web_contents from
+  // SimpleWebViewDialog::GetWebContents() which always returns null.
+  // TODO(crbug.com/680329) Remove the null check and make
+  // SimpleWebViewDialog::GetWebContents return the proper web contents instead.
+  if (!web_contents || !url.SchemeIs(extensions::kExtensionScheme))
     return base::string16();
 
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
