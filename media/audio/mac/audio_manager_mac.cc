@@ -447,8 +447,10 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
   // only return up to 8 channels in any layout. To allow WebAudio to work with
   // > 8 channel devices, we must use the total channel count instead of the
   // channel count of the preferred layout.
-  if (GetDeviceTotalChannelCount(device, scope, channels) &&
-      *channels > kMaxConcurrentChannels) {
+  int total_channel_count = 0;
+  if (GetDeviceTotalChannelCount(device, scope, &total_channel_count) &&
+      total_channel_count > kMaxConcurrentChannels) {
+    *channels = total_channel_count;
     return true;
   }
 
@@ -508,6 +510,12 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
           kAudioChannelLabel_Unknown)
         (*channels)++;
     }
+  }
+
+  // If we still don't have a channel count, fall back to total channel count.
+  if (*channels == 0) {
+    DLOG(WARNING) << "Unable to use channel layout for channel count.";
+    *channels = total_channel_count;
   }
 
   DVLOG(1) << (scope == kAudioDevicePropertyScopeInput ? "Input" : "Output")
