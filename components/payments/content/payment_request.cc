@@ -4,10 +4,13 @@
 
 #include "components/payments/content/payment_request.h"
 
+#include <algorithm>
 #include <unordered_map>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_details_validation.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
@@ -26,6 +29,7 @@ PaymentRequest::PaymentRequest(
       delegate_(std::move(delegate)),
       manager_(manager),
       binding_(this, std::move(request)),
+      is_ready_to_pay_(false),
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
       selected_credit_card_(nullptr) {
@@ -54,6 +58,7 @@ void PaymentRequest::Init(
   }
   client_ = std::move(client);
   details_ = std::move(details);
+  options_ = std::move(options);
   PopulateValidatedMethodData(method_data);
   PopulateProfileCache();
   SetDefaultProfileSelections();
@@ -103,6 +108,22 @@ void PaymentRequest::OnConnectionTerminated() {
   manager_->DestroyRequest(this);
 }
 
+void PaymentRequest::Pay() {
+  DCHECK(is_ready_to_pay_);
+
+  // TODO(mathp): Return the PaymentResponse to the |client_|.
+  UserCancelled();
+}
+
+void PaymentRequest::AddObserver(Observer* observer) {
+  CHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void PaymentRequest::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
     const std::string& currency_code,
     const std::string& currency_system,
@@ -114,14 +135,21 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
   return currency_formatter_.get();
 }
 
-const std::vector<autofill::AutofillProfile*>&
-PaymentRequest::shipping_profiles() {
-  return shipping_profiles_;
+void PaymentRequest::SetSelectedShippingProfile(
+    autofill::AutofillProfile* profile) {
+  selected_shipping_profile_ = profile;
+  UpdateIsReadyToPayAndNotifyObservers();
 }
 
-const std::vector<autofill::AutofillProfile*>&
-PaymentRequest::contact_profiles() {
-  return contact_profiles_;
+void PaymentRequest::SetSelectedContactProfile(
+    autofill::AutofillProfile* profile) {
+  selected_contact_profile_ = profile;
+  UpdateIsReadyToPayAndNotifyObservers();
+}
+
+void PaymentRequest::SetSelectedCreditCard(autofill::CreditCard* card) {
+  selected_credit_card_ = card;
+  UpdateIsReadyToPayAndNotifyObservers();
 }
 
 void PaymentRequest::PopulateProfileCache() {
@@ -151,10 +179,10 @@ void PaymentRequest::PopulateProfileCache() {
 
 void PaymentRequest::SetDefaultProfileSelections() {
   if (!shipping_profiles().empty())
-    set_selected_shipping_profile(shipping_profiles()[0]);
+    selected_shipping_profile_ = shipping_profiles()[0];
 
   if (!contact_profiles().empty())
-    set_selected_contact_profile(contact_profiles()[0]);
+    selected_contact_profile_ = contact_profiles()[0];
 
   // TODO(anthonyvd): Change this code to prioritize server cards and implement
   // a way to modify this function's return value.
@@ -165,6 +193,8 @@ void PaymentRequest::SetDefaultProfileSelections() {
 
   selected_credit_card_ =
       first_complete_card == cards.end() ? nullptr : *first_complete_card;
+
+  UpdateIsReadyToPayAndNotifyObservers();
 }
 
 void PaymentRequest::PopulateValidatedMethodData(
@@ -239,6 +269,65 @@ void PaymentRequest::PopulateValidatedMethodData(
       }
     }
   }
+}
+
+void PaymentRequest::UpdateIsReadyToPayAndNotifyObservers() {
+  is_ready_to_pay_ =
+      ArePaymentDetailsSatisfied() && ArePaymentOptionsSatisfied();
+  NotifyOnSelectedInformationChanged();
+}
+
+void PaymentRequest::NotifyOnSelectedInformationChanged() {
+  for (auto& observer : observers_)
+    observer.OnSelectedInformationChanged();
+}
+
+bool PaymentRequest::ArePaymentDetailsSatisfied() {
+  // TODO(mathp): A masked card may not satisfy IsValid().
+  if (selected_credit_card_ == nullptr || !selected_credit_card_->IsValid())
+    return false;
+
+  const std::string basic_card_payment_type =
+      autofill::data_util::GetPaymentRequestData(selected_credit_card_->type())
+          .basic_card_payment_type;
+  return !supported_card_networks_.empty() &&
+         std::find(supported_card_networks_.begin(),
+                   supported_card_networks_.end(),
+                   basic_card_payment_type) != supported_card_networks_.end();
+}
+
+bool PaymentRequest::ArePaymentOptionsSatisfied() {
+  // TODO(mathp): Have a measure of shipping address completeness.
+  if (options_->request_shipping && selected_shipping_profile_ == nullptr)
+    return false;
+
+  // TODO(mathp): Make an encompassing class to validate contact info.
+  const std::string& app_locale = delegate_->GetApplicationLocale();
+  if (options_->request_payer_name &&
+      (selected_contact_profile_ == nullptr ||
+       selected_contact_profile_
+           ->GetInfo(autofill::AutofillType(autofill::NAME_FULL), app_locale)
+           .empty())) {
+    return false;
+  }
+  if (options_->request_payer_email &&
+      (selected_contact_profile_ == nullptr ||
+       selected_contact_profile_
+           ->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
+                     app_locale)
+           .empty())) {
+    return false;
+  }
+  if (options_->request_payer_phone &&
+      (selected_contact_profile_ == nullptr ||
+       selected_contact_profile_
+           ->GetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                     app_locale)
+           .empty())) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace payments

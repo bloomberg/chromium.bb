@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
+#include "components/payments/content/payment_request.h"
 
 namespace payments {
 
@@ -17,7 +18,8 @@ class PaymentRequestDialogView;
 
 // The PaymentRequestSheetController subtype for the Payment Sheet screen of the
 // Payment Request dialog.
-class PaymentSheetViewController : public PaymentRequestSheetController {
+class PaymentSheetViewController : public PaymentRequestSheetController,
+                                   public PaymentRequest::Observer {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
   PaymentSheetViewController(PaymentRequest* request,
@@ -26,10 +28,16 @@ class PaymentSheetViewController : public PaymentRequestSheetController {
 
   // PaymentRequestSheetController:
   std::unique_ptr<views::View> CreateView() override;
+  std::unique_ptr<views::Button> CreatePrimaryButton() override;
+
+  // PaymentRequest::Observer:
+  void OnSelectedInformationChanged() override;
 
  private:
   // PaymentRequestSheetController:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  void UpdatePayButtonState(bool enabled);
 
   std::unique_ptr<views::View> CreateOrderSummarySectionContent();
   std::unique_ptr<views::View> CreateShippingSectionContent();
@@ -38,6 +46,8 @@ class PaymentSheetViewController : public PaymentRequestSheetController {
   std::unique_ptr<views::Button> CreatePaymentMethodRow();
   std::unique_ptr<views::View> CreateContactInfoSectionContent();
   std::unique_ptr<views::Button> CreateContactInfoRow();
+
+  views::Button* pay_button_;
 
   const int widest_name_column_view_width_;
 

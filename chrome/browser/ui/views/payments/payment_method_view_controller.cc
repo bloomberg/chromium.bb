@@ -134,7 +134,7 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item,
     if (checkmark_)
       checkmark_->SetVisible(selected());
 
-    request()->set_selected_credit_card(card_);
+    request()->SetSelectedCreditCard(card_);
   }
 
   // views::ButtonListener:

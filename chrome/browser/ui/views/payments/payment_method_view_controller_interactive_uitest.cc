@@ -33,16 +33,8 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, EmptyList) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
-  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
-
-  PersonalDataLoadedObserverMock personal_data_observer;
-  personal_data_manager->AddObserver(&personal_data_observer);
-  base::RunLoop data_loop;
-  EXPECT_CALL(personal_data_observer, OnPersonalDataChanged())
-      .WillOnce(QuitMessageLoop(&data_loop));
-  autofill::CreditCard card = autofill::test::GetCreditCard();
-  personal_data_manager->AddCreditCard(card);
-  data_loop.Run();
+  const autofill::CreditCard card = autofill::test::GetCreditCard();
+  AddCreditCard(card);
 
   InvokePaymentRequestUI();
   OpenPaymentMethodScreen();
@@ -63,32 +55,14 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
                        OneCardSelectedOutOfMany) {
-  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
-
-  PersonalDataLoadedObserverMock personal_data_observer1;
-  personal_data_manager->AddObserver(&personal_data_observer1);
-  base::RunLoop card1_loop;
-  EXPECT_CALL(personal_data_observer1, OnPersonalDataChanged())
-      .WillOnce(QuitMessageLoop(&card1_loop));
   autofill::CreditCard card1 = autofill::test::GetCreditCard();
   // Ensure that this card is the first suggestion.
   card1.set_use_count(5U);
-  personal_data_manager->AddCreditCard(card1);
-  card1_loop.Run();
-  personal_data_manager->RemoveObserver(&personal_data_observer1);
+  AddCreditCard(card1);
 
-  EXPECT_EQ(1U, personal_data_manager->GetCreditCardsToSuggest().size());
-
-  PersonalDataLoadedObserverMock personal_data_observer2;
-  personal_data_manager->AddObserver(&personal_data_observer2);
-  base::RunLoop card2_loop;
-  EXPECT_CALL(personal_data_observer2, OnPersonalDataChanged())
-      .WillOnce(QuitMessageLoop(&card2_loop));
   autofill::CreditCard card2 = autofill::test::GetCreditCard2();
   card2.set_use_count(1U);
-  personal_data_manager->AddCreditCard(card2);
-  card2_loop.Run();
-  personal_data_manager->RemoveObserver(&personal_data_observer2);
+  AddCreditCard(card2);
 
   InvokePaymentRequestUI();
   OpenPaymentMethodScreen();

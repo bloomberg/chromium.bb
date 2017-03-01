@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/payments/content/payment_request.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -32,7 +31,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -54,6 +52,7 @@ enum class PaymentSheetViewControllerTags {
   SHOW_SHIPPING_BUTTON,
   SHOW_PAYMENT_METHOD_BUTTON,
   SHOW_CONTACT_INFO_BUTTON,
+  PAY_BUTTON
 };
 
 int ComputeWidestNameColumnViewWidth() {
@@ -167,7 +166,10 @@ PaymentSheetViewController::PaymentSheetViewController(
     PaymentRequest* request,
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(request, dialog),
-      widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {}
+      pay_button_(nullptr),
+      widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {
+  request->AddObserver(this);
+}
 
 PaymentSheetViewController::~PaymentSheetViewController() {}
 
@@ -197,6 +199,22 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
       std::move(content_view));
 }
 
+std::unique_ptr<views::Button>
+PaymentSheetViewController::CreatePrimaryButton() {
+  std::unique_ptr<views::Button> button(
+      views::MdTextButton::CreateSecondaryUiBlueButton(
+          this, l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON)));
+  button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
+  button->set_id(static_cast<int>(DialogViewID::PAYMENT_SHEET_PAY_BUTTON));
+  pay_button_ = button.get();
+  UpdatePayButtonState(request()->is_ready_to_pay());
+  return button;
+}
+
+void PaymentSheetViewController::OnSelectedInformationChanged() {
+  UpdatePayButtonState(request()->is_ready_to_pay());
+}
+
 void PaymentSheetViewController::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   switch (sender->tag()) {
@@ -223,6 +241,10 @@ void PaymentSheetViewController::ButtonPressed(
       PaymentRequestSheetController::ButtonPressed(sender, event);
       break;
   }
+}
+
+void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
+  pay_button_->SetEnabled(enabled);
 }
 
 std::unique_ptr<views::View>

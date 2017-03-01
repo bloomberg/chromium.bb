@@ -21,6 +21,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace autofill {
+class AutofillProfile;
+class CreditCard;
+}
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -95,6 +100,13 @@ class PaymentRequestInteractiveTestBase
       content::WebContents* web_contents);
 
   autofill::PersonalDataManager* GetDataManager();
+  // Adds the various models to the database, waiting until the personal data
+  // manager notifies that they are added.
+  // NOTE: If no use_count is specified on the models and multiple items are
+  // inserted, the order in which they are returned is undefined, since they
+  // are added close to each other.
+  void AddAutofillProfile(const autofill::AutofillProfile& profile);
+  void AddCreditCard(const autofill::CreditCard& card);
 
   void CreatePaymentRequestForTest(
       content::WebContents* web_contents,
@@ -116,6 +128,8 @@ class PaymentRequestInteractiveTestBase
   // an invalid state.
   bool IsEditorTextfieldInvalid(autofill::ServerFieldType type);
   bool IsEditorComboboxInvalid(autofill::ServerFieldType type);
+
+  bool IsPayButtonEnabled();
 
   // Sets proper animation delegates and waits for animation to finish.
   void WaitForAnimation();

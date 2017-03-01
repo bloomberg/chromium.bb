@@ -21,6 +21,9 @@
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -33,6 +36,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 
@@ -167,6 +171,40 @@ PaymentRequestInteractiveTestBase::GetDataManager() {
       Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()));
 }
 
+void PaymentRequestInteractiveTestBase::AddAutofillProfile(
+    const autofill::AutofillProfile& profile) {
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  size_t profile_count = personal_data_manager->GetProfiles().size();
+
+  PersonalDataLoadedObserverMock personal_data_observer;
+  personal_data_manager->AddObserver(&personal_data_observer);
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  personal_data_manager->AddProfile(profile);
+  data_loop.Run();
+
+  personal_data_manager->RemoveObserver(&personal_data_observer);
+  EXPECT_EQ(profile_count + 1, personal_data_manager->GetProfiles().size());
+}
+
+void PaymentRequestInteractiveTestBase::AddCreditCard(
+    const autofill::CreditCard& card) {
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  size_t card_count = personal_data_manager->GetCreditCards().size();
+
+  PersonalDataLoadedObserverMock personal_data_observer;
+  personal_data_manager->AddObserver(&personal_data_observer);
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  personal_data_manager->AddCreditCard(card);
+  data_loop.Run();
+
+  personal_data_manager->RemoveObserver(&personal_data_observer);
+  EXPECT_EQ(card_count + 1, personal_data_manager->GetCreditCards().size());
+}
+
 void PaymentRequestInteractiveTestBase::CreatePaymentRequestForTest(
     content::WebContents* web_contents,
     mojo::InterfaceRequest<payments::mojom::PaymentRequest> request) {
@@ -238,6 +276,14 @@ bool PaymentRequestInteractiveTestBase::IsEditorComboboxInvalid(
       delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
   DCHECK(combobox);
   return combobox->invalid();
+}
+
+bool PaymentRequestInteractiveTestBase::IsPayButtonEnabled() {
+  views::Button* button =
+      static_cast<views::Button*>(delegate_->dialog_view()->GetViewByID(
+          static_cast<int>(DialogViewID::PAYMENT_SHEET_PAY_BUTTON)));
+  DCHECK(button);
+  return button->enabled();
 }
 
 void PaymentRequestInteractiveTestBase::WaitForAnimation() {

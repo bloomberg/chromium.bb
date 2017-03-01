@@ -581,6 +581,7 @@ if (!is_android) {
           "../browser/ui/views/payments/payment_request_interactive_uitest.cc",
           "../browser/ui/views/payments/payment_request_interactive_uitest_base.cc",
           "../browser/ui/views/payments/payment_request_interactive_uitest_base.h",
+          "../browser/ui/views/payments/payment_sheet_view_controller_interactive_uitest.cc",
         ]
       }
       if (is_linux) {

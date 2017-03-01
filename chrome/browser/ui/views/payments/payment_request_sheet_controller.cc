@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
+#include "components/payments/content/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
@@ -38,6 +39,9 @@ void PaymentRequestSheetController::ButtonPressed(
       break;
     case PaymentRequestCommonTags::BACK_BUTTON_TAG:
       dialog()->GoBack();
+      break;
+    case PaymentRequestCommonTags::PAY_BUTTON_TAG:
+      request()->Pay();
       break;
     case PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX:
       NOTREACHED();

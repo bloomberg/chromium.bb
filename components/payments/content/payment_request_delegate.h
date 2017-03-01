@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
 
+#include <string>
+
 namespace autofill {
 class PersonalDataManager;
 }
@@ -27,6 +29,8 @@ class PaymentRequestDelegate {
   // Gets the PersonalDataManager associated with this PaymentRequest flow.
   // Cannot be null.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
+
+  virtual const std::string& GetApplicationLocale() const = 0;
 };
 
 }  // namespace payments

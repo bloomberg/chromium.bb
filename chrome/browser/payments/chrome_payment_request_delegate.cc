@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "components/payments/content/payment_request_dialog.h"
@@ -34,6 +35,10 @@ autofill::PersonalDataManager*
 ChromePaymentRequestDelegate::GetPersonalDataManager() {
   return autofill::PersonalDataManagerFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+}
+
+const std::string& ChromePaymentRequestDelegate::GetApplicationLocale() const {
+  return g_browser_process->GetApplicationLocale();
 }
 
 }  // namespace payments

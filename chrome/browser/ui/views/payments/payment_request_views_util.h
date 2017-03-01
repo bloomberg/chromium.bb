@@ -34,6 +34,7 @@ constexpr int kPaymentRequestButtonSpacing = 10;
 enum class PaymentRequestCommonTags {
   BACK_BUTTON_TAG = 0,
   CLOSE_BUTTON_TAG,
+  PAY_BUTTON_TAG,
   // This is the max value of tags for controls common to multiple
   // PaymentRequest contexts. Individual screens that handle both common and
   // specific events with tags can start their specific tags at this value.
