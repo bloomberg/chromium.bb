@@ -199,10 +199,13 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         setThumbnail();
 
         // Set the favicon of the publisher.
+        // We start initialising with the default favicon to reserve the space and prevent the text
+        // from moving later.
+        setDefaultFaviconOnView();
         try {
             fetchFaviconFromLocalCache(new URI(mArticle.mUrl), true);
         } catch (URISyntaxException e) {
-            setDefaultFaviconOnView();
+            // Do nothing, stick to the default favicon.
         }
 
         mOfflineBadge.setVisibility(View.GONE);
@@ -396,11 +399,12 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
                 getSnippetDomain(snippetUri), mPublisherFaviconSizePx, new FaviconImageCallback() {
                     @Override
                     public void onFaviconAvailable(Bitmap image, String iconUrl) {
-                        if (image == null && fallbackToService) {
+                        if (image != null) {
+                            setFaviconOnView(image);
+                        } else if (fallbackToService) {
                             fetchFaviconFromService(snippetUri);
-                            return;
                         }
-                        setFaviconOnView(image);
+                        // Else do nothing, we already have the placeholder set.
                     }
                 });
     }
@@ -408,9 +412,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("DefaultLocale")
     private void fetchFaviconFromService(final URI snippetUri) {
-        // Show the default favicon immediately.
-        setDefaultFaviconOnView();
-
         if (!mUseFaviconService) return;
         int sizePx = getFaviconServiceSupportedSize();
         if (sizePx == 0) return;
