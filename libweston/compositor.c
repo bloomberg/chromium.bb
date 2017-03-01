@@ -2388,7 +2388,7 @@ weston_output_finish_frame(struct weston_output *output,
 						  output->msc,
 						  presented_flags);
 
-	output->frame_time = stamp->tv_sec * 1000 + stamp->tv_nsec / 1000000;
+	output->frame_time = timespec_to_msec(stamp);
 
 	weston_compositor_read_presentation_clock(compositor, &now);
 	timespec_sub(&gone, &now, stamp);

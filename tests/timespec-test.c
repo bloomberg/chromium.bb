@@ -60,6 +60,15 @@ ZUC_TEST(timespec_test, timespec_to_nsec)
 	ZUC_ASSERT_EQ(timespec_to_nsec(&a), (NSEC_PER_SEC * 4ULL) + 4);
 }
 
+ZUC_TEST(timespec_test, timespec_to_msec)
+{
+	struct timespec a;
+
+	a.tv_sec = 4;
+	a.tv_nsec = 4000000;
+	ZUC_ASSERT_EQ(timespec_to_msec(&a), (4000ULL) + 4);
+}
+
 ZUC_TEST(timespec_test, millihz_to_nsec)
 {
 	ZUC_ASSERT_EQ(millihz_to_nsec(60000), 16666666);
