@@ -1194,6 +1194,7 @@ internal_tests = 				\
 
 shared_tests =					\
 	config-parser.test			\
+	timespec.test				\
 	string.test					\
 	vertex-clip.test			\
 	zuctest
@@ -1304,6 +1305,15 @@ config_parser_test_LDADD =	\
 	libzunitc.la		\
 	libzunitcmain.la
 config_parser_test_CFLAGS =			\
+	$(AM_CFLAGS)				\
+	-I$(top_srcdir)/tools/zunitc/inc
+
+timespec_test_SOURCES = tests/timespec-test.c
+timespec_test_LDADD =	\
+	libshared.la		\
+	libzunitc.la		\
+	libzunitcmain.la
+timespec_test_CFLAGS =			\
 	$(AM_CFLAGS)				\
 	-I$(top_srcdir)/tools/zunitc/inc
 

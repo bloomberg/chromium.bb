@@ -49,6 +49,27 @@ timespec_sub(struct timespec *r,
 	}
 }
 
+/* Add a nanosecond value to a timespec
+ *
+ * \param r[out] result: a + b
+ * \param a[in] base operand as timespec
+ * \param b[in] operand in nanoseconds
+ */
+static inline void
+timespec_add_nsec(struct timespec *r, const struct timespec *a, int64_t b)
+{
+	r->tv_sec = a->tv_sec + (b / NSEC_PER_SEC);
+	r->tv_nsec = a->tv_nsec + (b % NSEC_PER_SEC);
+
+	if (r->tv_nsec >= NSEC_PER_SEC) {
+		r->tv_sec++;
+		r->tv_nsec -= NSEC_PER_SEC;
+	} else if (r->tv_nsec < 0) {
+		r->tv_sec--;
+		r->tv_nsec += NSEC_PER_SEC;
+	}
+}
+
 /* Convert timespec to nanoseconds
  *
  * \param a timespec
