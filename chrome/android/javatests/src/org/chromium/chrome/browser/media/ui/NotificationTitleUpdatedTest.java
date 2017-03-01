@@ -68,11 +68,23 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
     }
 
     @SmallTest
-    public void testSessionStatePaused() {
+    public void testSessionStatePausedAfterPlaying() {
+        simulateMediaSessionStateChanged(mTab, true, false);
         simulateMediaSessionStateChanged(mTab, true, true);
         assertTitleMatches("title1");
         simulateUpdateTitle(mTab, "title2");
         assertTitleMatches("title2");
+    }
+
+    @SmallTest
+    public void testSessionStateNewlyPaused() {
+        simulateMediaSessionStateChanged(mTab, true, true);
+        getInstrumentation().waitForIdleSync();
+        assertNull(MediaNotificationManager.getNotificationBuilderForTesting(NOTIFICATION_ID));
+
+        simulateUpdateTitle(mTab, "title2");
+        getInstrumentation().waitForIdleSync();
+        assertNull(MediaNotificationManager.getNotificationBuilderForTesting(NOTIFICATION_ID));
     }
 
     @SmallTest

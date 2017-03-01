@@ -36,6 +36,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -375,9 +376,8 @@ public class MediaNotificationManager {
     }
 
     private PendingIntent createPendingIntent(String action) {
-        assert mService != null;
-        Intent intent = createIntent(mService).setAction(action);
-        return PendingIntent.getService(mService, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        Intent intent = createIntent(mContext).setAction(action);
+        return PendingIntent.getService(mContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     private String getButtonReceiverClassName() {
@@ -625,15 +625,8 @@ public class MediaNotificationManager {
      * Handles the service destruction destruction.
      */
     private void onServiceDestroyed() {
-        // Service already detached
-        if (mService == null) return;
-        // Notification is not showing
-        if (mMediaNotificationInfo == null) return;
-
-        clear(mMediaNotificationInfo.id);
-
-        mNotificationBuilder = null;
         mService = null;
+        if (mMediaNotificationInfo != null) clear(mMediaNotificationInfo.id);
     }
 
     private void onPlay(int actionSource) {
@@ -661,9 +654,18 @@ public class MediaNotificationManager {
             return;
         }
 
-        mMediaNotificationInfo = mediaNotificationInfo;
-        mContext.startService(createIntent(mContext));
+        if (mService == null && mediaNotificationInfo.isPaused) return;
 
+        mMediaNotificationInfo = mediaNotificationInfo;
+
+        if (mService == null) {
+            updateMediaSession();
+            updateNotificationBuilder();
+            AppHooks.get().startServiceWithNotification(createIntent(mContext),
+                    mMediaNotificationInfo.id, mNotificationBuilder.build());
+        } else {
+            mService.startService(createIntent(mContext));
+        }
         updateNotification();
     }
 
@@ -679,8 +681,11 @@ public class MediaNotificationManager {
             mMediaSession.release();
             mMediaSession = null;
         }
-        mContext.stopService(createIntent(mContext));
+        if (mService != null) {
+            mContext.stopService(createIntent(mContext));
+        }
         mMediaNotificationInfo = null;
+        mNotificationBuilder = null;
     }
 
     private void hideNotification(int tabId) {
@@ -721,7 +726,25 @@ public class MediaNotificationManager {
         if (mMediaNotificationInfo == null) return;
 
         updateMediaSession();
+        updateNotificationBuilder();
 
+        Notification notification = mNotificationBuilder.build();
+
+        // We keep the service as a foreground service while the media is playing. When it is not,
+        // the service isn't stopped but is no longer in foreground, thus at a lower priority.
+        // While the service is in foreground, the associated notification can't be swipped away.
+        // Moving it back to background allows the user to remove the notification.
+        if (mMediaNotificationInfo.supportsSwipeAway() && mMediaNotificationInfo.isPaused) {
+            mService.stopForeground(false /* removeNotification */);
+
+            NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
+            manager.notify(mMediaNotificationInfo.id, notification);
+        } else {
+            mService.startForeground(mMediaNotificationInfo.id, notification);
+        }
+    }
+
+    private void updateNotificationBuilder() {
         mNotificationBuilder =
                 ((ChromeApplication) mContext.getApplicationContext())
                         .createChromeNotificationBuilder(true,
@@ -757,21 +780,6 @@ public class MediaNotificationManager {
         mNotificationBuilder.setVisibility(
                 mMediaNotificationInfo.isPrivate ? NotificationCompat.VISIBILITY_PRIVATE
                                                  : NotificationCompat.VISIBILITY_PUBLIC);
-
-        Notification notification = mNotificationBuilder.build();
-
-        // We keep the service as a foreground service while the media is playing. When it is not,
-        // the service isn't stopped but is no longer in foreground, thus at a lower priority.
-        // While the service is in foreground, the associated notification can't be swipped away.
-        // Moving it back to background allows the user to remove the notification.
-        if (mMediaNotificationInfo.supportsSwipeAway() && mMediaNotificationInfo.isPaused) {
-            mService.stopForeground(false /* removeNotification */);
-
-            NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
-            manager.notify(mMediaNotificationInfo.id, notification);
-        } else {
-            mService.startForeground(mMediaNotificationInfo.id, notification);
-        }
     }
 
     private void updateMediaSession() {
