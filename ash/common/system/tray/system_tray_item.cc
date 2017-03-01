@@ -29,17 +29,11 @@ views::View* SystemTrayItem::CreateDetailedView(LoginStatus status) {
   return nullptr;
 }
 
-views::View* SystemTrayItem::CreateNotificationView(LoginStatus status) {
-  return nullptr;
-}
-
 void SystemTrayItem::DestroyTrayView() {}
 
 void SystemTrayItem::DestroyDefaultView() {}
 
 void SystemTrayItem::DestroyDetailedView() {}
-
-void SystemTrayItem::DestroyNotificationView() {}
 
 void SystemTrayItem::TransitionDetailedView() {
   transition_delay_timer_.Start(
@@ -65,14 +59,6 @@ void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {
 
 void SystemTrayItem::HideDetailedView(bool animate) {
   system_tray()->HideDetailedView(this, animate);
-}
-
-void SystemTrayItem::ShowNotificationView() {
-  system_tray()->ShowNotificationView(this);
-}
-
-void SystemTrayItem::HideNotificationView() {
-  system_tray()->HideNotificationView(this);
 }
 
 bool SystemTrayItem::ShouldShowShelf() const {

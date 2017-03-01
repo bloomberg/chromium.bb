@@ -108,8 +108,6 @@ void ScreenStatusView::CreateItems() {
 }
 
 void ScreenStatusView::UpdateFromScreenTrayItem() {
-  // Hide the notification bubble when the ash tray bubble opens.
-  screen_tray_item_->HideNotificationView();
   SetVisible(screen_tray_item_->is_started());
 }
 

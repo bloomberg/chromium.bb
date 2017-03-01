@@ -1546,60 +1546,6 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
             widget_one->GetNativeWindow()->bounds().size().GetArea());
 }
 
-// Make sure that the shelf will not hide if the mouse is between a bubble and
-// the shelf. This test uses system tray notification bubbles, which needn't
-// exist: see crbug.com/630641
-TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
-  WmShelf* shelf = GetPrimaryShelf();
-  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  StatusAreaWidget* status_area_widget =
-      shelf->shelf_widget()->status_area_widget();
-  SystemTray* tray = GetPrimarySystemTray();
-
-  // Create a visible window so auto-hide behavior is enforced.
-  CreateTestWidget();
-
-  layout_manager->LayoutShelf();
-  ui::test::EventGenerator& generator(GetEventGenerator());
-
-  // Make two iterations - first without a message bubble which should make
-  // the shelf disappear and then with a message bubble which should keep it
-  // visible.
-  for (int i = 0; i < 2; i++) {
-    // Make sure the shelf is visible and position the mouse over it. Then
-    // allow auto hide.
-    shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-    EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
-    gfx::Point center =
-        status_area_widget->GetWindowBoundsInScreen().CenterPoint();
-    generator.MoveMouseTo(center.x(), center.y());
-    shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-    EXPECT_TRUE(layout_manager->IsVisible());
-    if (!i) {
-      // In our first iteration we make sure there is no bubble.
-      tray->CloseSystemBubble();
-      EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
-    } else {
-      // In our second iteration we show a bubble.
-      test::TestSystemTrayItem* item = new test::TestSystemTrayItem();
-      tray->AddTrayItem(base::WrapUnique(item));
-      tray->ShowNotificationView(item);
-      EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
-    }
-    // Move the pointer over the edge of the shelf.
-    generator.MoveMouseTo(
-        center.x(), status_area_widget->GetWindowBoundsInScreen().y() - 8);
-    layout_manager->UpdateVisibilityState();
-    if (i) {
-      EXPECT_TRUE(layout_manager->IsVisible());
-      EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
-    } else {
-      EXPECT_FALSE(layout_manager->IsVisible());
-      EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
-    }
-  }
-}
-
 TEST_F(ShelfLayoutManagerTest, BackgroundTypeWhenLockingScreen) {
   EXPECT_NE(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 

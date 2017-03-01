@@ -79,10 +79,6 @@ class TestItem : public SystemTrayItem {
     return default_view;
   }
 
-  views::View* CreateNotificationView(LoginStatus status) override {
-    return new views::View;
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestItem);
 };
@@ -303,26 +299,6 @@ TEST_F(WebNotificationTrayTest, PopupAndSystemTray) {
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   int bottom_with_tray = GetPopupWorkAreaBottom();
   EXPECT_GT(bottom, bottom_with_tray);
-
-  // System tray notification is also created, the popup's work area is narrowed
-  // even more, but still visible.
-  GetSystemTray()->ShowNotificationView(test_item);
-  EXPECT_TRUE(GetTray()->IsPopupVisible());
-  int bottom_with_tray_notification = GetPopupWorkAreaBottom();
-  EXPECT_GT(bottom, bottom_with_tray_notification);
-  EXPECT_GT(bottom_with_tray, bottom_with_tray_notification);
-
-  // Close system tray, only system tray notifications.
-  GetSystemTray()->ClickedOutsideBubble();
-  EXPECT_TRUE(GetTray()->IsPopupVisible());
-  int bottom_with_notification = GetPopupWorkAreaBottom();
-  EXPECT_GT(bottom, bottom_with_notification);
-  EXPECT_LT(bottom_with_tray_notification, bottom_with_notification);
-
-  // Close the system tray notifications.
-  GetSystemTray()->HideNotificationView(test_item);
-  EXPECT_TRUE(GetTray()->IsPopupVisible());
-  EXPECT_EQ(bottom, GetPopupWorkAreaBottom());
 }
 
 TEST_F(WebNotificationTrayTest, PopupAndAutoHideShelf) {
@@ -356,30 +332,6 @@ TEST_F(WebNotificationTrayTest, PopupAndAutoHideShelf) {
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   int bottom_with_tray = GetPopupWorkAreaBottom();
   EXPECT_GT(bottom_auto_shown, bottom_with_tray);
-
-  // Create tray notification.
-  GetSystemTray()->ShowNotificationView(test_item);
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
-  int bottom_with_tray_notification = GetPopupWorkAreaBottom();
-  EXPECT_GT(bottom_with_tray, bottom_with_tray_notification);
-
-  // Close the system tray.
-  GetSystemTray()->ClickedOutsideBubble();
-  shelf->UpdateAutoHideState();
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  int bottom_hidden_with_tray_notification = GetPopupWorkAreaBottom();
-  EXPECT_LT(bottom_with_tray_notification,
-            bottom_hidden_with_tray_notification);
-  EXPECT_GT(bottom_auto_hidden, bottom_hidden_with_tray_notification);
-
-  // Close the window again, which shows the shelf.
-  widget.reset();
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
-  int bottom_shown_with_tray_notification = GetPopupWorkAreaBottom();
-  EXPECT_GT(bottom_hidden_with_tray_notification,
-            bottom_shown_with_tray_notification);
-  EXPECT_GT(bottom_auto_shown, bottom_shown_with_tray_notification);
 }
 
 TEST_F(WebNotificationTrayTest, PopupAndFullscreen) {

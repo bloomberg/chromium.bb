@@ -351,41 +351,6 @@ TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
             tray->GetWidget()->GetWindowBoundsInScreen().size().ToString());
 }
 
-TEST_F(SystemTrayTest, SystemTrayNotifications) {
-  SystemTray* tray = GetPrimarySystemTray();
-  ASSERT_TRUE(tray->GetWidget());
-
-  TestSystemTrayItem* test_item = new TestSystemTrayItem();
-  TestSystemTrayItem* detailed_item = new TestSystemTrayItem();
-  tray->AddTrayItem(base::WrapUnique(test_item));
-  tray->AddTrayItem(base::WrapUnique(detailed_item));
-
-  // Ensure the tray views are created.
-  ASSERT_TRUE(test_item->tray_view() != NULL);
-  ASSERT_TRUE(detailed_item->tray_view() != NULL);
-
-  // Ensure a notification view is created.
-  tray->ShowNotificationView(test_item);
-  ASSERT_TRUE(test_item->notification_view() != NULL);
-
-  // Show the default view, notification view should remain.
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
-  RunAllPendingInMessageLoop();
-  ASSERT_TRUE(test_item->notification_view() != NULL);
-
-  // Show the detailed view, ensure the notification view remains.
-  tray->ShowDetailedView(detailed_item, 0, false, BUBBLE_CREATE_NEW);
-  RunAllPendingInMessageLoop();
-  ASSERT_TRUE(detailed_item->detailed_view() != NULL);
-  ASSERT_TRUE(test_item->notification_view() != NULL);
-
-  // Hide the detailed view, ensure the notification view still exists.
-  ASSERT_TRUE(tray->CloseSystemBubble());
-  RunAllPendingInMessageLoop();
-  ASSERT_TRUE(detailed_item->detailed_view() == NULL);
-  ASSERT_TRUE(test_item->notification_view() != NULL);
-}
-
 // Test is flaky. http://crbug.com/637978
 TEST_F(SystemTrayTest, DISABLED_BubbleCreationTypesTest) {
   SystemTray* tray = GetPrimarySystemTray();

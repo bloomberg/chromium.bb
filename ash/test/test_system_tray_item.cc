@@ -21,8 +21,7 @@ TestSystemTrayItem::TestSystemTrayItem(SystemTrayItem::UmaType uma_type)
       views_are_visible_(true),
       tray_view_(nullptr),
       default_view_(nullptr),
-      detailed_view_(nullptr),
-      notification_view_(nullptr) {}
+      detailed_view_(nullptr) {}
 
 TestSystemTrayItem::~TestSystemTrayItem() {}
 
@@ -63,16 +62,6 @@ views::View* TestSystemTrayItem::CreateDetailedView(LoginStatus status) {
   return detailed_view_;
 }
 
-views::View* TestSystemTrayItem::CreateNotificationView(LoginStatus status) {
-  if (!has_views_) {
-    notification_view_ = nullptr;
-    return notification_view_;
-  }
-  notification_view_ = new views::View;
-  notification_view_->SetVisible(views_are_visible_);
-  return notification_view_;
-}
-
 void TestSystemTrayItem::DestroyTrayView() {
   tray_view_ = nullptr;
 }
@@ -83,10 +72,6 @@ void TestSystemTrayItem::DestroyDefaultView() {
 
 void TestSystemTrayItem::DestroyDetailedView() {
   detailed_view_ = nullptr;
-}
-
-void TestSystemTrayItem::DestroyNotificationView() {
-  notification_view_ = nullptr;
 }
 
 void TestSystemTrayItem::UpdateAfterLoginStatusChange(LoginStatus status) {}

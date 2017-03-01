@@ -143,16 +143,11 @@ bool StatusAreaWidget::ShouldShowShelf() const {
   if (ime_menu_tray_ && ime_menu_tray_->ShouldBlockShelfAutoHide())
     return true;
 
-  if (!wm_shelf_->IsVisible())
-    return false;
-
-  // If the shelf is currently visible, don't hide the shelf if the mouse
-  // is in any of the notification bubbles.
-  return system_tray_ && system_tray_->IsMouseInNotificationBubble();
+  return false;
 }
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {
-  return ((system_tray_ && system_tray_->IsAnyBubbleVisible()) ||
+  return ((system_tray_ && system_tray_->IsSystemBubbleVisible()) ||
           (web_notification_tray_ &&
            web_notification_tray_->IsMessageCenterBubbleVisible()));
 }

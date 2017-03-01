@@ -40,7 +40,7 @@ namespace tray {
 
 class AccessibilityPopupView : public TrayNotificationView {
  public:
-  AccessibilityPopupView(SystemTrayItem* owner, uint32_t enabled_state_bits);
+  explicit AccessibilityPopupView(uint32_t enabled_state_bits);
 
   const views::Label* label_for_test() const { return label_; }
 

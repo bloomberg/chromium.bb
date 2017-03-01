@@ -90,8 +90,6 @@ SystemTrayBubble::~SystemTrayBubble() {
 void SystemTrayBubble::UpdateView(
     const std::vector<ash::SystemTrayItem*>& items,
     BubbleType bubble_type) {
-  DCHECK(bubble_type != BUBBLE_TYPE_NOTIFICATION);
-
   std::unique_ptr<ui::Layer> scoped_layer;
   if (bubble_type != bubble_type_) {
     base::TimeDelta swipe_duration =
@@ -196,8 +194,6 @@ void SystemTrayBubble::InitView(views::View* anchor,
   if (bubble_type_ == BUBBLE_TYPE_DETAILED &&
       init_params->max_height < GetDetailedBubbleMaxHeight()) {
     init_params->max_height = GetDetailedBubbleMaxHeight();
-  } else if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION) {
-    init_params->close_on_deactivate = false;
   }
 
   bubble_view_ = TrayBubbleView::Create(anchor, tray_, init_params);
@@ -236,9 +232,6 @@ void SystemTrayBubble::DestroyItemViews() {
         break;
       case BUBBLE_TYPE_DETAILED:
         (*it)->DestroyDetailedView();
-        break;
-      case BUBBLE_TYPE_NOTIFICATION:
-        (*it)->DestroyNotificationView();
         break;
     }
   }
@@ -339,9 +332,6 @@ void SystemTrayBubble::CreateItemViews(LoginStatus login_status) {
         break;
       case BUBBLE_TYPE_DETAILED:
         item_view = items_[i]->CreateDetailedView(login_status);
-        break;
-      case BUBBLE_TYPE_NOTIFICATION:
-        item_view = items_[i]->CreateNotificationView(login_status);
         break;
     }
     if (item_view) {

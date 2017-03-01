@@ -106,9 +106,8 @@ class DefaultAccessibilityView : public TrayItemMore {
 ////////////////////////////////////////////////////////////////////////////////
 // ash::tray::AccessibilityPopupView
 
-AccessibilityPopupView::AccessibilityPopupView(SystemTrayItem* owner,
-                                               uint32_t enabled_state_bits)
-    : TrayNotificationView(owner, IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK),
+AccessibilityPopupView::AccessibilityPopupView(uint32_t enabled_state_bits)
+    : TrayNotificationView(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK),
       label_(CreateLabel(enabled_state_bits)) {
   InitView(label_);
 }
@@ -382,7 +381,7 @@ views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
 
   if (request_popup_view_state_) {
     detailed_popup_ =
-        new tray::AccessibilityPopupView(this, request_popup_view_state_);
+        new tray::AccessibilityPopupView(request_popup_view_state_);
     request_popup_view_state_ = A11Y_NONE;
     return detailed_popup_;
   } else {

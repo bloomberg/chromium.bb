@@ -21,11 +21,7 @@ class SystemTrayItem;
 
 class SystemTrayBubble {
  public:
-  enum BubbleType {
-    BUBBLE_TYPE_DEFAULT,
-    BUBBLE_TYPE_DETAILED,
-    BUBBLE_TYPE_NOTIFICATION
-  };
+  enum BubbleType { BUBBLE_TYPE_DEFAULT, BUBBLE_TYPE_DETAILED };
 
   SystemTrayBubble(ash::SystemTray* tray,
                    const std::vector<ash::SystemTrayItem*>& items,

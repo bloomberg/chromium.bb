@@ -86,18 +86,12 @@ class ASH_EXPORT SystemTrayItem {
   // Returns a detailed view for the item. This view is displayed standalone.
   virtual views::View* CreateDetailedView(LoginStatus status);
 
-  // Returns a notification view for the item. This view is displayed with
-  // other notifications and should be the same size as default views.
-  // DEPRECATED. Use the message center instead.
-  virtual views::View* CreateNotificationView(LoginStatus status);
-
   // These functions are called when the corresponding view item is about to be
   // removed. An item should do appropriate cleanup in these functions.
   // The default implementation does nothing.
   virtual void DestroyTrayView();
   virtual void DestroyDefaultView();
   virtual void DestroyDetailedView();
-  virtual void DestroyNotificationView();
 
   // Updates the tray view (if applicable) when the user's login status changes.
   // It is not necessary the update the default or detailed view, since the
@@ -133,12 +127,6 @@ class ASH_EXPORT SystemTrayItem {
   // Hides the detailed view for this item. Disable hiding animation if
   // |animate| is false.
   void HideDetailedView(bool animate);
-
-  // Shows a notification for this item.
-  void ShowNotificationView();
-
-  // Hides the notification for this item.
-  void HideNotificationView();
 
   // Returns true if this item needs to force the shelf to be visible when
   // the shelf is in the auto-hide state. Default is true.

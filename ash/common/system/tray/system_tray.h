@@ -83,20 +83,11 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // the hiding animation for hiding |item|.
   void HideDetailedView(SystemTrayItem* item, bool animate);
 
-  // Shows the notification view for |item|.
-  void ShowNotificationView(SystemTrayItem* item);
-
-  // Hides the notification view for |item|.
-  void HideNotificationView(SystemTrayItem* item);
-
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
   // Updates the items when the shelf alignment changes.
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment);
-
-  // Temporarily hides/unhides the notification bubble.
-  void SetHideNotifications(bool hidden);
 
   // Returns true if the shelf should be forced visible when auto-hidden.
   bool ShouldShowShelf() const;
@@ -105,20 +96,14 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // of being created).
   bool HasSystemBubble() const;
 
-  // Returns true if there is a notification bubble.
-  bool HasNotificationBubble() const;
-
   // Returns true if the system_bubble_ exists and is of type |type|.
   bool HasSystemBubbleType(SystemTrayBubble::BubbleType type);
 
   // Returns a pointer to the system bubble or NULL if none.
   SystemTrayBubble* GetSystemBubble();
 
-  // Returns true if any bubble is visible.
-  bool IsAnyBubbleVisible() const;
-
-  // Returns true if the mouse is inside the notification bubble.
-  bool IsMouseInNotificationBubble() const;
+  // Returns true if system bubble is visible.
+  bool IsSystemBubbleVisible() const;
 
   // Closes system bubble and returns true if it did exist.
   bool CloseSystemBubble() const;
@@ -187,9 +172,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Resets |system_bubble_| and clears any related state.
   void DestroySystemBubble();
 
-  // Resets |notification_bubble_| and clears any related state.
-  void DestroyNotificationBubble();
-
   // Returns a string with the current time for accessibility on the status
   // tray bar.
   base::string16 GetAccessibleTimeString(const base::Time& now) const;
@@ -206,10 +188,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
                  bool can_activate,
                  BubbleCreationType creation_type,
                  bool persistent);
-
-  // Constructs or re-constructs |notification_bubble_| and populates it with
-  // |notification_items_|, or destroys it if there are no notification items.
-  void UpdateNotificationBubble();
 
   // Checks the current status of the system tray and updates the web
   // notification tray according to the current status.
@@ -233,7 +211,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // Pointers to members of |items_|.
   SystemTrayItem* detailed_item_;
-  std::vector<SystemTrayItem*> notification_items_;
 
   // Mappings of system tray item and it's view in the tray.
   std::map<SystemTrayItem*, views::View*> tray_item_map_;
@@ -241,16 +218,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Bubble for default and detailed views.
   std::unique_ptr<SystemBubbleWrapper> system_bubble_;
 
-  // Bubble for notifications.
-  std::unique_ptr<SystemBubbleWrapper> notification_bubble_;
-
   // Keep track of the default view height so that when we create detailed
   // views directly (e.g. from a notification) we know what height to use.
   int default_bubble_height_;
-
-  // Set to true when system notifications should be hidden (e.g. web
-  // notification bubble is visible).
-  bool hide_notifications_;
 
   // This is true when the displayed system tray menu is a full tray menu,
   // otherwise a single line item menu like the volume slider is shown.

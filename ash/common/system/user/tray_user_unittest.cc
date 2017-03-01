@@ -89,7 +89,7 @@ void TrayUserTest::ShowTrayMenu(ui::test::EventGenerator* generator) {
   gfx::Point center = tray()->GetBoundsInScreen().CenterPoint();
 
   generator->MoveMouseTo(center.x(), center.y());
-  EXPECT_FALSE(tray()->IsAnyBubbleVisible());
+  EXPECT_FALSE(tray()->IsSystemBubbleVisible());
   generator->ClickLeftButton();
 }
 
@@ -127,7 +127,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   // Move the mouse over the status area and click to open the status menu.
   ui::test::EventGenerator& generator = GetEventGenerator();
 
-  EXPECT_FALSE(tray()->IsAnyBubbleVisible());
+  EXPECT_FALSE(tray()->IsSystemBubbleVisible());
 
   for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
     EXPECT_EQ(TrayUser::HIDDEN, tray_user(i)->GetStateForTest());
@@ -135,7 +135,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   ShowTrayMenu(&generator);
 
   EXPECT_TRUE(tray()->HasSystemBubble());
-  EXPECT_TRUE(tray()->IsAnyBubbleVisible());
+  EXPECT_TRUE(tray()->IsSystemBubbleVisible());
 
   for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
     EXPECT_EQ(i == 0 ? TrayUser::SHOWN : TrayUser::HIDDEN,
@@ -191,7 +191,7 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
     delegate()->set_logged_in_users(j);
 
     // Verify that nothing is shown.
-    EXPECT_FALSE(tray()->IsAnyBubbleVisible());
+    EXPECT_FALSE(tray()->IsSystemBubbleVisible());
     for (int i = 0; i < max_users; i++)
       EXPECT_FALSE(tray_user(i)->GetStateForTest());
     // After clicking on the tray the menu should get shown and for each logged
@@ -199,7 +199,7 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
     ShowTrayMenu(&generator);
 
     EXPECT_TRUE(tray()->HasSystemBubble());
-    EXPECT_TRUE(tray()->IsAnyBubbleVisible());
+    EXPECT_TRUE(tray()->IsSystemBubbleVisible());
     for (int i = 0; i < max_users; i++) {
       EXPECT_EQ(i < j ? TrayUser::SHOWN : TrayUser::HIDDEN,
                 tray_user(i)->GetStateForTest());
@@ -226,7 +226,7 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
 
     // Close and check that everything is deleted.
     tray()->CloseSystemBubble();
-    EXPECT_FALSE(tray()->IsAnyBubbleVisible());
+    EXPECT_FALSE(tray()->IsSystemBubbleVisible());
     for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
       EXPECT_EQ(TrayUser::HIDDEN, tray_user(i)->GetStateForTest());
   }

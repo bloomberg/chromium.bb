@@ -379,7 +379,6 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   message_center_bubble_.reset(new WebNotificationBubbleWrapper(
       this, anchor_tray, message_center_bubble));
 
-  system_tray_->SetHideNotifications(true);
   shelf()->UpdateAutoHideState();
   SetIsActive(true);
   return true;
@@ -396,7 +395,6 @@ void WebNotificationTray::HideMessageCenter() {
   message_center_bubble_.reset();
   should_block_shelf_auto_hide_ = false;
   show_message_center_on_unlock_ = false;
-  system_tray_->SetHideNotifications(false);
   shelf()->UpdateAutoHideState();
 }
 
@@ -424,8 +422,7 @@ void WebNotificationTray::HidePopups() {
 // Private methods.
 
 bool WebNotificationTray::ShouldShowMessageCenter() {
-  return WmShell::Get()->system_tray_delegate()->ShouldShowNotificationTray() &&
-         !system_tray_->HasNotificationBubble();
+  return WmShell::Get()->system_tray_delegate()->ShouldShowNotificationTray();
 }
 
 bool WebNotificationTray::ShouldBlockShelfAutoHide() const {
