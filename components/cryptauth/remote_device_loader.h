@@ -59,12 +59,12 @@ class RemoteDeviceLoader {
       std::unique_ptr<cryptauth::SecureMessageDelegate>
           secure_message_delegate);
 
-  ~RemoteDeviceLoader();
+  virtual ~RemoteDeviceLoader();
 
   // Loads the RemoteDevice objects. |callback| will be invoked upon completion.
   typedef base::Callback<void(const cryptauth::RemoteDeviceList&)>
       RemoteDeviceCallback;
-  void Load(const RemoteDeviceCallback& callback);
+  virtual void Load(const RemoteDeviceCallback& callback);
 
  private:
   // Called when the PSK is derived for each device. If the PSKs for all devices

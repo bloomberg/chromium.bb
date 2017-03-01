@@ -32,6 +32,8 @@ static_library("tether") {
     "message_wrapper.h",
     "pref_names.cc",
     "pref_names.h",
+    "tether_host_fetcher.cc",
+    "tether_host_fetcher.h",
   ]
 
   deps = [
@@ -84,6 +86,7 @@ source_set("unit_tests") {
     "local_device_data_provider_unittest.cc",
     "message_transfer_operation_unittest.cc",
     "message_wrapper_unittest.cc",
+    "tether_host_fetcher_unittest.cc",
   ]
 
   deps = [
