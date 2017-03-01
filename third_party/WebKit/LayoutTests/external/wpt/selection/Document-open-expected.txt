@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Selection must be replaced with a new object after document.open() assert_not_equals: After document.open(), the Selection object must no longer be the same got disallowed value object ""
-Harness: the test ran to completion.
-

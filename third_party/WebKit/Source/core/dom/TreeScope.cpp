@@ -75,6 +75,10 @@ TreeScope::TreeScope(Document& document)
 
 TreeScope::~TreeScope() {}
 
+void TreeScope::resetTreeScope() {
+  m_selection = nullptr;
+}
+
 TreeScope* TreeScope::olderShadowRootOrParentTreeScope() const {
   if (rootNode().isShadowRoot()) {
     if (ShadowRoot* olderShadowRoot =

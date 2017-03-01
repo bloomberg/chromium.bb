@@ -2727,6 +2727,9 @@ void Document::open() {
   }
 
   removeAllEventListenersRecursively();
+  resetTreeScope();
+  if (m_frame)
+    m_frame->selection().clear();
   implicitOpen(ForceSynchronousParsing);
   if (ScriptableDocumentParser* parser = scriptableDocumentParser())
     parser->setWasCreatedByScript(true);

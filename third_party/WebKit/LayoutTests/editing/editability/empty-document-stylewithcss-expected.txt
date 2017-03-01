@@ -1,5 +1,4 @@
 CONSOLE WARNING: line 14: document.execCommand() doesn't work with an invalid HTML structure. It is corrected automatically.
-CONSOLE WARNING: line 18: The behavior that Selection.addRange() merges existing Range and the specified Range was removed. See https://www.chromestatus.com/features/6680566019653632 for more details.
 CONSOLE WARNING: line 21: document.execCommand() doesn't work with an invalid HTML structure. It is corrected automatically.
 This test ensures WebKit executes StyleWithCSS properly even in an empty document.
 First negation:PASS

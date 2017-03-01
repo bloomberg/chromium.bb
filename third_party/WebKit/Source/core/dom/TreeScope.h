@@ -135,6 +135,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   TreeScope(Document&);
   virtual ~TreeScope();
 
+  void resetTreeScope();
   void setDocument(Document& document) { m_document = &document; }
   void setParentTreeScope(TreeScope&);
   void setNeedsStyleRecalcForViewportUnits();
