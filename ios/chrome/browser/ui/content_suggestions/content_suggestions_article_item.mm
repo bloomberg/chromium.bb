@@ -19,7 +19,10 @@ const CGFloat kStandardSpacing = 8;
 @interface ContentSuggestionsArticleItem ()
 
 @property(nonatomic, copy) NSString* subtitle;
-@property(nonatomic, weak) id<ContentSuggestionsArticleItemDelegate> delegate;
+// Used to check if the image has already been fetched. There is no way to
+// discriminate between failed image download and nonexitent image. The article
+// tries to download the image only once.
+@property(nonatomic, assign) BOOL imageFetched;
 
 @end
 
@@ -35,7 +38,7 @@ const CGFloat kStandardSpacing = 8;
 @synthesize publishDate = _publishDate;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
 @synthesize delegate = _delegate;
-@synthesize imageBeingFetched = _imageBeingFetched;
+@synthesize imageFetched = _imageFetched;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
@@ -55,7 +58,10 @@ const CGFloat kStandardSpacing = 8;
 
 - (void)configureCell:(ContentSuggestionsArticleCell*)cell {
   [super configureCell:cell];
-  if (!self.image && !self.imageBeingFetched) {
+  if (!self.image && !self.imageFetched) {
+    self.imageFetched = YES;
+    // Fetch the image. During the fetch the cell's image should still be set to
+    // nil.
     [self.delegate loadImageForArticleItem:self];
   }
   cell.titleLabel.text = _title;

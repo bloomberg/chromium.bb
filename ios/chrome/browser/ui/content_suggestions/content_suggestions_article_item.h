@@ -43,9 +43,7 @@ class Time;
 @property(nonatomic, readonly, assign) GURL articleURL;
 @property(nonatomic, copy) NSString* publisher;
 @property(nonatomic, assign) base::Time publishDate;
-
-// Whether the image is being fetched. This property is set by the delegate.
-@property(nonatomic, assign) BOOL imageBeingFetched;
+@property(nonatomic, weak) id<ContentSuggestionsArticleItemDelegate> delegate;
 
 @end
 

@@ -75,24 +75,31 @@ TEST(ContentSuggestionsArticleItemTest, CellIsConfiguredWithImage) {
   EXPECT_EQ(image, cell.imageView.image);
 }
 
-// Tests that configureCell: does not call the delegate is |imageBeingFetched|
-// is YES even if there is no image.
+// Tests that configureCell: does not call the delegate if it fetched the image
+// once.
 TEST(ContentSuggestionsArticleItemTest, DontFetchImageIsImageIsBeingFetched) {
   // Setup.
   NSString* title = @"testTitle";
   NSString* subtitle = @"testSubtitle";
   GURL url = GURL("http://chromium.org");
-  id delegateMock =
-      OCMStrictProtocolMock(@protocol(ContentSuggestionsArticleItemDelegate));
+  id niceDelegateMock =
+      OCMProtocolMock(@protocol(ContentSuggestionsArticleItemDelegate));
   ContentSuggestionsArticleItem* item =
       [[ContentSuggestionsArticleItem alloc] initWithType:0
                                                     title:title
                                                  subtitle:subtitle
-                                                 delegate:delegateMock
+                                                 delegate:niceDelegateMock
                                                       url:url];
-  item.imageBeingFetched = YES;
+
+  OCMExpect([niceDelegateMock loadImageForArticleItem:item]);
   ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
   ASSERT_EQ(nil, item.image);
+  [item configureCell:cell];
+  ASSERT_OCMOCK_VERIFY(niceDelegateMock);
+
+  id strictDelegateMock =
+      OCMStrictProtocolMock(@protocol(ContentSuggestionsArticleItemDelegate));
+  item.delegate = strictDelegateMock;
 
   // Action.
   [item configureCell:cell];
@@ -101,7 +108,6 @@ TEST(ContentSuggestionsArticleItemTest, DontFetchImageIsImageIsBeingFetched) {
   EXPECT_EQ(nil, cell.imageView.image);
   EXPECT_EQ(title, cell.titleLabel.text);
   EXPECT_EQ(subtitle, cell.subtitleLabel.text);
-  EXPECT_OCMOCK_VERIFY(delegateMock);
 }
 
 }  // namespace

@@ -153,20 +153,21 @@ SectionIdentifier SectionIdentifierForInfo(
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
   __weak ContentSuggestionsArticleItem* weakArticle = articleItem;
   void (^imageFetchedCallback)(const gfx::Image&) = ^(const gfx::Image& image) {
+    if (image.IsEmpty()) {
+      return;
+    }
+
     ContentSuggestionsCollectionUpdater* strongSelf = weakSelf;
     ContentSuggestionsArticleItem* strongArticle = weakArticle;
     if (!strongSelf || !strongArticle) {
       return;
     }
 
-    strongArticle.imageBeingFetched = NO;
     strongArticle.image = image.CopyUIImage();
     [strongSelf.collectionViewController
         reconfigureCellsForItems:@[ strongArticle ]
          inSectionWithIdentifier:sectionIdentifier];
   };
-
-  articleItem.imageBeingFetched = YES;
 
   [self.dataSource.imageFetcher
       fetchImageForSuggestion:articleItem.suggestionIdentifier
