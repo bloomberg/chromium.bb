@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -380,6 +381,11 @@ TEST_F(CaptivePortalTabHelperTest, HttpsSubframe) {
 // but with a different error code.  Make sure the TabHelper sees the correct
 // error.
 TEST_F(CaptivePortalTabHelperTest, HttpsSubframeParallelError) {
+  if (content::IsBrowserSideNavigationEnabled() &&
+      content::AreAllSitesIsolatedForTesting()) {
+    // http://crbug.com/674734 Fix this test with PlzNavigate and Site Isolation
+    return;
+  }
   // URL used by both frames.
   GURL url = GURL(kHttpsUrl);
   content::RenderFrameHostTester* rfh_tester =
@@ -406,6 +412,11 @@ TEST_F(CaptivePortalTabHelperTest, HttpsSubframeParallelError) {
 
 // Simulates an HTTP to HTTPS redirect, which then times out.
 TEST_F(CaptivePortalTabHelperTest, HttpToHttpsRedirectTimeout) {
+  if (content::IsBrowserSideNavigationEnabled() &&
+      content::AreAllSitesIsolatedForTesting()) {
+    // http://crbug.com/674734 Fix this test with PlzNavigate and Site Isolation
+    return;
+  }
   GURL http_url(kHttpUrl);
   EXPECT_CALL(mock_reloader(), OnLoadStart(false)).Times(1);
   content::RenderFrameHostTester* rfh_tester =

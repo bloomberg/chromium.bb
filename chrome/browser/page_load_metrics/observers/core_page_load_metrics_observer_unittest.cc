@@ -10,6 +10,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/test_rappor_service.h"
+#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/test/test_utils.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 
 namespace {
@@ -302,6 +304,11 @@ TEST_F(CorePageLoadMetricsObserverTest, DontBackgroundQuickerLoad) {
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
+  if (content::IsBrowserSideNavigationEnabled() &&
+      content::AreAllSitesIsolatedForTesting()) {
+    // http://crbug.com/674734 Fix this test with PlzNavigate and Site Isolation
+    return;
+  }
   GURL url(kDefaultTestUrl);
   content::RenderFrameHostTester* rfh_tester =
       content::RenderFrameHostTester::For(main_rfh());
