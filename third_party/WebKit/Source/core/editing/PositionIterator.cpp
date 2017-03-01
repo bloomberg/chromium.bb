@@ -346,7 +346,8 @@ bool PositionIteratorAlgorithm<Strategy>::atEndOfNode() const {
          m_offsetInAnchor >= Strategy::lastOffsetForEditing(m_anchorNode);
 }
 
-template class PositionIteratorAlgorithm<EditingStrategy>;
-template class PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT PositionIteratorAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT
+    PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 }  // namespace blink

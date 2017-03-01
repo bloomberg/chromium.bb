@@ -26,6 +26,7 @@
 #ifndef PositionIterator_h
 #define PositionIterator_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/EditingUtilities.h"
@@ -39,7 +40,7 @@ namespace blink {
 // Conversion to Position is O(1).
 // PositionIteratorAlgorithm must be used without DOM tree change.
 template <typename Strategy>
-class PositionIteratorAlgorithm {
+class CORE_TEMPLATE_CLASS_EXPORT PositionIteratorAlgorithm {
   STACK_ALLOCATED();
 
  public:
@@ -90,8 +91,10 @@ class PositionIteratorAlgorithm {
   uint64_t m_domTreeVersion;
 };
 
-extern template class PositionIteratorAlgorithm<EditingStrategy>;
-extern template class PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    PositionIteratorAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 using PositionIterator = PositionIteratorAlgorithm<EditingStrategy>;
 using PositionIteratorInFlatTree =

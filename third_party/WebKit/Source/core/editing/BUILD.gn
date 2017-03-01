@@ -238,6 +238,7 @@ source_set("unit_tests") {
     "FrameSelectionTest.cpp",
     "GranularityStrategyTest.cpp",
     "InputMethodControllerTest.cpp",
+    "PositionIteratorTest.cpp",
     "PositionTest.cpp",
     "RelocatablePositionTest.cpp",
     "SelectionControllerTest.cpp",
