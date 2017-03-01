@@ -17,6 +17,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//services/device/fingerprint",
     "//services/device/power_monitor",
     "//services/device/time_zone_monitor",
     "//services/service_manager/public/cpp",
@@ -46,6 +47,11 @@ source_set("tests") {
     "//services/device/public/cpp/power_monitor",
     "//testing/gtest",
   ]
+
+  if (is_chromeos) {
+    sources += [ "fingerprint/fingerprint_chromeos_unittest.cc" ]
+    deps += [ "//services/device/fingerprint" ]
+  }
 }
 
 service_manifest("manifest") {

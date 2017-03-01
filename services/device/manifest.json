@@ -5,7 +5,8 @@
     "service_manager:connector": {
       "provides": {
         "device:power_monitor": [ "device::mojom::PowerMonitor" ],
-        "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ]
+        "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ],
+	"device:fingerprint": [ "device::mojom::Fingerprint" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]

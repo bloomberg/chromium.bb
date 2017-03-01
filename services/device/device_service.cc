@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "services/device/fingerprint/fingerprint.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
 #include "services/service_manager/public/cpp/connection.h"
@@ -41,9 +42,15 @@ void DeviceService::OnStart() {}
 
 bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
                               service_manager::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Fingerprint>(this);
   registry->AddInterface<mojom::PowerMonitor>(this);
   registry->AddInterface<mojom::TimeZoneMonitor>(this);
   return true;
+}
+
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           mojom::FingerprintRequest request) {
+  Fingerprint::Create(std::move(request));
 }
 
 void DeviceService::Create(const service_manager::Identity& remote_identity,

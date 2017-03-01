@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/device/public/interfaces/fingerprint.mojom.h"
 #include "services/device/public/interfaces/power_monitor.mojom.h"
 #include "services/device/public/interfaces/time_zone_monitor.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -21,6 +22,7 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 
 class DeviceService
     : public service_manager::Service,
+      public service_manager::InterfaceFactory<mojom::Fingerprint>,
       public service_manager::InterfaceFactory<mojom::PowerMonitor>,
       public service_manager::InterfaceFactory<mojom::TimeZoneMonitor> {
  public:
@@ -32,6 +34,10 @@ class DeviceService
   void OnStart() override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
+
+  // InterfaceFactory<mojom::Fingerprint>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::FingerprintRequest request) override;
 
   // InterfaceFactory<mojom::PowerMonitor>:
   void Create(const service_manager::Identity& remote_identity,
