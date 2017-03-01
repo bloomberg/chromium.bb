@@ -22,25 +22,22 @@ Polymer({
     },
 
     /**
-     * |hasMouse_|, |hasTouchpad_|, and |hasStylus_| start undefined so
-     * observers don't trigger until they have been populated.
+     * |hasMouse_| and |hasTouchpad_| start undefined so observers don't trigger
+     * until they have been populated.
      * @private
      */
-    hasMouse_: {
-      type: Boolean,
-      value: false
-    },
+    hasMouse_: Boolean,
 
     /** @private */
-    hasTouchpad_: {
-      type: Boolean,
-      value: false
-    },
+    hasTouchpad_: Boolean,
 
-    /** @private */
+    /**
+     * |hasStylus_| is initialized to false so that dom-if behaves correctly.
+     * @private
+     */
     hasStylus_: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     /**
@@ -170,7 +167,7 @@ Polymer({
    * @return {string} Description of the power source.
    * @private
    */
-  computePowerSourceName_: function (powerSources, lowPowerCharger) {
+  computePowerSourceName_: function(powerSources, lowPowerCharger) {
     if (lowPowerCharger)
       return this.i18n('powerSourceLowPowerCharger');
     if (powerSources.length)
