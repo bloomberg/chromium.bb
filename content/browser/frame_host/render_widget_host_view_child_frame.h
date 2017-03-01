@@ -17,8 +17,8 @@
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -31,9 +31,8 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace cc {
-class SurfaceFactory;
+class CompositorFrameSinkSupport;
 }
-
 
 namespace content {
 class CrossProcessFrameConnector;
@@ -52,8 +51,7 @@ class RenderWidgetHostViewGuestSurfaceTest;
 // See comments in render_widget_host_view.h about this class and its members.
 class CONTENT_EXPORT RenderWidgetHostViewChildFrame
     : public RenderWidgetHostViewBase,
-      public cc::SurfaceFactoryClient,
-      public cc::BeginFrameObserver {
+      public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient) {
  public:
   static RenderWidgetHostViewChildFrame* Create(RenderWidgetHost* widget);
   ~RenderWidgetHostViewChildFrame() override;
@@ -161,18 +159,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
 
-  // cc::SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* source) override;
-
-  // cc::BeginFrameObserver implementation.
+  // cc::CompositorFrameSinkSupportClient implementation.
+  void DidReceiveCompositorFrameAck() override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
-
-  // Declared 'public' instead of 'protected' here to allow derived classes
-  // to Bind() to it.
-  void SurfaceDrawn(uint32_t compositor_frame_sink_id);
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void WillDrawSurface(const cc::LocalSurfaceId& id,
+                       const gfx::Rect& damage_rect) override {}
 
   // Exposed for tests.
   bool IsChildFrameForTesting() const override;
@@ -227,15 +219,13 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // Surface-related state.
   std::unique_ptr<cc::LocalSurfaceIdAllocator> id_allocator_;
-  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   cc::LocalSurfaceId local_surface_id_;
   uint32_t next_surface_sequence_;
   uint32_t last_compositor_frame_sink_id_;
   gfx::Size current_surface_size_;
   float current_surface_scale_factor_;
   gfx::Rect last_screen_rect_;
-  uint32_t ack_pending_count_;
-  cc::ReturnedResourceArray surface_returned_resources_;
 
   // frame_connector_ provides a platform abstraction. Messages
   // sent through it are routed to the embedding renderer process.
@@ -255,14 +245,14 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                                 const ReadbackRequestCallback& callback,
                                 const SkColorType preferred_color_type);
 
+  void CreateCompositorFrameSinkSupport();
+  void ResetCompositorFrameSinkSupport();
+
   using FrameSwappedCallbackList = std::deque<std::unique_ptr<base::Closure>>;
   // Since frame-drawn callbacks are "fire once", we use std::deque to make
   // it convenient to swap() when processing the list.
   FrameSwappedCallbackList frame_swapped_callbacks_;
 
-  // The begin frame source being observed.  Null if none.
-  cc::BeginFrameSource* begin_frame_source_;
-  cc::BeginFrameArgs last_begin_frame_args_;
   // The surface client ID of the parent RenderWidgetHostView.  0 if none.
   cc::FrameSinkId parent_frame_sink_id_;
 
