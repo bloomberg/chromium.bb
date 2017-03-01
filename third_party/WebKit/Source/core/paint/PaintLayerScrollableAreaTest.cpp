@@ -10,6 +10,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -547,5 +548,23 @@ TEST_F(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
   EXPECT_CALL(chromeClient(), mockSetToolTip(document().frame(), String(), _))
       .Times(0);
   scrollableArea->setScrollOffset(ScrollOffset(2, 2), ProgrammaticScroll);
+}
+
+TEST_F(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
+  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+  setBodyInnerHTML(
+      "<style>"
+      "#scroller { overflow: overlay; height: 100px; width: 100px; }"
+      "#scrolled { width: 100px; height: 200px; }"
+      "</style>"
+      "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
+  document().view()->updateAllLifecyclePhases();
+  Element* scroller = document().getElementById("scroller");
+  ASSERT_TRUE(scroller);
+  PaintLayerScrollableArea* scrollableArea =
+      toLayoutBoxModelObject(scroller->layoutObject())->getScrollableArea();
+  ASSERT_TRUE(scrollableArea);
+  scrollableArea->setScrollOffset(ScrollOffset(100, 0), ClampingScroll);
+  EXPECT_EQ(scrollableArea->getScrollOffset().width(), 0);
 }
 }

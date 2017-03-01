@@ -1284,10 +1284,12 @@ int PaintLayerScrollableArea::verticalScrollbarWidth(
     OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const {
   if (!hasVerticalScrollbar())
     return 0;
-  if (verticalScrollbar()->isOverlayScrollbar() &&
+  if ((verticalScrollbar()->isOverlayScrollbar() ||
+       box().style()->overflowY() == EOverflow::kOverlay) &&
       (overlayScrollbarClipBehavior == IgnoreOverlayScrollbarSize ||
-       !verticalScrollbar()->shouldParticipateInHitTesting()))
+       !verticalScrollbar()->shouldParticipateInHitTesting())) {
     return 0;
+  }
   return verticalScrollbar()->scrollbarThickness();
 }
 
@@ -1295,10 +1297,12 @@ int PaintLayerScrollableArea::horizontalScrollbarHeight(
     OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const {
   if (!hasHorizontalScrollbar())
     return 0;
-  if (horizontalScrollbar()->isOverlayScrollbar() &&
+  if ((horizontalScrollbar()->isOverlayScrollbar() ||
+       box().style()->overflowX() == EOverflow::kOverlay) &&
       (overlayScrollbarClipBehavior == IgnoreOverlayScrollbarSize ||
-       !horizontalScrollbar()->shouldParticipateInHitTesting()))
+       !horizontalScrollbar()->shouldParticipateInHitTesting())) {
     return 0;
+  }
   return horizontalScrollbar()->scrollbarThickness();
 }
 
