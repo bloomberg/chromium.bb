@@ -50,14 +50,6 @@ class BattOrToughVideoCases(_BattOrBenchmark):
     return 'battor.tough_video_cases'
 
 
-class BattOrPowerCases(_BattOrBenchmark):
-  page_set = page_sets.power_cases.PowerCasesPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'battor.power_cases'
-
-
 @benchmark.Enabled('mac')
 class BattOrTrivialPages(_BattOrBenchmark):
 
