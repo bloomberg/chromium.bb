@@ -85,6 +85,31 @@ source_set("unit_tests") {
     "//third_party/wayland:wayland_client",
   ]
 }
+source_set("client_lib") {
+  sources = [
+    "clients/client_base.cc",
+    "clients/client_base.h",
+    "clients/client_helper.cc",
+    "clients/client_helper.h",
+  ]
+  deps = [
+    "//base",
+    "//skia",
+    "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:linux_dmabuf_protocol",
+    "//third_party/wayland-protocols:presentation_time_protocol",
+    "//ui/gl",
+    "//ui/gl/init",
+  ]
+  if (ozone_platform_gbm) {
+    configs += [
+      ":libdrm",
+      "//ui/gl:gl_config",
+    ]
+    defines = [ "OZONE_PLATFORM_GBM" ]
+    deps += [ "//third_party/minigbm" ]
+  }
+}
 
 executable("wayland_motion_events") {
   sources = [
@@ -92,6 +117,7 @@ executable("wayland_motion_events") {
   ]
 
   deps = [
+    ":client_lib",
     "//base",
     "//skia",
     "//third_party/wayland:wayland_client",
@@ -99,7 +125,32 @@ executable("wayland_motion_events") {
     "//third_party/wayland-protocols:presentation_time_protocol",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//ui/gl/init",
+  ]
+
+  if (ozone_platform_gbm) {
+    configs += [
+      ":libdrm",
+      "//ui/gl:gl_config",
+    ]
+    defines = [ "OZONE_PLATFORM_GBM" ]
+    deps += [ "//third_party/minigbm" ]
+  }
+}
+
+executable("wayland_simple_client") {
+  sources = [
+    "clients/simple_client.cc",
+  ]
+
+  deps = [
+    ":client_lib",
+    "//base",
+    "//skia",
+    "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:linux_dmabuf_protocol",
+    "//third_party/wayland-protocols:presentation_time_protocol",
+    "//ui/gfx/geometry",
+    "//ui/gl",
   ]
 
   if (ozone_platform_gbm) {
