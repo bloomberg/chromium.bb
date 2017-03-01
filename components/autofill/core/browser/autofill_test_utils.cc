@@ -325,7 +325,6 @@ void SetServerCreditCards(AutofillTable* table,
     std::string type = card.type();
     card.SetNumber(card.LastFourDigits());
     card.SetTypeForMaskedCard(type.c_str());
-    table->UpdateServerCardMetadata(card);
   }
   table->SetServerCreditCards(as_masked_cards);
 

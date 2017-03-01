@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -75,10 +74,6 @@ std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
 }
 
 namespace {
-
-const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
-const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
-const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
 
 typedef std::set<AutofillEntry,
     bool (*)(const AutofillEntry&, const AutofillEntry&)> AutofillEntrySet;
@@ -1750,9 +1745,6 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
 }
 
 TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
-  TestAutofillClock test_clock;
-  test_clock.SetNow(kArbitraryTime);
-
   // Add a masked card.
   CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
   masked_card.SetRawInfo(CREDIT_CARD_NAME_FULL,
@@ -1772,7 +1764,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(1U, outputs[0]->use_count());
-  EXPECT_EQ(kArbitraryTime, outputs[0]->use_date());
+  EXPECT_NE(base::Time(), outputs[0]->use_date());
   // We don't track modification date for server cards. It should always be
   // base::Time().
   EXPECT_EQ(base::Time(), outputs[0]->modification_date());
@@ -1780,28 +1772,25 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
 
   // Update the usage stats; make sure they're reflected in GetServerProfiles.
   inputs.back().set_use_count(4U);
-  inputs.back().set_use_date(kSomeLaterTime);
+  inputs.back().set_use_date(base::Time());
   inputs.back().set_billing_address_id("2");
   table_->UpdateServerCardMetadata(inputs.back());
   table_->GetServerCreditCards(&outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
-  EXPECT_EQ(kSomeLaterTime, outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->use_date());
   EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   EXPECT_EQ("2", outputs[0]->billing_address_id());
   outputs.clear();
 
-  // Setting the cards shouldn't delete the usage stats.
-  inputs.back().set_use_count(1000U);
-  inputs.back().set_use_date(kMuchLaterTime);
+  // Setting the cards again shouldn't delete the usage stats.
   table_->SetServerCreditCards(inputs);
   table_->GetServerCreditCards(&outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
-  // The use stats should not be modified.
   EXPECT_EQ(4U, outputs[0]->use_count());
-  EXPECT_EQ(kSomeLaterTime, outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->use_date());
   EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   EXPECT_EQ("2", outputs[0]->billing_address_id());
   outputs.clear();
@@ -1814,13 +1803,11 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
   // Back to the original card list.
   inputs.back() = masked_card;
   table_->SetServerCreditCards(inputs);
-  table_->UpdateServerCardMetadata(inputs.back());
   table_->GetServerCreditCards(&outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
-  // The use stats should have stayed the same.
   EXPECT_EQ(1U, outputs[0]->use_count());
-  EXPECT_EQ(kArbitraryTime, outputs[0]->use_date());
+  EXPECT_NE(base::Time(), outputs[0]->use_date());
   EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   EXPECT_EQ("1", outputs[0]->billing_address_id());
   outputs.clear();
