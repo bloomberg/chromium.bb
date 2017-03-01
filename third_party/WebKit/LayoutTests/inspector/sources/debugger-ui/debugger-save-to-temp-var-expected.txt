@@ -17,11 +17,11 @@ temp10
 temp11
 -0
 temp12
-[1, 2, NaN, -0, null, undefined]
+(6) [1, 2, NaN, -0, null, undefined]
 temp13
 Object {foo: "bar"}
 temp14
-[1, 2, 3, 4, callee: function, Symbol(Symbol.iterator): function]
+(4) [1, 2, 3, 4, callee: function, Symbol(Symbol.iterator): function]
 temp15
 function func() {}
 temp16
