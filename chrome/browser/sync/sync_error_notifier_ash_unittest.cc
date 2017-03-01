@@ -27,7 +27,6 @@
 #include "ui/message_center/notification.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/display/screen.h"
 #endif

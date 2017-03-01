@@ -9,7 +9,6 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager.h"

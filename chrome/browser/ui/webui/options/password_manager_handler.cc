@@ -49,10 +49,6 @@
 #include "content/public/common/origin_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "chrome/browser/ui/ash/ash_util.h"
-#endif
-
 namespace options {
 
 namespace {
