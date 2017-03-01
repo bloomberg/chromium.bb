@@ -34,8 +34,8 @@ namespace blink {
 
 class ExceptionState;
 class Frame;
+class FrameViewBase;
 class LayoutPart;
-class Widget;
 
 class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                                           public FrameOwner {
@@ -59,9 +59,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   virtual bool loadedNonEmptyDocument() const { return false; }
   virtual void didLoadNonEmptyDocument() {}
 
-  void setWidget(Widget*);
-  Widget* releaseWidget();
-  Widget* ownedWidget() const;
+  void setWidget(FrameViewBase*);
+  FrameViewBase* releaseWidget();
+  FrameViewBase* ownedWidget() const;
 
   class UpdateSuspendScope {
     STACK_ALLOCATED();
@@ -106,7 +106,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                               bool replaceCurrentItem);
   bool isKeyboardFocusable() const override;
 
-  void disposeWidgetSoon(Widget*);
+  void disposeWidgetSoon(FrameViewBase*);
 
  private:
   // Intentionally private to prevent redundant checks when the type is
@@ -121,7 +121,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   }
 
   Member<Frame> m_contentFrame;
-  Member<Widget> m_widget;
+  Member<FrameViewBase> m_widget;
   SandboxFlags m_sandboxFlags;
 };
 

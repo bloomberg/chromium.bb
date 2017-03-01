@@ -61,6 +61,7 @@ namespace blink {
 class Document;
 class DocumentLoader;
 struct FrameLoadRequest;
+class FrameViewBase;
 class HTMLFormElement;
 class HTMLFrameElementBase;
 class HTMLFrameOwnerElement;
@@ -84,7 +85,6 @@ class WebMediaPlayerSource;
 class WebRemotePlaybackClient;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
-class Widget;
 
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
@@ -193,7 +193,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     AllowDetachedPlugin,
   };
   virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const = 0;
-  virtual Widget* createPlugin(HTMLPlugInElement*,
+  virtual FrameViewBase* createPlugin(HTMLPlugInElement*,
                                const KURL&,
                                const Vector<String>&,
                                const Vector<String>&,

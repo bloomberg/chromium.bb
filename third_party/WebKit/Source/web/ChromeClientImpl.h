@@ -110,8 +110,8 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void setStatusbarText(const String& message) override;
   bool tabsToLinks() override;
   void invalidateRect(const IntRect&) override;
-  void scheduleAnimation(Widget*) override;
-  IntRect viewportToScreen(const IntRect&, const Widget*) const override;
+  void scheduleAnimation(FrameViewBase*) override;
+  IntRect viewportToScreen(const IntRect&, const FrameViewBase*) const override;
   float windowToViewportScalar(const float) const override;
   WebScreenInfo screenInfo() const override;
   WTF::Optional<IntRect> visibleContentRectForPainting() const override;

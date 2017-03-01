@@ -55,7 +55,6 @@ class ResourceResponse;
 class TouchEvent;
 class WebPlugin;
 class WheelEvent;
-class Widget;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 

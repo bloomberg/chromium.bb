@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class Widget;
+class FrameViewBase;
 
 class PLATFORM_EXPORT ScrollbarThemeClient {
  public:
@@ -46,8 +46,8 @@ class PLATFORM_EXPORT ScrollbarThemeClient {
   virtual IntSize size() const = 0;
   virtual IntPoint location() const = 0;
 
-  virtual Widget* parent() const = 0;
-  virtual Widget* root() const = 0;
+  virtual FrameViewBase* parent() const = 0;
+  virtual FrameViewBase* root() const = 0;
 
   virtual void setFrameRect(const IntRect&) = 0;
   virtual IntRect frameRect() const = 0;

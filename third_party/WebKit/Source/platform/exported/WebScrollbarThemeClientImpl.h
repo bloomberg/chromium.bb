@@ -53,8 +53,8 @@ class PLATFORM_EXPORT WebScrollbarThemeClientImpl
   int height() const override;
   IntSize size() const override;
   IntPoint location() const override;
-  Widget* parent() const override;
-  Widget* root() const override;
+  FrameViewBase* parent() const override;
+  FrameViewBase* root() const override;
   void setFrameRect(const IntRect&) override;
   IntRect frameRect() const override;
   void invalidate() override;

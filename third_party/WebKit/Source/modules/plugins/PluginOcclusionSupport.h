@@ -25,11 +25,11 @@
 
 namespace blink {
 class Element;
-class Widget;
+class FrameViewBase;
 class IntRect;
 
 MODULES_EXPORT void getPluginOcclusions(Element*,
-                                        Widget* parentWidget,
+                                        FrameViewBase* parentWidget,
                                         const IntRect& frameRect,
                                         Vector<IntRect>& occlusions);
 

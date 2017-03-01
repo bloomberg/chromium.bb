@@ -24,66 +24,66 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/Widget.h"
+#include "platform/FrameViewBase.h"
 
 #include "wtf/Assertions.h"
 
 namespace blink {
 
-Widget::Widget()
+FrameViewBase::FrameViewBase()
     : m_parent(nullptr), m_selfVisible(false), m_parentVisible(false) {}
 
-Widget::~Widget() {}
+FrameViewBase::~FrameViewBase() {}
 
-DEFINE_TRACE(Widget) {
+DEFINE_TRACE(FrameViewBase) {
   visitor->trace(m_parent);
 }
 
-void Widget::setParent(Widget* widget) {
-  ASSERT(!widget || !m_parent);
-  if (!widget || !widget->isVisible())
+void FrameViewBase::setParent(FrameViewBase* frameViewBase) {
+  DCHECK(!frameViewBase || !m_parent);
+  if (!frameViewBase || !frameViewBase->isVisible())
     setParentVisible(false);
-  m_parent = widget;
-  if (widget && widget->isVisible())
+  m_parent = frameViewBase;
+  if (frameViewBase && frameViewBase->isVisible())
     setParentVisible(true);
 }
 
-Widget* Widget::root() const {
-  const Widget* top = this;
+FrameViewBase* FrameViewBase::root() const {
+  const FrameViewBase* top = this;
   while (top->parent())
     top = top->parent();
   if (top->isFrameView())
-    return const_cast<Widget*>(static_cast<const Widget*>(top));
+    return const_cast<FrameViewBase*>(static_cast<const FrameViewBase*>(top));
   return 0;
 }
 
-IntRect Widget::convertFromRootFrame(const IntRect& rectInRootFrame) const {
-  if (const Widget* parentWidget = parent()) {
-    IntRect parentRect = parentWidget->convertFromRootFrame(rectInRootFrame);
+IntRect FrameViewBase::convertFromRootFrame(const IntRect& rectInRootFrame) const {
+  if (const FrameViewBase* parentFrameViewBase = parent()) {
+    IntRect parentRect = parentFrameViewBase->convertFromRootFrame(rectInRootFrame);
     return convertFromContainingWidget(parentRect);
   }
   return rectInRootFrame;
 }
 
-IntRect Widget::convertToRootFrame(const IntRect& localRect) const {
-  if (const Widget* parentWidget = parent()) {
+IntRect FrameViewBase::convertToRootFrame(const IntRect& localRect) const {
+  if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntRect parentRect = convertToContainingWidget(localRect);
-    return parentWidget->convertToRootFrame(parentRect);
+    return parentFrameViewBase->convertToRootFrame(parentRect);
   }
   return localRect;
 }
 
-IntPoint Widget::convertFromRootFrame(const IntPoint& pointInRootFrame) const {
-  if (const Widget* parentWidget = parent()) {
-    IntPoint parentPoint = parentWidget->convertFromRootFrame(pointInRootFrame);
+IntPoint FrameViewBase::convertFromRootFrame(const IntPoint& pointInRootFrame) const {
+  if (const FrameViewBase* parentFrameViewBase = parent()) {
+    IntPoint parentPoint = parentFrameViewBase->convertFromRootFrame(pointInRootFrame);
     return convertFromContainingWidget(parentPoint);
   }
   return pointInRootFrame;
 }
 
-FloatPoint Widget::convertFromRootFrame(
+FloatPoint FrameViewBase::convertFromRootFrame(
     const FloatPoint& pointInRootFrame) const {
-  // Widgets / windows are required to be IntPoint aligned, but we may need to
+  // FrameViewBase / windows are required to be IntPoint aligned, but we may need to
   // convert FloatPoint values within them (eg. for event co-ordinates).
   IntPoint flooredPoint = flooredIntPoint(pointInRootFrame);
   FloatPoint parentPoint = this->convertFromRootFrame(flooredPoint);
@@ -102,56 +102,56 @@ FloatPoint Widget::convertFromRootFrame(
   return parentPoint;
 }
 
-IntPoint Widget::convertToRootFrame(const IntPoint& localPoint) const {
-  if (const Widget* parentWidget = parent()) {
+IntPoint FrameViewBase::convertToRootFrame(const IntPoint& localPoint) const {
+  if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntPoint parentPoint = convertToContainingWidget(localPoint);
-    return parentWidget->convertToRootFrame(parentPoint);
+    return parentFrameViewBase->convertToRootFrame(parentPoint);
   }
   return localPoint;
 }
 
-IntRect Widget::convertToContainingWidget(const IntRect& localRect) const {
-  if (const Widget* parentWidget = parent()) {
+IntRect FrameViewBase::convertToContainingWidget(const IntRect& localRect) const {
+  if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntRect parentRect(localRect);
     parentRect.setLocation(
-        parentWidget->convertChildToSelf(this, localRect.location()));
+        parentFrameViewBase->convertChildToSelf(this, localRect.location()));
     return parentRect;
   }
   return localRect;
 }
 
-IntRect Widget::convertFromContainingWidget(const IntRect& parentRect) const {
-  if (const Widget* parentWidget = parent()) {
+IntRect FrameViewBase::convertFromContainingWidget(const IntRect& parentRect) const {
+  if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntRect localRect = parentRect;
     localRect.setLocation(
-        parentWidget->convertSelfToChild(this, localRect.location()));
+        parentFrameViewBase->convertSelfToChild(this, localRect.location()));
     return localRect;
   }
 
   return parentRect;
 }
 
-IntPoint Widget::convertToContainingWidget(const IntPoint& localPoint) const {
-  if (const Widget* parentWidget = parent())
-    return parentWidget->convertChildToSelf(this, localPoint);
+IntPoint FrameViewBase::convertToContainingWidget(const IntPoint& localPoint) const {
+  if (const FrameViewBase* parentFrameViewBase = parent())
+    return parentFrameViewBase->convertChildToSelf(this, localPoint);
 
   return localPoint;
 }
 
-IntPoint Widget::convertFromContainingWidget(
+IntPoint FrameViewBase::convertFromContainingWidget(
     const IntPoint& parentPoint) const {
-  if (const Widget* parentWidget = parent())
-    return parentWidget->convertSelfToChild(this, parentPoint);
+  if (const FrameViewBase* parentFrameViewBase = parent())
+    return parentFrameViewBase->convertSelfToChild(this, parentPoint);
 
   return parentPoint;
 }
 
-IntPoint Widget::convertChildToSelf(const Widget*,
+IntPoint FrameViewBase::convertChildToSelf(const FrameViewBase*,
                                     const IntPoint& point) const {
   return point;
 }
 
-IntPoint Widget::convertSelfToChild(const Widget*,
+IntPoint FrameViewBase::convertSelfToChild(const FrameViewBase*,
                                     const IntPoint& point) const {
   return point;
 }

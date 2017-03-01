@@ -31,7 +31,7 @@
 namespace blink {
 
 class Node;
-class Widget;
+class FrameViewBase;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
  public:
@@ -42,7 +42,7 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
 
   void setPluginNode(Node* pluginNode) { m_pluginNode = pluginNode; }
 
-  Widget* pluginWidget();
+  FrameViewBase* pluginWidget();
   Node* pluginNode();
 
   void shutdown() override;
