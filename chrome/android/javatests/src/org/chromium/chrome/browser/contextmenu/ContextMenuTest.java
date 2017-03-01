@@ -9,6 +9,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
+import android.test.MoreAsserts;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 
@@ -34,6 +36,8 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -346,6 +350,80 @@ public class ContextMenuTest extends DownloadTestBase {
         String imageUrl = mTestServer.getURL(
                 "/chrome/test/data/android/contextmenu/test_link2.html");
         assertEquals(imageUrl, tabModel.getTabAt(indexOfLinkPage2).getUrl());
+    }
+
+    @SmallTest
+    @Feature({"Browser", "ContextMenu"})
+    @RetryOnFailure
+    public void testContextMenuRetrievesLinkOptions()
+            throws TimeoutException, InterruptedException {
+        Tab tab = getActivity().getActivityTab();
+        ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testLink");
+
+        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
+                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_copy_link_text, R.id.contextmenu_save_link_as};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @SmallTest
+    @Feature({"Browser", "ContextMenu"})
+    @RetryOnFailure
+    public void testContextMenuRetrievesImageOptions()
+            throws TimeoutException, InterruptedException {
+        Tab tab = getActivity().getActivityTab();
+        ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
+
+        Integer[] expectedItems = {R.id.contextmenu_save_image,
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
+                R.id.contextmenu_share_image};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @SmallTest
+    @Feature({"Browser", "ContextMenu"})
+    @RetryOnFailure
+    public void testContextMenuRetrievesImageLinkOptions()
+            throws TimeoutException, InterruptedException {
+        Tab tab = getActivity().getActivityTab();
+        ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImageLink");
+
+        Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
+                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_save_link_as, R.id.contextmenu_save_image,
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
+                R.id.contextmenu_share_image};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @SmallTest
+    @Feature({"Browser", "ContextMenu"})
+    @RetryOnFailure
+    public void testContextMenuRetrievesVideoOptions()
+            throws TimeoutException, InterruptedException {
+        Tab tab = getActivity().getActivityTab();
+        DOMUtils.clickNode(getActivity().getCurrentContentViewCore(), "videoDOMElement");
+        ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "videoDOMElement");
+
+        Integer[] expectedItems = {R.id.contextmenu_save_video};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    /**
+     * Takes all the visible items on the menu and compares them to a the list of expected items.
+     * @param menu A context menu that is displaying visible items.
+     * @param expectedItems A list of items that is expected to appear within a context menu. The
+     *                      list does not need to be ordered.
+     */
+    private void assertMenuItemsAreEqual(ContextMenu menu, Integer... expectedItems) {
+        List<Integer> actualItems = new ArrayList<>();
+        for (int i = 0; i < menu.size(); i++) {
+            if (menu.getItem(i).isVisible()) {
+                actualItems.add(menu.getItem(i).getItemId());
+            }
+        }
+
+        MoreAsserts.assertContentsInAnyOrder(actualItems, expectedItems);
     }
 
     private void saveMediaFromContextMenu(String mediaDOMElement, int saveMenuID,
