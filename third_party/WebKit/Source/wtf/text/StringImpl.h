@@ -381,6 +381,7 @@ class WTF_EXPORT StringImpl {
   PassRefPtr<StringImpl> lower();
   PassRefPtr<StringImpl> lowerASCII();
   PassRefPtr<StringImpl> upper();
+  PassRefPtr<StringImpl> upperASCII();
   PassRefPtr<StringImpl> lower(const AtomicString& localeIdentifier);
   PassRefPtr<StringImpl> upper(const AtomicString& localeIdentifier);
 

@@ -689,7 +689,7 @@ bool Document::isInMainFrame() const {
 }
 
 AtomicString Document::convertLocalName(const AtomicString& name) {
-  return isHTMLDocument() ? name.lower() : name;
+  return isHTMLDocument() ? name.lowerASCII() : name;
 }
 
 // https://dom.spec.whatwg.org/#dom-document-createelement

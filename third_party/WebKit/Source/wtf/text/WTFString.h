@@ -293,6 +293,10 @@ class WTF_EXPORT String {
   String lower(const AtomicString& localeIdentifier) const;
   String upper(const AtomicString& localeIdentifier) const;
 
+  // Returns a uppercase version of the string.
+  // This function converts ASCII characters only.
+  String upperASCII() const;
+
   String stripWhiteSpace() const;
   String stripWhiteSpace(IsWhiteSpaceFunctionPtr) const;
   String simplifyWhiteSpace(StripBehavior = StripExtraWhiteSpace) const;

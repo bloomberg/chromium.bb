@@ -294,6 +294,12 @@ String String::upper(const AtomicString& localeIdentifier) const {
   return m_impl->upper(localeIdentifier);
 }
 
+String String::upperASCII() const {
+  if (!m_impl)
+    return String();
+  return m_impl->upperASCII();
+}
+
 String String::stripWhiteSpace() const {
   if (!m_impl)
     return String();

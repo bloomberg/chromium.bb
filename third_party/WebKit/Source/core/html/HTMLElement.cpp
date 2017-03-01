@@ -114,8 +114,8 @@ DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
 String HTMLElement::debugNodeName() const {
   if (document().isHTMLDocument()) {
-    return tagQName().hasPrefix() ? Element::nodeName().upper()
-                                  : tagQName().localName().upper();
+    return tagQName().hasPrefix() ? Element::nodeName().upperASCII()
+                                  : tagQName().localName().upperASCII();
   }
   return Element::nodeName();
 }
@@ -131,7 +131,7 @@ String HTMLElement::nodeName() const {
   if (document().isHTMLDocument()) {
     if (!tagQName().hasPrefix())
       return tagQName().localNameUpper();
-    return Element::nodeName().upper();
+    return Element::nodeName().upperASCII();
   }
   return Element::nodeName();
 }

@@ -126,7 +126,7 @@ const QualifiedName& QualifiedName::null() {
 
 const AtomicString& QualifiedName::localNameUpper() const {
   if (!m_impl->m_localNameUpper)
-    m_impl->m_localNameUpper = m_impl->m_localName.upper();
+    m_impl->m_localNameUpper = m_impl->m_localName.upperASCII();
   return m_impl->m_localNameUpper;
 }
 

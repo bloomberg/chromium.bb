@@ -803,6 +803,28 @@ upconvert:
   return newImpl.release();
 }
 
+PassRefPtr<StringImpl> StringImpl::upperASCII() {
+  if (is8Bit()) {
+    LChar* data8;
+    RefPtr<StringImpl> newImpl = createUninitialized(m_length, data8);
+
+    for (unsigned i = 0; i < m_length; ++i) {
+      LChar c = characters8()[i];
+      data8[i] = isASCIILower(c) ? toASCIIUpper(c) : c;
+    }
+    return newImpl.release();
+  }
+
+  UChar* data16;
+  RefPtr<StringImpl> newImpl = createUninitialized(m_length, data16);
+
+  for (unsigned i = 0; i < m_length; ++i) {
+    UChar c = characters16()[i];
+    data16[i] = isASCIILower(c) ? toASCIIUpper(c) : c;
+  }
+  return newImpl.release();
+}
+
 static inline bool localeIdMatchesLang(const AtomicString& localeId,
                                        const StringView& lang) {
   RELEASE_ASSERT(lang.length() >= 2 && lang.length() <= 3);

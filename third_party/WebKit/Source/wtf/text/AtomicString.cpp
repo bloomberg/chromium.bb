@@ -87,6 +87,13 @@ AtomicString AtomicString::lowerASCII() const {
   return AtomicString(newImpl.release());
 }
 
+AtomicString AtomicString::upperASCII() const {
+  StringImpl* impl = this->impl();
+  if (UNLIKELY(!impl))
+    return *this;
+  return AtomicString(impl->upperASCII());
+}
+
 template <typename IntegerType>
 static AtomicString integerToAtomicString(IntegerType input) {
   IntegerToStringConverter<IntegerType> converter(input);

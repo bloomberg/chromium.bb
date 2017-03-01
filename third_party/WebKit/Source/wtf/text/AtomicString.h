@@ -161,16 +161,16 @@ class WTF_EXPORT AtomicString {
   }
   bool endsWith(UChar character) const { return m_string.endsWith(character); }
 
-  // Returns a lowercase/uppercase version of the string. These functions might
-  // convert non-ASCII characters to ASCII characters. For example, lower() for
-  // U+212A is 'k', upper() for U+017F is 'S'.
-  // These functions are rarely used to implement web platform features.
+  // Returns a lowercase version of the string. This function might
+  // convert non-ASCII characters to ASCII characters. For example,
+  // lower() for U+212A is 'k'.
+  // This function is rarely used to implement web platform features.
   AtomicString lower() const;
-  AtomicString upper() const { return AtomicString(impl()->upper()); }
 
-  // Returns a lowercase version of the string. This function converts only
-  // upper-case ASCII characters.
+  // Returns a lowercase/uppercase version of the string.
+  // These functions convert ASCII characters only.
   AtomicString lowerASCII() const;
+  AtomicString upperASCII() const;
 
   int toInt(bool* ok = 0) const { return m_string.toInt(ok); }
   double toDouble(bool* ok = 0) const { return m_string.toDouble(ok); }
