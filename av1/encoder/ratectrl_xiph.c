@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include "av1/common/odintrin.h"
 #include "av1/encoder/ratectrl_xiph.h"
 
 #define OD_Q57(v) ((int64_t)((uint64_t)(v) << 57))

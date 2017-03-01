@@ -12,8 +12,6 @@
 #if !defined(_ratectrl_xiph_H)
 #define _ratectrl_xiph_H (1)
 
-#include "av1/common/quant_common.h"
-#include "av1/encoder/encint.h"
 #include "av1/encoder/ratectrl.h"
 
 /*Frame types.*/
