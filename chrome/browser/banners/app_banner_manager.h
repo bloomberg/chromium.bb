@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
@@ -93,12 +92,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // provided from the Play Store rather than the web manifest. Not used on
   // desktop platforms.
   virtual void OnAppIconFetched(const SkBitmap& bitmap) {}
-
-  // Overridden and passed through base::Bind on Android. Called after a web app
-  // banner was successfully used to add a web app to homescreen to kick off an
-  // asynchronous fetch of a splash screen icon. Not used on desktop platforms.
-  virtual base::Closure FetchWebappSplashScreenImageCallback(
-      const std::string& webapp_id);
 
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);

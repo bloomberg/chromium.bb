@@ -56,11 +56,6 @@ class AppBannerManagerAndroid
   // AppBannerManager overrides.
   void RequestAppBanner(const GURL& validated_url, bool is_debug_mode) override;
 
-  // Returns a callback which fetches the splash screen image and stores it in
-  // a WebappDataStorage.
-  base::Closure FetchWebappSplashScreenImageCallback(
-      const std::string& webapp_id) override;
-
   // Registers native methods.
   static bool Register(JNIEnv* env);
 

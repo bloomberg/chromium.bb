@@ -12,7 +12,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
+#include "base/guid.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -133,14 +133,17 @@ void AddShortcutWithSkBitmap(const ShortcutInfo& info,
 
 // static
 void ShortcutHelper::AddToLauncherWithSkBitmap(
-    content::BrowserContext* browser_context,
+    content::WebContents* web_contents,
     const ShortcutInfo& info,
-    const std::string& webapp_id,
-    const SkBitmap& icon_bitmap,
-    const base::Closure& splash_image_callback) {
+    const SkBitmap& icon_bitmap) {
+  std::string webapp_id = base::GenerateGUID();
   if (info.display == blink::WebDisplayModeStandalone ||
       info.display == blink::WebDisplayModeFullscreen) {
-    AddWebappWithSkBitmap(info, webapp_id, icon_bitmap, splash_image_callback);
+    AddWebappWithSkBitmap(
+        info, webapp_id, icon_bitmap,
+        base::Bind(&ShortcutHelper::FetchSplashScreenImage, web_contents,
+                   info.splash_image_url, info.ideal_splash_image_size_in_px,
+                   info.minimum_splash_image_size_in_px, webapp_id));
     GooglePlayInstallState state =
         ChromeWebApkHost::GetGooglePlayInstallState();
     if (state != GooglePlayInstallState::SUPPORTED)
@@ -152,11 +155,11 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
 
 // static
 void ShortcutHelper::InstallWebApkWithSkBitmap(
-    content::BrowserContext* browser_context,
+    content::WebContents* web_contents,
     const ShortcutInfo& info,
     const SkBitmap& icon_bitmap,
     const WebApkInstaller::FinishCallback& callback) {
-  WebApkInstallService::Get(browser_context)
+  WebApkInstallService::Get(web_contents->GetBrowserContext())
       ->InstallAsync(info, icon_bitmap, callback);
   // Don't record metric for users who install WebAPKs via "unsigned sources"
   // flow.

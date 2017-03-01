@@ -18,9 +18,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
-class BrowserContext;
 class WebContents;
-}  // namespace content
+}
 
 // ShortcutHelper is the C++ counterpart of org.chromium.chrome.browser's
 // ShortcutHelper in Java.
@@ -36,16 +35,13 @@ class ShortcutHelper {
   // added depends on the properties in |info|. Calls one of
   // InstallWebApkInBackgroundWithSkBitmap, AddWebappInBackgroundWithSkBitmap,
   // or AddShortcutInBackgroundWithSkBitmap.
-  static void AddToLauncherWithSkBitmap(
-      content::BrowserContext* browser_context,
-      const ShortcutInfo& info,
-      const std::string& webapp_id,
-      const SkBitmap& icon_bitmap,
-      const base::Closure& splash_image_callback);
+  static void AddToLauncherWithSkBitmap(content::WebContents* web_contents,
+                                        const ShortcutInfo& info,
+                                        const SkBitmap& icon_bitmap);
 
   // Installs WebAPK and adds shortcut to the launcher.
   static void InstallWebApkWithSkBitmap(
-      content::BrowserContext* browser_context,
+      content::WebContents* web_conetnts,
       const ShortcutInfo& info,
       const SkBitmap& icon_bitmap,
       const WebApkInstaller::FinishCallback& callback);

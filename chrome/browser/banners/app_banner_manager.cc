@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -138,11 +137,6 @@ void AppBannerManager::SendBannerDismissed(int request_id) {
 
   DCHECK(event_.is_bound());
   event_->BannerDismissed();
-}
-
-base::Closure AppBannerManager::FetchWebappSplashScreenImageCallback(
-    const std::string& webapp_id) {
-  return base::Closure();
 }
 
 AppBannerManager::AppBannerManager(content::WebContents* web_contents)

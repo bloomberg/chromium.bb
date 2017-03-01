@@ -47,6 +47,16 @@ std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
     shortcut_info->best_primary_icon_url = icon_url;
     shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
   }
+
+  shortcut_info->ideal_splash_image_size_in_px =
+      ShortcutHelper::GetIdealSplashImageSizeInPx();
+  shortcut_info->minimum_splash_image_size_in_px =
+      ShortcutHelper::GetMinimumSplashImageSizeInPx();
+  shortcut_info->splash_image_url = ManifestIconSelector::FindBestMatchingIcon(
+      manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
+      shortcut_info->minimum_splash_image_size_in_px,
+      content::Manifest::Icon::IconPurpose::ANY);
+
   return shortcut_info;
 }
 
@@ -65,25 +75,6 @@ AppBannerManagerAndroid::~AppBannerManagerAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AppBannerManager_destroy(env, java_banner_manager_);
   java_banner_manager_.Reset();
-}
-
-base::Closure AppBannerManagerAndroid::FetchWebappSplashScreenImageCallback(
-    const std::string& webapp_id) {
-  content::WebContents* contents = web_contents();
-  DCHECK(contents);
-
-  int ideal_splash_image_size_in_px =
-      ShortcutHelper::GetIdealSplashImageSizeInPx();
-  int minimum_splash_image_size_in_px =
-      ShortcutHelper::GetMinimumSplashImageSizeInPx();
-  GURL image_url = ManifestIconSelector::FindBestMatchingIcon(
-      manifest_.icons, ideal_splash_image_size_in_px,
-      minimum_splash_image_size_in_px,
-      content::Manifest::Icon::IconPurpose::ANY);
-
-  return base::Bind(&ShortcutHelper::FetchSplashScreenImage, contents,
-                    image_url, ideal_splash_image_size_in_px,
-                    minimum_splash_image_size_in_px, webapp_id);
 }
 
 const base::android::ScopedJavaGlobalRef<jobject>&

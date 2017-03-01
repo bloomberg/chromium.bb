@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/timer/elapsed_timer.h"
@@ -295,12 +294,8 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApp(
   AppBannerSettingsHelper::RecordBannerInstallEvent(
       web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
 
-  if (weak_manager_) {
-    const std::string& uid = base::GenerateGUID();
-    ShortcutHelper::AddToLauncherWithSkBitmap(
-        web_contents->GetBrowserContext(), *shortcut_info_, uid,
-        *icon_.get(), weak_manager_->FetchWebappSplashScreenImageCallback(uid));
-  }
+  ShortcutHelper::AddToLauncherWithSkBitmap(web_contents, *shortcut_info_,
+                                            *icon_.get());
 
   SendBannerAccepted();
   return true;
@@ -354,8 +349,7 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
   WebApkInstaller::FinishCallback callback =
       base::Bind(&AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished,
                   weak_ptr_factory_.GetWeakPtr());
-  ShortcutHelper::InstallWebApkWithSkBitmap(web_contents->GetBrowserContext(),
-                                            *shortcut_info_,
+  ShortcutHelper::InstallWebApkWithSkBitmap(web_contents, *shortcut_info_,
                                             *icon_.get(), callback);
   SendBannerAccepted();
 

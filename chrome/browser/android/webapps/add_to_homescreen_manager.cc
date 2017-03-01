@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -117,11 +116,7 @@ void AddToHomescreenManager::AddShortcut(const ShortcutInfo& info,
     return;
 
   RecordAddToHomescreen();
-
-  const std::string& uid = base::GenerateGUID();
-  ShortcutHelper::AddToLauncherWithSkBitmap(
-      web_contents->GetBrowserContext(), info, uid, icon,
-      data_fetcher_->FetchSplashScreenImageCallback(uid));
+  ShortcutHelper::AddToLauncherWithSkBitmap(web_contents, info, icon);
 
   // Fire the appinstalled event.
   blink::mojom::InstallationServicePtr installation_service;
