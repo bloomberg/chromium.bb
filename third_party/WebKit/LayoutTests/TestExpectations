@@ -856,23 +856,6 @@ crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
-
-crbug.com/133700 fast/text/place-ellipsis-in-inline-blocks-align-center.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-ellipsis-in-inline-blocks-align-justify.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-ellipsis-in-inline-blocks-align-left.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-ellipsis-in-inline-blocks-align-right.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-ellipsis-in-inline-blocks.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-mixed-ellipsis-in-inline-blocks-align-center.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-mixed-ellipsis-in-inline-blocks-align-justify.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-mixed-ellipsis-in-inline-blocks-align-left.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-mixed-ellipsis-in-inline-blocks-align-right.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-mixed-ellipsis-in-inline-blocks.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-rtl-ellipsis-in-inline-blocks-align-center.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-rtl-ellipsis-in-inline-blocks-align-justify.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-rtl-ellipsis-in-inline-blocks-align-left.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-rtl-ellipsis-in-inline-blocks-align-right.html [ NeedsRebaseline ]
-crbug.com/133700 fast/text/place-rtl-ellipsis-in-inline-blocks.html [ NeedsRebaseline ]
-
 # Mac does not support fractional scale factor.
 crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static [ Skip ]
 

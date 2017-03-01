@@ -4,20 +4,20 @@ layer at (0,0) size 800x372
   LayoutBlockFlow {HTML} at (0,0) size 800x372
     LayoutBlockFlow {BODY} at (8,16) size 784x348
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 520x19
-          text run at (0,0) width 520: "crbug.com/133700: Ellipsis placed correctly in rtl text in an inline-block wth an rtl flow."
+        LayoutText {#text} at (0,0) size 551x19
+          text run at (0,0) width 551: "crbug.com/133700: Ellipsis placed correctly in rtl text in an inline-block wth an rtl flow."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 280x19
-          text run at (0,0) width 280: "You should see text followed by ellipsis below."
+        LayoutText {#text} at (0,0) size 297x19
+          text run at (0,0) width 297: "You should see text followed by ellipsis below."
       LayoutBlockFlow {P} at (0,108) size 784x20
-        LayoutText {#text} at (0,0) size 280x19
-          text run at (0,0) width 280: "You should see ellipsis followed by text below."
+        LayoutText {#text} at (0,0) size 297x19
+          text run at (0,0) width 297: "You should see ellipsis followed by text below."
       LayoutBlockFlow {P} at (0,180) size 784x20
-        LayoutText {#text} at (0,0) size 280x19
-          text run at (0,0) width 280: "You should see text followed by ellipsis below."
+        LayoutText {#text} at (0,0) size 297x19
+          text run at (0,0) width 297: "You should see text followed by ellipsis below."
       LayoutBlockFlow {P} at (0,272) size 784x20
-        LayoutText {#text} at (0,0) size 280x19
-          text run at (0,0) width 280: "You should see ellipsis followed by text below."
+        LayoutText {#text} at (0,0) size 297x19
+          text run at (0,0) width 297: "You should see ellipsis followed by text below."
 layer at (8,88) size 55x20 scrollWidth 60
   LayoutBlockFlow {DIV} at (0,72) size 55x20
     LayoutBlockFlow {SPAN} at (0,0) size 20x20
