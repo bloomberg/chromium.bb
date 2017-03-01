@@ -127,6 +127,11 @@ void CompositorView::DidSwapFrame(int pending_frames) {
   Java_CompositorView_didSwapFrame(env, obj_, pending_frames);
 }
 
+void CompositorView::DidSwapBuffers() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CompositorView_didSwapBuffers(env, obj_);
+}
+
 ui::UIResourceProvider* CompositorView::GetUIResourceProvider() {
   return compositor_ ? &compositor_->GetUIResourceProvider() : nullptr;
 }
