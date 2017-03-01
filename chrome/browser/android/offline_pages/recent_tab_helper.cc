@@ -261,9 +261,6 @@ void RecentTabHelper::WebContentsDestroyed() {
   CancelInFlightSnapshots();
 }
 
-// TODO(carlosk): this method is also called when the tab is being closed, when
-// saving a snapshot is probably useless (low probability of the user undoing
-// the close). We should detect that and avoid the saving.
 void RecentTabHelper::WasHidden() {
   if (!IsOffliningRecentPagesEnabled())
     return;

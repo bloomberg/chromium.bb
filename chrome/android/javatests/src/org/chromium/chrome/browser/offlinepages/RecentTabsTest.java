@@ -13,12 +13,16 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -112,6 +116,65 @@ public class RecentTabsTest extends ChromeTabbedActivityTestBase {
         // Switch to a new tab to cause the WebContents hidden event.
         loadUrlInNewTab("about:blank");
 
+        waitForPageWithClientId(firstTabClientId);
+    }
+
+    /**
+     * Note: this test relies on a sleeping period because some of the taking actions are
+     * complicated to track otherwise, so there is the possibility of flakiness. I chose 100ms from
+     * local testing and I expect it to be "safe" but it flakiness is detected it might have to be
+     * further increased.
+     */
+    @CommandLineFlags.Add("short-offline-page-snapshot-delay-for-test")
+    @MediumTest
+    public void testLastNClosingTabIsNotSaved() throws Exception {
+        // Create the tab of interest.
+        final Tab tab = loadUrlInNewTab(mTestPage);
+        final ClientId firstTabClientId =
+                new ClientId(OfflinePageBridge.LAST_N_NAMESPACE, Integer.toString(tab.getId()));
+
+        // The tab should be foreground and so no snapshot should exist.
+        TabModelSelector tabModelSelector = tab.getTabModelSelector();
+        assertEquals(tabModelSelector.getCurrentTab(), tab);
+        assertFalse(tab.isHidden());
+        assertNull(getPageByClientId(firstTabClientId));
+
+        // The tab model is expected to support pending closures.
+        final TabModel tabModel = tabModelSelector.getModelForTabId(tab.getId());
+        assertTrue(tabModel.supportsPendingClosures());
+
+        // Requests closing of the tab allowing for closure undo and checks it's actually closing.
+        boolean closeTabReturnValue = ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return tabModel.closeTab(tab, false, false, true);
+            }
+        });
+        assertTrue(closeTabReturnValue);
+        assertTrue(tab.isHidden());
+        assertTrue(tab.isClosing());
+
+        // Wait a bit and checks that no snapshot was created.
+        Thread.sleep(100); // Note: Flakiness potential here.
+        assertNull(getPageByClientId(firstTabClientId));
+
+        // Undo the closure and make sure the tab is again the current one on foreground.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                tabModel.cancelTabClosure(tab.getId());
+                int tabIndex = TabModelUtils.getTabIndexById(tabModel, tab.getId());
+                TabModelUtils.setIndex(tabModel, tabIndex);
+            }
+        });
+        assertFalse(tab.isHidden());
+        assertFalse(tab.isClosing());
+        assertEquals(tabModelSelector.getCurrentTab(), tab);
+
+        // Finally switch to a new tab and check that a snapshot is created.
+        Tab newTab = loadUrlInNewTab("about:blank");
+        assertEquals(tabModelSelector.getCurrentTab(), newTab);
+        assertTrue(tab.isHidden());
         waitForPageWithClientId(firstTabClientId);
     }
 
