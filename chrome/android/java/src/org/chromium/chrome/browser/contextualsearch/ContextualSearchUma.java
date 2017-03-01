@@ -1474,6 +1474,8 @@ public class ContextualSearchUma {
                 return "Event";
             case QuickActionCategory.PHONE:
                 return "Phone";
+            case QuickActionCategory.WEBSITE:
+                return "Website";
             default:
                 return "None";
         }
