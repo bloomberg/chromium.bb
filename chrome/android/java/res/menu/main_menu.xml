@@ -57,6 +57,8 @@
             android:title="@string/menu_find_in_page" />
         <item android:id="@+id/add_to_homescreen_id"
             android:title="@string/menu_add_to_homescreen" />
+        <item android:id="@+id/open_webapk_id"
+            android:title="@string/menu_open_webapk" />
         <item android:id="@+id/request_desktop_site_id"
             android:title="@string/menu_request_desktop_site"
             android:checkable="true"
@@ -100,4 +102,3 @@
             android:title="@string/menu_preferences" />
     </group>
 </menu>
-

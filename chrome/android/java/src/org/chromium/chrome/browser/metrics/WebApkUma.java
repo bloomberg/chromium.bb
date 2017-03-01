@@ -29,6 +29,11 @@ public class WebApkUma {
 
     public static final String HISTOGRAM_UPDATE_REQUEST_QUEUED = "WebApk.Update.RequestQueued";
 
+    private static final int WEBAPK_OPEN_MAX = 3;
+    public static final int WEBAPK_OPEN_LAUNCH_SUCCESS = 0;
+    public static final int WEBAPK_OPEN_NO_LAUNCH_INTENT = 1;
+    public static final int WEBAPK_OPEN_ACTIVITY_NOT_FOUND = 2;
+
     /**
      * Records the time point when a request to update a WebAPK is sent to the WebAPK Server.
      * @param type representing when the update request is sent to the WebAPK server.
@@ -47,5 +52,15 @@ public class WebApkUma {
     public static void recordUpdateRequestQueued(int times) {
         RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_UPDATE_REQUEST_QUEUED, times,
                 UPDATE_REQUEST_QUEUED_MAX);
+    }
+
+    /**
+     * When a user presses on the "Open WebAPK" menu item, this records whether the WebAPK was
+     * opened successfully.
+     * @param type Result of trying to open WebAPK.
+     */
+    public static void recordWebApkOpenAttempt(int type) {
+        assert type >= 0 && type < WEBAPK_OPEN_MAX;
+        RecordHistogram.recordEnumeratedHistogram("WebApk.OpenFromMenu", type, WEBAPK_OPEN_MAX);
     }
 }

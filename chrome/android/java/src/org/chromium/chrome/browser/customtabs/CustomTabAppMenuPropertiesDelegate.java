@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -78,8 +77,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
             MenuItem bookmarkItem = menu.findItem(R.id.bookmark_this_page_id);
             MenuItem downloadItem = menu.findItem(R.id.offline_page_id);
-            MenuItem addToHomeScreenItem = menu.findItem(R.id.add_to_homescreen_id);
-            addToHomeScreenItem.setTitle(AppBannerManager.getHomescreenLanguageOption());
+
+            boolean addToHomeScreenVisible = true;
 
             // Hide request desktop site on all chrome:// pages except for the NTP. Check request
             // desktop site if it's activated on this page.
@@ -92,7 +91,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 openInChromeItem.setVisible(false);
                 menu.findItem(R.id.find_in_page_id).setVisible(false);
                 menu.findItem(R.id.request_desktop_site_id).setVisible(false);
-                addToHomeScreenItem.setVisible(false);
+                addToHomeScreenVisible = false;
             } else {
                 openInChromeItem.setTitle(
                         DefaultBrowserInfo.getTitleOpenInDefaultBrowser(mIsOpenedByChrome));
@@ -103,7 +102,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 openInChromeItem.setVisible(false);
                 bookmarkItem.setVisible(false);
                 downloadItem.setVisible(false);
-                addToHomeScreenItem.setVisible(false);
+                addToHomeScreenVisible = false;
             }
 
             downloadItem.setEnabled(DownloadUtils.isAllowedToDownloadPage(currentTab));
@@ -112,7 +111,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
             if (isChromeScheme) {
-                addToHomeScreenItem.setVisible(false);
+                addToHomeScreenVisible = false;
             }
 
             // Add custom menu items. Make sure they are only added once.
@@ -123,6 +122,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                     mItemToIndexMap.put(item, i);
                 }
             }
+
+            prepareAddToHomescreenMenuItem(menu, currentTab.getUrl(), addToHomeScreenVisible);
         }
     }
 

@@ -9738,6 +9738,14 @@ should be able to be added at any place in this file.
   <obsolete>This action was renamed to MobileMenuRecentTabs.</obsolete>
 </action>
 
+<action name="MobileMenuOpenWebApk">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <description>
+    User successfully opened a WebAPK by pressing 'Open WebAPK' in the app menu.
+  </description>
+</action>
+
 <action name="MobileMenuPrint">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Print' in the app menu.</description>

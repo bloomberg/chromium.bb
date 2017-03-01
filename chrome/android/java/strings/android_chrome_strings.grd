@@ -1601,6 +1601,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_MENU_ADD_TO_HOMESCREEN" desc="Menu item for adding a shortcut to the Home screen (default title). [CHAR-LIMIT=27]">
         Add to Home screen
       </message>
+      <message name="IDS_MENU_OPEN_WEBAPK" desc="Menu item for opening the installed WebAPK associated with the current PWA. [CHAR-LIMIT=27]">
+        Open <ph name="WEBAPK_NAME">%1$s<ex>Telegram</ex></ph>
+      </message>
+      <message name="IDS_OPEN_WEBAPK_FAILED" desc="Opening of a WebAPK failed. [CHAR-LIMIT=27]">
+        Could not launch app
+      </message>
       <message name="IDS_MENU_ADD_TO_HOMESCREEN_ADD" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
         Add shortcut
       </message>

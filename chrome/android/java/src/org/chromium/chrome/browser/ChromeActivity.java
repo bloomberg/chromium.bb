@@ -9,6 +9,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.assist.AssistContent;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -44,6 +45,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -87,6 +89,7 @@ import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
@@ -150,6 +153,8 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.widget.Toast;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -1797,6 +1802,28 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     new AddToHomescreenManager(this, currentTab);
             addToHomescreenManager.start();
             RecordUserAction.record("MobileMenuAddToHomescreen");
+        } else if (id == R.id.open_webapk_id) {
+            Context context = ContextUtils.getApplicationContext();
+            String packageName = WebApkValidator.queryWebApkPackage(context, currentTab.getUrl());
+            Intent launchIntent =
+                    context.getPackageManager().getLaunchIntentForPackage(packageName);
+            boolean launchFailed = false;
+            if (launchIntent != null) {
+                try {
+                    context.startActivity(launchIntent);
+                    RecordUserAction.record("MobileMenuOpenWebApk");
+                    WebApkUma.recordWebApkOpenAttempt(WebApkUma.WEBAPK_OPEN_LAUNCH_SUCCESS);
+                } catch (ActivityNotFoundException e) {
+                    WebApkUma.recordWebApkOpenAttempt(WebApkUma.WEBAPK_OPEN_ACTIVITY_NOT_FOUND);
+                    launchFailed = true;
+                }
+            } else {
+                WebApkUma.recordWebApkOpenAttempt(WebApkUma.WEBAPK_OPEN_NO_LAUNCH_INTENT);
+                launchFailed = true;
+            }
+            if (launchFailed) {
+                Toast.makeText(context, R.string.open_webapk_failed, Toast.LENGTH_SHORT).show();
+            }
         } else if (id == R.id.request_desktop_site_id) {
             final boolean reloadOnChange = !currentTab.isNativePage();
             final boolean usingDesktopUserAgent = currentTab.getUseDesktopUserAgent();

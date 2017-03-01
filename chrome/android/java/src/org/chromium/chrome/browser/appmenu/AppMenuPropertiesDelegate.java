@@ -4,13 +4,18 @@
 
 package org.chromium.chrome.browser.appmenu;
 
+import android.content.Context;
+import android.content.pm.ResolveInfo;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -28,6 +33,9 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.webapk.lib.client.WebApkValidator;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * App Menu helper that handles hiding and showing menu items based on activity state.
@@ -162,13 +170,9 @@ public class AppMenuPropertiesDelegate {
             //                access to the resource via FLAG_GRANT_READ_URI_PERMISSION, and that
             //                is not persisted when adding to the homescreen.
             // * If creating shortcuts it not supported by the current home screen.
-            MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
-            boolean homescreenItemVisible = ShortcutHelper.isAddToHomeIntentSupported()
+            boolean canShowHomeScreenMenuItem = ShortcutHelper.isAddToHomeIntentSupported()
                     && !isChromeScheme && !isFileScheme && !isContentScheme && !isIncognito;
-            if (homescreenItemVisible) {
-                homescreenItem.setTitle(AppBannerManager.getHomescreenLanguageOption());
-            }
-            homescreenItem.setVisible(homescreenItemVisible);
+            prepareAddToHomescreenMenuItem(menu, currentTab.getUrl(), canShowHomeScreenMenuItem);
 
             // Hide request desktop site on all chrome:// pages except for the NTP. Check request
             // desktop site if it's activated on this page.
@@ -215,6 +219,40 @@ public class AppMenuPropertiesDelegate {
                 PrefServiceBridge.getInstance().isIncognitoModeEnabled(),
                 PrefServiceBridge.getInstance().isIncognitoModeManaged());
         mActivity.prepareMenu(menu);
+    }
+
+    /**
+     * Sets the visibility and labels of the "Add to Home screen" and "Open WebAPK" menu items.
+     */
+    protected void prepareAddToHomescreenMenuItem(
+            Menu menu, String url, boolean canShowHomeScreenMenuItem) {
+        MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
+        MenuItem openWebApkItem = menu.findItem(R.id.open_webapk_id);
+        if (canShowHomeScreenMenuItem) {
+            Context context = ContextUtils.getApplicationContext();
+            long addToHomeScreenStart = SystemClock.elapsedRealtime();
+            ResolveInfo resolveInfo = WebApkValidator.queryResolveInfo(context, url);
+            RecordHistogram.recordTimesHistogram("Android.PrepareMenu.OpenWebApkVisibilityCheck",
+                    SystemClock.elapsedRealtime() - addToHomeScreenStart, TimeUnit.MILLISECONDS);
+
+            boolean openWebApkItemVisible =
+                    resolveInfo != null && resolveInfo.activityInfo.packageName != null;
+
+            if (openWebApkItemVisible) {
+                String appName = resolveInfo.loadLabel(context.getPackageManager()).toString();
+                openWebApkItem.setTitle(context.getString(R.string.menu_open_webapk, appName));
+
+                homescreenItem.setVisible(false);
+                openWebApkItem.setVisible(true);
+            } else {
+                homescreenItem.setTitle(AppBannerManager.getHomescreenLanguageOption());
+                homescreenItem.setVisible(true);
+                openWebApkItem.setVisible(false);
+            }
+        } else {
+            homescreenItem.setVisible(false);
+            openWebApkItem.setVisible(false);
+        }
     }
 
     /**

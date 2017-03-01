@@ -42,6 +42,9 @@
         <item android:id="@+id/add_to_homescreen_id"
             android:title="@string/menu_add_to_homescreen"
             android:orderInCategory="2" />
+        <item android:id="@+id/open_webapk_id"
+            android:title="@string/menu_open_webapk"
+            android:orderInCategory="2" />
         <item android:id="@+id/request_desktop_site_id"
             android:title="@string/menu_request_desktop_site"
             android:checkable="true"
