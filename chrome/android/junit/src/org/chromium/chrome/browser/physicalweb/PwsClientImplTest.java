@@ -4,35 +4,71 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.content.Context;
-import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import android.content.res.Resources;
 import android.text.TextUtils;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowResources;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
+import org.chromium.chrome.R;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Locale;
 
 /**
- * Tests for the PwsClientImpl class.
+ * Tests for {@link PwsClientImpl}.
  */
-public class PwsClientImplTest extends InstrumentationTestCase {
-    private PwsClientImpl mPwsClientImpl;
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
+public class PwsClientImplTest {
+    private static final String ACCEPT_LANGUAGES = "en-US,en";
+    PwsClientImpl mPwsClientImpl;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        mPwsClientImpl = new PwsClientImpl(context);
+    /**
+     * Robolectric shadow to mock out calls to {@link Resources#getString}.
+     */
+    @Implements(Resources.class)
+    public static class AcceptLanguageShadowResources extends ShadowResources {
+        public static final Resources sResources = mock(Resources.class);
+
+        @Override
+        @Implementation
+        public CharSequence getText(int id) {
+            return sResources.getText(id);
+        }
     }
 
-    @SmallTest
+    @Before
+    public void setUp() throws Exception {
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        mPwsClientImpl = new PwsClientImpl();
+    }
+
+    @Test
     public void testUserAgentNonEmpty() {
         assertFalse(TextUtils.isEmpty(mPwsClientImpl.getUserAgent()));
     }
 
-    @SmallTest
+    @Test
+    @Config(shadows = AcceptLanguageShadowResources.class)
     public void testLanguageTagIsIncludedInAcceptLanguageHeader() {
+        when(AcceptLanguageShadowResources.sResources.getText(R.string.accept_languages))
+                .thenReturn(ACCEPT_LANGUAGES);
         String defaultLocaleString = LocaleUtils.getDefaultLocaleString();
         String[] languageTags = defaultLocaleString.split(",");
 
@@ -55,7 +91,7 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         }
     }
 
-    @SmallTest
+    @Test
     public void testLanguageTagIsPrepended() {
         Locale locale = new Locale("en", "GB");
         String defaultLocale = LocaleUtils.toLanguageTag(locale);
@@ -67,7 +103,7 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         assertEquals("en-GB,en,fr-CA,fr-FR,fr", languageListWithTag);
     }
 
-    @SmallTest
+    @Test
     public void testLanguageOnlyTagIsPrepended() {
         Locale locale = new Locale("mas");
         String defaultLocale = LocaleUtils.toLanguageTag(locale);
@@ -79,7 +115,7 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         assertEquals("mas,fr-CA,fr-FR,fr", languageListWithTag);
     }
 
-    @SmallTest
+    @Test
     public void testSpecialLengthCountryCodeIsPrepended() {
         Locale locale = new Locale("es", "005");
         String defaultLocale = LocaleUtils.toLanguageTag(locale);
@@ -91,14 +127,14 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         assertEquals("es-005,es,fr-CA,fr-FR,fr", languageListWithTag);
     }
 
-    @SmallTest
+    @Test
     public void testMultipleLanguageTagIsPrepended() {
         String locale = "jp-JP,is-IS";
         String languageList = "en-US,en";
 
         // Should prepend the language tag "aa-AA" as well as the language code "aa".
-        String languageListWithTag = PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale,
-                languageList);
+        String languageListWithTag =
+                PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale, languageList);
         assertEquals("jp-JP,jp,is-IS,is,en-US,en", languageListWithTag);
 
         // Make sure the language code is only inserted after the last languageTag that
@@ -109,7 +145,7 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         assertEquals("jp-JP,jp,fr-CA,fr-FR,fr,en-US,en", languageListWithTag);
     }
 
-    @SmallTest
+    @Test
     public void testLanguageTagIsPrependedWhenListContainsLanguageCode() {
         Locale locale = new Locale("fr", "FR");
         String defaultLocale = LocaleUtils.toLanguageTag(locale);
@@ -122,7 +158,7 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         assertEquals("fr-FR,fr-CA,fr", languageListWithTag);
     }
 
-    @SmallTest
+    @Test
     public void testLanguageTagNotPrependedWhenUnnecessary() {
         Locale locale = new Locale("fr", "CA");
         String defaultLocale = LocaleUtils.toLanguageTag(locale);
@@ -134,19 +170,19 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         assertEquals(languageList, languageListWithTag);
     }
 
-    @SmallTest
+    @Test
     public void testMultiLanguageTagNotPrependedWhenUnnecessary() {
         String locale = "fr-FR,is-IS";
         String languageList = "fr-FR,is-IS,fr,is";
 
         // Language list should be unmodified since the tag is already present. However, the order
         // changes because a language-code-only language tag is acceptable now.
-        String languageListWithTag = PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale,
-                languageList);
+        String languageListWithTag =
+                PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale, languageList);
         assertEquals(languageList, languageListWithTag);
     }
 
-    @SmallTest
+    @Test
     public void testAcceptLanguageQvalues() {
         String languageList = "en-US,en-GB,en,jp-JP,jp";
 
@@ -157,7 +193,6 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         // When there are six or more items, the q-value should not go below 0.2.
         languageList = "mas,es,en,jp,ch,fr";
         acceptLanguage = PwsClientImpl.generateAcceptLanguageHeader(languageList);
-        assertEquals("mas,es;q=0.8,en;q=0.6,jp;q=0.4,ch;q=0.2,fr;q=0.2",
-                acceptLanguage);
+        assertEquals("mas,es;q=0.8,en;q=0.6,jp;q=0.4,ch;q=0.2,fr;q=0.2", acceptLanguage);
     }
 }

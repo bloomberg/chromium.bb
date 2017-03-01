@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -56,13 +57,7 @@ class PwsClientImpl implements PwsClient {
     // Cached locale string. When the default locale changes, recreate the Accept-Language header.
     private static String sDefaultLocale;
 
-    // The context must be valid for as long as this client is in use, since it is used to recreate
-    // the Accept-Language header when the locale changes.
-    private final Context mContext;
-
-    public PwsClientImpl(Context context) {
-        mContext = context;
-    }
+    public PwsClientImpl() {}
 
     private String getApiKey() {
         if (ChromeVersionInfo.isStableBuild()) {
@@ -231,7 +226,8 @@ class PwsClientImpl implements PwsClient {
     String updateAcceptLanguage() {
         String localeString = LocaleUtils.getDefaultLocaleListString();
         if (sDefaultLocale == null || !sDefaultLocale.equals(localeString)) {
-            String acceptLanguages = mContext.getResources().getString(R.string.accept_languages);
+            Context context = ContextUtils.getApplicationContext();
+            String acceptLanguages = context.getResources().getString(R.string.accept_languages);
             acceptLanguages = prependToAcceptLanguagesIfNecessary(localeString, acceptLanguages);
             sAcceptLanguage = generateAcceptLanguageHeader(acceptLanguages);
             sDefaultLocale = localeString;

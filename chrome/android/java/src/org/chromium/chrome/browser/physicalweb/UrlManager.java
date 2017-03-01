@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -77,8 +76,7 @@ class UrlManager {
      */
     @VisibleForTesting
     public UrlManager() {
-        Context context = ContextUtils.getApplicationContext();
-        mPwsClient = new PwsClientImpl(context);
+        mPwsClient = new PwsClientImpl();
         mObservers = new ObserverList<Listener>();
         mNearbyUrls = new HashSet<>();
         mUrlInfoMap = new HashMap<>();
