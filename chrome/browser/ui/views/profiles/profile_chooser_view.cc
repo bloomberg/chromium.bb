@@ -318,20 +318,6 @@ class SizedContainer : public views::View {
   gfx::Size preferred_size_;
 };
 
-// NonInteractiveContainer -------------------------------------------------
-
-// A simple container view that does not process events within subtree.
-class NonInteractiveContainer : public views::View {
- public:
-  NonInteractiveContainer() {}
-
-  // views::CanProcessEventsWithinSubtree:
-  bool CanProcessEventsWithinSubtree() const override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NonInteractiveContainer);
-};
-
 // A view to host the GAIA webview overlapped with a back button.  This class
 // is needed to reparent the back button inside a native view so that on
 // windows, user input can be be properly routed to the button.
@@ -1760,6 +1746,27 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
   // Container for the profile photo and avatar/user name.
   BackgroundColorHoverButton* current_profile_card =
       new BackgroundColorHoverButton(this, base::string16());
+  views::GridLayout* grid_layout = new views::GridLayout(current_profile_card);
+  current_profile_card->SetLayoutManager(grid_layout);
+  views::ColumnSet* columns = grid_layout->AddColumnSet(0);
+  columns->AddPaddingColumn(0, kMaterialMenuEdgeMargin);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(
+      0, kMaterialMenuEdgeMargin - EditableProfilePhoto::badge_spacing());
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(0, kMaterialMenuEdgeMargin);
+  grid_layout->AddPaddingRow(0, 0);
+  const int num_labels =
+      (avatar_item.signed_in && !switches::IsEnableAccountConsistency()) ? 2
+                                                                         : 1;
+  int profile_card_height = EditableProfilePhoto::icon_image_side() +
+                            2 *
+                                (EditableProfilePhoto::badge_spacing() +
+                                 views::kRelatedControlSmallVerticalSpacing);
+  const int line_height = profile_card_height / num_labels;
+  grid_layout->StartRow(0, 0, line_height);
   current_profile_card_ = current_profile_card;
 
   // Profile picture, left-aligned.
@@ -1775,23 +1782,15 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
       ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
           1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
   current_profile_name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  NonInteractiveContainer* profile_name_container =
-      new NonInteractiveContainer();
-  int name_container_v_spacing =
-      (current_profile_photo->GetPreferredSize().height() -
-       current_profile_name->GetPreferredSize().height()) / 2;
-  views::BoxLayout* profile_name_layout = new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, name_container_v_spacing, 0);
-  profile_name_container->SetLayoutManager(profile_name_layout);
-  profile_name_container->AddChildView(current_profile_name);
 
-  const int between_child_spacing =
-      kMaterialMenuEdgeMargin - EditableProfilePhoto::badge_spacing();
-  current_profile_card_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0,
-      views::kRelatedControlSmallVerticalSpacing, between_child_spacing));
-  current_profile_card_->AddChildView(current_profile_photo);
-  current_profile_card_->AddChildView(profile_name_container);
+  // The grid layout contains one row if not signed in or account consistency is
+  // enabled. It contains 2 rows if signed in and account consistency is
+  // disabled (the second row is for the email label). For the second case the
+  // profile photo has to be over 2 rows.
+  grid_layout->AddView(current_profile_photo, 1, num_labels);
+  grid_layout->AddView(current_profile_name, 1, 1, views::GridLayout::LEADING,
+                       (num_labels == 2) ? views::GridLayout::TRAILING
+                                         : views::GridLayout::CENTER);
   current_profile_card_->SetMinSize(gfx::Size(
       GetFixedMenuWidth(), current_profile_photo->GetPreferredSize().height() +
                                2 * views::kRelatedControlSmallVerticalSpacing));
@@ -1825,13 +1824,11 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
       email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
       email_label->SetEnabled(false);
       email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      name_container_v_spacing =
-          (current_profile_photo->GetPreferredSize().height() -
-           current_profile_name->GetPreferredSize().height() -
-           email_label->GetPreferredSize().height()) / 2;
-      profile_name_layout->set_inside_border_insets(
-          gfx::Insets(name_container_v_spacing, 0));
-      profile_name_container->AddChildView(email_label);
+      grid_layout->StartRow(1, 0);
+      // Skip first column for the profile icon.
+      grid_layout->SkipColumns(1);
+      grid_layout->AddView(email_label, 1, 1, views::GridLayout::LEADING,
+                           views::GridLayout::LEADING);
     }
 
     current_profile_card_->SetAccessibleName(
