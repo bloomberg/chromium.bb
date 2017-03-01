@@ -57,10 +57,8 @@ class TestCustomView : public views::View {
     keyboard_event_count_ = 0;
   }
 
-  void set_preferred_size(gfx::Size size) { preferred_size_ = size; }
-
   // views::View
-  gfx::Size GetPreferredSize() const override { return preferred_size_; }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(100, 100); }
   bool OnMousePressed(const ui::MouseEvent& event) override {
     ++mouse_event_count_;
     return true;
@@ -82,7 +80,6 @@ class TestCustomView : public views::View {
  private:
   int mouse_event_count_ = 0;
   int keyboard_event_count_ = 0;
-  gfx::Size preferred_size_ = gfx::Size(100, 100);
 
   DISALLOW_COPY_AND_ASSIGN(TestCustomView);
 };
@@ -375,19 +372,6 @@ TEST_F(CustomNotificationViewTest, PressBackspaceKeyOnEditBox) {
   EXPECT_FALSE(controller()->IsRemoved(notification_id));
 
   input_method->SetFocusedTextInputClient(nullptr);
-}
-
-TEST_F(CustomNotificationViewTest, ChangeContentHeight) {
-  // Default size.
-  EXPECT_EQ("360x100", notification_view()->GetPreferredSize().ToString());
-
-  // The minimum height is 64px.
-  custom_view()->set_preferred_size(gfx::Size(10, 10));
-  EXPECT_EQ("360x64", notification_view()->GetPreferredSize().ToString());
-
-  // The long notification.
-  custom_view()->set_preferred_size(gfx::Size(1000, 1000));
-  EXPECT_EQ("360x1000", notification_view()->GetPreferredSize().ToString());
 }
 
 }  // namespace message_center
