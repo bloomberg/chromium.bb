@@ -29,7 +29,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/GrTexture.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/trace_util.h"
 
