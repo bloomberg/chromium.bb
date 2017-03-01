@@ -452,8 +452,12 @@ void FontCache::invalidate() {
 
   HeapVector<Member<FontCacheClient>> clients;
   copyToVector(fontCacheClients(), clients);
-  for (const auto& client : clients)
-    client->fontCacheInvalidated();
+  for (const auto& client : clients) {
+    // This should not be nullptr, but to see if checking nullptr can suppress
+    // crashes. crbug.com/581698
+    if (client)
+      client->fontCacheInvalidated();
+  }
 
   purge(ForcePurge);
 }
