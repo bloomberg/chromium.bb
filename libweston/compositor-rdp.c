@@ -355,7 +355,8 @@ rdp_output_start_repaint_loop(struct weston_output *output)
 }
 
 static int
-rdp_output_repaint(struct weston_output *output_base, pixman_region32_t *damage)
+rdp_output_repaint(struct weston_output *output_base, pixman_region32_t *damage,
+		   void *repaint_data)
 {
 	struct rdp_output *output = container_of(output_base, struct rdp_output, base);
 	struct weston_compositor *ec = output->base.compositor;

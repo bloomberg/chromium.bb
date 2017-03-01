@@ -118,7 +118,8 @@ fbdev_output_start_repaint_loop(struct weston_output *output)
 }
 
 static int
-fbdev_output_repaint(struct weston_output *base, pixman_region32_t *damage)
+fbdev_output_repaint(struct weston_output *base, pixman_region32_t *damage,
+		     void *repaint_data)
 {
 	struct fbdev_output *output = to_fbdev_output(base);
 	struct weston_compositor *ec = output->base.compositor;

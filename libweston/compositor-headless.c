@@ -92,7 +92,8 @@ finish_frame_handler(void *data)
 
 static int
 headless_output_repaint(struct weston_output *output_base,
-		       pixman_region32_t *damage)
+		       pixman_region32_t *damage,
+		       void *repaint_data)
 {
 	struct headless_output *output = to_headless_output(output_base);
 	struct weston_compositor *ec = output->base.compositor;

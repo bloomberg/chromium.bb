@@ -488,7 +488,8 @@ wayland_output_start_repaint_loop(struct weston_output *output_base)
 #ifdef ENABLE_EGL
 static int
 wayland_output_repaint_gl(struct weston_output *output_base,
-			  pixman_region32_t *damage)
+			  pixman_region32_t *damage,
+			  void *repaint_data)
 {
 	struct wayland_output *output = to_wayland_output(output_base);
 	struct weston_compositor *ec = output->base.compositor;
@@ -595,7 +596,8 @@ wayland_shm_buffer_attach(struct wayland_shm_buffer *sb)
 
 static int
 wayland_output_repaint_pixman(struct weston_output *output_base,
-			      pixman_region32_t *damage)
+			      pixman_region32_t *damage,
+			      void *repaint_data)
 {
 	struct wayland_output *output = to_wayland_output(output_base);
 	struct wayland_backend *b =

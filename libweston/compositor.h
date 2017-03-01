@@ -212,9 +212,10 @@ struct weston_output {
 
 	void (*start_repaint_loop)(struct weston_output *output);
 	int (*repaint)(struct weston_output *output,
-			pixman_region32_t *damage);
+			pixman_region32_t *damage,
+			void *repaint_data);
 	void (*destroy)(struct weston_output *output);
-	void (*assign_planes)(struct weston_output *output);
+	void (*assign_planes)(struct weston_output *output, void *repaint_data);
 	int (*switch_mode)(struct weston_output *output, struct weston_mode *mode);
 
 	/* backlight values are on 0-255 range, where higher is brighter */
@@ -804,6 +805,39 @@ struct weston_backend_config {
 struct weston_backend {
 	void (*destroy)(struct weston_compositor *compositor);
 	void (*restore)(struct weston_compositor *compositor);
+
+	/** Begin a repaint sequence
+	 *
+	 * Provides the backend with explicit markers around repaint
+	 * sequences, which may allow the backend to aggregate state
+	 * application. This call will be bracketed by the repaint_flush (on
+	 * success), or repaint_cancel (when any output in the grouping fails
+	 * repaint).
+	 *
+	 * Returns an opaque pointer, which the backend may use as private
+	 * data referring to the repaint cycle.
+	 */
+	void * (*repaint_begin)(struct weston_compositor *compositor);
+
+	/** Cancel a repaint sequence
+	 *
+	 * Cancels a repaint sequence, when an error has occurred during
+	 * one output's repaint; see repaint_begin.
+	 *
+	 * @param repaint_data Data returned by repaint_begin
+	 */
+	void (*repaint_cancel)(struct weston_compositor *compositor,
+			       void *repaint_data);
+
+	/** Conclude a repaint sequence
+	 *
+	 * Called on successful completion of a repaint sequence; see
+	 * repaint_begin.
+	 *
+	 * @param repaint_data Data returned by repaint_begin
+	 */
+	void (*repaint_flush)(struct weston_compositor *compositor,
+			      void *repaint_data);
 };
 
 struct weston_desktop_xwayland;

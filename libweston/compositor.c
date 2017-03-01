@@ -2254,7 +2254,7 @@ weston_output_take_feedback_list(struct weston_output *output,
 }
 
 static int
-weston_output_repaint(struct weston_output *output)
+weston_output_repaint(struct weston_output *output, void *repaint_data)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_view *ev;
@@ -2273,7 +2273,7 @@ weston_output_repaint(struct weston_output *output)
 	weston_compositor_build_view_list(ec);
 
 	if (output->assign_planes && !output->disable_planes) {
-		output->assign_planes(output);
+		output->assign_planes(output, repaint_data);
 	} else {
 		wl_list_for_each(ev, &ec->view_list, link) {
 			weston_view_move_to_plane(ev, &ec->primary_plane);
@@ -2306,7 +2306,7 @@ weston_output_repaint(struct weston_output *output)
 	if (output->dirty)
 		weston_output_update_matrix(output);
 
-	r = output->repaint(output, &output_damage);
+	r = output->repaint(output, &output_damage, repaint_data);
 
 	pixman_region32_fini(&output_damage);
 
@@ -2338,21 +2338,21 @@ weston_output_schedule_repaint_reset(struct weston_output *output)
 	TL_POINT("core_repaint_exit_loop", TLP_OUTPUT(output), TLP_END);
 }
 
-static void
-weston_output_maybe_repaint(struct weston_output *output,
-			    struct timespec *now)
+static int
+weston_output_maybe_repaint(struct weston_output *output, struct timespec *now,
+			    void *repaint_data)
 {
 	struct weston_compositor *compositor = output->compositor;
-	int ret;
+	int ret = 0;
 	int64_t msec_to_repaint;
 
 	/* We're not ready yet; come back to make a decision later. */
 	if (output->repaint_status != REPAINT_SCHEDULED)
-		return;
+		return ret;
 
 	msec_to_repaint = timespec_sub_to_msec(&output->next_repaint, now);
 	if (msec_to_repaint > 1)
-		return;
+		return ret;
 
 	/* If we're sleeping, drop the repaint machinery entirely; we will
 	 * explicitly repaint all outputs when we come back. */
@@ -2370,15 +2370,16 @@ weston_output_maybe_repaint(struct weston_output *output,
 	 * something schedules a successful repaint later. As repainting may
 	 * take some time, re-read our clock as a courtesy to the next
 	 * output. */
-	ret = weston_output_repaint(output);
+	ret = weston_output_repaint(output, repaint_data);
 	weston_compositor_read_presentation_clock(compositor, now);
 	if (ret != 0)
 		goto err;
 
-	return;
+	return ret;
 
 err:
 	weston_output_schedule_repaint_reset(output);
+	return ret;
 }
 
 static void
@@ -2426,10 +2427,29 @@ output_repaint_timer_handler(void *data)
 	struct weston_compositor *compositor = data;
 	struct weston_output *output;
 	struct timespec now;
+	void *repaint_data = NULL;
+	int ret;
 
 	weston_compositor_read_presentation_clock(compositor, &now);
-	wl_list_for_each(output, &compositor->output_list, link)
-		weston_output_maybe_repaint(output, &now);
+
+	if (compositor->backend->repaint_begin)
+		repaint_data = compositor->backend->repaint_begin(compositor);
+
+	wl_list_for_each(output, &compositor->output_list, link) {
+		ret = weston_output_maybe_repaint(output, &now, repaint_data);
+		if (ret)
+			break;
+	}
+
+	if (ret == 0) {
+	    if (compositor->backend->repaint_flush)
+		    compositor->backend->repaint_flush(compositor,
+						       repaint_data);
+	} else {
+	    if (compositor->backend->repaint_cancel)
+		    compositor->backend->repaint_cancel(compositor,
+						        repaint_data);
+	}
 
 	output_repaint_timer_arm(compositor);
 

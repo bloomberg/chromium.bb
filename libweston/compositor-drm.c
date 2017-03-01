@@ -760,7 +760,8 @@ drm_waitvblank_pipe(struct drm_output *output)
 
 static int
 drm_output_repaint(struct weston_output *output_base,
-		   pixman_region32_t *damage)
+		   pixman_region32_t *damage,
+		   void *repaint_data)
 {
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_backend *backend =
@@ -1375,7 +1376,7 @@ drm_output_set_cursor(struct drm_output *output)
 }
 
 static void
-drm_assign_planes(struct weston_output *output_base)
+drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 {
 	struct drm_backend *b = to_drm_backend(output_base->compositor);
 	struct drm_output *output = to_drm_output(output_base);
