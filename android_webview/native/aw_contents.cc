@@ -1407,6 +1407,20 @@ bool AwContents::CanShowInterstitial() {
   return Java_AwContents_canShowInterstitial(env, obj);
 }
 
+void AwContents::CallProceedOnInterstitialForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK(web_contents_->GetInterstitialPage());
+  web_contents_->GetInterstitialPage()->Proceed();
+}
+
+void AwContents::CallDontProceedOnInterstitialForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK(web_contents_->GetInterstitialPage());
+  web_contents_->GetInterstitialPage()->DontProceed();
+}
+
 void AwContents::OnRenderProcessGone(int child_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();

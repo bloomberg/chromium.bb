@@ -364,6 +364,13 @@ class AwContents : public FindHelper::Listener,
   // AwSafeBrowsingUIManager::UIManagerClient implementation
   bool CanShowInterstitial() override;
 
+  void CallProceedOnInterstitialForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void CallDontProceedOnInterstitialForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   // AwRenderProcessGoneDelegate overrides
   void OnRenderProcessGone(int child_process_id) override;
   bool OnRenderProcessGoneDetail(int child_process_id, bool crashed) override;

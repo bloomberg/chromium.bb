@@ -14,6 +14,8 @@ import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.AwWebContentsObserver;
+import org.chromium.android_webview.ErrorCodeConversionHelper;
+import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedError2Helper;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -24,6 +26,8 @@ import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test suite for SafeBrowsing.
@@ -168,6 +172,24 @@ public class SafeBrowsingTest extends AwTestBase {
         waitForVisualStateCallback(mAwContents);
     }
 
+    private void proceedThroughInterstitial() {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mAwContents.callProceedOnInterstitial();
+            }
+        });
+    }
+
+    private void dontProceedThroughInterstitial() {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mAwContents.callDontProceedOnInterstitial();
+            }
+        });
+    }
+
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
@@ -216,5 +238,60 @@ public class SafeBrowsingTest extends AwTestBase {
                                    mAwContents, mContainerView));
         // Assume that we are rendering the interstitial, since we see neither the previous page nor
         // the target page
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingCanProceedThroughInterstitial() throws Throwable {
+        int interstitialCount =
+                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        int pageFinishedCount =
+                mContentsClient.getOnPageFinishedHelper().getCallCount();
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        loadUrlAsync(mAwContents, responseUrl);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        proceedThroughInterstitial();
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
+        waitForVisualStateCallback(mAwContents);
+        assertEquals("Target page should be visible", COLOR_BLUE,
+                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingBackToSafetyShowsNetworkError() throws Throwable {
+        int interstitialCount =
+                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        loadUrlAsync(mAwContents, responseUrl);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
+        int errorCount = errorHelper.getCallCount();
+        dontProceedThroughInterstitial();
+        errorHelper.waitForCallback(errorCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
+        assertEquals(responseUrl, errorHelper.getRequest().url);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingBackToSafetyShowsNetworkErrorForMaliciousSubresource()
+            throws Throwable {
+        int interstitialCount =
+                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        final String responseUrl = mTestServer.getURL(IFRAME_HTML_PATH);
+        loadUrlAsync(mAwContents, responseUrl);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
+        int errorCount = errorHelper.getCallCount();
+        dontProceedThroughInterstitial();
+        errorHelper.waitForCallback(errorCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
+        final String subresourceUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        assertEquals(subresourceUrl, errorHelper.getRequest().url);
+        assertFalse(errorHelper.getRequest().isMainFrame);
     }
 }

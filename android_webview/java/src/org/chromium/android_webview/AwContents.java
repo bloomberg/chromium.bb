@@ -2907,6 +2907,18 @@ public class AwContents implements SmartClipProvider {
         return true;
     }
 
+    @VisibleForTesting
+    public void callProceedOnInterstitial() {
+        if (isDestroyedOrNoOperation(NO_WARN)) return;
+        nativeCallProceedOnInterstitialForTesting(mNativeAwContents);
+    }
+
+    @VisibleForTesting
+    public void callDontProceedOnInterstitial() {
+        if (isDestroyedOrNoOperation(NO_WARN)) return;
+        nativeCallDontProceedOnInterstitialForTesting(mNativeAwContents);
+    }
+
     // -------------------------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------------------------
@@ -3344,6 +3356,8 @@ public class AwContents implements SmartClipProvider {
     private static native void nativeSetShouldDownloadFavicons();
     private static native void nativeUpdateDefaultLocale(String locale, String localeList);
 
+    private native void nativeCallProceedOnInterstitialForTesting(long nativeAwContents);
+    private native void nativeCallDontProceedOnInterstitialForTesting(long nativeAwContents);
     private native void nativeSetJavaPeers(long nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,
             AwContentsClientBridge contentsClientBridge,
