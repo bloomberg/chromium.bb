@@ -111,7 +111,7 @@ void StartupPagesHandler::InitializeHandler() {
 
   autocomplete_controller_.reset(new AutocompleteController(
       base::MakeUnique<ChromeAutocompleteProviderClient>(profile), this,
-      AutocompleteClassifier::kDefaultOmniboxProviders));
+      AutocompleteClassifier::DefaultOmniboxProviders()));
 }
 
 void StartupPagesHandler::InitializePage() {

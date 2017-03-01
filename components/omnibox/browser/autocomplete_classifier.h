@@ -20,11 +20,6 @@ class GURL;
 
 class AutocompleteClassifier : public KeyedService {
  public:
-  // Bitmap of AutocompleteProvider::Type values describing the default set of
-  // providers queried for the omnibox.  Intended to be passed to
-  // AutocompleteController().
-  static const int kDefaultOmniboxProviders;
-
   AutocompleteClassifier(
       std::unique_ptr<AutocompleteController> controller_,
       std::unique_ptr<AutocompleteSchemeClassifier> scheme_classifier);
@@ -32,6 +27,11 @@ class AutocompleteClassifier : public KeyedService {
 
   // KeyedService:
   void Shutdown() override;
+
+  // Bitmap of AutocompleteProvider::Type values describing the default set of
+  // providers queried for the omnibox.  Intended to be passed to
+  // AutocompleteController().
+  static int DefaultOmniboxProviders();
 
   // Given some string |text| that the user wants to use for navigation,
   // determines how it should be interpreted.

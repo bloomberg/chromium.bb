@@ -23,7 +23,7 @@ VrOmnibox::VrOmnibox(UiInterface* ui)
       autocomplete_controller_(base::MakeUnique<AutocompleteController>(
           base::MakeUnique<ChromeAutocompleteProviderClient>(profile_),
           this,
-          AutocompleteClassifier::kDefaultOmniboxProviders)) {}
+          AutocompleteClassifier::DefaultOmniboxProviders())) {}
 
 VrOmnibox::~VrOmnibox() = default;
 

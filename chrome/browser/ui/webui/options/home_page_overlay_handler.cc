@@ -39,7 +39,7 @@ void HomePageOverlayHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   autocomplete_controller_.reset(new AutocompleteController(
       base::MakeUnique<ChromeAutocompleteProviderClient>(profile), this,
-      AutocompleteClassifier::kDefaultOmniboxProviders));
+      AutocompleteClassifier::DefaultOmniboxProviders()));
 }
 
 void HomePageOverlayHandler::GetLocalizedValues(

@@ -65,9 +65,6 @@ using metrics::OmniboxEventProto;
 
 namespace {
 
-const int kAndroidAutocompleteProviders =
-    AutocompleteClassifier::kDefaultOmniboxProviders;
-
 /**
  * A prefetcher class responsible for triggering zero suggest prefetch.
  * The prefetch occurs as a side-effect of calling OnOmniboxFocused() on
@@ -127,7 +124,7 @@ AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile)
     : autocomplete_controller_(new AutocompleteController(
           base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
           this,
-          kAndroidAutocompleteProviders)),
+          AutocompleteClassifier::DefaultOmniboxProviders())),
       inside_synchronous_start_(false),
       profile_(profile) {}
 

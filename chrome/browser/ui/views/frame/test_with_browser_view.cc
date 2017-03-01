@@ -56,7 +56,7 @@ std::unique_ptr<KeyedService> CreateAutocompleteClassifier(
       base::WrapUnique(new AutocompleteController(
           base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
 
-          nullptr, AutocompleteClassifier::kDefaultOmniboxProviders)),
+          nullptr, AutocompleteClassifier::DefaultOmniboxProviders())),
       std::unique_ptr<AutocompleteSchemeClassifier>(
           new TestSchemeClassifier()));
 }

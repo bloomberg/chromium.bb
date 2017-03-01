@@ -215,7 +215,7 @@ TestingOmniboxClient::TestingOmniboxClient()
           base::MakeUnique<AutocompleteController>(
               CreateAutocompleteProviderClient(),
               nullptr,
-              AutocompleteClassifier::kDefaultOmniboxProviders),
+              AutocompleteClassifier::DefaultOmniboxProviders()),
           base::MakeUnique<TestingSchemeClassifier>()) {}
 
 TestingOmniboxClient::~TestingOmniboxClient() {

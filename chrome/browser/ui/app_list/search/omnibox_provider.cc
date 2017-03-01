@@ -27,7 +27,7 @@ OmniboxProvider::OmniboxProvider(Profile* profile,
       controller_(new AutocompleteController(
           base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
           this,
-          AutocompleteClassifier::kDefaultOmniboxProviders &
+          AutocompleteClassifier::DefaultOmniboxProviders() &
               ~AutocompleteProvider::TYPE_ZERO_SUGGEST)),
       is_voice_query_(false) {}
 

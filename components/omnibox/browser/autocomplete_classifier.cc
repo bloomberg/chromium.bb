@@ -7,36 +7,15 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "url/gurl.h"
-
-// static
-const int AutocompleteClassifier::kDefaultOmniboxProviders =
-#if defined(OS_ANDROID) || defined(OS_IOS)
-    // The Physical Web currently is only implemented on mobile devices.
-    AutocompleteProvider::TYPE_PHYSICAL_WEB |
-#else
-    // Custom search engines cannot be used on mobile.
-    AutocompleteProvider::TYPE_KEYWORD |
-#endif
-#if !defined(OS_IOS)
-    // "Builtin", "Shortcuts" and "Zero Suggest" are not supported on iOS.
-    AutocompleteProvider::TYPE_BUILTIN |
-    AutocompleteProvider::TYPE_SHORTCUTS |
-    AutocompleteProvider::TYPE_ZERO_SUGGEST |
-#else
-    // "URL from clipboard" can only be used on iOS.
-    AutocompleteProvider::TYPE_CLIPBOARD_URL |
-#endif
-    AutocompleteProvider::TYPE_BOOKMARK |
-    AutocompleteProvider::TYPE_HISTORY_QUICK |
-    AutocompleteProvider::TYPE_HISTORY_URL |
-    AutocompleteProvider::TYPE_SEARCH;
 
 AutocompleteClassifier::AutocompleteClassifier(
     std::unique_ptr<AutocompleteController> controller,
@@ -52,6 +31,31 @@ AutocompleteClassifier::~AutocompleteClassifier() {
 
 void AutocompleteClassifier::Shutdown() {
   controller_.reset();
+}
+
+// static
+int AutocompleteClassifier::DefaultOmniboxProviders() {
+  return
+#if defined(OS_ANDROID) || defined(OS_IOS)
+      // The Physical Web currently is only implemented on mobile devices.
+      AutocompleteProvider::TYPE_PHYSICAL_WEB |
+#else
+      // Custom search engines cannot be used on mobile.
+      AutocompleteProvider::TYPE_KEYWORD |
+#endif
+#if !defined(OS_IOS)
+      // "Builtin", "Shortcuts" and "Zero Suggest" are not supported on iOS.
+      AutocompleteProvider::TYPE_BUILTIN |
+      AutocompleteProvider::TYPE_SHORTCUTS |
+      AutocompleteProvider::TYPE_ZERO_SUGGEST |
+#endif
+      (base::FeatureList::IsEnabled(omnibox::kEnableClipboardProvider)
+           ? AutocompleteProvider::TYPE_CLIPBOARD_URL
+           : 0) |
+      AutocompleteProvider::TYPE_BOOKMARK |
+      AutocompleteProvider::TYPE_HISTORY_QUICK |
+      AutocompleteProvider::TYPE_HISTORY_URL |
+      AutocompleteProvider::TYPE_SEARCH;
 }
 
 void AutocompleteClassifier::Classify(
