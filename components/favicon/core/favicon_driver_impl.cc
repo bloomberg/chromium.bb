@@ -49,26 +49,6 @@ void FaviconDriverImpl::FetchFavicon(const GURL& url) {
     touch_icon_handler_->FetchFavicon(url);
 }
 
-void FaviconDriverImpl::DidDownloadFavicon(
-    int id,
-    int http_status_code,
-    const GURL& image_url,
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<gfx::Size>& original_bitmap_sizes) {
-  if (bitmaps.empty() && http_status_code == 404) {
-    DVLOG(1) << "Failed to Download Favicon:" << image_url;
-    if (favicon_service_)
-      favicon_service_->UnableToDownloadFavicon(image_url);
-  }
-
-  favicon_handler_->OnDidDownloadFavicon(id, image_url, bitmaps,
-                                         original_bitmap_sizes);
-  if (touch_icon_handler_.get()) {
-    touch_icon_handler_->OnDidDownloadFavicon(id, image_url, bitmaps,
-                                              original_bitmap_sizes);
-  }
-}
-
 bool FaviconDriverImpl::IsBookmarked(const GURL& url) {
   return bookmark_model_ && bookmark_model_->IsBookmarked(url);
 }

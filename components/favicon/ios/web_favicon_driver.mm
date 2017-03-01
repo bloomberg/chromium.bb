@@ -61,7 +61,15 @@ bool WebFaviconDriver::FaviconIsValid() const {
   return item ? item->GetFavicon().valid : false;
 }
 
-int WebFaviconDriver::StartDownload(const GURL& url, int max_image_size) {
+GURL WebFaviconDriver::GetActiveURL() {
+  web::NavigationItem* item =
+      web_state()->GetNavigationManager()->GetVisibleItem();
+  return item ? item->GetURL() : GURL();
+}
+
+int WebFaviconDriver::DownloadImage(const GURL& url,
+                                    int max_image_size,
+                                    ImageDownloadCallback callback) {
   if (WasUnableToDownloadFavicon(url)) {
     DVLOG(1) << "Skip Failed FavIcon: " << url;
     return 0;
@@ -70,8 +78,6 @@ int WebFaviconDriver::StartDownload(const GURL& url, int max_image_size) {
   static int downloaded_image_count = 0;
   int local_download_id = ++downloaded_image_count;
 
-  ImageDownloadCallback local_image_callback = base::Bind(
-      &FaviconDriverImpl::DidDownloadFavicon, base::Unretained(this));
   GURL local_url(url);
 
   image_fetcher::IOSImageDataFetcherCallback local_callback =
@@ -88,8 +94,8 @@ int WebFaviconDriver::StartDownload(const GURL& url, int max_image_size) {
             sizes.push_back(gfx::Size(frame.width(), frame.height()));
           }
         }
-        local_image_callback.Run(local_download_id, metadata.response_code,
-                                 local_url, frames, sizes);
+        callback.Run(local_download_id, metadata.response_code, local_url,
+                     frames, sizes);
       };
   image_fetcher_.FetchImageDataWebpDecoded(url, local_callback);
 
@@ -99,12 +105,6 @@ int WebFaviconDriver::StartDownload(const GURL& url, int max_image_size) {
 bool WebFaviconDriver::IsOffTheRecord() {
   DCHECK(web_state());
   return web_state()->GetBrowserState()->IsOffTheRecord();
-}
-
-GURL WebFaviconDriver::GetActiveURL() {
-  web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetVisibleItem();
-  return item ? item->GetURL() : GURL();
 }
 
 void WebFaviconDriver::OnFaviconUpdated(

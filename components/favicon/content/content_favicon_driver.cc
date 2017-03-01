@@ -88,26 +88,6 @@ bool ContentFaviconDriver::FaviconIsValid() const {
   return false;
 }
 
-int ContentFaviconDriver::StartDownload(const GURL& url, int max_image_size) {
-  if (WasUnableToDownloadFavicon(url)) {
-    DVLOG(1) << "Skip Failed FavIcon: " << url;
-    return 0;
-  }
-
-  bool bypass_cache = (bypass_cache_page_url_ == GetActiveURL());
-  bypass_cache_page_url_ = GURL();
-
-  return web_contents()->DownloadImage(
-      url, true, max_image_size, bypass_cache,
-      base::Bind(&FaviconDriverImpl::DidDownloadFavicon,
-                 base::Unretained(this)));
-}
-
-bool ContentFaviconDriver::IsOffTheRecord() {
-  DCHECK(web_contents());
-  return web_contents()->GetBrowserContext()->IsOffTheRecord();
-}
-
 GURL ContentFaviconDriver::GetActiveURL() {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
@@ -124,6 +104,26 @@ ContentFaviconDriver::ContentFaviconDriver(
 }
 
 ContentFaviconDriver::~ContentFaviconDriver() {
+}
+
+int ContentFaviconDriver::DownloadImage(const GURL& url,
+                                        int max_image_size,
+                                        ImageDownloadCallback callback) {
+  if (WasUnableToDownloadFavicon(url)) {
+    DVLOG(1) << "Skip Failed FavIcon: " << url;
+    return 0;
+  }
+
+  bool bypass_cache = (bypass_cache_page_url_ == GetActiveURL());
+  bypass_cache_page_url_ = GURL();
+
+  return web_contents()->DownloadImage(url, true, max_image_size, bypass_cache,
+                                       callback);
+}
+
+bool ContentFaviconDriver::IsOffTheRecord() {
+  DCHECK(web_contents());
+  return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
 
 void ContentFaviconDriver::OnFaviconUpdated(

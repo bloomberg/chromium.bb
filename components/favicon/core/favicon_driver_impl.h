@@ -10,17 +10,13 @@
 
 #include "base/macros.h"
 #include "components/favicon/core/favicon_driver.h"
+#include "components/favicon/core/favicon_handler.h"
 
 class GURL;
-class SkBitmap;
-
 namespace bookmarks {
 class BookmarkModel;
 }
 
-namespace gfx {
-class Size;
-}
 
 namespace history {
 class HistoryService;
@@ -28,7 +24,6 @@ class HistoryService;
 
 namespace favicon {
 
-class FaviconHandler;
 class FaviconService;
 struct FaviconURL;
 
@@ -39,20 +34,18 @@ struct FaviconURL;
 // fetches the given page's icons, requesting them from history backend. If the
 // icon is not available or expired, the icon will be downloaded and saved in
 // the history backend.
-class FaviconDriverImpl : public FaviconDriver {
+class FaviconDriverImpl : public FaviconDriver,
+                          public FaviconHandler::Delegate {
  public:
-  // Favicon download callback.
-  // Public for testing.
-  void DidDownloadFavicon(int id,
-                          int http_status_code,
-                          const GURL& image_url,
-                          const std::vector<SkBitmap>& bitmaps,
-                          const std::vector<gfx::Size>& original_bitmap_sizes);
-
   // FaviconDriver implementation.
   void FetchFavicon(const GURL& url) override;
+
+  // FaviconHandler::Delegate implementation.
   bool IsBookmarked(const GURL& url) override;
-  bool HasPendingTasksForTest() override;
+
+  // Returns whether the driver is waiting for a download to complete or for
+  // data from the FaviconService. Reserved for testing.
+  bool HasPendingTasksForTest();
 
  protected:
   FaviconDriverImpl(FaviconService* favicon_service,

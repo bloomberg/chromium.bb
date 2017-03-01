@@ -33,9 +33,13 @@ class WebFaviconDriver : public web::WebStateObserver,
   void FetchFavicon(const GURL& url) override;
   gfx::Image GetFavicon() const override;
   bool FaviconIsValid() const override;
-  int StartDownload(const GURL& url, int max_bitmap_size) override;
-  bool IsOffTheRecord() override;
   GURL GetActiveURL() override;
+
+  // FaviconHandler::Delegate implementation.
+  int DownloadImage(const GURL& url,
+                    int max_image_size,
+                    ImageDownloadCallback callback) override;
+  bool IsOffTheRecord() override;
   void OnFaviconUpdated(
       const GURL& page_url,
       FaviconDriverObserver::NotificationIconType notification_icon_type,

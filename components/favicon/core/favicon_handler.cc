@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
-#include "components/favicon/core/favicon_driver.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -212,7 +211,7 @@ FaviconHandler::FaviconCandidate::FaviconCandidate(
 
 FaviconHandler::FaviconHandler(
     FaviconService* service,
-    FaviconDriver* driver,
+    Delegate* delegate,
     FaviconDriverObserver::NotificationIconType handler_type)
     : handler_type_(handler_type),
       got_favicon_from_history_(false),
@@ -224,9 +223,10 @@ FaviconHandler::FaviconHandler(
           handler_type == FaviconDriverObserver::TOUCH_LARGEST),
       notification_icon_type_(favicon_base::INVALID_ICON),
       service_(service),
-      driver_(driver),
-      current_candidate_index_(0u) {
-  DCHECK(driver_);
+      delegate_(delegate),
+      current_candidate_index_(0u),
+      weak_ptr_factory_(this) {
+  DCHECK(delegate_);
 }
 
 FaviconHandler::~FaviconHandler() {
@@ -353,9 +353,9 @@ void FaviconHandler::NotifyFaviconUpdated(const GURL& icon_url,
   gfx::Image image_with_adjusted_colorspace = image;
   favicon_base::SetFaviconColorSpace(&image_with_adjusted_colorspace);
 
-  driver_->OnFaviconUpdated(url_, handler_type_, icon_url,
-                            icon_url != notification_icon_url_,
-                            image_with_adjusted_colorspace);
+  delegate_->OnFaviconUpdated(url_, handler_type_, icon_url,
+                              icon_url != notification_icon_url_,
+                              image_with_adjusted_colorspace);
 
   notification_icon_url_ = icon_url;
   notification_icon_type_ = icon_type;
@@ -415,9 +415,16 @@ void FaviconHandler::OnGotInitialHistoryDataAndIconURLCandidates() {
 
 void FaviconHandler::OnDidDownloadFavicon(
     int id,
+    int http_status_code,
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
+  if (bitmaps.empty() && http_status_code == 404) {
+    DVLOG(1) << "Failed to Download Favicon:" << image_url;
+    if (service_)
+      service_->UnableToDownloadFavicon(image_url);
+  }
+
   DownloadRequests::iterator i = download_requests_.find(id);
   if (i == download_requests_.end()) {
     // Currently WebContents notifies us of ANY downloads so that it is
@@ -492,15 +499,6 @@ bool FaviconHandler::HasPendingTasksForTest() {
          cancelable_task_tracker_.HasTrackedTasks();
 }
 
-int FaviconHandler::DownloadFavicon(const GURL& image_url,
-                                    int max_bitmap_size) {
-  if (!image_url.is_valid()) {
-    NOTREACHED();
-    return 0;
-  }
-  return driver_->StartDownload(image_url, max_bitmap_size);
-}
-
 void FaviconHandler::UpdateFaviconMappingAndFetch(
     const GURL& page_url,
     const GURL& icon_url,
@@ -550,11 +548,11 @@ void FaviconHandler::SetHistoryFavicons(const GURL& page_url,
 }
 
 bool FaviconHandler::ShouldSaveFavicon() {
-  if (!driver_->IsOffTheRecord())
+  if (!delegate_->IsOffTheRecord())
     return true;
 
   // Always save favicon if the page is bookmarked.
-  return driver_->IsBookmarked(url_);
+  return delegate_->IsBookmarked(url_);
 }
 
 int FaviconHandler::GetMaximalIconSize(favicon_base::IconType icon_type) {
@@ -612,7 +610,7 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
     // We don't know the favicon, but we may have previously downloaded the
     // favicon for another page that shares the same favicon. Ask for the
     // favicon given the favicon URL.
-    if (driver_->IsOffTheRecord()) {
+    if (delegate_->IsOffTheRecord()) {
       GetFaviconFromFaviconService(
           icon_url, icon_type,
           base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)),
@@ -662,11 +660,14 @@ void FaviconHandler::OnFaviconData(const std::vector<
 
 void FaviconHandler::ScheduleDownload(const GURL& image_url,
                                       favicon_base::IconType icon_type) {
+  DCHECK(image_url.is_valid());
   // A max bitmap size is specified to avoid receiving huge bitmaps in
   // OnDidDownloadFavicon(). See FaviconDriver::StartDownload()
   // for more details about the max bitmap size.
-  const int download_id = DownloadFavicon(image_url,
-                                          GetMaximalIconSize(icon_type));
+  const int download_id =
+      delegate_->DownloadImage(image_url, GetMaximalIconSize(icon_type),
+                               base::Bind(&FaviconHandler::OnDidDownloadFavicon,
+                                          weak_ptr_factory_.GetWeakPtr()));
 
   // Download ids should be unique.
   DCHECK(download_requests_.find(download_id) == download_requests_.end());
@@ -676,9 +677,8 @@ void FaviconHandler::ScheduleDownload(const GURL& image_url,
     // If DownloadFavicon() did not start a download, it returns a download id
     // of 0. We still need to call OnDidDownloadFavicon() because the method is
     // responsible for initiating the data request for the next candidate.
-    OnDidDownloadFavicon(download_id, image_url, std::vector<SkBitmap>(),
+    OnDidDownloadFavicon(download_id, 0, image_url, std::vector<SkBitmap>(),
                          std::vector<gfx::Size>());
-
   }
 }
 
