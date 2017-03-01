@@ -122,3 +122,14 @@ ZUC_TEST(timespec_test, timespec_add_nsec)
 	ZUC_ASSERT_EQ(16, r.tv_sec);
 	ZUC_ASSERT_EQ(0, r.tv_nsec);
 }
+
+ZUC_TEST(timespec_test, timespec_add_msec)
+{
+	struct timespec a, r;
+
+	a.tv_sec = 1000;
+	a.tv_nsec = 1;
+	timespec_add_msec(&r, &a, 2002);
+	ZUC_ASSERT_EQ(1002, r.tv_sec);
+	ZUC_ASSERT_EQ(2000001, r.tv_nsec);
+}

@@ -70,6 +70,18 @@ timespec_add_nsec(struct timespec *r, const struct timespec *a, int64_t b)
 	}
 }
 
+/* Add a millisecond value to a timespec
+ *
+ * \param r[out] result: a + b
+ * \param a[in] base operand as timespec
+ * \param b[in] operand in milliseconds
+ */
+static inline void
+timespec_add_msec(struct timespec *r, const struct timespec *a, int64_t b)
+{
+	return timespec_add_nsec(r, a, b * 1000000);
+}
+
 /* Convert timespec to nanoseconds
  *
  * \param a timespec
