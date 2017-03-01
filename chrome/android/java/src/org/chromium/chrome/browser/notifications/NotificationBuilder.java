@@ -9,7 +9,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
+import android.media.session.MediaSession;
 import android.os.Build;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.widget.RemoteViews;
 
 /**
@@ -217,6 +219,18 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     @Override
     public ChromeNotificationBuilder setStyle(Notification.BigTextStyle style) {
         mBuilder.setStyle(style);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setMediaStyle(MediaSessionCompat session, int[] actions,
+            PendingIntent intent, boolean showCancelButton) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Notification.MediaStyle style = new Notification.MediaStyle();
+            style.setMediaSession(((MediaSession) session.getMediaSession()).getSessionToken());
+            style.setShowActionsInCompactView(actions);
+            mBuilder.setStyle(style);
+        }
         return this;
     }
 

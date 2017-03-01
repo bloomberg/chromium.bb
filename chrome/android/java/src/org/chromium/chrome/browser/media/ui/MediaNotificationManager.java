@@ -36,6 +36,8 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.content_public.common.MediaMetadata;
 
@@ -84,7 +86,7 @@ public class MediaNotificationManager {
 
     private SparseArray<MediaButtonInfo> mActionToButtonInfo;
 
-    private NotificationCompat.Builder mNotificationBuilder;
+    private ChromeNotificationBuilder mNotificationBuilder;
 
     private Bitmap mDefaultNotificationLargeIcon;
 
@@ -539,8 +541,7 @@ public class MediaNotificationManager {
 
     @VisibleForTesting
     @Nullable
-    static NotificationCompat.Builder getNotificationBuilderForTesting(
-            int notificationId) {
+    static ChromeNotificationBuilder getNotificationBuilderForTesting(int notificationId) {
         MediaNotificationManager manager = getManager(notificationId);
         if (manager == null) return null;
 
@@ -721,7 +722,15 @@ public class MediaNotificationManager {
 
         updateMediaSession();
 
-        mNotificationBuilder = new NotificationCompat.Builder(mContext);
+        mNotificationBuilder =
+                ((ChromeApplication) mContext.getApplicationContext())
+                        .createChromeNotificationBuilder(true,
+                                NotificationConstants.CATEGORY_ID_BROWSER,
+                                mContext.getString(
+                                        org.chromium.chrome.R.string.notification_category_browser),
+                                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                                mContext.getString(org.chromium.chrome.R.string
+                                                           .notification_category_group_general));
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
         mNotificationBuilder.setSmallIcon(mMediaNotificationInfo.notificationSmallIcon);
@@ -853,7 +862,7 @@ public class MediaNotificationManager {
         mMediaSession.setActive(true);
     }
 
-    private void setMediaStyleLayoutForNotificationBuilder(NotificationCompat.Builder builder) {
+    private void setMediaStyleLayoutForNotificationBuilder(ChromeNotificationBuilder builder) {
         setMediaStyleNotificationText(builder);
         if (!mMediaNotificationInfo.supportsPlayPause()) {
             builder.setLargeIcon(null);
@@ -876,7 +885,7 @@ public class MediaNotificationManager {
         addNotificationButtons(builder);
     }
 
-    private void addNotificationButtons(NotificationCompat.Builder builder) {
+    private void addNotificationButtons(ChromeNotificationBuilder builder) {
         Set<Integer> actions = new HashSet<>();
 
         // TODO(zqzhang): handle other actions when play/pause is not supported? See
@@ -907,15 +916,8 @@ public class MediaNotificationManager {
 
         // Only apply MediaStyle when NotificationInfo supports play/pause.
         if (mMediaNotificationInfo.supportsPlayPause()) {
-            NotificationCompat.MediaStyle style = new NotificationCompat.MediaStyle();
-            style.setMediaSession(mMediaSession.getSessionToken());
-
-            int[] compactViewActionIndices = computeCompactViewActionIndices(bigViewActions);
-
-            style.setShowActionsInCompactView(compactViewActionIndices);
-            style.setCancelButtonIntent(createPendingIntent(ListenerService.ACTION_CANCEL));
-            style.setShowCancelButton(true);
-            builder.setStyle(style);
+            builder.setMediaStyle(mMediaSession, computeCompactViewActionIndices(bigViewActions),
+                    createPendingIntent(ListenerService.ACTION_CANCEL), true);
         }
     }
 
@@ -926,7 +928,7 @@ public class MediaNotificationManager {
         return bitmapDrawable.getBitmap();
     }
 
-    private void setMediaStyleNotificationText(NotificationCompat.Builder builder) {
+    private void setMediaStyleNotificationText(ChromeNotificationBuilder builder) {
         builder.setContentTitle(mMediaNotificationInfo.metadata.getTitle());
         String artistAndAlbumText = getArtistAndAlbumText(mMediaNotificationInfo.metadata);
         if (isRunningN() || !artistAndAlbumText.isEmpty()) {

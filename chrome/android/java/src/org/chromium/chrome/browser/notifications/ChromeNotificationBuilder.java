@@ -8,6 +8,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.widget.RemoteViews;
 
 /**
@@ -73,6 +74,9 @@ public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setStyle(Notification.BigPictureStyle style);
 
     ChromeNotificationBuilder setStyle(Notification.BigTextStyle bigTextStyle);
+
+    ChromeNotificationBuilder setMediaStyle(MediaSessionCompat session, int[] actions,
+            PendingIntent intent, boolean showCancelButton);
 
     Notification buildWithBigContentView(RemoteViews bigView);
 
