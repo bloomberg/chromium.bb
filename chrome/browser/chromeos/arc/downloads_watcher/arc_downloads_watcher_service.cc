@@ -174,9 +174,9 @@ bool HasAndroidSupportedMediaExtension(const base::FilePath& path) {
   DCHECK(std::is_sorted(std::begin(kAndroidSupportedMediaExtensions),
                         std::end(kAndroidSupportedMediaExtensions),
                         less_comparator));
-  auto iter = std::lower_bound(std::begin(kAndroidSupportedMediaExtensions),
-                               std::end(kAndroidSupportedMediaExtensions),
-                               extension.c_str(), less_comparator);
+  auto** iter = std::lower_bound(std::begin(kAndroidSupportedMediaExtensions),
+                                 std::end(kAndroidSupportedMediaExtensions),
+                                 extension.c_str(), less_comparator);
   return iter != std::end(kAndroidSupportedMediaExtensions) &&
          strcmp(*iter, extension.c_str()) == 0;
 }

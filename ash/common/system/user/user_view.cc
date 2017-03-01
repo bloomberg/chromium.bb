@@ -68,9 +68,9 @@ bool IsMultiProfileSupportedAndUserActive() {
 // Creates the view shown in the user switcher popup ("AddUserMenuOption").
 views::View* CreateAddUserView(AddUserSessionPolicy policy,
                                views::ButtonListener* listener) {
-  auto view = new views::View;
+  auto* view = new views::View;
   const int icon_padding = (kMenuButtonSize - kMenuIconSize) / 2;
-  auto layout =
+  auto* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
                            kTrayPopupLabelHorizontalPadding + icon_padding);
   layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
@@ -83,7 +83,7 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy,
     case AddUserSessionPolicy::ALLOWED: {
       message_id = IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT;
 
-      auto icon = new views::ImageView();
+      auto* icon = new views::ImageView();
       icon->SetImage(
           gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kMenuIconColor));
       view->AddChildView(icon);
@@ -100,7 +100,7 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy,
       break;
   }
 
-  auto command_label = new views::Label(l10n_util::GetStringUTF16(message_id));
+  auto* command_label = new views::Label(l10n_util::GetStringUTF16(message_id));
   command_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   command_label->SetMultiLine(true);
 
@@ -118,7 +118,7 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy,
                                            vertical_padding,
                                            kTrayPopupLabelHorizontalPadding));
   if (policy == AddUserSessionPolicy::ALLOWED) {
-    auto button =
+    auto* button =
         new ButtonFromView(view, listener, TrayPopupInkDropStyle::INSET_BOUNDS);
     button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
@@ -220,7 +220,7 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
     AddLogoutButton(login);
   AddUserCard(login);
 
-  auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
   SetLayoutManager(layout);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);

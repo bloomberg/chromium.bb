@@ -84,7 +84,7 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
   self = [super init];
   if (self) {
     pendingWindows_.reset([[NSMutableDictionary alloc] init]);
-    auto pool = web::WebThread::GetBlockingPool();
+    auto* pool = web::WebThread::GetBlockingPool();
     taskRunner_ = pool->GetSequencedTaskRunner(pool->GetSequenceToken());
   }
   return self;

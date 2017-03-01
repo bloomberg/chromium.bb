@@ -38,7 +38,7 @@ class HttpAuthTest : public WebIntTest {
   // Authenticates and waits until the page finishes loading.
   void Authenticate(NSString* username, NSString* password) {
     ASSERT_TRUE(web_state()->IsLoading());
-    auto auth_request = web_state_delegate_.last_authentication_request();
+    auto* auth_request = web_state_delegate_.last_authentication_request();
     auth_request->auth_callback.Run(username, password);
     base::test::ios::WaitUntilCondition(^bool {
       return !web_state()->IsLoading();
@@ -55,7 +55,7 @@ TEST_F(HttpAuthTest, SuccessfullBasicAuth) {
   LoadUrlWithAuthChallenge(url);
 
   // Verify that callback receives correct WebState.
-  auto auth_request = web_state_delegate_.last_authentication_request();
+  auto* auth_request = web_state_delegate_.last_authentication_request();
   EXPECT_EQ(web_state(), auth_request->web_state);
 
   // Verify that callback receives correctly configured protection space.
@@ -88,7 +88,7 @@ TEST_F(HttpAuthTest, UnsucessfulBasicAuth) {
   LoadUrlWithAuthChallenge(url);
 
   // Make sure that incorrect credentials request authentication again.
-  auto auth_request = web_state_delegate_.last_authentication_request();
+  auto* auth_request = web_state_delegate_.last_authentication_request();
   auth_request->auth_callback.Run(@"gooduser", @"goodpass");
   WaitForOnAuthRequiredCallback();
 

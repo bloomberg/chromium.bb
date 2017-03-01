@@ -341,7 +341,7 @@ AVDACodecAllocator::AVDACodecAllocator(base::TickClock* tick_clock,
                                        base::WaitableEvent* stop_event)
     : stop_event_for_testing_(stop_event), weak_this_factory_(this) {
   // We leak the clock we create, but that's okay because we're a singleton.
-  auto clock = tick_clock ? tick_clock : new base::DefaultTickClock();
+  auto* clock = tick_clock ? tick_clock : new base::DefaultTickClock();
 
   // Create threads with names and indices that match up with TaskType.
   threads_.push_back(new ThreadAndHangDetector("AVDAAutoThread", clock));

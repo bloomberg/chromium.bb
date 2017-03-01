@@ -196,7 +196,7 @@ size_t CalculatePositionsInFrame(
 }
 
 - (void)clearTrackingArea {
-  for (auto& decoration : mouseTrackingDecorations_)
+  for (auto* decoration : mouseTrackingDecorations_)
     decoration->RemoveTrackingArea();
 
   mouseTrackingDecorations_.clear();

@@ -154,7 +154,7 @@ scoped_refptr<CARendererLayerTree::SolidColorContents>
 CARendererLayerTree::SolidColorContents::Get(SkColor color) {
   const int kSolidColorContentsSize = 16;
 
-  auto map = GetMap();
+  auto* map = GetMap();
   auto found = map->find(color);
   if (found != map->end())
     return found->second;
@@ -188,13 +188,13 @@ CARendererLayerTree::SolidColorContents::SolidColorContents(
     SkColor color,
     IOSurfaceRef io_surface)
     : color_(color), io_surface_(io_surface) {
-  auto map = GetMap();
+  auto* map = GetMap();
   DCHECK(map->find(color_) == map->end());
   map->insert(std::make_pair(color_, this));
 }
 
 CARendererLayerTree::SolidColorContents::~SolidColorContents() {
-  auto map = GetMap();
+  auto* map = GetMap();
   auto found = map->find(color_);
   DCHECK(found != map->end());
   DCHECK(found->second == this);
@@ -204,7 +204,7 @@ CARendererLayerTree::SolidColorContents::~SolidColorContents() {
 // static
 std::map<SkColor, CARendererLayerTree::SolidColorContents*>*
 CARendererLayerTree::SolidColorContents::GetMap() {
-  static auto map = new std::map<SkColor, SolidColorContents*>();
+  static auto* map = new std::map<SkColor, SolidColorContents*>();
   return map;
 }
 

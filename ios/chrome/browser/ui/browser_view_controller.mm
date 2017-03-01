@@ -2556,7 +2556,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   CGPoint dialogLocation =
       CGPointMake(CGRectGetMidX(view.frame),
                   CGRectGetMinY(view.frame) + [self headerHeightForTab:tab]);
-  auto helper = RepostFormTabHelper::FromWebState(webState);
+  auto* helper = RepostFormTabHelper::FromWebState(webState);
   helper->PresentDialog(dialogLocation, base::BindBlock(^(bool shouldContinue) {
                           handler(shouldContinue);
                         }));

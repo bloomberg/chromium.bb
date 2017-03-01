@@ -329,7 +329,7 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
     tri_view_->AddView(TriView::Container::START, back_button_);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    auto label = TrayPopupUtils::CreateDefaultLabel();
+    auto* label = TrayPopupUtils::CreateDefaultLabel();
     label->SetText(rb.GetLocalizedString(string_id));
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
     style.SetupLabel(label);

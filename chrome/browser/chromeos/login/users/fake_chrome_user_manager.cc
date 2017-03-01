@@ -362,7 +362,7 @@ user_manager::UserList FakeChromeUserManager::GetUnlockUsers() const {
 void FakeChromeUserManager::UserLoggedIn(const AccountId& account_id,
                                          const std::string& username_hash,
                                          bool browser_restart) {
-  for (const auto& user : users_) {
+  for (auto* user : users_) {
     if (user->username_hash() == username_hash) {
       user->set_is_logged_in(true);
       user->set_profile_is_created();
@@ -389,7 +389,7 @@ const user_manager::User* FakeChromeUserManager::FindUser(
     return active_user_;
 
   const user_manager::UserList& users = GetUsers();
-  for (const auto& user : users) {
+  for (const auto* user : users) {
     if (user->GetAccountId() == account_id)
       return user;
   }
@@ -428,7 +428,7 @@ void FakeChromeUserManager::SaveForceOnlineSignin(const AccountId& account_id,
 void FakeChromeUserManager::SaveUserDisplayName(
     const AccountId& account_id,
     const base::string16& display_name) {
-  for (const auto& user : users_) {
+  for (auto* user : users_) {
     if (user->GetAccountId() == account_id) {
       user->set_display_name(display_name);
       return;
@@ -624,7 +624,7 @@ user_manager::User* FakeChromeUserManager::GetActiveUserInternal() const {
   if (users_.empty())
     return nullptr;
   if (active_account_id_.is_valid()) {
-    for (const auto& user : users_) {
+    for (auto* user : users_) {
       if (user->GetAccountId() == active_account_id_)
         return user;
     }

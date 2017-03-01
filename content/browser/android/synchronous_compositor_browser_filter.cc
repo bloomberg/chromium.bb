@@ -185,7 +185,7 @@ void SynchronousCompositorBrowserFilter::VSyncComplete() {
 
   std::vector<int> routing_ids;
   routing_ids.reserve(compositor_host_pending_renderer_state_.size());
-  for (const auto host : compositor_host_pending_renderer_state_)
+  for (const auto* host : compositor_host_pending_renderer_state_)
     routing_ids.push_back(host->routing_id());
 
   std::vector<SyncCompositorCommonRendererParams> params;

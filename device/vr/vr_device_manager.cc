@@ -126,7 +126,7 @@ void VRDeviceManager::ListeningForActivateChanged(bool listening) {
 
   bool activate_listeners = listening;
   if (!activate_listeners) {
-    for (const auto& service : services_) {
+    for (auto* service : services_) {
       if (service->listening_for_activate()) {
         activate_listeners = true;
         break;

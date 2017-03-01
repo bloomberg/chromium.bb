@@ -408,7 +408,7 @@ void segregateNodes(
   [formatter setDateFormat:@"MMMM yyyy"];
   // Segregate nodes by creation date.
   // Nodes that were created in the same month are grouped together.
-  for (auto node : vector) {
+  for (auto* node : vector) {
     base::mac::ScopedNSAutoreleasePool pool;
     base::Time dateAdded = node->date_added();
     base::TimeDelta delta = dateAdded - base::Time::UnixEpoch();
@@ -531,7 +531,7 @@ void UpdateFoldersFromNode(const BookmarkNode* folder,
   results->insert(it, directDescendants.begin(), directDescendants.end());
 
   // Recursively perform the operation on each direct descendant.
-  for (auto node : directDescendants)
+  for (auto* node : directDescendants)
     UpdateFoldersFromNode(node, results, obstructions);
 }
 
@@ -550,7 +550,7 @@ NodeVector VisibleNonDescendantNodes(const NodeSet& obstructions,
 
   NodeVector primaryNodes = PrimaryPermanentNodes(model);
   NodeVector filteredPrimaryNodes;
-  for (auto node : primaryNodes) {
+  for (auto* node : primaryNodes) {
     if (IsObstructed(node, obstructions))
       continue;
 
@@ -561,7 +561,7 @@ NodeVector VisibleNonDescendantNodes(const NodeSet& obstructions,
   results = filteredPrimaryNodes;
 
   // Iterate over a static copy of the filtered, root folders.
-  for (auto node : filteredPrimaryNodes)
+  for (auto* node : filteredPrimaryNodes)
     UpdateFoldersFromNode(node, &results, obstructions);
 
   return results;
@@ -571,7 +571,7 @@ NodeVector VisibleNonDescendantNodes(const NodeSet& obstructions,
 BOOL IsSubvectorOfNodes(const NodeVector& vector1, const NodeVector& vector2) {
   NodeVector::const_iterator it = vector2.begin();
   // Scan the first vector.
-  for (const auto& node : vector1) {
+  for (const auto* node : vector1) {
     // Look for a match in the rest of the second vector. When found, advance
     // the iterator on vector2 to only focus on the remaining part of vector2,
     // so that ordering is verified.

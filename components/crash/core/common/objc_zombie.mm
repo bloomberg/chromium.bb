@@ -74,7 +74,7 @@ BOOL g_zombieAllObjects = NO;
 
 // Protects |g_zombieCount|, |g_zombieIndex|, and |g_zombies|.
 base::Lock& GetLock() {
-  static auto lock = new base::Lock();
+  static auto* lock = new base::Lock();
   return *lock;
 }
 

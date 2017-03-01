@@ -66,7 +66,7 @@ bool AppBannerInfoBarDelegateAndroid::Create(
           weak_manager, app_title, std::move(shortcut_info), std::move(icon),
           event_request_id, is_webapk, is_webapk_already_installed,
           webapk_install_source));
-  auto raw_delegate = infobar_delegate.get();
+  auto* raw_delegate = infobar_delegate.get();
   auto infobar = base::MakeUnique<AppBannerInfoBarAndroid>(
       std::move(infobar_delegate), url, is_webapk);
   if (!InfoBarService::FromWebContents(web_contents)

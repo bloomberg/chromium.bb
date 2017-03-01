@@ -48,20 +48,20 @@ TEST(protobuf_to_mojo_converterTest, ConvertReport) {
   report.set_num_rising_intervals(5);
   report.set_num_allocs_increase(42);
 
-  auto entry1 = report.add_alloc_breakdown_history();
+  auto* entry1 = report.add_alloc_breakdown_history();
   entry1->add_counts_by_size(1);
   entry1->add_counts_by_size(2);
   entry1->add_counts_by_size(3);
   entry1->set_count_for_call_stack(4);
 
-  auto entry2 = report.add_alloc_breakdown_history();
+  auto* entry2 = report.add_alloc_breakdown_history();
   entry2->add_counts_by_size(11);
   entry2->add_counts_by_size(12);
   entry2->add_counts_by_size(13);
   entry2->add_counts_by_size(14);
   entry2->set_count_for_call_stack(15);
 
-  auto entry3 = report.add_alloc_breakdown_history();
+  auto* entry3 = report.add_alloc_breakdown_history();
   entry3->add_counts_by_size(21);
   entry3->add_counts_by_size(22);
   entry3->add_counts_by_size(23);

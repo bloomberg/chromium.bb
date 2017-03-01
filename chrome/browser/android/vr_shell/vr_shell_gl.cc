@@ -833,7 +833,7 @@ void VrShellGl::DrawElements(
     const gvr::Mat4f& view_proj_matrix,
     const gvr::Mat4f& view_matrix,
     const std::vector<const ContentRectangle*>& elements) {
-  for (auto& rect : elements) {
+  for (const auto* rect : elements) {
     gvr::Mat4f transform =
         MatrixMul(view_proj_matrix, rect->transform.to_world);
 
@@ -888,7 +888,7 @@ std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(
   std::vector<DistanceElementPair> zOrderedElementPairs;
   zOrderedElementPairs.reserve(elements.size());
 
-  for (const auto& element : elements) {
+  for (const auto* element : elements) {
     // Distance is the abs(z) value in view space.
     gvr::Vec3f element_position = GetTranslation(element->transform.to_world);
     float distance =

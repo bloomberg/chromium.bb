@@ -1298,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{}),
                                                 GetFrame(IndexVector{0})};
   std::vector<content::RenderWidgetHostView*> views;
-  for (auto frame : frames)
+  for (auto* frame : frames)
     views.push_back(frame->GetView());
   std::vector<std::string> values{"main frame", "child frame"};
 

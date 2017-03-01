@@ -58,7 +58,7 @@ void MojoToReport(const mojom::MemoryLeakReport& mojo_report,
     report->add_call_stack(call_stack_addr);
 
   for (const auto& history_entry : mojo_report.alloc_breakdown_history) {
-    auto proto_entry = report->add_alloc_breakdown_history();
+    auto* proto_entry = report->add_alloc_breakdown_history();
     for (auto count : history_entry->counts_by_size) {
       proto_entry->add_counts_by_size(count);
     }

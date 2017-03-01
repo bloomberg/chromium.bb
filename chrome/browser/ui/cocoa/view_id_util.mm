@@ -21,7 +21,7 @@ namespace {
 typedef std::map<NSView*, ViewID> ViewIDMap;
 
 ViewIDMap* GetViewIDMap() {
-  static auto view_id_map = new ViewIDMap();
+  static auto* view_id_map = new ViewIDMap();
   return view_id_map;
 }
 

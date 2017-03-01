@@ -152,7 +152,7 @@ void CastWebView::ActivateContents(content::WebContents* contents) {
 base::android::ScopedJavaLocalRef<jobject>
 CastWebView::GetContentVideoViewEmbedder() {
   DCHECK(web_contents_);
-  auto activity = shell::CastWebContentsActivity::Get(web_contents_.get());
+  auto* activity = shell::CastWebContentsActivity::Get(web_contents_.get());
   return activity->GetContentVideoViewEmbedder();
 }
 #endif  // defined(OS_ANDROID)

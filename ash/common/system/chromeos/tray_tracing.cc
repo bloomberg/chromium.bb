@@ -35,10 +35,10 @@ class DefaultTracingView : public ActionableView {
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
 
-    auto image = TrayPopupUtils::CreateMainImageView();
+    auto* image = TrayPopupUtils::CreateMainImageView();
     tri_view->AddView(TriView::Container::START, image);
 
-    auto label = TrayPopupUtils::CreateDefaultLabel();
+    auto* label = TrayPopupUtils::CreateDefaultLabel();
     label->SetMultiLine(true);
     label->SetText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_TRACING));
     tri_view->AddView(TriView::Container::CENTER, label);

@@ -32,7 +32,7 @@ ResourcePrefetchPredictor* ResourcePrefetchPredictorFromProfileAndroid(
 static jboolean StartInitialization(JNIEnv* env,
                                     const JavaParamRef<jclass>& clazz,
                                     const JavaParamRef<jobject>& j_profile) {
-  auto predictor = ResourcePrefetchPredictorFromProfileAndroid(j_profile);
+  auto* predictor = ResourcePrefetchPredictorFromProfileAndroid(j_profile);
   if (!predictor)
     return false;
   predictor->StartInitialization();
@@ -43,7 +43,7 @@ static jboolean StartPrefetching(JNIEnv* env,
                                  const JavaParamRef<jclass>& clazz,
                                  const JavaParamRef<jobject>& j_profile,
                                  const JavaParamRef<jstring>& j_url) {
-  auto predictor = ResourcePrefetchPredictorFromProfileAndroid(j_profile);
+  auto* predictor = ResourcePrefetchPredictorFromProfileAndroid(j_profile);
   if (!predictor)
     return false;
   GURL url = GURL(base::android::ConvertJavaStringToUTF16(env, j_url));
@@ -56,7 +56,7 @@ static jboolean StopPrefetching(JNIEnv* env,
                                 const JavaParamRef<jclass>& clazz,
                                 const JavaParamRef<jobject>& j_profile,
                                 const JavaParamRef<jstring>& j_url) {
-  auto predictor = ResourcePrefetchPredictorFromProfileAndroid(j_profile);
+  auto* predictor = ResourcePrefetchPredictorFromProfileAndroid(j_profile);
   if (!predictor)
     return false;
   GURL url = GURL(base::android::ConvertJavaStringToUTF16(env, j_url));

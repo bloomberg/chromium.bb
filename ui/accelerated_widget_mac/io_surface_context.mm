@@ -22,7 +22,7 @@ namespace {
 using TypeMap = std::map<IOSurfaceContext::Type, IOSurfaceContext*>;
 
 TypeMap* GetTypeMap() {
-  static auto type_map = new TypeMap();
+  static auto* type_map = new TypeMap();
   return type_map;
 }
 
@@ -34,7 +34,7 @@ IOSurfaceContext::Get(Type type) {
   TRACE_EVENT0("browser", "IOSurfaceContext::Get");
 
   // Return the context for this type, if it exists.
-  auto type_map = GetTypeMap();
+  auto* type_map = GetTypeMap();
   TypeMap::iterator found = type_map->find(type);
   if (found != type_map->end()) {
     DCHECK(!found->second->poisoned_);
@@ -80,7 +80,7 @@ void IOSurfaceContext::PoisonContextAndSharegroup() {
   if (poisoned_)
     return;
 
-  auto type_map = GetTypeMap();
+  auto* type_map = GetTypeMap();
   for (TypeMap::iterator it = type_map->begin(); it != type_map->end(); ++it) {
     it->second->poisoned_ = true;
   }
@@ -90,7 +90,7 @@ void IOSurfaceContext::PoisonContextAndSharegroup() {
 IOSurfaceContext::IOSurfaceContext(
     Type type, base::ScopedTypeRef<CGLContextObj> cgl_context)
     : type_(type), cgl_context_(cgl_context), poisoned_(false) {
-  auto type_map = GetTypeMap();
+  auto* type_map = GetTypeMap();
   DCHECK(type_map->find(type_) == type_map->end());
   type_map->insert(std::make_pair(type_, this));
 
@@ -100,7 +100,7 @@ IOSurfaceContext::IOSurfaceContext(
 IOSurfaceContext::~IOSurfaceContext() {
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
-  auto type_map = GetTypeMap();
+  auto* type_map = GetTypeMap();
   if (!poisoned_) {
     DCHECK(type_map->find(type_) != type_map->end());
     DCHECK(type_map->find(type_)->second == this);

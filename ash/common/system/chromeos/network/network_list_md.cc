@@ -304,7 +304,7 @@ void NetworkListViewMd::Update() {
 
   NetworkStateHandler::NetworkStateList tether_network_list;
   handler->GetTetherNetworkList(0 /* no limit */, &tether_network_list);
-  for (const auto& tether_network : tether_network_list) {
+  for (const auto* tether_network : tether_network_list) {
     network_list_.push_back(
         base::MakeUnique<NetworkInfo>(tether_network->guid()));
   }
@@ -329,7 +329,7 @@ void NetworkListViewMd::UpdateNetworks(
   SCOPED_NET_LOG_IF_SLOW();
   network_list_.clear();
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
-  for (const auto& network : networks) {
+  for (const auto* network : networks) {
     if (pattern.MatchesType(network->type()))
       network_list_.push_back(base::MakeUnique<NetworkInfo>(network->guid()));
   }

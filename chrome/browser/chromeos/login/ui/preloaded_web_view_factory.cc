@@ -14,7 +14,7 @@ namespace chromeos {
 
 // static
 PreloadedWebView* PreloadedWebViewFactory::GetForProfile(Profile* profile) {
-  auto result = static_cast<PreloadedWebView*>(
+  auto* result = static_cast<PreloadedWebView*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
   return result;
 }

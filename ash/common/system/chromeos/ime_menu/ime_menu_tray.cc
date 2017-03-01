@@ -146,7 +146,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
     SetLayoutManager(box_layout);
-    auto title_label =
+    auto* title_label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
     title_label->SetBorder(
         views::CreateEmptyBorder(0, kMenuEdgeEffectivePadding, 1, 0));

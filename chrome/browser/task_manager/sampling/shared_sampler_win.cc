@@ -398,8 +398,8 @@ std::unique_ptr<ProcessDataSnapshot> SharedSampler::CaptureSnapshot() {
   snapshot->timestamp = base::TimeTicks::Now();
 
   for (size_t offset = 0; offset < data_buffer.size(); ) {
-    auto pi = reinterpret_cast<const SYSTEM_PROCESS_INFORMATION*>(
-      data_buffer.data() + offset);
+    const auto* pi = reinterpret_cast<const SYSTEM_PROCESS_INFORMATION*>(
+        data_buffer.data() + offset);
 
     // Validate that the offset is valid and all needed data is within
     // the buffer boundary.

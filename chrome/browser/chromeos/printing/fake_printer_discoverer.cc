@@ -27,7 +27,7 @@ FakePrinterDiscoverer::~FakePrinterDiscoverer() {}
 bool FakePrinterDiscoverer::StartDiscovery() {
   discovery_running_ = true;
 
-  for (auto observer : observers_)
+  for (auto* observer : observers_)
     observer->OnDiscoveryStarted();
 
   base::SequencedTaskRunnerHandle::Get()->PostNonNestableDelayedTask(
@@ -39,7 +39,7 @@ bool FakePrinterDiscoverer::StartDiscovery() {
 
 bool FakePrinterDiscoverer::StopDiscovery() {
   discovery_running_ = false;
-  for (auto observer : observers_)
+  for (auto* observer : observers_)
     observer->OnDiscoveryStopping();
 
   return true;
@@ -85,7 +85,7 @@ void FakePrinterDiscoverer::EmitPrinters(size_t start, size_t end) {
     std::vector<Printer> subset(printers_.cbegin() + clipped_start,
                                 printers_.cbegin() + clipped_end);
 
-    for (auto observer : observers_)
+    for (auto* observer : observers_)
       observer->OnPrintersFound(subset);
   }
 
@@ -99,7 +99,7 @@ void FakePrinterDiscoverer::EmitPrinters(size_t start, size_t end) {
   } else {
     // We're done.  Notify observers.
     discovery_running_ = false;
-    for (auto observer : observers_)
+    for (auto* observer : observers_)
       observer->OnDiscoveryDone();
   }
 }

@@ -547,7 +547,7 @@ std::vector<ItemFormPair> ExtractAllKeychainItemAttributesIntoPasswordForms(
   MacKeychainPasswordFormAdapter keychain_adapter(&keychain);
   *keychain_items = keychain_adapter.GetAllPasswordFormKeychainItems();
   std::vector<ItemFormPair> item_form_pairs;
-  for (const auto& keychain_item : *keychain_items) {
+  for (auto* keychain_item : *keychain_items) {
     std::unique_ptr<PasswordForm> form_without_password =
         base::MakeUnique<PasswordForm>();
     internal_keychain_helpers::FillPasswordFormFromKeychainItem(

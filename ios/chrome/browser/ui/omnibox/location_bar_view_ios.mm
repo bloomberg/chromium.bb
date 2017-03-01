@@ -59,8 +59,8 @@ bool DoesCurrentPageHaveCertInfo(web::WebState* webState) {
 bool IsCurrentPageOffline(web::WebState* webState) {
   if (!webState)
     return false;
-  auto navigationManager = webState->GetNavigationManager();
-  auto visibleItem = navigationManager->GetVisibleItem();
+  auto* navigationManager = webState->GetNavigationManager();
+  auto* visibleItem = navigationManager->GetVisibleItem();
   if (!visibleItem)
     return false;
   const GURL& url = visibleItem->GetURL();

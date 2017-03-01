@@ -51,8 +51,8 @@ bool ChromeLauncherController::ConnectToShelfController() {
   if (shelf_controller_.is_bound())
     return true;
 
-  auto connection = content::ServiceManagerConnection::GetForProcess();
-  auto connector = connection ? connection->GetConnector() : nullptr;
+  auto* connection = content::ServiceManagerConnection::GetForProcess();
+  auto* connector = connection ? connection->GetConnector() : nullptr;
   // Unit tests may not have a connector.
   if (!connector)
     return false;

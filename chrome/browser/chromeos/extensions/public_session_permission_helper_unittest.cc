@@ -142,7 +142,7 @@ base::WeakPtr<ProgrammableInstallPrompt>
 PublicSessionPermissionHelperTest::CallHandlePermissionRequest(
     const scoped_refptr<Extension>& extension,
     const PermissionIDSet& permissions) {
-  auto prompt = new ProgrammableInstallPrompt(web_contents());
+  auto* prompt = new ProgrammableInstallPrompt(web_contents());
   auto prompt_weak_ptr = prompt->AsWeakPtr();
   auto factory_callback = base::Bind(
       &PublicSessionPermissionHelperTest::ReturnPrompt, base::Unretained(this),

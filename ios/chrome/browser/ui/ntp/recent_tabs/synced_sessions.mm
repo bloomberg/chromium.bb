@@ -75,7 +75,7 @@ DistantSession::DistantSession(syncer::SyncService* sync_service,
 
     std::vector<const sync_sessions::SyncedSession*> sessions;
     open_tabs->GetAllForeignSessions(&sessions);
-    for (const auto& session : sessions) {
+    for (const auto* session : sessions) {
       if (tag == session->session_tag) {
         this->InitWithSyncedSession(session, open_tabs);
       }
@@ -100,7 +100,7 @@ void DistantSession::InitWithSyncedSession(
     std::vector<const sessions::SessionTab*> session_tabs;
     open_tabs->GetForeignSessionTabs(synced_session->session_tag,
                                      &session_tabs);
-    for (const auto& session_tab : session_tabs) {
+    for (const auto* session_tab : session_tabs) {
       AddTabToDistantSession(*session_tab, synced_session->session_tag, this);
     }
   } else {
@@ -128,7 +128,7 @@ SyncedSessions::SyncedSessions(syncer::SyncService* sync_service) {
 
     std::vector<const sync_sessions::SyncedSession*> sessions;
     open_tabs->GetAllForeignSessions(&sessions);
-    for (const auto& session : sessions) {
+    for (const auto* session : sessions) {
       std::unique_ptr<DistantSession> distant_session(new DistantSession());
       distant_session->InitWithSyncedSession(session, open_tabs);
       // Don't display sessions with no tabs.

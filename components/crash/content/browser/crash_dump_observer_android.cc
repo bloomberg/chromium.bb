@@ -75,7 +75,7 @@ void CrashDumpObserver::OnChildExit(int child_process_id,
     for (auto& client : registered_clients_)
       registered_clients_copy.push_back(client.get());
   }
-  for (auto& client : registered_clients_copy) {
+  for (auto* client : registered_clients_copy) {
     client->OnChildExit(child_process_id, pid, process_type, termination_status,
                         app_state);
   }
@@ -91,7 +91,7 @@ void CrashDumpObserver::BrowserChildProcessStarted(
     for (auto& client : registered_clients_)
       registered_clients_copy.push_back(client.get());
   }
-  for (auto& client : registered_clients_copy) {
+  for (auto* client : registered_clients_copy) {
     client->OnChildStart(child_process_id, mappings);
   }
 }

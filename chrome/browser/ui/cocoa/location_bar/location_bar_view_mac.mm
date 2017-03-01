@@ -782,7 +782,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
 
   if (PageActionsDiffer(new_page_actions)) {
     DeletePageActionDecorations();
-    for (const auto new_page_action : new_page_actions) {
+    for (auto* new_page_action : new_page_actions) {
       page_action_decorations_.push_back(base::MakeUnique<PageActionDecoration>(
           this, browser_, new_page_action));
     }

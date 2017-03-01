@@ -94,7 +94,7 @@ TEST_F(BlockedPopupTabHelperTest, AllowBlockedPopup) {
   // Allow blocked popup.
   ASSERT_EQ(1U, GetInfobarManager()->infobar_count());
   infobars::InfoBar* infobar = GetInfobarManager()->infobar_at(0);
-  auto delegate = infobar->delegate()->AsConfirmInfoBarDelegate();
+  auto* delegate = infobar->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate);
   delegate->Accept();
 

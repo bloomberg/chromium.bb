@@ -128,7 +128,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:messageItem
       toSectionWithIdentifier:SectionIdentifierShippingAddress];
 
-  for (const auto& shippingAddress : _paymentRequest->shipping_profiles()) {
+  for (auto* shippingAddress : _paymentRequest->shipping_profiles()) {
     AutofillProfileItem* item =
         [[AutofillProfileItem alloc] initWithType:ItemTypeShippingAddress];
     item.accessibilityTraits |= UIAccessibilityTraitButton;

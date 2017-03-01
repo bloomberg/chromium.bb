@@ -96,7 +96,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addSectionWithIdentifier:SectionIdentifierPayment];
 
-  for (const auto& paymentMethod : _paymentRequest->credit_cards()) {
+  for (const auto* paymentMethod : _paymentRequest->credit_cards()) {
     PaymentMethodItem* paymentMethodItem =
         [[PaymentMethodItem alloc] initWithType:ItemTypePaymentMethod];
     paymentMethodItem.accessibilityTraits |= UIAccessibilityTraitButton;

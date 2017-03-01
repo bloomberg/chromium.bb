@@ -241,7 +241,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   AudioNodeList GenerateAudioNodeList(
       const std::vector<const AudioNodeInfo*> nodes) {
     AudioNodeList node_list;
-    for (auto node_info : nodes) {
+    for (auto* node_info : nodes) {
       node_list.push_back(GenerateAudioNode(node_info));
     }
     return node_list;

@@ -451,7 +451,7 @@ const CGFloat kBookmarkMenuWidth = 264;
 
   int bookmarkCount = 0;
   int folderCount = 0;
-  for (auto node : _editNodes) {
+  for (auto* node : _editNodes) {
     if (node->is_url())
       ++bookmarkCount;
     else

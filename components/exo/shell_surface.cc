@@ -329,7 +329,7 @@ ShellSurface::~ShellSurface() {
     ash::wm::GetWindowState(widget_->GetNativeWindow())->RemoveObserver(this);
     widget_->GetNativeWindow()->RemoveObserver(this);
     // Remove transient children so they are not automatically destroyed.
-    for (auto child : wm::GetTransientChildren(widget_->GetNativeWindow()))
+    for (auto* child : wm::GetTransientChildren(widget_->GetNativeWindow()))
       wm::RemoveTransientChild(widget_->GetNativeWindow(), child);
     if (widget_->IsVisible())
       widget_->Hide();
@@ -790,7 +790,7 @@ void ShellSurface::OnSurfaceDestroying(Surface* surface) {
   // run using the current surface contents.
   if (widget_) {
     // Remove transient children so they are not automatically hidden.
-    for (auto child : wm::GetTransientChildren(widget_->GetNativeWindow()))
+    for (auto* child : wm::GetTransientChildren(widget_->GetNativeWindow()))
       wm::RemoveTransientChild(widget_->GetNativeWindow(), child);
     widget_->Hide();
   }

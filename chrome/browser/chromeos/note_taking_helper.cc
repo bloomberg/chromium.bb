@@ -122,7 +122,7 @@ NoteTakingAppInfos NoteTakingHelper::GetAvailableApps(Profile* profile) {
 
   const std::vector<const extensions::Extension*> chrome_apps =
       GetChromeApps(profile);
-  for (const auto& app : chrome_apps)
+  for (const auto* app : chrome_apps)
     infos.push_back(NoteTakingAppInfo{app->name(), app->id(), false});
 
   if (arc::IsArcAllowedForProfile(profile))
@@ -233,12 +233,12 @@ NoteTakingHelper::NoteTakingHelper()
   }
 
   // Watch for changes of Google Play Store enabled state.
-  auto session_manager = arc::ArcSessionManager::Get();
+  auto* session_manager = arc::ArcSessionManager::Get();
   session_manager->AddObserver(this);
 
   // ArcIntentHelperBridge will notify us about changes to the list of available
   // Android apps.
-  auto intent_helper_bridge =
+  auto* intent_helper_bridge =
       arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
   if (intent_helper_bridge)
     intent_helper_bridge->AddObserver(this);
@@ -258,7 +258,7 @@ NoteTakingHelper::~NoteTakingHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // ArcSessionManagerTest shuts down ARC before NoteTakingHelper.
-  auto intent_helper_bridge =
+  auto* intent_helper_bridge =
       arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
   if (intent_helper_bridge)
     intent_helper_bridge->RemoveObserver(this);
@@ -391,7 +391,7 @@ void NoteTakingHelper::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_ADDED);
-  auto registry = extensions::ExtensionRegistry::Get(
+  auto* registry = extensions::ExtensionRegistry::Get(
       content::Source<Profile>(source).ptr());
   DCHECK(!extension_registry_observer_.IsObserving(registry));
   extension_registry_observer_.Add(registry);

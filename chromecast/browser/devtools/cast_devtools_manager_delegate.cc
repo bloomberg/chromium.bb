@@ -36,7 +36,7 @@ CastDevToolsManagerDelegate::~CastDevToolsManagerDelegate() {
 bool CastDevToolsManagerDelegate::DiscoverTargets(
     const content::DevToolsAgentHost::DiscoveryCallback& callback) {
   content::DevToolsAgentHost::List enabled_hosts;
-  for (const auto& web_contents : enabled_webcontents_) {
+  for (auto* web_contents : enabled_webcontents_) {
     enabled_hosts.push_back(
         content::DevToolsAgentHost::GetOrCreateFor(web_contents));
   }

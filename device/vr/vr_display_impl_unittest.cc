@@ -119,7 +119,7 @@ TEST_F(VRDisplayImplTest, DeviceChangedDispatched) {
 
   base::RunLoop().RunUntilIdle();
 
-  for (auto client : clients_)
+  for (auto* client : clients_)
     EXPECT_TRUE(client->CheckDeviceId(device()->id()));
 }
 }

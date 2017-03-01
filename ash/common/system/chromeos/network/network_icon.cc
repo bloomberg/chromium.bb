@@ -202,7 +202,7 @@ class NetworkIconImageSource : public gfx::CanvasImageSource {
  public:
   static gfx::ImageSkia CreateImage(const gfx::ImageSkia& icon,
                                     const Badges& badges) {
-    auto source = new NetworkIconImageSource(icon, badges);
+    auto* source = new NetworkIconImageSource(icon, badges);
     return gfx::ImageSkia(source, source->size());
   }
 

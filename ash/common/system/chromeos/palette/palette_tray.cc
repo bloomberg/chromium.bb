@@ -82,7 +82,7 @@ class TitleView : public views::View, public views::ButtonListener {
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     SetLayoutManager(box_layout);
 
-    auto title_label =
+    auto* title_label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(title_label);

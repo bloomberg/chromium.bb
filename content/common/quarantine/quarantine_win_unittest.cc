@@ -68,7 +68,7 @@ TEST(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
   const char* const kLocalSourceURLs[] = {"http://localhost/foo",
                                           "file:///C:/some-local-dir/foo.exe"};
 
-  for (const auto source_url : kLocalSourceURLs) {
+  for (const char* source_url : kLocalSourceURLs) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
     ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
               base::WriteFile(test_file, kTestData, arraysize(kTestData)));
@@ -108,7 +108,7 @@ TEST(QuarantineWinTest, DownloadedFile_DependsOnLocalConfig) {
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
 
-  for (const auto source_url : kUntrustedURLs) {
+  for (const char* source_url : kUntrustedURLs) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
     ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
               base::WriteFile(test_file, kTestData, arraysize(kTestData)));

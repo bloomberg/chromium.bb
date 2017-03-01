@@ -50,7 +50,7 @@ class RepostFormTabHelperTest : public PlatformTest {
   // Presents a repost form dialog using RepostFormTabHelperTest.
   void PresentDialog() {
     ASSERT_FALSE(GetAlertController());
-    auto helper = RepostFormTabHelper::FromWebState(web_state_.get());
+    auto* helper = RepostFormTabHelper::FromWebState(web_state_.get());
     helper->PresentDialog(location_, base::Bind(&IgnoreBool));
     ASSERT_TRUE(GetAlertController());
   }

@@ -624,7 +624,7 @@ GamepadSource XboxDataFetcher::source() {
 void XboxDataFetcher::GetGamepadData(bool devices_changed_hint) {
   // This just loops through all the connected pads and "pings" them to indicate
   // that they're still active.
-  for (const auto& controller : controllers_) {
+  for (auto* controller : controllers_) {
     GetPadState(controller->location_id());
   }
 }

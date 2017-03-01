@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, PRE_LoginExistingUsers) {
-  for (auto user : kTestUsers) {
+  for (auto* user : kTestUsers) {
     RegisterUser(user);
   }
   StartupUtils::MarkOobeCompleted();

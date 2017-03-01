@@ -54,7 +54,7 @@ payments::CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
 }
 
 void PaymentRequest::PopulateProfileCache() {
-  for (const auto& profile : personal_data_manager_->GetProfilesToSuggest()) {
+  for (const auto* profile : personal_data_manager_->GetProfilesToSuggest()) {
     profile_cache_.push_back(
         base::MakeUnique<autofill::AutofillProfile>(*profile));
     shipping_profiles_.push_back(profile_cache_.back().get());
@@ -82,7 +82,7 @@ void PaymentRequest::PopulateCreditCardCache() {
   std::vector<autofill::CreditCard*> credit_cards =
       personal_data_manager_->GetCreditCardsToSuggest();
 
-  for (const auto& credit_card : credit_cards) {
+  for (const auto* credit_card : credit_cards) {
     std::string spec_card_type =
         autofill::data_util::GetPaymentRequestData(credit_card->type())
             .basic_card_payment_type;
@@ -111,7 +111,7 @@ void PaymentRequest::PopulateShippingOptionCache() {
                  [](web::PaymentShippingOption& option) { return &option; });
 
   selected_shipping_option_ = nullptr;
-  for (const auto& shipping_option : shipping_options_) {
+  for (auto* shipping_option : shipping_options_) {
     if (shipping_option->selected) {
       // If more than one option has |selected| set, the last one in the
       // sequence should be treated as the selected item.

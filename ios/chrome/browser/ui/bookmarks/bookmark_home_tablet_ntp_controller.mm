@@ -649,7 +649,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
   int bookmarkCount = 0;
   int folderCount = 0;
-  for (auto node : _editNodes) {
+  for (auto* node : _editNodes) {
     if (node->is_url())
       ++bookmarkCount;
     else

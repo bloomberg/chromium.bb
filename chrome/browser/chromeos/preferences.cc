@@ -413,7 +413,7 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocation, callback);
   pref_change_registrar_.Add(prefs::kUse24HourClock, callback);
-  for (auto remap_pref : kLanguageRemapPrefs)
+  for (auto* remap_pref : kLanguageRemapPrefs)
     pref_change_registrar_.Add(remap_pref, callback);
 }
 
@@ -730,7 +730,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
                                              prefs::kUse24HourClock, value);
   }
 
-  for (auto remap_pref : kLanguageRemapPrefs) {
+  for (auto* remap_pref : kLanguageRemapPrefs) {
     if (pref_name == remap_pref || reason != REASON_ACTIVE_USER_CHANGED) {
       const int value = prefs_->GetInteger(remap_pref);
       user_manager::known_user::SetIntegerPref(user_->GetAccountId(),

@@ -57,7 +57,7 @@ class CapsLockDefaultView : public ActionableView {
     SetLayoutManager(new views::FillLayout);
     AddChildView(tri_view);
 
-    auto image = TrayPopupUtils::CreateMainImageView();
+    auto* image = TrayPopupUtils::CreateMainImageView();
     image->SetEnabled(enabled());
     TrayPopupItemStyle default_view_style(
         TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);

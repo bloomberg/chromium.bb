@@ -42,7 +42,7 @@ static ScopedJavaLocalRef<jobjectArray> GetCertificateChain(
     cert_handles.insert(cert_handles.begin(), cert->os_cert_handle());
 
   cert_chain.reserve(cert_handles.size());
-  for (const auto& handle : cert_handles) {
+  for (auto* handle : cert_handles) {
     std::string cert_bytes;
     net::X509Certificate::GetDEREncoded(handle, &cert_bytes);
     cert_chain.push_back(cert_bytes);

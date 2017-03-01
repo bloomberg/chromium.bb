@@ -110,7 +110,7 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
   MockTRS::Tab* CreateSessionTab(SessionID::id_type id,
                                  const std::string& url,
                                  const std::string& title) {
-    auto tab = new MockTRS::Tab;
+    auto* tab = new MockTRS::Tab;
     tab->id = id;
     tab->current_navigation_index = 0;
     tab->navigations.push_back(
@@ -122,7 +122,7 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
   MockTRS::Window* CreateSessionWindow(
       SessionID::id_type id,
       std::initializer_list<MockTRS::Tab*> tabs) {
-    auto window = new MockTRS::Window;
+    auto* window = new MockTRS::Window;
     window->id = id;
     window->tabs.reserve(tabs.size());
     for (auto* tab : tabs)

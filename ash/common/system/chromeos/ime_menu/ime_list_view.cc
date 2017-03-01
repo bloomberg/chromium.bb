@@ -114,7 +114,7 @@ class ImeListItemView : public ActionableView {
     tri_view->AddView(TriView::Container::START, id_label);
 
     // The label shows the IME name.
-    auto label_view = TrayPopupUtils::CreateDefaultLabel();
+    auto* label_view = TrayPopupUtils::CreateDefaultLabel();
     label_view->SetText(label);
     TrayPopupItemStyle style(
         TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
@@ -205,7 +205,7 @@ class MaterialKeyboardStatusRowView : public views::View {
     tri_view->AddView(TriView::Container::START, keyboard_image);
 
     // The on-screen keyboard label ('On-screen keyboard').
-    auto label = TrayPopupUtils::CreateDefaultLabel();
+    auto* label = TrayPopupUtils::CreateDefaultLabel();
     label->SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
         IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
     TrayPopupItemStyle style(

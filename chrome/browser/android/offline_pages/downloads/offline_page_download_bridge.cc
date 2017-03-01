@@ -219,7 +219,7 @@ void ToJavaOfflinePageDownloadItemList(
     JNIEnv* env,
     jobject j_result_obj,
     const std::vector<const DownloadUIItem*>& items) {
-  for (const auto item : items) {
+  for (const auto* item : items) {
     Java_OfflinePageDownloadBridge_createDownloadItemAndAddToList(
         env, j_result_obj, ConvertUTF8ToJavaString(env, item->guid),
         ConvertUTF8ToJavaString(env, item->url.spec()), item->download_state,

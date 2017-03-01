@@ -876,7 +876,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   // Make sure the Dinosaur game is disabled by default. This ensures the
   // default policies have been set in Public Sessions.
   bool allow_dinosaur_game = true;
-  auto policy_value =
+  auto* policy_value =
       provider_->policies()
           .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
           .GetValue(key::kAllowDinosaurEasterEgg);

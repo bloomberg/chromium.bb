@@ -129,7 +129,7 @@ ui::devtools::protocol::Response AshDevToolsCSSAgent::setStyleTexts(
       updated_styles = ui::devtools::protocol::Array<
           ui::devtools::protocol::CSS::CSSStyle>::create();
   for (size_t i = 0; i < edits->length(); i++) {
-    const auto& edit = edits->get(i);
+    auto* edit = edits->get(i);
     int node_id;
     if (!base::StringToInt(edit->getStyleSheetId(), &node_id))
       return ui::devtools::protocol::Response::Error("Invalid node id");

@@ -453,7 +453,7 @@ class UMAHistogramReporter {
   }
 
   void RecordBooleanHistogram(const std::string& name, bool sample) const {
-    auto histogram =
+    auto* histogram =
         base::BooleanHistogram::FactoryGet(FullName(name), kUmaHistogramFlag);
     if (histogram)
       histogram->AddBoolean(sample);
@@ -463,7 +463,7 @@ class UMAHistogramReporter {
                                   Sample sample,
                                   Sample boundary) const {
     // See HISTOGRAM_ENUMERATION_WITH_FLAG for the parameters to |FactoryGet|.
-    auto histogram = base::LinearHistogram::FactoryGet(
+    auto* histogram = base::LinearHistogram::FactoryGet(
         FullName(name), 1, boundary, boundary + 1, kUmaHistogramFlag);
     if (histogram)
       histogram->Add(sample);
@@ -472,7 +472,7 @@ class UMAHistogramReporter {
   void RecordLongTimesHistogram(const std::string& name,
                                 const base::TimeDelta& sample) const {
     // See UMA_HISTOGRAM_LONG_TIMES for the parameters to |FactoryTimeGet|.
-    auto histogram = base::Histogram::FactoryTimeGet(
+    auto* histogram = base::Histogram::FactoryTimeGet(
         FullName(name), base::TimeDelta::FromMilliseconds(1),
         base::TimeDelta::FromHours(1), 100, kUmaHistogramFlag);
     if (histogram)
@@ -481,14 +481,14 @@ class UMAHistogramReporter {
 
   void RecordMemoryKBHistogram(const std::string& name, Sample sample) const {
     // See UMA_HISTOGRAM_MEMORY_KB for the parameters to |FactoryGet|.
-    auto histogram = base::Histogram::FactoryGet(FullName(name), 1000, 500000,
-                                                 50, kUmaHistogramFlag);
+    auto* histogram = base::Histogram::FactoryGet(FullName(name), 1000, 500000,
+                                                  50, kUmaHistogramFlag);
     if (histogram)
       histogram->Add(sample);
   }
 
   void RecordSparseHistogram(const std::string& name, Sample sample) const {
-    auto histogram =
+    auto* histogram =
         base::SparseHistogram::FactoryGet(FullName(name), kUmaHistogramFlag);
     if (histogram)
       histogram->Add(sample);
@@ -497,7 +497,7 @@ class UMAHistogramReporter {
   void RecordSparseHistogramCount(const std::string& name,
                                   Sample sample,
                                   int count) const {
-    auto histogram =
+    auto* histogram =
         base::SparseHistogram::FactoryGet(FullName(name), kUmaHistogramFlag);
     if (histogram)
       histogram->AddCount(sample, count);

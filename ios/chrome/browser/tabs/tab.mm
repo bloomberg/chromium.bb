@@ -2028,7 +2028,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                          openerURL:(const GURL&)openerURL
                    initiatedByUser:(BOOL)initiatedByUser {
   if (!initiatedByUser) {
-    auto helper = BlockedPopupTabHelper::FromWebState(webController.webState);
+    auto* helper = BlockedPopupTabHelper::FromWebState(webController.webState);
     if (helper->ShouldBlockPopup(openerURL)) {
       [self blockPopupForURL:URL openerURL:openerURL];
       return nil;

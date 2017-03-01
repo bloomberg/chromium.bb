@@ -562,7 +562,7 @@ void Surface::UnregisterCursorProvider(Pointer* provider) {
 gfx::NativeCursor Surface::GetCursor() {
   // What cursor we display when we have multiple cursor providers is not
   // important. Return the first non-null cursor.
-  for (const auto& cursor_provider : cursor_providers_) {
+  for (auto* cursor_provider : cursor_providers_) {
     gfx::NativeCursor cursor = cursor_provider->GetCursor();
     if (cursor != ui::kCursorNull)
       return cursor;

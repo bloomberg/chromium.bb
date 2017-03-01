@@ -160,7 +160,7 @@ using bookmarks::BookmarkNode;
   std::vector<const BookmarkNode*> rootLevelFolders =
       RootLevelFolders(self.bookmarkModel);
   bookmark_utils_ios::SortFolders(&rootLevelFolders);
-  for (auto node : rootLevelFolders) {
+  for (auto* node : rootLevelFolders) {
     [folderSection addObject:[BookmarkMenuItem folderMenuItemForNode:node
                                                         rootAncestor:node]];
   }

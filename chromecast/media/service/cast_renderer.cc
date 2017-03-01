@@ -220,7 +220,7 @@ void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
 
-  auto cast_cdm_context = static_cast<CastCdmContext*>(cdm_context);
+  auto* cast_cdm_context = static_cast<CastCdmContext*>(cdm_context);
 
   if (!pipeline_) {
     // If the pipeline has not yet been created in Initialize(), cache

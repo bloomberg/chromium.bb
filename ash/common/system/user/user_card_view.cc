@@ -292,8 +292,8 @@ UserCardView::UserCardView(LoginStatus login_status,
       user_name_(nullptr),
       media_capture_label_(nullptr),
       media_capture_icon_(nullptr) {
-  auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                                     kTrayPopupLabelHorizontalPadding);
+  auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                                      kTrayPopupLabelHorizontalPadding);
   SetLayoutManager(layout);
   layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
   layout->set_cross_axis_alignment(
@@ -334,7 +334,7 @@ void UserCardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   std::list<views::View*> descendants;
   descendants.push_back(this);
   while (!descendants.empty()) {
-    auto view = descendants.front();
+    auto* view = descendants.front();
     descendants.pop_front();
     if (view != this) {
       ui::AXNodeData descendant_data;
@@ -411,7 +411,7 @@ void UserCardView::AddUserContent(views::BoxLayout* layout,
   // label starts as black and the entire row is 54% opacity).
   if (is_active_user())
     user_email_style.set_color_style(TrayPopupItemStyle::ColorStyle::INACTIVE);
-  auto user_email = new views::Label();
+  auto* user_email = new views::Label();
   base::string16 user_email_string;
   if (login_status != LoginStatus::GUEST) {
     user_email_string =

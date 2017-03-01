@@ -21,7 +21,7 @@ TEST_F(MemoryKillsMonitorTest, LogLowMemoryKill) {
   MemoryKillsMonitor::LogLowMemoryKill("APP", 100);
   MemoryKillsMonitor::LogLowMemoryKill("TAB", 10000);
 
-  auto histogram_count =
+  auto* histogram_count =
       base::StatisticsRecorder::FindHistogram("Arc.LowMemoryKiller.Count");
   ASSERT_TRUE(histogram_count);
   auto count_samples = histogram_count->SnapshotSamples();
@@ -30,7 +30,7 @@ TEST_F(MemoryKillsMonitorTest, LogLowMemoryKill) {
   EXPECT_EQ(1, count_samples->GetCount(2));
   EXPECT_EQ(1, count_samples->GetCount(3));
 
-  auto histogram_freed_size =
+  auto* histogram_freed_size =
       base::StatisticsRecorder::FindHistogram("Arc.LowMemoryKiller.FreedSize");
   ASSERT_TRUE(histogram_freed_size);
   auto freed_size_samples = histogram_freed_size->SnapshotSamples();
@@ -40,7 +40,7 @@ TEST_F(MemoryKillsMonitorTest, LogLowMemoryKill) {
   EXPECT_EQ(2, freed_size_samples->GetCount(100));
   EXPECT_EQ(1, freed_size_samples->GetCount(10000));
 
-  auto histogram_time_delta =
+  auto* histogram_time_delta =
       base::StatisticsRecorder::FindHistogram("Arc.LowMemoryKiller.TimeDelta");
   ASSERT_TRUE(histogram_time_delta);
   auto time_delta_samples = histogram_time_delta->SnapshotSamples();
@@ -66,7 +66,7 @@ TEST_F(MemoryKillsMonitorTest, TryMatchOomKillLine) {
     MemoryKillsMonitor::TryMatchOomKillLine(sample_lines[i]);
   }
 
-  auto histogram_count =
+  auto* histogram_count =
       base::StatisticsRecorder::FindHistogram("Arc.OOMKills.Count");
   ASSERT_TRUE(histogram_count);
   auto count_samples = histogram_count->SnapshotSamples();
@@ -75,7 +75,7 @@ TEST_F(MemoryKillsMonitorTest, TryMatchOomKillLine) {
   EXPECT_EQ(1, count_samples->GetCount(2));
   EXPECT_EQ(1, count_samples->GetCount(3));
 
-  auto histogram_score =
+  auto* histogram_score =
       base::StatisticsRecorder::FindHistogram("Arc.OOMKills.Score");
   ASSERT_TRUE(histogram_score);
   auto score_samples = histogram_score->SnapshotSamples();
@@ -84,7 +84,7 @@ TEST_F(MemoryKillsMonitorTest, TryMatchOomKillLine) {
   EXPECT_EQ(1, score_samples->GetCount(652));
   EXPECT_EQ(1, score_samples->GetCount(653));
 
-  auto histogram_time_delta =
+  auto* histogram_time_delta =
       base::StatisticsRecorder::FindHistogram("Arc.OOMKills.TimeDelta");
   ASSERT_TRUE(histogram_time_delta);
   auto time_delta_samples = histogram_time_delta->SnapshotSamples();

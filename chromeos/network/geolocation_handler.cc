@@ -155,7 +155,7 @@ void GeolocationHandler::GeolocationCallback(
   //                                 ],
   //   kGeoCellTowersProperty: [ {kGeoCellIdProperty: cell_id_value, ...}, ... ]
   // }
-  for (auto device_type : kDevicePropertyNames) {
+  for (auto* device_type : kDevicePropertyNames) {
     if (!properties.HasKey(device_type)) {
       continue;
     }

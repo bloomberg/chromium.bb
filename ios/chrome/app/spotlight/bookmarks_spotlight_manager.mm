@@ -289,7 +289,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
   NSMutableDictionary* spotlightItems = [[NSMutableDictionary alloc] init];
   std::vector<const bookmarks::BookmarkNode*> nodes;
   _bookmarkModel->GetNodesByURL(URL, &nodes);
-  for (auto node : nodes) {
+  for (auto* node : nodes) {
     NSString* nodeTitle = base::SysUTF16ToNSString(node->GetTitle());
     NSString* spotlightID = [self spotlightIDForURL:URL title:nodeTitle];
     CSSearchableItem* item = [spotlightItems objectForKey:spotlightID];

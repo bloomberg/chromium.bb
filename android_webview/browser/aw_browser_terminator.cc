@@ -57,7 +57,7 @@ void OnRenderProcessGone(int child_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<AwRenderProcessGoneDelegate*> delegates;
   GetAwRenderProcessGoneDelegatesForRenderProcess(child_process_id, &delegates);
-  for (auto delegate : delegates)
+  for (auto* delegate : delegates)
     delegate->OnRenderProcessGone(child_process_id);
 }
 
@@ -67,7 +67,7 @@ void OnRenderProcessGoneDetail(int child_process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<AwRenderProcessGoneDelegate*> delegates;
   GetAwRenderProcessGoneDelegatesForRenderProcess(child_process_id, &delegates);
-  for (auto delegate : delegates) {
+  for (auto* delegate : delegates) {
     if (!delegate->OnRenderProcessGoneDetail(child_process_pid, crashed)) {
       if (crashed) {
         // Keeps this log unchanged, CTS test uses it to detect crash.
