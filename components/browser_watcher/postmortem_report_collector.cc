@@ -170,6 +170,8 @@ int PostmortemReportCollector::CollectAndSubmitForUpload(
   // Collect the list of files to harvest.
   std::vector<FilePath> debug_files = GetDebugStateFilePaths(
       debug_info_dir, debug_file_pattern, excluded_debug_files);
+  UMA_HISTOGRAM_COUNTS_100("ActivityTracker.Collect.StabilityFileCount",
+                           debug_files.size());
 
   // Determine the crashpad client id.
   crashpad::UUID client_id;
@@ -232,7 +234,7 @@ PostmortemReportCollector::CollectAndSubmit(
     // The file was empty, or there was an error collecting the data. Detailed
     // logging happens within the Collect function.
     if (!base::DeleteFile(file, false))
-      LOG(ERROR) << "Failed to delete " << file.value();
+      DLOG(ERROR) << "Failed to delete " << file.value();
     return status;
   }
   DCHECK_NE(nullptr, report_proto.get());
@@ -242,7 +244,8 @@ PostmortemReportCollector::CollectAndSubmit(
   CrashReportDatabase::OperationStatus database_status =
       report_database->PrepareNewCrashReport(&new_report);
   if (database_status != CrashReportDatabase::kNoError) {
-    LOG(ERROR) << "PrepareNewCrashReport failed";
+    // Assume this is recoverable: not deleting the file.
+    DLOG(ERROR) << "PrepareNewCrashReport failed";
     return PREPARE_NEW_CRASH_REPORT_FAILED;
   }
   CrashReportDatabase::CallErrorWritingCrashReport
@@ -251,6 +254,9 @@ PostmortemReportCollector::CollectAndSubmit(
   // Write the report to a minidump.
   if (!WriteReportToMinidump(report_proto.get(), client_id, new_report->uuid,
                              reinterpret_cast<FILE*>(new_report->handle))) {
+    // Assume this is not recoverable and delete the file.
+    if (!base::DeleteFile(file, false))
+      DLOG(ERROR) << "Failed to delete " << file.value();
     return WRITE_TO_MINIDUMP_FAILED;
   }
 
@@ -260,7 +266,7 @@ PostmortemReportCollector::CollectAndSubmit(
   // cannot be deleted.
   // TODO(manzagop): metrics for the number of non-deletable files.
   if (!base::DeleteFile(file, false)) {
-    LOG(ERROR) << "Failed to delete " << file.value();
+    DLOG(ERROR) << "Failed to delete " << file.value();
     return DEBUG_FILE_DELETION_FAILED;
   }
 
@@ -272,7 +278,7 @@ PostmortemReportCollector::CollectAndSubmit(
   database_status = report_database->FinishedWritingCrashReport(
       new_report, &unused_report_id);
   if (database_status != CrashReportDatabase::kNoError) {
-    LOG(ERROR) << "FinishedWritingCrashReport failed";
+    DLOG(ERROR) << "FinishedWritingCrashReport failed";
     return FINISHED_WRITING_CRASH_REPORT_FAILED;
   }
 
