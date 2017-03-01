@@ -8,7 +8,6 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -29,7 +28,7 @@ import java.util.Set;
  */
 public class NotificationActionsUpdatedTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int NOTIFICATION_ID = R.id.media_playback_notification;
-    private static final String SIMPLE_PAGE_URL = "/content/test/data/simple_page.html";
+    private static final String TEST_PAGE_URL = "/content/test/data/media/session/title1.html";
 
     private Tab mTab;
     private EmbeddedTestServer mTestServer;
@@ -75,17 +74,16 @@ public class NotificationActionsUpdatedTest extends ChromeActivityTestCaseBase<C
         assertActionsMatch(new HashSet<Integer>());
     }
 
-    @FlakyTest(message = "crbug.com/697453")
     @SmallTest
     public void testActionsPersistAfterSamePageNavigation() throws Throwable {
         ensureTestServer();
-        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL));
+        loadUrl(mTestServer.getURL(TEST_PAGE_URL));
         simulateMediaSessionActionsChanged(mTab, buildActions());
         simulateMediaSessionStateChanged(mTab, true, false);
         assertActionsMatch(buildActions());
 
         NotificationTestUtils.simulateSamePageNavigation(
-                getInstrumentation(), mTab, mTestServer.getURL(SIMPLE_PAGE_URL));
+                getInstrumentation(), mTab, mTestServer.getURL(TEST_PAGE_URL));
         assertActionsMatch(buildActions());
     }
 

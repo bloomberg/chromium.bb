@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -37,8 +36,8 @@ import org.chromium.net.test.EmbeddedTestServer;
 @RetryOnFailure
 public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int NOTIFICATION_ID = R.id.media_playback_notification;
-    private static final String SIMPLE_PAGE_URL_1 = "/content/test/data/title1.html";
-    private static final String SIMPLE_PAGE_URL_2 = "/content/test/data/title2.html";
+    private static final String TEST_PAGE_URL_1 = "/content/test/data/media/session/title1.html";
+    private static final String TEST_PAGE_URL_2 = "/content/test/data/media/session/title2.html";
 
     private Tab mTab;
     private EmbeddedTestServer mTestServer;
@@ -179,27 +178,26 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
     @SmallTest
     public void testMediaMetadataResetsAfterSameOriginNavigation() throws Throwable {
         ensureTestServer();
-        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL_1));
+        loadUrl(mTestServer.getURL(TEST_PAGE_URL_1));
         simulateMediaSessionStateChanged(mTab, true, false);
         simulateMediaSessionMetadataChanged(mTab, new MediaMetadata("title2", "", ""));
         assertTitleMatches("title2");
 
-        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL_2));
+        loadUrl(mTestServer.getURL(TEST_PAGE_URL_2));
         simulateUpdateTitle(mTab, "title3");
         assertTitleMatches("title3");
     }
 
-    @FlakyTest(message = "crbug.com/697453")
     @SmallTest
     public void testMediaMetadataPersistsAfterSamePageNavigation() throws Throwable {
         ensureTestServer();
-        loadUrl(mTestServer.getURL(SIMPLE_PAGE_URL_1));
+        loadUrl(mTestServer.getURL(TEST_PAGE_URL_1));
         simulateMediaSessionStateChanged(mTab, true, false);
         simulateMediaSessionMetadataChanged(mTab, new MediaMetadata("title2", "", ""));
         assertTitleMatches("title2");
 
         NotificationTestUtils.simulateSamePageNavigation(
-                getInstrumentation(), mTab, mTestServer.getURL(SIMPLE_PAGE_URL_1));
+                getInstrumentation(), mTab, mTestServer.getURL(TEST_PAGE_URL_1));
         assertTitleMatches("title2");
     }
 
