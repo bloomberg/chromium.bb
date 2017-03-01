@@ -976,119 +976,20 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
       return;
     case BorderStyleDotted:
     case BorderStyleDashed: {
-      graphicsContext.setStrokeColor(color);
-
-      // The stroke is doubled here because the provided path is the
-      // outside edge of the border so half the stroke is clipped off.
-      // The extra multiplier is so that the clipping mask can antialias
-      // the edges to prevent jaggies.
-      graphicsContext.setStrokeThickness(drawThickness * 2 * 1.1f);
-      graphicsContext.setStrokeStyle(
-          borderStyle == BorderStyleDashed ? DashedStroke : DottedStroke);
-
-      // If the number of dashes that fit in the path is odd and non-integral
-      // then we will have an awkwardly-sized dash at the end of the path. To
-      // try to avoid that here, we simply make the whitespace dashes ever so
-      // slightly bigger.
-      // FIXME: This could be even better if we tried to manipulate the dash
-      // offset and possibly the gapLength to get the corners dash-symmetrical.
-      float dashLength =
-          thickness * ((borderStyle == BorderStyleDashed) ? 3.0f : 1.0f);
-      float gapLength = dashLength;
-      float numberOfDashes = borderPath.length() / dashLength;
-      // Don't try to show dashes if we have less than 2 dashes + 2 gaps.
-      // FIXME: should do this test per side.
-      if (numberOfDashes >= 4) {
-        bool evenNumberOfFullDashes = !((int)numberOfDashes % 2);
-        bool integralNumberOfDashes = !(numberOfDashes - (int)numberOfDashes);
-        if (!evenNumberOfFullDashes && !integralNumberOfDashes) {
-          float numberOfGaps = numberOfDashes / 2;
-          gapLength += (dashLength / numberOfGaps);
-        }
-
-        DashArray lineDash;
-        lineDash.push_back(dashLength);
-        lineDash.push_back(gapLength);
-        graphicsContext.setLineDash(lineDash, dashLength);
-      }
-
-      // FIXME: stroking the border path causes issues with tight corners:
-      // https://bugs.webkit.org/show_bug.cgi?id=58711
-      // Also, to get the best appearance we should stroke a path between the
-      // two borders.
-      graphicsContext.strokePath(borderPath);
+      drawDashedDottedBoxSideFromPath(graphicsContext, borderPath, thickness,
+                                      drawThickness, color, borderStyle);
       return;
     }
     case BorderStyleDouble: {
-      // Draw inner border line
-      {
-        GraphicsContextStateSaver stateSaver(graphicsContext);
-        const LayoutRectOutsets innerInsets =
-            doubleStripeInsets(m_edges, BorderEdge::DoubleBorderStripeInner);
-        FloatRoundedRect innerClip = m_style.getRoundedInnerBorderFor(
-            borderRect, innerInsets, m_includeLogicalLeftEdge,
-            m_includeLogicalRightEdge);
-
-        graphicsContext.clipRoundedRect(innerClip);
-        drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness,
-                            drawThickness, side, color, BorderStyleSolid);
-      }
-
-      // Draw outer border line
-      {
-        GraphicsContextStateSaver stateSaver(graphicsContext);
-        LayoutRect outerRect = borderRect;
-        LayoutRectOutsets outerInsets =
-            doubleStripeInsets(m_edges, BorderEdge::DoubleBorderStripeOuter);
-
-        if (bleedAvoidanceIsClipping(m_bleedAvoidance)) {
-          outerRect.inflate(1);
-          outerInsets.setTop(outerInsets.top() - 1);
-          outerInsets.setRight(outerInsets.right() - 1);
-          outerInsets.setBottom(outerInsets.bottom() - 1);
-          outerInsets.setLeft(outerInsets.left() - 1);
-        }
-
-        FloatRoundedRect outerClip = m_style.getRoundedInnerBorderFor(
-            outerRect, outerInsets, m_includeLogicalLeftEdge,
-            m_includeLogicalRightEdge);
-        graphicsContext.clipOutRoundedRect(outerClip);
-        drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness,
-                            drawThickness, side, color, BorderStyleSolid);
-      }
+      drawDoubleBoxSideFromPath(graphicsContext, borderRect, borderPath,
+                                thickness, drawThickness, side, color);
       return;
     }
     case BorderStyleRidge:
     case BorderStyleGroove: {
-      EBorderStyle s1;
-      EBorderStyle s2;
-      if (borderStyle == BorderStyleGroove) {
-        s1 = BorderStyleInset;
-        s2 = BorderStyleOutset;
-      } else {
-        s1 = BorderStyleOutset;
-        s2 = BorderStyleInset;
-      }
-
-      // Paint full border
-      drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness,
-                          drawThickness, side, color, s1);
-
-      // Paint inner only
-      GraphicsContextStateSaver stateSaver(graphicsContext);
-      int topWidth = m_edges[BSTop].usedWidth() / 2;
-      int bottomWidth = m_edges[BSBottom].usedWidth() / 2;
-      int leftWidth = m_edges[BSLeft].usedWidth() / 2;
-      int rightWidth = m_edges[BSRight].usedWidth() / 2;
-
-      FloatRoundedRect clipRect = m_style.getRoundedInnerBorderFor(
-          borderRect,
-          LayoutRectOutsets(-topWidth, -rightWidth, -bottomWidth, -leftWidth),
-          m_includeLogicalLeftEdge, m_includeLogicalRightEdge);
-
-      graphicsContext.clipRoundedRect(clipRect);
-      drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness,
-                          drawThickness, side, color, s2);
+      drawRidgeGrooveBoxSideFromPath(graphicsContext, borderRect, borderPath,
+                                     thickness, drawThickness, side, color,
+                                     borderStyle);
       return;
     }
     case BorderStyleInset:
@@ -1106,6 +1007,145 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
   graphicsContext.setStrokeStyle(NoStroke);
   graphicsContext.setFillColor(color);
   graphicsContext.drawRect(pixelSnappedIntRect(borderRect));
+}
+
+void BoxBorderPainter::drawDashedDottedBoxSideFromPath(
+    GraphicsContext& graphicsContext,
+    const Path& borderPath,
+    float thickness,
+    float drawThickness,
+    Color color,
+    EBorderStyle borderStyle) const {
+  graphicsContext.setStrokeColor(color);
+
+  // The stroke is doubled here because the provided path is the
+  // outside edge of the border so half the stroke is clipped off.
+  // The extra multiplier is so that the clipping mask can antialias
+  // the edges to prevent jaggies.
+  graphicsContext.setStrokeThickness(drawThickness * 2 * 1.1f);
+  graphicsContext.setStrokeStyle(
+      borderStyle == BorderStyleDashed ? DashedStroke : DottedStroke);
+
+  // If the number of dashes that fit in the path is odd and non-integral
+  // then we will have an awkwardly-sized dash at the end of the path. To
+  // try to avoid that here, we simply make the whitespace dashes ever so
+  // slightly bigger.
+  // TODO(schenney): This code for setting up the dash effect is trying to
+  // do the same thing as StrokeData::setupPaintDashPathEffect and should be
+  // refactored to re-use that code. It would require
+  // GraphicsContext::strokePath to take a length parameter.
+
+  float dashLength =
+      thickness * ((borderStyle == BorderStyleDashed) ? 3.0f : 1.0f);
+  float gapLength = dashLength;
+  float numberOfDashes = borderPath.length() / dashLength;
+  // Don't try to show dashes if we have less than 2 dashes + 2 gaps.
+  // FIXME: should do this test per side.
+  if (numberOfDashes >= 4) {
+    bool evenNumberOfFullDashes = !((int)numberOfDashes % 2);
+    bool integralNumberOfDashes = !(numberOfDashes - (int)numberOfDashes);
+    if (!evenNumberOfFullDashes && !integralNumberOfDashes) {
+      float numberOfGaps = numberOfDashes / 2;
+      gapLength += (dashLength / numberOfGaps);
+    }
+
+    DashArray lineDash;
+    lineDash.push_back(dashLength);
+    lineDash.push_back(gapLength);
+    graphicsContext.setLineDash(lineDash, dashLength);
+  }
+
+  // FIXME: stroking the border path causes issues with tight corners:
+  // https://bugs.webkit.org/show_bug.cgi?id=58711
+  // Also, to get the best appearance we should stroke a path between the
+  // two borders.
+  graphicsContext.strokePath(borderPath);
+}
+
+void BoxBorderPainter::drawDoubleBoxSideFromPath(
+    GraphicsContext& graphicsContext,
+    const LayoutRect& borderRect,
+    const Path& borderPath,
+    float thickness,
+    float drawThickness,
+    BoxSide side,
+    Color color) const {
+  // Draw inner border line
+  {
+    GraphicsContextStateSaver stateSaver(graphicsContext);
+    const LayoutRectOutsets innerInsets =
+        doubleStripeInsets(m_edges, BorderEdge::DoubleBorderStripeInner);
+    FloatRoundedRect innerClip = m_style.getRoundedInnerBorderFor(
+        borderRect, innerInsets, m_includeLogicalLeftEdge,
+        m_includeLogicalRightEdge);
+
+    graphicsContext.clipRoundedRect(innerClip);
+    drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness,
+                        drawThickness, side, color, BorderStyleSolid);
+  }
+
+  // Draw outer border line
+  {
+    GraphicsContextStateSaver stateSaver(graphicsContext);
+    LayoutRect outerRect = borderRect;
+    LayoutRectOutsets outerInsets =
+        doubleStripeInsets(m_edges, BorderEdge::DoubleBorderStripeOuter);
+
+    if (bleedAvoidanceIsClipping(m_bleedAvoidance)) {
+      outerRect.inflate(1);
+      outerInsets.setTop(outerInsets.top() - 1);
+      outerInsets.setRight(outerInsets.right() - 1);
+      outerInsets.setBottom(outerInsets.bottom() - 1);
+      outerInsets.setLeft(outerInsets.left() - 1);
+    }
+
+    FloatRoundedRect outerClip = m_style.getRoundedInnerBorderFor(
+        outerRect, outerInsets, m_includeLogicalLeftEdge,
+        m_includeLogicalRightEdge);
+    graphicsContext.clipOutRoundedRect(outerClip);
+    drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness,
+                        drawThickness, side, color, BorderStyleSolid);
+  }
+}
+
+void BoxBorderPainter::drawRidgeGrooveBoxSideFromPath(
+    GraphicsContext& graphicsContext,
+    const LayoutRect& borderRect,
+    const Path& borderPath,
+    float thickness,
+    float drawThickness,
+    BoxSide side,
+    Color color,
+    EBorderStyle borderStyle) const {
+  EBorderStyle s1;
+  EBorderStyle s2;
+  if (borderStyle == BorderStyleGroove) {
+    s1 = BorderStyleInset;
+    s2 = BorderStyleOutset;
+  } else {
+    s1 = BorderStyleOutset;
+    s2 = BorderStyleInset;
+  }
+
+  // Paint full border
+  drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness,
+                      drawThickness, side, color, s1);
+
+  // Paint inner only
+  GraphicsContextStateSaver stateSaver(graphicsContext);
+  int topWidth = m_edges[BSTop].usedWidth() / 2;
+  int bottomWidth = m_edges[BSBottom].usedWidth() / 2;
+  int leftWidth = m_edges[BSLeft].usedWidth() / 2;
+  int rightWidth = m_edges[BSRight].usedWidth() / 2;
+
+  FloatRoundedRect clipRect = m_style.getRoundedInnerBorderFor(
+      borderRect,
+      LayoutRectOutsets(-topWidth, -rightWidth, -bottomWidth, -leftWidth),
+      m_includeLogicalLeftEdge, m_includeLogicalRightEdge);
+
+  graphicsContext.clipRoundedRect(clipRect);
+  drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness,
+                      drawThickness, side, color, s2);
 }
 
 void BoxBorderPainter::clipBorderSideForComplexInnerPath(
