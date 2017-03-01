@@ -29,8 +29,10 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
+#include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace {
+using storage::BlobStatus;
 
 const char kEmptyBlobStorageMessage[] = "No available blob data.";
 const char kContentType[] = "Content Type: ";
@@ -45,6 +47,7 @@ const char kOffset[] = "Offset: ";
 const char kLength[] = "Length: ";
 const char kUUID[] = "Uuid: ";
 const char kRefcount[] = "Refcount: ";
+const char kStatus[] = "Status: ";
 
 void StartHTML(std::string* out) {
   out->append(
@@ -60,6 +63,41 @@ void StartHTML(std::string* out) {
       ".subsection_title { font-weight: bold; }\n"
       "</style>\n"
       "</head><body>\n\n");
+}
+
+std::string StatusToString(BlobStatus status) {
+  switch (status) {
+    case BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS:
+      return "BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS: Illegal blob "
+             "construction.";
+    case BlobStatus::ERR_OUT_OF_MEMORY:
+      return "BlobStatus::ERR_OUT_OF_MEMORY: Not enough memory or disk space "
+             "available for blob.";
+    case BlobStatus::ERR_FILE_WRITE_FAILED:
+      return "BlobStatus::ERR_FILE_WRITE_FAILED: File operation filed";
+    case BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT:
+      return "BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT: Blob source died before "
+             "transporting data to browser.";
+    case BlobStatus::ERR_BLOB_DEREFERENCED_WHILE_BUILDING:
+      return "BlobStatus::ERR_BLOB_DEREFERENCED_WHILE_BUILDING: Blob "
+             "references removed while building.";
+    case BlobStatus::ERR_REFERENCED_BLOB_BROKEN:
+      return "BlobStatus::ERR_REFERENCED_BLOB_BROKEN: Blob contains dependency "
+             "blob that is broken.";
+    case BlobStatus::DONE:
+      return "BlobStatus::DONE: Blob built with no errors.";
+    case BlobStatus::PENDING_QUOTA:
+      return "BlobStatus::PENDING_QUOTA: Blob construction is pending on "
+             "memory or file quota.";
+    case BlobStatus::PENDING_TRANSPORT:
+      return "BlobStatus::PENDING_TRANSPORT: Blob construction is pending on "
+             "data transport from renderer.";
+    case BlobStatus::PENDING_INTERNALS:
+      return "BlobStatus::PENDING_INTERNALS: Blob construction is pending on "
+             "dependency blobs to finish construction.";
+  }
+  NOTREACHED();
+  return "Invalid blob state.";
 }
 
 void EndHTML(std::string* out) {
@@ -181,6 +219,7 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
   StartHTMLList(out);
 
   AddHTMLListItem(kRefcount, base::IntToString(refcount), out);
+  AddHTMLListItem(kStatus, StatusToString(blob_data.status()), out);
   if (!content_type.empty())
     AddHTMLListItem(kContentType, content_type, out);
   if (!content_disposition.empty())
