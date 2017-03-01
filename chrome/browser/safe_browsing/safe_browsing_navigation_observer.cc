@@ -177,7 +177,6 @@ void SafeBrowsingNavigationObserver::DidRedirectNavigation(
   // We should have already seen this navigation_handle in DidStartNavigation.
   if (navigation_handle_map_.find(navigation_handle) ==
       navigation_handle_map_.end()) {
-    NOTREACHED();
     return;
   }
   NavigationEvent* nav_event = navigation_handle_map_[navigation_handle].get();
@@ -191,7 +190,6 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle_map_.find(navigation_handle) ==
       navigation_handle_map_.end()) {
-    NOTREACHED();
     return;
   }
 

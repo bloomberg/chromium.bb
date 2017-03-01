@@ -642,6 +642,24 @@
             ]
         }
     ],
+    "DownloadAttributionPerformanceTest": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "DownloadAttributionEnabled",
+                    "enable_features": [
+                        "DownloadAttribution"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadsUi": [
         {
             "platforms": [
