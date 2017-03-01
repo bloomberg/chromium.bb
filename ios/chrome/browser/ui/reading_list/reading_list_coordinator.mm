@@ -278,7 +278,6 @@ readingListCollectionViewController:
 
   [self.URLLoader webPageOrderedOpen:URL
                             referrer:web::Referrer()
-                          windowName:nil
                          inIncognito:incognito
                         inBackground:NO
                             appendTo:kLastTab];

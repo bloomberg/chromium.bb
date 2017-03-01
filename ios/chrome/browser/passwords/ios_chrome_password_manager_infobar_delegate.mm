@@ -52,7 +52,6 @@ bool IOSChromePasswordManagerInfoBarDelegate::LinkClicked(
   base::scoped_nsobject<OpenUrlCommand> command([[OpenUrlCommand alloc]
        initWithURL:GURL(password_manager::kPasswordManagerHelpCenterSmartLock)
           referrer:web::Referrer()
-        windowName:nil
        inIncognito:NO
       inBackground:NO
           appendTo:kCurrentTab]);

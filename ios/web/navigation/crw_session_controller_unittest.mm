@@ -47,10 +47,9 @@ namespace {
 class CRWSessionControllerTest : public PlatformTest {
  protected:
   void SetUp() override {
-    session_controller_.reset(
-        [[CRWSessionController alloc] initWithWindowName:@"test window"
-                                             openedByDOM:NO
-                                            browserState:&browser_state_]);
+    session_controller_.reset([[CRWSessionController alloc]
+        initWithBrowserState:&browser_state_
+                 openedByDOM:NO]);
   }
 
   web::Referrer MakeReferrer(const std::string& url) {
@@ -62,8 +61,7 @@ class CRWSessionControllerTest : public PlatformTest {
   base::scoped_nsobject<CRWSessionController> session_controller_;
 };
 
-TEST_F(CRWSessionControllerTest, InitWithWindowName) {
-  EXPECT_NSEQ(@"test window", [session_controller_ windowName]);
+TEST_F(CRWSessionControllerTest, Init) {
   EXPECT_FALSE([session_controller_ isOpenedByDOM]);
   EXPECT_EQ(0U, [[session_controller_ entries] count]);
   EXPECT_EQ(nil, [session_controller_ currentEntry]);
@@ -510,10 +508,8 @@ TEST_F(CRWSessionControllerTest, InsertState) {
 
   // Create source session controller with 1 committed entry.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithWindowName:nil
-                                           openedByDOM:NO
-                                          browserState:&browser_state_]);
-  [other_session_controller setWindowName:@"test-window"];
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                             openedByDOM:NO]);
   [other_session_controller
       addPendingItem:GURL("http://www.url.com/0")
             referrer:web::Referrer()
@@ -530,7 +526,6 @@ TEST_F(CRWSessionControllerTest, InsertState) {
   [session_controller_
       insertStateFromSessionController:other_session_controller.get()];
 
-  EXPECT_NSEQ(@"test-window", [session_controller_ windowName]);
   EXPECT_EQ(2U, [[session_controller_ entries] count]);
   EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
@@ -562,16 +557,12 @@ TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
 
   // Create empty source session controller.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithWindowName:nil
-                                           openedByDOM:NO
-                                          browserState:&browser_state_]);
-  [other_session_controller setWindowName:@"test-window"];
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                             openedByDOM:NO]);
 
   // Insert and verify the state of target session controller.
   [session_controller_
       insertStateFromSessionController:other_session_controller.get()];
-
-  EXPECT_NSEQ(@"test-window", [session_controller_ windowName]);
   EXPECT_EQ(2U, [[session_controller_ entries] count]);
   EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(0, [session_controller_ previousNavigationIndex]);
@@ -588,10 +579,8 @@ TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
   // Create source session controller with 2 committed entries and one
   // pending entry.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithWindowName:nil
-                                           openedByDOM:NO
-                                          browserState:&browser_state_]);
-  [other_session_controller setWindowName:@"test-window"];
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                             openedByDOM:NO]);
   [other_session_controller
       addPendingItem:GURL("http://www.url.com/0")
             referrer:web::Referrer()
@@ -614,7 +603,6 @@ TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
   [session_controller_
       insertStateFromSessionController:other_session_controller.get()];
 
-  EXPECT_NSEQ(@"test-window", [session_controller_ windowName]);
   EXPECT_EQ(2U, [[session_controller_ entries] count]);
   EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
@@ -647,10 +635,8 @@ TEST_F(CRWSessionControllerTest,
 
   // Create source session controller with 1 committed entry.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithWindowName:nil
-                                           openedByDOM:NO
-                                          browserState:&browser_state_]);
-  [other_session_controller setWindowName:@"test-window"];
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                             openedByDOM:NO]);
   [other_session_controller
       addPendingItem:GURL("http://www.url.com/0")
             referrer:web::Referrer()
@@ -662,7 +648,6 @@ TEST_F(CRWSessionControllerTest,
   [session_controller_
       insertStateFromSessionController:other_session_controller.get()];
 
-  EXPECT_NSEQ(@"test-window", [session_controller_ windowName]);
   EXPECT_EQ(3U, [[session_controller_ entries] count]);
   EXPECT_EQ(2, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
@@ -705,9 +690,9 @@ std::unique_ptr<web::NavigationItemImpl> CreateNavigationItem(
 TEST_F(CRWSessionControllerTest, CreateWithEmptyNavigations) {
   std::vector<std::unique_ptr<web::NavigationItem>> items;
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
-                                               currentIndex:0
-                                               browserState:&browser_state_]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                         navigationItems:std::move(items)
+                                            currentIndex:0]);
   EXPECT_EQ(controller.get().entries.count, 0U);
   EXPECT_EQ(controller.get().currentNavigationIndex, -1);
   EXPECT_EQ(controller.get().previousNavigationIndex, -1);
@@ -723,9 +708,9 @@ TEST_F(CRWSessionControllerTest, CreateWithNavList) {
   items.push_back(CreateNavigationItem("http://www.espn.com",
                                        "http://www.nothing.com", @"ESPN"));
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
-                                               currentIndex:1
-                                               browserState:&browser_state_]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                         navigationItems:std::move(items)
+                                            currentIndex:1]);
 
   EXPECT_EQ(controller.get().entries.count, 3U);
   EXPECT_EQ(controller.get().currentNavigationIndex, 1);
@@ -785,9 +770,9 @@ TEST_F(CRWSessionControllerTest, PushNewEntry) {
   items.push_back(CreateNavigationItem("http://www.thirdpage.com",
                                        "http://www.secondpage.com", @"Third"));
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
-                                               currentIndex:0
-                                               browserState:&browser_state_]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                         navigationItems:std::move(items)
+                                            currentIndex:0]);
 
   GURL pushPageGurl1("http://www.firstpage.com/#push1");
   NSString* stateObject1 = @"{'foo': 1}";
@@ -837,9 +822,9 @@ TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
   items.push_back(CreateNavigationItem("http://foo.com/bar#bar",
                                        "http://foo.com/bar", @"Sixth"));
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
-                                               currentIndex:0
-                                               browserState:&browser_state_]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                         navigationItems:std::move(items)
+                                            currentIndex:0]);
   web::NavigationItemImpl* item0 =
       static_cast<web::NavigationItemImpl*>([controller items][0]);
   web::NavigationItemImpl* item1 =
@@ -881,9 +866,9 @@ TEST_F(CRWSessionControllerTest, UpdateCurrentEntry) {
   items.push_back(CreateNavigationItem("http://www.thirdpage.com",
                                        "http://www.secondpage.com", @"Third"));
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
-                                               currentIndex:0
-                                               browserState:&browser_state_]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
+                                         navigationItems:std::move(items)
+                                            currentIndex:0]);
 
   GURL replacePageGurl1("http://www.firstpage.com/#replace1");
   NSString* stateObject1 = @"{'foo': 1}";

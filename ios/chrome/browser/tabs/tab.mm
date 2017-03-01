@@ -501,15 +501,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 @synthesize tabSnapshottingDelegate = tabSnapshottingDelegate_;
 @synthesize tabHeadersDelegate = tabHeadersDelegate_;
 
-- (instancetype)initWithWindowName:(NSString*)windowName
-                            opener:(Tab*)opener
-                       openedByDOM:(BOOL)openedByDOM
-                             model:(TabModel*)parentModel
-                      browserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                              opener:(Tab*)opener
+                         openedByDOM:(BOOL)openedByDOM
+                               model:(TabModel*)parentModel {
   std::unique_ptr<web::WebStateImpl> webState(
       new web::WebStateImpl(browserState));
-  webState->GetNavigationManagerImpl().InitializeSession(windowName,
-                                                         openedByDOM);
+  webState->GetNavigationManagerImpl().InitializeSession(openedByDOM);
   if ([opener navigationManager]) {
     web::SerializableUserDataManager* userDataManager =
         web::SerializableUserDataManager::FromWebState(webState.get());
@@ -688,11 +686,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                                   opener:(Tab*)opener
                         desktopUserAgent:(BOOL)desktopUserAgent
                            configuration:(void (^)(Tab*))configuration {
-  Tab* tab = [[[Tab alloc] initWithWindowName:nil
-                                       opener:opener
-                                  openedByDOM:NO
-                                        model:nil
-                                 browserState:browserState] autorelease];
+  Tab* tab = [[[Tab alloc] initWithBrowserState:browserState
+                                         opener:opener
+                                    openedByDOM:NO
+                                          model:nil] autorelease];
   if (desktopUserAgent)
     [tab enableDesktopUserAgent];
   [[tab webController] setNativeProvider:provider];
@@ -792,11 +789,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       self.url, url_formatter::kFormatUrlOmitNothing, net::UnescapeRule::SPACES,
       nullptr, nullptr, nullptr);
   return base::SysUTF16ToNSString(urlText);
-}
-
-- (NSString*)windowName {
-  DCHECK([self navigationManager]);
-  return [self navigationManager]->GetSessionController().windowName;
 }
 
 - (NSString*)tabId {
@@ -2181,7 +2173,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     base::scoped_nsobject<OpenUrlCommand> command([[OpenUrlCommand alloc]
          initWithURL:url
             referrer:web::Referrer()  // Strip referrer when switching modes.
-          windowName:nil
          inIncognito:YES
         inBackground:NO
             appendTo:kLastTab]);

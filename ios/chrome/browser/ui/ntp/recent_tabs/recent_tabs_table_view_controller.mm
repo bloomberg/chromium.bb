@@ -642,7 +642,6 @@ enum CellType {
   for (auto const& tab : session->tabs) {
     [_loader webPageOrderedOpen:tab->virtual_url
                        referrer:web::Referrer()
-                     windowName:nil
                    inBackground:YES
                        appendTo:kLastTab];
   }

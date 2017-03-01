@@ -34,19 +34,17 @@ enum OpenPosition {
            transition:(ui::PageTransition)transition
     rendererInitiated:(BOOL)rendererInitiated;
 
-// Load a new URL on a new page/tab. The |referrer| and |windowName| are
-// optional. The tab will be placed in the model according to |appendTo|.
+// Load a new URL on a new page/tab. The |referrer| is optional. The tab will be
+// placed in the model according to |appendTo|.
 - (void)webPageOrderedOpen:(const GURL&)url
                   referrer:(const web::Referrer&)referrer
-                windowName:(NSString*)windowName
               inBackground:(BOOL)inBackground
                   appendTo:(OpenPosition)appendTo;
 
-// Load a new URL on a new page/tab. The |referrer| and |windowName| are
-// optional. The tab will be placed in the model according to |appendTo|.
+// Load a new URL on a new page/tab. The |referrer| is optional. The tab will be
+// placed in the model according to |appendTo|.
 - (void)webPageOrderedOpen:(const GURL&)url
                   referrer:(const web::Referrer&)referrer
-                windowName:(NSString*)windowName
                inIncognito:(BOOL)inIncognito
               inBackground:(BOOL)inBackground
                   appendTo:(OpenPosition)appendTo;

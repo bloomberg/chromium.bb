@@ -54,24 +54,22 @@ using web::WebStateImpl;
 
 @interface TabTest : Tab
 
-- (instancetype)initWithWindowName:(NSString*)windowName
-              lastVisitedTimestamp:(double)lastVisitedTimestamp
-                      browserState:(ios::ChromeBrowserState*)browserState
-                          tabModel:(TabModel*)tabModel;
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                lastVisitedTimestamp:(double)lastVisitedTimestamp
+                            tabModel:(TabModel*)tabModel;
 @end
 
 @implementation TabTest
 
-- (instancetype)initWithWindowName:(NSString*)windowName
-              lastVisitedTimestamp:(double)lastVisitedTimestamp
-                      browserState:(ios::ChromeBrowserState*)browserState
-                          tabModel:(TabModel*)tabModel {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                lastVisitedTimestamp:(double)lastVisitedTimestamp
+                            tabModel:(TabModel*)tabModel {
   id webControllerMock =
       [OCMockObject niceMockForClass:[CRWWebController class]];
 
   auto webStateImpl = base::MakeUnique<WebStateImpl>(browserState);
   webStateImpl->SetWebController(webControllerMock);
-  webStateImpl->GetNavigationManagerImpl().InitializeSession(windowName, NO);
+  webStateImpl->GetNavigationManagerImpl().InitializeSession(NO);
   [webStateImpl->GetNavigationManagerImpl().GetSessionController()
       setLastVisitedTimestamp:lastVisitedTimestamp];
 
@@ -157,11 +155,10 @@ class TabModelTest : public PlatformTest {
   }
 
  protected:
-  std::unique_ptr<WebStateImpl> CreateWebState(NSString* windowName,
-                                               NSString* opener,
+  std::unique_ptr<WebStateImpl> CreateWebState(NSString* opener,
                                                NSInteger index) {
     auto webState = base::MakeUnique<WebStateImpl>(chrome_browser_state_.get());
-    webState->GetNavigationManagerImpl().InitializeSession(windowName, NO);
+    webState->GetNavigationManagerImpl().InitializeSession(NO);
     if ([opener length] != 0) {
       // Duplicate code from Tab initializer. Will be removed once the code
       // is rewritten to remove the use of internal ios/web/ API (see issue
@@ -174,12 +171,12 @@ class TabModelTest : public PlatformTest {
     return webState;
   }
 
-  std::unique_ptr<WebStateImpl> CreateWebState(NSString* windowName) {
-    return CreateWebState(windowName, @"", -1);
+  std::unique_ptr<WebStateImpl> CreateWebState() {
+    return CreateWebState(@"", -1);
   }
 
   std::unique_ptr<WebStateImpl> CreateChildWebState(Tab* parent) {
-    return CreateWebState([parent windowName], parent.tabId, -1);
+    return CreateWebState(parent.tabId, -1);
   }
 
   void RestoreSession(SessionWindowIOS* window) {
@@ -190,9 +187,9 @@ class TabModelTest : public PlatformTest {
   SessionWindowIOS* CreateSessionWindow(int entries) {
     SessionWindowIOS* window = [[SessionWindowIOS alloc] init];
     for (int i = 0; i < entries; i++) {
-      NSString* windowName = [NSString stringWithFormat:@"window %d", i + 1];
-      [window addSerializedSessionStorage:CreateWebState(windowName)
-                                              ->BuildSessionStorage()];
+      CRWSessionStorage* session_storage =
+          CreateWebState()->BuildSessionStorage();
+      [window addSerializedSessionStorage:session_storage];
     }
     if (entries)
       [window setSelectedIndex:1];
@@ -214,7 +211,6 @@ TEST_F(TabModelTest, IsEmpty) {
   EXPECT_TRUE([tab_model_ isEmpty]);
   [tab_model_ insertTabWithURL:kURL
                       referrer:kReferrer
-                    windowName:@"window 1"
                         opener:nil
                        atIndex:0];
   ASSERT_EQ(1U, [tab_model_ count]);
@@ -222,93 +218,89 @@ TEST_F(TabModelTest, IsEmpty) {
 }
 
 TEST_F(TabModelTest, InsertUrlSingle) {
-  [tab_model_ insertTabWithURL:kURL
-                      referrer:kReferrer
-                    windowName:@"window 1"
-                        opener:nil
-                       atIndex:0];
+  Tab* tab = [tab_model_ insertTabWithURL:kURL
+                                 referrer:kReferrer
+                                   opener:nil
+                                  atIndex:0];
   ASSERT_EQ(1U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:0] windowName]);
+  EXPECT_NSEQ(tab, [tab_model_ tabAtIndex:0]);
 }
 
 TEST_F(TabModelTest, InsertUrlMultiple) {
-  [tab_model_ insertTabWithURL:kURL
-                      referrer:kReferrer
-                    windowName:@"window 1"
-                        opener:nil
-                       atIndex:0];
-  [tab_model_ insertTabWithURL:kURL
-                      referrer:kReferrer
-                    windowName:@"window 2"
-                        opener:nil
-                       atIndex:0];
-  [tab_model_ insertTabWithURL:kURL
-                      referrer:kReferrer
-                    windowName:@"window 3"
-                        opener:nil
-                       atIndex:1];
+  Tab* tab0 = [tab_model_ insertTabWithURL:kURL
+                                  referrer:kReferrer
+                                    opener:nil
+                                   atIndex:0];
+  Tab* tab1 = [tab_model_ insertTabWithURL:kURL
+                                  referrer:kReferrer
+                                    opener:nil
+                                   atIndex:0];
+  Tab* tab2 = [tab_model_ insertTabWithURL:kURL
+                                  referrer:kReferrer
+                                    opener:nil
+                                   atIndex:1];
 
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:2] windowName]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:2]);
 }
 
 TEST_F(TabModelTest, AppendUrlSingle) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
+  Tab* tab = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
   ASSERT_EQ(1U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:0] windowName]);
+  EXPECT_NSEQ(tab, [tab_model_ tabAtIndex:0]);
 }
 
 TEST_F(TabModelTest, AppendUrlMultiple) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 2"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
+  Tab* tab0 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  Tab* tab1 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  Tab* tab2 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
 
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:2] windowName]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:2]);
 }
 
 TEST_F(TabModelTest, CloseTabAtIndexBeginning) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 2"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
+  [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  Tab* tab1 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  Tab* tab2 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
 
   [tab_model_ closeTabAtIndex:0];
 
   ASSERT_EQ(2U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:1] windowName]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
 }
 
 TEST_F(TabModelTest, CloseTabAtIndexMiddle) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 2"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
+  Tab* tab0 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  Tab* tab2 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
 
   [tab_model_ closeTabAtIndex:1];
 
   ASSERT_EQ(2U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:1] windowName]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
 }
 
 TEST_F(TabModelTest, CloseTabAtIndexLast) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 2"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
+  Tab* tab0 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  Tab* tab1 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kReferrer];
 
   [tab_model_ closeTabAtIndex:2];
 
   ASSERT_EQ(2U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:1] windowName]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:1]);
 }
 
 TEST_F(TabModelTest, CloseTabAtIndexOnlyOne) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
+  [tab_model_ addTabWithURL:kURL referrer:kReferrer];
 
   [tab_model_ closeTabAtIndex:0];
 
@@ -316,92 +308,65 @@ TEST_F(TabModelTest, CloseTabAtIndexOnlyOne) {
 }
 
 TEST_F(TabModelTest, RestoreSessionOnNTPTest) {
-  [tab_model_ insertTabWithURL:GURL(kChromeUINewTabURL)
-                      referrer:kEmptyReferrer
-                    windowName:@"old window"
-                        opener:nil
-                       atIndex:0];
+  Tab* tab = [tab_model_ insertTabWithURL:GURL(kChromeUINewTabURL)
+                                 referrer:kEmptyReferrer
+                                   opener:nil
+                                  atIndex:0];
   base::scoped_nsobject<SessionWindowIOS> window(CreateSessionWindow(3));
 
   RestoreSession(window.get());
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ currentTab] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:2] windowName]);
+  EXPECT_NSEQ([tab_model_ tabAtIndex:1], [tab_model_ currentTab]);
+  EXPECT_NSNE(tab, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSNE(tab, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSNE(tab, [tab_model_ tabAtIndex:2]);
 }
 
 TEST_F(TabModelTest, RestoreSessionOn2NtpTest) {
-  [tab_model_ insertTabWithURL:GURL(kChromeUINewTabURL)
-                      referrer:kEmptyReferrer
-                    windowName:@"old window 1"
-                        opener:nil
-                       atIndex:0];
-  [tab_model_ insertTabWithURL:GURL(kChromeUINewTabURL)
-                      referrer:kEmptyReferrer
-                    windowName:@"old window 2"
-                        opener:nil
-                       atIndex:1];
+  Tab* tab0 = [tab_model_ insertTabWithURL:GURL(kChromeUINewTabURL)
+                                  referrer:kEmptyReferrer
+                                    opener:nil
+                                   atIndex:0];
+  Tab* tab1 = [tab_model_ insertTabWithURL:GURL(kChromeUINewTabURL)
+                                  referrer:kEmptyReferrer
+                                    opener:nil
+                                   atIndex:1];
   base::scoped_nsobject<SessionWindowIOS> window(CreateSessionWindow(3));
 
   RestoreSession(window.get());
   ASSERT_EQ(5U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ currentTab] windowName]);
-  EXPECT_NSEQ(@"old window 1", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"old window 2", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:2] windowName]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:3] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:4] windowName]);
+  EXPECT_NSEQ([tab_model_ tabAtIndex:3], [tab_model_ currentTab]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSNE(tab0, [tab_model_ tabAtIndex:2]);
+  EXPECT_NSNE(tab0, [tab_model_ tabAtIndex:3]);
+  EXPECT_NSNE(tab0, [tab_model_ tabAtIndex:4]);
+  EXPECT_NSNE(tab1, [tab_model_ tabAtIndex:2]);
+  EXPECT_NSNE(tab1, [tab_model_ tabAtIndex:3]);
+  EXPECT_NSNE(tab1, [tab_model_ tabAtIndex:4]);
 }
 
 TEST_F(TabModelTest, RestoreSessionOnAnyTest) {
-  [tab_model_ insertTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    windowName:@"old window 1"
-                        opener:nil
-                       atIndex:0];
+  Tab* tab = [tab_model_ insertTabWithURL:kURL
+                                 referrer:kEmptyReferrer
+                                   opener:nil
+                                  atIndex:0];
   base::scoped_nsobject<SessionWindowIOS> window(CreateSessionWindow(3));
 
   RestoreSession(window.get());
   ASSERT_EQ(4U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ currentTab] windowName]);
-  EXPECT_NSEQ(@"old window 1", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:2] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:3] windowName]);
-}
-
-TEST_F(TabModelTest, TabForWindowName) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
-  [tab_model_ addTabWithURL:GURL("https://www.some.url2.com")
-                   referrer:kReferrer2
-                 windowName:@"window 2"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
-
-  Tab* tab = [tab_model_ tabWithWindowName:@"window 2"];
-
-  EXPECT_NSEQ([tab windowName], @"window 2");
-  EXPECT_EQ(tab.url, GURL("https://www.some.url2.com/"));
-}
-
-TEST_F(TabModelTest, TabForWindowNameNotFound) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
-  [tab_model_ addTabWithURL:GURL("https://www.some.url2.com")
-                   referrer:kReferrer2
-                 windowName:@"window 2"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
-
-  Tab* tab = [tab_model_ tabWithWindowName:@"window not found"];
-
-  EXPECT_EQ(nil, tab);
+  EXPECT_NSEQ([tab_model_ tabAtIndex:2], [tab_model_ currentTab]);
+  EXPECT_NSEQ(tab, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSNE(tab, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSNE(tab, [tab_model_ tabAtIndex:2]);
+  EXPECT_NSNE(tab, [tab_model_ tabAtIndex:3]);
 }
 
 TEST_F(TabModelTest, CloseAllTabs) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
+  [tab_model_ addTabWithURL:kURL referrer:kReferrer];
   [tab_model_ addTabWithURL:GURL("https://www.some.url2.com")
-                   referrer:kReferrer2
-                 windowName:@"window 2"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
+                   referrer:kReferrer2];
+  [tab_model_ addTabWithURL:kURL referrer:kReferrer];
 
   [tab_model_ closeAllTabs];
 
@@ -418,9 +383,8 @@ TEST_F(TabModelTest, InsertWithSessionController) {
   EXPECT_EQ([tab_model_ count], 0U);
   EXPECT_TRUE([tab_model_ isEmpty]);
 
-  Tab* new_tab =
-      [tab_model_ insertTabWithWebState:CreateWebState(@"window", @"opener", -1)
-                                atIndex:0];
+  Tab* new_tab = [tab_model_ insertTabWithWebState:CreateWebState(@"opener", -1)
+                                           atIndex:0];
   EXPECT_EQ([tab_model_ count], 1U);
   [tab_model_ setCurrentTab:new_tab];
   Tab* current_tab = [tab_model_ currentTab];
@@ -429,19 +393,19 @@ TEST_F(TabModelTest, InsertWithSessionController) {
 
 TEST_F(TabModelTest, OpenerOfTab) {
   // Start off with a couple tabs.
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
 
   // Create parent tab.
-  Tab* parent_tab = [tab_model_ insertTabWithWebState:CreateWebState(@"window")
+  Tab* parent_tab = [tab_model_ insertTabWithWebState:CreateWebState()
                                               atIndex:[tab_model_ count]];
   // Create child tab.
   Tab* child_tab =
       [tab_model_ insertTabWithWebState:CreateChildWebState(parent_tab)
                                 atIndex:[tab_model_ count]];
   // Create another unrelated tab.
-  Tab* another_tab = [tab_model_ insertTabWithWebState:CreateWebState(@"window")
+  Tab* another_tab = [tab_model_ insertTabWithWebState:CreateWebState()
                                                atIndex:[tab_model_ count]];
 
   // Create another child of the first tab.
@@ -468,33 +432,33 @@ TEST_F(TabModelTest, OpenersEmptyModel) {
 
 TEST_F(TabModelTest, OpenersNothingOpenedGeneral) {
   // Start with a few tabs.
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
 
-  Tab* tab = [tab_model_ insertTabWithWebState:CreateWebState(@"window")
+  Tab* tab = [tab_model_ insertTabWithWebState:CreateWebState()
                                        atIndex:[tab_model_ count]];
 
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
 
   // All should fail since this hasn't opened anything else.
   EXPECT_FALSE([tab_model_ nextTabWithOpener:tab afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:tab]);
 
   // Add more items to the tab, expect the same results.
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
   EXPECT_FALSE([tab_model_ nextTabWithOpener:tab afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:tab]);
 }
 
 TEST_F(TabModelTest, OpenersNothingOpenedFirst) {
   // Our tab is first.
-  Tab* tab = [tab_model_ insertTabWithWebState:CreateWebState(@"window")
+  Tab* tab = [tab_model_ insertTabWithWebState:CreateWebState()
                                        atIndex:[tab_model_ count]];
 
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
 
   // All should fail since this hasn't opened anything else.
   EXPECT_FALSE([tab_model_ nextTabWithOpener:tab afterTab:nil]);
@@ -503,9 +467,9 @@ TEST_F(TabModelTest, OpenersNothingOpenedFirst) {
 
 TEST_F(TabModelTest, OpenersNothingOpenedLast) {
   // Our tab is last.
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  Tab* tab = [tab_model_ insertTabWithWebState:CreateWebState(@"window")
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  Tab* tab = [tab_model_ insertTabWithWebState:CreateWebState()
                                        atIndex:[tab_model_ count]];
 
   // All should fail since this hasn't opened anything else.
@@ -514,25 +478,25 @@ TEST_F(TabModelTest, OpenersNothingOpenedLast) {
 }
 
 TEST_F(TabModelTest, OpenersChildTabBeforeOpener) {
-  Tab* parent_tab = [tab_model_ insertTabWithWebState:CreateWebState(@"window")
+  Tab* parent_tab = [tab_model_ insertTabWithWebState:CreateWebState()
                                               atIndex:[tab_model_ count]];
   // Insert child at start
   [tab_model_ insertTabWithWebState:CreateChildWebState(parent_tab) atIndex:0];
 
   // Insert a few more between them.
-  [tab_model_ insertTabWithWebState:CreateWebState(@"window") atIndex:1];
-  [tab_model_ insertTabWithWebState:CreateWebState(@"window") atIndex:1];
+  [tab_model_ insertTabWithWebState:CreateWebState() atIndex:1];
+  [tab_model_ insertTabWithWebState:CreateWebState() atIndex:1];
 
   EXPECT_FALSE([tab_model_ nextTabWithOpener:parent_tab afterTab:nil]);
   EXPECT_FALSE([tab_model_ lastTabWithOpener:parent_tab]);
 }
 
 TEST_F(TabModelTest, OpenersChildTabAfterOpener) {
-  Tab* parent_tab = [tab_model_ insertTabWithWebState:CreateWebState(@"window")
+  Tab* parent_tab = [tab_model_ insertTabWithWebState:CreateWebState()
                                               atIndex:[tab_model_ count]];
 
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
   // Insert two children at end.
   Tab* child_tab1 =
       [tab_model_ insertTabWithWebState:CreateChildWebState(parent_tab)
@@ -549,108 +513,99 @@ TEST_F(TabModelTest, OpenersChildTabAfterOpener) {
 
 TEST_F(TabModelTest, AddWithOrderController) {
   // Create a few tabs with the controller at the front.
-  Tab* parent =
-      [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  Tab* parent = [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
 
   // Add a new tab, it should be added behind the parent.
-  Tab* child = [tab_model_
-      insertOrUpdateTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:nil
-                        opener:parent
-                   openedByDOM:NO
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:NO];
+  Tab* child =
+      [tab_model_ insertTabWithURL:kURL
+                          referrer:kEmptyReferrer
+                        transition:ui::PAGE_TRANSITION_LINK
+                            opener:parent
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:NO];
   EXPECT_EQ([tab_model_ indexOfTab:parent], 0U);
   EXPECT_EQ([tab_model_ indexOfTab:child], 1U);
 
   // Add another new tab without a parent, should go at the end.
-  Tab* tab = [tab_model_
-      insertOrUpdateTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:nil
-                        opener:nil
-                   openedByDOM:NO
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:NO];
+  Tab* tab =
+      [tab_model_ insertTabWithURL:kURL
+                          referrer:kEmptyReferrer
+                        transition:ui::PAGE_TRANSITION_LINK
+                            opener:nil
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:NO];
   EXPECT_EQ([tab_model_ indexOfTab:tab], [tab_model_ count] - 1);
 
   // Same for a tab that's not opened via a LINK transition.
-  Tab* tab2 = [tab_model_ insertOrUpdateTabWithURL:kURL
-                                          referrer:kEmptyReferrer
-                                        transition:ui::PAGE_TRANSITION_TYPED
-                                        windowName:nil
-                                            opener:nil
-                                       openedByDOM:NO
-                                           atIndex:[tab_model_ count]
-                                      inBackground:NO];
+  Tab* tab2 = [tab_model_ insertTabWithURL:kURL
+                                  referrer:kEmptyReferrer
+                                transition:ui::PAGE_TRANSITION_TYPED
+                                    opener:nil
+                               openedByDOM:NO
+                                   atIndex:[tab_model_ count]
+                              inBackground:NO];
   EXPECT_EQ([tab_model_ indexOfTab:tab2], [tab_model_ count] - 1);
 
   // Add a tab in the background. It should appear behind the opening tab.
-  Tab* tab3 = [tab_model_
-      insertOrUpdateTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:nil
-                        opener:tab
-                   openedByDOM:NO
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:YES];
+  Tab* tab3 =
+      [tab_model_ insertTabWithURL:kURL
+                          referrer:kEmptyReferrer
+                        transition:ui::PAGE_TRANSITION_LINK
+                            opener:tab
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:YES];
   EXPECT_EQ([tab_model_ indexOfTab:tab3], [tab_model_ indexOfTab:tab] + 1);
 
   // Add another background tab behind the one we just opened.
-  Tab* tab4 = [tab_model_
-      insertOrUpdateTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:nil
-                        opener:tab3
-                   openedByDOM:NO
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:YES];
+  Tab* tab4 =
+      [tab_model_ insertTabWithURL:kURL
+                          referrer:kEmptyReferrer
+                        transition:ui::PAGE_TRANSITION_LINK
+                            opener:tab3
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:YES];
   EXPECT_EQ([tab_model_ indexOfTab:tab4], [tab_model_ indexOfTab:tab3] + 1);
 }
 
 TEST_F(TabModelTest, AddWithOrderControllerAndGrouping) {
   // Create a few tabs with the controller at the front.
-  Tab* parent =
-      [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  Tab* parent = [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
   // Force the history to update, as it is used to determine grouping.
   ASSERT_TRUE([parent navigationManager]);
   [[parent navigationManager]->GetSessionController() commitPendingItem];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
 
   ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
 
   // Add a new tab, it should be added behind the parent.
-  Tab* child1 = [tab_model_
-      insertOrUpdateTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:nil
-                        opener:parent
-                   openedByDOM:NO
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:NO];
+  Tab* child1 =
+      [tab_model_ insertTabWithURL:kURL
+                          referrer:kEmptyReferrer
+                        transition:ui::PAGE_TRANSITION_LINK
+                            opener:parent
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:NO];
   EXPECT_EQ([tab_model_ indexOfTab:parent], 0U);
   EXPECT_EQ([tab_model_ indexOfTab:child1], 1U);
 
   // Add a second child tab in the background. It should be added behind the
   // first child.
-  Tab* child2 = [tab_model_
-      insertOrUpdateTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:nil
-                        opener:parent
-                   openedByDOM:NO
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:YES];
+  Tab* child2 =
+      [tab_model_ insertTabWithURL:kURL
+                          referrer:kEmptyReferrer
+                        transition:ui::PAGE_TRANSITION_LINK
+                            opener:parent
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:YES];
   EXPECT_EQ([tab_model_ indexOfTab:child2], 2U);
 
   // Navigate the parent tab to a new URL.  It should not change any ordering.
@@ -664,28 +619,26 @@ TEST_F(TabModelTest, AddWithOrderControllerAndGrouping) {
 
   // Add a new tab. It should be added behind the parent. It should not be added
   // after the previous two children.
-  Tab* child3 = [tab_model_
-      insertOrUpdateTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:nil
-                        opener:parent
-                   openedByDOM:NO
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:NO];
+  Tab* child3 =
+      [tab_model_ insertTabWithURL:kURL
+                          referrer:kEmptyReferrer
+                        transition:ui::PAGE_TRANSITION_LINK
+                            opener:parent
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:NO];
   EXPECT_EQ([tab_model_ indexOfTab:child3], 1U);
 
   // Add a fourt child tab in the background. It should be added behind the
   // third child.
-  Tab* child4 = [tab_model_
-      insertOrUpdateTabWithURL:kURL
-                      referrer:kEmptyReferrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:nil
-                        opener:parent
-                   openedByDOM:NO
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:YES];
+  Tab* child4 =
+      [tab_model_ insertTabWithURL:kURL
+                          referrer:kEmptyReferrer
+                        transition:ui::PAGE_TRANSITION_LINK
+                            opener:parent
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:YES];
   EXPECT_EQ([tab_model_ indexOfTab:child4], 2U);
 
   // The first two children should have been moved to the right.
@@ -693,60 +646,55 @@ TEST_F(TabModelTest, AddWithOrderControllerAndGrouping) {
   EXPECT_EQ([tab_model_ indexOfTab:child2], 4U);
 
   // Now add a non-owned tab and make sure it is added at the end.
-  Tab* nonChild =
-      [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  Tab* nonChild = [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
   EXPECT_EQ([tab_model_ indexOfTab:nonChild], [tab_model_ count] - 1);
 }
 
 TEST_F(TabModelTest, AddWithLinkTransitionAndIndex) {
   // Create a few tabs with the controller at the front.
-  Tab* parent =
-      [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  Tab* parent = [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
   // Force the history to update, as it is used to determine grouping.
   ASSERT_TRUE([parent navigationManager]);
   [[parent navigationManager]->GetSessionController() commitPendingItem];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
-  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
+  [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer];
 
   ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
 
   // Add a new tab, it should be added before the parent since the index
   // parameter has been specified with a valid value.
-  Tab* child1 = [tab_model_ insertOrUpdateTabWithURL:kURL
-                                            referrer:kEmptyReferrer
-                                          transition:ui::PAGE_TRANSITION_LINK
-                                          windowName:nil
-                                              opener:parent
-                                         openedByDOM:NO
-                                             atIndex:0
-                                        inBackground:NO];
+  Tab* child1 = [tab_model_ insertTabWithURL:kURL
+                                    referrer:kEmptyReferrer
+                                  transition:ui::PAGE_TRANSITION_LINK
+                                      opener:parent
+                                 openedByDOM:NO
+                                     atIndex:0
+                                inBackground:NO];
   EXPECT_EQ([tab_model_ indexOfTab:parent], 1U);
   EXPECT_EQ([tab_model_ indexOfTab:child1], 0U);
 
   // Add a new tab, it should be added at the beginning of the stack because
   // the index parameter has been specified with a valid value.
-  Tab* child2 = [tab_model_ insertOrUpdateTabWithURL:kURL
-                                            referrer:kEmptyReferrer
-                                          transition:ui::PAGE_TRANSITION_LINK
-                                          windowName:nil
-                                              opener:parent
-                                         openedByDOM:NO
-                                             atIndex:0
-                                        inBackground:NO];
+  Tab* child2 = [tab_model_ insertTabWithURL:kURL
+                                    referrer:kEmptyReferrer
+                                  transition:ui::PAGE_TRANSITION_LINK
+                                      opener:parent
+                                 openedByDOM:NO
+                                     atIndex:0
+                                inBackground:NO];
   EXPECT_EQ([tab_model_ indexOfTab:parent], 2U);
   EXPECT_EQ([tab_model_ indexOfTab:child1], 1U);
   EXPECT_EQ([tab_model_ indexOfTab:child2], 0U);
 
   // Add a new tab, it should be added at position 1 because the index parameter
   // has been specified with a valid value.
-  Tab* child3 = [tab_model_ insertOrUpdateTabWithURL:kURL
-                                            referrer:kEmptyReferrer
-                                          transition:ui::PAGE_TRANSITION_LINK
-                                          windowName:nil
-                                              opener:parent
-                                         openedByDOM:NO
-                                             atIndex:1
-                                        inBackground:NO];
+  Tab* child3 = [tab_model_ insertTabWithURL:kURL
+                                    referrer:kEmptyReferrer
+                                  transition:ui::PAGE_TRANSITION_LINK
+                                      opener:parent
+                                 openedByDOM:NO
+                                     atIndex:1
+                                inBackground:NO];
   EXPECT_EQ([tab_model_ indexOfTab:parent], 3U);
   EXPECT_EQ([tab_model_ indexOfTab:child1], 2U);
   EXPECT_EQ([tab_model_ indexOfTab:child3], 1U);
@@ -754,59 +702,59 @@ TEST_F(TabModelTest, AddWithLinkTransitionAndIndex) {
 }
 
 TEST_F(TabModelTest, MoveTabs) {
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 2"];
-  [tab_model_ addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
+  Tab* tab0 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  Tab* tab1 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
+  Tab* tab2 = [tab_model_ addTabWithURL:kURL referrer:kReferrer];
 
   // Basic sanity checks before moving on.
   ASSERT_EQ(3U, [tab_model_ count]);
-  ASSERT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:0] windowName]);
-  ASSERT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:1] windowName]);
-  ASSERT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:2] windowName]);
+  ASSERT_NSEQ(tab0, [tab_model_ tabAtIndex:0]);
+  ASSERT_NSEQ(tab1, [tab_model_ tabAtIndex:1]);
+  ASSERT_NSEQ(tab2, [tab_model_ tabAtIndex:2]);
 
   // Move a tab from index 1 to index 0 (move tab left by one).
   [tab_model_observer_ setTabMovedWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:1] toIndex:0];
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:2] windowName]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:2]);
   EXPECT_TRUE([tab_model_observer_ tabMovedWasCalled]);
 
   // Move a tab from index 1 to index 2 (move tab right by one).
   [tab_model_observer_ setTabMovedWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:1] toIndex:2];
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:2] windowName]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:2]);
   EXPECT_TRUE([tab_model_observer_ tabMovedWasCalled]);
 
   // Move a tab from index 0 to index 2 (move tab right by more than one).
   [tab_model_observer_ setTabMovedWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:0] toIndex:2];
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:2] windowName]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:2]);
   EXPECT_TRUE([tab_model_observer_ tabMovedWasCalled]);
 
   // Move a tab from index 2 to index 0 (move tab left by more than one).
   [tab_model_observer_ setTabMovedWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:2] toIndex:0];
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:2] windowName]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:2]);
   EXPECT_TRUE([tab_model_observer_ tabMovedWasCalled]);
 
   // Move a tab from index 2 to index 2 (move tab to the same index).
   [tab_model_observer_ setTabMovedWasCalled:NO];
   [tab_model_ moveTab:[tab_model_ tabAtIndex:2] toIndex:2];
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ(@"window 2", [[tab_model_ tabAtIndex:0] windowName]);
-  EXPECT_NSEQ(@"window 3", [[tab_model_ tabAtIndex:1] windowName]);
-  EXPECT_NSEQ(@"window 1", [[tab_model_ tabAtIndex:2] windowName]);
+  EXPECT_NSEQ(tab1, [tab_model_ tabAtIndex:0]);
+  EXPECT_NSEQ(tab2, [tab_model_ tabAtIndex:1]);
+  EXPECT_NSEQ(tab0, [tab_model_ tabAtIndex:2]);
   EXPECT_FALSE([tab_model_observer_ tabMovedWasCalled]);
 }
 
@@ -814,9 +762,8 @@ TEST_F(TabModelTest, SetParentModel) {
   // Create a tab without a parent model and make sure it doesn't crash.  Then
   // set its parent TabModel and make sure that works as well.
   base::scoped_nsobject<TabTest> tab([[TabTest alloc]
-        initWithWindowName:@"parentless"
+      initWithBrowserState:chrome_browser_state_.get()
       lastVisitedTimestamp:100
-              browserState:chrome_browser_state_.get()
                   tabModel:nil]);
   EXPECT_TRUE([tab parentTabModel] == nil);
   [tab_model_ insertTab:tab atIndex:0];
@@ -845,15 +792,13 @@ TEST_F(TabModelTest, PersistSelectionChange) {
              sessionService:[SessionServiceIOS sharedService]
                browserState:chrome_browser_state.get()]);
 
-  [model addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
+  [model addTabWithURL:kURL referrer:kReferrer];
   [model insertTabWithURL:kURL
                  referrer:kReferrer
-               windowName:@"window 3"
                    opener:[model tabAtIndex:0]
                   atIndex:[model count]];
   [model insertTabWithURL:kURL
                  referrer:kReferrer
-               windowName:@"window 3"
                    opener:[model tabAtIndex:1]
                   atIndex:0];
 

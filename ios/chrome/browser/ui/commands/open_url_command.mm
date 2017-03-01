@@ -22,7 +22,6 @@
 @synthesize inBackground = _inBackground;
 @synthesize fromChrome = _fromChrome;
 @synthesize appendTo = _appendTo;
-@synthesize windowName = _windowName;
 
 - (instancetype)initWithTag:(NSInteger)tag {
   NOTREACHED();
@@ -31,14 +30,12 @@
 
 - (instancetype)initWithURL:(const GURL&)url
                    referrer:(const web::Referrer&)referrer
-                 windowName:(NSString*)windowName
                 inIncognito:(BOOL)inIncognito
                inBackground:(BOOL)inBackground
                    appendTo:(OpenPosition)appendTo {
   if ((self = [super initWithTag:IDC_OPEN_URL])) {
     _url = url;
     _referrer = referrer;
-    _windowName = [windowName copy];
     _inIncognito = inIncognito;
     _inBackground = inBackground;
     _appendTo = appendTo;
@@ -49,7 +46,6 @@
 - (instancetype)initWithURLFromChrome:(const GURL&)url {
   if ((self = [self initWithURL:url
                        referrer:web::Referrer()
-                     windowName:nil
                     inIncognito:NO
                    inBackground:NO
                        appendTo:kLastTab])) {

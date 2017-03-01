@@ -835,11 +835,10 @@ enum class SnapshotViewOption {
   DCHECK(tabModel.browserState);
 
   base::scoped_nsobject<Tab> tab([[Tab alloc]
-      initWithWindowName:nil
-                  opener:nil
-             openedByDOM:NO
-                   model:tabModel
-            browserState:tabModel.browserState]);
+      initWithBrowserState:tabModel.browserState
+                    opener:nil
+               openedByDOM:NO
+                     model:tabModel]);
   [tab webController].webUsageEnabled = tabModel.webUsageEnabled;
 
   ProceduralBlock dismissWithNewTab = ^{
@@ -899,14 +898,13 @@ enum class SnapshotViewOption {
     // Disable user interactions until the tab is inserted to prevent multiple
     // concurrent tab model updates.
     [_tabSwitcherView setUserInteractionEnabled:NO];
-    Tab* tab = [mainModel insertOrUpdateTabWithURL:GURL()
-                                          referrer:web::Referrer()
-                                        transition:ui::PAGE_TRANSITION_TYPED
-                                        windowName:nil
-                                            opener:nil
-                                       openedByDOM:NO
-                                           atIndex:NSNotFound
-                                      inBackground:NO];
+    Tab* tab = [mainModel insertTabWithURL:GURL()
+                                  referrer:web::Referrer()
+                                transition:ui::PAGE_TRANSITION_TYPED
+                                    opener:nil
+                               openedByDOM:NO
+                                   atIndex:NSNotFound
+                              inBackground:NO];
     [tab loadSessionTab:toLoad];
     [mainModel setCurrentTab:tab];
 

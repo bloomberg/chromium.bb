@@ -21,7 +21,6 @@
 // as this functionality moves from CRWSessionController to
 // NavigationManagerImpl;
 @interface CRWSessionController (ExposedForSerialization)
-@property(nonatomic, readwrite, retain) NSString* tabId;
 @property(nonatomic, readwrite, getter=isOpenedByDOM) BOOL openedByDOM;
 @property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
 @property(nonatomic, readwrite, retain)
@@ -41,7 +40,6 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
   CRWSessionController* session_controller =
       navigation_manager->GetSessionController();
   serialized_navigation_manager.openedByDOM = session_controller.openedByDOM;
-  serialized_navigation_manager.windowName = session_controller.windowName;
   serialized_navigation_manager.currentNavigationIndex =
       session_controller.currentNavigationIndex;
   serialized_navigation_manager.previousNavigationIndex =
@@ -80,11 +78,10 @@ void SessionStorageBuilder::ExtractSessionState(
   }
   NSUInteger current_index = storage.currentNavigationIndex;
   base::scoped_nsobject<CRWSessionController> session_controller(
-      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
-                                               currentIndex:current_index
-                                               browserState:nullptr]);
+      [[CRWSessionController alloc] initWithBrowserState:nullptr
+                                         navigationItems:std::move(items)
+                                            currentIndex:current_index]);
   [session_controller setOpenedByDOM:storage.openedByDOM];
-  [session_controller setWindowName:storage.windowName];
   [session_controller
       setPreviousNavigationIndex:storage.previousNavigationIndex];
   [session_controller setLastVisitedTimestamp:storage.lastVisitedTimestamp];

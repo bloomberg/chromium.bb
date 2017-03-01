@@ -194,7 +194,7 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
 
     NavigationManagerImpl& navigationManager =
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
-    navigationManager.InitializeSession(@"name", NO);
+    navigationManager.InitializeSession(NO);
     navigationManager.AddPendingItem(
         GURL("http://www.google.com/?q=foo#bar"), web::Referrer(),
         ui::PAGE_TRANSITION_TYPED,
@@ -807,7 +807,7 @@ class CRWWebControllerNativeContentTest : public web::WebTestWithWebController {
   void Load(const GURL& URL) {
     NavigationManagerImpl& navigation_manager =
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
-    navigation_manager.InitializeSession(@"name", NO);
+    navigation_manager.InitializeSession(NO);
     navigation_manager.AddPendingItem(
         URL, web::Referrer(), ui::PAGE_TRANSITION_TYPED,
         web::NavigationInitiationType::USER_INITIATED);

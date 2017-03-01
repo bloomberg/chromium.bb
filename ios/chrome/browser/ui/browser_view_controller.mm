@@ -2043,12 +2043,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     params.post_data.reset([data retain]);
     params.extra_headers.reset([@{ @"Content-Type" : contentType } retain]);
   }
-  Tab* tab = [_model insertOrUpdateTabWithLoadParams:params
-                                          windowName:nil
-                                              opener:nil
-                                         openedByDOM:NO
-                                             atIndex:position
-                                        inBackground:NO];
+  Tab* tab = [_model insertTabWithLoadParams:params
+                                      opener:nil
+                                 openedByDOM:NO
+                                     atIndex:position
+                                inBackground:NO];
   return tab;
 }
 
@@ -2357,15 +2356,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
       Tab* tab = [[self tabModel]
-          insertOrUpdateTabWithURL:params.url
-                          referrer:params.referrer
-                        transition:params.transition
-                        windowName:nil
-                            opener:LegacyTabHelper::GetTabForWebState(webState)
-                       openedByDOM:NO
-                           atIndex:TabModelConstants::kTabPositionAutomatically
-                      inBackground:(params.disposition ==
-                                    WindowOpenDisposition::NEW_BACKGROUND_TAB)];
+          insertTabWithURL:params.url
+                  referrer:params.referrer
+                transition:params.transition
+                    opener:LegacyTabHelper::GetTabForWebState(webState)
+               openedByDOM:NO
+                   atIndex:TabModelConstants::kTabPositionAutomatically
+              inBackground:(params.disposition ==
+                            WindowOpenDisposition::NEW_BACKGROUND_TAB)];
       return tab.webState;
     }
     case WindowOpenDisposition::CURRENT_TAB: {
@@ -2378,14 +2376,13 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     }
     case WindowOpenDisposition::NEW_POPUP: {
       Tab* tab = [[self tabModel]
-          insertOrUpdateTabWithURL:params.url
-                          referrer:params.referrer
-                        transition:params.transition
-                        windowName:nil
-                            opener:LegacyTabHelper::GetTabForWebState(webState)
-                       openedByDOM:YES
-                           atIndex:TabModelConstants::kTabPositionAutomatically
-                      inBackground:NO];
+          insertTabWithURL:params.url
+                  referrer:params.referrer
+                transition:params.transition
+                    opener:LegacyTabHelper::GetTabForWebState(webState)
+               openedByDOM:YES
+                   atIndex:TabModelConstants::kTabPositionAutomatically
+              inBackground:NO];
       return tab.webState;
     }
     default:
@@ -2444,7 +2441,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         Record(ACTION_OPEN_IN_NEW_TAB, isImage, isLink);
         [weakSelf webPageOrderedOpen:link
                             referrer:referrer
-                          windowName:nil
                         inBackground:YES
                             appendTo:kCurrentTab];
       };
@@ -2457,7 +2453,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
           Record(ACTION_OPEN_IN_INCOGNITO_TAB, isImage, isLink);
           [weakSelf webPageOrderedOpen:link
                               referrer:referrer
-                            windowName:nil
                            inIncognito:YES
                           inBackground:NO
                               appendTo:kCurrentTab];
@@ -2519,7 +2514,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       Record(ACTION_OPEN_IMAGE_IN_NEW_TAB, isImage, isLink);
       [weakSelf webPageOrderedOpen:imageUrl
                           referrer:referrer
-                        windowName:nil
                       inBackground:true
                           appendTo:kCurrentTab];
     };
@@ -3355,7 +3349,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 - (void)showSecurityHelpPage {
   [self webPageOrderedOpen:GURL(kPageInfoHelpCenterURL)
                   referrer:web::Referrer()
-                windowName:nil
               inBackground:NO
                   appendTo:kCurrentTab];
   [self hidePageInfoPopupForView:nil];
@@ -3620,7 +3613,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (_isOffTheRecord && !IsURLAllowedInIncognito(url)) {
     [self webPageOrderedOpen:url
                     referrer:web::Referrer()
-                  windowName:nil
                  inIncognito:NO
                 inBackground:NO
                     appendTo:kCurrentTab];
@@ -3659,32 +3651,28 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 // Load a new URL on a new page/tab.
 - (void)webPageOrderedOpen:(const GURL&)URL
                   referrer:(const web::Referrer&)referrer
-                windowName:(NSString*)windowName
               inBackground:(BOOL)inBackground
                   appendTo:(OpenPosition)appendTo {
   Tab* adjacentTab = nil;
   if (appendTo == kCurrentTab)
     adjacentTab = [_model currentTab];
-  [_model insertOrUpdateTabWithURL:URL
-                          referrer:referrer
-                        transition:ui::PAGE_TRANSITION_LINK
-                        windowName:windowName
-                            opener:adjacentTab
-                       openedByDOM:NO
-                           atIndex:TabModelConstants::kTabPositionAutomatically
-                      inBackground:inBackground];
+  [_model insertTabWithURL:URL
+                  referrer:referrer
+                transition:ui::PAGE_TRANSITION_LINK
+                    opener:adjacentTab
+               openedByDOM:NO
+                   atIndex:TabModelConstants::kTabPositionAutomatically
+              inBackground:inBackground];
 }
 
 - (void)webPageOrderedOpen:(const GURL&)url
                   referrer:(const web::Referrer&)referrer
-                windowName:(NSString*)windowName
                inIncognito:(BOOL)inIncognito
               inBackground:(BOOL)inBackground
                   appendTo:(OpenPosition)appendTo {
   if (inIncognito == _isOffTheRecord) {
     [self webPageOrderedOpen:url
                     referrer:referrer
-                  windowName:windowName
                 inBackground:inBackground
                     appendTo:appendTo];
     return;
@@ -3696,7 +3684,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   base::scoped_nsobject<OpenUrlCommand> command([[OpenUrlCommand alloc]
        initWithURL:url
           referrer:web::Referrer()  // Strip referrer when switching modes.
-        windowName:windowName
        inIncognito:inIncognito
       inBackground:inBackground
           appendTo:kLastTab]);
@@ -4130,7 +4117,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
   [self webPageOrderedOpen:helpUrl
                   referrer:web::Referrer()
-                windowName:nil
               inBackground:NO
                   appendTo:kCurrentTab];
 }
@@ -4342,14 +4328,13 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     web::Referrer referrer([strongTab url], web::ReferrerPolicyDefault);
 
     [[weakSelf tabModel]
-        insertOrUpdateTabWithURL:URL
-                        referrer:referrer
-                      transition:ui::PAGE_TRANSITION_LINK
-                      windowName:nil
-                          opener:strongTab
-                     openedByDOM:YES
-                         atIndex:TabModelConstants::kTabPositionAutomatically
-                    inBackground:NO];
+        insertTabWithURL:URL
+                referrer:referrer
+              transition:ui::PAGE_TRANSITION_LINK
+                  opener:strongTab
+             openedByDOM:YES
+                 atIndex:TabModelConstants::kTabPositionAutomatically
+            inBackground:NO];
   };
   [webController executeJavaScript:script
                  completionHandler:completionHandlerBlock];

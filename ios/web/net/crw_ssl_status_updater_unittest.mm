@@ -105,10 +105,9 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
   CRWSessionController* SessionControllerWithEntry(std::string item_url_spec) {
     std::vector<std::unique_ptr<web::NavigationItem>> nav_items;
     base::scoped_nsobject<CRWSessionController> session_controller(
-        [[CRWSessionController alloc]
-            initWithNavigationItems:std::move(nav_items)
-                       currentIndex:0
-                       browserState:GetBrowserState()]);
+        [[CRWSessionController alloc] initWithBrowserState:GetBrowserState()
+                                           navigationItems:std::move(nav_items)
+                                              currentIndex:0]);
     [session_controller
         addPendingItem:GURL(item_url_spec)
               referrer:Referrer()

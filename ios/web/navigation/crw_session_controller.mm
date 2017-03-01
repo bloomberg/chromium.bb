@@ -59,9 +59,6 @@
   // should only be set through its setter.
   base::scoped_nsobject<CRWSessionEntry> _transientEntry;
 
-  // The window name associated with the session.
-  NSString* _windowName;
-
    // Stores the certificate policies decided by the user.
   CRWSessionCertificatePolicyManager* _sessionCertificatePolicyManager;
 
@@ -115,17 +112,14 @@
 @synthesize previousNavigationIndex = _previousNavigationIndex;
 @synthesize pendingItemIndex = _pendingItemIndex;
 @synthesize entries = _entries;
-@synthesize windowName = _windowName;
 @synthesize lastVisitedTimestamp = _lastVisitedTimestamp;
 @synthesize openedByDOM = _openedByDOM;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
-- (instancetype)initWithWindowName:(NSString*)windowName
-                       openedByDOM:(BOOL)openedByDOM
-                      browserState:(web::BrowserState*)browserState {
+- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
+                         openedByDOM:(BOOL)openedByDOM {
   self = [super init];
   if (self) {
-    self.windowName = windowName;
     _openedByDOM = openedByDOM;
     _browserState = browserState;
     _entries = [NSMutableArray array];
@@ -139,17 +133,15 @@
   return self;
 }
 
-- (instancetype)initWithNavigationItems:
-                    (std::vector<std::unique_ptr<web::NavigationItem>>)items
-                           currentIndex:(NSUInteger)currentIndex
-                           browserState:(web::BrowserState*)browserState {
+- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
+                     navigationItems:(web::ScopedNavigationItemList)items
+                        currentIndex:(NSUInteger)currentIndex {
   self = [super init];
   if (self) {
     _browserState = browserState;
 
     // Create entries array from list of navigations.
     _entries = [[NSMutableArray alloc] initWithCapacity:items.size()];
-
     for (auto& item : items) {
       base::scoped_nsobject<CRWSessionEntry> entry(
           [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
@@ -174,7 +166,6 @@
 - (id)copyWithZone:(NSZone*)zone {
   CRWSessionController* copy = [[[self class] alloc] init];
   copy->_openedByDOM = _openedByDOM;
-  copy.windowName = self.windowName;
   copy->_currentNavigationIndex = _currentNavigationIndex;
   copy->_previousNavigationIndex = _previousNavigationIndex;
   copy->_pendingItemIndex = _pendingItemIndex;
@@ -224,14 +215,13 @@
 
 - (NSString*)description {
   return [NSString
-      stringWithFormat:@"name: %@\nlast visit: %f\ncurrent index: %" PRIdNS
+      stringWithFormat:@"last visit: %f\ncurrent index: %" PRIdNS
                        @"\nprevious index: %" PRIdNS
                        @"\npending index: %" PRIdNS
                        @"\n%@\npending: %@\ntransient: %@\n",
-                       self.windowName, _lastVisitedTimestamp,
-                       _currentNavigationIndex, _previousNavigationIndex,
-                       _pendingItemIndex, _entries, _pendingEntry.get(),
-                       _transientEntry.get()];
+                       _lastVisitedTimestamp, _currentNavigationIndex,
+                       _previousNavigationIndex, _pendingItemIndex, _entries,
+                       _pendingEntry.get(), _transientEntry.get()];
 }
 
 - (web::NavigationItemList)items {
@@ -539,8 +529,6 @@
 
 - (void)insertStateFromSessionController:(CRWSessionController*)sourceSession {
   DCHECK(sourceSession);
-  self.windowName = sourceSession.windowName;
-
   // The other session may not have any entries, in which case there is nothing
   // to insert.  The other session's currentNavigationEntry will be bogus
   // in such cases, so ignore it and return early.

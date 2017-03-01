@@ -57,14 +57,12 @@ using testing::_;
 
 - (void)webPageOrderedOpen:(const GURL&)url
                   referrer:(const web::Referrer&)referrer
-                windowName:(NSString*)windowName
               inBackground:(BOOL)inBackground
                   appendTo:(OpenPosition)appendTo {
 }
 
 - (void)webPageOrderedOpen:(const GURL&)url
                   referrer:(const web::Referrer&)referrer
-                windowName:(NSString*)windowName
                inIncognito:(BOOL)inIncognito
               inBackground:(BOOL)inBackground
                   appendTo:(OpenPosition)appendTo {

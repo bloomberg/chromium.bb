@@ -114,7 +114,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, readonly) NSString* originalTitle;
 
 @property(nonatomic, readonly) NSString* urlDisplayString;
-@property(nonatomic, readonly) NSString* windowName;
 
 // ID associated with this tab.
 @property(nonatomic, readonly) NSString* tabId;
@@ -165,11 +164,10 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Creates a new tab with the given state. |opener| is nil unless another tab
 // is conceptually the parent of this tab. |openedByDOM| is YES if the page was
 // opened by DOM. |model| and |browserState| must not be nil.
-- (instancetype)initWithWindowName:(NSString*)windowName
-                            opener:(Tab*)opener
-                       openedByDOM:(BOOL)openedByDOM
-                             model:(TabModel*)parentModel
-                      browserState:(ios::ChromeBrowserState*)browserState;
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                              opener:(Tab*)opener
+                         openedByDOM:(BOOL)openedByDOM
+                               model:(TabModel*)parentModel;
 
 // Create a new tab with given web state and tab model. All must be non-nil.
 - (instancetype)initWithWebState:(std::unique_ptr<web::WebState>)webState
@@ -186,12 +184,11 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Creates a new Tab instance loading |url| with |transition|, configured
 // with no TabModel. |opener| may be nil, and behaves exactly as for
-// -initWithWindowName:opener:model:browserState:.
-// |configuration| is a block that will be run before |url| starts loading,
-// and is the correct place to set properties and delegates on the tab.
-// Calling code must take ownership of the tab -- this is particularly important
-// with Tab instances, because they will fail a DCHECK if they are deallocated
-// when falling out of scope without -close being called.
+// -initWithBrowserState:opener:openedByDOM:model. |configuration| is a block
+// that will be run before |url| starts loading, and is the correct place to set
+// properties and delegates on the tab. Calling code must take ownership of the
+// tab -- this is particularly important with Tab instances, because they will
+// fail a DCHECK if they are deallocated without -close being called.
 + (Tab*)newPreloadingTabWithBrowserState:(ios::ChromeBrowserState*)browserState
                                      url:(const GURL&)url
                                 referrer:(const web::Referrer&)referrer

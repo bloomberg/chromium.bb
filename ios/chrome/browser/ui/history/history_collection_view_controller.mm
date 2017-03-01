@@ -785,7 +785,6 @@ const CGFloat kSeparatorInset = 10;
                        shouldCloseWithCompletion:^{
                          [self.URLLoader webPageOrderedOpen:copiedURL
                                                    referrer:web::Referrer()
-                                                 windowName:nil
                                                 inIncognito:NO
                                                inBackground:NO
                                                    appendTo:kLastTab];
@@ -798,7 +797,6 @@ const CGFloat kSeparatorInset = 10;
                        shouldCloseWithCompletion:^{
                          [self.URLLoader webPageOrderedOpen:copiedURL
                                                    referrer:web::Referrer()
-                                                 windowName:nil
                                                 inIncognito:YES
                                                inBackground:NO
                                                    appendTo:kLastTab];

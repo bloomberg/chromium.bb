@@ -134,7 +134,7 @@ class WebUIMojoTest : public WebIntTest {
   WebUIMojoTest()
       : web_state_(new WebStateImpl(GetBrowserState())),
         ui_handler_(new TestUIHandler()) {
-    web_state_->GetNavigationManagerImpl().InitializeSession(nil, NO);
+    web_state_->GetNavigationManagerImpl().InitializeSession(NO);
     WebUIIOSControllerFactory::RegisterFactory(
         new TestWebUIControllerFactory(ui_handler_.get()));
   }

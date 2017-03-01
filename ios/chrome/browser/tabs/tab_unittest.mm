@@ -195,8 +195,7 @@ class TabTest : public BlockCleanupTest {
         [OCMockObject niceMockForClass:[CRWWebController class]];
     auto web_state_impl = base::MakeUnique<WebStateImpl>(browser_state);
     web_state_impl->SetWebController(mock_web_controller_);
-    web_state_impl->GetNavigationManagerImpl().InitializeSession(@"window1",
-                                                                 NO);
+    web_state_impl->GetNavigationManagerImpl().InitializeSession(NO);
     web_state_impl_ = web_state_impl.get();
     [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
         andReturnValue:OCMOCK_VALUE(web_state_impl_)] webStateImpl];

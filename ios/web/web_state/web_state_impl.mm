@@ -47,11 +47,9 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
   std::unique_ptr<WebStateImpl> web_state(
       new WebStateImpl(params.browser_state));
 
-  // Initialized the new session.
-  NSString* window_name = nil;
+  // Initialize the new session.
   BOOL opened_by_dom = NO;
-  web_state->GetNavigationManagerImpl().InitializeSession(window_name,
-                                                          opened_by_dom);
+  web_state->GetNavigationManagerImpl().InitializeSession(opened_by_dom);
 
   // This std::move is required to compile with the version of clang shipping
   // with Xcode 8.0+. Evalute whether the issue is fixed once a new version of

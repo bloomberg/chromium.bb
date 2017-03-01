@@ -194,22 +194,6 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
 // Returns YES if tab URL host indicates that tab is an NTP tab.
 - (BOOL)isNTPTab:(Tab*)tab;
 
-// Opens a tab at the specified URL and registers its JS-supplied window name if
-// appropriate. For certain transition types, will consult the order controller
-// and thus may only use |index| as a hint. |parentTab| may be nil if there
-// is no parent associated with this new tab, as may |windowName| if not
-// applicable. |openedByDOM| is YES if the page was opened by DOM.
-// The |index| parameter can be set to
-// TabModelConstants::kTabPositionAutomatically if the caller doesn't have a
-// preference for the position of the tab.
-- (Tab*)insertTabWithLoadParams:
-            (const web::NavigationManager::WebLoadParams&)params
-                     windowName:(NSString*)windowName
-                         opener:(Tab*)parentTab
-                    openedByDOM:(BOOL)openedByDOM
-                        atIndex:(NSUInteger)index
-                   inBackground:(BOOL)inBackground;
-
 // Call to switch the selected tab. Broadcasts about the change in selection.
 // It's ok for |newTab| to be nil in case the last tab is going away. In that
 // case, the "tab deselected" notification gets sent, but no corresponding
@@ -425,17 +409,6 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   return static_cast<NSUInteger>(index);
 }
 
-- (Tab*)tabWithWindowName:(NSString*)windowName {
-  if (!windowName)
-    return nil;
-  for (Tab* tab in self) {
-    if ([windowName isEqualToString:tab.windowName]) {
-      return tab;
-    }
-  }
-  return nil;
-}
-
 - (Tab*)nextTabWithOpener:(Tab*)tab afterTab:(Tab*)afterTab {
   int startIndex = WebStateList::kInvalidIndex;
   if (afterTab)
@@ -476,57 +449,59 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   return opener ? LegacyTabHelper::GetTabForWebState(opener) : nil;
 }
 
-- (Tab*)insertOrUpdateTabWithURL:(const GURL&)URL
-                        referrer:(const web::Referrer&)referrer
-                      transition:(ui::PageTransition)transition
-                      windowName:(NSString*)windowName
-                          opener:(Tab*)parentTab
-                     openedByDOM:(BOOL)openedByDOM
-                         atIndex:(NSUInteger)index
-                    inBackground:(BOOL)inBackground {
+- (Tab*)insertTabWithURL:(const GURL&)URL
+                referrer:(const web::Referrer&)referrer
+              transition:(ui::PageTransition)transition
+                  opener:(Tab*)parentTab
+             openedByDOM:(BOOL)openedByDOM
+                 atIndex:(NSUInteger)index
+            inBackground:(BOOL)inBackground {
   web::NavigationManager::WebLoadParams params(URL);
   params.referrer = referrer;
   params.transition_type = transition;
-  return [self insertOrUpdateTabWithLoadParams:params
-                                    windowName:windowName
-                                        opener:parentTab
-                                   openedByDOM:openedByDOM
-                                       atIndex:index
-                                  inBackground:inBackground];
+  return [self insertTabWithLoadParams:params
+                                opener:parentTab
+                           openedByDOM:openedByDOM
+                               atIndex:index
+                          inBackground:inBackground];
 }
 
-- (Tab*)insertOrUpdateTabWithLoadParams:
-            (const web::NavigationManager::WebLoadParams&)loadParams
-                             windowName:(NSString*)windowName
-                                 opener:(Tab*)parentTab
-                            openedByDOM:(BOOL)openedByDOM
-                                atIndex:(NSUInteger)index
-                           inBackground:(BOOL)inBackground {
-  // Find the tab for the given window name. If found, load with
-  // |originalParams| in it, otherwise create a new tab for it.
-  Tab* tab = [self tabWithWindowName:windowName];
-  if (tab) {
-    // Updating a tab shouldn't be possible with web usage suspended, since
-    // whatever page would be driving it should also be suspended.
-    DCHECK(webUsageEnabled_);
+- (Tab*)insertTabWithLoadParams:
+            (const web::NavigationManager::WebLoadParams&)params
+                         opener:(Tab*)parentTab
+                    openedByDOM:(BOOL)openedByDOM
+                        atIndex:(NSUInteger)index
+                   inBackground:(BOOL)inBackground {
+  DCHECK(_browserState);
+  base::scoped_nsobject<Tab> tab([[Tab alloc] initWithBrowserState:_browserState
+                                                            opener:parentTab
+                                                       openedByDOM:openedByDOM
+                                                             model:self]);
+  [tab webController].webUsageEnabled = webUsageEnabled_;
 
-    web::NavigationManager::WebLoadParams updatedParams(loadParams);
-    updatedParams.is_renderer_initiated = (parentTab != nil);
-    [tab.webController loadWithParams:updatedParams];
+  [self insertTab:tab
+          atIndex:index
+           opener:parentTab
+       transition:params.transition_type];
 
-    // Force the page to start loading even if it's in the background.
-    [tab.webController triggerPendingLoad];
+  if (!inBackground && _tabUsageRecorder)
+    _tabUsageRecorder->TabCreatedForSelection(tab);
 
-    if (!inBackground)
-      [self setCurrentTab:tab];
-  } else {
-    tab = [self insertTabWithLoadParams:loadParams
-                             windowName:windowName
-                                 opener:parentTab
-                            openedByDOM:openedByDOM
-                                atIndex:index
-                           inBackground:inBackground];
-  }
+  [[tab webController] loadWithParams:params];
+  // Force the page to start loading even if it's in the background.
+  if (webUsageEnabled_)
+    [[tab webController] triggerPendingLoad];
+  NSDictionary* userInfo = @{
+    kTabModelTabKey : tab,
+    kTabModelOpenInBackgroundKey : @(inBackground),
+  };
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kTabModelNewTabWillOpenNotification
+                    object:self
+                  userInfo:userInfo];
+
+  if (!inBackground)
+    [self setCurrentTab:tab];
 
   return tab;
 }
@@ -542,7 +517,6 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   // Tabs open by DOM are always renderer initiated.
   params.is_renderer_initiated = openedByDOM;
   return [self insertTabWithLoadParams:params
-                            windowName:nil
                                 opener:parentTab
                            openedByDOM:openedByDOM
                                atIndex:index
@@ -877,49 +851,6 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   return host == kChromeUINewTabHost || host == kChromeUIBookmarksHost;
 }
 
-- (Tab*)insertTabWithLoadParams:
-            (const web::NavigationManager::WebLoadParams&)params
-                     windowName:(NSString*)windowName
-                         opener:(Tab*)parentTab
-                    openedByDOM:(BOOL)openedByDOM
-                        atIndex:(NSUInteger)index
-                   inBackground:(BOOL)inBackground {
-  DCHECK(_browserState);
-  base::scoped_nsobject<Tab> tab([[Tab alloc]
-      initWithWindowName:windowName
-                  opener:parentTab
-             openedByDOM:openedByDOM
-                   model:self
-            browserState:_browserState]);
-  [tab webController].webUsageEnabled = webUsageEnabled_;
-
-  [self insertTab:tab
-          atIndex:index
-           opener:parentTab
-       transition:params.transition_type];
-
-  if (!inBackground && _tabUsageRecorder)
-    _tabUsageRecorder->TabCreatedForSelection(tab);
-
-  [[tab webController] loadWithParams:params];
-  // Force the page to start loading even if it's in the background.
-  if (webUsageEnabled_)
-    [[tab webController] triggerPendingLoad];
-  NSDictionary* userInfo = @{
-    kTabModelTabKey : tab,
-    kTabModelOpenInBackgroundKey : @(inBackground),
-  };
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabModelNewTabWillOpenNotification
-                    object:self
-                  userInfo:userInfo];
-
-  if (!inBackground)
-    [self setCurrentTab:tab];
-
-  return tab;
-}
-
 - (void)changeSelectedTabFrom:(Tab*)oldTab
                            to:(Tab*)newTab
                  persistState:(BOOL)persist {
@@ -1110,28 +1041,22 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
 
 @implementation TabModel (PrivateForTestingOnly)
 
-- (Tab*)addTabWithURL:(const GURL&)URL
-             referrer:(const web::Referrer&)referrer
-           windowName:(NSString*)windowName {
+- (Tab*)addTabWithURL:(const GURL&)URL referrer:(const web::Referrer&)referrer {
   return [self insertTabWithURL:URL
                        referrer:referrer
-                     windowName:windowName
                          opener:nil
                         atIndex:self.count];
 }
 
 - (Tab*)insertTabWithURL:(const GURL&)URL
                 referrer:(const web::Referrer&)referrer
-              windowName:(NSString*)windowName
                   opener:(Tab*)parentTab
                  atIndex:(NSUInteger)index {
   DCHECK(_browserState);
-  base::scoped_nsobject<Tab> tab([[Tab alloc]
-      initWithWindowName:windowName
-                  opener:parentTab
-             openedByDOM:NO
-                   model:self
-            browserState:_browserState]);
+  base::scoped_nsobject<Tab> tab([[Tab alloc] initWithBrowserState:_browserState
+                                                            opener:parentTab
+                                                       openedByDOM:NO
+                                                             model:self]);
   web::NavigationManager::WebLoadParams params(URL);
   params.referrer = referrer;
   params.transition_type = ui::PAGE_TRANSITION_TYPED;

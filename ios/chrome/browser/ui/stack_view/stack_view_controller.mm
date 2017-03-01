@@ -2045,14 +2045,13 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     position = [_activeCardSet.tabModel count];
   DCHECK(position <= [_activeCardSet.tabModel count]);
 
-  Tab* tab = [_activeCardSet.tabModel insertOrUpdateTabWithURL:URL
-                                                      referrer:web::Referrer()
-                                                    transition:transition
-                                                    windowName:nil
-                                                        opener:nil
-                                                   openedByDOM:NO
-                                                       atIndex:position
-                                                  inBackground:NO];
+  Tab* tab = [_activeCardSet.tabModel insertTabWithURL:URL
+                                              referrer:web::Referrer()
+                                            transition:transition
+                                                opener:nil
+                                           openedByDOM:NO
+                                               atIndex:position
+                                          inBackground:NO];
   [_activeCardSet.tabModel setCurrentTab:tab];
 
   [_delegate tabSwitcher:self

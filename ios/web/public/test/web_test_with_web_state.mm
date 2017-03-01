@@ -30,7 +30,7 @@ WebTestWithWebState::~WebTestWithWebState() {}
 void WebTestWithWebState::SetUp() {
   WebTest::SetUp();
   std::unique_ptr<WebStateImpl> web_state(new WebStateImpl(GetBrowserState()));
-  web_state->GetNavigationManagerImpl().InitializeSession(nil, NO);
+  web_state->GetNavigationManagerImpl().InitializeSession(NO);
   web_state->SetWebUsageEnabled(true);
   web_state_.reset(web_state.release());
 

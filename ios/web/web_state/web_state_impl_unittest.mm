@@ -249,7 +249,7 @@ class WebStateTest : public web::WebTest {
 
   // Loads specified html page into WebState.
   void LoadHtml(std::string html) {
-    web_state_->GetNavigationManagerImpl().InitializeSession(nil, NO);
+    web_state_->GetNavigationManagerImpl().InitializeSession(NO);
 
     // Use data: url for loading html page.
     std::string encoded_html;

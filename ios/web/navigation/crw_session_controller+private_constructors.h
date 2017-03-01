@@ -20,17 +20,15 @@ class NavigationItem;
 // CRWSessionControllers. Once CRWSessionController has no users outside of
 // web/, these methods can go back into session_controller.h. crbug.com/318974
 @interface CRWSessionController (PrivateConstructors)
-// Initializes a session controller, supplying a unique textual identifier for
-// the window, or nil.
-- (instancetype)initWithWindowName:(NSString*)windowName
-                       openedByDOM:(BOOL)openedByDOM
-                      browserState:(web::BrowserState*)browserState;
+// Initializes a session controller.
+- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
+                         openedByDOM:(BOOL)openedByDOM;
 
 // Initializes a session controller, supplying a list of NavigationItem objects
 // and the current index in the navigation history.
-- (instancetype)initWithNavigationItems:(web::ScopedNavigationItemList)items
-                           currentIndex:(NSUInteger)currentIndex
-                           browserState:(web::BrowserState*)browserState;
+- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
+                     navigationItems:(web::ScopedNavigationItemList)items
+                        currentIndex:(NSUInteger)currentIndex;
 @end
 
 #endif  // IOS_WEB_NAVIGATION_CRW_SESSION_CONTROLLER_PRIVATE_CONSTRUCTORS_H_

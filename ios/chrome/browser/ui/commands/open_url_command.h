@@ -25,7 +25,6 @@ class GURL;
 // Initializes a command intended to open a URL as a link from a page.
 - (instancetype)initWithURL:(const GURL&)url
                    referrer:(const web::Referrer&)referrer
-                 windowName:(NSString*)windowName
                 inIncognito:(BOOL)inIncognito
                inBackground:(BOOL)inBackground
                    appendTo:(OpenPosition)append NS_DESIGNATED_INITIALIZER;
@@ -40,9 +39,6 @@ class GURL;
 
 // Referrer for the URL.
 @property(nonatomic, readonly) const web::Referrer& referrer;
-
-// Name of the window.
-@property(strong, nonatomic, readonly) NSString* windowName;
 
 // Whether this URL command requests opening in incognito or not.
 @property(nonatomic, readonly) BOOL inIncognito;

@@ -1556,7 +1556,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       self.currentBVC = [command inIncognito] ? self.otrBVC : self.mainBVC;
       [self.currentBVC webPageOrderedOpen:[command url]
                                  referrer:[command referrer]
-                               windowName:[command windowName]
                              inBackground:[command inBackground]
                                  appendTo:[command appendTo]];
     }];

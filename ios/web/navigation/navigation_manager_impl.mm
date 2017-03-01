@@ -94,21 +94,19 @@ void NavigationManagerImpl::SetSessionController(
   [session_controller_ setNavigationManager:this];
 }
 
-void NavigationManagerImpl::InitializeSession(NSString* window_name,
-                                              BOOL opened_by_dom) {
+void NavigationManagerImpl::InitializeSession(BOOL opened_by_dom) {
   SetSessionController([[CRWSessionController alloc]
-         initWithWindowName:window_name
-                openedByDOM:opened_by_dom
-               browserState:browser_state_]);
+      initWithBrowserState:browser_state_
+               openedByDOM:opened_by_dom]);
 }
 
 void NavigationManagerImpl::ReplaceSessionHistory(
     std::vector<std::unique_ptr<web::NavigationItem>> items,
     int current_index) {
   SetSessionController([[CRWSessionController alloc]
-      initWithNavigationItems:std::move(items)
-                 currentIndex:current_index
-                 browserState:browser_state_]);
+      initWithBrowserState:browser_state_
+           navigationItems:std::move(items)
+              currentIndex:current_index]);
 }
 
 void NavigationManagerImpl::SetFacadeDelegate(

@@ -19,7 +19,6 @@ class SerializableUserData;
 @interface CRWSessionStorage : NSObject<NSCoding>
 
 @property(nonatomic, getter=isOpenedByDOM) BOOL openedByDOM;
-@property(nonatomic, copy) NSString* windowName;
 @property(nonatomic, assign) NSInteger currentNavigationIndex;
 @property(nonatomic, assign) NSInteger previousNavigationIndex;
 @property(nonatomic, assign) NSTimeInterval lastVisitedTimestamp;

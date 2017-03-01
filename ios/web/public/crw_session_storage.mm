@@ -19,7 +19,6 @@ NSString* const kItemStoragesKey = @"entries";
 NSString* const kLastVisitedTimestampKey = @"lastVisitedTimestamp";
 NSString* const kOpenedByDOMKey = @"openedByDOM";
 NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
-NSString* const kWindowNameKey = @"windowName";
 }
 
 @interface CRWSessionStorage () {
@@ -32,7 +31,6 @@ NSString* const kWindowNameKey = @"windowName";
 @implementation CRWSessionStorage
 
 @synthesize openedByDOM = _openedByDOM;
-@synthesize windowName = _windowName;
 @synthesize currentNavigationIndex = _currentNavigationIndex;
 @synthesize previousNavigationIndex = _previousNavigationIndex;
 @synthesize lastVisitedTimestamp = _lastVisitedTimestamp;
@@ -55,7 +53,6 @@ NSString* const kWindowNameKey = @"windowName";
 - (instancetype)initWithCoder:(nonnull NSCoder*)decoder {
   self = [super init];
   if (self) {
-    _windowName = [[decoder decodeObjectForKey:kWindowNameKey] copy];
     _openedByDOM = [decoder decodeBoolForKey:kOpenedByDOMKey];
     _currentNavigationIndex =
         [decoder decodeIntForKey:kCurrentNavigationIndexKey];
@@ -82,7 +79,6 @@ NSString* const kWindowNameKey = @"windowName";
 
 - (void)encodeWithCoder:(NSCoder*)coder {
   [coder encodeBool:self.openedByDOM forKey:kOpenedByDOMKey];
-  [coder encodeObject:self.windowName forKey:kWindowNameKey];
   [coder encodeInt:self.currentNavigationIndex
             forKey:kCurrentNavigationIndexKey];
   [coder encodeInt:self.previousNavigationIndex
