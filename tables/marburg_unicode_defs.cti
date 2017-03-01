@@ -282,6 +282,7 @@ math \X25CA 1246-456-14 filled Circle
 math \X25CB 1246-25 Circle
 math \xf577 1246-135 contracted right arrow
 sign * 4-3456 ASTERISK OPERATOR 
+noback sign \X25CF 4-3456 BLACK CIRCLE
 sign \x009A a SINGLE CHARACTER INTRODUCER 
 sign \x00A2 4-14 CENT SIGN 
 sign \x00A7 4-6-234 SECTION SIGN 

@@ -262,3 +262,4 @@ tests:
   - [˧, ⠘⠨⠒] # mid tone [\x2e7]
   - [˨, ⠘⠨⠤] # low tone [\x2e8]
   - [〃, ⠐⠂] # ditto mark [\x3003]
+  - [●, ⠐⠔] # black circle [\x25cf]

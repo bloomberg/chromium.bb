@@ -439,6 +439,7 @@ math \x3009 4-345 〉
 punctuation \x0093 236
 punctuation \x0094 356
 punctuation \x0096 36
+noback sign \X25CF 5-35	# 9679 black circle
 
 #   Unicode prefers \x2019 for apostrophe instead of \x27
 endword \x2019d 3-145
