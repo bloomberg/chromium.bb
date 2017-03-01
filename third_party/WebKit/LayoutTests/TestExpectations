@@ -2600,3 +2600,6 @@ crbug.com/696903 [ Mac ] custom-properties/register-property.html [ Crash ]
 crbug.com/697334 [ Mac ] inspector/sources/debugger/debug-inlined-scripts.html [ Pass Failure ]
 
 crbug.com/697087 external/wpt/service-workers/service-worker/registration-iframe.https.html [ Pass Timeout ]
+
+crbug.com/697342 http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
+crbug.com/697342 virtual/mojo-loading/http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
