@@ -22,16 +22,14 @@ namespace content {
 
 namespace {
 
-class ChildSharedBitmap : public SharedMemoryBitmap {
+class ChildSharedBitmap : public cc::SharedBitmap {
  public:
   ChildSharedBitmap(
       const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
           render_message_filter_ptr,
       base::SharedMemory* shared_memory,
       const cc::SharedBitmapId& id)
-      : SharedMemoryBitmap(static_cast<uint8_t*>(shared_memory->memory()),
-                           id,
-                           shared_memory),
+      : cc::SharedBitmap(static_cast<uint8_t*>(shared_memory->memory()), id),
         render_message_filter_ptr_(render_message_filter_ptr) {}
 
   ChildSharedBitmap(
@@ -81,11 +79,6 @@ void CollectMemoryUsageAndDie(const gfx::Size& size, size_t alloc_size) {
 
 }  // namespace
 
-SharedMemoryBitmap::SharedMemoryBitmap(uint8_t* pixels,
-                                       const cc::SharedBitmapId& id,
-                                       base::SharedMemory* shared_memory)
-    : SharedBitmap(pixels, id), shared_memory_(shared_memory) {}
-
 ChildSharedBitmapManager::ChildSharedBitmapManager(
     const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
         render_message_filter_ptr)
@@ -95,12 +88,11 @@ ChildSharedBitmapManager::~ChildSharedBitmapManager() {}
 
 std::unique_ptr<cc::SharedBitmap>
 ChildSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
-  TRACE_EVENT2("renderer",
-               "ChildSharedBitmapManager::AllocateSharedMemoryBitmap", "width",
-               size.width(), "height", size.height());
+  TRACE_EVENT2("renderer", "ChildSharedBitmapManager::AllocateSharedBitmap",
+               "width", size.width(), "height", size.height());
   size_t memory_size;
   if (!cc::SharedBitmap::SizeInBytes(size, &memory_size))
-    return std::unique_ptr<SharedMemoryBitmap>();
+    return nullptr;
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
   std::unique_ptr<base::SharedMemory> memory =
       ChildThreadImpl::AllocateSharedMemory(memory_size);
@@ -121,7 +113,7 @@ std::unique_ptr<cc::SharedBitmap>
 ChildSharedBitmapManager::GetSharedBitmapFromId(const gfx::Size&,
                                                 const cc::SharedBitmapId&) {
   NOTREACHED();
-  return std::unique_ptr<cc::SharedBitmap>();
+  return nullptr;
 }
 
 std::unique_ptr<cc::SharedBitmap>

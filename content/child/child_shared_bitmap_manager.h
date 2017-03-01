@@ -18,18 +18,6 @@
 
 namespace content {
 
-class SharedMemoryBitmap : public cc::SharedBitmap {
- public:
-  base::SharedMemory* shared_memory() { return shared_memory_; }
-
- protected:
-  SharedMemoryBitmap(uint8_t* pixels,
-                     const cc::SharedBitmapId& id,
-                     base::SharedMemory* shared_memory);
-
-  base::SharedMemory* shared_memory_;
-};
-
 class ChildSharedBitmapManager : public cc::SharedBitmapManager {
  public:
   explicit ChildSharedBitmapManager(
