@@ -538,6 +538,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Color spaced used when initializing the dx11 format converter.
   gfx::ColorSpace dx11_converter_color_space_;
 
+  // Outputs from the dx11 format converter will be in this color space.
+  gfx::ColorSpace dx11_converter_output_color_space_;
+
   // Set to true if we are sharing ANGLE's device.
   bool using_angle_device_;
 

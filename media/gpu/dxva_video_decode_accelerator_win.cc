@@ -24,6 +24,7 @@
 #include "base/base_paths_win.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
@@ -49,6 +50,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
@@ -560,6 +562,13 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       config.profile == VP9PROFILE_PROFILE3 ||
       config.profile == H264PROFILE_HIGH10PROFILE) {
     // Input file has more than 8 bits per channel.
+    use_fp16_ = true;
+  }
+
+  // Unfortunately, the profile is currently unreliable for
+  // VP9 (crbug.com/592074) so also try to use fp16 if HDR is on.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHDROutput)) {
     use_fp16_ = true;
   }
 
@@ -2495,9 +2504,8 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 
-  NotifyPictureReady(
-      picture_buffer->id(), input_buffer_id,
-      copy_nv12_textures_ ? picture_buffer->color_space() : gfx::ColorSpace());
+  NotifyPictureReady(picture_buffer->id(), input_buffer_id,
+                     picture_buffer->color_space());
 
   {
     base::AutoLock lock(decoder_lock_);
@@ -2596,6 +2604,11 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
     RETURN_AND_NOTIFY_ON_FAILURE(false,
                                  "Failed to initialize D3D11 video processor.",
                                  PLATFORM_FAILURE, );
+  }
+
+  OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
+  if (it != output_picture_buffers_.end()) {
+    it->second->set_color_space(dx11_converter_output_color_space_);
   }
 
   // The input to the video processor is the output sample.
@@ -2809,27 +2822,34 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
 
     video_context_->VideoProcessorSetStreamColorSpace(d3d11_processor_.get(), 0,
                                                       &d3d11_color_space);
+    dx11_converter_output_color_space_ = color_space;
   } else {
+    dx11_converter_output_color_space_ = gfx::ColorSpace::CreateSRGB();
     // Not sure if this call is expensive, let's only do it if the color
     // space changes.
-    gfx::ColorSpace output_color_space = gfx::ColorSpace::CreateSRGB();
-    if (use_color_info_ && dx11_converter_color_space_ != color_space) {
+    if ((use_color_info_ || use_fp16_) &&
+        dx11_converter_color_space_ != color_space) {
       base::win::ScopedComPtr<ID3D11VideoContext1> video_context1;
       HRESULT hr = video_context_.QueryInterface(video_context1.Receive());
       if (SUCCEEDED(hr)) {
+        if (use_fp16_ && base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             switches::kEnableHDROutput)) {
+          dx11_converter_output_color_space_ =
+              gfx::ColorSpace::CreateSCRGBLinear();
+        }
         video_context1->VideoProcessorSetStreamColorSpace1(
             d3d11_processor_.get(), 0,
             gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
         video_context1->VideoProcessorSetOutputColorSpace1(
-            d3d11_processor_.get(),
-            gfx::ColorSpaceWin::GetDXGIColorSpace(output_color_space));
+            d3d11_processor_.get(), gfx::ColorSpaceWin::GetDXGIColorSpace(
+                                        dx11_converter_output_color_space_));
       } else {
         D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
             gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
         video_context_->VideoProcessorSetStreamColorSpace(
             d3d11_processor_.get(), 0, &d3d11_color_space);
-        d3d11_color_space =
-            gfx::ColorSpaceWin::GetD3D11ColorSpace(output_color_space);
+        d3d11_color_space = gfx::ColorSpaceWin::GetD3D11ColorSpace(
+            dx11_converter_output_color_space_);
         video_context_->VideoProcessorSetOutputColorSpace(
             d3d11_processor_.get(), &d3d11_color_space);
       }

@@ -146,6 +146,7 @@ component("gpu") {
     "//ui/gfx/geometry",
   ]
   deps = [
+    "//ui/base",
     "//ui/display/types",
     "//ui/gl",
     "//ui/platform_window",
