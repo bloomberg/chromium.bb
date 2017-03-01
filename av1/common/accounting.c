@@ -66,6 +66,8 @@ void aom_accounting_init(Accounting *accounting) {
 
 void aom_accounting_reset(Accounting *accounting) {
   accounting->syms.num_syms = 0;
+  accounting->syms.num_binary_syms = 0;
+  accounting->syms.num_multi_syms = 0;
   accounting->context.x = -1;
   accounting->context.y = -1;
   accounting->last_tell_frac = 0;
@@ -122,7 +124,11 @@ void aom_accounting_record(Accounting *accounting, const char *str,
 void aom_accounting_dump(Accounting *accounting) {
   int i;
   AccountingSymbol *sym;
-  printf("----- %d -----\n", accounting->syms.num_syms);
+  printf("\n----- Number of recorded syntax elements = %d -----\n",
+         accounting->syms.num_syms);
+  printf("----- Total number of symbol calls = %d (%d binary) -----\n",
+         accounting->syms.num_multi_syms + accounting->syms.num_binary_syms,
+         accounting->syms.num_binary_syms);
   for (i = 0; i < accounting->syms.num_syms; i++) {
     sym = &accounting->syms.syms[i];
     printf("%s x: %d, y: %d bits: %f samples: %d\n",

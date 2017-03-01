@@ -48,8 +48,12 @@ typedef struct {
 typedef struct {
   /** All recorded symbols decoded. */
   AccountingSymbol *syms;
-  /** Number of symbols actually recorded. */
+  /** Number of syntax actually recorded. */
   int num_syms;
+  /** Raw symbol decoding calls for non-binary values. */
+  int num_multi_syms;
+  /** Raw binary symbol decoding calls. */
+  int num_binary_syms;
   /** Dictionary for translating strings into id. */
   AccountingDictionary dictionary;
 } AccountingSymbols;

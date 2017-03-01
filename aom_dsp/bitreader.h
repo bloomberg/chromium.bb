@@ -144,6 +144,14 @@ static INLINE void aom_process_accounting(const aom_reader *r ACCT_STR_PARAM) {
     r->accounting->last_tell_frac = tell_frac;
   }
 }
+
+static INLINE void aom_update_symb_counts(const aom_reader *r,
+                                          const int is_binary) {
+  if (r->accounting != NULL) {
+    r->accounting->syms.num_multi_syms += !is_binary;
+    r->accounting->syms.num_binary_syms += !!is_binary;
+  }
+}
 #endif
 
 static INLINE int aom_read_(aom_reader *r, int prob ACCT_STR_PARAM) {
@@ -157,6 +165,7 @@ static INLINE int aom_read_(aom_reader *r, int prob ACCT_STR_PARAM) {
 #endif
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
+  aom_update_symb_counts(r, 1);
 #endif
   return ret;
 }
@@ -167,6 +176,7 @@ static INLINE int aom_read_bit_(aom_reader *r ACCT_STR_PARAM) {
   ret = rabs_read_bit(r);  // Non trivial optimization at half probability
 #elif CONFIG_DAALA_EC && CONFIG_RAWBITS
   // Note this uses raw bits and is not the same as aom_daala_read(r, 128);
+  // Calls to this function are omitted from raw symbol accounting.
   ret = aom_daala_read_bit(r);
 #else
   ret = aom_read(r, 128, NULL);  // aom_prob_half
@@ -213,6 +223,7 @@ static INLINE int aom_read_cdf_(aom_reader *r, const aom_cdf_prob *cdf,
 
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
+  aom_update_symb_counts(r, (nsymbs == 2));
 #endif
   return ret;
 }
@@ -239,6 +250,7 @@ static INLINE int aom_read_cdf_unscaled_(aom_reader *r, const aom_cdf_prob *cdf,
 
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
+  aom_update_raw_counts(r, (nsymbs == 2));
 #endif
   return ret;
 }
