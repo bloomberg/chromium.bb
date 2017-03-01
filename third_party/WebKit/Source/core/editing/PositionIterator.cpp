@@ -273,32 +273,32 @@ void PositionIteratorAlgorithm<Strategy>::decrement() {
       m_offsetsInAnchorNode[m_depthToAnchorNode] = kInvalidOffset;
     ++m_depthToAnchorNode;
     return;
-  } else {
-    if (m_offsetInAnchor && m_anchorNode->layoutObject()) {
-      // Case #3-a. This is a reverse of increment()::Case#2.
-      // In this case |anchor| is a leaf(E,F,C,G or H) and
-      // |m_offsetInAnchor| is not on the beginning of |anchor|.
-      // Then just decrement |m_offsetInAnchor|.
-      m_offsetInAnchor =
-          previousGraphemeBoundaryOf(m_anchorNode, m_offsetInAnchor);
-      return;
-    } else {
-      // Case #3-b. This is a reverse of increment()::Case#1.
-      // In this case |anchor| is a leaf(E,F,C,G or H) and
-      // |m_offsetInAnchor| is on the beginning of |anchor|.
-      // Let |anchor| is E,
-      // next |anchor| is B and |child| is E.
-      m_nodeAfterPositionInAnchor = m_anchorNode;
-      m_anchorNode = Strategy::parent(*m_anchorNode);
-      if (!m_anchorNode)
-        return;
-      DCHECK_GT(m_depthToAnchorNode, 0u);
-      --m_depthToAnchorNode;
-      if (m_offsetsInAnchorNode[m_depthToAnchorNode] == kInvalidOffset)
-        m_offsetsInAnchorNode[m_depthToAnchorNode] =
-            Strategy::index(*m_nodeAfterPositionInAnchor);
-    }
   }
+
+  if (m_offsetInAnchor && m_anchorNode->layoutObject()) {
+    // Case #3-a. This is a reverse of increment()::Case#2.
+    // In this case |anchor| is a leaf(E,F,C,G or H) and
+    // |m_offsetInAnchor| is not on the beginning of |anchor|.
+    // Then just decrement |m_offsetInAnchor|.
+    m_offsetInAnchor =
+        previousGraphemeBoundaryOf(m_anchorNode, m_offsetInAnchor);
+    return;
+  }
+  // Case #3-b. This is a reverse of increment()::Case#1.
+  // In this case |anchor| is a leaf(E,F,C,G or H) and
+  // |m_offsetInAnchor| is on the beginning of |anchor|.
+  // Let |anchor| is E,
+  // next |anchor| is B and |child| is E.
+  m_nodeAfterPositionInAnchor = m_anchorNode;
+  m_anchorNode = Strategy::parent(*m_anchorNode);
+  if (!m_anchorNode)
+    return;
+  DCHECK_GT(m_depthToAnchorNode, 0u);
+  --m_depthToAnchorNode;
+  if (m_offsetsInAnchorNode[m_depthToAnchorNode] != kInvalidOffset)
+    return;
+  m_offsetsInAnchorNode[m_depthToAnchorNode] =
+      Strategy::index(*m_nodeAfterPositionInAnchor);
 }
 
 template <typename Strategy>
