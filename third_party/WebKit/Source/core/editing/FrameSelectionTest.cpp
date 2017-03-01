@@ -127,6 +127,19 @@ TEST_F(FrameSelectionTest, SelectWordAroundPosition) {
   EXPECT_EQ_SELECTED_TEXT("Baz");
 }
 
+// crbug.com/657996
+TEST_F(FrameSelectionTest, SelectWordAroundPosition2) {
+  setBodyContent(
+      "<p style='width:70px; font-size:14px'>foo bar<em>+</em> baz</p>");
+  // "foo bar
+  //  b|az"
+  Node* const baz = document().body()->firstChild()->lastChild();
+  EXPECT_TRUE(selection().selectWordAroundPosition(
+      createVisiblePosition(Position(baz, 2))));
+  // TODO(yoichio): We should select only "baz".
+  EXPECT_EQ_SELECTED_TEXT(" baz");
+}
+
 TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
   setBodyContent("<span id=host></span>one");
   setShadowContent("two<content></content>", "host");
