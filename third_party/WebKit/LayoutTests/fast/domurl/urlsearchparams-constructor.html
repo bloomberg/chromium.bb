@@ -169,9 +169,17 @@ test(function() {
 }, 'Parse =');
 
 test(function() {
-    var params = new URLSearchParams('foobar=a\nb');
-    assert_equals(params.toString(), 'foobar=a%0Ab');
-}, 'Parse \\n');
+    let params = new URLSearchParams([]);
+    assert_true(params !== null, 'Empty sequence');
+    assert_equals(params.toString(), '');
+
+    params = new URLSearchParams([[1, 2], ['a', 'b']]);
+    assert_equals(params.toString(), '1=2&a=b');
+
+    assert_type_error(() => { new URLSearchParams([[1, 2, 3]]) },
+      "Sequence elements must be pairs");
+}, 'sequence initializer');
+
 </script>
 </head>
 </html>

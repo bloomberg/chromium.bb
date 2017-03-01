@@ -4,6 +4,7 @@
 
 #include "core/dom/URLSearchParams.h"
 
+#include <utility>
 #include "core/dom/DOMURL.h"
 #include "platform/network/FormDataEncoder.h"
 #include "platform/weborigin/KURL.h"
@@ -39,18 +40,45 @@ class URLSearchParamsIterationSource final
 
 }  // namespace
 
-URLSearchParams* URLSearchParams::create(const URLSearchParamsInit& init) {
+URLSearchParams* URLSearchParams::create(const URLSearchParamsInit& init,
+                                         ExceptionState& exceptionState) {
   if (init.isUSVString()) {
     const String& queryString = init.getAsUSVString();
     if (queryString.startsWith('?'))
       return new URLSearchParams(queryString.substring(1));
     return new URLSearchParams(queryString);
   }
+  // TODO(sof): copy constructor no longer in the spec,
+  // consider removing.
   if (init.isURLSearchParams())
     return new URLSearchParams(init.getAsURLSearchParams());
 
+  if (init.isUSVStringSequenceSequence()) {
+    return URLSearchParams::create(init.getAsUSVStringSequenceSequence(),
+                                   exceptionState);
+  }
+
   DCHECK(init.isNull());
   return new URLSearchParams(String());
+}
+
+URLSearchParams* URLSearchParams::create(const Vector<Vector<String>>& init,
+                                         ExceptionState& exceptionState) {
+  URLSearchParams* instance = new URLSearchParams(String());
+  if (!init.size())
+    return instance;
+  for (unsigned i = 0; i < init.size(); ++i) {
+    const Vector<String>& pair = init[i];
+    if (pair.size() != 2) {
+      exceptionState.throwTypeError(ExceptionMessages::failedToConstruct(
+          "URLSearchParams",
+          "Sequence initializer must only contain pair elements"));
+      return nullptr;
+    }
+    instance->appendWithoutUpdate(pair[0], pair[1]);
+  }
+  instance->runUpdateSteps();
+  return instance;
 }
 
 URLSearchParams::URLSearchParams(const String& queryString, DOMURL* urlObject)
@@ -112,7 +140,7 @@ void URLSearchParams::setInput(const String& queryString) {
             queryString.substring(endOfName + 1, nameValueEnd - endOfName - 1));
       if (value.isNull())
         value = "";
-      m_params.push_back(std::make_pair(name, value));
+      appendWithoutUpdate(name, value);
     }
     start = nameValueEnd + 1;
   }
@@ -125,8 +153,13 @@ String URLSearchParams::toString() const {
   return String(encodedData.data(), encodedData.size());
 }
 
-void URLSearchParams::append(const String& name, const String& value) {
+void URLSearchParams::appendWithoutUpdate(const String& name,
+                                          const String& value) {
   m_params.push_back(std::make_pair(name, value));
+}
+
+void URLSearchParams::append(const String& name, const String& value) {
+  appendWithoutUpdate(name, value);
   runUpdateSteps();
 }
 

@@ -103,7 +103,7 @@ PasswordCredential* PasswordCredential::create(HTMLFormElement* form,
   if (form->enctype() == "multipart/form-data") {
     additionalData.setFormData(formData);
   } else {
-    URLSearchParams* params = URLSearchParams::create(URLSearchParamsInit());
+    URLSearchParams* params = URLSearchParams::create(String());
     for (const FormData::Entry* entry : formData->entries()) {
       if (entry->isString())
         params->append(entry->name().data(), entry->value().data());
@@ -135,7 +135,7 @@ PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData(
   if (m_additionalData.isURLSearchParams()) {
     // If |additionalData| is a 'URLSearchParams' object, build a urlencoded
     // response.
-    URLSearchParams* params = URLSearchParams::create(URLSearchParamsInit());
+    URLSearchParams* params = URLSearchParams::create(String());
     URLSearchParams* additionalData = m_additionalData.getAsURLSearchParams();
     for (const auto& param : additionalData->params()) {
       const String& name = param.first;

@@ -5,22 +5,23 @@
 #ifndef URLSearchParams_h
 #define URLSearchParams_h
 
+#include <base/gtest_prod_util.h>
+#include <utility>
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/USVStringOrURLSearchParams.h"
+#include "bindings/core/v8/USVStringSequenceSequenceOrUSVStringOrURLSearchParams.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
-#include <base/gtest_prod_util.h>
-#include <utility>
 
 namespace blink {
 
 class ExceptionState;
 class DOMURL;
 
-typedef USVStringOrURLSearchParams URLSearchParamsInit;
+typedef USVStringSequenceSequenceOrUSVStringOrURLSearchParams
+    URLSearchParamsInit;
 
 class CORE_EXPORT URLSearchParams final
     : public GarbageCollectedFinalized<URLSearchParams>,
@@ -29,7 +30,9 @@ class CORE_EXPORT URLSearchParams final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static URLSearchParams* create(const URLSearchParamsInit&);
+  static URLSearchParams* create(const URLSearchParamsInit&, ExceptionState&);
+  static URLSearchParams* create(const Vector<Vector<String>>&,
+                                 ExceptionState&);
 
   static URLSearchParams* create(const String& queryString,
                                  DOMURL* urlObject = nullptr) {
@@ -67,6 +70,8 @@ class CORE_EXPORT URLSearchParams final
   void runUpdateSteps();
   IterationSource* startIteration(ScriptState*, ExceptionState&) override;
   void encodeAsFormData(Vector<char>&) const;
+
+  void appendWithoutUpdate(const String& name, const String& value);
 
   Vector<std::pair<String, String>> m_params;
 
