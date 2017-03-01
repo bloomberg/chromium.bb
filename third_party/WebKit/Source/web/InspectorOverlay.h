@@ -150,7 +150,7 @@ class InspectorOverlay final
   bool m_drawViewSize;
   bool m_resizeTimerActive;
   bool m_omitTooltip;
-  Timer<InspectorOverlay> m_timer;
+  TaskRunnerTimer<InspectorOverlay> m_timer;
   bool m_suspended;
   bool m_showReloadingBlanket;
   bool m_inLayout;

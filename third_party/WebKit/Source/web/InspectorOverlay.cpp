@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
 #include "core/dom/Node.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -182,7 +183,10 @@ InspectorOverlay::InspectorOverlay(WebLocalFrameImpl* frameImpl)
       m_drawViewSize(false),
       m_resizeTimerActive(false),
       m_omitTooltip(false),
-      m_timer(this, &InspectorOverlay::onTimer),
+      m_timer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, frameImpl->frame()),
+          this,
+          &InspectorOverlay::onTimer),
       m_suspended(false),
       m_showReloadingBlanket(false),
       m_inLayout(false),
