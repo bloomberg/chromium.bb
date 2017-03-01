@@ -4,6 +4,10 @@
 
 #include "services/ui/ws/window_manager_display_root.h"
 
+#include <string>
+#include <vector>
+
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/server_window.h"
@@ -14,9 +18,14 @@ namespace ws {
 
 WindowManagerDisplayRoot::WindowManagerDisplayRoot(Display* display)
     : display_(display) {
+  std::string name = "WindowManagerRoot";
+  ServerWindow::Properties properties;
+  properties[mojom::WindowManager::kName_Property] =
+      std::vector<uint8_t>(name.begin(), name.end());
+
   root_.reset(window_server()->CreateServerWindow(
       window_server()->display_manager()->GetAndAdvanceNextRootId(),
-      ServerWindow::Properties()));
+      properties));
   root_->set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   // Our root is always a child of the Display's root. Do this

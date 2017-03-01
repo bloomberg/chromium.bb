@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/common/accelerator_util.h"
@@ -156,7 +157,7 @@ bool WindowManagerState::SetCapture(ServerWindow* window,
       client_id == event_dispatcher_.capture_window_client_id()) {
     return true;
   }
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   if (window) {
     WindowManagerDisplayRoot* display_root =
         display_manager()->GetWindowManagerDisplayRoot(window);
@@ -478,7 +479,7 @@ void WindowManagerState::ProcessDebugAccelerator(const ui::Event& event) {
 }
 
 void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type) {
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
   // Error so it will be collected in system logs.
   for (Display* display : display_manager()->displays()) {
     WindowManagerDisplayRoot* display_root =

@@ -203,7 +203,7 @@ class ServerWindow {
   // Called when the window is no longer an embed root.
   void OnEmbeddedAppDisconnected();
 
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
   std::string GetDebugWindowHierarchy() const;
   std::string GetDebugWindowInfo() const;
   void BuildDebugInfo(const std::string& depth, std::string* result) const;

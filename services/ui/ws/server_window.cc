@@ -394,7 +394,7 @@ void ServerWindow::OnEmbeddedAppDisconnected() {
     observer.OnWindowEmbeddedAppDisconnected(this);
 }
 
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
 std::string ServerWindow::GetDebugWindowHierarchy() const {
   std::string result;
   BuildDebugInfo(std::string(), &result);
@@ -403,10 +403,17 @@ std::string ServerWindow::GetDebugWindowHierarchy() const {
 
 std::string ServerWindow::GetDebugWindowInfo() const {
   std::string name = GetName();
-  return base::StringPrintf(
-      "id=%s visible=%s bounds=%d,%d %dx%d %s", id_.ToString().c_str(),
-      visible_ ? "true" : "false", bounds_.x(), bounds_.y(), bounds_.width(),
-      bounds_.height(), !name.empty() ? name.c_str() : "(no name)");
+  if (name.empty())
+    name = "(no name)";
+
+  std::string frame_sink;
+  if (compositor_frame_sink_manager_)
+    frame_sink = " [" + frame_sink_id_.ToString() + "]";
+
+  return base::StringPrintf("id=%s visible=%s bounds=%s name=%s%s",
+                            id_.ToString().c_str(), visible_ ? "true" : "false",
+                            bounds_.ToString().c_str(), name.c_str(),
+                            frame_sink.c_str());
 }
 
 void ServerWindow::BuildDebugInfo(const std::string& depth,
@@ -416,7 +423,7 @@ void ServerWindow::BuildDebugInfo(const std::string& depth,
   for (const ServerWindow* child : children_)
     child->BuildDebugInfo(depth + "  ", result);
 }
-#endif
+#endif  // DCHECK_IS_ON()
 
 void ServerWindow::RemoveImpl(ServerWindow* window) {
   window->parent_ = nullptr;
