@@ -311,10 +311,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   GlobalFrameRoutingId GetGlobalFrameRoutingId();
 
-  void set_render_frame_proxy_host(RenderFrameProxyHost* proxy) {
-    render_frame_proxy_host_ = proxy;
-  }
-
   // The unique ID of the latest NavigationEntry that this RenderFrameHost is
   // showing. This may change even when this frame hasn't committed a page,
   // such as for a new subframe navigation in a different frame.
@@ -903,12 +899,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // method has the side effect of creating the process if it doesn't exist.
   // Cache a pointer to avoid unnecessary process creation.
   RenderProcessHost* process_;
-
-  // The proxy created for this RenderFrameHost. It is used to send and receive
-  // IPC messages while in swapped out state.
-  // TODO(nasko): This can be removed once we don't have a swapped out state on
-  // RenderFrameHosts. See https://crbug.com/357747.
-  RenderFrameProxyHost* render_frame_proxy_host_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
   // Allows this RenderFrameHost to add and remove nodes in response to

@@ -317,7 +317,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       delegate_(delegate),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
       process_(site_instance->GetProcess()),
-      render_frame_proxy_host_(NULL),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
       parent_(nullptr),
@@ -1382,8 +1381,6 @@ void RenderFrameHostImpl::SwapOut(
   // there are no remaining active views in the process, the proxy will be
   // short-lived and will be deleted when the SwapOut ACK is received.
   CHECK(proxy);
-
-  set_render_frame_proxy_host(proxy);
 
   if (IsRenderFrameLive()) {
     FrameReplicationState replication_state =
