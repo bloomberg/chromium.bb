@@ -21,6 +21,7 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/custom_notification_view.h"
 #include "ui/message_center/views/padded_button.h"
+#include "ui/message_center/views/toast_contents_view.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -56,6 +57,11 @@ class ArcCustomNotificationView::EventForwarder : public ui::EventHandler {
     } else if (event->IsMouseWheelEvent()) {
       ForwardMouseWheelEvent(event->AsMouseWheelEvent());
     } else if (!event->IsTouchEvent()) {
+      // TODO(yoshiki): Use a better tigger (eg. focusing EditText on
+      // notification) than clicking (crbug.com/697379).
+      if (event->type() == ui::ET_MOUSE_PRESSED)
+        owner_->ActivateToast();
+
       // Forward the rest events to |owner_| except touches because View
       // should no longer receive touch events. See View::OnTouchEvent.
       owner_->OnEvent(event);
@@ -495,6 +501,14 @@ void ArcCustomNotificationView::OnBlur() {
   NativeViewHost::OnBlur();
   static_cast<message_center::CustomNotificationView*>(parent())
       ->OnContentBlured();
+}
+
+void ArcCustomNotificationView::ActivateToast() {
+  if (message_center::ToastContentsView::kViewClassName ==
+      parent()->parent()->GetClassName()) {
+    static_cast<message_center::ToastContentsView*>(parent()->parent())
+        ->ActivateToast();
+  }
 }
 
 views::FocusTraversable* ArcCustomNotificationView::GetFocusTraversable() {
