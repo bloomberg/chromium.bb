@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -29,6 +30,28 @@
 namespace certificate_transparency {
 
 namespace {
+
+// Used by UMA_HISTOGRAM_ENUMERATION to record query success/failures.
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
+enum QueryStatus {
+  QUERY_STATUS_SUCCESS = 0,
+  QUERY_STATUS_FAILED_UNKNOWN = 1,
+  QUERY_STATUS_FAILED_NAME_RESOLUTION = 2,
+  QUERY_STATUS_FAILED_LEAF_INDEX_MALFORMED = 3,
+  QUERY_STATUS_FAILED_INCLUSION_PROOF_MALFORMED = 4,
+  QUERY_STATUS_MAX  // Upper bound
+};
+
+void LogQueryStatus(QueryStatus result) {
+  UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.DnsQueryStatus",
+                            result, QUERY_STATUS_MAX);
+}
+
+void LogQueryDuration(const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Net.CertificateTransparency.DnsQueryDuration",
+                             duration);
+}
 
 // Parses the DNS response and extracts a single string from the TXT RDATA.
 // If the response is malformed, not a TXT record, or contains any number of
@@ -191,6 +214,8 @@ class LogDnsClient::AuditProofQuery {
   const net::DnsResponse* last_dns_response_;
   // The NetLog that DNS transactions will log to.
   net::NetLogWithSource net_log_;
+  // The time that Start() was last called. Used to measure query duration.
+  base::TimeTicks start_time_;
   // Produces WeakPtrs to |this| for binding callbacks.
   base::WeakPtrFactory<AuditProofQuery> weak_ptr_factory_;
 };
@@ -217,6 +242,7 @@ net::Error LogDnsClient::AuditProofQuery::Start(
     net::ct::MerkleAuditProof* proof) {
   // It should not already be in progress.
   DCHECK_EQ(State::NONE, next_state_);
+  start_time_ = base::TimeTicks::Now();
   proof_ = proof;
   proof_->tree_size = tree_size;
   leaf_hash_ = std::move(leaf_hash);
@@ -230,8 +256,9 @@ net::Error LogDnsClient::AuditProofQuery::Start(
 
 net::Error LogDnsClient::AuditProofQuery::DoLoop(net::Error result) {
   CHECK_NE(State::NONE, next_state_);
+  State state;
   do {
-    State state = next_state_;
+    state = next_state_;
     next_state_ = State::NONE;
     switch (state) {
       case State::REQUEST_LEAF_INDEX:
@@ -251,6 +278,37 @@ net::Error LogDnsClient::AuditProofQuery::DoLoop(net::Error result) {
         break;
     }
   } while (result != net::ERR_IO_PENDING && next_state_ != State::NONE);
+
+  if (result != net::ERR_IO_PENDING) {
+    // If the query is complete, log some metrics.
+    LogQueryDuration(base::TimeTicks::Now() - start_time_);
+
+    switch (result) {
+      case net::OK:
+        LogQueryStatus(QUERY_STATUS_SUCCESS);
+        break;
+      case net::ERR_NAME_RESOLUTION_FAILED:
+        LogQueryStatus(QUERY_STATUS_FAILED_NAME_RESOLUTION);
+        break;
+      case net::ERR_DNS_MALFORMED_RESPONSE:
+        switch (state) {
+          case State::REQUEST_LEAF_INDEX_COMPLETE:
+            LogQueryStatus(QUERY_STATUS_FAILED_LEAF_INDEX_MALFORMED);
+            break;
+          case State::REQUEST_AUDIT_PROOF_NODES_COMPLETE:
+            LogQueryStatus(QUERY_STATUS_FAILED_INCLUSION_PROOF_MALFORMED);
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+        break;
+      default:
+        // Some other error occurred.
+        LogQueryStatus(QUERY_STATUS_FAILED_UNKNOWN);
+        break;
+    }
+  }
 
   return result;
 }
