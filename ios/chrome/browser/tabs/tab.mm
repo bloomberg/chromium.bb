@@ -874,10 +874,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return self.webController.viewForPrinting;
 }
 
-- (NavigationManagerImpl*)navigationManager {
-  if (!webStateImpl_)
-    return nil;
-  return &(webStateImpl_->GetNavigationManagerImpl());
+- (web::NavigationManager*)navigationManager {
+  return webStateImpl_ ? webStateImpl_->GetNavigationManager() : nullptr;
+}
+
+- (web::NavigationManagerImpl*)navigationManagerImpl {
+  return webStateImpl_ ? &(webStateImpl_->GetNavigationManagerImpl()) : nullptr;
 }
 
 - (id<StoreKitLauncher>)storeKitLauncher {
@@ -897,8 +899,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                          currentIndex:(NSInteger)currentIndex {
   std::vector<std::unique_ptr<web::NavigationItem>> items =
       sessions::IOSSerializedNavigationBuilder::ToNavigationItems(navigations);
-  [self navigationManager]->ReplaceSessionHistory(std::move(items),
-                                                  currentIndex);
+  [self navigationManagerImpl]->ReplaceSessionHistory(std::move(items),
+                                                      currentIndex);
   [self didReplaceSessionHistory];
 
   [self.webController loadCurrentURL];
@@ -1275,7 +1277,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (web::NavigationItem*)currentNavigationItem {
   if (![self navigationManager])
     return nil;
-  return [[self navigationManager]->GetSessionController() currentItem];
+  return [[self navigationManagerImpl]->GetSessionController() currentItem];
 }
 
 - (void)setShouldObserveInfoBarManager:(BOOL)shouldObserveInfoBarManager {
@@ -1326,7 +1328,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   if (self.navigationManager) {
     CRWSessionController* sessionController =
-        self.navigationManager->GetSessionController();
+        [self navigationManagerImpl]->GetSessionController();
     NSInteger itemIndex = [sessionController indexOfItem:item];
     DCHECK_NE(itemIndex, NSNotFound);
     self.navigationManager->GoToIndex(itemIndex);
@@ -1376,7 +1378,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     // Clears pending navigation history after successfully launching the
     // external app.
     DCHECK([self navigationManager]);
-    [[self navigationManager]->GetSessionController() discardNonCommittedItems];
+    [self navigationManager]->DiscardNonCommittedItems();
     // Ensure the UI reflects the current entry, not the just-discarded pending
     // entry.
     [parentTabModel_ notifyTabChanged:self];
@@ -1604,7 +1606,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FORM_SUBMIT);
   DCHECK([self navigationManager]);
   CRWSessionController* sessionController =
-      [self navigationManager]->GetSessionController();
+      [self navigationManagerImpl]->GetSessionController();
   web::NavigationItem* lastUserItem = [sessionController lastUserItem];
   if (!lastUserItem)
     return;
@@ -1643,7 +1645,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)webPageOrderedClose {
   // Only allow a web page to close itself if it was opened by DOM, or if there
   // are no navigation items.
-  DCHECK([[self navigationManager]->GetSessionController() isOpenedByDOM] ||
+  DCHECK([[self navigationManagerImpl]->GetSessionController() isOpenedByDOM] ||
          ![self navigationManager]->GetItemCount());
   [self closeThisTab];
 }
@@ -1877,15 +1879,15 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (double)lastVisitedTimestamp {
   DCHECK([self navigationManager]);
-  return
-      [[self navigationManager]->GetSessionController() lastVisitedTimestamp];
+  return [[self navigationManagerImpl]->GetSessionController()
+              lastVisitedTimestamp];
 }
 
 - (void)updateLastVisitedTimestamp {
   // Stores this information in self.history and it will be written into disc
   // with other information when needed.
   DCHECK([self navigationManager]);
-  [[self navigationManager]->GetSessionController()
+  [[self navigationManagerImpl]->GetSessionController()
       setLastVisitedTimestamp:[[NSDate date] timeIntervalSince1970]];
 }
 

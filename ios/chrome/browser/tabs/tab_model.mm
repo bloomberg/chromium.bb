@@ -746,7 +746,7 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
       _browserState
           ? IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState)
           : nullptr;
-  web::NavigationManagerImpl* navigationManager = [closedTab navigationManager];
+  web::NavigationManager* navigationManager = [closedTab navigationManager];
   DCHECK(navigationManager);
   int itemCount = navigationManager->GetItemCount();
   if (restoreService && (![self isNTPTab:closedTab] || itemCount > 1)) {
@@ -799,7 +799,7 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
 
   // See if the navigation was within a page; if so ignore it.
   web::NavigationItem* previousItem =
-      [tab navigationManager]->GetPreviousItem();
+      [tab navigationManagerImpl]->GetPreviousItem();
   if (previousItem) {
     GURL previousURL = previousItem->GetURL();
     GURL currentURL = [tab navigationManager]->GetVisibleItem()->GetURL();

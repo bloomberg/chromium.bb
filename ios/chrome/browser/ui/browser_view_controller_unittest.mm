@@ -88,7 +88,8 @@ using web::WebStateImpl;
 @property(nonatomic, assign) const GURL& url;
 @property(nonatomic, assign) WebStateImpl* webState;
 
-- (NavigationManagerImpl*)navigationManager;
+- (web::NavigationManager*)navigationManager;
+- (web::NavigationManagerImpl*)navigationManagerImpl;
 
 @end
 
@@ -105,7 +106,10 @@ using web::WebStateImpl;
 - (void)setWebState:(WebStateImpl*)webState {
   webState_ = webState;
 }
-- (NavigationManagerImpl*)navigationManager {
+- (web::NavigationManager*)navigationManager {
+  return &(webState_->GetNavigationManagerImpl());
+}
+- (web::NavigationManagerImpl*)navigationManagerImpl {
   return &(webState_->GetNavigationManagerImpl());
 }
 @end

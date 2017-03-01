@@ -1918,7 +1918,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // Hide the toolbar if displaying phone NTP.
   if (!IsIPadIdiom()) {
     CRWSessionEntry* entry =
-        [[tab navigationManager]->GetSessionController() currentEntry];
+        [[tab navigationManagerImpl]->GetSessionController() currentEntry];
     BOOL hideToolbar = NO;
     if (entry) {
       GURL url = [entry navigationItem]->GetURL();
@@ -3364,7 +3364,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [tab.webController dismissKeyboard];
 
   DCHECK([tab navigationManager]);
-  CRWSessionController* sc = [tab navigationManager]->GetSessionController();
+  CRWSessionController* sc =
+      [tab navigationManagerImpl]->GetSessionController();
   [_toolbarController showTabHistoryPopupInView:[self view]
                              withSessionEntries:[sc backwardEntries]
                                  forBackHistory:YES];
@@ -3380,7 +3381,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [tab.webController dismissKeyboard];
 
   DCHECK([tab navigationManager]);
-  CRWSessionController* sc = [tab navigationManager]->GetSessionController();
+  CRWSessionController* sc =
+      [tab navigationManagerImpl]->GetSessionController();
   [_toolbarController showTabHistoryPopupInView:[self view]
                              withSessionEntries:[sc forwardEntries]
                                  forBackHistory:NO];
@@ -3577,10 +3579,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [oldTab recordStateInHistory];
       DCHECK([newTab navigationManager]);
       CRWSessionController* newHistory =
-          [newTab navigationManager]->GetSessionController();
+          [newTab navigationManagerImpl]->GetSessionController();
       DCHECK([oldTab navigationManager]);
       CRWSessionController* oldHistory =
-          [oldTab navigationManager]->GetSessionController();
+          [oldTab navigationManagerImpl]->GetSessionController();
       [newHistory insertStateFromSessionController:oldHistory];
       [[newTab nativeAppNavigationController]
           copyStateFrom:[oldTab nativeAppNavigationController]];
@@ -4806,7 +4808,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* tab = [_model currentTab];
   if (![tab navigationManager])
     return nil;
-  return [[tab navigationManager]->GetSessionController() currentEntry];
+  return [[tab navigationManagerImpl]->GetSessionController() currentEntry];
 }
 
 #pragma mark - BookmarkBridgeMethods
