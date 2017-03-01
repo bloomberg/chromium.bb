@@ -1,0 +1,4 @@
+//gclient*
+//subprocess2.py
+//third_party/__init__.py
+//third_party/repo/
