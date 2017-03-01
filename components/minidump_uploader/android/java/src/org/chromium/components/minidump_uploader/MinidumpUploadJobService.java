@@ -1,47 +1,30 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.android_webview.crash;
+package org.chromium.components.minidump_uploader;
 
 import android.annotation.TargetApi;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.os.Build;
 
-import org.chromium.android_webview.command_line.CommandLineUtil;
-import org.chromium.base.ContextUtils;
-import org.chromium.components.minidump_uploader.MinidumpUploader;
-
 /**
  * Class that interacts with the Android JobScheduler to upload Minidumps at appropriate times.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-// OBS: This class needs to be public to be started from android.app.ActivityThread.
-public class MinidumpUploadJobService extends JobService {
+public abstract class MinidumpUploadJobService extends JobService {
     Object mRunningLock = new Object();
     boolean mRunningJob = false;
     MinidumpUploader mMinidumpUploader;
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        // This overwrites the command line set by ChromeApplication.onCreate() to use a
-        // WebView-specific command line file. This is okay since this Service is not running in the
-        // same process as the main Chrome process.
-        CommandLineUtil.initCommandLine();
-    }
-
-    @Override
     public boolean onStartJob(JobParameters params) {
-        // Ensure we can use ContextUtils later on (from minidump_uploader component).
-        ContextUtils.initApplicationContext(this.getApplicationContext());
-
         // Ensure we only run one job at a time.
         synchronized (mRunningLock) {
             assert !mRunningJob;
             mRunningJob = true;
         }
-        mMinidumpUploader = new MinidumpUploaderImpl(this, true /* cleanOutMinidumps */);
+        mMinidumpUploader = createMinidumpUploader();
         mMinidumpUploader.uploadAllMinidumps(createJobFinishedCallback(params));
         return true; // true = processing work on a separate thread, false = done already.
     }
@@ -53,6 +36,12 @@ public class MinidumpUploadJobService extends JobService {
             mRunningJob = false;
         }
         return reschedule;
+    }
+
+    @Override
+    public void onDestroy() {
+        mMinidumpUploader = null;
+        super.onDestroy();
     }
 
     private MinidumpUploader.UploadsFinishedCallback createJobFinishedCallback(
@@ -68,9 +57,8 @@ public class MinidumpUploadJobService extends JobService {
         };
     }
 
-    @Override
-    public void onDestroy() {
-        mMinidumpUploader = null;
-        super.onDestroy();
-    }
+    /**
+     * @return The minidump uploader that jobs should use.
+     */
+    protected abstract MinidumpUploader createMinidumpUploader();
 }

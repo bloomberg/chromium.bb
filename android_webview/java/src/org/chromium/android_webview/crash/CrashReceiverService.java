@@ -107,14 +107,15 @@ public class CrashReceiverService extends Service {
     private void scheduleNewJob() {
         JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
         JobInfo newJob = new JobInfo
-                .Builder(MINIDUMP_UPLOADING_JOB_ID /* jobId */,
-                    new ComponentName(this, MinidumpUploadJobService.class))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-                // Minimum delay when a job is retried (a retry will happen when there are minidumps
-                // left after trying to upload all minidumps - this could e.g. happen if we add more
-                // minidumps at the same time as uploading old ones).
-                .setBackoffCriteria(JOB_BACKOFF_TIME_IN_MS, JOB_BACKOFF_POLICY)
-                .build();
+                                 .Builder(MINIDUMP_UPLOADING_JOB_ID /* jobId */,
+                                         new ComponentName(this, AwMinidumpUploadJobService.class))
+                                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+                                 // Minimum delay when a job is retried (a retry will happen when
+                                 // there are minidumps left after trying to upload all minidumps -
+                                 // this could e.g. happen if we add more minidumps at the same time
+                                 // as uploading old ones).
+                                 .setBackoffCriteria(JOB_BACKOFF_TIME_IN_MS, JOB_BACKOFF_POLICY)
+                                 .build();
         if (jobScheduler.schedule(newJob) == JobScheduler.RESULT_FAILURE) {
             throw new RuntimeException("couldn't schedule " + newJob);
         }

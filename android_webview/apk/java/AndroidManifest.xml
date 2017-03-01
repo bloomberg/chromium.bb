@@ -41,7 +41,7 @@
             <service android:name="org.chromium.android_webview.crash.CrashReceiverService"
                      android:exported="true"
                      android:process=":crash_receiver_service"/>
-            <service android:name="org.chromium.android_webview.crash.MinidumpUploadJobService"
+            <service android:name="org.chromium.android_webview.crash.AwMinidumpUploadJobService"
                      android:permission="android.permission.BIND_JOB_SERVICE"
                      android:exported="true"
                      android:process=":crash_receiver_service"/>
