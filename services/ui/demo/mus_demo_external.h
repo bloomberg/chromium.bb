@@ -36,6 +36,8 @@ class MusDemoExternal : public MusDemo {
   mojom::WindowTreeClientPtr window_tree_client_mojo_;
   size_t initialized_windows_count_ = 0;
 
+  size_t number_of_windows_ = 1;
+
   DISALLOW_COPY_AND_ASSIGN(MusDemoExternal);
 };
 

@@ -4,6 +4,8 @@
 
 #include "services/ui/demo/mus_demo_external.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/demo/window_tree_data.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -36,10 +38,6 @@ class WindowTreeDataExternal : public WindowTreeData {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeDataExternal);
 };
 
-// Number of windows to open.
-// TODO(tonikitoo,fwang): Open multiple windows.
-const size_t kNumberOfWindows = 1;
-
 int GetSquareSizeForWindow(int window_index) {
   return 50 * window_index + 400;
 };
@@ -58,6 +56,17 @@ MusDemoExternal::CreateWindowTreeClient() {
 }
 
 void MusDemoExternal::OnStartImpl() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch("external-window-count")) {
+    if (!base::StringToSizeT(
+            command_line->GetSwitchValueASCII("external-window-count"),
+            &number_of_windows_)) {
+      LOG(FATAL) << "Invalid value for \'external-window-count\'";
+      return;
+    }
+  }
+
   // TODO(tonikitoo,fwang): Extend the WindowTreeClient API to allow connection
   // to the window tree host factory using window_tree_client().
   context()->connector()->BindInterface(ui::mojom::kServiceName,
@@ -68,10 +77,11 @@ void MusDemoExternal::OnStartImpl() {
   // aura::GetDeviceScaleFactorFromDisplay().
   AddPrimaryDisplay(display::Display(0));
 
-  // The number of windows to open is specified by kNumberOfWindows. The windows
-  // are opened sequentially (the first one here and the others after each call
-  // to OnEmbed) to ensure that the WindowTreeHostMus passed to OnEmbed
-  // corresponds to the WindowTreeDataExternal::host_ created in OpenNewWindow.
+  // The number of windows to open is specified by number_of_windows_. The
+  // windows are opened sequentially (the first one here and the others after
+  // each call to OnEmbed) to ensure that the WindowTreeHostMus passed to
+  // OnEmbed corresponds to the WindowTreeDataExternal::host_ created in
+  // OpenNewWindow.
   OpenNewWindow();
 }
 
@@ -92,7 +102,7 @@ void MusDemoExternal::OnEmbed(
   initialized_windows_count_++;
 
   // Open the next window until the requested number of windows is reached.
-  if (initialized_windows_count_ < kNumberOfWindows)
+  if (initialized_windows_count_ < number_of_windows_)
     OpenNewWindow();
 }
 
