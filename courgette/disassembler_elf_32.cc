@@ -323,6 +323,70 @@ CheckBool DisassemblerElf32::RVAsToFileOffsets(
   return true;
 }
 
+CheckBool DisassemblerElf32::ParseAbs32Relocs() {
+  abs32_locations_.clear();
+
+  // Loop through sections for relocation sections
+  for (Elf32_Half section_id = 0; section_id < SectionHeaderCount();
+       ++section_id) {
+    const Elf32_Shdr* section_header = SectionHeader(section_id);
+
+    if (section_header->sh_type == SHT_REL) {
+      const Elf32_Rel* relocs_table =
+          reinterpret_cast<const Elf32_Rel*>(SectionBody(section_id));
+
+      int relocs_table_count =
+          section_header->sh_size / section_header->sh_entsize;
+
+      // Elf32_Word relocation_section_id = section_header->sh_info;
+
+      // Loop through relocation objects in the relocation section
+      for (int rel_id = 0; rel_id < relocs_table_count; ++rel_id) {
+        RVA rva;
+
+        // Quite a few of these conversions fail, and we simply skip
+        // them, that's okay.
+        if (RelToRVA(relocs_table[rel_id], &rva) && CheckSection(rva))
+          abs32_locations_.push_back(rva);
+      }
+    }
+  }
+
+  std::sort(abs32_locations_.begin(), abs32_locations_.end());
+  DCHECK(abs32_locations_.empty() || abs32_locations_.back() != kUnassignedRVA);
+  return true;
+}
+
+CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {
+  rel32_locations_.clear();
+  bool found_rel32 = false;
+
+  // Loop through sections for relocation sections
+  for (Elf32_Half section_id = 0; section_id < SectionHeaderCount();
+       ++section_id) {
+    const Elf32_Shdr* section_header = SectionHeader(section_id);
+
+    // Some debug sections can have sh_type=SHT_PROGBITS but sh_addr=0.
+    if (section_header->sh_type != SHT_PROGBITS || section_header->sh_addr == 0)
+      continue;
+
+    // Heuristic: Only consider ".text" section.
+    std::string section_name;
+    if (!SectionName(*section_header, &section_name))
+      return false;
+    if (section_name != ".text")
+      continue;
+
+    found_rel32 = true;
+    if (!ParseRel32RelocsFromSection(section_header))
+      return false;
+  }
+  if (!found_rel32)
+    VLOG(1) << "Warning: Found no rel32 addresses. Missing .text section?";
+
+  return true;
+}
+
 RvaVisitor* DisassemblerElf32::CreateAbs32TargetRvaVisitor() {
   return new RvaVisitor_Abs32(abs32_locations_, *this);
 }
@@ -541,41 +605,6 @@ CheckBool DisassemblerElf32::ParseSimpleRegion(
   return true;
 }
 
-CheckBool DisassemblerElf32::ParseAbs32Relocs() {
-  abs32_locations_.clear();
-
-  // Loop through sections for relocation sections
-  for (Elf32_Half section_id = 0; section_id < SectionHeaderCount();
-       ++section_id) {
-    const Elf32_Shdr* section_header = SectionHeader(section_id);
-
-    if (section_header->sh_type == SHT_REL) {
-      const Elf32_Rel* relocs_table =
-          reinterpret_cast<const Elf32_Rel*>(SectionBody(section_id));
-
-      int relocs_table_count = section_header->sh_size /
-                               section_header->sh_entsize;
-
-      // Elf32_Word relocation_section_id = section_header->sh_info;
-
-      // Loop through relocation objects in the relocation section
-      for (int rel_id = 0; rel_id < relocs_table_count; ++rel_id) {
-        RVA rva;
-
-        // Quite a few of these conversions fail, and we simply skip
-        // them, that's okay.
-        if (RelToRVA(relocs_table[rel_id], &rva) && CheckSection(rva))
-          abs32_locations_.push_back(rva);
-      }
-    }
-  }
-
-  std::sort(abs32_locations_.begin(), abs32_locations_.end());
-  DCHECK(abs32_locations_.empty() ||
-         abs32_locations_.back() != kUnassignedRVA);
-  return true;
-}
-
 CheckBool DisassemblerElf32::CheckSection(RVA rva) {
   FileOffset file_offset = RVAToFileOffset(rva);
   if (file_offset == kNoFileOffset)
@@ -596,37 +625,6 @@ CheckBool DisassemblerElf32::CheckSection(RVA rva) {
   }
 
   return false;
-}
-
-CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {
-  rel32_locations_.clear();
-  bool found_rel32 = false;
-
-  // Loop through sections for relocation sections
-  for (Elf32_Half section_id = 0; section_id < SectionHeaderCount();
-       ++section_id) {
-    const Elf32_Shdr* section_header = SectionHeader(section_id);
-
-    // Some debug sections can have sh_type=SHT_PROGBITS but sh_addr=0.
-    if (section_header->sh_type != SHT_PROGBITS ||
-        section_header->sh_addr == 0)
-      continue;
-
-    // Heuristic: Only consider ".text" section.
-    std::string section_name;
-    if (!SectionName(*section_header, &section_name))
-      return false;
-    if (section_name != ".text")
-      continue;
-
-    found_rel32 = true;
-    if (!ParseRel32RelocsFromSection(section_header))
-      return false;
-  }
-  if (!found_rel32)
-    VLOG(1) << "Warning: Found no rel32 addresses. Missing .text section?";
-
-  return true;
 }
 
 }  // namespace courgette

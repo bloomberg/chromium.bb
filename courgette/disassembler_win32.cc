@@ -365,6 +365,60 @@ bool DisassemblerWin32::QuickDetect(const uint8_t* start,
   return true;
 }
 
+bool DisassemblerWin32::ParseAbs32Relocs() {
+  abs32_locations_.clear();
+  if (!ParseRelocs(&abs32_locations_))
+    return false;
+
+#if COURGETTE_HISTOGRAM_TARGETS
+  for (size_t i = 0; i < abs32_locations_.size(); ++i) {
+    RVA rva = abs32_locations_[i];
+    // The 4 bytes at the relocation are a reference to some address.
+    ++abs32_target_rvas_[PointerToTargetRVA(RVAToPointer(rva))];
+  }
+#endif
+  return true;
+}
+
+void DisassemblerWin32::ParseRel32RelocsFromSections() {
+  FileOffset file_offset = 0;
+  while (file_offset < length()) {
+    const Section* section = FindNextSection(file_offset);
+    if (section == nullptr)
+      break;
+    if (file_offset < section->file_offset_of_raw_data)
+      file_offset = section->file_offset_of_raw_data;
+    ParseRel32RelocsFromSection(section);
+    file_offset += section->size_of_raw_data;
+  }
+  std::sort(rel32_locations_.begin(), rel32_locations_.end());
+  DCHECK(rel32_locations_.empty() || rel32_locations_.back() != kUnassignedRVA);
+
+#if COURGETTE_HISTOGRAM_TARGETS
+  VLOG(1) << "abs32_locations_ " << abs32_locations_.size()
+          << "\nrel32_locations_ " << rel32_locations_.size()
+          << "\nabs32_target_rvas_ " << abs32_target_rvas_.size()
+          << "\nrel32_target_rvas_ " << rel32_target_rvas_.size();
+
+  int common = 0;
+  std::map<RVA, int>::iterator abs32_iter = abs32_target_rvas_.begin();
+  std::map<RVA, int>::iterator rel32_iter = rel32_target_rvas_.begin();
+  while (abs32_iter != abs32_target_rvas_.end() &&
+         rel32_iter != rel32_target_rvas_.end()) {
+    if (abs32_iter->first < rel32_iter->first) {
+      ++abs32_iter;
+    } else if (rel32_iter->first < abs32_iter->first) {
+      ++rel32_iter;
+    } else {
+      ++common;
+      ++abs32_iter;
+      ++rel32_iter;
+    }
+  }
+  VLOG(1) << "common " << common;
+#endif
+}
+
 RvaVisitor* DisassemblerWin32::CreateAbs32TargetRvaVisitor() {
   return new RvaVisitor_Abs32(abs32_locations_, *this);
 }
@@ -418,60 +472,6 @@ CheckBool DisassemblerWin32::ParseFile(AssemblyProgram* program,
 #endif
 
   return true;
-}
-
-bool DisassemblerWin32::ParseAbs32Relocs() {
-  abs32_locations_.clear();
-  if (!ParseRelocs(&abs32_locations_))
-    return false;
-
-#if COURGETTE_HISTOGRAM_TARGETS
-  for (size_t i = 0; i < abs32_locations_.size(); ++i) {
-    RVA rva = abs32_locations_[i];
-    // The 4 bytes at the relocation are a reference to some address.
-    ++abs32_target_rvas_[PointerToTargetRVA(RVAToPointer(rva))];
-  }
-#endif
-  return true;
-}
-
-void DisassemblerWin32::ParseRel32RelocsFromSections() {
-  FileOffset file_offset = 0;
-  while (file_offset < length()) {
-    const Section* section = FindNextSection(file_offset);
-    if (section == nullptr)
-      break;
-    if (file_offset < section->file_offset_of_raw_data)
-      file_offset = section->file_offset_of_raw_data;
-    ParseRel32RelocsFromSection(section);
-    file_offset += section->size_of_raw_data;
-  }
-  std::sort(rel32_locations_.begin(), rel32_locations_.end());
-  DCHECK(rel32_locations_.empty() || rel32_locations_.back() != kUnassignedRVA);
-
-#if COURGETTE_HISTOGRAM_TARGETS
-  VLOG(1) << "abs32_locations_ " << abs32_locations_.size()
-          << "\nrel32_locations_ " << rel32_locations_.size()
-          << "\nabs32_target_rvas_ " << abs32_target_rvas_.size()
-          << "\nrel32_target_rvas_ " << rel32_target_rvas_.size();
-
-  int common = 0;
-  std::map<RVA, int>::iterator abs32_iter = abs32_target_rvas_.begin();
-  std::map<RVA, int>::iterator rel32_iter = rel32_target_rvas_.begin();
-  while (abs32_iter != abs32_target_rvas_.end() &&
-         rel32_iter != rel32_target_rvas_.end()) {
-    if (abs32_iter->first < rel32_iter->first) {
-      ++abs32_iter;
-    } else if (rel32_iter->first < abs32_iter->first) {
-      ++rel32_iter;
-    } else {
-      ++common;
-      ++abs32_iter;
-      ++rel32_iter;
-    }
-  }
-  VLOG(1) << "common " << common;
-#endif
 }
 
 CheckBool DisassemblerWin32::ParseNonSectionFileRegion(

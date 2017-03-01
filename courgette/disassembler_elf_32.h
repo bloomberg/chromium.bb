@@ -179,6 +179,11 @@ class DisassemblerElf32 : public Disassembler {
   virtual CheckBool ParseRel32RelocsFromSection(const Elf32_Shdr* section)
       WARN_UNUSED_RESULT = 0;
 
+  CheckBool ParseAbs32Relocs() WARN_UNUSED_RESULT;
+
+  // Extracts all rel32 TypedRVAs. Does not sort the result.
+  CheckBool ParseRel32RelocsFromSections() WARN_UNUSED_RESULT;
+
   // Disassembler interfaces.
   RvaVisitor* CreateAbs32TargetRvaVisitor() override;
   RvaVisitor* CreateRel32TargetRvaVisitor() override;
@@ -201,12 +206,7 @@ class DisassemblerElf32 : public Disassembler {
                               InstructionReceptor* receptor) const
       WARN_UNUSED_RESULT;
 
-  CheckBool ParseAbs32Relocs() WARN_UNUSED_RESULT;
-
   CheckBool CheckSection(RVA rva) WARN_UNUSED_RESULT;
-
-  // Extracts all rel32 TypedRVAs. Does not sort the result.
-  CheckBool ParseRel32RelocsFromSections() WARN_UNUSED_RESULT;
 
   const Elf32_Ehdr* header_;
 

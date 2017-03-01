@@ -56,6 +56,9 @@ class DisassemblerWin32 : public Disassembler {
   // which will be checked against the detected one.
   static bool QuickDetect(const uint8_t* start, size_t length, uint16_t magic);
 
+  bool ParseAbs32Relocs();
+  void ParseRel32RelocsFromSections();
+
   // Disassembler interfaces.
   RvaVisitor* CreateAbs32TargetRvaVisitor() override;
   RvaVisitor* CreateRel32TargetRvaVisitor() override;
@@ -65,8 +68,6 @@ class DisassemblerWin32 : public Disassembler {
 
   CheckBool ParseFile(AssemblyProgram* target,
                       InstructionReceptor* receptor) const WARN_UNUSED_RESULT;
-  bool ParseAbs32Relocs();
-  void ParseRel32RelocsFromSections();
   virtual void ParseRel32RelocsFromSection(const Section* section) = 0;
 
   CheckBool ParseNonSectionFileRegion(FileOffset start_file_offset,
