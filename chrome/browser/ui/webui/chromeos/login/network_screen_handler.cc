@@ -154,6 +154,7 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("selectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
   builder->Add("selectNetwork", IDS_NETWORK_SELECTION_SELECT);
   builder->Add("selectTimezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION);
+  builder->Add("timezoneDropdownLabel", IDS_TIMEZONE_DROPDOWN_LABEL);
   builder->Add("proxySettings", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON);
   builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
   builder->Add("debuggingFeaturesLink", IDS_NETWORK_ENABLE_DEV_FEATURES_LINK);

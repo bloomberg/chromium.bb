@@ -14,21 +14,24 @@ a {
 }
 
 #installationSettings {
-  padding-top: 31px; /* = 44 - font size */
+  -webkit-margin-start: 20px;
+  margin-top: 31px; /* = 44 - font size */
 }
 
 #logging {
+  -webkit-margin-start: 20px;
   color: rgba(0, 0, 0, 0.54);
-  padding-top: 21px; /* = 36 - font size */
+  margin-bottom: 20px;
+  margin-top: 23px; /* = 36 - font size */
 }
 
 #usageStats {
-  --paper-checkbox-size: 20px;
+  --paper-checkbox-size: 16px;
   --paper-checkbox-checked-color: rgb(66, 133, 244); /* #4285f4 */
-  /* End padding must be greater than --paper-checkbox-label-spacing */
-  -webkit-padding-end: 16px;
-  max-width: 550px;
-  padding-bottom: 20px;
+}
+
+#usageStatsLabelContainer label {
+  color: rgba(0, 0, 0, .54);
 }
 
 .bottom-buttons {

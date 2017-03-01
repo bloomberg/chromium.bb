@@ -465,14 +465,4 @@ Polymer({
 
     this.screen.onTimezoneSelected_(item.value);
   },
-
-  /**
-    * This function formats message for labels.
-    * @param String label i18n string ID.
-    * @param String parameter i18n string parameter.
-    * @private
-    */
-  formatMessage_: function(label, parameter) {
-    return loadTimeData.getStringF(label, parameter);
-  },
 });

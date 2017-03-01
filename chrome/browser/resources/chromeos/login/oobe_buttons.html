@@ -37,13 +37,13 @@
   Attributes:
     'disabled' - button is disabled when the attribute is set.
     'inverse' - makes text white and background blue
-    'aria-label' - accessibility label.
+    'label-for-aria' - accessibility label.
 -->
 <dom-module id="oobe-text-button">
   <link rel="stylesheet" href="oobe_text_button.css">
   <template>
     <paper-button id="textButton" on-tap="onClick_" disabled="[[disabled]]"
-        inverse$="[[inverse]]" aria-label$="[[ariaLabel]]">
+        inverse$="[[inverse]]" aria-label$="[[labelForAria]]">
       <div id="container"
           class="flex layout horizontal center center-justified self-stretch">
         <content></content>
@@ -62,13 +62,13 @@
 
   Attributes:
     'disabled' - button is disabled when the attribute is set.
-    'aria-label' - accessibility label.
+    'label-for-aria' - accessibility label.
 -->
 <dom-module id="oobe-back-button">
   <link rel="stylesheet" href="oobe_nav_button.css">
   <template>
     <paper-button id="button" on-tap="onClick_" disabled="[[disabled]]"
-        aria-label$="[[ariaLabel]]">
+        aria-label$="[[labelForAria]]">
       <div class="flex horizontal layout start center">
         <iron-icon icon="oobe-buttons:arrow-back"></iron-icon>
         <div id="text" i18n-content="back"></div>
@@ -99,12 +99,12 @@
 
   Attributes:
     'icon' - a name of icon from material design set to show on button.
-    'aria-label' - accessibility label.
+    'label-for-aria' - accessibility label.
 -->
 <dom-module id="oobe-welcome-secondary-button">
   <link rel="stylesheet" href="oobe_welcome_secondary_button.css">
   <template>
-    <paper-button id="button" aria-label$="[[ariaLabel]]">
+    <paper-button id="button" aria-label$="[[labelForAria]]">
       <div id="container" class="flex layout vertical center self-stretch">
         <div id="subcontainer"
             class="flex layout horizontal center self-stretch">
