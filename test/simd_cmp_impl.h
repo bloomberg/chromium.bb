@@ -13,7 +13,6 @@
 #include <string>
 #include "./aom_dsp_rtcd.h"
 #include "test/acm_random.h"
-#include "test/register_state_check.h"
 #include "aom_dsp/aom_simd.h"
 #undef SIMD_INLINE
 #define SIMD_INLINE static  // Don't enforce inlining
@@ -743,8 +742,8 @@ int CompareSimd1Arg(fptr store, fptr load, fptr simd, void *d, fptr c_store,
   CRet (*const my_c_simd)(CArg) = (CRet(*const)(CArg))c_simd;
 
   // Call reference and intrinsic
-  ASM_REGISTER_STATE_CHECK(my_c_store(ref_d, my_c_simd(my_c_load(a))));
-  ASM_REGISTER_STATE_CHECK(my_store(d, my_simd(my_load(a))));
+  my_c_store(ref_d, my_c_simd(my_c_load(a)));
+  my_store(d, my_simd(my_load(a)));
 
   // Compare results
   return memcmp(ref_d, d, sizeof(CRet));
@@ -767,9 +766,8 @@ int CompareSimd2Args(fptr store, fptr load1, fptr load2, fptr simd, void *d,
   CRet (*const my_c_simd)(CArg1, CArg2) = (CRet(*const)(CArg1, CArg2))c_simd;
 
   // Call reference and intrinsic
-  ASM_REGISTER_STATE_CHECK(
-      my_c_store(ref_d, my_c_simd(my_c_load1(a), my_c_load2(b))));
-  ASM_REGISTER_STATE_CHECK(my_store(d, my_simd(my_load1(a), my_load2(b))));
+  my_c_store(ref_d, my_c_simd(my_c_load1(a), my_c_load2(b)));
+  my_store(d, my_simd(my_load1(a), my_load2(b)));
 
   // Compare results
   return memcmp(ref_d, d, sizeof(CRet));
