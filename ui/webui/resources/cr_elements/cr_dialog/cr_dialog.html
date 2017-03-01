@@ -33,11 +33,11 @@
         border-bottom: 1px solid var(--divider-color);
         display: flex;
         min-height: 52px;
+        outline: none;
       }
 
       :host ::content .title {
         font-size: 123.07%; /* (16px / 13px) * 100 */
-        outline: none;
       }
 
       #close {
@@ -95,7 +95,7 @@
         border-top: 1px solid var(--divider-color);
       }
     </style>
-    <div class="title-container">
+    <div class="title-container" tabindex="-1">
       <content select=".title"></content>
       <paper-icon-button icon="cr:clear" on-tap="cancel" id="close"
           aria-label$="[[closeText]]">

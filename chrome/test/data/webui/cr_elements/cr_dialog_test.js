@@ -14,13 +14,16 @@ suite('cr-dialog', function() {
         <div class="body"><button>button</button></div>
       </dialog>`;
 
-    assertFalse(document.activeElement.matches('div.title'));
-    assertFalse(document.activeElement.matches('button'));
+    var dialog = document.body.querySelector('dialog');
+    var button = document.body.querySelector('button');
 
-    document.body.querySelector('dialog').showModal();
+    assertNotEquals(dialog, document.activeElement);
+    assertNotEquals(button, document.activeElement);
 
-    expectTrue(document.activeElement.matches('div.title'));
-    expectFalse(document.activeElement.matches('button'));
+    dialog.showModal();
+
+    expectEquals(dialog, document.activeElement);
+    expectNotEquals(button, document.activeElement);
   });
 
   test('focuses [autofocus] instead of title when present', function() {
@@ -30,12 +33,15 @@ suite('cr-dialog', function() {
         <div class="body"><button autofocus>button</button></div>
       </dialog>`;
 
-    assertFalse(document.activeElement.matches('button'));
-    assertFalse(document.activeElement.matches('div.title'));
+    var dialog = document.body.querySelector('dialog');
+    var button = document.body.querySelector('button');
 
-    document.body.querySelector('dialog').showModal();
+    assertNotEquals(dialog, document.activeElement);
+    assertNotEquals(button, document.activeElement);
 
-    expectTrue(document.activeElement.matches('button'));
-    expectFalse(document.activeElement.matches('div.title'));
+    dialog.showModal();
+
+    expectNotEquals(dialog, document.activeElement);
+    expectEquals(button, document.activeElement);
   });
 });
