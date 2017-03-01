@@ -39,6 +39,7 @@ _for_blink = False
 # TODO(rockot, yzshen): The variant handling is kind of a hack currently. Make
 # it right.
 _variant = None
+_export_attribute = None
 
 
 class _NameFormatter(object):
@@ -220,7 +221,8 @@ def FormatConstantDeclaration(constant, nested=False):
   if mojom.IsStringKind(constant.kind):
     if nested:
       return "const char %s[]" % constant.name
-    return "extern const char %s[]" % constant.name
+    return "%sextern const char %s[]" % \
+        ((_export_attribute + " ") if _export_attribute else "", constant.name)
   return "constexpr %s %s = %s" % (GetCppPodType(constant.kind), constant.name,
                                    ConstantValue(constant))
 
@@ -783,6 +785,8 @@ class Generator(generator.Generator):
       _use_once_callback = self.use_once_callback
       global _variant
       _variant = self.variant
+      global _export_attribute
+      _export_attribute = self.export_attribute
       suffix = "-%s" % self.variant if self.variant else ""
       self.Write(self.GenerateModuleHeader(),
                  self.MatchMojomFilePath("%s%s.h" % (self.module.name, suffix)))
