@@ -13,50 +13,56 @@
     </uses-sdk>
 
     <uses-feature android:name="android.hardware.touchscreen"
-            android:required="false"/>
+                  android:required="false"/>
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application android:label="Android System WebView"
-        android:icon="@drawable/icon_webview"
-        android:multiArch="true"
-        android:use32bitAbi="true">
+                 android:icon="@drawable/icon_webview"
+                 android:multiArch="true"
+                 android:use32bitAbi="true">
         {# This part is shared between stand-alone WebView and Monochrome #}
         {% macro common(manifest_package, webview_lib) %}
-            <activity android:name="com.android.webview.chromium.LicenseActivity"
-                    android:label="@string/license_activity_title">
-                <intent-filter>
-                    <action android:name="android.settings.WEBVIEW_LICENSE" />
-                    <category android:name="android.intent.category.DEFAULT" />
-                </intent-filter>
-                <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
-                        android:value="true" />
-            </activity>
-            <provider android:name="com.android.webview.chromium.LicenseContentProvider"
-                    android:exported="true"
-                    android:authorities="{{ manifest_package }}.LicenseContentProvider" />
             <meta-data android:name="com.android.webview.WebViewLibrary"
-                    android:value="{{ webview_lib }}" />
-            <service android:name="org.chromium.android_webview.crash.CrashReceiverService"
-                     android:exported="true"
-                     android:process=":crash_receiver_service"/>
-            <service android:name="org.chromium.android_webview.crash.AwMinidumpUploadJobService"
-                     android:permission="android.permission.BIND_JOB_SERVICE"
-                     android:exported="true"
-                     android:process=":crash_receiver_service"/>
+                       android:value="{{ webview_lib }}" />
+            {% if donor_package is not defined %}
+                <activity android:name="com.android.webview.chromium.LicenseActivity"
+                          android:label="@string/license_activity_title">
+                    <intent-filter>
+                        <action android:name="android.settings.WEBVIEW_LICENSE" />
+                        <category android:name="android.intent.category.DEFAULT" />
+                    </intent-filter>
+                    <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
+                               android:value="true" />
+                </activity>
+                <provider android:name="com.android.webview.chromium.LicenseContentProvider"
+                          android:exported="true"
+                          android:authorities="{{ manifest_package }}.LicenseContentProvider" />
+                <service android:name="org.chromium.android_webview.crash.CrashReceiverService"
+                         android:exported="true"
+                         android:process=":crash_receiver_service"/>
+                <service android:name="org.chromium.android_webview.crash.AwMinidumpUploadJobService"
+                         android:permission="android.permission.BIND_JOB_SERVICE"
+                         android:exported="true"
+                         android:process=":crash_receiver_service"/>
+            {% endif %}
         {% endmacro %}
-        {{ common(package|default('com.android.webview'), 'libwebviewchromium.so') }}
+        {{ common(package|default('com.android.webview'), library|default('libwebviewchromium.so')) }}
+        {% if donor_package is defined %}
+            <meta-data android:name="com.android.webview.WebViewDonorPackage"
+                       android:value="{{ donor_package }}" />
+        {% endif %}
         {% set num_sandboxed_services = 20 %}
         <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
                    android:value="{{ num_sandboxed_services }}"/>
         {% for i in range(num_sandboxed_services) %}
-        <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
-                 android:process=":sandboxed_process{{ i }}"
-                 android:isolatedProcess="true"
-                 android:exported="true"
-                 android:externalService="true"
-                 tools:ignore="ExportedService" />
+            <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
+                     android:process=":sandboxed_process{{ i }}"
+                     android:isolatedProcess="true"
+                     android:exported="true"
+                     android:externalService="true"
+                     tools:ignore="ExportedService" />
         {% endfor %}
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="0"/>
