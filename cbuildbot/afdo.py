@@ -53,8 +53,8 @@ AFDO_ALLOWED_STALE = 14
 # at least 4GB of memory.
 #
 # This must be consistent with the definitions in autotest.
-AFDO_DATA_GENERATORS_GCC = ('samus', 'link', 'lumpy')
-AFDO_DATA_GENERATORS_LLVM = ('chell',)
+AFDO_DATA_GENERATORS_GCC = ('lumpy',)
+AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
 
 # For a given architecture, which architecture is used to generate
 # the AFDO profile. Some architectures are not able to generate their

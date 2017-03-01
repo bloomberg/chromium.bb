@@ -93,7 +93,7 @@ class AFDOUpdateEbuildStage(generic_stages.BuilderStage):
     # board is None iff master-chromium-pfq. That means we need to update both
     # afdos for gcc(produced on samus) and llvm(produced on chell).
     # TODO: Remove this after the transition is done.
-    afdoboards = [board] if board else ['samus', 'chell']
+    afdoboards = [board] if board else ['chell']
     for afdoboard in afdoboards:
       arch_profiles = {}
       afdo.InitGSUrls(afdoboard, reset=True)
