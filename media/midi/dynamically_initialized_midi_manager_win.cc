@@ -40,7 +40,7 @@ class DynamicallyInitializedMidiManagerWin::PortManager {
   void UnregisterInHandle(HMIDIIN handle);
 
   // Finds HMIDIIN handle and fullfil |out_index| with the port index.
-  bool FindHandle(HMIDIIN hmi, size_t* out_index);
+  bool FindInHandle(HMIDIIN hmi, size_t* out_index);
 
   // Restores used input buffer for the next data receive.
   void RestoreInBuffer(size_t index);
@@ -56,6 +56,13 @@ class DynamicallyInitializedMidiManagerWin::PortManager {
                                             DWORD_PTR param1,
                                             DWORD_PTR param2);
 
+  // Handles MIDI output port callbacks that runs on a system provided thread.
+  static void CALLBACK HandleMidiOutCallback(HMIDIOUT hmo,
+                                             UINT msg,
+                                             DWORD_PTR instance,
+                                             DWORD_PTR param1,
+                                             DWORD_PTR param2);
+
  private:
   // Holds all MIDI input or output ports connected once.
   std::vector<std::unique_ptr<InPort>> input_ports_;
@@ -70,6 +77,20 @@ namespace {
 // Assumes that nullptr represents an invalid MIDI handle.
 constexpr HMIDIIN kInvalidInHandle = nullptr;
 constexpr HMIDIOUT kInvalidOutHandle = nullptr;
+
+// Defines SysEx message size limit.
+// TODO(crbug.com/383578): This restriction should be removed once Web MIDI
+// defines a standardized way to handle large sysex messages.
+// Note for built-in USB-MIDI driver:
+// From an observation on Windows 7/8.1 with a USB-MIDI keyboard,
+// midiOutLongMsg() will be always blocked. Sending 64 bytes or less data takes
+// roughly 300 usecs. Sending 2048 bytes or more data takes roughly
+// |message.size() / (75 * 1024)| secs in practice. Here we put 256 KB size
+// limit on SysEx message, with hoping that midiOutLongMsg will be blocked at
+// most 4 sec or so with a typical USB-MIDI device.
+// TODO(toyoshim): Consider to use linked small buffers so that midiOutReset()
+// can abort sending unhandled following buffers.
+constexpr size_t kSysExSizeLimit = 256 * 1024;
 
 // Defines input buffer size.
 constexpr size_t kBufferLength = 32 * 1024;
@@ -141,6 +162,12 @@ ScopedMIDIHDR CreateMIDIHDR(size_t size) {
   return hdr;
 }
 
+ScopedMIDIHDR CreateMIDIHDR(const std::vector<uint8_t>& data) {
+  ScopedMIDIHDR hdr(CreateMIDIHDR(data.size()));
+  std::copy(data.begin(), data.end(), hdr->lpData);
+  return hdr;
+}
+
 // Helper functions to close MIDI device handles on TaskRunner asynchronously.
 void FinalizeInPort(HMIDIIN handle, ScopedMIDIHDR hdr) {
   // Resets the device. This stops receiving messages, and allows to release
@@ -154,16 +181,10 @@ void FinalizeInPort(HMIDIIN handle, ScopedMIDIHDR hdr) {
 }
 
 void FinalizeOutPort(HMIDIOUT handle) {
+  // Resets inflight buffers. This will cancel sending data that system
+  // holds and were not sent yet.
+  midiOutReset(handle);
   midiOutClose(handle);
-}
-
-// Handles MIDI output port callbacks that runs on a system provided thread.
-void CALLBACK HandleMidiOutCallback(HMIDIOUT hmo,
-                                    UINT msg,
-                                    DWORD_PTR instance,
-                                    DWORD_PTR param1,
-                                    DWORD_PTR param2) {
-  // TODO(toyoshim): Following patches will implement actual functions.
 }
 
 // All instances of Port subclasses are always accessed behind a lock of
@@ -252,7 +273,6 @@ class Port {
 
 }  // namespace
 
-// TODO(toyoshim): Following patches will implement actual functions.
 class DynamicallyInitializedMidiManagerWin::InPort final : public Port {
  public:
   InPort(DynamicallyInitializedMidiManagerWin* manager,
@@ -371,7 +391,6 @@ class DynamicallyInitializedMidiManagerWin::InPort final : public Port {
   const int instance_id_;
 };
 
-// TODO(toyoshim): Following patches will implement actual functions.
 class DynamicallyInitializedMidiManagerWin::OutPort final : public Port {
  public:
   OutPort(UINT device_id, const MIDIOUTCAPS2W& caps)
@@ -420,6 +439,37 @@ class DynamicallyInitializedMidiManagerWin::OutPort final : public Port {
                    base::Unretained(manager), info_));
   }
 
+  void Send(const std::vector<uint8_t>& data) {
+    if (out_handle_ == kInvalidOutHandle)
+      return;
+
+    if (data.size() <= 3) {
+      uint32_t message = 0;
+      for (size_t i = 0; i < data.size(); ++i)
+        message |= (static_cast<uint32_t>(data[i]) << (i * 8));
+      midiOutShortMsg(out_handle_, message);
+    } else {
+      if (data.size() > kSysExSizeLimit) {
+        LOG(ERROR) << "Ignoring SysEx message due to the size limit"
+                   << ", size = " << data.size();
+        // TODO(toyoshim): Consider to report metrics here.
+        return;
+      }
+      ScopedMIDIHDR hdr(CreateMIDIHDR(data));
+      MMRESULT result =
+          midiOutPrepareHeader(out_handle_, hdr.get(), sizeof(*hdr));
+      if (result != MMSYSERR_NOERROR)
+        return;
+      result = midiOutLongMsg(out_handle_, hdr.get(), sizeof(*hdr));
+      if (result != MMSYSERR_NOERROR) {
+        midiOutUnprepareHeader(out_handle_, hdr.get(), sizeof(*hdr));
+      } else {
+        // MIDIHDR will be released on MOM_DONE.
+        ignore_result(hdr.release());
+      }
+    }
+  }
+
   // Port overrides:
   bool Connect() override {
     // Until |software| option is supported, disable Microsoft GS Wavetable
@@ -443,10 +493,10 @@ class DynamicallyInitializedMidiManagerWin::OutPort final : public Port {
   }
 
   void Open() override {
-    MMRESULT result =
-        midiOutOpen(&out_handle_, device_id_,
-                    reinterpret_cast<DWORD_PTR>(&HandleMidiOutCallback), 0,
-                    CALLBACK_FUNCTION);
+    MMRESULT result = midiOutOpen(
+        &out_handle_, device_id_,
+        reinterpret_cast<DWORD_PTR>(&PortManager::HandleMidiOutCallback), 0,
+        CALLBACK_FUNCTION);
     if (result == MMSYSERR_NOERROR) {
       Port::Open();
     } else {
@@ -481,7 +531,7 @@ void DynamicallyInitializedMidiManagerWin::PortManager::UnregisterInHandle(
   hmidiin_to_index_map_.erase(handle);
 }
 
-bool DynamicallyInitializedMidiManagerWin::PortManager::FindHandle(
+bool DynamicallyInitializedMidiManagerWin::PortManager::FindInHandle(
     HMIDIIN hmi,
     size_t* out_index) {
   GetTaskLock()->AssertAcquired();
@@ -522,7 +572,7 @@ DynamicallyInitializedMidiManagerWin::PortManager::HandleMidiInCallback(
   }
 
   size_t index;
-  if (!manager->port_manager()->FindHandle(hmi, &index))
+  if (!manager->port_manager()->FindInHandle(hmi, &index))
     return;
 
   DCHECK(msg == MIM_DATA || msg == MIM_LONGDATA);
@@ -555,6 +605,26 @@ DynamicallyInitializedMidiManagerWin::PortManager::HandleMidiInCallback(
     manager->PostTask(base::Bind(
         &DynamicallyInitializedMidiManagerWin::PortManager::RestoreInBuffer,
         base::Unretained(manager->port_manager()), index));
+  }
+}
+
+void CALLBACK
+DynamicallyInitializedMidiManagerWin::PortManager::HandleMidiOutCallback(
+    HMIDIOUT hmo,
+    UINT msg,
+    DWORD_PTR instance,
+    DWORD_PTR param1,
+    DWORD_PTR param2) {
+  if (msg == MOM_DONE) {
+    ScopedMIDIHDR hdr(reinterpret_cast<LPMIDIHDR>(param1));
+    if (!hdr)
+      return;
+    // TODO(toyoshim): Call midiOutUnprepareHeader outside the callback.
+    // Since this callback may be invoked after the manager is destructed,
+    // and can not send a task to the TaskRunner in such case, we need to
+    // consider to track MIDIHDR per port, and clean it in port finalization
+    // steps, too.
+    midiOutUnprepareHeader(hmo, hdr.get(), sizeof(*hdr));
   }
 }
 
@@ -628,7 +698,21 @@ void DynamicallyInitializedMidiManagerWin::DispatchSendMidiData(
     uint32_t port_index,
     const std::vector<uint8_t>& data,
     double timestamp) {
-  // TODO(toyoshim): Following patches will implement.
+  if (timestamp != 0.0) {
+    base::TimeTicks time = base::TimeTicks() +
+                           base::TimeDelta::FromMicroseconds(
+                               timestamp * base::Time::kMicrosecondsPerSecond);
+    base::TimeTicks now = base::TimeTicks::Now();
+    if (now < time) {
+      PostDelayedTask(
+          base::Bind(&DynamicallyInitializedMidiManagerWin::SendOnTaskRunner,
+                     base::Unretained(this), client, port_index, data),
+          time - now);
+      return;
+    }
+  }
+  PostTask(base::Bind(&DynamicallyInitializedMidiManagerWin::SendOnTaskRunner,
+                      base::Unretained(this), client, port_index, data));
 }
 
 void DynamicallyInitializedMidiManagerWin::OnDevicesChanged(
@@ -661,6 +745,15 @@ void DynamicallyInitializedMidiManagerWin::PostTask(const base::Closure& task) {
   service()
       ->GetTaskRunner(kTaskRunner)
       ->PostTask(FROM_HERE, base::Bind(&RunTask, instance_id_, task));
+}
+
+void DynamicallyInitializedMidiManagerWin::PostDelayedTask(
+    const base::Closure& task,
+    base::TimeDelta delay) {
+  service()
+      ->GetTaskRunner(kTaskRunner)
+      ->PostDelayedTask(FROM_HERE, base::Bind(&RunTask, instance_id_, task),
+                        delay);
 }
 
 void DynamicallyInitializedMidiManagerWin::PostReplyTask(
@@ -723,6 +816,18 @@ void DynamicallyInitializedMidiManagerWin::ReflectActiveDeviceList(
       (*known_ports)[index]->NotifyPortAdded(this);
     }
   }
+}
+
+void DynamicallyInitializedMidiManagerWin::SendOnTaskRunner(
+    MidiManagerClient* client,
+    uint32_t port_index,
+    const std::vector<uint8_t>& data) {
+  CHECK_GT(port_manager_->outputs()->size(), port_index);
+  (*port_manager_->outputs())[port_index]->Send(data);
+  // |client| will be checked inside MidiManager::AccumulateMidiBytesSent.
+  PostReplyTask(
+      base::Bind(&DynamicallyInitializedMidiManagerWin::AccumulateMidiBytesSent,
+                 base::Unretained(this), client, data.size()));
 }
 
 }  // namespace midi

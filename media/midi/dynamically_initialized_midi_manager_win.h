@@ -16,6 +16,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TimeDelta;
 }  // namespace base
 
 namespace midi {
@@ -57,6 +58,7 @@ class DynamicallyInitializedMidiManagerWin final
   // Posts a task to TaskRunner, and ensures that the instance keeps alive while
   // the task is running.
   void PostTask(const base::Closure&);
+  void PostDelayedTask(const base::Closure&, base::TimeDelta delay);
 
   // Posts a reply task to the I/O thread that hosts MidiManager instance, runs
   // it safely, and ensures that the instance keeps alive while the task is
@@ -75,6 +77,11 @@ class DynamicallyInitializedMidiManagerWin final
   void ReflectActiveDeviceList(DynamicallyInitializedMidiManagerWin* manager,
                                std::vector<T>* known_ports,
                                std::vector<T>* active_ports);
+
+  // Sends MIDI data on TaskRunner.
+  void SendOnTaskRunner(MidiManagerClient* client,
+                        uint32_t port_index,
+                        const std::vector<uint8_t>& data);
 
   // Holds an unique instance ID.
   const int instance_id_;
