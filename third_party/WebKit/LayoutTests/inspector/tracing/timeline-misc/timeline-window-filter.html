@@ -33,7 +33,7 @@ function test()
 
     function dumpFlameChartRecordsCountForRange(windowLeft, windowRight)
     {
-        var mainView = timeline._currentViews[0]._mainView;
+        var mainView = timeline._currentView._mainFlameChart;
         mainView._muteAnimation = true;
         overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
         mainView.update();

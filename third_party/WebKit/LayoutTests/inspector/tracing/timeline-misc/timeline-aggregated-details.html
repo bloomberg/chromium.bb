@@ -620,7 +620,7 @@ function test()
     {
         InspectorTest.addResult("");
         timeline._tabbedPane.selectTab(type, true);
-        var callTree = timeline._currentViews[0]._treeView;
+        var callTree = timeline._currentView._treeView;
         if (grouping) {
             InspectorTest.addResult(type + "  Group by: " + grouping);
             callTree._groupByCombobox.select(callTree._groupByCombobox.options().find(x => x.value === grouping));

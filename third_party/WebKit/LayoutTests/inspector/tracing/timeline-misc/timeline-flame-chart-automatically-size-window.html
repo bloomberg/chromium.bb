@@ -10,7 +10,7 @@ function test()
 {
     var timeline = UI.panels.timeline;
     timeline._onModeChanged();
-    timeline._currentViews[0]._automaticallySizeWindow = true;
+    timeline._currentView._automaticallySizeWindow = true;
 
     function requestWindowTimesHook(startTime, endTime)
     {

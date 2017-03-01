@@ -68,7 +68,7 @@ async function test()
         InspectorTest.addResult(count);
         for (var i = 0; i < count + 2; ++i) {
             view._onNextButtonSearch();
-            var node = panel._currentViews[0]._treeView.lastSelectedNode();
+            var node = panel._currentView._treeView.lastSelectedNode();
             InspectorTest.addResult(Timeline.TimelineUIUtils.eventTitle(node.event));
         }
     }

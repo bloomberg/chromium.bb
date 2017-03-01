@@ -364,7 +364,7 @@ InspectorTest.dumpFlameChartProvider = function(provider, includeGroups)
 }
 
 InspectorTest.dumpTimelineFlameChart = function(includeGroups) {
-    const provider = UI.panels.timeline._flameChart._dataProvider;
+    const provider = UI.panels.timeline._flameChart._mainDataProvider;
     InspectorTest.addResult('Timeline Flame Chart');
     InspectorTest.dumpFlameChartProvider(provider, includeGroups);
 }
