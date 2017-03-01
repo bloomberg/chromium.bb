@@ -118,7 +118,8 @@ XFAIL_TESTS =					\
 	present_progressive			\
 	lastworditalafter			\
 	en_gb_g1_italics			\
-	squash_space
+	squash_space				\
+	compbrlAtCursor
 
 # en-ueb-symbols_harness.yaml defines the desired behaviour.
 # Apparently the tables aren't quite there yet.
