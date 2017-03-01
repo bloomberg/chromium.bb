@@ -8276,10 +8276,10 @@
         },
       ],
       'supported_on': [
-        'chrome.*:57-',
-        'chrome_os:57-',
-        'android:57-',
-        'ios:57-',
+        'chrome.*:58-',
+        'chrome_os:58-',
+        'android:58-',
+        'ios:58-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -8291,7 +8291,7 @@
       'tags': ['system-security'],
       'desc': '''Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> around version 66 (around February 2018).
 
-      If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses a default maximum version which is TLSv1.3.
+      If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default maximum version.
 
       Otherwise it may be set to one of the following values: "tls1.2" or "tls1.3". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions greater than the specified version. An unrecognized value will be ignored.''',
     },
