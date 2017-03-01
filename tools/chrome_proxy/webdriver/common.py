@@ -578,6 +578,41 @@ class IntegrationTest(unittest.TestCase):
       self.assertNotIn(expected_via_header,
         http_response.response_headers['via'])
 
+  def assertLoFiResponse(self, http_response, expected_lo_fi):
+    """Asserts that the response and request headers contain the given directive
+    and the content size is less than 100 if |expected_lo_fi|. Otherwise, checks
+    that the response and request headers don't contain the Lo-Fi directive and
+    the content size is greater than 100.
+
+    Args:
+      http_response: The HTTPResponse object to check.
+      expected_lo_fi: Whether the response should be Lo-Fi.
+
+    Returns:
+      Whether the response was Lo-Fi.
+    """
+
+    if (expected_lo_fi) :
+      self.assertHasChromeProxyViaHeader(http_response)
+      content_length = http_response.response_headers['content-length']
+      cpat_request = http_response.request_headers[
+                       'chrome-proxy-accept-transform']
+      cpct_response = http_response.response_headers[
+                        'chrome-proxy-content-transform']
+      if ('empty-image' in cpct_response):
+        self.assertIn('empty-image', cpat_request)
+        self.assertTrue(int(content_length) < 100)
+        return True;
+      return False;
+    else:
+      self.assertNotIn('chrome-proxy-accept-transform',
+        http_response.request_headers)
+      self.assertNotIn('chrome-proxy-content-transform',
+        http_response.response_headers)
+      content_length = http_response.response_headers['content-length']
+      self.assertTrue(int(content_length) > 100)
+      return False;
+
   @staticmethod
   def RunAllTests(run_all_tests=False):
     """A simple helper method to run all tests using unittest.main().
