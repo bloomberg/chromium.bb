@@ -8,7 +8,9 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.widget.RemoteViews;
 
 /**
  * Wraps a Notification.Builder object.
@@ -33,13 +35,13 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
-    public ChromeNotificationBuilder setContentTitle(String title) {
+    public ChromeNotificationBuilder setContentTitle(CharSequence title) {
         mBuilder.setContentTitle(title);
         return this;
     }
 
     @Override
-    public ChromeNotificationBuilder setContentText(String text) {
+    public ChromeNotificationBuilder setContentText(CharSequence text) {
         mBuilder.setContentText(text);
         return this;
     }
@@ -51,7 +53,15 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
-    public ChromeNotificationBuilder setTicker(String text) {
+    public ChromeNotificationBuilder setSmallIcon(Icon icon) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mBuilder.setSmallIcon(icon);
+        }
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setTicker(CharSequence text) {
         mBuilder.setTicker(text);
         return this;
     }
@@ -95,8 +105,16 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
-    public ChromeNotificationBuilder addAction(int icon, String title, PendingIntent intent) {
+    public ChromeNotificationBuilder addAction(int icon, CharSequence title, PendingIntent intent) {
         mBuilder.addAction(icon, title, intent);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder addAction(Notification.Action action) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            mBuilder.addAction(action);
+        }
         return this;
     }
 
@@ -119,7 +137,7 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
-    public ChromeNotificationBuilder setSubText(String text) {
+    public ChromeNotificationBuilder setSubText(CharSequence text) {
         mBuilder.setSubText(text);
         return this;
     }
@@ -150,6 +168,59 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     public ChromeNotificationBuilder setVibrate(long[] vibratePattern) {
         mBuilder.setVibrate(vibratePattern);
         return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setDefaults(int defaults) {
+        mBuilder.setDefaults(defaults);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setOnlyAlertOnce(boolean onlyAlertOnce) {
+        mBuilder.setOnlyAlertOnce(onlyAlertOnce);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setPublicVersion(Notification publicNotification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mBuilder.setPublicVersion(publicNotification);
+        }
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setContent(RemoteViews views) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mBuilder.setCustomContentView(views);
+        } else {
+            mBuilder.setContent(views);
+        }
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setStyle(Notification.BigPictureStyle style) {
+        mBuilder.setStyle(style);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setStyle(Notification.BigTextStyle style) {
+        mBuilder.setStyle(style);
+        return this;
+    }
+
+    @Override
+    public Notification buildWithBigContentView(RemoteViews view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return mBuilder.setCustomBigContentView(view).build();
+        } else {
+            Notification notification = mBuilder.build();
+            notification.bigContentView = view;
+            return notification;
+        }
     }
 
     @Override

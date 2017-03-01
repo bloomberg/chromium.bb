@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.notifications;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
+import android.widget.RemoteViews;
 
 /**
  * Abstraction over Notification.Builder and NotificationCompat.Builder interfaces.
@@ -18,13 +20,15 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder setContentIntent(PendingIntent contentIntent);
 
-    ChromeNotificationBuilder setContentTitle(String title);
+    ChromeNotificationBuilder setContentTitle(CharSequence title);
 
-    ChromeNotificationBuilder setContentText(String text);
+    ChromeNotificationBuilder setContentText(CharSequence text);
 
     ChromeNotificationBuilder setSmallIcon(int icon);
 
-    ChromeNotificationBuilder setTicker(String text);
+    ChromeNotificationBuilder setSmallIcon(Icon icon);
+
+    ChromeNotificationBuilder setTicker(CharSequence text);
 
     ChromeNotificationBuilder setLocalOnly(boolean localOnly);
 
@@ -36,7 +40,9 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder setShowWhen(boolean showWhen);
 
-    ChromeNotificationBuilder addAction(int icon, String title, PendingIntent intent);
+    ChromeNotificationBuilder addAction(int icon, CharSequence title, PendingIntent intent);
+
+    ChromeNotificationBuilder addAction(Notification.Action action);
 
     ChromeNotificationBuilder setDeleteIntent(PendingIntent intent);
 
@@ -44,7 +50,7 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder setProgress(int max, int percentage, boolean indeterminate);
 
-    ChromeNotificationBuilder setSubText(String text);
+    ChromeNotificationBuilder setSubText(CharSequence text);
 
     ChromeNotificationBuilder setContentInfo(String info);
 
@@ -53,6 +59,20 @@ public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setLargeIcon(Bitmap icon);
 
     ChromeNotificationBuilder setVibrate(long[] vibratePattern);
+
+    ChromeNotificationBuilder setDefaults(int defaults);
+
+    ChromeNotificationBuilder setOnlyAlertOnce(boolean onlyAlertOnce);
+
+    ChromeNotificationBuilder setPublicVersion(Notification publicNotification);
+
+    ChromeNotificationBuilder setContent(RemoteViews views);
+
+    ChromeNotificationBuilder setStyle(Notification.BigPictureStyle style);
+
+    ChromeNotificationBuilder setStyle(Notification.BigTextStyle bigTextStyle);
+
+    Notification buildWithBigContentView(RemoteViews bigView);
 
     Notification buildWithBigTextStyle(String bigText);
 

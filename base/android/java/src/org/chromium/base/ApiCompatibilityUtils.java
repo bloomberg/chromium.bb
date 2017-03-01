@@ -7,7 +7,6 @@ package org.chromium.base;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -34,7 +33,6 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodSubtype;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import java.io.File;
@@ -598,34 +596,6 @@ public class ApiCompatibilityUtils {
             // just swallow the exception and treat it as the permission is denied.
             // crbug.com/639099
             return PackageManager.PERMISSION_DENIED;
-        }
-    }
-
-    /**
-     * @see android.app.Notification.Builder#setContent(RemoteViews)
-     */
-    @SuppressWarnings("deprecation")
-    public static void setContentViewForNotificationBuilder(
-            Notification.Builder builder, RemoteViews views) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            builder.setCustomContentView(views);
-        } else {
-            builder.setContent(views);
-        }
-    }
-
-    /**
-     * @see android.app.Notification#bigContentView
-     */
-    @SuppressWarnings("deprecation")
-    public static Notification notificationWithBigContentView(
-            Notification.Builder builder, RemoteViews view) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return builder.setCustomBigContentView(view).build();
-        } else {
-            Notification notification = builder.build();
-            notification.bigContentView = view;
-            return notification;
         }
     }
 
