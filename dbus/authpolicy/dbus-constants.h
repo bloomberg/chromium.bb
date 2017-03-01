@@ -16,7 +16,8 @@ const char kAuthPolicyJoinADDomain[] = "JoinADDomain";
 const char kAuthPolicyRefreshUserPolicy[] = "RefreshUserPolicy";
 const char kAuthPolicyRefreshDevicePolicy[] = "RefreshDevicePolicy";
 
-// Enum values.
+// D-Bus call error codes. These values are written to logs. New enum values can
+// be added, but existing enums must never be renumbered or deleted and reused.
 enum ErrorType {
   // Everything is A-OK!
   ERROR_NONE = 0,
