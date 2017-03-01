@@ -686,11 +686,6 @@ crbug.com/656171 external/wpt/html/semantics/scripting-1/the-script-element/scri
 external/wpt/domxpath/001.html [ Skip ]
 external/wpt/domxpath/002.html [ Skip ]
 
-# This test depends on a file xml_xpath_tests.xml, which is too large
-# for Rietveld to handle now, so it's not currently imported.
-crbug.com/676491 external/wpt/domxpath/xml_xpath_runner.html [ Skip ]
-crbug.com/676491 external/wpt/domxpath/xml_xpath_tests.xml [ Skip ]
-
 # This test depends on a support file with non-LF new lines, which
 # causes a patch error in the bot_update step when importing this test.
 crbug.com/691107 external/wpt/webvtt/webvtt-file-format-parsing/webvtt-file-parsing/001.html [ Skip ]
