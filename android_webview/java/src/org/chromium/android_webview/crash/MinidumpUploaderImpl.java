@@ -51,23 +51,30 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
      */
     private Thread mWorkerThread;
 
-    private final boolean mCleanOutMinidumps;
     private boolean mPermittedByUser = false;
 
     @VisibleForTesting
     public static final int MAX_UPLOAD_TRIES_ALLOWED = 3;
 
     @VisibleForTesting
-    public MinidumpUploaderImpl(Context context, boolean cleanOutMinidumps) {
+    public MinidumpUploaderImpl(Context context) {
         mConnectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         mContext = context;
-        File webviewCrashDir = CrashReceiverService.createWebViewCrashDir(context);
-        mFileManager = new CrashFileManager(webviewCrashDir);
+        File crashDir = CrashReceiverService.createWebViewCrashDir(context);
+        mFileManager = createCrashFileManager(crashDir);
         if (!mFileManager.ensureCrashDirExists()) {
             Log.e(TAG, "Crash directory doesn't exist!");
         }
-        mCleanOutMinidumps = cleanOutMinidumps;
+    }
+
+    /**
+     * Utility method to allow tests to customize the behavior of the crash file manager.
+     * @param {crashDir} The directory in which to store crash files (i.e. minidumps).
+     */
+    @VisibleForTesting
+    public CrashFileManager createCrashFileManager(File crashDir) {
+        return new CrashFileManager(crashDir);
     }
 
     /**
@@ -182,10 +189,8 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
             }
 
             // Clean out old/uploaded minidumps. Note that this clean-up method is more strict than
-            // our copying mechanism in the sense that it keeps less minidumps.
-            if (mCleanOutMinidumps) {
-                mFileManager.cleanOutAllNonFreshMinidumpFiles();
-            }
+            // our copying mechanism in the sense that it keeps fewer minidumps.
+            mFileManager.cleanOutAllNonFreshMinidumpFiles();
 
             // Reschedule if there are still minidumps to upload.
             boolean reschedule =

@@ -74,12 +74,20 @@ public class MinidumpUploaderTest extends CrashTestCase {
     }
 
     private static class TestMinidumpUploaderImpl extends MinidumpUploaderImpl {
-        private CrashReportingPermissionManager mPermissionManager;
+        private final CrashReportingPermissionManager mPermissionManager;
 
-        TestMinidumpUploaderImpl(Context context, CrashReportingPermissionManager permissionManager,
-                boolean cleanOutMinidumps) {
-            super(context, cleanOutMinidumps);
+        TestMinidumpUploaderImpl(
+                Context context, CrashReportingPermissionManager permissionManager) {
+            super(context);
             mPermissionManager = permissionManager;
+        }
+
+        @Override
+        public CrashFileManager createCrashFileManager(File crashDir) {
+            return new CrashFileManager(crashDir) {
+                @Override
+                public void cleanOutAllNonFreshMinidumpFiles() {}
+            };
         }
 
         @Override
@@ -115,8 +123,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
                     }
                 };
         MinidumpUploader minidumpUploader =
-                new TestMinidumpUploaderImpl(getInstrumentation().getTargetContext(), permManager,
-                        false /* cleanOutMinidumps */);
+                new TestMinidumpUploaderImpl(getInstrumentation().getTargetContext(), permManager);
 
         File firstFile = createMinidumpFileInCrashDir("1_abc.dmp0");
         File secondFile = createMinidumpFileInCrashDir("12_abc.dmp0");
@@ -207,8 +214,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
                     { mIsEnabledForTests = true; }
                 };
         MinidumpUploader minidumpUploader =
-                new TestMinidumpUploaderImpl(getInstrumentation().getTargetContext(), permManager,
-                        false /* cleanOutMinidumps */);
+                new TestMinidumpUploaderImpl(getInstrumentation().getTargetContext(), permManager);
 
         File firstFile = createMinidumpFileInCrashDir("1_abc.dmp0");
         File secondFile = createMinidumpFileInCrashDir("12_abcd.dmp0");
@@ -231,7 +237,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
 
     private static MinidumpUploaderImpl createCallableListMinidumpUploader(Context context,
             final List<MinidumpUploadCallableCreator> callables, final boolean userPermitted) {
-        return new MinidumpUploaderImpl(context, false /* cleanOutMinidumps */) {
+        return new TestMinidumpUploaderImpl(context, null) {
             private int mIndex = 0;
 
             @Override
@@ -359,8 +365,8 @@ public class MinidumpUploaderTest extends CrashTestCase {
                     { mIsEnabledForTests = true; }
                 };
         final CountDownLatch stopStallingLatch = new CountDownLatch(1);
-        MinidumpUploaderImpl minidumpUploader = new MinidumpUploaderImpl(
-                getInstrumentation().getTargetContext(), false /* cleanOutMinidumps */) {
+        MinidumpUploaderImpl minidumpUploader = new TestMinidumpUploaderImpl(
+                getInstrumentation().getTargetContext(), permManager) {
             @Override
             public MinidumpUploadCallable createMinidumpUploadCallable(
                     File minidumpFile, File logfile) {
@@ -469,11 +475,17 @@ public class MinidumpUploaderTest extends CrashTestCase {
      * CrashReportingPermissionManager.isUsageAndCrashReportingPermittedByUser().
      */
     private static class WebViewUserConsentMinidumpUploaderImpl extends MinidumpUploaderImpl {
-        boolean mUserConsent;
-        WebViewUserConsentMinidumpUploaderImpl(
-                Context context, boolean cleanOutMinidumps, boolean userConsent) {
-            super(context, cleanOutMinidumps);
+        private final boolean mUserConsent;
+        WebViewUserConsentMinidumpUploaderImpl(Context context, boolean userConsent) {
+            super(context);
             mUserConsent = userConsent;
+        }
+        @Override
+        public CrashFileManager createCrashFileManager(File crashDir) {
+            return new CrashFileManager(crashDir) {
+                @Override
+                public void cleanOutAllNonFreshMinidumpFiles() {}
+            };
         }
         @Override
         public PlatformServiceBridge createPlatformServiceBridge() {
@@ -514,9 +526,8 @@ public class MinidumpUploaderTest extends CrashTestCase {
     }
 
     private void testPlatformServicesBridgeIsUsed(final boolean userConsent) throws IOException {
-        MinidumpUploader minidumpUploader =
-                new WebViewUserConsentMinidumpUploaderImpl(getInstrumentation().getTargetContext(),
-                        false /* cleanOutMinidumps */, userConsent);
+        MinidumpUploader minidumpUploader = new WebViewUserConsentMinidumpUploaderImpl(
+                getInstrumentation().getTargetContext(), userConsent);
 
         File firstFile = createMinidumpFileInCrashDir("1_abc.dmp0");
         File secondFile = createMinidumpFileInCrashDir("12_abcd.dmp0");
@@ -658,8 +669,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
                     { mIsEnabledForTests = true; }
                 };
         MinidumpUploader minidumpUploader =
-                new TestMinidumpUploaderImpl(getInstrumentation().getTargetContext(), permManager,
-                        false /* cleanOutMinidumps */);
+                new TestMinidumpUploaderImpl(getInstrumentation().getTargetContext(), permManager);
 
         uploadMinidumpsSync(minidumpUploader, false /* expectReschedule */);
         // Ensure there are no minidumps left to upload.

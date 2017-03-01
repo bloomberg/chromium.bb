@@ -31,6 +31,6 @@ public class AwMinidumpUploadJobService extends MinidumpUploadJobService {
         // Ensure we can use ContextUtils later on (from the minidump_uploader component).
         ContextUtils.initApplicationContext(this.getApplicationContext());
 
-        return new MinidumpUploaderImpl(this, true /* cleanOutMinidumps */);
+        return new MinidumpUploaderImpl(this);
     }
 }
