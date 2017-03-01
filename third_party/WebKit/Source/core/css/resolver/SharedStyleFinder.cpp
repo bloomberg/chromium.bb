@@ -59,16 +59,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline ComputedStyle* getElementStyle(Element& element) {
-  if (element.needsReattachLayoutTree()) {
-    StyleReattachData styleReattachData =
-        element.document().getStyleReattachData(element);
-    if (styleReattachData.computedStyle)
-      return styleReattachData.computedStyle.get();
-  }
-  return element.mutableComputedStyle();
-}
-
 bool SharedStyleFinder::canShareStyleWithControl(Element& candidate) const {
   if (!isHTMLInputElement(candidate) || !isHTMLInputElement(element()))
     return false;
@@ -238,21 +228,21 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const {
   if (element() == candidate)
     return false;
   Element* parent = candidate.parentOrShadowHostElement();
-  const ComputedStyle* style = getElementStyle(candidate);
+  const ComputedStyle* style = candidate.computedStyle();
   if (!style)
     return false;
   if (!style->isSharable())
     return false;
   if (!parent)
     return false;
-  if (getElementStyle(*element().parentOrShadowHostElement()) !=
-      getElementStyle(*parent))
+  if (element().parentOrShadowHostElement()->computedStyle() !=
+      parent->computedStyle())
     return false;
   if (candidate.tagQName() != element().tagQName())
     return false;
   if (candidate.inlineStyle())
     return false;
-  if (candidate.needsStyleRecalc() && !candidate.needsReattachLayoutTree())
+  if (candidate.needsStyleRecalc())
     return false;
   if (candidate.isSVGElement() &&
       toSVGElement(candidate).animatedSMILStyleProperties())
@@ -417,7 +407,7 @@ ComputedStyle* SharedStyleFinder::findSharedStyle() {
     return nullptr;
   }
 
-  return getElementStyle(*shareElement);
+  return shareElement->mutableComputedStyle();
 }
 
 }  // namespace blink

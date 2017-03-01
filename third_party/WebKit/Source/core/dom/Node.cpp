@@ -931,7 +931,6 @@ void Node::detachLayoutTree(const AttachContext& context) {
     layoutObject()->destroyAndCleanupAnonymousWrappers();
   setLayoutObject(nullptr);
   setStyleChange(NeedsReattachStyleChange);
-  setFlag(NeedsReattachLayoutTree);
   clearChildNeedsStyleInvalidation();
 }
 
