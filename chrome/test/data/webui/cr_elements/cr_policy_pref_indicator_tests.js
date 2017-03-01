@@ -40,15 +40,6 @@ suite('CrPolicyPrefIndicator', function() {
       LIST: 'LIST',
       DICTIONARY: 'DICTIONARY',
     };
-
-    // Set up strings used by policy indicator elements.
-    CrPolicyStrings = {
-      controlledSettingPolicy: 'policy',
-      controlledSettingRecommendedMatches: 'matches',
-      controlledSettingRecommendedDiffers: 'differs',
-      controlledSettingShared: 'shared: $1',
-      controlledSettingOwner: 'owner: $1',
-    };
   });
 
   setup(function() {

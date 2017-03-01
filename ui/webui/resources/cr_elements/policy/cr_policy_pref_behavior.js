@@ -9,35 +9,20 @@
 /** @polymerBehavior */
 var CrPolicyPrefBehavior = {
   /**
-   * @param {!chrome.settingsPrivate.PrefObject} pref
-   * @return {boolean} True if the pref is controlled by an enforced policy.
+   * @return {boolean} True if |this.pref| is controlled by an enforced policy.
    */
-  isPrefPolicyControlled: function(pref) {
-    return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&
-        pref.controlledBy != chrome.settingsPrivate.ControlledBy.EXTENSION;
+  isPrefPolicyControlled: function() {
+    return (
+        this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&
+        this.pref.controlledBy !=
+            chrome.settingsPrivate.ControlledBy.EXTENSION);
   },
 
   /**
-   * @param {!chrome.settingsPrivate.ControlledBy|undefined} controlledBy
-   * @param {!chrome.settingsPrivate.Enforcement|undefined} enforcement
-   * @return {CrPolicyIndicatorType} The indicator type based on |controlledBy|
-   *     and |enforcement|.
+   * @return {boolean} True if |this.pref| has a recommended or enforced policy.
    */
-  getIndicatorType: function(controlledBy, enforcement) {
-    if (enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED)
-      return CrPolicyIndicatorType.RECOMMENDED;
-    if (enforcement == chrome.settingsPrivate.Enforcement.ENFORCED) {
-      switch (controlledBy) {
-        case chrome.settingsPrivate.ControlledBy.PRIMARY_USER:
-          return CrPolicyIndicatorType.PRIMARY_USER;
-        case chrome.settingsPrivate.ControlledBy.OWNER:
-          return CrPolicyIndicatorType.OWNER;
-        case chrome.settingsPrivate.ControlledBy.USER_POLICY:
-          return CrPolicyIndicatorType.USER_POLICY;
-        case chrome.settingsPrivate.ControlledBy.DEVICE_POLICY:
-          return CrPolicyIndicatorType.DEVICE_POLICY;
-      }
-    }
-    return CrPolicyIndicatorType.NONE;
+  hasPrefPolicyIndicator: function() {
+    return this.isPrefPolicyControlled() ||
+        this.pref.enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED;
   },
 };

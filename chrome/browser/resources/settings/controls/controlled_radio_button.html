@@ -37,7 +37,7 @@
       <content></content>
     </paper-radio-button>
 
-    <template is="dom-if" if="[[showIndicator_(controlled_, name, pref)]]">
+    <template is="dom-if" if="[[showIndicator_(controlled_, name, pref.*)]]">
       <cr-policy-pref-indicator pref="[[pref]]" on-tap="onIndicatorTap_">
       </cr-policy-pref-indicator>
     </template>

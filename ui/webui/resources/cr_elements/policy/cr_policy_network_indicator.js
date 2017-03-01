@@ -20,16 +20,16 @@ Polymer({
     property: {type: Object, observer: 'propertyChanged_'},
 
     /**
-     * Which indicator type to show (or NONE).
-     * @type {!CrPolicyIndicatorType}
-     */
-    indicatorType: {type: String, value: CrPolicyIndicatorType.NONE},
-
-    /**
      * Recommended value for non enforced properties.
      * @private {!CrOnc.NetworkPropertyType|undefined}
      */
     recommended_: Object,
+
+    /** @override */
+    indicatorTooltip: {
+      type: String,
+      computed: 'getNetworkIndicatorTooltip_(indicatorType)',
+    },
   },
 
   /**
@@ -74,7 +74,7 @@ Polymer({
    * @return {string} The tooltip text for |type|.
    * @private
    */
-  getTooltip_: function() {
+  getNetworkIndicatorTooltip_: function() {
     var matches;
     if (this.indicatorType == CrPolicyIndicatorType.RECOMMENDED &&
         this.property) {
@@ -83,6 +83,6 @@ Polymer({
         value = this.property[this.property.Effective];
       matches = value == this.recommended_;
     }
-    return this.getPolicyIndicatorTooltip(this.indicatorType, '', matches);
+    return this.getIndicatorTooltip(this.indicatorType, '', matches);
   }
 });

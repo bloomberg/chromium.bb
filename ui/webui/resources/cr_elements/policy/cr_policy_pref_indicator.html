@@ -3,14 +3,12 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="cr_policy_indicator_behavior.html">
-<link rel="import" href="cr_policy_pref_behavior.html">
 <link rel="import" href="cr_policy_vars_css.html">
 
 <dom-module id="cr-policy-pref-indicator">
-  <link rel="import" type="css" href="cr_policy_indicator.css">
   <style>
     :host {
-      display: flex;  /* Position independantly from the line-height. */
+      @apply(--cr-policy-indicator);
     }
 
     paper-tooltip {
@@ -18,12 +16,11 @@
     }
   </style>
   <template>
-    <iron-icon id="indicator" tabindex=0 aria-describedby="tooltip"
-        hidden$="[[!isIndicatorVisible(indicatorType_)]]"
-        icon="[[getPolicyIndicatorIcon(indicatorType_)]]"></iron-icon>
+    <iron-icon id="indicator" tabindex="0" aria-describedby="tooltip"
+        hidden$="[[!indicatorVisible]]" icon="[[indicatorIcon]]"></iron-icon>
     <paper-tooltip id="tooltip" for="indicator" position="top"
         fit-to-visible-bounds>
-      [[getTooltip_(indicatorType_, pref.*)]]
+      [[indicatorTooltip]]
     </paper-tooltip>
   </template>
   <script src="cr_policy_pref_indicator.js"></script>

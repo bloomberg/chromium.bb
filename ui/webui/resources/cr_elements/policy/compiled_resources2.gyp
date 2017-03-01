@@ -23,7 +23,6 @@
       'dependencies': [
         '<(EXTERNS_GYP):settings_private',
         'cr_policy_indicator_behavior',
-        'cr_policy_pref_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

@@ -4,21 +4,24 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="cr_policy_indicator_behavior.html">
 <link rel="import" href="cr_policy_network_behavior.html">
+<link rel="import" href="cr_policy_vars_css.html">
 
 <dom-module id="cr-policy-network-indicator">
-  <link rel="import" type="css" href="cr_policy_indicator.css">
   <style>
+    :host {
+      @apply(--cr-policy-indicator);
+    }
+
     paper-tooltip {
       --paper-tooltip: var(--cr-policy-tooltip);
     }
   </style>
   <template>
-    <iron-icon id="indicator" tabindex=0
-        hidden$="[[!isIndicatorVisible(indicatorType)]]"
-        icon="[[getPolicyIndicatorIcon(indicatorType)]]">
+    <iron-icon id="indicator" tabindex="0" hidden$="[[!indicatorVisible]]"
+        icon="[[indicatorIcon]]">
     </iron-icon>
     <paper-tooltip for="indicator" position="top" fit-to-visible-bounds>
-      [[getTooltip_(indicatorType)]]
+      [[indicatorTooltip]]
     </paper-tooltip>
   </template>
   <script src="cr_policy_network_indicator.js"></script>

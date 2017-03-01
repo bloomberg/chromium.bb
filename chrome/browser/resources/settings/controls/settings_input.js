@@ -119,11 +119,10 @@ Polymer({
 
   /**
    * @param {boolean} disabled
-   * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {boolean} Whether the element should be disabled.
    * @private
    */
-  isDisabled_: function(disabled, pref) {
-    return disabled || this.isPrefPolicyControlled(pref);
+  isDisabled_: function(disabled) {
+    return disabled || this.isPrefPolicyControlled();
   },
 });

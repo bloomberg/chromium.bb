@@ -121,7 +121,7 @@
 
       if (policy) {
         assertTrue(!!indicator);
-        assertTrue(indicator.isActive());
+        assertTrue(indicator.indicatorVisible);
       } else {
         // Indicator should be missing dom-ifed out.
         assertFalse(!!indicator);

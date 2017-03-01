@@ -124,7 +124,7 @@ var SettingsBooleanControlBehaviorImpl = {
    * @private
    */
   controlDisabled_: function() {
-    return this.disabled || this.isPrefPolicyControlled(assert(this.pref));
+    return this.disabled || this.isPrefPolicyControlled();
   },
 };
 

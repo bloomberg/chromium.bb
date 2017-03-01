@@ -9,7 +9,7 @@
 Polymer({
   is: 'cr-policy-pref-indicator',
 
-  behaviors: [CrPolicyIndicatorBehavior, CrPolicyPrefBehavior],
+  behaviors: [CrPolicyIndicatorBehavior],
 
   properties: {
     /**
@@ -22,30 +22,53 @@ Polymer({
     /**
      * Which indicator type to show (or NONE).
      * @type {CrPolicyIndicatorType}
-     * @private
+     * @override
      */
-    indicatorType_: {
+    indicatorType: {
       type: String,
       value: CrPolicyIndicatorType.NONE,
-      computed: 'getIndicatorType(pref.controlledBy, pref.enforcement)',
+      computed: 'getIndicatorTypeForPref_(pref.controlledBy, pref.enforcement)',
+    },
+
+    /** @override */
+    indicatorTooltip: {
+      type: String,
+      computed: 'getIndicatorTooltipForPref_(indicatorType, pref.*)',
     },
   },
 
   /**
-   * @param {CrPolicyIndicatorType} type
-   * @return {string} The tooltip text for |type|.
-   * @private
+   * @param {!chrome.settingsPrivate.ControlledBy|undefined} controlledBy
+   * @param {!chrome.settingsPrivate.Enforcement|undefined} enforcement
+   * @return {CrPolicyIndicatorType} The indicator type based on |controlledBy|
+   *     and |enforcement|.
    */
-  getTooltip_: function(type) {
-    var matches = !!this.pref && this.pref.value == this.pref.recommendedValue;
-    return this.getPolicyIndicatorTooltip(
-        type, this.pref.controlledByName || '', matches);
+  getIndicatorTypeForPref_: function(controlledBy, enforcement) {
+    if (enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED)
+      return CrPolicyIndicatorType.RECOMMENDED;
+    if (enforcement == chrome.settingsPrivate.Enforcement.ENFORCED) {
+      switch (controlledBy) {
+        case chrome.settingsPrivate.ControlledBy.PRIMARY_USER:
+          return CrPolicyIndicatorType.PRIMARY_USER;
+        case chrome.settingsPrivate.ControlledBy.OWNER:
+          return CrPolicyIndicatorType.OWNER;
+        case chrome.settingsPrivate.ControlledBy.USER_POLICY:
+          return CrPolicyIndicatorType.USER_POLICY;
+        case chrome.settingsPrivate.ControlledBy.DEVICE_POLICY:
+          return CrPolicyIndicatorType.DEVICE_POLICY;
+      }
+    }
+    return CrPolicyIndicatorType.NONE;
   },
 
   /**
-   * @return {boolean} Whether the policy indicator is on. Useful for testing.
+   * @param {CrPolicyIndicatorType} indicatorType
+   * @return {string} The tooltip text for |indicatorType|.
+   * @private
    */
-  isActive: function() {
-    return this.isIndicatorVisible(this.indicatorType_);
+  getIndicatorTooltipForPref_: function(indicatorType) {
+    var matches = this.pref && this.pref.value == this.pref.recommendedValue;
+    return this.getIndicatorTooltip(
+        indicatorType, this.pref.controlledByName || '', matches);
   },
 });

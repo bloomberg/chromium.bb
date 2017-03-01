@@ -4,6 +4,8 @@
 
 /**
  * @fileoverview Behavior for policy controlled indicators.
+ * TODO(michaelpg): Since extensions can also control settings and be indicated,
+ * rework the "policy" naming scheme throughout this directory.
  */
 
 /**
@@ -32,12 +34,51 @@ var CrPolicyIndicatorType = {
 
 /** @polymerBehavior */
 var CrPolicyIndicatorBehavior = {
+  // Properties exposed to all policy indicators.
+  properties: {
+    /**
+     * Which indicator type to show (or NONE).
+     * @type {CrPolicyIndicatorType}
+     */
+    indicatorType: {
+      type: String,
+      value: CrPolicyIndicatorType.NONE,
+    },
+
+    /**
+     * The name associated with the policy source. See
+     * chrome.settingsPrivate.PrefObject.controlledByName.
+     */
+    indicatorSourceName: {
+      type: String,
+      value: '',
+    },
+
+    // Computed properties based on indicatorType and indicatorSourceName.
+    // Override to provide different values.
+
+    indicatorVisible: {
+      type: Boolean,
+      computed: 'getIndicatorVisible_(indicatorType)',
+    },
+
+    indicatorIcon: {
+      type: String,
+      computed: 'getIndicatorIcon_(indicatorType)',
+    },
+
+    indicatorTooltip: {
+      type: String,
+      computed: 'getIndicatorTooltip(indicatorType, indicatorSourceName)',
+    },
+  },
+
   /**
    * @param {CrPolicyIndicatorType} type
    * @return {boolean} True if the indicator should be shown.
    * @private
    */
-  isIndicatorVisible: function(type) {
+  getIndicatorVisible_: function(type) {
     return type != CrPolicyIndicatorType.NONE &&
         type != CrPolicyIndicatorType.EXTENSION;
   },
@@ -47,7 +88,7 @@ var CrPolicyIndicatorBehavior = {
    * @return {string} The iron-icon icon name.
    * @private
    */
-  getPolicyIndicatorIcon: function(type) {
+  getIndicatorIcon_: function(type) {
     var icon = '';
     switch (type) {
       case CrPolicyIndicatorType.EXTENSION:
@@ -78,7 +119,7 @@ var CrPolicyIndicatorBehavior = {
    *     value matches the recommended value.
    * @return {string} The tooltip text for |type|.
    */
-  getPolicyIndicatorTooltip: function(type, name, opt_matches) {
+  getIndicatorTooltip: function(type, name, opt_matches) {
     if (!CrPolicyStrings)
       return '';  // Tooltips may not be defined, e.g. in OOBE.
     switch (type) {
