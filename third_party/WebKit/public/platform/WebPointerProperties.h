@@ -46,7 +46,9 @@ class WebPointerProperties {
         tangentialPressure(0.0f),
         twist(0),
         button(Button::NoButton),
-        pointerType(PointerType::Unknown) {}
+        pointerType(PointerType::Unknown),
+        movementX(0),
+        movementY(0) {}
 
   WebPointerProperties(Button buttonParam, PointerType pointerTypeParam)
       : id(0),
@@ -56,7 +58,9 @@ class WebPointerProperties {
         tangentialPressure(0.0f),
         twist(0),
         button(buttonParam),
-        pointerType(pointerTypeParam) {}
+        pointerType(pointerTypeParam),
+        movementX(0),
+        movementY(0) {}
 
   int id;
 
