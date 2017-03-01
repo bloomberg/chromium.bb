@@ -42,6 +42,10 @@
 
 namespace blink {
 
+namespace InspectorInstrumentation {
+class RecalculateStyle;
+}
+
 class Resource;
 class Document;
 class DocumentLoader;
@@ -155,7 +159,8 @@ class CORE_EXPORT InspectorPageAgent final
   void didRunJavaScriptDialog(bool result);
   void didUpdateLayout();
   void didResizeMainFrame();
-  void didRecalculateStyle();
+  void will(const InspectorInstrumentation::RecalculateStyle&);
+  void did(const InspectorInstrumentation::RecalculateStyle&);
   void windowCreated(LocalFrame*);
 
   // Inspector Controller API

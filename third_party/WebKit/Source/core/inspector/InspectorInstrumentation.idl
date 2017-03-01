@@ -318,11 +318,8 @@ class XMLHttpRequest;
     [Log]
     void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
 
-    [Performance]
-    void willRecalculateStyle([Keep] Document*);
-
     [Page, Performance]
-    void didRecalculateStyle(Document*);
+    RecalculateStyle(Document*);
 
     [Page]
     void willRunJavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType);

@@ -227,7 +227,8 @@ void PerformanceMonitor::didUpdateLayout() {
   }
 }
 
-void PerformanceMonitor::willRecalculateStyle(Document*) {
+void PerformanceMonitor::will(
+    const InspectorInstrumentation::RecalculateStyle&) {
   if (!m_enabled)
     return;
 
@@ -235,7 +236,8 @@ void PerformanceMonitor::willRecalculateStyle(Document*) {
     m_styleStartTime = WTF::monotonicallyIncreasingTime();
 }
 
-void PerformanceMonitor::didRecalculateStyle() {
+void PerformanceMonitor::did(
+    const InspectorInstrumentation::RecalculateStyle&) {
   if (!m_enabled)
     return;
   if (m_thresholds[kLongLayout] && m_scriptDepth) {
