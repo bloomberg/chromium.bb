@@ -36,45 +36,45 @@ class CORE_EXPORT ComputedStyleBase {
   {}
 
   bool operator==(const ComputedStyleBase& o) const {
-    return true &&
+    return (
     {% for field in fields %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
-        ;
+    );
   }
 
   bool operator!=(const ComputedStyleBase& o) const { return !(*this == o); }
 
   inline bool inheritedEqual(const ComputedStyleBase& o) const {
-    return true &&
+    return (
     {% for field in fields if field.is_property and field.is_inherited %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
-        ;
+    );
   }
 
   inline bool independentInheritedEqual(const ComputedStyleBase& o) const {
-    return true &&
+    return (
     {% for field in fields if field.is_property and field.is_inherited and field.is_independent %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
-        ;
+    );
   }
 
   inline bool nonIndependentInheritedEqual(const ComputedStyleBase& o) const {
-    return true &&
+    return (
     {% for field in fields if field.is_property and field.is_inherited and not field.is_independent %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
-        ;
+    );
   }
 
   inline bool nonInheritedEqual(const ComputedStyleBase& o) const {
-    return true &&
+    return (
     {% for field in fields if field.is_property and not field.is_inherited %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
-        ;
+    );
   }
 
   enum IsAtShadowBoundary {
