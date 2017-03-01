@@ -381,12 +381,6 @@ void UserView::ToggleAddUserMenuOption() {
   add_menu_option_->SetAlwaysOnTop(true);
   add_menu_option_->Show();
 
-  // We activate the entry automatically if invoked with focus.
-  if (add_user_enabled_ && user_card_view_->HasFocus()) {
-    add_user_view->GetFocusManager()->SetFocusedView(add_user_view);
-    user_card_view_->GetFocusManager()->SetFocusedView(add_user_view);
-  }
-
   // Install a listener to focus changes so that we can remove the card when
   // the focus gets changed. When called through the destruction of the bubble,
   // the FocusManager cannot be determined anymore and we remember it here.
