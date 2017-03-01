@@ -1556,13 +1556,13 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "loader/fetch/MockResource.cpp",
-    "loader/fetch/MockResource.h",
-    "loader/fetch/MockResourceClient.cpp",
-    "loader/fetch/MockResourceClient.h",
     "loader/testing/FetchTestingPlatformSupport.cpp",
     "loader/testing/FetchTestingPlatformSupport.h",
     "loader/testing/MockFetchContext.h",
+    "loader/testing/MockResource.cpp",
+    "loader/testing/MockResource.h",
+    "loader/testing/MockResourceClient.cpp",
+    "loader/testing/MockResourceClient.h",
     "network/mime/MockMimeRegistry.h",
     "scheduler/base/task_queue_manager_delegate_for_test.cc",
     "scheduler/base/test_time_source.cc",

@@ -32,11 +32,11 @@
 
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchRequest.h"
-#include "platform/loader/fetch/MockResource.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/testing/MockFetchContext.h"
+#include "platform/loader/testing/MockResource.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
