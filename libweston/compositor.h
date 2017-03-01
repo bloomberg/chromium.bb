@@ -183,7 +183,10 @@ struct weston_output {
 		REPAINT_AWAITING_COMPLETION, /**< last repaint not yet finished */
 	} repaint_status;
 
-	struct wl_event_source *repaint_timer;
+	/** If repaint_status is REPAINT_SCHEDULED, contains the time the
+	 *  next repaint should be run */
+	struct timespec next_repaint;
+
 	struct weston_output_zoom zoom;
 	int dirty;
 	struct wl_signal frame_signal;
@@ -856,6 +859,7 @@ struct weston_compositor {
 	struct wl_event_source *idle_source;
 	uint32_t idle_inhibit;
 	int idle_time;			/* timeout, s */
+	struct wl_event_source *repaint_timer;
 
 	const struct weston_pointer_grab_interface *default_pointer_grab;
 

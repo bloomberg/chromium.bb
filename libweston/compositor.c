@@ -2338,14 +2338,21 @@ weston_output_schedule_repaint_reset(struct weston_output *output)
 	TL_POINT("core_repaint_exit_loop", TLP_OUTPUT(output), TLP_END);
 }
 
-static int
-output_repaint_timer_handler(void *data)
+static void
+weston_output_maybe_repaint(struct weston_output *output,
+			    struct timespec *now)
 {
-	struct weston_output *output = data;
 	struct weston_compositor *compositor = output->compositor;
 	int ret;
+	int64_t msec_to_repaint;
 
-	assert(output->repaint_status == REPAINT_SCHEDULED);
+	/* We're not ready yet; come back to make a decision later. */
+	if (output->repaint_status != REPAINT_SCHEDULED)
+		return;
+
+	msec_to_repaint = timespec_sub_to_msec(&output->next_repaint, now);
+	if (msec_to_repaint > 1)
+		return;
 
 	/* If we're sleeping, drop the repaint machinery entirely; we will
 	 * explicitly repaint all outputs when we come back. */
@@ -2360,15 +2367,72 @@ output_repaint_timer_handler(void *data)
 
 	/* If repaint fails, we aren't going to get weston_output_finish_frame
 	 * to trigger a new repaint, so drop it from repaint and hope
-	 * something schedules a successful repaint later. */
+	 * something schedules a successful repaint later. As repainting may
+	 * take some time, re-read our clock as a courtesy to the next
+	 * output. */
 	ret = weston_output_repaint(output);
+	weston_compositor_read_presentation_clock(compositor, now);
 	if (ret != 0)
 		goto err;
 
-	return 0;
+	return;
 
 err:
 	weston_output_schedule_repaint_reset(output);
+}
+
+static void
+output_repaint_timer_arm(struct weston_compositor *compositor)
+{
+	struct weston_output *output;
+	bool any_should_repaint = false;
+	struct timespec now;
+	int64_t msec_to_next;
+
+	weston_compositor_read_presentation_clock(compositor, &now);
+
+	wl_list_for_each(output, &compositor->output_list, link) {
+		int64_t msec_to_this;
+
+		if (output->repaint_status != REPAINT_SCHEDULED)
+			continue;
+
+		msec_to_this = timespec_sub_to_msec(&output->next_repaint,
+						    &now);
+		if (!any_should_repaint || msec_to_this < msec_to_next)
+			msec_to_next = msec_to_this;
+
+		any_should_repaint = true;
+	}
+
+	if (!any_should_repaint)
+		return;
+
+	/* Even if we should repaint immediately, add the minimum 1 ms delay.
+	 * This is a workaround to allow coalescing multiple output repaints
+	 * particularly from weston_output_finish_frame()
+	 * into the same call, which would not happen if we called
+	 * output_repaint_timer_handler() directly.
+	 */
+	if (msec_to_next < 1)
+		msec_to_next = 1;
+
+	wl_event_source_timer_update(compositor->repaint_timer, msec_to_next);
+}
+
+static int
+output_repaint_timer_handler(void *data)
+{
+	struct weston_compositor *compositor = data;
+	struct weston_output *output;
+	struct timespec now;
+
+	weston_compositor_read_presentation_clock(compositor, &now);
+	wl_list_for_each(output, &compositor->output_list, link)
+		weston_output_maybe_repaint(output, &now);
+
+	output_repaint_timer_arm(compositor);
+
 	return 0;
 }
 
@@ -2380,9 +2444,7 @@ weston_output_finish_frame(struct weston_output *output,
 	struct weston_compositor *compositor = output->compositor;
 	int32_t refresh_nsec;
 	struct timespec now;
-	struct timespec next;
-	struct timespec remain;
-	int msec_rel = 0;
+	int64_t msec_rel;
 
 	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
 		 TLP_VBLANK(stamp), TLP_END);
@@ -2390,11 +2452,15 @@ weston_output_finish_frame(struct weston_output *output,
 	assert(output->repaint_status == REPAINT_AWAITING_COMPLETION);
 	assert(stamp || (presented_flags & WP_PRESENTATION_FEEDBACK_INVALID));
 
+	weston_compositor_read_presentation_clock(compositor, &now);
+
 	/* If we haven't been supplied any timestamp at all, we don't have a
 	 * timebase to work against, so any delay just wastes time. Push a
 	 * repaint as soon as possible so we can get on with it. */
-	if (!stamp)
+	if (!stamp) {
+		output->next_repaint = now;
 		goto out;
+	}
 
 	refresh_nsec = millihz_to_nsec(output->current_mode->refresh);
 	weston_presentation_feedback_present_list(&output->feedback_list,
@@ -2403,22 +2469,21 @@ weston_output_finish_frame(struct weston_output *output,
 						  presented_flags);
 
 	output->frame_time = timespec_to_msec(stamp);
-	weston_compositor_read_presentation_clock(compositor, &now);
 
-	timespec_add_nsec(&next, stamp, refresh_nsec);
-	timespec_add_msec(&next, &next, -compositor->repaint_msec);
-	timespec_sub(&remain, &next, &now);
-	msec_rel = timespec_to_msec(&remain);
+	timespec_add_nsec(&output->next_repaint, stamp, refresh_nsec);
+	timespec_add_msec(&output->next_repaint, &output->next_repaint,
+			  -compositor->repaint_msec);
+	msec_rel = timespec_sub_to_msec(&output->next_repaint, &now);
 
 	if (msec_rel < -1000 || msec_rel > 1000) {
 		static bool warned;
 
 		if (!warned)
 			weston_log("Warning: computed repaint delay is "
-				   "insane: %d msec\n", msec_rel);
+				   "insane: %lld msec\n", (long long) msec_rel);
 		warned = true;
 
-		msec_rel = 0;
+		output->next_repaint = now;
 	}
 
 	/* Called from restart_repaint_loop and restart happens already after
@@ -2426,15 +2491,12 @@ weston_output_finish_frame(struct weston_output *output,
 	 * the deadline of the next frame, to give clients a more predictable
 	 * timing of the repaint cycle to lock on. */
 	if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID && msec_rel < 0)
-		msec_rel += refresh_nsec / 1000000;
+		timespec_add_nsec(&output->next_repaint, &output->next_repaint,
+				  refresh_nsec);
 
 out:
 	output->repaint_status = REPAINT_SCHEDULED;
-
-	if (msec_rel < 1)
-		output_repaint_timer_handler(output);
-	else
-		wl_event_source_timer_update(output->repaint_timer, msec_rel);
+	output_repaint_timer_arm(compositor);
 }
 
 static void
@@ -4425,8 +4487,6 @@ weston_output_transform_coordinate(struct weston_output *output,
 static void
 weston_output_enable_undo(struct weston_output *output)
 {
-	wl_event_source_remove(output->repaint_timer);
-
 	wl_global_destroy(output->global);
 
 	pixman_region32_fini(&output->region);
@@ -4608,7 +4668,6 @@ weston_output_enable(struct weston_output *output)
 {
 	struct weston_compositor *c = output->compositor;
 	struct weston_output *iterator;
-	struct wl_event_loop *loop;
 	int x = 0, y = 0;
 
 	assert(output->enable);
@@ -4648,10 +4707,6 @@ weston_output_enable(struct weston_output *output)
 	wl_list_init(&output->resource_list);
 	wl_list_init(&output->feedback_list);
 	wl_list_init(&output->link);
-
-	loop = wl_display_get_event_loop(c->wl_display);
-	output->repaint_timer = wl_event_loop_add_timer(loop,
-					output_repaint_timer_handler, output);
 
 	/* Invert the output id pool and look for the lowest numbered
 	 * switch (the least significant bit).  Take that bit's position
@@ -5154,6 +5209,9 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
+	ec->repaint_timer =
+		wl_event_loop_add_timer(loop, output_repaint_timer_handler,
+					ec);
 
 	weston_layer_init(&ec->fade_layer, ec);
 	weston_layer_init(&ec->cursor_layer, ec);
