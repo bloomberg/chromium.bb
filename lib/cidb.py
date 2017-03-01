@@ -1273,7 +1273,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       starting_build_number=None, milestone_version=None,
-                      starting_build_id=None):
+                      starting_build_id=None, final=False):
     """Returns basic information about most recent builds.
 
     By default this function returns the most recent builds. Some arguments can
@@ -1297,6 +1297,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           milestone_version.
       starting_build_id: (Optional) The minimum build_id for which data should
           be retrieved.
+      final: (Optional) If True, only retrieve final (ie finished) builds.
 
     Returns:
       A sorted list of dicts containing up to |number| dictionaries for
@@ -1320,6 +1321,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('id != %d' % ignore_build_id)
     if milestone_version is not None:
       where_clauses.append('milestone_version = "%s"' % milestone_version)
+    if final:
+      where_clauses.append('final = 1')
     query = (
         'SELECT %s'
         ' FROM buildTable'
