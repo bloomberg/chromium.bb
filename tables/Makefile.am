@@ -86,6 +86,7 @@ table_files = \
 	digits8Dots.uti \
 	dra.ctb \
 	dra.tbl \
+	el.ctb \
 	el.tbl \
 	en_AS.tbl \
 	en_CA.ctb \
@@ -95,7 +96,6 @@ table_files = \
 	en-gb-g1.utb \
 	en-GB-g2.ctb \
 	en_GB.tbl \
-	en_US-comp8-ext.tbl \
 	en-in-g1.ctb \
 	en.tbl \
 	en-ueb-chardefs.uti \
@@ -105,6 +105,7 @@ table_files = \
 	en-us-brf.dis \
 	en-us-comp6.ctb \
 	en-us-comp8.ctb \
+	en_US-comp8-ext.tbl \
 	en-us-comp8-ext.utb \
 	en-us-compbrl.ctb \
 	en-us-g1.ctb \
