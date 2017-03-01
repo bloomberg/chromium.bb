@@ -16,7 +16,6 @@ namespace {
 NSString* const kCertificatePolicyManagerKey = @"certificatePolicyManager";
 NSString* const kCurrentNavigationIndexKey = @"currentNavigationIndex";
 NSString* const kItemStoragesKey = @"entries";
-NSString* const kLastVisitedTimestampKey = @"lastVisitedTimestamp";
 NSString* const kOpenedByDOMKey = @"openedByDOM";
 NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 }
@@ -33,7 +32,6 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 @synthesize openedByDOM = _openedByDOM;
 @synthesize currentNavigationIndex = _currentNavigationIndex;
 @synthesize previousNavigationIndex = _previousNavigationIndex;
-@synthesize lastVisitedTimestamp = _lastVisitedTimestamp;
 @synthesize itemStorages = _itemStorages;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
@@ -58,8 +56,6 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
         [decoder decodeIntForKey:kCurrentNavigationIndexKey];
     _previousNavigationIndex =
         [decoder decodeIntForKey:kPreviousNavigationIndexKey];
-    _lastVisitedTimestamp =
-        [decoder decodeDoubleForKey:kLastVisitedTimestampKey];
     _itemStorages = [[NSMutableArray alloc]
         initWithArray:[decoder decodeObjectForKey:kItemStoragesKey]];
     // Prior to M34, 0 was used as "no index" instead of -1; adjust for that.
@@ -83,8 +79,6 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
             forKey:kCurrentNavigationIndexKey];
   [coder encodeInt:self.previousNavigationIndex
             forKey:kPreviousNavigationIndexKey];
-  [coder encodeDouble:self.lastVisitedTimestamp
-               forKey:kLastVisitedTimestampKey];
   [coder encodeObject:self.itemStorages forKey:kItemStoragesKey];
   [coder encodeObject:self.sessionCertificatePolicyManager
                forKey:kCertificatePolicyManagerKey];

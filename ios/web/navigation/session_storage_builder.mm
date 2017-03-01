@@ -44,8 +44,6 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
       session_controller.currentNavigationIndex;
   serialized_navigation_manager.previousNavigationIndex =
       session_controller.previousNavigationIndex;
-  serialized_navigation_manager.lastVisitedTimestamp =
-      session_controller.lastVisitedTimestamp;
   serialized_navigation_manager.sessionCertificatePolicyManager =
       session_controller.sessionCertificatePolicyManager;
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
@@ -84,7 +82,6 @@ void SessionStorageBuilder::ExtractSessionState(
   [session_controller setOpenedByDOM:storage.openedByDOM];
   [session_controller
       setPreviousNavigationIndex:storage.previousNavigationIndex];
-  [session_controller setLastVisitedTimestamp:storage.lastVisitedTimestamp];
   [session_controller
       setSessionCertificatePolicyManager:storage
                                              .sessionCertificatePolicyManager];

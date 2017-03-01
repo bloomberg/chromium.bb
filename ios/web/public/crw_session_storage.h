@@ -21,7 +21,6 @@ class SerializableUserData;
 @property(nonatomic, getter=isOpenedByDOM) BOOL openedByDOM;
 @property(nonatomic, assign) NSInteger currentNavigationIndex;
 @property(nonatomic, assign) NSInteger previousNavigationIndex;
-@property(nonatomic, assign) NSTimeInterval lastVisitedTimestamp;
 @property(nonatomic, copy) NSArray* itemStorages;
 @property(nonatomic, retain)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;

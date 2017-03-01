@@ -51,7 +51,6 @@ BOOL SessionStoragesAreEqual(CRWSessionStorage* session1,
          session1.openedByDOM == session2.openedByDOM &&
          session1.currentNavigationIndex == session2.currentNavigationIndex &&
          session1.previousNavigationIndex == session2.previousNavigationIndex &&
-         session1.lastVisitedTimestamp == session2.lastVisitedTimestamp &&
          UserDataAreEqual(session1.userData, session2.userData);
 }
 }  // namespace
@@ -64,7 +63,6 @@ class CRWNSessionStorageTest : public PlatformTest {
     [session_storage_ setOpenedByDOM:YES];
     [session_storage_ setCurrentNavigationIndex:4];
     [session_storage_ setPreviousNavigationIndex:3];
-    [session_storage_ setLastVisitedTimestamp:CFAbsoluteTimeGetCurrent()];
     // Create an item storage.
     base::scoped_nsobject<CRWNavigationItemStorage> item_storage(
         [[CRWNavigationItemStorage alloc] init]);

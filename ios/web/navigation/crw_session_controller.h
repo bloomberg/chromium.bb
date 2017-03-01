@@ -41,7 +41,6 @@ struct Referrer;
 @property(nonatomic, readonly, getter=isOpenedByDOM) BOOL openedByDOM;
 @property(nonatomic, readonly, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
-@property(nonatomic, assign) NSTimeInterval lastVisitedTimestamp;
 
 // The list of CRWSessionEntries in |_entries|'s NavigationItemImpls.
 @property(nonatomic, readonly) web::NavigationItemList items;

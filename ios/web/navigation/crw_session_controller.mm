@@ -62,10 +62,6 @@
    // Stores the certificate policies decided by the user.
   CRWSessionCertificatePolicyManager* _sessionCertificatePolicyManager;
 
-  // The timestamp of the last time this tab is visited, represented in time
-  // interval since 1970.
-  NSTimeInterval _lastVisitedTimestamp;
-
   // The browser state associated with this CRWSessionController;
   web::BrowserState* _browserState;  // weak
 
@@ -112,7 +108,6 @@
 @synthesize previousNavigationIndex = _previousNavigationIndex;
 @synthesize pendingItemIndex = _pendingItemIndex;
 @synthesize entries = _entries;
-@synthesize lastVisitedTimestamp = _lastVisitedTimestamp;
 @synthesize openedByDOM = _openedByDOM;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
@@ -123,7 +118,6 @@
     _openedByDOM = openedByDOM;
     _browserState = browserState;
     _entries = [NSMutableArray array];
-    _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
     _currentNavigationIndex = -1;
     _previousNavigationIndex = -1;
     _pendingItemIndex = -1;
@@ -156,7 +150,6 @@
     }
     _previousNavigationIndex = -1;
     _pendingItemIndex = -1;
-    _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
     _sessionCertificatePolicyManager =
         [[CRWSessionCertificatePolicyManager alloc] init];
   }
@@ -169,7 +162,6 @@
   copy->_currentNavigationIndex = _currentNavigationIndex;
   copy->_previousNavigationIndex = _previousNavigationIndex;
   copy->_pendingItemIndex = _pendingItemIndex;
-  copy->_lastVisitedTimestamp = _lastVisitedTimestamp;
   copy->_entries =
       [[NSMutableArray alloc] initWithArray:_entries copyItems:YES];
   copy->_sessionCertificatePolicyManager =
@@ -214,14 +206,14 @@
 }
 
 - (NSString*)description {
-  return [NSString
-      stringWithFormat:@"last visit: %f\ncurrent index: %" PRIdNS
-                       @"\nprevious index: %" PRIdNS
-                       @"\npending index: %" PRIdNS
-                       @"\n%@\npending: %@\ntransient: %@\n",
-                       _lastVisitedTimestamp, _currentNavigationIndex,
-                       _previousNavigationIndex, _pendingItemIndex, _entries,
-                       _pendingEntry.get(), _transientEntry.get()];
+  return [NSString stringWithFormat:@"current index: %" PRIdNS
+                                    @"\nprevious index: %" PRIdNS
+                                    @"\npending index: %" PRIdNS
+                                    @"\n%@\npending: %@\ntransient: %@\n",
+                                    _currentNavigationIndex,
+                                    _previousNavigationIndex, _pendingItemIndex,
+                                    _entries, _pendingEntry.get(),
+                                    _transientEntry.get()];
 }
 
 - (web::NavigationItemList)items {

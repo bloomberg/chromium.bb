@@ -187,6 +187,10 @@ NSString* const kOpenerIDKey = @"OpenerID";
 // serializable user data.
 NSString* const kOpenerNavigationIndexKey = @"OpenerNavigationIndex";
 
+// The key under which the last visited timestamp is stored in the WebState's
+// serializable user data.
+NSString* const kLastVisitedTimestampKey = @"LastVisitedTimestamp";
+
 // Name of histogram for recording the state of the tab when the renderer is
 // terminated.
 const char kRendererTerminationStateHistogram[] =
@@ -542,6 +546,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
     webStateObserver_.reset(
         new web::WebStateObserverBridge(webStateImpl_.get(), self));
+    [self updateLastVisitedTimestamp];
 
     // Do not respect |attachTabHelpers| as this tab helper is required for
     // proper conversion from WebState to Tab.
@@ -1878,17 +1883,23 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (double)lastVisitedTimestamp {
-  DCHECK([self navigationManager]);
-  return [[self navigationManagerImpl]->GetSessionController()
-              lastVisitedTimestamp];
+  DCHECK(self.webState);
+  web::SerializableUserDataManager* userDataManager =
+      web::SerializableUserDataManager::FromWebState(self.webState);
+  id<NSCoding> lastVisitedTimestamp =
+      userDataManager->GetValueForSerializationKey(kLastVisitedTimestampKey);
+  return lastVisitedTimestamp
+             ? base::mac::ObjCCastStrict<NSNumber>(lastVisitedTimestamp)
+                   .doubleValue
+             : 0.;
 }
 
 - (void)updateLastVisitedTimestamp {
-  // Stores this information in self.history and it will be written into disc
-  // with other information when needed.
-  DCHECK([self navigationManager]);
-  [[self navigationManagerImpl]->GetSessionController()
-      setLastVisitedTimestamp:[[NSDate date] timeIntervalSince1970]];
+  DCHECK(self.webState);
+  web::SerializableUserDataManager* userDataManager =
+      web::SerializableUserDataManager::FromWebState(self.webState);
+  userDataManager->AddSerializableData(@([[NSDate date] timeIntervalSince1970]),
+                                       kLastVisitedTimestampKey);
 }
 
 - (infobars::InfoBarManager*)infoBarManager {

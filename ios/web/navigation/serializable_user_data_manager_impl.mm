@@ -62,7 +62,8 @@ SerializableUserDataImpl::SerializableUserDataImpl()
     : data_(@{}), legacy_key_conversions_(@{
         @"tabId" : @"TabID",
         @"openerId" : @"OpenerID",
-        @"openerNavigationIndex" : @"OpenerNavigationIndex"
+        @"openerNavigationIndex" : @"OpenerNavigationIndex",
+        @"lastVisitedTimestamp" : @"LastVisitedTimestamp",
       }) {}
 
 SerializableUserDataImpl::~SerializableUserDataImpl() {}
