@@ -39,15 +39,17 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   RefPtr<NGLayoutResult> Layout() override;
 
  private:
-  NGBoxStrut CalculateMargins(const NGConstraintSpace& space,
-                              const ComputedStyle& style);
+  NGBoxStrut CalculateMargins(NGBlockNode* child,
+                              const NGConstraintSpace& space);
 
   // Creates a new constraint space for the current child.
-  NGConstraintSpace* CreateConstraintSpaceForCurrentChild();
-  void FinishCurrentChildLayout(RefPtr<NGLayoutResult>);
+  NGConstraintSpace* CreateConstraintSpaceForChild(NGLayoutInputNode*);
+  void FinishChildLayout(NGLayoutInputNode*,
+                         NGConstraintSpace*,
+                         RefPtr<NGLayoutResult>);
 
   // Layout inline children.
-  void LayoutInlineChildren(NGInlineNode*);
+  void LayoutInlineChildren(NGInlineNode*, NGConstraintSpace*);
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break
@@ -68,18 +70,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
     return NGLogicalOffset(border_and_padding_.inline_start, content_size_);
   }
 
-  // Read-only Getters.
-  const ComputedStyle& CurrentChildStyle() const {
-    DCHECK(current_child_);
-    return toNGBlockNode(current_child_)->Style();
-  }
-
   const NGConstraintSpace& ConstraintSpace() const {
     return *constraint_space_;
-  }
-
-  const NGConstraintSpace& CurrentChildConstraintSpace() const {
-    return *space_for_current_child_.get();
   }
 
   const ComputedStyle& Style() const { return node_->Style(); }
@@ -92,8 +84,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   std::unique_ptr<NGFragmentBuilder> builder_;
   Persistent<NGConstraintSpaceBuilder> space_builder_;
-  Persistent<NGConstraintSpace> space_for_current_child_;
-  Persistent<NGLayoutInputNode> current_child_;
 
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;
