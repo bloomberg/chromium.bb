@@ -73,13 +73,6 @@ _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1625
-    'ChromeDriverTest.testWindowMaximize',
-    'ChromeDriverTest.testWindowPosition',
-    'ChromeDriverTest.testWindowSize',
-    'ChromeExtensionsCapabilityTest.testCanInspectBackgroundPage',
-    'ChromeExtensionsCapabilityTest.testCanLaunchApp',
-    'MobileEmulationCapabilityTest.testDeviceMetricsWithStandardWidth',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
     'ChromeDownloadDirTest.testFileDownloadWithGet',
     'ChromeDriverPageLoadTimeoutTest.*',
