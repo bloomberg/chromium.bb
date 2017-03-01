@@ -292,6 +292,16 @@ struct CacheStorageCache::QueryCacheContext {
         callback(callback),
         matches(base::MakeUnique<QueryCacheResults>()) {}
 
+  ~QueryCacheContext() {
+    // If the CacheStorageCache is deleted before a backend operation to open
+    // an entry completes, the callback won't be run and the resulting entry
+    // will be leaked unless we close it here.
+    if (enumerated_entry) {
+      enumerated_entry->Close();
+      enumerated_entry = nullptr;
+    }
+  }
+
   // Input to QueryCache
   std::unique_ptr<ServiceWorkerFetchRequest> request;
   CacheStorageCacheQueryParams options;
