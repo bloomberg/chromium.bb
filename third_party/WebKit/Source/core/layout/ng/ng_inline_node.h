@@ -22,7 +22,7 @@ class ComputedStyle;
 class LayoutBlockFlow;
 class LayoutObject;
 class LayoutUnit;
-struct MinMaxContentSize;
+struct MinAndMaxContentSizes;
 class NGConstraintSpace;
 class NGLayoutInlineItem;
 class NGLayoutInlineItemRange;
@@ -47,7 +47,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
-  MinMaxContentSize ComputeMinMaxContentSize();
+  MinAndMaxContentSizes ComputeMinAndMaxContentSizes();
 
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayout();

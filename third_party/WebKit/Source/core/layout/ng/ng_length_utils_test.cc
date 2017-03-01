@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
+#include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/CalculationValue.h"
 #include "platform/LayoutUnit.h"
@@ -40,7 +41,7 @@ class NGLengthUtilsTest : public ::testing::Test {
   LayoutUnit ResolveInlineLength(
       const Length& length,
       LengthResolveType type = LengthResolveType::kContentSize,
-      const WTF::Optional<MinMaxContentSize>& sizes = WTF::nullopt) {
+      const WTF::Optional<MinAndMaxContentSizes>& sizes = WTF::nullopt) {
     NGConstraintSpace* constraintSpace = ConstructConstraintSpace(200, 300);
     return ::blink::ResolveInlineLength(*constraintSpace, *style_, sizes,
                                         length, type);
@@ -58,7 +59,7 @@ class NGLengthUtilsTest : public ::testing::Test {
   LayoutUnit ComputeInlineSizeForFragment(
       const NGConstraintSpace* constraintSpace = ConstructConstraintSpace(200,
                                                                           300),
-      const MinMaxContentSize& sizes = MinMaxContentSize()) {
+      const MinAndMaxContentSizes& sizes = MinAndMaxContentSizes()) {
     return ::blink::ComputeInlineSizeForFragment(*constraintSpace, *style_,
                                                  sizes);
   }
@@ -86,7 +87,7 @@ TEST_F(NGLengthUtilsTest, testResolveInlineLength) {
             ResolveInlineLength(Length(Auto), LengthResolveType::kMaxSize));
   EXPECT_EQ(LayoutUnit(200), ResolveInlineLength(Length(FillAvailable),
                                                  LengthResolveType::kMaxSize));
-  MinMaxContentSize sizes;
+  MinAndMaxContentSizes sizes;
   sizes.min_content = LayoutUnit(30);
   sizes.max_content = LayoutUnit(40);
   EXPECT_EQ(LayoutUnit(30),
@@ -122,18 +123,18 @@ TEST_F(NGLengthUtilsTest, testResolveBlockLength) {
 }
 
 TEST_F(NGLengthUtilsTest, testComputeContentContribution) {
-  MinMaxContentSize sizes;
+  MinAndMaxContentSizes sizes;
   sizes.min_content = LayoutUnit(30);
   sizes.max_content = LayoutUnit(40);
 
-  MinMaxContentSize expected{LayoutUnit(), LayoutUnit()};
+  MinAndMaxContentSizes expected{LayoutUnit(), LayoutUnit()};
   style_->setLogicalWidth(Length(30, Percent));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
   style_->setLogicalWidth(Length(FillAvailable));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
-  expected = MinMaxContentSize{LayoutUnit(150), LayoutUnit(150)};
+  expected = MinAndMaxContentSizes{LayoutUnit(150), LayoutUnit(150)};
   style_->setLogicalWidth(Length(150, Fixed));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
@@ -141,39 +142,39 @@ TEST_F(NGLengthUtilsTest, testComputeContentContribution) {
   style_->setLogicalWidth(Length(Auto));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
-  expected = MinMaxContentSize{LayoutUnit(430), LayoutUnit(440)};
+  expected = MinAndMaxContentSizes{LayoutUnit(430), LayoutUnit(440)};
   style_->setPaddingLeft(Length(400, Fixed));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
-  expected = MinMaxContentSize{LayoutUnit(100), LayoutUnit(100)};
+  expected = MinAndMaxContentSizes{LayoutUnit(100), LayoutUnit(100)};
   style_->setPaddingLeft(Length(0, Fixed));
   style_->setLogicalWidth(Length(CalculationValue::create(
       PixelsAndPercent(100, -10), ValueRangeNonNegative)));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
-  expected = MinMaxContentSize{LayoutUnit(30), LayoutUnit(35)};
+  expected = MinAndMaxContentSizes{LayoutUnit(30), LayoutUnit(35)};
   style_->setLogicalWidth(Length(Auto));
   style_->setMaxWidth(Length(35, Fixed));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
-  expected = MinMaxContentSize{LayoutUnit(80), LayoutUnit(80)};
+  expected = MinAndMaxContentSizes{LayoutUnit(80), LayoutUnit(80)};
   style_->setLogicalWidth(Length(50, Fixed));
   style_->setMinWidth(Length(80, Fixed));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
-  expected = MinMaxContentSize{LayoutUnit(150), LayoutUnit(150)};
+  expected = MinAndMaxContentSizes{LayoutUnit(150), LayoutUnit(150)};
   style_ = ComputedStyle::create();
   style_->setLogicalWidth(Length(100, Fixed));
   style_->setPaddingLeft(Length(50, Fixed));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
-  expected = MinMaxContentSize{LayoutUnit(100), LayoutUnit(100)};
+  expected = MinAndMaxContentSizes{LayoutUnit(100), LayoutUnit(100)};
   style_->setBoxSizing(EBoxSizing::kBorderBox);
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
   // Content size should never be below zero, even with box-sizing: border-box
   // and a large padding...
-  expected = MinMaxContentSize{LayoutUnit(400), LayoutUnit(400)};
+  expected = MinAndMaxContentSizes{LayoutUnit(400), LayoutUnit(400)};
   style_->setPaddingLeft(Length(400, Fixed));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
@@ -185,15 +186,15 @@ TEST_F(NGLengthUtilsTest, testComputeContentContribution) {
   style_->setMaxWidth(Length(MaxContent));
   // Due to padding and box-sizing, width computes to 400px and max-width to
   // 440px, so the result is 400.
-  expected = MinMaxContentSize{LayoutUnit(400), LayoutUnit(400)};
+  expected = MinAndMaxContentSizes{LayoutUnit(400), LayoutUnit(400)};
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
-  expected = MinMaxContentSize{LayoutUnit(40), LayoutUnit(40)};
+  expected = MinAndMaxContentSizes{LayoutUnit(40), LayoutUnit(40)};
   style_->setPaddingLeft(Length(0, Fixed));
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 }
 
 TEST_F(NGLengthUtilsTest, testComputeInlineSizeForFragment) {
-  MinMaxContentSize sizes;
+  MinAndMaxContentSizes sizes;
   sizes.min_content = LayoutUnit(30);
   sizes.max_content = LayoutUnit(40);
 

@@ -216,25 +216,25 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   TEST_TEXT_FRAGMENT(fragments[4], node, 8u, 22u, 28u, TextDirection::kLtr);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxContentSize) {
+TEST_F(NGInlineNodeTest, MinAndMaxContentSizes) {
   setAhemToStyle();
   NGInlineNodeForTest* node = new NGInlineNodeForTest(style_.get());
   node->Append("AB CDE", style_.get());
   node->ShapeText();
-  MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
+  MinAndMaxContentSizes sizes = node->ComputeMinAndMaxContentSizes();
   // TODO(kojii): min_content should be 20, but is 30 until NGLineBuilder
   // implements trailing spaces correctly.
   EXPECT_EQ(30, sizes.min_content);
   EXPECT_EQ(60, sizes.max_content);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxContentSizeElementBoundary) {
+TEST_F(NGInlineNodeTest, MinAndMaxContentSizesElementBoundary) {
   setAhemToStyle();
   NGInlineNodeForTest* node = new NGInlineNodeForTest(style_.get());
   node->Append("A B", style_.get());
   node->Append("C D", style_.get());
   node->ShapeText();
-  MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
+  MinAndMaxContentSizes sizes = node->ComputeMinAndMaxContentSizes();
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
   // TODO(kojii): min_content should be 20, but is 30 until NGLineBuilder

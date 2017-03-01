@@ -6,10 +6,7 @@
 #define NGAbsoluteUtils_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_box_strut.h"
-#include "core/layout/ng/geometry/ng_physical_size.h"
-#include "core/layout/ng/geometry/ng_static_position.h"
-#include "core/layout/ng/ng_min_max_content_size.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
 #include "wtf/Optional.h"
 
@@ -30,7 +27,7 @@ struct CORE_EXPORT NGAbsolutePhysicalPosition {
 // The size is computed as NGAbsolutePhysicalPosition.
 // It needs to be computed in 4 stages:
 // 1. If AbsoluteNeedsChildInlineSize compute estimated inline_size using
-//    MinMaxContentSize.ShrinkToFit.
+//    MinAndMaxContentSizes.ShrinkToFit.
 // 2. Compute part of PhysicalPosition that depends upon child inline size
 //    with ComputePartialAbsoluteWithChildInlineSize.
 // 3. If AbsoluteNeedsChildBlockSize compute estimated block_size by
@@ -53,7 +50,7 @@ ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGStaticPosition&,
-    const Optional<MinMaxContentSize>& child_minmax);
+    const Optional<MinAndMaxContentSizes>& child_minmax);
 
 // Compute rest of NGPhysicalRect that depends on child's block_size.
 CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(

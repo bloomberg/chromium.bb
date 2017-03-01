@@ -6,11 +6,11 @@
 #define NGBlockLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
+#include "core/layout/ng/ng_units.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -35,7 +35,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGConstraintSpace* space,
                          NGBlockBreakToken* break_token = nullptr);
 
-  Optional<MinMaxContentSize> ComputeMinMaxContentSize() const override;
+  Optional<MinAndMaxContentSizes> ComputeMinAndMaxContentSizes() const override;
   RefPtr<NGLayoutResult> Layout() override;
 
  private:

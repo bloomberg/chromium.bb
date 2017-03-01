@@ -6,8 +6,8 @@
 #define NGLayoutResult_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_static_position.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"

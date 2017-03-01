@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
+#include "core/layout/ng/ng_units.h"
 #include "core/layout/ng/ng_writing_mode.h"
 
 namespace blink {

@@ -16,6 +16,7 @@
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,7 +95,7 @@ class NGBlockLayoutAlgorithmTest
         toNGPhysicalBoxFragment(result->PhysicalFragment().get()), space);
   }
 
-  MinMaxContentSize RunComputeMinAndMax(NGBlockNode* first_child) {
+  MinAndMaxContentSizes RunComputeMinAndMax(NGBlockNode* first_child) {
     // The constraint space is not used for min/max computation, but we need
     // it to create the algorithm.
     NGConstraintSpace* space =
@@ -104,8 +105,8 @@ class NGBlockLayoutAlgorithmTest
     node->SetFirstChild(first_child);
 
     NGBlockLayoutAlgorithm algorithm(node, space);
-    EXPECT_TRUE(algorithm.ComputeMinMaxContentSize().has_value());
-    return *algorithm.ComputeMinMaxContentSize();
+    EXPECT_TRUE(algorithm.ComputeMinAndMaxContentSizes().has_value());
+    return *algorithm.ComputeMinAndMaxContentSizes();
   }
 
   RefPtr<ComputedStyle> style_;
@@ -1300,7 +1301,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContent) {
 
   first_child->SetNextSibling(second_child);
 
-  MinMaxContentSize sizes = RunComputeMinAndMax(first_child);
+  MinAndMaxContentSizes sizes = RunComputeMinAndMax(first_child);
   EXPECT_EQ(kWidthChild2, sizes.min_content);
   EXPECT_EQ(kWidthChild2, sizes.max_content);
 }

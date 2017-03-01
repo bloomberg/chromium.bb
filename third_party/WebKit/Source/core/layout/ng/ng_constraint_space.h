@@ -6,14 +6,9 @@
 #define NGConstraintSpace_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/geometry/ng_margin_strut.h"
-#include "core/layout/ng/geometry/ng_physical_size.h"
-#include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_units.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
-#include "platform/text/TextDirection.h"
 #include "wtf/Optional.h"
 #include "wtf/text/WTFString.h"
 

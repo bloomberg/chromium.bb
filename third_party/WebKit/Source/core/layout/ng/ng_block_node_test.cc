@@ -5,7 +5,6 @@
 #include "core/layout/ng/ng_block_node.h"
 
 #include "core/layout/ng/ng_box_fragment.h"
-#include "core/layout/ng/ng_min_max_content_size.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +27,7 @@ TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
   NGBlockNode* box = new NGBlockNode(style_.get());
   box->SetFirstChild(first_child);
 
-  MinMaxContentSize sizes = box->ComputeMinMaxContentSize();
+  MinAndMaxContentSizes sizes = box->ComputeMinAndMaxContentSizes();
   EXPECT_EQ(LayoutUnit(kWidth), sizes.min_content);
   EXPECT_EQ(LayoutUnit(kWidth), sizes.max_content);
 }

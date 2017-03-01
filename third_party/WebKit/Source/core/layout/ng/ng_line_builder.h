@@ -6,8 +6,8 @@
 #define NGLineBuilder_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"

@@ -17,8 +17,8 @@ namespace blink {
 // - replaced calculations
 // - Take scrollbars into account
 
-bool NeedMinMaxContentSize(const NGConstraintSpace& constraint_space,
-                           const ComputedStyle& style) {
+bool NeedMinAndMaxContentSizes(const NGConstraintSpace& constraint_space,
+                               const ComputedStyle& style) {
   // This check is technically too broad (fill-available does not need intrinsic
   // size computation) but that's a rare case and only affects performance, not
   // correctness.
@@ -28,7 +28,8 @@ bool NeedMinMaxContentSize(const NGConstraintSpace& constraint_space,
          style.logicalMaxWidth().isIntrinsic();
 }
 
-bool NeedMinMaxContentSizeForContentContribution(const ComputedStyle& style) {
+bool NeedMinAndMaxContentSizesForContentContribution(
+    const ComputedStyle& style) {
   return style.logicalWidth().isIntrinsicOrAuto() ||
          style.logicalMinWidth().isIntrinsic() ||
          style.logicalMaxWidth().isIntrinsic();
@@ -37,7 +38,7 @@ bool NeedMinMaxContentSizeForContentContribution(const ComputedStyle& style) {
 LayoutUnit ResolveInlineLength(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
-    const WTF::Optional<MinMaxContentSize>& min_and_max,
+    const WTF::Optional<MinAndMaxContentSizes>& min_and_max,
     const Length& length,
     LengthResolveType type) {
   DCHECK(!length.isMaxSizeNone());
@@ -182,9 +183,9 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
   }
 }
 
-MinMaxContentSize ComputeMinAndMaxContentContribution(
+MinAndMaxContentSizes ComputeMinAndMaxContentContribution(
     const ComputedStyle& style,
-    const WTF::Optional<MinMaxContentSize>& min_and_max) {
+    const WTF::Optional<MinAndMaxContentSizes>& min_and_max) {
   // Synthesize a zero-sized constraint space for passing to
   // ResolveInlineLength.
   NGWritingMode writing_mode = FromPlatformWritingMode(style.getWritingMode());
@@ -193,7 +194,7 @@ MinMaxContentSize ComputeMinAndMaxContentContribution(
       NGPhysicalSize{LayoutUnit(), LayoutUnit()});
   NGConstraintSpace* space = builder.ToConstraintSpace(writing_mode);
 
-  MinMaxContentSize computed_sizes;
+  MinAndMaxContentSizes computed_sizes;
   Length inline_size = style.logicalWidth();
   if (inline_size.isAuto()) {
     CHECK(min_and_max.has_value());
@@ -233,7 +234,7 @@ MinMaxContentSize ComputeMinAndMaxContentContribution(
 LayoutUnit ComputeInlineSizeForFragment(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
-    const WTF::Optional<MinMaxContentSize>& min_and_max) {
+    const WTF::Optional<MinAndMaxContentSizes>& min_and_max) {
   if (space.IsFixedSizeInline())
     return space.AvailableSize().inline_size;
 
@@ -334,7 +335,7 @@ NGBoxStrut ComputeMargins(const NGConstraintSpace& constraint_space,
                           const NGWritingMode writing_mode,
                           const TextDirection direction) {
   // We don't need these for margin computations
-  MinMaxContentSize empty_sizes;
+  MinAndMaxContentSizes empty_sizes;
   // Margins always get computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
   NGPhysicalBoxStrut physical_dim;
@@ -376,7 +377,7 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
     return NGBoxStrut();
 
   // We don't need these for padding computations
-  MinMaxContentSize empty_sizes;
+  MinAndMaxContentSizes empty_sizes;
   // Padding always gets computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-padding-width
   NGBoxStrut padding;

@@ -6,6 +6,7 @@
 #define NGConstraintSpaceBuilder_h
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_units.h"
 #include "wtf/Optional.h"
 
 namespace blink {

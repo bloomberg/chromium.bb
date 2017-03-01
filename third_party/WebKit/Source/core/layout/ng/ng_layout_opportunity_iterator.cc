@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 
-#include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_units.h"
 #include "wtf/NonCopyingSort.h"
 
 namespace blink {

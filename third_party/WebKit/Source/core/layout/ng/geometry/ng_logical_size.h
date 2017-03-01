@@ -12,7 +12,6 @@
 namespace blink {
 
 struct NGPhysicalSize;
-#define NGSizeIndefinite LayoutUnit(-1)
 
 // NGLogicalSize is the size of rect (typically a fragment) in the logical
 // coordinate system.

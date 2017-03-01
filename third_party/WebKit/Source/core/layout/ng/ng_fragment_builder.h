@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_units.h"
 
 namespace blink {
 
