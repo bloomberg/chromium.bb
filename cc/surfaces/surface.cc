@@ -164,12 +164,23 @@ void Surface::ActivatePendingFrame() {
 // compositor.
 void Surface::ActivateFrame(CompositorFrame frame) {
   DCHECK(factory_);
+
+  // Save root pass copy requests.
+  std::vector<std::unique_ptr<CopyOutputRequest>> old_copy_requests;
+  if (active_frame_ && !active_frame_->render_pass_list.empty()) {
+    std::swap(old_copy_requests,
+              active_frame_->render_pass_list.back()->copy_requests);
+  }
+
   ClearCopyRequests();
 
   TakeLatencyInfo(&frame.metadata.latency_info);
 
   base::Optional<CompositorFrame> previous_frame = std::move(active_frame_);
   active_frame_ = std::move(frame);
+
+  for (auto& copy_request : old_copy_requests)
+    RequestCopyOfOutput(std::move(copy_request));
 
   // Empty frames shouldn't be drawn and shouldn't contribute damage, so don't
   // increment frame index for them.
