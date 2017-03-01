@@ -18,6 +18,11 @@ from name_utilities import camel_case, lower_first, upper_first_letter, enum_for
 NONPROPERTY_FIELDS = set([
     # Style can not be shared.
     'unique',
+    # Whether this style is affected by these pseudo-classes.
+    'affectedByFocus',
+    'affectedByHover',
+    'affectedByActive',
+    'affectedByDrag',
 ])
 
 

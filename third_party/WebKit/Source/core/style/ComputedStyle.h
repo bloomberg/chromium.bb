@@ -273,11 +273,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     unsigned m_emptyState : 1;
 
-    unsigned m_affectedByFocus : 1;
-    unsigned m_affectedByHover : 1;
-    unsigned m_affectedByActive : 1;
-    unsigned m_affectedByDrag : 1;
-
     // 64 bits
 
     unsigned m_isLink : 1;
@@ -310,10 +305,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_unique = false;
     m_nonInheritedData.m_emptyState = false;
     m_nonInheritedData.m_hasViewportUnits = false;
-    m_nonInheritedData.m_affectedByFocus = false;
-    m_nonInheritedData.m_affectedByHover = false;
-    m_nonInheritedData.m_affectedByActive = false;
-    m_nonInheritedData.m_affectedByDrag = false;
     m_nonInheritedData.m_isLink = false;
     m_nonInheritedData.m_hasRemUnits = false;
   }
@@ -2456,20 +2447,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   bool hasRemUnits() const { return m_nonInheritedData.m_hasRemUnits; }
   void setHasRemUnits() const { m_nonInheritedData.m_hasRemUnits = true; }
-
-  bool affectedByFocus() const { return m_nonInheritedData.m_affectedByFocus; }
-  void setAffectedByFocus() { m_nonInheritedData.m_affectedByFocus = true; }
-
-  bool affectedByHover() const { return m_nonInheritedData.m_affectedByHover; }
-  void setAffectedByHover() { m_nonInheritedData.m_affectedByHover = true; }
-
-  bool affectedByActive() const {
-    return m_nonInheritedData.m_affectedByActive;
-  }
-  void setAffectedByActive() { m_nonInheritedData.m_affectedByActive = true; }
-
-  bool affectedByDrag() const { return m_nonInheritedData.m_affectedByDrag; }
-  void setAffectedByDrag() { m_nonInheritedData.m_affectedByDrag = true; }
 
   bool emptyState() const { return m_nonInheritedData.m_emptyState; }
   void setEmptyState(bool b) {
