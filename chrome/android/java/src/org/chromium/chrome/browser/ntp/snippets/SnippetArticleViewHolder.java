@@ -289,15 +289,33 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private void setThumbnailFromBitmap(Bitmap thumbnail) {
         assert thumbnail != null && !thumbnail.isRecycled();
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        mThumbnailView.setPadding(0, 0, 0, 0);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageBitmap(thumbnail);
         mThumbnailView.setTint(null);
     }
 
     private void setThumbnailFromFileType(int fileType) {
-        mThumbnailView.setScaleType(ImageView.ScaleType.CENTER);
+        mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+        // The provided asset is 36dp, but the spec requires 32dp. Add padding to force the asset to
+        // be scaled down.
+        final int actualIconSizeDp = 36;
+        final int desiredIconSizeDp = 32;
+        Drawable icon = ApiCompatibilityUtils.getDrawable(mThumbnailView.getResources(),
+                DownloadUtils.getIconResId(fileType, DownloadUtils.ICON_SIZE_36_DP));
+
+        final int drawableSize = icon.getIntrinsicWidth();
+        assert icon.getIntrinsicHeight() == drawableSize;
+
+        final int viewSize = mThumbnailView.getResources().getDimensionPixelSize(
+                R.dimen.snippets_thumbnail_size);
+        final float scale = ((float) desiredIconSizeDp) / actualIconSizeDp;
+        final int padding = (int) (viewSize / 2f - drawableSize * scale / 2f);
+        mThumbnailView.setPadding(padding, padding, padding, padding);
+
         mThumbnailView.setBackgroundColor(mIconBackgroundColor);
-        mThumbnailView.setImageResource(DownloadUtils.getIconResId(fileType));
+        mThumbnailView.setImageDrawable(icon);
         mThumbnailView.setTint(mIconForegroundColorList);
     }
 
@@ -342,6 +360,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         }
 
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
+        mThumbnailView.setPadding(0, 0, 0, 0);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
         mThumbnailView.setTint(null);
@@ -387,6 +406,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
                 new BitmapDrawable(mThumbnailView.getResources(), scaledThumbnail)};
         TransitionDrawable transitionDrawable = new TransitionDrawable(layers);
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        mThumbnailView.setPadding(0, 0, 0, 0);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageDrawable(transitionDrawable);
         mThumbnailView.setTint(null);

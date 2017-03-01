@@ -153,7 +153,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         }
 
         // Pick what icon to display for the item.
-        mIconResId = DownloadUtils.getIconResId(fileType);
+        mIconResId = DownloadUtils.getIconResId(fileType, DownloadUtils.ICON_SIZE_24_DP);
         updateIconView();
 
         Context context = mFilesizeView.getContext();
