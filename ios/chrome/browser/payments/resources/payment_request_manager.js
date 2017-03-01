@@ -176,6 +176,13 @@ var SerializedPaymentResponse;
   __gCrWeb['paymentRequestManager'].requestPromiseResolver = null;
 
   /**
+   * The PromiseResolver object used to resolve or reject the promise returned
+   * by PaymentRequest.prototype.abort, if any.
+   * @type {__gCrWeb.PromiseResolver}
+   */
+  __gCrWeb['paymentRequestManager'].abortPromiseResolver = null;
+
+  /**
    * The PromiseResolver object used to resolve the promise returned by
    * PaymentResponse.prototype.complete, if any.
    * @type {window.PaymentRequest}
@@ -231,7 +238,7 @@ var SerializedPaymentResponse;
         })
         .catch(function() {
           var message = {
-            'command': 'paymentRequest.requestCancel',
+            'command': 'paymentRequest.requestAbort',
           };
           __gCrWeb.message.invokeOnHost(message);
 
@@ -290,6 +297,20 @@ var SerializedPaymentResponse;
     __gCrWeb['paymentRequestManager'].requestPromiseResolver = null;
     __gCrWeb['paymentRequestManager'].pendingRequest = null;
     __gCrWeb['paymentRequestManager'].updateEvent = null;
+  };
+
+  /**
+   * Resolves the promise returned by calling PaymentRequest.prototype.abort.
+   * This method also gets called when the request is aborted through rejecting
+   * the promise passed to PaymentRequestUpdateEvent.prototype.updateWith.
+   * Therefore, it does nothing if there is no abort promise to resolve.
+   */
+  __gCrWeb['paymentRequestManager'].resolveAbortPromise = function() {
+    if (!__gCrWeb['paymentRequestManager'].abortPromiseResolver)
+      return;
+
+    __gCrWeb['paymentRequestManager'].abortPromiseResolver.resolve();
+    __gCrWeb['paymentRequestManager'].abortPromiseResolver = null;
   };
 
   /**
@@ -513,7 +534,7 @@ window.PaymentRequest.prototype = {
 
 /**
  * Presents the PaymentRequest UI to the user.
- * @return {!Promise<window.PaymentResponse>} A promise to notify the caller of
+ * @return {!Promise<window.PaymentResponse>} A promise to notify the caller
  *     whether the user accepted or rejected the request.
  */
 window.PaymentRequest.prototype.show = function() {
@@ -532,6 +553,28 @@ window.PaymentRequest.prototype.show = function() {
   __gCrWeb['paymentRequestManager'].requestPromiseResolver =
       new __gCrWeb.PromiseResolver();
   return __gCrWeb['paymentRequestManager'].requestPromiseResolver.promise;
+};
+
+/**
+ * May be called if the web page wishes to tell the user agent to abort the
+ * payment request and to tear down any user interface that might be shown.
+ * @return {!Promise<undefined>} A promise to notify the caller whether the user
+ *     agent was able to abort the payment request.
+ */
+window.PaymentRequest.prototype.abort = function() {
+  if (!__gCrWeb['paymentRequestManager'].pendingRequest) {
+    __gCrWeb['paymentRequestManager'].rejectRequestPromise(
+        'Internal PaymentRequest error: No pending request.');
+  }
+
+  var message = {
+    'command': 'paymentRequest.requestAbort',
+  };
+  __gCrWeb.message.invokeOnHost(message);
+
+  __gCrWeb['paymentRequestManager'].abortPromiseResolver =
+      new __gCrWeb.PromiseResolver();
+  return __gCrWeb['paymentRequestManager'].abortPromiseResolver.promise;
 };
 
 /**

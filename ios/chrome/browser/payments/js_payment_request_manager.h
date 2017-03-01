@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_PAYMENTS_JS_PAYMENT_REQUEST_MANAGER_H_
 
 #include "base/strings/string16.h"
+#include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
 namespace web {
@@ -29,30 +30,35 @@ class PaymentShippingOption;
 - (void)resolveRequestPromiseWithPaymentResponse:
             (const web::PaymentResponse&)paymentResponse
                                completionHandler:
-                                   (void (^)(BOOL))completionHandler;
+                                   (ProceduralBlockWithBool)completionHandler;
 
 // Rejects the JavaScript promise associated with the current PaymentRequest
 // with the supplied |errorMessage|. If |completionHandler| is not nil, it will
 // be invoked with YES after the operation has completed successfully or with NO
 // otherwise.
 - (void)rejectRequestPromiseWithErrorMessage:(NSString*)errorMessage
-                           completionHandler:(void (^)(BOOL))completionHandler;
+                           completionHandler:
+                               (ProceduralBlockWithBool)completionHandler;
+
+// Resolves the promise returned by PaymentRequest.prototype.abort.
+- (void)resolveAbortPromiseWithCompletionHandler:
+    (ProceduralBlockWithBool)completionHandler;
 
 // Resolves the JavaScript promise associated with the current PaymentResponse.
 // If |completionHandler| is not nil, it will be invoked with YES after the
 // operation has completed successfully or with NO otherwise.
 - (void)resolveResponsePromiseWithCompletionHandler:
-    (void (^)(BOOL))completionHandler;
+    (ProceduralBlockWithBool)completionHandler;
 
 // Updates the shippingAddress property on the PaymentRequest object and
 // dispatches a shippingaddresschange event.
 - (void)updateShippingAddress:(const web::PaymentAddress&)shippingAddress
-            completionHandler:(void (^)(BOOL))completionHanlder;
+            completionHandler:(ProceduralBlockWithBool)completionHanlder;
 
 // Updates the shippingOption property on the PaymentRequest object and
 // dispatches a shippingoptionchange event.
 - (void)updateShippingOption:(const web::PaymentShippingOption&)shippingOption
-           completionHandler:(void (^)(BOOL))completionHanlder;
+           completionHandler:(ProceduralBlockWithBool)completionHanlder;
 
 @end
 
