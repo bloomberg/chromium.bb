@@ -142,3 +142,25 @@ ZUC_TEST(timespec_test, timespec_add_msec)
 	ZUC_ASSERT_EQ(1002, r.tv_sec);
 	ZUC_ASSERT_EQ(2000001, r.tv_nsec);
 }
+
+ZUC_TEST(timespec_test, timespec_sub_to_nsec)
+{
+	struct timespec a, b;
+
+	a.tv_sec = 1000;
+	a.tv_nsec = 1;
+	b.tv_sec = 1;
+	b.tv_nsec = 2;
+	ZUC_ASSERT_EQ((999L * NSEC_PER_SEC) - 1, timespec_sub_to_nsec(&a, &b));
+}
+
+ZUC_TEST(timespec_test, timespec_sub_to_msec)
+{
+	struct timespec a, b;
+
+	a.tv_sec = 1000;
+	a.tv_nsec = 2000000L;
+	b.tv_sec = 2;
+	b.tv_nsec = 1000000L;
+	ZUC_ASSERT_EQ((998 * 1000) + 1, timespec_sub_to_msec(&a, &b));
+}
