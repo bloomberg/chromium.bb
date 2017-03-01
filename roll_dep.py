@@ -124,15 +124,23 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
   ]
   logs = check_output(
       cmd + ['--format=%ad %ae %s'], # Args with '=' are automatically quoted.
-      cwd=full_dir)
+      cwd=full_dir).rstrip()
   logs = re.sub(r'(?m)^(\d\d\d\d-\d\d-\d\d [^@]+)@[^ ]+( .*)$', r'\1\2', logs)
-  nb_commits = logs.count('\n')
+  lines = logs.splitlines()
+  cleaned_lines = [
+      l for l in lines
+      if not l.endswith('recipe-roller Roll recipe dependencies (trivial).')
+  ]
+  logs = '\n'.join(cleaned_lines) + '\n'
+  nb_commits = len(lines)
+  rolls = nb_commits - len(cleaned_lines)
 
-  header = 'Roll %s/ %s (%d commit%s).\n\n' % (
+  header = 'Roll %s/ %s (%d commit%s%s)\n\n' % (
       deps_dir,
       commit_range,
       nb_commits,
-      's' if nb_commits > 1 else '')
+      's' if nb_commits > 1 else '',
+      ('; %s trivial rolls' % rolls) if rolls else '')
 
   log_section = ''
   if log_url:
@@ -140,7 +148,7 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
   log_section += '$ %s ' % ' '.join(cmd)
   log_section += '--format=\'%ad %ae %s\'\n'
   if not no_log and should_show_log(upstream_url):
-    if logs.count('\n') > log_limit:
+    if len(cleaned_lines) > log_limit:
       # Keep the first N log entries.
       logs = ''.join(logs.splitlines(True)[:log_limit]) + '(...)\n'
     log_section += logs
