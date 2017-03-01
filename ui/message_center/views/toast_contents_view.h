@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -39,10 +40,13 @@ class PopupAlignmentDelegate;
 // which delegates over to MessagePopupCollection, but takes care about
 // checking the weakref since MessagePopupCollection may disappear before
 // widget/views are closed/destructed.
-class ToastContentsView : public views::WidgetDelegateView,
-                          public MessageCenterController,
-                          public gfx::AnimationDelegate {
+class MESSAGE_CENTER_EXPORT ToastContentsView
+    : public views::WidgetDelegateView,
+      public MessageCenterController,
+      public gfx::AnimationDelegate {
  public:
+  static const char kViewClassName[];
+
   // Computes the size of a toast assuming it will host the given view.
   static gfx::Size GetToastSizeForView(const views::View* view);
 
@@ -69,6 +73,9 @@ class ToastContentsView : public views::WidgetDelegateView,
 
   void SetBoundsWithAnimation(gfx::Rect new_bounds);
 
+  // Makes the toast activatable, then activate.
+  void ActivateToast();
+
   // Origin and bounds are not 'instant', but rather 'current stable values',
   // there could be animation in progress that targets these values.
   gfx::Point origin() { return origin_; }
@@ -82,6 +89,7 @@ class ToastContentsView : public views::WidgetDelegateView,
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
 
  private:
   friend class test::MessagePopupCollectionTest;
