@@ -57,13 +57,13 @@
 namespace blink {
 
 class ApplicationCacheHost;
+class SubresourceFilter;
 class ResourceFetcher;
 class DocumentInit;
 class LocalFrame;
 class LocalFrameClient;
 class FrameLoader;
 class ResourceTimingInfo;
-class WebDocumentSubresourceFilter;
 struct ViewportDescriptionWrapper;
 
 class CORE_EXPORT DocumentLoader
@@ -101,8 +101,8 @@ class CORE_EXPORT DocumentLoader
 
   ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 
-  void setSubresourceFilter(std::unique_ptr<WebDocumentSubresourceFilter>);
-  WebDocumentSubresourceFilter* subresourceFilter() const {
+  void setSubresourceFilter(SubresourceFilter*);
+  SubresourceFilter* subresourceFilter() const {
     return m_subresourceFilter.get();
   }
 
@@ -242,11 +242,12 @@ class CORE_EXPORT DocumentLoader
 
   Member<LocalFrame> m_frame;
   Member<ResourceFetcher> m_fetcher;
-  std::unique_ptr<WebDocumentSubresourceFilter> m_subresourceFilter;
 
   Member<RawResource> m_mainResource;
 
   Member<DocumentWriter> m_writer;
+
+  Member<SubresourceFilter> m_subresourceFilter;
 
   // A reference to actual request used to create the data source.
   // The only part of this request that should change is the url, and

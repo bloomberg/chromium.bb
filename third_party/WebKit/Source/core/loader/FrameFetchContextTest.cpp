@@ -40,6 +40,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
+#include "core/loader/SubresourceFilter.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
@@ -160,9 +161,9 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
   int getFilteredLoadCallCount() const { return m_filteredLoadCallbackCounter; }
 
   void setFilterPolicy(WebDocumentSubresourceFilter::LoadPolicy policy) {
-    document->loader()->setSubresourceFilter(
-        WTF::makeUnique<FixedPolicySubresourceFilter>(
-            policy, &m_filteredLoadCallbackCounter));
+    document->loader()->setSubresourceFilter(SubresourceFilter::create(
+        document->loader(), WTF::makeUnique<FixedPolicySubresourceFilter>(
+                                policy, &m_filteredLoadCallbackCounter)));
   }
 
   ResourceRequestBlockedReason canRequest() {

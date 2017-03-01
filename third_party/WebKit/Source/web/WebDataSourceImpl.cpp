@@ -30,13 +30,14 @@
 
 #include "web/WebDataSourceImpl.h"
 
+#include <memory>
 #include "core/dom/Document.h"
+#include "core/loader/SubresourceFilter.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -156,7 +157,8 @@ void WebDataSourceImpl::detachFromFrame() {
 
 void WebDataSourceImpl::setSubresourceFilter(
     WebDocumentSubresourceFilter* subresourceFilter) {
-  DocumentLoader::setSubresourceFilter(WTF::wrapUnique(subresourceFilter));
+  DocumentLoader::setSubresourceFilter(
+      SubresourceFilter::create(this, WTF::wrapUnique(subresourceFilter)));
 }
 
 DEFINE_TRACE(WebDataSourceImpl) {

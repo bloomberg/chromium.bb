@@ -57,6 +57,7 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/ProgressTracker.h"
+#include "core/loader/SubresourceFilter.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/private/FrameClientHintsPreferencesContext.h"
 #include "core/page/NetworkStateNotifier.h"
@@ -79,7 +80,6 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebCachePolicy.h"
-#include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebViewScheduler.h"
 #include "wtf/Vector.h"
@@ -819,24 +819,10 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
   DocumentLoader* documentLoader = masterDocumentLoader();
   if (documentLoader && documentLoader->subresourceFilter() &&
       type != Resource::MainResource && type != Resource::ImportResource) {
-    WebDocumentSubresourceFilter::LoadPolicy loadPolicy =
-        documentLoader->subresourceFilter()->getLoadPolicy(
-            url, resourceRequest.requestContext());
-    if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
-      switch (loadPolicy) {
-        case WebDocumentSubresourceFilter::Allow:
-          break;
-        case WebDocumentSubresourceFilter::Disallow:
-          documentLoader->subresourceFilter()->reportDisallowedLoad();
-        // fall through
-        case WebDocumentSubresourceFilter::WouldDisallow:
-          documentLoader->didObserveLoadingBehavior(
-              WebLoadingBehaviorSubresourceFilterMatch);
-          break;
-      }
-    }
-    if (loadPolicy == WebDocumentSubresourceFilter::Disallow)
+    if (!documentLoader->subresourceFilter()->allowLoad(
+            url, resourceRequest.requestContext(), reportingPolicy)) {
       return ResourceRequestBlockedReason::SubresourceFilter;
+    }
   }
 
   return ResourceRequestBlockedReason::None;

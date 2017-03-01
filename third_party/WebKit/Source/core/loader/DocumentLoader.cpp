@@ -30,7 +30,6 @@
 #include "core/loader/DocumentLoader.h"
 
 #include <memory>
-
 #include "core/dom/Document.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
@@ -51,6 +50,7 @@
 #include "core/loader/LinkLoader.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/ProgressTracker.h"
+#include "core/loader/SubresourceFilter.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/loader/resource/FontResource.h"
@@ -73,7 +73,6 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebDocumentSubresourceFilter.h"
 #include "wtf/Assertions.h"
 #include "wtf/AutoReset.h"
 #include "wtf/text/WTFString.h"
@@ -154,6 +153,7 @@ DEFINE_TRACE(DocumentLoader) {
   visitor->trace(m_fetcher);
   visitor->trace(m_mainResource);
   visitor->trace(m_writer);
+  visitor->trace(m_subresourceFilter);
   visitor->trace(m_documentLoadTiming);
   visitor->trace(m_applicationCacheHost);
   visitor->trace(m_contentSecurityPolicy);
@@ -176,13 +176,13 @@ const ResourceRequest& DocumentLoader::getRequest() const {
   return m_request;
 }
 
-const KURL& DocumentLoader::url() const {
-  return m_request.url();
+void DocumentLoader::setSubresourceFilter(
+    SubresourceFilter* subresourceFilter) {
+  m_subresourceFilter = subresourceFilter;
 }
 
-void DocumentLoader::setSubresourceFilter(
-    std::unique_ptr<WebDocumentSubresourceFilter> subresourceFilter) {
-  m_subresourceFilter = std::move(subresourceFilter);
+const KURL& DocumentLoader::url() const {
+  return m_request.url();
 }
 
 Resource* DocumentLoader::startPreload(Resource::Type type,
