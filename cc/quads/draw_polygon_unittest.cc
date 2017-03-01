@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "cc/output/bsp_compare_result.h"
 #include "cc/quads/draw_polygon.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -486,6 +487,59 @@ TEST(DrawPolygonSplitTest, AngledSplit) {
   ValidatePointsWithinDeltaOf(*back_polygon, test_points_b, 1e-6f);
 }
 
+// This test was derived from crbug.com/693826. An almost coplanar
+// pair of polygons are used for splitting. In this case, the
+// splitting plane distance signs are [ 0 0 + - ]. This configuration
+// represents a case where snapping to the splitting plane causes the
+// polygon to become twisted. Splitting should still give a valid
+// result, indicated by all four of the input split polygon vertices
+// being present in the output polygons.
+TEST(DrawPolygonSplitTest, AlmostCoplanarSplit) {
+  std::vector<gfx::Point3F> vertices_a;
+  vertices_a.push_back(gfx::Point3F(723.814758300781250f, 552.810119628906250f,
+                                    -206.656036376953125f));
+  vertices_a.push_back(gfx::Point3F(797.634155273437500f, 549.095703125000000f,
+                                    -209.802902221679688f));
+  vertices_a.push_back(gfx::Point3F(799.264648437500000f, 490.325805664062500f,
+                                    -172.261627197265625f));
+  vertices_a.push_back(gfx::Point3F(720.732421875000000f, 493.944458007812500f,
+                                    -168.700469970703125f));
+  std::vector<gfx::Point3F> vertices_b;
+  vertices_b.push_back(gfx::Point3F(720.631286621093750f, 487.595977783203125f,
+                                    -164.681198120117188f));
+  vertices_b.push_back(gfx::Point3F(799.672851562500000f, 484.059020996093750f,
+                                    -168.219161987304688f));
+  vertices_b.push_back(gfx::Point3F(801.565490722656250f, 416.416809082031250f,
+                                    -125.007690429687500f));
+  vertices_b.push_back(gfx::Point3F(717.096801757812500f, 419.792327880859375f,
+                                    -120.967689514160156f));
+
+  CREATE_NEW_DRAW_POLYGON_PTR(
+      splitting_polygon, vertices_a,
+      gfx::Vector3dF(-0.062916249036789f, -0.538499474525452f,
+                     -0.840273618698120f),
+      0);
+  CREATE_NEW_DRAW_POLYGON_PTR(
+      split_polygon, vertices_b,
+      gfx::Vector3dF(-0.061713f, -0.538550f, -0.840330f), 1);
+
+  std::unique_ptr<DrawPolygon> front_polygon;
+  std::unique_ptr<DrawPolygon> back_polygon;
+  bool is_coplanar;
+
+  splitting_polygon->SplitPolygon(std::move(split_polygon), &front_polygon,
+                                  &back_polygon, &is_coplanar);
+
+  EXPECT_FALSE(is_coplanar);
+  EXPECT_TRUE(front_polygon != nullptr);
+  EXPECT_TRUE(back_polygon != nullptr);
+
+  for (auto vertex : vertices_b) {
+    EXPECT_TRUE(base::ContainsValue(front_polygon->points(), vertex) ||
+                base::ContainsValue(back_polygon->points(), vertex));
+  }
+}
+
 // In this test we cut the corner of a quad so that it creates a triangle and
 // a pentagon as a result, and then cut the pentagon.
 TEST(DrawPolygonSplitTest, DoubleSplit) {
@@ -518,6 +572,8 @@ TEST(DrawPolygonSplitTest, DoubleSplit) {
 
   EXPECT_EQ(3u, front_polygon->points().size());
   EXPECT_EQ(5u, back_polygon->points().size());
+  std::vector<gfx::Point3F> saved_back_polygon_vertices =
+      back_polygon->points();
 
   std::vector<gfx::Point3F> vertices_c;
   vertices_c.push_back(gfx::Point3F(0.0f, 0.0f, 10.0f));
@@ -538,8 +594,13 @@ TEST(DrawPolygonSplitTest, DoubleSplit) {
   EXPECT_TRUE(second_front_polygon != nullptr);
   EXPECT_TRUE(second_back_polygon != nullptr);
 
-  EXPECT_EQ(3u, second_front_polygon->points().size());
+  EXPECT_EQ(4u, second_front_polygon->points().size());
   EXPECT_EQ(3u, second_back_polygon->points().size());
+
+  for (auto vertex : saved_back_polygon_vertices) {
+    EXPECT_TRUE(base::ContainsValue(second_front_polygon->points(), vertex) ||
+                base::ContainsValue(second_back_polygon->points(), vertex));
+  }
 }
 
 TEST(DrawPolygonTransformTest, TransformNormal) {

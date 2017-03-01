@@ -288,11 +288,12 @@ void DrawPolygon::SplitPolygon(std::unique_ptr<DrawPolygon> polygon,
   std::vector<gfx::Point3F> out_points;
 
   out_points.push_back(pre_pos_intersection);
-  do {
-    out_points.push_back(polygon->points_[front_begin]);
-    front_begin = next(front_begin);
-  } while (vertex_distance[front_begin] > 0.0);
-  out_points.push_back(pre_neg_intersection);
+  for (size_t index = front_begin; index != back_begin; index = next(index)) {
+    out_points.push_back(polygon->points_[index]);
+  }
+  if (out_points.back() != pre_neg_intersection) {
+    out_points.push_back(pre_neg_intersection);
+  }
   *front =
       base::MakeUnique<DrawPolygon>(polygon->original_ref_, out_points,
                                     polygon->normal_, polygon->order_index_);
@@ -300,11 +301,12 @@ void DrawPolygon::SplitPolygon(std::unique_ptr<DrawPolygon> polygon,
   out_points.clear();
 
   out_points.push_back(pre_neg_intersection);
-  do {
-    out_points.push_back(polygon->points_[back_begin]);
-    back_begin = next(back_begin);
-  } while (vertex_distance[back_begin] < 0.0);
-  out_points.push_back(pre_pos_intersection);
+  for (size_t index = back_begin; index != front_begin; index = next(index)) {
+    out_points.push_back(polygon->points_[index]);
+  }
+  if (out_points.back() != pre_pos_intersection) {
+    out_points.push_back(pre_pos_intersection);
+  }
   *back =
       base::MakeUnique<DrawPolygon>(polygon->original_ref_, out_points,
                                     polygon->normal_, polygon->order_index_);
