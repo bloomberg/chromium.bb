@@ -273,6 +273,8 @@ class CORE_EXPORT FrameSelection final
   Range* documentCachedRange() const;
   void clearDocumentCachedRange();
 
+  FrameCaret& frameCaretForTesting() const { return *m_frameCaret; }
+
   DECLARE_TRACE();
 
  private:

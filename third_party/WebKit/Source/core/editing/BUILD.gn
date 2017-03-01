@@ -234,6 +234,7 @@ source_set("unit_tests") {
     "EditingUtilitiesTest.cpp",
     "EditorTest.cpp",
     "EphemeralRangeTest.cpp",
+    "FrameCaretTest.cpp",
     "FrameSelectionTest.cpp",
     "GranularityStrategyTest.cpp",
     "InputMethodControllerTest.cpp",

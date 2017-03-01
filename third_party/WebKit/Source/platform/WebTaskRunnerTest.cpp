@@ -129,7 +129,7 @@ TEST(WebTaskRunnerTest, CancellationCheckerTest) {
   // TaskHandle::isActive should detect the deletion of posted task.
   auto queue = taskRunner->takePendingTasksForTesting();
   ASSERT_EQ(1u, queue.size());
-  EXPECT_FALSE(queue[0].IsCancelled());
+  EXPECT_FALSE(queue[0].first.IsCancelled());
   EXPECT_TRUE(handle.isActive());
   queue.clear();
   EXPECT_FALSE(handle.isActive());
@@ -145,10 +145,10 @@ TEST(WebTaskRunnerTest, CancellationCheckerTest) {
   // The cancellation of the posted task should be propagated to TaskHandle.
   queue = taskRunner->takePendingTasksForTesting();
   ASSERT_EQ(1u, queue.size());
-  EXPECT_FALSE(queue[0].IsCancelled());
+  EXPECT_FALSE(queue[0].first.IsCancelled());
   EXPECT_TRUE(handle.isActive());
   helper.revokeWeakPtrs();
-  EXPECT_TRUE(queue[0].IsCancelled());
+  EXPECT_TRUE(queue[0].first.IsCancelled());
   EXPECT_FALSE(handle.isActive());
 }
 

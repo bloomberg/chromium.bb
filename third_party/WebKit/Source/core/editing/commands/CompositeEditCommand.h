@@ -78,7 +78,6 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   virtual bool isDragAndDropCommand() const;
   virtual bool preservesTypingStyle() const;
   virtual void setShouldRetainAutocorrectionIndicator(bool);
-  virtual bool shouldStopCaretBlinking() const { return false; }
 
   DECLARE_VIRTUAL_TRACE();
 

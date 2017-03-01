@@ -18,8 +18,20 @@ class FakeWebTaskRunner::Data : public WTF::ThreadSafeRefCounted<Data> {
  public:
   Data() : time_(0.0) {}
 
+  void PostTask(const base::Closure& task, base::TimeDelta delay) {
+    task_queue_.push_back(std::make_pair(task, time_ + delay.InSecondsF()));
+  }
+
+  using QueueItem = std::pair<base::Closure, double>;
+  std::deque<QueueItem>::iterator FindRunnableTask() {
+    // TODO(tkent): This should return an item which has the minimum |second|.
+    return std::find_if(
+        task_queue_.begin(), task_queue_.end(),
+        [&](const QueueItem& item) { return item.second <= time_; });
+  }
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::deque<base::Closure> task_queue_;
+  std::deque<QueueItem> task_queue_;
   double time_;
 
  private:
@@ -36,14 +48,14 @@ class FakeWebTaskRunner::BaseTaskRunner : public base::SingleThreadTaskRunner {
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay) override {
-    data_->task_queue_.push_back(task);
+    data_->PostTask(task, delay);
     return true;
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay) override {
-    data_->task_queue_.push_back(task);
+    data_->PostTask(task, delay);
     return true;
   }
 
@@ -70,8 +82,8 @@ void FakeWebTaskRunner::setTime(double new_time) {
 
 void FakeWebTaskRunner::postDelayedTask(const WebTraceLocation&,
                                         const base::Closure& closure,
-                                        double) {
-  data_->task_queue_.push_back(closure);
+                                        double delay_ms) {
+  data_->PostTask(closure, base::TimeDelta::FromMillisecondsD(delay_ms));
 }
 
 bool FakeWebTaskRunner::runsTasksOnCurrentThread() {
@@ -94,13 +106,24 @@ void FakeWebTaskRunner::runUntilIdle() {
   while (!data_->task_queue_.empty()) {
     // Move the task to run into a local variable in case it touches the
     // task queue by posting a new task.
-    base::Closure task = std::move(data_->task_queue_.front());
+    base::Closure task = std::move(data_->task_queue_.front()).first;
     data_->task_queue_.pop_front();
     task.Run();
   }
 }
 
-std::deque<base::Closure> FakeWebTaskRunner::takePendingTasksForTesting() {
+void FakeWebTaskRunner::advanceTimeAndRun(double delta_seconds) {
+  data_->time_ += delta_seconds;
+  for (auto it = data_->FindRunnableTask(); it != data_->task_queue_.end();
+       it = data_->FindRunnableTask()) {
+    base::Closure task = std::move(*it).first;
+    data_->task_queue_.erase(it);
+    task.Run();
+  }
+}
+
+std::deque<std::pair<base::Closure, double>>
+FakeWebTaskRunner::takePendingTasksForTesting() {
   return std::move(data_->task_queue_);
 }
 

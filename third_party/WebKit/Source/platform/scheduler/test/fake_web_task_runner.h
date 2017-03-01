@@ -33,7 +33,8 @@ class FakeWebTaskRunner : public WebTaskRunner {
   SingleThreadTaskRunner* toSingleThreadTaskRunner() override;
 
   void runUntilIdle();
-  std::deque<base::Closure> takePendingTasksForTesting();
+  void advanceTimeAndRun(double delta_seconds);
+  std::deque<std::pair<base::Closure, double>> takePendingTasksForTesting();
 
  private:
   ~FakeWebTaskRunner() override;

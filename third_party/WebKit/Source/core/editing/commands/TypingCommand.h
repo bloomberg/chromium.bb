@@ -144,7 +144,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   void setShouldRetainAutocorrectionIndicator(bool retain) override {
     m_shouldRetainAutocorrectionIndicator = retain;
   }
-  bool shouldStopCaretBlinking() const override { return true; }
   void setShouldPreventSpellChecking(bool prevent) {
     m_shouldPreventSpellChecking = prevent;
   }

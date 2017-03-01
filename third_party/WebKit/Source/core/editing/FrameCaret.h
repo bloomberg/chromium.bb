@@ -88,6 +88,7 @@ class CORE_EXPORT FrameCaret final
   const DisplayItemClient& caretDisplayItemClientForTesting() const;
   const LayoutBlock* caretLayoutBlockForTesting() const;
   bool shouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
+  void recreateCaretBlinkTimerForTesting(RefPtr<WebTaskRunner>);
 
   DECLARE_TRACE();
 
@@ -106,7 +107,7 @@ class CORE_EXPORT FrameCaret final
   const std::unique_ptr<CaretDisplayItemClient> m_displayItemClient;
   CaretVisibility m_caretVisibility;
   // TODO(https://crbug.com/668758): Consider using BeginFrame update for this.
-  TaskRunnerTimer<FrameCaret> m_caretBlinkTimer;
+  std::unique_ptr<TaskRunnerTimer<FrameCaret>> m_caretBlinkTimer;
   bool m_shouldPaintCaret : 1;
   bool m_isCaretBlinkingSuspended : 1;
   bool m_shouldShowBlockCursor : 1;
