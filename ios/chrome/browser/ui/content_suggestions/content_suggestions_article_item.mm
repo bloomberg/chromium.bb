@@ -5,14 +5,17 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
 
 #include "base/time/time.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-const CGFloat kImageSize = 100;
+const CGFloat kImageSize = 72;
+// When updating this, make sure to update |layoutSubviews|.
 const CGFloat kStandardSpacing = 8;
 }
 
@@ -64,9 +67,9 @@ const CGFloat kStandardSpacing = 8;
     // nil.
     [self.delegate loadImageForArticleItem:self];
   }
-  cell.titleLabel.text = _title;
-  cell.subtitleLabel.text = _subtitle;
-  cell.imageView.image = _image;
+  cell.titleLabel.text = self.title;
+  cell.subtitleLabel.text = self.subtitle;
+  cell.imageView.image = self.image;
   [cell setPublisherName:self.publisher date:self.publishDate];
 }
 
@@ -77,6 +80,9 @@ const CGFloat kStandardSpacing = 8;
 @interface ContentSuggestionsArticleCell ()
 
 @property(nonatomic, strong) UILabel* publisherLabel;
+
+// Applies the constraints on the elements. Called in the init.
+- (void)applyConstraints;
 
 @end
 
@@ -95,12 +101,14 @@ const CGFloat kStandardSpacing = 8;
     _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _publisherLabel = [[UILabel alloc] initWithFrame:CGRectZero];
 
+    _titleLabel.numberOfLines = 2;
     _subtitleLabel.numberOfLines = 0;
     [_subtitleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                       forAxis:UILayoutConstraintAxisVertical];
     [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                    forAxis:UILayoutConstraintAxisVertical];
-    _imageView.contentMode = UIViewContentModeScaleAspectFit;
+    _imageView.contentMode = UIViewContentModeScaleAspectFill;
+    _imageView.clipsToBounds = YES;
 
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -112,32 +120,14 @@ const CGFloat kStandardSpacing = 8;
     [self.contentView addSubview:_subtitleLabel];
     [self.contentView addSubview:_publisherLabel];
 
-    [NSLayoutConstraint activateConstraints:@[
-      [_imageView.widthAnchor constraintLessThanOrEqualToConstant:kImageSize],
-      [_imageView.heightAnchor constraintLessThanOrEqualToConstant:kImageSize],
-      [_publisherLabel.topAnchor
-          constraintGreaterThanOrEqualToAnchor:_imageView.bottomAnchor
-                                      constant:kStandardSpacing],
-      [_publisherLabel.topAnchor
-          constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
-                                      constant:kStandardSpacing],
-    ]];
+    _titleLabel.font = [MDCTypography subheadFont];
+    _subtitleLabel.font = [MDCTypography body1Font];
+    _publisherLabel.font = [MDCTypography captionFont];
 
-    ApplyVisualConstraints(
-        @[
-          @"H:|-[title]-[image]-|",
-          @"H:|-[text]-[image]",
-          @"V:|-[title]-[text]",
-          @"V:|-[image]",
-          @"H:|-[publish]-|",
-          @"V:[publish]-|",
-        ],
-        @{
-          @"image" : _imageView,
-          @"title" : _titleLabel,
-          @"text" : _subtitleLabel,
-          @"publish" : _publisherLabel,
-        });
+    _subtitleLabel.textColor = [[MDCPalette greyPalette] tint700];
+    _publisherLabel.textColor = [[MDCPalette greyPalette] tint700];
+
+    [self applyConstraints];
   }
   return self;
 }
@@ -164,12 +154,47 @@ const CGFloat kStandardSpacing = 8;
   // Adjust the text label preferredMaxLayoutWidth when the parent's width
   // changes, for instance on screen rotation.
   CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
+
+  self.titleLabel.preferredMaxLayoutWidth =
+      parentWidth - self.imageView.bounds.size.width - 3 * kStandardSpacing;
   self.subtitleLabel.preferredMaxLayoutWidth =
-      parentWidth - self.imageView.bounds.size.width - 3 * 8;
+      parentWidth - self.imageView.bounds.size.width - 3 * kStandardSpacing;
 
   // Re-layout with the new preferred width to allow the label to adjust its
   // height.
   [super layoutSubviews];
+}
+
+#pragma mark - Private
+
+- (void)applyConstraints {
+  [NSLayoutConstraint activateConstraints:@[
+    [_imageView.widthAnchor constraintEqualToConstant:kImageSize],
+    [_imageView.heightAnchor constraintEqualToAnchor:_imageView.widthAnchor],
+    [_publisherLabel.topAnchor
+        constraintGreaterThanOrEqualToAnchor:_imageView.bottomAnchor
+                                    constant:kStandardSpacing],
+    [_publisherLabel.topAnchor
+        constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
+                                    constant:kStandardSpacing],
+  ]];
+
+  ApplyVisualConstraintsWithMetrics(
+      @[
+        @"H:|-(space)-[title]-(space)-[image]-(space)-|",
+        @"H:|-(space)-[text]-(space)-[image]",
+        @"V:|-[title]-[text]",
+        @"V:|-[image]",
+        @"H:|-[publish]-|",
+        @"V:[publish]-|",
+      ],
+      @{
+        @"image" : _imageView,
+        @"title" : _titleLabel,
+        @"text" : _subtitleLabel,
+        @"publish" : _publisherLabel,
+      },
+      @{ @"space" : @(kStandardSpacing) });
 }
 
 @end

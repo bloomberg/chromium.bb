@@ -39,6 +39,7 @@ source_set("content_suggestions") {
     "//base",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
+    "//ios/chrome/browser/ui/colors",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
     "//url",
