@@ -364,8 +364,8 @@ class TestPort(Port):
         'win10': ['test-win-win10'],
         'mac10.10': ['test-mac-mac10.10', 'test-mac-mac10.11'],
         'mac10.11': ['test-mac-mac10.11'],
-        'trusty': ['test-linux-trusty', 'test-win-win7'],
-        'precise': ['test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
+        'trusty': ['test-linux-trusty', 'test-win-win10'],
+        'precise': ['test-linux-precise', 'test-linux-trusty', 'test-win-win10'],
     }
 
     @classmethod

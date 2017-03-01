@@ -148,6 +148,19 @@ class CopyExistingBaselinesInternal(AbstractRebaseliningCommand):
 
     @memoized
     def _immediate_predecessors_in_fallback(self, path_to_rebaseline):
+        """Returns the predecessor directories in the baseline fall-back graph.
+
+        The platform-specific fall-back baseline directories form a tree; the
+        "immediate predecessors" are the children nodes For example, if the
+        baseline fall-back graph includes:
+            "mac10.9" -> "mac10.10/"
+            "mac10.10/" -> "mac/"
+            "retina/" -> "mac/"
+        Then, the "immediate predecessors" are:
+            "mac/": ["mac10.10/", "retina/"]
+            "mac10.10/": ["mac10.9/"]
+            "mac10.9/", "retina/": []
+        """
         port_names = self._tool.port_factory.all_port_names()
         immediate_predecessors = []
         for port_name in port_names:
@@ -165,12 +178,14 @@ class CopyExistingBaselinesInternal(AbstractRebaseliningCommand):
         return immediate_predecessors
 
     def _port_for_primary_baseline(self, baseline):
+        """Returns a Port object for the given baseline directory base name."""
         for port in [self._tool.port_factory.get(port_name) for port_name in self._tool.port_factory.all_port_names()]:
             if self._tool.filesystem.basename(port.baseline_version_dir()) == baseline:
                 return port
         raise Exception("Failed to find port for primary baseline %s." % baseline)
 
     def _copy_existing_baseline(self, builder_name, test_name, suffix):
+        """Copies the baseline for the given builder to all "predecessor" directories."""
         baseline_directory = self._baseline_directory(builder_name)
         ports = [self._port_for_primary_baseline(baseline)
                  for baseline in self._immediate_predecessors_in_fallback(baseline_directory)]
