@@ -18,7 +18,7 @@ interface URLLoaderFactory {
                        int32 routing_id,
                        int32 request_id,
                        URLRequest request,
-                       associated URLLoaderClient client);
+                       URLLoaderClient client);
 
   // Loads the resource for the given |request| synchronously.
   // |request_id| is for compatibility with the existing Chrome IPC.

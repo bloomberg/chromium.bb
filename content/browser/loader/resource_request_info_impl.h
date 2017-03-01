@@ -37,7 +37,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
  public:
   using TransferCallback =
       base::Callback<void(mojom::URLLoaderAssociatedRequest,
-                          mojom::URLLoaderClientAssociatedPtr)>;
+                          mojom::URLLoaderClientPtr)>;
 
   // Returns the ResourceRequestInfoImpl associated with the given URLRequest.
   CONTENT_EXPORT static ResourceRequestInfoImpl* ForRequest(
@@ -126,7 +126,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                          int request_id,
                          ResourceRequesterInfo* requester_info,
                          mojom::URLLoaderAssociatedRequest url_loader_request,
-                         mojom::URLLoaderClientAssociatedPtr url_loader_client);
+                         mojom::URLLoaderClientPtr url_loader_client);
 
   // Whether this request is part of a navigation that should replace the
   // current session history entry. This state is shuffled up and down the stack

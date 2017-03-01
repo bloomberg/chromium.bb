@@ -68,12 +68,11 @@ class CONTENT_EXPORT ResourceMessageFilter
 
   base::WeakPtr<ResourceMessageFilter> GetWeakPtr();
 
-  void CreateLoaderAndStart(
-      mojom::URLLoaderAssociatedRequest request,
-      int32_t routing_id,
-      int32_t request_id,
-      const ResourceRequest& url_request,
-      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) override;
+  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            const ResourceRequest& url_request,
+                            mojom::URLLoaderClientPtr client) override;
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& request,

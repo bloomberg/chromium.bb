@@ -162,7 +162,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
                                  kRequestId, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
 
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.response_body().is_valid());
@@ -237,7 +237,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
 
   client.RunUntilComplete();
   ASSERT_FALSE(client.has_received_response());
@@ -265,7 +265,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
 
   client.RunUntilComplete();
   ASSERT_FALSE(client.has_received_response());
@@ -291,7 +291,7 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   request.request_initiator = url::Origin();
   ASSERT_FALSE(request.url.is_valid());
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
 
   client.RunUntilComplete();
   ASSERT_FALSE(client.has_received_response());
@@ -316,7 +316,7 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
 
   client.RunUntilComplete();
   rdh_.SetDelegate(nullptr);
@@ -346,7 +346,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
                                  kRequestId, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.has_data_downloaded());
   ASSERT_FALSE(client.has_received_completion());
@@ -413,7 +413,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
                                  kRequestId, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.has_data_downloaded());
   ASSERT_FALSE(client.has_received_completion());
@@ -476,7 +476,7 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   request.report_raw_headers = true;
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
                                  kRequestId, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
 
   client.RunUntilComplete();
 
@@ -536,7 +536,7 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
                                  kRequestId, request,
-                                 client.CreateRemoteAssociatedPtrInfo());
+                                 client.CreateInterfacePtr());
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(rdh_.GetURLRequest(GlobalRequestID(kChildId, kRequestId)));

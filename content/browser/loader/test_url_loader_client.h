@@ -15,7 +15,7 @@
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/resource_response.h"
 #include "mojo/public/c/system/data_pipe.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/redirect_info.h"
 
 namespace content {
@@ -29,9 +29,8 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   TestURLLoaderClient();
   ~TestURLLoaderClient() override;
 
-  void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
-      mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file) override;
+  void OnReceiveResponse(const ResourceResponseHead& response_head,
+                         mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
@@ -76,9 +75,8 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   }
 
   void ClearHasReceivedRedirect();
-  // Creates an AssociatedPtrInfo, binds it to |*this| and returns it. The
-  // returned PtrInfo is expected to be passed to the remote endpoint.
-  mojom::URLLoaderClientAssociatedPtrInfo CreateRemoteAssociatedPtrInfo();
+  // Creates an InterfacePtr, binds it to |*this| and returns it.
+  mojom::URLLoaderClientPtr CreateInterfacePtr();
 
   void Unbind();
 
@@ -90,7 +88,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void RunUntilComplete();
 
  private:
-  mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
+  mojo::Binding<mojom::URLLoaderClient> binding_;
   ResourceResponseHead response_head_;
   net::RedirectInfo redirect_info_;
   std::string cached_metadata_;

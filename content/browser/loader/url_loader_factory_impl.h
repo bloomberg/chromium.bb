@@ -21,24 +21,22 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
  public:
   ~URLLoaderFactoryImpl() override;
 
-  void CreateLoaderAndStart(
-      mojom::URLLoaderAssociatedRequest request,
-      int32_t routing_id,
-      int32_t request_id,
-      const ResourceRequest& url_request,
-      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) override;
+  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            const ResourceRequest& url_request,
+                            mojom::URLLoaderClientPtr client) override;
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& request,
                 const SyncLoadCallback& callback) override;
 
-  static void CreateLoaderAndStart(
-      ResourceRequesterInfo* requester_info,
-      mojom::URLLoaderAssociatedRequest request,
-      int32_t routing_id,
-      int32_t request_id,
-      const ResourceRequest& url_request,
-      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info);
+  static void CreateLoaderAndStart(ResourceRequesterInfo* requester_info,
+                                   mojom::URLLoaderAssociatedRequest request,
+                                   int32_t routing_id,
+                                   int32_t request_id,
+                                   const ResourceRequest& url_request,
+                                   mojom::URLLoaderClientPtr client);
   static void SyncLoad(ResourceRequesterInfo* requester_info,
                        int32_t routing_id,
                        int32_t request_id,

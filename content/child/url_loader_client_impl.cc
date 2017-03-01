@@ -28,11 +28,8 @@ URLLoaderClientImpl::~URLLoaderClientImpl() {
     body_consumer_->Cancel();
 }
 
-void URLLoaderClientImpl::Bind(
-    mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info) {
-  // TODO(yhirano): Use |task_runner_| here.
-  // Currently it is unable because of a ChannelAssociatedInterface restriction.
-  binding_.Bind(client_ptr_info);
+void URLLoaderClientImpl::Bind(mojom::URLLoaderClientPtr* client_ptr) {
+  binding_.Bind(client_ptr, task_runner_);
 }
 
 void URLLoaderClientImpl::SetDefersLoading() {
@@ -112,9 +109,9 @@ void URLLoaderClientImpl::FlushDeferredMessages() {
 
 void URLLoaderClientImpl::OnReceiveResponse(
     const ResourceResponseHead& response_head,
-    mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file) {
+    mojom::DownloadedTempFilePtr downloaded_file) {
   has_received_response_ = true;
-  downloaded_file_.Bind(std::move(downloaded_file));
+  downloaded_file_ = std::move(downloaded_file);
   Dispatch(ResourceMsg_ReceivedResponse(request_id_, response_head));
 }
 

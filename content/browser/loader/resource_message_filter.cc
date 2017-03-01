@@ -86,10 +86,10 @@ void ResourceMessageFilter::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) {
+    mojom::URLLoaderClientPtr client) {
   URLLoaderFactoryImpl::CreateLoaderAndStart(
       requester_info_.get(), std::move(request), routing_id, request_id,
-      url_request, std::move(client_ptr_info));
+      url_request, std::move(client));
 }
 
 void ResourceMessageFilter::SyncLoad(int32_t routing_id,

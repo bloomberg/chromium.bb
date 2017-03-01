@@ -221,7 +221,7 @@ class MojoAsyncResourceHandlerWithStubOperations
       net::URLRequest* request,
       ResourceDispatcherHostImpl* rdh,
       mojom::URLLoaderAssociatedRequest mojo_request,
-      mojom::URLLoaderClientAssociatedPtr url_loader_client)
+      mojom::URLLoaderClientPtr url_loader_client)
       : MojoAsyncResourceHandler(request,
                                  rdh,
                                  std::move(mojo_request),
@@ -303,23 +303,20 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
   TestURLLoaderFactory() {}
   ~TestURLLoaderFactory() override {}
 
-  void CreateLoaderAndStart(
-      mojom::URLLoaderAssociatedRequest request,
-      int32_t routing_id,
-      int32_t request_id,
-      const ResourceRequest& url_request,
-      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) override {
+  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            const ResourceRequest& url_request,
+                            mojom::URLLoaderClientPtr client_ptr) override {
     loader_request_ = std::move(request);
-    client_ptr_info_ = std::move(client_ptr_info);
+    client_ptr_ = std::move(client_ptr);
   }
 
   mojom::URLLoaderAssociatedRequest PassLoaderRequest() {
     return std::move(loader_request_);
   }
 
-  mojom::URLLoaderClientAssociatedPtrInfo PassClientPtrInfo() {
-    return std::move(client_ptr_info_);
-  }
+  mojom::URLLoaderClientPtr PassClientPtr() { return std::move(client_ptr_); }
 
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
@@ -330,7 +327,7 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
 
  private:
   mojom::URLLoaderAssociatedRequest loader_request_;
-  mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info_;
+  mojom::URLLoaderClientPtr client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
@@ -372,18 +369,16 @@ class MojoAsyncResourceHandlerTestBase {
 
     url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_proxy_), kRouteId, kRequestId, request,
-        url_loader_client_.CreateRemoteAssociatedPtrInfo());
+        url_loader_client_.CreateInterfacePtr());
 
     url_loader_factory_.FlushForTesting();
     DCHECK(weak_binding);
     TestURLLoaderFactory* factory_impl =
         static_cast<TestURLLoaderFactory*>(weak_binding->impl());
 
-    mojom::URLLoaderClientAssociatedPtr client_ptr;
-    client_ptr.Bind(factory_impl->PassClientPtrInfo());
     handler_.reset(new MojoAsyncResourceHandlerWithStubOperations(
         request_.get(), &rdh_, factory_impl->PassLoaderRequest(),
-        std::move(client_ptr)));
+        factory_impl->PassClientPtr()));
     mock_loader_.reset(new MockResourceLoader(handler_.get()));
   }
 

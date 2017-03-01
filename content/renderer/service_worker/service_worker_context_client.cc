@@ -281,9 +281,9 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
 
   void OnReceiveResponse(
       const ResourceResponseHead& response_head,
-      mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file) override {
+      mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK(!response_);
-    DCHECK(!downloaded_file.is_valid());
+    DCHECK(!downloaded_file);
     response_ = base::MakeUnique<blink::WebURLResponse>();
     // TODO(horo): Set report_security_info to true when DevTools is attached.
     const bool report_security_info = false;

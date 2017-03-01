@@ -416,7 +416,10 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
 
   PendingRequestInfo* request_info = it->second.get();
 
-  bool release_downloaded_file = request_info->download_to_file;
+  // |url_loader_client| releases the downloaded file. Otherwise (i.e., we
+  // are using Chrome IPC), we should release it here.
+  bool release_downloaded_file =
+      request_info->download_to_file && !it->second->url_loader_client;
 
   ReleaseResourcesInMessageQueue(&request_info->deferred_message_queue);
 
@@ -673,11 +676,11 @@ int ResourceDispatcher::StartAsync(
     std::unique_ptr<URLLoaderClientImpl> client(
         new URLLoaderClientImpl(request_id, this, std::move(task_runner)));
     mojom::URLLoaderAssociatedPtr url_loader;
-    mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info;
-    client->Bind(&client_ptr_info);
+    mojom::URLLoaderClientPtr client_ptr;
+    client->Bind(&client_ptr);
     url_loader_factory->CreateLoaderAndStart(MakeRequest(&url_loader),
                                              routing_id, request_id, *request,
-                                             std::move(client_ptr_info));
+                                             std::move(client_ptr));
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);
   } else {

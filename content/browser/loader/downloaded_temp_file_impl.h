@@ -17,25 +17,19 @@ namespace content {
 class CONTENT_EXPORT DownloadedTempFileImpl final
     : public mojom::DownloadedTempFile {
  public:
-  // Creates a DownloadedTempFileImpl, binds it as a strong associated
-  // interface, and returns the interface ptr info to be passed to the client.
+  // Creates a DownloadedTempFileImpl, binds it as a strong interface, and
+  // returns the interface ptr to be passed to the client.
   // That means:
   //  * The DownloadedTempFile object created here is essentially owned by the
   //    client. It keeps alive until the client destroys the other endpoint.
-  //  * The resulting interface will be associated to the same message pipe on
-  //    which the returned pointer info object is sent.
-  static mojom::DownloadedTempFileAssociatedPtrInfo Create(int child_id,
-                                                           int request_id);
-
-  static mojom::DownloadedTempFilePtr CreateForTesting(int child_id,
-                                                       int request_id);
+  static mojom::DownloadedTempFilePtr Create(int child_id, int request_id);
 
   DownloadedTempFileImpl(int child_id, int request_id);
   ~DownloadedTempFileImpl() override;
 
  private:
-  int child_id_;
-  int request_id_;
+  const int child_id_;
+  const int request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadedTempFileImpl);
 };

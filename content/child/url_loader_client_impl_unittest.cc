@@ -50,13 +50,12 @@ class URLLoaderClientImplTest : public ::testing::Test,
     return false;
   }
 
-  void CreateLoaderAndStart(
-      mojom::URLLoaderAssociatedRequest request,
-      int32_t routing_id,
-      int32_t request_id,
-      const ResourceRequest& url_request,
-      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) override {
-    url_loader_client_.Bind(std::move(client_ptr_info));
+  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            const ResourceRequest& url_request,
+                            mojom::URLLoaderClientPtr client) override {
+    url_loader_client_ = std::move(client);
   }
 
   void SyncLoad(int32_t routing_id,
@@ -79,7 +78,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
   std::unique_ptr<ResourceDispatcher> dispatcher_;
   TestRequestPeer::Context request_peer_context_;
   int request_id_ = 0;
-  mojom::URLLoaderClientAssociatedPtr url_loader_client_;
+  mojom::URLLoaderClientPtr url_loader_client_;
   mojom::URLLoaderFactoryPtr url_loader_factory_proxy_;
   mojo::Binding<mojom::URLLoaderFactory> mojo_binding_;
 };

@@ -51,9 +51,9 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) {
+    mojom::URLLoaderClientPtr client) {
   CreateLoaderAndStart(requester_info_.get(), std::move(request), routing_id,
-                       request_id, url_request, std::move(client_ptr_info));
+                       request_id, url_request, std::move(client));
 }
 
 void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
@@ -71,11 +71,8 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) {
+    mojom::URLLoaderClientPtr client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  mojom::URLLoaderClientAssociatedPtr client;
-  client.Bind(std::move(client_ptr_info));
 
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   rdh->OnRequestResourceWithMojo(requester_info, routing_id, request_id,

@@ -3431,9 +3431,9 @@ TEST_P(ResourceDispatcherHostTest, RegisterDownloadedTempFileWithMojo) {
 
   // Register it for a resource request.
   auto downloaded_file =
-      DownloadedTempFileImpl::CreateForTesting(filter_->child_id(), kRequestID);
+      DownloadedTempFileImpl::Create(filter_->child_id(), kRequestID);
   mojom::DownloadedTempFilePtr downloaded_file_ptr =
-      DownloadedTempFileImpl::CreateForTesting(filter_->child_id(), kRequestID);
+      DownloadedTempFileImpl::Create(filter_->child_id(), kRequestID);
   host_.RegisterDownloadedTempFile(filter_->child_id(), kRequestID, file_path);
 
   // Should be readable now.

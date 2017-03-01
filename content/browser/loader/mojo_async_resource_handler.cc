@@ -62,7 +62,7 @@ void InitializeResourceBufferConstants() {
 }
 
 void NotReached(mojom::URLLoaderAssociatedRequest mojo_request,
-                mojom::URLLoaderClientAssociatedPtr url_loader_client) {
+                mojom::URLLoaderClientPtr url_loader_client) {
   NOTREACHED();
 }
 
@@ -117,7 +117,7 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
     net::URLRequest* request,
     ResourceDispatcherHostImpl* rdh,
     mojom::URLLoaderAssociatedRequest mojo_request,
-    mojom::URLLoaderClientAssociatedPtr url_loader_client,
+    mojom::URLLoaderClientPtr url_loader_client,
     ResourceType resource_type)
     : ResourceHandler(request),
       rdh_(rdh),
@@ -193,7 +193,7 @@ void MojoAsyncResourceHandler::OnResponseStarted(
   response->head.response_start = base::TimeTicks::Now();
   sent_received_response_message_ = true;
 
-  mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file_ptr;
+  mojom::DownloadedTempFilePtr downloaded_file_ptr;
   if (!response->head.download_file_path.empty()) {
     downloaded_file_ptr = DownloadedTempFileImpl::Create(info->GetChildID(),
                                                          info->GetRequestID());
@@ -561,7 +561,7 @@ MojoAsyncResourceHandler::CreateUploadProgressTracker(
 
 void MojoAsyncResourceHandler::OnTransfer(
     mojom::URLLoaderAssociatedRequest mojo_request,
-    mojom::URLLoaderClientAssociatedPtr url_loader_client) {
+    mojom::URLLoaderClientPtr url_loader_client) {
   binding_.Unbind();
   binding_.Bind(std::move(mojo_request));
   binding_.set_connection_error_handler(

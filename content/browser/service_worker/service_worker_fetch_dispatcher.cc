@@ -27,7 +27,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_util.h"
@@ -158,7 +157,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   }
   void OnReceiveResponse(
       const ResourceResponseHead& head,
-      mojom::DownloadedTempFileAssociatedPtrInfo downloaded_file) override {
+      mojom::DownloadedTempFilePtr downloaded_file) override {
     client_->OnReceiveResponse(head, std::move(downloaded_file));
     DCHECK(on_response_);
     std::move(on_response_).Run();
@@ -181,9 +180,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
         base::Bind(&NotifyNavigationPreloadCompletedOnUI, completion_status));
   }
 
-  void Bind(mojom::URLLoaderClientAssociatedPtrInfo* ptr_info) {
-    binding_.Bind(ptr_info);
-  }
+  void Bind(mojom::URLLoaderClientPtr* ptr_info) { binding_.Bind(ptr_info); }
 
  private:
   void MayBeRunDevToolsCallbacks() {
@@ -202,7 +199,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
     MayBeRunDevToolsCallbacks();
   }
 
-  mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
+  mojo::Binding<mojom::URLLoaderClient> binding_;
   mojom::URLLoaderClientPtr client_;
   base::OnceClosure on_response_;
   bool completed_ = false;
@@ -582,14 +579,14 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       mojo::MakeRequest(&url_loader_client_ptr);
   auto url_loader_client = base::MakeUnique<DelegatingURLLoaderClient>(
       std::move(url_loader_client_ptr), std::move(on_response), request);
-  mojom::URLLoaderClientAssociatedPtrInfo url_loader_client_associated_ptr_info;
-  url_loader_client->Bind(&url_loader_client_associated_ptr_info);
+  mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
+  url_loader_client->Bind(&url_loader_client_ptr_to_pass);
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr;
 
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr),
       original_info->GetRouteID(), request_id, request,
-      std::move(url_loader_client_associated_ptr_info));
+      std::move(url_loader_client_ptr_to_pass));
 
   std::unique_ptr<DelegatingURLLoader> url_loader(
       base::MakeUnique<DelegatingURLLoader>(
