@@ -866,6 +866,15 @@ static void dispatchEditableContentChangedEvents(Element* startRoot,
         Event::create(EventTypeNames::webkitEditableContentChanged));
 }
 
+static VisibleSelection correctedVisibleSelection(
+    const VisibleSelection& passedSelection) {
+  if (!passedSelection.base().isConnected() ||
+      !passedSelection.extent().isConnected())
+    return VisibleSelection();
+  DCHECK(!passedSelection.base().document()->needsLayoutTreeUpdate());
+  return createVisibleSelection(passedSelection.asSelection());
+}
+
 void Editor::appliedEditing(CompositeEditCommand* cmd) {
   DCHECK(!cmd->isCommandGroupWrapper());
   EventQueueScope scope;
@@ -890,11 +899,12 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
   // selection canonicalization so that selection update does not need layout.
   frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  VisibleSelection newSelection(cmd->endingSelection());
+  const VisibleSelection& newSelection =
+      correctedVisibleSelection(cmd->endingSelection());
 
   // Don't clear the typing style with this selection change. We do those things
   // elsewhere if necessary.
-  changeSelectionAfterCommand(newSelection, 0);
+  changeSelectionAfterCommand(newSelection.asSelection(), 0);
 
   if (!cmd->preservesTypingStyle())
     clearTypingStyle();
@@ -919,15 +929,6 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
   respondToChangedContents(newSelection.start());
 }
 
-static VisibleSelection correctedVisibleSelection(
-    const VisibleSelection& passedSelection) {
-  if (!passedSelection.base().isConnected() ||
-      !passedSelection.extent().isConnected())
-    return VisibleSelection();
-  DCHECK(!passedSelection.base().document()->needsLayoutTreeUpdate());
-  return createVisibleSelection(passedSelection.asSelection());
-}
-
 void Editor::unappliedEditing(UndoStep* cmd) {
   EventQueueScope scope;
 
@@ -947,11 +948,9 @@ void Editor::unappliedEditing(UndoStep* cmd) {
   const VisibleSelection& newSelection =
       correctedVisibleSelection(cmd->startingSelection());
   DCHECK(newSelection.isValidFor(*frame().document())) << newSelection;
-  if (!newSelection.isNone()) {
-    changeSelectionAfterCommand(
-        newSelection,
-        FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
-  }
+  changeSelectionAfterCommand(
+      newSelection.asSelection(),
+      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
   m_lastEditCommand = nullptr;
   m_undoStack->registerRedoStep(cmd);
@@ -976,11 +975,9 @@ void Editor::reappliedEditing(UndoStep* cmd) {
   const VisibleSelection& newSelection =
       correctedVisibleSelection(cmd->endingSelection());
   DCHECK(newSelection.isValidFor(*frame().document())) << newSelection;
-  if (!newSelection.isNone()) {
-    changeSelectionAfterCommand(
-        newSelection,
-        FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
-  }
+  changeSelectionAfterCommand(
+      newSelection.asSelection(),
+      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
   m_lastEditCommand = nullptr;
   m_undoStack->registerUndoStep(cmd);
@@ -1412,17 +1409,15 @@ void Editor::addToKillRing(const EphemeralRange& range) {
 }
 
 void Editor::changeSelectionAfterCommand(
-    const VisibleSelection& newSelection,
+    const SelectionInDOMTree& newSelection,
     FrameSelection::SetSelectionOptions options) {
-  // If the new selection is orphaned, then don't update the selection.
-  if (newSelection.start().isOrphan() || newSelection.end().isOrphan())
+  if (newSelection.isNone())
     return;
 
   // See <rdar://problem/5729315> Some shouldChangeSelectedDOMRange contain
   // Ranges for selections that are no longer valid
   bool selectionDidNotChangeDOMPosition =
-      newSelection ==
-      frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
+      newSelection == frame().selection().selectionInDOMTree();
   frame().selection().setSelection(newSelection, options);
 
   // Some editing operations change the selection visually without affecting its

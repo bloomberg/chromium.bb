@@ -350,7 +350,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void revealSelectionAfterEditingOperation(
       const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded,
       RevealExtentOption = DoNotRevealExtent);
-  void changeSelectionAfterCommand(const VisibleSelection& newSelection,
+  void changeSelectionAfterCommand(const SelectionInDOMTree&,
                                    FrameSelection::SetSelectionOptions);
 
   SpellChecker& spellChecker() const;
