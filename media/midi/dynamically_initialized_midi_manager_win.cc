@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include <ks.h>
+#include <ksmedia.h>
 #include <mmreg.h>
 #include <mmsystem.h>
 
@@ -20,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "device/usb/usb_ids.h"
 #include "media/midi/message_util.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_service.h"
@@ -187,6 +190,21 @@ void FinalizeOutPort(HMIDIOUT handle) {
   midiOutClose(handle);
 }
 
+// Gets manufacturer name in string from identifiers.
+std::string GetManufacturerName(uint16_t id, const GUID& guid) {
+  if (IS_COMPATIBLE_USBAUDIO_MID(&guid)) {
+    const char* name =
+        device::UsbIds::GetVendorName(EXTRACT_USBAUDIO_MID(&guid));
+    if (name)
+      return std::string(name);
+  }
+  if (id == MM_MICROSOFT)
+    return "Microsoft Corporation";
+
+  // TODO(crbug.com/472341): Support other manufacture IDs.
+  return "";
+}
+
 // All instances of Port subclasses are always accessed behind a lock of
 // *GetTaskLock(). Port and subclasses implementation do not need to
 // consider thread safety.
@@ -197,7 +215,8 @@ class Port {
        uint16_t manufacturer_id,
        uint16_t product_id,
        uint32_t driver_version,
-       const std::string& product_name)
+       const std::string& product_name,
+       const GUID& manufacturer_guid)
       : index_(0u),
         type_(type),
         device_id_(device_id),
@@ -205,7 +224,8 @@ class Port {
         product_id_(product_id),
         driver_version_(driver_version),
         product_name_(product_name) {
-    info_.manufacturer = "unknown";  // TODO(toyoshim): Use USB information.
+    info_.manufacturer =
+        GetManufacturerName(manufacturer_id, manufacturer_guid);
     info_.name = product_name_;
     info_.version = base::StringPrintf("%d.%d", HIBYTE(driver_version_),
                                        LOBYTE(driver_version_));
@@ -285,7 +305,8 @@ class DynamicallyInitializedMidiManagerWin::InPort final : public Port {
              caps.wPid,
              caps.vDriverVersion,
              base::WideToUTF8(
-                 base::string16(caps.szPname, wcslen(caps.szPname)))),
+                 base::string16(caps.szPname, wcslen(caps.szPname))),
+             caps.ManufacturerGuid),
         manager_(manager),
         in_handle_(kInvalidInHandle),
         instance_id_(instance_id) {}
@@ -400,7 +421,8 @@ class DynamicallyInitializedMidiManagerWin::OutPort final : public Port {
              caps.wPid,
              caps.vDriverVersion,
              base::WideToUTF8(
-                 base::string16(caps.szPname, wcslen(caps.szPname)))),
+                 base::string16(caps.szPname, wcslen(caps.szPname))),
+             caps.ManufacturerGuid),
         software_(caps.wTechnology == MOD_SWSYNTH),
         out_handle_(kInvalidOutHandle) {}
 
