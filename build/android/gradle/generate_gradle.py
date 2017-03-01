@@ -92,9 +92,9 @@ def _WriteFile(path, data):
     output_file.write(data)
 
 
-def _ReadBuildVars(output_dir):
-  with open(os.path.join(output_dir, 'build_vars.txt')) as f:
-    return dict(l.rstrip().split('=', 1) for l in f)
+def _ReadPropertiesFile(path):
+  with open(path) as f:
+    return dict(l.rstrip().split('=', 1) for l in f if '=' in l)
 
 
 def _RunNinja(output_dir, args):
@@ -514,9 +514,12 @@ def _GenerateGradleFile(entry, generator, build_vars, jinja_processor):
   variables['template_type'] = target_type
   variables['use_gradle_process_resources'] = (
       generator.use_gradle_process_resources)
-  variables['build_tools_version'] = (
-      build_vars['android_sdk_build_tools_version'])
-  variables['compile_sdk_version'] = build_vars['android_sdk_version']
+  source_properties = _ReadPropertiesFile(
+      _RebasePath(os.path.join(build_vars['android_sdk_build_tools'],
+                               'source.properties')))
+  variables['build_tools_version'] = source_properties['Pkg.Revision']
+  variables['compile_sdk_version'] = (
+      'android-%s' % build_vars['android_sdk_version'])
   variables['main'] = generator.Generate(entry)
   bootclasspath = gradle.get('bootclasspath')
   if bootclasspath:
@@ -660,7 +663,7 @@ def main():
   _gradle_output_dir = os.path.abspath(
       args.project_dir.replace('$CHROMIUM_OUTPUT_DIR', output_dir))
   jinja_processor = jinja_template.JinjaProcessor(_FILE_DIR)
-  build_vars = _ReadBuildVars(output_dir)
+  build_vars = _ReadPropertiesFile(os.path.join(output_dir, 'build_vars.txt'))
   generator = _ProjectContextGenerator(_gradle_output_dir, build_vars,
       args.use_gradle_process_resources, jinja_processor, args.split_projects)
   logging.warning('Creating project at: %s', generator.project_dir)

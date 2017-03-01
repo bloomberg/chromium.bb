@@ -39,7 +39,7 @@ apply plugin: "com.android.application"
 {% endif %}
 
 android {
-    compileSdkVersion {{ compile_sdk_version }}
+    compileSdkVersion "{{ compile_sdk_version }}"
     buildToolsVersion "{{ build_tools_version }}"
     publishNonDefault true
     // Multiple targets use the package name "dummy.package"
