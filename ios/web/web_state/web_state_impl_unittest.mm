@@ -18,6 +18,7 @@
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
+#import "ios/web/public/test/fakes/test_web_state_observer.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
@@ -111,90 +112,6 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   bool did_start_loading_called_;
   bool did_stop_loading_called_;
   bool page_loaded_called_with_success_;
-  bool web_state_destroyed_called_;
-};
-
-// Test observer to check that the WebStateObserver methods are called as
-// expected.
-class TestWebStateObserver : public WebStateObserver {
- public:
-  TestWebStateObserver(WebState* web_state)
-      : WebStateObserver(web_state),
-        provisional_navigation_started_called_(false),
-        navigation_items_pruned_called_(false),
-        navigation_item_changed_called_(false),
-        navigation_item_committed_called_(false),
-        page_loaded_called_with_success_(false),
-        history_state_changed_called_(false),
-        did_finish_navigation_called_(false),
-        title_was_set_called_(false),
-        web_state_destroyed_called_(false) {}
-
-  // Methods returning true if the corresponding WebStateObserver method has
-  // been called.
-  bool provisional_navigation_started_called() const {
-    return provisional_navigation_started_called_;
-  };
-  bool navigation_items_pruned_called() const {
-    return navigation_items_pruned_called_;
-  }
-  bool navigation_item_changed_called() const {
-    return navigation_item_changed_called_;
-  }
-  bool navigation_item_committed_called() const {
-    return navigation_item_committed_called_;
-  }
-  bool page_loaded_called_with_success() const {
-    return page_loaded_called_with_success_;
-  }
-  bool history_state_changed_called() const {
-    return history_state_changed_called_;
-  }
-  bool did_finish_navigation_called() const {
-    return did_finish_navigation_called_;
-  }
-  bool title_was_set_called() const { return title_was_set_called_; }
-  bool web_state_destroyed_called() const {
-    return web_state_destroyed_called_;
-  }
-
- private:
-  // WebStateObserver implementation:
-  void ProvisionalNavigationStarted(const GURL& url) override {
-    provisional_navigation_started_called_ = true;
-  }
-  void NavigationItemsPruned(size_t pruned_item_count) override {
-    navigation_items_pruned_called_ = true;
-  }
-  void NavigationItemChanged() override {
-    navigation_item_changed_called_ = true;
-  }
-  void NavigationItemCommitted(
-      const LoadCommittedDetails& load_details) override {
-    navigation_item_committed_called_ = true;
-  }
-  void DidFinishNavigation(NavigationContext* navigation_context) override {
-    did_finish_navigation_called_ = true;
-  }
-  void PageLoaded(PageLoadCompletionStatus load_completion_status) override {
-    page_loaded_called_with_success_ =
-        load_completion_status == PageLoadCompletionStatus::SUCCESS;
-  }
-  void TitleWasSet() override { title_was_set_called_ = true; }
-  void WebStateDestroyed() override {
-    EXPECT_TRUE(web_state()->IsBeingDestroyed());
-    web_state_destroyed_called_ = true;
-    Observe(nullptr);
-  }
-
-  bool provisional_navigation_started_called_;
-  bool navigation_items_pruned_called_;
-  bool navigation_item_changed_called_;
-  bool navigation_item_committed_called_;
-  bool page_loaded_called_with_success_;
-  bool history_state_changed_called_;
-  bool did_finish_navigation_called_;
-  bool title_was_set_called_;
   bool web_state_destroyed_called_;
 };
 
