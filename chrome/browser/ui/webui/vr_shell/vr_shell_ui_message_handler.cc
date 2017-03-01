@@ -70,10 +70,9 @@ void VrShellUIMessageHandler::HandleDoAction(const base::ListValue* args) {
   int action;
   const base::DictionaryValue* arguments = nullptr;
   CHECK(args->GetInteger(0, &action));
-  args->GetDictionary(1, &arguments);
-  if (vr_shell_) {
-    vr_shell_->DoUiAction((vr_shell::UiAction)action, arguments);
-  }
+  CHECK(args->GetDictionary(1, &arguments));
+  if (vr_shell_)
+    vr_shell_->DoUiAction(static_cast<vr_shell::UiAction>(action), arguments);
 }
 
 void VrShellUIMessageHandler::HandleSetContentCssSize(

@@ -71,7 +71,8 @@ api.Action = {
   'OMNIBOX_CONTENT': 7,
   'SET_CONTENT_PAUSED': 8,
   'SHOW_TAB': 9,
-  'OPEN_NEW_TAB': 10
+  'OPEN_NEW_TAB': 10,
+  'KEY_EVENT': 11,
 };
 
 /**
@@ -139,7 +140,7 @@ api.Fill = class {
     this.properties = {};
     this.properties['fillType'] = type;
   }
-}
+};
 
 api.NoFill = class extends api.Fill {
   constructor() {
@@ -155,7 +156,7 @@ api.Sprite = class extends api.Fill {
     this.properties['copyRectWidth'] = pixelWidth;
     this.properties['copyRectHeight'] = pixelHeight;
   }
-}
+};
 
 api.OpaqueGradient = class extends api.Fill {
   constructor(edgeColor, centerColor) {
@@ -163,7 +164,7 @@ api.OpaqueGradient = class extends api.Fill {
     this.properties.edgeColor = edgeColor;
     this.properties.centerColor = centerColor;
   }
-}
+};
 
 api.GridGradient = class extends api.Fill {
   constructor(edgeColor, centerColor, gridlineCount) {
@@ -172,13 +173,13 @@ api.GridGradient = class extends api.Fill {
     this.properties.centerColor = centerColor;
     this.properties.gridlineCount = gridlineCount;
   }
-}
+};
 
 api.Content = class extends api.Fill {
   constructor() {
     super(api.FillType.CONTENT);
   }
-}
+};
 
 /**
  * Represents updates to UI element properties. Any properties set on this
@@ -391,13 +392,13 @@ api.Easing = class {
   constructor(type) {
     this.type = type;
   }
-}
+};
 
 api.LinearEasing = class extends api.Easing {
   constructor() {
     super(api.EasingType.LINEAR);
   }
-}
+};
 
 api.CubicBezierEasing = class extends api.Easing {
   constructor(
@@ -411,21 +412,21 @@ api.CubicBezierEasing = class extends api.Easing {
     this.p2x = p2x;
     this.p2y = p2y;
   }
-}
+};
 
 api.InEasing = class extends api.Easing {
   constructor(pow = DEFAULT_EASING_POW) {
     super(api.EasingType.EASEIN);
     this.pow = pow;
   }
-}
+};
 
 api.OutEasing = class extends api.Easing {
   constructor(pow = DEFAULT_EASING_POW) {
     super(api.EasingType.EASEOUT);
     this.pow = pow;
   }
-}
+};
 
 api.InOutEasing = class extends api.Easing {
   constructor(pow = DEFAULT_EASING_POW) {

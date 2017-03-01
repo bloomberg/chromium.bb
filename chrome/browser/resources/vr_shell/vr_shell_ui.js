@@ -692,7 +692,6 @@ var vrShellUi = (function() {
 
     setEnabled(enabled) {
       this.enabled = enabled;
-
       let update = new api.UiElementUpdate();
       update.setVisible(enabled);
       ui.updateElement(this.domUiElement.uiElementId, update);
@@ -861,6 +860,26 @@ var vrShellUi = (function() {
     }
   };
 
+  class VirtualKeyboard {
+    constructor(contentQuadId) {
+      this.domUiElement = new DomUiElement('#vkb');
+      let update = new api.UiElementUpdate();
+      update.setParentId(contentQuadId);
+      update.setVisible(false);
+      update.setRotation(1.0, 0.0, 0.0, -0.9);
+      update.setScale(1.8, 1.8, 1.8);
+      update.setTranslation(0, -1.2, 0.1);
+      update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
+      ui.updateElement(this.domUiElement.uiElementId, update);
+    }
+
+    setEnabled(enabled) {
+      let update = new api.UiElementUpdate();
+      update.setVisible(enabled);
+      ui.updateElement(this.domUiElement.uiElementId, update);
+    }
+  };
+
   class UiManager {
     constructor() {
       this.mode = api.Mode.UNKNOWN;
@@ -877,6 +896,7 @@ var vrShellUi = (function() {
       this.omnibox = new Omnibox();
       this.reloadUiButton = new ReloadUiButton();
       this.tabContainer = new TabContainer(contentId);
+      this.keyboard = new VirtualKeyboard(contentId);
     }
 
     setMode(mode) {
@@ -919,6 +939,7 @@ var vrShellUi = (function() {
       this.tabContainer.setEnabled(mode == api.Mode.STANDARD && menuMode);
 
       this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
+      this.keyboard.setEnabled(mode == api.Mode.STANDARD);
 
       api.setUiCssSize(
           uiRootElement.clientWidth, uiRootElement.clientHeight, UI_DPR);

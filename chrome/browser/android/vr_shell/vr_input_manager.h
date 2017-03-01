@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -26,11 +27,14 @@ class VrInputManager {
   ~VrInputManager();
 
   void ProcessUpdatedGesture(std::unique_ptr<blink::WebInputEvent> event);
+  void GenerateKeyboardEvent(int char_value, int modifiers);
 
  private:
   void SendGesture(const blink::WebGestureEvent& gesture);
   void ForwardGestureEvent(const blink::WebGestureEvent& gesture);
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event);
+  void ForwardKeyboardEvent(
+      const content::NativeWebKeyboardEvent& keyboard_event);
 
   content::WebContents* web_contents_;
 

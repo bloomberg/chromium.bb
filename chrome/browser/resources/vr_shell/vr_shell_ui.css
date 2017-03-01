@@ -241,9 +241,10 @@ html {
 
 #url-indicator #url {
   color: #252525;
-  font-size: 34px;
+  font-size: 48px;
   overflow: hidden;
   white-space: nowrap;
+  width: 100%;
 }
 
 #url-indicator #path {

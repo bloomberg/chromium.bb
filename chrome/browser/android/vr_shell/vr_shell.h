@@ -59,6 +59,7 @@ enum UiAction {
   SET_CONTENT_PAUSED,
   SHOW_TAB,
   OPEN_NEW_TAB,
+  KEY_EVENT,
 };
 
 class VrMetricsHelper;

@@ -227,6 +227,8 @@
           <include name="IDR_VR_SHELL_UI_JS" file="resources\vr_shell\vr_shell_ui.js" compress="gzip" type="BINDATA" />
           <include name="IDR_VR_SHELL_UI_API_JS" file="resources\vr_shell\vr_shell_ui_api.js" compress="gzip" type="BINDATA" />
           <include name="IDR_VR_SHELL_UI_SCENE_JS" file="resources\vr_shell\vr_shell_ui_scene.js" compress="gzip" type="BINDATA" />
+          <include name="IDR_VR_SHELL_UI_VK_CSS" file="resources\vr_shell\vk.css" compress="gzip" type="BINDATA" />
+          <include name="IDR_VR_SHELL_UI_VK_JS" file="resources\vr_shell\vk.js" compress="gzip" type="BINDATA" />
         </if>
       </if>
       <include name="IDR_SUPERVISED_USER_INTERNALS_HTML" file="resources\supervised_user_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />

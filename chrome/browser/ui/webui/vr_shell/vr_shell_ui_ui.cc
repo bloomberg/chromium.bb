@@ -191,6 +191,8 @@ content::WebUIDataSource* CreateVrShellUIHTMLSource() {
   source->AddResourcePath("vr_shell_ui.js", IDR_VR_SHELL_UI_JS);
   source->AddResourcePath("vr_shell_ui_api.js", IDR_VR_SHELL_UI_API_JS);
   source->AddResourcePath("vr_shell_ui_scene.js", IDR_VR_SHELL_UI_SCENE_JS);
+  source->AddResourcePath("vk.css", IDR_VR_SHELL_UI_VK_CSS);
+  source->AddResourcePath("vk.js", IDR_VR_SHELL_UI_VK_JS);
   source->SetDefaultResource(IDR_VR_SHELL_UI_HTML);
   source->AddLocalizedString(
       "insecureWebVrContentPermanent",

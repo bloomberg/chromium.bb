@@ -454,6 +454,14 @@ void VrShell::DoUiAction(const UiAction action,
       delegate_provider_->OpenNewTab(incognito);
       return;
     }
+    case KEY_EVENT: {
+      int char_value;
+      int modifiers = 0;
+      arguments->GetInteger("modifiers", &modifiers);
+      CHECK(arguments->GetInteger("charValue", &char_value));
+      ui_input_manager_->GenerateKeyboardEvent(char_value, modifiers);
+      return;
+    }
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
       ui_contents_->GetController().Reload(content::ReloadType::NORMAL, false);

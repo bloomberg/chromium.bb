@@ -1,0 +1,124 @@
+/* Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.inputview-container {
+  float: left;
+  font-family: Roboto2, Roboto, 'Noto Sans', sans-serif;
+  height: 340px;
+  user-select: none;
+  width: 1228px;
+}
+
+.inputview-spacerview {
+  display: inline-block;
+  float: left;
+  overflow: hidden;
+  padding: 32px;
+  position: relative;
+}
+
+.inputview-layoutview {
+  background-color: rgb(71, 71, 71);
+  border: 2px solid rgb(128, 128, 128);
+  border-radius: 10px;
+  display: inline-block;
+  float: left;
+  overflow: hidden;
+  padding: 32px;
+  position: relative;
+}
+
+.inputview-softkey-view {
+  box-sizing: border-box;
+  display: inline-block;
+  overflow: hidden;
+  padding: 3px 2px;
+}
+
+.inputview-softkey {
+  background-color: rgb(71, 71, 71);
+  border-radius: 5px;
+  display: block;
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.inputview-softkey:hover {
+  background-color: rgb(110, 112, 114);
+}
+
+.inputview-softkey:active {
+  background-color: rgb(90, 93, 95);
+}
+
+.inputview-softkey-spacer:hover {
+  background-color: inherit;
+}
+
+.inputview-ch {
+  color: rgba(236, 236, 236, 0.8);
+  display: inline-block;
+  font-size: 30px;
+  position: absolute;
+  text-align: center;
+  top: 15%;
+  width: 100%;
+}
+
+.inputview-ch {
+  display: block;
+}
+
+.inputview-level {
+  display: none;
+}
+
+.inputview-active-level-0 .inputview-level-0,
+.inputview-active-level-1 .inputview-level-1,
+.inputview-active-level-2 .inputview-level-2,
+.inputview-active-level-3 .inputview-level-3 {
+  display: block;
+}
+
+.vk-icon {
+  display: block;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+}
+
+.vk-escape-icon {
+  background: url(../../../../ui/webui/resources/images/hidekeyboard.svg)
+      transparent no-repeat 0 0/32px 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  width: 32px;
+}
+
+.vk-backspace-icon {
+  background: url(../../../../ui/webui/resources/images/backspace.svg)
+      transparent no-repeat 0 0/24px 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  width: 24px;
+}
+
+.vk-space-icon {
+  background-color: rgba(165, 161, 169, 0.35);
+  border-radius: 40px;
+  height: 100%;
+  left: 0;
+  top: 0;
+  width: 100%;
+}
+
+.inputview-code-space:hover {
+  background-color: rgba(165, 161, 169, 0.35);
+  border-radius: 40px;
+}
+.inputview-code-space:active {
+  background-color: rgb(90, 93, 95);
+}
+
