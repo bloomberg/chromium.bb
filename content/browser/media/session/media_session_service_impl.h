@@ -36,6 +36,8 @@ class CONTENT_EXPORT MediaSessionServiceImpl
     return actions_;
   }
 
+  void DidFinishNavigation();
+
   // blink::mojom::MediaSessionService implementation.
   void SetClient(blink::mojom::MediaSessionClientPtr client) override;
 
@@ -52,6 +54,8 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   MediaSessionImpl* GetMediaSession();
 
   void Bind(blink::mojom::MediaSessionServiceRequest request);
+
+  void ClearActions();
 
   const int render_frame_process_id_;
   const int render_frame_routing_id_;

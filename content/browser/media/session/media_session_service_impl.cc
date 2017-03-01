@@ -43,6 +43,14 @@ RenderFrameHost* MediaSessionServiceImpl::GetRenderFrameHost() {
                                  render_frame_routing_id_);
 }
 
+void MediaSessionServiceImpl::DidFinishNavigation() {
+  // At this point the BrowsingContext of the frame has changed, so the members
+  // need to be reset, and notify MediaSessionImpl.
+  SetPlaybackState(blink::mojom::MediaSessionPlaybackState::NONE);
+  SetMetadata(base::nullopt);
+  ClearActions();
+}
+
 void MediaSessionServiceImpl::SetClient(
     blink::mojom::MediaSessionClientPtr client) {
   client_ = std::move(client);
@@ -87,6 +95,13 @@ void MediaSessionServiceImpl::EnableAction(
 void MediaSessionServiceImpl::DisableAction(
     blink::mojom::MediaSessionAction action) {
   actions_.erase(action);
+  MediaSessionImpl* session = GetMediaSession();
+  if (session)
+    session->OnMediaSessionActionsChanged(this);
+}
+
+void MediaSessionServiceImpl::ClearActions() {
+  actions_.clear();
   MediaSessionImpl* session = GetMediaSession();
   if (session)
     session->OnMediaSessionActionsChanged(this);
