@@ -11,7 +11,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -22,15 +22,13 @@ namespace memory_instrumentation {
 
 class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
  public:
-  static CoordinatorImpl* GetInstance(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  static CoordinatorImpl* GetInstance();
 
   // Coordinator
   void BindCoordinatorRequest(mojom::CoordinatorRequest) override;
 
  private:
-  friend std::default_delete<CoordinatorImpl>;  // For testing
-  friend class CoordinatorImplTest;             // For testing
+  friend class CoordinatorImplTest;  // For testing
   friend struct base::DefaultLazyInstanceTraits<CoordinatorImpl>;
 
   struct QueuedMemoryDumpRequest {
@@ -43,10 +41,6 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 
   CoordinatorImpl();
   ~CoordinatorImpl() override;
-
-  void Initialize(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  void InitializeForTest(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // mojom::Coordinator
   void RegisterProcessLocalDumpManager(
@@ -84,7 +78,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   int failed_memory_dump_count_;
   std::list<QueuedMemoryDumpRequest> queued_memory_dump_requests_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinatorImpl);
 };

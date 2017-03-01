@@ -8,13 +8,11 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
-#include "components/tracing/common/process_metrics_memory_dump_provider.h"
+#include "components/tracing/child/child_memory_dump_manager_delegate_impl.h"
 #include "components/tracing/common/tracing_messages.h"
 #include "ipc/ipc_channel.h"
 
-using base::trace_event::MemoryDumpManager;
 using base::trace_event::TraceLog;
 
 namespace tracing {
@@ -27,18 +25,16 @@ const int kMinTimeBetweenHistogramChangesInSeconds = 10;
 
 ChildTraceMessageFilter::ChildTraceMessageFilter(
     base::SingleThreadTaskRunner* ipc_task_runner)
-    : sender_(NULL), ipc_task_runner_(ipc_task_runner) {}
+    : sender_(NULL),
+      ipc_task_runner_(ipc_task_runner),
+      pending_memory_dump_guid_(0) {
+}
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   sender_ = channel;
   sender_->Send(new TracingHostMsg_ChildSupportsTracing());
-
-#if !defined(OS_LINUX) && !defined(OS_NACL)
-  // On linux the browser process takes care of dumping process metrics.
-  // The child process is not allowed to do so due to BPF sandbox.
-  tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
-      base::kNullProcessId);
-#endif
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->SetChildTraceMessageFilter(
+      this);
 }
 
 void ChildTraceMessageFilter::SetSenderForTesting(IPC::Sender* sender) {
@@ -46,6 +42,8 @@ void ChildTraceMessageFilter::SetSenderForTesting(IPC::Sender* sender) {
 }
 
 void ChildTraceMessageFilter::OnFilterRemoved() {
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->SetChildTraceMessageFilter(
+      nullptr);
   sender_ = NULL;
 }
 
@@ -56,6 +54,10 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TracingMsg_EndTracing, OnEndTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_CancelTracing, OnCancelTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_GetTraceLogStatus, OnGetTraceLogStatus)
+    IPC_MESSAGE_HANDLER(TracingMsg_ProcessMemoryDumpRequest,
+                        OnProcessMemoryDumpRequest)
+    IPC_MESSAGE_HANDLER(TracingMsg_GlobalMemoryDumpResponse,
+                        OnGlobalMemoryDumpResponse)
     IPC_MESSAGE_HANDLER(TracingMsg_SetUMACallback, OnSetUMACallback)
     IPC_MESSAGE_HANDLER(TracingMsg_ClearUMACallback, OnClearUMACallback)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -76,7 +78,8 @@ void ChildTraceMessageFilter::OnBeginTracing(
   base::TimeDelta time_offset = base::TimeTicks::Now() - browser_time;
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
-  MemoryDumpManager::GetInstance()->set_tracing_process_id(tracing_process_id);
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->set_tracing_process_id(
+      tracing_process_id);
   TraceLog::GetInstance()->SetEnabled(
       base::trace_event::TraceConfig(trace_config_str),
       base::trace_event::TraceLog::RECORDING_MODE);
@@ -92,8 +95,8 @@ void ChildTraceMessageFilter::OnEndTracing() {
   TraceLog::GetInstance()->Flush(
       base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
 
-  MemoryDumpManager::GetInstance()->set_tracing_process_id(
-      MemoryDumpManager::kInvalidTracingProcessId);
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->set_tracing_process_id(
+      base::trace_event::MemoryDumpManager::kInvalidTracingProcessId);
 }
 
 void ChildTraceMessageFilter::OnCancelTracing() {
@@ -124,6 +127,52 @@ void ChildTraceMessageFilter::OnTraceDataCollected(
     TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
     sender_->Send(new TracingHostMsg_EndTracingAck(category_groups));
   }
+}
+
+// Sent by the Browser's MemoryDumpManager when coordinating a global dump.
+void ChildTraceMessageFilter::OnProcessMemoryDumpRequest(
+    const base::trace_event::MemoryDumpRequestArgs& args) {
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->CreateProcessDump(
+      args,
+      base::Bind(&ChildTraceMessageFilter::OnProcessMemoryDumpDone, this));
+}
+
+void ChildTraceMessageFilter::OnProcessMemoryDumpDone(uint64_t dump_guid,
+                                                      bool success) {
+  sender_->Send(
+      new TracingHostMsg_ProcessMemoryDumpResponse(dump_guid, success));
+}
+
+// Initiates a dump request, asking the Browser's MemoryDumpManager to
+// coordinate a global memory dump. The Browser's MDM will answer back with a
+// MemoryDumpResponse when all the child processes (including this one) have
+// dumped, or with a NACK (|success| == false) if the dump failed (e.g., due to
+// a collision with a concurrent request from another child process).
+void ChildTraceMessageFilter::SendGlobalMemoryDumpRequest(
+    const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::trace_event::MemoryDumpCallback& callback) {
+  // If there is already another dump request pending from this child process,
+  // there is no point bothering the Browser's MemoryDumpManager.
+  if (pending_memory_dump_guid_) {
+    if (!callback.is_null())
+      callback.Run(args.dump_guid, false);
+    return;
+  }
+
+  pending_memory_dump_guid_ = args.dump_guid;
+  pending_memory_dump_callback_ = callback;
+  sender_->Send(new TracingHostMsg_GlobalMemoryDumpRequest(args));
+}
+
+// Sent by the Browser's MemoryDumpManager in response of a dump request
+// initiated by this child process.
+void ChildTraceMessageFilter::OnGlobalMemoryDumpResponse(uint64_t dump_guid,
+                                                         bool success) {
+  DCHECK_NE(0U, pending_memory_dump_guid_);
+  pending_memory_dump_guid_ = 0;
+  if (pending_memory_dump_callback_.is_null())
+    return;
+  pending_memory_dump_callback_.Run(dump_guid, success);
 }
 
 void ChildTraceMessageFilter::OnHistogramChanged(

@@ -20,7 +20,6 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::trace_event::MemoryDumpArgs;
@@ -123,9 +122,6 @@ class MemoryTracingTest : public ContentBrowserTest {
             GetTraceConfig_EmptyTriggers());
 
     base::RunLoop run_loop;
-    // Start the Coordinator service.
-    memory_instrumentation::CoordinatorImpl::GetInstance(
-        base::ThreadTaskRunnerHandle::Get().get());
     bool success = TracingController::GetInstance()->StartTracing(
       trace_config, run_loop.QuitClosure());
     EXPECT_TRUE(success);

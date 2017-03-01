@@ -738,7 +738,6 @@ test("content_browsertests") {
     "//net:test_support",
     "//ppapi/features",
     "//services/catalog:lib",
-    "//services/resource_coordinator:lib",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp/gpu",
     "//storage/browser",

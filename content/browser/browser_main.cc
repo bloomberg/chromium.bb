@@ -6,9 +6,7 @@
 
 #include <memory>
 
-#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/child_process_host_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_main_runner.h"
 
@@ -38,8 +36,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessName("Browser");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
-  base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
-      ChildProcessHost::kBrowserTracingProcessId);
+
   std::unique_ptr<BrowserMainRunner> main_runner(BrowserMainRunner::Create());
 
   int exit_code = main_runner->Initialize(parameters);

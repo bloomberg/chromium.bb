@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -35,6 +36,8 @@ class TraceMessageFilter : public BrowserMessageFilter {
   void SendSetWatchEvent(const std::string& category_name,
                          const std::string& event_name);
   void SendCancelWatchEvent();
+  void SendProcessMemoryDumpRequest(
+      const base::trace_event::MemoryDumpRequestArgs& args);
 
  protected:
   ~TraceMessageFilter() override;
@@ -46,6 +49,11 @@ class TraceMessageFilter : public BrowserMessageFilter {
   void OnWatchEventMatched();
   void OnTraceLogStatusReply(const base::trace_event::TraceLogStatus& status);
   void OnTraceDataCollected(const std::string& data);
+  void OnGlobalMemoryDumpRequest(
+      const base::trace_event::MemoryDumpRequestArgs& args);
+  void OnProcessMemoryDumpResponse(uint64_t dump_guid, bool success);
+
+  void SendGlobalMemoryDumpResponse(uint64_t dump_guid, bool success);
   void OnTriggerBackgroundTrace(const std::string& histogram_name);
   void OnAbortBackgroundTrace();
 
