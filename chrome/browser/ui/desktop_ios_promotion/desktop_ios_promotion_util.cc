@@ -6,11 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -26,6 +28,48 @@ const char* kEntrypointHistogramPrefix[] = {
     "SavePasswordsNewBubble", "BookmarksNewBubble", "BookmarksFootNote",
     "HistoryPage",
 };
+
+// Entry point string names, used to check which entry point is targeted from
+// finch parameters.
+const char* kPromotionEntryPointNames[] = {
+    "", "SavePasswordsBubblePromotion", "BookmarksBubblePromotion",
+    "BookmarksFootnotePromotion", "HistoryPagePromotion"};
+
+// Text used on the promotion body, the first dimension is the entrypoint and
+// the second is the text version specified by body_text_id Finch parameter.
+// TODO(crbug.com/676655): Only Password text is defined update the array when
+// other promotions text is defined.
+const int kBodyTextIDForEntryPoint[5][2] = {
+    // The first entry is padding as PromotionEntryPoints enum starts from 1.
+    {0, 0},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2}};
+
+// Text used on the promotion title, the first dimension is the entrypoint and
+// the second is the text version specified by title_text_id Finch parameter.
+// TODO(crbug.com/676655): Only Password text is defined update the array when
+// other promotions text is defined.
+const int kTitleTextIDForEntryPoint[5][3] = {
+    // The first entry is padding as PromotionEntryPoints enum starts from 1.
+    {0, 0},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3}};
 
 bool IsEligibleForIOSPromotion(
     PrefService* prefs,
@@ -45,16 +89,23 @@ bool IsEligibleForIOSPromotion(
       !sync_service || !sync_service->IsSyncAllowed())
     return false;
 
-  // TODO(crbug.com/676655): Check if the specific entrypoint is enabled by
-  // Finch.
+  // Check if the specific entrypoint is enabled by Finch.
+  std::string targeted_entry_point = base::GetFieldTrialParamValueByFeature(
+      features::kDesktopIOSPromotion, "entry_point");
+  if (targeted_entry_point !=
+      kPromotionEntryPointNames[static_cast<int>(entry_point)])
+    return false;
   bool is_dismissed = local_state->GetBoolean(
       kEntryPointLocalPrefs[static_cast<int>(entry_point)][1]);
   int show_count = local_state->GetInteger(
       kEntryPointLocalPrefs[static_cast<int>(entry_point)][0]);
-  // TODO(crbug.com/676655): Get the impression cap. from Finch and replace the
-  // value from the entryPointImpressionCap array.
-  if (is_dismissed ||
-      show_count >= kEntryPointImpressionCap[static_cast<int>(entry_point)])
+
+  // Get the impression cap. from Finch, if exists override the value from the
+  // kEntryPointImpressionCap array.
+  int impression_cap = base::GetFieldTrialParamByFeatureAsInt(
+      features::kDesktopIOSPromotion, "max_views",
+      kEntryPointImpressionCap[static_cast<int>(entry_point)]);
+  if (is_dismissed || show_count >= impression_cap)
     return false;
 
   // Don't show the promotion if the user have used any entry point to recieve
@@ -70,14 +121,28 @@ bool IsEligibleForIOSPromotion(
   bool did_promo_done_before = prefs->GetBoolean(prefs::kIOSPromotionDone);
   return is_user_eligible && !did_promo_done_before;
 }
-base::string16 GetPromoBubbleText(
+base::string16 GetPromoText(
     desktop_ios_promotion::PromotionEntryPoint entry_point) {
-  if (entry_point ==
-      desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE) {
-    return l10n_util::GetStringUTF16(
-        IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT);
-  }
-  return base::string16();
+  int text_id_from_finch = base::GetFieldTrialParamByFeatureAsInt(
+      features::kDesktopIOSPromotion, "body_text_id", 0);
+  return l10n_util::GetStringUTF16(kBodyTextIDForEntryPoint[static_cast<int>(
+      entry_point)][text_id_from_finch]);
+}
+
+base::string16 GetPromoTitle(
+    desktop_ios_promotion::PromotionEntryPoint entry_point) {
+  int text_id_from_finch = base::GetFieldTrialParamByFeatureAsInt(
+      features::kDesktopIOSPromotion, "title_text_id", 0);
+  return l10n_util::GetStringUTF16(kTitleTextIDForEntryPoint[static_cast<int>(
+      entry_point)][text_id_from_finch]);
+}
+
+std::string GetSMSID() {
+  const std::string default_sms_message_id = "19001507";
+  // Get the SMS message id from the finch group.
+  std::string finch_sms_id = base::GetFieldTrialParamValueByFeature(
+      features::kDesktopIOSPromotion, "sms_id");
+  return finch_sms_id.empty() ? default_sms_message_id : finch_sms_id;
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {

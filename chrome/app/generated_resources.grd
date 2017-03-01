@@ -5959,8 +5959,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE" desc="Title for Chrome iOS promotion appearing in the password bubble after a password is saved.">
         Sync this password to your iPhone
       </message>
-      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved.">
-        Install Chrome on your phone. We’ll send an SMS to your phone.
+      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2" desc="Title for Chrome iOS promotion appearing in the password bubble after a password is saved.">
+        Get this password on your iPhone
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3" desc="Title for Chrome iOS promotion appearing in the password bubble after a password is saved.">
+        Share this password with your iPhone
       </message>
       <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_TITLE" desc="Promotion text for Chrome sign-in appearing in the password bubble after a password is saved.">
         Password saved. To get your passwords on all your devices, sign in to Chrome.

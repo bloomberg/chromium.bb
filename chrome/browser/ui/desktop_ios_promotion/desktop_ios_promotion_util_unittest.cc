@@ -6,6 +6,8 @@
 
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/chrome_features.h"
@@ -77,8 +79,25 @@ TEST_F(DesktopIOSPromotionUtilTest, IsEligibleForIOSPromotionForSavePassword) {
   // By default the promo is off.
   EXPECT_FALSE(desktop_ios_promotion::IsEligibleForIOSPromotion(
       prefs(), nullptr, entry_point));
+
+  // Enable the promotion and assign the entry_point finch parameter.
+  base::FieldTrialList field_trial_list(nullptr);
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kDesktopIOSPromotion);
+  std::map<std::string, std::string> params;
+  params["entry_point"] = "SavePasswordsBubblePromotion";
+  base::AssociateFieldTrialParams("DesktopIOSPromotion",
+                                  "SavePasswordBubblePromotion", params);
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "DesktopIOSPromotion", 100, "SavePasswordBubblePromotion",
+          base::FieldTrialList::kNoExpirationYear, 1, 1,
+          base::FieldTrial::SESSION_RANDOMIZED, nullptr));
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->RegisterFieldTrialOverride(
+      features::kDesktopIOSPromotion.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
   std::string locales[] = {"en-US", "en-CA", "en-AU", "es-US"};
   constexpr struct {
     bool is_sync_allowed;

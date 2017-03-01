@@ -72,8 +72,16 @@ bool IsEligibleForIOSPromotion(PrefService* prefs,
                                const syncer::SyncService* sync_service,
                                PromotionEntryPoint entry_point);
 
-// Returns the Bubble text based on the promotion entry point.
-base::string16 GetPromoBubbleText(PromotionEntryPoint entry_point);
+// Returns the SMS ID to be used with send SMS API call.
+std::string GetSMSID();
+
+// Returns the Promotion text based on the promotion entry point and finch
+// parameters.
+base::string16 GetPromoText(PromotionEntryPoint entry_point);
+
+// Returns the Promotion title based on the promotion entry point and finch
+// parameters.
+base::string16 GetPromoTitle(PromotionEntryPoint entry_point);
 
 // Register all Priority Sync preferences.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

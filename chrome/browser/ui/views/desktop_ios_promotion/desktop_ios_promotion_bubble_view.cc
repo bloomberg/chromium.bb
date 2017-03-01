@@ -66,9 +66,8 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
   column_set->AddPaddingColumn(0, 32);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                         views::GridLayout::FIXED, bubble_width, 0);
-  views::Label* label =
-      new views::Label(desktop_ios_promotion::GetPromoBubbleText(
-          promotion_controller_->entry_point()));
+  views::Label* label = new views::Label(desktop_ios_promotion::GetPromoText(
+      promotion_controller_->entry_point()));
   label->SetEnabledColor(SK_ColorGRAY);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

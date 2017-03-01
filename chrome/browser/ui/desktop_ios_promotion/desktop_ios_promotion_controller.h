@@ -49,6 +49,11 @@ class DesktopIOSPromotionController {
   // set.
   std::string GetUsersRecoveryPhoneNumber();
 
+  // Used for testing.
+  desktop_ios_promotion::PromotionDismissalReason dismissal_reason() const {
+    return dismissal_reason_;
+  }
+
  private:
   // Updates the user's recovery phone number once the sms_service phone query
   // returns a response.

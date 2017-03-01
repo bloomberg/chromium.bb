@@ -36,9 +36,7 @@ DesktopIOSPromotionController::~DesktopIOSPromotionController() {
 }
 
 void DesktopIOSPromotionController::OnSendSMSClicked() {
-  // TODO(crbug.com/676655): Get the SMS message id from the finch group.
-  std::string sms_message_id = "19001507";
-  sms_service_->SendSMS(sms_message_id,
+  sms_service_->SendSMS(desktop_ios_promotion::GetSMSID(),
                         base::Bind(&DesktopIOSPromotionController::OnSendSMS,
                                    weak_ptr_factory_.GetWeakPtr()));
 

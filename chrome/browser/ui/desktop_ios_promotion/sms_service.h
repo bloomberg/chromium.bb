@@ -68,12 +68,12 @@ class SMSService : public KeyedService {
   ~SMSService() override;
 
   // Query the logged in user's verified phone number.
-  void QueryPhoneNumber(const PhoneNumberCallback& callback);
+  virtual void QueryPhoneNumber(const PhoneNumberCallback& callback);
 
   // Send an SMS to the logged in user's verified phone number.  The text of
   // the SMS is determined by |promo_id|.
-  void SendSMS(const std::string& promo_id,
-               const SMSService::PhoneNumberCallback& callback);
+  virtual void SendSMS(const std::string& promo_id,
+                       const SMSService::PhoneNumberCallback& callback);
 
  protected:
   void QueryPhoneNumberCompletionCallback(

@@ -466,8 +466,8 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
           desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE)) {
     interaction_keeper_->ReportInteractions(this);
     title_brand_link_range_ = gfx::Range();
-    title_ = l10n_util::GetStringUTF16(
-        IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE);
+    title_ = desktop_ios_promotion::GetPromoTitle(
+        desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE);
     state_ = password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE;
     return true;
   }

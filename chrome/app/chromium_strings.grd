@@ -1202,6 +1202,14 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         Restart Chromium to enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
       </message>
 
+      <!-- Desktop to iOS promotion -->
+      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved.">
+        Install Chromium on your phone. We’ll send an SMS to your phone:
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved, this one mentioning explicitly that the SMS will be sent to the recovery phone number.">
+        Install Chromium on your phone. We’ll send an SMS to your account recovery phone number:
+      </message>
+
       <!-- Runtime permission strings -->
       <if expr="is_android">
         <message name="IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT" desc="Text shown in an infobar when a website has requested access to the camera capabilities, but Chrome is missing the Android camera permission.">
