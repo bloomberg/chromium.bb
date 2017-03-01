@@ -31,6 +31,15 @@ public class BackgroundSchedulerBridge {
                 callback);
     }
 
+    /**
+     * Stops scheduled processing.
+     * @return true, as it always expects to be rescheduled.
+     */
+    public static boolean stopScheduledProcessing() {
+        nativeStopScheduledProcessing();
+        return true;
+    }
+
     @CalledByNative
     private static void schedule(TriggerConditions triggerConditions) {
         BackgroundScheduler.getInstance(ContextUtils.getApplicationContext())
@@ -77,4 +86,6 @@ public class BackgroundSchedulerBridge {
     /** Instructs the native RequestCoordinator to start processing. */
     private static native boolean nativeStartScheduledProcessing(boolean powerConnected,
             int batteryPercentage, int netConnectionType, Callback<Boolean> callback);
+    /** Instructs the native RequestCoordinator to stop processing. */
+    private static native void nativeStopScheduledProcessing();
 }

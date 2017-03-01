@@ -39,6 +39,8 @@ static std::string OfflinerRequestStatusToString(
       return "LOADING_NOT_ACCEPTED";
     case Offliner::QUEUE_UPDATE_FAILED:
       return "QUEUE_UPDATE_FAILED";
+    case Offliner::BACKGROUND_SCHEDULER_CANCELED:
+      return "BACKGROUND_SCHEDULER_CANCELED";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));

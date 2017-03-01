@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.content.Context;
+import android.os.Build;
 
 import java.util.concurrent.TimeUnit;
 
@@ -30,8 +31,11 @@ public abstract class BackgroundScheduler {
      * @return An instance of BackgroundScheduler.
      */
     public static BackgroundScheduler getInstance(Context context) {
-        // TODO(fgorski): Enable JobScheduler for >= N_MR1 once service implemented.
-        return new BackgroundGcmScheduler(context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return new BackgroundJobScheduler(context);
+        } else {
+            return new BackgroundGcmScheduler(context);
+        }
     }
 
     protected BackgroundScheduler(Context context) {

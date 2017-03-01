@@ -10,7 +10,6 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import android.os.Bundle;
-import android.os.PersistableBundle;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,47 +64,6 @@ public class TaskExtrasPackerTest {
     public void testTriggerConditionsExtraDefaults() {
         TriggerConditions unpackedConditionsFromEmptyBundle =
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(new Bundle());
-
-        // Verify conservative defaults:
-        assertTrue(unpackedConditionsFromEmptyBundle.requirePowerConnected());
-        assertEquals(100, unpackedConditionsFromEmptyBundle.getMinimumBatteryPercentage());
-        assertTrue(unpackedConditionsFromEmptyBundle.requireUnmeteredNetwork());
-    }
-
-    @Test
-    @Feature({"OfflinePages"})
-    public void testScheduledTimeExtra_API22() {
-        PersistableBundle taskExtras = new PersistableBundle();
-        long beforeMillis = System.currentTimeMillis();
-        TaskExtrasPacker.packTimeInBundle(taskExtras);
-        long afterMillis = System.currentTimeMillis();
-        long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(taskExtras);
-        assertTrue(scheduledTimeMillis >= beforeMillis);
-        assertTrue(scheduledTimeMillis <= afterMillis);
-    }
-
-    @Test
-    @Feature({"OfflinePages"})
-    public void testTriggerConditionsExtra_API22() {
-        PersistableBundle taskExtras = new PersistableBundle();
-        TriggerConditions conditions1 = new TriggerConditions(true, 25, false);
-        TaskExtrasPacker.packTriggerConditionsInBundle(taskExtras, conditions1);
-        TriggerConditions unpackedConditions1 =
-                TaskExtrasPacker.unpackTriggerConditionsFromBundle(taskExtras);
-        assertEquals(conditions1, unpackedConditions1);
-        assertNotSame(conditions1, unpackedConditions1);
-
-        // Now verify overwriting bundle with different values.
-        TriggerConditions conditions2 = new TriggerConditions(false, 50, true);
-        TaskExtrasPacker.packTriggerConditionsInBundle(taskExtras, conditions2);
-        assertEquals(conditions2, TaskExtrasPacker.unpackTriggerConditionsFromBundle(taskExtras));
-    }
-
-    @Test
-    @Feature({"OfflinePages"})
-    public void testTriggerConditionsExtraDefaults_API22() {
-        TriggerConditions unpackedConditionsFromEmptyBundle =
-                TaskExtrasPacker.unpackTriggerConditionsFromBundle(new PersistableBundle());
 
         // Verify conservative defaults:
         assertTrue(unpackedConditionsFromEmptyBundle.requirePowerConnected());

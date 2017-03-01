@@ -15,8 +15,11 @@ public class BackgroundSchedulerProcessorImpl implements BackgroundSchedulerProc
     @Override
     public boolean startScheduledProcessing(
             DeviceConditions deviceConditions, Callback<Boolean> callback) {
-        BackgroundSchedulerBridge.startScheduledProcessing(deviceConditions, callback);
+        return BackgroundSchedulerBridge.startScheduledProcessing(deviceConditions, callback);
+    }
 
-        return true;
+    @Override
+    public boolean stopScheduledProcessing() {
+        return BackgroundSchedulerBridge.stopScheduledProcessing();
     }
 }

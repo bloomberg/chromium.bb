@@ -21,11 +21,11 @@ public class BackgroundOfflinerTask {
     private static final String TAG = "BGOfflinerTask";
     private static final long DEFER_START_SECONDS = 5 * 60;
 
+    private final BackgroundSchedulerProcessor mBridge;
+
     public BackgroundOfflinerTask(BackgroundSchedulerProcessor bridge) {
         mBridge = bridge;
     }
-
-    private final BackgroundSchedulerProcessor mBridge;
 
     /**
      * Triggers processing of background offlining requests.  This is called when
@@ -38,9 +38,13 @@ public class BackgroundOfflinerTask {
      */
     public void startBackgroundRequests(
             Context context, Bundle bundle, final ChromeBackgroundServiceWaiter waiter) {
+        // Set up backup scheduled task in case processing is killed before RequestCoordinator
+        // has a chance to reschedule base on remaining work.
+        BackgroundScheduler.getInstance(context).scheduleBackup(
+                TaskExtrasPacker.unpackTriggerConditionsFromBundle(bundle), DEFER_START_SECONDS);
         // Complete the wait if background request processing was not started.
         // If background processing was started, completion is going to be handled by callback.
-        if (!startBackgroundRequestsImpl(context, bundle, waiter)) {
+        if (!startBackgroundRequestsImpl(mBridge, context, bundle, createCallback(waiter))) {
             waiter.onWaitDone();
         }
     }
@@ -52,21 +56,17 @@ public class BackgroundOfflinerTask {
      * task processing by passing the call along to the C++ RequestCoordinator.
      * Also starts UMA collection.
      *
-     * @returns true for success
+     * @returns Whether processing will be carried out and completion will be indicated through a
+     *     callback.
      */
-    private boolean startBackgroundRequestsImpl(
-            Context context, Bundle bundle, final ChromeBackgroundServiceWaiter waiter) {
-        // Set up backup scheduled task in case processing is killed before RequestCoordinator
-        // has a chance to reschedule base on remaining work.
-        TriggerConditions previousTriggerConditions =
-                TaskExtrasPacker.unpackTriggerConditionsFromBundle(bundle);
-        BackgroundScheduler.getInstance(context).scheduleBackup(
-                previousTriggerConditions, DEFER_START_SECONDS);
-
+    static boolean startBackgroundRequestsImpl(BackgroundSchedulerProcessor bridge, Context context,
+            Bundle taskExtras, Callback<Boolean> callback) {
+        TriggerConditions triggerConditions =
+                TaskExtrasPacker.unpackTriggerConditionsFromBundle(taskExtras);
         DeviceConditions currentConditions = OfflinePageUtils.getDeviceConditions(context);
         if (!currentConditions.isPowerConnected()
                 && currentConditions.getBatteryPercentage()
-                        < previousTriggerConditions.getMinimumBatteryPercentage()) {
+                        < triggerConditions.getMinimumBatteryPercentage()) {
             Log.d(TAG, "Battery percentage is lower than minimum to start processing");
             return false;
         }
@@ -78,10 +78,10 @@ public class BackgroundOfflinerTask {
 
         // Gather UMA data to measure how often the user's machine is amenable to background
         // loading when we wake to do a task.
-        long taskScheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(bundle);
+        long taskScheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(taskExtras);
         OfflinePageUtils.recordWakeupUMA(context, taskScheduledTimeMillis);
 
-        return mBridge.startScheduledProcessing(currentConditions, createCallback(waiter));
+        return bridge.startScheduledProcessing(currentConditions, callback);
     }
 
     private Callback<Boolean> createCallback(final ChromeBackgroundServiceWaiter waiter) {
@@ -89,7 +89,7 @@ public class BackgroundOfflinerTask {
             /** Callback releasing the wakelock once background work concludes. */
             @Override
             public void onResult(Boolean result) {
-                Log.d(TAG, "onProcessingDone");
+                Log.d(TAG, "onResult");
                 // Release the wake lock.
                 waiter.onWaitDone();
             }

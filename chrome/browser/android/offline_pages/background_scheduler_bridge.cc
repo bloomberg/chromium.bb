@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "base/android/callback_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/core/background/device_conditions.h"
+#include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "jni/BackgroundSchedulerBridge_jni.h"
 
@@ -54,6 +55,19 @@ static jboolean StartScheduledProcessing(
           j_net_connection_type));
   return coordinator->StartScheduledProcessing(
       device_conditions, base::Bind(&ProcessingDoneCallback, j_callback_ref));
+}
+
+// JNI call to stop request processing in scheduled mode.
+static void StopScheduledProcessing(JNIEnv* env,
+                                    const JavaParamRef<jclass>& jcaller) {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);
+  DVLOG(2) << "resource_coordinator: " << coordinator;
+  if (!coordinator)
+    return;
+  coordinator->StopProcessing(
+      Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED);
 }
 
 BackgroundSchedulerBridge::BackgroundSchedulerBridge() = default;

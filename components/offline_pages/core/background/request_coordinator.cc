@@ -268,11 +268,11 @@ void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
     DCHECK(active_request_.get());
     offliner_->Cancel();
 
-    if (stop_status == Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT) {
+    if (stop_status == Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT ||
+        stop_status == Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED) {
       // Consider watchdog timeout a completed attempt.
       SavePageRequest request(*active_request_.get());
-      UpdateRequestForCompletedAttempt(request,
-                                       Offliner::REQUEST_COORDINATOR_TIMED_OUT);
+      UpdateRequestForCompletedAttempt(request, stop_status);
     } else {
       // Otherwise consider this stop an aborted attempt.
       UpdateRequestForAbortedAttempt(*active_request_.get());

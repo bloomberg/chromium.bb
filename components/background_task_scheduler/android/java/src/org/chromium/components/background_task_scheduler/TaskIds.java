@@ -14,6 +14,7 @@ public final class TaskIds {
 
     public static final int GCM_BACKGROUND_TASK_JOB_ID = 1;
     public static final int NOTIFICATION_SERVICE_JOB_ID = 21;
+    public static final int OFFLINE_PAGES_BACKGROUND_JOB_ID = 77;
 
     private TaskIds() {}
 }

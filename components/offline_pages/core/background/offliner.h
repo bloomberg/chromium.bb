@@ -53,6 +53,8 @@ class Offliner {
     // The RequestCoordinator did not start loading the request because
     // updating the status in the request queue failed.
     QUEUE_UPDATE_FAILED = 13,
+    // Scheduler canceled processing of requests.
+    BACKGROUND_SCHEDULER_CANCELED = 14,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

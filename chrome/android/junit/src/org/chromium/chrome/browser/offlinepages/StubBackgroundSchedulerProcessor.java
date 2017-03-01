@@ -44,4 +44,9 @@ public class StubBackgroundSchedulerProcessor implements BackgroundSchedulerProc
         mCallback = callback;
         return true;
     }
+
+    @Override
+    public boolean stopScheduledProcessing() {
+        return true;
+    }
 }
