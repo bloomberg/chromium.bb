@@ -142,20 +142,6 @@ class TestCopierTest(LoggingTestCase):
             'WARNING:   Reason: Ref file "/blink/w3c/dir1/not-here.html" was not found.\n'
         ])
 
-    def test_files_with_long_path_are_skipped(self):
-        host = MockHost()
-        host.filesystem = MockFileSystem(files=FAKE_FILES)
-        long_file_path = '%s/%s.html' % (FAKE_SOURCE_REPO_DIR, 'x' * 180)
-        short_file_path = '%s/x.html' % FAKE_SOURCE_REPO_DIR
-        host.filesystem.write_text_file(long_file_path, '<html></html>')
-        host.filesystem.write_text_file(short_file_path, '<html></html>')
-        copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
-        copier.find_importable_tests()
-        self.assertLog([
-            'WARNING: Skipping: %s\n' % long_file_path,
-            'WARNING:   Reason: Long path. Max length 160; see http://crbug.com/609871.\n',
-        ])
-
     def test_should_try_to_convert_positive_cases(self):
         self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.css', 'LayoutTests/external/csswg-test/x'))
         self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.htm', 'LayoutTests/external/csswg-test/x'))

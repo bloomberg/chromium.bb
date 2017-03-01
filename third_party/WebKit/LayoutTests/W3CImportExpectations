@@ -508,14 +508,6 @@ external/wpt/html/browsers/the-window-object/security-window/window-security.sub
 # crbug.com/493465: Requires the pipe feature of wptserve
 external/wpt/html/infrastructure/urls/resolving-urls [ Skip ]
 
-# crbug.com/535615: Pathnames are too long for Windows.
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-fragment-into-document.html [ Skip ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-parent-into-document.html [ Skip ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html [ Skip ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-not-in-document.html [ Skip ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document-networkState.html [ Skip ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-after.html [ Skip ]
-
 # It contains only manual SVG tests.
 external/wpt/html/editing/dnd/svg [ Skip ]
 
