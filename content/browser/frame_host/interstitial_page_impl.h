@@ -129,6 +129,7 @@ class CONTENT_EXPORT InterstitialPageImpl
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
+  void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) override;
 
   // RenderViewHostDelegate implementation:
   RenderViewHostDelegateView* GetDelegateView() override;
