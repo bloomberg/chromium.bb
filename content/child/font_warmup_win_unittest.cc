@@ -57,6 +57,13 @@ class TestSkTypeface : public SkTypeface {
     return nullptr;
   }
 
+  int onGetVariationDesignPosition(
+      SkFontArguments::VariationPosition::Coordinate coordinates[],
+      int coordinateCount) const override {
+    ADD_FAILURE();
+    return -1;
+  }
+
   void onGetFontDescriptor(SkFontDescriptor*, bool* isLocal) const override {
     ADD_FAILURE();
   }
