@@ -211,15 +211,6 @@ void InputRouterImpl::SendMouseEventImmediately(
 
 void InputRouterImpl::SendTouchEventImmediately(
     const TouchEventWithLatencyInfo& touch_event) {
-  if (WebTouchEventTraits::IsTouchSequenceStart(touch_event.event)) {
-    touch_action_filter_.ResetTouchAction();
-    // Note that if the previous touch-action was TOUCH_ACTION_NONE, enabling
-    // the timeout here will not take effect until the *following* touch
-    // sequence.  This is a desirable side-effect, giving the renderer a chance
-    // to send a touch-action response without racing against the ack timeout.
-    UpdateTouchAckTimeoutEnabled();
-  }
-
   FilterAndSendWebInputEvent(touch_event.event, touch_event.latency);
 }
 
@@ -284,6 +275,12 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
     UpdateTouchAckTimeoutEnabled();
   }
   ack_handler_->OnTouchEventAck(event, ack_result);
+
+  // Reset the touch action at the end of a touch-action sequence.
+  if (WebTouchEventTraits::IsTouchSequenceEnd(event.event)) {
+    touch_action_filter_.ResetTouchAction();
+    UpdateTouchAckTimeoutEnabled();
+  }
 }
 
 void InputRouterImpl::OnFilteringTouchEvent(

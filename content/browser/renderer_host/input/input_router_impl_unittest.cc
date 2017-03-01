@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
@@ -29,6 +30,7 @@
 #include "content/common/input/touch_action.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -142,7 +144,16 @@ bool EventListIsSubset(const ScopedVector<ui::TouchEvent>& subset,
 
 class InputRouterImplTest : public testing::Test {
  public:
-  InputRouterImplTest() {}
+  InputRouterImplTest(bool raf_aligned_touch = false) {
+    if (raf_aligned_touch) {
+      feature_list_.InitFromCommandLine(
+          features::kRafAlignedTouchInputEvents.name, "");
+    } else {
+      feature_list_.InitFromCommandLine(
+          "", features::kRafAlignedTouchInputEvents.name);
+    }
+  }
+
   ~InputRouterImplTest() override {}
 
  protected:
@@ -355,7 +366,13 @@ class InputRouterImplTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   SyntheticWebTouchEvent touch_event_;
 
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<TestBrowserContext> browser_context_;
+};
+
+class InputRouterImplRafAlignedTouchEnabledTest : public InputRouterImplTest {
+ public:
+  InputRouterImplRafAlignedTouchEnabledTest() : InputRouterImplTest(true) {}
 };
 
 TEST_F(InputRouterImplTest, CoalescesRangeSelection) {
@@ -1331,7 +1348,7 @@ TEST_F(InputRouterImplTest,
   uint32_t touch_release_event_id = SendTouchEvent();
   SendTouchEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_release_event_id);
-  EXPECT_FALSE(TouchEventTimeoutEnabled());
+  EXPECT_TRUE(TouchEventTimeoutEnabled());
   ack_handler_->GetAndResetAckCount();
   GetSentMessageCountAndResetSink();
 
@@ -1501,6 +1518,74 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                        blink::WebGestureDeviceTouchscreen);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+}
+
+// Test that the double tap gesture depends on the touch action of the first
+// tap.
+TEST_F(InputRouterImplRafAlignedTouchEnabledTest,
+       DoubleTapGestureDependsOnFirstTap) {
+  OnHasTouchEventHandlers(true);
+
+  // Sequence 1.
+  PressTouchPoint(1, 1);
+  uint32_t touch_press_event_id1 = SendTouchEvent();
+  OnSetTouchAction(TOUCH_ACTION_NONE);
+  SendTouchEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
+                    touch_press_event_id1);
+
+  ReleaseTouchPoint(0);
+  uint32_t touch_release_event_id = SendTouchEvent();
+
+  // Sequence 2
+  PressTouchPoint(1, 1);
+  uint32_t touch_press_event_id2 = SendTouchEvent();
+
+  // First tap.
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // The GestureTapUnconfirmed is converted into a tap, as the touch action is
+  // none.
+  SimulateGestureEvent(WebInputEvent::GestureTapUnconfirmed,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // This test will become invalid if GestureTap stops requiring an ack.
+  ASSERT_TRUE(WebInputEventTraits::ShouldBlockEventStream(
+      GetEventWithType(WebInputEvent::GestureTap)));
+  EXPECT_EQ(3, client_->in_flight_event_count());
+  SendInputEventACK(WebInputEvent::GestureTap, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(2, client_->in_flight_event_count());
+
+  // This tap gesture is dropped, since the GestureTapUnconfirmed was turned
+  // into a tap.
+  SimulateGestureEvent(WebInputEvent::GestureTap,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  SendTouchEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED,
+                    touch_release_event_id);
+  SendTouchEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+                    touch_press_event_id2);
+
+  // Second Tap.
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Although the touch-action is now auto, the double tap still won't be
+  // dispatched, because the first tap occured when the touch-action was none.
+  SimulateGestureEvent(WebInputEvent::GestureDoubleTap,
+                       blink::WebGestureDeviceTouchscreen);
+  // This test will become invalid if GestureDoubleTap stops requiring an ack.
+  ASSERT_TRUE(WebInputEventTraits::ShouldBlockEventStream(
+      GetEventWithType(WebInputEvent::GestureDoubleTap)));
+  EXPECT_EQ(1, client_->in_flight_event_count());
+  SendInputEventACK(WebInputEvent::GestureTap, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0, client_->in_flight_event_count());
 }
 
 // Test that the double tap gesture depends on the touch action of the first
