@@ -12,8 +12,6 @@
 
 namespace content {
 
-class NavigationURLLoader;
-
 // PlzNavigate
 // Manages creation of the NavigationURLLoaders; when registered, all created
 // NavigationURLLoaderss will be TestNavigationURLLoaderss. This automatically
@@ -27,7 +25,8 @@ class TestNavigationURLLoaderFactory : public NavigationURLLoaderFactory {
 
   // TestNavigationURLLoaderFactory implementation.
   std::unique_ptr<NavigationURLLoader> CreateLoader(
-      BrowserContext* browser_context,
+      ResourceContext* resource_context,
+      StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       ServiceWorkerNavigationHandle* service_worker_handle,

@@ -277,6 +277,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // loader to attach to the leaf resource handler.
   void BeginNavigationRequest(
       ResourceContext* resource_context,
+      net::URLRequestContext* request_context,
       const NavigationRequestInfo& info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       NavigationURLLoaderImplCore* loader,

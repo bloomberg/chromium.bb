@@ -20,12 +20,14 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 
 namespace content {
 
 NavigationURLLoaderImpl::NavigationURLLoaderImpl(
-    BrowserContext* browser_context,
+    ResourceContext* resource_context,
+    StoragePartition* storage_partition,
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     ServiceWorkerNavigationHandle* service_worker_handle,
@@ -51,7 +53,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NavigationURLLoaderImplCore::Start, base::Unretained(core_),
-                 browser_context->GetResourceContext(),
+                 resource_context, storage_partition->GetURLRequestContext(),
                  service_worker_handle_core, appcache_handle_core,
                  base::Passed(&request_info),
                  base::Passed(&navigation_ui_data)));

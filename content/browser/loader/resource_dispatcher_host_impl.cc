@@ -2084,6 +2084,7 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
 
 void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ResourceContext* resource_context,
+    net::URLRequestContext* request_context,
     const NavigationRequestInfo& info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     NavigationURLLoaderImplCore* loader,
@@ -2122,9 +2123,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     loader->NotifyRequestFailed(false, net::ERR_ABORTED);
     return;
   }
-
-  const net::URLRequestContext* request_context =
-      resource_context->GetRequestContext();
 
   int load_flags = info.begin_params.load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;

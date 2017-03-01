@@ -31,7 +31,8 @@ struct SSLStatus;
 class NavigationURLLoaderImpl : public NavigationURLLoader {
  public:
   // The caller is responsible for ensuring that |delegate| outlives the loader.
-  NavigationURLLoaderImpl(BrowserContext* browser_context,
+  NavigationURLLoaderImpl(ResourceContext* resource_context,
+                          StoragePartition* storage_partition,
                           std::unique_ptr<NavigationRequestInfo> request_info,
                           std::unique_ptr<NavigationUIData> navigation_ui_data,
                           ServiceWorkerNavigationHandle* service_worker_handle,

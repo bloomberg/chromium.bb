@@ -116,9 +116,10 @@ class NavigationURLLoaderTest : public testing::Test {
         new NavigationRequestInfo(common_params, begin_params, url, true, false,
                                   false, -1, false, false,
                                   blink::WebPageVisibilityStateVisible));
-    return NavigationURLLoader::Create(browser_context_.get(),
-                                       std::move(request_info), nullptr,
-                                       nullptr, nullptr, delegate);
+    return NavigationURLLoader::Create(
+        browser_context_->GetResourceContext(),
+        BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
+        std::move(request_info), nullptr, nullptr, nullptr, delegate);
   }
 
   // Helper function for fetching the body of a URL to a string.

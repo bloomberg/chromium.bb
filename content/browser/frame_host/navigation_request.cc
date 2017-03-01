@@ -687,7 +687,7 @@ void NavigationRequest::OnStartChecksComplete(
       RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(frame_tree_node_);
 
   loader_ = NavigationURLLoader::Create(
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+      browser_context->GetResourceContext(), partition,
       base::MakeUnique<NavigationRequestInfo>(
           common_params_, begin_params_, first_party_for_cookies,
           frame_tree_node_->IsMainFrame(), parent_is_main_frame,

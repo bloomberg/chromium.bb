@@ -12,6 +12,7 @@
 #include "content/browser/loader/navigation_url_loader_impl.h"
 
 namespace net {
+class URLRequestContextGetter;
 struct RedirectInfo;
 }
 
@@ -41,6 +42,7 @@ class NavigationURLLoaderImplCore {
 
   // Starts the request.
   void Start(ResourceContext* resource_context,
+             net::URLRequestContextGetter* url_request_context_getter,
              ServiceWorkerNavigationHandleCore* service_worker_handle_core,
              AppCacheNavigationHandleCore* appcache_handle_core,
              std::unique_ptr<NavigationRequestInfo> request_info,
