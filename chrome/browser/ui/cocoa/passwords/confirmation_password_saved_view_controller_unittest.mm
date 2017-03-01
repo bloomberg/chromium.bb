@@ -44,7 +44,7 @@ TEST_F(ConfirmationPasswordSavedViewControllerTest,
 
 TEST_F(ConfirmationPasswordSavedViewControllerTest,
        ShouldOpenPasswordsAndDismissWhenLinkClicked) {
-  EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerSettingsPage());
+  EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerAccountDashboard());
   [controller().confirmationText clickedOnLink:@"about:blank" atIndex:0];
   EXPECT_TRUE([delegate() dismissed]);
 }
@@ -52,7 +52,7 @@ TEST_F(ConfirmationPasswordSavedViewControllerTest,
 TEST_F(ConfirmationPasswordSavedViewControllerTest, CloseBubbleAndHandleClick) {
   // A user may press mouse down, some navigation closes the bubble, mouse up
   // still sends the action.
-  EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerSettingsPage())
+  EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerAccountDashboard())
       .Times(0);
   [delegate() setModel:nil];
   [controller().confirmationText clickedOnLink:@"about:blank" atIndex:0];
