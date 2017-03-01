@@ -4,7 +4,69 @@
 
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 
+#include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "ash/wm/window_state_aura.h"
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ui/ash/ash_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+
+namespace {
+
+void ProcessAcceleratorNow(const ui::Accelerator& accelerator) {
+  // TODO(afakhry): See if we need here to send the accelerator to the
+  // FocusManager of the active window in a follow-up CL.
+  ash::WmShell::Get()->accelerator_controller()->Process(accelerator);
+}
+
+}  // namespace
+
+views::ViewsDelegate::ProcessMenuAcceleratorResult
+ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
+    const ui::Accelerator& accelerator) {
+  DCHECK(base::MessageLoopForUI::IsCurrent());
+
+  // Early return because mash chrome does not have access to ash::Shell
+  if (ash_util::IsRunningInMash())
+    return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
+
+  ash::AcceleratorController* accelerator_controller =
+      ash::WmShell::Get()->accelerator_controller();
+
+  accelerator_controller->accelerator_history()->StoreCurrentAccelerator(
+      accelerator);
+  if (accelerator_controller->ShouldCloseMenuAndRepostAccelerator(
+          accelerator)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(ProcessAcceleratorNow, accelerator));
+    return views::ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU;
+  }
+
+  ProcessAcceleratorNow(accelerator);
+  return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
+}
+
+views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
+    views::Widget* widget) {
+  return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
+}
+
+void ChromeViewsDelegate::AdjustSavedWindowPlacementChromeOS(
+    const views::Widget* widget,
+    gfx::Rect* bounds) const {
+  // On ChromeOS a window won't span across displays.  Adjust the bounds to fit
+  // the work area.
+  aura::Window* window = widget->GetNativeView();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayMatching(*bounds);
+  bounds->AdjustToFit(display.work_area());
+  ash::wm::GetWindowState(window)->set_minimum_visibility(true);
+}
 
 views::Widget::InitParams::WindowOpacity
 ChromeViewsDelegate::GetOpacityForInitParams(
