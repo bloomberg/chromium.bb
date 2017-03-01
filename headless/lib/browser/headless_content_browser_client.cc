@@ -28,7 +28,6 @@
 #include "headless/lib/headless_macros.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/switches.h"
 
 #if defined(HEADLESS_USE_BREAKPAD)
 #include "base/debug/leak_annotations.h"
@@ -187,7 +186,6 @@ void HeadlessContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-  command_line->AppendSwitch(switches::kHeadless);
 #if defined(HEADLESS_USE_BREAKPAD)
   // This flag tells child processes to also turn on crash reporting.
   if (breakpad::IsCrashReporterEnabled())

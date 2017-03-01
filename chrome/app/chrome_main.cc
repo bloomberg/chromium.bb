@@ -22,10 +22,6 @@
 #include "services/service_manager/runner/common/client_util.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/app/chrome_main_mac.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/debug/dump_without_crashing.h"
 #include "base/win/win_util.h"
@@ -97,14 +93,10 @@ int ChromeMain(int argc, const char** argv) {
   ALLOW_UNUSED_LOCAL(command_line);
 #endif
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  if (command_line->HasSwitch(switches::kHeadless)) {
-#if defined(OS_MACOSX)
-    SetUpBundleOverrides();
-#endif
+#if defined(OS_LINUX)
+  if (command_line->HasSwitch(switches::kHeadless))
     return headless::HeadlessShellMain(argc, argv);
-  }
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_LINUX)
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   version_info::Channel channel = chrome::GetChannel();
