@@ -4,6 +4,9 @@
 
 import("//build/config/chromecast_build.gni")
 
+assert(is_android || is_chromecast,
+       "This library is only used on Android or Chromecast")
+
 config("freetype_config") {
   include_dirs = [
     "include",
@@ -11,23 +14,10 @@ config("freetype_config") {
   ]
 }
 
-config("freetype-warnings") {
-  cflags = []
-
-  # The reduction of FreeType files to a minimum triggers -Wunused-function
-  # warnings in ftbase.c
-  cflags += [ "-Wno-unused-function" ]
-}
-
-config("freetype-visibility") {
-  cflags = []
-  cflags += [ "-fvisibility=default" ]
-}
-
-component("freetype") {
-  output_name = "freetype"
-  output_extension = "so.6"
+source_set("freetype") {
   sources = [
+    # The following files are not sorted alphabetically, but in the
+    # same order as in Android.mk to ease maintenance.
     "src/src/autofit/autofit.c",
     "src/src/base/ftbase.c",
     "src/src/base/ftbbox.c",
@@ -52,8 +42,7 @@ component("freetype") {
     "src/src/truetype/truetype.c",
   ]
 
-  if (is_linux || is_chromecast) {
-    # Needed for content_shell on Linux and Chromecast, since fontconfig requires FT_Get_BDF_Property.
+  if (is_chromecast) {
     sources += [ "src/src/base/ftbdf.c" ]
   }
 
@@ -68,11 +57,7 @@ component("freetype") {
 
   public_configs = [ ":freetype_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    ":freetype-warnings",
-    ":freetype-visibility"
-  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   deps = [
     "//third_party/libpng",

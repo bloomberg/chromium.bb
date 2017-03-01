@@ -1,0 +1,75 @@
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_linux, "This file should only be depended on from Linux.")
+
+config("freetype2_config") {
+  include_dirs = [
+    "include",
+    "src/include",
+  ]
+}
+
+shared_library("freetype2") {
+  output_name = "freetype"
+  output_extension = "so.6"
+
+  sources = [
+    "src/src/autofit/autofit.c",
+    "src/src/base/ftbase.c",
+    "src/src/base/ftbbox.c",
+    "src/src/base/ftbdf.c",
+    "src/src/base/ftbitmap.c",
+    "src/src/base/ftcid.c",
+    "src/src/base/ftdebug.c",
+    "src/src/base/ftfntfmt.c",
+    "src/src/base/ftfstype.c",
+    "src/src/base/ftgasp.c",
+    "src/src/base/ftglyph.c",
+    "src/src/base/ftgxval.c",
+    "src/src/base/ftinit.c",
+    "src/src/base/ftlcdfil.c",
+    "src/src/base/ftmm.c",
+    "src/src/base/ftstroke.c",
+    "src/src/base/ftsynth.c",
+    "src/src/base/ftsystem.c",
+    "src/src/base/fttype1.c",
+    "src/src/bdf/bdf.c",
+    "src/src/cff/cff.c",
+    "src/src/gzip/ftgzip.c",
+    "src/src/lzw/ftlzw.c",
+    "src/src/psaux/psaux.c",
+    "src/src/pshinter/pshinter.c",
+    "src/src/psnames/psnames.c",
+    "src/src/raster/raster.c",
+    "src/src/sfnt/sfnt.c",
+    "src/src/smooth/smooth.c",
+    "src/src/truetype/truetype.c",
+    "src/src/type1/type1.c",
+  ]
+
+  defines = [
+    "FT_CONFIG_OPTION_SYSTEM_ZLIB",
+
+    # TODO: Enable this option and figure out a way to address the cyclic
+    # dependency with HarfBuzz. crbug.com/617168
+    # "FT_CONFIG_OPTION_USE_HARFBUZZ",
+    "FT2_BUILD_LIBRARY",
+    "FT_CONFIG_CONFIG_H=<freetype-custom-config/ftconfig.h>",  # See comments in README.chromium.
+    "FT_CONFIG_MODULES_H=<freetype-custom-config/ftmodule.h>",  # See comments in README.chromium.
+    "FT_CONFIG_OPTION_H=<freetype-custom-config/ftoption.h>",  # See comments in README.chromium.
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":freetype2_config" ]
+
+  public_configs = [ ":freetype2_config" ]
+
+  deps = [
+    "//build/config/sanitizers:deps",
+    "//third_party/libpng",
+    "//third_party/zlib",
+  ]
+}

@@ -369,7 +369,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_linux) {
-    deps += [ "//third_party/freetype-android:freetype" ]
+    deps += [ "//third_party/freetype2" ]
   }
 
   if (!enable_plugins) {

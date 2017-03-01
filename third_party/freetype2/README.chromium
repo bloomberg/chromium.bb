@@ -1,0 +1,53 @@
+Name: freetype2
+URL: git://git.sv.nongnu.org/freetype/freetype2.git
+Version: VER-2-7-1-updates
+Revision: e432ebf2e2c96e75f674af41f062d8b210de8491
+Security Critical: yes
+License: Custom license "inspired by the BSD, Artistic, and IJG (Independent
+         JPEG Group) licenses"
+License File: src/docs/FTL.TXT
+License Android Compatible: yes
+
+Description:
+
+This version of Freetype is updated by checking out freetype from the above git
+URL, using the hash from "Revision:". Versions from 2.7.1 contain the level of
+OpenType font variations support that we require.
+
+The build files should approximate the output of
+
+make -Bn | rev | cut -d ' ' -f 1 | rev | grep "\.c$" | sort
+
+Currently the cache, patent checker (no longer used), bzip2 are excluded, as
+well as the following modules:
+t1cid_driver_class
+pfr_driver_class
+t42_driver_class
+winfnt_driver_class
+pcf_driver_class
+
+base/ftotval.c
+base/ftpfr.c
+base/ftwinfnt.c
+cid/type1cid.c
+pcf/pcf.c
+pfr/pfr.c
+type42/type42.c
+winfonts/winfnt.c
+
+Freetype depends on two header files to be supplied by the user to specify
+how to build the library, ftconfig.h and ftmodule.h (or equivalent filenames
+as defined by the FT_CONFIG_CONFIG_H and FT_CONFIG_MODULES_H #defines).
+
+The versions in include/ were generated as follows:
+
+  % cd <dir-where-you-cloned-freetype-to>
+  % bash autogen.sh
+  % ./configure
+  % cp objs/ftmodule.h ../include
+  % cp builds/unix/ftconfig.h ../include
+  % git apply patches/freetype2_symbols_visbility.patch
+
+Then we disable modules in include/ftmodule.h, then apply the symbols visibility
+patch to define the FT_EXPORT and FT_EXPORT_DEF macros to work properly when
+building a linux shared lib.

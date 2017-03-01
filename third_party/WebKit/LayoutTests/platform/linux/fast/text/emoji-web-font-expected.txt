@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 500x19
           text run at (0,0) width 500: "Following should show Asterisk with FruitGirl similar to Asterisk Image below"
       LayoutBlockFlow {P} at (0,45) size 784x25
-        LayoutText {#text} at (0,0) size 17x25
-          text run at (0,0) width 17: "*"
+        LayoutText {#text} at (0,0) size 0x25
+          text run at (0,0) width 0: "*"
       LayoutBlockFlow (anonymous) at (0,95) size 784x25
         LayoutImage {IMG} at (0,0) size 25x25
         LayoutText {#text} at (0,0) size 0x0
