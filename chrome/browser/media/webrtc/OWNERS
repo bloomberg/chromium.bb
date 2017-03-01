@@ -7,3 +7,5 @@ per-file *webrtc*browsertest*=phoglund@chromium.org
 
 # For changes related to the tab media indicators.
 per-file media_stream_capture_indicator*=miu@chromium.org
+
+# COMPONENT: Blink>WebRTC

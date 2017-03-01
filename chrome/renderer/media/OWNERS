@@ -5,3 +5,5 @@ tommi@chromium.org
 # For Cast streaming changes.
 per-file cast_*=hubbe@chromium.org
 per-file cast_*=miu@chromium.org
+
+# COMPONENT: Internals>Media
