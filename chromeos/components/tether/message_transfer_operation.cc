@@ -4,6 +4,8 @@
 
 #include "chromeos/components/tether/message_transfer_operation.h"
 
+#include <set>
+
 #include "chromeos/components/tether/message_wrapper.h"
 #include "components/proximity_auth/logging/logging.h"
 
@@ -13,13 +15,19 @@ namespace tether {
 
 namespace {
 
-std::set<cryptauth::RemoteDevice> VectorToSet(
+std::vector<cryptauth::RemoteDevice> RemoveDuplicatesFromVector(
     const std::vector<cryptauth::RemoteDevice>& remote_devices) {
-  std::set<cryptauth::RemoteDevice> set;
+  std::vector<cryptauth::RemoteDevice> updated_remote_devices;
+  std::set<cryptauth::RemoteDevice> remote_devices_set;
   for (const auto& remote_device : remote_devices) {
-    set.insert(remote_device);
+    // Only add the device to the output vector if it has not already been put
+    // into the set.
+    if (remote_devices_set.find(remote_device) == remote_devices_set.end()) {
+      remote_devices_set.insert(remote_device);
+      updated_remote_devices.push_back(remote_device);
+    }
   }
-  return set;
+  return updated_remote_devices;
 }
 
 }  // namespace
@@ -30,7 +38,7 @@ uint32_t MessageTransferOperation::kMaxConnectionAttemptsPerDevice = 3;
 MessageTransferOperation::MessageTransferOperation(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
     BleConnectionManager* connection_manager)
-    : remote_devices_(VectorToSet(devices_to_connect)),
+    : remote_devices_(RemoveDuplicatesFromVector(devices_to_connect)),
       connection_manager_(connection_manager),
       initialized_(false) {}
 
@@ -45,6 +53,7 @@ void MessageTransferOperation::Initialize() {
   initialized_ = true;
 
   connection_manager_->AddObserver(this);
+  OnOperationStarted();
 
   MessageType message_type_for_connection = GetMessageTypeForConnection();
   for (const auto& remote_device : remote_devices_) {
@@ -127,9 +136,15 @@ void MessageTransferOperation::OnMessageReceived(
 void MessageTransferOperation::UnregisterDevice(
     const cryptauth::RemoteDevice& remote_device) {
   remote_device_to_num_attempts_map_.erase(remote_device);
-  remote_devices_.erase(remote_device);
+  remote_devices_.erase(std::remove(remote_devices_.begin(),
+                                    remote_devices_.end(), remote_device),
+                        remote_devices_.end());
   connection_manager_->UnregisterRemoteDevice(remote_device,
                                               GetMessageTypeForConnection());
+
+  if (remote_devices_.empty()) {
+    OnOperationFinished();
+  }
 }
 
 void MessageTransferOperation::SendMessageToDevice(

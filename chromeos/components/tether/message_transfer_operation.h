@@ -6,7 +6,6 @@
 #define CHROMEOS_COMPONENTS_TETHER_MESSAGE_TRANSFER_OPERATION_H_
 
 #include <map>
-#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -61,15 +60,26 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
       std::unique_ptr<MessageWrapper> message_wrapper,
       const cryptauth::RemoteDevice& remote_device) {}
 
+  // Callback executed when the operation has started (i.e., in Initialize()).
+  virtual void OnOperationStarted() {}
+
+  // Callback executed when the operation has finished (i.e., when all devices
+  // have been unregistered).
+  virtual void OnOperationFinished() {}
+
   // Returns the type of message that this operation intends to send.
   virtual MessageType GetMessageTypeForConnection() = 0;
+
+  std::vector<cryptauth::RemoteDevice>& remote_devices() {
+    return remote_devices_;
+  }
 
  private:
   friend class MessageTransferOperationTest;
 
   static uint32_t kMaxConnectionAttemptsPerDevice;
 
-  std::set<cryptauth::RemoteDevice> remote_devices_;
+  std::vector<cryptauth::RemoteDevice> remote_devices_;
   BleConnectionManager* connection_manager_;
 
   bool initialized_;

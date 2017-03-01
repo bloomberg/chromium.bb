@@ -27,7 +27,9 @@ class TestOperation : public MessageTransferOperation {
  public:
   TestOperation(const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
                 BleConnectionManager* connection_manager)
-      : MessageTransferOperation(devices_to_connect, connection_manager) {}
+      : MessageTransferOperation(devices_to_connect, connection_manager),
+        has_operation_started_(false),
+        has_operation_finished_(false) {}
   ~TestOperation() override {}
 
   bool HasDeviceAuthenticated(const cryptauth::RemoteDevice& remote_device) {
@@ -62,9 +64,17 @@ class TestOperation : public MessageTransferOperation {
         std::move(message_wrapper));
   }
 
+  void OnOperationStarted() override { has_operation_started_ = true; }
+
+  void OnOperationFinished() override { has_operation_finished_ = true; }
+
   MessageType GetMessageTypeForConnection() override {
     return kTestMessageType;
   }
+
+  bool has_operation_started() { return has_operation_started_; }
+
+  bool has_operation_finished() { return has_operation_finished_; }
 
  private:
   struct DeviceMapValue {
@@ -76,6 +86,9 @@ class TestOperation : public MessageTransferOperation {
   };
 
   std::map<cryptauth::RemoteDevice, DeviceMapValue> device_map_;
+
+  bool has_operation_started_;
+  bool has_operation_finished_;
 };
 
 DeviceStatus CreateFakeDeviceStatus() {
@@ -120,6 +133,8 @@ class MessageTransferOperationTest : public testing::Test {
   void ConstructOperation(std::vector<cryptauth::RemoteDevice> remote_devices) {
     operation_ = base::WrapUnique(
         new TestOperation(remote_devices, fake_ble_connection_manager_.get()));
+    VerifyOperationStartedAndFinished(false /* has_started */,
+                                      false /* has_finished */);
   }
 
   bool IsDeviceRegistered(const cryptauth::RemoteDevice& remote_device) const {
@@ -127,6 +142,19 @@ class MessageTransferOperationTest : public testing::Test {
     return std::find(operation_->remote_devices_.begin(),
                      operation_->remote_devices_.end(),
                      remote_device) != operation_->remote_devices_.end();
+  }
+
+  void InitializeOperation() {
+    VerifyOperationStartedAndFinished(false /* has_started */,
+                                      false /* has_finished */);
+    operation_->Initialize();
+    VerifyOperationStartedAndFinished(true /* has_started */,
+                                      false /* has_finished */);
+  }
+
+  void VerifyOperationStartedAndFinished(bool has_started, bool has_finished) {
+    EXPECT_EQ(has_started, operation_->has_operation_started());
+    EXPECT_EQ(has_finished, operation_->has_operation_finished());
   }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
@@ -140,7 +168,7 @@ class MessageTransferOperationTest : public testing::Test {
 
 TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
-  operation_->Initialize();
+  InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
 
   // Try to connect and fail. The device should still be registered.
@@ -164,6 +192,8 @@ TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED);
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[0]));
+  VerifyOperationStartedAndFinished(true /* has_started */,
+                                    true /* has_finished */);
 
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   EXPECT_TRUE(operation_->GetReceivedMessages(test_devices_[0]).empty());
@@ -171,7 +201,7 @@ TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
 
 TEST_F(MessageTransferOperationTest, TestFailsAuthentication) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
-  operation_->Initialize();
+  InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
 
   fake_ble_connection_manager_->SetDeviceStatus(
@@ -186,6 +216,8 @@ TEST_F(MessageTransferOperationTest, TestFailsAuthentication) {
   // When authentication fails, we consider this a fatal error; the device
   // should be unregistered.
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[0]));
+  VerifyOperationStartedAndFinished(true /* has_started */,
+                                    true /* has_finished */);
 
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   EXPECT_TRUE(operation_->GetReceivedMessages(test_devices_[0]).empty());
@@ -193,7 +225,7 @@ TEST_F(MessageTransferOperationTest, TestFailsAuthentication) {
 
 TEST_F(MessageTransferOperationTest, TestFailsThenConnects) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
-  operation_->Initialize();
+  InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
 
   // Try to connect and fail. The device should still be registered.
@@ -221,7 +253,7 @@ TEST_F(MessageTransferOperationTest, TestFailsThenConnects) {
 TEST_F(MessageTransferOperationTest,
        TestSuccessfulConnectionAndReceiveMessage) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
-  operation_->Initialize();
+  InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
 
   fake_ble_connection_manager_->SetDeviceStatus(
@@ -252,7 +284,7 @@ TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
   // Construct with two copies of the same device.
   ConstructOperation(
       std::vector<cryptauth::RemoteDevice>{test_devices_[0], test_devices_[0]});
-  operation_->Initialize();
+  InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
 
   fake_ble_connection_manager_->SetDeviceStatus(
@@ -283,7 +315,7 @@ TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
 
 TEST_F(MessageTransferOperationTest, TestReceiveEventForOtherDevice) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
-  operation_->Initialize();
+  InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
 
   // Simulate the authentication of |test_devices_[1]|'s channel. Since the
@@ -331,7 +363,7 @@ TEST_F(MessageTransferOperationTest,
       test_devices_[0], cryptauth::SecureChannel::Status::AUTHENTICATED);
 
   // Now initialize; the authentication handler should have been invoked.
-  operation_->Initialize();
+  InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
 
@@ -351,7 +383,7 @@ TEST_F(MessageTransferOperationTest,
 
 TEST_F(MessageTransferOperationTest, MultipleDevices) {
   ConstructOperation(test_devices_);
-  operation_->Initialize();
+  InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[1]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[2]));
