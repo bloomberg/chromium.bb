@@ -41,6 +41,31 @@ bool addCSSPaintArgument(const Vector<CSSParserToken>& tokens,
   return false;
 }
 
+// Consume input arguments, if encounter function, will return the function
+// block as a Vector of CSSParserToken, otherwise, will just return a Vector of
+// a single CSSParserToken.
+Vector<CSSParserToken> consumeFunctionArgsOrNot(CSSParserTokenRange& args) {
+  Vector<CSSParserToken> argumentTokens;
+  if (args.peek().getBlockType() == CSSParserToken::BlockStart) {
+    // Function block.
+    // Push the function name and initial right parenthesis.
+    // Since we don't have any upfront knowledge about the input argument types
+    // here, we should just leave the token as it is and resolve it later in
+    // the variable parsing phase.
+    argumentTokens.push_back(args.peek());
+    CSSParserTokenRange contents = args.consumeBlock();
+    while (!contents.atEnd()) {
+      argumentTokens.push_back(contents.consume());
+    }
+    argumentTokens.push_back(
+        CSSParserToken(RightParenthesisToken, CSSParserToken::BlockEnd));
+
+  } else {
+    argumentTokens.push_back(args.consumeIncludingWhitespace());
+  }
+  return argumentTokens;
+}
+
 }  // namespace
 
 void complete4Sides(CSSValue* side[4]) {
@@ -1165,15 +1190,14 @@ static CSSValue* consumePaint(CSSParserTokenRange& args,
   if (!consumeCommaIncludingWhitespace(args))
     return nullptr;
 
-  // Consume arguments. Currently does not support complicated arguments
-  // like function calls.
+  // Consume arguments.
   // TODO(renjieliu): We may want to optimize the implementation by resolve
   // variables early if paint function is registered.
   Vector<CSSParserToken> argumentTokens;
   Vector<RefPtr<CSSVariableData>> variableData;
   while (!args.atEnd()) {
     if (args.peek().type() != CommaToken) {
-      argumentTokens.push_back(args.consumeIncludingWhitespace());
+      argumentTokens.appendVector(consumeFunctionArgsOrNot(args));
     } else {
       if (!addCSSPaintArgument(argumentTokens, &variableData))
         return nullptr;

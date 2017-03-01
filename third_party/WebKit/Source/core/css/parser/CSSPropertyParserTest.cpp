@@ -20,6 +20,14 @@ static int computeNumberOfTracks(const CSSValueList* valueList) {
   return numberOfTracks;
 }
 
+TEST(CSSPropertyParserTest, CSSPaint_Functions) {
+  const CSSValue* value = CSSParser::parseSingleValue(
+      CSSPropertyBackgroundImage, "paint(foo, func1(1px, 3px), red)");
+  ASSERT_TRUE(value);
+  ASSERT_TRUE(value->isImageGeneratorValue());
+  EXPECT_EQ(value->cssText(), "paint(foo, func1(1px, 3px), red)");
+}
+
 TEST(CSSPropertyParserTest, CSSPaint_NoArguments) {
   const CSSValue* value =
       CSSParser::parseSingleValue(CSSPropertyBackgroundImage, "paint(foo)");
