@@ -59,7 +59,7 @@ set(AOM_DSP_COMMON_INTRIN_SSE4_1
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_sse4.c"
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c")
 
-set(AOM_DSP_COMMON_AVX2_INTRIN
+set(AOM_DSP_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c")
@@ -161,7 +161,7 @@ if (CONFIG_ENCODERS)
   set(AOM_DSP_ENCODER_INTRIN_SSE3 "${AOM_ROOT}/aom_dsp/x86/sad_sse3.asm")
   set(AOM_DSP_ENCODER_ASM_SSE4_1 "${AOM_ROOT}/aom_dsp/x86/sad_sse4.asm")
 
-  set(AOM_DSP_ENCODER_AVX2_INTRIN
+  set(AOM_DSP_ENCODER_INTRIN_AVX2
       "${AOM_ROOT}/aom_dsp/x86/sad4d_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c"
@@ -230,8 +230,8 @@ if (CONFIG_ENCODERS)
         ${AOM_DSP_ENCODER_INTRIN_SSE4_1}
         "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse4.c")
 
-    set(AOM_DSP_ENCODER_AVX2_INTRIN
-        ${AOM_DSP_ENCODER_AVX2_INTRIN}
+    set(AOM_DSP_ENCODER_INTRIN_AVX2
+        ${AOM_DSP_ENCODER_INTRIN_AVX2}
         "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c")
   endif ()
 
@@ -347,10 +347,10 @@ function (setup_aom_dsp_targets)
 
   if (HAVE_AVX2)
     add_intrinsics_object_library("-mavx2" "avx2" "aom_dsp_common"
-                                  "AOM_DSP_COMMON_AVX2_INTRIN")
+                                  "AOM_DSP_COMMON_INTRIN_AVX2")
     if (CONFIG_ENCODERS)
       add_intrinsics_object_library("-mavx2" "avx2" "aom_dsp_encoder"
-                                    "AOM_DSP_ENCODER_AVX2_INTRIN")
+                                    "AOM_DSP_ENCODER_INTRIN_AVX2")
     endif ()
   endif ()
 
