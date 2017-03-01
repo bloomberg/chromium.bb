@@ -298,19 +298,19 @@ bool PaymentRequest::ArePaymentDetailsSatisfied() {
 
 bool PaymentRequest::ArePaymentOptionsSatisfied() {
   // TODO(mathp): Have a measure of shipping address completeness.
-  if (options_->request_shipping && selected_shipping_profile_ == nullptr)
+  if (request_shipping() && selected_shipping_profile_ == nullptr)
     return false;
 
   // TODO(mathp): Make an encompassing class to validate contact info.
   const std::string& app_locale = delegate_->GetApplicationLocale();
-  if (options_->request_payer_name &&
+  if (request_payer_name() &&
       (selected_contact_profile_ == nullptr ||
        selected_contact_profile_
            ->GetInfo(autofill::AutofillType(autofill::NAME_FULL), app_locale)
            .empty())) {
     return false;
   }
-  if (options_->request_payer_email &&
+  if (request_payer_email() &&
       (selected_contact_profile_ == nullptr ||
        selected_contact_profile_
            ->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
@@ -318,7 +318,7 @@ bool PaymentRequest::ArePaymentOptionsSatisfied() {
            .empty())) {
     return false;
   }
-  if (options_->request_payer_phone &&
+  if (request_payer_phone() &&
       (selected_contact_profile_ == nullptr ||
        selected_contact_profile_
            ->GetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),

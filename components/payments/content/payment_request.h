@@ -130,6 +130,11 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   }
   content::WebContents* web_contents() { return web_contents_; }
 
+  bool request_shipping() const { return options_->request_shipping; }
+  bool request_payer_name() const { return options_->request_payer_name; }
+  bool request_payer_phone() const { return options_->request_payer_phone; }
+  bool request_payer_email() const { return options_->request_payer_email; }
+
   bool is_ready_to_pay() { return is_ready_to_pay_; }
 
  private:

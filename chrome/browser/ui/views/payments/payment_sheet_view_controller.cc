@@ -184,14 +184,20 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                      1, views::GridLayout::USE_PREF, 0, 0);
 
+  // The shipping address and contact info rows are optional.
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentSheetSummaryRow().release());
-  layout->StartRow(1, 0);
-  layout->AddView(CreateShippingRow().release());
+  if (request()->request_shipping()) {
+    layout->StartRow(1, 0);
+    layout->AddView(CreateShippingRow().release());
+  }
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentMethodRow().release());
-  layout->StartRow(1, 0);
-  layout->AddView(CreateContactInfoRow().release());
+  if (request()->request_payer_name() || request()->request_payer_email() ||
+      request()->request_payer_phone()) {
+    layout->StartRow(1, 0);
+    layout->AddView(CreateContactInfoRow().release());
+  }
 
   return CreatePaymentView(
       CreateSheetHeaderView(

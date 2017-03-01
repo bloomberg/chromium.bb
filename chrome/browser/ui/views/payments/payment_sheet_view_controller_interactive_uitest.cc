@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -49,6 +50,22 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 
   InvokePaymentRequestUI();
   EXPECT_FALSE(IsPayButtonEnabled());
+}
+
+// If shipping and contact info are not requested, their rows should not be
+// present.
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
+                       NoShippingNoContactRows) {
+  InvokePaymentRequestUI();
+
+  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)));
+  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION)));
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION)));
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION)));
 }
 
 // Accepts 'visa' cards and requests the full contact details.
@@ -117,6 +134,21 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 
   InvokePaymentRequestUI();
   EXPECT_FALSE(IsPayButtonEnabled());
+}
+
+// If shipping and contact info are requested, show all the rows.
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
+                       AllRowsPresent) {
+  InvokePaymentRequestUI();
+
+  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)));
+  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION)));
+  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_SHIPPING_SECTION)));
+  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION)));
 }
 
 }  // namespace payments
