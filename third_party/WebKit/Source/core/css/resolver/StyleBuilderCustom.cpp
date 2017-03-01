@@ -38,6 +38,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <memory>
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
@@ -53,6 +54,7 @@
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
+#include "core/css/CSSValueIDMappings.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/PropertyRegistration.h"
 #include "core/css/PropertyRegistry.h"
@@ -79,7 +81,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -759,11 +760,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
           ContentData::create(state.styleImage(CSSPropertyContent, *item));
     } else if (item->isCounterValue()) {
       const CSSCounterValue* counterValue = toCSSCounterValue(item.get());
-      EListStyleType listStyleType = EListStyleType::kNone;
-      CSSValueID listStyleIdent = counterValue->listStyle();
-      if (listStyleIdent != CSSValueNone)
-        listStyleType =
-            static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
+      const auto listStyleType =
+          cssValueIDToPlatformEnum<EListStyleType>(counterValue->listStyle());
       std::unique_ptr<CounterContent> counter =
           WTF::wrapUnique(new CounterContent(
               AtomicString(counterValue->identifier()), listStyleType,
