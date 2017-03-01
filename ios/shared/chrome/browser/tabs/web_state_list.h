@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/base/page_transition_types.h"
@@ -94,10 +95,11 @@ class WebStateList {
   // returned WebState). An optional opener for the new WebState may be passed.
   web::WebState* ReplaceWebStateAt(int index,
                                    web::WebState* web_state,
-                                   web::WebState* opener);
+                                   web::WebState* opener) WARN_UNUSED_RESULT;
 
-  // Detaches the WebState at the specified index.
-  void DetachWebStateAt(int index);
+  // Detaches the WebState at the specified index. Returns the detached WebState
+  // to the caller (abandon ownership of the returned WebState).
+  web::WebState* DetachWebStateAt(int index) WARN_UNUSED_RESULT;
 
   // Adds an observer to the model.
   void AddObserver(WebStateListObserver* observer);

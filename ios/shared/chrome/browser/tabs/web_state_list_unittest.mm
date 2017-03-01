@@ -328,7 +328,8 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexBegining) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 
   observer_.ResetStatistics();
-  web_state_list_.DetachWebStateAt(0);
+  std::unique_ptr<web::WebState> old_web_state(
+      web_state_list_.DetachWebStateAt(0));
 
   EXPECT_TRUE(observer_.web_state_detached_called());
   EXPECT_EQ(2, web_state_list_.count());
@@ -348,7 +349,8 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexMiddle) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 
   observer_.ResetStatistics();
-  web_state_list_.DetachWebStateAt(1);
+  std::unique_ptr<web::WebState> old_web_state(
+      web_state_list_.DetachWebStateAt(1));
 
   EXPECT_TRUE(observer_.web_state_detached_called());
   EXPECT_EQ(2, web_state_list_.count());
@@ -368,7 +370,8 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexLast) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 
   observer_.ResetStatistics();
-  web_state_list_.DetachWebStateAt(2);
+  std::unique_ptr<web::WebState> old_web_state(
+      web_state_list_.DetachWebStateAt(2));
 
   EXPECT_TRUE(observer_.web_state_detached_called());
   EXPECT_EQ(2, web_state_list_.count());

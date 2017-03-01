@@ -599,8 +599,14 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   [_tabRetainer addObject:newTab];
   [newTab setParentTabModel:self];
 
-  _webStateList.ReplaceWebStateAt(index, newTab.webState,
-                                  GetOpenerForTab(self, newTab).webState);
+  // The WebState is owned by the associated Tab, so it is safe to ignore
+  // the result and won't cause a memory leak. Once the ownership is moved
+  // to WebStateList, this function will return a std::unique_ptr<> and the
+  // object destroyed as expected, so it will fine to ignore the result then
+  // too. See http://crbug.com/546222 for progress of changing the ownership
+  // of the WebStates.
+  ignore_result(_webStateList.ReplaceWebStateAt(
+      index, newTab.webState, GetOpenerForTab(self, newTab).webState));
 
   if (self.currentTab == oldTab)
     [self changeSelectedTabFrom:nil to:newTab persistState:NO];
@@ -764,7 +770,13 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   DCHECK([_tabRetainer containsObject:closedTab]);
   [_tabRetainer removeObject:closedTab];
 
-  _webStateList.DetachWebStateAt(closedTabIndex);
+  // The WebState is owned by the associated Tab, so it is safe to ignore
+  // the result and won't cause a memory leak. Once the ownership is moved
+  // to WebStateList, this function will return a std::unique_ptr<> and the
+  // object destroyed as expected, so it will fine to ignore the result then
+  // too. See http://crbug.com/546222 for progress of changing the ownership
+  // of the WebStates.
+  ignore_result(_webStateList.DetachWebStateAt(closedTabIndex));
 
   // Current tab has closed, update the selected tab and swap in its
   // contents. There is nothing to do if a non-selected tab is closed as

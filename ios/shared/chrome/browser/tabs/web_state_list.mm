@@ -17,12 +17,10 @@
 #error "This file requires ARC support."
 #endif
 
-// Wrapper around a WebState stored in a WebStateList. May own the WebState
-// dependending on the WebStateList ownership setting (should always be true
-// once ownership of Tab is sane, see http://crbug.com/546222 for progress).
+// Wrapper around a WebState stored in a WebStateList.
 class WebStateList::WebStateWrapper {
  public:
-  WebStateWrapper(web::WebState* web_state, bool assume_ownership);
+  explicit WebStateWrapper(web::WebState* web_state);
   ~WebStateWrapper();
 
   web::WebState* web_state() const { return web_state_; }
@@ -47,21 +45,16 @@ class WebStateList::WebStateWrapper {
   web::WebState* web_state_;
   web::WebState* opener_ = nullptr;
   int opener_last_committed_index_;
-  const bool has_web_state_ownership_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateWrapper);
 };
 
-WebStateList::WebStateWrapper::WebStateWrapper(web::WebState* web_state,
-                                               bool assume_ownership)
-    : web_state_(web_state), has_web_state_ownership_(assume_ownership) {
+WebStateList::WebStateWrapper::WebStateWrapper(web::WebState* web_state)
+    : web_state_(web_state) {
   DCHECK(web_state_);
 }
 
-WebStateList::WebStateWrapper::~WebStateWrapper() {
-  if (has_web_state_ownership_)
-    delete web_state_;
-}
+WebStateList::WebStateWrapper::~WebStateWrapper() = default;
 
 web::WebState* WebStateList::WebStateWrapper::ReplaceWebState(
     web::WebState* web_state) {
@@ -97,7 +90,17 @@ WebStateList::WebStateList(WebStateOwnership ownership)
     : web_state_ownership_(ownership),
       order_controller_(base::MakeUnique<WebStateListOrderController>(this)) {}
 
-WebStateList::~WebStateList() = default;
+WebStateList::~WebStateList() {
+  // Once WebStateList owns the WebState and has a CloseWebStateAt() method,
+  // then change this to close all the WebState. See http://crbug.com/546222
+  // for progress.
+  if (web_state_ownership_ == WebStateOwned) {
+    for (auto& web_state_wrapper : web_state_wrappers_) {
+      web::WebState* web_state = web_state_wrapper->web_state();
+      delete web_state;
+    }
+  }
+}
 
 bool WebStateList::ContainsIndex(int index) const {
   return 0 <= index && index < count();
@@ -143,10 +146,8 @@ void WebStateList::InsertWebState(int index,
                                   web::WebState* web_state,
                                   web::WebState* opener) {
   DCHECK(ContainsIndex(index) || index == count());
-  web_state_wrappers_.insert(
-      web_state_wrappers_.begin() + index,
-      base::MakeUnique<WebStateWrapper>(web_state,
-                                        web_state_ownership_ == WebStateOwned));
+  web_state_wrappers_.insert(web_state_wrappers_.begin() + index,
+                             base::MakeUnique<WebStateWrapper>(web_state));
 
   if (opener)
     SetOpenerOfWebStateAt(index, opener);
@@ -200,15 +201,17 @@ web::WebState* WebStateList::ReplaceWebStateAt(int index,
   return old_web_state;
 }
 
-void WebStateList::DetachWebStateAt(int index) {
+web::WebState* WebStateList::DetachWebStateAt(int index) {
   DCHECK(ContainsIndex(index));
   ClearOpenersReferencing(index);
 
-  web::WebState* web_state = web_state_wrappers_[index]->web_state();
+  web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
   web_state_wrappers_.erase(web_state_wrappers_.begin() + index);
 
   for (auto& observer : observers_)
-    observer.WebStateDetachedAt(this, web_state, index);
+    observer.WebStateDetachedAt(this, old_web_state, index);
+
+  return old_web_state;
 }
 
 void WebStateList::AddObserver(WebStateListObserver* observer) {
