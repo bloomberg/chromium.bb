@@ -20,18 +20,24 @@ namespace {
 // Given the |path| of a package, returns the destination that the package
 // should be zipped to. Returns an empty path on any errors.
 base::FilePath ZipDestination(const base::FilePath& path) {
-  NSMutableString* dest =
-      [NSMutableString stringWithString:NSTemporaryDirectory()];
+  base::FilePath dest;
 
-  // Couldn't get the temporary directory.
-  if (!dest)
+  if (!base::GetTempDir(&dest)) {
+    // Couldn't get the temporary directory.
     return base::FilePath();
+  }
 
-  [dest appendFormat:@"%@/zip_cache/%@",
-                     [[NSBundle mainBundle] bundleIdentifier],
-                     [[NSProcessInfo processInfo] globallyUniqueString]];
+  // TMPDIR/<bundleID>/zip_cache/<guid>
 
-  return base::mac::NSStringToFilePath(dest);
+  NSString* bundleID = [[NSBundle mainBundle] bundleIdentifier];
+  dest = dest.Append([bundleID fileSystemRepresentation]);
+
+  dest = dest.Append("zip_cache");
+
+  NSString* guid = [[NSProcessInfo processInfo] globallyUniqueString];
+  dest = dest.Append([guid fileSystemRepresentation]);
+
+  return dest;
 }
 
 // Returns the path of the package and its components relative to the package's

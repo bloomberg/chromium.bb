@@ -17,6 +17,7 @@
 #include <fstream>
 #include <memory>
 
+#include "base/files/file_util.h"
 #include "base/mac/authorization_util.h"
 #include "base/mac/launchd.h"
 #include "base/mac/mac_logging.h"
@@ -33,12 +34,16 @@
 namespace {
 
 bool GetTemporaryConfigFilePath(std::string* path) {
-  NSString* filename = NSTemporaryDirectory();
-  if (filename == nil)
-    return false;
+  base::FilePath ret;
 
-  *path = [[NSString stringWithFormat:@"%@/%s",
-            filename, remoting::kHostConfigFileName] UTF8String];
+  if (!base::GetTempDir(&ret)) {
+    return false;
+  }
+
+  ret = ret.Append(remoting::kHostConfigFileName);
+
+  // This should be safe on OS X because utf8 is always supported.
+  *path = ret.AsUTF8Unsafe();
   return true;
 }
 
