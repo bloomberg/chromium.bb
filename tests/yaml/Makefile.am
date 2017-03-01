@@ -6,6 +6,8 @@ EXTRA_DIST =					\
 	da-dk-g18-dictionary_harness.yaml	\
 	da-dk-g26-dictionary_harness.yaml	\
 	da-dk-g28-dictionary_harness.yaml	\
+	el-backward.yaml                 	\
+	el-forward.yaml                  	\
 	emphasis-full.yaml			\
 	emphasis-no-context.yaml		\
 	en-GB-g2_backward.yaml			\
@@ -49,6 +51,9 @@ EXTRA_DIST =					\
 	letterDefTest_harness.yaml		\
 	lt_harness.yaml				\
 	mn-MN_harness.yaml			\
+	multipass.yaml			\
+	multipass-backward.yaml			\
+	multipass-forward.yaml			\
 	nl-g0_harness.yaml			\
 	nl-NL-g0_harness.yaml			\
 	no_8dot_harness.yaml			\
