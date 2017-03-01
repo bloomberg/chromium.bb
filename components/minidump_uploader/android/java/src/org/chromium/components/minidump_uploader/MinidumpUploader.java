@@ -18,7 +18,7 @@ public interface MinidumpUploader {
 
     /**
      * Cancel the current set of uploads.
-     * @return whether there are still uploads to be done.
+     * @return Whether there are still uploads to be done.
      */
     boolean cancelUploads();
 
