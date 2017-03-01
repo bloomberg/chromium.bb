@@ -26,6 +26,7 @@
 
 #include "core/frame/FrameView.h"
 
+#include <algorithm>
 #include <memory>
 #include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
@@ -328,7 +329,6 @@ void FrameView::setupRenderThrottling() {
                              return;
                            frameView->updateRenderThrottlingStatus(
                                !isVisible, frameView->m_subtreeThrottled);
-                           frameView->maybeRecordLoadReason();
                          },
                          wrapWeakPersistent(this)));
   m_visibilityObserver->start();
@@ -4753,13 +4753,16 @@ void FrameView::updateViewportIntersectionsForSubtree(
   if (!frame().document()->isActive())
     return;
 
-  // Notify javascript IntersectionObservers
-  if (targetState == DocumentLifecycle::PaintClean &&
-      frame().document()->intersectionObserverController())
-    frame()
-        .document()
-        ->intersectionObserverController()
-        ->computeTrackedIntersectionObservations();
+  if (targetState == DocumentLifecycle::PaintClean) {
+    recordDeferredLoadingStats();
+    // Notify javascript IntersectionObservers
+    if (frame().document()->intersectionObserverController()) {
+      frame()
+          .document()
+          ->intersectionObserverController()
+          ->computeTrackedIntersectionObservations();
+    }
+  }
 
   // Don't throttle display:none frames (see updateRenderThrottlingStatus).
   HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
@@ -4873,39 +4876,63 @@ void FrameView::updateRenderThrottlingStatus(
 #endif
 }
 
-// TODO(esprehn): Rename this and the method on Document to
-// recordDeferredLoadReason().
-void FrameView::maybeRecordLoadReason() {
+void FrameView::recordDeferredLoadingStats() {
+  if (!frame().document()->frame() || !frame().isCrossOriginSubframe())
+    return;
+
   FrameView* parent = parentFrameView();
-  if (frame().document()->frame()) {
-    if (!parent) {
-      HTMLFrameOwnerElement* element = frame().deprecatedLocalOwner();
-      if (!element)
-        frame().document()->maybeRecordLoadReason(WouldLoadOutOfProcess);
-      // Having no layout object means the frame is not drawn.
-      else if (!element->layoutObject())
-        frame().document()->maybeRecordLoadReason(WouldLoadDisplayNone);
-    } else {
-      // Assume the main frame has always loaded since we don't track its
-      // visibility.
-      bool parentLoaded =
-          !parent->parentFrameView() ||
-          parent->frame().document()->wouldLoadReason() > Created;
-      // If the parent wasn't loaded, the children won't be either.
-      if (parentLoaded) {
-        if (frameRect().isEmpty())
-          frame().document()->maybeRecordLoadReason(WouldLoadZeroByZero);
-        else if (frameRect().maxY() < 0 && frameRect().maxX() < 0)
-          frame().document()->maybeRecordLoadReason(WouldLoadAboveAndLeft);
-        else if (frameRect().maxY() < 0)
-          frame().document()->maybeRecordLoadReason(WouldLoadAbove);
-        else if (frameRect().maxX() < 0)
-          frame().document()->maybeRecordLoadReason(WouldLoadLeft);
-        else if (!m_hiddenForThrottling)
-          frame().document()->maybeRecordLoadReason(WouldLoadVisible);
-      }
-    }
+  if (!parent) {
+    HTMLFrameOwnerElement* element = frame().deprecatedLocalOwner();
+    // We would fall into an else block on some teardowns and other weird cases.
+    if (!element || !element->layoutObject())
+      frame().document()->recordDeferredLoadReason(WouldLoadNoParent);
+    return;
   }
+  // Small inaccuracy: frames with origins that match the top level might be
+  // nested in a cross-origin frame. To keep code simpler, count such frames as
+  // WouldLoadVisible, even when their parent is offscreen.
+  WouldLoadReason whyParentLoaded = WouldLoadVisible;
+  if (parent->parentFrameView() && parent->frame().isCrossOriginSubframe())
+    whyParentLoaded = parent->frame().document()->deferredLoadReason();
+
+  // If the parent wasn't loaded, the children won't be either.
+  if (whyParentLoaded == Created)
+    return;
+  // These frames are never meant to be seen so we will need to load them.
+  if (frameRect().isEmpty() || frameRect().maxY() < 0 ||
+      frameRect().maxX() < 0) {
+    frame().document()->recordDeferredLoadReason(whyParentLoaded);
+    return;
+  }
+
+  IntRect parentRect = parent->frameRect();
+  // First clause: for this rough data collection we assume the user never
+  // scrolls right.
+  if (frameRect().x() >= parentRect.width() || parentRect.height() <= 0)
+    return;
+
+  int thisFrameScreensAway = 0;
+  // If an frame is created above the current scoll position, this logic counts
+  // it as visible.
+  if (frameRect().y() > parent->getScrollOffset().height()) {
+    thisFrameScreensAway =
+        (frameRect().y() - parent->getScrollOffset().height()) /
+        parentRect.height();
+  }
+  DCHECK_GE(thisFrameScreensAway, 0);
+
+  int parentScreensAway = 0;
+  if (whyParentLoaded <= WouldLoadVisible)
+    parentScreensAway = WouldLoadVisible - whyParentLoaded;
+
+  int totalScreensAway = thisFrameScreensAway + parentScreensAway;
+
+  // We're collecting data for frames that are at most 3 screens away.
+  if (totalScreensAway > 3)
+    return;
+
+  frame().document()->recordDeferredLoadReason(
+      static_cast<WouldLoadReason>(WouldLoadVisible - totalScreensAway));
 }
 
 bool FrameView::shouldThrottleRendering() const {

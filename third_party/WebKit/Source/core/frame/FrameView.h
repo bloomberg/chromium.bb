@@ -944,7 +944,7 @@ class CORE_EXPORT FrameView final
   void scheduleOrPerformPostLayoutTasks();
   void performPostLayoutTasks();
 
-  void maybeRecordLoadReason();
+  void recordDeferredLoadingStats();
 
   DocumentLifecycle& lifecycle() const;
 

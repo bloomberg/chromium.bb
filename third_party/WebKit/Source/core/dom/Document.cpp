@@ -401,7 +401,7 @@ static void runAutofocusTask(ExecutionContext* context) {
 static void recordLoadReasonToHistogram(WouldLoadReason reason) {
   DEFINE_STATIC_LOCAL(
       EnumerationHistogram, unseenFrameHistogram,
-      ("Navigation.DeferredDocumentLoading.StatesV3", WouldLoadReasonEnd));
+      ("Navigation.DeferredDocumentLoading.StatesV4", WouldLoadReasonEnd));
   unseenFrameHistogram.count(reason);
 }
 
@@ -532,7 +532,7 @@ Document::Document(const DocumentInit& initializer,
       m_hasViewportUnits(false),
       m_parserSyncPolicy(AllowAsynchronousParsing),
       m_nodeCount(0),
-      m_wouldLoadReason(Created),
+      m_wouldLoadReason(Invalid),
       m_passwordCount(0),
       m_engagementLevel(mojom::blink::EngagementLevel::NONE) {
   if (m_frame) {
@@ -6612,13 +6612,16 @@ DEFINE_TRACE(Document) {
   SynchronousMutationNotifier::trace(visitor);
 }
 
-void Document::maybeRecordLoadReason(WouldLoadReason reason) {
-  DCHECK(m_wouldLoadReason == Created || reason != Created);
+void Document::recordDeferredLoadReason(WouldLoadReason reason) {
+  DCHECK(m_wouldLoadReason == Invalid || reason != Created);
+  DCHECK(reason != Invalid);
   DCHECK(frame());
-  if (m_wouldLoadReason == Created && frame()->isCrossOriginSubframe() &&
-      frame()->loader().stateMachine()->committedFirstRealDocumentLoad()) {
-    recordLoadReasonToHistogram(reason);
-  }
+  DCHECK(frame()->isCrossOriginSubframe());
+  if (reason <= m_wouldLoadReason ||
+      !frame()->loader().stateMachine()->committedFirstRealDocumentLoad())
+    return;
+  for (int i = m_wouldLoadReason + 1; i <= reason; ++i)
+    recordLoadReasonToHistogram(static_cast<WouldLoadReason>(i));
   m_wouldLoadReason = reason;
 }
 

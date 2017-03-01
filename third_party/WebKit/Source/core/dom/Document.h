@@ -232,20 +232,16 @@ enum CreateElementFlags {
 // See https://crbug.com/635105.
 // Logged to UMA, don't re-arrange entries without creating a new histogram.
 enum WouldLoadReason {
+  Invalid,
   Created,
+  WouldLoad3ScreensAway,
+  WouldLoad2ScreensAway,
+  WouldLoad1ScreenAway,
+  WouldLoadVisible,
   // If outer and inner frames aren't in the same process we can't determine
   // if the inner frame is visible, so just load it.
   // TODO(dgrogan): Revisit after https://crbug.com/650433 is fixed.
-  WouldLoadOutOfProcess,
-  // The next five indicate frames that are probably used for cross-origin
-  // communication.
-  WouldLoadDisplayNone,
-  WouldLoadZeroByZero,
-  WouldLoadAboveAndLeft,
-  WouldLoadAbove,
-  WouldLoadLeft,
-  // We have to load documents in visible frames.
-  WouldLoadVisible,
+  WouldLoadNoParent,
 
   WouldLoadReasonEnd
 };
@@ -1303,8 +1299,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool isInMainFrame() const;
 
-  void maybeRecordLoadReason(WouldLoadReason);
-  WouldLoadReason wouldLoadReason() { return m_wouldLoadReason; }
+  void recordDeferredLoadReason(WouldLoadReason);
+  WouldLoadReason deferredLoadReason() { return m_wouldLoadReason; }
 
   const PropertyRegistry* propertyRegistry() const;
   PropertyRegistry* propertyRegistry();
