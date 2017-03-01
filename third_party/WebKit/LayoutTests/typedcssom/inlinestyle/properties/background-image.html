@@ -4,7 +4,15 @@
 <script src='property-suite.js'></script>
 <script src='config-templates.js'></script>
 
+<div id="testElement"></div>
 <script>
+test(function() {
+  testElement.styleMap.set('background-image', new CSSURLImageValue(''));
+  document.body.offsetTop;
+  assert_equals(testElement.styleMap.get('background-image').intrinsicHeight, 0);
+  assert_equals(testElement.styleMap.get('background-image').intrinsicWidth, 0);
+}, "Check that setting background-image to CSSURLImageValue('') doesn't cause a crash");
+
 runInlineStylePropertyMapTests( {
   property: 'background-image',
   validKeywords: [
@@ -12,7 +20,7 @@ runInlineStylePropertyMapTests( {
   ],
   validObjects: [
     new CSSURLImageValue(window.location.href + 'resources/1x1-green.jpg'),
-    // new CSSURLImageValue('') - This will be introduced in a later patch and crashes for now.
+    new CSSURLImageValue(window.location.href)
   ],
   supportsMultiple: false,
   invalidObjects: [new CSSSimpleLength(4, 'px')]
