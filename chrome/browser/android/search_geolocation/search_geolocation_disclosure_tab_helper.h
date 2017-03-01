@@ -52,7 +52,7 @@ class SearchGeolocationDisclosureTabHelper
   void RecordPostDisclosureMetrics(const GURL& gurl);
   Profile* GetProfile();
 
-  bool consistent_geolocation_enabled_;
+  bool consistent_geolocation_disclosure_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchGeolocationDisclosureTabHelper);
 };

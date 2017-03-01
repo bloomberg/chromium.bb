@@ -264,6 +264,10 @@ const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
 // Disables the QUIC protocol.
 const char kDisableQuic[] = "disable-quic";
 
+// Disables showing the search geolocation disclosure UI. Used for perf testing.
+const char kDisableSearchGeolocationDisclosure[] =
+    "disable-search-geolocation-disclosure";
+
 // Disable settings in a separate browser window per profile
 // (see SettingsWindowEnabled() below).
 const char kDisableSettingsWindow[]          = "disable-settings-window";

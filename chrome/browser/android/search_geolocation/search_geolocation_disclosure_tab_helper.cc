@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -70,8 +72,10 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchGeolocationDisclosureTabHelper);
 SearchGeolocationDisclosureTabHelper::SearchGeolocationDisclosureTabHelper(
     content::WebContents* contents)
     : content::WebContentsObserver(contents) {
-  consistent_geolocation_enabled_ =
-      base::FeatureList::IsEnabled(features::kConsistentOmniboxGeolocation);
+  consistent_geolocation_disclosure_enabled_ =
+      base::FeatureList::IsEnabled(features::kConsistentOmniboxGeolocation) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSearchGeolocationDisclosure);
 }
 
 SearchGeolocationDisclosureTabHelper::~SearchGeolocationDisclosureTabHelper() {}
@@ -83,7 +87,7 @@ void SearchGeolocationDisclosureTabHelper::NavigationEntryCommitted(
 
 void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosure(
     const GURL& gurl) {
-  if (!consistent_geolocation_enabled_)
+  if (!consistent_geolocation_disclosure_enabled_)
     return;
 
   if (!ShouldShowDisclosureForUrl(gurl))
