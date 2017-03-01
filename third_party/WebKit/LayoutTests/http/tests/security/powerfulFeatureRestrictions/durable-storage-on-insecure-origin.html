@@ -5,10 +5,11 @@
 <script src="/resources/get-host-info.js"></script>
 <script>
 if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
-    window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
+  window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
 } else {
-    promise_test(function(test) {
-        return promise_rejects(test, 'SecurityError', navigator.storage.persist());
-    }, "Requires secure context");
+  test(function(test) {
+    assert_false('storage' in navigator,
+                 'navigator.storage attribute has [SecureContext]');
+  }, 'Requires secure context');
 }
 </script>

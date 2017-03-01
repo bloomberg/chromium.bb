@@ -24,6 +24,9 @@ using mojom::blink::PermissionStatus;
 
 namespace {
 
+const char uniqueOriginErrorMessage[] =
+    "The operation is not supported in this context.";
+
 class EstimateCallbacks final : public StorageQuotaCallbacks {
   WTF_MAKE_NONCOPYABLE(EstimateCallbacks);
 
@@ -60,19 +63,14 @@ ScriptPromise StorageManager::persist(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
   ExecutionContext* executionContext = scriptState->getExecutionContext();
+  DCHECK(executionContext->isSecureContext());  // [SecureContext] in IDL
   SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
-  // TODO(dgrogan): Is the isUnique() check covered by the later
-  // isSecureContext() check? If so, maybe remove it. Write a test if it
-  // stays.
   if (securityOrigin->isUnique()) {
-    resolver->reject(DOMException::create(NotSupportedError));
+    resolver->reject(V8ThrowException::createTypeError(
+        scriptState->isolate(), uniqueOriginErrorMessage));
     return promise;
   }
-  String errorMessage;
-  if (!executionContext->isSecureContext(errorMessage)) {
-    resolver->reject(DOMException::create(SecurityError, errorMessage));
-    return promise;
-  }
+
   ASSERT(executionContext->isDocument());
   PermissionService* permissionService =
       getPermissionService(scriptState->getExecutionContext());
@@ -96,6 +94,15 @@ ScriptPromise StorageManager::persist(ScriptState* scriptState) {
 ScriptPromise StorageManager::persisted(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  DCHECK(executionContext->isSecureContext());  // [SecureContext] in IDL
+  SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
+  if (securityOrigin->isUnique()) {
+    resolver->reject(V8ThrowException::createTypeError(
+        scriptState->isolate(), uniqueOriginErrorMessage));
+    return promise;
+  }
+
   PermissionService* permissionService =
       getPermissionService(scriptState->getExecutionContext());
   if (!permissionService) {
@@ -117,15 +124,11 @@ ScriptPromise StorageManager::estimate(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
   ExecutionContext* executionContext = scriptState->getExecutionContext();
+  DCHECK(executionContext->isSecureContext());  // [SecureContext] in IDL
   SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
   if (securityOrigin->isUnique()) {
-    resolver->reject(DOMException::create(NotSupportedError));
-    return promise;
-  }
-  // IDL has: [SecureContext]
-  String errorMessage;
-  if (!executionContext->isSecureContext(errorMessage)) {
-    resolver->reject(DOMException::create(SecurityError, errorMessage));
+    resolver->reject(V8ThrowException::createTypeError(
+        scriptState->isolate(), uniqueOriginErrorMessage));
     return promise;
   }
 

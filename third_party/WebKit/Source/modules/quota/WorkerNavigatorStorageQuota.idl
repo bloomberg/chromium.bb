@@ -19,5 +19,5 @@
 
 partial interface WorkerNavigator {
     // https://storage.spec.whatwg.org/#api
-    [RuntimeEnabled=DurableStorage] readonly attribute StorageManager storage;
+    [SecureContext, RuntimeEnabled=DurableStorage] readonly attribute StorageManager storage;
 };

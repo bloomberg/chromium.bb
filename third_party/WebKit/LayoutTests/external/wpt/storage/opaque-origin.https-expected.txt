@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS navigator.storage.persist() in non-sandboxed iframe should not reject 
-FAIL navigator.storage.persist() in sandboxed iframe should reject with TypeError assert_equals: navigator.storage.persist() should reject with TypeError expected "TypeError" but got "NotSupportedError"
-PASS navigator.storage.persisted() in non-sandboxed iframe should not reject 
-FAIL navigator.storage.persisted() in sandboxed iframe should reject with TypeError assert_equals: navigator.storage.persisted() should reject with TypeError expected "TypeError" but got "no rejection"
-PASS navigator.storage.estimate() in non-sandboxed iframe should not reject 
-FAIL navigator.storage.estimate() in sandboxed iframe should reject with TypeError assert_equals: navigator.storage.estimate() should reject with TypeError expected "TypeError" but got "NotSupportedError"
-Harness: the test ran to completion.
-
