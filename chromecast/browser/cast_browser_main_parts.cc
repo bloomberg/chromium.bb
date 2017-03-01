@@ -251,6 +251,8 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // Enable navigator.connection API.
   // TODO(derekjchow): Remove this switch when enabled by default.
   { switches::kEnableNetworkInformation, "" },
+  // TODO(halliwell): Remove after fixing b/35422666.
+  { switches::kEnableUseZoomForDSF, "false" },
   { NULL, NULL },  // Termination
 };
 
