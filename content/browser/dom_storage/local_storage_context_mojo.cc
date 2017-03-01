@@ -280,6 +280,11 @@ void LocalStorageContextMojo::Flush() {
     it.second->level_db_wrapper()->ScheduleImmediateCommit();
 }
 
+void LocalStorageContextMojo::PurgeMemory() {
+  for (const auto& it : level_db_wrappers_)
+    it.second->level_db_wrapper()->PurgeMemory();
+}
+
 leveldb::mojom::LevelDBDatabaseAssociatedRequest
 LocalStorageContextMojo::DatabaseRequestForTesting() {
   DCHECK_EQ(connection_state_, NO_CONNECTION);

@@ -74,6 +74,10 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   // until the load has finished.
   void ScheduleImmediateCommit();
 
+  // Clears the in-memory cache if currently no changes are pending. If there
+  // are uncommitted changes this method does nothing.
+  void PurgeMemory();
+
   // LevelDBWrapper:
   void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
   void Put(const std::vector<uint8_t>& key,

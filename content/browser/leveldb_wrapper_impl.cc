@@ -89,6 +89,16 @@ void LevelDBWrapperImpl::ScheduleImmediateCommit() {
   CommitChanges();
 }
 
+void LevelDBWrapperImpl::PurgeMemory() {
+  if (!map_ ||          // We're not using any memory.
+      commit_batch_ ||  // We leave things alone with changes pending.
+      !database_) {  // Don't purge anything if we're not backed by a database.
+    return;
+  }
+
+  map_.reset();
+}
+
 void LevelDBWrapperImpl::AddObserver(
     mojom::LevelDBObserverAssociatedPtrInfo observer) {
   mojom::LevelDBObserverAssociatedPtr observer_ptr;

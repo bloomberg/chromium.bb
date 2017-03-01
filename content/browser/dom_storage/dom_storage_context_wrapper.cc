@@ -285,6 +285,8 @@ void DOMStorageContextWrapper::PurgeMemory(DOMStorageContextImpl::PurgeOption
   context_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DOMStorageContextImpl::PurgeMemory, context_, purge_option));
+  if (mojo_state_ && purge_option == DOMStorageContextImpl::PURGE_AGGRESSIVE)
+    mojo_state_->PurgeMemory();
 }
 
 void DOMStorageContextWrapper::GotMojoLocalStorageUsage(

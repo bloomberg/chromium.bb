@@ -56,6 +56,14 @@ class MockDelegate : public LevelDBWrapperImpl::Delegate {
     return std::vector<leveldb::mojom::BatchedOperationPtr>();
   }
   void DidCommit(leveldb::mojom::DatabaseError error) override {}
+  void OnMapLoaded(leveldb::mojom::DatabaseError error) override {
+    map_load_count_++;
+  }
+
+  int map_load_count() const { return map_load_count_; }
+
+ private:
+  int map_load_count_ = 0;
 };
 
 void GetCallback(const base::Closure& callback,
@@ -132,6 +140,7 @@ class LevelDBWrapperImplTest : public testing::Test,
   void clear_mock_data() { mock_data_.clear(); }
 
   mojom::LevelDBWrapper* wrapper() { return level_db_wrapper_ptr_.get(); }
+  LevelDBWrapperImpl* wrapper_impl() { return &level_db_wrapper_; }
 
   bool GetSync(const std::vector<uint8_t>& key, std::vector<uint8_t>* result) {
     base::RunLoop run_loop;
@@ -177,6 +186,8 @@ class LevelDBWrapperImplTest : public testing::Test,
   void CommitChanges() { level_db_wrapper_.ScheduleImmediateCommit(); }
 
   const std::vector<Observation>& observations() { return observations_; }
+
+  MockDelegate* delegate() { return &delegate_; }
 
  private:
   // LevelDBObserver:
@@ -478,6 +489,41 @@ TEST_F(LevelDBWrapperImplTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
   // Increasing size should fail.
   value.resize(1, 'a');
   EXPECT_FALSE(PutSync(key, value));
+}
+
+TEST_F(LevelDBWrapperImplTest, GetAfterPurgeMemory) {
+  std::vector<uint8_t> result;
+  EXPECT_TRUE(GetSync(StdStringToUint8Vector("123"), &result));
+  EXPECT_EQ(StdStringToUint8Vector("123data"), result);
+  EXPECT_EQ(delegate()->map_load_count(), 1);
+
+  // Reading again doesn't load map again.
+  EXPECT_TRUE(GetSync(StdStringToUint8Vector("123"), &result));
+  EXPECT_EQ(delegate()->map_load_count(), 1);
+
+  wrapper_impl()->PurgeMemory();
+
+  // Now reading should still work, and load map again.
+  result.clear();
+  EXPECT_TRUE(GetSync(StdStringToUint8Vector("123"), &result));
+  EXPECT_EQ(StdStringToUint8Vector("123data"), result);
+  EXPECT_EQ(delegate()->map_load_count(), 2);
+}
+
+TEST_F(LevelDBWrapperImplTest, PurgeMemoryWithPendingChanges) {
+  std::vector<uint8_t> key = StdStringToUint8Vector("123");
+  std::vector<uint8_t> value = StdStringToUint8Vector("foo");
+  EXPECT_TRUE(PutSync(key, value));
+  EXPECT_EQ(delegate()->map_load_count(), 1);
+
+  // Purge memory, and read. Should not actually have purged, so should not have
+  // triggered a load.
+  wrapper_impl()->PurgeMemory();
+
+  std::vector<uint8_t> result;
+  EXPECT_TRUE(GetSync(key, &result));
+  EXPECT_EQ(value, result);
+  EXPECT_EQ(delegate()->map_load_count(), 1);
 }
 
 }  // namespace content

@@ -45,6 +45,10 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   void DeleteStorageForPhysicalOrigin(const url::Origin& origin);
   void Flush();
 
+  // Clears any caches, to free up as much memory as possible. Next access to
+  // storage for a particular origin will reload the data from the database.
+  void PurgeMemory();
+
   leveldb::mojom::LevelDBDatabaseAssociatedRequest DatabaseRequestForTesting();
 
  private:
