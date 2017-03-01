@@ -10,6 +10,7 @@ import collections
 import datetime
 
 from chromite.cbuildbot import buildbucket_lib
+from chromite.cbuildbot import relevant_changes
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -37,7 +38,7 @@ class SlaveStatus(object):
 
   def __init__(self, start_time, builders_array, master_build_id, db,
                config=None, metadata=None, buildbucket_client=None,
-               pool=None, dry_run=True):
+               version=None, pool=None, dry_run=True):
     """Initializes a SlaveStatus instance.
 
     Args:
@@ -49,6 +50,8 @@ class SlaveStatus(object):
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
                 build.
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
+      version: Current manifest version string. See the return type of
+               VersionInfo.VersionString().
       pool: An instance of ValidationPool.validation_pool used by sync stage
             to apply changes.
       dry_run: Boolean indicating whether it's a dry run. Default to True.
@@ -60,6 +63,7 @@ class SlaveStatus(object):
     self.config = config
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
+    self.version = version
     self.pool = pool
     self.dry_run = dry_run
 
@@ -484,6 +488,18 @@ class SlaveStatus(object):
       logging.error('Ending build since at least one builder has not started '
                     'within 5 mins.')
       return False
+
+    if self.pool is not None:
+      triage_relevant_changes = relevant_changes.TriageRelevantChanges(
+          self.master_build_id, self.db, self.config, self.version,
+          self.pool.build_root, self.pool.applied,
+          self.all_buildbucket_info_dict, self.all_cidb_status_dict,
+          self.completed_builds, self.dependency_map)
+
+      if not triage_relevant_changes.ShouldWait():
+        logging.warning('No need to wait for the remaining running slaves given'
+                        ' the results of relevant change triages.')
+        # TODO(nxia): return False here after confirmation.
 
     # We got here which means no problems, we should still wait.
     logging.info('Still waiting for the following builds to complete: %r',

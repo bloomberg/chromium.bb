@@ -600,6 +600,7 @@ class BuildSpecsManager(object):
         config=self.config,
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client,
+        version=self.current_version,
         pool=pool,
         dry_run=self.dry_run)
 

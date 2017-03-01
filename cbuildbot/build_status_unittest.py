@@ -12,6 +12,7 @@ import time
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import build_status
+from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot import validation_pool_unittest
 from chromite.lib import constants
 from chromite.lib import config_lib
@@ -105,7 +106,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
 
   def _GetSlaveStatus(self, start_time=None, builders_array=None,
                       master_build_id=None, db=None, config=None,
-                      metadata=None, buildbucket_client=None,
+                      metadata=None, buildbucket_client=None, version=None,
                       pool=None, dry_run=True):
     if start_time is None:
       start_time = self.time_now
@@ -125,6 +126,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
         config=config,
         metadata=metadata,
         buildbucket_client=buildbucket_client,
+        version=version,
         pool=pool,
         dry_run=dry_run)
 
@@ -975,6 +977,29 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
                      return_value=set(['slave2']))
     slave_status.ShouldWait()
     self.assertEqual(slave_status.builds_to_retry, set([]))
+
+  def testShouldWaitWithTriageRelevantChanges(self):
+    """Test ShouldWait with TriageRelevantChanges."""
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_UpdateSlaveInfo')
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_ProcessCompletedBuilds')
+    self.PatchObject(relevant_changes.TriageRelevantChanges,
+                     '_ProcessMightSubmitChanges')
+    self.PatchObject(build_status.SlaveStatus,
+                     '_Completed',
+                     return_value=False)
+    self.PatchObject(build_status.SlaveStatus,
+                     '_ShouldFailForBuilderStartTimeout',
+                     return_value=False)
+    pool = validation_pool_unittest.MakePool(applied=[])
+    slave_status = self._GetSlaveStatus(
+        builders_array=['slave1', 'slave2'],
+        config=self.master_cq_config,
+        version='9289.0.0-rc2',
+        pool=pool)
+
+    self.assertTrue(slave_status.ShouldWait())
 
   def testRetryBuilds(self):
     """Test RetryBuilds."""
