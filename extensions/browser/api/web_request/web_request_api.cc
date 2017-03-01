@@ -420,6 +420,9 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
   // Note that details.event_name is actually the sub_event_name!
   ExtensionWebRequestEventRouter::EventListener::ID id(
       details.browser_context, details.extension_id, details.event_name, 0, 0);
+
+  // This Unretained is safe because the ExtensionWebRequestEventRouter
+  // singleton is leaked.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -582,16 +585,14 @@ ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() {
 
 // static
 ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
-  return base::Singleton<ExtensionWebRequestEventRouter>::get();
+  CR_DEFINE_STATIC_LOCAL(ExtensionWebRequestEventRouter, instance, ());
+  return &instance;
 }
 
 ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter()
     : request_time_tracker_(new ExtensionWebRequestTimeTracker),
       web_request_event_router_delegate_(
           ExtensionsAPIClient::Get()->CreateWebRequestEventRouterDelegate()) {}
-
-ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
-}
 
 void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     void* browser_context,
@@ -1127,9 +1128,12 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     DispatchEventToListeners(browser_context, std::move(listeners_to_dispatch),
                              std::move(event_details));
   } else {
-    event_details.release()->DetermineFrameDataOnIO(base::Bind(
-        &ExtensionWebRequestEventRouter::DispatchEventToListeners, AsWeakPtr(),
-        browser_context, base::Passed(&listeners_to_dispatch)));
+    // This Unretained is safe because the ExtensionWebRequestEventRouter
+    // singleton is leaked.
+    event_details.release()->DetermineFrameDataOnIO(
+        base::Bind(&ExtensionWebRequestEventRouter::DispatchEventToListeners,
+                   base::Unretained(this), browser_context,
+                   base::Passed(&listeners_to_dispatch)));
   }
 
   if (num_handlers_blocking > 0) {
@@ -1975,10 +1979,12 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
 
     // The rules registry is still loading. Block this request until it
     // finishes.
+    // This Unretained is safe because the ExtensionWebRequestEventRouter
+    // singleton is leaked.
     rules_registry->ready().Post(
         FROM_HERE,
         base::Bind(&ExtensionWebRequestEventRouter::OnRulesRegistryReady,
-                   AsWeakPtr(), browser_context, event_name,
+                   base::Unretained(this), browser_context, event_name,
                    request->identifier(), request_stage));
     BlockedRequest& blocked_request = blocked_requests_[request->identifier()];
     blocked_request.num_handlers_blocking++;

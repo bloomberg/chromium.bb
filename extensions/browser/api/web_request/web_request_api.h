@@ -16,8 +16,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
@@ -94,8 +92,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
 // This class observes network events and routes them to the appropriate
 // extensions listening to those events. All methods must be called on the IO
 // thread unless otherwise specified.
-class ExtensionWebRequestEventRouter
-    : public base::SupportsWeakPtr<ExtensionWebRequestEventRouter> {
+class ExtensionWebRequestEventRouter {
  public:
   struct BlockedRequest;
 
@@ -371,8 +368,6 @@ class ExtensionWebRequestEventRouter
     DISALLOW_COPY_AND_ASSIGN(EventListener);
   };
 
-  friend struct base::DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
-
   using RawListeners = std::vector<EventListener*>;
   using ListenerIDs = std::vector<EventListener::ID>;
   using Listeners = std::vector<std::unique_ptr<EventListener>>;
@@ -388,7 +383,9 @@ class ExtensionWebRequestEventRouter
   using CallbacksForPageLoad = std::list<base::Closure>;
 
   ExtensionWebRequestEventRouter();
-  ~ExtensionWebRequestEventRouter();
+
+  // This instance is leaked.
+  ~ExtensionWebRequestEventRouter() = delete;
 
   // Returns the EventListener with the given |id|, or nullptr. Must be called
   // from the IO thread.
