@@ -132,9 +132,10 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   more_button_ = new ButtonListenerActionableView(
       owner_, TrayPopupInkDropStyle::INSET_BOUNDS, this);
   TrayPopupUtils::ConfigureContainer(TriView::Container::END, more_button_);
+
   more_button_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   more_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-      0, GetTrayConstant(TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET))));
+      0, kTrayPopupButtonEndMargin)));
   tri_view_->AddView(TriView::Container::END, more_button_);
 
   device_type_ = TrayPopupUtils::CreateMoreImageView();

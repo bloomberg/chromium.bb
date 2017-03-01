@@ -38,7 +38,7 @@ namespace {
 // be too short, so we use this as a default and minimum height for any
 // detailed view.
 int GetDetailedBubbleMaxHeight() {
-  return GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT) * 5;
+  return kTrayPopupItemMinHeight * 5;
 }
 
 // Duration of swipe animation used when transitioning from a default to

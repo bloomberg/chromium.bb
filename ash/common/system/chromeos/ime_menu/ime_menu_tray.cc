@@ -54,7 +54,7 @@ namespace {
 gfx::Range GetImeListViewRange() {
   const int max_items = 5;
   const int min_items = 1;
-  const int tray_item_height = GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT);
+  const int tray_item_height = kTrayPopupItemMinHeight;
   return gfx::Range(tray_item_height * min_items, tray_item_height * max_items);
 }
 
@@ -113,12 +113,9 @@ class ImeMenuLabel : public views::Label {
 
   // views:Label:
   gfx::Size GetPreferredSize() const override {
-    const int tray_constant = GetTrayConstant(TRAY_IME_MENU_ICON);
-    return gfx::Size(tray_constant, tray_constant);
+    return gfx::Size(kTrayItemSize, kTrayItemSize);
   }
-  int GetHeightForWidth(int width) const override {
-    return GetTrayConstant(TRAY_IME_MENU_ICON);
-  }
+  int GetHeightForWidth(int width) const override { return kTrayItemSize; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImeMenuLabel);
@@ -147,8 +144,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
         gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
     auto* box_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-    box_layout->set_minimum_cross_axis_size(
-        GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
+    box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
     SetLayoutManager(box_layout);
     auto title_label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
@@ -277,14 +273,13 @@ class ImeButtonsView : public views::View,
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
       auto* box_layout =
           new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-      box_layout->set_minimum_cross_axis_size(
-          GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
+      box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
       SetLayoutManager(box_layout);
       SetBorder(views::CreatePaddedBorder(
           views::CreateSolidSidedBorder(kSeparatorWidth, 0, 0, 0,
                                         kMenuSeparatorColor),
           gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth,
-                      GetTrayConstant(TRAY_POPUP_ITEM_LEFT_INSET))));
+                      kMenuExtraMarginFromLeftEdge)));
     } else {
       auto* box_layout =
           new views::BoxLayout(views::BoxLayout::kHorizontal, 4, 4, 0);

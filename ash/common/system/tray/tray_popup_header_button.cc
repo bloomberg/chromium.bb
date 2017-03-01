@@ -57,8 +57,7 @@ const char* TrayPopupHeaderButton::GetClassName() const {
 }
 
 gfx::Size TrayPopupHeaderButton::GetPreferredSize() const {
-  int size = GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT);
-  return gfx::Size(size, size);
+  return gfx::Size(kTrayPopupItemMinHeight, kTrayPopupItemMinHeight);
 }
 
 void TrayPopupHeaderButton::StateChanged(ButtonState old_state) {

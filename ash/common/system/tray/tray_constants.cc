@@ -30,6 +30,8 @@ const int kTrayImageItemHorizontalPaddingVerticalAlignment = 1;
 // Size of tray items on the primary axis.
 const int kTrayItemSize = 32;
 
+const int kTrayImageItemPadding = 3;
+
 const int kTrayLabelItemHorizontalPaddingBottomAlignment = 7;
 
 // Vertical padding between status tray items when the shelf is vertical.
@@ -46,6 +48,10 @@ const int kTrayPopupPaddingHorizontal = 18;
 const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupButtonEndMargin = 10;
 const int kTrayPopupLabelHorizontalPadding = 4;
+const int kTrayPopupItemMinHeight = 48;
+const int kTrayPopupItemMinStartWidth = 48;
+const int kTrayPopupItemMinEndWidth =
+    kMenuIconSize + 2 * kTrayPopupButtonEndMargin;
 
 const int kTrayDetailedViewTransitionDelayMs = 100;
 
@@ -105,49 +111,5 @@ const int kTrayPopupInkDropInset = 4;
 const int kTrayPopupInkDropCornerRadius = 2;
 
 const int kTrayPopupSystemInfoRowHeight = 40;
-
-const int kTrayPaddingFromEdgeOfShelf = 3;
-
-int GetTrayConstant(TrayConstant constant) {
-  const int kTrayPopupItemMinHeight[] = {46, 48, 48};
-  const int kTrayPopupItemMaxHeight[] = {138, 144, 144};
-  // FixedSizedImageViews use the contained ImageView's width for 0 values.
-  const int kTrayPopupItemMainImageRegionWidth[] = {0, 48, 48};
-  const int kTrayPopupItemMoreImageSize[] = {25, kMenuIconSize, kMenuIconSize};
-  const int kTrayPopupItemMoreRegionHorizontalInset[] = {10, 10, 10};
-  const int kTrayPopupItemLeftInset[] = {0, 4, 4};
-  const int kTrayPopupItemMinStartWidth[] = {46, 48, 48};
-  const int kTrayPopupItemMinEndWidth[] = {40, 40, 40};
-  const int kTrayImeMenuIcon[] = {40, kTrayItemSize, kTrayItemSize};
-  const int kTrayImageItemPadding[] = {1, 3, 3};
-
-  // TODO(estade): clean this up --- remove unneeded constants and reduce
-  // remaining arrays to a single constant.
-  const int mode = 1;
-  switch (constant) {
-    case TRAY_POPUP_ITEM_MIN_HEIGHT:
-      return kTrayPopupItemMinHeight[mode];
-    case TRAY_POPUP_ITEM_MAX_HEIGHT:
-      return kTrayPopupItemMaxHeight[mode];
-    case TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH:
-      return kTrayPopupItemMainImageRegionWidth[mode];
-    case TRAY_POPUP_ITEM_MORE_IMAGE_SIZE:
-      return kTrayPopupItemMoreImageSize[mode];
-    case TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET:
-      return kTrayPopupItemMoreRegionHorizontalInset[mode];
-    case TRAY_POPUP_ITEM_LEFT_INSET:
-      return kTrayPopupItemLeftInset[mode];
-    case TRAY_POPUP_ITEM_MIN_START_WIDTH:
-      return kTrayPopupItemMinStartWidth[mode];
-    case TRAY_POPUP_ITEM_MIN_END_WIDTH:
-      return kTrayPopupItemMinEndWidth[mode];
-    case TRAY_IME_MENU_ICON:
-      return kTrayImeMenuIcon[mode];
-    case TRAY_IMAGE_ITEM_PADDING:
-      return kTrayImageItemPadding[mode];
-  }
-  NOTREACHED();
-  return 0;
-}
 
 }  // namespace ash

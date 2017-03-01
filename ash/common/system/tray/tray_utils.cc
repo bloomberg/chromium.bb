@@ -41,16 +41,13 @@ void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment) {
   if (MaterialDesignController::IsShelfMaterial())
     return;
 
-  const int tray_image_item_padding = GetTrayConstant(TRAY_IMAGE_ITEM_PADDING);
   if (IsHorizontalAlignment(alignment)) {
-    tray_view->SetBorder(views::CreateEmptyBorder(0, tray_image_item_padding, 0,
-                                                  tray_image_item_padding));
+    tray_view->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets(0, kTrayImageItemPadding)));
   } else {
-    tray_view->SetBorder(views::CreateEmptyBorder(
-        tray_image_item_padding,
-        kTrayImageItemHorizontalPaddingVerticalAlignment,
-        tray_image_item_padding,
-        kTrayImageItemHorizontalPaddingVerticalAlignment));
+    tray_view->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+        kTrayImageItemPadding,
+        kTrayImageItemHorizontalPaddingVerticalAlignment)));
   }
 }
 

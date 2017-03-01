@@ -68,10 +68,9 @@ views::View* CreateUserAvatarView(LoginStatus login_status, int user_index) {
                          gfx::Size(kTrayItemSize, kTrayItemSize));
   }
 
-  image_view->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets((GetTrayConstant(TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH) -
-                   image_view->GetPreferredSize().width()) /
-                  2)));
+  image_view->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      (kTrayPopupItemMinStartWidth - image_view->GetPreferredSize().width()) /
+      2)));
   return image_view;
 }
 
@@ -296,8 +295,7 @@ UserCardView::UserCardView(LoginStatus login_status,
   auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
                                      kTrayPopupLabelHorizontalPadding);
   SetLayoutManager(layout);
-  layout->set_minimum_cross_axis_size(
-      GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
+  layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   // For active users, the left inset is provided by ActiveUserBorder, which
@@ -455,8 +453,7 @@ void UserCardView::AddUserContent(views::BoxLayout* layout,
     media_capture_icon_ = new views::ImageView;
     media_capture_icon_->SetImage(
         gfx::CreateVectorIcon(kSystemTrayRecordingIcon, gfx::kGoogleRed700));
-    const int media_capture_width =
-        GetTrayConstant(TRAY_POPUP_ITEM_MIN_END_WIDTH);
+    const int media_capture_width = kTrayPopupItemMinEndWidth;
     media_capture_icon_->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(0, (media_capture_width -
                         media_capture_icon_->GetPreferredSize().width()) /

@@ -73,8 +73,7 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy,
   auto layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
                            kTrayPopupLabelHorizontalPadding + icon_padding);
-  layout->set_minimum_cross_axis_size(
-      GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
+  layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
   view->SetLayoutManager(layout);
   view->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));

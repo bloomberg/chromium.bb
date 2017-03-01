@@ -88,22 +88,22 @@ void ConfigureDefaultSizeAndFlex(TriView* tri_view,
   int min_width = 0;
   switch (container) {
     case TriView::Container::START:
-      min_width = GetTrayConstant(TRAY_POPUP_ITEM_MIN_START_WIDTH);
+      min_width = kTrayPopupItemMinStartWidth;
       break;
     case TriView::Container::CENTER:
       tri_view->SetFlexForContainer(TriView::Container::CENTER, 1.f);
       break;
     case TriView::Container::END:
-      min_width = GetTrayConstant(TRAY_POPUP_ITEM_MIN_END_WIDTH);
+      min_width = kTrayPopupItemMinEndWidth;
       break;
   }
 
-  tri_view->SetMinSize(
+  tri_view->SetMinSize(container,
+                       gfx::Size(min_width, kTrayPopupItemMinHeight));
+  constexpr int kTrayPopupItemMaxHeight = 144;
+  tri_view->SetMaxSize(
       container,
-      gfx::Size(min_width, GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT)));
-  tri_view->SetMaxSize(container,
-                       gfx::Size(SizeRangeLayout::kAbsoluteMaxSize,
-                                 GetTrayConstant(TRAY_POPUP_ITEM_MAX_HEIGHT)));
+      gfx::Size(SizeRangeLayout::kAbsoluteMaxSize, kTrayPopupItemMaxHeight));
 }
 
 class BorderlessLabelButton : public views::LabelButton {
@@ -185,8 +185,7 @@ TriView* TrayPopupUtils::CreateSubHeaderRowView() {
 TriView* TrayPopupUtils::CreateMultiTargetRowView() {
   TriView* tri_view = new TriView(0 /* padding_between_items */);
 
-  tri_view->SetInsets(
-      gfx::Insets(0, GetTrayConstant(TRAY_POPUP_ITEM_LEFT_INSET), 0, 0));
+  tri_view->SetInsets(gfx::Insets(0, kMenuExtraMarginFromLeftEdge, 0, 0));
 
   ConfigureDefaultSizeAndFlex(tri_view, TriView::Container::START);
   ConfigureDefaultSizeAndFlex(tri_view, TriView::Container::CENTER);
@@ -217,15 +216,13 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
 }
 
 views::ImageView* TrayPopupUtils::CreateMainImageView() {
-  return new FixedSizedImageView(
-      GetTrayConstant(TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH),
-      GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
+  return new FixedSizedImageView(kTrayPopupItemMinStartWidth,
+                                 kTrayPopupItemMinHeight);
 }
 
 views::ImageView* TrayPopupUtils::CreateMoreImageView() {
   views::ImageView* image =
-      new FixedSizedImageView(GetTrayConstant(TRAY_POPUP_ITEM_MORE_IMAGE_SIZE),
-                              GetTrayConstant(TRAY_POPUP_ITEM_MORE_IMAGE_SIZE));
+      new FixedSizedImageView(kMenuIconSize, kMenuIconSize);
   image->EnableCanvasFlippingForRTLUI(true);
   image->SetImage(
       gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));

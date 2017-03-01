@@ -28,6 +28,9 @@ extern const int kTrayImageItemHorizontalPaddingVerticalAlignment;
 
 ASH_EXPORT extern const int kTrayItemSize;
 
+// Extra padding used beside a single icon in the tray area of the shelf.
+extern const int kTrayImageItemPadding;
+
 extern const int kTrayLabelItemHorizontalPaddingBottomAlignment;
 extern const int kTrayLabelItemVerticalPaddingVerticalAlignment;
 
@@ -42,11 +45,19 @@ extern const int kTrayPopupAutoCloseDelayInSeconds;
 extern const int kTrayPopupAutoCloseDelayForTextInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupPaddingBetweenItems;
-// Used for buttons that have borders.
 extern const int kTrayPopupButtonEndMargin;
 // The padding used on the left and right of labels. This applies to all labels
 // in the system menu.
 extern const int kTrayPopupLabelHorizontalPadding;
+
+// The minimum/default height of the rows in the system tray menu.
+extern const int kTrayPopupItemMinHeight;
+
+// The width used for the first region of the row (which holds an image).
+extern const int kTrayPopupItemMinStartWidth;
+
+// The width used for the end region of the row (usually a more arrow).
+extern const int kTrayPopupItemMinEndWidth;
 
 // When transitioning between a detailed and a default view, this delay is used
 // before the transition starts.
@@ -136,44 +147,6 @@ extern const int kTrayPopupInkDropCornerRadius;
 
 // The height of the system info row.
 extern const int kTrayPopupSystemInfoRowHeight;
-
-// Padding between the edge of shelf and the item in status tray area.
-extern const int kTrayPaddingFromEdgeOfShelf;
-
-enum TrayConstant {
-  // The minimum height of the rows in the system tray menu.
-  TRAY_POPUP_ITEM_MIN_HEIGHT,
-
-  // The maximum height of the rows in the system tray menu.
-  TRAY_POPUP_ITEM_MAX_HEIGHT,
-
-  // The width used for the main image of the row. This applies to all rows
-  // in the system menu that have a main image (e.g. default and detailed).
-  TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH,
-
-  // The width used for the images used in the 'more' region of default rows.
-  TRAY_POPUP_ITEM_MORE_IMAGE_SIZE,
-
-  // The horizontal inset in the 'more' region of default rows.
-  TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET,
-
-  // The left inset for all tray system menu rows.
-  TRAY_POPUP_ITEM_LEFT_INSET,
-
-  // The minimum default width for the left container of the system menu rows.
-  TRAY_POPUP_ITEM_MIN_START_WIDTH,
-
-  // The minimum default width for the right container of the system menu rows.
-  TRAY_POPUP_ITEM_MIN_END_WIDTH,
-
-  // The icon size of opt-in IME menu tray.
-  TRAY_IME_MENU_ICON,
-
-  // Extra padding used beside a single icon in the tray area of the shelf.
-  TRAY_IMAGE_ITEM_PADDING,
-};
-
-ASH_EXPORT int GetTrayConstant(TrayConstant constant);
 
 namespace test {
 const int kSettingsTrayItemViewId = 10000;

@@ -361,20 +361,21 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
     layout->AddView(vertical_label_hours_.get());
     layout->StartRow(0, kColumnId);
     layout->AddView(vertical_label_minutes_.get());
-    layout->AddPaddingRow(0,
-                          is_material_design
-                              ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING) +
-                                    kVerticalClockMinutesTopOffsetMD
-                              : kTrayLabelItemVerticalPaddingVerticalAlignment);
+    layout->AddPaddingRow(
+        0,
+        is_material_design
+            ? kTrayImageItemPadding + kVerticalClockMinutesTopOffsetMD
+            : kTrayLabelItemVerticalPaddingVerticalAlignment);
   }
   Layout();
 }
 
 void TimeView::SetBorderFromLayout(ClockLayout clock_layout) {
   if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(
-        0, UseMd() ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)
-                   : kTrayLabelItemHorizontalPaddingBottomAlignment)));
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(0,
+                    UseMd() ? kTrayImageItemPadding
+                            : kTrayLabelItemHorizontalPaddingBottomAlignment)));
   } else {
     SetBorder(views::NullBorder());
   }

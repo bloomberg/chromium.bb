@@ -415,8 +415,7 @@ TrayBackgroundView::CreateInkDropHighlight() const {
   // correctly, so the extra highlight would be clipped.
   // TODO(mohsen): Remove this extra size when resize is handled properly (see
   // https://crbug.com/669253).
-  const int icon_size =
-      kTrayIconSize + 2 * GetTrayConstant(TRAY_IMAGE_ITEM_PADDING);
+  const int icon_size = kTrayIconSize + 2 * kTrayImageItemPadding;
   bounds.set_width(bounds.width() + 2 * icon_size);
   bounds.set_height(bounds.height() + 2 * icon_size);
   std::unique_ptr<views::InkDropHighlight> highlight(

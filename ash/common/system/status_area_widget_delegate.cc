@@ -22,7 +22,9 @@
 
 namespace {
 
-const int kAnimationDurationMs = 250;
+constexpr int kAnimationDurationMs = 250;
+
+constexpr int kPaddingFromEdgeOfShelf = 3;
 
 class StatusAreaWidgetDelegateAnimationSettings
     : public ui::ScopedLayerAnimationSettings {
@@ -181,10 +183,10 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   const int bottom_edge =
       horizontal_alignment
           ? padding
-          : (extend_border_to_edge ? kTrayPaddingFromEdgeOfShelf : 0);
+          : (extend_border_to_edge ? kPaddingFromEdgeOfShelf : 0);
   const int right_edge =
       horizontal_alignment
-          ? (extend_border_to_edge ? kTrayPaddingFromEdgeOfShelf : 0)
+          ? (extend_border_to_edge ? kPaddingFromEdgeOfShelf : 0)
           : padding;
   child->SetBorder(
       views::CreateEmptyBorder(top_edge, left_edge, bottom_edge, right_edge));

@@ -94,7 +94,7 @@ gfx::Size TrayItemView::GetPreferredSize() const {
     if (image_view_)
       inner_size = gfx::Size(kTrayIconSize, kTrayIconSize);
     gfx::Rect rect(inner_size);
-    rect.Inset(gfx::Insets(-GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)));
+    rect.Inset(gfx::Insets(-kTrayImageItemPadding));
     size = rect.size();
   } else {
     size = views::View::GetPreferredSize();

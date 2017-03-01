@@ -373,12 +373,11 @@ void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 gfx::Size HoverHighlightView::GetPreferredSize() const {
   gfx::Size size = ActionableView::GetPreferredSize();
-  const int default_height = GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT);
 
   if (custom_height_)
     size.set_height(custom_height_);
-  else if (!expandable_ || size.height() < default_height)
-    size.set_height(default_height);
+  else if (!expandable_ || size.height() < kTrayPopupItemMinHeight)
+    size.set_height(kTrayPopupItemMinHeight);
 
   return size;
 }
