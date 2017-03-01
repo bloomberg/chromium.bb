@@ -4,25 +4,38 @@
 <script>
 function test() {
      Help.releaseNoteText = [
-        {
-            version: 99,
-            highlights: [
-                {
-                    text: "Test bullet #1",
-                    link: "https://google.com/",
-                    featured: true,
-                },
-                {
-                    text: "Test bullet #2",
-                    link: "https://google.com/",
-                },
-            ],
-            link: "https://google.com/",
-            image: {
-                src: "./resources/test.png",
-                caption: "Test image",
-            },
-        }
+         {
+             version: 99,
+             highlights: [
+                 {
+                     contents: [
+                         {
+                             text: 'Improved',
+                         },
+                         {
+                             text: 'Performance and Memory panels',
+                             link: 'https://developers.google.com/web/tools/chrome-devtools/',
+                         }
+                     ],
+                     featured: true,
+                 },
+                 {
+                     contents: [
+                         {
+                             text: 'Edit cookies directly',
+                             link: 'https://developers.google.com/web/tools/chrome-devtools/',
+                         },
+                         {
+                             text: 'from the Application panel',
+                         },
+                     ],
+                 },
+             ],
+             link: 'https://developers.google.com/web/tools/chrome-devtools/',
+             image: {
+                 src: './resources/test.png',
+             },
+         },
     ];
 
     InspectorTest.addSniffer(UI.inspectorView, "showPanel", onPanelShown);
