@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -43,6 +44,10 @@
 #include "net/proxy/proxy_resolver_v8.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/common/zip_file_creator.mojom.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/utility/ipc_shell_handler_win.h"
 #include "chrome/utility/shell_handler_impl_win.h"
@@ -62,16 +67,6 @@
 #endif
 
 namespace {
-
-#if defined(OS_CHROMEOS) || defined(FULL_SAFE_BROWSING)
-bool Send(IPC::Message* message) {
-  return content::UtilityThread::Get()->Send(message);
-}
-
-void ReleaseProcessIfNeeded() {
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
-}
-#endif  // defined(OS_CHROMEOS) || defined(FULL_SAFE_BROWSING)
 
 class FilePatcherImpl : public chrome::mojom::FilePatcher {
  public:
@@ -106,6 +101,40 @@ class FilePatcherImpl : public chrome::mojom::FilePatcher {
   DISALLOW_COPY_AND_ASSIGN(FilePatcherImpl);
 };
 
+#if defined(OS_CHROMEOS)
+class ZipFileCreatorImpl : public chrome::mojom::ZipFileCreator {
+ public:
+  ZipFileCreatorImpl() = default;
+  ~ZipFileCreatorImpl() override = default;
+
+  static void Create(chrome::mojom::ZipFileCreatorRequest request) {
+    mojo::MakeStrongBinding(base::MakeUnique<ZipFileCreatorImpl>(),
+                            std::move(request));
+  }
+
+ private:
+  // chrome::mojom::ZipFileCreator:
+  void CreateZipFile(const base::FilePath& source_dir,
+                     const std::vector<base::FilePath>& source_relative_paths,
+                     base::File zip_file,
+                     const CreateZipFileCallback& callback) override {
+    DCHECK(zip_file.IsValid());
+
+    for (const auto& path : source_relative_paths) {
+      if (path.IsAbsolute() || path.ReferencesParent()) {
+        callback.Run(false);
+        return;
+      }
+    }
+
+    callback.Run(zip::ZipFiles(source_dir, source_relative_paths,
+                               zip_file.GetPlatformFile()));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ZipFileCreatorImpl);
+};
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_ANDROID)
 void CreateProxyResolverFactory(
     net::interfaces::ProxyResolverFactoryRequest request) {
@@ -130,6 +159,8 @@ class ResourceUsageReporterImpl : public chrome::mojom::ResourceUsageReporter {
     }
     callback.Run(std::move(data));
   }
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceUsageReporterImpl);
 };
 
 void CreateResourceUsageReporter(
@@ -189,9 +220,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
                         OnAnalyzeDmgFileForDownloadProtection)
 #endif  // defined(OS_MACOSX)
 #endif  // defined(FULL_SAFE_BROWSING)
-#if defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CreateZipFile, OnCreateZipFile)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -229,6 +257,9 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
 #if defined(OS_WIN)
   registry->AddInterface(base::Bind(&ShellHandlerImpl::Create));
 #endif
+#if defined(OS_CHROMEOS)
+  registry->AddInterface(base::Bind(&ZipFileCreatorImpl::Create));
+#endif
 }
 
 void ChromeContentUtilityClient::RegisterServices(StaticServiceMap* services) {
@@ -245,38 +276,6 @@ void ChromeContentUtilityClient::PreSandboxStartup() {
 #endif
 }
 
-#if defined(OS_CHROMEOS)
-void ChromeContentUtilityClient::OnCreateZipFile(
-    const base::FilePath& src_dir,
-    const std::vector<base::FilePath>& src_relative_paths,
-    const base::FileDescriptor& dest_fd) {
-  // dest_fd should be closed in the function. See ipc/ipc_message_util.h for
-  // details.
-  base::ScopedFD fd_closer(dest_fd.fd);
-  bool succeeded = true;
-
-  // Check sanity of source relative paths. Reject if path is absolute or
-  // contains any attempt to reference a parent directory ("../" tricks).
-  for (std::vector<base::FilePath>::const_iterator iter =
-           src_relative_paths.begin(); iter != src_relative_paths.end();
-       ++iter) {
-    if (iter->IsAbsolute() || iter->ReferencesParent()) {
-      succeeded = false;
-      break;
-    }
-  }
-
-  if (succeeded)
-    succeeded = zip::ZipFiles(src_dir, src_relative_paths, dest_fd.fd);
-
-  if (succeeded)
-    Send(new ChromeUtilityHostMsg_CreateZipFile_Succeeded());
-  else
-    Send(new ChromeUtilityHostMsg_CreateZipFile_Failed());
-  ReleaseProcessIfNeeded();
-}
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(FULL_SAFE_BROWSING)
 void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
     const IPC::PlatformFileForTransit& zip_file,
@@ -285,9 +284,10 @@ void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
   safe_browsing::zip_analyzer::AnalyzeZipFile(
       IPC::PlatformFileForTransitToFile(zip_file),
       IPC::PlatformFileForTransitToFile(temp_file), &results);
-  Send(new ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished(
-      results));
-  ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->Send(
+      new ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished(
+          results));
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 #if defined(OS_MACOSX)
@@ -296,9 +296,10 @@ void ChromeContentUtilityClient::OnAnalyzeDmgFileForDownloadProtection(
   safe_browsing::zip_analyzer::Results results;
   safe_browsing::dmg::AnalyzeDMGFile(
       IPC::PlatformFileForTransitToFile(dmg_file), &results);
-  Send(new ChromeUtilityHostMsg_AnalyzeDmgFileForDownloadProtection_Finished(
-      results));
-  ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->Send(
+      new ChromeUtilityHostMsg_AnalyzeDmgFileForDownloadProtection_Finished(
+          results));
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_MACOSX)
 

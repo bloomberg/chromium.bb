@@ -8,6 +8,7 @@
           "chrome::mojom::ProfileImport",
           "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::ShellHandler",
+          "chrome::mojom::ZipFileCreator",
           "extensions::mojom::MediaParser",
           "extensions::mojom::RemovableStorageWriter",
           "extensions::mojom::WiFiCredentialsGetter",

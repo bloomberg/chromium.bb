@@ -140,14 +140,6 @@ IPC_STRUCT_END()
 // Utility process messages:
 // These are messages from the browser to the utility process.
 
-#if defined(OS_CHROMEOS)
-// Tell the utility process to create a zip file on the given list of files.
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_CreateZipFile,
-                     base::FilePath /* src_dir */,
-                     std::vector<base::FilePath> /* src_relative_paths */,
-                     base::FileDescriptor /* dest_fd */)
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(FULL_SAFE_BROWSING)
 // Tells the utility process to analyze a zip file for malicious download
 // protection, providing a file that can be used temporarily to analyze binaries
@@ -192,14 +184,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetSaveFileName,
 // went wrong.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackWebResource_Failed,
                      std::string /* error_message, if any */)
-
-#if defined(OS_CHROMEOS)
-// Reply when the utility process has succeeded in creating the zip file.
-IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Succeeded)
-
-// Reply when an error occured in creating the zip file.
-IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Failed)
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(FULL_SAFE_BROWSING)
 // Reply when a zip file has been analyzed for malicious download protection.

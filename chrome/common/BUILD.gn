@@ -692,6 +692,10 @@ mojom("mojo_bindings") {
     "shell_handler_win.mojom",
   ]
 
+  if (is_chromeos) {
+    sources += [ "zip_file_creator.mojom" ]
+  }
+
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/common:common_custom_types",
