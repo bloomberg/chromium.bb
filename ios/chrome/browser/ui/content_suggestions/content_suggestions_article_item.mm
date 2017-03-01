@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/i18n_string.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -139,9 +140,8 @@ const CGFloat kStandardSpacing = 8;
                                      dateStyle:NSDateFormatterMediumStyle
                                      timeStyle:NSDateFormatterNoStyle];
 
-  // TODO(crbug.com/694423): Make it RTL friendly.
-  self.publisherLabel.text =
-      [NSString stringWithFormat:@"%@ - %@.", publisherName, dateString];
+  self.publisherLabel.text = AdjustStringForLocaleDirection(
+      [NSString stringWithFormat:@"%@ - %@.", publisherName, dateString]);
 }
 
 #pragma mark - UIView
