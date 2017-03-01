@@ -84,10 +84,14 @@ class QuotaLimitHeuristic;
 // supply a unique |histogramvalue| used for histograms of extension function
 // invocation (add new ones at the end of the enum in
 // extension_function_histogram_value.h).
-#define DECLARE_EXTENSION_FUNCTION(name, histogramvalue) \
-  public: static const char* function_name() { return name; } \
-  public: static extensions::functions::HistogramValue histogram_value() \
-    { return extensions::functions::histogramvalue; }
+#define DECLARE_EXTENSION_FUNCTION(name, histogramvalue)                     \
+ public:                                                                     \
+  static constexpr const char* function_name() { return name; }              \
+                                                                             \
+ public:                                                                     \
+  static constexpr extensions::functions::HistogramValue histogram_value() { \
+    return extensions::functions::histogramvalue;                            \
+  }
 
 // Traits that describe how ExtensionFunction should be deleted. This just calls
 // the virtual "Destruct" method on ExtensionFunction, allowing derived classes

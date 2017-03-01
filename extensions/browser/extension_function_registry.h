@@ -26,6 +26,22 @@ ExtensionFunction* NewExtensionFunction() {
 // create instances of them.
 class ExtensionFunctionRegistry {
  public:
+  struct FactoryEntry {
+   public:
+    explicit FactoryEntry();
+    constexpr FactoryEntry(
+        ExtensionFunctionFactory factory,
+        const char* function_name,
+        extensions::functions::HistogramValue histogram_value)
+        : factory_(factory),
+          function_name_(function_name),
+          histogram_value_(histogram_value) {}
+
+    ExtensionFunctionFactory factory_;
+    const char* function_name_;
+    extensions::functions::HistogramValue histogram_value_;
+  };
+
   static ExtensionFunctionRegistry* GetInstance();
   explicit ExtensionFunctionRegistry();
   virtual ~ExtensionFunctionRegistry();
@@ -38,25 +54,12 @@ class ExtensionFunctionRegistry {
   // Factory method for the ExtensionFunction registered as 'name'.
   ExtensionFunction* NewFunction(const std::string& name);
 
+  void Register(const FactoryEntry& entry);
   template <class T>
   void RegisterFunction() {
-    ExtensionFunctionFactory factory = &NewExtensionFunction<T>;
-    factories_[T::function_name()] =
-        FactoryEntry(factory, T::function_name(), T::histogram_value());
+    Register(FactoryEntry(&NewExtensionFunction<T>, T::function_name(),
+                          T::histogram_value()));
   }
-
-  struct FactoryEntry {
-   public:
-    explicit FactoryEntry();
-    explicit FactoryEntry(
-        ExtensionFunctionFactory factory,
-        const char* function_name,
-        extensions::functions::HistogramValue histogram_value);
-
-    ExtensionFunctionFactory factory_;
-    const char* function_name_;
-    extensions::functions::HistogramValue histogram_value_;
-  };
 
   typedef std::map<std::string, FactoryEntry> FactoryMap;
   FactoryMap factories_;

@@ -47,17 +47,12 @@ ExtensionFunction* ExtensionFunctionRegistry::NewFunction(
   return function;
 }
 
+void ExtensionFunctionRegistry::Register(const FactoryEntry& entry) {
+  factories_[entry.function_name_] = entry;
+}
+
 ExtensionFunctionRegistry::FactoryEntry::FactoryEntry()
     : factory_(0),
       function_name_(nullptr),
       histogram_value_(extensions::functions::UNKNOWN) {
-}
-
-ExtensionFunctionRegistry::FactoryEntry::FactoryEntry(
-    ExtensionFunctionFactory factory,
-    const char* function_name,
-    extensions::functions::HistogramValue histogram_value)
-    : factory_(factory),
-      function_name_(function_name),
-      histogram_value_(histogram_value) {
 }
