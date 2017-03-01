@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/extended_authenticator.h"
@@ -49,9 +49,9 @@ const char* kMostCommonPins[] = {"1212", "1004", "2000", "6969",
 QuickUnlockModeList ComputeActiveModes(Profile* profile) {
   QuickUnlockModeList modes;
 
-  chromeos::quick_unlock::PinStorage* pin_storage =
-      chromeos::quick_unlock::PinStorageFactory::GetForProfile(profile);
-  if (pin_storage && pin_storage->IsPinSet())
+  chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
+  if (quick_unlock_storage && quick_unlock_storage->pin_storage()->IsPinSet())
     modes.push_back(quick_unlock_private::QUICK_UNLOCK_MODE_PIN);
 
   return modes;
@@ -400,14 +400,14 @@ void QuickUnlockPrivateSetModesFunction::ApplyModeChange() {
   // Apply changes.
   if (update_pin) {
     Profile* profile = chrome_details_.GetProfile();
-    chromeos::quick_unlock::PinStorage* pin_storage =
-        chromeos::quick_unlock::PinStorageFactory::GetForProfile(profile);
+    chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+        chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
 
     if (pin_credential.empty()) {
-      pin_storage->RemovePin();
+      quick_unlock_storage->pin_storage()->RemovePin();
     } else {
-      pin_storage->SetPin(pin_credential);
-      pin_storage->MarkStrongAuth();
+      quick_unlock_storage->pin_storage()->SetPin(pin_credential);
+      quick_unlock_storage->MarkStrongAuth();
     }
   }
 }

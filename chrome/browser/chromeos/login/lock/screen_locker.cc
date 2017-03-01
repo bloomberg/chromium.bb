@@ -30,8 +30,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -113,10 +113,10 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
       // strong authentication to allow them to use PIN to unlock the device.
       user_manager::User* user =
           content::Details<user_manager::User>(details).ptr();
-      quick_unlock::PinStorage* pin_storage =
-          quick_unlock::PinStorageFactory::GetForUser(user);
-      if (pin_storage)
-        pin_storage->MarkStrongAuth();
+      quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+          quick_unlock::QuickUnlockFactory::GetForUser(user);
+      if (quick_unlock_storage)
+        quick_unlock_storage->MarkStrongAuth();
     } else {
       NOTREACHED() << "Unexpected notification " << type;
     }
@@ -245,10 +245,12 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
     // 2. If the user signed in with cryptohome keys, then the PIN timeout is
     //    going to be reset as well, so it is safe to reset the unlock attempt
     //    count.
-    quick_unlock::PinStorage* pin_storage =
-        quick_unlock::PinStorageFactory::GetForUser(user);
-    if (pin_storage)
-      pin_storage->ResetUnlockAttemptCount();
+    quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+        quick_unlock::QuickUnlockFactory::GetForUser(user);
+    if (quick_unlock_storage) {
+      quick_unlock_storage->pin_storage()->ResetUnlockAttemptCount();
+      quick_unlock_storage->fingerprint_storage()->ResetUnlockAttemptCount();
+    }
 
     UserSessionManager::GetInstance()->UpdateEasyUnlockKeys(user_context);
   } else {
@@ -269,11 +271,11 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
 
 void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
   // The user has signed in using their password, so reset the PIN timeout.
-  quick_unlock::PinStorage* pin_storage =
-      quick_unlock::PinStorageFactory::GetForAccountId(
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForAccountId(
           user_context.GetAccountId());
-  if (pin_storage)
-    pin_storage->MarkStrongAuth();
+  if (quick_unlock_storage)
+    quick_unlock_storage->MarkStrongAuth();
 }
 
 void ScreenLocker::UnlockOnLoginSuccess() {
@@ -312,9 +314,10 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
     // incorrectly more than a few times.
     int dummy_value;
     if (is_pin_attempt_ && base::StringToInt(pin, &dummy_value)) {
-      quick_unlock::PinStorage* pin_storage =
-          quick_unlock::PinStorageFactory::GetForUser(user);
-      if (pin_storage && pin_storage->TryAuthenticatePin(pin)) {
+      quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+          quick_unlock::QuickUnlockFactory::GetForUser(user);
+      if (quick_unlock_storage &&
+          quick_unlock_storage->TryAuthenticatePin(pin)) {
         OnAuthSuccess(user_context);
         return;
       }

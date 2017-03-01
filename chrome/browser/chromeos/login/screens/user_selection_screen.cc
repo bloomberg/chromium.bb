@@ -15,8 +15,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
@@ -62,6 +62,7 @@ const char kKeyInitialLocale[] = "initialLocale";
 const char kKeyInitialMultipleRecommendedLocales[] =
     "initialMultipleRecommendedLocales";
 const char kKeyInitialKeyboardLayout[] = "initialKeyboardLayout";
+const char kKeyAllowFingerprint[] = "allowFingerprint";
 
 // Max number of users to show.
 // Please keep synced with one in signin_userlist_unittest.cc.
@@ -123,12 +124,26 @@ bool CanShowPinForUser(user_manager::User* user) {
   if (!user->is_logged_in())
     return false;
 
-  quick_unlock::PinStorage* pin_storage =
-      quick_unlock::PinStorageFactory::GetForUser(user);
-  if (!pin_storage)
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForUser(user);
+  if (!quick_unlock_storage)
     return false;
 
-  return pin_storage->IsPinAuthenticationAvailable();
+  return quick_unlock_storage->IsPinAuthenticationAvailable();
+}
+
+// Returns true if the fingerprint icon should be displayed for the given
+// |user|.
+bool AllowFingerprintForUser(user_manager::User* user) {
+  if (!user->is_logged_in())
+    return false;
+
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForUser(user);
+  if (!quick_unlock_storage)
+    return false;
+
+  return quick_unlock_storage->IsFingerprintAuthenticationAvailable();
 }
 
 }  // namespace
@@ -180,6 +195,7 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
   user_dict->SetBoolean(kKeyIsActiveDirectory, user->IsActiveDirectoryUser());
+  user_dict->SetBoolean(kKeyAllowFingerprint, AllowFingerprintForUser(user));
 
   FillMultiProfileUserPrefs(user, user_dict, is_signin_to_add);
   FillKnownUserPrefs(user, user_dict);

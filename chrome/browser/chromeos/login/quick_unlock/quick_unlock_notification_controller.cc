@@ -8,8 +8,8 @@
 #include "ash/common/system/system_notifier.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -91,7 +91,8 @@ bool QuickUnlockNotificationController::ShouldShowPinNotification(
     return false;
 
   // Do not show the notification if the pin is already set.
-  PinStorage* pin_storage = PinStorageFactory::GetForProfile(profile);
+  PinStorage* pin_storage =
+      QuickUnlockFactory::GetForProfile(profile)->pin_storage();
   if (pin_storage->IsPinSet())
     return false;
 
@@ -186,5 +187,5 @@ QuickUnlockNotificationController::NotificationParams::NotificationParams() {}
 
 QuickUnlockNotificationController::NotificationParams::~NotificationParams() {}
 
-}  // quick_unlock
+}  // namespace quick_unlock
 }  // namespace chromeos

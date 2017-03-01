@@ -1,10 +1,10 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -15,13 +15,14 @@ namespace chromeos {
 namespace quick_unlock {
 
 // static
-PinStorage* PinStorageFactory::GetForProfile(Profile* profile) {
-  return static_cast<PinStorage*>(
+QuickUnlockStorage* QuickUnlockFactory::GetForProfile(Profile* profile) {
+  return static_cast<QuickUnlockStorage*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-PinStorage* PinStorageFactory::GetForUser(const user_manager::User* user) {
+QuickUnlockStorage* QuickUnlockFactory::GetForUser(
+    const user_manager::User* user) {
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile)
     return nullptr;
@@ -30,7 +31,8 @@ PinStorage* PinStorageFactory::GetForUser(const user_manager::User* user) {
 }
 
 // static
-PinStorage* PinStorageFactory::GetForAccountId(const AccountId& account_id) {
+QuickUnlockStorage* QuickUnlockFactory::GetForAccountId(
+    const AccountId& account_id) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
   if (!user)
@@ -40,20 +42,21 @@ PinStorage* PinStorageFactory::GetForAccountId(const AccountId& account_id) {
 }
 
 // static
-PinStorageFactory* PinStorageFactory::GetInstance() {
-  return base::Singleton<PinStorageFactory>::get();
+QuickUnlockFactory* QuickUnlockFactory::GetInstance() {
+  return base::Singleton<QuickUnlockFactory>::get();
 }
 
-PinStorageFactory::PinStorageFactory()
+QuickUnlockFactory::QuickUnlockFactory()
     : BrowserContextKeyedServiceFactory(
-          "PinStorageFactory",
+          "QuickUnlockFactory",
           BrowserContextDependencyManager::GetInstance()) {}
 
-PinStorageFactory::~PinStorageFactory() {}
+QuickUnlockFactory::~QuickUnlockFactory() {}
 
-KeyedService* PinStorageFactory::BuildServiceInstanceFor(
+KeyedService* QuickUnlockFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new PinStorage(Profile::FromBrowserContext(context)->GetPrefs());
+  return new QuickUnlockStorage(
+      Profile::FromBrowserContext(context)->GetPrefs());
 }
 
 }  // namespace quick_unlock

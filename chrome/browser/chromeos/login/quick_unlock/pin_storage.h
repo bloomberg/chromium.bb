@@ -9,7 +9,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "components/keyed_service/core/keyed_service.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -20,7 +19,9 @@ class PinStorageTestApi;
 
 namespace quick_unlock {
 
-class PinStorage : public KeyedService {
+class QuickUnlockStorage;
+
+class PinStorage {
  public:
   // TODO(sammiequon): Pull this value in from policy. See crbug.com/612271.
   static const int kMaximumUnlockAttempts = 3;
@@ -29,17 +30,7 @@ class PinStorage : public KeyedService {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   explicit PinStorage(PrefService* pref_service);
-  ~PinStorage() override;
-
-  // Mark in storage that the user has had a strong authentication. This means
-  // that they authenticated with their password, for example. PIN unlock will
-  // timeout after a delay.
-  void MarkStrongAuth();
-  // Returns true if the user has been strongly authenticated.
-  bool HasStrongAuth() const;
-  // Returns the time since the last strong authentication. This should not be
-  // called if HasStrongAuth returns false.
-  base::TimeDelta TimeSinceLastStrongAuth() const;
+  ~PinStorage();
 
   // Add a PIN unlock attempt count.
   void AddUnlockAttempt();
@@ -55,6 +46,10 @@ class PinStorage : public KeyedService {
   // Removes the pin; IsPinSet will return false.
   void RemovePin();
 
+ private:
+  friend class chromeos::PinStorageTestApi;
+  friend class QuickUnlockStorage;
+
   // Is PIN entry currently available?
   bool IsPinAuthenticationAvailable() const;
 
@@ -62,16 +57,12 @@ class PinStorage : public KeyedService {
   // This always returns false if IsPinAuthenticationAvailable returns false.
   bool TryAuthenticatePin(const std::string& pin);
 
- private:
   // Return the stored salt/secret. This is fetched directly from pref_service_.
   std::string PinSalt() const;
   std::string PinSecret() const;
 
-  friend class chromeos::PinStorageTestApi;
-
   PrefService* pref_service_;
   int unlock_attempt_count_ = 0;
-  base::Time last_strong_auth_;
 
   DISALLOW_COPY_AND_ASSIGN(PinStorage);
 };

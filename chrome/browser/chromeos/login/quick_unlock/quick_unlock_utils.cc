@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/chrome_features.h"
@@ -24,6 +25,22 @@ const char kQuickUnlockWhitelistOptionPin[] = "PIN";
 // Default minimum PIN length. Policy can increase or decrease this value.
 constexpr int kDefaultMinimumPinLength = 6;
 }  // namespace
+
+base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(
+    PasswordConfirmationFrequency frequency) {
+  switch (frequency) {
+    case PasswordConfirmationFrequency::SIX_HOURS:
+      return base::TimeDelta::FromHours(6);
+    case PasswordConfirmationFrequency::TWELVE_HOURS:
+      return base::TimeDelta::FromHours(12);
+    case PasswordConfirmationFrequency::DAY:
+      return base::TimeDelta::FromDays(1);
+    case PasswordConfirmationFrequency::WEEK:
+      return base::TimeDelta::FromDays(7);
+  }
+  NOTREACHED();
+  return base::TimeDelta();
+}
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   base::ListValue quick_unlock_whitelist_default;
@@ -71,6 +88,9 @@ bool IsPinEnabled(PrefService* pref_service) {
 }
 
 bool IsFingerprintEnabled() {
+  if (enable_for_testing_)
+    return true;
+
   // Enable fingerprint unlock only if the switch is present.
   return base::FeatureList::IsEnabled(features::kQuickUnlockFingerprint);
 }

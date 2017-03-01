@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -354,8 +354,8 @@ TEST_F(QuickUnlockPrivateUnitTest, ModeChangeEventOnlyRaisedWhenModesChange) {
 // Ensures that quick unlock can be enabled and disabled by checking the result
 // of quickUnlockPrivate.GetActiveModes and PinStorage::IsPinSet.
 TEST_F(QuickUnlockPrivateUnitTest, SetModesAndGetActiveModes) {
-  quick_unlock::PinStorage* pin_storage =
-      quick_unlock::PinStorageFactory::GetForProfile(profile());
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForProfile(profile());
 
   // Update mode to PIN raises an event and updates GetActiveModes.
   ExpectModesChanged(
@@ -364,31 +364,31 @@ TEST_F(QuickUnlockPrivateUnitTest, SetModesAndGetActiveModes) {
       QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"111111"}));
   EXPECT_EQ(GetActiveModes(),
             QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN});
-  EXPECT_TRUE(pin_storage->IsPinSet());
+  EXPECT_TRUE(quick_unlock_storage->pin_storage()->IsPinSet());
 
   // SetModes can be used to turn off a quick unlock mode.
   ExpectModesChanged(QuickUnlockModeList{});
   EXPECT_TRUE(SetModes(QuickUnlockModeList{}, CredentialList{}));
   EXPECT_EQ(GetActiveModes(), QuickUnlockModeList{});
-  EXPECT_FALSE(pin_storage->IsPinSet());
+  EXPECT_FALSE(quick_unlock_storage->pin_storage()->IsPinSet());
 }
 
 // Verifies that enabling PIN quick unlock actually talks to the PIN subsystem.
 TEST_F(QuickUnlockPrivateUnitTest, VerifyAuthenticationAgainstPIN) {
-  quick_unlock::PinStorage* pin_storage =
-      quick_unlock::PinStorageFactory::GetForProfile(profile());
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForProfile(profile());
 
   EXPECT_TRUE(SetModes(QuickUnlockModeList{}, CredentialList{}));
-  EXPECT_FALSE(pin_storage->IsPinSet());
+  EXPECT_FALSE(quick_unlock_storage->pin_storage()->IsPinSet());
 
   EXPECT_TRUE(SetModes(
       QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"111111"}));
-  EXPECT_TRUE(pin_storage->IsPinSet());
+  EXPECT_TRUE(quick_unlock_storage->pin_storage()->IsPinSet());
 
-  pin_storage->MarkStrongAuth();
-  pin_storage->ResetUnlockAttemptCount();
-  EXPECT_TRUE(pin_storage->TryAuthenticatePin("111111"));
-  EXPECT_FALSE(pin_storage->TryAuthenticatePin("000000"));
+  quick_unlock_storage->MarkStrongAuth();
+  quick_unlock_storage->pin_storage()->ResetUnlockAttemptCount();
+  EXPECT_TRUE(quick_unlock_storage->TryAuthenticatePin("111111"));
+  EXPECT_FALSE(quick_unlock_storage->TryAuthenticatePin("000000"));
 }
 
 // Verifies that the number of modes and the number of passwords given must be

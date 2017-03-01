@@ -38,22 +38,6 @@ std::string ComputeSecret(const std::string& pin, const std::string& salt) {
   return key.GetSecret();
 }
 
-base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(
-    PasswordConfirmationFrequency frequency) {
-  switch (frequency) {
-    case PasswordConfirmationFrequency::SIX_HOURS:
-      return base::TimeDelta::FromHours(6);
-    case PasswordConfirmationFrequency::TWELVE_HOURS:
-      return base::TimeDelta::FromHours(12);
-    case PasswordConfirmationFrequency::DAY:
-      return base::TimeDelta::FromDays(1);
-    case PasswordConfirmationFrequency::WEEK:
-      return base::TimeDelta::FromDays(7);
-  }
-  NOTREACHED();
-  return base::TimeDelta();
-}
-
 }  // namespace
 
 // static
@@ -66,29 +50,6 @@ PinStorage::PinStorage(PrefService* pref_service)
     : pref_service_(pref_service) {}
 
 PinStorage::~PinStorage() {}
-
-void PinStorage::MarkStrongAuth() {
-  last_strong_auth_ = base::Time::Now();
-  ResetUnlockAttemptCount();
-}
-
-bool PinStorage::HasStrongAuth() const {
-  if (last_strong_auth_.is_null())
-    return false;
-
-  PasswordConfirmationFrequency strong_auth_interval =
-      static_cast<PasswordConfirmationFrequency>(
-          pref_service_->GetInteger(prefs::kQuickUnlockTimeout));
-  base::TimeDelta strong_auth_timeout =
-      PasswordConfirmationFrequencyToTimeDelta(strong_auth_interval);
-
-  return TimeSinceLastStrongAuth() < strong_auth_timeout;
-}
-
-base::TimeDelta PinStorage::TimeSinceLastStrongAuth() const {
-  DCHECK(!last_strong_auth_.is_null());
-  return base::Time::Now() - last_strong_auth_;
-}
 
 void PinStorage::AddUnlockAttempt() {
   ++unlock_attempt_count_;
@@ -127,8 +88,7 @@ bool PinStorage::IsPinAuthenticationAvailable() const {
   const bool exceeded_unlock_attempts =
       unlock_attempt_count() >= kMaximumUnlockAttempts;
 
-  return IsPinEnabled(pref_service_) && IsPinSet() && HasStrongAuth() &&
-         !exceeded_unlock_attempts;
+  return IsPinEnabled(pref_service_) && IsPinSet() && !exceeded_unlock_attempts;
 }
 
 bool PinStorage::TryAuthenticatePin(const std::string& pin) {

@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_UTILS_H_
 
+namespace base {
+class TimeDelta;
+}
+
 class PrefRegistrySimple;
 class PrefService;
 
@@ -21,6 +25,9 @@ enum class PasswordConfirmationFrequency {
   DAY = 2,
   WEEK = 3
 };
+
+base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(
+    PasswordConfirmationFrequency frequency);
 
 // Register quick unlock prefs.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
