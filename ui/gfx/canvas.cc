@@ -326,6 +326,15 @@ void Canvas::DrawSharpLine(PointF p1, PointF p2, SkColor color) {
   DrawLine(p1, p2, flags);
 }
 
+void Canvas::Draw1pxLine(PointF p1, PointF p2, SkColor color) {
+  ScopedCanvas scoped(this);
+  float dsf = UndoDeviceScaleFactor();
+  p1.Scale(dsf);
+  p2.Scale(dsf);
+
+  DrawLine(p1, p2, color);
+}
+
 void Canvas::DrawCircle(const Point& center_point,
                         int radius,
                         const cc::PaintFlags& flags) {

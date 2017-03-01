@@ -94,7 +94,6 @@ const int kMenuEdgeEffectivePadding =
     kMenuExtraMarginFromLeftEdge + (kMenuButtonSize - kMenuIconSize) / 2;
 
 const int kHitRegionPadding = 4;
-const SkColor kTraySeparatorColor = SkColorSetA(SK_ColorWHITE, 0x99);
 const int kSeparatorWidth = 1;
 
 const SkColor kMenuSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);

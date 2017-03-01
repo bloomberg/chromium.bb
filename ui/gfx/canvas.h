@@ -271,7 +271,7 @@ class GFX_EXPORT Canvas {
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawLine(const Point& p1, const Point& p2, SkColor color);
 
-  // Draws a single pixel line with the specified color.
+  // Draws a single dip line with the specified color.
   void DrawLine(const PointF& p1, const PointF& p2, SkColor color);
 
   // Draws a line with the given |flags| parameters.
@@ -287,6 +287,9 @@ class GFX_EXPORT Canvas {
   // Draws a line that's a single DIP. At fractional scale factors, this is
   // floored to the nearest integral number of pixels.
   void DrawSharpLine(PointF p1, PointF p2, SkColor color);
+
+  // As above, but draws a single pixel at all scale factors.
+  void Draw1pxLine(PointF p1, PointF p2, SkColor color);
 
   // Draws a circle with the given |flags| parameters.
   // DEPRECATED in favor of the RectF version below.
