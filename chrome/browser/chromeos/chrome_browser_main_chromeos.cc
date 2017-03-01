@@ -214,8 +214,8 @@ class DBusServices {
   explicit DBusServices(const content::MainFunctionParams& parameters) {
     // Under mash, some D-Bus clients are owned by other processes.
     DBusThreadManager::ProcessMask process_mask =
-        chrome::IsRunningInMash() ? DBusThreadManager::PROCESS_BROWSER
-                                  : DBusThreadManager::PROCESS_ALL;
+        ash_util::IsRunningInMash() ? DBusThreadManager::PROCESS_BROWSER
+                                    : DBusThreadManager::PROCESS_ALL;
 
     // Initialize DBusThreadManager for the browser. This must be done after
     // the main message loop is started, as it uses the message loop.
@@ -232,14 +232,14 @@ class DBusServices {
     service_providers.push_back(
         base::WrapUnique(ProxyResolutionServiceProvider::Create(
             base::MakeUnique<ChromeProxyResolverDelegate>())));
-    if (!chrome::IsRunningInMash()) {
+    if (!ash_util::IsRunningInMash()) {
       // TODO(crbug.com/629707): revisit this with mustash dbus work.
       service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
           base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
     }
     service_providers.push_back(base::MakeUnique<LivenessServiceProvider>());
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
-    if (chrome::IsRunningInMash()) {
+    if (ash_util::IsRunningInMash()) {
       service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
           base::MakeUnique<MusConsoleServiceProviderDelegate>()));
     } else {
@@ -520,7 +520,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   AccessibilityManager::Initialize();
 
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     // Initialize magnification manager before ash tray is created. And this
     // must be placed after UserManager::SessionStarted();
     // TODO(sad): These components expects the ash::Shell instance to be
@@ -763,7 +763,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
     SystemKeyEventListener::Initialize();
   }
 
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     // Listen for XI_HierarchyChanged events. Note: if this is moved to
     // PreMainMessageLoopRun() then desktopui_PageCyclerTests fail for unknown
     // reasons, see http://crosbug.com/24833.
@@ -787,7 +787,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     system::InputDeviceSettings::Get()->UpdateTouchDevicesStatusFromPrefs();
 
     // These are dependent on the ash::Shell singleton already having been
@@ -867,7 +867,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   keyboard_event_rewriters_.reset();
   low_disk_notification_.reset();
 #if defined(USE_X11)
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     // The XInput2 event listener needs to be shut down earlier than when
     // Singletons are finally destroyed in AtExitManager.
     XInputHierarchyChangedEventListener::GetInstance()->Stop();
@@ -884,7 +884,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   login_lock_state_notifier_.reset();
   idle_action_warning_observer_.reset();
 
-  if (!chrome::IsRunningInMash())
+  if (!ash_util::IsRunningInMash())
     MagnificationManager::Shutdown();
 
   media::SoundsManager::Shutdown();
@@ -926,7 +926,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // closed above.
   arc_kiosk_app_manager_.reset();
 
-  if (!chrome::IsRunningInMash())
+  if (!ash_util::IsRunningInMash())
     AccessibilityManager::Shutdown();
 
   input_method::Shutdown();

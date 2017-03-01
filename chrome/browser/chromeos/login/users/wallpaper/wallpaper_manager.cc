@@ -198,7 +198,7 @@ void SetKnownUserWallpaperFilesId(
 // A helper to set the wallpaper image for Classic Ash and Mash.
 void SetWallpaper(const gfx::ImageSkia& image,
                   wallpaper::WallpaperLayout layout) {
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     // In mash, connect to the WallpaperController interface via mojo.
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();

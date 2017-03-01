@@ -78,7 +78,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   gfx::NativeWindow context =
       browser ? browser->window()->GetNativeWindow() : nullptr;
 #if defined(USE_ASH)
-  if (!chrome::IsRunningInMash() && !context)
+  if (!ash_util::IsRunningInMash() && !context)
     context = ash::wm::GetActiveWindow();
 #endif
 

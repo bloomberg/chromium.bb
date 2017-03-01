@@ -384,7 +384,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 OobeUI::~OobeUI() {
   core_handler_->SetDelegate(nullptr);
   network_dropdown_handler_->RemoveObserver(error_screen_handler_);
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     // TODO: Ash needs to expose screen dimming api. See
     // http://crbug.com/646034.
     NOTIMPLEMENTED();
@@ -614,7 +614,7 @@ void OobeUI::OnCurrentScreenChanged(OobeScreen new_screen) {
       std::find(std::begin(kDimOverlayScreenIds),
                 std::end(kDimOverlayScreenIds),
                 new_screen) != std::end(kDimOverlayScreenIds);
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     if (!screen_dimmer_) {
       screen_dimmer_ = base::MakeUnique<ash::ScreenDimmer>(
           ash::ScreenDimmer::Container::LOCK_SCREEN);

@@ -923,7 +923,7 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       is_ime_menu_activated_(false) {
   // TODO(mohsen): Revisit using FakeImeKeyboard with mash when InputController
   // work is ready. http://crbug.com/601981
-  if (IsRunningAsSystemCompositor() && !chrome::IsRunningInMash())
+  if (IsRunningAsSystemCompositor() && !ash_util::IsRunningInMash())
     keyboard_.reset(ImeKeyboard::Create());
   else
     keyboard_.reset(new FakeImeKeyboard());

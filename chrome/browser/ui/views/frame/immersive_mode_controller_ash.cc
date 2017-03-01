@@ -179,7 +179,7 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
                                                    ->exclusive_access_manager()
                                                    ->fullscreen_controller());
   if (enable) {
-    if (chrome::IsRunningInMash()) {
+    if (ash_util::IsRunningInMash()) {
       browser_view_->GetWidget()->GetNativeView()->GetRootWindow()->AddObserver(
           this);
       // TODO: http://crbug.com/640381.
@@ -189,7 +189,7 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
     }
     registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED, source);
   } else {
-    if (chrome::IsRunningInMash()) {
+    if (ash_util::IsRunningInMash()) {
       browser_view_->GetWidget()
           ->GetNativeView()
           ->GetRootWindow()
@@ -213,7 +213,7 @@ void ImmersiveModeControllerAsh::LayoutBrowserRootView() {
 }
 
 void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
-  if (!chrome::IsRunningInMash())
+  if (!ash_util::IsRunningInMash())
     return;
 
   DCHECK(!mash_reveal_widget_);
@@ -259,7 +259,7 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
   // In mash the window manager (ash) also renders to the non-client area. In
   // order to see the decorations drawn by ash the layer needs to be marked as
   // not filling bounds opaquely.
-  if (chrome::IsRunningInMash())
+  if (ash_util::IsRunningInMash())
     browser_view_->top_container()->layer()->SetFillsBoundsOpaquely(false);
   LayoutBrowserRootView();
   CreateMashRevealWidget();
@@ -337,7 +337,7 @@ void ImmersiveModeControllerAsh::Observe(
   if (!controller_->IsEnabled())
     return;
 
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     // TODO: http://crbug.com/640384.
     NOTIMPLEMENTED();
     return;
@@ -356,7 +356,7 @@ void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
                                                          intptr_t old) {
   // In mash the window manager may move us out of immersive mode by changing
   // the show state. When this happens notify the controller.
-  DCHECK(chrome::IsRunningInMash());
+  DCHECK(ash_util::IsRunningInMash());
   if (key == aura::client::kShowStateKey &&
       !browser_view_->GetWidget()->IsFullscreen()) {
     SetEnabled(false);

@@ -254,7 +254,7 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
     : host_(host), oobe_ui_(oobe_ui), weak_factory_(this) {
   DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     CHECK(accessibility_manager);
     accessibility_subscription_ = accessibility_manager->RegisterCallback(

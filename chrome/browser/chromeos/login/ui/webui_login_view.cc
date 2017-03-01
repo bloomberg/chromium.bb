@@ -178,7 +178,7 @@ WebUILoginView::~WebUILoginView() {
   for (auto& observer : observer_list_)
     observer.OnHostDestroying();
 
-  if (!chrome::IsRunningInMash() &&
+  if (!ash_util::IsRunningInMash() &&
       ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
     ash::Shell::GetInstance()->GetPrimarySystemTray()->SetNextFocusableView(
         nullptr);
@@ -323,7 +323,7 @@ void WebUILoginView::LoadURL(const GURL& url) {
   web_view()->RequestFocus();
 
   // There is no Shell instance while running in mash.
-  if (chrome::IsRunningInMash())
+  if (ash_util::IsRunningInMash())
     return;
 }
 
@@ -459,7 +459,7 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
 
   // Focus is accepted, but the Ash system tray is not available in Mash, so
   // exit early.
-  if (chrome::IsRunningInMash())
+  if (ash_util::IsRunningInMash())
     return true;
 
   ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();

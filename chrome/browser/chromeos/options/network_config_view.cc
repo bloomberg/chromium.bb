@@ -55,7 +55,7 @@ gfx::NativeWindow GetParentForUnhostedDialog() {
     // TODO(jamescook): LoginDisplayHost has the wrong native window in mash.
     // This will fix itself when mash converts from ui::Window to aura::Window.
     // http://crbug.com/659155
-    if (!chrome::IsRunningInMash())
+    if (!ash_util::IsRunningInMash())
       return LoginDisplayHost::default_host()->GetNativeWindow();
   } else {
     Browser* browser = chrome::FindTabbedBrowser(

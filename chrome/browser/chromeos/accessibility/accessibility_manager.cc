@@ -662,7 +662,7 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
     return;
   autoclick_enabled_ = enabled;
 
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     mash::mojom::LaunchablePtr launchable;
@@ -699,7 +699,7 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
     return;
   autoclick_delay_ms_ = autoclick_delay_ms;
 
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     ash::autoclick::mojom::AutoclickControllerPtr autoclick_controller;
@@ -739,7 +739,7 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   virtual_keyboard_enabled_ = enabled;
 
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     // Note that there are two versions of the on-screen keyboard. A full layout
     // is provided for accessibility, which includes sticky modifier keys to
     // enable typing of hotkeys. A compact version is used in touchview mode
@@ -1022,7 +1022,7 @@ void AccessibilityManager::InputMethodChanged(
     bool show_message) {
   // Sticky keys is implemented only in ash.
   // TODO(dpolukhin): support Athena, crbug.com/408733.
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     ash::Shell::GetInstance()->sticky_keys_controller()->SetModifiersEnabled(
         manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
         manager->IsAltGrUsedByCurrentInputMethod());

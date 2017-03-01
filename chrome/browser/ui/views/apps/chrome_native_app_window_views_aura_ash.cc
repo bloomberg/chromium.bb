@@ -145,7 +145,7 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   if (app_window->window_type_is_panel()) {
     // Ash's ShelfWindowWatcher handles app panel windows once this type is set.
     // The type should have been initialized for mash below, via mus_properties.
-    if (!chrome::IsRunningInMash())
+    if (!ash_util::IsRunningInMash())
       window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP_PANEL);
   } else {
     window->SetProperty(aura::client::kAppType,
@@ -162,7 +162,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   if (create_params.is_ime_window) {
     // Put ime windows into the ime window container on the primary display.
     int container_id = ash::kShellWindowId_ImeWindowParentContainer;
-    if (chrome::IsRunningInMash()) {
+    if (ash_util::IsRunningInMash()) {
       init_params->mus_properties
           [ui::mojom::WindowManager::kContainerId_InitProperty] =
           mojo::ConvertTo<std::vector<uint8_t>>(container_id);
@@ -190,7 +190,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
                                                           init_params,
                                                           widget);
 
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     // Ash's ShelfWindowWatcher handles app panel windows once this type is set.
     init_params
         ->mus_properties[ui::mojom::WindowManager::kShelfItemType_Property] =
@@ -318,7 +318,7 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   if (IsFrameless())
     return CreateNonStandardAppFrame();
 
-  if (chrome::IsRunningInMash())
+  if (ash_util::IsRunningInMash())
     return ChromeNativeAppWindowViews::CreateNonClientFrameView(widget);
 
   if (app_window()->window_type_is_panel()) {
@@ -362,7 +362,7 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
         ash::wm::GetWindowState(widget()->GetNativeWindow());
     window_state->set_hide_shelf_when_fullscreen(fullscreen_types !=
                                                  AppWindow::FULLSCREEN_TYPE_OS);
-    if (!chrome::IsRunningInMash()) {
+    if (!ash_util::IsRunningInMash()) {
       DCHECK(ash::Shell::HasInstance());
       ash::Shell::GetInstance()->UpdateShelfVisibility();
     }

@@ -54,10 +54,6 @@ std::unique_ptr<service_manager::Service> CreateEmbeddedAshService(
   return base::MakeUnique<EmbeddedAshService>(task_runner);
 }
 
-}  // namespace ash_util
-
-namespace chrome {
-
 bool ShouldOpenAshOnStartup() {
   return !IsRunningInMash();
 }
@@ -68,11 +64,11 @@ bool IsRunningInMash() {
 
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {
   // When running in mash the browser doesn't handle ash accelerators.
-  if (chrome::IsRunningInMash())
+  if (IsRunningInMash())
     return false;
 
   return ash::WmShell::Get()->accelerator_controller()->IsDeprecated(
       accelerator);
 }
 
-}  // namespace chrome
+}  // namespace ash_util

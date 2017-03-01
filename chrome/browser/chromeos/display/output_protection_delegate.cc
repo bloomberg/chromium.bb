@@ -102,7 +102,7 @@ bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
   if (!window)
     return false;
 
-  if (chrome::IsRunningInMash())
+  if (ash_util::IsRunningInMash())
     controller_ = base::MakeUnique<OutputProtectionControllerMus>();
   else
     controller_ = base::MakeUnique<OutputProtectionControllerAsh>();

@@ -38,7 +38,7 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
 
 void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     // Register ash-specific window properties with Chrome's property converter.
     // This propagates ash properties set on chrome windows to ash, via mojo.
     DCHECK(views::MusClient::Exists());
@@ -61,10 +61,10 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
 }
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
-  if (chrome::ShouldOpenAshOnStartup())
+  if (ash_util::ShouldOpenAshOnStartup())
     chrome::OpenAsh(gfx::kNullAcceleratedWidget);
 
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     immersive_context_ = base::MakeUnique<ImmersiveContextMus>();
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryMus>();
   }
@@ -86,7 +86,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     DCHECK(!ash::Shell::HasInstance());
     DCHECK(!ChromeLauncherController::instance());
     chrome_launcher_controller_mus_ =

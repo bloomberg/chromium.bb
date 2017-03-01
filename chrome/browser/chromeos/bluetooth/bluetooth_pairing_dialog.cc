@@ -66,7 +66,7 @@ void BluetoothPairingDialog::ShowInContainer(int container_id) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = view;
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     using ui::mojom::WindowManager;
     params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);

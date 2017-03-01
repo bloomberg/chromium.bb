@@ -14,7 +14,7 @@ namespace chromeos {
 InputEventsBlocker::InputEventsBlocker() {
   // TODO(mash): Implement a mash version. This will probably need to talk to
   // the window server.
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     ash::Shell::GetInstance()->PrependPreTargetHandler(this);
     VLOG(1) << "InputEventsBlocker " << this << " created.";
   } else {
@@ -23,7 +23,7 @@ InputEventsBlocker::InputEventsBlocker() {
 }
 
 InputEventsBlocker::~InputEventsBlocker() {
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     ash::Shell::GetInstance()->RemovePreTargetHandler(this);
     VLOG(1) << "InputEventsBlocker " << this << " destroyed.";
   } else {

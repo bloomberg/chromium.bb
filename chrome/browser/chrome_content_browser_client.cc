@@ -3241,7 +3241,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
 
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     content::ServiceInfo info;
     info.factory = base::Bind(&ash_util::CreateEmbeddedAshService,
                               base::ThreadTaskRunnerHandle::Get());

@@ -58,7 +58,7 @@ namespace chromeos {
 CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
     : oobe_ui_(oobe_ui), version_info_updater_(this) {
   set_call_js_prefix(kJsScreenPath);
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     CHECK(accessibility_manager);
     accessibility_subscription_ = accessibility_manager->RegisterCallback(
@@ -314,7 +314,7 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(
   if (delegate_)
     delegate_->OnCurrentScreenChanged(screen);
   // TODO(mash): Support EventRewriterController; see crbug.com/647781
-  if (!chrome::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash()) {
     KeyboardDrivenEventRewriter::GetInstance()->SetArrowToTabRewritingEnabled(
         screen == OobeScreen::SCREEN_OOBE_EULA);
   }
@@ -399,7 +399,7 @@ void CoreOobeHandler::UpdateShutdownAndRebootVisibility(
 }
 
 void CoreOobeHandler::UpdateA11yState() {
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     NOTIMPLEMENTED();
     return;
   }

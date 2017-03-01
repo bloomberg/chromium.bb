@@ -1344,7 +1344,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   }
 
 #if defined(OS_CHROMEOS)
-  if (chrome::IsAcceleratorDeprecated(accelerator)) {
+  if (ash_util::IsAcceleratorDeprecated(accelerator)) {
     if (event.type() == blink::WebInputEvent::RawKeyDown)
       *is_keyboard_shortcut = true;
     return false;

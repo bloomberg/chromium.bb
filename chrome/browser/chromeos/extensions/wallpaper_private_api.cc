@@ -173,7 +173,7 @@ WindowStateManager* g_window_state_manager = NULL;
 // static
 void WindowStateManager::MinimizeInactiveWindows(
     const std::string& user_id_hash) {
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     NOTIMPLEMENTED();
     return;
   }
@@ -186,7 +186,7 @@ void WindowStateManager::MinimizeInactiveWindows(
 
 // static
 void WindowStateManager::RestoreWindows(const std::string& user_id_hash) {
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     NOTIMPLEMENTED();
     return;
   }

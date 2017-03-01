@@ -157,7 +157,7 @@ void ChromeSessionManager::Initialize(
     bool is_running_test) {
   // Keep Chrome alive for mash.
   // TODO(xiyuan): Remove this when session manager is moved out of Chrome.
-  if (chrome::IsRunningInMash() &&
+  if (ash_util::IsRunningInMash() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisableZeroBrowsersOpenForTests)) {
     g_browser_process->platform_part()->RegisterKeepAlive();

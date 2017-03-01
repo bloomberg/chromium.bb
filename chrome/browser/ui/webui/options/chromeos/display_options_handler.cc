@@ -195,13 +195,13 @@ base::DictionaryValue* ConvertBoundsToValue(const gfx::Rect& bounds) {
 
 DisplayOptionsHandler::DisplayOptionsHandler() {
   // TODO(mash) Support Chrome display settings in Mash. crbug.com/548429
-  if (!chrome::IsRunningInMash())
+  if (!ash_util::IsRunningInMash())
     ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
 }
 
 DisplayOptionsHandler::~DisplayOptionsHandler() {
   // TODO(mash) Support Chrome display settings in Mash. crbug.com/548429
-  if (!chrome::IsRunningInMash())
+  if (!ash_util::IsRunningInMash())
     ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 }
 
@@ -380,7 +380,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
 
 void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
   // TODO(mash) Support Chrome display settings in Mash. crbug.com/548429
-  if (chrome::IsRunningInMash())
+  if (ash_util::IsRunningInMash())
     return;
 
   display::DisplayManager* display_manager = GetDisplayManager();

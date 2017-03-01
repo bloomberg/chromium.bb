@@ -80,7 +80,7 @@ AppListServiceAsh* AppListServiceAsh::GetInstance() {
 
 AppListServiceAsh::AppListServiceAsh() {
   std::unique_ptr<app_list::AppListPresenterDelegateFactory> factory;
-  if (chrome::IsRunningInMash()) {
+  if (ash_util::IsRunningInMash()) {
     factory = base::MakeUnique<AppListPresenterDelegateFactoryMus>(
         base::MakeUnique<ViewDelegateFactoryImpl>(this));
   } else {

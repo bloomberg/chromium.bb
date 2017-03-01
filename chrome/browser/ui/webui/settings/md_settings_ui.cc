@@ -172,7 +172,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 
   // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
   bool enable_power_settings =
-      !chrome::IsRunningInMash() &&
+      !ash_util::IsRunningInMash() &&
       (switches::PowerOverlayEnabled() ||
        (ash::PowerStatus::Get()->IsBatteryPresent() &&
         ash::PowerStatus::Get()->SupportsDualRoleDevices()));

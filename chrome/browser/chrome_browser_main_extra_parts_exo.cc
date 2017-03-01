@@ -124,7 +124,7 @@ void ChromeBrowserMainExtraPartsExo::PreProfileInit() {
 
   arc_notification_surface_manager_ =
       base::MakeUnique<arc::ArcNotificationSurfaceManager>();
-  if (chrome::IsRunningInMash())
+  if (ash_util::IsRunningInMash())
     wm_helper_ = base::MakeUnique<exo::WMHelperMus>();
   else
     wm_helper_ = base::MakeUnique<exo::WMHelperAsh>();

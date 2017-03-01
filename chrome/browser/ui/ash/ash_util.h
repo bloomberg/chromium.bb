@@ -25,11 +25,6 @@ namespace ash_util {
 std::unique_ptr<service_manager::Service> CreateEmbeddedAshService(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
-}  // namespace ash_util
-
-// TODO(jamescook): Change this namespace to ash_util.
-namespace chrome {
-
 // Returns true if Ash should be run at startup.
 bool ShouldOpenAshOnStartup();
 
@@ -40,6 +35,6 @@ bool IsRunningInMash();
 // be consumed by web contents if needed.
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator);
 
-}  // namespace chrome
+}  // namespace ash_util
 
 #endif  // CHROME_BROWSER_UI_ASH_ASH_UTIL_H_

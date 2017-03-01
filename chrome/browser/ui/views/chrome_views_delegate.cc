@@ -294,7 +294,7 @@ ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
   // Early return because mash chrome does not have access to ash::Shell
-  if (chrome::IsRunningInMash())
+  if (ash_util::IsRunningInMash())
     return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
 
   ash::AcceleratorController* accelerator_controller =
