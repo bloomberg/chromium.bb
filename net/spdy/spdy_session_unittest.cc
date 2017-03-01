@@ -5625,9 +5625,34 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameForOriginNotCoveredByCert) {
   ASSERT_TRUE(altsvc_vector.empty());
 }
 
-TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameWithEmptyOriginOnZeroStream) {
+// An ALTSVC frame on stream 0 with empty origin MUST be ignored.
+// (RFC 7838 Section 4)
+TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameWithEmptyOriginOnStreamZero) {
   SpdyAltSvcIR altsvc_ir(0);
   altsvc_ir.add_altsvc(alternative_service_);
+  AddSocketData(altsvc_ir);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSecureSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceVector altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          session_origin);
+  ASSERT_TRUE(altsvc_vector.empty());
+}
+
+// An ALTSVC frame on a stream other than stream 0 with non-empty origin MUST be
+// ignored.  (RFC 7838 Section 4)
+TEST_F(AltSvcFrameTest,
+       DoNotProcessAltSvcFrameWithNonEmptyOriginOnNonZeroStream) {
+  SpdyAltSvcIR altsvc_ir(1);
+  altsvc_ir.add_altsvc(alternative_service_);
+  altsvc_ir.set_origin("https://mail.example.org");
   AddSocketData(altsvc_ir);
   AddSSLSocketData();
 
