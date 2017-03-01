@@ -783,7 +783,11 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
                           automation_extension.value());
 #else
     if (switches->HasSwitch("disable-extensions")) {
+      // For Chrome 56 and earlier:
       UpdateExtensionSwitch(switches, "load-component-extension",
+                            automation_extension.value());
+      // For Chrome 57 and later:
+      UpdateExtensionSwitch(switches, "disable-extensions-except",
                             automation_extension.value());
     } else {
       extension_paths.push_back(automation_extension.value());
