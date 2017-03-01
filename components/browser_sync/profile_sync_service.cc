@@ -176,7 +176,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       engine_initialized_(false),
       sync_disabled_by_admin_(false),
       is_auth_in_progress_(false),
-      local_sync_backend_folder_(init_params.local_sync_backend_folder),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
       configure_status_(DataTypeManager::UNKNOWN),

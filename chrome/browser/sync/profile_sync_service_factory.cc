@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -74,11 +75,6 @@ void UpdateNetworkTime(const base::Time& network_time,
       base::Bind(&UpdateNetworkTimeOnUIThread, network_time, resolution,
                  latency, base::TimeTicks::Now()));
 }
-
-#if defined(OS_WIN)
-static const base::FilePath::CharType kLoopbackServerBackendFilename[] =
-    FILE_PATH_LITERAL("profile.pb");
-#endif
 
 }  // anonymous namespace
 
@@ -160,27 +156,31 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
           blocking_pool->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
-  bool local_sync_backend_enabled = false;
+  if (!client_factory_) {
+    init_params.sync_client =
+        base::MakeUnique<browser_sync::ChromeSyncClient>(profile);
+  } else {
+    init_params.sync_client = client_factory_->Run(profile);
+  }
 
+  bool local_sync_backend_enabled = false;
 // Since the local sync backend is currently only supported on Windows don't
 // even check the pref on other os-es.
 #if defined(OS_WIN)
   syncer::SyncPrefs prefs(profile->GetPrefs());
   local_sync_backend_enabled = prefs.IsLocalSyncEnabled();
+  UMA_HISTOGRAM_BOOLEAN("Sync.Local.Enabled", local_sync_backend_enabled);
+
   if (local_sync_backend_enabled) {
-    // This code as it is now will assume the same profile order is present on
-    // all machines, which is not a given. It is to be defined if only the
-    // Default profile should get this treatment or all profile as is the case
-    // now. The solution for now will be to assume profiles are created in the
-    // same order on all machines and in the future decide if only the Default
-    // one should be considered roamed.
-    init_params.local_sync_backend_folder = prefs.GetLocalSyncBackendDir();
-    init_params.local_sync_backend_folder =
-        init_params.local_sync_backend_folder.Append(
-            init_params.base_directory.BaseName());
-    init_params.local_sync_backend_folder =
-        init_params.local_sync_backend_folder.Append(
-            kLoopbackServerBackendFilename);
+    base::FilePath local_sync_backend_folder =
+        init_params.sync_client->GetLocalSyncBackendFolder();
+
+    // If the user has not specified a folder and we can't get the default
+    // roaming profile location the sync service will not be created.
+    UMA_HISTOGRAM_BOOLEAN("Sync.Local.RoamingProfileUnavailable",
+                          local_sync_backend_folder.empty());
+    if (local_sync_backend_folder.empty())
+      return nullptr;
 
     init_params.start_behavior = ProfileSyncService::AUTO_START;
   }
@@ -214,13 +214,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     init_params.start_behavior = browser_defaults::kSyncAutoStarts
                                      ? ProfileSyncService::AUTO_START
                                      : ProfileSyncService::MANUAL_START;
-  }
-
-  if (!client_factory_) {
-    init_params.sync_client =
-        base::MakeUnique<browser_sync::ChromeSyncClient>(profile);
-  } else {
-    init_params.sync_client = client_factory_->Run(profile);
   }
 
   auto pss = base::MakeUnique<ProfileSyncService>(std::move(init_params));

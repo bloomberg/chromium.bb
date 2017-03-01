@@ -241,7 +241,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner;
-    base::FilePath local_sync_backend_folder;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -785,9 +784,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Set to true if a signin has completed but we're still waiting for the
   // engine to refresh its credentials.
   bool is_auth_in_progress_;
-
-  // The location where the local sync backend stores its data.
-  base::FilePath local_sync_backend_folder_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;

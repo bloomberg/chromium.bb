@@ -186,6 +186,10 @@ PrefService* IOSChromeSyncClient::GetPrefService() {
   return browser_state_->GetPrefs();
 }
 
+base::FilePath IOSChromeSyncClient::GetLocalSyncBackendFolder() {
+  return base::FilePath();
+}
+
 bookmarks::BookmarkModel* IOSChromeSyncClient::GetBookmarkModel() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return ios::BookmarkModelFactory::GetForBrowserState(browser_state_);

@@ -39,6 +39,7 @@ class ChromeSyncClient : public syncer::SyncClient {
   void Initialize() override;
   syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
+  base::FilePath GetLocalSyncBackendFolder() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;

@@ -560,23 +560,7 @@ bool SyncPrefs::IsLocalSyncEnabled() const {
 }
 
 base::FilePath SyncPrefs::GetLocalSyncBackendDir() const {
-  base::FilePath local_sync_backend_folder =
-      pref_service_->GetFilePath(prefs::kLocalSyncBackendDir);
-
-#if defined(OS_WIN)
-  if (local_sync_backend_folder.empty()) {
-    // TODO(pastarmovj): Add DIR_ROAMING_USER_DATA to PathService to simplify
-    // this code and move the logic in its right place. See crbug/657810.
-    CHECK(
-        base::PathService::Get(base::DIR_APP_DATA, &local_sync_backend_folder));
-
-    // TODO(pastarmovj): Quick and dirty solution for stage 1 of crbug/694464
-    // for merging back into Chrome 57.
-    local_sync_backend_folder = local_sync_backend_folder.Append(
-        FILE_PATH_LITERAL("Google/Chrome/User Data"));
-  }
-#endif  // defined(OS_WIN)
-  return local_sync_backend_folder;
+  return pref_service_->GetFilePath(prefs::kLocalSyncBackendDir);
 }
 
 }  // namespace syncer

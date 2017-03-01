@@ -48,6 +48,10 @@ PrefService* FakeSyncClient::GetPrefService() {
   return &pref_service_;
 }
 
+base::FilePath FakeSyncClient::GetLocalSyncBackendFolder() {
+  return base::FilePath();
+}
+
 bookmarks::BookmarkModel* FakeSyncClient::GetBookmarkModel() {
   return nullptr;
 }

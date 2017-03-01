@@ -26,11 +26,6 @@ namespace {
 const base::FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
 
-#if defined(OS_WIN)
-const base::FilePath::CharType kLoopbackServerBackendFilename[] =
-    FILE_PATH_LITERAL("profile.pb");
-#endif
-
 EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
   EngineComponentsFactory::Switches factory_switches = {
       EngineComponentsFactory::ENCRYPTION_KEYSTORE,
@@ -124,8 +119,8 @@ void SyncServiceBase::InitializeEngine() {
   // The first time we start up the engine we want to ensure we have a clean
   // directory, so delete any old one that might be there.
   params.delete_sync_data_folder = !IsFirstSetupComplete();
-  params.enable_local_sync_backend =
-      GetLocalSyncConfig(&params.local_sync_backend_folder);
+  params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
+  params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
   params.restored_key_for_bootstrapping =
       sync_prefs_.GetEncryptionBootstrapToken();
   params.restored_keystore_key_for_bootstrapping =
@@ -140,40 +135,6 @@ void SyncServiceBase::InitializeEngine() {
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
 
   engine_->Initialize(std::move(params));
-}
-
-bool SyncServiceBase::GetLocalSyncConfig(
-    base::FilePath* local_sync_backend_folder) const {
-  bool enable_local_sync_backend = false;
-  *local_sync_backend_folder = sync_prefs_.GetLocalSyncBackendDir();
-#if defined(OS_WIN)
-  enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
-  UMA_HISTOGRAM_BOOLEAN("Sync.Local.Enabled", enable_local_sync_backend);
-  if (local_sync_backend_folder->empty()) {
-    // TODO(pastarmovj): Add DIR_ROAMING_USER_DATA to PathService to simplify
-    // this code and move the logic in its right place. See crbug/657810.
-    if (!base::PathService::Get(base::DIR_APP_DATA,
-                                local_sync_backend_folder)) {
-      SYSLOG(WARNING) << "Local sync can not get the roaming profile folder.";
-      UMA_HISTOGRAM_BOOLEAN("Sync.Local.RoamingProfileUnavailable", false);
-      return false;
-    }
-    *local_sync_backend_folder = local_sync_backend_folder->Append(
-        FILE_PATH_LITERAL("Chrome/User Data"));
-  }
-  // This code as it is now will assume the same profile order is present on all
-  // machines, which is not a given. It is to be defined if only the Default
-  // profile should get this treatment or all profile as is the case now. The
-  // solution for now will be to assume profiles are created in the same order
-  // on all machines and in the future decide if only the Default one should be
-  // considered roamed.
-  // See http://crbug.com/674928.
-  *local_sync_backend_folder =
-      local_sync_backend_folder->Append(base_directory_.BaseName());
-  *local_sync_backend_folder =
-      local_sync_backend_folder->Append(kLoopbackServerBackendFilename);
-#endif  // defined(OS_WIN)
-  return enable_local_sync_backend;
 }
 
 void SyncServiceBase::ResetCryptoState() {

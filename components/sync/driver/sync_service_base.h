@@ -121,8 +121,6 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
   base::ThreadChecker thread_checker_;
 
  private:
-  bool GetLocalSyncConfig(base::FilePath* local_sync_backend_folder) const;
-
   DISALLOW_COPY_AND_ASSIGN(SyncServiceBase);
 };
 

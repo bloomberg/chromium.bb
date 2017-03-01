@@ -222,8 +222,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
             ProfileSyncService::AUTO_START, builder.Build());
 
     prefs()->SetBoolean(syncer::prefs::kEnableLocalSyncBackend, true);
-    init_params.local_sync_backend_folder =
-        base::FilePath(FILE_PATH_LITERAL("dummyPath"));
     init_params.oauth2_token_service = nullptr;
     init_params.gaia_cookie_manager_service = nullptr;
 

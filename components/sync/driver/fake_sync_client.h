@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -26,6 +27,7 @@ class FakeSyncClient : public SyncClient {
 
   SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
+  base::FilePath GetLocalSyncBackendFolder() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;

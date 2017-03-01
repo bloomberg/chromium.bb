@@ -67,6 +67,10 @@ class SyncClient {
   // Returns the current profile's preference service.
   virtual PrefService* GetPrefService() = 0;
 
+  // Returns the path to the folder used for storing the local sync database.
+  // It is only used when sync is running against a local backend.
+  virtual base::FilePath GetLocalSyncBackendFolder() = 0;
+
   // DataType specific service getters.
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual favicon::FaviconService* GetFaviconService() = 0;
