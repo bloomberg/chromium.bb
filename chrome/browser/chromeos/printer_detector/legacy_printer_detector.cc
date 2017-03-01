@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printer_detector/printer_detector.h"
-
 #include <stdint.h>
 
 #include <memory>
@@ -12,23 +10,20 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/webstore_widget_private.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/user_manager/user.h"
@@ -62,9 +57,6 @@ const char kPrinterProviderFoundNotificationID[] =
 
 const char kNoPrinterProviderNotificationID[] =
     "chrome://settings/printer/no_printer_app";
-
-const char kUSBPrinterFoundNotificationID[] =
-    "chrome://settings/cupsPrinters/printer_found";
 
 // Base class used for printer USB interfaces
 // (https://www.usb.org/developers/defined_class).
@@ -151,7 +143,6 @@ class PrinterProviderExistsNotificationDelegate : public NotificationDelegate {
 
 // Delegate for notification shown when there are no printer provider apps that
 // support the plugged in printer found.
-//
 // The notification is clickable, and clicking it is supposed to launch
 // Chrome Web Store widget listing apps that can support the plugged in printer.
 // (not implemented yet).
@@ -207,80 +198,32 @@ class SearchPrinterAppNotificationDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(SearchPrinterAppNotificationDelegate);
 };
 
-// USBPrinterSetupNotificationDelegate takes a pointer to the Impl class, so
-// we have to forward declare it.
-class PrinterDetectorImpl;
-
-class USBPrinterSetupNotificationDelegate : public NotificationDelegate {
+// The PrinterDetector that initiates extension-based USB printer setup:
+//
+// * if there is a printer provider extension for a detected USB printer
+// installed, it shows a notification informing the user the printer is ready to
+// be used.
+//
+// * otherwise, it shows a notification offering the user an option to install a
+// printer provider extension for the printer from the Chrome Web Store.
+//
+// TODO(justincarlson) - Remove this implementation when CUPS support is enabled
+// by default.
+class LegacyPrinterDetectorImpl : public PrinterDetector,
+                                  public device::UsbService::Observer {
  public:
-  explicit USBPrinterSetupNotificationDelegate(
-      PrinterDetectorImpl* printer_detector)
-      : printer_detector_(printer_detector) {}
-
-  // NotificationDelegate override:
-  std::string id() const override { return kUSBPrinterFoundNotificationID; }
-
-  // This is defined out of line because it needs the PrinterDetectorImpl
-  // full class declaration, not just the forward declaration.
-  void ButtonClick(int button_index) override;
-
-  bool HasClickedListener() override { return true; }
-
- private:
-  ~USBPrinterSetupNotificationDelegate() override = default;
-
-  PrinterDetectorImpl* printer_detector_;
-
-  DISALLOW_COPY_AND_ASSIGN(USBPrinterSetupNotificationDelegate);
-};
-
-class PrinterDetectorImpl : public PrinterDetector,
-                            public device::UsbService::Observer {
- public:
-  explicit PrinterDetectorImpl(Profile* profile)
+  explicit LegacyPrinterDetectorImpl(Profile* profile)
       : profile_(profile),
         notification_ui_manager_(nullptr),
         observer_(this),
         weak_ptr_factory_(this) {
     extensions::ExtensionSystem::Get(profile)->ready().Post(
-        FROM_HERE, base::Bind(&PrinterDetectorImpl::Initialize,
+        FROM_HERE, base::Bind(&LegacyPrinterDetectorImpl::Initialize,
                               weak_ptr_factory_.GetWeakPtr()));
   }
-  ~PrinterDetectorImpl() override {}
-
-  void ClickOnNotificationButton(int button_index) {
-    // Remove the old notification first.
-    const ProfileID profile_id = NotificationUIManager::GetProfileID(profile_);
-    DCHECK(notification_ui_manager_);
-    notification_ui_manager_->CancelById(kUSBPrinterFoundNotificationID,
-                                         profile_id);
-
-    if (command_ == ButtonCommand::SETUP) {
-      OnSetUpUSBPrinterStarted();
-      // TODO(skau/xdai): call the CUPS backend to set up the USB printer and
-      // then call OnSetUpPrinterDone() or OnSetUpPrinterError() depending on
-      // the setup result.
-    } else if (command_ == ButtonCommand::CANCEL_SETUP) {
-      // TODO(skau/xdai): call the CUPS backend to cancel the printer setup.
-    } else if (command_ == ButtonCommand::GET_HELP) {
-      chrome::NavigateParams params(profile_,
-                                    GURL(chrome::kChromeUIMdCupsSettingsURL),
-                                    ui::PAGE_TRANSITION_LINK);
-      params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-      params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-      chrome::Navigate(&params);
-    }
-  }
+  ~LegacyPrinterDetectorImpl() override = default;
 
  private:
-  // Action that should be performed when a notification button is clicked.
-  enum class ButtonCommand {
-    SETUP,
-    CANCEL_SETUP,
-    CLOSE,
-    GET_HELP,
-  };
-
   // UsbService::observer override:
   void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override {
     const user_manager::User* user =
@@ -295,20 +238,13 @@ class PrinterDetectorImpl : public PrinterDetector,
     if (!printer_filter.Matches(device))
       return;
 
-    notification_ui_manager_ =
-        notification_ui_manager_ ? notification_ui_manager_
-                                 : g_browser_process->notification_ui_manager();
-
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kEnableNativeCups)) {
-      ShowUSBPrinterSetupNotification(device);
-    } else {
-      // TODO(xdai): Clean up the printer provider app notification related
-      // codes after CUPS printing support is launched.
-      UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
-                                PRINTER_ADDED, PRINTER_SERVICE_EVENT_MAX);
-      ShowPrinterPluggedNotification(device);
+    if (notification_ui_manager_ == nullptr) {
+      notification_ui_manager_ = g_browser_process->notification_ui_manager();
     }
+
+    UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
+                              PRINTER_ADDED, PRINTER_SERVICE_EVENT_MAX);
+    ShowPrinterPluggedNotification(device);
   }
 
   // Initializes the printer detector.
@@ -382,88 +318,20 @@ class PrinterDetectorImpl : public PrinterDetector,
     notification_ui_manager_->Add(*notification, profile_);
   }
 
-  void ShowUSBPrinterSetupNotification(
-      scoped_refptr<device::UsbDevice> device) {
-    base::string16 printer_name = device->manufacturer_string() +
-                                  base::UTF8ToUTF16(" ") +
-                                  device->product_string();
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    message_center::RichNotificationData data;
-    data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_BUTTON)));
-    notification_.reset(new Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        l10n_util::GetStringUTF16(
-            IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_TITLE),      // title
-        printer_name,                                             // body
-        bundle.GetImageNamed(IDR_PRINTER_DETECTED_NOTIFICATION),  // icon
-        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                   kUSBPrinterFoundNotificationID),
-        base::string16(),  // display_source
-        GURL(), kUSBPrinterFoundNotificationID, data,
-        new USBPrinterSetupNotificationDelegate(this)));
-    notification_->SetSystemPriority();
-    command_ = ButtonCommand::SETUP;
-
-    DCHECK(notification_ui_manager_);
-    notification_ui_manager_->Add(*notification_, profile_);
-  }
-
-  void OnSetUpUSBPrinterStarted() {
-    notification_->set_title(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_IN_PROGRESS_TITLE));
-    notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
-    notification_->set_progress(-1);
-    std::vector<message_center::ButtonInfo> buttons;
-    buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_CANCEL_BUTTON)));
-    notification_->set_buttons(buttons);
-    command_ = ButtonCommand::CANCEL_SETUP;
-    notification_ui_manager_->Add(*notification_, profile_);
-  }
-
-  void OnSetUpUSBPrinterDone() {
-    notification_->set_title(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_SUCCESS_TITLE));
-    notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
-    std::vector<message_center::ButtonInfo> buttons;
-    buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_CLOSE_BUTTON)));
-    notification_->set_buttons(buttons);
-    command_ = ButtonCommand::CLOSE;
-    notification_ui_manager_->Add(*notification_, profile_);
-  }
-
-  void OnSetUpUSBPrinterError() {
-    notification_->set_title(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_FAILED_TITLE));
-    notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
-    std::vector<message_center::ButtonInfo> buttons;
-    buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_GET_HELP_BUTTON)));
-    notification_->set_buttons(buttons);
-    command_ = ButtonCommand::GET_HELP;
-    notification_ui_manager_->Add(*notification_, profile_);
-  }
-
   std::unique_ptr<Notification> notification_;
-  ButtonCommand command_ = ButtonCommand::SETUP;
 
   Profile* profile_;
   NotificationUIManager* notification_ui_manager_;
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
-  base::WeakPtrFactory<PrinterDetectorImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<LegacyPrinterDetectorImpl> weak_ptr_factory_;
 };
-
-void USBPrinterSetupNotificationDelegate::ButtonClick(int button_index) {
-  printer_detector_->ClickOnNotificationButton(button_index);
-}
 
 }  // namespace
 
 // static
-std::unique_ptr<PrinterDetector> PrinterDetector::Create(Profile* profile) {
-  return base::MakeUnique<PrinterDetectorImpl>(profile);
+std::unique_ptr<PrinterDetector> PrinterDetector::CreateLegacy(
+    Profile* profile) {
+  return base::MakeUnique<LegacyPrinterDetectorImpl>(profile);
 }
 
 }  // namespace chromeos

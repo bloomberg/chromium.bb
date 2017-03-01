@@ -17,17 +17,28 @@ class Profile;
 namespace chromeos {
 
 // Observes device::UsbService for addition of USB printers (devices with
-// interface class 7).
-// When a printer is detected, a shows a notification depending on whether there
-// are printer provider apps that declared support for the USB device installed.
-// If such app exists, the notification notifies the user the printer is ready.
+// interface class 7).  What it does with this depends on whether or not
+// CUPS printing support is enabled.
+//
+// If CUPS is disabled, the Legacy implementation should be used.  The legacy
+// implementation shows a notification depending on whether there are printer
+// provider apps that declared support for the USB device installed.  If such
+// app exists, the notification notifies the user the printer is ready.
 // Otherwise the notification offers user to search Chrome Web Store for apps
 // that support the printer. Clicking the notification launches webstore_widget
-// app for the printer.
-// The notification is shown only for active user's profile.
+// app for the printer.  The notification is shown only for active user's
+// profile.
+//
+// If CUPS is enabled, the Cups implementation should be used.  This
+// implementation to guides the user through setting up a new USB printer in the
+// CUPS backend.
 class PrinterDetector : public KeyedService {
  public:
-  static std::unique_ptr<PrinterDetector> Create(Profile* profile);
+  // Factory function for the Legacy implementation.
+  static std::unique_ptr<PrinterDetector> CreateLegacy(Profile* profile);
+
+  // Factory function for the CUPS implementation.
+  static std::unique_ptr<PrinterDetector> CreateCups(Profile* profile);
   ~PrinterDetector() override {}
 
  protected:

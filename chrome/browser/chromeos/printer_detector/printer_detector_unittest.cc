@@ -52,7 +52,7 @@ const char kPrinterAppNotFoundDelegateIDTemplate[] =
 
 std::unique_ptr<KeyedService> CreatePrinterDetector(
     content::BrowserContext* context) {
-  return PrinterDetector::Create(Profile::FromBrowserContext(context));
+  return PrinterDetector::CreateLegacy(Profile::FromBrowserContext(context));
 }
 
 }  // namespace

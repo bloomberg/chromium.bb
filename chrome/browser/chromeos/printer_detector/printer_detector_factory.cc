@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/printer_detector/printer_detector_factory.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -41,8 +43,14 @@ PrinterDetectorFactory::~PrinterDetectorFactory() {
 
 KeyedService* PrinterDetectorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return PrinterDetector::Create(Profile::FromBrowserContext(context))
-      .release();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableNativeCups)) {
+    return PrinterDetector::CreateCups(Profile::FromBrowserContext(context))
+        .release();
+  } else {
+    return PrinterDetector::CreateLegacy(Profile::FromBrowserContext(context))
+        .release();
+  }
 }
 
 bool PrinterDetectorFactory::ServiceIsCreatedWithBrowserContext() const {
