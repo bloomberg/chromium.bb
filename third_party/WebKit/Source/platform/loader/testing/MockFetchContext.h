@@ -38,7 +38,6 @@ class MockFetchContext : public FetchContext {
 
   ~MockFetchContext() override {}
 
-  void setCachePolicy(CachePolicy policy) { m_policy = policy; }
   void setLoadComplete(bool complete) { m_complete = complete; }
   long long getTransferSize() const { return m_transferSize; }
 
@@ -59,7 +58,6 @@ class MockFetchContext : public FetchContext {
     return m_loadPolicy == kShouldLoadNewResource;
   }
   RefPtr<WebTaskRunner> loadingTaskRunner() const override { return m_runner; }
-  CachePolicy getCachePolicy() const override { return m_policy; }
   bool isLoadComplete() const override { return m_complete; }
   void addResourceTiming(
       const ResourceTimingInfo& resourceTimingInfo) override {
@@ -69,14 +67,12 @@ class MockFetchContext : public FetchContext {
  private:
   MockFetchContext(LoadPolicy loadPolicy, RefPtr<WebTaskRunner> taskRunner)
       : m_loadPolicy(loadPolicy),
-        m_policy(CachePolicyVerify),
         m_runner(taskRunner ? std::move(taskRunner)
                             : adoptRef(new scheduler::FakeWebTaskRunner)),
         m_complete(false),
         m_transferSize(-1) {}
 
   enum LoadPolicy m_loadPolicy;
-  CachePolicy m_policy;
   RefPtr<WebTaskRunner> m_runner;
   bool m_complete;
   long long m_transferSize;

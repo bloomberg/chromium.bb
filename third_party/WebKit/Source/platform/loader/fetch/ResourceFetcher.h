@@ -29,7 +29,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/Timer.h"
-#include "platform/loader/fetch/CachePolicy.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchRequest.h"

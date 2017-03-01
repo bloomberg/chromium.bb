@@ -18,6 +18,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,10 +60,10 @@ TEST_F(FontResourceTest,
 
   // Set the context as it is on reloads.
   context->setLoadComplete(true);
-  context->setCachePolicy(CachePolicyRevalidate);
 
   // Revalidate the resource.
   ResourceRequest request2(url);
+  request2.setCachePolicy(WebCachePolicy::ValidatingCacheData);
   FetchRequest fetchRequest2 = FetchRequest(request2, FetchInitiatorInfo());
   Resource* resource2 = FontResource::fetch(fetchRequest2, fetcher);
   ASSERT_TRUE(resource2);
@@ -72,6 +73,7 @@ TEST_F(FontResourceTest,
 
   // Fetch the same resource again before actual load operation starts.
   ResourceRequest request3(url);
+  request3.setCachePolicy(WebCachePolicy::ValidatingCacheData);
   FetchRequest fetchRequest3 = FetchRequest(request3, FetchInitiatorInfo());
   Resource* resource3 = FontResource::fetch(fetchRequest3, fetcher);
   ASSERT_TRUE(resource3);

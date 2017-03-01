@@ -683,8 +683,10 @@ void ResourceFetcher::initializeRevalidation(
   const AtomicString& eTag =
       resource->response().httpHeaderField(HTTPNames::ETag);
   if (!lastModified.isEmpty() || !eTag.isEmpty()) {
-    DCHECK_NE(context().getCachePolicy(), CachePolicyReload);
-    if (context().getCachePolicy() == CachePolicyRevalidate) {
+    DCHECK_NE(WebCachePolicy::BypassingCache,
+              revalidatingRequest.getCachePolicy());
+    if (revalidatingRequest.getCachePolicy() ==
+        WebCachePolicy::ValidatingCacheData) {
       revalidatingRequest.setHTTPHeaderField(HTTPNames::Cache_Control,
                                              "max-age=0");
     }
@@ -863,8 +865,9 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   //
   // TODO(japhet): Can we get rid of one of these settings?
   if (existingResource->isImage() &&
-      !context().allowImage(m_imagesEnabled, existingResource->url()))
+      !context().allowImage(m_imagesEnabled, existingResource->url())) {
     return Reload;
+  }
 
   // Never use cache entries for downloadToFile / useStreamOnResponse requests.
   // The data will be delivered through other paths.
@@ -876,8 +879,9 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   if (existingResource->response().wasFetchedViaServiceWorker() &&
       existingResource->response().serviceWorkerResponseType() ==
           WebServiceWorkerResponseTypeOpaque &&
-      request.fetchRequestMode() != WebURLRequest::FetchRequestModeNoCORS)
+      request.fetchRequestMode() != WebURLRequest::FetchRequestModeNoCORS) {
     return Reload;
+  }
 
   // If resource was populated from a SubstituteData load or data: url, use it.
   if (isStaticData)
@@ -898,8 +902,9 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   // In this case, the Resource likely has insufficient context to provide a
   // useful cache hit or revalidation. See http://crbug.com/643659
   if (request.isConditional() ||
-      existingResource->response().httpStatusCode() == 304)
+      existingResource->response().httpStatusCode() == 304) {
     return Reload;
+  }
 
   // Don't reload resources while pasting.
   if (m_allowStaleResources)
@@ -912,9 +917,8 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   if (existingResource->isPreloaded())
     return Use;
 
-  // CachePolicyHistoryBuffer uses the cache no matter what.
-  CachePolicy cachePolicy = context().getCachePolicy();
-  if (cachePolicy == CachePolicyHistoryBuffer)
+  // WebCachePolicy::ReturnCacheDataElseLoad uses the cache no matter what.
+  if (request.getCachePolicy() == WebCachePolicy::ReturnCacheDataElseLoad)
     return Use;
 
   // Don't reuse resources with Cache-control: no-store.
@@ -951,21 +955,19 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
       return Use;
   }
 
-  if (request.getCachePolicy() == WebCachePolicy::BypassingCache)
-    return Reload;
-
-  // CachePolicyReload always reloads
-  if (cachePolicy == CachePolicyReload) {
+  // WebCachePolicy::BypassingCache always reloads
+  if (request.getCachePolicy() == WebCachePolicy::BypassingCache) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
-                                 "reloading due to CachePolicyReload.";
+                                 "reloading due to "
+                                 "WebCachePolicy::BypassingCache.";
     return Reload;
   }
 
   // We'll try to reload the resource if it failed last time.
   if (existingResource->errorOccurred()) {
-    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::"
-                                 "determineRevalidationPolicye reloading due "
-                                 "to resource being in the error state";
+    RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
+                                 "reloading due to resource being in the error "
+                                 "state";
     return Reload;
   }
 
@@ -973,8 +975,9 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   // validation. We restrict this only to images from memory cache which are the
   // same as the version in the current document.
   if (type == Resource::Image &&
-      existingResource == cachedResource(request.url()))
+      existingResource == cachedResource(request.url())) {
     return Use;
+  }
 
   if (existingResource->mustReloadDueToVaryHeader(request))
     return Reload;
@@ -989,7 +992,7 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
 
   // Check if the cache headers requires us to revalidate (cache expiration for
   // example).
-  if (cachePolicy == CachePolicyRevalidate ||
+  if (request.getCachePolicy() == WebCachePolicy::ValidatingCacheData ||
       existingResource->mustRevalidateDueToCacheHeaders() ||
       request.cacheControlContainsNoCache()) {
     // See if the resource has usable ETag or Last-modified headers. If the page
