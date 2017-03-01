@@ -366,7 +366,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Note that the `FOND' resource isn't checked.                        */
   /*                                                                       */
-#define FT_CONFIG_OPTION_MAC_FONTS
+/* #define FT_CONFIG_OPTION_MAC_FONTS */
 
 
   /*************************************************************************/
@@ -722,7 +722,7 @@ FT_BEGIN_HEADER
   /* Define TT_CONFIG_OPTION_BDF if you want to include support for        */
   /* an embedded `BDF ' table within SFNT-based bitmap formats.            */
   /*                                                                       */
-#define TT_CONFIG_OPTION_BDF
+/* #define TT_CONFIG_OPTION_BDF */
 
 
   /*************************************************************************/
