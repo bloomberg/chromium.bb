@@ -52,43 +52,6 @@ using web::WebStateImpl;
               toDirectory:(NSString*)directory;
 @end
 
-@interface TabTest : Tab
-
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                lastVisitedTimestamp:(double)lastVisitedTimestamp
-                            tabModel:(TabModel*)tabModel;
-@end
-
-@implementation TabTest
-
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                lastVisitedTimestamp:(double)lastVisitedTimestamp
-                            tabModel:(TabModel*)tabModel {
-  id webControllerMock =
-      [OCMockObject niceMockForClass:[CRWWebController class]];
-
-  auto webStateImpl = base::MakeUnique<WebStateImpl>(browserState);
-  webStateImpl->SetWebController(webControllerMock);
-  webStateImpl->GetNavigationManagerImpl().InitializeSession(NO);
-  [webStateImpl->GetNavigationManagerImpl().GetSessionController()
-      setLastVisitedTimestamp:lastVisitedTimestamp];
-
-  WebStateImpl* webStateImplPtr = webStateImpl.get();
-  [[[webControllerMock stub] andReturnValue:OCMOCK_VALUE(webStateImplPtr)]
-      webStateImpl];
-  BOOL yes = YES;
-  [[[webControllerMock stub] andReturnValue:OCMOCK_VALUE(yes)] isViewAlive];
-
-  if ((self = [super initWithWebState:std::move(webStateImpl)
-                                model:tabModel
-                     attachTabHelpers:NO])) {
-    IOSChromeSessionTabHelper::CreateForWebState(self.webState);
-  }
-  return self;
-}
-
-@end
-
 @interface TabModel (VisibleForTesting)
 - (SessionWindowIOS*)windowForSavingSession;
 @end
@@ -761,10 +724,11 @@ TEST_F(TabModelTest, MoveTabs) {
 TEST_F(TabModelTest, SetParentModel) {
   // Create a tab without a parent model and make sure it doesn't crash.  Then
   // set its parent TabModel and make sure that works as well.
-  base::scoped_nsobject<TabTest> tab([[TabTest alloc]
+  base::scoped_nsobject<Tab> tab([[Tab alloc]
       initWithBrowserState:chrome_browser_state_.get()
-      lastVisitedTimestamp:100
-                  tabModel:nil]);
+                    opener:nil
+               openedByDOM:NO
+                     model:nil]);
   EXPECT_TRUE([tab parentTabModel] == nil);
   [tab_model_ insertTab:tab atIndex:0];
   [tab setParentTabModel:tab_model_.get()];
