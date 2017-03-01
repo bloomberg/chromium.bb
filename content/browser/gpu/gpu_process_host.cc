@@ -196,6 +196,14 @@ void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
   }
 }
 
+void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
+                     bool force_create,
+                     const base::Callback<void(GpuProcessHost*)>& callback) {
+  GpuProcessHost* host = GpuProcessHost::Get(kind, force_create);
+  if (host)
+    callback.Run(host);
+}
+
 #if defined(USE_OZONE)
 void SendGpuProcessMessageByHostId(int host_id, IPC::Message* message) {
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
@@ -425,6 +433,16 @@ void GpuProcessHost::SendOnIO(GpuProcessKind kind,
           base::Bind(&SendGpuProcessMessage, kind, force_create, message))) {
     delete message;
   }
+}
+
+// static
+void GpuProcessHost::CallOnIO(
+    GpuProcessKind kind,
+    bool force_create,
+    const base::Callback<void(GpuProcessHost*)>& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&RunCallbackOnIO, kind, force_create, callback));
 }
 
 service_manager::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {

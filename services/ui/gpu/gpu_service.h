@@ -122,6 +122,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const gpu::SyncToken& sync_token) override;
+  void GetVideoMemoryUsageStats(
+      const GetVideoMemoryUsageStatsCallback& callback) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 

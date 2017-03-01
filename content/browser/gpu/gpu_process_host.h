@@ -100,6 +100,13 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                                       bool force_create,
                                       IPC::Message* message);
 
+  // Helper function to run a callback on the IO thread. The callback receives
+  // the appropriate GpuProcessHost instance. If |force_create| is false, and no
+  // GpuProcessHost instance exists, then the callback is never called.
+  static void CallOnIO(GpuProcessKind kind,
+                       bool force_create,
+                       const base::Callback<void(GpuProcessHost*)>& callback);
+
   service_manager::InterfaceProvider* GetRemoteInterfaces();
 
   // Get the GPU process host for the GPU process with the given ID. Returns
@@ -153,6 +160,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void StopGpuProcess();
 
   void LoadedShader(const std::string& key, const std::string& data);
+
+  ui::mojom::GpuService* gpu_service() { return gpu_service_ptr_.get(); }
 
  private:
   class ConnectionFilterImpl;

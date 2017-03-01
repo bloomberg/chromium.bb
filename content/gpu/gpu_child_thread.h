@@ -112,7 +112,6 @@ class GpuChildThread : public ChildThreadImpl,
   // Message handlers.
   void OnFinalize();
   void OnCollectGraphicsInfo();
-  void OnGetVideoMemoryUsageStats();
   void OnSetVideoMemoryWindowCount(uint32_t window_count);
 
   void OnClean();

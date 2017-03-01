@@ -250,8 +250,6 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_Finalize, OnFinalize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
-    IPC_MESSAGE_HANDLER(GpuMsg_GetVideoMemoryUsageStats,
-                        OnGetVideoMemoryUsageStats)
     IPC_MESSAGE_HANDLER(GpuMsg_Clean, OnClean)
     IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
     IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
@@ -421,15 +419,6 @@ void GpuChildThread::OnCollectGraphicsInfo() {
     base::MessageLoop::current()->QuitWhenIdle();
   }
 #endif  // OS_WIN
-}
-
-void GpuChildThread::OnGetVideoMemoryUsageStats() {
-  gpu::VideoMemoryUsageStats video_memory_usage_stats;
-  if (gpu_channel_manager()) {
-    gpu_channel_manager()->gpu_memory_manager()->GetVideoMemoryUsageStats(
-        &video_memory_usage_stats);
-  }
-  Send(new GpuHostMsg_VideoMemoryUsageStats(video_memory_usage_stats));
 }
 
 void GpuChildThread::OnClean() {

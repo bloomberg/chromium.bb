@@ -9,6 +9,7 @@ typemaps = [
   "//gpu/ipc/common/dx_diag_node.typemap",
   "//gpu/ipc/common/mailbox.typemap",
   "//gpu/ipc/common/mailbox_holder.typemap",
+  "//gpu/ipc/common/memory_stats.typemap",
   "//gpu/ipc/common/surface_handle.typemap",
   "//gpu/ipc/common/sync_token.typemap",
 ]

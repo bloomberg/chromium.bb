@@ -270,6 +270,15 @@ bool ShouldDisableHardwareAcceleration() {
       switches::kDisableGpu);
 }
 
+void OnVideoMemoryUsageStats(const gpu::VideoMemoryUsageStats& stats) {
+  GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(stats);
+}
+
+void RequestVideoMemoryUsageStats(GpuProcessHost* host) {
+  host->gpu_service()->GetVideoMemoryUsageStats(
+      base::Bind(&OnVideoMemoryUsageStats));
+}
+
 }  // namespace anonymous
 
 void GpuDataManagerImplPrivate::InitializeForTesting(
@@ -431,9 +440,9 @@ bool GpuDataManagerImplPrivate::IsCompleteGpuInfoAvailable() const {
 }
 
 void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate() const {
-  GpuProcessHost::SendOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+  GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                            false /* force_create */,
-                           new GpuMsg_GetVideoMemoryUsageStats());
+                           base::Bind(&RequestVideoMemoryUsageStats));
 }
 
 bool GpuDataManagerImplPrivate::ShouldUseSwiftShader() const {

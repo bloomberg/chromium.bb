@@ -36,16 +36,6 @@ IPC_ENUM_TRAITS_VALIDATE(gpu::GpuPreferences::VpxDecodeVendors,
                          ((value >= gpu::GpuPreferences::VPX_VENDOR_NONE) &&
                           (value <= gpu::GpuPreferences::VPX_VENDOR_ALL)))
 
-IPC_STRUCT_TRAITS_BEGIN(gpu::VideoMemoryUsageStats)
-  IPC_STRUCT_TRAITS_MEMBER(process_map)
-  IPC_STRUCT_TRAITS_MEMBER(bytes_allocated)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gpu::VideoMemoryUsageStats::ProcessStats)
-  IPC_STRUCT_TRAITS_MEMBER(video_memory)
-  IPC_STRUCT_TRAITS_MEMBER(has_duplicates)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_BEGIN(GpuMsg_CreateGpuMemoryBuffer_Params)
   IPC_STRUCT_MEMBER(gfx::GpuMemoryBufferId, id)
   IPC_STRUCT_MEMBER(gfx::Size, size)
@@ -120,9 +110,6 @@ IPC_MESSAGE_CONTROL3(GpuMsg_DestroyGpuMemoryBuffer,
 // information.
 IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
-// Tells the GPU process to report video_memory information for the task manager
-IPC_MESSAGE_CONTROL0(GpuMsg_GetVideoMemoryUsageStats)
-
 #if defined(OS_ANDROID)
 // Tells the GPU process to wake up the GPU because we're about to draw.
 IPC_MESSAGE_CONTROL0(GpuMsg_WakeUpGpu)
@@ -168,10 +155,6 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryBufferCreated,
 // Response from GPU to a GpuMsg_CollectGraphicsInfo.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
                      gpu::GPUInfo /* GPU logging stats */)
-
-// Response from GPU to a GpuMsg_GetVideoMemory.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_VideoMemoryUsageStats,
-                     gpu::VideoMemoryUsageStats /* GPU memory stats */)
 
 #if defined(OS_ANDROID)
 // Response to a GpuMsg_DestroyingVideoSurface message.

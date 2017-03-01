@@ -187,8 +187,6 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage, OnLogMessage)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
-                        OnVideoMemoryUsageStatsReceived);
 
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -211,12 +209,6 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
   TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
 
   GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
-}
-
-void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
-    const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
-  GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(
-      video_memory_usage_stats);
 }
 
 }  // namespace content

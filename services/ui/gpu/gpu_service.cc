@@ -127,6 +127,16 @@ void GpuService::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
     gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
+void GpuService::GetVideoMemoryUsageStats(
+    const GetVideoMemoryUsageStatsCallback& callback) {
+  gpu::VideoMemoryUsageStats video_memory_usage_stats;
+  if (gpu_channel_manager_) {
+    gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
+        &video_memory_usage_stats);
+  }
+  callback.Run(video_memory_usage_stats);
+}
+
 void GpuService::DidCreateOffscreenContext(const GURL& active_url) {
   gpu_host_->DidCreateOffscreenContext(active_url);
 }
