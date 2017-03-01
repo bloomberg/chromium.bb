@@ -625,7 +625,7 @@ FindInPageController* GetFindInPageController(Tab* tab) {
 // Shows the source of the current page.
 - (void)viewSource;
 #endif
-// Whether the given tab's url begins with the chrome prefix.
+// Whether the given tab's URL is an application specific URL.
 - (BOOL)isTabNativePage:(Tab*)tab;
 // Returns the view to use when animating a page in or out, positioning it to
 // fill the content area but not actually adding it to the view hierarchy.
@@ -2051,9 +2051,18 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   return tab;
 }
 
-// Whether the given tab's url begins with the chrome prefix.
+// Whether the given tab's URL is an application specific URL.
 - (BOOL)isTabNativePage:(Tab*)tab {
-  return tab && tab.url.SchemeIs(kChromeUIScheme);
+  web::WebState* webState = tab.webState;
+  if (!webState)
+    return NO;
+  web::NavigationManager* navigationManager = webState->GetNavigationManager();
+  if (!navigationManager)
+    return NO;
+  web::NavigationItem* visibleItem = navigationManager->GetVisibleItem();
+  if (!visibleItem)
+    return NO;
+  return web::GetWebClient()->IsAppSpecificURL(visibleItem->GetURL());
 }
 
 - (void)expectNewForegroundTab {
