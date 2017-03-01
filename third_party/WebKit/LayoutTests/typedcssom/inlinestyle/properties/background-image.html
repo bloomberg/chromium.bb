@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='property-suite.js'></script>
+<script src='config-templates.js'></script>
+
+<script>
+runInlineStylePropertyMapTests( {
+  property: 'background-image',
+  validKeywords: [
+    'none',
+  ],
+  validObjects: [
+    new CSSURLImageValue(window.location.href + 'resources/1x1-green.jpg'),
+    // new CSSURLImageValue('') - This will be introduced in a later patch and crashes for now.
+  ],
+  supportsMultiple: false,
+  invalidObjects: [new CSSSimpleLength(4, 'px')]
+});
+</script>

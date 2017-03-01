@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='property-suite.js'></script>
+<script src='config-templates.js'></script>
+
+<script>
+  let config = Object.assign({}, config_templates.borderConfig);
+  config['property'] = 'border-top-style';
+  runInlineStylePropertyMapTests(config);
+</script>

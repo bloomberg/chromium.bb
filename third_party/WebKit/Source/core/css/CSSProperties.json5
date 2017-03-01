@@ -563,7 +563,7 @@
       name: "background-image",
       custom_all: true,
       interpolable: true,
-      keywords: ["auto"],
+      keywords: ["auto", "none"],
       typedom_types: ["Image"],
     },
     {
@@ -627,6 +627,8 @@
       name: "border-bottom-style",
       initial: "initialBorderStyle",
       type_name: "EBorderStyle",
+      keywords: ["none"],
+      typedom_types: ["Image"],
     },
     {
       name: "border-bottom-width",
@@ -684,6 +686,8 @@
       name: "border-left-style",
       initial: "initialBorderStyle",
       type_name: "EBorderStyle",
+      keywords: ["none"],
+      typedom_types: ["Image"],
     },
     {
       name: "border-left-width",
@@ -701,6 +705,8 @@
       name: "border-right-style",
       initial: "initialBorderStyle",
       type_name: "EBorderStyle",
+      keywords: ["none"],
+      typedom_types: ["Image"],
     },
     {
       name: "border-right-width",
@@ -734,6 +740,8 @@
       name: "border-top-style",
       initial: "initialBorderStyle",
       type_name: "EBorderStyle",
+      keywords: ["none"],
+      typedom_types: ["Image"],
     },
     {
       name: "border-top-width",
@@ -2638,6 +2646,8 @@
     {
       name: "border-style",
       longhands: "border-top-style;border-right-style;border-bottom-style;border-left-style",
+      keywords: ["none"],
+      typedom_types: ["Image"],
     },
     {
       name: "border-top",
