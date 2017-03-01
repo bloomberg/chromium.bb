@@ -2383,6 +2383,14 @@ weston_output_finish_frame(struct weston_output *output,
 	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
 		 TLP_VBLANK(stamp), TLP_END);
 
+	assert(stamp || (presented_flags & WP_PRESENTATION_FEEDBACK_INVALID));
+
+	/* If we haven't been supplied any timestamp at all, we don't have a
+	 * timebase to work against, so any delay just wastes time. Push a
+	 * repaint as soon as possible so we can get on with it. */
+	if (!stamp)
+		goto out;
+
 	refresh_nsec = millihz_to_nsec(output->current_mode->refresh);
 	weston_presentation_feedback_present_list(&output->feedback_list,
 						  output, refresh_nsec, stamp,
@@ -2415,6 +2423,7 @@ weston_output_finish_frame(struct weston_output *output,
 	if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID && msec_rel < 0)
 		msec_rel += refresh_nsec / 1000000;
 
+out:
 	if (msec_rel < 1)
 		output_repaint_timer_handler(output);
 	else

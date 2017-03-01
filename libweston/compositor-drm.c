@@ -932,8 +932,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 
 finish_frame:
 	/* if we cannot page-flip, immediately finish frame */
-	weston_compositor_read_presentation_clock(output_base->compositor, &ts);
-	weston_output_finish_frame(output_base, &ts,
+	weston_output_finish_frame(output_base, NULL,
 				   WP_PRESENTATION_FEEDBACK_INVALID);
 }
 
