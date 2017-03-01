@@ -873,16 +873,32 @@ inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload) {
 }
 
 #if CPU(64BIT)
+ALWAYS_INLINE uint32_t RotateLeft16(uint32_t x) {
+#if COMPILER(MSVC)
+  return _lrotr(x, 16);
+#else
+  // http://blog.regehr.org/archives/1063
+  return (x << 16) | (x >> (-16 & 31));
+#endif
+}
+
 inline uint32_t HeapObjectHeader::getMagic() const {
-  const uintptr_t random1 =
-      ~(reinterpret_cast<uintptr_t>(
-            base::trace_event::MemoryAllocatorDump::kNameSize) >>
-        16);
+// Ignore C4319: It is OK to 0-extend into the high-order bits of the uintptr_t
+// on 64-bit, in this case.
+#if COMPILER(MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4319)
+#endif
+
+  const uintptr_t random1 = ~(RotateLeft16(reinterpret_cast<uintptr_t>(
+      base::trace_event::MemoryAllocatorDump::kNameSize)));
 
 #if OS(WIN)
-  const uintptr_t random2 = ~(reinterpret_cast<uintptr_t>(::ReadFile) << 16);
+  const uintptr_t random2 =
+      ~(RotateLeft16(reinterpret_cast<uintptr_t>(::ReadFile)));
 #elif OS(POSIX)
-  const uintptr_t random2 = ~(reinterpret_cast<uintptr_t>(::read) << 16);
+  const uintptr_t random2 =
+      ~(RotateLeft16(reinterpret_cast<uintptr_t>(::read)));
 #else
 #error OS not supported
 #endif
@@ -902,9 +918,13 @@ inline uint32_t HeapObjectHeader::getMagic() const {
 #error architecture not supported
 #endif
 
+#if COMPILER(MSVC)
+#pragma warning(pop)
+#endif
+
   return random;
 }
-#endif
+#endif  // CPU(64BIT)
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isWrapperHeaderMarked()
     const {
