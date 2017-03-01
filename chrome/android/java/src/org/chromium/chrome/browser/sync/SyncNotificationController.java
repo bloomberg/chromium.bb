@@ -12,11 +12,12 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
@@ -100,18 +101,25 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
 
         // There is no need to provide a group summary notification because the NOTIFICATION_ID_SYNC
         // notification id ensures there's only one sync notification at a time.
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mApplicationContext)
-                                                     .setAutoCancel(true)
-                                                     .setContentIntent(contentIntent)
-                                                     .setContentTitle(title)
-                                                     .setContentText(text)
-                                                     .setSmallIcon(R.drawable.ic_chrome)
-                                                     .setTicker(text)
-                                                     .setLocalOnly(true)
-                                                     .setGroup(NotificationConstants.GROUP_SYNC);
+        ChromeNotificationBuilder builder =
+                ((ChromeApplication) mApplicationContext)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                NotificationConstants.CATEGORY_ID_BROWSER,
+                                mApplicationContext.getString(
+                                        R.string.notification_category_browser),
+                                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                                mApplicationContext.getString(
+                                        R.string.notification_category_group_general))
+                        .setAutoCancel(true)
+                        .setContentIntent(contentIntent)
+                        .setContentTitle(title)
+                        .setContentText(text)
+                        .setSmallIcon(R.drawable.ic_chrome)
+                        .setTicker(text)
+                        .setLocalOnly(true)
+                        .setGroup(NotificationConstants.GROUP_SYNC);
 
-        Notification notification =
-                new NotificationCompat.BigTextStyle(builder).bigText(text).build();
+        Notification notification = builder.buildWithBigTextStyle(text);
 
         mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_SYNC, notification);
     }

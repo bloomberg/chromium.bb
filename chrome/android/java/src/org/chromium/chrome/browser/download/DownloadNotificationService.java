@@ -24,7 +24,6 @@ import android.graphics.drawable.shapes.OvalShape;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -37,6 +36,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -127,7 +127,7 @@ public class DownloadNotificationService extends Service {
     @Override
     public void onCreate() {
         mStopPostingProgressNotifications = false;
-        mContext = getApplicationContext();
+        mContext = ContextUtils.getApplicationContext();
         mNotificationManager = (NotificationManager) mContext.getSystemService(
                 Context.NOTIFICATION_SERVICE);
         mSharedPrefs = ContextUtils.getAppSharedPreferences();
@@ -298,7 +298,7 @@ public class DownloadNotificationService extends Service {
         }
         int resId = isDownloadPending ? R.drawable.ic_download_pending
                 : android.R.drawable.stat_sys_download;
-        NotificationCompat.Builder builder = buildNotification(resId, fileName, contentText);
+        ChromeNotificationBuilder builder = buildNotification(resId, fileName, contentText);
         builder.setOngoing(true);
         builder.setPriority(Notification.PRIORITY_HIGH);
 
@@ -401,8 +401,8 @@ public class DownloadNotificationService extends Service {
 
         String contentText = mContext.getResources().getString(
                 R.string.download_notification_paused);
-        NotificationCompat.Builder builder = buildNotification(
-                R.drawable.ic_download_pause, entry.fileName, contentText);
+        ChromeNotificationBuilder builder =
+                buildNotification(R.drawable.ic_download_pause, entry.fileName, contentText);
 
         // Clicking on an in-progress download sends the user to see all their downloads.
         Intent downloadHomeIntent = buildActionIntent(
@@ -453,8 +453,7 @@ public class DownloadNotificationService extends Service {
             String downloadGuid, String filePath, String fileName, long systemDownloadId,
             boolean isOfflinePage, boolean isSupportedMimeType) {
         int notificationId = getNotificationId(downloadGuid);
-        NotificationCompat.Builder builder = buildNotification(
-                R.drawable.offline_pin, fileName,
+        ChromeNotificationBuilder builder = buildNotification(R.drawable.offline_pin, fileName,
                 mContext.getResources().getString(R.string.download_notification_completed));
         ComponentName component = new ComponentName(
                 mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
@@ -500,9 +499,9 @@ public class DownloadNotificationService extends Service {
         }
 
         int notificationId = getNotificationId(downloadGuid);
-        NotificationCompat.Builder builder = buildNotification(
-                android.R.drawable.stat_sys_download_done, fileName,
-                mContext.getResources().getString(R.string.download_notification_failed));
+        ChromeNotificationBuilder builder =
+                buildNotification(android.R.drawable.stat_sys_download_done, fileName,
+                        mContext.getResources().getString(R.string.download_notification_failed));
         updateNotification(notificationId, builder.build());
         mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(downloadGuid);
         mDownloadsInProgress.remove(downloadGuid);
@@ -570,15 +569,22 @@ public class DownloadNotificationService extends Service {
      * @param contentText Notification content text to be displayed.
      * @return notification builder that builds the notification to be displayed
      */
-    private NotificationCompat.Builder buildNotification(
+    private ChromeNotificationBuilder buildNotification(
             int iconId, String title, String contentText) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
-                .setContentTitle(DownloadUtils.getAbbreviatedFileName(title, MAX_FILE_NAME_LENGTH))
-                .setSmallIcon(iconId)
-                .setLocalOnly(true)
-                .setAutoCancel(true)
-                .setContentText(contentText)
-                .setGroup(NotificationConstants.GROUP_DOWNLOADS);
+        ChromeNotificationBuilder builder =
+                ((ChromeApplication) mContext)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                NotificationConstants.CATEGORY_ID_BROWSER,
+                                mContext.getString(R.string.notification_category_browser),
+                                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                                mContext.getString(R.string.notification_category_group_general))
+                        .setContentTitle(
+                                DownloadUtils.getAbbreviatedFileName(title, MAX_FILE_NAME_LENGTH))
+                        .setSmallIcon(iconId)
+                        .setLocalOnly(true)
+                        .setAutoCancel(true)
+                        .setContentText(contentText)
+                        .setGroup(NotificationConstants.GROUP_DOWNLOADS);
         return builder;
     }
 

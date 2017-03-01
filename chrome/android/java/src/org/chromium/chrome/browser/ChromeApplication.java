@@ -25,6 +25,9 @@ import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
+import org.chromium.chrome.browser.notifications.NotificationBuilder;
+import org.chromium.chrome.browser.notifications.NotificationCompatBuilder;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
@@ -193,5 +196,21 @@ public class ChromeApplication extends ContentApplication {
                     new StorageDelegate(), new TabDelegate(false), new TabDelegate(true));
         }
         return sDocumentTabModelSelector;
+    }
+
+    /**
+     * Creates either a Notification.Builder or NotificationCompat.Builder under the hood, wrapped
+     * in our own common interface. Should be used for all notifications we create.
+     *
+     * TODO(awdf) Remove this once we've updated to revision 26 of the support library.
+     *
+     * @param preferCompat if a NotificationCompat.Builder is preferred.
+     * @param notificationCategoryGroupId
+     * @param notificationCategoryGroupName
+     */
+    public ChromeNotificationBuilder createChromeNotificationBuilder(boolean preferCompat,
+            String notificationCategoryId, String notificationCategoryName,
+            String notificationCategoryGroupId, String notificationCategoryGroupName) {
+        return preferCompat ? new NotificationCompatBuilder(this) : new NotificationBuilder(this);
     }
 }

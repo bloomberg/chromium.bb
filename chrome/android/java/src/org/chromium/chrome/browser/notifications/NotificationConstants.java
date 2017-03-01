@@ -77,4 +77,7 @@ public class NotificationConstants {
     // Web notification group names are set dynamically as this prefix + notification origin.
     // For example, 'Web:chromium.org' for a notification from chromium.org.
     static final String GROUP_WEB_PREFIX = "Web:";
+
+    public static final String CATEGORY_ID_BROWSER = "browser";
+    public static final String CATEGORY_GROUP_ID_GENERAL = "general";
 }

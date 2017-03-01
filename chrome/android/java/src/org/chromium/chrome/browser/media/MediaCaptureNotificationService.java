@@ -12,12 +12,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.SparseIntArray;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
+import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 
@@ -160,8 +162,13 @@ public class MediaCaptureNotificationService extends Service {
      * @param url Url of the current webrtc call.
      */
     private void createNotification(int notificationId, int mediaType, String url) {
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(mContext)
+        ChromeNotificationBuilder builder =
+                ((ChromeApplication) mContext)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                NotificationConstants.CATEGORY_ID_BROWSER,
+                                mContext.getString(R.string.notification_category_browser),
+                                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                                mContext.getString(R.string.notification_category_group_general))
                         .setAutoCancel(false)
                         .setOngoing(true)
                         .setContentTitle(mContext.getString(R.string.app_name))
@@ -190,10 +197,9 @@ public class MediaCaptureNotificationService extends Service {
         } else {
             contentText.append(" ").append(url);
         }
-        builder.setContentText(contentText);
+        builder.setContentText(contentText.toString());
 
-        Notification notification = new NotificationCompat.BigTextStyle(builder)
-                .bigText(contentText).build();
+        Notification notification = builder.buildWithBigTextStyle(contentText.toString());
         mNotificationManager.notify(NOTIFICATION_NAMESPACE, notificationId, notification);
         mNotifications.put(notificationId, mediaType);
         updateSharedPreferencesEntry(notificationId, false);
