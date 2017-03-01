@@ -21,6 +21,9 @@ class Timer;
 
 namespace chromecast {
 
+// Alarm handle for scoping the in-flight alarm.
+class AlarmHandle : public base::SupportsWeakPtr<AlarmHandle> {};
+
 // Alarm manager allows setting a task for wall clock time rather than for an
 // elapsed amount of time. This is different from using long PostDelayedTasks
 // that are sensitive to time changes, clock drift, and other factors.
@@ -29,7 +32,6 @@ namespace chromecast {
 // equal or past the requested time, the alarm will fire.
 class AlarmManager {
  public:
-  class AlarmHandle : public base::SupportsWeakPtr<AlarmHandle> {};
   // Construct and start the alarm manager. The clock poller will run on the
   // caller's thread.
   AlarmManager();
@@ -53,9 +55,9 @@ class AlarmManager {
   // if it is past the requested time if the software is suspended. However,
   // once woken up, the event will fire within 5 seconds if the target time has
   // passed.
-  std::unique_ptr<AlarmManager::AlarmHandle> PostAlarmTask(
-      const base::Closure& task,
-      base::Time time) WARN_UNUSED_RESULT;
+  std::unique_ptr<AlarmHandle> PostAlarmTask(const base::Closure& task,
+                                             base::Time time)
+      WARN_UNUSED_RESULT;
 
  private:
   class AlarmInfo {

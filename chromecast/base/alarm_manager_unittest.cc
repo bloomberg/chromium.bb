@@ -54,7 +54,7 @@ TEST_F(AlarmManagerTest, AlarmNotFire) {
       base::MakeUnique<AlarmManager>(std::move(test_clock), task_runner_);
 
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task.GetWeakPtr()),
       alarm_time));
   task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(9));
@@ -78,7 +78,7 @@ TEST_F(AlarmManagerTest, AlarmFire) {
 
   // Add an alarm.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task.GetWeakPtr()),
       alarm_time));
   clock->Advance(base::TimeDelta::FromMinutes(10));
@@ -108,7 +108,7 @@ TEST_F(AlarmManagerTest, AlarmPast) {
 
   // Add an alarm in the past. Should fire right away.
   base::Time alarm_time = base::Time::Now() - base::TimeDelta::FromMinutes(10);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task.GetWeakPtr()),
       alarm_time));
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
@@ -131,7 +131,7 @@ TEST_F(AlarmManagerTest, AlarmTimeJump) {
 
   // Add an alarm. The time jumps to the future.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task.GetWeakPtr()),
       alarm_time));
   clock->Advance(base::TimeDelta::FromMinutes(10));
@@ -155,7 +155,7 @@ TEST_F(AlarmManagerTest, AlarmJumpFuture) {
 
   // Add an alarm. The time jumps far into the future.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task.GetWeakPtr()),
       alarm_time));
   clock->Advance(base::TimeDelta::FromMinutes(60));
@@ -181,13 +181,13 @@ TEST_F(AlarmManagerTest, AlarmMultiple) {
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(10);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle1(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle1(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task1.GetWeakPtr()),
       alarm_time));
 
   // Add second task.
   alarm_time = now + base::TimeDelta::FromMinutes(12);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle2(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle2(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task2.GetWeakPtr()),
       alarm_time));
 
@@ -227,13 +227,13 @@ TEST_F(AlarmManagerTest, AlarmMultipleReverseOrder) {
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(12);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle1(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle1(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task1.GetWeakPtr()),
       alarm_time));
 
   // Add second task.
   alarm_time = now + base::TimeDelta::FromMinutes(10);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle2(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle2(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task2.GetWeakPtr()),
       alarm_time));
 
@@ -275,19 +275,19 @@ TEST_F(AlarmManagerTest, AlarmMultipleSameTime) {
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(12);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle1(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle1(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task1.GetWeakPtr()),
       alarm_time));
 
   // Add second task.
   alarm_time = now + base::TimeDelta::FromMinutes(16);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle2(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle2(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task2.GetWeakPtr()),
       alarm_time));
 
   // Add third task.
   alarm_time = now + base::TimeDelta::FromMinutes(12);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle3(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle3(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task3.GetWeakPtr()),
       alarm_time));
 
@@ -319,19 +319,19 @@ TEST_F(AlarmManagerTest, AlarmMultipleShuffle) {
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(15);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle1(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle1(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task1.GetWeakPtr()),
       alarm_time));
 
   // Add second task.
   alarm_time = now + base::TimeDelta::FromMinutes(16);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle2(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle2(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task2.GetWeakPtr()),
       alarm_time));
 
   // Add third task.
   alarm_time = now + base::TimeDelta::FromMinutes(11);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle3(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle3(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task3.GetWeakPtr()),
       alarm_time));
 
@@ -368,19 +368,19 @@ TEST_F(AlarmManagerTest, AlarmTwice) {
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(15);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle1(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle1(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task1.GetWeakPtr()),
       alarm_time));
 
   // Add it again with less time.
   alarm_time = now + base::TimeDelta::FromMinutes(1);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle2(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle2(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task1.GetWeakPtr()),
       alarm_time));
 
   // Add second task.
   alarm_time = now + base::TimeDelta::FromMinutes(16);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle3(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle3(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task2.GetWeakPtr()),
       alarm_time));
 
@@ -424,19 +424,19 @@ TEST_F(AlarmManagerTest, AlarmCancel) {
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(12);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle1(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle1(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task1->GetWeakPtr()),
       alarm_time));
 
   // Add second task.
   alarm_time = now + base::TimeDelta::FromMinutes(16);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle2(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle2(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task2->GetWeakPtr()),
       alarm_time));
 
   // Add third task.
   alarm_time = now + base::TimeDelta::FromMinutes(12);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle3(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle3(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task3->GetWeakPtr()),
       alarm_time));
 
@@ -473,19 +473,19 @@ TEST_F(AlarmManagerTest, AlarmDeleteHandle) {
 
   // Add first task.
   base::Time alarm_time = now + base::TimeDelta::FromMinutes(12);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle1(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle1(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task1->GetWeakPtr()),
       alarm_time));
 
   // Add second task.
   alarm_time = now + base::TimeDelta::FromMinutes(16);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle2(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle2(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task2->GetWeakPtr()),
       alarm_time));
 
   // Add third task.
   alarm_time = now + base::TimeDelta::FromMinutes(12);
-  std::unique_ptr<AlarmManager::AlarmHandle> handle3(manager->PostAlarmTask(
+  std::unique_ptr<AlarmHandle> handle3(manager->PostAlarmTask(
       base::Bind(&WallClockDependantTask::OnAlarmFire, task3->GetWeakPtr()),
       alarm_time));
 

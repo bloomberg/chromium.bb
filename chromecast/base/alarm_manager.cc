@@ -23,7 +23,7 @@ namespace {
 int kClockPollInterval = 5;
 
 void VerifyHandleCallback(const base::Closure& task,
-                          base::WeakPtr<AlarmManager::AlarmHandle> handle) {
+                          base::WeakPtr<AlarmHandle> handle) {
   if (!handle.get()) {
     return;
   }
@@ -59,7 +59,7 @@ AlarmManager::AlarmManager()
 
 AlarmManager::~AlarmManager() {}
 
-std::unique_ptr<AlarmManager::AlarmHandle> AlarmManager::PostAlarmTask(
+std::unique_ptr<AlarmHandle> AlarmManager::PostAlarmTask(
     const base::Closure& task,
     base::Time time) {
   std::unique_ptr<AlarmHandle> handle = base::MakeUnique<AlarmHandle>();
