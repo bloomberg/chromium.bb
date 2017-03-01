@@ -795,7 +795,8 @@ void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
     FAIL() << "Internal error: Unknown intrinsic function " << name;
   }
 
-  for (unsigned int count = 0; count < iterations && !error; count++) {
+  for (unsigned int count = 0;
+       count < iterations && !error && !testing::Test::HasFailure(); count++) {
     for (unsigned int c = 0; c < sizeof(CArg) / sizeof(uint16_t); c++)
       s[c] = rnd.Rand16();
 
@@ -914,7 +915,8 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
     FAIL() << "Internal error: Unknown intrinsic function " << name;
   }
 
-  for (unsigned int count = 0; count < iterations && !error; count++) {
+  for (unsigned int count = 0;
+       count < iterations && !error && !testing::Test::HasFailure(); count++) {
     for (unsigned int c = 0; c < sizeof(CArg1) / sizeof(uint16_t); c++)
       s1[c] = rnd.Rand16();
 
