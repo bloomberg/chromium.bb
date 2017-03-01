@@ -52,7 +52,8 @@ CSSFontSelector::CSSFontSelector(Document* document)
   ASSERT(m_document);
   DCHECK(m_document->frame());
   FontCache::fontCache()->addClient(this);
-  FontFaceSet::from(*document)->addFontFacesToFontFaceCache(this);
+  FontFaceSet::from(*document)->addFontFacesToFontFaceCache(&m_fontFaceCache,
+                                                            this);
 }
 
 CSSFontSelector::~CSSFontSelector() {}
@@ -68,7 +69,7 @@ void CSSFontSelector::unregisterForInvalidationCallbacks(
 }
 
 void CSSFontSelector::dispatchInvalidationCallbacks() {
-  m_document->incrementFontFaceVersion();
+  m_fontFaceCache.incrementVersion();
 
   HeapVector<Member<CSSFontSelectorClient>> clients;
   copyToVector(m_clients, clients);
@@ -120,15 +121,15 @@ static AtomicString familyNameFromSettings(
 
 PassRefPtr<FontData> CSSFontSelector::getFontData(
     const FontDescription& fontDescription,
-    const AtomicString& family) {
-  CSSSegmentedFontFace* face = getFontFaceFromCache(fontDescription, family);
-  if (face)
+    const AtomicString& familyName) {
+  if (CSSSegmentedFontFace* face =
+          m_fontFaceCache.get(fontDescription, familyName))
     return face->getFontData(fontDescription);
 
   // Try to return the correct font based off our settings, in case we were
   // handed the generic font family name.
   AtomicString settingsFamilyName = familyNameFromSettings(
-      m_genericFontFamilySettings, fontDescription, family);
+      m_genericFontFamilySettings, fontDescription, familyName);
   if (settingsFamilyName.isEmpty())
     return nullptr;
 
@@ -139,7 +140,7 @@ PassRefPtr<FontData> CSSFontSelector::getFontData(
 void CSSFontSelector::willUseFontData(const FontDescription& fontDescription,
                                       const AtomicString& family,
                                       const String& text) {
-  CSSSegmentedFontFace* face = getFontFaceFromCache(fontDescription, family);
+  CSSSegmentedFontFace* face = m_fontFaceCache.get(fontDescription, family);
   if (face)
     face->willUseFontData(fontDescription, text);
 }
@@ -147,7 +148,7 @@ void CSSFontSelector::willUseFontData(const FontDescription& fontDescription,
 void CSSFontSelector::willUseRange(const FontDescription& fontDescription,
                                    const AtomicString& family,
                                    const FontDataForRangeSet& rangeSet) {
-  CSSSegmentedFontFace* face = getFontFaceFromCache(fontDescription, family);
+  CSSSegmentedFontFace* face = m_fontFaceCache.get(fontDescription, family);
   if (face)
     face->willUseRange(fontDescription, rangeSet);
 }
@@ -173,6 +174,7 @@ void CSSFontSelector::updateGenericFontFamilySettings(Document& document) {
 
 DEFINE_TRACE(CSSFontSelector) {
   visitor->trace(m_document);
+  visitor->trace(m_fontFaceCache);
   visitor->trace(m_clients);
   FontSelector::trace(visitor);
 }

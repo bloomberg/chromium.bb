@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
-#include "core/css/FontFaceCache.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
@@ -1261,8 +1260,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return m_clientHintsPreferences;
   }
 
-  FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
-  void incrementFontFaceVersion() { m_fontFaceCache.incrementVersion(); }
   CanvasFontCache* canvasFontCache();
 
   // Used by unit tests so that all parsing will be main thread for
@@ -1654,7 +1651,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ClientHintsPreferences m_clientHintsPreferences;
 
-  FontFaceCache m_fontFaceCache;
   Member<CanvasFontCache> m_canvasFontCache;
 
   Member<IntersectionObserverController> m_intersectionObserverController;

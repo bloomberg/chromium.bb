@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/css/FontFaceCache.h"
-#include "core/dom/Document.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
 #include "platform/heap/Handle.h"
@@ -39,6 +38,7 @@
 namespace blink {
 
 class CSSFontSelectorClient;
+class Document;
 class FontDescription;
 
 class CORE_EXPORT CSSFontSelector : public FontSelector {
@@ -48,9 +48,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   }
   ~CSSFontSelector() override;
 
-  unsigned version() const override {
-    return m_document->fontFaceCache()->version();
-  }
+  unsigned version() const override { return m_fontFaceCache.version(); }
 
   PassRefPtr<FontData> getFontData(const FontDescription&,
                                    const AtomicString&) override;
@@ -72,6 +70,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void unregisterForInvalidationCallbacks(CSSFontSelectorClient*);
 
   Document* document() const { return m_document; }
+  FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
 
   const GenericFontFamilySettings& genericFontFamilySettings() const {
     return m_genericFontFamilySettings;
@@ -86,16 +85,12 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void dispatchInvalidationCallbacks();
 
  private:
-  CSSSegmentedFontFace* getFontFaceFromCache(
-      const FontDescription& fontDescription,
-      const AtomicString& family) {
-    return m_document->fontFaceCache()->get(fontDescription, family);
-  }
-
   // TODO(Oilpan): Ideally this should just be a traced Member but that will
   // currently leak because ComputedStyle and its data are not on the heap.
   // See crbug.com/383860 for details.
   WeakMember<Document> m_document;
+  // FIXME: Move to Document or StyleEngine.
+  FontFaceCache m_fontFaceCache;
   HeapHashSet<WeakMember<CSSFontSelectorClient>> m_clients;
   GenericFontFamilySettings m_genericFontFamilySettings;
 };
