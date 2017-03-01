@@ -42,7 +42,7 @@ void av1_calc_indices(const float *data, const float *centroids,
 
 // Generate a random number in the range [0, 32768).
 static unsigned int lcg_rand16(unsigned int *state) {
-  *state = *state * 1103515245 + 12345;
+  *state = (unsigned int)(*state * 1103515245ULL + 12345);
   return *state / 65536 % 32768;
 }
 
