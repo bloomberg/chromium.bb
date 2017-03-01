@@ -6,11 +6,12 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../controls/settings_checkbox.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="import_data_browser_proxy.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_vars_css.html">
 
 <dom-module id="settings-import-data-dialog">
@@ -19,6 +20,7 @@
       .description {
         align-items: center;
         display: flex;
+        min-height: var(--settings-row-min-height);
       }
 
       paper-spinner {
@@ -31,10 +33,6 @@
         margin: auto;
         width: 100%;
       }
-
-      .row {
-        min-height: var(--settings-row-min-height);
-      }
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}" ignore-popstate>
       <div class="title">$i18n{importTitle}</div>
@@ -43,8 +41,8 @@
             importStatusEnum_.SUCCEEDED, importStatus_)]]">
           <iron-icon id="successIcon" icon="settings:check-circle">
           </iron-icon>
-          <div hidden$="[[!showBookmarkSuccess_]]">
-            <div class="description row">$i18n{importSuccess}</div>
+          <div hidden$="[[!prefs.import_bookmarks.value]]">
+            <div class="description">$i18n{importSuccess}</div>
             <settings-toggle-button class="start"
                 label="$i18n{showBookmarksBar}"
                 pref="{{prefs.bookmark_bar.show_on_all_tabs}}">
@@ -63,34 +61,32 @@
             </select>
             <span class="md-select-underline"></span>
           </span>
-          <div class="description row">$i18n{importDescription}</div>
-          <div on-change="onCheckboxChange_">
-            <div class="row" hidden$="[[!selected_.history]]">
-              <paper-checkbox id="history" checked>
-                $i18n{importHistory}
-              </paper-checkbox>
-            </div>
-            <div class="row" hidden$="[[!selected_.favorites]]">
-              <paper-checkbox id="favorites" checked>
-                $i18n{importFavorites}
-              </paper-checkbox>
-            </div>
-            <div class="row" hidden$="[[!selected_.passwords]]">
-              <paper-checkbox id="passwords" checked>
-                $i18n{importPasswords}"
-              </paper-checkbox>
-            </div>
-            <div class="row" hidden$="[[!selected_.search]]">
-              <paper-checkbox id="search" checked>
-                $i18n{importSearch}
-              </paper-checkbox>
-            </div>
-            <div class="row" hidden="[[!selected_.autofillFormData]]">
-              <paper-checkbox id="autofillFormData" checked>
-                $i18n{importAutofillFormData}
-              </paper-checkbox>
-            </div>
-          </div>
+          <div class="description">$i18n{importDescription}</div>
+          <settings-checkbox
+              hidden="[[!selected_.history]]"
+              pref="{{prefs.import_history}}"
+              label="$i18n{importHistory}">
+          </settings-checkbox>
+          <settings-checkbox
+              hidden="[[!selected_.favorites]]"
+              pref="{{prefs.import_bookmarks}}"
+              label="$i18n{importFavorites}">
+          </settings-checkbox>
+          <settings-checkbox
+              hidden="[[!selected_.passwords]]"
+              pref="{{prefs.import_saved_passwords}}"
+              label="$i18n{importPasswords}">
+          </settings-checkbox>
+          <settings-checkbox
+              hidden="[[!selected_.search]]"
+              pref="{{prefs.import_search_engine}}"
+              label="$i18n{importSearch}">
+          </settings-checkbox>
+          <settings-checkbox
+              hidden="[[!selected_.autofillFormData]]"
+              pref="{{prefs.import_autofill_form_data}}"
+              label="$i18n{importAutofillFormData}">
+          </settings-checkbox>
         </div>
       </div>
       <div class="button-container">
