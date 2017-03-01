@@ -274,7 +274,7 @@ void WebFrameWidgetImpl::updateLayerTreeDeviceScaleFactor() {
   DCHECK(page());
   DCHECK(m_layerTreeView);
 
-  float deviceScaleFactor = page()->deviceScaleFactor();
+  float deviceScaleFactor = page()->deviceScaleFactorDeprecated();
   m_layerTreeView->setDeviceScaleFactor(deviceScaleFactor);
 }
 

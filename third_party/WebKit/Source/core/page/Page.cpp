@@ -72,13 +72,13 @@ Page::PageSet& Page::ordinaryPages() {
   return pages;
 }
 
-float deviceScaleFactor(LocalFrame* frame) {
+float deviceScaleFactorDeprecated(LocalFrame* frame) {
   if (!frame)
     return 1;
   Page* page = frame->page();
   if (!page)
     return 1;
-  return page->deviceScaleFactor();
+  return page->deviceScaleFactorDeprecated();
 }
 
 Page* Page::createOrdinary(PageClients& pageClients) {
@@ -254,7 +254,7 @@ float Page::pageScaleFactor() const {
   return frameHost().visualViewport().scale();
 }
 
-void Page::setDeviceScaleFactor(float scaleFactor) {
+void Page::setDeviceScaleFactorDeprecated(float scaleFactor) {
   if (m_deviceScaleFactor == scaleFactor)
     return;
 

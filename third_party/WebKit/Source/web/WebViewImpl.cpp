@@ -2892,11 +2892,12 @@ double WebViewImpl::setZoomLevel(double zoomLevel) {
     if (m_compositorDeviceScaleFactorOverride) {
       // Adjust the page's DSF so that DevicePixelRatio becomes
       // m_zoomFactorForDeviceScaleFactor.
-      page()->setDeviceScaleFactor(m_zoomFactorForDeviceScaleFactor /
-                                   m_compositorDeviceScaleFactorOverride);
+      page()->setDeviceScaleFactorDeprecated(
+          m_zoomFactorForDeviceScaleFactor /
+          m_compositorDeviceScaleFactorOverride);
       zoomFactor *= m_compositorDeviceScaleFactorOverride;
     } else {
-      page()->setDeviceScaleFactor(1.f);
+      page()->setDeviceScaleFactorDeprecated(1.f);
       zoomFactor *= m_zoomFactorForDeviceScaleFactor;
     }
   }
@@ -3008,7 +3009,7 @@ void WebViewImpl::setDeviceScaleFactor(float scaleFactor) {
   if (!page())
     return;
 
-  page()->setDeviceScaleFactor(scaleFactor);
+  page()->setDeviceScaleFactorDeprecated(scaleFactor);
 
   if (m_layerTreeView)
     updateLayerTreeDeviceScaleFactor();
@@ -4024,7 +4025,7 @@ void WebViewImpl::updateLayerTreeDeviceScaleFactor() {
 
   float deviceScaleFactor = m_compositorDeviceScaleFactorOverride
                                 ? m_compositorDeviceScaleFactorOverride
-                                : page()->deviceScaleFactor();
+                                : page()->deviceScaleFactorDeprecated();
   m_layerTreeView->setDeviceScaleFactor(deviceScaleFactor);
 }
 
@@ -4151,7 +4152,7 @@ float WebViewImpl::deviceScaleFactor() const {
   if (!page())
     return 1;
 
-  return page()->deviceScaleFactor();
+  return page()->deviceScaleFactorDeprecated();
 }
 
 LocalFrame* WebViewImpl::focusedLocalFrameInWidget() const {

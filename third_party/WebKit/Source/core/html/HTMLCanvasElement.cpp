@@ -315,7 +315,7 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect) {
   if (layoutObject())
     layoutObject()->setMayNeedPaintInvalidation();
   if (m_context && m_context->is2d() && m_context->shouldAntialias() &&
-      page() && page()->deviceScaleFactor() > 1.0f) {
+      page() && page()->deviceScaleFactorDeprecated() > 1.0f) {
     FloatRect inflatedRect = rect;
     inflatedRect.inflate(1);
     m_dirtyRect.unite(inflatedRect);

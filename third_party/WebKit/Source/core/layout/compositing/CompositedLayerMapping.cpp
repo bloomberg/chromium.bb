@@ -2914,8 +2914,8 @@ void CompositedLayerMapping::doPaintTask(
     paintInfo.paintLayer->layoutObject().assertSubtreeIsLaidOut();
 #endif
 
-  float deviceScaleFactor =
-      blink::deviceScaleFactor(paintInfo.paintLayer->layoutObject().frame());
+  float deviceScaleFactor = blink::deviceScaleFactorDeprecated(
+      paintInfo.paintLayer->layoutObject().frame());
   context.setDeviceScaleFactor(deviceScaleFactor);
 
   if (paintInfo.paintLayer->compositingState() != PaintsIntoGroupedBacking) {

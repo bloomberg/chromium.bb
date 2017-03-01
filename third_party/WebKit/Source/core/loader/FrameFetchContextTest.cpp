@@ -105,7 +105,7 @@ class FrameFetchContextTest : public ::testing::Test {
  protected:
   void SetUp() override {
     dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
-    dummyPageHolder->page().setDeviceScaleFactor(1.0);
+    dummyPageHolder->page().setDeviceScaleFactorDeprecated(1.0);
     document = &dummyPageHolder->document();
     fetchContext =
         static_cast<FrameFetchContext*>(&document->fetcher()->context());
@@ -197,7 +197,7 @@ class FrameFetchContextMockedLocalFrameClientTest
     client = new testing::NiceMock<MockLocalFrameClient>();
     dummyPageHolder =
         DummyPageHolder::create(IntSize(500, 500), nullptr, client);
-    dummyPageHolder->page().setDeviceScaleFactor(1.0);
+    dummyPageHolder->page().setDeviceScaleFactorDeprecated(1.0);
     document = &dummyPageHolder->document();
     document->setURL(mainResourceUrl);
     fetchContext =
@@ -495,7 +495,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorDPRHints) {
   preferences.setShouldSendDPR(true);
   document->clientHintsPreferences().updateFrom(preferences);
   expectHeader("http://www.example.com/1.gif", "DPR", true, "1");
-  dummyPageHolder->page().setDeviceScaleFactor(2.5);
+  dummyPageHolder->page().setDeviceScaleFactorDeprecated(2.5);
   expectHeader("http://www.example.com/1.gif", "DPR", true, "2.5");
   expectHeader("http://www.example.com/1.gif", "Width", false, "");
   expectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
@@ -509,7 +509,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorResourceWidthHints) {
   expectHeader("http://www.example.com/1.gif", "Width", true, "500", 500);
   expectHeader("http://www.example.com/1.gif", "Width", true, "667", 666.6666);
   expectHeader("http://www.example.com/1.gif", "DPR", false, "");
-  dummyPageHolder->page().setDeviceScaleFactor(2.5);
+  dummyPageHolder->page().setDeviceScaleFactorDeprecated(2.5);
   expectHeader("http://www.example.com/1.gif", "Width", true, "1250", 500);
   expectHeader("http://www.example.com/1.gif", "Width", true, "1667", 666.6666);
 }
@@ -637,7 +637,7 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
                                       << test.serializedOrigin);
     // Set up a new document to ensure sandbox flags are cleared:
     dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
-    dummyPageHolder->page().setDeviceScaleFactor(1.0);
+    dummyPageHolder->page().setDeviceScaleFactorDeprecated(1.0);
     document = &dummyPageHolder->document();
     FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
 

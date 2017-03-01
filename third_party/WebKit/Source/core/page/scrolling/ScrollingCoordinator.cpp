@@ -451,8 +451,8 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(
             scrollbar.theme().trackPosition(scrollbar),
             scrollableArea->shouldPlaceVerticalScrollbarOnLeft());
       } else {
-        webScrollbarLayer =
-            createScrollbarLayer(scrollbar, m_page->deviceScaleFactor());
+        webScrollbarLayer = createScrollbarLayer(
+            scrollbar, m_page->deviceScaleFactorDeprecated());
       }
       scrollbarLayer = addWebScrollbarLayer(scrollableArea, orientation,
                                             std::move(webScrollbarLayer));

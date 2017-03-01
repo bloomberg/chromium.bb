@@ -1220,7 +1220,7 @@ TEST_P(ParameterizedWebFrameTest,
 
   webViewHelper.resize(WebSize(viewportWidth, viewportHeight));
 
-  EXPECT_EQ(2, webViewHelper.webView()->page()->deviceScaleFactor());
+  EXPECT_EQ(2, webViewHelper.webView()->page()->deviceScaleFactorDeprecated());
 
   // Device scale factor should be independent of page scale.
   webViewHelper.webView()->setDefaultPageScaleLimits(1, 2);

@@ -344,7 +344,7 @@ void DevToolsEmulator::disableMobileEmulation() {
 float DevToolsEmulator::compositorDeviceScaleFactor() const {
   if (m_deviceMetricsEnabled)
     return m_emulationParams.deviceScaleFactor;
-  return m_webViewImpl->page()->deviceScaleFactor();
+  return m_webViewImpl->page()->deviceScaleFactorDeprecated();
 }
 
 void DevToolsEmulator::forceViewport(const WebFloatPoint& position,

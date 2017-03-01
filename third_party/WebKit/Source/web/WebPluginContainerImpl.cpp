@@ -274,7 +274,7 @@ float WebPluginContainerImpl::deviceScaleFactor() {
   Page* page = m_element->document().page();
   if (!page)
     return 1.0;
-  return page->deviceScaleFactor();
+  return page->deviceScaleFactorDeprecated();
 }
 
 float WebPluginContainerImpl::pageScaleFactor() {

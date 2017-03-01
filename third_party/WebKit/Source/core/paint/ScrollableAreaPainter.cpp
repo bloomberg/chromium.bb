@@ -70,7 +70,7 @@ void ScrollableAreaPainter::drawPlatformResizerImage(
     GraphicsContext& context,
     IntRect resizerCornerRect) {
   float oldDeviceScaleFactor =
-      blink::deviceScaleFactor(getScrollableArea().box().frame());
+      blink::deviceScaleFactorDeprecated(getScrollableArea().box().frame());
   // |blink::deviceScaleFactor| returns different values between MAC (2 or 1)
   // and other platforms (always 1). For this reason we cannot hardcode the
   // value of 1 in the call for |windowToViewportScalar|. Since zoom-for-dsf is

@@ -170,7 +170,7 @@ void FramePainter::paintContents(GraphicsContext& context,
   PaintLayerPainter layerPainter(*rootLayer);
 
   float deviceScaleFactor =
-      blink::deviceScaleFactor(rootLayer->layoutObject().frame());
+      blink::deviceScaleFactorDeprecated(rootLayer->layoutObject().frame());
   context.setDeviceScaleFactor(deviceScaleFactor);
 
   layerPainter.paint(context, LayoutRect(rect), localPaintFlags);
