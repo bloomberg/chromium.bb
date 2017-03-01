@@ -13,10 +13,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/resource_type.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class GURL;
 class URLPattern;
@@ -35,11 +37,11 @@ class Extension;
 //
 // This class lives mostly on the IO thread. It listens on the UI thread for
 // updates to loaded extensions.
-class UserScriptListener
-    : public base::RefCountedThreadSafe<
-          UserScriptListener,
-          content::BrowserThread::DeleteOnUIThread>,
-      public content::NotificationObserver {
+class UserScriptListener : public base::RefCountedThreadSafe<
+                               UserScriptListener,
+                               content::BrowserThread::DeleteOnUIThread>,
+                           public content::NotificationObserver,
+                           public ExtensionRegistryObserver {
  public:
   UserScriptListener();
 
@@ -105,6 +107,18 @@ class UserScriptListener
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+  void OnShutdown(ExtensionRegistry* registry) override;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   content::NotificationRegistrar registrar_;
 

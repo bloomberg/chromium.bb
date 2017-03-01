@@ -6,12 +6,13 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/navigation_data.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -21,12 +22,16 @@
 class ChromeResourceDispatcherHostDelegateTest : public testing::Test {
  public:
   ChromeResourceDispatcherHostDelegateTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+      : profile_manager_(
+            new TestingProfileManager(TestingBrowserProcess::GetGlobal())) {}
   ~ChromeResourceDispatcherHostDelegateTest() override {}
 
+  void SetUp() override { ASSERT_TRUE(profile_manager_->SetUp()); }
+
  private:
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  // Set up TestingProfileManager for extensions::UserScriptListener.
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 };
 
 TEST_F(ChromeResourceDispatcherHostDelegateTest,
