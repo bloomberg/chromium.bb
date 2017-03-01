@@ -18,11 +18,6 @@ const base::Feature kAffiliationBasedMatching = {
 const base::Feature kDropSyncCredential = {"drop-sync-credential",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Disables the save-password prompt. Passwords are then saved automatically,
-// without asking the user.
-const base::Feature kEnableAutomaticPasswordSaving = {
-    "enable-automatic-password-saving", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable a context menu item in the password field that allows the user
 // to manually enforce saving of their password.
 const base::Feature kEnablePasswordForceSaving = {

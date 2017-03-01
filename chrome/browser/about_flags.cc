@@ -1098,11 +1098,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PASSWORD_GENERATION_DESCRIPTION, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(autofill::switches::kEnablePasswordGeneration,
                                autofill::switches::kDisablePasswordGeneration)},
-    {"enable-automatic-password-saving",
-     IDS_FLAGS_AUTOMATIC_PASSWORD_SAVING_NAME,
-     IDS_FLAGS_AUTOMATIC_PASSWORD_SAVING_DESCRIPTION, kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEnableAutomaticPasswordSaving)},
     {"enable-password-force-saving", IDS_FLAGS_PASSWORD_FORCE_SAVING_NAME,
      IDS_FLAGS_PASSWORD_FORCE_SAVING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(

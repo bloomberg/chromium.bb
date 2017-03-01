@@ -7,10 +7,6 @@
 
 namespace password_manager {
 
-bool PasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
-  return false;
-}
-
 bool PasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage() const {
   return true;
 }

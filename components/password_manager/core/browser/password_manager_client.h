@@ -50,12 +50,6 @@ class PasswordManagerClient {
   PasswordManagerClient() {}
   virtual ~PasswordManagerClient() {}
 
-  // For automated testing, the save password prompt should sometimes not be
-  // shown, and password immediately saved instead. That can be enforced by
-  // a command-line flag. If auto-saving is enforced, this method returns true.
-  // The default return value is false.
-  virtual bool IsAutomaticPasswordSavingEnabled() const;
-
   // Is saving new data for password autofill and filling of saved data enabled
   // for the current profile and page? For example, saving is disabled in
   // Incognito mode.

@@ -180,12 +180,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
 
-bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
-  return base::FeatureList::IsEnabled(
-             password_manager::features::kEnableAutomaticPasswordSaving) &&
-         chrome::GetChannel() == version_info::Channel::UNKNOWN;
-}
-
 bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
     const {
   DCHECK(web_contents());

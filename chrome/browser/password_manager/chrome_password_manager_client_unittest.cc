@@ -14,11 +14,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
@@ -30,7 +28,6 @@
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -42,7 +39,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/web_contents_tester.h"
-#include "extensions/features/features.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -251,24 +247,6 @@ TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressNotifyRenderer) {
   log_router->UnregisterReceiver(&log_receiver);
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
   EXPECT_FALSE(logging_active);
-}
-
-TEST_F(ChromePasswordManagerClientTest,
-       IsAutomaticPasswordSavingEnabledDefaultBehaviourTest) {
-  EXPECT_FALSE(GetClient()->IsAutomaticPasswordSavingEnabled());
-}
-
-TEST_F(ChromePasswordManagerClientTest,
-       IsAutomaticPasswordSavingEnabledWhenFlagIsSetTest) {
-  // Add the enable-automatic-password-saving feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kEnableAutomaticPasswordSaving);
-
-  if (chrome::GetChannel() == version_info::Channel::UNKNOWN)
-    EXPECT_TRUE(GetClient()->IsAutomaticPasswordSavingEnabled());
-  else
-    EXPECT_FALSE(GetClient()->IsAutomaticPasswordSavingEnabled());
 }
 
 TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {

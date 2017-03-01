@@ -590,8 +590,7 @@ bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
 }
 
 bool PasswordManager::ShouldPromptUserToSavePassword() const {
-  return !client_->IsAutomaticPasswordSavingEnabled() &&
-         (provisional_save_manager_->IsNewLogin() ||
+  return (provisional_save_manager_->IsNewLogin() ||
           provisional_save_manager_
               ->is_possible_change_password_form_without_username() ||
           provisional_save_manager_->retry_password_form_password_update() ||
