@@ -346,12 +346,11 @@ bool ImageBuffer::getImageData(Multiply multiplied,
 
   if (!isSurfaceValid()) {
     size_t allocSizeInBytes = rect.width() * rect.height() * bytesPerPixel;
-    void* data;
-    WTF::ArrayBufferContents::allocateMemoryOrNull(
-        allocSizeInBytes, WTF::ArrayBufferContents::ZeroInitialize, data);
+    auto data = WTF::ArrayBufferContents::createDataHandle(
+        allocSizeInBytes, WTF::ArrayBufferContents::ZeroInitialize);
     if (!data)
       return false;
-    WTF::ArrayBufferContents result(data, allocSizeInBytes,
+    WTF::ArrayBufferContents result(std::move(data), allocSizeInBytes,
                                     WTF::ArrayBufferContents::NotShared);
     result.transfer(contents);
     return true;
@@ -375,15 +374,14 @@ bool ImageBuffer::getImageData(Multiply multiplied,
       rect.maxX() > m_surface->size().width() ||
       rect.maxY() > m_surface->size().height();
   size_t allocSizeInBytes = rect.width() * rect.height() * bytesPerPixel;
-  void* data;
   WTF::ArrayBufferContents::InitializationPolicy initializationPolicy =
       mayHaveStrayArea ? WTF::ArrayBufferContents::ZeroInitialize
                        : WTF::ArrayBufferContents::DontInitialize;
-  WTF::ArrayBufferContents::allocateMemoryOrNull(allocSizeInBytes,
-                                                 initializationPolicy, data);
+  auto data = WTF::ArrayBufferContents::createDataHandle(allocSizeInBytes,
+                                                         initializationPolicy);
   if (!data)
     return false;
-  WTF::ArrayBufferContents result(data, allocSizeInBytes,
+  WTF::ArrayBufferContents result(std::move(data), allocSizeInBytes,
                                   WTF::ArrayBufferContents::NotShared);
 
   // Skia does not support unpremultiplied read with an F16 to 8888 conversion

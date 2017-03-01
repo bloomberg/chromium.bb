@@ -43,6 +43,15 @@ class WTF_EXPORT ArrayBufferContents {
 
  public:
   using AdjustAmountOfExternalAllocatedMemoryFunction = void (*)(int64_t diff);
+  // Types that need to be used when injecting external memory.
+  // DataHandle allows specifying a deleter which will be invoked when
+  // DataHandle instance goes out of scope. If the data memory is allocated
+  // using ArrayBufferContents::allocateMemoryOrNull, it is necessary to
+  // specify ArrayBufferContents::freeMemory as the DataDeleter.
+  // Most clients would want to use ArrayBufferContents::createData, which
+  // allocates memory and specifies the correct deleter.
+  using DataDeleter = void (*)(void* data);
+  using DataHandle = std::unique_ptr<void, DataDeleter>;
 
   enum InitializationPolicy { ZeroInitialize, DontInitialize };
 
@@ -56,13 +65,7 @@ class WTF_EXPORT ArrayBufferContents {
                       unsigned elementByteSize,
                       SharingType isShared,
                       InitializationPolicy);
-
-  // Use with care. data must be allocated with allocateMemory.
-  // ArrayBufferContents will take ownership of the data and free it (using
-  // freeMemory) upon destruction.
-  // This constructor will not call observer->StartObserving(), so it is a
-  // responsibility of the caller to make sure JS knows about external memory.
-  ArrayBufferContents(void* data, unsigned sizeInBytes, SharingType isShared);
+  ArrayBufferContents(DataHandle, unsigned sizeInBytes, SharingType isShared);
 
   ~ArrayBufferContents();
 
@@ -88,9 +91,9 @@ class WTF_EXPORT ArrayBufferContents {
   void shareWith(ArrayBufferContents& other);
   void copyTo(ArrayBufferContents& other);
 
-  static void allocateMemory(size_t, InitializationPolicy, void*&);
-  static void allocateMemoryOrNull(size_t, InitializationPolicy, void*&);
-  static void freeMemory(void*, size_t);
+  static void* allocateMemoryOrNull(size_t, InitializationPolicy);
+  static void freeMemory(void*);
+  static DataHandle createDataHandle(size_t, InitializationPolicy);
   static void initialize(
       AdjustAmountOfExternalAllocatedMemoryFunction function) {
     DCHECK(isMainThread());
@@ -100,10 +103,7 @@ class WTF_EXPORT ArrayBufferContents {
   }
 
  private:
-  static void allocateMemoryWithFlags(size_t,
-                                      InitializationPolicy,
-                                      int,
-                                      void*&);
+  static void* allocateMemoryWithFlags(size_t, InitializationPolicy, int);
 
   static void defaultAdjustAmountOfExternalAllocatedMemoryFunction(
       int64_t diff);
@@ -118,11 +118,11 @@ class WTF_EXPORT ArrayBufferContents {
     void allocateNew(unsigned sizeInBytes,
                      SharingType isShared,
                      InitializationPolicy);
-    void adopt(void* data, unsigned sizeInBytes, SharingType isShared);
+    void adopt(DataHandle, unsigned sizeInBytes, SharingType isShared);
     void copyMemoryFrom(const DataHolder& source);
 
-    const void* data() const { return m_data; }
-    void* data() { return m_data; }
+    const void* data() const { return m_data.get(); }
+    void* data() { return m_data.get(); }
     unsigned sizeInBytes() const { return m_sizeInBytes; }
     bool isShared() const { return m_isShared == Shared; }
 
@@ -150,7 +150,7 @@ class WTF_EXPORT ArrayBufferContents {
 #endif
     }
 
-    void* m_data;
+    DataHandle m_data;
     unsigned m_sizeInBytes;
     SharingType m_isShared;
   };

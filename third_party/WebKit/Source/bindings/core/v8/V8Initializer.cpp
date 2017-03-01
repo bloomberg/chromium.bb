@@ -391,21 +391,17 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   // should respond by throwing a RangeError, per
   // http://www.ecma-international.org/ecma-262/6.0/#sec-createbytedatablock.
   void* Allocate(size_t size) override {
-    void* data;
-    WTF::ArrayBufferContents::allocateMemoryOrNull(
-        size, WTF::ArrayBufferContents::ZeroInitialize, data);
-    return data;
+    return WTF::ArrayBufferContents::allocateMemoryOrNull(
+        size, WTF::ArrayBufferContents::ZeroInitialize);
   }
 
   void* AllocateUninitialized(size_t size) override {
-    void* data;
-    WTF::ArrayBufferContents::allocateMemoryOrNull(
-        size, WTF::ArrayBufferContents::DontInitialize, data);
-    return data;
+    return WTF::ArrayBufferContents::allocateMemoryOrNull(
+        size, WTF::ArrayBufferContents::DontInitialize);
   }
 
   void Free(void* data, size_t size) override {
-    WTF::ArrayBufferContents::freeMemory(data, size);
+    WTF::ArrayBufferContents::freeMemory(data);
   }
 };
 

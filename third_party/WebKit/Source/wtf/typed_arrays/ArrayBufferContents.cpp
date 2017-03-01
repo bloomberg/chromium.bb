@@ -68,12 +68,12 @@ ArrayBufferContents::ArrayBufferContents(
   m_holder->allocateNew(totalSize, isShared, policy);
 }
 
-ArrayBufferContents::ArrayBufferContents(void* data,
+ArrayBufferContents::ArrayBufferContents(DataHandle data,
                                          unsigned sizeInBytes,
                                          SharingType isShared)
     : m_holder(adoptRef(new DataHolder())) {
   if (data) {
-    m_holder->adopt(data, sizeInBytes, isShared);
+    m_holder->adopt(std::move(data), sizeInBytes, isShared);
   } else {
     DCHECK_EQ(sizeInBytes, 0u);
     sizeInBytes = 0;
@@ -107,42 +107,40 @@ void ArrayBufferContents::copyTo(ArrayBufferContents& other) {
   other.m_holder->copyMemoryFrom(*m_holder);
 }
 
-void ArrayBufferContents::allocateMemoryWithFlags(size_t size,
-                                                  InitializationPolicy policy,
-                                                  int flags,
-                                                  void*& data) {
-  data = PartitionAllocGenericFlags(
+void* ArrayBufferContents::allocateMemoryWithFlags(size_t size,
+                                                   InitializationPolicy policy,
+                                                   int flags) {
+  void* data = PartitionAllocGenericFlags(
       Partitions::arrayBufferPartition(), flags, size,
       WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
   if (policy == ZeroInitialize && data)
     memset(data, '\0', size);
+  return data;
 }
 
-void ArrayBufferContents::allocateMemory(size_t size,
-                                         InitializationPolicy policy,
-                                         void*& data) {
-  allocateMemoryWithFlags(size, policy, 0, data);
+void* ArrayBufferContents::allocateMemoryOrNull(size_t size,
+                                                InitializationPolicy policy) {
+  return allocateMemoryWithFlags(size, policy, base::PartitionAllocReturnNull);
 }
 
-void ArrayBufferContents::allocateMemoryOrNull(size_t size,
-                                               InitializationPolicy policy,
-                                               void*& data) {
-  allocateMemoryWithFlags(size, policy, base::PartitionAllocReturnNull, data);
-}
-
-void ArrayBufferContents::freeMemory(void* data, size_t size) {
+void ArrayBufferContents::freeMemory(void* data) {
   PartitionFreeGeneric(Partitions::arrayBufferPartition(), data);
 }
 
+ArrayBufferContents::DataHandle ArrayBufferContents::createDataHandle(
+    size_t size,
+    InitializationPolicy policy) {
+  return DataHandle(ArrayBufferContents::allocateMemoryOrNull(size, policy),
+                    freeMemory);
+}
+
 ArrayBufferContents::DataHolder::DataHolder()
-    : m_data(nullptr), m_sizeInBytes(0), m_isShared(NotShared) {}
+    : m_data(nullptr, freeMemory), m_sizeInBytes(0), m_isShared(NotShared) {}
 
 ArrayBufferContents::DataHolder::~DataHolder() {
-  ArrayBufferContents::freeMemory(m_data, m_sizeInBytes);
-
   adjustAmountOfExternalAllocatedMemory(-static_cast<int64_t>(m_sizeInBytes));
 
-  m_data = nullptr;
+  m_data.reset();
   m_sizeInBytes = 0;
   m_isShared = NotShared;
 }
@@ -153,7 +151,7 @@ void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes,
   DCHECK(!m_data);
   DCHECK_EQ(m_sizeInBytes, 0u);
 
-  ArrayBufferContents::allocateMemory(sizeInBytes, policy, m_data);
+  m_data = createDataHandle(sizeInBytes, policy);
   if (!m_data)
     return;
 
@@ -163,13 +161,13 @@ void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes,
   adjustAmountOfExternalAllocatedMemory(m_sizeInBytes);
 }
 
-void ArrayBufferContents::DataHolder::adopt(void* data,
+void ArrayBufferContents::DataHolder::adopt(DataHandle data,
                                             unsigned sizeInBytes,
                                             SharingType isShared) {
   DCHECK(!m_data);
   DCHECK_EQ(m_sizeInBytes, 0u);
 
-  m_data = data;
+  m_data = std::move(data);
   m_sizeInBytes = sizeInBytes;
   m_isShared = isShared;
 
@@ -180,13 +178,12 @@ void ArrayBufferContents::DataHolder::copyMemoryFrom(const DataHolder& source) {
   DCHECK(!m_data);
   DCHECK_EQ(m_sizeInBytes, 0u);
 
-  ArrayBufferContents::allocateMemory(source.sizeInBytes(), DontInitialize,
-                                      m_data);
+  m_data = createDataHandle(source.sizeInBytes(), DontInitialize);
   if (!m_data)
     return;
 
   m_sizeInBytes = source.sizeInBytes();
-  memcpy(m_data, source.data(), source.sizeInBytes());
+  memcpy(m_data.get(), source.data(), source.sizeInBytes());
 
   adjustAmountOfExternalAllocatedMemory(m_sizeInBytes);
 }
