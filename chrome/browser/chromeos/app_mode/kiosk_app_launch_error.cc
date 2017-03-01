@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -14,8 +16,11 @@ namespace chromeos {
 
 namespace {
 
-// Key under "kiosk" dictionary to store last launch error.
-const char kKeyLaunchError[] = "launch_error";
+// Key under "kiosk" dictionary to store the last launch error.
+constexpr char kKeyLaunchError[] = "launch_error";
+
+// Key under "kiosk" dictionary to store the last cryptohome error.
+constexpr char kKeyCryptohomeFailure[] = "cryptohome_failure";
 
 }  // namespace
 
@@ -49,6 +54,10 @@ std::string KioskAppLaunchError::GetErrorMessage(Error error) {
 
     case UNABLE_TO_LAUNCH:
       return l10n_util::GetStringUTF8(IDS_KIOSK_APP_ERROR_UNABLE_TO_LAUNCH);
+
+    case ERROR_COUNT:
+      // Break onto the NOTREACHED() code path below.
+      break;
   }
 
   NOTREACHED() << "Unknown kiosk app launch error, error=" << error;
@@ -61,6 +70,15 @@ void KioskAppLaunchError::Save(KioskAppLaunchError::Error error) {
   DictionaryPrefUpdate dict_update(local_state,
                                    KioskAppManager::kKioskDictionaryName);
   dict_update->SetInteger(kKeyLaunchError, error);
+}
+
+// static
+void KioskAppLaunchError::SaveCryptohomeFailure(
+    const AuthFailure& auth_failure) {
+  PrefService* local_state = g_browser_process->local_state();
+  DictionaryPrefUpdate dict_update(local_state,
+                                   KioskAppManager::kKioskDictionaryName);
+  dict_update->SetInteger(kKeyCryptohomeFailure, auth_failure.reason());
 }
 
 // static
@@ -77,11 +95,23 @@ KioskAppLaunchError::Error KioskAppLaunchError::Get() {
 }
 
 // static
-void KioskAppLaunchError::Clear() {
+void KioskAppLaunchError::RecordMetricAndClear() {
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate dict_update(local_state,
                                    KioskAppManager::kKioskDictionaryName);
+
+  int error;
+  if (dict_update->GetInteger(kKeyLaunchError, &error))
+    UMA_HISTOGRAM_ENUMERATION("Kiosk.Launch.Error", error, ERROR_COUNT);
   dict_update->Remove(kKeyLaunchError, NULL);
+
+  int cryptohome_failure;
+  if (dict_update->GetInteger(kKeyCryptohomeFailure, &cryptohome_failure)) {
+    UMA_HISTOGRAM_ENUMERATION("Kiosk.Launch.CryptohomeFailure",
+                              cryptohome_failure,
+                              AuthFailure::NUM_FAILURE_REASONS);
+  }
+  dict_update->Remove(kKeyCryptohomeFailure, NULL);
 }
 
 }  // namespace chromeos

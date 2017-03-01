@@ -186,6 +186,7 @@ void KioskProfileLoader::OnAuthSuccess(const UserContext& user_context) {
 
 void KioskProfileLoader::OnAuthFailure(const AuthFailure& error) {
   LOG(ERROR) << "Kiosk auth failure: error=" << error.GetErrorString();
+  KioskAppLaunchError::SaveCryptohomeFailure(error);
   ReportLaunchResult(LoginFailureToKioskAppLaunchError(error));
 }
 

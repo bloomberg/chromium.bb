@@ -174,7 +174,7 @@ void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(
   KioskAppLaunchError::Error error = KioskAppLaunchError::Get();
   if (error == KioskAppLaunchError::NONE)
     return;
-  KioskAppLaunchError::Clear();
+  KioskAppLaunchError::RecordMetricAndClear();
 
   const std::string error_message = KioskAppLaunchError::GetErrorMessage(error);
   bool new_kiosk_ui = EnableNewKioskUI();
