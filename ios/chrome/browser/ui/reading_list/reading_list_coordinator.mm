@@ -58,7 +58,11 @@ enum UMAContextMenuAction {
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 
 // Opens |URL| in a new tab |incognito| or not.
-- (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito;
+- (void)openNewTabWithURL:(const GURL&)URL
+                                  incognito:(BOOL)incognito
+    fromReadingListCollectionViewController:
+        (ReadingListCollectionViewController*)
+            readingListCollectionViewController;
 
 // Opens the offline url |offlineURL| of the entry saved in the reading list
 // model with the |entryURL| url.
@@ -159,6 +163,8 @@ enum UMAContextMenuAction {
   const GURL entryURL = entry->URL();
 
   __weak ReadingListCoordinator* weakSelf = self;
+  __weak ReadingListCollectionViewController* weakCollection =
+      readingListCollectionViewController;
 
   _alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.containerViewController
@@ -174,7 +180,9 @@ enum UMAContextMenuAction {
   [_alertCoordinator
       addItemWithTitle:openInNewTabTitle
                 action:^{
-                  [weakSelf openNewTabWithURL:entryURL incognito:NO];
+                  [weakSelf openNewTabWithURL:entryURL
+                                                    incognito:NO
+                      fromReadingListCollectionViewController:weakCollection];
                   UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu", NEW_TAB,
                                             ENUM_MAX);
 
@@ -186,9 +194,11 @@ enum UMAContextMenuAction {
   [_alertCoordinator
       addItemWithTitle:openInNewTabIncognitoTitle
                 action:^{
+                  [weakSelf openNewTabWithURL:entryURL
+                                                    incognito:YES
+                      fromReadingListCollectionViewController:weakCollection];
                   UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
                                             NEW_INCOGNITO_TAB, ENUM_MAX);
-                  [weakSelf openNewTabWithURL:entryURL incognito:YES];
                 }
                  style:UIAlertActionStyleDefault];
 
@@ -215,8 +225,7 @@ enum UMAContextMenuAction {
                                               VIEW_OFFLINE, ENUM_MAX);
                     [weakSelf openOfflineURL:offlineURL
                                           correspondingEntryURL:entryURL
-                        fromReadingListCollectionViewController:
-                            readingListCollectionViewController];
+                        fromReadingListCollectionViewController:weakCollection];
                   }
                    style:UIAlertActionStyleDefault];
   }
@@ -248,6 +257,8 @@ readingListCollectionViewController:
 
   base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
 
+  [readingListCollectionViewController willBeDismissed];
+
   [self.URLLoader loadURL:entry->URL()
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
@@ -263,9 +274,10 @@ readingListCollectionViewController:
     fromReadingListCollectionViewController:
         (ReadingListCollectionViewController*)
             readingListCollectionViewController {
-  [readingListCollectionViewController willBeDismissed];
-
-  [self openNewTabWithURL:offlineURL incognito:NO];
+  [self openNewTabWithURL:offlineURL
+                                    incognito:NO
+      fromReadingListCollectionViewController:
+          readingListCollectionViewController];
 
   UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
   const GURL updateURL = entryURL;
@@ -273,9 +285,14 @@ readingListCollectionViewController:
                                                                       true);
 }
 
-- (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito {
+- (void)openNewTabWithURL:(const GURL&)URL
+                                  incognito:(BOOL)incognito
+    fromReadingListCollectionViewController:
+        (ReadingListCollectionViewController*)
+            readingListCollectionViewController {
   base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
 
+  [readingListCollectionViewController willBeDismissed];
   [self.URLLoader webPageOrderedOpen:URL
                             referrer:web::Referrer()
                          inIncognito:incognito
