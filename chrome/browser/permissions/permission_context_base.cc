@@ -42,6 +42,31 @@
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #endif
 
+namespace {
+
+const char kPermissionBlockedKillSwitchMessage[] =
+    "%s permission has been blocked.";
+
+const char kPermissionBlockedRepeatedDismissalsMessage[] =
+    "%s permission has been blocked as the user has dismissed the permission "
+    "prompt several times. See "
+    "https://www.chromestatus.com/features/6443143280984064 for more "
+    "information.";
+
+const char kPermissionBlockedBlacklistMessage[] =
+    "this origin is not allowed to request %s permission.";
+
+void LogPermissionBlockedMessage(content::WebContents* web_contents,
+                                 const char* message,
+                                 ContentSettingsType type) {
+  web_contents->GetMainFrame()->AddMessageToConsole(
+      content::CONSOLE_MESSAGE_LEVEL_INFO,
+      base::StringPrintf(message,
+                         PermissionUtil::GetPermissionString(type).c_str()));
+}
+
+}  // namespace
+
 // static
 const char PermissionContextBase::kPermissionsKillSwitchFieldStudy[] =
     "PermissionsKillSwitch";
@@ -100,14 +125,15 @@ void PermissionContextBase::RequestPermission(
       result.content_setting == CONTENT_SETTING_BLOCK) {
     if (result.source == PermissionStatusSource::KILL_SWITCH) {
       // Block the request and log to the developer console.
-      web_contents->GetMainFrame()->AddMessageToConsole(
-          content::CONSOLE_MESSAGE_LEVEL_INFO,
-          base::StringPrintf(
-              "%s permission has been blocked.",
-              PermissionUtil::GetPermissionString(content_settings_type_)
-                  .c_str()));
+      LogPermissionBlockedMessage(web_contents,
+                                  kPermissionBlockedKillSwitchMessage,
+                                  content_settings_type_);
       callback.Run(CONTENT_SETTING_BLOCK);
       return;
+    } else if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS) {
+      LogPermissionBlockedMessage(web_contents,
+                                  kPermissionBlockedRepeatedDismissalsMessage,
+                                  content_settings_type_);
     }
 
     // If we are under embargo, record the embargo reason for which we have
@@ -139,12 +165,9 @@ void PermissionContextBase::ContinueRequestPermission(
     bool permission_blocked) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (permission_blocked) {
-    web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_INFO,
-        base::StringPrintf(
-            "%s permission has been auto-blocked.",
-            PermissionUtil::GetPermissionString(content_settings_type_)
-                .c_str()));
+    LogPermissionBlockedMessage(web_contents,
+                                kPermissionBlockedBlacklistMessage,
+                                content_settings_type_);
     // Permission has been automatically blocked. Record that the prompt was
     // suppressed and that we hit the blacklist.
     PermissionUmaUtil::RecordEmbargoPromptSuppression(
