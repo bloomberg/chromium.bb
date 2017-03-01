@@ -276,11 +276,9 @@ class ScopedUndoFrameViewContentClipAndScroll {
 
 }  // namespace
 
-void PaintInvalidator::updateContext(const LayoutObject& object,
-                                     PaintInvalidatorContext& context) {
-  Optional<ScopedUndoFrameViewContentClipAndScroll>
-      undoFrameViewContentClipAndScroll;
-
+void PaintInvalidator::updatePaintInvalidationContainer(
+    const LayoutObject& object,
+    PaintInvalidatorContext& context) {
   if (object.isPaintInvalidationContainer()) {
     context.paintInvalidationContainer = toLayoutBoxModelObject(&object);
     if (object.styleRef().isStackingContext())
@@ -294,9 +292,6 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
     // this frame's paintInvalidationContainer.
     context.paintInvalidationContainerForStackedContents =
         context.paintInvalidationContainer;
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-      undoFrameViewContentClipAndScroll.emplace(
-          *toLayoutView(object).frameView(), context);
   } else if (object.isFloatingWithNonContainingBlockParent()) {
     context.paintInvalidationContainer =
         &object.containerForPaintInvalidation();
@@ -337,10 +332,18 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
   DCHECK(context.paintInvalidationContainer ==
          object.containerForPaintInvalidation());
   DCHECK(context.paintingLayer == object.paintingLayer());
+}
 
-  if (object.mayNeedPaintInvalidationSubtree())
-    context.forcedSubtreeInvalidationFlags |=
-        PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
+void PaintInvalidator::updateVisualRect(const LayoutObject& object,
+                                        PaintInvalidatorContext& context) {
+  Optional<ScopedUndoFrameViewContentClipAndScroll>
+      undoFrameViewContentClipAndScroll;
+
+  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+      object.isLayoutView() && !object.isPaintInvalidationContainer()) {
+    undoFrameViewContentClipAndScroll.emplace(*toLayoutView(object).frameView(),
+                                              context);
+  }
 
   // TODO(crbug.com/637313): Use GeometryMapper which now supports filter
   // geometry effects, after skia optimizes filter's mapRect operation.
@@ -398,6 +401,10 @@ void PaintInvalidator::invalidatePaintIfNeeded(
 void PaintInvalidator::invalidatePaintIfNeeded(
     const LayoutObject& object,
     PaintInvalidatorContext& context) {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
+               "PaintInvalidator::invalidatePaintIfNeeded()", "object",
+               object.debugName().ascii());
+
   object.getMutableForPainting().ensureIsReadyForPaintInvalidation();
 
   // The paint offset should already be updated through
@@ -405,25 +412,24 @@ void PaintInvalidator::invalidatePaintIfNeeded(
   DCHECK(context.treeBuilderContext.current.paintOffset ==
          object.paintOffset());
 
-  if (!context.forcedSubtreeInvalidationFlags &&
-      !object
-           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
-    return;
-
   updatePaintingLayer(object, context);
 
   if (object.document().printing() &&
       !RuntimeEnabledFeatures::printBrowserEnabled())
     return;  // Don't invalidate paints if we're printing.
 
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
-               "PaintInvalidator::invalidatePaintIfNeeded()", "object",
-               object.debugName().ascii());
+  updatePaintInvalidationContainer(object, context);
 
-  updateContext(object, context);
+  bool objectShouldCheckForPaintInvalidation =
+      object
+          .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+  if (!context.forcedSubtreeInvalidationFlags &&
+      !objectShouldCheckForPaintInvalidation)
+    return;
 
-  if (!object
-           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() &&
+  updateVisualRect(object, context);
+
+  if (!objectShouldCheckForPaintInvalidation &&
       context.forcedSubtreeInvalidationFlags ==
           PaintInvalidatorContext::ForcedSubtreeInvalidationRectUpdate) {
     // We are done updating the visual rect. No other paint invalidation work to
@@ -450,21 +456,15 @@ void PaintInvalidator::invalidatePaintIfNeeded(
       break;
   }
 
-  if (context.oldLocation != context.newLocation) {
+  if (object.mayNeedPaintInvalidationSubtree()) {
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
   }
 
-  // TODO(crbug.com/490725): This is a workaround for the bug, to force
-  // descendant to update visual rects on clipping change.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      context.oldVisualRect != context.newVisualRect
-      // Note that isLayoutView() below becomes unnecessary after the launch of
-      // root layer scrolling.
-      && (object.hasOverflowClip() || object.isLayoutView()) &&
-      !toLayoutBox(object).usesCompositedScrolling())
+  if (context.oldLocation != context.newLocation) {
     context.forcedSubtreeInvalidationFlags |=
-        PaintInvalidatorContext::ForcedSubtreeInvalidationRectUpdate;
+        PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
+  }
 }
 
 void PaintInvalidator::processPendingDelayedPaintInvalidations() {

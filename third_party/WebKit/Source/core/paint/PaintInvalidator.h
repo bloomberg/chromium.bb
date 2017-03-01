@@ -106,8 +106,10 @@ class PaintInvalidator {
   computeLocationInBacking(const LayoutObject&, const PaintInvalidatorContext&);
   ALWAYS_INLINE void updatePaintingLayer(const LayoutObject&,
                                          PaintInvalidatorContext&);
-  ALWAYS_INLINE void updateContext(const LayoutObject&,
-                                   PaintInvalidatorContext&);
+  ALWAYS_INLINE void updatePaintInvalidationContainer(const LayoutObject&,
+                                                      PaintInvalidatorContext&);
+  ALWAYS_INLINE void updateVisualRect(const LayoutObject&,
+                                      PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> m_pendingDelayedPaintInvalidations;
   GeometryMapper& m_geometryMapper;

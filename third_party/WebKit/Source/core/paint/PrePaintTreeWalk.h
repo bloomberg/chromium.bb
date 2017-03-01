@@ -29,13 +29,10 @@ class PrePaintTreeWalk {
   void walk(FrameView&, const PrePaintTreeWalkContext&);
   void walk(const LayoutObject&, const PrePaintTreeWalkContext&);
 
-  // Invalidates paint-layer painting optimizations, such as
-  // subsequence caching and empty paint phase optimizations,
-  // if clips from the context have changed.
-  void invalidatePaintLayerOptimizationsIfNeeded(
-      const LayoutObject&,
-      const PaintLayer& ancestorTransformedOrRootPaintLayer,
-      PaintPropertyTreeBuilderContext&);
+  // Invalidates paint-layer painting optimizations, such as subsequence caching
+  // and empty paint phase optimizations if clips from the context have changed.
+  void invalidatePaintLayerOptimizationsIfNeeded(const LayoutObject&,
+                                                 PrePaintTreeWalkContext&);
 
   // Returns the clip applied to children for the given
   // contaiing block context + effect, in the space of ancestorState adjusted
