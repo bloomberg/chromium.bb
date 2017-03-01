@@ -59,7 +59,7 @@
 #include "core/page/ContextMenuController.h"
 #include "core/page/Page.h"
 #include "platform/ContextMenu.h"
-#include "platform/Widget.h"
+#include "platform/FrameViewBase.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/weborigin/KURL.h"
@@ -250,10 +250,11 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
              isHTMLEmbedElement(*r.innerNode())) {
     LayoutObject* object = r.innerNode()->layoutObject();
     if (object && object->isLayoutPart()) {
-      Widget* widget = toLayoutPart(object)->widget();
-      if (widget && widget->isPluginContainer()) {
+      FrameViewBase* frameViewBase = toLayoutPart(object)->widget();
+      if (frameViewBase && frameViewBase->isPluginContainer()) {
         data.mediaType = WebContextMenuData::MediaTypePlugin;
-        WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
+        WebPluginContainerImpl* plugin =
+            toWebPluginContainerImpl(frameViewBase);
         WebString text = plugin->plugin()->selectionAsText();
         if (!text.isEmpty()) {
           data.selectedText = text;

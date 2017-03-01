@@ -545,9 +545,9 @@ void ChromeClientImpl::invalidateRect(const IntRect& updateRect) {
     m_webView->invalidateRect(updateRect);
 }
 
-void ChromeClientImpl::scheduleAnimation(Widget* widget) {
-  DCHECK(widget->isFrameView());
-  FrameView* view = toFrameView(widget);
+void ChromeClientImpl::scheduleAnimation(FrameViewBase* frameViewBase) {
+  DCHECK(frameViewBase->isFrameView());
+  FrameView* view = toFrameView(frameViewBase);
   LocalFrame* frame = view->frame().localFrameRoot();
 
   // If the frame is still being created, it might not yet have a WebWidget.
@@ -559,12 +559,13 @@ void ChromeClientImpl::scheduleAnimation(Widget* widget) {
     WebLocalFrameImpl::fromFrame(frame)->frameWidget()->scheduleAnimation();
 }
 
-IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport,
-                                           const Widget* widget) const {
+IntRect ChromeClientImpl::viewportToScreen(
+    const IntRect& rectInViewport,
+    const FrameViewBase* frameViewBase) const {
   WebRect screenRect(rectInViewport);
 
-  DCHECK(widget->isFrameView());
-  const FrameView* view = toFrameView(widget);
+  DCHECK(frameViewBase->isFrameView());
+  const FrameView* view = toFrameView(frameViewBase);
   LocalFrame* frame = view->frame().localFrameRoot();
 
   WebWidgetClient* client =
@@ -639,9 +640,10 @@ void ChromeClientImpl::showMouseOverURL(const HitTestResult& result) {
                 isHTMLEmbedElement(*result.innerNode()))) {
       LayoutObject* object = result.innerNode()->layoutObject();
       if (object && object->isLayoutPart()) {
-        Widget* widget = toLayoutPart(object)->widget();
-        if (widget && widget->isPluginContainer()) {
-          WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
+        FrameViewBase* frameViewBase = toLayoutPart(object)->widget();
+        if (frameViewBase && frameViewBase->isPluginContainer()) {
+          WebPluginContainerImpl* plugin =
+              toWebPluginContainerImpl(frameViewBase);
           url = plugin->plugin()->linkAtPosition(
               result.roundedPointInInnerNodeFrame());
         }

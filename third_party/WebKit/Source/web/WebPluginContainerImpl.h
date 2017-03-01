@@ -34,7 +34,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/plugins/PluginView.h"
-#include "platform/Widget.h"
+#include "platform/FrameViewBase.h"
 #include "public/web/WebPluginContainer.h"
 #include "web/WebExport.h"
 #include "wtf/Compiler.h"
@@ -81,7 +81,7 @@ class WEB_EXPORT WebPluginContainerImpl final
   void updateAllLifecyclePhases() override;
   void invalidatePaintIfNeeded() override { issuePaintInvalidations(); }
 
-  // Widget methods
+  // FrameViewBase methods
   void setFrameRect(const IntRect&) override;
   void paint(GraphicsContext&, const CullRect&) const override;
   void invalidateRect(const IntRect&) override;
@@ -220,11 +220,11 @@ class WEB_EXPORT WebPluginContainerImpl final
 };
 
 DEFINE_TYPE_CASTS(WebPluginContainerImpl,
-                  Widget,
-                  widget,
-                  widget->isPluginContainer(),
-                  widget.isPluginContainer());
-// Unlike Widget, we need not worry about object type for container.
+                  FrameViewBase,
+                  frameViewBase,
+                  frameViewBase->isPluginContainer(),
+                  frameViewBase.isPluginContainer());
+// Unlike FrameViewBase, we need not worry about object type for container.
 // WebPluginContainerImpl is the only subclass of WebPluginContainer.
 DEFINE_TYPE_CASTS(WebPluginContainerImpl,
                   WebPluginContainer,

@@ -112,7 +112,7 @@ namespace blink {
 // Public methods --------------------------------------------------------------
 
 void WebPluginContainerImpl::setFrameRect(const IntRect& frameRect) {
-  Widget::setFrameRect(frameRect);
+  FrameViewBase::setFrameRect(frameRect);
 }
 
 void WebPluginContainerImpl::updateAllLifecyclePhases() {
@@ -185,7 +185,7 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect) {
 }
 
 void WebPluginContainerImpl::setFocused(bool focused, WebFocusType focusType) {
-  Widget::setFocused(focused, focusType);
+  FrameViewBase::setFocused(focused, focusType);
   m_webPlugin->updateFocus(focused, focusType);
 }
 
@@ -193,14 +193,14 @@ void WebPluginContainerImpl::show() {
   setSelfVisible(true);
   m_webPlugin->updateVisibility(true);
 
-  Widget::show();
+  FrameViewBase::show();
 }
 
 void WebPluginContainerImpl::hide() {
   setSelfVisible(false);
   m_webPlugin->updateVisibility(false);
 
-  Widget::hide();
+  FrameViewBase::hide();
 }
 
 void WebPluginContainerImpl::handleEvent(Event* event) {
@@ -221,19 +221,20 @@ void WebPluginContainerImpl::handleEvent(Event* event) {
   else if (event->isDragEvent() && m_webPlugin->canProcessDrag())
     handleDragEvent(toDragEvent(event));
 
-  // FIXME: it would be cleaner if Widget::handleEvent returned true/false and
-  // HTMLPluginElement called setDefaultHandled or defaultEventHandler.
+  // FIXME: it would be cleaner if FrameViewBase::handleEvent returned
+  // true/false and HTMLPluginElement called setDefaultHandled or
+  // defaultEventHandler.
   if (!event->defaultHandled())
     m_element->Node::defaultEventHandler(event);
 }
 
 void WebPluginContainerImpl::frameRectsChanged() {
-  Widget::frameRectsChanged();
+  FrameViewBase::frameRectsChanged();
   reportGeometry();
 }
 
 void WebPluginContainerImpl::widgetGeometryMayHaveChanged() {
-  Widget::widgetGeometryMayHaveChanged();
+  FrameViewBase::widgetGeometryMayHaveChanged();
   reportGeometry();
 }
 
@@ -253,7 +254,7 @@ void WebPluginContainerImpl::setParentVisible(bool parentVisible) {
   if (isParentVisible() == parentVisible)
     return;  // No change.
 
-  Widget::setParentVisible(parentVisible);
+  FrameViewBase::setParentVisible(parentVisible);
   if (!isSelfVisible())
     return;  // This widget has explicitely been marked as not visible.
 
@@ -411,7 +412,7 @@ void WebPluginContainerImpl::enqueueMessageEvent(
 }
 
 void WebPluginContainerImpl::invalidate() {
-  Widget::invalidate();
+  FrameViewBase::invalidate();
 }
 
 void WebPluginContainerImpl::invalidateRect(const WebRect& rect) {

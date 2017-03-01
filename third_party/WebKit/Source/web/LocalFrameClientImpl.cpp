@@ -748,13 +748,14 @@ bool LocalFrameClientImpl::canCreatePluginWithoutRenderer(
   return m_webFrame->client()->canCreatePluginWithoutRenderer(mimeType);
 }
 
-Widget* LocalFrameClientImpl::createPlugin(HTMLPlugInElement* element,
-                                           const KURL& url,
-                                           const Vector<String>& paramNames,
-                                           const Vector<String>& paramValues,
-                                           const String& mimeType,
-                                           bool loadManually,
-                                           DetachedPluginPolicy policy) {
+FrameViewBase* LocalFrameClientImpl::createPlugin(
+    HTMLPlugInElement* element,
+    const KURL& url,
+    const Vector<String>& paramNames,
+    const Vector<String>& paramValues,
+    const String& mimeType,
+    bool loadManually,
+    DetachedPluginPolicy policy) {
   if (!m_webFrame->client())
     return nullptr;
 
