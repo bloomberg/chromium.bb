@@ -874,6 +874,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnRendererConnect(const service_manager::ServiceInfo& local_info,
                          const service_manager::ServiceInfo& remote_info);
 
+  void SendJavaScriptDialogReply(IPC::Message* reply_msg,
+                                 bool success,
+                                 const base::string16& user_input);
+
   // Returns ownership of the NavigationHandle associated with a navigation that
   // just committed.
   std::unique_ptr<NavigationHandleImpl> TakeNavigationHandleForCommit(

@@ -17,7 +17,10 @@ enum RendererUnresponsiveType {
   RENDERER_UNRESPONSIVE_DIALOG_CLOSED = 2,
   RENDERER_UNRESPONSIVE_DIALOG_SUPPRESSED = 3,
   RENDERER_UNRESPONSIVE_BEFORE_UNLOAD = 4,
-  RENDERER_UNRESPONSIVE_UNLOAD = 5,
+
+  // Used when a page hangs after a JavaScript dialog is fired inside of unload.
+  // This is no longer allowed to happen so this value is no longer used.
+  RENDERER_UNRESPONSIVE_UNLOAD_OBSOLETE = 5,
   RENDERER_UNRESPONSIVE_CLOSE_PAGE = 6,
   RENDERER_UNRESPONSIVE_MAX = RENDERER_UNRESPONSIVE_CLOSE_PAGE,
 };

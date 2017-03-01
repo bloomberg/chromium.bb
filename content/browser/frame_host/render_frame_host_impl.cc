@@ -1667,10 +1667,8 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
     const GURL& frame_url,
     JavaScriptDialogType dialog_type,
     IPC::Message* reply_msg) {
-  if (!is_active()) {
-    JavaScriptDialogClosed(reply_msg, true, base::string16(),
-                           /*is_before_unload_dialog=*/false,
-                           /*dialog_was_suppressed=*/true);
+  if (IsWaitingForUnloadACK()) {
+    SendJavaScriptDialogReply(reply_msg, true, base::string16());
     return;
   }
 
@@ -2615,20 +2613,15 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
     bool is_before_unload_dialog,
     bool dialog_was_suppressed) {
   GetProcess()->SetIgnoreInputEvents(false);
-  bool is_waiting = is_before_unload_dialog || IsWaitingForUnloadACK();
 
-  // If we are executing as part of (before)unload event handling, we don't
+  // If we are executing as part of beforeunload event handling, we don't
   // want to use the regular hung_renderer_delay_ms_ if the user has agreed to
   // leave the current page. In this case, use the regular timeout value used
-  // during the (before)unload handling.
-  if (is_waiting) {
+  // during the beforeunload handling.
+  if (is_before_unload_dialog) {
     RendererUnresponsiveType type =
-        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_DIALOG_CLOSED;
-    if (success) {
-      type = is_before_unload_dialog
-                 ? RendererUnresponsiveType::RENDERER_UNRESPONSIVE_BEFORE_UNLOAD
-                 : RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNLOAD;
-    }
+        success ? RendererUnresponsiveType::RENDERER_UNRESPONSIVE_BEFORE_UNLOAD
+                : RendererUnresponsiveType::RENDERER_UNRESPONSIVE_DIALOG_CLOSED;
     render_view_host_->GetWidget()->StartHangMonitorTimeout(
         success
             ? TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS)
@@ -2636,21 +2629,28 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
         blink::WebInputEvent::Undefined, type);
   }
 
-  FrameHostMsg_RunJavaScriptDialog::WriteReplyParams(reply_msg, success,
-                                                     user_input);
-  Send(reply_msg);
+  SendJavaScriptDialogReply(reply_msg, success, user_input);
 
-  // If we are waiting for an unload or beforeunload ack and the user has
-  // suppressed messages, kill the tab immediately; a page that's spamming
-  // alerts in onbeforeunload is presumably malicious, so there's no point in
-  // continuing to run its script and dragging out the process.
-  // This must be done after sending the reply since RenderView can't close
-  // correctly while waiting for a response.
-  if (is_waiting && dialog_was_suppressed) {
+  // If we are waiting for a beforeunload ack and the user has suppressed
+  // messages, kill the tab immediately; a page that's spamming alerts in
+  // onbeforeunload is presumably malicious, so there's no point in continuing
+  // to run its script and dragging out the process. This must be done after
+  // sending the reply since RenderView can't close correctly while waiting for
+  // a response.
+  if (is_before_unload_dialog && dialog_was_suppressed) {
     render_view_host_->GetWidget()->delegate()->RendererUnresponsive(
         render_view_host_->GetWidget(),
         RendererUnresponsiveType::RENDERER_UNRESPONSIVE_DIALOG_SUPPRESSED);
   }
+}
+
+void RenderFrameHostImpl::SendJavaScriptDialogReply(
+    IPC::Message* reply_msg,
+    bool success,
+    const base::string16& user_input) {
+  FrameHostMsg_RunJavaScriptDialog::WriteReplyParams(reply_msg, success,
+                                                     user_input);
+  Send(reply_msg);
 }
 
 // PlzNavigate
