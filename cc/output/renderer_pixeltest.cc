@@ -155,6 +155,7 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
 
 void CreateTestTextureDrawQuad(const gfx::Rect& rect,
                                SkColor texel_color,
+                               float vertex_opacity[4],
                                SkColor background_color,
                                bool premultiplied_alpha,
                                const SharedQuadState* shared_state,
@@ -175,8 +176,6 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
-  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-
   const gfx::PointF uv_top_left(0.0f, 0.0f);
   const gfx::PointF uv_bottom_right(1.0f, 1.0f);
   const bool flipped = false;
@@ -187,6 +186,19 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
                premultiplied_alpha, uv_top_left, uv_bottom_right,
                background_color, vertex_opacity, flipped, nearest_neighbor,
                false);
+}
+
+void CreateTestTextureDrawQuad(const gfx::Rect& rect,
+                               SkColor texel_color,
+                               SkColor background_color,
+                               bool premultiplied_alpha,
+                               const SharedQuadState* shared_state,
+                               ResourceProvider* resource_provider,
+                               RenderPass* render_pass) {
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  CreateTestTextureDrawQuad(rect, texel_color, vertex_opacity, background_color,
+                            premultiplied_alpha, shared_state,
+                            resource_provider, render_pass);
 }
 
 void CreateTestYUVVideoDrawQuad_FromVideoFrame(
@@ -793,6 +805,41 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("green_alpha.png")),
+      FuzzyPixelOffByOneComparator(true)));
+}
+
+TEST_F(GLRendererPixelTest,
+       PremultipliedTextureWithBackgroundAndVertexOpacity) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* texture_quad_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+  texture_quad_state->opacity = 0.8f;
+
+  float vertex_opacity[4] = {1.f, 1.f, 0.f, 0.f};
+  CreateTestTextureDrawQuad(gfx::Rect(this->device_viewport_size_),
+                            SkColorSetARGB(204, 120, 255, 120),  // Texel color.
+                            vertex_opacity,
+                            SK_ColorGREEN,  // Background color.
+                            true,           // Premultiplied alpha.
+                            texture_quad_state, this->resource_provider_.get(),
+                            pass.get());
+
+  SharedQuadState* color_quad_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+  SolidColorDrawQuad* color_quad =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad->SetNew(color_quad_state, rect, rect, SK_ColorWHITE, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("green_alpha_vertex_opacity.png")),
       FuzzyPixelOffByOneComparator(true)));
 }
 

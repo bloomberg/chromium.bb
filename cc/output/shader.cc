@@ -373,7 +373,7 @@ std::string VertexShader::GetShaderString() const {
     DCHECK(use_uniform_arrays_);
     HDR("uniform float opacity[NUM_QUADS * 4];");
     HDR("varying float v_alpha;");
-    SRC("v_alpha = opacity[quad_index];");
+    SRC("v_alpha = opacity[vertex_index];");
   }
 
   // Add cargo-culted dummy variables for Android.
