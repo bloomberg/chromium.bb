@@ -146,7 +146,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void DoSubscribe(const PushMessagingAppIdentifier& app_identifier,
                    const content::PushSubscriptionOptions& options,
                    const RegisterCallback& callback,
-                   blink::mojom::PermissionStatus permission_status);
+                   ContentSetting permission_status);
 
   void SubscribeEnd(const RegisterCallback& callback,
                     const std::string& subscription_id,

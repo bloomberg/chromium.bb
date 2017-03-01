@@ -36,7 +36,7 @@ const char kGetFlashURLSecondaryRegex[] =
     "(get[-_]?flash|fl(ash)?.?pl(ayer)?|flash_completion|flashpm|flashdownload|"
     "fp|h-m-a-?2|chrome|download_player|gnav_fl|pdcredirect).*";
 
-void DoNothing(blink::mojom::PermissionStatus result) {}
+void DoNothing(ContentSetting result) {}
 
 bool InterceptNavigation(
     const GURL& source_url,

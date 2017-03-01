@@ -24,6 +24,7 @@
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
@@ -100,14 +101,16 @@ void RecordUnsubscribeIIDResult(InstanceID::Result result) {
 }
 
 blink::WebPushPermissionStatus ToPushPermission(
-    blink::mojom::PermissionStatus permission_status) {
-  switch (permission_status) {
-    case blink::mojom::PermissionStatus::GRANTED:
+    ContentSetting content_setting) {
+  switch (content_setting) {
+    case CONTENT_SETTING_ALLOW:
       return blink::WebPushPermissionStatusGranted;
-    case blink::mojom::PermissionStatus::DENIED:
+    case CONTENT_SETTING_BLOCK:
       return blink::WebPushPermissionStatusDenied;
-    case blink::mojom::PermissionStatus::ASK:
+    case CONTENT_SETTING_ASK:
       return blink::WebPushPermissionStatusPrompt;
+    default:
+      break;
   }
   NOTREACHED();
   return blink::WebPushPermissionStatusDenied;
@@ -507,7 +510,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
   }
 
   DoSubscribe(app_identifier, options, register_callback,
-              blink::mojom::PermissionStatus::GRANTED);
+              CONTENT_SETTING_ALLOW);
 }
 
 blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
@@ -519,8 +522,11 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
   // Because the Push API is tied to Service Workers, many usages of the API
   // won't have an embedding origin at all. Only consider the requesting
   // |origin| when checking whether permission to use the API has been granted.
-  return ToPushPermission(PermissionManager::Get(profile_)->GetPermissionStatus(
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, origin, origin));
+  return ToPushPermission(
+      PermissionManager::Get(profile_)
+          ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, origin,
+                                origin)
+          .content_setting);
 }
 
 bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
@@ -531,8 +537,8 @@ void PushMessagingServiceImpl::DoSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
     const content::PushSubscriptionOptions& options,
     const RegisterCallback& register_callback,
-    blink::mojom::PermissionStatus permission_status) {
-  if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
+    ContentSetting content_setting) {
+  if (content_setting != CONTENT_SETTING_ALLOW) {
     SubscribeEndWithError(register_callback,
                           content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;

@@ -106,21 +106,14 @@ ContentSetting MediaPermission::GetPermissionStatus(
 #endif  // defined(OS_CHROMEOS)
 
   // Check policy and content settings.
-  blink::mojom::PermissionStatus status =
-      permission_manager->GetPermissionStatus(
-          content_type_, requesting_origin_, embedding_origin_);
-  switch (status) {
-    case blink::mojom::PermissionStatus::DENIED:
-      *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
-      return CONTENT_SETTING_BLOCK;
-    case blink::mojom::PermissionStatus::ASK:
-      return CONTENT_SETTING_ASK;
-    case blink::mojom::PermissionStatus::GRANTED:
-      return CONTENT_SETTING_ALLOW;
-  }
-
-  NOTREACHED();
-  return CONTENT_SETTING_BLOCK;
+  ContentSetting content_setting =
+      permission_manager
+          ->GetPermissionStatus(content_type_, requesting_origin_,
+                                embedding_origin_)
+          .content_setting;
+  if (content_setting == CONTENT_SETTING_BLOCK)
+    *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
+  return content_setting;
 }
 
 ContentSetting MediaPermission::GetPermissionStatusWithDeviceRequired(

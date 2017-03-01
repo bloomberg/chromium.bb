@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation.pb.h"
 #include "chromeos/attestation/attestation_flow.h"
@@ -112,14 +113,15 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
     const GURL& requesting_origin = GetURL(web_contents).GetOrigin();
 
     GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
-    blink::mojom::PermissionStatus status =
+    ContentSetting content_setting =
         PermissionManager::Get(
             Profile::FromBrowserContext(web_contents->GetBrowserContext()))
             ->GetPermissionStatus(
                 CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                requesting_origin, embedding_origin);
+                requesting_origin, embedding_origin)
+            .content_setting;
 
-    return status == blink::mojom::PermissionStatus::GRANTED;
+    return content_setting == CONTENT_SETTING_ALLOW;
   }
 
   bool IsInSupportedMode(content::WebContents* web_contents) override {

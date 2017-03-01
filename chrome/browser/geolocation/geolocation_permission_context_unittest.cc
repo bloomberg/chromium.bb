@@ -912,16 +912,18 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
 
   // A DSE setting of ALLOW should not flow through to incognito.
   geo_service->SetDSEGeolocationSetting(true);
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
+  ASSERT_EQ(CONTENT_SETTING_ASK,
             PermissionManager::Get(otr_profile)
                 ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                      requesting_frame, requesting_frame));
+                                      requesting_frame, requesting_frame)
+                .content_setting);
 
   // Changing the setting to BLOCK should flow through to incognito.
   geo_service->SetDSEGeolocationSetting(false);
-  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
+  ASSERT_EQ(CONTENT_SETTING_BLOCK,
             PermissionManager::Get(otr_profile)
                 ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                      requesting_frame, requesting_frame));
+                                      requesting_frame, requesting_frame)
+                .content_setting);
 }
 #endif  // defined(OS_ANDROID)

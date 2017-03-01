@@ -28,7 +28,6 @@
 namespace {
 
 void DoNothing(ContentSetting content_setting) {}
-void DoNothing2(blink::mojom::PermissionStatus content_setting) {}
 
 class TestNotificationPermissionContext : public NotificationPermissionContext {
  public:
@@ -298,7 +297,7 @@ TEST_F(NotificationPermissionContextTest, TestCancelledIncognitoRequest) {
   // failing, PermissionManager::OnPermissionsRequestResponseStatus will crash.
   int request_id = permission_manager->RequestPermission(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, web_contents()->GetMainFrame(),
-      url.GetOrigin(), true /* user_gesture */, base::Bind(&DoNothing2));
+      url.GetOrigin(), true /* user_gesture */, base::Bind(&DoNothing));
 
   permission_manager->CancelPermissionRequest(request_id);
 

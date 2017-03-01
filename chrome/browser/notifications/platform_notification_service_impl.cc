@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -227,8 +228,17 @@ PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
   }
 #endif
 
-  return PermissionManager::Get(profile)->GetPermissionStatus(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin);
+  ContentSetting setting =
+      PermissionManager::Get(profile)
+          ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin,
+                                origin)
+          .content_setting;
+  if (setting == CONTENT_SETTING_ALLOW)
+    return blink::mojom::PermissionStatus::GRANTED;
+  if (setting == CONTENT_SETTING_ASK)
+    return blink::mojom::PermissionStatus::ASK;
+  DCHECK_EQ(CONTENT_SETTING_BLOCK, setting);
+  return blink::mojom::PermissionStatus::DENIED;
 }
 
 blink::mojom::PermissionStatus

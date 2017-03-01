@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -315,15 +316,19 @@ TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {
 
   // (1) Enable the permission when the default is to ask (expected to set).
   controller()->SetNotifierEnabled(disabled_notifier, true);
-  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            permission_manager->GetPermissionStatus(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            permission_manager
+                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      origin, origin)
+                .content_setting);
 
   // (2) Disable the permission when the default is to ask (expected to clear).
   controller()->SetNotifierEnabled(enabled_notifier, false);
-  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
-            permission_manager->GetPermissionStatus(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            permission_manager
+                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      origin, origin)
+                .content_setting);
 
   // Change the default content setting vaule for notifications to ALLOW.
   HostContentSettingsMapFactory::GetForProfile(profile)
@@ -332,15 +337,19 @@ TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {
 
   // (3) Disable the permission when the default is allowed (expected to set).
   controller()->SetNotifierEnabled(enabled_notifier, false);
-  EXPECT_EQ(blink::mojom::PermissionStatus::DENIED,
-            permission_manager->GetPermissionStatus(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            permission_manager
+                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      origin, origin)
+                .content_setting);
 
   // (4) Enable the permission when the default is allowed (expected to clear).
   controller()->SetNotifierEnabled(disabled_notifier, true);
-  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            permission_manager->GetPermissionStatus(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            permission_manager
+                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      origin, origin)
+                .content_setting);
 
   // Now change the default content setting value to BLOCK.
   HostContentSettingsMapFactory::GetForProfile(profile)
@@ -349,13 +358,17 @@ TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {
 
   // (5) Enable the permission when the default is blocked (expected to set).
   controller()->SetNotifierEnabled(disabled_notifier, true);
-  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            permission_manager->GetPermissionStatus(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            permission_manager
+                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      origin, origin)
+                .content_setting);
 
   // (6) Disable the permission when the default is blocked (expected to clear).
   controller()->SetNotifierEnabled(enabled_notifier, false);
-  EXPECT_EQ(blink::mojom::PermissionStatus::DENIED,
-            permission_manager->GetPermissionStatus(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            permission_manager
+                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      origin, origin)
+                .content_setting);
 }

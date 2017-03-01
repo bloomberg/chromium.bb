@@ -18,6 +18,7 @@
 #include "content/public/browser/permission_manager.h"
 
 class PermissionContextBase;
+struct PermissionResult;
 class Profile;
 
 namespace content {
@@ -38,24 +39,21 @@ class PermissionManager : public KeyedService,
   // are for the content::PermissionManager overrides and shouldn't be used
   // from chrome/.
 
-  int RequestPermission(
-      ContentSettingsType permission,
-      content::RenderFrameHost* render_frame_host,
-      const GURL& requesting_origin,
-      bool user_gesture,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback);
+  int RequestPermission(ContentSettingsType permission,
+                        content::RenderFrameHost* render_frame_host,
+                        const GURL& requesting_origin,
+                        bool user_gesture,
+                        const base::Callback<void(ContentSetting)>& callback);
   int RequestPermissions(
       const std::vector<ContentSettingsType>& permissions,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       bool user_gesture,
-      const base::Callback<
-          void(const std::vector<blink::mojom::PermissionStatus>&)>& callback);
+      const base::Callback<void(const std::vector<ContentSetting>&)>& callback);
 
-  blink::mojom::PermissionStatus GetPermissionStatus(
-      ContentSettingsType permission,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin);
+  PermissionResult GetPermissionStatus(ContentSettingsType permission,
+                                       const GURL& requesting_origin,
+                                       const GURL& embedding_origin);
 
   // content::PermissionManager implementation.
   int RequestPermission(
@@ -89,8 +87,8 @@ class PermissionManager : public KeyedService,
       override;
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
-  // TODO(raymes): Rather than exposing this, expose a denial reason from
-  // GetPermissionStatus so that callers can determine whether a permission is
+  // TODO(raymes): Rather than exposing this, use the denial reason from
+  // GetPermissionStatus in callers to determine whether a permission is
   // denied due to the kill switch.
   bool IsPermissionKillSwitchOn(ContentSettingsType);
 
@@ -111,10 +109,9 @@ class PermissionManager : public KeyedService,
   // one permission, it will wait for the remaining permissions to be resolved.
   // When all the permissions have been resolved, the PendingRequest's callback
   // is run.
-  void OnPermissionsRequestResponseStatus(
-      int request_id,
-      int permission_id,
-      blink::mojom::PermissionStatus status);
+  void OnPermissionsRequestResponseStatus(int request_id,
+                                          int permission_id,
+                                          ContentSetting status);
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,

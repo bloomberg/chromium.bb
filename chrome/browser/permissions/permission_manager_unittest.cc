@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/permission_type.h"
@@ -59,6 +60,15 @@ class PermissionManagerTest : public testing::Test {
                              PermissionStatus expected) {
     EXPECT_EQ(expected, GetPermissionManager()->GetPermissionStatus(
                             type, url_.GetOrigin(), url_.GetOrigin()));
+  }
+
+  void CheckPermissionResult(ContentSettingsType type,
+                             ContentSetting expected_status,
+                             PermissionStatusSource expected_status_source) {
+    PermissionResult result = GetPermissionManager()->GetPermissionStatus(
+        type, url_.GetOrigin(), url_.GetOrigin());
+    EXPECT_EQ(expected_status, result.content_setting);
+    EXPECT_EQ(expected_status_source, result.source);
   }
 
   void SetPermission(ContentSettingsType type, ContentSetting value) {
@@ -123,6 +133,51 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
                 CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
                         PermissionStatus::GRANTED);
+#endif
+}
+
+TEST_F(PermissionManagerTest, CheckPersmissionResultDefault) {
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ASK,
+                        PermissionStatusSource::UNSPECIFIED);
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                        CONTENT_SETTING_ASK,
+                        PermissionStatusSource::UNSPECIFIED);
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                        CONTENT_SETTING_ASK,
+                        PermissionStatusSource::UNSPECIFIED);
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ASK,
+                        PermissionStatusSource::UNSPECIFIED);
+#if defined(OS_ANDROID)
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+                        CONTENT_SETTING_ASK,
+                        PermissionStatusSource::UNSPECIFIED);
+#endif
+}
+
+TEST_F(PermissionManagerTest, CheckPermissionResultAfterSet) {
+  SetPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                        CONTENT_SETTING_ALLOW,
+                        PermissionStatusSource::UNSPECIFIED);
+
+  SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                        CONTENT_SETTING_ALLOW,
+                        PermissionStatusSource::UNSPECIFIED);
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                        CONTENT_SETTING_ALLOW,
+                        PermissionStatusSource::UNSPECIFIED);
+
+  SetPermission(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW);
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW,
+                        PermissionStatusSource::UNSPECIFIED);
+
+#if defined(OS_ANDROID)
+  SetPermission(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+                CONTENT_SETTING_ALLOW);
+  CheckPermissionResult(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+                        CONTENT_SETTING_ALLOW,
+                        PermissionStatusSource::UNSPECIFIED);
 #endif
 }
 

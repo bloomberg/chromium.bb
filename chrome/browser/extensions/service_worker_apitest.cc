@@ -14,6 +14,7 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
@@ -223,9 +224,11 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
   void GrantNotificationPermissionForTest(const GURL& url) {
     GURL origin = url.GetOrigin();
     DesktopNotificationProfileUtil::GrantPermission(profile(), origin);
-    ASSERT_EQ(blink::mojom::PermissionStatus::GRANTED,
-              PermissionManager::Get(profile())->GetPermissionStatus(
-                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin));
+    ASSERT_EQ(CONTENT_SETTING_ALLOW,
+              PermissionManager::Get(profile())
+                  ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                        origin, origin)
+                  .content_setting);
   }
 
   PushMessagingAppIdentifier GetAppIdentifierForServiceWorkerRegistration(
