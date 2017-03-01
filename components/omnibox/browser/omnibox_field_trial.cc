@@ -37,6 +37,11 @@ namespace omnibox {
 const base::Feature kNewOmniboxAnswerTypes{"NewOmniboxAnswerTypes",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable the transmission of entity suggestions from GWS
+// to this client.
+const base::Feature kOmniboxEntitySuggestions{
+    "OmniboxEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox
 
 namespace {

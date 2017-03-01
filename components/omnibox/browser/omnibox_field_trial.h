@@ -25,6 +25,7 @@ class TimeDelta;
 namespace omnibox {
 
 extern const base::Feature kNewOmniboxAnswerTypes;
+extern const base::Feature kOmniboxEntitySuggestions;
 
 }
 
