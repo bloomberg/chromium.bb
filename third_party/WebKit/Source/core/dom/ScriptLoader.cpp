@@ -715,41 +715,40 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
   }
 
   if (m_isExternalScript) {
-    ScriptResource* resource =
-        m_resource ? m_resource.get() : sourceCode.resource();
-    if (resource) {
-      if (!ScriptResource::mimeTypeAllowedByNosniff(resource->response())) {
-        contextDocument->addConsoleMessage(ConsoleMessage::create(
-            SecurityMessageSource, ErrorMessageLevel,
-            "Refused to execute script from '" +
-                resource->url().elidedString() + "' because its MIME type ('" +
-                resource->httpContentType() + "') is not executable, and "
-                                              "strict MIME type checking is "
-                                              "enabled."));
-        return false;
-      }
-
-      String mimeType = resource->httpContentType();
-      if (mimeType.startsWith("image/") || mimeType == "text/csv" ||
-          mimeType.startsWith("audio/") || mimeType.startsWith("video/")) {
-        contextDocument->addConsoleMessage(ConsoleMessage::create(
-            SecurityMessageSource, ErrorMessageLevel,
-            "Refused to execute script from '" +
-                resource->url().elidedString() + "' because its MIME type ('" +
-                mimeType + "') is not executable."));
-        if (mimeType.startsWith("image/"))
-          UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
-        else if (mimeType.startsWith("audio/"))
-          UseCounter::count(frame, UseCounter::BlockedSniffingAudioToScript);
-        else if (mimeType.startsWith("video/"))
-          UseCounter::count(frame, UseCounter::BlockedSniffingVideoToScript);
-        else if (mimeType == "text/csv")
-          UseCounter::count(frame, UseCounter::BlockedSniffingCSVToScript);
-        return false;
-      }
-
-      logScriptMIMEType(frame, resource, mimeType);
+    ScriptResource* resource = sourceCode.resource();
+    CHECK_EQ(resource, m_resource);
+    CHECK(resource);
+    if (!ScriptResource::mimeTypeAllowedByNosniff(resource->response())) {
+      contextDocument->addConsoleMessage(ConsoleMessage::create(
+          SecurityMessageSource, ErrorMessageLevel,
+          "Refused to execute script from '" + resource->url().elidedString() +
+              "' because its MIME type ('" + resource->httpContentType() +
+              "') is not executable, and "
+              "strict MIME type checking is "
+              "enabled."));
+      return false;
     }
+
+    String mimeType = resource->httpContentType();
+    if (mimeType.startsWith("image/") || mimeType == "text/csv" ||
+        mimeType.startsWith("audio/") || mimeType.startsWith("video/")) {
+      contextDocument->addConsoleMessage(ConsoleMessage::create(
+          SecurityMessageSource, ErrorMessageLevel,
+          "Refused to execute script from '" + resource->url().elidedString() +
+              "' because its MIME type ('" + mimeType +
+              "') is not executable."));
+      if (mimeType.startsWith("image/"))
+        UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
+      else if (mimeType.startsWith("audio/"))
+        UseCounter::count(frame, UseCounter::BlockedSniffingAudioToScript);
+      else if (mimeType.startsWith("video/"))
+        UseCounter::count(frame, UseCounter::BlockedSniffingVideoToScript);
+      else if (mimeType == "text/csv")
+        UseCounter::count(frame, UseCounter::BlockedSniffingCSVToScript);
+      return false;
+    }
+
+    logScriptMIMEType(frame, resource, mimeType);
   }
 
   AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
