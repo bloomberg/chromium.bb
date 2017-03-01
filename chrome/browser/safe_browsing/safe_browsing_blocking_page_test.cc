@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -60,6 +59,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
@@ -327,11 +327,6 @@ class SafeBrowsingBlockingPageBrowserTest
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    feature_list_.reset(new base::test::ScopedFeatureList);
-    feature_list_->InitAndEnableFeature(kFillDOMInThreatDetails);
-  }
-
   void TearDown() override {
     InProcessBrowserTest::TearDown();
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
@@ -340,6 +335,15 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        "enable-features",
+        "FillDOMInThreatDetails,ThreatDomDetailsTagAttributes<SBDomStudy");
+    command_line->AppendSwitchASCII("force-fieldtrials",
+                                    "SBDomStudy/SBDomGroup");
+    command_line->AppendSwitchASCII(
+        "force-fieldtrial-params",
+        "SBDomStudy.SBDomGroup:tag_attribute_csv/div%2Cfoo%2Cdiv%2Cbaz");
+
     if (testing::get<1>(GetParam()))
       content::IsolateAllSitesForTesting(command_line);
   }
@@ -611,10 +615,14 @@ class SafeBrowsingBlockingPageBrowserTest
   void VerifyElement(const ClientSafeBrowsingReportRequest& report,
                      const HTMLElement& actual_element,
                      const std::string& expected_url,
-                     const std::string& expected_tag_name) {
-    ASSERT_EQ(1, actual_element.attribute_size());
-    EXPECT_EQ(expected_url, actual_element.attribute(0).value());
+                     const std::string& expected_tag_name,
+                     const int expected_child_ids_size) {
+    if (!expected_url.empty()) {
+      ASSERT_EQ(1, actual_element.attribute_size());
+      EXPECT_EQ(expected_url, actual_element.attribute(0).value());
+    }
     EXPECT_EQ(expected_tag_name, actual_element.tag());
+    EXPECT_EQ(expected_child_ids_size, actual_element.child_ids_size());
   }
 
   void ExpectSecurityIndicatorDowngrade(content::WebContents* tab,
@@ -659,7 +667,6 @@ class SafeBrowsingBlockingPageBrowserTest
   TestSafeBrowsingServiceFactory factory_;
   TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
   net::EmbeddedTestServer https_server_;
-  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageBrowserTest);
 };
@@ -804,11 +811,34 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
         url.spec(),  // kCrossSiteMaliciousPage
         0, "IFRAME");
 
-    ASSERT_EQ(1, report.dom_size());
-    VerifyElement(
-        report, report.dom(0),
-        net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe).spec(),
-        "IFRAME");
+    ASSERT_EQ(2, report.dom_size());
+    // Because the order of elements is not deterministic, we basically need to
+    // verify the relationship. Namely that there is an IFRAME element and that
+    // its has a DIV as its parent.
+    int iframe_node_id = -1;
+    for (const HTMLElement& elem : report.dom()) {
+      if (elem.tag() == "IFRAME") {
+        iframe_node_id = elem.id();
+        VerifyElement(
+            report, elem,
+            net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe).spec(),
+            "IFRAME", /*child_size=*/0);
+        break;
+      }
+    }
+    EXPECT_GT(iframe_node_id, -1);
+
+    // Find the parent DIV that is the parent of the iframe.
+    // TODO(lpz): Test the identify of the DIV once we start collecting its
+    // attributes.
+    for (const HTMLElement& elem : report.dom()) {
+      if (elem.id() != iframe_node_id) {
+        // Not the IIFRAME, so this is the parent DIV
+        VerifyElement(report, elem, /*url=*/"", "DIV", /*child_size=*/1);
+        // Make sure this DIV has the IFRAME as a child.
+        EXPECT_EQ(iframe_node_id, elem.child_ids(0));
+      }
+    }
   }
 }
 

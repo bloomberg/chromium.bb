@@ -496,8 +496,11 @@ void ThreatDetails::AddDOMDetails(
   for (size_t i = 0; i < params.size() && i < kMaxDomNodes; ++i) {
     SafeBrowsingHostMsg_ThreatDOMDetails_Node node = params[i];
     DVLOG(1) << node.url << ", " << node.tag_name << ", " << node.parent;
-    ClientSafeBrowsingReportRequest::Resource* resource =
-        AddUrl(node.url, node.parent, node.tag_name, &(node.children));
+    ClientSafeBrowsingReportRequest::Resource* resource = nullptr;
+    if (!node.url.is_empty()) {
+      resource = AddUrl(node.url, node.parent, node.tag_name, &(node.children));
+    }
+    // Check for a tag_name to avoid adding the summary node to the DOM.
     if (!node.tag_name.empty()) {
       AddDomElement(frame_tree_node_id, frame_url.spec(), node.node_id,
                     node.tag_name, node.parent_node_id, resource);

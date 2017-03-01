@@ -6,19 +6,54 @@
 
 #include <memory>
 
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/native_theme/native_theme_switches.h"
 
-typedef ChromeRenderViewTest ThreatDOMDetailsTest;
+namespace {
+
+std::unique_ptr<base::test::ScopedFeatureList> SetupTagAndAttributeFeature() {
+  std::map<std::string, std::string> feature_params;
+  feature_params[std::string(safe_browsing::kTagAndAttributeParamName)] =
+      "div,foo,div,baz";
+  variations::AssociateVariationParams(
+      safe_browsing::kThreatDomDetailsTagAndAttributeFeature.name, "Group",
+      feature_params);
+  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
+      safe_browsing::kThreatDomDetailsTagAndAttributeFeature.name, "Group");
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      safe_browsing::kThreatDomDetailsTagAndAttributeFeature.name,
+      std::string());
+  feature_list->AssociateReportingFieldTrial(
+      safe_browsing::kThreatDomDetailsTagAndAttributeFeature.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_list(
+      new base::test::ScopedFeatureList);
+  scoped_list->InitWithFeatureList(std::move(feature_list));
+  return scoped_list;
+}
+
+}  // namespace
+
+using ThreatDOMDetailsTest = ChromeRenderViewTest;
+
+using testing::ElementsAre;
 
 TEST_F(ThreatDOMDetailsTest, Everything) {
   blink::WebRuntimeFeatures::enableOverlayScrollbars(
       ui::IsOverlayScrollbarEnabled());
+  // Configure a field trial to collect divs with attribute foo.
+  std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+      SetupTagAndAttributeFeature();
   std::unique_ptr<safe_browsing::ThreatDOMDetails> details(
       safe_browsing::ThreatDOMDetails::Create(view_->GetMainRenderFrame()));
   // Lower kMaxNodes for the test. Loading 500 subframes in a
@@ -78,10 +113,14 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
   }
 
   {
-    // A page with an iframe which in turn contains an iframe.
+    // A page with some divs containing an iframe which itself contains an
+    // iframe. Tag "img foo" exists to ensure we honour both the tag name and
+    // the attribute name when deciding which elements to collect.
     //  html
-    //   \ iframe1
-    //    \ iframe2
+    //   \ div foo
+    //    \ img foo, div bar
+    //                \ div baz, iframe1
+    //                            \ iframe2
     // Since ThreatDOMDetails is a RenderFrameObserver, it will only
     // extract resources from the frame it assigned to (in this case,
     // the main frame). Extracting resources from all frames within a
@@ -89,35 +128,61 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     // In this example, ExtractResources() will still touch iframe1
     // since it is the direct child of the main frame, but it would not
     // go inside of iframe1.
+    // We configure the test to collect divs with attribute foo and baz, but not
+    // divs with attribute bar. So div foo will be collected and contain iframe1
+    // and div baz as children.
     std::string iframe2_html = "<html><body>iframe2</body></html>";
     GURL iframe2_url(urlprefix + iframe2_html);
     std::string iframe1_html = "<iframe src=\"" +
                                net::EscapeForHTML(iframe2_url.spec()) +
                                "\"></iframe>";
     GURL iframe1_url(urlprefix + iframe1_html);
-    std::string html = "<html><head><iframe src=\"" +
-                       net::EscapeForHTML(iframe1_url.spec()) +
-                       "\"></iframe></head></html>";
+    std::string html =
+        "<html><head><div foo=1><img foo=1><div bar=1><div baz=1></div>"
+        "<iframe src=\"" +
+        net::EscapeForHTML(iframe1_url.spec()) +
+        "\"></iframe></div></div></head></html>";
     GURL url(urlprefix + html);
 
     LoadHTML(html.c_str());
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
-    ASSERT_EQ(2u, params.size());
+    ASSERT_EQ(4u, params.size());
 
     auto& param = params[0];
+    EXPECT_TRUE(param.url.is_empty());
+    EXPECT_EQ(url, param.parent);
+    EXPECT_EQ("DIV", param.tag_name);
+    // The children field contains URLs, but this mapping is not currently
+    // maintained among the interior nodes. The summary node is the parent of
+    // all elements in the frame.
+    EXPECT_TRUE(param.children.empty());
+    EXPECT_EQ(1, param.node_id);
+    EXPECT_EQ(0, param.parent_node_id);
+    EXPECT_THAT(param.child_node_ids, ElementsAre(2, 3));
+
+    param = params[1];
+    EXPECT_TRUE(param.url.is_empty());
+    EXPECT_EQ(url, param.parent);
+    EXPECT_EQ("DIV", param.tag_name);
+    EXPECT_TRUE(param.children.empty());
+    EXPECT_EQ(2, param.node_id);
+    EXPECT_EQ(1, param.parent_node_id);
+    EXPECT_TRUE(param.child_node_ids.empty());
+
+    param = params[2];
     EXPECT_EQ(iframe1_url, param.url);
     EXPECT_EQ(url, param.parent);
     EXPECT_EQ("IFRAME", param.tag_name);
-    EXPECT_EQ(0u, param.children.size());
-    EXPECT_EQ(1, param.node_id);
-    EXPECT_EQ(0, param.parent_node_id);
+    EXPECT_TRUE(param.children.empty());
+    EXPECT_EQ(3, param.node_id);
+    EXPECT_EQ(1, param.parent_node_id);
     EXPECT_TRUE(param.child_node_ids.empty());
 
-    param = params[1];
+    param = params[3];
     EXPECT_EQ(url, param.url);
     EXPECT_EQ(GURL(), param.parent);
-    EXPECT_EQ(1u, param.children.size());
+    EXPECT_THAT(param.children, ElementsAre(iframe1_url));
     EXPECT_EQ(0, param.node_id);
     EXPECT_EQ(0, param.parent_node_id);
     EXPECT_TRUE(param.child_node_ids.empty());
