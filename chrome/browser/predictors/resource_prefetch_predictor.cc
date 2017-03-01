@@ -8,13 +8,10 @@
 #include <set>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -22,20 +19,14 @@
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/mime_util/mime_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/mime_util.h"
-#include "net/base/network_change_notifier.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 
@@ -797,7 +788,8 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
 
   // Fetch URLs based on a redirect endpoint for URL/host first.
   std::string redirect_endpoint;
-  if (GetRedirectEndpoint(main_frame_url.spec(), *url_redirect_table_cache_,
+  if (config_.is_url_learning_enabled &&
+      GetRedirectEndpoint(main_frame_url.spec(), *url_redirect_table_cache_,
                           &redirect_endpoint) &&
       PopulatePrefetcherRequest(redirect_endpoint, *url_table_cache_, urls)) {
     if (prediction) {
@@ -820,7 +812,8 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
   }
 
   // Fallback to fetching URLs based on the incoming URL/host.
-  if (PopulatePrefetcherRequest(main_frame_url.spec(), *url_table_cache_,
+  if (config_.is_url_learning_enabled &&
+      PopulatePrefetcherRequest(main_frame_url.spec(), *url_table_cache_,
                                 urls)) {
     if (prediction) {
       prediction->is_host = false;
@@ -1060,19 +1053,21 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
 
   // TODO(alexilin): make only one request to DB thread.
 
-  // URL level data - merge only if we already saved the data, or it
-  // meets the cutoff requirement.
-  const std::string url_spec = summary.main_frame_url.spec();
-  bool already_tracking = url_table_cache_->find(url_spec) !=
-      url_table_cache_->end();
-  bool should_track_url =
-      already_tracking || (url_visit_count >= config_.min_url_visit_count);
+  if (config_.is_url_learning_enabled) {
+    // URL level data - merge only if we already saved the data, or it
+    // meets the cutoff requirement.
+    const std::string url_spec = summary.main_frame_url.spec();
+    bool already_tracking =
+        url_table_cache_->find(url_spec) != url_table_cache_->end();
+    bool should_track_url =
+        already_tracking || (url_visit_count >= config_.min_url_visit_count);
 
-  if (should_track_url) {
-    LearnNavigation(url_spec, PREFETCH_KEY_TYPE_URL,
-                    summary.subresource_requests, config_.max_urls_to_track,
-                    url_table_cache_.get(), summary.initial_url.spec(),
-                    url_redirect_table_cache_.get());
+    if (should_track_url) {
+      LearnNavigation(url_spec, PREFETCH_KEY_TYPE_URL,
+                      summary.subresource_requests, config_.max_urls_to_track,
+                      url_table_cache_.get(), summary.initial_url.spec(),
+                      url_redirect_table_cache_.get());
+    }
   }
 
   // Host level data - no cutoff, always learn the navigation if enabled.

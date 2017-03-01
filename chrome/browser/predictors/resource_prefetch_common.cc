@@ -7,14 +7,12 @@
 #include <string>
 #include <tuple>
 
-#include "base/command_line.h"
-#include "base/metrics/field_trial.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -26,6 +24,7 @@ const char kModeParamName[] = "mode";
 const char kLearningMode[] = "learning";
 const char kExternalPrefetchingMode[] = "external-prefetching";
 const char kPrefetchingMode[] = "prefetching";
+const char kEnableUrlLearningParamName[] = "enable-url-learning";
 
 namespace {
 
@@ -61,7 +60,14 @@ bool IsSpeculativeResourcePrefetchingEnabled(
   if (!base::FeatureList::IsEnabled(kSpeculativeResourcePrefetchingFeature))
     return false;
 
-  std::string mode_value = variations::GetVariationParamValueByFeature(
+  std::string enable_url_learning_value =
+      base::GetFieldTrialParamValueByFeature(
+          kSpeculativeResourcePrefetchingFeature, kEnableUrlLearningParamName);
+  if (enable_url_learning_value == "true") {
+    config->is_url_learning_enabled = true;
+  }
+
+  std::string mode_value = base::GetFieldTrialParamValueByFeature(
       kSpeculativeResourcePrefetchingFeature, kModeParamName);
   if (mode_value == kLearningMode) {
     config->mode |= ResourcePrefetchPredictorConfig::LEARNING;
@@ -125,7 +131,8 @@ ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
       min_resource_confidence_to_trigger_prefetch(0.7f),
       min_resource_hits_to_trigger_prefetch(2),
       max_prefetches_inflight_per_navigation(5),
-      max_prefetches_inflight_per_host_per_navigation(3) {
+      max_prefetches_inflight_per_host_per_navigation(3),
+      is_url_learning_enabled(false) {
 }
 
 ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig(

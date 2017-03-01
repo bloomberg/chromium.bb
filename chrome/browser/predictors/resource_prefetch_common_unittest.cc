@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -71,6 +70,7 @@ class ResourcePrefetchCommonTest : public testing::Test {
     EXPECT_FALSE(config.IsHighConfidenceForTest());
     EXPECT_FALSE(config.IsMoreResourcesEnabledForTest());
     EXPECT_FALSE(config.IsSmallDBEnabledForTest());
+    EXPECT_FALSE(config.is_url_learning_enabled);
   }
 
  protected:
@@ -92,7 +92,8 @@ TEST_F(ResourcePrefetchCommonTest, IsDisabledByDefault) {
   EXPECT_FALSE(config.IsLearningEnabled());
   EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
                                                     PrefetchOrigin::EXTERNAL));
-  EXPECT_FALSE(config.IsLearningEnabled());
+  EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
+      profile_.get(), PrefetchOrigin::NAVIGATION));
 
   TestIsDefaultExtraConfig(config);
 }
@@ -131,6 +132,18 @@ TEST_F(ResourcePrefetchCommonTest, EnablePrefetchExternalOnly) {
   EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
       profile_.get(), PrefetchOrigin::NAVIGATION));
   TestIsDefaultExtraConfig(config);
+}
+
+TEST_F(ResourcePrefetchCommonTest, EnableUrlLearning) {
+  variations::testing::VariationParamsManager params_manager(
+      "dummy-trial",
+      {{kModeParamName, kLearningMode}, {kEnableUrlLearningParamName, "true"}},
+      {kSpeculativeResourcePrefetchingFeatureName});
+
+  ResourcePrefetchPredictorConfig config;
+  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  TestIsPrefetchLearning(config);
+  EXPECT_TRUE(config.is_url_learning_enabled);
 }
 
 // Verifies whether prefetching is disabled according to the network type. But

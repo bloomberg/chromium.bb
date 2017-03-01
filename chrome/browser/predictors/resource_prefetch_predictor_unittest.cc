@@ -231,8 +231,8 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     config.max_resources_per_entry = 4;
     config.max_consecutive_misses = 2;
     config.min_resource_confidence_to_trigger_prefetch = 0.5;
+    config.is_url_learning_enabled = true;
 
-    // TODO(shishir): Enable the prefetching mode in the tests.
     config.mode |= ResourcePrefetchPredictorConfig::LEARNING;
     predictor_.reset(new ResourcePrefetchPredictor(config, profile_.get()));
     predictor_->set_mock_tables(mock_tables_);
