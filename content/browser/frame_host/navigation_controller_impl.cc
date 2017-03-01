@@ -1213,7 +1213,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // meanwhile and no new page was created. We are stuck at the last committed
     // entry.
     entry = GetLastCommittedEntry();
-    DCHECK(!is_in_page);
+    CHECK(!is_in_page);
     entry->GetSSL() = handle->ssl_status();
   } else if (params.nav_entry_id) {
     // This is a browser-initiated navigation (back/forward/reload).
