@@ -53,8 +53,6 @@
 #include "platform/HostWindow.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace std;
-
 namespace {
 
 // The base square size is set to 10 because it rounds nicely for both the
@@ -317,7 +315,7 @@ float ImageDocument::scale() const {
   float heightScale =
       view->height() * manualZoom / imageSize.height().toFloat();
 
-  return min(widthScale, heightScale);
+  return std::min(widthScale, heightScale);
 }
 
 void ImageDocument::resizeImageToFit() {

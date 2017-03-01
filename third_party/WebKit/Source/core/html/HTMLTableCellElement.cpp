@@ -33,8 +33,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTableCell.h"
 
-using namespace std;
-
 namespace blink {
 
 using namespace HTMLNames;
@@ -60,7 +58,7 @@ unsigned HTMLTableCellElement::colSpan() const {
     UseCounter::count(document(),
                       UseCounter::HTMLTableCellElementColspanGreaterThan1000);
   }
-  return max(1u, min(value, maxColSpan()));
+  return std::max(1u, std::min(value, maxColSpan()));
 }
 
 unsigned HTMLTableCellElement::rowSpan() const {
@@ -69,7 +67,7 @@ unsigned HTMLTableCellElement::rowSpan() const {
   if (rowSpanValue.isEmpty() ||
       !parseHTMLNonNegativeInteger(rowSpanValue, value))
     return 1;
-  return max(1u, min(value, maxRowSpan()));
+  return std::max(1u, std::min(value, maxRowSpan()));
 }
 
 int HTMLTableCellElement::cellIndex() const {

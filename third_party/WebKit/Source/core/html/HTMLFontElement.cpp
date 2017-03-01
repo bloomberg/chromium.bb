@@ -33,8 +33,6 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringToNumber.h"
 
-using namespace WTF;
-
 namespace blink {
 
 using namespace HTMLNames;

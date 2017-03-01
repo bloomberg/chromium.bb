@@ -39,8 +39,6 @@
 #include "core/page/Page.h"
 #include "platform/LayoutTestSupport.h"
 
-using namespace WTF::Unicode;
-
 namespace blink {
 
 using namespace HTMLNames;
