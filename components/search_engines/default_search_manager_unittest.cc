@@ -235,8 +235,7 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByExtension) {
   // Extension trumps prefs:
   std::unique_ptr<TemplateURLData> extension_data_1 =
       GenerateDummyTemplateURLData("ext1");
-  manager.SetExtensionControlledDefaultSearchEngine(*extension_data_1);
-
+  SetExtensionDefaultSearchInPrefs(pref_service(), *extension_data_1);
   ExpectSimilar(extension_data_1.get(),
                 manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_EXTENSION, source);
@@ -256,15 +255,14 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByExtension) {
       GenerateDummyTemplateURLData("ext2");
   std::unique_ptr<TemplateURLData> extension_data_3 =
       GenerateDummyTemplateURLData("ext3");
-  manager.SetExtensionControlledDefaultSearchEngine(*extension_data_2);
-  manager.SetExtensionControlledDefaultSearchEngine(*extension_data_3);
 
+  SetExtensionDefaultSearchInPrefs(pref_service(), *extension_data_2);
+  SetExtensionDefaultSearchInPrefs(pref_service(), *extension_data_3);
   ExpectSimilar(extension_data_3.get(),
                 manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_EXTENSION, source);
 
-  manager.ClearExtensionControlledDefaultSearchEngine();
-
+  RemoveExtensionDefaultSearchFromPrefs(pref_service());
   ExpectSimilar(data.get(), manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_USER, source);
 }

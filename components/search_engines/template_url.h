@@ -512,6 +512,11 @@ class TemplateURL {
                           const TemplateURLData* data,
                           const SearchTermsData& search_terms_data);
 
+  // Special case for search_terms_replacement_key comparison, because of
+  // its special initialization in TemplateURL constructor.
+  static bool SearchTermsReplacementKeysMatch(const std::string& key1,
+                                              const std::string& key2);
+
   const TemplateURLData& data() const { return data_; }
 
   const base::string16& short_name() const { return data_.short_name(); }
@@ -587,11 +592,8 @@ class TemplateURL {
 
   Type type() const { return type_; }
 
-  // This setter shouldn't be used except by TemplateURLService and
-  // TemplateURLServiceClient implementations.
-  void set_extension_info(
-      std::unique_ptr<AssociatedExtensionInfo> extension_info) {
-    extension_info_ = std::move(extension_info);
+  const AssociatedExtensionInfo* GetExtensionInfoForTesting() const {
+    return extension_info_.get();
   }
 
   // Returns true if |url| supports replacement.

@@ -54,8 +54,9 @@ void ExpectSimilar(const TemplateURLData* expected,
   EXPECT_EQ(expected->safe_for_autoreplace, actual->safe_for_autoreplace);
   EXPECT_EQ(expected->input_encodings, actual->input_encodings);
   EXPECT_EQ(expected->alternate_urls, actual->alternate_urls);
-  EXPECT_EQ(expected->search_terms_replacement_key,
-            actual->search_terms_replacement_key);
+  EXPECT_TRUE(TemplateURL::SearchTermsReplacementKeysMatch(
+      expected->search_terms_replacement_key,
+      actual->search_terms_replacement_key));
 }
 
 void SetExtensionDefaultSearchInPrefs(

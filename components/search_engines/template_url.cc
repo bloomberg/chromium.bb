@@ -160,17 +160,6 @@ bool IsTemplateParameterString(const std::string& param) {
       (*(param.rbegin()) == kEndParameter);
 }
 
-// Special case for search_terms_replacement_key comparison, because of
-// its special initialization in TemplateUrl constructor.
-bool SearchTermsReplacementKeysMatch(const std::string& key1,
-                                     const std::string& key2) {
-  const auto IsInstantExtended = [](const std::string& key) {
-    return (key == google_util::kInstantExtendedAPIParam) ||
-           (key == google_util::kGoogleInstantExtendedEnabledKeyFull);
-  };
-  return (key1 == key2) || (IsInstantExtended(key1) && IsInstantExtended(key2));
-}
-
 }  // namespace
 
 // TemplateURLRef::SearchTermsArgs --------------------------------------------
@@ -1232,6 +1221,17 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
          (t_url->alternate_urls() == data->alternate_urls) &&
          SearchTermsReplacementKeysMatch(t_url->search_terms_replacement_key(),
                                          data->search_terms_replacement_key);
+}
+
+// Special case for search_terms_replacement_key comparison, because of
+// its special initialization in TemplateUrl constructor.
+bool TemplateURL::SearchTermsReplacementKeysMatch(const std::string& key1,
+                                                  const std::string& key2) {
+  const auto IsInstantExtended = [](const std::string& key) {
+    return (key == google_util::kInstantExtendedAPIParam) ||
+           (key == google_util::kGoogleInstantExtendedEnabledKeyFull);
+  };
+  return (key1 == key2) || (IsInstantExtended(key1) && IsInstantExtended(key2));
 }
 
 base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
