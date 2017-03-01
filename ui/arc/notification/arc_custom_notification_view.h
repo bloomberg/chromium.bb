@@ -55,7 +55,6 @@ class ArcCustomNotificationView
   void UpdatePinnedState();
   void UpdateSnapshot();
   void AttachSurface();
-  void ActivateToast();
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
