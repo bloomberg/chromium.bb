@@ -12,7 +12,6 @@ import android.os.FileObserver;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 
 import java.io.File;
@@ -43,7 +42,6 @@ public class MinidumpDirectoryObserver extends FileObserver {
                         MinidumpUploadService.createFindAndUploadLastCrashIntent(appContext);
                 appContext.startService(intent);
                 Log.i(TAG, "Detects a new minidump %s send intent to MinidumpUploadService", path);
-                RecordUserAction.record("MobileBreakpadUploadAttempt");
             } catch (SecurityException e) {
                 // For KitKat and below, there was a framework bug which cause us to not be able to
                 // find our own crash uploading service. Ignore a SecurityException here on older

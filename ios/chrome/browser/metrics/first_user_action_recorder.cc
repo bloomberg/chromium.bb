@@ -35,7 +35,6 @@ namespace {
 // task or continuing an existing task.
 const char* kIgnoredActions[] = {
     "MobileOmniboxUse",
-    "MobileBreakpadUploadAttempt",
     "MobileFirstUserAction_Continuation",
     "MobileFirstUserAction_Expiration",
     "MobileFirstUserAction_NewTask",

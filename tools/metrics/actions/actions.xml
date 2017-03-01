@@ -9379,11 +9379,15 @@ should be able to be added at any place in this file.
 <action name="MobileBreakpadUploadAttempt" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 2017/02/28 due to confusing semantics and lack of use.
+  </obsolete>
 </action>
 
 <action name="MobileBreakpadUploadFail" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of the metric.</description>
+  <obsolete>Deprecated as of at least 2017/02/28.</obsolete>
 </action>
 
 <action name="MobileBreakpadUploadFailure" not_user_triggered="true">
@@ -9395,6 +9399,7 @@ should be able to be added at any place in this file.
 <action name="MobileBreakpadUploadSuccess" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of at least 2017/02/28.</obsolete>
 </action>
 
 <action name="MobileComeToForeground">
