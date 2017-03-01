@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
-#include "components/arc/arc_session.h"
 
 namespace arc {
 
@@ -29,12 +28,12 @@ ArcSessionRunner::~ArcSessionRunner() {
     arc_session_->RemoveObserver(this);
 }
 
-void ArcSessionRunner::AddObserver(ArcSessionObserver* observer) {
+void ArcSessionRunner::AddObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.AddObserver(observer);
 }
 
-void ArcSessionRunner::RemoveObserver(ArcSessionObserver* observer) {
+void ArcSessionRunner::RemoveObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
 }
@@ -151,12 +150,9 @@ void ArcSessionRunner::OnSessionReady() {
 
   VLOG(0) << "ARC ready";
   state_ = State::RUNNING;
-
-  for (auto& observer : observer_list_)
-    observer.OnSessionReady();
 }
 
-void ArcSessionRunner::OnSessionStopped(StopReason stop_reason) {
+void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(state_, State::STOPPED);
   DCHECK(arc_session_);
@@ -173,8 +169,9 @@ void ArcSessionRunner::OnSessionStopped(StopReason stop_reason) {
   // Otherwise, do nothing.
   // If STARTING, ARC instance has not been booted properly, so do not
   // restart it automatically.
-  if (state_ == State::RUNNING ||
-      (state_ == State::STOPPING && run_requested_)) {
+  const bool restarting = (state_ == State::RUNNING ||
+                           (state_ == State::STOPPING && run_requested_));
+  if (restarting) {
     // This check is for RUNNING case. In RUNNING case |run_requested_| should
     // be always true, because if once RequestStop() is called, the state_
     // will be set to STOPPING.
@@ -190,11 +187,9 @@ void ArcSessionRunner::OnSessionStopped(StopReason stop_reason) {
                                     weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // TODO(hidehiko): Consider to let observers know whether there is scheduled
-  // restarting event, or not.
   state_ = State::STOPPED;
   for (auto& observer : observer_list_)
-    observer.OnSessionStopped(stop_reason);
+    observer.OnSessionStopped(stop_reason, restarting);
 }
 
 }  // namespace arc

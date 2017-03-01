@@ -1,16 +1,15 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/arc_session_observer.h"
+#include "components/arc/arc_stop_reason.h"
 
 namespace arc {
 
-std::ostream& operator<<(std::ostream& os,
-                         ArcSessionObserver::StopReason reason) {
+std::ostream& operator<<(std::ostream& os, ArcStopReason reason) {
   switch (reason) {
-#define CASE_IMPL(val)                      \
-  case ArcSessionObserver::StopReason::val: \
+#define CASE_IMPL(val)     \
+  case ArcStopReason::val: \
     return os << #val
 
     CASE_IMPL(SHUTDOWN);
@@ -21,7 +20,7 @@ std::ostream& operator<<(std::ostream& os,
   }
 
   // In case of unexpected value, output the int value.
-  return os << "StopReason(" << static_cast<int>(reason) << ")";
+  return os << "ArcStopReason(" << static_cast<int>(reason) << ")";
 }
 
 }  // namespace arc

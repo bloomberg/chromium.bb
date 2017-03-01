@@ -142,12 +142,15 @@ void ArcSessionManager::EnableCheckAndroidManagementForTesting() {
   g_enable_check_android_management_for_testing = true;
 }
 
-void ArcSessionManager::OnSessionReady() {
-  for (auto& observer : arc_session_observer_list_)
-    observer.OnSessionReady();
-}
+void ArcSessionManager::OnSessionStopped(ArcStopReason reason,
+                                         bool restarting) {
+  if (restarting) {
+    // If ARC is being restarted, here do nothing, and just wait for its
+    // next run.
+    VLOG(1) << "ARC session is stopped, but being restarted: " << reason;
+    return;
+  }
 
-void ArcSessionManager::OnSessionStopped(StopReason reason) {
   // TODO(crbug.com/625923): Use |reason| to report more detailed errors.
   if (arc_sign_in_timer_.IsRunning())
     OnProvisioningFinished(ProvisioningResult::ARC_STOPPED);
@@ -167,8 +170,8 @@ void ArcSessionManager::OnSessionStopped(StopReason reason) {
                               weak_ptr_factory_.GetWeakPtr()));
   }
 
-  for (auto& observer : arc_session_observer_list_)
-    observer.OnSessionStopped(reason);
+  for (auto& observer : observer_list_)
+    observer.OnArcSessionStopped(reason);
 }
 
 void ArcSessionManager::RemoveArcData() {
@@ -580,16 +583,6 @@ void ArcSessionManager::AddObserver(Observer* observer) {
 void ArcSessionManager::RemoveObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observer_list_.RemoveObserver(observer);
-}
-
-void ArcSessionManager::AddSessionObserver(ArcSessionObserver* observer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc_session_observer_list_.AddObserver(observer);
-}
-
-void ArcSessionManager::RemoveSessionObserver(ArcSessionObserver* observer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc_session_observer_list_.RemoveObserver(observer);
 }
 
 bool ArcSessionManager::IsSessionRunning() const {

@@ -22,18 +22,25 @@ namespace arc {
 
 namespace {
 
-class DummyObserver : public ArcSessionObserver {};
+class DoNothingObserver : public ArcSessionRunner::Observer {
+ public:
+  void OnSessionStopped(ArcStopReason reason, bool restarting) override {
+    // Do nothing.
+  }
+};
 
 }  // namespace
 
-class ArcSessionRunnerTest : public testing::Test, public ArcSessionObserver {
+class ArcSessionRunnerTest : public testing::Test,
+                             public ArcSessionRunner::Observer {
  public:
   ArcSessionRunnerTest() = default;
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
 
-    stop_reason_ = StopReason::SHUTDOWN;
+    stop_reason_ = ArcStopReason::SHUTDOWN;
+    restarting_ = false;
 
     // We inject FakeArcSession here so we do not need task_runner.
     arc_session_runner_ =
@@ -55,7 +62,8 @@ class ArcSessionRunnerTest : public testing::Test, public ArcSessionObserver {
         arc_session_runner_->GetArcSessionForTesting());
   }
 
-  StopReason stop_reason() { return stop_reason_; }
+  ArcStopReason stop_reason() { return stop_reason_; }
+  bool restarting() { return restarting_; }
 
   void ResetArcSessionFactory(
       const ArcSessionRunner::ArcSessionFactory& factory) {
@@ -71,21 +79,23 @@ class ArcSessionRunnerTest : public testing::Test, public ArcSessionObserver {
   }
 
   static std::unique_ptr<ArcSession> CreateBootFailureArcSession(
-      StopReason reason) {
+      ArcStopReason reason) {
     auto arc_session = base::MakeUnique<FakeArcSession>();
     arc_session->EnableBootFailureEmulation(reason);
     return std::move(arc_session);
   }
 
  private:
-  // ArcSessionObserver:
-  void OnSessionStopped(StopReason stop_reason) override {
+  // ArcSessionRunner::Observer:
+  void OnSessionStopped(ArcStopReason stop_reason, bool restarting) override {
     // The instance is already destructed in
     // ArcSessionRunner::OnSessionStopped().
     stop_reason_ = stop_reason;
+    restarting_ = restarting;
   }
 
-  StopReason stop_reason_;
+  ArcStopReason stop_reason_;
+  bool restarting_;
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
   base::MessageLoopForUI message_loop_;
 
@@ -95,21 +105,18 @@ class ArcSessionRunnerTest : public testing::Test, public ArcSessionObserver {
 // Exercises the basic functionality of the ArcSessionRunner. Observer should
 // be notified.
 TEST_F(ArcSessionRunnerTest, Basic) {
-  class Observer : public ArcSessionObserver {
+  class Observer : public ArcSessionRunner::Observer {
    public:
     Observer() = default;
 
-    bool ready_called() const { return ready_called_; }
     bool stopped_called() const { return stopped_called_; }
 
-    // ArcSessionObserver:
-    void OnSessionReady() override { ready_called_ = true; }
-    void OnSessionStopped(StopReason reason) override {
+    // ArcSessionRunner::Observer:
+    void OnSessionStopped(ArcStopReason reason, bool restarting) override {
       stopped_called_ = true;
     }
 
    private:
-    bool ready_called_ = false;
     bool stopped_called_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -127,7 +134,6 @@ TEST_F(ArcSessionRunnerTest, Basic) {
 
   arc_session_runner()->RequestStart();
   EXPECT_TRUE(arc_session_runner()->IsRunning());
-  EXPECT_TRUE(observer.ready_called());
 
   arc_session_runner()->RequestStop();
   EXPECT_TRUE(arc_session_runner()->IsStopped());
@@ -154,11 +160,11 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup) {
 TEST_F(ArcSessionRunnerTest, BootFailure) {
   ResetArcSessionFactory(
       base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
-                 StopReason::GENERIC_BOOT_FAILURE));
+                 ArcStopReason::GENERIC_BOOT_FAILURE));
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 
   arc_session_runner()->RequestStart();
-  EXPECT_EQ(StopReason::GENERIC_BOOT_FAILURE, stop_reason());
+  EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE, stop_reason());
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 }
 
@@ -172,7 +178,7 @@ TEST_F(ArcSessionRunnerTest, Restart) {
 
   // Simulate a connection loss.
   ASSERT_TRUE(arc_session());
-  arc_session()->StopWithReason(StopReason::CRASH);
+  arc_session()->StopWithReason(ArcStopReason::CRASH);
   EXPECT_TRUE(arc_session_runner()->IsStopped());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(arc_session_runner()->IsRunning());
@@ -191,23 +197,26 @@ TEST_F(ArcSessionRunnerTest, OnSessionStopped) {
 
   // Simulate boot failure.
   ASSERT_TRUE(arc_session());
-  arc_session()->StopWithReason(StopReason::GENERIC_BOOT_FAILURE);
-  EXPECT_EQ(StopReason::GENERIC_BOOT_FAILURE, stop_reason());
+  arc_session()->StopWithReason(ArcStopReason::GENERIC_BOOT_FAILURE);
+  EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE, stop_reason());
+  EXPECT_TRUE(restarting());
   EXPECT_TRUE(arc_session_runner()->IsStopped());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(arc_session_runner()->IsRunning());
 
   // Simulate crash.
   ASSERT_TRUE(arc_session());
-  arc_session()->StopWithReason(StopReason::CRASH);
-  EXPECT_EQ(StopReason::CRASH, stop_reason());
+  arc_session()->StopWithReason(ArcStopReason::CRASH);
+  EXPECT_EQ(ArcStopReason::CRASH, stop_reason());
+  EXPECT_TRUE(restarting());
   EXPECT_TRUE(arc_session_runner()->IsStopped());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(arc_session_runner()->IsRunning());
 
   // Graceful stop.
   arc_session_runner()->RequestStop();
-  EXPECT_EQ(StopReason::SHUTDOWN, stop_reason());
+  EXPECT_EQ(ArcStopReason::SHUTDOWN, stop_reason());
+  EXPECT_FALSE(restarting());
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 }
 
@@ -220,7 +229,7 @@ TEST_F(ArcSessionRunnerTest, Shutdown) {
 
   // Simulate shutdown.
   arc_session_runner()->OnShutdown();
-  EXPECT_EQ(StopReason::SHUTDOWN, stop_reason());
+  EXPECT_EQ(ArcStopReason::SHUTDOWN, stop_reason());
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 }
 
@@ -228,19 +237,19 @@ TEST_F(ArcSessionRunnerTest, Shutdown) {
 TEST_F(ArcSessionRunnerTest, RemoveObserverTwice) {
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 
-  DummyObserver dummy_observer;
-  arc_session_runner()->AddObserver(&dummy_observer);
+  DoNothingObserver do_nothing_observer;
+  arc_session_runner()->AddObserver(&do_nothing_observer);
   // Call RemoveObserver() twice.
-  arc_session_runner()->RemoveObserver(&dummy_observer);
-  arc_session_runner()->RemoveObserver(&dummy_observer);
+  arc_session_runner()->RemoveObserver(&do_nothing_observer);
+  arc_session_runner()->RemoveObserver(&do_nothing_observer);
 }
 
 // Removing an unknown observer should be allowed.
 TEST_F(ArcSessionRunnerTest, RemoveUnknownObserver) {
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 
-  DummyObserver dummy_observer;
-  arc_session_runner()->RemoveObserver(&dummy_observer);
+  DoNothingObserver do_nothing_observer;
+  arc_session_runner()->RemoveObserver(&do_nothing_observer);
 }
 
 }  // namespace arc

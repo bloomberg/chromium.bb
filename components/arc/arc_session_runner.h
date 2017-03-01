@@ -11,18 +11,29 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_session_observer.h"
+#include "components/arc/arc_session.h"
+#include "components/arc/arc_stop_reason.h"
 
 namespace arc {
 
-class ArcSession;
-
 // Accept requests to start/stop ARC instance. Also supports automatic
 // restarting on unexpected ARC instance crash.
-// TODO(hidehiko): Get rid of ArcBridgeService inheritance.
-class ArcSessionRunner : public ArcSessionObserver {
+class ArcSessionRunner : public ArcSession::Observer {
  public:
+  // Observer to notify events across multiple ARC session runs.
+  class Observer {
+   public:
+    // Called when ARC instance is stopped. If |restarting| is true, another
+    // ARC session is being restarted (practically after certain delay).
+    // Note: this is called once per ARC session, including unexpected
+    // CRASH on ARC container, and expected SHUTDOWN of ARC triggered by
+    // RequestStop(), so may be called multiple times for one RequestStart().
+    virtual void OnSessionStopped(ArcStopReason reason, bool restarting) = 0;
+
+   protected:
+    virtual ~Observer() = default;
+  };
+
   // This is the factory interface to inject ArcSession instance
   // for testing purpose.
   using ArcSessionFactory = base::Callback<std::unique_ptr<ArcSession>()>;
@@ -31,8 +42,8 @@ class ArcSessionRunner : public ArcSessionObserver {
   ~ArcSessionRunner() override;
 
   // Add/Remove an observer.
-  void AddObserver(ArcSessionObserver* observer);
-  void RemoveObserver(ArcSessionObserver* observer);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Starts the ARC service, then it will connect the Mojo channel. When the
   // bridge becomes ready, registered Observer's OnSessionReady() is called.
@@ -68,7 +79,7 @@ class ArcSessionRunner : public ArcSessionObserver {
   //   RequestStart() ->
   // STARTING
   //   OnSessionReady() ->
-  // READY
+  // RUNNING
   //
   // The ArcSession state machine can be thought of being substates of
   // ArcBridgeService's STARTING state.
@@ -97,14 +108,14 @@ class ArcSessionRunner : public ArcSessionObserver {
   // Starts to run an ARC instance.
   void StartArcSession();
 
-  // ArcSessionObserver:
+  // ArcSession::Observer:
   void OnSessionReady() override;
-  void OnSessionStopped(StopReason reason) override;
+  void OnSessionStopped(ArcStopReason reason) override;
 
   base::ThreadChecker thread_checker_;
 
   // Observers for the ARC instance state change events.
-  base::ObserverList<ArcSessionObserver> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   // Whether a client requests to run session or not.
   bool run_requested_ = false;

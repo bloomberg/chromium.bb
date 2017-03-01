@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -91,15 +90,15 @@ void ShowLowDiskSpaceErrorNotification() {
 ArcBootErrorNotification::ArcBootErrorNotification(
     ArcBridgeService* bridge_service)
     : ArcService(bridge_service) {
-  ArcSessionManager::Get()->AddSessionObserver(this);
+  ArcSessionManager::Get()->AddObserver(this);
 }
 
 ArcBootErrorNotification::~ArcBootErrorNotification() {
-  ArcSessionManager::Get()->RemoveSessionObserver(this);
+  ArcSessionManager::Get()->RemoveObserver(this);
 }
 
-void ArcBootErrorNotification::OnSessionStopped(StopReason reason) {
-  if (reason == StopReason::LOW_DISK_SPACE)
+void ArcBootErrorNotification::OnArcSessionStopped(ArcStopReason reason) {
+  if (reason == ArcStopReason::LOW_DISK_SPACE)
     ShowLowDiskSpaceErrorNotification();
 }
 

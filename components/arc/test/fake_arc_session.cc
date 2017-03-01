@@ -26,20 +26,19 @@ void FakeArcSession::Start() {
 }
 
 void FakeArcSession::Stop() {
-  StopWithReason(ArcSessionObserver::StopReason::SHUTDOWN);
+  StopWithReason(ArcStopReason::SHUTDOWN);
 }
 
 void FakeArcSession::OnShutdown() {
-  StopWithReason(ArcSessionObserver::StopReason::SHUTDOWN);
+  StopWithReason(ArcStopReason::SHUTDOWN);
 }
 
-void FakeArcSession::StopWithReason(ArcSessionObserver::StopReason reason) {
+void FakeArcSession::StopWithReason(ArcStopReason reason) {
   for (auto& observer : observer_list_)
     observer.OnSessionStopped(reason);
 }
 
-void FakeArcSession::EnableBootFailureEmulation(
-    ArcSessionObserver::StopReason reason) {
+void FakeArcSession::EnableBootFailureEmulation(ArcStopReason reason) {
   DCHECK(!boot_failure_emulation_enabled_);
   DCHECK(!boot_suspended_);
 

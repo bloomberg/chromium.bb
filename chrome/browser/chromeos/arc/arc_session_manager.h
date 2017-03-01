@@ -15,7 +15,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
-#include "components/arc/arc_session_observer.h"
+#include "components/arc/arc_session_runner.h"
+#include "components/arc/arc_stop_reason.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 
@@ -31,13 +32,12 @@ namespace arc {
 class ArcAndroidManagementChecker;
 class ArcAuthInfoFetcher;
 class ArcAuthContext;
-class ArcSessionRunner;
 class ArcTermsOfServiceNegotiator;
 enum class ProvisioningResult : int;
 
 // This class proxies the request from the client to fetch an auth code from
 // LSO. It lives on the UI thread.
-class ArcSessionManager : public ArcSessionObserver,
+class ArcSessionManager : public ArcSessionRunner::Observer,
                           public ArcSupportHost::Observer,
                           public sync_preferences::PrefServiceSyncableObserver {
  public:
@@ -85,10 +85,9 @@ class ArcSessionManager : public ArcSessionObserver,
     ACTIVE,
   };
 
+  // Observer for those services outside of ARC which want to know ARC events.
   class Observer {
    public:
-    virtual ~Observer() = default;
-
     // Called to notify that whether Google Play Store is enabled or not, which
     // is represented by "arc.enabled" preference, is updated.
     virtual void OnArcPlayStoreEnabledChanged(bool enabled) {}
@@ -96,9 +95,16 @@ class ArcSessionManager : public ArcSessionObserver,
     // Called to notify that ARC has been initialized successfully.
     virtual void OnArcInitialStart() {}
 
+    // Called when ARC session is stopped, and is not being restarted
+    // automatically.
+    virtual void OnArcSessionStopped(ArcStopReason stop_reason) {}
+
     // Called to notify that Android data has been removed. Used in
     // browser_tests
     virtual void OnArcDataRemoved() {}
+
+   protected:
+    virtual ~Observer() = default;
   };
 
   explicit ArcSessionManager(
@@ -144,12 +150,6 @@ class ArcSessionManager : public ArcSessionObserver,
   // Adds or removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // Adds or removes ArcSessionObservers.
-  // TODO(hidehiko): The observer should be migrated into
-  // ArcSessionManager::Observer.
-  void AddSessionObserver(ArcSessionObserver* observer);
-  void RemoveSessionObserver(ArcSessionObserver* observer);
 
   // Returns true if ARC instance is running/stopped, respectively.
   // See ArcSessionRunner::IsRunning()/IsStopped() for details.
@@ -261,9 +261,8 @@ class ArcSessionManager : public ArcSessionObserver,
   void OnBackgroundAndroidManagementChecked(
       policy::AndroidManagementClient::Result result);
 
-  // ArcSessionObserver:
-  void OnSessionReady() override;
-  void OnSessionStopped(StopReason reason) override;
+  // ArcSessionRunner::Observer:
+  void OnSessionStopped(ArcStopReason reason, bool restarting) override;
 
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
 
@@ -280,7 +279,6 @@ class ArcSessionManager : public ArcSessionObserver,
   // Internal state machine. See also State enum class.
   State state_ = State::NOT_INITIALIZED;
   base::ObserverList<Observer> observer_list_;
-  base::ObserverList<ArcSessionObserver> arc_session_observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   bool reenable_arc_ = false;
   bool provisioning_reported_ = false;
