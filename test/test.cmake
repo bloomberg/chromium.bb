@@ -8,6 +8,8 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
+include("${AOM_ROOT}/test/test_data_util.cmake")
+
 set(AOM_UNIT_TEST_WRAPPER_SOURCES
     "${AOM_CONFIG_DIR}/usage_exit.c"
     "${AOM_ROOT}/test/test_libaom.cc")
@@ -294,4 +296,11 @@ function (setup_aom_test_targets)
     add_intrinsics_source_to_target("-msse4.1" "test_libaom"
                                     "AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1")
   endif ()
+
+  add_custom_target(testdata
+                    COMMAND ${CMAKE_COMMAND}
+                      -DAOM_CONFIG_DIR="${AOM_CONFIG_DIR}"
+                      -DAOM_ROOT="${AOM_ROOT}"
+                      -P "${AOM_ROOT}/test/test_worker.cmake"
+                    SOURCES ${AOM_TEST_DATA_LIST})
 endfunction ()
