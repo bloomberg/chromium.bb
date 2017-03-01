@@ -71,6 +71,7 @@
 #import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/payments/payment_request_manager.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
@@ -3318,9 +3319,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (!navItem)
     return;
 
-  // Don't show if the page is native.
-  if ([self isTabNativePage:tab])
+  // Don't show if the page is native except for offline pages (to show the
+  // offline page info).
+  if ([self isTabNativePage:tab] &&
+      !reading_list::IsOfflineURL(navItem->GetURL())) {
     return;
+  }
 
   // Don't show the bubble twice (this can happen when tapping very quickly in
   // accessibility mode).
