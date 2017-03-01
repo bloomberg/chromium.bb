@@ -57,6 +57,9 @@ void PhysicalWebBaseMessageHandler::HandleRequestNearbyURLs(
 
   results.Set(physical_web_ui::kMetadata, metadata.release());
 
+  UMA_HISTOGRAM_EXACT_LINEAR("PhysicalWeb.TotalUrls.OnInitialDisplay",
+                             (int)metadata_list->size(), 50);
+
   // Pass the list of Physical Web URL metadata to the WebUI. A jstemplate will
   // create a list view with an item for each URL.
   CallJavaScriptFunction(physical_web_ui::kReturnNearbyUrls, results);
