@@ -90,7 +90,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   LayoutUnit max_inline_size_;
   // MarginStrut for the previous child.
   NGMarginStrut curr_margin_strut_;
-  NGLogicalOffset bfc_offset_;
   NGLogicalOffset curr_bfc_offset_;
   NGBoxStrut curr_child_margins_;
 };
