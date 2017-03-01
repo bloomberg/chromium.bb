@@ -174,7 +174,6 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // If |gcInfoIndex| is 0, this header is interpreted as a free list header.
   NO_SANITIZE_ADDRESS
   HeapObjectHeader(size_t size, size_t gcInfoIndex) {
-    m_magic = getMagic();
     // sizeof(HeapObjectHeader) must be equal to or smaller than
     // |allocationGranularity|, because |HeapObjectHeader| is used as a header
     // for a freed entry. Given that the smallest entry size is
@@ -182,8 +181,11 @@ class PLATFORM_EXPORT HeapObjectHeader {
     static_assert(
         sizeof(HeapObjectHeader) <= allocationGranularity,
         "size of HeapObjectHeader must be smaller than allocationGranularity");
+#if CPU(64BIT)
     static_assert(sizeof(HeapObjectHeader) == 8,
                   "sizeof(HeapObjectHeader) must be 8 bytes");
+    m_magic = getMagic();
+#endif
 
     ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
     ASSERT(size < nonLargeObjectPageSizeMax);
@@ -229,9 +231,11 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // explicitly check.
   bool checkHeader() const;
 
+#if DCHECK_IS_ON() && CPU(64BIT)
   // Zap |m_magic| with a new magic number that means there was once an object
   // allocated here, but it was freed because nobody marked it during GC.
   void zapMagic();
+#endif
 
   void finalize(Address, size_t);
   static HeapObjectHeader* fromPayload(const void*);
@@ -239,6 +243,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   static const uint32_t zappedMagic = 0xDEAD4321;
 
  private:
+#if CPU(64BIT)
   // Returns a random value.
   //
   // The implementation gets its randomness from the locations of 2 independent
@@ -248,8 +253,9 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // attackers to discover and use 2 independent weak infoleak bugs, or 1
   // arbitrary infoleak bug (used twice).
   uint32_t getMagic() const;
-
   uint32_t m_magic;
+#endif
+
   uint32_t m_encoded;
 };
 
@@ -258,7 +264,7 @@ class FreeListEntry final : public HeapObjectHeader {
   NO_SANITIZE_ADDRESS
   explicit FreeListEntry(size_t size)
       : HeapObjectHeader(size, gcInfoIndexForFreeListHeader), m_next(nullptr) {
-#if DCHECK_IS_ON()
+#if DCHECK_IS_ON() && CPU(64BIT)
     ASSERT(size >= sizeof(HeapObjectHeader));
     zapMagic();
 #endif
@@ -833,7 +839,11 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::checkHeader() const {
+#if CPU(64BIT)
   return m_magic == getMagic();
+#else
+  return true;
+#endif
 }
 
 inline Address HeapObjectHeader::payload() {
@@ -862,6 +872,7 @@ inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload) {
   return header;
 }
 
+#if CPU(64BIT)
 inline uint32_t HeapObjectHeader::getMagic() const {
   const uintptr_t random1 =
       ~(reinterpret_cast<uintptr_t>(
@@ -882,6 +893,8 @@ inline uint32_t HeapObjectHeader::getMagic() const {
   const uint32_t random = static_cast<uint32_t>(
       (random1 & 0x0FFFFULL) | ((random2 >> 32) & 0x0FFFF0000ULL));
 #elif CPU(32BIT)
+  // Although we don't use heap metadata canaries on 32-bit due to memory
+  // pressure, keep this code around just in case we do, someday.
   static_assert(sizeof(uintptr_t) == sizeof(uint32_t),
                 "uintptr_t is not uint32_t");
   const uint32_t random = (random1 & 0x0FFFFUL) | (random2 & 0xFFFF0000UL);
@@ -891,6 +904,7 @@ inline uint32_t HeapObjectHeader::getMagic() const {
 
   return random;
 }
+#endif
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isWrapperHeaderMarked()
     const {

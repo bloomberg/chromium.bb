@@ -88,7 +88,7 @@
 
 namespace blink {
 
-#if DCHECK_IS_ON()
+#if DCHECK_IS_ON() && CPU(64BIT)
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::zapMagic() {
   ASSERT(checkHeader());
