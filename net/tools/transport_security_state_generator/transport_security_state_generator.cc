@@ -546,6 +546,7 @@ int main(int argc, char* argv[]) {
       *base::CommandLine::ForCurrentProcess();
 
   logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
 #if defined(OS_WIN)
