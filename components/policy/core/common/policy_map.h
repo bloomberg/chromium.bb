@@ -27,13 +27,13 @@ class POLICY_EXPORT PolicyMap {
   // Each policy maps to an Entry which keeps the policy value as well as other
   // relevant data about the policy.
   struct POLICY_EXPORT Entry {
-    PolicyLevel level;
-    PolicyScope scope;
+    PolicyLevel level = POLICY_LEVEL_RECOMMENDED;
+    PolicyScope scope = POLICY_SCOPE_USER;
     std::unique_ptr<base::Value> value;
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher;
 
     // For debugging and displaying only. Set by provider delivering the policy.
-    PolicySource source;
+    PolicySource source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
 
     Entry();
     ~Entry();

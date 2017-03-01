@@ -12,8 +12,7 @@
 
 namespace policy {
 
-PolicyMap::Entry::Entry()
-    : level(POLICY_LEVEL_RECOMMENDED), scope(POLICY_SCOPE_USER) {}
+PolicyMap::Entry::Entry() = default;
 
 PolicyMap::Entry::~Entry() = default;
 
