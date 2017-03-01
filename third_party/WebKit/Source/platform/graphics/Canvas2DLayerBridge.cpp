@@ -25,6 +25,7 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
+#include <memory>
 #include "base/memory/ptr_util.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
@@ -49,9 +50,9 @@
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrTexture.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace {
 enum {
