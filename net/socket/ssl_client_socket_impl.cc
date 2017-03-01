@@ -1149,17 +1149,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
 
   SSLContext::GetInstance()->session_cache()->ResetLookupCount(
       GetSessionCacheKey());
-  // If we got a session from the session cache, log how many concurrent
-  // handshakes that session was used in before we finished our handshake. This
-  // is only recorded if the session from the cache was actually used, and only
-  // if the ALPN protocol is h2 (under the assumption that TLS 1.3 servers will
-  // be speaking h2). See https://crbug.com/631988.
-  if (ssl_session_cache_lookup_count_ && negotiated_protocol_ == kProtoHTTP2 &&
-      SSL_session_reused(ssl_.get())) {
-    UMA_HISTOGRAM_EXACT_LINEAR("Net.SSLSessionConcurrentLookupCount",
-                               ssl_session_cache_lookup_count_, 20);
-  }
-
   // Check that if token binding was negotiated, then extended master secret
   // and renegotiation indication must also be negotiated.
   if (tb_was_negotiated_ &&
@@ -1175,6 +1164,17 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     base::StringPiece proto(reinterpret_cast<const char*>(alpn_proto),
                             alpn_len);
     negotiated_protocol_ = NextProtoFromString(proto);
+  }
+
+  // If we got a session from the session cache, log how many concurrent
+  // handshakes that session was used in before we finished our handshake. This
+  // is only recorded if the session from the cache was actually used, and only
+  // if the ALPN protocol is h2 (under the assumption that TLS 1.3 servers will
+  // be speaking h2). See https://crbug.com/631988.
+  if (ssl_session_cache_lookup_count_ && negotiated_protocol_ == kProtoHTTP2 &&
+      SSL_session_reused(ssl_.get())) {
+    UMA_HISTOGRAM_EXACT_LINEAR("Net.SSLSessionConcurrentLookupCount",
+                               ssl_session_cache_lookup_count_, 20);
   }
 
   RecordNegotiatedProtocol();
