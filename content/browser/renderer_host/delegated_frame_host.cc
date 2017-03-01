@@ -448,18 +448,10 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
       allocated_new_local_surface_id = true;
     }
 
-    gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
-    if (desired_size != frame_size_in_dip && !desired_size.IsEmpty()) {
-      skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
-                                        frame.metadata.latency_info.begin(),
-                                        frame.metadata.latency_info.end());
-      frame.metadata.latency_info.clear();
-    } else {
-      frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
-                                         skipped_latency_info_list_.begin(),
-                                         skipped_latency_info_list_.end());
-      skipped_latency_info_list_.clear();
-    }
+    frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
+                                       skipped_latency_info_list_.begin(),
+                                       skipped_latency_info_list_.end());
+    skipped_latency_info_list_.clear();
 
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
 

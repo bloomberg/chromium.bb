@@ -50,9 +50,14 @@ void Surface::SetPreviousFrameSurface(Surface* surface) {
   DCHECK(surface);
   frame_index_ = surface->frame_index() + 1;
   previous_frame_surface_id_ = surface->surface_id();
+  CompositorFrame& frame = active_frame_ ? *active_frame_ : *pending_frame_;
+  surface->TakeLatencyInfo(&frame.metadata.latency_info);
+  surface->TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 }
 
 void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
+  TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
+
   base::Optional<CompositorFrame> previous_pending_frame =
       std::move(pending_frame_);
   pending_frame_.reset();
@@ -278,14 +283,7 @@ const CompositorFrame& Surface::GetPendingFrame() {
 void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
   if (!active_frame_)
     return;
-  if (latency_info->empty()) {
-    active_frame_->metadata.latency_info.swap(*latency_info);
-    return;
-  }
-  std::copy(active_frame_->metadata.latency_info.begin(),
-            active_frame_->metadata.latency_info.end(),
-            std::back_inserter(*latency_info));
-  active_frame_->metadata.latency_info.clear();
+  TakeLatencyInfoFromFrame(&active_frame_.value(), latency_info);
 }
 
 void Surface::RunDrawCallbacks() {
@@ -329,6 +327,27 @@ void Surface::ClearCopyRequests() {
         copy_request->SendEmptyResult();
     }
   }
+}
+
+void Surface::TakeLatencyInfoFromPendingFrame(
+    std::vector<ui::LatencyInfo>* latency_info) {
+  if (!pending_frame_)
+    return;
+  TakeLatencyInfoFromFrame(&pending_frame_.value(), latency_info);
+}
+
+// static
+void Surface::TakeLatencyInfoFromFrame(
+    CompositorFrame* frame,
+    std::vector<ui::LatencyInfo>* latency_info) {
+  if (latency_info->empty()) {
+    frame->metadata.latency_info.swap(*latency_info);
+    return;
+  }
+  std::copy(frame->metadata.latency_info.begin(),
+            frame->metadata.latency_info.end(),
+            std::back_inserter(*latency_info));
+  frame->metadata.latency_info.clear();
 }
 
 }  // namespace cc

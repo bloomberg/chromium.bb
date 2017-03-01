@@ -723,5 +723,206 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id2));
 }
 
+// Checks whether the latency info are moved to the new surface from the old
+// one when LocalSurfaceId changes. No frame has unresolved dependencies.
+TEST_F(CompositorFrameSinkSupportTest,
+       LatencyInfoCarriedOverOnResize_NoUnresolvedDependencies) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const ui::LatencyComponentType latency_type1 =
+      ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+  const int64_t latency_id1 = 234;
+  const int64_t latency_sequence_number1 = 5645432;
+  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
+  const int64_t latency_id2 = 31434351;
+  const int64_t latency_sequence_number2 = 663788;
+
+  // Submit a frame with latency info
+  ui::LatencyInfo info;
+  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
+
+  CompositorFrame frame;
+  frame.metadata.latency_info.push_back(info);
+
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         std::move(frame));
+
+  // Verify that the old surface has an active frame and no pending frame.
+  Surface* old_surface = surface_manager().GetSurfaceForId(parent_id1);
+  ASSERT_NE(nullptr, old_surface);
+  EXPECT_TRUE(old_surface->HasActiveFrame());
+  EXPECT_FALSE(old_surface->HasPendingFrame());
+
+  // Submit another frame with some other latency info and a different
+  // LocalSurfaceId.
+  ui::LatencyInfo info2;
+  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
+
+  CompositorFrame frame2;
+  frame2.metadata.latency_info.push_back(info2);
+
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         std::move(frame2));
+
+  // Verify that the new surface has an active frame and no pending frames.
+  Surface* surface = surface_manager().GetSurfaceForId(parent_id2);
+  ASSERT_NE(nullptr, surface);
+  EXPECT_TRUE(surface->HasActiveFrame());
+  EXPECT_FALSE(surface->HasPendingFrame());
+
+  // Verify that the new surface has both latency info elements.
+  std::vector<ui::LatencyInfo> info_list;
+  surface->TakeLatencyInfo(&info_list);
+  EXPECT_EQ(2u, info_list.size());
+
+  ui::LatencyInfo aggregated_latency_info = info_list[0];
+  aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
+  EXPECT_EQ(2u, aggregated_latency_info.latency_components().size());
+
+  ui::LatencyInfo::LatencyComponent comp1;
+  EXPECT_TRUE(
+      aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
+  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
+}
+
+// Checks whether the latency info are moved to the new surface from the old
+// one when LocalSurfaceId changes. Old surface has unresolved dependencies.
+TEST_F(CompositorFrameSinkSupportTest,
+       LatencyInfoCarriedOverOnResize_OldSurfaceHasPendingAndActiveFrame) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+
+  const ui::LatencyComponentType latency_type1 =
+      ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+  const int64_t latency_id1 = 234;
+  const int64_t latency_sequence_number1 = 5645432;
+  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
+  const int64_t latency_id2 = 31434351;
+  const int64_t latency_sequence_number2 = 663788;
+
+  // Submit a frame with no unresolved dependecy.
+  ui::LatencyInfo info;
+  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
+
+  CompositorFrame frame;
+  frame.metadata.latency_info.push_back(info);
+
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         std::move(frame));
+
+  // Submit a frame with unresolved dependencies.
+  ui::LatencyInfo info2;
+  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
+
+  CompositorFrame frame2 = MakeCompositorFrame({child_id});
+  frame2.metadata.latency_info.push_back(info2);
+
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         std::move(frame2));
+
+  // Verify that the old surface has both an active and a pending frame.
+  Surface* old_surface = surface_manager().GetSurfaceForId(parent_id1);
+  ASSERT_NE(nullptr, old_surface);
+  EXPECT_TRUE(old_surface->HasActiveFrame());
+  EXPECT_TRUE(old_surface->HasPendingFrame());
+
+  // Submit a frame with a new local surface id.
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         CompositorFrame());
+
+  // Verify that the new surface has an active frame only.
+  Surface* surface = surface_manager().GetSurfaceForId(parent_id2);
+  ASSERT_NE(nullptr, surface);
+  EXPECT_TRUE(surface->HasActiveFrame());
+  EXPECT_FALSE(surface->HasPendingFrame());
+
+  // Verify that the new surface has latency info from both active and pending
+  // frame of the old surface.
+  std::vector<ui::LatencyInfo> info_list;
+  surface->TakeLatencyInfo(&info_list);
+  EXPECT_EQ(2u, info_list.size());
+
+  ui::LatencyInfo aggregated_latency_info = info_list[0];
+  aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
+  EXPECT_EQ(2u, aggregated_latency_info.latency_components().size());
+
+  ui::LatencyInfo::LatencyComponent comp1;
+  EXPECT_TRUE(
+      aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
+  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
+}
+
+// Checks whether the latency info are moved to the new surface from the old
+// one when LocalSurfaceId changes. The new surface has unresolved dependencies.
+TEST_F(CompositorFrameSinkSupportTest,
+       LatencyInfoCarriedOverOnResize_NewSurfaceHasPendingFrame) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+
+  const ui::LatencyComponentType latency_type1 =
+      ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+  const int64_t latency_id1 = 234;
+  const int64_t latency_sequence_number1 = 5645432;
+  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
+  const int64_t latency_id2 = 31434351;
+  const int64_t latency_sequence_number2 = 663788;
+
+  // Submit a frame with no unresolved dependencies.
+  ui::LatencyInfo info;
+  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
+
+  CompositorFrame frame;
+  frame.metadata.latency_info.push_back(info);
+
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         std::move(frame));
+
+  // Verify that the old surface has an active frame only.
+  Surface* old_surface = surface_manager().GetSurfaceForId(parent_id1);
+  ASSERT_NE(nullptr, old_surface);
+  EXPECT_TRUE(old_surface->HasActiveFrame());
+  EXPECT_FALSE(old_surface->HasPendingFrame());
+
+  // Submit a frame with a new local surface id and with unresolved
+  // dependencies.
+  ui::LatencyInfo info2;
+  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
+
+  CompositorFrame frame2 = MakeCompositorFrame({child_id});
+  frame2.metadata.latency_info.push_back(info2);
+
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         std::move(frame2));
+
+  // Verify that the new surface has a pending frame and no active frame.
+  Surface* surface = surface_manager().GetSurfaceForId(parent_id2);
+  ASSERT_NE(nullptr, surface);
+  EXPECT_TRUE(surface->HasPendingFrame());
+  EXPECT_FALSE(surface->HasActiveFrame());
+
+  // Resolve the dependencies. The frame in parent's surface must become active.
+  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
+                                         CompositorFrame());
+  EXPECT_FALSE(surface->HasPendingFrame());
+  EXPECT_TRUE(surface->HasActiveFrame());
+
+  // Both latency info elements must exist in the now-activated frame of the
+  // new surface.
+  std::vector<ui::LatencyInfo> info_list;
+  surface->TakeLatencyInfo(&info_list);
+  EXPECT_EQ(2u, info_list.size());
+
+  ui::LatencyInfo aggregated_latency_info = info_list[0];
+  aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
+  EXPECT_EQ(2u, aggregated_latency_info.latency_components().size());
+
+  ui::LatencyInfo::LatencyComponent comp1;
+  EXPECT_TRUE(
+      aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
+  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
+}
+
 }  // namespace test
 }  // namespace cc

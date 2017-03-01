@@ -132,6 +132,12 @@ class CC_SURFACES_EXPORT Surface {
   void UnrefFrameResources(const CompositorFrame& frame_data);
   void ClearCopyRequests();
 
+  void TakeLatencyInfoFromPendingFrame(
+      std::vector<ui::LatencyInfo>* latency_info);
+  static void TakeLatencyInfoFromFrame(
+      CompositorFrame* frame,
+      std::vector<ui::LatencyInfo>* latency_info);
+
   SurfaceId surface_id_;
   SurfaceId previous_frame_surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;
