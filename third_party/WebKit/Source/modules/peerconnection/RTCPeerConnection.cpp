@@ -48,6 +48,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -264,7 +265,7 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
   String rtcpMuxPolicyString = configuration.rtcpMuxPolicy();
   if (rtcpMuxPolicyString == "negotiate") {
     rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kNegotiate;
-    UseCounter::count(context, UseCounter::RtcpMuxPolicyNegotiate);
+    Deprecation::countDeprecation(context, UseCounter::RtcpMuxPolicyNegotiate);
   } else {
     DCHECK_EQ(rtcpMuxPolicyString, "require");
   }
