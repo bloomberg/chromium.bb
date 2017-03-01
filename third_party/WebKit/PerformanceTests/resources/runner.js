@@ -150,9 +150,7 @@ if (window.testRunner) {
             return;
         }
         currentTest = test;
-        // FIXME: We should be using multiple instances of test runner on Dromaeo as well but it's too slow now.
-        // FIXME: Don't hard code the number of in-process iterations to use inside a test runner.
-        iterationCount = test.dromaeoIterationCount || (window.testRunner ? 5 : 20);
+        iterationCount = test.iterationCount || (window.testRunner ? 5 : 20);
         if (test.warmUpCount && test.warmUpCount > 0)
             completedIterations = -test.warmUpCount;
         logLines = PerfTestRunner.bufferedLog || window.testRunner ? [] : null;
@@ -247,6 +245,8 @@ if (window.testRunner) {
     PerfTestRunner.measureFrameTime = function (test) {
         PerfTestRunner.unit = "ms";
         PerfTestRunner.bufferedLog = true;
+        test.warmUpCount = test.warmUpCount || 5;
+        test.iterationCount = test.iterationCount || 10;
         // Force gc before starting the test to avoid the measured time from
         // being affected by gc performance. See crbug.com/667811#c16.
         PerfTestRunner.gc();

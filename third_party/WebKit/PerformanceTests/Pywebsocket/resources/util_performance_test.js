@@ -19,7 +19,7 @@ function startPerformanceTest(connectionType, benchmarkName,
                             'http://localhost:8001');
         },
         unit: 'ms',
-        dromaeoIterationCount: numIterations
+        iterationCount: numIterations
     });
 
     child.postMessage({'command': 'start',

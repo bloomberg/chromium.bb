@@ -26,7 +26,7 @@ const StructuredClonePerfTestRunner = (function() {
         description: test.description,
         unit: 'ms',
         warmUpCount: test.warmUpCount || 10,
-        dromaeoIterationCount: test.iterationCount || 250,
+        iterationCount: test.iterationCount || 250,
         done() { isDone = true; },
       });
 

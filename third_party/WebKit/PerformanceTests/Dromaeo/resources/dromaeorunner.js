@@ -4,7 +4,12 @@
 
          setup: function(testName) {
              var ITERATION_COUNT = 5;
-             PerfTestRunner.prepareToMeasureValuesAsync({dromaeoIterationCount: ITERATION_COUNT, doNotMeasureMemoryUsage: true, doNotIgnoreInitialRun: true, unit: 'runs/s'});
+             PerfTestRunner.prepareToMeasureValuesAsync({
+                 iterationCount: ITERATION_COUNT,
+                 doNotMeasureMemoryUsage: true,
+                 doNotIgnoreInitialRun: true,
+                 unit: 'runs/s'
+             });
 
              var iframe = document.createElement("iframe");
              var url = DRT.baseURL + "?" + testName + '&numTests=' + ITERATION_COUNT;
