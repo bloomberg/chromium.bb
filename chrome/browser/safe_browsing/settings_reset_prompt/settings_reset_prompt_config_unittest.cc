@@ -45,8 +45,7 @@ class SettingsResetPromptConfigTest : public ::testing::Test {
   Parameters GetDefaultFeatureParams() {
     return {
         {"domain_hashes", base::StringPrintf("{\"%s\": \"1\"}", kDomainHash)},
-        {"delay_before_prompt_seconds", "42"},
-        {"use_modal_dialog", "true"}};
+        {"delay_before_prompt_seconds", "42"}};
   }
 
   variations::testing::VariationParamsManager params_manager_;
@@ -246,44 +245,6 @@ TEST_F(SettingsResetPromptConfigTest, DelayBeforePromptSecondsParam) {
     auto config = SettingsResetPromptConfig::Create();
     ASSERT_TRUE(config);
     EXPECT_EQ(config->delay_before_prompt(), base::TimeDelta::FromSeconds(0));
-  }
-}
-
-TEST_F(SettingsResetPromptConfigTest, UseModalDialogParam) {
-  constexpr char kModalParam[] = "use_modal_dialog";
-
-  Parameters params = GetDefaultFeatureParams();
-
-  // Missing parameter.
-  ASSERT_EQ(params.erase(kModalParam), 1U);
-  SetFeatureParams(params);
-  EXPECT_FALSE(SettingsResetPromptConfig::Create());
-
-  // Empty parameter.
-  params[kModalParam] = "";
-  SetFeatureParams(params);
-  EXPECT_FALSE(SettingsResetPromptConfig::Create());
-
-  // Bad parameter value.
-  params[kModalParam] = "not-a-boolean-value";
-  SetFeatureParams(params);
-  EXPECT_FALSE(SettingsResetPromptConfig::Create());
-
-  // Correct parameter value.
-  params[kModalParam] = "true";
-  SetFeatureParams(params);
-  {
-    auto config = SettingsResetPromptConfig::Create();
-    ASSERT_TRUE(config);
-    EXPECT_TRUE(config->use_modal_dialog());
-  }
-
-  params[kModalParam] = "false";
-  SetFeatureParams(params);
-  {
-    auto config = SettingsResetPromptConfig::Create();
-    ASSERT_TRUE(config);
-    EXPECT_FALSE(config->use_modal_dialog());
   }
 }
 

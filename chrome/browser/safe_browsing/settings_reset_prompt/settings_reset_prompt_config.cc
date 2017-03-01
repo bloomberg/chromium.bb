@@ -23,7 +23,7 @@ namespace safe_browsing {
 
 namespace {
 
-constexpr char kSettingsResetPromptFeatureName[] = "SettingsResetPrompt";
+constexpr const char kSettingsResetPromptFeatureName[] = "SettingsResetPrompt";
 
 bool IsPromptEnabled() {
   return base::FeatureList::IsEnabled(kSettingsResetPrompt);
@@ -101,10 +101,6 @@ base::TimeDelta SettingsResetPromptConfig::delay_before_prompt() const {
   return delay_before_prompt_;
 }
 
-bool SettingsResetPromptConfig::use_modal_dialog() const {
-  return use_modal_dialog_;
-}
-
 // Implements the hash function for SHA256Hash objects. Simply uses the
 // first bytes of the SHA256 hash as its own hash.
 size_t SettingsResetPromptConfig::SHA256HashHasher::operator()(
@@ -127,7 +123,6 @@ enum SettingsResetPromptConfig::ConfigError : int {
   CONFIG_ERROR_BAD_DOMAIN_ID = 5,
   CONFIG_ERROR_DUPLICATE_DOMAIN_HASH = 6,
   CONFIG_ERROR_BAD_DELAY_BEFORE_PROMPT_SECONDS_PARAM = 7,
-  CONFIG_ERROR_BAD_USE_MODAL_DIALOG_PARAM = 8,
   CONFIG_ERROR_MAX
 };
 
@@ -156,23 +151,6 @@ bool SettingsResetPromptConfig::Init() {
   }
   delay_before_prompt_ =
       base::TimeDelta::FromSeconds(delay_before_prompt_seconds);
-
-  // Get the use_modal_dialog feature parameter. Since
-  // |GetFieldTrialParamByFeatureAsBool| always returns true or false and
-  // ignores any errors that are encountered, the parsing from string to bool is
-  // done explicitly here.
-  std::string use_modal_dialog_string = base::GetFieldTrialParamValueByFeature(
-      kSettingsResetPrompt, "use_modal_dialog");
-  if (use_modal_dialog_string == "true") {
-    use_modal_dialog_ = true;
-  } else if (use_modal_dialog_string == "false") {
-    use_modal_dialog_ = false;
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ConfigError",
-                              CONFIG_ERROR_BAD_USE_MODAL_DIALOG_PARAM,
-                              CONFIG_ERROR_MAX);
-    return false;
-  }
 
   UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ConfigError", CONFIG_ERROR_OK,
                             CONFIG_ERROR_MAX);

@@ -40,12 +40,7 @@ class SettingsResetPromptConfig {
 
   // The delay before showing the reset prompt after Chrome startup.
   base::TimeDelta delay_before_prompt() const;
-  // Whether the prompt dialog should be modal.
-  bool use_modal_dialog() const;
 
-  // TODO(alito): parameterize the set of things that we want to reset
-  // for so that we can control it from the finch config. For example,
-  // with functions like HomepageResetAllowed() etc.
  protected:
   SettingsResetPromptConfig();
 
@@ -64,7 +59,6 @@ class SettingsResetPromptConfig {
 
   // Other feature parameters.
   base::TimeDelta delay_before_prompt_;
-  bool use_modal_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptConfig);
 };
