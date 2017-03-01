@@ -87,7 +87,8 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
-#if defined(OS_IOS) || defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#if defined(OS_IOS) || defined(ADDRESS_SANITIZER) || \
+    defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_NewOverflow DISABLED_NewOverflow
 #else
 #define MAYBE_NewOverflow NewOverflow
