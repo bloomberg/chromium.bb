@@ -43,6 +43,10 @@ test data. Refer to the documentation for the details
 - The Python bindings now give a helpful error if liblouis has been
   compiled with a different character size than Python. Thanks to Matt
   Wenn.
+- Massive bug fixes in multipass rules. Dave Mielke has done a
+  tremendeous job improving the multipass machinery also in the
+  context of back-translation. Where needed nofor/noback has been
+  added to the multipass rules.
 ** Other changes
 - Improvements to the emacs mode for editing liblouis tables thanks to
   Christian Egli
@@ -75,6 +79,7 @@ test data. Refer to the documentation for the details
   to Davy Kager. The table is tailored for use on Windows (CP-1252)
   and uses dot patterns from Windows screen readers, but should be
   useful on other platforms too.
+- New Greek table thanks to Dave Mielke
 ** License changes
 - DocArch has agreed to relicense their tables, so we have 8 more
   tables under the LGPLv2.1+.
