@@ -596,7 +596,8 @@ class CONTENT_EXPORT RenderFrameHostManager
       SiteInstance* candidate_instance,
       ui::PageTransition transition,
       bool dest_is_restore,
-      bool dest_is_view_source_mode);
+      bool dest_is_view_source_mode,
+      bool was_server_redirect);
 
   // Returns a descriptor of the appropriate SiteInstance object for the given
   // |dest_url|, possibly reusing the current, source or destination
@@ -620,7 +621,8 @@ class CONTENT_EXPORT RenderFrameHostManager
       ui::PageTransition transition,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
-      bool force_browsing_instance_swap);
+      bool force_browsing_instance_swap,
+      bool was_server_redirect);
 
   // Converts a SiteInstanceDescriptor to the actual SiteInstance it describes.
   // If a |candidate_instance| is provided (is not nullptr) and it matches the
@@ -750,7 +752,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Returns true if a subframe can navigate cross-process.
   bool CanSubframeSwapProcess(const GURL& dest_url,
                               SiteInstance* source_instance,
-                              SiteInstance* dest_instance);
+                              SiteInstance* dest_instance,
+                              bool was_server_redirect);
 
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;

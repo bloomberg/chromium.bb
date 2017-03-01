@@ -9549,4 +9549,39 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAndroidImeTest,
 }
 #endif  // OS_ANDROID
 
+// Test that an OOPIF at b.com can navigate to a cross-site a.com URL that
+// transfers back to b.com.  See https://crbug.com/681077#c10 and
+// https://crbug.com/660407.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeTransfersToCurrentRFH) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  scoped_refptr<SiteInstanceImpl> b_site_instance =
+      root->child_at(0)->current_frame_host()->GetSiteInstance();
+
+  // Navigate subframe to a URL that will redirect from a.com back to b.com.
+  // This navigation shouldn't time out.  Also ensure that the pending RFH
+  // that was created for a.com is destroyed.
+  GURL frame_url(
+      embedded_test_server()->GetURL("a.com", "/cross-site/b.com/title2.html"));
+  NavigateIframeToURL(shell()->web_contents(), "child-0", frame_url);
+  EXPECT_FALSE(root->child_at(0)->render_manager()->pending_frame_host());
+  GURL redirected_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_EQ(root->child_at(0)->current_url(), redirected_url);
+  EXPECT_EQ(b_site_instance,
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+
+  // Try the same navigation, but use the browser-initiated path.
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  EXPECT_FALSE(root->child_at(0)->render_manager()->pending_frame_host());
+  EXPECT_EQ(root->child_at(0)->current_url(), redirected_url);
+  EXPECT_EQ(b_site_instance,
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+}
+
 }  // namespace content
