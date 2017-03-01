@@ -60,6 +60,7 @@ CSSFontSelector::~CSSFontSelector() {}
 
 void CSSFontSelector::registerForInvalidationCallbacks(
     CSSFontSelectorClient* client) {
+  CHECK(client);
   m_clients.insert(client);
 }
 

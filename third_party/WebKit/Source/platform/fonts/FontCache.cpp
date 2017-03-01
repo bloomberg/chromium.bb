@@ -426,6 +426,7 @@ HeapHashSet<WeakMember<FontCacheClient>>& fontCacheClients() {
 }
 
 void FontCache::addClient(FontCacheClient* client) {
+  CHECK(client);
   ASSERT(!fontCacheClients().contains(client));
   fontCacheClients().insert(client);
 }
