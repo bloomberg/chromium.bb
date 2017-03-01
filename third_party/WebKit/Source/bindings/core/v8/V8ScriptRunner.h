@@ -53,35 +53,32 @@ class CORE_EXPORT V8ScriptRunner final {
  public:
   // For the following methods, the caller sites have to hold
   // a HandleScope and a ContextScope.
-  static v8::MaybeLocal<v8::Script> compileScript(
-      const ScriptSourceCode&,
-      v8::Isolate*,
-      AccessControlStatus = SharableCrossOrigin,
-      V8CacheOptions = V8CacheOptionsDefault);
-  static v8::MaybeLocal<v8::Script> compileScript(
-      const String&,
-      const String& fileName,
-      const String& sourceMapUrl,
-      const TextPosition&,
-      v8::Isolate*,
-      CachedMetadataHandler* = nullptr,
-      AccessControlStatus = SharableCrossOrigin,
-      V8CacheOptions = V8CacheOptionsDefault);
+  static v8::MaybeLocal<v8::Script> compileScript(const ScriptSourceCode&,
+                                                  v8::Isolate*,
+                                                  AccessControlStatus,
+                                                  V8CacheOptions);
+  static v8::MaybeLocal<v8::Script> compileScript(const String&,
+                                                  const String& fileName,
+                                                  const String& sourceMapUrl,
+                                                  const TextPosition&,
+                                                  v8::Isolate*,
+                                                  CachedMetadataHandler*,
+                                                  AccessControlStatus,
+                                                  V8CacheOptions);
   // CachedMetadataHandler is set when metadata caching is supported. For
   // normal scripe resources, CachedMetadataHandler is from ScriptResource.
   // For worker script, ScriptResource is null but CachedMetadataHandler may be
   // set. When ScriptStreamer is set, ScriptResource must be set.
-  static v8::MaybeLocal<v8::Script> compileScript(
-      v8::Local<v8::String>,
-      const String& fileName,
-      const String& sourceMapUrl,
-      const TextPosition&,
-      v8::Isolate*,
-      ScriptResource* = nullptr,
-      ScriptStreamer* = nullptr,
-      CachedMetadataHandler* = nullptr,
-      AccessControlStatus = SharableCrossOrigin,
-      V8CacheOptions = V8CacheOptionsDefault);
+  static v8::MaybeLocal<v8::Script> compileScript(v8::Local<v8::String>,
+                                                  const String& fileName,
+                                                  const String& sourceMapUrl,
+                                                  const TextPosition&,
+                                                  v8::Isolate*,
+                                                  ScriptResource*,
+                                                  ScriptStreamer*,
+                                                  CachedMetadataHandler*,
+                                                  AccessControlStatus,
+                                                  V8CacheOptions);
   static v8::MaybeLocal<v8::Module> compileModule(v8::Isolate*,
                                                   const String& source,
                                                   const String& fileName);
