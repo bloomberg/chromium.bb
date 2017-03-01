@@ -23,9 +23,6 @@ class AndroidPageLoadMetricsObserver
   explicit AndroidPageLoadMetricsObserver(content::WebContents* web_contents);
 
   // page_load_metrics::PageLoadMetricsObserver:
-  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
-                        const GURL& currently_committed_url,
-                        bool started_in_foreground) override;
   void OnFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
@@ -35,7 +32,6 @@ class AndroidPageLoadMetricsObserver
 
  private:
   content::WebContents* web_contents_;
-  base::TimeTicks navigation_start_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidPageLoadMetricsObserver);
 };

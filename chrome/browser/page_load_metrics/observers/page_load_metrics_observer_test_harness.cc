@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -40,18 +41,6 @@ class TestPageLoadMetricsEmbedderInterface
 
   DISALLOW_COPY_AND_ASSIGN(TestPageLoadMetricsEmbedderInterface);
 };
-
-base::Optional<base::TimeDelta> OptionalMin(
-    const base::Optional<base::TimeDelta>& a,
-    const base::Optional<base::TimeDelta>& b) {
-  if (a && !b)
-    return a;
-  if (b && !a)
-    return b;
-  if (!a && !b)
-    return a;  // doesn't matter which
-  return base::Optional<base::TimeDelta>(std::min(a.value(), b.value()));
-}
 
 }  // namespace
 

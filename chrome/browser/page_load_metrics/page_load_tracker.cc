@@ -615,10 +615,11 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
          (!page_end_user_initiated_info_.browser_initiated &&
           !page_end_user_initiated_info_.user_gesture &&
           !page_end_user_initiated_info_.user_input_event));
-  return PageLoadExtraInfo(
-      first_background_time, first_foreground_time, started_in_foreground_,
-      user_initiated_info_, url(), start_url_, did_commit_, page_end_reason_,
-      page_end_user_initiated_info_, page_end_time, metadata_);
+  return PageLoadExtraInfo(navigation_start_, first_background_time,
+                           first_foreground_time, started_in_foreground_,
+                           user_initiated_info_, url(), start_url_, did_commit_,
+                           page_end_reason_, page_end_user_initiated_info_,
+                           page_end_time, metadata_);
 }
 
 bool PageLoadTracker::HasMatchingNavigationRequestID(

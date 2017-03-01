@@ -215,7 +215,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramParseBlockedOnScriptExecution, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramPageTimingPageEnd, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramPageTimingForegroundDuration, 1);
 
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
   // have been recorded.

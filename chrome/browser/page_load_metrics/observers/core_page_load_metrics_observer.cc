@@ -157,20 +157,10 @@ const char kHistogramLoadTypeFirstContentfulPaintNewNavigation[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
     "NewNavigation";
 
-const char kHistogramPageTimingPageEnd[] =
-    "PageLoad.Experimental.PageTiming.NavigationToPageEnd";
-const char kHistogramPageTimingFirstPaintToPageEnd[] =
-    "PageLoad.Experimental.PageTiming.FirstPaintToPageEnd";
-
-const char kHistogramPageTimingPageEndNoEndTime[] =
-    "PageLoad.Experimental.PageTiming.NavigationToPageEnd.NoEndTime";
-const char kHistogramPageTimingFirstPaintToPageEndNoEndTime[] =
-    "PageLoad.Experimental.PageTiming.FirstPaintToPageEnd.NoEndTime";
-
-const char kHistogramPageTimingFirstBackground[] =
-    "PageLoad.Experimental.PageTiming.NavigationToFirstBackground";
-const char kHistogramPageTimingFirstPaintToFirstBackground[] =
-    "PageLoad.Experimental.PageTiming.FirstPaintToFirstBackground";
+const char kHistogramPageTimingForegroundDuration[] =
+    "PageLoad.PageTiming.ForegroundDuration";
+const char kHistogramPageTimingForegroundDurationAfterPaint[] =
+    "PageLoad.PageTiming.ForegroundDuration.AfterPaint";
 
 const char kHistogramLoadTypeParseStartReload[] =
     "PageLoad.ParseTiming.NavigationToParseStart.LoadType.Reload";
@@ -245,7 +235,6 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 CorePageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   transition_ = navigation_handle->GetPageTransition();
-  navigation_start_ = navigation_handle->NavigationStart();
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();
   if (headers) {
@@ -297,7 +286,7 @@ void CorePageLoadMetricsObserver::OnFirstLayout(
 void CorePageLoadMetricsObserver::OnFirstPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  first_paint_ = navigation_start_ + timing.first_paint.value();
+  first_paint_ = info.navigation_start + timing.first_paint.value();
   if (WasStartedInForegroundOptionalEventInForeground(timing.first_paint,
                                                       info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstPaint,
@@ -441,7 +430,7 @@ void CorePageLoadMetricsObserver::OnFirstMeaningfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   base::TimeTicks paint =
-      navigation_start_ + timing.first_meaningful_paint.value();
+      info.navigation_start + timing.first_meaningful_paint.value();
   if (first_user_interaction_after_first_paint_.is_null() ||
       paint < first_user_interaction_after_first_paint_) {
     if (WasStartedInForegroundOptionalEventInForeground(
@@ -560,7 +549,7 @@ void CorePageLoadMetricsObserver::OnParseStop(
 void CorePageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordTimingHistograms(timing, info);
+  RecordTimingHistograms(timing, info, base::TimeTicks());
   RecordByteAndResourceHistograms(timing, info);
   RecordRappor(timing, info);
 }
@@ -574,7 +563,7 @@ CorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we record final metrics collected up to this point.
   if (info.did_commit) {
-    RecordTimingHistograms(timing, info);
+    RecordTimingHistograms(timing, info, base::TimeTicks::Now());
     RecordByteAndResourceHistograms(timing, info);
   }
   return STOP_OBSERVING;
@@ -644,7 +633,8 @@ void CorePageLoadMetricsObserver::OnLoadedResource(
 
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::PageLoadExtraInfo& info,
+    base::TimeTicks app_background_time) {
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
   if (!info.started_in_foreground && info.first_foreground_time) {
@@ -683,36 +673,15 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     }
   }
 
-  if (!info.started_in_foreground)
-    return;
-
-  if (info.first_background_time) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramPageTimingFirstBackground,
-                        info.first_background_time.value());
-    if (timing.first_paint &&
-        timing.first_paint <= info.first_background_time) {
-      PAGE_LOAD_HISTOGRAM(
-          internal::kHistogramPageTimingFirstPaintToFirstBackground,
-          info.first_background_time.value() - timing.first_paint.value());
-    }
-  } else if (info.page_end_time) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramPageTimingPageEnd,
-                        info.page_end_time.value());
-    if (timing.first_paint && timing.first_paint <= info.page_end_time) {
-      PAGE_LOAD_HISTOGRAM(
-          internal::kHistogramPageTimingFirstPaintToPageEnd,
-          info.page_end_time.value() - timing.first_paint.value());
-    }
-  } else {
-    // If we terminate via FlushMetricsOnAppEnterBackground, we may have neither
-    // a first_background_time nor a page_end_time.
-    base::TimeDelta end_time = base::TimeTicks::Now() - navigation_start_;
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramPageTimingPageEndNoEndTime,
-                        end_time);
-    if (timing.first_paint && timing.first_paint <= end_time) {
-      PAGE_LOAD_HISTOGRAM(
-          internal::kHistogramPageTimingFirstPaintToPageEndNoEndTime,
-          end_time - timing.first_paint.value());
+  base::Optional<base::TimeDelta> foreground_duration =
+      GetInitialForegroundDuration(info, app_background_time);
+  if (foreground_duration) {
+    PAGE_LOAD_LONG_HISTOGRAM(internal::kHistogramPageTimingForegroundDuration,
+                             foreground_duration.value());
+    if (timing.first_paint && timing.first_paint < foreground_duration) {
+      PAGE_LOAD_LONG_HISTOGRAM(
+          internal::kHistogramPageTimingForegroundDurationAfterPaint,
+          foreground_duration.value() - timing.first_paint.value());
     }
   }
 }

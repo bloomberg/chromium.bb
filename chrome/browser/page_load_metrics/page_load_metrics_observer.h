@@ -107,6 +107,7 @@ struct UserInitiatedInfo {
 
 struct PageLoadExtraInfo {
   PageLoadExtraInfo(
+      base::TimeTicks navigation_start,
       const base::Optional<base::TimeDelta>& first_background_time,
       const base::Optional<base::TimeDelta>& first_foreground_time,
       bool started_in_foreground,
@@ -126,6 +127,9 @@ struct PageLoadExtraInfo {
   PageLoadExtraInfo(const PageLoadExtraInfo& other);
 
   ~PageLoadExtraInfo();
+
+  // The time the navigation was initiated.
+  const base::TimeTicks navigation_start;
 
   // The first time that the page was backgrounded since the navigation started.
   const base::Optional<base::TimeDelta> first_background_time;

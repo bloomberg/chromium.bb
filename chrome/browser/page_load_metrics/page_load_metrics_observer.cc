@@ -7,6 +7,7 @@
 namespace page_load_metrics {
 
 PageLoadExtraInfo::PageLoadExtraInfo(
+    base::TimeTicks navigation_start,
     const base::Optional<base::TimeDelta>& first_background_time,
     const base::Optional<base::TimeDelta>& first_foreground_time,
     bool started_in_foreground,
@@ -18,7 +19,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     UserInitiatedInfo page_end_user_initiated_info,
     const base::Optional<base::TimeDelta>& page_end_time,
     const PageLoadMetadata& metadata)
-    : first_background_time(first_background_time),
+    : navigation_start(navigation_start),
+      first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
       started_in_foreground(started_in_foreground),
       user_initiated_info(user_initiated_info),
@@ -39,6 +41,7 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
     const GURL& url,
     bool started_in_foreground) {
   return PageLoadExtraInfo(
+      base::TimeTicks::Now() /* navigation_start */,
       base::Optional<base::TimeDelta>() /* first_background_time */,
       base::Optional<base::TimeDelta>() /* first_foreground_time */,
       started_in_foreground /* started_in_foreground */,

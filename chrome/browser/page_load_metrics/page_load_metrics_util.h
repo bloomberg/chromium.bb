@@ -10,10 +10,17 @@
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 
+// Up to 10 minutes, with 100 buckets.
 #define PAGE_LOAD_HISTOGRAM(name, sample)                           \
   UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                          \
                              base::TimeDelta::FromMilliseconds(10), \
                              base::TimeDelta::FromMinutes(10), 100)
+
+// Up to 1 hour, with 100 buckets.
+#define PAGE_LOAD_LONG_HISTOGRAM(name, sample)                      \
+  UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                          \
+                             base::TimeDelta::FromMilliseconds(10), \
+                             base::TimeDelta::FromHours(1), 100)
 
 // Records |bytes| to |histogram_name| in kilobytes (i.e., bytes / 1024).
 #define PAGE_BYTES_HISTOGRAM(histogram_name, bytes) \
@@ -97,6 +104,25 @@ bool WasStartedInForegroundOptionalEventInForeground(
     const PageLoadExtraInfo& info);
 
 PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info);
+
+// Get the duration of time that the page spent in the foreground, from
+// navigation start until one of the following events:
+// * the load of the main resource fails
+// * the page load is stopped
+// * the tab hosting the page is closed
+// * the render process hosting the page goes away
+// * a new navigation which later commits is initiated in the same tab
+// * the tab hosting the page is backgrounded
+base::Optional<base::TimeDelta> GetInitialForegroundDuration(
+    const PageLoadExtraInfo& info,
+    base::TimeTicks app_background_time);
+
+// Returns the minimum value of the optional TimeDeltas, if both values are
+// set. Otherwise, if one value is set, returns that value. Otherwise, returns
+// an unset value.
+base::Optional<base::TimeDelta> OptionalMin(
+    const base::Optional<base::TimeDelta>& a,
+    const base::Optional<base::TimeDelta>& b);
 
 }  // namespace page_load_metrics
 

@@ -70,4 +70,37 @@ PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info) {
           info.page_end_time.value()};
 }
 
+base::Optional<base::TimeDelta> GetInitialForegroundDuration(
+    const PageLoadExtraInfo& info,
+    base::TimeTicks app_background_time) {
+  if (!info.started_in_foreground)
+    return base::Optional<base::TimeDelta>();
+
+  base::Optional<base::TimeDelta> time_on_page =
+      OptionalMin(info.first_background_time, info.page_end_time);
+
+  // If we don't have a time_on_page value yet, and we have an app background
+  // time, use the app background time as our end time. This addresses cases
+  // where the Chrome app is backgrounded before the page load is complete, on
+  // platforms where Chrome may be killed once it goes into the background
+  // (Android). In these cases, we use the app background time as the 'end
+  // time'.
+  if (!time_on_page && !app_background_time.is_null()) {
+    time_on_page = app_background_time - info.navigation_start;
+  }
+  return time_on_page;
+}
+
+base::Optional<base::TimeDelta> OptionalMin(
+    const base::Optional<base::TimeDelta>& a,
+    const base::Optional<base::TimeDelta>& b) {
+  if (a && !b)
+    return a;
+  if (b && !a)
+    return b;
+  if (!a && !b)
+    return a;  // doesn't matter which
+  return base::Optional<base::TimeDelta>(std::min(a.value(), b.value()));
+}
+
 }  // namespace page_load_metrics

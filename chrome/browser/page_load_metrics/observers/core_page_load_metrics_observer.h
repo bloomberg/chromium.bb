@@ -41,8 +41,7 @@ extern const char kHistogramLoadTypeParseStartNewNavigation[];
 
 extern const char kHistogramFailedProvisionalLoad[];
 
-extern const char kHistogramPageTimingPageEnd[];
-extern const char kHistogramPageTimingFirstBackground[];
+extern const char kHistogramPageTimingForegroundDuration[];
 
 extern const char kRapporMetricsNameCoarseTiming[];
 extern const char kHistogramFirstMeaningfulPaintStatus[];
@@ -124,7 +123,8 @@ class CorePageLoadMetricsObserver
 
  private:
   void RecordTimingHistograms(const page_load_metrics::PageLoadTiming& timing,
-                              const page_load_metrics::PageLoadExtraInfo& info);
+                              const page_load_metrics::PageLoadExtraInfo& info,
+                              base::TimeTicks app_background_time);
   void RecordByteAndResourceHistograms(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info);
@@ -152,7 +152,6 @@ class CorePageLoadMetricsObserver
   // True if we've received a scroll input after first paint has happened.
   bool received_scroll_input_after_first_paint_ = false;
 
-  base::TimeTicks navigation_start_;
   base::TimeTicks first_user_interaction_after_first_paint_;
   base::TimeTicks first_paint_;
 
