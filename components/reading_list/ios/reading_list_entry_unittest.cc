@@ -18,10 +18,6 @@ const int kThirdBackoff = 60;
 const int kFourthBackoff = 120;
 const int kFifthBackoff = 120;
 
-// Returns the number of microseconds since Jan 1st 1970.
-int64_t Now() {
-  return (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
-}
 }  // namespace
 
 TEST(ReadingListEntry, CompareIgnoreTitle) {
@@ -322,11 +318,11 @@ TEST(ReadingListEntry, AsReadingListLocal) {
 // sync_pb::ReadingListLocal.
 TEST(ReadingListEntry, FromReadingListLocal) {
   ReadingListEntry entry(GURL("http://example.com/"), "title");
-  base::Time next_call = base::Time::Now() + entry.TimeUntilNextTry();
+  entry.SetDistilledState(ReadingListEntry::ERROR);
 
   std::unique_ptr<reading_list::ReadingListLocal> pb_entry(
       entry.AsReadingListLocal());
-  int64_t now = Now();
+  int64_t now = 12345;
 
   pb_entry->set_entry_id("http://example.com/");
   pb_entry->set_url("http://example.com/");
@@ -349,10 +345,9 @@ TEST(ReadingListEntry, FromReadingListLocal) {
   EXPECT_EQ(waiting_entry->DistilledPath(), base::FilePath());
   EXPECT_EQ(waiting_entry->DistillationSize(), 50);
   EXPECT_EQ(waiting_entry->DistillationTime(), now);
-  base::Time waiting_next_call =
-      base::Time::Now() + waiting_entry->TimeUntilNextTry();
-  base::TimeDelta delta = next_call - waiting_next_call;
-  EXPECT_NEAR(delta.InMillisecondsRoundedUp(), 0, 10);
+  double fuzzing = ReadingListEntry::kBackoffPolicy.jitter_factor;
+  int nextTry = waiting_entry->TimeUntilNextTry().InMinutes();
+  EXPECT_NEAR(kFirstBackoff, nextTry, kFirstBackoff * fuzzing);
 }
 
 // Tests the merging of two ReadingListEntry.
@@ -361,7 +356,6 @@ TEST(ReadingListEntry, FromReadingListLocal) {
 TEST(ReadingListEntry, MergeWithEntry) {
   ReadingListEntry local_entry(GURL("http://example.com/"), "title");
   local_entry.SetDistilledState(ReadingListEntry::ERROR);
-  base::Time next_call = base::Time::Now() + local_entry.TimeUntilNextTry();
   int64_t local_update_time_us = local_entry.UpdateTime();
 
   ReadingListEntry sync_entry(GURL("http://example.com/"), "title2");
@@ -375,8 +369,7 @@ TEST(ReadingListEntry, MergeWithEntry) {
   EXPECT_EQ(local_entry.UpdateTime(), sync_update_time_us);
   EXPECT_EQ(local_entry.FailedDownloadCounter(), 1);
   EXPECT_EQ(local_entry.DistilledState(), ReadingListEntry::ERROR);
-  base::Time merge_next_call =
-      base::Time::Now() + local_entry.TimeUntilNextTry();
-  base::TimeDelta delta = merge_next_call - next_call;
-  EXPECT_NEAR(delta.InMillisecondsRoundedUp(), 0, 10);
+  double fuzzing = ReadingListEntry::kBackoffPolicy.jitter_factor;
+  int nextTry = local_entry.TimeUntilNextTry().InMinutes();
+  EXPECT_NEAR(kFirstBackoff, nextTry, kFirstBackoff * fuzzing);
 }
