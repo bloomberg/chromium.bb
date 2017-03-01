@@ -1024,6 +1024,7 @@ if (is_win) {
       "//components/crash/content/app",
       "//components/policy:generated",
       "//content/public/app:both",
+      "//headless:headless_shell_lib",
       "//pdf",
       "//third_party/cld",
     ]
