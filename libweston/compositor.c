@@ -2376,8 +2376,9 @@ weston_output_finish_frame(struct weston_output *output,
 	struct weston_compositor *compositor = output->compositor;
 	int32_t refresh_nsec;
 	struct timespec now;
-	struct timespec gone;
-	int msec;
+	struct timespec next;
+	struct timespec remain;
+	int msec_rel = 0;
 
 	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
 		 TLP_VBLANK(stamp), TLP_END);
@@ -2389,34 +2390,35 @@ weston_output_finish_frame(struct weston_output *output,
 						  presented_flags);
 
 	output->frame_time = timespec_to_msec(stamp);
-
 	weston_compositor_read_presentation_clock(compositor, &now);
-	timespec_sub(&gone, &now, stamp);
-	msec = (refresh_nsec - timespec_to_nsec(&gone)) / 1000000; /* floor */
-	msec -= compositor->repaint_msec;
 
-	if (msec < -1000 || msec > 1000) {
+	timespec_add_nsec(&next, stamp, refresh_nsec);
+	timespec_add_msec(&next, &next, -compositor->repaint_msec);
+	timespec_sub(&remain, &next, &now);
+	msec_rel = timespec_to_msec(&remain);
+
+	if (msec_rel < -1000 || msec_rel > 1000) {
 		static bool warned;
 
 		if (!warned)
 			weston_log("Warning: computed repaint delay is "
-				   "insane: %d msec\n", msec);
+				   "insane: %d msec\n", msec_rel);
 		warned = true;
 
-		msec = 0;
+		msec_rel = 0;
 	}
 
 	/* Called from restart_repaint_loop and restart happens already after
 	 * the deadline given by repaint_msec? In that case we delay until
 	 * the deadline of the next frame, to give clients a more predictable
 	 * timing of the repaint cycle to lock on. */
-	if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID && msec < 0)
-		msec += refresh_nsec / 1000000;
+	if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID && msec_rel < 0)
+		msec_rel += refresh_nsec / 1000000;
 
-	if (msec < 1)
+	if (msec_rel < 1)
 		output_repaint_timer_handler(output);
 	else
-		wl_event_source_timer_update(output->repaint_timer, msec);
+		wl_event_source_timer_update(output->repaint_timer, msec_rel);
 }
 
 static void
