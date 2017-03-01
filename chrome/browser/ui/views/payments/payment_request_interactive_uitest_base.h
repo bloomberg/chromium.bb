@@ -77,6 +77,7 @@ class PaymentRequestInteractiveTestBase
   void OnPaymentMethodOpened() override;
   void OnCreditCardEditorOpened() override;
   void OnBackNavigation() override;
+  void OnContactInfoOpened() override;
 
   // views::WidgetObserver
   // Effective way to be warned of all dialog closures.
@@ -152,6 +153,7 @@ class PaymentRequestInteractiveTestBase
     PAYMENT_METHOD_OPENED,
     CREDIT_CARD_EDITOR_OPENED,
     BACK_NAVIGATION,
+    CONTACT_INFO_OPENED,
   };
 
   // DialogEventObserver is used to wait on specific events that may have

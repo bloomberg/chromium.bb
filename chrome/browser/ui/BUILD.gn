@@ -1503,6 +1503,8 @@ split_static_library("ui") {
       "views/login_view.h",
       "views/new_back_shortcut_bubble.cc",
       "views/new_back_shortcut_bubble.h",
+      "views/payments/contact_info_view_controller.cc",
+      "views/payments/contact_info_view_controller.h",
       "views/payments/credit_card_editor_view_controller.cc",
       "views/payments/credit_card_editor_view_controller.h",
       "views/payments/editor_view_controller.cc",

@@ -106,6 +106,11 @@ void PaymentRequestInteractiveTestBase::OnBackNavigation() {
     event_observer_->Observe(DialogEvent::BACK_NAVIGATION);
 }
 
+void PaymentRequestInteractiveTestBase::OnContactInfoOpened() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::CONTACT_INFO_OPENED);
+}
+
 void PaymentRequestInteractiveTestBase::OnWidgetDestroyed(
     views::Widget* widget) {
   if (event_observer_)

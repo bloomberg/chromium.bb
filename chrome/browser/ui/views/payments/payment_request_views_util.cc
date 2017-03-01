@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -29,6 +30,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
@@ -175,6 +177,7 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
       base::JoinString(values, base::ASCIIToUTF16("\n")), nullptr);
 }
 
+// TODO(anthonyvd): unit test the label layout.
 std::unique_ptr<views::View> GetContactInfoLabel(
     AddressStyleType type,
     const std::string& locale,
@@ -182,37 +185,50 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     bool show_payer_name,
     bool show_payer_email,
     bool show_payer_phone) {
-  base::string16 name_value;
-  base::string16 phone_value;
-  base::string16 email_value;
+  std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
+  std::unique_ptr<views::BoxLayout> layout =
+      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  container->SetLayoutManager(layout.release());
 
   if (show_payer_name) {
-    name_value =
+    base::string16 name =
         profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale);
-
-    // TODO(tmartino): Add bold styling for name in DETAILED style.
+    if (!name.empty()) {
+      std::unique_ptr<views::Label> label =
+          base::MakeUnique<views::Label>(name);
+      if (type == AddressStyleType::DETAILED) {
+        const gfx::FontList& font_list = label->font_list();
+        label->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::BOLD));
+      }
+      container->AddChildView(label.release());
+    }
   }
 
   if (show_payer_phone) {
-    phone_value = profile.GetInfo(
+    base::string16 phone = profile.GetInfo(
         autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale);
+    if (!phone.empty()) {
+      std::unique_ptr<views::Label> label =
+          base::MakeUnique<views::Label>(phone);
+      container->AddChildView(label.release());
+    }
   }
 
   if (show_payer_email) {
-    email_value = profile.GetInfo(
+    base::string16 email = profile.GetInfo(
         autofill::AutofillType(autofill::EMAIL_ADDRESS), locale);
+    if (!email.empty()) {
+      std::unique_ptr<views::Label> label =
+          base::MakeUnique<views::Label>(email);
+      container->AddChildView(label.release());
+    }
   }
 
-  std::vector<base::string16> values;
-  if (!name_value.empty())
-    values.push_back(name_value);
-  if (!phone_value.empty())
-    values.push_back(phone_value);
-  if (!email_value.empty())
-    values.push_back(email_value);
+  // TODO(anthonyvd): add the error label
 
-  return base::MakeUnique<views::StyledLabel>(
-      base::JoinString(values, base::ASCIIToUTF16("\n")), nullptr);
+  return container;
 }
 
 // Creates a views::Border object that can paint the gray horizontal ruler used

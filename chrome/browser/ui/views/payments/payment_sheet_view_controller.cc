@@ -236,7 +236,7 @@ void PaymentSheetViewController::ButtonPressed(
 
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON):
-      // TODO(tmartino): Transition to contact info page once it exists.
+      dialog()->ShowContactInfoSheet();
       break;
 
     default:

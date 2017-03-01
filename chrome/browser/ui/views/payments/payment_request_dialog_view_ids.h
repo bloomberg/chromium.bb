@@ -34,6 +34,9 @@ enum class DialogViewID : int {
   PAYMENT_METHOD_SHEET_LIST_VIEW,
   PAYMENT_METHOD_ITEM_CHECKMARK_VIEW,
 
+  // The following are views contained within the Contact Info Sheet.
+  CONTACT_INFO_ITEM_CHECKMARK_VIEW,
+
   // Used to label the error labels with an offset, which gets added to
   // the Autofill type value they represent (for tests).
   ERROR_LABEL_OFFSET,

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/views/payments/contact_info_view_controller.h"
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
@@ -98,6 +99,16 @@ void PaymentRequestDialogView::GoBack() {
 
   if (observer_for_testing_)
     observer_for_testing_->OnBackNavigation();
+}
+
+void PaymentRequestDialogView::ShowContactInfoSheet() {
+  view_stack_.Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<ContactInfoViewController>(request_, this),
+          &controller_map_),
+      /* animate */ true);
+  if (observer_for_testing_)
+    observer_for_testing_->OnContactInfoOpened();
 }
 
 void PaymentRequestDialogView::ShowOrderSummary() {
