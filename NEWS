@@ -81,6 +81,8 @@ test data. Refer to the documentation for the details
   useful on other platforms too.
 - New Greek table that is better than the existing Greek Grade 1
   Braille Table (gr-gr-g1.utb) thanks to Dave Mielke.
+- Improved number back-translations on fr-fr-g1 and vi-g1 tables
+  thanks to Victor Montalvao.
 ** License changes
 - DocArch has agreed to relicense their tables, so we have 8 more
   tables under the LGPLv2.1+.
