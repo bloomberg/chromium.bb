@@ -444,21 +444,15 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
                     << device.public_key;
       continue;
     }
-    cryptauth::RemoteDevice::BluetoothType bluetooth_type =
-        device.bluetooth_type == chromeos::EasyUnlockDeviceKeyData::BLUETOOTH_LE
-            ? cryptauth::RemoteDevice::BLUETOOTH_LE
-            : cryptauth::RemoteDevice::BLUETOOTH_CLASSIC;
     cryptauth::RemoteDevice remote_device(
         account_id.GetUserEmail(), std::string(), decoded_public_key,
-        bluetooth_type, device.bluetooth_address, decoded_psk,
-        decoded_challenge);
+        device.bluetooth_address, decoded_psk, decoded_challenge);
     remote_devices.push_back(remote_device);
     PA_LOG(INFO) << "Loaded Remote Device:\n"
                  << "  user id: " << remote_device.user_id << "\n"
                  << "  name: " << remote_device.name << "\n"
                  << "  public key" << device.public_key << "\n"
-                 << "  bt_addr:" << remote_device.bluetooth_address
-                 << "  type:" << static_cast<int>(remote_device.bluetooth_type);
+                 << "  bt_addr:" << remote_device.bluetooth_address;
   }
 
   SetProximityAuthDevices(account_id, remote_devices);

@@ -31,6 +31,7 @@
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
+#include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -40,7 +41,6 @@
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "components/proximity_auth/proximity_auth_system.h"
-#include "components/proximity_auth/remote_device_loader.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -108,11 +108,10 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     return;
   }
 
-  remote_device_loader_.reset(new proximity_auth::RemoteDeviceLoader(
+  remote_device_loader_.reset(new cryptauth::RemoteDeviceLoader(
       device_manager_->GetUnlockKeys(), proximity_auth_client()->GetAccountId(),
       enrollment_manager_->GetUserPrivateKey(),
-      proximity_auth_client()->CreateSecureMessageDelegate(),
-      pref_manager_.get()));
+      proximity_auth_client()->CreateSecureMessageDelegate()));
   remote_device_loader_->Load(
       base::Bind(&EasyUnlockServiceRegular::OnRemoteDevicesLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -140,7 +139,6 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     dict->SetString("name", device.name);
     dict->SetString("psk", b64_psk);
     dict->SetString("bluetoothAddress", device.bluetooth_address);
-    dict->SetInteger("bluetoothType", static_cast<int>(device.bluetooth_type));
     dict->SetString("permitId", "permit://google.com/easyunlock/v1/" +
                                     proximity_auth_client()->GetAccountId());
     dict->SetString("permitRecord.id", b64_public_key);

@@ -1,0 +1,112 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/cryptauth/remote_device_loader.h"
+
+#include <algorithm>
+#include <utility>
+
+#include "base/base64url.h"
+#include "base/bind.h"
+#include "base/memory/ptr_util.h"
+#include "components/cryptauth/secure_message_delegate.h"
+#include "components/proximity_auth/logging/logging.h"
+
+namespace cryptauth {
+
+// static
+RemoteDeviceLoader::Factory* RemoteDeviceLoader::Factory::factory_instance_ =
+    nullptr;
+
+// static
+std::unique_ptr<RemoteDeviceLoader> RemoteDeviceLoader::Factory::NewInstance(
+    const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
+    const std::string& user_id,
+    const std::string& user_private_key,
+    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate) {
+  if (!factory_instance_) {
+    factory_instance_ = new Factory();
+  }
+  return factory_instance_->BuildInstance(device_info_list,
+                                          user_id,
+                                          user_private_key,
+                                          std::move(secure_message_delegate));
+}
+
+// static
+void RemoteDeviceLoader::Factory::SetInstanceForTesting(Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<RemoteDeviceLoader> RemoteDeviceLoader::Factory::BuildInstance(
+    const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
+    const std::string& user_id,
+    const std::string& user_private_key,
+    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate) {
+  return base::WrapUnique(
+      new RemoteDeviceLoader(device_info_list,
+                             user_id,
+                             user_private_key,
+                             std::move(secure_message_delegate)));
+}
+
+RemoteDeviceLoader::RemoteDeviceLoader(
+    const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
+    const std::string& user_id,
+    const std::string& user_private_key,
+    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
+    : remaining_devices_(device_info_list),
+      user_id_(user_id),
+      user_private_key_(user_private_key),
+      secure_message_delegate_(std::move(secure_message_delegate)),
+      weak_ptr_factory_(this) {}
+
+RemoteDeviceLoader::~RemoteDeviceLoader() {}
+
+void RemoteDeviceLoader::Load(const RemoteDeviceCallback& callback) {
+  DCHECK(callback_.is_null());
+  callback_ = callback;
+  PA_LOG(INFO) << "Loading " << remaining_devices_.size()
+               << " remote devices";
+
+  if (remaining_devices_.empty()) {
+    callback_.Run(remote_devices_);
+    return;
+  }
+
+  std::vector<cryptauth::ExternalDeviceInfo> all_devices_to_convert =
+      remaining_devices_;
+
+  for (const auto& device : all_devices_to_convert) {
+    secure_message_delegate_->DeriveKey(
+        user_private_key_, device.public_key(),
+        base::Bind(&RemoteDeviceLoader::OnPSKDerived,
+                   weak_ptr_factory_.GetWeakPtr(), device));
+  }
+}
+
+void RemoteDeviceLoader::OnPSKDerived(
+    const cryptauth::ExternalDeviceInfo& device,
+    const std::string& psk) {
+  std::string public_key = device.public_key();
+  auto iterator = std::find_if(
+      remaining_devices_.begin(), remaining_devices_.end(),
+      [&public_key](const cryptauth::ExternalDeviceInfo& device) {
+        return device.public_key() == public_key;
+      });
+
+  DCHECK(iterator != remaining_devices_.end());
+  remaining_devices_.erase(iterator);
+  PA_LOG(INFO) << "Derived PSK for " << device.friendly_device_name()
+               << ", " << remaining_devices_.size() << " keys remaining.";
+
+  remote_devices_.push_back(cryptauth::RemoteDevice(
+      user_id_, device.friendly_device_name(), device.public_key(),
+      device.bluetooth_address(), psk, std::string()));
+
+  if (remaining_devices_.empty())
+    callback_.Run(remote_devices_);
+}
+
+}  // namespace cryptauth

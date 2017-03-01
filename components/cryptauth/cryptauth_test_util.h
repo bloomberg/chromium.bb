@@ -20,7 +20,7 @@ extern const char kTestRemoteDeviceSignInChallenge[];
 // Returns a BLE RemoteDevice used for tests.
 inline RemoteDevice CreateLERemoteDeviceForTest() {
   return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
-                      kTestRemoteDevicePublicKey, RemoteDevice::BLUETOOTH_LE,
+                      kTestRemoteDevicePublicKey,
                       kTestRemoteDeviceBluetoothAddress, kTestRemoteDevicePSK,
                       kTestRemoteDeviceSignInChallenge);
 }
@@ -29,7 +29,6 @@ inline RemoteDevice CreateLERemoteDeviceForTest() {
 inline RemoteDevice CreateClassicRemoteDeviceForTest() {
   return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
                       kTestRemoteDevicePublicKey,
-                      RemoteDevice::BLUETOOTH_CLASSIC,
                       kTestRemoteDeviceBluetoothAddress, kTestRemoteDevicePSK,
                       kTestRemoteDeviceSignInChallenge);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_REMOTE_DEVICE_LOADER_H
-#define COMPONENTS_PROXIMITY_REMOTE_DEVICE_LOADER_H
+#ifndef COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_LOADER_H_
+#define COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_LOADER_H_
 
 #include <memory>
 #include <string>
@@ -15,30 +15,49 @@
 #include "components/cryptauth/remote_device.h"
 
 namespace cryptauth {
+
 class SecureMessageDelegate;
-}
-
-namespace proximity_auth {
-
-class ProximityAuthPrefManager;
 
 // Loads a collection of RemoteDevice objects from the given ExternalDeviceInfo
 // protos that were synced from CryptAuth. We need to derive the PSK, which is
 // a symmetric key used to authenticate each remote device.
 class RemoteDeviceLoader {
  public:
+  class Factory {
+   public:
+    static std::unique_ptr<RemoteDeviceLoader> NewInstance(
+        const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
+        const std::string& user_id,
+        const std::string& user_private_key,
+        std::unique_ptr<cryptauth::SecureMessageDelegate>
+            secure_message_delegate);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<RemoteDeviceLoader> BuildInstance(
+        const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
+        const std::string& user_id,
+        const std::string& user_private_key,
+        std::unique_ptr<cryptauth::SecureMessageDelegate>
+            secure_message_delegate);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
   // Creates the instance:
-  // |unlock_keys|: The unlock keys previously synced from CryptAuth.
+  // |device_info_list|: The ExternalDeviceInfo objects to convert to
+  //                     RemoteDevices.
   // |user_private_key|: The private key of the user's local device. Used to
   //                     derive the PSK.
   // |secure_message_delegate|: Used to derive each persistent symmetric key.
-  // |pref_manager|: Used to retrieve the Bluetooth address of BLE devices.
   RemoteDeviceLoader(
-      const std::vector<cryptauth::ExternalDeviceInfo>& unlock_keys,
+      const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
       const std::string& user_id,
       const std::string& user_private_key,
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
-      ProximityAuthPrefManager* pref_manager);
+      std::unique_ptr<cryptauth::SecureMessageDelegate>
+          secure_message_delegate);
 
   ~RemoteDeviceLoader();
 
@@ -48,13 +67,13 @@ class RemoteDeviceLoader {
   void Load(const RemoteDeviceCallback& callback);
 
  private:
-  // Called when the PSK is derived for each unlock key. If the PSK for all
-  // unlock have been derived, then we can invoke |callback_|.
-  void OnPSKDerived(const cryptauth::ExternalDeviceInfo& unlock_key,
+  // Called when the PSK is derived for each device. If the PSKs for all devices
+  // have been derived, then we can invoke |callback_|.
+  void OnPSKDerived(const cryptauth::ExternalDeviceInfo& device,
                     const std::string& psk);
 
-  // The remaining unlock keys whose PSK we're waiting on.
-  std::vector<cryptauth::ExternalDeviceInfo> remaining_unlock_keys_;
+  // The remaining devices whose PSK we're waiting on.
+  std::vector<cryptauth::ExternalDeviceInfo> remaining_devices_;
 
   // The id of the user who the remote devices belong to.
   const std::string user_id_;
@@ -64,9 +83,6 @@ class RemoteDeviceLoader {
 
   // Performs the PSK key derivation.
   std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
-
-  // Used to retrieve the address for BLE devices. Not owned.
-  ProximityAuthPrefManager* pref_manager_;
 
   // Invoked when the RemoteDevices are loaded.
   RemoteDeviceCallback callback_;
@@ -79,6 +95,6 @@ class RemoteDeviceLoader {
   DISALLOW_COPY_AND_ASSIGN(RemoteDeviceLoader);
 };
 
-}  // namespace proximity_auth
+}  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_REMOTE_DEVICE_LOADER_H
+#endif  // COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_LOADER_H_

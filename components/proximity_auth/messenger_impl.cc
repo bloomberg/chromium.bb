@@ -81,8 +81,7 @@ MessengerImpl::MessengerImpl(
 
   // TODO(tengs): We need CryptAuth to report if the phone runs iOS or Android,
   // rather than relying on this heuristic.
-  if (connection_->remote_device().bluetooth_type ==
-      cryptauth::RemoteDevice::BLUETOOTH_LE)
+  if (connection_->remote_device().bluetooth_address.empty())
     PollScreenStateForIOS();
 }
 
@@ -103,8 +102,7 @@ bool MessengerImpl::SupportsSignIn() const {
   // TODO(tengs): Support sign-in for Bluetooth LE protocol.
   return (secure_context_->GetProtocolVersion() ==
           cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ONE) &&
-         connection_->remote_device().bluetooth_type !=
-             cryptauth::RemoteDevice::BLUETOOTH_LE;
+         !connection_->remote_device().bluetooth_address.empty();
 }
 
 void MessengerImpl::DispatchUnlockEvent() {

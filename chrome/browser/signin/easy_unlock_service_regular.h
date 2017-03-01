@@ -32,12 +32,12 @@ class CryptAuthClient;
 class CryptAuthDeviceManager;
 class CryptAuthEnrollmentManager;
 class CryptAuthGCMManager;
+class RemoteDeviceLoader;
 class ToggleEasyUnlockResponse;
 }
 
 namespace proximity_auth {
 class ProximityAuthPrefManager;
-class RemoteDeviceLoader;
 }
 
 class Profile;
@@ -182,7 +182,7 @@ class EasyUnlockServiceRegular
   std::unique_ptr<proximity_auth::ProximityAuthPrefManager> pref_manager_;
 
   // Loads the RemoteDevice instances from CryptAuth and local data.
-  std::unique_ptr<proximity_auth::RemoteDeviceLoader> remote_device_loader_;
+  std::unique_ptr<cryptauth::RemoteDeviceLoader> remote_device_loader_;
 
   // If a new RemoteDevice was synced while the screen is locked, we defer
   // loading the RemoteDevice until the screen is unlocked. For security,

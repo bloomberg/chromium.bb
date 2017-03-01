@@ -90,7 +90,6 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
             cryptauth::RemoteDevice(kRemoteDeviceUserId,
                                     kRemoteDeviceName,
                                     kRemoteDevicePublicKey,
-                                    cryptauth::RemoteDevice::BLUETOOTH_CLASSIC,
                                     kBluetoothAddress,
                                     kPersistentSymmetricKey,
                                     std::string()),
@@ -544,8 +543,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   // its name.
   cryptauth::RemoteDevice unnamed_remote_device(
       kRemoteDeviceUserId, kBluetoothAddress, kRemoteDevicePublicKey,
-      cryptauth::RemoteDevice::BLUETOOTH_CLASSIC, kBluetoothAddress,
-      kPersistentSymmetricKey, std::string());
+      kBluetoothAddress, kPersistentSymmetricKey, std::string());
 
   std::unique_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
   ProximityMonitorImpl monitor(unnamed_remote_device, std::move(clock));
