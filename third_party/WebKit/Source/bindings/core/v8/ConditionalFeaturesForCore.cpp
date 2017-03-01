@@ -44,11 +44,6 @@ void installConditionalFeaturesCore(const WrapperTypeInfo* wrapperTypeInfo,
           isolate, world, v8::Local<v8::Object>(), prototypeObject,
           interfaceObject);
     }
-  } else if (wrapperTypeInfo == &V8Document::wrapperTypeInfo) {
-    if (OriginTrials::setRootScrollerEnabled(executionContext)) {
-      V8Document::installRootScroller(isolate, world, v8::Local<v8::Object>(),
-                                      prototypeObject, interfaceObject);
-    }
   }
 }
 
@@ -71,14 +66,6 @@ void installPendingConditionalFeatureCore(const String& feature,
       V8HTMLLinkElement::installLinkServiceWorker(
           isolate, world, v8::Local<v8::Object>(), prototypeObject,
           interfaceObject);
-    }
-    return;
-  }
-  if (feature == "RootScroller") {
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8Document::wrapperTypeInfo, &prototypeObject, &interfaceObject)) {
-      V8Document::installRootScroller(isolate, world, v8::Local<v8::Object>(),
-                                      prototypeObject, interfaceObject);
     }
     return;
   }

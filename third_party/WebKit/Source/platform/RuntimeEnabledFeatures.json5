@@ -790,7 +790,6 @@
     },
     {
       name: "SetRootScroller",
-      origin_trial_feature_name: "RootScroller",
       status: "experimental",
     },
     {
