@@ -149,8 +149,9 @@ class InterstitialPageImplTest : public ContentBrowserTest {
     // Focus the interstitial frame
     FrameTree* frame_tree = static_cast<RenderViewHostDelegate*>(
                                 interstitial_.get())->GetFrameTree();
-    frame_tree->SetFocusedFrame(frame_tree->root(),
-                                frame_tree->GetMainFrame()->GetSiteInstance());
+    static_cast<RenderFrameHostDelegate*>(interstitial_.get())
+        ->SetFocusedFrame(frame_tree->root(),
+                          frame_tree->GetMainFrame()->GetSiteInstance());
 
     clipboard_message_watcher_ =
         new ClipboardMessageWatcher(interstitial_.get());
