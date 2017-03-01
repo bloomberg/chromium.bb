@@ -281,7 +281,7 @@ bool PaymentRequestInteractiveTestBase::IsEditorComboboxInvalid(
 bool PaymentRequestInteractiveTestBase::IsPayButtonEnabled() {
   views::Button* button =
       static_cast<views::Button*>(delegate_->dialog_view()->GetViewByID(
-          static_cast<int>(DialogViewID::PAYMENT_SHEET_PAY_BUTTON)));
+          static_cast<int>(DialogViewID::PAY_BUTTON)));
   DCHECK(button);
   return button->enabled();
 }

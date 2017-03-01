@@ -48,7 +48,7 @@ std::unique_ptr<views::View> CreateViewAndInstallController(
 PaymentRequestDialogView::PaymentRequestDialogView(
     PaymentRequest* request,
     PaymentRequestDialogView::ObserverForTest* observer)
-    : request_(request), observer_for_testing_(observer) {
+    : request_(request), observer_for_testing_(observer), being_closed_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SetLayoutManager(new views::FillLayout());
 
@@ -65,9 +65,13 @@ ui::ModalType PaymentRequestDialogView::GetModalType() const {
 }
 
 bool PaymentRequestDialogView::Cancel() {
-  // Called when the widget is about to close. We send a message to the
-  // PaymentRequest object to signal user cancellation.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Called when the widget is about to close. We send a message to the
+  // PaymentRequest object to signal user cancellation. Before destroying the
+  // PaymentRequest object, we destroy all controllers so that they are not left
+  // alive with an invalid PaymentRequest pointer.
+  being_closed_ = true;
+  controller_map_.clear();
   request_->UserCancelled();
   return true;
 }
@@ -140,6 +144,7 @@ void PaymentRequestDialogView::ShowDialog() {
 
 void PaymentRequestDialogView::CloseDialog() {
   // This calls PaymentRequestDialogView::Cancel() before closing.
+  // ViewHierarchyChanged() also gets called after Cancel().
   GetWidget()->Close();
 }
 
@@ -159,6 +164,9 @@ gfx::Size PaymentRequestDialogView::GetPreferredSize() const {
 
 void PaymentRequestDialogView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
+  if (being_closed_)
+    return;
+
   // When a view that is associated with a controller is removed from this
   // view's descendants, dispose of the controller.
   if (!details.is_add &&

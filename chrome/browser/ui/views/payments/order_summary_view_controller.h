@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
+#include "components/payments/content/payment_request.h"
 
 namespace payments {
 
@@ -15,7 +16,8 @@ class PaymentRequestDialogView;
 
 // The PaymentRequestSheetController subtype for the Order Summary screen of the
 // Payment Request flow.
-class OrderSummaryViewController : public PaymentRequestSheetController {
+class OrderSummaryViewController : public PaymentRequestSheetController,
+                                   public PaymentRequest::Observer {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
   OrderSummaryViewController(PaymentRequest* request,
@@ -24,8 +26,16 @@ class OrderSummaryViewController : public PaymentRequestSheetController {
 
   // PaymentRequestSheetController:
   std::unique_ptr<views::View> CreateView() override;
+  std::unique_ptr<views::Button> CreatePrimaryButton() override;
+
+  // PaymentRequest::Observer:
+  void OnSelectedInformationChanged() override;
 
  private:
+  void UpdatePayButtonState(bool enabled);
+
+  views::Button* pay_button_;
+
   DISALLOW_COPY_AND_ASSIGN(OrderSummaryViewController);
 };
 

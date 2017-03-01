@@ -171,7 +171,9 @@ PaymentSheetViewController::PaymentSheetViewController(
   request->AddObserver(this);
 }
 
-PaymentSheetViewController::~PaymentSheetViewController() {}
+PaymentSheetViewController::~PaymentSheetViewController() {
+  request()->RemoveObserver(this);
+}
 
 std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
   std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
@@ -205,7 +207,7 @@ PaymentSheetViewController::CreatePrimaryButton() {
       views::MdTextButton::CreateSecondaryUiBlueButton(
           this, l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON)));
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
-  button->set_id(static_cast<int>(DialogViewID::PAYMENT_SHEET_PAY_BUTTON));
+  button->set_id(static_cast<int>(DialogViewID::PAY_BUTTON));
   pay_button_ = button.get();
   UpdatePayButtonState(request()->is_ready_to_pay());
   return button;

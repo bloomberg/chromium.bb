@@ -112,7 +112,7 @@ void PaymentRequest::Pay() {
   DCHECK(is_ready_to_pay_);
 
   // TODO(mathp): Return the PaymentResponse to the |client_|.
-  UserCancelled();
+  OnConnectionTerminated();
 }
 
 void PaymentRequest::AddObserver(Observer* observer) {

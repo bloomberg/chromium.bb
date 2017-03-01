@@ -89,6 +89,10 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // May be null.
   ObserverForTest* observer_for_testing_;
 
+  // Used when the dialog is being closed to avoid re-entrancy into the
+  // controller_map_.
+  bool being_closed_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestDialogView);
 };
 
