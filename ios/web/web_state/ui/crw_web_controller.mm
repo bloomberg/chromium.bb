@@ -2133,23 +2133,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
   if (![userDefaults boolForKey:@"PendingIndexNavigationDisabled"]) {
     [self clearTransientContentView];
+    [self updateDesktopUserAgentForEntry:toEntry fromEntry:fromEntry];
 
     BOOL sameDocumentNavigation = [sessionController
         isSameDocumentNavigationBetweenItem:fromEntry.navigationItem
                                     andItem:toEntry.navigationItem];
     if (sameDocumentNavigation) {
-      [self.sessionController goToItemAtIndex:index];
-      // TODO(crbug.com/684098): move this call out this block to avoid code
-      // duplication.
-      [self webWillFinishHistoryNavigationFromEntry:fromEntry];
+      [sessionController goToItemAtIndex:index];
       [self updateHTML5HistoryState];
     } else {
       [sessionController discardNonCommittedItems];
       [sessionController setPendingItemIndex:index];
-
-      // TODO(crbug.com/684098): move this call out this block to avoid code
-      // duplication.
-      [self webWillFinishHistoryNavigationFromEntry:fromEntry];
 
       web::NavigationItemImpl* pendingItem =
           sessionController.pendingEntry.navigationItemImpl;
@@ -2159,7 +2153,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [self loadCurrentURL];
     }
   } else {
-    [self.sessionController goToItemAtIndex:index];
+    [sessionController goToItemAtIndex:index];
     if (fromEntry)
       [self finishHistoryNavigationFromEntry:fromEntry];
   }
