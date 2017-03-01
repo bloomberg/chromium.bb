@@ -220,13 +220,14 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
 
   bool using_data_reduction_proxy = true;
-  // The following checks rule out direct, invalid, and othe connection types.
-  if (!proxy_info.is_http() && !proxy_info.is_https() && !proxy_info.is_quic())
+  // The following checks rule out direct, invalid, and other connection types.
+  if (!proxy_info.is_http() && !proxy_info.is_https() &&
+      !proxy_info.is_quic()) {
     using_data_reduction_proxy = false;
-  else if (proxy_info.proxy_server().host_port_pair().IsEmpty())
+  } else if (proxy_info.proxy_server().host_port_pair().IsEmpty()) {
     using_data_reduction_proxy = false;
-  else if (!data_reduction_proxy_config_->IsDataReductionProxy(
-               proxy_info.proxy_server(), nullptr)) {
+  } else if (!data_reduction_proxy_config_->IsDataReductionProxy(
+                 proxy_info.proxy_server(), nullptr)) {
     using_data_reduction_proxy = false;
   }
 
