@@ -739,7 +739,8 @@ ALWAYS_INLINE int lastBreakablePositionForBreakAll(LineLayoutText text,
                                                    const ComputedStyle& style,
                                                    int start,
                                                    int end) {
-  LazyLineBreakIterator lineBreakIterator(text.text(), style.locale());
+  LazyLineBreakIterator lineBreakIterator(text.text(),
+                                          localeForLineBreakIterator(style));
   int lastBreakablePosition = 0, nextBreakablePosition = -1;
   for (int i = start;; i = nextBreakablePosition + 1) {
     lineBreakIterator.isBreakable(i, nextBreakablePosition,
@@ -798,7 +799,8 @@ ALWAYS_INLINE bool BreakingContext::rewindToFirstMidWordBreak(
   int start = wordMeasurement.startOffset;
   int end = canMidWordBreakBefore(text) ? start : start + 1;
   if (breakAll) {
-    LazyLineBreakIterator lineBreakIterator(text.text(), style.locale());
+    LazyLineBreakIterator lineBreakIterator(text.text(),
+                                            localeForLineBreakIterator(style));
     int nextBreakable = -1;
     lineBreakIterator.isBreakable(end, nextBreakable, LineBreakType::BreakAll);
     if (nextBreakable < 0)
@@ -987,7 +989,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
     m_layoutTextInfo.m_text = layoutText;
     m_layoutTextInfo.m_font = &font;
     m_layoutTextInfo.m_lineBreakIterator.resetStringAndReleaseIterator(
-        layoutText.text(), style.locale());
+        layoutText.text(), localeForLineBreakIterator(style));
   } else if (m_layoutTextInfo.m_font != &font) {
     m_layoutTextInfo.m_font = &font;
   }

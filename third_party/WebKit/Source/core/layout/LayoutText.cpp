@@ -1003,7 +1003,8 @@ static float minWordFragmentWidthForBreakAll(LayoutText* layoutText,
                                              int length,
                                              EWordBreak breakAllOrBreakWord) {
   DCHECK_GT(length, 0);
-  LazyLineBreakIterator breakIterator(layoutText->text(), style.locale());
+  LazyLineBreakIterator breakIterator(layoutText->text(),
+                                      localeForLineBreakIterator(style));
   int nextBreakable = -1;
   float min = std::numeric_limits<float>::max();
   int end = start + length;
@@ -1071,6 +1072,30 @@ static float maxWordFragmentWidth(LayoutText* layoutText,
   return maxFragmentWidth + layoutText->hyphenWidth(font, textDirection);
 }
 
+AtomicString localeForLineBreakIterator(const ComputedStyle& style) {
+  LineBreakIteratorMode mode = LineBreakIteratorMode::Default;
+  switch (style.getLineBreak()) {
+    default:
+      NOTREACHED();
+    // Fall through.
+    case LineBreakAuto:
+    case LineBreakAfterWhiteSpace:
+      return style.locale();
+    case LineBreakNormal:
+      mode = LineBreakIteratorMode::Normal;
+      break;
+    case LineBreakStrict:
+      mode = LineBreakIteratorMode::Strict;
+      break;
+    case LineBreakLoose:
+      mode = LineBreakIteratorMode::Loose;
+      break;
+  }
+  if (const LayoutLocale* locale = style.getFontDescription().locale())
+    return locale->localeWithBreakKeyword(mode);
+  return style.locale();
+}
+
 void LayoutText::computePreferredLogicalWidths(
     float leadWidth,
     HashSet<const SimpleFontData*>& fallbackFonts,
@@ -1099,7 +1124,8 @@ void LayoutText::computePreferredLogicalWidths(
   const Font& f = styleToUse.font();  // FIXME: This ignores first-line.
   float wordSpacing = styleToUse.wordSpacing();
   int len = textLength();
-  LazyLineBreakIterator breakIterator(m_text, styleToUse.locale());
+  LazyLineBreakIterator breakIterator(m_text,
+                                      localeForLineBreakIterator(styleToUse));
   bool needsWordSpacing = false;
   bool ignoringSpaces = false;
   bool isSpace = false;

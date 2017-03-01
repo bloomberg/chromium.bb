@@ -6,6 +6,7 @@
 
 #include "platform/Language.h"
 #include "platform/fonts/AcceptLanguagesResolver.h"
+#include "platform/text/ICUError.h"
 #include "platform/text/LocaleToScriptMapping.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -181,6 +182,56 @@ void LayoutLocale::setHyphenationForTesting(
   const LayoutLocale& locale = valueOrDefault(get(localeString));
   locale.m_hyphenationComputed = true;
   locale.m_hyphenation = hyphenation;
+}
+
+AtomicString LayoutLocale::localeWithBreakKeyword(
+    LineBreakIteratorMode mode) const {
+  if (m_string.isEmpty())
+    return m_string;
+
+  CString utf8Locale = m_string.utf8();
+  Vector<char> buffer(utf8Locale.length() + 11, 0);
+  memcpy(buffer.data(), utf8Locale.data(), utf8Locale.length());
+
+  const char* keywordValue = nullptr;
+  switch (mode) {
+    default:
+      NOTREACHED();
+    // Fall through.
+    case LineBreakIteratorMode::Default:
+      // nullptr will cause any existing values to be removed.
+      break;
+    case LineBreakIteratorMode::Normal:
+      keywordValue = "normal";
+      break;
+    case LineBreakIteratorMode::Strict:
+      keywordValue = "strict";
+      break;
+    case LineBreakIteratorMode::Loose:
+      keywordValue = "loose";
+      break;
+  }
+
+  ICUError status;
+  int32_t lengthNeeded = uloc_setKeywordValue("lb", keywordValue, buffer.data(),
+                                              buffer.size(), &status);
+  if (U_SUCCESS(status))
+    return AtomicString::fromUTF8(buffer.data(), lengthNeeded);
+
+  if (status == U_BUFFER_OVERFLOW_ERROR) {
+    buffer.grow(lengthNeeded + 1);
+    memset(buffer.data() + utf8Locale.length(), 0,
+           buffer.size() - utf8Locale.length());
+    status = U_ZERO_ERROR;
+    int32_t lengthNeeded2 = uloc_setKeywordValue(
+        "lb", keywordValue, buffer.data(), buffer.size(), &status);
+    DCHECK_EQ(lengthNeeded, lengthNeeded2);
+    if (U_SUCCESS(status) && lengthNeeded == lengthNeeded2)
+      return AtomicString::fromUTF8(buffer.data(), lengthNeeded);
+  }
+
+  NOTREACHED();
+  return m_string;
 }
 
 }  // namespace blink

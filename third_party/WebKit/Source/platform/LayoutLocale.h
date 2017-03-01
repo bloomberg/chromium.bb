@@ -19,6 +19,8 @@ namespace blink {
 
 class Hyphenation;
 
+enum class LineBreakIteratorMode { Default, Normal, Strict, Loose };
+
 class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
  public:
   static const LayoutLocale* get(const AtomicString& locale);
@@ -56,6 +58,8 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
   const char* localeForHanForSkFontMgr() const;
 
   Hyphenation* getHyphenation() const;
+
+  AtomicString localeWithBreakKeyword(LineBreakIteratorMode) const;
 
   static PassRefPtr<LayoutLocale> createForTesting(const AtomicString&);
   static void clearForTesting();

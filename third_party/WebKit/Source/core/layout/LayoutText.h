@@ -356,6 +356,7 @@ inline LayoutText* Text::layoutObject() const {
 }
 
 void applyTextTransform(const ComputedStyle*, String&, UChar);
+AtomicString localeForLineBreakIterator(const ComputedStyle&);
 
 }  // namespace blink
 

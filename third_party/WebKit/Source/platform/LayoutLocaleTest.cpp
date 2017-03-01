@@ -112,4 +112,27 @@ TEST(LayoutLocaleTest, ScriptTest) {
   }
 }
 
+TEST(LayoutLocaleTest, BreakKeyword) {
+  struct {
+    const char* expected;
+    const char* locale;
+    LineBreakIteratorMode mode;
+  } tests[] = {
+      {nullptr, nullptr, LineBreakIteratorMode::Default},
+      {"", "", LineBreakIteratorMode::Default},
+      {nullptr, nullptr, LineBreakIteratorMode::Strict},
+      {"", "", LineBreakIteratorMode::Strict},
+      {"ja", "ja", LineBreakIteratorMode::Default},
+      {"ja@lb=normal", "ja", LineBreakIteratorMode::Normal},
+      {"ja@lb=strict", "ja", LineBreakIteratorMode::Strict},
+      {"ja@lb=loose", "ja", LineBreakIteratorMode::Loose},
+  };
+  for (const auto& test : tests) {
+    RefPtr<LayoutLocale> locale = LayoutLocale::createForTesting(test.locale);
+    EXPECT_EQ(test.expected, locale->localeWithBreakKeyword(test.mode))
+        << String::format("'%s' with line-break %d should be '%s'", test.locale,
+                          static_cast<int>(test.mode), test.expected);
+  }
+}
+
 }  // namespace blink
