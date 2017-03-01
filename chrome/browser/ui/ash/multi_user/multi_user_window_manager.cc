@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 
 #include "ash/common/multi_profile_uma.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "base/logging.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_stub.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
+#include "components/user_manager/user_manager.h"
 
 namespace {
 chrome::MultiUserWindowManager* g_instance = NULL;
@@ -40,9 +40,8 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   if (ash::WmShell::Get()->delegate()->IsMultiProfilesEnabled()) {
     if (!g_instance) {
       MultiUserWindowManagerChromeOS* manager =
-          new MultiUserWindowManagerChromeOS(ash::WmShell::Get()
-                                                 ->GetSessionStateDelegate()
-                                                 ->GetUserInfo(0)
+          new MultiUserWindowManagerChromeOS(user_manager::UserManager::Get()
+                                                 ->GetActiveUser()
                                                  ->GetAccountId());
       g_instance = manager;
       manager->Init();

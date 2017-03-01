@@ -56,9 +56,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/multi_profile_uma.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using base::TimeDelta;
@@ -567,9 +567,8 @@ void TabManager::RecordDiscardStatistics() {
   // Record the discarded tab in relation to the amount of simultaneously
   // logged in users.
   if (ash::WmShell::HasInstance()) {
-    ash::MultiProfileUMA::RecordDiscardedTab(ash::WmShell::Get()
-                                                 ->GetSessionStateDelegate()
-                                                 ->NumberOfLoggedInUsers());
+    ash::MultiProfileUMA::RecordDiscardedTab(
+        user_manager::UserManager::Get()->GetLoggedInUsers().size());
   }
 #endif
   // TODO(jamescook): If the time stats prove too noisy, then divide up users

@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 
-#include "ash/common/test/test_session_state_delegate.h"
-#include "ash/shell.h"
-#include "ash/test/ash_test_helper.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -45,8 +42,6 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
         const_cast<user_manager::User*>(user), profile);
     chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
         const_cast<user_manager::User*>(user));
-    ash::test::AshTestHelper::GetTestSessionStateDelegate()->AddUser(
-        account_id);
     GetUserWindowManager()->AddUser(profile);
     return profile;
   }

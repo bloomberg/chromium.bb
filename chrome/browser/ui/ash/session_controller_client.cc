@@ -190,10 +190,6 @@ void SessionControllerClient::DoLockScreen() {
 // static
 void SessionControllerClient::DoSwitchActiveUser(const AccountId& account_id) {
   // Disallow switching to an already active user since that might crash.
-  // Also check that we got a user id and not an email address.
-  DCHECK_EQ(
-      account_id.GetUserEmail(),
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(account_id.GetUserEmail())));
   if (account_id == UserManager::Get()->GetActiveUser()->GetAccountId())
     return;
 

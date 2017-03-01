@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/test/test_session_state_delegate.h"
+#include <memory>
+
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
-#include "ash/test/test_shell_delegate.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/base/ui_base_types.h"
 
 namespace ash {
 namespace test {
@@ -28,8 +26,9 @@ namespace test {
 class MultiUserContextMenuChromeOSTest : public AshTestBase {
  public:
   MultiUserContextMenuChromeOSTest()
-      : multi_user_window_manager_(NULL),
-        user_manager_enabler_(new chromeos::FakeChromeUserManager) {}
+      : multi_user_window_manager_(nullptr),
+        fake_user_manager_(new chromeos::FakeChromeUserManager),
+        user_manager_enabler_(fake_user_manager_) {}
 
   void SetUp() override;
   void TearDown() override;
@@ -37,6 +36,18 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
  protected:
   // Set up the test environment for this many windows.
   void SetUpForThisManyWindows(int windows);
+
+  // Ensures there are |n| logged-in users.
+  void SetLoggedInUsers(size_t n) {
+    DCHECK_LE(fake_user_manager_->GetLoggedInUsers().size(), n);
+    while (fake_user_manager_->GetLoggedInUsers().size() < n) {
+      AccountId account_id = AccountId::FromUserEmail(
+          base::StringPrintf("generated-user-%" PRIuS "@consumer.example.com",
+                             fake_user_manager_->GetLoggedInUsers().size()));
+      fake_user_manager_->AddUser(account_id);
+      fake_user_manager_->LoginUser(account_id);
+    }
+  }
 
   aura::Window* window() { return window_; }
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager() {
@@ -49,6 +60,8 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
 
   // The instance of the MultiUserWindowManager.
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
+  // Owned by |user_manager_enabler_|.
+  chromeos::FakeChromeUserManager* fake_user_manager_ = nullptr;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserContextMenuChromeOSTest);
@@ -77,11 +90,11 @@ void MultiUserContextMenuChromeOSTest::TearDown() {
 
 // Check that an unowned window will never create a menu.
 TEST_F(MultiUserContextMenuChromeOSTest, UnownedWindow) {
-  EXPECT_EQ(NULL, CreateMultiUserContextMenu(window()).get());
+  EXPECT_EQ(nullptr, CreateMultiUserContextMenu(window()).get());
 
   // Add more users.
-  AshTestHelper::GetTestSessionStateDelegate()->set_logged_in_users(2);
-  EXPECT_EQ(NULL, CreateMultiUserContextMenu(window()).get());
+  SetLoggedInUsers(2);
+  EXPECT_EQ(nullptr, CreateMultiUserContextMenu(window()).get());
 }
 
 // Check that an owned window will never create a menu.
@@ -90,17 +103,17 @@ TEST_F(MultiUserContextMenuChromeOSTest, OwnedWindow) {
   // user exists).
   multi_user_window_manager()->SetWindowOwner(window(),
                                               AccountId::FromUserEmail("A"));
-  EXPECT_EQ(NULL, CreateMultiUserContextMenu(window()).get());
+  EXPECT_EQ(nullptr, CreateMultiUserContextMenu(window()).get());
 
   // After adding another user a menu should get created.
   {
-    AshTestHelper::GetTestSessionStateDelegate()->set_logged_in_users(2);
+    SetLoggedInUsers(2);
     std::unique_ptr<ui::MenuModel> menu = CreateMultiUserContextMenu(window());
     ASSERT_TRUE(menu.get());
     EXPECT_EQ(1, menu.get()->GetItemCount());
   }
   {
-    AshTestHelper::GetTestSessionStateDelegate()->set_logged_in_users(3);
+    SetLoggedInUsers(3);
     std::unique_ptr<ui::MenuModel> menu = CreateMultiUserContextMenu(window());
     ASSERT_TRUE(menu.get());
     EXPECT_EQ(2, menu.get()->GetItemCount());

@@ -8,27 +8,24 @@
 #include <string>
 
 #include "ash/common/palette_delegate.h"
-#include "ash/common/session/session_state_observer.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class PrefChangeRegistrar;
 class Profile;
 
-namespace ash {
-class ScopedSessionStateObserver;
-}
-
 namespace chromeos {
 
 // A class which allows the Ash palette to perform chrome actions.
-class PaletteDelegateChromeOS : public ash::PaletteDelegate,
-                                public ash::SessionStateObserver,
-                                public content::NotificationObserver {
+class PaletteDelegateChromeOS
+    : public ash::PaletteDelegate,
+      public user_manager::UserManager::UserSessionStateObserver,
+      public content::NotificationObserver {
  public:
   PaletteDelegateChromeOS();
   ~PaletteDelegateChromeOS() override;
@@ -45,8 +42,8 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
   void TakePartialScreenshot(const base::Closure& done) override;
   void CancelPartialScreenshot() override;
 
-  // ash::SessionStateObserver:
-  void ActiveUserChanged(const AccountId& account_id) override;
+  // user_manager::UserManager::UserSessionStateObserver:
+  void ActiveUserChanged(const user_manager::User* active_user) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -64,7 +61,8 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
   // Unowned pointer to the active profile.
   Profile* profile_ = nullptr;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  std::unique_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
+  std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
+      session_state_observer_;
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<PaletteDelegateChromeOS> weak_factory_;

@@ -191,9 +191,10 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
       SendGaiaUserLoginMetrics(account_id);
   } else if (primary_user_ != active_user_) {
     // This is only needed for tests where a new user session is created
-    // for non-existent user.
+    // for non-existent user. The new user is created and automatically set
+    // to active and there will be no pending user switch in such case.
     SetIsCurrentUserNew(true);
-    NotifyUserAddedToSession(active_user_, true /* user switch pending */);
+    NotifyUserAddedToSession(active_user_, false /* user switch pending */);
   }
 
   UMA_HISTOGRAM_ENUMERATION(

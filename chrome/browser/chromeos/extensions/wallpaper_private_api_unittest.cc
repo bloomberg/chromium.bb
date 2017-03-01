@@ -220,7 +220,8 @@ void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(
 void WallpaperPrivateApiMultiUserUnittest::SwitchActiveUser(
     const AccountId& active_account_id) {
   fake_user_manager()->SwitchActiveUser(active_account_id);
-  multi_user_window_manager_->ActiveUserChanged(active_account_id);
+  multi_user_window_manager_->ActiveUserChanged(
+      fake_user_manager()->FindUser(active_account_id));
 }
 
 // In multi profile mode, user may open wallpaper picker in one profile and

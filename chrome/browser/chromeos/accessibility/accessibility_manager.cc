@@ -13,7 +13,6 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
 #include "ash/common/ash_constants.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
@@ -59,10 +58,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/audio_a11y_controller.h"
 #include "chromeos/audio/chromeos_sounds.h"
-#include "chromeos/login/login_state.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -1156,12 +1153,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     chromevox_panel_->UpdatePanelHeight();
 }
 
-void AccessibilityManager::ActiveUserChanged(const AccountId& account_id) {
+void AccessibilityManager::ActiveUserChanged(
+    const user_manager::User* active_user) {
   SetProfile(ProfileManager::GetActiveUserProfile());
-}
-
-void AccessibilityManager::OnAppTerminating() {
-  session_state_observer_.reset();
 }
 
 void AccessibilityManager::OnFullscreenStateChanged(
@@ -1272,9 +1266,9 @@ void AccessibilityManager::Observe(
       SetProfile(ProfileManager::GetActiveUserProfile());
 
       // Add a session state observer to be able to monitor session changes.
-      if (!session_state_observer_.get() && ash::Shell::HasInstance())
+      if (!session_state_observer_.get())
         session_state_observer_.reset(
-            new ash::ScopedSessionStateObserver(this));
+            new user_manager::ScopedUserSessionStateObserver(this));
       break;
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       // Update |profile_| when exiting a session or shutting down.

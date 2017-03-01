@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -18,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -112,25 +111,25 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
   EXPECT_EQ(3u, user_manager::UserManager::Get()->GetUsers().size());
   EXPECT_EQ(0u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
-            ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
+            session_manager::SessionManager::Get()->session_state());
 
   LoginUser(kTestUsers[0]);
   EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
+            session_manager::SessionManager::Get()->session_state());
 
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, user_adding_started());
   EXPECT_EQ(session_manager::SessionState::LOGIN_SECONDARY,
-            ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
+            session_manager::SessionManager::Get()->session_state());
 
   UserAddingScreen::Get()->Cancel();
   WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, user_adding_finished());
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
+            session_manager::SessionManager::Get()->session_state());
 
   EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
   EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
@@ -148,12 +147,11 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
-  ash::WmShell* wm_shell = ash::WmShell::Get();
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
-            wm_shell->GetSessionStateDelegate()->GetSessionState());
+            session_manager::SessionManager::Get()->session_state());
   LoginUser(kTestUsers[0]);
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            wm_shell->GetSessionStateDelegate()->GetSessionState());
+            session_manager::SessionManager::Get()->session_state());
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
@@ -162,19 +160,19 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
     content::RunAllPendingInMessageLoop();
     EXPECT_EQ(i, user_adding_started());
     EXPECT_EQ(session_manager::SessionState::LOGIN_SECONDARY,
-              wm_shell->GetSessionStateDelegate()->GetSessionState());
+              session_manager::SessionManager::Get()->session_state());
     AddUser(kTestUsers[i]);
     WaitUntilUserAddingFinishedOrCancelled();
     content::RunAllPendingInMessageLoop();
     EXPECT_EQ(i, user_adding_finished());
     EXPECT_EQ(session_manager::SessionState::ACTIVE,
-              wm_shell->GetSessionStateDelegate()->GetSessionState());
+              session_manager::SessionManager::Get()->session_state());
     EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
     ASSERT_EQ(unsigned(i + 1), user_manager->GetLoggedInUsers().size());
   }
 
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            wm_shell->GetSessionStateDelegate()->GetSessionState());
+            session_manager::SessionManager::Get()->session_state());
 
   // Now check how unlock policy works for these users.
   PrefService* prefs1 =

@@ -9,12 +9,12 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/session/session_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
@@ -58,7 +58,7 @@ class UserSwitchAnimatorChromeOS;
 //   gets detached from its current owning parent.
 class MultiUserWindowManagerChromeOS
     : public MultiUserWindowManager,
-      public ash::SessionStateObserver,
+      public user_manager::UserManager::UserSessionStateObserver,
       public aura::WindowObserver,
       public content::NotificationObserver,
       public wm::TransientWindowObserver {
@@ -93,8 +93,8 @@ class MultiUserWindowManagerChromeOS
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
-  // SessionStateObserver overrides:
-  void ActiveUserChanged(const AccountId& account_id) override;
+  // user_manager::UserManager::UserSessionStateObserver overrides:
+  void ActiveUserChanged(const user_manager::User* active_user) override;
 
   // WindowObserver overrides:
   void OnWindowDestroyed(aura::Window* window) override;

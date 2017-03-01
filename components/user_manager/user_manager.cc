@@ -92,4 +92,16 @@ UserManager* UserManager::SetForTesting(UserManager* user_manager) {
   return previous_instance;
 }
 
+ScopedUserSessionStateObserver::ScopedUserSessionStateObserver(
+    UserManager::UserSessionStateObserver* observer)
+    : observer_(observer) {
+  if (UserManager::IsInitialized())
+    UserManager::Get()->AddSessionStateObserver(observer_);
+}
+
+ScopedUserSessionStateObserver::~ScopedUserSessionStateObserver() {
+  if (UserManager::IsInitialized())
+    UserManager::Get()->RemoveSessionStateObserver(observer_);
+}
+
 }  // namespace user_manager

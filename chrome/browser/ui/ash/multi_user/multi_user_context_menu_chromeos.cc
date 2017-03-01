@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 
 #include "ash/common/multi_profile_uma.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -64,13 +62,10 @@ void MultiUserContextMenuChromeos::ExecuteCommand(int command_id,
 std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(
     aura::Window* window) {
   std::unique_ptr<ui::MenuModel> model;
-  ash::SessionStateDelegate* delegate =
-      ash::WmShell::Get()->GetSessionStateDelegate();
-  if (!delegate)
-    return model;
+  const user_manager::UserList logged_in_users =
+      user_manager::UserManager::Get()->GetLRULoggedInUsers();
 
-  int logged_in_users = delegate->NumberOfLoggedInUsers();
-  if (logged_in_users > 1) {
+  if (logged_in_users.size() > 1u) {
     // If this window is not owned, we don't show the menu addition.
     chrome::MultiUserWindowManager* manager =
         chrome::MultiUserWindowManager::GetInstance();
@@ -80,9 +75,9 @@ std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(
     chromeos::MultiUserContextMenuChromeos* menu =
         new chromeos::MultiUserContextMenuChromeos(window);
     model.reset(menu);
-    for (int user_index = 1; user_index < logged_in_users; ++user_index) {
-      const user_manager::UserInfo* user_info =
-          delegate->GetUserInfo(user_index);
+    for (size_t user_index = 1; user_index < logged_in_users.size();
+         ++user_index) {
+      const user_manager::UserInfo* user_info = logged_in_users[user_index];
       menu->AddItem(
           user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2
                           : IDC_VISIT_DESKTOP_OF_LRU_USER_3,
@@ -111,21 +106,18 @@ void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
   switch (command_id) {
     case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
     case IDC_VISIT_DESKTOP_OF_LRU_USER_3: {
+      const user_manager::UserList logged_in_users =
+          user_manager::UserManager::Get()->GetLRULoggedInUsers();
       // When running the multi user mode on Chrome OS, windows can "visit"
       // another user's desktop.
       const AccountId account_id =
-          ash::WmShell::Get()
-              ->GetSessionStateDelegate()
-              ->GetUserInfo(IDC_VISIT_DESKTOP_OF_LRU_USER_2 == command_id ? 1
-                                                                          : 2)
+          logged_in_users[IDC_VISIT_DESKTOP_OF_LRU_USER_2 == command_id ? 1 : 2]
               ->GetAccountId();
       base::Callback<void(bool)> on_accept =
           base::Bind(&OnAcceptTeleportWarning, account_id, window);
 
       // Don't show warning dialog if any logged in user in multi-profiles
       // session dismissed it.
-      const user_manager::UserList logged_in_users =
-          user_manager::UserManager::Get()->GetLoggedInUsers();
       for (user_manager::UserList::const_iterator it = logged_in_users.begin();
            it != logged_in_users.end();
            ++it) {

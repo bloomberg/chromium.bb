@@ -9,9 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
-#include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
@@ -63,6 +61,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -1445,8 +1444,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
       user_manager::UserManager::Get()->FindUser(account_id);
   // |user| may be nullptr in kiosk mode or unit tests.
   if (user && user->is_logged_in() && !user->is_active()) {
-    ash::WmShell::Get()->GetSessionStateDelegate()->SwitchActiveUser(
-        account_id);
+    SessionControllerClient::DoSwitchActiveUser(account_id);
   } else {
     SetUserInputMethod(account_id.GetUserEmail(), ime_state_.get());
     SetKeyboardSettings(account_id);

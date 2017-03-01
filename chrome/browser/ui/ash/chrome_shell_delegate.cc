@@ -12,7 +12,6 @@
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
