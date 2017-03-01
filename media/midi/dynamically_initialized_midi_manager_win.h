@@ -25,13 +25,14 @@ class DynamicallyInitializedMidiManagerWin final
     : public MidiManager,
       public base::SystemMonitor::DevicesChangedObserver {
  public:
+  class PortManager;
+
   explicit DynamicallyInitializedMidiManagerWin(MidiService* service);
   ~DynamicallyInitializedMidiManagerWin() override;
 
-  // Posts a reply task to the I/O thread that hosts MidiManager instance, runs
-  // it safely, and ensures that the instance keeps alive while the task is
-  // running.
-  void PostReplyTask(const base::Closure&);
+  // Returns PortManager that implements interfaces to help implementation.
+  // This hides Windows specific structures, i.e. HMIDIIN in the header.
+  PortManager* port_manager() { return port_manager_.get(); }
 
   // MidiManager overrides:
   void StartInitialization() override;
@@ -48,9 +49,19 @@ class DynamicallyInitializedMidiManagerWin final
   class InPort;
   class OutPort;
 
+  // Handles MIDI inport event posted from a thread system provides.
+  void ReceiveMidiData(uint32_t index,
+                       const std::vector<uint8_t>& data,
+                       base::TimeTicks time);
+
   // Posts a task to TaskRunner, and ensures that the instance keeps alive while
   // the task is running.
   void PostTask(const base::Closure&);
+
+  // Posts a reply task to the I/O thread that hosts MidiManager instance, runs
+  // it safely, and ensures that the instance keeps alive while the task is
+  // running.
+  void PostReplyTask(const base::Closure&);
 
   // Initializes instance asynchronously on TaskRunner.
   void InitializeOnTaskRunner();
@@ -71,11 +82,9 @@ class DynamicallyInitializedMidiManagerWin final
   // Keeps a TaskRunner for the I/O thread.
   scoped_refptr<base::SingleThreadTaskRunner> thread_runner_;
 
-  // Following members should be accessed only on TaskRunner.
-
-  // Holds all MIDI input or output ports connected once.
-  std::vector<std::unique_ptr<InPort>> input_ports_;
-  std::vector<std::unique_ptr<OutPort>> output_ports_;
+  // Manages platform dependent implementation for port managegent. Should be
+  // accessed with the task lock.
+  std::unique_ptr<PortManager> port_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicallyInitializedMidiManagerWin);
 };
