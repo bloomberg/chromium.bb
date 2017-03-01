@@ -92,7 +92,7 @@ void CanvasSurfaceLayerBridge::createSolidColorLayer() {
 
 void CanvasSurfaceLayerBridge::OnSurfaceCreated(
     const cc::SurfaceInfo& surfaceInfo) {
-  if (!m_currentSurfaceId.is_valid() && surfaceInfo.id().is_valid()) {
+  if (!m_currentSurfaceId.is_valid() && surfaceInfo.is_valid()) {
     // First time a SurfaceId is received
     m_currentSurfaceId = surfaceInfo.id();
     GraphicsLayer::unregisterContentsLayer(m_webLayer.get());

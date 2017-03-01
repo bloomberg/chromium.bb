@@ -43,12 +43,12 @@ void FrameGenerator::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
     return;
   device_scale_factor_ = device_scale_factor;
-  if (window_manager_surface_info_.id().is_valid())
+  if (window_manager_surface_info_.is_valid())
     compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
 void FrameGenerator::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
-  DCHECK(surface_info.id().is_valid());
+  DCHECK(surface_info.is_valid());
 
   // Only handle embedded surfaces changing here. The display root surface
   // changing is handled immediately after the CompositorFrame is submitted.
@@ -59,7 +59,7 @@ void FrameGenerator::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
 }
 
 void FrameGenerator::OnWindowDamaged() {
-  if (window_manager_surface_info_.id().is_valid())
+  if (window_manager_surface_info_.is_valid())
     compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
@@ -134,7 +134,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   }
   frame.metadata.device_scale_factor = device_scale_factor_;
 
-  if (window_manager_surface_info_.id().is_valid()) {
+  if (window_manager_surface_info_.is_valid()) {
     frame.metadata.referenced_surfaces.push_back(
         window_manager_surface_info_.id());
   }
@@ -143,7 +143,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
 }
 
 void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
-  DCHECK(window_manager_surface_info_.id().is_valid());
+  DCHECK(window_manager_surface_info_.is_valid());
 
   const gfx::Rect bounds_at_origin(
       window_manager_surface_info_.size_in_pixels());

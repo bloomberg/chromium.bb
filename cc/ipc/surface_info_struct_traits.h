@@ -27,7 +27,7 @@ struct StructTraits<cc::mojom::SurfaceInfoDataView, cc::SurfaceInfo> {
   static bool Read(cc::mojom::SurfaceInfoDataView data, cc::SurfaceInfo* out) {
     out->device_scale_factor_ = data.device_scale_factor();
     return data.ReadSurfaceId(&out->id_) &&
-           data.ReadSizeInPixels(&out->size_in_pixels_);
+           data.ReadSizeInPixels(&out->size_in_pixels_) && out->is_valid();
   }
 };
 

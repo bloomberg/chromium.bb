@@ -1602,7 +1602,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
         surface_layer_impl->primary_surface_info().id());
     // We need to retain a reference to the fallback surface too so that it's
     // guaranteed to be available when needed.
-    if (surface_layer_impl->fallback_surface_info().id().is_valid()) {
+    if (surface_layer_impl->fallback_surface_info().is_valid()) {
       metadata.referenced_surfaces.push_back(
           surface_layer_impl->fallback_surface_info().id());
     }

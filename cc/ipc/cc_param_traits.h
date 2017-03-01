@@ -100,6 +100,17 @@ struct CC_IPC_EXPORT ParamTraits<cc::SurfaceId> {
 };
 
 template <>
+struct CC_IPC_EXPORT ParamTraits<cc::SurfaceInfo> {
+  typedef cc::SurfaceInfo param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
 struct CC_IPC_EXPORT ParamTraits<cc::CompositorFrame> {
   typedef cc::CompositorFrame param_type;
   static void Write(base::Pickle* m, const param_type& p);

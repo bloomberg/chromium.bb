@@ -95,7 +95,7 @@ std::unique_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(
 }
 
 bool SurfaceLayer::HasDrawableContent() const {
-  return primary_surface_info_.id().is_valid() && Layer::HasDrawableContent();
+  return primary_surface_info_.is_valid() && Layer::HasDrawableContent();
 }
 
 void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -107,11 +107,11 @@ void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
   RemoveReference(std::move(fallback_reference_returner_));
   Layer::SetLayerTreeHost(host);
   if (layer_tree_host()) {
-    if (primary_surface_info_.id().is_valid()) {
+    if (primary_surface_info_.is_valid()) {
       primary_reference_returner_ = ref_factory_->CreateReference(
           layer_tree_host(), primary_surface_info_.id());
     }
-    if (fallback_surface_info_.id().is_valid()) {
+    if (fallback_surface_info_.is_valid()) {
       fallback_reference_returner_ = ref_factory_->CreateReference(
           layer_tree_host(), fallback_surface_info_.id());
     }

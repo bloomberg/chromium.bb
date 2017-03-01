@@ -632,5 +632,24 @@ TEST_F(CCParamTraitsTest, Resources) {
   Compare(arbitrary_resource2, frame_out.resource_list[1]);
 }
 
+TEST_F(CCParamTraitsTest, SurfaceInfo) {
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  const cc::SurfaceId kArbitrarySurfaceId(
+      kArbitraryFrameSinkId,
+      cc::LocalSurfaceId(3, base::UnguessableToken::Create()));
+  constexpr float kArbitraryDeviceScaleFactor = 0.9f;
+  const gfx::Size kArbitrarySize(65, 321);
+  const cc::SurfaceInfo surface_info_in(
+      kArbitrarySurfaceId, kArbitraryDeviceScaleFactor, kArbitrarySize);
+  IPC::ParamTraits<cc::SurfaceInfo>::Write(&msg, surface_info_in);
+
+  cc::SurfaceInfo surface_info_out;
+  base::PickleIterator iter(msg);
+  EXPECT_TRUE(
+      IPC::ParamTraits<cc::SurfaceInfo>::Read(&msg, &iter, &surface_info_out));
+
+  ASSERT_EQ(surface_info_in, surface_info_out);
+}
+
 }  // namespace
 }  // namespace content

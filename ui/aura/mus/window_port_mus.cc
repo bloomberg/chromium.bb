@@ -32,7 +32,7 @@ WindowPortMus::WindowPortMus(WindowTreeClient* client,
     : WindowMus(window_mus_type), window_tree_client_(client) {}
 
 WindowPortMus::~WindowPortMus() {
-  if (surface_info_.id().is_valid())
+  if (surface_info_.is_valid())
     SetSurfaceInfoFromServer(cc::SurfaceInfo());
 
   // DESTROY is only scheduled from DestroyFromServer(), meaning if DESTROY is
@@ -245,7 +245,7 @@ void WindowPortMus::SetPropertyFromServer(
 
 void WindowPortMus::SetSurfaceInfoFromServer(
     const cc::SurfaceInfo& surface_info) {
-  if (surface_info_.id().is_valid()) {
+  if (surface_info_.is_valid()) {
     const cc::SurfaceId& existing_surface_id = surface_info_.id();
     const cc::SurfaceId& new_surface_id = surface_info.id();
     if (existing_surface_id.is_valid() &&
@@ -256,10 +256,10 @@ void WindowPortMus::SetSurfaceInfoFromServer(
 
   // The fact that SetSurfaceIdFromServer was called means that this window
   // corresponds to an embedded client.
-  if (!client_surface_embedder && surface_info.id().is_valid())
+  if (!client_surface_embedder && surface_info.is_valid())
     client_surface_embedder = base::MakeUnique<ClientSurfaceEmbedder>(window_);
 
-  if (surface_info.id().is_valid())
+  if (surface_info.is_valid())
     client_surface_embedder->UpdateSurface(surface_info);
   else
     client_surface_embedder.reset();

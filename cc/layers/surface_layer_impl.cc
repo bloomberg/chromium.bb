@@ -78,7 +78,7 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     RenderPass* render_pass,
     SurfaceDrawQuadType surface_draw_quad_type,
     const SurfaceInfo& surface_info) {
-  if (!surface_info.id().is_valid())
+  if (!surface_info.is_valid())
     return nullptr;
 
   gfx::Rect quad_rect(surface_info.size_in_pixels());
