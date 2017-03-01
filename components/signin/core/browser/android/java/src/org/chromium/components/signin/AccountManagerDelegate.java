@@ -29,14 +29,31 @@ public interface AccountManagerDelegate {
     /**
      * Get an auth token. This should only be called on a background thread.
      *
-     * @param account The {@link Account} for which the auth token is requested.
+     * @param account        The {@link Account} for which the auth token is requested.
      * @param authTokenScope The scope of the authToken being requested.
+     *
      * @return The auth token fetched from the authenticator.
      * @throws AuthException Indicates a failure in fetching the auth token perhaps due to a
      * transient error or when user intervention is required (like confirming the credentials)
      * which is expressed as an {@link Intent} to the handler.
      */
     String getAuthToken(Account account, String authTokenScope) throws AuthException;
+
+    /**
+     * Get an auth token. If there is a user-recoverable auth error, immediately attempt to resolve
+     * it by launching the intent associated with it.
+     * This should only be called on a background thread.
+     *
+     * @param account        The {@link Account} for which the auth token is requested.
+     * @param authTokenScope The scope of the authToken being requested.
+     *
+     * @return The auth token fetched from the authenticator.
+     * @throws AuthException Indicates a failure in fetching the auth token perhaps due to a
+     *         transient error or when user intervention is required (like confirming the
+     *         credentials) which is expressed as an {@link Intent} to the handler.
+     */
+    String getAuthTokenAndFixUserRecoverableErrorIfNeeded(Account account, String authTokenScope)
+            throws AuthException;
 
     /**
      * @param authToken The auth token to invalidate.
