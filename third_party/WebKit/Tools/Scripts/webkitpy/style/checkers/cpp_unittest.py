@@ -1455,91 +1455,91 @@ class CppStyleTest(CppStyleTestBase):
     # CHECK/EXPECT_TRUE/EXPECT_FALSE replacements
     def test_check_check(self):
         self.assert_lint('CHECK(x == 42)',
-                         'Consider using CHECK_EQ instead of CHECK(a == b)'
+                         'Consider using CHECK_EQ(a, b) instead of CHECK(a == b)'
                          '  [readability/check] [2]')
         self.assert_lint('CHECK(x != 42)',
-                         'Consider using CHECK_NE instead of CHECK(a != b)'
+                         'Consider using CHECK_NE(a, b) instead of CHECK(a != b)'
                          '  [readability/check] [2]')
         self.assert_lint('CHECK(x >= 42)',
-                         'Consider using CHECK_GE instead of CHECK(a >= b)'
+                         'Consider using CHECK_GE(a, b) instead of CHECK(a >= b)'
                          '  [readability/check] [2]')
         self.assert_lint('CHECK(x > 42)',
-                         'Consider using CHECK_GT instead of CHECK(a > b)'
+                         'Consider using CHECK_GT(a, b) instead of CHECK(a > b)'
                          '  [readability/check] [2]')
         self.assert_lint('CHECK(x <= 42)',
-                         'Consider using CHECK_LE instead of CHECK(a <= b)'
+                         'Consider using CHECK_LE(a, b) instead of CHECK(a <= b)'
                          '  [readability/check] [2]')
         self.assert_lint('CHECK(x < 42)',
-                         'Consider using CHECK_LT instead of CHECK(a < b)'
+                         'Consider using CHECK_LT(a, b) instead of CHECK(a < b)'
                          '  [readability/check] [2]')
 
         self.assert_lint('DCHECK(x == 42)',
-                         'Consider using DCHECK_EQ instead of DCHECK(a == b)'
+                         'Consider using DCHECK_EQ(a, b) instead of DCHECK(a == b)'
                          '  [readability/check] [2]')
         self.assert_lint('DCHECK(x != 42)',
-                         'Consider using DCHECK_NE instead of DCHECK(a != b)'
+                         'Consider using DCHECK_NE(a, b) instead of DCHECK(a != b)'
                          '  [readability/check] [2]')
         self.assert_lint('DCHECK(x >= 42)',
-                         'Consider using DCHECK_GE instead of DCHECK(a >= b)'
+                         'Consider using DCHECK_GE(a, b) instead of DCHECK(a >= b)'
                          '  [readability/check] [2]')
         self.assert_lint('DCHECK(x > 42)',
-                         'Consider using DCHECK_GT instead of DCHECK(a > b)'
+                         'Consider using DCHECK_GT(a, b) instead of DCHECK(a > b)'
                          '  [readability/check] [2]')
         self.assert_lint('DCHECK(x <= 42)',
-                         'Consider using DCHECK_LE instead of DCHECK(a <= b)'
+                         'Consider using DCHECK_LE(a, b) instead of DCHECK(a <= b)'
                          '  [readability/check] [2]')
         self.assert_lint('DCHECK(x < 42)',
-                         'Consider using DCHECK_LT instead of DCHECK(a < b)'
+                         'Consider using DCHECK_LT(a, b) instead of DCHECK(a < b)'
                          '  [readability/check] [2]')
 
         self.assert_lint(
             'EXPECT_TRUE("42" == x)',
-            'Consider using EXPECT_EQ instead of EXPECT_TRUE(a == b)'
+            'Consider using EXPECT_EQ(a, b) instead of EXPECT_TRUE(a == b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'EXPECT_TRUE("42" != x)',
-            'Consider using EXPECT_NE instead of EXPECT_TRUE(a != b)'
+            'Consider using EXPECT_NE(a, b) instead of EXPECT_TRUE(a != b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'EXPECT_TRUE(+42 >= x)',
-            'Consider using EXPECT_GE instead of EXPECT_TRUE(a >= b)'
+            'Consider using EXPECT_GE(a, b) instead of EXPECT_TRUE(a >= b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'EXPECT_TRUE_M(-42 > x)',
-            'Consider using EXPECT_GT_M instead of EXPECT_TRUE_M(a > b)'
+            'Consider using EXPECT_GT_M(a, b) instead of EXPECT_TRUE_M(a > b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'EXPECT_TRUE_M(42U <= x)',
-            'Consider using EXPECT_LE_M instead of EXPECT_TRUE_M(a <= b)'
+            'Consider using EXPECT_LE_M(a, b) instead of EXPECT_TRUE_M(a <= b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'EXPECT_TRUE_M(42L < x)',
-            'Consider using EXPECT_LT_M instead of EXPECT_TRUE_M(a < b)'
+            'Consider using EXPECT_LT_M(a, b) instead of EXPECT_TRUE_M(a < b)'
             '  [readability/check] [2]')
 
         self.assert_lint(
             'EXPECT_FALSE(x == 42)',
-            'Consider using EXPECT_NE instead of EXPECT_FALSE(a == b)'
+            'Consider using EXPECT_NE(a, b) instead of EXPECT_FALSE(a == b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'EXPECT_FALSE(x != 42)',
-            'Consider using EXPECT_EQ instead of EXPECT_FALSE(a != b)'
+            'Consider using EXPECT_EQ(a, b) instead of EXPECT_FALSE(a != b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'EXPECT_FALSE(x >= 42)',
-            'Consider using EXPECT_LT instead of EXPECT_FALSE(a >= b)'
+            'Consider using EXPECT_LT(a, b) instead of EXPECT_FALSE(a >= b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'ASSERT_FALSE(x > 42)',
-            'Consider using ASSERT_LE instead of ASSERT_FALSE(a > b)'
+            'Consider using ASSERT_LE(a, b) instead of ASSERT_FALSE(a > b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'ASSERT_FALSE(x <= 42)',
-            'Consider using ASSERT_GT instead of ASSERT_FALSE(a <= b)'
+            'Consider using ASSERT_GT(a, b) instead of ASSERT_FALSE(a <= b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'ASSERT_FALSE_M(x < 42)',
-            'Consider using ASSERT_GE_M instead of ASSERT_FALSE_M(a < b)'
+            'Consider using ASSERT_GE_M(a, b) instead of ASSERT_FALSE_M(a < b)'
             '  [readability/check] [2]')
 
         self.assert_lint('CHECK(some_iterator == obj.end())', '')
@@ -1550,23 +1550,23 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('CHECK(CreateTestFile(dir, (1 >> 20)));', '')
 
         self.assert_lint('CHECK(x<42)',
-                         'Consider using CHECK_LT instead of CHECK(a < b)'
+                         'Consider using CHECK_LT(a, b) instead of CHECK(a < b)'
                          '  [readability/check] [2]')
         self.assert_lint('CHECK(x>42)',
-                         'Consider using CHECK_GT instead of CHECK(a > b)'
+                         'Consider using CHECK_GT(a, b) instead of CHECK(a > b)'
                          '  [readability/check] [2]')
 
         self.assert_lint(
             '  EXPECT_TRUE(42 < x) // Random comment.',
-            'Consider using EXPECT_LT instead of EXPECT_TRUE(a < b)'
+            'Consider using EXPECT_LT(a, b) instead of EXPECT_TRUE(a < b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'EXPECT_TRUE( 42 < x )',
-            'Consider using EXPECT_LT instead of EXPECT_TRUE(a < b)'
+            'Consider using EXPECT_LT(a, b) instead of EXPECT_TRUE(a < b)'
             '  [readability/check] [2]')
         self.assert_lint(
             'CHECK("foo" == "foo")',
-            'Consider using CHECK_EQ instead of CHECK(a == b)'
+            'Consider using CHECK_EQ(a, b) instead of CHECK(a == b)'
             '  [readability/check] [2]')
 
         self.assert_lint('CHECK_EQ("foo", "foo")', '')

@@ -2091,7 +2091,7 @@ def check_check(clean_lines, line_number, error):
     for operator in ['==', '!=', '>=', '>', '<=', '<']:
         if replaceable_check(operator, current_macro, line):
             error(line_number, 'readability/check', 2,
-                  'Consider using %s instead of %s(a %s b)' % (
+                  'Consider using %s(a, b) instead of %s(a %s b)' % (
                       _CHECK_REPLACEMENT[current_macro][operator],
                       current_macro, operator))
             break
