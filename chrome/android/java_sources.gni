@@ -1466,6 +1466,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/push_messaging/PushMessagingTest.java",
   "javatests/src/org/chromium/chrome/browser/search_engines/TemplateUrlServiceTest.java",
   "javatests/src/org/chromium/chrome/browser/services/GoogleServicesManagerIntegrationTest.java",
+  "javatests/src/org/chromium/chrome/browser/shape_detection/ShapeDetectionTest.java",
   "javatests/src/org/chromium/chrome/browser/share/ShareUrlTest.java",
   "javatests/src/org/chromium/chrome/browser/signin/OAuth2TokenServiceIntegrationTest.java",
   "javatests/src/org/chromium/chrome/browser/signin/OAuth2TokenServiceTest.java",
