@@ -559,17 +559,17 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_NEW_TOKENSET
   aom_cdf_prob(
       *const coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
-      ec_ctx->coef_head_cdfs[tx_size][type][ref];
+      ec_ctx->coef_head_cdfs[txsize_sqr_map[tx_size]][type][ref];
   aom_cdf_prob(
       *const coef_tail_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
-      ec_ctx->coef_tail_cdfs[tx_size][type][ref];
+      ec_ctx->coef_tail_cdfs[txsize_sqr_map[tx_size]][type][ref];
   unsigned int(*const blockz_count)[2] =
       td->counts->blockz_count[txsize_sqr_map[tx_size]][type][ref];
   int is_eob;
 #else
 #if CONFIG_EC_MULTISYMBOL
   aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
-      ec_ctx->coef_cdfs[tx_size][type][ref];
+      ec_ctx->coef_cdfs[txsize_sqr_map[tx_size]][type][ref];
 #endif
   int skip_eob = 0;
   const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
