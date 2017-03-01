@@ -172,7 +172,7 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
     }
 
     private boolean isTabChromeHomeNewTabPage(Tab tab) {
-        return tab.getUrl().equals(getUrl()) && !tab.isIncognito();
+        return tab != null && tab.getUrl().equals(getUrl()) && !tab.isIncognito();
     }
 
     // TemplateUrlServiceObserver overrides
