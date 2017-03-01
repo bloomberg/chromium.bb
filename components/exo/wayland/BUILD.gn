@@ -111,9 +111,9 @@ source_set("client_lib") {
   }
 }
 
-executable("wayland_motion_events") {
+executable("wayland_rects_client") {
   sources = [
-    "clients/motion_events.cc",
+    "clients/rects.cc",
   ]
 
   deps = [
@@ -139,7 +139,7 @@ executable("wayland_motion_events") {
 
 executable("wayland_simple_client") {
   sources = [
-    "clients/simple_client.cc",
+    "clients/simple.cc",
   ]
 
   deps = [

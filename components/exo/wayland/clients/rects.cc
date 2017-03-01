@@ -204,11 +204,11 @@ void FeedbackDiscarded(void* data,
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// MotionEvents:
+// RectsClient:
 
-class MotionEvents : public ClientBase {
+class RectsClient : public ClientBase {
  public:
-  MotionEvents() {}
+  RectsClient() {}
 
   // Initialize and run client main loop.
   int Run(const ClientBase::InitParams& params,
@@ -219,15 +219,15 @@ class MotionEvents : public ClientBase {
           bool show_fps_counter);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MotionEvents);
+  DISALLOW_COPY_AND_ASSIGN(RectsClient);
 };
 
-int MotionEvents::Run(const ClientBase::InitParams& params,
-                      size_t max_frames_pending,
-                      size_t num_rects,
-                      size_t num_benchmark_runs,
-                      base::TimeDelta benchmark_interval,
-                      bool show_fps_counter) {
+int RectsClient::Run(const ClientBase::InitParams& params,
+                     size_t max_frames_pending,
+                     size_t num_rects,
+                     size_t num_benchmark_runs,
+                     base::TimeDelta benchmark_interval,
+                     bool show_fps_counter) {
   if (!ClientBase::Init(params))
     return 1;
 
@@ -520,7 +520,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  exo::wayland::clients::MotionEvents client;
+  exo::wayland::clients::RectsClient client;
   return client.Run(params, max_frames_pending, num_rects, num_benchmark_runs,
                     base::TimeDelta::FromMilliseconds(benchmark_interval_ms),
                     command_line->HasSwitch(switches::kShowFpsCounter));
