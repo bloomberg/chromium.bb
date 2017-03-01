@@ -186,7 +186,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         assertEquals(1, urls.size());
         assertEquals(urlInfo.getDistance(), urls.get(0).getDistance());
         assertEquals(urlInfo.getDeviceAddress(), urls.get(0).getDeviceAddress());
-        assertEquals(urlInfo.getScanTimestamp(), urls.get(0).getScanTimestamp());
+        assertEquals(urlInfo.getFirstSeenTimestamp(), urls.get(0).getFirstSeenTimestamp());
 
         urlInfo = new UrlInfo(URL1)
                 .setDistance(100.0)
@@ -196,7 +196,6 @@ public class UrlManagerTest extends InstrumentationTestCase {
         assertEquals(1, urls.size());
         assertEquals(urlInfo.getDistance(), urls.get(0).getDistance());
         assertEquals(urlInfo.getDeviceAddress(), urls.get(0).getDeviceAddress());
-        assertEquals(urlInfo.getScanTimestamp(), urls.get(0).getScanTimestamp());
     }
 
     @SmallTest

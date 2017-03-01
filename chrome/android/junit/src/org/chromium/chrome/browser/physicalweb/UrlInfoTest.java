@@ -33,7 +33,7 @@ public class UrlInfoTest {
         mReferenceJsonObject = new JSONObject("{"
                 + "    \"url\": \"" + URL + "\","
                 + "    \"distance\": 99.5,"
-                + "    \"scan_timestamp\": 42,"
+                + "    \"first_seen_timestamp\": 42,"
                 + "    \"device_address\": \"00:11:22:33:AA:BB\","
                 + "    \"has_been_displayed\": true"
                 + "}");
@@ -49,7 +49,7 @@ public class UrlInfoTest {
         UrlInfo urlInfo = UrlInfo.jsonDeserialize(mReferenceJsonObject);
         assertEquals(mReferenceUrlInfo.getUrl(), urlInfo.getUrl());
         assertEquals(mReferenceUrlInfo.getDistance(), urlInfo.getDistance(), EPSILON);
-        assertEquals(mReferenceUrlInfo.getScanTimestamp(), urlInfo.getScanTimestamp());
+        assertEquals(mReferenceUrlInfo.getFirstSeenTimestamp(), urlInfo.getFirstSeenTimestamp());
         assertEquals(mReferenceUrlInfo.getDeviceAddress(), urlInfo.getDeviceAddress());
         assertEquals(mReferenceUrlInfo.hasBeenDisplayed(), urlInfo.hasBeenDisplayed());
     }
