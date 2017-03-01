@@ -20,6 +20,7 @@ proto_library("proto") {
     "sampled_profile.proto",
     "system_profile.proto",
     "translate_event.proto",
+    "ukm/entry.proto",
     "ukm/report.proto",
     "ukm/source.proto",
     "user_action_event.proto",

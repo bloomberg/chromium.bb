@@ -9,16 +9,18 @@ package ukm;
 option optimize_for = LITE_RUNTIME;
 
 // Source contains data related to a top-level navigation.
-// Next tag: 5
+// Next tag: 6
 message Source {
-  // A identifier for the source. This should be unique even across sessions.
+  // An identifier for the source. This should be unique within a session.
   optional int32 id = 1;
 
-  // The url of the source, as recorded in history.  If this URL has not been
-  // discovered by Google's crawler, it must be stripped to the security origin
-  // before recording to logs.  If the security origin has not been discovered
-  // by the crawler, the security origin must not be logged.
+  // The URL of the source, as recorded in history. If this URL has not been
+  // discovered by Google's crawler, it should not be recorded.
   optional string url = 2;
+
+  // The origin of the URL. This is reserved to be used by server side only.
+  reserved 5;
+  reserved "url_origin";
 
   // Timestamp of navigation to this Source, as seen by the client. Time of
   // events related to this Source will generally be relative to this timestamp.

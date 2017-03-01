@@ -6,6 +6,7 @@
 #define COMPONENTS_UKM_UKM_SOURCE_H_
 
 #include <stddef.h>
+#include <map>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -20,6 +21,9 @@ class UkmSource {
  public:
   UkmSource();
   ~UkmSource();
+
+  int32_t id() const { return id_; }
+  void set_id(int32_t id) { id_ = id; }
 
   const GURL& committed_url() const { return committed_url_; }
   void set_committed_url(const GURL& committed_url) {
@@ -37,6 +41,7 @@ class UkmSource {
   void PopulateProto(Source* proto_source);
 
  private:
+  int32_t id_;
   GURL committed_url_;
   base::TimeDelta first_contentful_paint_;
 

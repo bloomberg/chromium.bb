@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -18,12 +19,15 @@
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
+#include "components/metrics/proto/ukm/entry.pb.h"
 #include "components/metrics/proto/ukm/report.pb.h"
 #include "components/metrics/proto/ukm/source.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/metrics_reporting_scheduler.h"
 #include "components/ukm/persisted_logs_metrics_impl.h"
+#include "components/ukm/ukm_entry.h"
+#include "components/ukm/ukm_entry_builder.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_source.h"
 #include "components/variations/variations_associated_data.h"
@@ -59,7 +63,11 @@ constexpr size_t kMaxLogRetransmitSize = 100 * 1024;
 
 // Maximum number of Sources we'll keep in memory before discarding any
 // new ones being added.
-const size_t kMaxSources = 100;
+const size_t kMaxSources = 500;
+
+// Maximum number of Entries we'll keep in memory before discarding any
+// new ones being added.
+const size_t kMaxEntries = 5000;
 
 std::string GetServerUrl() {
   std::string server_url =
@@ -85,17 +93,23 @@ uint64_t LoadOrGenerateClientId(PrefService* pref_service) {
   return client_id;
 }
 
-enum class DroppedSourceReason {
+enum class DroppedDataReason {
   NOT_DROPPED = 0,
   RECORDING_DISABLED = 1,
-  MAX_SOURCES_HIT = 2,
-  NUM_DROPPED_SOURCES_REASONS
+  MAX_HIT = 2,
+  NUM_DROPPED_DATA_REASONS
 };
 
-void RecordDroppedSource(DroppedSourceReason reason) {
+void RecordDroppedSource(DroppedDataReason reason) {
   UMA_HISTOGRAM_ENUMERATION(
       "UKM.Sources.Dropped", static_cast<int>(reason),
-      static_cast<int>(DroppedSourceReason::NUM_DROPPED_SOURCES_REASONS));
+      static_cast<int>(DroppedDataReason::NUM_DROPPED_DATA_REASONS));
+}
+
+void RecordDroppedEntry(DroppedDataReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "UKM.Entries.Dropped", static_cast<int>(reason),
+      static_cast<int>(DroppedDataReason::NUM_DROPPED_DATA_REASONS));
 }
 
 }  // namespace
@@ -194,8 +208,10 @@ void UkmService::Flush() {
 void UkmService::Purge() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::Purge";
+
   persisted_logs_.Purge();
   sources_.clear();
+  entries_.clear();
 }
 
 void UkmService::ResetClientId() {
@@ -240,8 +256,10 @@ void UkmService::RotateLog() {
 void UkmService::BuildAndStoreLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::BuildAndStoreLog";
+
   // Suppress generating a log if we have no new data to include.
-  if (sources_.empty())
+  // TODO(zhenw): add a histogram here to debug if this case is hitting a lot.
+  if (sources_.empty() && entries_.empty())
     return;
 
   Report report;
@@ -251,8 +269,15 @@ void UkmService::BuildAndStoreLog() {
     Source* proto_source = report.add_sources();
     source->PopulateProto(proto_source);
   }
+  for (const auto& entry : entries_) {
+    Entry* proto_entry = report.add_entries();
+    entry->PopulateProto(proto_entry);
+  }
+
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount", sources_.size());
+  UMA_HISTOGRAM_COUNTS_1000("UKM.Entries.SerializedCount", entries_.size());
   sources_.clear();
+  entries_.clear();
 
   metrics::MetricsLog::RecordCoreSystemProfile(client_,
                                                report.mutable_system_profile());
@@ -328,15 +353,67 @@ void UkmService::RecordSource(std::unique_ptr<UkmSource> source) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!recording_enabled_) {
-    RecordDroppedSource(DroppedSourceReason::RECORDING_DISABLED);
+    RecordDroppedSource(DroppedDataReason::RECORDING_DISABLED);
     return;
   }
   if (sources_.size() >= kMaxSources) {
-    RecordDroppedSource(DroppedSourceReason::MAX_SOURCES_HIT);
+    RecordDroppedSource(DroppedDataReason::MAX_HIT);
     return;
   }
 
   sources_.push_back(std::move(source));
+}
+
+std::unique_ptr<UkmEntryBuilder> UkmService::GetEntryBuilder(
+    int32_t source_id,
+    const char* event_name) {
+  return std::unique_ptr<UkmEntryBuilder>(new UkmEntryBuilder(
+      base::Bind(&UkmService::AddEntry, base::Unretained(this)), source_id,
+      event_name));
+}
+
+void UkmService::UpdateSourceURL(int32_t source_id, const GURL& url) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!recording_enabled_) {
+    RecordDroppedSource(DroppedDataReason::RECORDING_DISABLED);
+    return;
+  }
+
+  // Update the pre-existing source if there is any. This happens when the
+  // initial URL is different from the committed URL for the same source, e.g.,
+  // when there is redirection.
+  for (auto& source : sources_) {
+    if (source_id != source->id())
+      continue;
+
+    source->set_committed_url(url);
+    return;
+  }
+
+  if (sources_.size() >= kMaxSources) {
+    RecordDroppedSource(DroppedDataReason::MAX_HIT);
+    return;
+  }
+  std::unique_ptr<UkmSource> source = base::MakeUnique<UkmSource>();
+  source->set_id(source_id);
+  source->set_committed_url(url);
+  sources_.push_back(std::move(source));
+}
+
+void UkmService::AddEntry(std::unique_ptr<UkmEntry> entry) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!recording_enabled_) {
+    RecordDroppedEntry(DroppedDataReason::RECORDING_DISABLED);
+    return;
+  }
+  if (entries_.size() >= kMaxEntries) {
+    RecordDroppedEntry(DroppedDataReason::MAX_HIT);
+    return;
+  }
+
+  entries_.push_back(std::move(entry));
 }
 
 }  // namespace ukm

@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+#include "base/hash.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/proto/ukm/report.pb.h"
@@ -15,6 +17,7 @@
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ukm/persisted_logs_metrics_impl.h"
+#include "components/ukm/ukm_entry_builder.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,14 +64,6 @@ class UkmServiceTest : public testing::Test {
     return report;
   }
 
-  std::unique_ptr<UkmSource> MakeSource(std::string url, int paint_msec) {
-    auto source = base::MakeUnique<UkmSource>();
-    source->set_committed_url(GURL(url));
-    source->set_first_contentful_paint(
-        base::TimeDelta::FromMilliseconds(paint_msec));
-    return source;
-  }
-
  protected:
   TestingPrefServiceSimple prefs_;
   metrics::TestMetricsServiceClient client_;
@@ -104,12 +99,18 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
-  service.RecordSource(MakeSource("https://google.com", 300));
-  // Should init, generate a log, and start an upload.
+
+  int32_t id = 1;
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  // Should init, generate a log, and start an upload for source.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client_.uploader()->is_uploading());
-  // Flushes the generated log to disk and generates a new one.
-  service.RecordSource(MakeSource("https://google.com", 300));
+  // Flushes the generated log to disk and generates a new entry.
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "PageLoad");
+    builder->AddMetric("FirstContentfulPaint", 300);
+  }
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 2);
   service.Purge();
@@ -124,7 +125,8 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   service.EnableRecording();
   service.EnableReporting();
 
-  service.RecordSource(MakeSource("https://google.com", 300));
+  int32_t id = 1;
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 1);
@@ -133,8 +135,102 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   EXPECT_EQ(1, proto_report.sources_size());
   const Source& proto_source = proto_report.sources(0);
 
-  EXPECT_EQ(GURL("https://google.com").spec(), proto_source.url());
-  EXPECT_EQ(300, proto_source.first_contentful_paint_msec());
+  EXPECT_EQ(id, proto_source.id());
+  EXPECT_EQ(GURL("https://google.com/foobar").spec(), proto_source.url());
+}
+
+TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
+  UkmService service(&prefs_, &client_);
+  EXPECT_EQ(0, GetPersistedLogCount());
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  int32_t id = 1;
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  {
+    std::unique_ptr<UkmEntryBuilder> foo_builder =
+        service.GetEntryBuilder(id, "foo");
+    foo_builder->AddMetric("foo_start", 0);
+    foo_builder->AddMetric("foo_end", 10);
+
+    std::unique_ptr<UkmEntryBuilder> bar_builder =
+        service.GetEntryBuilder(id, "bar");
+    bar_builder->AddMetric("bar_start", 5);
+    bar_builder->AddMetric("bar_end", 15);
+  }
+
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+
+  Report proto_report = GetPersistedReport();
+
+  EXPECT_EQ(1, proto_report.sources_size());
+  const Source& proto_source = proto_report.sources(0);
+  EXPECT_EQ(GURL("https://google.com/foobar").spec(), proto_source.url());
+  EXPECT_EQ(id, proto_source.id());
+
+  EXPECT_EQ(2, proto_report.entries_size());
+
+  // Bar entry is the 0th entry here because bar_builder is destructed before
+  // foo_builder: the reverse order as they are constructed. To have the same
+  // ordering as the builders are constructed, one can achieve that by putting
+  // builders in separate scopes.
+  const Entry& proto_entry_bar = proto_report.entries(0);
+  EXPECT_EQ(id, proto_entry_bar.source_id());
+  EXPECT_EQ(base::HashMetricName("bar"), proto_entry_bar.event_hash());
+  EXPECT_EQ(2, proto_entry_bar.metrics_size());
+  const Entry::Metric proto_entry_bar_start = proto_entry_bar.metrics(0);
+  EXPECT_EQ(base::HashMetricName("bar_start"),
+            proto_entry_bar_start.metric_hash());
+  EXPECT_EQ(5, proto_entry_bar_start.value());
+  const Entry::Metric proto_entry_bar_end = proto_entry_bar.metrics(1);
+  EXPECT_EQ(base::HashMetricName("bar_end"), proto_entry_bar_end.metric_hash());
+  EXPECT_EQ(15, proto_entry_bar_end.value());
+
+  const Entry& proto_entry_foo = proto_report.entries(1);
+  EXPECT_EQ(id, proto_entry_foo.source_id());
+  EXPECT_EQ(base::HashMetricName("foo"), proto_entry_foo.event_hash());
+  EXPECT_EQ(2, proto_entry_foo.metrics_size());
+  const Entry::Metric proto_entry_foo_start = proto_entry_foo.metrics(0);
+  EXPECT_EQ(base::HashMetricName("foo_start"),
+            proto_entry_foo_start.metric_hash());
+  EXPECT_EQ(0, proto_entry_foo_start.value());
+  const Entry::Metric proto_entry_foo_end = proto_entry_foo.metrics(1);
+  EXPECT_EQ(base::HashMetricName("foo_end"), proto_entry_foo_end.metric_hash());
+  EXPECT_EQ(10, proto_entry_foo_end.value());
+}
+
+TEST_F(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics) {
+  UkmService service(&prefs_, &client_);
+  EXPECT_EQ(0, GetPersistedLogCount());
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  int32_t id = 1;
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "PageLoad");
+  }
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+  Report proto_report = GetPersistedReport();
+  EXPECT_EQ(0, proto_report.entries_size());
+
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "PageLoad");
+    builder->AddMetric("FirstContentfulPaint", 300);
+  }
+  service.Flush();
+  EXPECT_EQ(2, GetPersistedLogCount());
+  Report proto_report_with_entries = GetPersistedReport();
+  EXPECT_EQ(1, proto_report_with_entries.entries_size());
 }
 
 TEST_F(UkmServiceTest, MetricsProviderTest) {
@@ -153,18 +249,25 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   service.EnableRecording();
   service.EnableReporting();
 
-  service.RecordSource(MakeSource("https://google.com", 300));
+  int32_t id = 1;
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "PageLoad");
+    builder->AddMetric("FirstContentfulPaint", 300);
+  }
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
   Report proto_report = GetPersistedReport();
   EXPECT_EQ(1, proto_report.sources_size());
+  EXPECT_EQ(1, proto_report.entries_size());
 
   // Providers have now supplied system profile information.
   EXPECT_TRUE(provider->provide_system_profile_metrics_called());
 }
 
-TEST_F(UkmServiceTest, LogsUploadedWithSourcesOnly) {
+TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   UkmService service(&prefs_, &client_);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -178,14 +281,34 @@ TEST_F(UkmServiceTest, LogsUploadedWithSourcesOnly) {
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 0);
 
-  service.RecordSource(MakeSource("https://google.com", 300));
+  int32_t id = 1;
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Includes a Source, so will persist.
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "PageLoad");
+    builder->AddMetric("FirstPaint", 300);
+  }
+  // Includes an Entry, so will persist.
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 2);
+
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "PageLoad");
+    builder->AddMetric("FirstContentfulPaint", 300);
+  }
+  // Includes a Source and an Entry, so will persist.
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 3);
+
   // Current log has no Sources.
   service.Flush();
-  EXPECT_EQ(GetPersistedLogCount(), 1);
+  EXPECT_EQ(GetPersistedLogCount(), 3);
 }
 
 }  // namespace ukm

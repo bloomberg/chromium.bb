@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -17,9 +18,11 @@
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_reporting_scheduler.h"
 #include "components/metrics/persisted_logs.h"
+#include "url/gurl.h"
 
 class PrefRegistrySimple;
 class PrefService;
+class UkmPageLoadMetricsObserver;
 
 namespace metrics {
 class MetricsLogUploader;
@@ -28,6 +31,8 @@ class MetricsServiceClient;
 
 namespace ukm {
 
+class UkmEntry;
+class UkmEntryBuilder;
 class UkmSource;
 
 // This feature controls whether UkmService should be created.
@@ -44,6 +49,10 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   UkmService(PrefService* pref_service, metrics::MetricsServiceClient* client);
   virtual ~UkmService();
 
+  // Update the URL on the source keyed to the given source ID. If the source
+  // does not exist, it will create a new UkmSource object.
+  void UpdateSourceURL(int32_t source_id, const GURL& url);
+
   // Initializes the UKM service.
   void Initialize();
 
@@ -55,10 +64,6 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // been created will remain persisted to disk.
   void EnableReporting();
   void DisableReporting();
-
-  // Adds a new source of UKM metrics, which will be stored
-  // until periodically serialized for upload, and then deleted.
-  void RecordSource(std::unique_ptr<UkmSource> source);
 
   // Records any collected data into logs, and writes to disk.
   void Flush();
@@ -78,12 +83,36 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // the provided PrefRegistry.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  using AddEntryCallback = base::Callback<void(std::unique_ptr<UkmEntry>)>;
+
  protected:
   const std::vector<std::unique_ptr<UkmSource>>& sources_for_testing() const {
     return sources_;
   }
 
  private:
+  friend UkmPageLoadMetricsObserver;
+  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics);
+  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
+  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,
+                           LogsUploadedOnlyWhenHavingSourcesOrEntries);
+  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, MetricsProviderTest);
+  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, PersistAndPurge);
+
+  // Get a new UkmEntryBuilder object for the specified source ID and event,
+  // which can get metrics added to.
+  //
+  // This API being private is intentional. Any client using UKM needs to
+  // declare itself to be a friend of UkmService and go through code review
+  // process.
+  std::unique_ptr<UkmEntryBuilder> GetEntryBuilder(int32_t source_id,
+                                                   const char* event_name);
+
+  // Adds a new source of UKM metrics, which will be stored until periodically
+  // serialized for upload, and then deleted. This method is deprecated. Please
+  // use GetEntryBuilder and UpdateSourceURL above.
+  void RecordSource(std::unique_ptr<UkmSource> source);
+
   // Starts metrics client initialization.
   void StartInitTask();
 
@@ -103,6 +132,9 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
 
   // Called by log_uploader_ when the an upload is completed.
   void OnLogUploadComplete(int response_code);
+
+  // Add an entry to the UkmEntry list.
+  void AddEntry(std::unique_ptr<UkmEntry> entry);
 
   // A weak pointer to the PrefService used to read and write preferences.
   PrefService* pref_service_;
@@ -135,9 +167,11 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   bool initialize_complete_;
   bool log_upload_in_progress_;
 
-  // Contains newly added sources of UKM metrics which periodically
+  // Contains newly added sources and entries of UKM metrics which periodically
   // get serialized and cleared by BuildAndStoreLog().
+  // TODO(zhenw): update sources to a map keyed by source ID.
   std::vector<std::unique_ptr<UkmSource>> sources_;
+  std::vector<std::unique_ptr<UkmEntry>> entries_;
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as UkmService.

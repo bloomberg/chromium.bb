@@ -8,11 +8,12 @@ package ukm;
 
 option optimize_for = LITE_RUNTIME;
 
+import "ukm/entry.proto";
 import "ukm/source.proto";
 import "system_profile.proto";
 
 // This is the message type sent from Chrome to the UKM collector.
-// Next tag: 4
+// Next tag: 5
 message Report {
   // A unique identifier for a Chrome install. This ID should be used only
   // in UKM reports, and not linked to any other data sources.
@@ -23,4 +24,7 @@ message Report {
 
   // A list of the top-level navigations that data was collected for.
   repeated Source sources = 3;
+
+  // List of Entries containing the main UKM data.
+  repeated Entry entries = 4;
 }
