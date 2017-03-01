@@ -63,6 +63,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/histogram_synchronizer.h"
+#include "content/browser/leveldb_wrapper_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader_delegate_impl.h"
 #include "content/browser/media/media_internals.h"
@@ -823,6 +824,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:EnableAggressiveCommitDelay");
     DOMStorageArea::EnableAggressiveCommitDelay();
+    LevelDBWrapperImpl::EnableAggressiveCommitDelay();
   }
 
   // Enable memory-infra dump providers.
