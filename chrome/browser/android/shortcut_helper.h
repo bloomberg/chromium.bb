@@ -50,22 +50,6 @@ class ShortcutHelper {
       const SkBitmap& icon_bitmap,
       const WebApkInstaller::FinishCallback& callback);
 
-  // Adds a shortcut which opens in a fullscreen window to the launcher.
-  // |splash_image_callback| will be invoked once the Java-side operation has
-  // completed. This is necessary as Java will asynchronously create and
-  // populate a WebappDataStorage object for standalone-capable sites. This must
-  // exist before the splash image can be stored.
-  static void AddWebappWithSkBitmap(
-      const ShortcutInfo& info,
-      const std::string& webapp_id,
-      const SkBitmap& icon_bitmap,
-      const base::Closure& splash_image_callback);
-
-  // Adds a shortcut which opens in a browser tab to the launcher.
-  static void AddShortcutWithSkBitmap(const ShortcutInfo& info,
-                                      const std::string& id,
-                                      const SkBitmap& icon_bitmap);
-
   // Shows toast notifying user that a WebAPK install is already in progress
   // when user tries to queue a new install for the same WebAPK.
   static void ShowWebApkInstallInProgressToast();
@@ -129,10 +113,7 @@ class ShortcutHelper {
   static void RetrieveWebApks(const WebApkInfoCallback& callback);
 
  private:
-  ShortcutHelper() = delete;
-  ~ShortcutHelper() = delete;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutHelper);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ShortcutHelper);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SHORTCUT_HELPER_H_

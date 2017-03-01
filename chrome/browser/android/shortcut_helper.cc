@@ -66,49 +66,15 @@ void GetHomescreenIconAndSplashImageSizes() {
   DCHECK(g_minimum_splash_image_size <= g_ideal_splash_image_size);
 }
 
-}  // anonymous namespace
-
-// static
-void ShortcutHelper::AddToLauncherWithSkBitmap(
-    content::BrowserContext* browser_context,
-    const ShortcutInfo& info,
-    const std::string& webapp_id,
-    const SkBitmap& icon_bitmap,
-    const base::Closure& splash_image_callback) {
-  if (info.display == blink::WebDisplayModeStandalone ||
-      info.display == blink::WebDisplayModeFullscreen) {
-    AddWebappWithSkBitmap(info, webapp_id, icon_bitmap, splash_image_callback);
-    GooglePlayInstallState state =
-        ChromeWebApkHost::GetGooglePlayInstallState();
-    if (state != GooglePlayInstallState::SUPPORTED)
-      webapk::TrackGooglePlayInstallState(state);
-    return;
-  }
-  AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap);
-}
-
-// static
-void ShortcutHelper::InstallWebApkWithSkBitmap(
-    content::BrowserContext* browser_context,
-    const ShortcutInfo& info,
-    const SkBitmap& icon_bitmap,
-    const WebApkInstaller::FinishCallback& callback) {
-  WebApkInstallService::Get(browser_context)
-      ->InstallAsync(info, icon_bitmap, callback);
-  // Don't record metric for users who install WebAPKs via "unsigned sources"
-  // flow.
-  if (ChromeWebApkHost::GetGooglePlayInstallState() ==
-      GooglePlayInstallState::SUPPORTED) {
-    webapk::TrackGooglePlayInstallState(GooglePlayInstallState::SUPPORTED);
-  }
-}
-
-// static
-void ShortcutHelper::AddWebappWithSkBitmap(
-    const ShortcutInfo& info,
-    const std::string& webapp_id,
-    const SkBitmap& icon_bitmap,
-    const base::Closure& splash_image_callback) {
+// Adds a shortcut which opens in a fullscreen window to the launcher.
+// |splash_image_callback| will be invoked once the Java-side operation has
+// completed. This is necessary as Java will asynchronously create and
+// populate a WebappDataStorage object for standalone-capable sites. This must
+// exist before the splash image can be stored.
+void AddWebappWithSkBitmap(const ShortcutInfo& info,
+                           const std::string& webapp_id,
+                           const SkBitmap& icon_bitmap,
+                           const base::Closure& splash_image_callback) {
   // Send the data to the Java side to create the shortcut.
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_webapp_id =
@@ -144,9 +110,10 @@ void ShortcutHelper::AddWebappWithSkBitmap(
       callback_pointer);
 }
 
-void ShortcutHelper::AddShortcutWithSkBitmap(const ShortcutInfo& info,
-                                             const std::string& id,
-                                             const SkBitmap& icon_bitmap) {
+// Adds a shortcut which opens in a browser tab to the launcher.
+void AddShortcutWithSkBitmap(const ShortcutInfo& info,
+                             const std::string& id,
+                             const SkBitmap& icon_bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_id =
       base::android::ConvertUTF8ToJavaString(env, id);
@@ -160,6 +127,43 @@ void ShortcutHelper::AddShortcutWithSkBitmap(const ShortcutInfo& info,
 
   Java_ShortcutHelper_addShortcut(env, java_id, java_url, java_user_title,
                                   java_bitmap, info.source);
+}
+
+}  // anonymous namespace
+
+// static
+void ShortcutHelper::AddToLauncherWithSkBitmap(
+    content::BrowserContext* browser_context,
+    const ShortcutInfo& info,
+    const std::string& webapp_id,
+    const SkBitmap& icon_bitmap,
+    const base::Closure& splash_image_callback) {
+  if (info.display == blink::WebDisplayModeStandalone ||
+      info.display == blink::WebDisplayModeFullscreen) {
+    AddWebappWithSkBitmap(info, webapp_id, icon_bitmap, splash_image_callback);
+    GooglePlayInstallState state =
+        ChromeWebApkHost::GetGooglePlayInstallState();
+    if (state != GooglePlayInstallState::SUPPORTED)
+      webapk::TrackGooglePlayInstallState(state);
+    return;
+  }
+  AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap);
+}
+
+// static
+void ShortcutHelper::InstallWebApkWithSkBitmap(
+    content::BrowserContext* browser_context,
+    const ShortcutInfo& info,
+    const SkBitmap& icon_bitmap,
+    const WebApkInstaller::FinishCallback& callback) {
+  WebApkInstallService::Get(browser_context)
+      ->InstallAsync(info, icon_bitmap, callback);
+  // Don't record metric for users who install WebAPKs via "unsigned sources"
+  // flow.
+  if (ChromeWebApkHost::GetGooglePlayInstallState() ==
+      GooglePlayInstallState::SUPPORTED) {
+    webapk::TrackGooglePlayInstallState(GooglePlayInstallState::SUPPORTED);
+  }
 }
 
 void ShortcutHelper::ShowWebApkInstallInProgressToast() {
