@@ -137,8 +137,8 @@ dist_yaml_TESTS =				\
 	yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
-	yaml/el-backward.yaml                 	\
-	yaml/el-forward.yaml                  	\
+	yaml/el-backward.yaml			\
+	yaml/el-forward.yaml			\
 	yaml/emphasis-full.yaml			\
 	yaml/emphasis-no-context.yaml		\
 	yaml/en-GB-g2_backward.yaml		\
@@ -168,6 +168,8 @@ dist_yaml_TESTS =				\
 	yaml/fi_harness.yaml			\
 	yaml/foo.yaml				\
 	yaml/fr-bfu-g2_harness.yaml		\
+	yaml/fr-fr-g1_backward.yaml		\
+	yaml/fr-fr-g1_harness.yaml		\
 	yaml/ga-g1_harness.yaml			\
 	yaml/ga-g2_harness.yaml			\
 	yaml/hr-8dots_harness.yaml		\
@@ -181,11 +183,11 @@ dist_yaml_TESTS =				\
 	yaml/letterDefTest_harness.yaml		\
 	yaml/lt_harness.yaml			\
 	yaml/mn-MN_harness.yaml			\
-	yaml/multipass.yaml			\
 	yaml/multipass-backward.yaml		\
 	yaml/multipass-forward.yaml		\
-	yaml/nl-g0_harness.yaml			\
+	yaml/multipass.yaml			\
 	yaml/nl-NL-g0_harness.yaml		\
+	yaml/nl-g0_harness.yaml			\
 	yaml/no_8dot_harness.yaml		\
 	yaml/no_g1_harness.yaml			\
 	yaml/no_g2_harness.yaml			\
@@ -194,7 +196,9 @@ dist_yaml_TESTS =				\
 	yaml/noletsignafter.yaml		\
 	yaml/pl-pl-comp8_harness.yaml		\
 	yaml/sr-g1_harness.yaml			\
-	yaml/ta-ta-g1_harness.yaml
+	yaml/ta-ta-g1_harness.yaml		\
+	yaml/vi-g1_backward.yaml		\
+	yaml/vi-g1_harness.yaml
 
 TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER =  $(top_builddir)/tools/lou_checkyaml
