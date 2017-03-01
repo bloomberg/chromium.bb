@@ -8,24 +8,14 @@ from recipe_engine import recipe_api
 class CIPDApi(recipe_api.RecipeApi):
   """CIPDApi provides basic support for CIPD.
 
-  This assumes that `cipd` (or `cipd.exe` on windows) has been installed
-  somewhere in $PATH. This will be true if you use depot_tools, or if your
-  recipe is running inside of chrome-infrastructure's systems (buildbot,
+  This assumes that `cipd` (or `cipd.exe` or `cipd.bat` on windows) has been
+  installed somewhere in $PATH. This will be true if you use depot_tools, or if
+  your recipe is running inside of chrome-infrastructure's systems (buildbot,
   swarming).
   """
   def __init__(self, *args, **kwargs):
     super(CIPDApi, self).__init__(*args, **kwargs)
     self._cipd_credentials = None
-    self._executable = None
-
-  def initialize(self):
-    self._executable = 'cipd'
-    if self.m.platform.is_win:
-      self._executable += '.exe'
-
-  @property
-  def executable(self):
-    return self._executable
 
   def set_service_account_credentials(self, path):
     self._cipd_credentials = path
@@ -59,7 +49,7 @@ class CIPDApi(recipe_api.RecipeApi):
     return self.m.step(
         'build %s' % self.m.path.basename(package_name),
         [
-          self.executable,
+          'cipd',
           'pkg-build',
           '-in', input_dir,
           '-name', package_name,
@@ -73,7 +63,7 @@ class CIPDApi(recipe_api.RecipeApi):
 
   def register(self, package_name, package_path, refs=None, tags=None):
     cmd = [
-      self.executable,
+      'cipd',
       'pkg-register', package_path,
       '-json-output', self.m.json.output(),
     ]
@@ -97,7 +87,7 @@ class CIPDApi(recipe_api.RecipeApi):
     This builds and uploads the package in one step.
     """
     cmd = [
-      self.executable,
+      'cipd',
       'create',
       '-pkg-def', pkg_def,
       '-json-output', self.m.json.output(),
@@ -126,7 +116,7 @@ class CIPDApi(recipe_api.RecipeApi):
                     for name, version in sorted(packages.items())]
     ensure_file = self.m.raw_io.input('\n'.join(package_list))
     cmd = [
-      self.executable,
+      'cipd',
       'ensure',
       '-root', root,
       '-ensure-file', ensure_file,
@@ -141,7 +131,7 @@ class CIPDApi(recipe_api.RecipeApi):
 
   def set_tag(self, package_name, version, tags):
     cmd = [
-      self.executable,
+      'cipd',
       'set-tag', package_name,
       '-version', version,
       '-json-output', self.m.json.output(),
@@ -161,7 +151,7 @@ class CIPDApi(recipe_api.RecipeApi):
 
   def set_ref(self, package_name, version, refs):
     cmd = [
-      self.executable,
+      'cipd',
       'set-ref', package_name,
       '-version', version,
       '-json-output', self.m.json.output(),
@@ -183,7 +173,7 @@ class CIPDApi(recipe_api.RecipeApi):
     assert ':' in tag, 'tag must be in a form "k:v"'
 
     cmd = [
-      self.executable,
+      'cipd',
       'search', package_name,
       '-tag', tag,
       '-json-output', self.m.json.output(),
@@ -200,7 +190,7 @@ class CIPDApi(recipe_api.RecipeApi):
   def describe(self, package_name, version,
                test_data_refs=None, test_data_tags=None):
     cmd = [
-      self.executable,
+      'cipd',
       'describe', package_name,
       '-version', version,
       '-json-output', self.m.json.output(),

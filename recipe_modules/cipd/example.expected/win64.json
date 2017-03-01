@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "ensure",
       "-root",
       "[START_DIR]\\packages",
@@ -27,7 +27,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "search",
       "public/package/windows-amd64",
       "-tag",
@@ -52,7 +52,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "describe",
       "public/package/windows-amd64",
       "-version",
@@ -103,7 +103,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "ensure",
       "-root",
       "[START_DIR]\\packages",
@@ -133,7 +133,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "search",
       "private/package/windows-amd64",
       "-tag",
@@ -158,7 +158,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "describe",
       "private/package/windows-amd64",
       "-version",
@@ -204,7 +204,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "pkg-build",
       "-in",
       "fake-input-dir",
@@ -228,7 +228,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "pkg-build",
       "-in",
       "fake-input-dir",
@@ -254,7 +254,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "pkg-register",
       "fake-package-path",
       "-json-output",
@@ -283,7 +283,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "create",
       "-pkg-def",
       "[START_DIR]\\fake-package.yaml",
@@ -308,7 +308,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "set-tag",
       "fake-package",
       "-version",
@@ -338,7 +338,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "set-ref",
       "fake-package",
       "-version",
@@ -368,7 +368,7 @@
   },
   {
     "cmd": [
-      "cipd.exe",
+      "cipd",
       "search",
       "fake-package/windows-amd64",
       "-tag",
