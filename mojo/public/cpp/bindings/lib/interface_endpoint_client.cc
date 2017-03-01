@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -360,7 +361,16 @@ void InterfaceEndpointClient::OnAssociationEvent(
 
 bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
   DCHECK_EQ(handle_.id(), message->interface_id());
-  DCHECK(!encountered_error_);
+
+  if (encountered_error_) {
+    // This message is received after error has been encountered. For associated
+    // interfaces, this means the remote side sends a
+    // PeerAssociatedEndpointClosed event but continues to send more messages
+    // for the same interface. Close the pipe because this shouldn't happen.
+    DVLOG(1) << "A message is received for an interface after it has been "
+             << "disconnected. Closing the pipe.";
+    return false;
+  }
 
   if (message->has_flag(Message::kFlagExpectsResponse)) {
     MessageReceiverWithStatus* responder =
