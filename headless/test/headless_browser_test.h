@@ -117,6 +117,10 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   // are processed (e.g. in a callback).
   virtual void RunDevTooledTest() = 0;
 
+  // Returns the protocol handlers to construct the browser with.  By default
+  // the map returned is empty.
+  virtual ProtocolHandlerMap GetProtocolHandlers();
+
  protected:
   void RunTest();
 

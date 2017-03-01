@@ -247,6 +247,7 @@ static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName) {
           "Cache-Control", "If-Modified-Since", "If-None-Match", "Origin",
           "Pragma", "Purpose", "Referer", "User-Agent",
           HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
+          HTTPNames::X_DevTools_Request_Id,
       }));
   return headers.contains(headerName);
 }

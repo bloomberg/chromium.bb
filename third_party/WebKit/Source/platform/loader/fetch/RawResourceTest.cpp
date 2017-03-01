@@ -579,4 +579,11 @@ TEST_F(RawResourceTest,
   EXPECT_TRUE(raw->canReuse(ResourceRequest("data:text/html,")));
 }
 
+TEST_F(RawResourceTest, CanReuseDevToolsRequestIdHeader) {
+  ResourceRequest request("data:text/html,");
+  request.setHTTPHeaderField(HTTPNames::X_DevTools_Request_Id, "12345");
+  Resource* raw = RawResource::create(request, Resource::Raw);
+  EXPECT_TRUE(raw->canReuse(ResourceRequest("data:text/html,")));
+}
+
 }  // namespace blink

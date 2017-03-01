@@ -695,6 +695,10 @@ void InspectorNetworkAgent::willSendRequest(
     request.addHTTPHeaderField(
         HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
         AtomicString(m_hostId));
+
+  request.setHTTPHeaderField(
+      HTTPNames::X_DevTools_Request_Id,
+      AtomicString(IdentifiersFactory::requestId(identifier)));
 }
 
 void InspectorNetworkAgent::markResourceAsCached(unsigned long identifier) {

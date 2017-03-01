@@ -24,6 +24,7 @@ class DeterministicHttpProtocolHandler::NopGenericURLRequestJobDelegate
   // GenericURLRequestJob::Delegate methods:
   bool BlockOrRewriteRequest(
       const GURL& url,
+      const std::string& devtools_id,
       const std::string& method,
       const std::string& referrer,
       GenericURLRequestJob::RewriteCallback callback) override {
@@ -32,12 +33,14 @@ class DeterministicHttpProtocolHandler::NopGenericURLRequestJobDelegate
 
   const GenericURLRequestJob::HttpResponse* MaybeMatchResource(
       const GURL& url,
+      const std::string& devtools_id,
       const std::string& method,
       const net::HttpRequestHeaders& request_headers) override {
     return nullptr;
   }
 
   void OnResourceLoadComplete(const GURL& final_url,
+                              const std::string& devtools_id,
                               const std::string& mime_type,
                               int http_response_code) override {}
 

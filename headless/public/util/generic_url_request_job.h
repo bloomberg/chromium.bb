@@ -58,21 +58,38 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
     // with the result, or false to indicate that no rewriting is necessary.
     // Called on an arbitrary thread.
     virtual bool BlockOrRewriteRequest(const GURL& url,
+                                       const std::string& devtools_id,
                                        const std::string& method,
                                        const std::string& referrer,
-                                       RewriteCallback callback) = 0;
+                                       RewriteCallback callback);
+    // TODO(alexclarke): Make the above pure virtual and remove this.
+    virtual bool BlockOrRewriteRequest(const GURL& url,
+                                       const std::string& method,
+                                       const std::string& referrer,
+                                       RewriteCallback callback);
 
     // Allows the delegate to synchronously fulfill a request with a reply.
     // Called on an arbitrary thread.
     virtual const HttpResponse* MaybeMatchResource(
         const GURL& url,
+        const std::string& devtools_id,
         const std::string& method,
-        const net::HttpRequestHeaders& request_headers) = 0;
+        const net::HttpRequestHeaders& request_headers);
+    // TODO(alexclarke): Make the above pure virtual and remove this.
+    virtual const HttpResponse* MaybeMatchResource(
+        const GURL& url,
+        const std::string& method,
+        const net::HttpRequestHeaders& request_headers);
 
     // Signals that a resource load has finished. Called on an arbitrary thread.
     virtual void OnResourceLoadComplete(const GURL& final_url,
+                                        const std::string& devtools_id,
                                         const std::string& mime_type,
-                                        int http_response_code) = 0;
+                                        int http_response_code);
+    // TODO(alexclarke): Make the above pure virtual and remove this.
+    virtual void OnResourceLoadComplete(const GURL& final_url,
+                                        const std::string& mime_type,
+                                        int http_response_code) {}
 
    protected:
     virtual ~Delegate() {}
@@ -117,6 +134,7 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
   std::unique_ptr<URLFetcher> url_fetcher_;
   net::HttpRequestHeaders extra_request_headers_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  std::string devtools_request_id_;
   Delegate* delegate_;          // Not owned.
   const char* body_ = nullptr;  // Not owned.
   int http_response_code_ = 0;

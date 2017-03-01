@@ -92,14 +92,15 @@ bool FetchUtils::isSimpleHeader(const AtomicString& name,
   // `text/plain`."
   // Treat 'Save-Data' as a simple header, since it is added by Chrome when
   // Data Saver feature is enabled.
-  // Treat inspector header as a simple header, since it is added by blink when
-  // inspector is open.
+  // Treat inspector headers as a simple headers, since they are added by blink
+  // when the inspector is open.
 
   if (equalIgnoringCase(name, "accept") ||
       equalIgnoringCase(name, "accept-language") ||
       equalIgnoringCase(name, "content-language") ||
       equalIgnoringCase(
           name, HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id) ||
+      equalIgnoringCase(name, HTTPNames::X_DevTools_Request_Id) ||
       equalIgnoringCase(name, "save-data"))
     return true;
 

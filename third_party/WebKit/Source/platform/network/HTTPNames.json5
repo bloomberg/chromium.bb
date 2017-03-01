@@ -62,6 +62,7 @@
     "X-Content-Type-Options",
     "X-DNS-Prefetch-Control",
     "X-DevTools-Emulate-Network-Conditions-Client-Id",
+    "X-DevTools-Request-Id",
     "X-Frame-Options",
     "X-SourceMap",
     "X-XSS-Protection",

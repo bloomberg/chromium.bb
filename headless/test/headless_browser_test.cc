@@ -214,7 +214,10 @@ void HeadlessAsyncDevTooledBrowserTest::RenderProcessExited(
 }
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {
-  browser_context_ = browser()->CreateBrowserContextBuilder().Build();
+  browser_context_ = browser()
+                         ->CreateBrowserContextBuilder()
+                         .SetProtocolHandlers(GetProtocolHandlers())
+                         .Build();
   browser()->SetDefaultBrowserContext(browser_context_);
 
   web_contents_ = browser_context_->CreateWebContentsBuilder().Build();
@@ -229,6 +232,10 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   web_contents_ = nullptr;
   browser_context_->Close();
   browser_context_ = nullptr;
+}
+
+ProtocolHandlerMap HeadlessAsyncDevTooledBrowserTest::GetProtocolHandlers() {
+  return ProtocolHandlerMap();
 }
 
 }  // namespace headless
