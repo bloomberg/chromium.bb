@@ -24,6 +24,8 @@ source_set("key_systems") {
 
 source_set("base") {
   sources = [
+    "audio_device_ids.cc",
+    "audio_device_ids.h",
     "decrypt_context_impl.cc",
     "decrypt_context_impl.h",
     "decrypt_context_impl_clearkey.cc",

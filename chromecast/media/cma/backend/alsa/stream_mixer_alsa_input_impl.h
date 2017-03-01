@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -29,6 +30,8 @@ class MultiChannelResampler;
 
 namespace chromecast {
 namespace media {
+
+class FilterGroup;
 
 // Input queue implementation for StreamMixerAlsa. Each input source pushes
 // frames to an instance of StreamMixerAlsaInputImpl; this then signals the
@@ -90,6 +93,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   StreamMixerAlsaInputImpl(StreamMixerAlsaInput::Delegate* delegate,
                            int input_samples_per_second,
                            bool primary,
+                           const std::string& device_id,
                            StreamMixerAlsa* mixer);
 
   ~StreamMixerAlsaInputImpl() override;
@@ -115,9 +119,12 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   // StreamMixerAlsa::InputQueue implementation:
   int input_samples_per_second() const override;
   bool primary() const override;
+  std::string device_id() const override;
   bool IsDeleting() const override;
   void Initialize(const MediaPipelineBackendAlsa::RenderingDelay&
                       mixer_rendering_delay) override;
+  void set_filter_group(FilterGroup* filter_group) override;
+  FilterGroup* filter_group() override;
   int MaxReadSize() override;
   void GetResampledData(::media::AudioBus* dest, int frames) override;
   void OnSkipped() override;
@@ -147,7 +154,9 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   StreamMixerAlsaInput::Delegate* const delegate_;
   const int input_samples_per_second_;
   const bool primary_;
+  std::string device_id_;
   StreamMixerAlsa* const mixer_;
+  FilterGroup* filter_group_;
   const scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 

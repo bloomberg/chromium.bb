@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_DEVICE_PARAMS_H_
 #define CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_DEVICE_PARAMS_H_
 
+#include <string>
+
 namespace chromecast {
 class TaskRunner;
 
@@ -55,8 +57,20 @@ struct MediaPipelineDeviceParams {
         audio_type(audio_type_in),
         task_runner(task_runner_in) {}
 
+  // |device_id_in| should be from media/audio/audio_device_description.h or
+  // chromecast/media/base/audio_device_ids.h
+  MediaPipelineDeviceParams(MediaSyncType sync_type_in,
+                            AudioStreamType audio_type_in,
+                            const std::string& device_id_in,
+                            TaskRunner* task_runner_in)
+      : sync_type(sync_type_in),
+        audio_type(audio_type_in),
+        device_id(device_id_in),
+        task_runner(task_runner_in) {}
+
   const MediaSyncType sync_type;
   const AudioStreamType audio_type;
+  const std::string device_id;
 
   // task_runner allows backend implementations to post tasks to the media
   // thread.  Since all calls from cast_shell into the backend are made on
