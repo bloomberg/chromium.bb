@@ -1216,16 +1216,21 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #if CONFIG_WARPED_MOTION
 
 #define IDET_PREC_BITS 48
+#define LEAST_SQUARES_SAMPLES_MAX 32
+#define LEAST_SQUARES_MV_MAX 1024  // max mv in 1/8-pel
 #define IDET_WARPEDMODEL_DIFF_BITS (IDET_PREC_BITS - WARPEDMODEL_PREC_BITS)
+
 static int find_affine_int(const int np, int *pts1, int *pts2,
                            WarpedMotionParams *wm, int mi_row, int mi_col) {
-  int64_t A[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
-  int64_t C[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
-  int64_t Bx[3] = { 0, 0, 0 };
-  int64_t By[3] = { 0, 0, 0 };
+  int32_t A[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
+  int32_t Bx[3] = { 0, 0, 0 };
+  int32_t By[3] = { 0, 0, 0 };
+  int i, j, n = 0, off;
+
+  int64_t C00, C01, C02, C11, C12, C22;
   int64_t Px[3], Py[3];
-  int64_t Det, iDet;
-  int i, off;
+  int64_t Det, iDet, v;
+
   // Offsets to make the values in the arrays smaller
   const int ux = mi_col * MI_SIZE * 8, uy = mi_row * MI_SIZE * 8;
   // Let source points (xi, yi) map to destimation points (xi', yi'),
@@ -1245,79 +1250,83 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
   //          y' = h3.x + h4.y + dy
   //
   // The loop below computes: A = P'P, Bx = P'q, By = P'r
-  for (i = 0; i < np; ++i) {
-    const int dx = *(pts2++) - ux;
-    const int dy = *(pts2++) - uy;
-    const int sx = *(pts1++) - ux;
-    const int sy = *(pts1++) - uy;
-    A[0][0] += sx * sx;
-    A[0][1] += sx * sy;
-    A[0][2] += sx;
-    A[1][1] += sy * sy;
-    A[1][2] += sy;
-    A[2][2] += 1;
-    Bx[0] += sx * dx;
-    Bx[1] += sy * dx;
-    Bx[2] += dx;
-    By[0] += sx * dy;
-    By[1] += sy * dy;
-    By[2] += dy;
+  // We need to just compute inv(A).Bx and inv(A).By for the solutions.
+  //
+  for (j = 0; j < SAMPLES_PER_NEIGHBOR && n < LEAST_SQUARES_SAMPLES_MAX; ++j) {
+    for (i = j; i < np && n < LEAST_SQUARES_SAMPLES_MAX;
+         i += SAMPLES_PER_NEIGHBOR) {
+      const int dx = pts2[i * 2] - ux;
+      const int dy = pts2[i * 2 + 1] - uy;
+      const int sx = pts1[i * 2] - ux;
+      const int sy = pts1[i * 2 + 1] - uy;
+      if (abs(sx - dx) >= LEAST_SQUARES_MV_MAX ||
+          abs(sy - dy) >= LEAST_SQUARES_MV_MAX)
+        continue;
+      A[0][0] += sx * sx;
+      A[0][1] += sx * sy;
+      A[0][2] += sx;
+      A[1][1] += sy * sy;
+      A[1][2] += sy;
+      A[2][2] += 1;
+      Bx[0] += sx * dx;
+      Bx[1] += sy * dx;
+      Bx[2] += dx;
+      By[0] += sx * dy;
+      By[1] += sy * dy;
+      By[2] += dy;
+      n++;
+    }
   }
   // Compute Cofactors of A
-  C[0][0] = A[1][1] * A[2][2] - A[1][2] * A[1][2];
-  C[0][1] = A[1][2] * A[0][2] - A[0][1] * A[2][2];
-  C[0][2] = A[0][1] * A[1][2] - A[0][2] * A[1][1];
-  C[1][1] = A[0][0] * A[2][2] - A[0][2] * A[0][2];
-  C[1][2] = A[0][1] * A[0][2] - A[0][0] * A[1][2];
-  C[2][2] = A[0][0] * A[1][1] - A[0][1] * A[0][1];
-
-  // Compute Determinant of A
-  Det = C[0][0] * A[0][0] + C[0][1] * A[0][1] + C[0][2] * A[0][2];
-
-  // These are the least squares solutions but need scaling.
-  Px[0] = C[0][0] * Bx[0] + C[0][1] * Bx[1] + C[0][2] * Bx[2];
-  Px[1] = C[0][1] * Bx[0] + C[1][1] * Bx[1] + C[1][2] * Bx[2];
-  Px[2] = C[0][2] * Bx[0] + C[1][2] * Bx[1] + C[2][2] * Bx[2];
-  Py[0] = C[0][0] * By[0] + C[0][1] * By[1] + C[0][2] * By[2];
-  Py[1] = C[0][1] * By[0] + C[1][1] * By[1] + C[1][2] * By[2];
-  Py[2] = C[0][2] * By[0] + C[1][2] * By[1] + C[2][2] * By[2];
+  C00 = (int64_t)A[1][1] * A[2][2] - (int64_t)A[1][2] * A[1][2];
+  C01 = (int64_t)A[1][2] * A[0][2] - (int64_t)A[0][1] * A[2][2];
+  C02 = (int64_t)A[0][1] * A[1][2] - (int64_t)A[0][2] * A[1][1];
+  C11 = (int64_t)A[0][0] * A[2][2] - (int64_t)A[0][2] * A[0][2];
+  C12 = (int64_t)A[0][1] * A[0][2] - (int64_t)A[0][0] * A[1][2];
+  C22 = (int64_t)A[0][0] * A[1][1] - (int64_t)A[0][1] * A[0][1];
 
   // Scale by 1/16
-  Px[0] = ROUND_POWER_OF_TWO_SIGNED(Px[0], 4);
-  Px[1] = ROUND_POWER_OF_TWO_SIGNED(Px[1], 4);
-  Px[2] = ROUND_POWER_OF_TWO_SIGNED(Px[2], 4);
-  Py[0] = ROUND_POWER_OF_TWO_SIGNED(Py[0], 4);
-  Py[1] = ROUND_POWER_OF_TWO_SIGNED(Py[1], 4);
-  Py[2] = ROUND_POWER_OF_TWO_SIGNED(Py[2], 4);
-  Det = ROUND_POWER_OF_TWO_SIGNED(Det, 4);
+  C00 = ROUND_POWER_OF_TWO_SIGNED(C00, 6);
+  C01 = ROUND_POWER_OF_TWO_SIGNED(C01, 6);
+  C02 = ROUND_POWER_OF_TWO_SIGNED(C02, 6);
+  C11 = ROUND_POWER_OF_TWO_SIGNED(C11, 6);
+  C12 = ROUND_POWER_OF_TWO_SIGNED(C12, 6);
+  C22 = ROUND_POWER_OF_TWO_SIGNED(C22, 6);
+
+  // Compute Determinant of A
+  Det = C00 * A[0][0] + C01 * A[0][1] + C02 * A[0][2];
   if (Det == 0) return 1;
 
+  // These divided by the Det, are the least squares solutions
+  Px[0] = C00 * Bx[0] + C01 * Bx[1] + C02 * Bx[2];
+  Px[1] = C01 * Bx[0] + C11 * Bx[1] + C12 * Bx[2];
+  Px[2] = C02 * Bx[0] + C12 * Bx[1] + C22 * Bx[2];
+  Py[0] = C00 * By[0] + C01 * By[1] + C02 * By[2];
+  Py[1] = C01 * By[0] + C11 * By[1] + C12 * By[2];
+  Py[2] = C02 * By[0] + C12 * By[1] + C22 * By[2];
+
   // Compute inverse of the Determinant
-  // TODO(debargha, yuec): Try to remove this only division
+  // TODO(debargha, yuec): Try to remove this only division if possible
   iDet = ((int64_t)1 << IDET_PREC_BITS) / Det;
 
-  wm->wmmat[2] = ((int64_t)Px[0] * (int64_t)iDet +
-                  ((int64_t)1 << (IDET_WARPEDMODEL_DIFF_BITS - 1))) >>
-                 IDET_WARPEDMODEL_DIFF_BITS;
-  wm->wmmat[3] = ((int64_t)Px[1] * (int64_t)iDet +
-                  ((int64_t)1 << (IDET_WARPEDMODEL_DIFF_BITS - 1))) >>
-                 IDET_WARPEDMODEL_DIFF_BITS;
-  wm->wmmat[0] = ((int64_t)Px[2] * (int64_t)iDet +
-                  ((int64_t)1 << (IDET_WARPEDMODEL_DIFF_BITS + 2))) >>
-                 (IDET_WARPEDMODEL_DIFF_BITS + 3);
+  v = Px[0] * iDet;
+  wm->wmmat[2] = ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS);
+  v = Px[1] * iDet;
+  wm->wmmat[3] = ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS);
+  v = Px[2] * iDet;
+  wm->wmmat[0] =
+      ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS + 3);
   // Adjust x displacement for the offset
   off = (ux << WARPEDMODEL_PREC_BITS) - ux * wm->wmmat[2] - uy * wm->wmmat[3];
   wm->wmmat[0] += ROUND_POWER_OF_TWO_SIGNED(off, 3);
 
-  wm->wmmat[4] = ((int64_t)Py[0] * (int64_t)iDet +
-                  ((int64_t)1 << (IDET_WARPEDMODEL_DIFF_BITS - 1))) >>
-                 IDET_WARPEDMODEL_DIFF_BITS;
-  wm->wmmat[5] = ((int64_t)Py[1] * (int64_t)iDet +
-                  ((int64_t)1 << (IDET_WARPEDMODEL_DIFF_BITS - 1))) >>
-                 IDET_WARPEDMODEL_DIFF_BITS;
-  wm->wmmat[1] = ((int64_t)Py[2] * (int64_t)iDet +
-                  ((int64_t)1 << (IDET_WARPEDMODEL_DIFF_BITS + 2))) >>
-                 (IDET_WARPEDMODEL_DIFF_BITS + 3);
+  v = Py[0] * iDet;
+  wm->wmmat[4] = ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS);
+  v = Py[1] * iDet;
+  wm->wmmat[5] = ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS);
+  v = Py[2] * iDet;
+  wm->wmmat[1] =
+      ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS + 3);
   // Adjust y displacement for the offset
   off = (uy << WARPEDMODEL_PREC_BITS) - ux * wm->wmmat[4] - uy * wm->wmmat[5];
   wm->wmmat[1] += ROUND_POWER_OF_TWO_SIGNED(off, 3);
