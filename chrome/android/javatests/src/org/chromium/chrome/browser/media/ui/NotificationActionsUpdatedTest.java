@@ -8,6 +8,7 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -74,6 +75,7 @@ public class NotificationActionsUpdatedTest extends ChromeActivityTestCaseBase<C
         assertActionsMatch(new HashSet<Integer>());
     }
 
+    @FlakyTest(message = "crbug.com/697453")
     @SmallTest
     public void testActionsPersistAfterSamePageNavigation() throws Throwable {
         ensureTestServer();

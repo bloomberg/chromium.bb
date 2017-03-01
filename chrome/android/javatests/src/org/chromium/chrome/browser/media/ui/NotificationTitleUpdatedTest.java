@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -188,6 +189,7 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
         assertTitleMatches("title3");
     }
 
+    @FlakyTest(message = "crbug.com/697453")
     @SmallTest
     public void testMediaMetadataPersistsAfterSamePageNavigation() throws Throwable {
         ensureTestServer();
