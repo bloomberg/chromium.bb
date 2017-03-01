@@ -75,6 +75,9 @@ test data. Refer to the documentation for the details
   to Davy Kager. The table is tailored for use on Windows (CP-1252)
   and uses dot patterns from Windows screen readers, but should be
   useful on other platforms too.
+** License changes
+- DocArch has agreed to relicense their tables, so we have 8 more
+  tables under the LGPLv2.1+.
 
 ** Backwards incompatible changes
 - The naming in the YAML test framework has changed slightly from
