@@ -10,9 +10,9 @@ namespace blink {
 {% for flag, function_name in switches %}
 
 bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID property) {
-  switch(property) {
+  switch (property) {
     case CSSPropertyInvalid:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
     {% for property_id, property in properties.items() if property[flag] %}
     case {{property_id}}:
@@ -26,6 +26,21 @@ bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID property) {
   }
 }
 {% endfor %}
+
+char CSSPropertyMetadata::repetitionSeparator(CSSPropertyID property) {
+  switch (property) {
+  {% for property_id, property in properties.items() if property.separator %}
+  case {{property_id}}:
+    return '{{property.separator}}';
+  {% endfor %}
+  default:
+    return 0;
+  }
+}
+
+bool CSSPropertyMetadata::propertyIsRepeated(CSSPropertyID property) {
+  return repetitionSeparator(property) != 0;
+}
 
 bool CSSPropertyMetadata::isEnabledProperty(CSSPropertyID unresolvedProperty) {
   CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);

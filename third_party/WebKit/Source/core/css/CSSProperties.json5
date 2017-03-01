@@ -96,16 +96,16 @@
     // - typedom_types: ["Type", "OtherType"]
     // The property can take types specified in typedom_types for CSS Typed OM.
     // Keyword does not need to be specified as every property can take keywords.
-    // - repeated
-    // The property supports a list of values.
+    // - separator
+    // The property supports a list of values, and when there is more than one,
+    // it is separated with this character.
     // - supports_percentage
     // The property supports percentage types.
     typedom_types: {
       default: [],
     },
-    repeated: {
-      default: false,
-      valid_type: "bool",
+    separator: {
+      valid_values: [",", " ", "/"],
     },
     supports_percentage: {
       default: false,
@@ -260,7 +260,7 @@
       custom_all: true,
       keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
       priority: "Animation",
-      repeated: true,
+      separator: ",",
     },
     {
       name: "animation-duration",
@@ -277,7 +277,7 @@
       custom_all: true,
       keywords: ["infinite"],
       priority: "Animation",
-      repeated: true,
+      separator: ",",
     },
     {
       name: "animation-name",
@@ -879,7 +879,7 @@
       api_class: true,
       api_methods: ["parseSingleValue"],
       custom_all: true,
-      repeated: true,
+      separator: ",",
       typedom_types: ["Image"],
     },
     {

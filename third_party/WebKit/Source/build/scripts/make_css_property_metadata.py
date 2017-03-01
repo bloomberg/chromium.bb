@@ -28,7 +28,6 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
                          ('interpolable', 'isInterpolableProperty'),
                          ('inherited', 'isInheritedProperty'),
                          ('supports_percentage', 'propertySupportsPercentage'),
-                         ('repeated', 'propertyIsRepeated')
                         ],
             'first_enum_value': self._first_enum_value,
         }

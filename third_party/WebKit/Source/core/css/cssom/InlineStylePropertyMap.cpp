@@ -21,6 +21,21 @@ namespace blink {
 
 namespace {
 
+CSSValueList* cssValueListForPropertyID(CSSPropertyID propertyID) {
+  char separator = CSSPropertyMetadata::repetitionSeparator(propertyID);
+  switch (separator) {
+    case ' ':
+      return CSSValueList::createSpaceSeparated();
+    case ',':
+      return CSSValueList::createCommaSeparated();
+    case '/':
+      return CSSValueList::createSlashSeparated();
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 const CSSValue* styleValueToCSSValue(CSSPropertyID propertyID,
                                      const CSSStyleValue& styleValue) {
   if (!CSSOMTypes::propertyCanTake(propertyID, styleValue))
@@ -38,16 +53,15 @@ const CSSValue* singleStyleValueAsCSSValue(CSSPropertyID propertyID,
       cssValue->isCSSWideKeyword())
     return cssValue;
 
-  // TODO(meade): Determine the correct separator for each property.
-  CSSValueList* valueList = CSSValueList::createSpaceSeparated();
+  CSSValueList* valueList = cssValueListForPropertyID(propertyID);
   valueList->append(*cssValue);
   return valueList;
 }
 
-CSSValueList* asCSSValueList(CSSPropertyID propertyID,
-                             const CSSStyleValueVector& styleValueVector) {
-  // TODO(meade): Determine the correct separator for each property.
-  CSSValueList* valueList = CSSValueList::createSpaceSeparated();
+const CSSValueList* asCSSValueList(
+    CSSPropertyID propertyID,
+    const CSSStyleValueVector& styleValueVector) {
+  CSSValueList* valueList = cssValueListForPropertyID(propertyID);
   for (const CSSStyleValue* value : styleValueVector) {
     const CSSValue* cssValue = styleValueToCSSValue(propertyID, *value);
     if (!cssValue) {
@@ -151,8 +165,7 @@ void InlineStylePropertyMap::append(
           propertyID);
   CSSValueList* cssValueList = nullptr;
   if (!cssValue) {
-    // TODO(meade): Determine the correct separator for each property.
-    cssValueList = CSSValueList::createSpaceSeparated();
+    cssValueList = cssValueListForPropertyID(propertyID);
   } else if (cssValue->isValueList()) {
     cssValueList = toCSSValueList(cssValue)->copy();
   } else {
