@@ -77,8 +77,8 @@ class ShortcutHelper {
   // passed as a closure to that method.
   static void FetchSplashScreenImage(content::WebContents* web_contents,
                                      const GURL& image_url,
-                                     const int ideal_splash_image_size_in_dp,
-                                     const int minimum_splash_image_size_in_dp,
+                                     const int ideal_splash_image_size_in_px,
+                                     const int minimum_splash_image_size_in_px,
                                      const std::string& webapp_id);
 
   // Stores the webapp splash screen in the WebappDataStorage associated with
