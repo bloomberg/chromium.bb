@@ -448,7 +448,7 @@ void RootFrameViewport::cancelProgrammaticScrollAnimation() {
   visualViewport().cancelProgrammaticScrollAnimation();
 }
 
-Widget* RootFrameViewport::getWidget() {
+FrameViewBase* RootFrameViewport::getWidget() {
   return visualViewport().getWidget();
 }
 

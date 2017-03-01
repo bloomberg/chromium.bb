@@ -22,8 +22,8 @@ RemoteFrameView::RemoteFrameView(RemoteFrame* remoteFrame)
 
 RemoteFrameView::~RemoteFrameView() {}
 
-void RemoteFrameView::setParent(Widget* parent) {
-  Widget::setParent(parent);
+void RemoteFrameView::setParent(FrameViewBase* parent) {
+  FrameViewBase::setParent(parent);
   frameRectsChanged();
 }
 
@@ -74,7 +74,7 @@ void RemoteFrameView::dispose() {
   // RemoteFrameView is disconnected before detachment.
   if (ownerElement && ownerElement->ownedWidget() == this)
     ownerElement->setWidget(nullptr);
-  Widget::dispose();
+  FrameViewBase::dispose();
 }
 
 void RemoteFrameView::invalidateRect(const IntRect& rect) {
@@ -94,7 +94,7 @@ void RemoteFrameView::setFrameRect(const IntRect& newRect) {
   if (newRect == oldRect)
     return;
 
-  Widget::setFrameRect(newRect);
+  FrameViewBase::setFrameRect(newRect);
 
   frameRectsChanged();
 }
@@ -115,7 +115,7 @@ void RemoteFrameView::frameRectsChanged() {
 void RemoteFrameView::hide() {
   setSelfVisible(false);
 
-  Widget::hide();
+  FrameViewBase::hide();
 
   m_remoteFrame->client()->visibilityChanged(false);
 }
@@ -123,7 +123,7 @@ void RemoteFrameView::hide() {
 void RemoteFrameView::show() {
   setSelfVisible(true);
 
-  Widget::show();
+  FrameViewBase::show();
 
   m_remoteFrame->client()->visibilityChanged(true);
 }
@@ -132,7 +132,7 @@ void RemoteFrameView::setParentVisible(bool visible) {
   if (isParentVisible() == visible)
     return;
 
-  Widget::setParentVisible(visible);
+  FrameViewBase::setParentVisible(visible);
   if (!isSelfVisible())
     return;
 
@@ -141,7 +141,7 @@ void RemoteFrameView::setParentVisible(bool visible) {
 
 DEFINE_TRACE(RemoteFrameView) {
   visitor->trace(m_remoteFrame);
-  Widget::trace(visitor);
+  FrameViewBase::trace(visitor);
 }
 
 }  // namespace blink

@@ -77,7 +77,7 @@ class LayoutScrollbar final : public Scrollbar {
  private:
   friend class Scrollbar;
 
-  void setParent(Widget*) override;
+  void setParent(FrameViewBase*) override;
   void setEnabled(bool) override;
 
   void setHoveredPart(ScrollbarPart) override;

@@ -168,9 +168,10 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   bool tabsToLinks() override { return false; }
 
   void invalidateRect(const IntRect&) override {}
-  void scheduleAnimation(Widget*) override {}
+  void scheduleAnimation(FrameViewBase*) override {}
 
-  IntRect viewportToScreen(const IntRect& r, const Widget*) const override {
+  IntRect viewportToScreen(const IntRect& r,
+                           const FrameViewBase*) const override {
     return r;
   }
   float windowToViewportScalar(const float s) const override { return s; }
@@ -322,13 +323,13 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   LocalFrame* createFrame(const FrameLoadRequest&,
                           const AtomicString&,
                           HTMLFrameOwnerElement*) override;
-  Widget* createPlugin(HTMLPlugInElement*,
-                       const KURL&,
-                       const Vector<String>&,
-                       const Vector<String>&,
-                       const String&,
-                       bool,
-                       DetachedPluginPolicy) override;
+  FrameViewBase* createPlugin(HTMLPlugInElement*,
+                              const KURL&,
+                              const Vector<String>&,
+                              const Vector<String>&,
+                              const String&,
+                              bool,
+                              DetachedPluginPolicy) override;
   bool canCreatePluginWithoutRenderer(const String& mimeType) const override {
     return false;
   }

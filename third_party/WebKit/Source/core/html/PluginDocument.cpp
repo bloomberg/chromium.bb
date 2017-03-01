@@ -158,9 +158,10 @@ void PluginDocumentParser::finish() {
 }
 
 PluginView* PluginDocumentParser::pluginView() const {
-  if (Widget* widget = toPluginDocument(document())->pluginWidget()) {
-    SECURITY_DCHECK(widget->isPluginContainer());
-    return toPluginView(widget);
+  if (FrameViewBase* frameViewBase =
+          toPluginDocument(document())->pluginWidget()) {
+    SECURITY_DCHECK(frameViewBase->isPluginContainer());
+    return toPluginView(frameViewBase);
   }
   return 0;
 }
@@ -178,14 +179,14 @@ DocumentParser* PluginDocument::createParser() {
   return PluginDocumentParser::create(this);
 }
 
-Widget* PluginDocument::pluginWidget() {
+FrameViewBase* PluginDocument::pluginWidget() {
   if (m_pluginNode && m_pluginNode->layoutObject()) {
     CHECK(m_pluginNode->layoutObject()->isEmbeddedObject());
-    Widget* widget =
+    FrameViewBase* frameViewBase =
         toLayoutEmbeddedObject(m_pluginNode->layoutObject())->widget();
-    if (!widget || !widget->isPluginContainer())
+    if (!frameViewBase || !frameViewBase->isPluginContainer())
       return nullptr;
-    return widget;
+    return frameViewBase;
   }
   return 0;
 }

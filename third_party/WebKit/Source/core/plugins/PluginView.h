@@ -29,7 +29,7 @@
 #define PluginView_h
 
 #include "core/CoreExport.h"
-#include "platform/Widget.h"
+#include "platform/FrameViewBase.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "v8/include/v8.h"
 #include "wtf/text/WTFString.h"
@@ -42,7 +42,7 @@ namespace blink {
 
 class ResourceResponse;
 
-class CORE_EXPORT PluginView : public Widget {
+class CORE_EXPORT PluginView : public FrameViewBase {
  public:
   bool isPluginView() const final { return true; }
 
@@ -62,14 +62,14 @@ class CORE_EXPORT PluginView : public Widget {
   virtual void invalidatePaintIfNeeded() {}
 
  protected:
-  PluginView() : Widget() {}
+  PluginView() : FrameViewBase() {}
 };
 
 DEFINE_TYPE_CASTS(PluginView,
-                  Widget,
-                  widget,
-                  widget->isPluginView(),
-                  widget.isPluginView());
+                  FrameViewBase,
+                  frameViewBase,
+                  frameViewBase->isPluginView(),
+                  frameViewBase.isPluginView());
 
 }  // namespace blink
 

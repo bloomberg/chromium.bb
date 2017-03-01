@@ -1884,7 +1884,7 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const {
              controller.globalRootScroller()) == this;
 }
 
-Widget* PaintLayerScrollableArea::getWidget() {
+FrameViewBase* PaintLayerScrollableArea::getWidget() {
   return box().frame()->view();
 }
 

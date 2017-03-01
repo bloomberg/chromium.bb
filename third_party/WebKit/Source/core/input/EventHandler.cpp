@@ -108,9 +108,9 @@ namespace {
 
 // Refetch the event target node if it is removed or currently is the shadow
 // node inside an <input> element.  If a mouse event handler changes the input
-// element type to one that has a widget associated, we'd like to
-// EventHandler::handleMousePressEvent to pass the event to the widget and thus
-// the event target node can't still be the shadow node.
+// element type to one that has a FrameViewBase associated, we'd like to
+// EventHandler::handleMousePressEvent to pass the event to the FrameViewBase
+// and thus the event target node can't still be the shadow node.
 bool shouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
   Node* targetNode = mev.innerNode();
   if (!targetNode || !targetNode->parentNode())
@@ -319,11 +319,11 @@ static LocalFrame* subframeForTargetNode(Node* node) {
   if (!layoutObject || !layoutObject->isLayoutPart())
     return nullptr;
 
-  Widget* widget = toLayoutPart(layoutObject)->widget();
-  if (!widget || !widget->isFrameView())
+  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->widget();
+  if (!frameViewBase || !frameViewBase->isFrameView())
     return nullptr;
 
-  return &toFrameView(widget)->frame();
+  return &toFrameView(frameViewBase)->frame();
 }
 
 static LocalFrame* subframeForHitTestResult(
@@ -609,8 +609,8 @@ WebInputEventResult EventHandler::handleMousePressEvent(
     WebInputEventResult result = passMousePressEventToSubframe(mev, subframe);
     // Start capturing future events for this frame.  We only do this if we
     // didn't clear the m_mousePressed flag, which may happen if an AppKit
-    // widget entered a modal event loop.  The capturing should be done only
-    // when the result indicates it has been handled. See crbug.com/269917
+    // FrameViewBase entered a modal event loop.  The capturing should be done
+    // only when the result indicates it has been handled. See crbug.com/269917
     m_mouseEventManager->setCapturesDragging(
         subframe->eventHandler().m_mouseEventManager->capturesDragging());
     if (m_mouseEventManager->mousePressed() &&
@@ -693,8 +693,8 @@ WebInputEventResult EventHandler::handleMousePressEvent(
       eventResult == WebInputEventResult::NotHandled || mev.scrollbar());
 
   // If the hit testing originally determined the event was in a scrollbar,
-  // refetch the MouseEventWithHitTestResults in case the scrollbar widget was
-  // destroyed when the mouse event was handled.
+  // refetch the MouseEventWithHitTestResults in case the scrollbar
+  // FrameViewBase was destroyed when the mouse event was handled.
   if (mev.scrollbar()) {
     const bool wasLastScrollBar =
         mev.scrollbar() == m_lastScrollbarUnderMouse.get();

@@ -25,7 +25,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutReplaced.h"
-#include "platform/Widget.h"
+#include "platform/FrameViewBase.h"
 
 namespace blink {
 
@@ -48,7 +48,7 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   void ref() { ++m_refCount; }
   void deref();
 
-  Widget* widget() const;
+  FrameViewBase* widget() const;
 
   LayoutRect replacedContentRect() const final;
 

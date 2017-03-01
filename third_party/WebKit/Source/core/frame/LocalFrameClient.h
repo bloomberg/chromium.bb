@@ -194,12 +194,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   };
   virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const = 0;
   virtual FrameViewBase* createPlugin(HTMLPlugInElement*,
-                               const KURL&,
-                               const Vector<String>&,
-                               const Vector<String>&,
-                               const String&,
-                               bool loadManually,
-                               DetachedPluginPolicy) = 0;
+                                      const KURL&,
+                                      const Vector<String>&,
+                                      const Vector<String>&,
+                                      const String&,
+                                      bool loadManually,
+                                      DetachedPluginPolicy) = 0;
 
   virtual std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
       HTMLMediaElement&,

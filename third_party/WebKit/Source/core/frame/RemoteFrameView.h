@@ -5,7 +5,7 @@
 #ifndef RemoteFrameView_h
 #define RemoteFrameView_h
 
-#include "platform/Widget.h"
+#include "platform/FrameViewBase.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 
@@ -13,14 +13,14 @@ namespace blink {
 
 class RemoteFrame;
 
-class RemoteFrameView final : public Widget {
+class RemoteFrameView final : public FrameViewBase {
  public:
   static RemoteFrameView* create(RemoteFrame*);
 
   ~RemoteFrameView() override;
 
   bool isRemoteFrameView() const override { return true; }
-  void setParent(Widget*) override;
+  void setParent(FrameViewBase*) override;
 
   RemoteFrame& frame() const {
     ASSERT(m_remoteFrame);
@@ -53,10 +53,10 @@ class RemoteFrameView final : public Widget {
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameView,
-                  Widget,
-                  widget,
-                  widget->isRemoteFrameView(),
-                  widget.isRemoteFrameView());
+                  FrameViewBase,
+                  frameViewBase,
+                  frameViewBase->isRemoteFrameView(),
+                  frameViewBase.isRemoteFrameView());
 
 }  // namespace blink
 

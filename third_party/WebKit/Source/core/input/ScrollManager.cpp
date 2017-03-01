@@ -361,13 +361,15 @@ WebInputEventResult ScrollManager::passScrollGestureEventToWidget(
       !layoutObject->isLayoutPart())
     return WebInputEventResult::NotHandled;
 
-  Widget* widget = toLayoutPart(layoutObject)->widget();
+  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->widget();
 
-  if (!widget || !widget->isFrameView())
+  if (!frameViewBase || !frameViewBase->isFrameView())
     return WebInputEventResult::NotHandled;
 
-  return toFrameView(widget)->frame().eventHandler().handleGestureScrollEvent(
-      gestureEvent);
+  return toFrameView(frameViewBase)
+      ->frame()
+      .eventHandler()
+      .handleGestureScrollEvent(gestureEvent);
 }
 
 bool ScrollManager::isViewportScrollingElement(const Element& element) const {

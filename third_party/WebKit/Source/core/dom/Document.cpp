@@ -368,7 +368,7 @@ static inline bool isValidNamePart(UChar32 c) {
   return true;
 }
 
-static Widget* widgetForElement(const Element& focusedElement) {
+static FrameViewBase* widgetForElement(const Element& focusedElement) {
   LayoutObject* layoutObject = focusedElement.layoutObject();
   if (!layoutObject || !layoutObject->isLayoutPart())
     return 0;
@@ -2060,7 +2060,8 @@ void Document::updateStyle() {
 
   unsigned initialElementCount = styleEngine().styleForElementCount();
 
-  HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+  HTMLFrameOwnerElement::UpdateSuspendScope
+      suspendFrameViewBaseHierarchyUpdates;
   m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
   StyleRecalcChange change = NoChange;
@@ -2456,20 +2457,21 @@ void Document::shutdown() {
   // to trigger navigation here.  However, plugins (see below) can cause lots of
   // crazy things to happen, since plugin detach involves nested message loops.
   FrameNavigationDisabler navigationDisabler(*m_frame);
-  // Defer widget updates to avoid plugins trying to run script inside
+  // Defer FrameViewBase updates to avoid plugins trying to run script inside
   // ScriptForbiddenScope, which will crash the renderer after
   // https://crrev.com/200984
-  HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+  HTMLFrameOwnerElement::UpdateSuspendScope
+      suspendFrameViewBaseHierarchyUpdates;
   // Don't allow script to run in the middle of detachLayoutTree() because a
   // detaching Document is not in a consistent state.
   ScriptForbiddenScope forbidScript;
 
   view()->dispose();
 
-  // If the widget of the document's frame owner doesn't match view() then
-  // FrameView::dispose() didn't clear the owner's widget. If we don't clear it
-  // here, it may be clobbered later in LocalFrame::createView(). See also
-  // https://crbug.com/673170 and the comment in FrameView::dispose().
+  // If the FrameViewBase of the document's frame owner doesn't match view()
+  // then FrameView::dispose() didn't clear the owner's FrameViewBase. If we
+  // don't clear it here, it may be clobbered later in LocalFrame::createView().
+  // See also https://crbug.com/673170 and the comment in FrameView::dispose().
   HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
   if (ownerElement)
     ownerElement->setWidget(nullptr);
@@ -4036,9 +4038,9 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     }
 
     if (view()) {
-      Widget* oldWidget = widgetForElement(*oldFocusedElement);
-      if (oldWidget)
-        oldWidget->setFocused(false, params.type);
+      FrameViewBase* oldFrameViewBase = widgetForElement(*oldFocusedElement);
+      if (oldFrameViewBase)
+        oldFrameViewBase->setFocused(false, params.type);
       else
         view()->setFocused(false, params.type);
     }
@@ -4110,17 +4112,17 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     // eww, I suck. set the qt focus correctly
     // ### find a better place in the code for this
     if (view()) {
-      Widget* focusWidget = widgetForElement(*m_focusedElement);
-      if (focusWidget) {
-        // Make sure a widget has the right size before giving it focus.
-        // Otherwise, we are testing edge cases of the Widget code.
+      FrameViewBase* focusFrameViewBase = widgetForElement(*m_focusedElement);
+      if (focusFrameViewBase) {
+        // Make sure a FrameViewBase has the right size before giving it focus.
+        // Otherwise, we are testing edge cases of the FrameViewBase code.
         // Specifically, in WebCore this does not work well for text fields.
         updateStyleAndLayout();
-        // Re-get the widget in case updating the layout changed things.
-        focusWidget = widgetForElement(*m_focusedElement);
+        // Re-get the FrameViewBase in case updating the layout changed things.
+        focusFrameViewBase = widgetForElement(*m_focusedElement);
       }
-      if (focusWidget)
-        focusWidget->setFocused(true, params.type);
+      if (focusFrameViewBase)
+        focusFrameViewBase->setFocused(true, params.type);
       else
         view()->setFocused(true, params.type);
     }

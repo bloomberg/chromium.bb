@@ -220,7 +220,7 @@ FrameView* FrameView::create(LocalFrame& frame) {
 
 FrameView* FrameView::create(LocalFrame& frame, const IntSize& initialSize) {
   FrameView* view = new FrameView(frame);
-  view->Widget::setFrameRect(IntRect(view->location(), initialSize));
+  view->FrameViewBase::setFrameRect(IntRect(view->location(), initialSize));
   view->setLayoutSizeInternal(initialSize);
 
   view->show();
@@ -244,7 +244,7 @@ DEFINE_TRACE(FrameView) {
   visitor->trace(m_anchoringAdjustmentQueue);
   visitor->trace(m_scrollbarManager);
   visitor->trace(m_printContext);
-  Widget::trace(visitor);
+  FrameViewBase::trace(visitor);
   ScrollableArea::trace(visitor);
 }
 
@@ -371,10 +371,11 @@ void FrameView::dispose() {
   // FIXME: Do we need to do something here for OOPI?
   HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
   // TODO(dcheng): It seems buggy that we can have an owner element that points
-  // to another Widget. This can happen when a plugin element loads a frame
-  // (widget A of type FrameView) and then loads a plugin (widget B of type
-  // WebPluginContainerImpl). In this case, the frame's view is A and the frame
-  // element's owned widget is B. See https://crbug.com/673170 for an example.
+  // to another FrameViewBase. This can happen when a plugin element loads a
+  // frame (FrameViewBase A of type FrameView) and then loads a plugin
+  // (FrameViewBase B of type WebPluginContainerImpl). In this case, the frame's
+  // view is A and the frame element's owned FrameViewBase is B. See
+  // https://crbug.com/673170 for an example.
   if (ownerElement && ownerElement->ownedWidget() == this)
     ownerElement->setWidget(nullptr);
 
@@ -490,13 +491,15 @@ void FrameView::invalidateAllCustomScrollbarsOnActiveChanged() {
       m_frame->document()->styleEngine().usesWindowInactiveSelector();
 
   const ChildrenWidgetSet* viewChildren = children();
-  for (const Member<Widget>& child : *viewChildren) {
-    Widget* widget = child.get();
-    if (widget->isFrameView())
-      toFrameView(widget)->invalidateAllCustomScrollbarsOnActiveChanged();
-    else if (usesWindowInactiveSelector && widget->isScrollbar() &&
-             toScrollbar(widget)->isCustomScrollbar())
-      toScrollbar(widget)->styleChanged();
+  for (const Member<FrameViewBase>& child : *viewChildren) {
+    FrameViewBase* frameViewBase = child.get();
+    if (frameViewBase->isFrameView()) {
+      toFrameView(frameViewBase)
+          ->invalidateAllCustomScrollbarsOnActiveChanged();
+    } else if (usesWindowInactiveSelector && frameViewBase->isScrollbar() &&
+               toScrollbar(frameViewBase)->isCustomScrollbar()) {
+      toScrollbar(frameViewBase)->styleChanged();
+    }
   }
   if (usesWindowInactiveSelector)
     recalculateCustomScrollbarStyle();
@@ -531,7 +534,7 @@ void FrameView::setFrameRect(const IntRect& newRect) {
   if (newRect == oldRect)
     return;
 
-  Widget::setFrameRect(newRect);
+  FrameViewBase::setFrameRect(newRect);
 
   const bool frameSizeChanged = oldRect.size() != newRect.size();
 
@@ -1140,9 +1143,10 @@ void FrameView::scheduleOrPerformPostLayoutTasks() {
   if (!m_postLayoutTasksTimer.isActive() &&
       (needsLayout() || m_inSynchronousPostLayout)) {
     // If we need layout or are already in a synchronous call to
-    // postLayoutTasks(), defer widget updates and event dispatch until after we
-    // return.  postLayoutTasks() can make us need to update again, and we can
-    // get stuck in a nasty cycle unless we call it through the timer here.
+    // postLayoutTasks(), defer FrameViewBase updates and event dispatch until
+    // after we return.  postLayoutTasks() can make us need to update again, and
+    // we can get stuck in a nasty cycle unless we call it through the timer
+    // here.
     m_postLayoutTasksTimer.startOneShot(0, BLINK_FROM_HERE);
     if (needsLayout())
       layout();
@@ -1469,9 +1473,9 @@ void FrameView::updateWidgetGeometries() {
     if (layoutViewItem().isNull())
       break;
 
-    if (Widget* widget = part->widget()) {
-      if (widget->isFrameView()) {
-        FrameView* frameView = toFrameView(widget);
+    if (FrameViewBase* frameViewBase = part->widget()) {
+      if (frameViewBase->isFrameView()) {
+        FrameView* frameView = toFrameView(frameViewBase);
         bool didNeedLayout = frameView->needsLayout();
         part->updateWidgetGeometry();
         if (!didNeedLayout && !frameView->shouldThrottleRendering())
@@ -1485,7 +1489,7 @@ void FrameView::updateWidgetGeometries() {
 
 void FrameView::addPartToUpdate(LayoutEmbeddedObject& object) {
   ASSERT(isInPerformLayout());
-  // Tell the DOM element that it needs a widget update.
+  // Tell the DOM element that it needs a FrameViewBase update.
   Node* node = object.node();
   ASSERT(node);
   if (isHTMLObjectElement(*node) || isHTMLEmbedElement(*node))
@@ -1995,8 +1999,8 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded() {
   }
 
   // If there fixed position elements, scrolling may cause compositing layers to
-  // change.  Update widget and layer positions after scrolling, but only if
-  // we're not inside of layout.
+  // change.  Update FrameViewBase and layer positions after scrolling, but only
+  // if we're not inside of layout.
   if (!m_nestedLayoutCount) {
     updateWidgetGeometries();
     LayoutViewItem layoutViewItem = this->layoutViewItem();
@@ -2407,8 +2411,9 @@ void FrameView::scrollToFragmentAnchor() {
 
 bool FrameView::updateWidgets() {
   // This is always called from updateWidgetsTimerFired.
-  // m_updateWidgetsTimer should only be scheduled if we have widgets to update.
-  // Thus I believe we can stop checking isEmpty here, and just ASSERT isEmpty:
+  // m_updateWidgetsTimer should only be scheduled if we have FrameViewBases to
+  // update. Thus I believe we can stop checking isEmpty here, and just ASSERT
+  // isEmpty:
   // FIXME: This assert has been temporarily removed due to
   // https://crbug.com/430344
   if (m_nestedLayoutCount > 1 || m_partUpdateSet.isEmpty())
@@ -3305,7 +3310,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
   // We should have a way to only run these other Documents to the same
   // lifecycle stage as this frame.
   const ChildrenWidgetSet* viewChildren = children();
-  for (const Member<Widget>& child : *viewChildren) {
+  for (const Member<FrameViewBase>& child : *viewChildren) {
     if ((*child).isPluginContainer())
       toPluginView(child.get())->updateAllLifecyclePhases();
   }
@@ -3743,11 +3748,11 @@ void FrameView::removeAnimatingScrollableArea(ScrollableArea* scrollableArea) {
   m_animatingScrollableAreas->erase(scrollableArea);
 }
 
-void FrameView::setParent(Widget* parentView) {
+void FrameView::setParent(FrameViewBase* parentView) {
   if (parentView == parent())
     return;
 
-  Widget::setParent(parentView);
+  FrameViewBase::setParent(parentView);
 
   updateParentScrollableAreaSet();
   setupRenderThrottling();
@@ -3756,7 +3761,7 @@ void FrameView::setParent(Widget* parentView) {
     m_subtreeThrottled = parentFrameView()->canThrottleRendering();
 }
 
-void FrameView::removeChild(Widget* child) {
+void FrameView::removeChild(FrameViewBase* child) {
   ASSERT(child->parent() == this);
 
   if (child->isFrameView() &&
@@ -3852,7 +3857,7 @@ IntSize FrameView::maximumScrollOffsetInt() const {
   return maximumOffset.expandedTo(minimumScrollOffsetInt());
 }
 
-void FrameView::addChild(Widget* child) {
+void FrameView::addChild(FrameViewBase* child) {
   ASSERT(child != this && !child->parent());
   child->setParent(this);
   m_children.insert(child);
@@ -4307,8 +4312,8 @@ void FrameView::scrollContents(const IntSize& scrollDelta) {
     setNeedsPaintPropertyUpdate();
   }
 
-  // This call will move children with native widgets (plugins) and invalidate
-  // them as well.
+  // This call will move children with native FrameViewBases (plugins) and
+  // invalidate them as well.
   frameRectsChanged();
 }
 
@@ -4474,7 +4479,7 @@ bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const {
   return false;
 }
 
-Widget* FrameView::getWidget() {
+FrameViewBase* FrameView::getWidget() {
   return this;
 }
 
@@ -4642,7 +4647,7 @@ void FrameView::setParentVisible(bool visible) {
   // and potentially child frame views.
   setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
 
-  Widget::setParentVisible(visible);
+  FrameViewBase::setParentVisible(visible);
 
   if (!isSelfVisible())
     return;
@@ -4671,7 +4676,7 @@ void FrameView::show() {
     }
   }
 
-  Widget::show();
+  FrameViewBase::show();
 }
 
 void FrameView::hide() {
@@ -4694,7 +4699,7 @@ void FrameView::hide() {
     }
   }
 
-  Widget::hide();
+  FrameViewBase::hide();
 }
 
 int FrameView::viewportWidth() const {
@@ -4745,11 +4750,11 @@ void FrameView::collectAnnotatedRegions(
 
 void FrameView::updateViewportIntersectionsForSubtree(
     DocumentLifecycle::LifecycleState targetState) {
-  // TODO(dcheng): Since widget tree updates are deferred, FrameViews might
-  // still be in the widget hierarchy even though the associated Document is
-  // already detached. Investigate if this check and a similar check in
-  // lifecycle updates are still needed when there are no more deferred widget
-  // updates: https://crbug.com/561683
+  // TODO(dcheng): Since FrameViewBase tree updates are deferred, FrameViews
+  // might still be in the FrameViewBase hierarchy even though the associated
+  // Document is already detached. Investigate if this check and a similar check
+  // in lifecycle updates are still needed when there are no more deferred
+  // FrameViewBase updates: https://crbug.com/561683
   if (!frame().document()->isActive())
     return;
 
@@ -4824,7 +4829,7 @@ void FrameView::updateRenderThrottlingStatus(
   if (notifyChildrenBehavior == NotifyChildren &&
       (wasThrottled != isThrottled ||
        forceThrottlingInvalidationBehavior == ForceThrottlingInvalidation)) {
-    for (const Member<Widget>& child : *children()) {
+    for (const Member<FrameViewBase>& child : *children()) {
       if (child->isFrameView()) {
         FrameView* childView = toFrameView(child);
         childView->updateRenderThrottlingStatus(

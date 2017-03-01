@@ -151,10 +151,10 @@ static bool contentLayerSupportsDirectBackgroundComposition(
 static WebLayer* platformLayerForPlugin(LayoutObject& layoutObject) {
   if (!layoutObject.isEmbeddedObject())
     return nullptr;
-  Widget* widget = toLayoutEmbeddedObject(layoutObject).widget();
-  if (!widget || !widget->isPluginView())
+  FrameViewBase* frameViewBase = toLayoutEmbeddedObject(layoutObject).widget();
+  if (!frameViewBase || !frameViewBase->isPluginView())
     return nullptr;
-  return toPluginView(widget)->platformLayer();
+  return toPluginView(frameViewBase)->platformLayer();
 }
 
 static inline bool isAcceleratedContents(LayoutObject& layoutObject) {

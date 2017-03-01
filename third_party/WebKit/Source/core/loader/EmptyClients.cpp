@@ -27,6 +27,7 @@
 
 #include "core/loader/EmptyClients.h"
 
+#include <memory>
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
@@ -35,14 +36,13 @@
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/FileChooser.h"
-#include "platform/Widget.h"
+#include "platform/FrameViewBase.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -159,13 +159,13 @@ LocalFrame* EmptyLocalFrameClient::createFrame(const FrameLoadRequest&,
   return nullptr;
 }
 
-Widget* EmptyLocalFrameClient::createPlugin(HTMLPlugInElement*,
-                                            const KURL&,
-                                            const Vector<String>&,
-                                            const Vector<String>&,
-                                            const String&,
-                                            bool,
-                                            DetachedPluginPolicy) {
+FrameViewBase* EmptyLocalFrameClient::createPlugin(HTMLPlugInElement*,
+                                                   const KURL&,
+                                                   const Vector<String>&,
+                                                   const Vector<String>&,
+                                                   const String&,
+                                                   bool,
+                                                   DetachedPluginPolicy) {
   return nullptr;
 }
 

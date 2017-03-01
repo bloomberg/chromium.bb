@@ -41,7 +41,8 @@ namespace blink {
 LayoutPart::LayoutPart(Element* element)
     : LayoutReplaced(element),
       // Reference counting is used to prevent the part from being destroyed
-      // while inside the Widget code, which might not be able to handle that.
+      // while inside the FrameViewBase code, which might not be able to handle
+      // that.
       m_refCount(1) {
   ASSERT(element);
   frameView()->addPart(this);
@@ -87,8 +88,8 @@ LayoutPart::~LayoutPart() {
   ASSERT(m_refCount <= 0);
 }
 
-Widget* LayoutPart::widget() const {
-  // Plugin widgets are stored in their DOM node.
+FrameViewBase* LayoutPart::widget() const {
+  // Plugin FrameViewBases are stored in their DOM node.
   Element* element = toElement(node());
 
   if (element && element->isFrameOwnerElement())
@@ -144,8 +145,8 @@ bool LayoutPart::nodeAtPointOverWidget(
   bool inside = LayoutReplaced::nodeAtPoint(result, locationInContainer,
                                             accumulatedOffset, action);
 
-  // Check to see if we are really over the widget itself (and not just in the
-  // border/padding area).
+  // Check to see if we are really over the FrameViewBase itself (and not just
+  // in the border/padding area).
   if ((inside || result.isRectBasedTest()) && !hadResult &&
       result.innerNode() == node())
     result.setIsOverWidget(contentBoxRect().contains(result.localPoint()));
@@ -233,19 +234,19 @@ CompositingReasons LayoutPart::additionalCompositingReasons() const {
 void LayoutPart::styleDidChange(StyleDifference diff,
                                 const ComputedStyle* oldStyle) {
   LayoutReplaced::styleDidChange(diff, oldStyle);
-  Widget* widget = this->widget();
+  FrameViewBase* frameViewBase = this->widget();
 
-  if (!widget)
+  if (!frameViewBase)
     return;
 
   // If the iframe has custom scrollbars, recalculate their style.
-  if (widget && widget->isFrameView())
-    toFrameView(widget)->recalculateCustomScrollbarStyle();
+  if (frameViewBase && frameViewBase->isFrameView())
+    toFrameView(frameViewBase)->recalculateCustomScrollbarStyle();
 
   if (style()->visibility() != EVisibility::kVisible) {
-    widget->hide();
+    frameViewBase->hide();
   } else {
-    widget->show();
+    frameViewBase->show();
   }
 }
 
@@ -286,8 +287,8 @@ LayoutRect LayoutPart::replacedContentRect() const {
 }
 
 void LayoutPart::updateOnWidgetChange() {
-  Widget* widget = this->widget();
-  if (!widget)
+  FrameViewBase* frameViewBase = this->widget();
+  if (!frameViewBase)
     return;
 
   if (!style())
@@ -297,9 +298,9 @@ void LayoutPart::updateOnWidgetChange() {
     updateWidgetGeometryInternal();
 
   if (style()->visibility() != EVisibility::kVisible) {
-    widget->hide();
+    frameViewBase->hide();
   } else {
-    widget->show();
+    frameViewBase->show();
     // FIXME: Why do we issue a full paint invalidation in this case, but not
     // the other?
     setShouldDoFullPaintInvalidation();
@@ -307,16 +308,18 @@ void LayoutPart::updateOnWidgetChange() {
 }
 
 void LayoutPart::updateWidgetGeometry() {
-  Widget* widget = this->widget();
-  if (!widget || !node())  // Check the node in case destroy() has been called.
+  FrameViewBase* frameViewBase = this->widget();
+  if (!frameViewBase ||
+      !node())  // Check the node in case destroy() has been called.
     return;
 
   LayoutRect newFrame = replacedContentRect();
   DCHECK(newFrame.size() == roundedIntSize(newFrame.size()));
   bool boundsWillChange =
-      LayoutSize(widget->frameRect().size()) != newFrame.size();
+      LayoutSize(frameViewBase->frameRect().size()) != newFrame.size();
 
-  FrameView* frameView = widget->isFrameView() ? toFrameView(widget) : nullptr;
+  FrameView* frameView =
+      frameViewBase->isFrameView() ? toFrameView(frameViewBase) : nullptr;
 
   // If frame bounds are changing mark the view for layout. Also check the
   // frame's page to make sure that the frame isn't in the process of being
@@ -330,16 +333,16 @@ void LayoutPart::updateWidgetGeometry() {
 
   // If view needs layout, either because bounds have changed or possibly
   // indicating content size is wrong, we have to do a layout to set the right
-  // widget size.
+  // FrameViewBase size.
   if (frameView && frameView->needsLayout() && frameView->frame().page())
     frameView->layout();
 
-  widget->widgetGeometryMayHaveChanged();
+  frameViewBase->widgetGeometryMayHaveChanged();
 }
 
 void LayoutPart::updateWidgetGeometryInternal() {
-  Widget* widget = this->widget();
-  ASSERT(widget);
+  FrameViewBase* frameViewBase = this->widget();
+  DCHECK(frameViewBase);
 
   // Ignore transform here, as we only care about the sub-pixel accumulation.
   // TODO(trchen): What about multicol? Need a LayoutBox function to query
@@ -352,10 +355,9 @@ void LayoutPart::updateWidgetGeometryInternal() {
                     pixelSnappedIntRect(absoluteReplacedRect).size());
   // Normally the location of the frame rect is ignored by the painter, but
   // currently it is still used by a family of coordinate conversion function in
-  // Widget/FrameView. This is incorrect because coordinate conversion needs to
-  // take transform and into account.
-  // A few callers still use the family of conversion function, including but
-  // not exhaustive:
+  // FrameViewBase/FrameView. This is incorrect because coordinate conversion
+  // needs to take transform and into account. A few callers still use the
+  // family of conversion function, including but not exhaustive:
   // FrameView::updateViewportIntersectionIfNeeded()
   // RemoteFrameView::frameRectsChanged().
   // WebPluginContainerImpl::reportGeometry()
@@ -366,7 +368,7 @@ void LayoutPart::updateWidgetGeometryInternal() {
 
   // Why is the protector needed?
   RefPtr<LayoutPart> protector(this);
-  widget->setFrameRect(frameRect);
+  frameViewBase->setFrameRect(frameRect);
 }
 
 void LayoutPart::invalidatePaintOfSubtreesIfNeeded(

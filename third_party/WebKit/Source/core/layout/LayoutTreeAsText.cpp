@@ -526,9 +526,9 @@ void write(TextStream& ts,
   }
 
   if (o.isLayoutPart()) {
-    Widget* widget = toLayoutPart(o).widget();
-    if (widget && widget->isFrameView()) {
-      FrameView* view = toFrameView(widget);
+    FrameViewBase* frameViewBase = toLayoutPart(o).widget();
+    if (frameViewBase && frameViewBase->isFrameView()) {
+      FrameView* view = toFrameView(frameViewBase);
       LayoutViewItem rootItem = view->layoutViewItem();
       if (!rootItem.isNull()) {
         rootItem.updateStyleAndLayout();

@@ -56,7 +56,7 @@ class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
 
   void chromeDestroyed() override;
   void invalidateRect(const IntRect&) override;
-  void scheduleAnimation(Widget*) override;
+  void scheduleAnimation(FrameViewBase*) override;
 
   void setTimer(std::unique_ptr<TimerBase>);
   void animationTimerFired(TimerBase*);

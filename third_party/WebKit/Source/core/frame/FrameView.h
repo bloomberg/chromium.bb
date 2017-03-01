@@ -26,6 +26,7 @@
 #ifndef FrameView_h
 #define FrameView_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
@@ -38,8 +39,8 @@
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "core/paint/ScrollbarManager.h"
+#include "platform/FrameViewBase.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/Widget.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/geometry/IntRect.h"
@@ -57,7 +58,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -99,7 +99,7 @@ struct CompositedSelection;
 typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT FrameView final
-    : public Widget,
+    : public FrameViewBase,
       public PaintInvalidationCapableScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(FrameView);
 
@@ -441,7 +441,7 @@ class CORE_EXPORT FrameView final
   bool isScrollCornerVisible() const override;
   bool userInputScrollable(ScrollbarOrientation) const override;
   bool shouldPlaceVerticalScrollbarOnLeft() const override;
-  Widget* getWidget() override;
+  FrameViewBase* getWidget() override;
   CompositorAnimationHost* compositorAnimationHost() const override;
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
   LayoutBox* layoutBox() const override;
@@ -459,12 +459,12 @@ class CORE_EXPORT FrameView final
   // and repaints to the host window in the window's coordinate space.
   HostWindow* getHostWindow() const;
 
-  typedef HeapHashSet<Member<Widget>> ChildrenWidgetSet;
+  typedef HeapHashSet<Member<FrameViewBase>> ChildrenWidgetSet;
 
   // Functions for child manipulation and inspection.
-  void setParent(Widget*) override;
-  void removeChild(Widget*);
-  void addChild(Widget*);
+  void setParent(FrameViewBase*) override;
+  void removeChild(FrameViewBase*);
+  void addChild(FrameViewBase*);
   const ChildrenWidgetSet* children() const { return &m_children; }
 
   // If the scroll view does not use a native widget, then it will have
@@ -609,7 +609,7 @@ class CORE_EXPORT FrameView final
   // event handlers (like Win32).
   Scrollbar* scrollbarAtFramePoint(const IntPoint&);
 
-  IntPoint convertChildToSelf(const Widget* child,
+  IntPoint convertChildToSelf(const FrameViewBase* child,
                               const IntPoint& point) const override {
     IntPoint newPoint = point;
     if (!isFrameViewScrollbar(child))
@@ -618,7 +618,7 @@ class CORE_EXPORT FrameView final
     return newPoint;
   }
 
-  IntPoint convertSelfToChild(const Widget* child,
+  IntPoint convertSelfToChild(const FrameViewBase* child,
                               const IntPoint& point) const override {
     IntPoint newPoint = point;
     if (!isFrameViewScrollbar(child))
@@ -627,16 +627,16 @@ class CORE_EXPORT FrameView final
     return newPoint;
   }
 
-  // Widget override. Handles painting of the contents of the view as well as
-  // the scrollbars.
+  // FrameViewBase override. Handles painting of the contents of the view as
+  // well as the scrollbars.
   void paint(GraphicsContext&, const CullRect&) const override;
   void paint(GraphicsContext&, const GlobalPaintFlags, const CullRect&) const;
   void paintContents(GraphicsContext&,
                      const GlobalPaintFlags,
                      const IntRect& damageRect) const;
 
-  // Widget overrides to ensure that our children's visibility status is kept up
-  // to date when we get shown and hidden.
+  // FrameViewBase overrides to ensure that our children's visibility status is
+  // kept up to date when we get shown and hidden.
   void show() override;
   void hide() override;
   void setParentVisible(bool) override;
@@ -951,8 +951,8 @@ class CORE_EXPORT FrameView final
   void contentsResized() override;
   void scrollbarExistenceDidChange();
 
-  // Override Widget methods to do point conversion via layoutObjects, in order
-  // to take transforms into account.
+  // Override FrameViewBase methods to do point conversion via layoutObjects, in
+  // order to take transforms into account.
   IntRect convertToContainingWidget(const IntRect&) const override;
   IntRect convertFromContainingWidget(const IntRect&) const override;
   IntPoint convertToContainingWidget(const IntPoint&) const override;
@@ -1007,7 +1007,7 @@ class CORE_EXPORT FrameView final
   void adjustScrollOffsetFromUpdateScrollbars();
   bool visualViewportSuppliesScrollbars();
 
-  bool isFrameViewScrollbar(const Widget* child) const {
+  bool isFrameViewScrollbar(const FrameViewBase* child) const {
     return horizontalScrollbar() == child || verticalScrollbar() == child;
   }
 
@@ -1054,7 +1054,7 @@ class CORE_EXPORT FrameView final
   EmbeddedObjectSet m_partUpdateSet;
 
   // FIXME: These are just "children" of the FrameView and should be
-  // Member<Widget> instead.
+  // Member<FrameViewBase> instead.
   HashSet<RefPtr<LayoutPart>> m_parts;
 
   Member<LocalFrame> m_frame;
@@ -1159,7 +1159,7 @@ class CORE_EXPORT FrameView final
 
   // Paint properties for SPv2 Only.
   // The hierarchy of transform subtree created by a FrameView.
-  // [ preTranslation ]               The offset from Widget::frameRect.
+  // [ preTranslation ]               The offset from FrameViewBase::frameRect.
   //     |                            Establishes viewport.
   //     +---[ scrollTranslation ]    Frame scrolling.
   // TODO(trchen): These will not be needed once settings->rootLayerScrolls() is
@@ -1253,10 +1253,10 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(
 }
 
 DEFINE_TYPE_CASTS(FrameView,
-                  Widget,
-                  widget,
-                  widget->isFrameView(),
-                  widget.isFrameView());
+                  FrameViewBase,
+                  frameViewBase,
+                  frameViewBase->isFrameView(),
+                  frameViewBase.isFrameView());
 DEFINE_TYPE_CASTS(FrameView,
                   ScrollableArea,
                   scrollableArea,

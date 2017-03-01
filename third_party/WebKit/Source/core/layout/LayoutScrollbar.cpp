@@ -99,7 +99,7 @@ LayoutBox* LayoutScrollbar::styleSource() const {
              : 0;
 }
 
-void LayoutScrollbar::setParent(Widget* parent) {
+void LayoutScrollbar::setParent(FrameViewBase* parent) {
   Scrollbar::setParent(parent);
   if (!parent) {
     // Destroy all of the scrollbar's LayoutBoxes.

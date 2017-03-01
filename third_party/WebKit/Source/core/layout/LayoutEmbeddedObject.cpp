@@ -135,8 +135,8 @@ void LayoutEmbeddedObject::layout() {
 
   updateLayerTransformAfterLayout();
 
-  Widget* widget = this->widget();
-  if (!widget && frameView())
+  FrameViewBase* frameViewBase = this->widget();
+  if (!frameViewBase && frameView())
     frameView()->addPartToUpdate(*this);
 
   clearNeedsLayout();

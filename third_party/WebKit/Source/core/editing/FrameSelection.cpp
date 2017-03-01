@@ -842,8 +842,8 @@ static bool isFrameElement(const Node* n) {
   LayoutObject* layoutObject = n->layoutObject();
   if (!layoutObject || !layoutObject->isLayoutPart())
     return false;
-  Widget* widget = toLayoutPart(layoutObject)->widget();
-  return widget && widget->isFrameView();
+  FrameViewBase* frameViewBase = toLayoutPart(layoutObject)->widget();
+  return frameViewBase && frameViewBase->isFrameView();
 }
 
 void FrameSelection::setFocusedNodeIfNeeded() {
