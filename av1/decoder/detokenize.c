@@ -50,25 +50,16 @@ static INLINE int read_coeff(const aom_prob *probs, int n, aom_reader *r) {
   return val;
 }
 
+static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
+                        TX_SIZE tx_size, TX_TYPE tx_type, const int16_t *dq,
+#if CONFIG_NEW_QUANT
+                        dequant_val_type_nuq *dq_val,
+#endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
-static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
-                        TX_SIZE tx_size, TX_TYPE tx_type, const int16_t *dq,
-#if CONFIG_NEW_QUANT
-                        dequant_val_type_nuq *dq_val,
-#endif  // CONFIG_NEW_QUANT
-                        int ctx, const int16_t *scan, const int16_t *nb,
-                        int16_t *max_scan_line, aom_reader *r,
-                        const qm_val_t *iqm[2][TX_SIZES])
-#else
-static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
-                        TX_SIZE tx_size, TX_TYPE tx_type, const int16_t *dq,
-#if CONFIG_NEW_QUANT
-                        dequant_val_type_nuq *dq_val,
-#endif  // CONFIG_NEW_QUANT
-                        int ctx, const int16_t *scan, const int16_t *nb,
-                        int16_t *max_scan_line, aom_reader *r)
+                        const qm_val_t *iqm[2][TX_SIZES],
 #endif  // CONFIG_AOM_QM
-{
+                        int ctx, const int16_t *scan, const int16_t *nb,
+                        int16_t *max_scan_line, aom_reader *r) {
   FRAME_COUNTS *counts = xd->counts;
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
@@ -561,21 +552,15 @@ int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
       get_dq_profile_from_ctx(xd->qindex[seg_id], ctx, ref, pd->plane_type);
 #endif  //  CONFIG_NEW_QUANT
 
-#if CONFIG_AOM_QM
-  const int eob = decode_coefs(
-      xd, pd->plane_type, pd->dqcoeff, tx_size, tx_type, dequant,
-#if CONFIG_NEW_QUANT
-      pd->seg_dequant_nuq[seg_id][dq],
-#endif  // CONFIG_NEW_QUANT
-      ctx, sc->scan, sc->neighbors, max_scan_line, r, pd->seg_iqmatrix[seg_id]);
-#else
   const int eob =
       decode_coefs(xd, pd->plane_type, pd->dqcoeff, tx_size, tx_type, dequant,
 #if CONFIG_NEW_QUANT
                    pd->seg_dequant_nuq[seg_id][dq],
 #endif  // CONFIG_NEW_QUANT
-                   ctx, sc->scan, sc->neighbors, max_scan_line, r);
+#if CONFIG_AOM_QM
+                   pd->seg_iqmatrix[seg_id],
 #endif  // CONFIG_AOM_QM
+                   ctx, sc->scan, sc->neighbors, max_scan_line, r);
   av1_set_contexts(xd, pd, plane, tx_size, eob > 0, x, y);
   return eob;
 }
