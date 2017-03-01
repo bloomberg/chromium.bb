@@ -28,6 +28,9 @@ namespace clients {
 class ClientBase {
  public:
   struct InitParams {
+    InitParams();
+    ~InitParams();
+
     bool FromCommandLine(const base::CommandLine& command_line);
 
     std::string title = "Wayland Client";
@@ -42,6 +45,9 @@ class ClientBase {
   };
 
   struct Globals {
+    Globals();
+    ~Globals();
+
     std::unique_ptr<wl_compositor> compositor;
     std::unique_ptr<wl_shm> shm;
     std::unique_ptr<wp_presentation> presentation;
@@ -51,6 +57,9 @@ class ClientBase {
   };
 
   struct Buffer {
+    Buffer();
+    ~Buffer();
+
     std::unique_ptr<wl_buffer> buffer;
     bool busy = false;
 #if defined(OZONE_PLATFORM_GBM)
@@ -68,8 +77,8 @@ class ClientBase {
   bool Init(const InitParams& params);
 
  protected:
-  ClientBase() {}
-  virtual ~ClientBase() {}
+  ClientBase();
+  virtual ~ClientBase();
 
   size_t width_ = 256;
   size_t height_ = 256;

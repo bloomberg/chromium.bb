@@ -141,11 +141,15 @@ zwp_linux_buffer_params_v1_listener g_params_listener = {
 ////////////////////////////////////////////////////////////////////////////////
 // ClientBase::InitParams, public:
 
+ClientBase::InitParams::InitParams() {}
+
+ClientBase::InitParams::~InitParams() {}
+
 bool ClientBase::InitParams::FromCommandLine(
     const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kSize)) {
     std::string size_str = command_line.GetSwitchValueASCII(switches::kSize);
-    if (sscanf(size_str.c_str(), "%dx%d", &width, &height) != 2) {
+    if (sscanf(size_str.c_str(), "%zdx%zd", &width, &height) != 2) {
       LOG(ERROR) << "Invalid value for " << switches::kSize;
       return false;
     }
@@ -167,6 +171,20 @@ bool ClientBase::InitParams::FromCommandLine(
       command_line.HasSwitch(switches::kTransparentBackground);
   return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ClientBase::Globals, public:
+
+ClientBase::Globals::Globals() {}
+
+ClientBase::Globals::~Globals() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// ClientBase::Buffer, public:
+
+ClientBase::Buffer::Buffer() {}
+
+ClientBase::Buffer::~Buffer() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClientBase, public:
@@ -338,6 +356,13 @@ bool ClientBase::Init(const InitParams& params) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ClientBase, protected:
+
+ClientBase::ClientBase() {}
+
+ClientBase::~ClientBase() {}
+
+////////////////////////////////////////////////////////////////////////////////
 // ClientBase, private:
 
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer() {
@@ -348,7 +373,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer() {
                                    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING));
     if (!buffer->bo) {
       LOG(ERROR) << "Can't create gbm buffer";
-      return false;
+      return nullptr;
     }
     base::ScopedFD fd(gbm_bo_get_plane_fd(buffer->bo.get(), 0));
 

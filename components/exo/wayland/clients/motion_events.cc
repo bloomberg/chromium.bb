@@ -491,7 +491,7 @@ int main(int argc, char* argv[]) {
           command_line->GetSwitchValueASCII(switches::kMaxFramesPending),
           &max_frames_pending))) {
     LOG(ERROR) << "Invalid value for " << switches::kMaxFramesPending;
-    return false;
+    return 1;
   }
 
   size_t num_rects = 1;
