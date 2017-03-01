@@ -26,12 +26,14 @@ enum VideoCodec {
   kCodecVP8,
   kCodecVP9,
   kCodecHEVC,
+  kCodecDolbyVision,
   // DO NOT ADD RANDOM VIDEO CODECS!
   //
   // The only acceptable time to add a new codec is if there is production code
   // that uses said codec in the same CL.
 
-  kVideoCodecMax = kCodecHEVC,  // Must equal the last "real" codec above.
+  kVideoCodecMax =
+      kCodecDolbyVision,  // Must equal the last "real" codec above.
 };
 
 // Video codec profiles. Keep in sync with mojo::VideoCodecProfile (see
@@ -74,7 +76,13 @@ enum VideoCodecProfile {
   HEVCPROFILE_MAIN10 = 17,
   HEVCPROFILE_MAIN_STILL_PICTURE = 18,
   HEVCPROFILE_MAX = HEVCPROFILE_MAIN_STILL_PICTURE,
-  VIDEO_CODEC_PROFILE_MAX = HEVCPROFILE_MAX,
+  DOLBYVISION_MIN = 19,
+  DOLBYVISION_PROFILE0 = DOLBYVISION_MIN,
+  DOLBYVISION_PROFILE4 = 20,
+  DOLBYVISION_PROFILE5 = 21,
+  DOLBYVISION_PROFILE7 = 22,
+  DOLBYVISION_MAX = DOLBYVISION_PROFILE7,
+  VIDEO_CODEC_PROFILE_MAX = DOLBYVISION_MAX,
 };
 
 struct CodecProfileLevel {
@@ -108,6 +116,12 @@ MEDIA_EXPORT bool ParseAVCCodecId(const std::string& codec_id,
 MEDIA_EXPORT bool ParseHEVCCodecId(const std::string& codec_id,
                                    VideoCodecProfile* profile,
                                    uint8_t* level_idc);
+#endif
+
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+MEDIA_EXPORT bool ParseDolbyVisionCodecId(const std::string& codec_id,
+                                          VideoCodecProfile* profile,
+                                          uint8_t* level_id);
 #endif
 
 MEDIA_EXPORT VideoCodec StringToVideoCodec(const std::string& codec_id);

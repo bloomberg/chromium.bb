@@ -40,6 +40,11 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
     case VP9PROFILE_PROFILE2:
     case VP9PROFILE_PROFILE3:
       return kCodecVP9;
+    case DOLBYVISION_PROFILE0:
+    case DOLBYVISION_PROFILE4:
+    case DOLBYVISION_PROFILE5:
+    case DOLBYVISION_PROFILE7:
+      return kCodecDolbyVision;
   }
   NOTREACHED();
   return kUnknownVideoCodec;

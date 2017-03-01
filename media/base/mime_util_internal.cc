@@ -140,6 +140,8 @@ VideoCodec MimeUtilToVideoCodec(MimeUtil::Codec codec) {
       return kCodecVP9;
     case MimeUtil::THEORA:
       return kCodecTheora;
+    case MimeUtil::DOLBY_VISION:
+      return kCodecDolbyVision;
     default:
       break;
   }
@@ -268,6 +270,9 @@ void MimeUtil::AddSupportedMediaFormats() {
   // Only VP9 with valid codec string vp09.xx.xx.xx.xx.xx.xx.xx is supported.
   // See ParseVp9CodecID for details.
   mp4_video_codecs.insert(VP9);
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  mp4_video_codecs.insert(DOLBY_VISION);
+#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
   CodecSet mp4_codecs(mp4_audio_codecs);
   mp4_codecs.insert(mp4_video_codecs.begin(), mp4_video_codecs.end());
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -536,6 +541,11 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
       // MediaPlayer only supports VP9 in WebM.
       return mime_type_lower_case == "video/webm";
     }
+
+    case DOLBY_VISION:
+      // This function is only called on Android which doesn't support Dolby
+      // Vision.
+      return false;
   }
 
   return false;
@@ -598,6 +608,13 @@ bool MimeUtil::ParseCodecString(const std::string& mime_type_lower_case,
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   if (ParseHEVCCodecId(codec_id, out_profile, out_level)) {
     *codec = MimeUtil::HEVC;
+    return true;
+  }
+#endif
+
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  if (ParseDolbyVisionCodecId(codec_id, out_profile, out_level)) {
+    *codec = MimeUtil::DOLBY_VISION;
     return true;
   }
 #endif
@@ -703,6 +720,7 @@ bool MimeUtil::IsCodecProprietary(Codec codec) const {
     case MPEG4_AAC:
     case H264:
     case HEVC:
+    case DOLBY_VISION:
       return true;
 
     case PCM:

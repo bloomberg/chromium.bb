@@ -233,7 +233,7 @@ VideoConfig DecoderConfigAdapter::ToCastVideoConfig(
   }
 
   video_config.id = id;
-  video_config.codec = ToCastVideoCodec(config.codec());
+  video_config.codec = ToCastVideoCodec(config.codec(), config.profile());
   video_config.profile = ToCastVideoProfile(config.profile());
   video_config.extra_data = config.extra_data();
   video_config.encryption_scheme = ToEncryptionScheme(

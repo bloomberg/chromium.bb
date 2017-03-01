@@ -104,6 +104,7 @@ bool RenderMediaClient::IsSupportedVideoConfig(media::VideoCodec codec,
     case media::kCodecMPEG2:
     case media::kCodecMPEG4:
     case media::kCodecHEVC:
+    case media::kCodecDolbyVision:
       return false;
   }
 

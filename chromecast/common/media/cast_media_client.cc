@@ -62,10 +62,10 @@ bool CastMediaClient::IsSupportedVideoConfig(::media::VideoCodec codec,
                                              int level) {
 #if defined(OS_ANDROID)
   return supported_profiles_->IsSupportedVideoConfig(
-      ToCastVideoCodec(codec), ToCastVideoProfile(profile), level);
+      ToCastVideoCodec(codec, profile), ToCastVideoProfile(profile), level);
 #else
   return MediaCapabilitiesShlib::IsSupportedVideoConfig(
-      ToCastVideoCodec(codec), ToCastVideoProfile(profile), level);
+      ToCastVideoCodec(codec, profile), ToCastVideoProfile(profile), level);
 #endif
 }
 

@@ -60,7 +60,9 @@ struct CodecInfo {
     HISTOGRAM_OPUS,
     HISTOGRAM_HEVC,
     HISTOGRAM_AC3,
-    HISTOGRAM_MAX = HISTOGRAM_AC3  // Must be equal to largest logged entry.
+    HISTOGRAM_DOLBYVISION,
+    HISTOGRAM_MAX =
+        HISTOGRAM_DOLBYVISION  // Must be equal to largest logged entry.
   };
 
   const char* pattern;
@@ -168,6 +170,18 @@ static const CodecInfo kHEVCHEV1CodecInfo = { "hev1.*", CodecInfo::VIDEO, NULL,
 static const CodecInfo kHEVCHVC1CodecInfo = { "hvc1.*", CodecInfo::VIDEO, NULL,
                                               CodecInfo::HISTOGRAM_HEVC };
 #endif
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+static const CodecInfo kDolbyVisionAVCCodecInfo1 = {
+    "dva1.*", CodecInfo::VIDEO, NULL, CodecInfo::HISTOGRAM_DOLBYVISION};
+static const CodecInfo kDolbyVisionAVCCodecInfo2 = {
+    "dvav.*", CodecInfo::VIDEO, NULL, CodecInfo::HISTOGRAM_DOLBYVISION};
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+static const CodecInfo kDolbyVisionHEVCCodecInfo1 = {
+    "dvh1.*", CodecInfo::VIDEO, NULL, CodecInfo::HISTOGRAM_DOLBYVISION};
+static const CodecInfo kDolbyVisionHEVCCodecInfo2 = {
+    "dvhe.*", CodecInfo::VIDEO, NULL, CodecInfo::HISTOGRAM_DOLBYVISION};
+#endif
+#endif
 static const CodecInfo kMPEG4VP09CodecInfo = {"vp09.*", CodecInfo::VIDEO,
                                               &CheckIfMp4Vp9DemuxingEnabled,
                                               CodecInfo::HISTOGRAM_VP9};
@@ -199,12 +213,18 @@ static const CodecInfo kEAC3CodecInfo3 = {"mp4a.A6", CodecInfo::AUDIO, NULL,
 #endif
 
 static const CodecInfo* kVideoMP4Codecs[] = {
-    &kH264AVC1CodecInfo,  &kH264AVC3CodecInfo,
+    &kH264AVC1CodecInfo,         &kH264AVC3CodecInfo,
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    &kHEVCHEV1CodecInfo,  &kHEVCHVC1CodecInfo,
+    &kHEVCHEV1CodecInfo,         &kHEVCHVC1CodecInfo,
 #endif
-    &kMPEG4VP09CodecInfo,
-    &kMPEG4AACCodecInfo,  &kMPEG2AACLCCodecInfo, NULL};
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+    &kDolbyVisionAVCCodecInfo1,  &kDolbyVisionAVCCodecInfo2,
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+    &kDolbyVisionHEVCCodecInfo1, &kDolbyVisionHEVCCodecInfo2,
+#endif
+#endif
+    &kMPEG4VP09CodecInfo,        &kMPEG4AACCodecInfo,
+    &kMPEG2AACLCCodecInfo,       NULL};
 
 static const CodecInfo* kAudioMP4Codecs[] = {&kMPEG4AACCodecInfo,
                                              &kMPEG2AACLCCodecInfo,

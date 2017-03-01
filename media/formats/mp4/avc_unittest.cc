@@ -448,7 +448,7 @@ TEST_F(AVCConversionTest, InsertParamSetsAnnexB) {
 
     StringToAnnexB(test_cases[i].input, &buf, &subsamples);
 
-    EXPECT_TRUE(AVC::InsertParamSetsAnnexB(avc_config, &buf, &subsamples))
+    EXPECT_TRUE(AVC::InsertParamSetsAnnexB(avc_config, &buf, &subsamples, true))
         << "'" << test_cases[i].input << "' insert failed.";
     EXPECT_TRUE(AVC::IsValidAnnexB(buf, subsamples))
         << "'" << test_cases[i].input << "' created invalid AnnexB.";

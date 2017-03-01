@@ -148,4 +148,71 @@ TEST(ParseHEVCCodecIdTest, InvalidHEVCCodecIds) {
 }
 #endif
 
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+TEST(ParseDolbyVisionCodecIdTest, InvalidDolbyVisionCodecIds) {
+  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  uint8_t level_id = 0;
+
+  // Codec dvav/dva1 should only contain profile 0.
+  EXPECT_TRUE(ParseDolbyVisionCodecId("dvav.00.07", &profile, &level_id));
+  EXPECT_EQ(profile, DOLBYVISION_PROFILE0);
+  EXPECT_EQ(level_id, 7);
+  EXPECT_TRUE(ParseDolbyVisionCodecId("dva1.00.07", &profile, &level_id));
+  EXPECT_EQ(profile, DOLBYVISION_PROFILE0);
+  EXPECT_EQ(level_id, 7);
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvav.04.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dva1.04.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvav.05.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dva1.05.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvav.07.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dva1.07.07", &profile, &level_id));
+
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  // Codec dvhe/dvh1 should only contain profile 4, 5, and 7.
+  EXPECT_TRUE(ParseDolbyVisionCodecId("dvhe.04.07", &profile, &level_id));
+  EXPECT_EQ(profile, DOLBYVISION_PROFILE4);
+  EXPECT_EQ(level_id, 7);
+  EXPECT_TRUE(ParseDolbyVisionCodecId("dvhe.05.07", &profile, &level_id));
+  EXPECT_EQ(profile, DOLBYVISION_PROFILE5);
+  EXPECT_EQ(level_id, 7);
+  EXPECT_TRUE(ParseDolbyVisionCodecId("dvh1.05.07", &profile, &level_id));
+  EXPECT_EQ(profile, DOLBYVISION_PROFILE5);
+  EXPECT_EQ(level_id, 7);
+  EXPECT_TRUE(ParseDolbyVisionCodecId("dvhe.07.07", &profile, &level_id));
+  EXPECT_EQ(profile, DOLBYVISION_PROFILE7);
+  EXPECT_EQ(level_id, 7);
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.00.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvh1.00.07", &profile, &level_id));
+
+  // Profiles 1, 2, 3 and 6 are deprecated.
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvav.01.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.02.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.03.07", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.06.07", &profile, &level_id));
+
+  // Level should be numbers between 1 and 9.
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.04.00", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.04.10", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.04.20", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.04.99", &profile, &level_id));
+
+  // Valid codec string is <FourCC>.<two digits profile>.<two digits level>.
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe..", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe...", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe....", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.5", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.5.", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.5..", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.5...", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.5.7", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.5.7.", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.5.7..", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe.5.7...", &profile, &level_id));
+  EXPECT_FALSE(ParseDolbyVisionCodecId("dvhe..5", &profile, &level_id));
+#endif
+}
+#endif
+
 }  // namespace media

@@ -111,6 +111,12 @@ static bool HasHevcSupport() {
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
 }
 
+// This is to validate MimeUtil::IsCodecSupportedOnPlatform(), which is used
+// only on Android platform.
+static bool HasDolbyVisionSupport() {
+  return false;
+}
+
 TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/webm"));
   EXPECT_TRUE(IsSupportedMediaMimeType("video/webm"));
@@ -283,6 +289,10 @@ TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
           case MimeUtil::HEVC:
             EXPECT_EQ(HasHevcSupport(), result);
             break;
+
+          case MimeUtil::DOLBY_VISION:
+            EXPECT_EQ(HasDolbyVisionSupport(), result);
+            break;
         }
       });
 }
@@ -326,6 +336,10 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
 
           case MimeUtil::HEVC:
             EXPECT_EQ(HasHevcSupport() && info.has_platform_decoders, result);
+            break;
+
+          case MimeUtil::DOLBY_VISION:
+            EXPECT_EQ(HasDolbyVisionSupport(), result);
             break;
         }
       });

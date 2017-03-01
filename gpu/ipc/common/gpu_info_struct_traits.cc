@@ -106,6 +106,14 @@ EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::ToMojom(
       return gpu::mojom::VideoCodecProfile::HEVCPROFILE_MAIN10;
     case gpu::VideoCodecProfile::HEVCPROFILE_MAIN_STILL_PICTURE:
       return gpu::mojom::VideoCodecProfile::HEVCPROFILE_MAIN_STILL_PICTURE;
+    case gpu::VideoCodecProfile::DOLBYVISION_PROFILE0:
+      return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE0;
+    case gpu::VideoCodecProfile::DOLBYVISION_PROFILE4:
+      return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE4;
+    case gpu::VideoCodecProfile::DOLBYVISION_PROFILE5:
+      return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE5;
+    case gpu::VideoCodecProfile::DOLBYVISION_PROFILE7:
+      return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7;
   }
   NOTREACHED() << "Invalid VideoCodecProfile:" << video_codec_profile;
   return gpu::mojom::VideoCodecProfile::VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -175,6 +183,18 @@ bool EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::
       return true;
     case gpu::mojom::VideoCodecProfile::HEVCPROFILE_MAIN_STILL_PICTURE:
       *out = gpu::VideoCodecProfile::HEVCPROFILE_MAIN_STILL_PICTURE;
+      return true;
+    case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE0:
+      *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE0;
+      return true;
+    case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE4:
+      *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE4;
+      return true;
+    case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE5:
+      *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE5;
+      return true;
+    case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7:
+      *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE7;
       return true;
   }
   NOTREACHED() << "Invalid VideoCodecProfile: " << input;

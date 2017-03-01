@@ -32,11 +32,14 @@ class MEDIA_EXPORT AVC {
   // |buffer| is expected to contain AnnexB conformant data.
   // |subsamples| contains the SubsampleEntry info if |buffer| contains
   // encrypted data.
+  // |annexb_validation| indicates if it should perform Annex B validation after
+  // the operation.
   // Returns true if the param sets were successfully inserted.
   static bool InsertParamSetsAnnexB(
       const AVCDecoderConfigurationRecord& avc_config,
       std::vector<uint8_t>* buffer,
-      std::vector<SubsampleEntry>* subsamples);
+      std::vector<SubsampleEntry>* subsamples,
+      bool annexb_validation);
 
   static bool ConvertConfigToAnnexB(
       const AVCDecoderConfigurationRecord& avc_config,
@@ -70,6 +73,8 @@ class AVCBitstreamConverter : public BitstreamConverter {
  public:
   explicit AVCBitstreamConverter(
       std::unique_ptr<AVCDecoderConfigurationRecord> avc_config);
+  // Overrides |post_annexb_validation_| to disable Annex B validation
+  void DisablePostAnnexbValidation() { post_annexb_validation_ = false; }
 
   // BitstreamConverter interface
   bool ConvertFrame(std::vector<uint8_t>* frame_buf,
@@ -79,6 +84,9 @@ class AVCBitstreamConverter : public BitstreamConverter {
  private:
   ~AVCBitstreamConverter() override;
   std::unique_ptr<AVCDecoderConfigurationRecord> avc_config_;
+  // Indicates if it needs to do AnnexB validation on bitstream after performing
+  // ConvertFrame() operation.
+  bool post_annexb_validation_;
 };
 
 }  // namespace mp4

@@ -107,8 +107,10 @@ bool AVC::ConvertFrameToAnnexB(int length_size,
 // static
 bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
                                 std::vector<uint8_t>* buffer,
-                                std::vector<SubsampleEntry>* subsamples) {
-  DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
+                                std::vector<SubsampleEntry>* subsamples,
+                                bool annexb_validation) {
+  if (annexb_validation)
+    DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
 
   std::unique_ptr<H264Parser> parser(new H264Parser());
   const uint8_t* start = &(*buffer)[0];
@@ -143,7 +145,8 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
   buffer->insert(config_insert_point,
                  param_sets.begin(), param_sets.end());
 
-  DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
+  if (annexb_validation)
+    DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
   return true;
 }
 
@@ -316,7 +319,7 @@ bool AVC::IsValidAnnexB(const uint8_t* buffer,
 
 AVCBitstreamConverter::AVCBitstreamConverter(
     std::unique_ptr<AVCDecoderConfigurationRecord> avc_config)
-    : avc_config_(std::move(avc_config)) {
+    : avc_config_(std::move(avc_config)), post_annexb_validation_(true) {
   DCHECK(avc_config_);
 }
 
@@ -339,7 +342,8 @@ bool AVCBitstreamConverter::ConvertFrame(
     // If this is a keyframe, we (re-)inject SPS and PPS headers at the start of
     // a frame. If subsample info is present, we also update the clear byte
     // count for that first subsample.
-    RCHECK(AVC::InsertParamSetsAnnexB(*avc_config_, frame_buf, subsamples));
+    RCHECK(AVC::InsertParamSetsAnnexB(*avc_config_, frame_buf, subsamples,
+                                      post_annexb_validation_));
   }
 
   DCHECK(AVC::IsValidAnnexB(*frame_buf, *subsamples));

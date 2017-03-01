@@ -26,6 +26,7 @@ bool IsCodecSupported(const std::string& codec) {
   else if (platform_support == MediaCodecSupportShlib::kNotSupported)
     return false;
 
+  // MediaCodecSupportShlib::IsSupported() returns kDefault.
   if (codec == "aac51") {
     return MediaCapabilities::HdmiSinkSupportsPcmSurroundSound();
   }
@@ -34,6 +35,16 @@ bool IsCodecSupported(const std::string& codec) {
   }
   if (codec == "ec-3" || codec == "mp4a.a6" || codec == "mp4a.A6") {
     return MediaCapabilities::HdmiSinkSupportsEAC3();
+  }
+
+  // For Dolby Vision, getting kDefault from shared library indicates the
+  // platform has external dependency to stream Dolby Vision. It needs to check
+  // HDMI sink capability as well.
+  if (base::StartsWith(codec, "dva1.", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(codec, "dvav.", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(codec, "dvh1.", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(codec, "dvhe.", base::CompareCase::SENSITIVE)) {
+    return MediaCapabilities::HdmiSinkSupportsDolbyVision();
   }
 
   // This function is invoked from MimeUtil::AreSupportedCodecs to check if a
@@ -50,9 +61,8 @@ bool IsCodecSupported(const std::string& codec) {
   return base::Bind(&IsCodecSupported);
 }
 
-// Converts ::media::VideoCodec to chromecast::media::VideoCodec. Any unknown or
-// unsupported codec will be converted to chromecast::media::kCodecUnknown.
-VideoCodec ToCastVideoCodec(const ::media::VideoCodec video_codec) {
+VideoCodec ToCastVideoCodec(const ::media::VideoCodec video_codec,
+                            const ::media::VideoCodecProfile codec_profile) {
   switch (video_codec) {
     case ::media::kCodecH264:
       return kCodecH264;
@@ -62,13 +72,22 @@ VideoCodec ToCastVideoCodec(const ::media::VideoCodec video_codec) {
       return kCodecVP9;
     case ::media::kCodecHEVC:
       return kCodecHEVC;
+    case ::media::kCodecDolbyVision:
+      if (codec_profile == ::media::DOLBYVISION_PROFILE0) {
+        return kCodecDolbyVisionH264;
+      } else if (codec_profile == ::media::DOLBYVISION_PROFILE4 ||
+                 codec_profile == ::media::DOLBYVISION_PROFILE5 ||
+                 codec_profile == ::media::DOLBYVISION_PROFILE7) {
+        return kCodecDolbyVisionHEVC;
+      }
+      LOG(ERROR) << "Unsupported video codec profile " << codec_profile;
+      break;
     default:
       LOG(ERROR) << "Unsupported video codec " << video_codec;
   }
   return kVideoCodecUnknown;
 }
 
-// Converts ::media::VideoCodecProfile to chromecast::media::VideoProfile.
 VideoProfile ToCastVideoProfile(
     const ::media::VideoCodecProfile codec_profile) {
   switch (codec_profile) {
@@ -110,6 +129,14 @@ VideoProfile ToCastVideoProfile(
       return kVP9Profile2;
     case ::media::VP9PROFILE_PROFILE3:
       return kVP9Profile3;
+    case ::media::DOLBYVISION_PROFILE0:
+      return kDolbyVisionCompatible_EL_MD;
+    case ::media::DOLBYVISION_PROFILE4:
+      return kDolbyVisionCompatible_EL_MD;
+    case ::media::DOLBYVISION_PROFILE5:
+      return kDolbyVisionNonCompatible_BL_MD;
+    case ::media::DOLBYVISION_PROFILE7:
+      return kDolbyVisionNonCompatible_BL_EL_MD;
     default:
       LOG(INFO) << "Unsupported video codec profile " << codec_profile;
   }
@@ -119,7 +146,8 @@ VideoProfile ToCastVideoProfile(
 CodecProfileLevel ToCastCodecProfileLevel(
     const ::media::CodecProfileLevel& codec_profile_level) {
   CodecProfileLevel result;
-  result.codec = ToCastVideoCodec(codec_profile_level.codec);
+  result.codec =
+      ToCastVideoCodec(codec_profile_level.codec, codec_profile_level.profile);
   result.profile = ToCastVideoProfile(codec_profile_level.profile);
   result.level = codec_profile_level.level;
   return result;

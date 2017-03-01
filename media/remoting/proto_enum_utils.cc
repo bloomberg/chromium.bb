@@ -223,6 +223,7 @@ base::Optional<VideoCodec> ToMediaVideoCodec(
     CASE_RETURN_OTHER(kCodecVP8);
     CASE_RETURN_OTHER(kCodecVP9);
     CASE_RETURN_OTHER(kCodecHEVC);
+    CASE_RETURN_OTHER(kCodecDolbyVision);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -241,6 +242,7 @@ base::Optional<pb::VideoDecoderConfig::Codec> ToProtoVideoDecoderConfigCodec(
     CASE_RETURN_OTHER(kCodecVP8);
     CASE_RETURN_OTHER(kCodecVP9);
     CASE_RETURN_OTHER(kCodecHEVC);
+    CASE_RETURN_OTHER(kCodecDolbyVision);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -270,6 +272,10 @@ base::Optional<VideoCodecProfile> ToMediaVideoCodecProfile(
     CASE_RETURN_OTHER(HEVCPROFILE_MAIN);
     CASE_RETURN_OTHER(HEVCPROFILE_MAIN10);
     CASE_RETURN_OTHER(HEVCPROFILE_MAIN_STILL_PICTURE);
+    CASE_RETURN_OTHER(DOLBYVISION_PROFILE0);
+    CASE_RETURN_OTHER(DOLBYVISION_PROFILE4);
+    CASE_RETURN_OTHER(DOLBYVISION_PROFILE5);
+    CASE_RETURN_OTHER(DOLBYVISION_PROFILE7);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -299,6 +305,10 @@ ToProtoVideoDecoderConfigProfile(VideoCodecProfile value) {
     CASE_RETURN_OTHER(HEVCPROFILE_MAIN);
     CASE_RETURN_OTHER(HEVCPROFILE_MAIN10);
     CASE_RETURN_OTHER(HEVCPROFILE_MAIN_STILL_PICTURE);
+    CASE_RETURN_OTHER(DOLBYVISION_PROFILE0);
+    CASE_RETURN_OTHER(DOLBYVISION_PROFILE4);
+    CASE_RETURN_OTHER(DOLBYVISION_PROFILE5);
+    CASE_RETURN_OTHER(DOLBYVISION_PROFILE7);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
