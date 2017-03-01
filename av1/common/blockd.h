@@ -595,8 +595,9 @@ static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
 }
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_EXT_TX
+#define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
 
+#if CONFIG_EXT_TX
 #define ALLOW_INTRA_EXT_TX 1
 
 typedef enum {
@@ -638,7 +639,6 @@ static const int ext_tx_set_index_inter[EXT_TX_SET_TYPES] = {
   0, 3, -1, -1, 2, 1
 };
 
-#define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
 static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
                                             int is_inter, int use_reduced_set) {
   const TX_SIZE tx_size2 = txsize_sqr_up_map[tx_size];
