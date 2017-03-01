@@ -2397,17 +2397,6 @@ crbug.com/508734 external/wpt/html/webappapis/system-state-and-capabilities/the-
 crbug.com/508734 external/wpt/html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_3.html [ Failure ]
 crbug.com/508734 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Failure Timeout ]
 
-crbug.com/686159 crypto/subtle/hkdf/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/aes-kw/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/aes-ctr/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/pbkdf2/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/aes-cbc/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/hmac/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/aes-gcm/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/rsassa-pkcs1-v1_5/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/ecdsa/cloneKey.html [ NeedsManualRebaseline ]
-crbug.com/686159 crypto/subtle/ecdh/cloneKey.html [ NeedsManualRebaseline ]
-
 # Fail differently when run with --enable-wptserve: (crbug.com/508728)
 crbug.com/508728 crbug.com/664268 external/wpt/html/browsers/history/the-location-interface/reload_post_1.html [ Failure Timeout ]
 crbug.com/508728 external/wpt/webstorage/document-domain.html [ Failure Timeout ]
