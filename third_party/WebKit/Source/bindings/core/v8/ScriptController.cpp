@@ -62,9 +62,9 @@
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/plugins/PluginView.h"
+#include "platform/FrameViewBase.h"
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/Widget.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -205,15 +205,15 @@ void ScriptController::disableEval(const String& errorMessage) {
 }
 
 PassRefPtr<SharedPersistent<v8::Object>> ScriptController::createPluginWrapper(
-    Widget* widget) {
-  ASSERT(widget);
+    FrameViewBase* frameViewBase) {
+  DCHECK(frameViewBase);
 
-  if (!widget->isPluginView())
+  if (!frameViewBase->isPluginView())
     return nullptr;
 
   v8::HandleScope handleScope(isolate());
   v8::Local<v8::Object> scriptableObject =
-      toPluginView(widget)->scriptableObject(isolate());
+      toPluginView(frameViewBase)->scriptableObject(isolate());
 
   if (scriptableObject.IsEmpty())
     return nullptr;
@@ -294,7 +294,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,
   String scriptResult = toCoreString(v8::Local<v8::String>::Cast(result));
 
   // We're still in a frame, so there should be a DocumentLoader.
-  ASSERT(frame()->document()->loader());
+  DCHECK(frame()->document()->loader());
   if (!locationChangeBefore &&
       frame()->navigationScheduler().locationChangePending())
     return true;
@@ -355,7 +355,7 @@ void ScriptController::executeScriptInIsolatedWorld(
     int worldID,
     const HeapVector<ScriptSourceCode>& sources,
     Vector<v8::Local<v8::Value>>* results) {
-  ASSERT(worldID > 0);
+  DCHECK_GT(worldID, 0);
 
   RefPtr<DOMWrapperWorld> world =
       DOMWrapperWorld::ensureIsolatedWorld(isolate(), worldID);
