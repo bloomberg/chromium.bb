@@ -6,7 +6,8 @@
 #define NGPhysicalFragment_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_units.h"
+#include "core/layout/ng/geometry/ng_physical_offset.h"
+#include "core/layout/ng/geometry/ng_physical_size.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"

@@ -28,7 +28,7 @@ bool AbsoluteVerticalNeedsEstimate(const ComputedStyle& style) {
 LayoutUnit ResolveWidth(const Length& width,
                         const NGConstraintSpace& space,
                         const ComputedStyle& style,
-                        const Optional<MinAndMaxContentSizes>& child_minmax,
+                        const Optional<MinMaxContentSize>& child_minmax,
                         LengthResolveType resolve_type) {
   if (space.WritingMode() == kHorizontalTopBottom)
     return ResolveInlineLength(space, style, child_minmax, width, resolve_type);
@@ -41,7 +41,7 @@ LayoutUnit ResolveWidth(const Length& width,
 LayoutUnit ResolveHeight(const Length& height,
                          const NGConstraintSpace& space,
                          const ComputedStyle& style,
-                         const Optional<MinAndMaxContentSizes>& child_minmax,
+                         const Optional<MinMaxContentSize>& child_minmax,
                          LengthResolveType resolve_type) {
   if (space.WritingMode() != kHorizontalTopBottom)
     return ResolveInlineLength(space, style, child_minmax, height,
@@ -54,13 +54,12 @@ LayoutUnit ResolveHeight(const Length& height,
 
 // Implement absolute horizontal size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
-void ComputeAbsoluteHorizontal(
-    const NGConstraintSpace& space,
-    const ComputedStyle& style,
-    const Optional<LayoutUnit>& incoming_width,
-    const NGStaticPosition& static_position,
-    const Optional<MinAndMaxContentSizes>& child_minmax,
-    NGAbsolutePhysicalPosition* position) {
+void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
+                               const ComputedStyle& style,
+                               const Optional<LayoutUnit>& incoming_width,
+                               const NGStaticPosition& static_position,
+                               const Optional<MinMaxContentSize>& child_minmax,
+                               NGAbsolutePhysicalPosition* position) {
   NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
       percentage_logical.ConvertToPhysical(space.WritingMode());
@@ -215,13 +214,12 @@ void ComputeAbsoluteHorizontal(
 
 // Implements absolute vertical size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-height
-void ComputeAbsoluteVertical(
-    const NGConstraintSpace& space,
-    const ComputedStyle& style,
-    const Optional<LayoutUnit>& incoming_height,
-    const NGStaticPosition& static_position,
-    const Optional<MinAndMaxContentSizes>& child_minmax,
-    NGAbsolutePhysicalPosition* position) {
+void ComputeAbsoluteVertical(const NGConstraintSpace& space,
+                             const ComputedStyle& style,
+                             const Optional<LayoutUnit>& incoming_height,
+                             const NGStaticPosition& static_position,
+                             const Optional<MinMaxContentSize>& child_minmax,
+                             NGAbsolutePhysicalPosition* position) {
   NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
       percentage_logical.ConvertToPhysical(space.WritingMode());
@@ -383,7 +381,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGStaticPosition& static_position,
-    const Optional<MinAndMaxContentSizes>& child_minmax) {
+    const Optional<MinMaxContentSize>& child_minmax) {
   NGAbsolutePhysicalPosition position;
   if (style.isHorizontalWritingMode()) {
     Optional<LayoutUnit> width;
@@ -415,9 +413,9 @@ void ComputeFullAbsoluteWithChildBlockSize(
   // unknown, or fully computed, there is no minmax.
   // To express this, a 'fixed' minmax is created where
   // min and max are the same.
-  Optional<MinAndMaxContentSizes> child_minmax;
+  Optional<MinMaxContentSize> child_minmax;
   if (child_block_size.has_value()) {
-    child_minmax = MinAndMaxContentSizes{*child_block_size, *child_block_size};
+    child_minmax = MinMaxContentSize{*child_block_size, *child_block_size};
   }
   if (style.isHorizontalWritingMode()) {
     Optional<LayoutUnit> height;

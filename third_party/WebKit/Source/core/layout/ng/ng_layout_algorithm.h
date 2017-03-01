@@ -6,14 +6,14 @@
 #define NGLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_units.h"
+#include "core/layout/ng/ng_min_max_content_size.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Optional.h"
 
 namespace blink {
 
-struct MinAndMaxContentSizes;
+struct MinMaxContentSize;
 class NGLayoutResult;
 
 // Base class for all LayoutNG algorithms.
@@ -34,7 +34,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // account. If the return value is empty, the caller is expected to synthesize
   // this value from the overflow rect returned from Layout called with an
   // available width of 0 and LayoutUnit::max(), respectively.
-  virtual Optional<MinAndMaxContentSizes> ComputeMinAndMaxContentSizes() const {
+  virtual Optional<MinMaxContentSize> ComputeMinMaxContentSize() const {
     return WTF::nullopt;
   }
 };

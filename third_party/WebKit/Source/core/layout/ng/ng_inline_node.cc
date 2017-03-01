@@ -262,7 +262,7 @@ void NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
   NGTextLayoutAlgorithm(this, constraint_space).LayoutInline(line_builder);
 }
 
-MinAndMaxContentSizes NGInlineNode::ComputeMinAndMaxContentSizes() {
+MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
   // Compute the max of inline sizes of all line boxes with 0 available inline
   // size. This gives the min-content, the width where lines wrap at every break
   // opportunity.
@@ -275,7 +275,7 @@ MinAndMaxContentSizes NGInlineNode::ComputeMinAndMaxContentSizes() {
           .ToConstraintSpace(writing_mode);
   NGLineBuilder line_builder(this, constraint_space);
   LayoutInline(constraint_space, &line_builder);
-  MinAndMaxContentSizes sizes;
+  MinMaxContentSize sizes;
   sizes.min_content = line_builder.MaxInlineSize();
 
   // max-content is the width without any line wrapping.

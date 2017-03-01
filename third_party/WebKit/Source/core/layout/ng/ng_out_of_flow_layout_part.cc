@@ -106,11 +106,11 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   static_position.offset -= container_border_physical_offset_;
 
   RefPtr<NGLayoutResult> layout_result = nullptr;
-  Optional<MinAndMaxContentSizes> inline_estimate;
+  Optional<MinMaxContentSize> inline_estimate;
   Optional<LayoutUnit> block_estimate;
 
   if (AbsoluteNeedsChildInlineSize(descendant.Style())) {
-    inline_estimate = descendant.ComputeMinAndMaxContentSizes();
+    inline_estimate = descendant.ComputeMinMaxContentSize();
   }
 
   NGAbsolutePhysicalPosition node_position =

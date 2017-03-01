@@ -20,7 +20,7 @@ class NGBreakToken;
 class NGConstraintSpace;
 class NGLayoutResult;
 struct NGLogicalOffset;
-struct MinAndMaxContentSizes;
+struct MinMaxContentSize;
 
 // Represents a node to be laid out.
 class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
@@ -40,12 +40,12 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   LayoutObject* GetLayoutObject() override;
 
   // Computes the value of min-content and max-content for this box.
-  // If the underlying layout algorithm's ComputeMinAndMaxContentSizes returns
+  // If the underlying layout algorithm's ComputeMinMaxContentSize returns
   // no value, this function will synthesize these sizes using Layout with
   // special constraint spaces -- infinite available size for max content, zero
   // available size for min content, and percentage resolution size zero for
   // both.
-  MinAndMaxContentSizes ComputeMinAndMaxContentSizes();
+  MinMaxContentSize ComputeMinMaxContentSize();
 
   const ComputedStyle& Style() const;
 
