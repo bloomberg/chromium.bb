@@ -19,8 +19,10 @@ let context = 0;
 let context2 = 0;
 let context3 = 0;
 
-audit.define('test', function(task, should) {
-  task.describe('Basic tests for AudioNode API.');
+audit.define({
+  label: 'test',
+  description: 'Basic tests for AudioNode API.'
+}, function(task, should) {
 
   context = new AudioContext();
   window.audioNode = context.createBufferSource();

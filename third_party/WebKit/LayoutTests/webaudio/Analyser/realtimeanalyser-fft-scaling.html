@@ -67,8 +67,10 @@
           }
       }
 
-      audit.define("FFT scaling tests", function (task, should) {
-        task.describe("Test Scaling of FFT in AnalyserNode");
+      audit.define({
+        label: "FFT scaling tests",
+        description: "Test Scaling of FFT in AnalyserNode"
+      }, function (task, should) {
         let tests = [];
         for (let k = 5; k <= 15; ++k)
           tests.push(runTest(k, should));

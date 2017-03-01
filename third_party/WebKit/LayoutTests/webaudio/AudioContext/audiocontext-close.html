@@ -21,8 +21,10 @@
     let audit = Audit.createTaskRunner();
 
     // Task: test online context (1).
-    audit.define('test-online-context-1', function (task, should) {
-      task.describe("Test online context 1");
+    audit.define({
+      label: 'test-online-context-1',
+      description: "Test online context 1"
+    }, function (task, should) {
       // Create a context and verify that the various states are correct and
       // that close() exists.
       should(() => context = new AudioContext(),
@@ -56,8 +58,10 @@
     });
 
     // Task: test online context (2).
-    audit.define('test-online-context-2', function (task, should) {
-      task.describe("Test closed online context 2");
+    audit.define({
+      label: 'test-online-context-2',
+      description: "Test closed online context 2"
+    }, function (task, should) {
       // Context is closed, so verify that we cannot create any more nodes,
       // nor connect any.
       should(() => context.createAnalyser(), "context.createAnalyser()")
@@ -121,8 +125,10 @@
     });
 
     // Task: test online context (3).
-    audit.define('test-online-context-3', function (task, should) {
-      task.describe("Close an online context again");
+    audit.define({
+      label: 'test-online-context-3',
+      description: "Close an online context again"
+    }, function (task, should) {
       // Try closing the context again. The promise should be rejected.
       should(context.close(), "context.close() again")
         .beRejected()
@@ -138,8 +144,10 @@
     });
 
     // Task: test online context (4).
-    audit.define('test-online-context-4', function (task, should) {
-      task.describe("Test closed online context 4");
+    audit.define({
+      label: 'test-online-context-4',
+      description: "Test closed online context 4"
+    }, function (task, should) {
       // Create a context and verify that its sampleRate and baseLatency return
       // valid values whether it's open or closed.
       should(() => context = new AudioContext(),
@@ -162,8 +170,10 @@
     });
 
     // Task: test offline context (1).
-    audit.define('test-offline-context-1', function (task, should) {
-      task.describe("Test offline context");
+    audit.define({
+      label: 'test-offline-context-1',
+      description: "Test offline context"
+    }, function (task, should) {
       // For an offline context, verify that close is not defined.
       should(() => offline = new OfflineAudioContext(1, 1000, 48000),
           "offline = new OfflineAudioContext(1, 1000, 48000)")

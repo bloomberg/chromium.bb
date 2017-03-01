@@ -1,7 +1,7 @@
-CONSOLE WARNING: line 49: The provided value '99' is not a valid enum value of type BiquadFilterType.
+CONSOLE WARNING: line 51: The provided value '99' is not a valid enum value of type BiquadFilterType.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED. 
-PASS > [test]  
+PASS > [test] Basic tests for BiquadFilterNode 
 PASS   Number of inputs is equal to 1. 
 PASS   Number of outputs is equal to 1. 
 PASS   Default filter type is equal to lowpass. 

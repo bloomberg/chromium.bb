@@ -13,8 +13,10 @@
 <script>
 let audit = Audit.createTaskRunner();
 
-audit.define("test", function (task, should) {
-    task.describe("DelayNode delayTime parameter can be scheduled at a given time");
+audit.define({
+  label: "test",
+  description: "DelayNode delayTime parameter can be scheduled at a given time"
+}, function (task, should) {
 
     // Create offline audio context.
     var context = new OfflineAudioContext(1, sampleRate * renderLengthSeconds, sampleRate);

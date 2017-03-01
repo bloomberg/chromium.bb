@@ -22,8 +22,10 @@
     let audit = Audit.createTaskRunner();
 
     // Task: test suspend().
-    audit.define('test-suspend', function (task, should) {
-      task.describe("Test suspend() for offline context");
+    audit.define({
+      label: 'test-suspend',
+      description: "Test suspend() for offline context"
+    }, function (task, should) {
       // Test suspend/resume.  Ideally this test is best with a online
       // AudioContext, but content shell doesn't really have a working online
       // AudioContext. Hence, use an OfflineAudioContext. Not all possible
@@ -63,8 +65,10 @@
 
 
     // Task: test resume().
-    audit.define('test-resume', function (task, should) {
-      task.describe("Test resume() for offline context");
+    audit.define({
+      label: 'test-resume',
+      description: "Test resume() for offline context"
+    }, function (task, should) {
       // Multiple calls to resume should not be a problem. But we can't test 
       // that on an offline context. Thus, check that resume() on an 
       // OfflineAudioContext rejects the promise.
@@ -83,8 +87,10 @@
     });
 
     // Task: test the state after context closed.
-    audit.define('test-after-close', function (task, should) {
-      task.describe("Test state after context closed");
+    audit.define({
+      label: 'test-after-close',
+      description: "Test state after context closed"
+    }, function (task, should) {
       // Render the offline context.
       osc.start();
 

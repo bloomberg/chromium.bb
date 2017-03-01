@@ -26,8 +26,10 @@
       // in to the render quantum boundary.
       var suspendInterval = 0.25;
 
-      audit.define('test', (task, should) => {
-        task.describe('Test event handler from resume() and suspend()');
+      audit.define({
+        label: 'test',
+        description: 'Test event handler from resume() and suspend()'
+      }, (task, should) => {
         context =
             new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 

@@ -19,8 +19,10 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.define("loadfiles", function (task, should) {
-        task.describe("Load HRTF database files");
+      audit.define({
+        label: "loadfiles",
+        description: "Load HRTF database files"
+      }, function (task, should) {
 
         // Any valid context with the right sample rate will do.
         context = new OfflineAudioContext(1, 1, sampleRate);
@@ -41,8 +43,10 @@
         bufferLoader.load();
       });
 
-      audit.define("verify-flac", function (task, should) {
-        task.describe("Verify FLAC-encoded HRTF database matches original");
+      audit.define({
+        label: "verify-flac",
+        description: "Verify FLAC-encoded HRTF database matches original"
+      }, function (task, should) {
 
         should(flacBuffer.numberOfChannels, "Number of FLAC channels")
           .beEqualTo(wavBuffer.numberOfChannels);

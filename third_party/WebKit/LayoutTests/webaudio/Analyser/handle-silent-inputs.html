@@ -15,21 +15,24 @@
       let renderDuration = 1;
       let renderFrames = renderDuration * sampleRate;
 
-      audit.define('connected', function(task, should) {
-        task.describe('Test handling of silent inputs');
-
+      audit.define({
+        label: 'connected',
+        description: 'Test handling of silent inputs'
+      }, function (task, should) {
         tester(should, false).then(task.done.bind(task));
       });
 
-      audit.define('auto-pull', function(task, should) {
-        task.describe('Test handling of silent inputs');
-
+      audit.define({
+        label: 'auto-pull',
+        description: 'Test handling of silent inputs'
+      }, function(task, should) {
         tester(should, true).then(task.done.bind(task));
       });
 
-      audit.define('timing', function(task, should) {
-        task.describe('Test shifting in of zeroes after source has stopped');
-
+      audit.define({
+        label: 'timing',
+        description: 'Test shifting in of zeroes after source has stopped'
+      }, function(task, should) {
         let renderQuantumFrames = 128;
 
         // sampleRate chosen to be a power of two so we don't have round-off

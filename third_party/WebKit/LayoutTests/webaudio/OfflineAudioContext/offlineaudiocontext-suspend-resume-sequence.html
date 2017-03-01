@@ -35,8 +35,10 @@
 
       var actualSuspendTimes = [];
 
-      audit.define('test', (task, should) => {
-        task.describe('resume() and suspend() with timed sequence');
+      audit.define({
+        label: 'test',
+        description: 'resume() and suspend() with timed sequence'
+      }, (task, should) => {
         context = new OfflineAudioContext(1, sampleRate * renderDuration,
           sampleRate);
 

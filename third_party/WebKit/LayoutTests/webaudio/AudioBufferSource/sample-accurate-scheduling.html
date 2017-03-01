@@ -86,8 +86,10 @@ function checkSampleAccuracy(buffer, should) {
     }
 }
 
-audit.define("test", function (task, should) {
-    task.describe("Test sample-accurate scheduling");
+audit.define({
+  label: "test",
+  description: "Test sample-accurate scheduling"
+}, function (task, should) {
 
     // Create offline audio context.
     context = new OfflineAudioContext(2, sampleRate * lengthInSeconds,

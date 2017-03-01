@@ -32,8 +32,10 @@
       // generally assumed to output zeroes.  This is also desired behavior.  However, biquad
       // filters have memory so they should not suddenly output zeroes when the input is
       // disconnected.  This test checks to see if the output doesn't suddenly change to zero.
-      audit.define("test", function (task, should) {
-        task.describe("Biquad Tail Output");
+      audit.define({
+        label: "test",
+        description: "Biquad Tail Output"
+      }, function (task, should) {
         let context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
 
         // Create an impulse source.

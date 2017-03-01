@@ -29,8 +29,10 @@ function createSinWaveBuffer(context, lengthInSeconds, frequency) {
   return audioBuffer;
 }
 
-audit.define('Test connections', function(task, should) {
-  task.describe('AudioNode connection order doesn\'t trigger assertion errors');
+audit.define({
+  label: 'Test connections',
+  description: 'AudioNode connection order doesn\'t trigger assertion errors'
+}, function(task, should) {
   // Create offline audio context.
   let context =
       new OfflineAudioContext(1, sampleRate * renderLengthSeconds, sampleRate);

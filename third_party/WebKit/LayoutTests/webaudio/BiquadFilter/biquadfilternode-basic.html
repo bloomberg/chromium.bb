@@ -11,8 +11,10 @@
 <script>
 let audit = Audit.createTaskRunner();
 
-audit.define('test', function(task, should) {
-  task.describe('Basic tests for BiquadFilterNode');
+audit.define({
+  label: 'test',
+  description: 'Basic tests for BiquadFilterNode'
+}, function(task, should) {
 
   let context = new AudioContext();
   let filter = context.createBiquadFilter();

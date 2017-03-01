@@ -62,8 +62,10 @@ function checkResult(buffer, should) {
       .message("correctly", "incorrectly");
 }
 
-audit.define("construction", function (task, should) {
-    task.describe("Construction of ChannelSplitterNode");
+audit.define({
+  label: "construction",
+  description: "Construction of ChannelSplitterNode"
+}, function (task, should) {
 
     // Create stereo offline audio context.
     context = new OfflineAudioContext(2, lengthInSampleFrames, sampleRate);
@@ -103,8 +105,10 @@ audit.define("construction", function (task, should) {
     task.done();
 });
 
-audit.define("functionality", function (task, should) {      
-    task.describe("Functionality of ChannelSplitterNode");
+audit.define({
+  label: "functionality",
+  description: "Functionality of ChannelSplitterNode"
+}, function (task, should) {      
 
     // Create a stereo buffer, with all +1 values in left channel, all -1 in right channel.
     sourceBuffer = createStereoBufferWithDCOffset(lengthInSampleFrames, sampleRate, 1);

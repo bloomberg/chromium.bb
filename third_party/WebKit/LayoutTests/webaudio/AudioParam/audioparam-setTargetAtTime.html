@@ -40,8 +40,10 @@ function automation(value, startTime, endTime){
     // endTime is not used for setTargetAtTime.
     gainNode.gain.setTargetAtTime(value, startTime, timeConstant)}
 
-audit.define('test', function(task, should) {
-  task.describe('AudioParam setTargetAtTime() functionality.');
+audit.define({
+  label: 'test',
+  description: 'AudioParam setTargetAtTime() functionality.'
+}, function(task, should) {
   createAudioGraphAndTest(
       task, should, numberOfTests, initialValue, setValue, automation,
       'setTargetAtTime()', maxAllowedError, createExponentialApproachArray);

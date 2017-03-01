@@ -9,8 +9,10 @@
 <script>
 let audit = Audit.createTaskRunner();
 
-audit.define('test', (task, should) => {
-  task.describe('OfflineAudioContext constructor');
+audit.define({
+  label: 'test',
+  description: 'OfflineAudioContext constructor'
+}, (task, should) => {
   let context;
   // Make sure we don't crash when giving 0 as number of frames.
   should(

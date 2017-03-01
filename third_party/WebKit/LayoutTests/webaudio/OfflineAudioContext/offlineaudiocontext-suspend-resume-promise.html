@@ -58,8 +58,10 @@
         }
       }
 
-      audit.define('test', (task, should) => {
-        task.describe('Promise resolution of resume() and suspend()');
+      audit.define({
+        label: 'test',
+        description: 'Promise resolution of resume() and suspend()'
+      }, (task, should) => {
         context = new OfflineAudioContext(1, sampleRate * renderDuration,
           sampleRate);
 

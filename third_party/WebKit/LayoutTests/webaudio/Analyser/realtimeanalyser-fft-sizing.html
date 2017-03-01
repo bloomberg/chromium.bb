@@ -29,8 +29,10 @@ function doTest(fftSize, illegal, should) {
   }
 }
 
-audit.define("FFT size test", function (task, should) {
-  task.describe("Test that re-sizing the FFT arrays does not fail.");
+audit.define({
+  label: "FFT size test",
+  description: "Test that re-sizing the FFT arrays does not fail."
+}, function (task, should) {
   doTest(-1, true, should);
   doTest(0, true, should);
   doTest(1, true, should);

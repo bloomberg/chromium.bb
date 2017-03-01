@@ -87,8 +87,10 @@
             .beEqualTo(0);
       }
 
-      audit.define("note-grain-on-play", function(task, should) {
-          task.describe("Test noteGrainOn offset rendering");
+      audit.define({
+        label: "note-grain-on-play",
+        description: "Test noteGrainOn offset rendering"
+      }, function(task, should) {
           // Create offline audio context.
           context = new OfflineAudioContext(2, sampleRate *
               renderTime, sampleRate);

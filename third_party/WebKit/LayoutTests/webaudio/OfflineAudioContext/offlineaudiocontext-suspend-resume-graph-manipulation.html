@@ -27,8 +27,10 @@
       // be 0.0 from |suspendTime2| to the end.
       var suspendTime2 = 2;
 
-      audit.define('test', (task, should) => {
-        task.describe('Synchronous graph manipulation with suspend() and resume()');
+      audit.define({
+        label: 'test',
+        description: 'Synchronous graph manipulation with suspend() and resume()'
+      }, (task, should) => {
         context = new OfflineAudioContext(1, sampleRate * renderDuration,
           sampleRate);
 

@@ -213,8 +213,10 @@ function checkResult(buffer, should) {
   }
 }
 
-audit.define('test', function(task, should) {
-  task.describe('Channel mixing rules for AudioNodes');
+audit.define({
+  label: 'test',
+  description: 'Channel mixing rules for AudioNodes'
+}, function(task, should) {
 
   // Create 8-channel offline audio context.  Each test will render 8
   // sample-frames starting at sample-frame position testNumber * 8.

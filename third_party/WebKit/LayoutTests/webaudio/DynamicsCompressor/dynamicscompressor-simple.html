@@ -42,8 +42,10 @@
           .beTrue();
       }
 
-      audit.define("test", function (task, should) {
-        task.describe("Test pre-emphasis in DynamicsCompressor is removed");
+      audit.define({
+        label: "test",
+        description: "Test pre-emphasis in DynamicsCompressor is removed"
+      }, function (task, should) {
 
         context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
         // Connect an oscillator to a gain node to the compressor.  The

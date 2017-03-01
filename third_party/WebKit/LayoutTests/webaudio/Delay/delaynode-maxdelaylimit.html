@@ -13,8 +13,10 @@
 <script>
 let audit = Audit.createTaskRunner();
 
-audit.define("test", function (task, should) {
-    task.describe("Tests attribute and maximum allowed delay of DelayNode");
+audit.define({
+  label: "test",
+  description: "Tests attribute and maximum allowed delay of DelayNode"
+}, function (task, should) {
         
     // Create offline audio context.
     var context = new OfflineAudioContext(1, sampleRate * renderLengthSeconds, sampleRate);

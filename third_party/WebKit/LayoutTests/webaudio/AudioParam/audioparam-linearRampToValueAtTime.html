@@ -38,8 +38,10 @@ function generateRamp(value, startTime, endTime){
     // setValueAtTime() call above.
     gainNode.gain.linearRampToValueAtTime(value, endTime)}
 
-audit.define('test', function(task, should) {
-  task.describe('AudioParam linearRampToValueAtTime() functionality');
+audit.define({
+  label: 'test',
+  description: 'AudioParam linearRampToValueAtTime() functionality'
+}, function(task, should) {
   createAudioGraphAndTest(
       task, should, numberOfTests, 1, setValue, generateRamp,
       'linearRampToValueAtTime()', maxAllowedError, createLinearRampArray);

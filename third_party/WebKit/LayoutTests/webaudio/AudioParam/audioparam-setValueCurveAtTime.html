@@ -41,8 +41,10 @@ function automation(value, startTime, endTime) {
   gainNode.gain.setValueCurveAtTime(curve, startTime, endTime - startTime);
 }
 
-audit.define('test', function(task, should) {
-  task.describe('AudioParam setValueCurveAtTime() functionality.');
+audit.define({
+  label: 'test',
+  description: 'AudioParam setValueCurveAtTime() functionality.'
+}, function(task, should) {
   // The curve of values to use.
   curve = createSineWaveArray(timeInterval, freqHz, sineAmplitude, sampleRate);
 

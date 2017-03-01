@@ -14,8 +14,10 @@
 <script>
 let audit = Audit.createTaskRunner();
 
-audit.define("test", function (task, should) {
-    task.describe("Biquad peaking filter");
+audit.define({
+  label: "test",
+  description: "Biquad peaking filter"
+}, function (task, should) {
     
     window.jsTestIsAsync = true;
         

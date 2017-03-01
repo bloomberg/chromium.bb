@@ -45,8 +45,10 @@
           .beEqualTo("closed");
       }
 
-      audit.define('test', (task, should) => {
-        task.describe('Signaling of statechange event');
+      audit.define({
+        label: 'test',
+        description: 'Signaling of statechange event'
+      }, (task, should) => {
         // Create an offline context with a source passing through a convolver.  The convolver is
         // just to waste some time.
         context = new OfflineAudioContext(1, secondsToRender * sampleRate, sampleRate);

@@ -250,8 +250,10 @@ function radToDegree(rad) {
     return rad * 180 / Math.PI;
 }
 
-audit.define("test", function (task, should) {
-    task.describe("Biquad frequency response");
+audit.define({
+  label: "test",
+  description: "Biquad frequency response"
+}, function (task, should) {
     context = new AudioContext();
     
     filter = context.createBiquadFilter();

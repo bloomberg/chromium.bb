@@ -35,8 +35,10 @@ function automation(value, startTime, endTime) {
   // Do nothing.
 }
 
-audit.define('test', function(task, should) {
-  task.describe('AudioParam setValueAtTime() functionality.');
+audit.define({
+  label: 'test',
+  description: 'AudioParam setValueAtTime() functionality.'
+}, function(task, should) {
   createAudioGraphAndTest(
       task, should, numberOfTests, 1, setValue, automation, 'setValueAtTime()',
       maxAllowedError, createConstantArray);

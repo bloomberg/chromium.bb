@@ -59,16 +59,20 @@ function playNote(time, gain) {
   source.start(time);
 }
 
-audit.define('create context', function(task, should) {
-  task.describe('Create context for test');
+audit.define({
+  label: 'create context',
+  description: 'Create context for test'
+}, function(task, should) {
   // Create offline audio context.
   context =
       new OfflineAudioContext(2, sampleRate * lengthInSeconds, sampleRate);
   task.done();
 });
 
-audit.define('load-ref', function(task, should) {
-  task.describe('Load reference audio file');
+audit.define({
+  label: 'load-ref',
+  description: 'Load reference audio file'
+}, function(task, should) {
   let bufferLoader =
       new BufferLoader(context, ['gain-expected.wav'], bufferList => {
         reference = bufferList[0].getChannelData(0);
@@ -78,8 +82,10 @@ audit.define('load-ref', function(task, should) {
   bufferLoader.load();
 });
 
-audit.define('test', function(task, should) {
-  task.describe('GainNode functionality');
+audit.define({
+  label: 'test',
+  description: 'GainNode functionality'
+}, function(task, should) {
 
   // Create a buffer for a short "note".
   sinWaveBuffer = createSinWaveBuffer(bufferDurationSeconds, 880.0);

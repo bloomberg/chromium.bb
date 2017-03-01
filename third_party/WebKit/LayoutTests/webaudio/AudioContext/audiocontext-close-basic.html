@@ -53,8 +53,10 @@
           .beEqualTo("closed");
       }
 
-      audit.define("test", function (task, should) {
-        task.describe("Test that closing a context releases the audio HW context");
+      audit.define({
+        label: "test",
+        description: "Test that closing a context releases the audio HW context"
+      }, function (task, should) {
         createContextAndClose(task, should);
       });
 
