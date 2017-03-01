@@ -436,7 +436,11 @@ void DOMSelection::modify(const String& alterString,
   else
     return;
 
+  Element* focusedElement = frame()->document()->focusedElement();
   frame()->selection().modify(alter, direction, granularity);
+  if (frame() && frame()->document() &&
+      focusedElement != frame()->document()->focusedElement())
+    UseCounter::count(frame(), UseCounter::SelectionFuncionsChangeFocus);
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-extend
