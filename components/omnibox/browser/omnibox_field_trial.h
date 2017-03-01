@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 
 namespace base {
@@ -375,11 +375,11 @@ class OmniboxFieldTrial {
   // field trial.
 
   // Returns the conditions under which the UI code should display the title
-  // of a URL more prominently than the URL for an input of type |input_type|.
-  // Normally the URL is displayed more prominently.  Returns NEVER_EMPHASIZE
-  // if the experiment isn't active.
+  // of a URL more prominently than the URL for input |input|. Normally the URL
+  // is displayed more prominently. Returns NEVER_EMPHASIZE if the experiment
+  // isn't active.
   static EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
-      metrics::OmniboxInputType::Type input_type);
+      const AutocompleteInput& input);
 
   // ---------------------------------------------------------
   // For PhysicalWebProvider related experiments.
@@ -405,8 +405,8 @@ class OmniboxFieldTrial {
   // For experiment redirecting zero suggest requests to a service provided by
   // the Chrome team.
 
-  // Returns whether the user is in the field trial which redirects zero suggest
-  // requests to the service provided by the Chrome team.
+  // Returns true whether the user is in the field trial which redirects zero
+  // suggest requests to the service provided by the Chrome team.
   static bool InZeroSuggestRedirectToChromeFieldTrial();
 
   // Returns a string representing the address of the server where the zero

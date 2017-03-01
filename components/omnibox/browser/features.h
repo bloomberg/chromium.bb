@@ -11,6 +11,8 @@ namespace features {
 
 extern const base::Feature kZeroSuggestRedirectToChrome;
 
+extern const base::Feature kZeroSuggestSwapTitleAndUrl;
+
 }  // namespace features
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_FEATURES_H_

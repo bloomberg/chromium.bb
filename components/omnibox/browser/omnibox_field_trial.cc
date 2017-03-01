@@ -539,14 +539,19 @@ int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
 
 OmniboxFieldTrial::EmphasizeTitlesCondition
 OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
-    metrics::OmniboxInputType::Type input_type) {
-  // Look up the parameter named kEmphasizeTitlesRule + ":" + input_type,
+    const AutocompleteInput& input) {
+  // First, check if we should emphasize titles for zero suggest suggestions.
+  if (input.from_omnibox_focus() &&
+      base::FeatureList::IsEnabled(features::kZeroSuggestSwapTitleAndUrl)) {
+    return EMPHASIZE_WHEN_NONEMPTY;
+  }
+  // Look up the parameter named kEmphasizeTitlesRule + ":" + input.type(),
   // find its value, and return that value as an enum.  If the parameter
   // isn't redefined, fall back to the generic rule kEmphasizeTitlesRule + ":*"
   std::string value_str(variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       std::string(kEmphasizeTitlesRule) + "_" +
-      base::IntToString(static_cast<int>(input_type))));
+          base::IntToString(static_cast<int>(input.type()))));
   if (value_str.empty()) {
     value_str = variations::GetVariationParamValue(
         kBundledExperimentFieldTrialName,

@@ -94,7 +94,7 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
     matches_.push_back(i);
     if (!AutocompleteMatch::IsSearchType(i.type)) {
       const OmniboxFieldTrial::EmphasizeTitlesCondition condition(
-          OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(input.type()));
+          OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(input));
       bool emphasize = false;
       switch (condition) {
         case OmniboxFieldTrial::EMPHASIZE_WHEN_NONEMPTY:

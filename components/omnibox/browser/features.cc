@@ -10,4 +10,9 @@ namespace features {
 const base::Feature kZeroSuggestRedirectToChrome{
     "ZeroSuggestRedirectToChrome", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to swap the title and URL when providing zero suggest
+// suggestions.
+const base::Feature kZeroSuggestSwapTitleAndUrl{
+    "ZeroSuggestSwapTitleAndUrl", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
