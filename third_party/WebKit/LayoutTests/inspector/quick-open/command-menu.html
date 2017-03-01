@@ -1,0 +1,44 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+  self.runtime.loadModulePromise('quick_open').then(() => {
+    var categories = new Set();
+    var commands = new Map();
+    QuickOpen.commandMenu.commands().forEach(command => {
+      categories.add(command.category());
+      commands.set(command.category() + ': ' + command.title(), command);
+    });
+
+    InspectorTest.addResult("Categories active:");
+    Array.from(categories).sort().forEach(category => InspectorTest.addResult("Has category: " + category));
+
+    InspectorTest.addResult("");
+    var whitelist = ["Panel: Show Console", "Drawer: Show Console", "Appearance: Switch to dark theme", "DevTools: Auto-open DevTools for popups"];
+    whitelist.forEach(item => {
+      if (!commands.has(item))
+        InspectorTest.addResult(item + " is MISSING");
+    });
+
+    InspectorTest.addResult("Switching to console panel");
+    try {
+      commands.get("Panel: Show Console")._executeHandler().then(() => {
+        InspectorTest.addResult("Current panel: " + UI.inspectorView.currentPanelDeprecated().name);
+        InspectorTest.completeTest();
+      });
+    }
+    catch (e) {
+      InspectorTest.addResult(e);
+      InspectorTest.completeTest();
+    }
+  });
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Test that the command menu is properly filled.</p>
+</body>
+</html>
