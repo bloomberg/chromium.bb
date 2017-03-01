@@ -52,10 +52,6 @@ blink::WebString ToWebString(::mojom::FacingMode facing_mode) {
 
 struct VideoDeviceCaptureSourceSettings {
  public:
-  VideoDeviceCaptureSourceSettings()
-      : facing_mode_(::mojom::FacingMode::NONE),
-        power_line_frequency_(media::PowerLineFrequency::FREQUENCY_DEFAULT) {}
-
   VideoDeviceCaptureSourceSettings(
       const std::string& device_id,
       const media::VideoCaptureFormat& format,
@@ -84,9 +80,6 @@ struct VideoDeviceCaptureSourceSettings {
   long GetPowerLineFrequency() const {
     return static_cast<long>(power_line_frequency_);
   }
-  long GetWidth() const { return format_.frame_size.width(); }
-  long GetHeight() const { return format_.frame_size.height(); }
-  double GetFrameRate() const { return format_.frame_rate; }
   blink::WebString GetDeviceId() const {
     return blink::WebString::fromASCII(device_id_.data());
   }
@@ -111,6 +104,72 @@ struct VideoDeviceCaptureSourceSettings {
   ::mojom::FacingMode facing_mode_;
   media::PowerLineFrequency power_line_frequency_;
   rtc::Optional<bool> noise_reduction_;
+};
+
+// The ConstrainedFormat class keeps track of the effect of constraint sets on
+// the range of values supported by a video-capture format while iterating over
+// the constraint sets.
+// For example, suppose a device supports a width of 1024. Then, in principle,
+// it can support any width below 1024 using cropping.
+// Suppose the first advanced constraint set requests a maximum width of 640,
+// and the second advanced constraint set requests a minimum of 800.
+// Separately, the camera supports both advanced sets. However, if the first
+// set is supported, the second set can no longer be supported because width can
+// no longer exceed 640. The ConstrainedFormat class keeps track of this.
+class ConstrainedFormat {
+ public:
+  explicit ConstrainedFormat(const media::VideoCaptureFormat& format)
+      : native_height_(format.frame_size.height()),
+        min_height_(1),
+        max_height_(format.frame_size.height()),
+        native_width_(format.frame_size.width()),
+        min_width_(1),
+        max_width_(format.frame_size.width()),
+        native_frame_rate_(format.frame_rate),
+        min_frame_rate_(1),
+        max_frame_rate_(format.frame_rate) {}
+
+  long native_height() const { return native_height_; }
+  long min_height() const { return min_height_; }
+  long max_height() const { return max_height_; }
+  long native_width() const { return native_width_; }
+  long min_width() const { return min_width_; }
+  long max_width() const { return max_width_; }
+  long native_frame_rate() const { return native_frame_rate_; }
+  long min_frame_rate() const { return min_frame_rate_; }
+  long max_frame_rate() const { return max_frame_rate_; }
+
+  void ApplyConstraintSet(
+      const blink::WebMediaTrackConstraintSet& constraint_set) {
+    if (ConstraintHasMin(constraint_set.width))
+      min_width_ = std::max(min_width_, ConstraintMin(constraint_set.width));
+    if (ConstraintHasMax(constraint_set.width))
+      max_width_ = std::min(max_width_, ConstraintMax(constraint_set.width));
+
+    if (ConstraintHasMin(constraint_set.height))
+      min_height_ = std::max(min_height_, ConstraintMin(constraint_set.height));
+    if (ConstraintHasMax(constraint_set.height))
+      max_height_ = std::min(max_height_, ConstraintMax(constraint_set.height));
+
+    if (ConstraintHasMin(constraint_set.frameRate))
+      min_frame_rate_ =
+          std::max(min_frame_rate_, ConstraintMin(constraint_set.frameRate));
+    if (ConstraintHasMax(constraint_set.frameRate))
+      max_frame_rate_ =
+          std::min(max_frame_rate_, ConstraintMax(constraint_set.frameRate));
+  }
+
+ private:
+  // Using long for compatibility with Blink constraint classes.
+  long native_height_;
+  long min_height_;
+  long max_height_;
+  long native_width_;
+  long min_width_;
+  long max_width_;
+  double native_frame_rate_;
+  double min_frame_rate_;
+  double max_frame_rate_;
 };
 
 VideoDeviceCaptureSourceSelectionResult ResultFromSettings(
@@ -138,29 +197,26 @@ double Distance(double value1, double value2) {
 }
 
 // Returns a pair with the minimum and maximum aspect ratios supported by the
-// source resolution settings |source_height| and |source_width|, subject to
-// given width and height constraints.
-void GetSourceAspectRatioRange(int source_height,
-                               int source_width,
+// candidate format |constrained_format|, subject to given width and height
+// constraints.
+void GetSourceAspectRatioRange(const ConstrainedFormat& constrained_format,
                                const blink::LongConstraint& height_constraint,
                                const blink::LongConstraint& width_constraint,
                                double* min_source_aspect_ratio,
                                double* max_source_aspect_ratio) {
-  DCHECK_GE(source_height, 1);
-  DCHECK_GE(source_width, 1);
-  long min_height = 1;
+  long min_height = constrained_format.min_height();
   if (ConstraintHasMin(height_constraint))
     min_height = std::max(min_height, ConstraintMin(height_constraint));
 
-  long max_height = source_height;
+  long max_height = constrained_format.max_height();
   if (ConstraintHasMax(height_constraint))
     max_height = std::min(max_height, ConstraintMax(height_constraint));
 
-  long min_width = 1;
+  long min_width = constrained_format.min_width();
   if (ConstraintHasMin(width_constraint))
     min_width = std::max(min_width, ConstraintMin(width_constraint));
 
-  long max_width = source_width;
+  long max_width = constrained_format.max_width();
   if (ConstraintHasMax(width_constraint))
     max_width = std::min(max_width, ConstraintMax(width_constraint));
 
@@ -185,75 +241,89 @@ double StringConstraintSourceDistance(const blink::WebString& value,
   return HUGE_VAL;
 }
 
-// Returns a custom distance function suitable for screen dimensions, given
-// a |constraint| (e.g. width or height) and a candidate value |source_value|.
-// A source can support track resolutions in the range [1, |source_value|],
-// using cropping if necessary.
-// If the source range and the constraint range are disjoint, return HUGE_VAL.
-// If the constraint has maximum, penalize sources that exceed the maximum
-// by returning Distance(|source_value|, maximum). This is intended to prefer,
-// among sources that satisfy the constraint, those that have lower resource
-// usage. Otherwise, return zero.
+// Returns a custom distance between a source screen dimension and |constraint|.
+// The source supports the range [|min_source_value|, |max_source_value|], using
+// cropping if necessary. This range may differ from the native range of the
+// source [1, |native_source_value|] due to the application of previous
+// constraint sets.
+// If the range supported by the source and the range specified by |constraint|
+// are disjoint, the distance is infinite.
+// If |constraint| has a maximum, penalize sources whose native resolution
+// exceeds the maximum by returning
+// Distance(|native_source_value|, |constraint.max()|). This is intended to
+// prefer, among sources that satisfy the constraint, those that have lower
+// resource usage. Otherwise, return zero.
 double ResolutionConstraintSourceDistance(
-    int source_value,
+    int native_source_value,
+    int min_source_value,
+    int max_source_value,
     const blink::LongConstraint& constraint,
     const char** failed_constraint_name) {
-  DCHECK_GE(source_value, 1);
+  DCHECK_GE(native_source_value, 1);
+  bool constraint_has_min = ConstraintHasMin(constraint);
+  long constraint_min = constraint_has_min ? ConstraintMin(constraint) : -1;
   bool constraint_has_max = ConstraintHasMax(constraint);
   long constraint_max = constraint_has_max ? ConstraintMax(constraint) : -1;
 
   // If the intersection between the source range and the constraint range is
   // empty, return HUGE_VAL.
-  if ((constraint_has_max && constraint_max < 1) ||
-      (ConstraintHasMin(constraint) &&
-       source_value < ConstraintMin(constraint))) {
+  if ((constraint_has_max && min_source_value > constraint_max) ||
+      (constraint_has_min && max_source_value < constraint_min)) {
     if (failed_constraint_name)
       *failed_constraint_name = constraint.name();
     return HUGE_VAL;
   }
 
   // If the source value exceeds the maximum requested, penalize.
-  if (constraint_has_max && source_value > constraint_max)
-    return Distance(source_value, constraint_max);
+  if (constraint_has_max && native_source_value > constraint_max)
+    return Distance(native_source_value, constraint_max);
 
   return 0.0;
 }
 
 // Returns a custom distance function suitable for frame rate, given
-// a |constraint| and a candidate value.
-// A source can support track frame rates in the interval (0.0, |source_value|],
-// using frame-rate adjustments if necessary.
-// If the source range and the constraint range are disjoint, return HUGE_VAL.
-// If the constraint has maximum, penalize source frame rates that exceed the
-// maximum by returning Distance(|source_value|, maximum). This is intended to
-// prefer, among sources that satisfy the constraint, those that have lower
+// a |constraint| and a candidate format |constrained_format|.
+// A source can support track frame rates in the interval
+// [min_frame_rate, max_frame_rate], using frame-rate adjustments if
+// necessary. If the candidate range and the constraint range are disjoint,
+// return HUGE_VAL.
+// The supported source range may differ from the native range of the source
+// (0, native_source_range] due to the application of previous constraint sets.
+// If |constraint| has a maximum, penalize native frame rates that exceed the
+// maximum by returning Distance(native_frame_rate, maximum). This is intended
+// to prefer, among sources that satisfy the constraint, those that have lower
 // resource usage. Otherwise, return zero.
 double FrameRateConstraintSourceDistance(
-    double source_value,
+    const ConstrainedFormat& constrained_format,
     const blink::DoubleConstraint& constraint,
     const char** failed_constraint_name) {
-  DCHECK_GT(source_value, 0.0);
+  bool constraint_has_min = ConstraintHasMin(constraint);
+  double constraint_min = constraint_has_min ? ConstraintMin(constraint) : -1.0;
   bool constraint_has_max = ConstraintHasMax(constraint);
   double constraint_max = constraint_has_max ? ConstraintMax(constraint) : -1.0;
 
-  if ((constraint_has_max && constraint_max <= 0.0) ||
-      (ConstraintHasMin(constraint) &&
-       source_value < ConstraintMin(constraint) -
-                          blink::DoubleConstraint::kConstraintEpsilon)) {
+  if ((constraint_has_max &&
+       constrained_format.min_frame_rate() >
+           constraint_max + blink::DoubleConstraint::kConstraintEpsilon) ||
+      (constraint_has_min &&
+       constrained_format.max_frame_rate() <
+           constraint_min - blink::DoubleConstraint::kConstraintEpsilon)) {
     if (failed_constraint_name)
       *failed_constraint_name = constraint.name();
     return HUGE_VAL;
   }
 
-  if (constraint_has_max && source_value > constraint_max)
-    return Distance(source_value, constraint_max);
+  // Compute the cost using the native rate.
+  if (constraint_has_max &&
+      constrained_format.native_frame_rate() > constraint_max)
+    return Distance(constrained_format.native_frame_rate(), constraint_max);
 
   return 0.0;
 }
 
 // Returns a custom distance function suitable for aspect ratio, given
-// the values for the aspect_ratio, width and height constraints, and candidate
-// source values for width and height.
+// the values for the aspect_ratio, width and height constraints, and a
+// candidate format |constrained_format|.
 // A source can support track resolutions that range from
 //    min_width x min_height  to  max_width x max_height
 // where
@@ -269,15 +339,11 @@ double FrameRateConstraintSourceDistance(
 // If the supported range [min_ar, max_ar] and the range specified by the
 // aspectRatio constraint are disjoint, return HUGE_VAL. Otherwise, return zero.
 double AspectRatioConstraintSourceDistance(
-    int source_height,
-    int source_width,
+    const ConstrainedFormat& constrained_format,
     const blink::LongConstraint& height_constraint,
     const blink::LongConstraint& width_constraint,
     const blink::DoubleConstraint& aspect_ratio_constraint,
     const char** failed_constraint_name) {
-  DCHECK_GT(source_height, 1);
-  DCHECK_GT(source_width, 1);
-
   bool ar_constraint_has_min = ConstraintHasMin(aspect_ratio_constraint);
   double ar_constraint_min =
       ar_constraint_has_min ? ConstraintMin(aspect_ratio_constraint) : -1.0;
@@ -287,7 +353,7 @@ double AspectRatioConstraintSourceDistance(
 
   double min_source_aspect_ratio;
   double max_source_aspect_ratio;
-  GetSourceAspectRatioRange(source_height, source_width, height_constraint,
+  GetSourceAspectRatioRange(constrained_format, height_constraint,
                             width_constraint, &min_source_aspect_ratio,
                             &max_source_aspect_ratio);
 
@@ -365,23 +431,30 @@ double DeviceSourceDistance(
                                         failed_constraint_name);
 }
 
-// Returns a custom distance for constraints that depend on a video-capture
-// format.
+// Returns a custom distance between |constraint_set| and |format| given that
+// the configuration is already constrained by |constrained_format|.
+// |constrained_format| may cause the distance to be infinite if
+// |constraint_set| cannot be satisfied together with previous constraint sets,
+// but will not influence the numeric value returned if it is not infinite.
+// Formats with lower distance satisfy |constraint_set| with lower resource
+// usage.
 double FormatSourceDistance(
     const media::VideoCaptureFormat& format,
+    const ConstrainedFormat& constrained_format,
     const blink::WebMediaTrackConstraintSet& constraint_set,
     const char** failed_constraint_name) {
-  return ResolutionConstraintSourceDistance(format.frame_size.height(),
-                                            constraint_set.height,
-                                            failed_constraint_name) +
-         ResolutionConstraintSourceDistance(format.frame_size.width(),
-                                            constraint_set.width,
-                                            failed_constraint_name) +
+  return ResolutionConstraintSourceDistance(
+             constrained_format.native_height(),
+             constrained_format.min_height(), constrained_format.max_height(),
+             constraint_set.height, failed_constraint_name) +
+         ResolutionConstraintSourceDistance(
+             constrained_format.native_width(), constrained_format.min_width(),
+             constrained_format.max_width(), constraint_set.width,
+             failed_constraint_name) +
          AspectRatioConstraintSourceDistance(
-             format.frame_size.height(), format.frame_size.width(),
-             constraint_set.height, constraint_set.width,
+             constrained_format, constraint_set.height, constraint_set.width,
              constraint_set.aspectRatio, failed_constraint_name) +
-         FrameRateConstraintSourceDistance(format.frame_rate,
+         FrameRateConstraintSourceDistance(constrained_format,
                                            constraint_set.frameRate,
                                            failed_constraint_name) +
          StringConstraintSourceDistance(GetVideoKindForFormat(format),
@@ -389,20 +462,22 @@ double FormatSourceDistance(
                                         failed_constraint_name);
 }
 
-// Returns a custom distance between a set of candidate settings and a
-// constraint set. It is simply the sum of the distances for each individual
-// setting in |candidate|.
-// If |candidate| cannot satisfy constraint, the distance is HUGE_VAL.
-// Otherwise the distance is a finite value. Candidates with lower distance
-// satisfy |constraint_set| in a "better" way.
+// Returns a custom distance between |constraint_set| and |candidate|, given
+// that the configuration is already constrained by |constrained_format|.
+// |constrained_format| may cause the distance to be infinite if
+// |constraint_set| cannot be satisfied together with previous constraint sets,
+// but will not influence the numeric value returned if it is not infinite.
+// Candidates with lower distance satisfy |constraint_set| with lower resource
+// usage.
 double CandidateSourceDistance(
     const VideoDeviceCaptureSourceSettings& candidate,
+    const ConstrainedFormat& constrained_format,
     const blink::WebMediaTrackConstraintSet& constraint_set,
     const char** failed_constraint_name) {
   return DeviceSourceDistance(candidate.device_id(), candidate.facing_mode(),
                               constraint_set, failed_constraint_name) +
-         FormatSourceDistance(candidate.format(), constraint_set,
-                              failed_constraint_name) +
+         FormatSourceDistance(candidate.format(), constrained_format,
+                              constraint_set, failed_constraint_name) +
          PowerLineFrequencyConstraintSourceDistance(
              constraint_set.googPowerLineFrequency,
              candidate.power_line_frequency(), failed_constraint_name) +
@@ -459,20 +534,16 @@ double ResolutionConstraintNativeFitnessDistance(
 // on the source imposed by the width and height constraints.
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
 double AspectRatioConstraintFitnessDistance(
-    long source_height,
-    long source_width,
+    const ConstrainedFormat& constrained_format,
     const blink::LongConstraint& height_constraint,
     const blink::LongConstraint& width_constraint,
     const blink::DoubleConstraint& aspect_ratio_constraint) {
-  DCHECK_GT(source_height, 1);
-  DCHECK_GT(source_width, 1);
-
   if (!aspect_ratio_constraint.hasIdeal())
     return 0.0;
 
   double min_source_aspect_ratio;
   double max_source_aspect_ratio;
-  GetSourceAspectRatioRange(source_height, source_width, height_constraint,
+  GetSourceAspectRatioRange(constrained_format, height_constraint,
                             width_constraint, &min_source_aspect_ratio,
                             &max_source_aspect_ratio);
 
@@ -555,56 +626,57 @@ double NoiseReductionConstraintFitnessDistance(
   return 1.0;
 }
 
-// Returns the fitness distance between a settings candidate and a constraint
-// set. The returned value is the sum of the fitness distances between each
-// setting in |candidate| and the corresponding constraint in |constraint_set|.
+// Returns the fitness distance between |constraint_set| and |candidate| given
+// that the configuration is already constrained by |constrained_format|.
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
 double CandidateFitnessDistance(
     const VideoDeviceCaptureSourceSettings& candidate,
+    const ConstrainedFormat& constrained_format,
     const blink::WebMediaTrackConstraintSet& constraint_set) {
-  DCHECK(std::isfinite(
-      CandidateSourceDistance(candidate, constraint_set, nullptr)));
+  DCHECK(std::isfinite(CandidateSourceDistance(candidate, constrained_format,
+                                               constraint_set, nullptr)));
   double fitness = 0.0;
   fitness += AspectRatioConstraintFitnessDistance(
-      candidate.GetHeight(), candidate.GetWidth(), constraint_set.height,
-      constraint_set.width, constraint_set.aspectRatio);
+      constrained_format, constraint_set.height, constraint_set.width,
+      constraint_set.aspectRatio);
   fitness += StringConstraintFitnessDistance(candidate.GetDeviceId(),
                                              constraint_set.deviceId);
   fitness += StringConstraintFitnessDistance(candidate.GetFacingMode(),
                                              constraint_set.facingMode);
-  fitness += FrameRateConstraintFitnessDistance(candidate.GetFrameRate(),
-                                                constraint_set.frameRate);
   fitness += StringConstraintFitnessDistance(candidate.GetVideoKind(),
                                              constraint_set.videoKind);
   fitness += PowerLineFrequencyConstraintFitnessDistance(
       candidate.GetPowerLineFrequency(), constraint_set.googPowerLineFrequency);
   fitness += NoiseReductionConstraintFitnessDistance(
       candidate.noise_reduction(), constraint_set.googNoiseReduction);
-  fitness += ResolutionConstraintFitnessDistance(candidate.GetHeight(),
-                                                 constraint_set.height);
-  fitness += ResolutionConstraintFitnessDistance(candidate.GetWidth(),
+  // No need to pass minimum value to compute fitness for range-based
+  // constraints because all candidates start out with the same minimum and are
+  // subject to the same constraints.
+  fitness += ResolutionConstraintFitnessDistance(
+      constrained_format.max_height(), constraint_set.height);
+  fitness += ResolutionConstraintFitnessDistance(constrained_format.max_width(),
                                                  constraint_set.width);
+  fitness += FrameRateConstraintFitnessDistance(
+      constrained_format.max_frame_rate(), constraint_set.frameRate);
 
   return fitness;
 }
 
-// Returns the native fitness distance between a settings candidate and a
+// Returns the native fitness distance between a candidate format and a
 // constraint set. The returned value is the sum of the fitness distances for
 // the native values of settings that support a range of values (i.e., width,
 // height and frame rate).
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
 double CandidateNativeFitnessDistance(
-    const VideoDeviceCaptureSourceSettings& candidate,
+    const ConstrainedFormat& constrained_format,
     const blink::WebMediaTrackConstraintSet& constraint_set) {
-  DCHECK(std::isfinite(
-      CandidateSourceDistance(candidate, constraint_set, nullptr)));
   double fitness = 0.0;
-  fitness += FrameRateConstraintNativeFitnessDistance(candidate.GetFrameRate(),
-                                                      constraint_set.frameRate);
-  fitness += ResolutionConstraintNativeFitnessDistance(candidate.GetHeight(),
-                                                       constraint_set.height);
-  fitness += ResolutionConstraintNativeFitnessDistance(candidate.GetWidth(),
-                                                       constraint_set.width);
+  fitness += FrameRateConstraintNativeFitnessDistance(
+      constrained_format.native_frame_rate(), constraint_set.frameRate);
+  fitness += ResolutionConstraintNativeFitnessDistance(
+      constrained_format.native_height(), constraint_set.height);
+  fitness += ResolutionConstraintNativeFitnessDistance(
+      constrained_format.native_width(), constraint_set.width);
 
   return fitness;
 }
@@ -731,10 +803,13 @@ VideoDeviceCaptureSourceSelectionResult SelectVideoDeviceCaptureSourceSettings(
       continue;
 
     for (auto& format : device->formats) {
-      double basic_format_distance = FormatSourceDistance(
-          format, constraints.basic(), &failed_constraint_name);
+      ConstrainedFormat constrained_format(format);
+      double basic_format_distance =
+          FormatSourceDistance(format, constrained_format, constraints.basic(),
+                               &failed_constraint_name);
       if (!std::isfinite(basic_format_distance))
         continue;
+      constrained_format.ApplyConstraintSet(constraints.basic());
 
       for (auto& power_line_frequency : capabilities.power_line_capabilities) {
         double basic_power_line_frequency_distance =
@@ -770,17 +845,19 @@ VideoDeviceCaptureSourceSelectionResult SelectVideoDeviceCaptureSourceSettings(
           DistanceVector candidate_distance_vector;
           // First criteria for valid candidates is satisfaction of advanced
           // constraint sets.
-          for (const auto& advanced : constraints.advanced()) {
-            double custom_distance =
-                CandidateSourceDistance(candidate, advanced, nullptr);
+          for (const auto& advanced_set : constraints.advanced()) {
+            double custom_distance = CandidateSourceDistance(
+                candidate, constrained_format, advanced_set, nullptr);
             advanced_custom_distance_vector.push_back(custom_distance);
             double spec_distance = std::isfinite(custom_distance) ? 0 : 1;
             candidate_distance_vector.push_back(spec_distance);
+            if (std::isfinite(custom_distance))
+              constrained_format.ApplyConstraintSet(advanced_set);
           }
 
           // Second criterion is fitness distance.
-          candidate_distance_vector.push_back(
-              CandidateFitnessDistance(candidate, constraints.basic()));
+          candidate_distance_vector.push_back(CandidateFitnessDistance(
+              candidate, constrained_format, constraints.basic()));
 
           // Third criteria are custom distances to constraint sets.
           candidate_distance_vector.push_back(candidate_basic_custom_distance);
@@ -789,8 +866,8 @@ VideoDeviceCaptureSourceSelectionResult SelectVideoDeviceCaptureSourceSettings(
                     std::back_inserter(candidate_distance_vector));
 
           // Fourth criteria is native fitness distance.
-          candidate_distance_vector.push_back(
-              CandidateNativeFitnessDistance(candidate, constraints.basic()));
+          candidate_distance_vector.push_back(CandidateNativeFitnessDistance(
+              constrained_format, constraints.basic()));
 
           // Final criteria are custom distances to default settings.
           AppendDistanceFromDefault(candidate, capabilities,

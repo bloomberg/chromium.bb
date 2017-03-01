@@ -67,7 +67,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     device->device_id = kDeviceID3;
     device->facing_mode = ::mojom::FacingMode::USER;
     device->formats = {
-        media::VideoCaptureFormat(gfx::Size(320, 240), 10.0f,
+        media::VideoCaptureFormat(gfx::Size(600, 400), 10.0f,
                                   media::PIXEL_FORMAT_I420),
         media::VideoCaptureFormat(gfx::Size(640, 480), 10.0f,
                                   media::PIXEL_FORMAT_I420),
@@ -1244,71 +1244,80 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
 
 // The "Advanced" tests check selection criteria involving advanced constraint
 // sets.
-TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedExactResolution) {
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedMinMaxResolutionFrameRate) {
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setExact(4000);
-  advanced1.height.setExact(4000);
-  blink::WebMediaTrackConstraintSet& advanced2 =
-      constraint_factory_.AddAdvanced();
-  advanced2.width.setExact(3000);
-  advanced2.height.setExact(3000);
-  auto result = SelectSettings();
-  // No device supports the advanced constraint sets.
+  advanced1.width.setMin(4000);
+  advanced1.height.setMin(4000);
+  // No device supports the first advanced set. This first advanced constraint
+  // set is therefore ignored in all calls to SelectSettings().
   // Tie-breaker rule that applies is closeness to default settings.
+  auto result = SelectSettings();
   EXPECT_EQ(default_device_->device_id, result.device_id);
   EXPECT_EQ(*default_closest_format_, result.Format());
 
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.width.setMin(320);
+  advanced2.height.setMin(240);
+  advanced2.width.setMax(640);
+  advanced2.height.setMax(480);
+  result = SelectSettings();
+  // The device that best supports this advanced set is the low-res device,
+  // which natively supports the maximum resolution.
+  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(640, result.Width());
+  EXPECT_EQ(480, result.Height());
+
   blink::WebMediaTrackConstraintSet& advanced3 =
       constraint_factory_.AddAdvanced();
-  advanced3.width.setExact(1920);
-  advanced3.height.setExact(1080);
+  advanced3.frameRate.setMax(10.0);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  // The high-res device natively supports the third advanced constraint set
-  // and should be selected.
-  // First tie-breaker rule that applies is support for advanced constraints
-  // that appear first. Second tie-breaker rule is custom distance to advanced
-  // constraint sets that appear first.
+  // The high-res device natively supports the third advanced set in addition
+  // to the previous set and should be selected.
   EXPECT_EQ(high_res_device_->device_id, result.device_id);
-  EXPECT_EQ(1920, result.Width());
-  EXPECT_EQ(1080, result.Height());
+  EXPECT_EQ(640, result.Width());
+  EXPECT_EQ(480, result.Height());
 
   blink::WebMediaTrackConstraintSet& advanced4 =
       constraint_factory_.AddAdvanced();
-  advanced4.width.setExact(640);
-  advanced4.height.setExact(480);
+  advanced4.width.setMax(1000);
+  advanced4.height.setMax(1000);
   result = SelectSettings();
+  // Even though the default device supports the resolution in the fourth
+  // advanced natively, having better support for the previous sets has
+  // precedence, so the high-res device is selected.
   EXPECT_TRUE(result.HasValue());
-  // First tie-breaker rule that applies is support for advanced constraints
-  // that appear first, which leaves out configurations that only support the
-  // fourth advanced constraint set in favor of configurations that support
-  // the third set.
-  // Second tie-breaker rule is custom distance to advanced constraint sets
-  // that appear first.
   EXPECT_EQ(high_res_device_->device_id, result.device_id);
-  EXPECT_EQ(1920, result.Width());
-  EXPECT_EQ(1080, result.Height());
+  EXPECT_EQ(640, result.Width());
+  EXPECT_EQ(480, result.Height());
 
-  constraint_factory_.basic().width.setIdeal(800);
-  constraint_factory_.basic().height.setIdeal(600);
+  constraint_factory_.basic().width.setIdeal(100);
+  constraint_factory_.basic().height.setIdeal(100);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  // The ideal value is supported by the same configuration, so nothing
-  // changes.
+  // The high-res device at 600x400@10Hz supports all advanced sets and is
+  // better at supporting the ideal value.
+  // It beats 320x240@30Hz because the penalty for the native frame rate takes
+  // precedence over the native fitness distance.
+  // Both support standard fitness distance equally, since 600x400 can be
+  // cropped to 320x240.
   EXPECT_EQ(high_res_device_->device_id, result.device_id);
-  EXPECT_EQ(1920, result.Width());
-  EXPECT_EQ(1080, result.Height());
+  EXPECT_EQ(600, result.Width());
+  EXPECT_EQ(400, result.Height());
 
   constraint_factory_.basic().width.setIdeal(2000);
   constraint_factory_.basic().height.setIdeal(1500);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  // The closest configuration to the ideal resolution is the high-res device
-  // at the highest resolution.
+  // The high-res device at 640x480@10Hz is closer to the large ideal
+  // resolution.
   EXPECT_EQ(high_res_device_->device_id, result.device_id);
-  EXPECT_EQ(*high_res_highest_format_, result.Format());
+  EXPECT_EQ(640, result.Width());
+  EXPECT_EQ(480, result.Height());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -1341,18 +1350,18 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedNoiseReduction) {
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setExact(640);
-  advanced1.height.setExact(480);
+  advanced1.width.setMin(640);
+  advanced1.height.setMin(480);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.width.setExact(1920);
-  advanced2.height.setExact(1080);
+  advanced2.width.setMin(1920);
+  advanced2.height.setMin(1080);
   advanced2.googNoiseReduction.setExact(false);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(high_res_device_->device_id, result.device_id);
-  EXPECT_EQ(1920, result.Width());
-  EXPECT_EQ(1080, result.Height());
+  EXPECT_LE(1920, result.Width());
+  EXPECT_LE(1080, result.Height());
   EXPECT_TRUE(result.noise_reduction && !*result.noise_reduction);
 }
 
@@ -1400,6 +1409,259 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     EXPECT_LE(1080, result.Height());
     // Should select default noise reduction setting.
     EXPECT_TRUE(!result.noise_reduction);
+  }
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryExactResolution) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.width.setExact(640);
+  advanced1.height.setExact(480);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.width.setExact(1920);
+  advanced2.height.setExact(1080);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set. The low-res device is the one that best supports the requested
+  // resolution.
+  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(640, result.Width());
+  EXPECT_EQ(480, result.Height());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryMaxMinResolutionFrameRate) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.width.setMax(640);
+  advanced1.height.setMax(480);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.width.setMin(1920);
+  advanced2.height.setMin(1080);
+  advanced2.frameRate.setExact(60.0);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set. The default device with the 200x200@40Hz format should be selected.
+  // That format satisfies the first advanced set as well as any other, so the
+  // tie breaker rule that applies is default device ID.
+  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(200, result.Width());
+  EXPECT_EQ(200, result.Height());
+  EXPECT_EQ(40, result.FrameRate());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryMinMaxResolutionFrameRate) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.width.setMin(800);
+  advanced1.height.setMin(600);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.width.setMax(640);
+  advanced2.height.setMax(480);
+  advanced2.frameRate.setExact(60.0);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set. The default device with the 1000x1000@20Hz format should be selected.
+  // That format satisfies the first advanced set as well as any other, so the
+  // tie breaker rule that applies is default device ID.
+  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(1000, result.Width());
+  EXPECT_EQ(1000, result.Height());
+  EXPECT_EQ(20, result.FrameRate());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryExactAspectRatio) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.aspectRatio.setExact(2300.0);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.aspectRatio.setExact(3.0);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set. Only the high-res device in the highest-resolution format supports the
+  // requested aspect ratio.
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(*high_res_highest_format_, result.Format());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryAspectRatioRange) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.aspectRatio.setMin(2300.0);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.aspectRatio.setMax(3.0);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set. Only the high-res device in the highest-resolution format supports the
+  // requested aspect ratio.
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(*high_res_highest_format_, result.Format());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryExactFrameRate) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.frameRate.setExact(40.0);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.frameRate.setExact(45.0);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set.
+  EXPECT_EQ(40.0, result.FrameRate());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryFrameRateRange) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.frameRate.setMin(40.0);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.frameRate.setMax(35.0);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set.
+  EXPECT_LE(40.0, result.FrameRate());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryWidthFrameRate) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.width.setMax(1920);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.width.setMin(2000);
+  advanced2.frameRate.setExact(10.0);
+  blink::WebMediaTrackConstraintSet& advanced3 =
+      constraint_factory_.AddAdvanced();
+  advanced3.frameRate.setExact(30.0);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The low-res device at 320x240@30Hz satisfies advanced sets 1 and 3.
+  // The high-res device at 2304x1536@10.0f can satisfy sets 1 and 2, but not
+  // both at the same time. Thus, low-res device must be preferred.
+  EXPECT_EQ(low_res_device_->device_id, result.device_id);
+  EXPECT_EQ(30.0, result.FrameRate());
+  EXPECT_GE(1920, result.Width());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryHeightFrameRate) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.height.setMax(1080);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.height.setMin(1500);
+  advanced2.frameRate.setExact(10.0);
+  blink::WebMediaTrackConstraintSet& advanced3 =
+      constraint_factory_.AddAdvanced();
+  advanced3.frameRate.setExact(60.0);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The high-res device at 1280x768@60Hz and 1920x1080@60Hz satisfies advanced
+  // sets 1 and 3. The same device at 2304x1536@10.0f can satisfy sets 1 and 2,
+  // but not both at the same time. Thus, the format closest to default that
+  // satisfies sets 1 and 3 must be chosen.
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(60.0, result.FrameRate());
+  EXPECT_GE(1080, result.Height());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedDeviceID) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  blink::WebString id_vector1[] = {blink::WebString::fromASCII(kDeviceID1),
+                                   blink::WebString::fromASCII(kDeviceID2)};
+  advanced1.deviceId.setExact(
+      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+  blink::WebString id_vector2[] = {blink::WebString::fromASCII(kDeviceID2),
+                                   blink::WebString::fromASCII(kDeviceID3)};
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.deviceId.setExact(
+      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // kDeviceID2 must be selected because it is the only one that satisfies both
+  // advanced sets.
+  EXPECT_EQ(std::string(kDeviceID2), result.device_id);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryDeviceID) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  blink::WebString id_vector1[] = {blink::WebString::fromASCII(kDeviceID1),
+                                   blink::WebString::fromASCII(kDeviceID2)};
+  advanced1.deviceId.setExact(
+      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+  blink::WebString id_vector2[] = {blink::WebString::fromASCII(kDeviceID3),
+                                   blink::WebString::fromASCII(kDeviceID4)};
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.deviceId.setExact(
+      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set.
+  EXPECT_EQ(std::string(kDeviceID1), result.device_id);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryPowerLineFrequency) {
+  {
+    constraint_factory_.Reset();
+    blink::WebMediaTrackConstraintSet& advanced1 =
+        constraint_factory_.AddAdvanced();
+    advanced1.width.setMin(640);
+    advanced1.height.setMin(480);
+    advanced1.googPowerLineFrequency.setExact(50);
+    blink::WebMediaTrackConstraintSet& advanced2 =
+        constraint_factory_.AddAdvanced();
+    advanced2.width.setMin(1920);
+    advanced2.height.setMin(1080);
+    advanced2.googPowerLineFrequency.setExact(60);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    // The second advanced set cannot be satisfied because it contradicts the
+    // first set. The default device supports the first set and should be
+    // selected.
+    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_LE(640, result.Width());
+    EXPECT_LE(480, result.Height());
+    EXPECT_EQ(50, static_cast<int>(result.PowerLineFrequency()));
   }
 }
 
