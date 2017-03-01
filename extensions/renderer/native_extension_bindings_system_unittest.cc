@@ -137,6 +137,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     ScriptContext* raw_script_context = script_context.get();
     raw_script_contexts_.push_back(raw_script_context);
     script_context_set_->AddForTesting(std::move(script_context));
+    bindings_system_->DidCreateScriptContext(raw_script_context);
     return raw_script_context;
   }
 

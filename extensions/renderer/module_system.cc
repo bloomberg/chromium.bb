@@ -546,13 +546,19 @@ void ModuleSystem::SetNativeLazyField(v8::Local<v8::Object> object,
 
 void ModuleSystem::OnNativeBindingCreated(
     const std::string& api_name,
-    v8::Local<v8::Value> api_bridge_value,
-    v8::Local<v8::Value> get_internal_api) {
+    v8::Local<v8::Value> api_bridge_value) {
+  DCHECK(!get_internal_api_.IsEmpty());
   v8::HandleScope scope(GetIsolate());
   if (source_map_->Contains(api_name)) {
     NativesEnabledScope enabled(this);
-    LoadModuleWithNativeAPIBridge(api_name, api_bridge_value, get_internal_api);
+    LoadModuleWithNativeAPIBridge(api_name, api_bridge_value);
   }
+}
+
+void ModuleSystem::SetGetInternalAPIHook(
+    v8::Local<v8::FunctionTemplate> get_internal_api) {
+  DCHECK(get_internal_api_.IsEmpty());
+  get_internal_api_.Set(GetIsolate(), get_internal_api);
 }
 
 v8::Local<v8::Value> ModuleSystem::RunString(v8::Local<v8::String> code,
@@ -673,14 +679,13 @@ void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 v8::Local<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
-  return LoadModuleWithNativeAPIBridge(module_name, v8::Undefined(GetIsolate()),
+  return LoadModuleWithNativeAPIBridge(module_name,
                                        v8::Undefined(GetIsolate()));
 }
 
 v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
     const std::string& module_name,
-    v8::Local<v8::Value> api_bridge,
-    v8::Local<v8::Value> get_internal_api) {
+    v8::Local<v8::Value> api_bridge) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Local<v8::Context> v8_context = context()->v8_context();
   v8::Context::Scope context_scope(v8_context);
@@ -733,6 +738,15 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
 
   v8::Local<v8::Object> natives(NewInstance());
   CHECK(!natives.IsEmpty());  // this can fail if v8 has issues
+
+  v8::Local<v8::Value> get_internal_api;
+  if (get_internal_api_.IsEmpty()) {
+    get_internal_api = v8::Undefined(GetIsolate());
+  } else {
+    get_internal_api = get_internal_api_.Get(GetIsolate())
+                           ->GetFunction(v8_context)
+                           .ToLocalChecked();
+  }
 
   // These must match the argument order in WrapSource.
   v8::Local<v8::Value> args[] = {

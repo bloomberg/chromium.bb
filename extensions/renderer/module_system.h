@@ -158,8 +158,9 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // TODO(devlin): We can get rid of this once we convert all our custom
   // bindings.
   void OnNativeBindingCreated(const std::string& api_name,
-                              v8::Local<v8::Value> api_bridge_value,
-                              v8::Local<v8::Value> get_internal_api);
+                              v8::Local<v8::Value> api_bridge_value);
+
+  void SetGetInternalAPIHook(v8::Local<v8::FunctionTemplate> get_internal_api);
 
  protected:
   friend class ModuleSystemTestEnvironment;
@@ -219,8 +220,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   v8::Local<v8::Value> LoadModule(const std::string& module_name);
   v8::Local<v8::Value> LoadModuleWithNativeAPIBridge(
       const std::string& module_name,
-      v8::Local<v8::Value> api_object,
-      v8::Local<v8::Value> get_internal_api);
+      v8::Local<v8::Value> api_object);
 
   // Invoked when a module is loaded in response to a requireAsync call.
   // Resolves |resolver| with |value|.
@@ -267,6 +267,9 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // name, or due to OverrideNativeHandlerForTest. This is needed so that they
   // can be later Invalidated. It should only happen in tests.
   std::vector<std::unique_ptr<NativeHandler>> clobbered_native_handlers_;
+
+  // The template to be used for retrieving an internal API.
+  v8::Eternal<v8::FunctionTemplate> get_internal_api_;
 
   base::WeakPtrFactory<ModuleSystem> weak_factory_;
 

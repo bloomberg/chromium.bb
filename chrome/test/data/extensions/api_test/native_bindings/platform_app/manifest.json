@@ -5,5 +5,6 @@
     "background": {
       "scripts": ["test.js"]
     }
-  }
+  },
+  "permissions": ["webview"]
 }

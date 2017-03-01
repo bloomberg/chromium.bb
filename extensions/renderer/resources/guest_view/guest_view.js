@@ -7,7 +7,8 @@
 
 var CreateEvent = require('guestViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
-var GuestViewInternal =
+var GuestViewInternal = getInternalApi ?
+    getInternalApi('guestViewInternal') :
     require('binding').Binding.create('guestViewInternal').generate();
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 
@@ -354,6 +355,8 @@ GuestView.prototype.getId = function() {
 };
 
 // Exports
-exports.$set('GuestView', GuestView);
-exports.$set('GuestViewImpl', GuestViewImpl);
-exports.$set('ResizeEvent', ResizeEvent);
+if (!apiBridge) {
+  exports.$set('GuestView', GuestView);
+  exports.$set('GuestViewImpl', GuestViewImpl);
+  exports.$set('ResizeEvent', ResizeEvent);
+}
