@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/atomicops.h"
+#include "base/debug/alias.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
@@ -20,12 +21,16 @@
 namespace gpu {
 
 namespace {
+// Default interval used when no v-sync interval comes from DWM.
+const int kDefaultTimerBasedInterval = 16666;
+
 // from <D3dkmthk.h>
 typedef LONG NTSTATUS;
 typedef UINT D3DKMT_HANDLE;
 typedef UINT D3DDDI_VIDEO_PRESENT_SOURCE_ID;
 
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#define STATUS_GRAPHICS_PRESENT_OCCLUDED ((NTSTATUS)0xC01E0006L)
 
 typedef struct _D3DKMT_OPENADAPTERFROMHDC {
   HDC hDc;
@@ -63,9 +68,6 @@ class GpuVSyncWorker : public base::Thread,
   void Enable(bool enabled);
   void StartRunningVSyncOnThread();
   void WaitForVSyncOnThread();
-  void SendVSyncUpdate(base::TimeTicks now,
-                       base::TimeTicks timestamp,
-                       base::TimeDelta interval);
   bool BelongsToWorkerThread();
 
  private:
@@ -75,7 +77,15 @@ class GpuVSyncWorker : public base::Thread,
   void Reschedule();
   void OpenAdapter(const wchar_t* device_name);
   void CloseAdapter();
-  bool WaitForVBlankEvent();
+  NTSTATUS WaitForVBlankEvent();
+
+  void SendGpuVSyncUpdate(base::TimeTicks now,
+                          base::TimeTicks timestamp,
+                          base::TimeDelta interval);
+  void InvokeCallbackAndReschedule(base::TimeTicks timestamp,
+                                   base::TimeDelta interval);
+  void ScheduleDelayBasedVSync(base::TimeTicks timebase,
+                               base::TimeDelta interval);
 
   // Specifies whether background tasks are running.
   // This can be set on background thread only.
@@ -190,19 +200,30 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
     OpenAdapter(monitor_info.szDevice);
   }
 
-  // Crash if WaitForVBlankEvent fails to avoid spinning the loop.
-  CHECK(WaitForVBlankEvent());
+  NTSTATUS wait_result = WaitForVBlankEvent();
+  if (wait_result != STATUS_SUCCESS) {
+    if (wait_result == STATUS_GRAPHICS_PRESENT_OCCLUDED) {
+      // This may be triggered by the monitor going into sleep.
+      // Use timer based mechanism as a backup, start with getting VSync
+      // parameters to determine timebase and interval.
+      // TODO(stanisc): Consider a slower v-sync rate in this particular case.
+      vsync_provider_->GetVSyncParameters(base::Bind(
+          &GpuVSyncWorker::ScheduleDelayBasedVSync, base::Unretained(this)));
+      return;
+    } else {
+      base::debug::Alias(&wait_result);
+      CHECK(false);
+    }
+  }
 
   vsync_provider_->GetVSyncParameters(
-      base::Bind(&GpuVSyncWorker::SendVSyncUpdate, base::Unretained(this),
+      base::Bind(&GpuVSyncWorker::SendGpuVSyncUpdate, base::Unretained(this),
                  base::TimeTicks::Now()));
-
-  Reschedule();
 }
 
-void GpuVSyncWorker::SendVSyncUpdate(base::TimeTicks now,
-                                     base::TimeTicks timestamp,
-                                     base::TimeDelta interval) {
+void GpuVSyncWorker::SendGpuVSyncUpdate(base::TimeTicks now,
+                                        base::TimeTicks timestamp,
+                                        base::TimeDelta interval) {
   base::TimeDelta adjustment;
 
   if (!(timestamp.is_null() || interval.is_zero())) {
@@ -219,23 +240,41 @@ void GpuVSyncWorker::SendVSyncUpdate(base::TimeTicks now,
     timestamp = now;
   }
 
-  TRACE_EVENT1("gpu", "GpuVSyncWorker::SendVSyncUpdate", "adjustment",
+  TRACE_EVENT1("gpu", "GpuVSyncWorker::SendGpuVSyncUpdate", "adjustment",
                adjustment.ToInternalValue());
 
-  if (base::subtle::NoBarrier_Load(&enabled_)) {
-    callback_.Run(timestamp, interval);
-  }
+  InvokeCallbackAndReschedule(timestamp, interval);
 }
 
-void GpuVSyncWorker::Reschedule() {
-  // Restart the task if still enabled.
+void GpuVSyncWorker::InvokeCallbackAndReschedule(base::TimeTicks timestamp,
+                                                 base::TimeDelta interval) {
+  // Send update and restart the task if still enabled.
   if (base::subtle::NoBarrier_Load(&enabled_)) {
+    callback_.Run(timestamp, interval);
     task_runner()->PostTask(FROM_HERE,
                             base::Bind(&GpuVSyncWorker::WaitForVSyncOnThread,
                                        base::Unretained(this)));
   } else {
     running_ = false;
   }
+}
+
+void GpuVSyncWorker::ScheduleDelayBasedVSync(base::TimeTicks timebase,
+                                             base::TimeDelta interval) {
+  // This is called only when WaitForVBlankEvent fails due to monitor going to
+  // sleep.  Use a delay based v-sync as a back-up.
+  if (interval.is_zero()) {
+    interval = base::TimeDelta::FromMicroseconds(kDefaultTimerBasedInterval);
+  }
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks next_vsync = now.SnappedToNextTick(timebase, interval);
+
+  task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&GpuVSyncWorker::InvokeCallbackAndReschedule,
+                 base::Unretained(this), next_vsync, interval),
+      next_vsync - now);
 }
 
 void GpuVSyncWorker::OpenAdapter(const wchar_t* device_name) {
@@ -269,16 +308,14 @@ void GpuVSyncWorker::CloseAdapter() {
   }
 }
 
-bool GpuVSyncWorker::WaitForVBlankEvent() {
+NTSTATUS GpuVSyncWorker::WaitForVBlankEvent() {
   D3DKMT_WAITFORVERTICALBLANKEVENT wait_for_vertical_blank_event_data;
   wait_for_vertical_blank_event_data.hAdapter = current_adapter_handle_;
   wait_for_vertical_blank_event_data.hDevice = 0;
   wait_for_vertical_blank_event_data.VidPnSourceId = current_source_id_;
 
-  NTSTATUS result =
-      wait_for_vertical_blank_event_ptr_(&wait_for_vertical_blank_event_data);
-
-  return result == STATUS_SUCCESS;
+  return wait_for_vertical_blank_event_ptr_(
+      &wait_for_vertical_blank_event_data);
 }
 
 // MessageFilter class for sending and receiving IPC messages
