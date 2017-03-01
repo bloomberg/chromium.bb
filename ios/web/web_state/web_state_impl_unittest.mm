@@ -13,9 +13,7 @@
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/values.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -241,39 +239,17 @@ bool HandleScriptCommand(bool* is_called,
   return should_handle;
 }
 
-class WebStateTest : public web::WebTest {
+}  // namespace
+
+// Test fixture for web::WebStateImpl class.
+class WebStateImplTest : public web::WebTest {
  protected:
-  void SetUp() override {
-    web_state_.reset(new WebStateImpl(&browser_state_));
-  }
+  WebStateImplTest() : web_state_(new WebStateImpl(GetBrowserState())) {}
 
-  // Loads specified html page into WebState.
-  void LoadHtml(std::string html) {
-    web_state_->GetNavigationManagerImpl().InitializeSession(NO);
-
-    // Use data: url for loading html page.
-    std::string encoded_html;
-    base::Base64Encode(html, &encoded_html);
-    GURL url("data:text/html;charset=utf8;base64," + encoded_html);
-    web::NavigationManager::WebLoadParams params(url);
-    web_state_->GetNavigationManager()->LoadURLWithParams(params);
-
-    // Trigger the load.
-    web_state_->SetWebUsageEnabled(true);
-    web_state_->GetView();
-
-    // Wait until load is completed.
-    EXPECT_TRUE(web_state_->IsLoading());
-    base::test::ios::WaitUntilCondition(^bool() {
-      return !web_state_->IsLoading();
-    });
-  }
-
-  web::TestBrowserState browser_state_;
   std::unique_ptr<WebStateImpl> web_state_;
 };
 
-TEST_F(WebStateTest, WebUsageEnabled) {
+TEST_F(WebStateImplTest, WebUsageEnabled) {
   // Default is false.
   ASSERT_FALSE(web_state_->IsWebUsageEnabled());
 
@@ -286,7 +262,7 @@ TEST_F(WebStateTest, WebUsageEnabled) {
   EXPECT_FALSE(web_state_->GetWebController().webUsageEnabled);
 }
 
-TEST_F(WebStateTest, ShouldSuppressDialogs) {
+TEST_F(WebStateImplTest, ShouldSuppressDialogs) {
   // Default is false.
   ASSERT_FALSE(web_state_->ShouldSuppressDialogs());
 
@@ -299,7 +275,7 @@ TEST_F(WebStateTest, ShouldSuppressDialogs) {
   EXPECT_FALSE(web_state_->GetWebController().shouldSuppressDialogs);
 }
 
-TEST_F(WebStateTest, ResponseHeaders) {
+TEST_F(WebStateImplTest, ResponseHeaders) {
   GURL real_url("http://foo.com/bar");
   GURL frame_url("http://frames-r-us.com/");
   scoped_refptr<net::HttpResponseHeaders> real_headers(HeadersFromString(
@@ -332,7 +308,7 @@ TEST_F(WebStateTest, ResponseHeaders) {
   EXPECT_EQ("en", web_state_->GetContentLanguageHeader());
 }
 
-TEST_F(WebStateTest, ResponseHeaderClearing) {
+TEST_F(WebStateImplTest, ResponseHeaderClearing) {
   GURL url("http://foo.com/");
   scoped_refptr<net::HttpResponseHeaders> headers(HeadersFromString(
       "HTTP/1.1 200 OK\r\n"
@@ -358,7 +334,7 @@ TEST_F(WebStateTest, ResponseHeaderClearing) {
   EXPECT_EQ("", web_state_->GetContentLanguageHeader());
 }
 
-TEST_F(WebStateTest, ObserverTest) {
+TEST_F(WebStateImplTest, ObserverTest) {
   std::unique_ptr<TestWebStateObserver> observer(
       new TestWebStateObserver(web_state_.get()));
   EXPECT_EQ(web_state_.get(), observer->web_state());
@@ -417,7 +393,7 @@ TEST_F(WebStateTest, ObserverTest) {
 }
 
 // Tests that WebStateDelegate methods appropriately called.
-TEST_F(WebStateTest, DelegateTest) {
+TEST_F(WebStateImplTest, DelegateTest) {
   TestWebStateDelegate delegate;
   web_state_->SetDelegate(&delegate);
 
@@ -474,7 +450,7 @@ TEST_F(WebStateTest, DelegateTest) {
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.
-TEST_F(WebStateTest, GlobalObserverTest) {
+TEST_F(WebStateImplTest, GlobalObserverTest) {
   std::unique_ptr<TestGlobalWebStateObserver> observer(
       new TestGlobalWebStateObserver());
 
@@ -518,7 +494,7 @@ TEST_F(WebStateTest, GlobalObserverTest) {
 }
 
 // Verifies that policy deciders are correctly called by the web state.
-TEST_F(WebStateTest, PolicyDeciderTest) {
+TEST_F(WebStateImplTest, PolicyDeciderTest) {
   MockWebStatePolicyDecider decider(web_state_.get());
   MockWebStatePolicyDecider decider2(web_state_.get());
   EXPECT_EQ(web_state_.get(), decider.web_state());
@@ -571,7 +547,7 @@ TEST_F(WebStateTest, PolicyDeciderTest) {
 }
 
 // Tests that script command callbacks are called correctly.
-TEST_F(WebStateTest, ScriptCommand) {
+TEST_F(WebStateImplTest, ScriptCommand) {
   // Set up two script command callbacks.
   const std::string kPrefix1("prefix1");
   const std::string kCommand1("prefix1.command1");
@@ -628,65 +604,4 @@ TEST_F(WebStateTest, ScriptCommand) {
   web_state_->RemoveScriptCommandCallback(kPrefix2);
 }
 
-// Tests script execution with and without callback.
-TEST_F(WebStateTest, ScriptExecution) {
-  LoadHtml("<html></html>");
-
-  // Execute script without callback.
-  web_state_->ExecuteJavaScript(base::UTF8ToUTF16("window.foo = 'bar'"));
-
-  // Execute script with callback.
-  __block std::unique_ptr<base::Value> execution_result;
-  __block bool execution_complete = false;
-  web_state_->ExecuteJavaScript(base::UTF8ToUTF16("window.foo"),
-                                base::BindBlock(^(const base::Value* value) {
-                                  execution_result = value->CreateDeepCopy();
-                                  execution_complete = true;
-                                }));
-  base::test::ios::WaitUntilCondition(^{
-    return execution_complete;
-  });
-
-  ASSERT_TRUE(execution_result);
-  std::string string_result;
-  execution_result->GetAsString(&string_result);
-  EXPECT_EQ("bar", string_result);
-}
-
-// Tests loading progress.
-TEST_F(WebStateTest, LoadingProgress) {
-  EXPECT_FLOAT_EQ(0.0, web_state_->GetLoadingProgress());
-  LoadHtml("<html></html>");
-  base::test::ios::WaitUntilCondition(^bool() {
-    return web_state_->GetLoadingProgress() == 1.0;
-  });
-}
-
-// Tests that page which overrides window.webkit object does not break the
-// messaging system.
-TEST_F(WebStateTest, OverridingWebKitObject) {
-  // Add a script command handler.
-  __block bool message_received = false;
-  const web::WebState::ScriptCommandCallback callback =
-      base::BindBlock(^bool(const base::DictionaryValue&, const GURL&, bool) {
-        message_received = true;
-        return true;
-      });
-  web_state_->AddScriptCommandCallback(callback, "test");
-
-  // Load the page which overrides window.webkit object and wait until the
-  // test message is received.
-  LoadHtml(
-      "<script>"
-      "  webkit = undefined;"
-      "  __gCrWeb.message.invokeOnHost({'command': 'test.webkit-overriding'});"
-      "</script>");
-
-  base::test::ios::WaitUntilCondition(^{
-    return message_received;
-  });
-  web_state_->RemoveScriptCommandCallback("test");
-}
-
-}  // namespace
 }  // namespace web
