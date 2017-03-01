@@ -300,6 +300,9 @@ public class AccountManagementFragment extends PreferenceFragment
 
     private void configureGoogleActivityControls() {
         Preference pref = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
+        if (ChildAccountService.isChildAccount()) {
+            pref.setSummary(R.string.sign_in_google_activity_controls_message_child_account);
+        }
         pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
