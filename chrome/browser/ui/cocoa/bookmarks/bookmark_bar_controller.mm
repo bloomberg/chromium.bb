@@ -230,9 +230,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // then show the no items label.
 - (void)reconfigureBookmarkBar;
 
-- (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
-- (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
-- (void)tagEmptyMenu:(NSMenu*)menu;
 - (void)clearMenuTagMap;
 - (int)preferredHeight;
 - (void)addButtonsToView;
@@ -1117,65 +1114,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     case BookmarkBar::HIDDEN:
       return 0;
   }
-}
-
-// Recursively add the given bookmark node and all its children to
-// menu, one menu item per node.
-- (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu {
-  NSString* title = [BookmarkMenuCocoaController menuTitleForNode:child];
-  NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title
-                                                 action:nil
-                                          keyEquivalent:@""] autorelease];
-  [menu addItem:item];
-  [item setImage:[self faviconForNode:child forADarkTheme:NO]];
-  if (child->is_folder()) {
-    NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
-    [menu setSubmenu:submenu forItem:item];
-    if (!child->empty()) {
-      [self addFolderNode:child toMenu:submenu];  // potentially recursive
-    } else {
-      [self tagEmptyMenu:submenu];
-    }
-  } else {
-    [item setTarget:self];
-    [item setAction:@selector(openBookmarkMenuItem:)];
-    [item setTag:[self menuTagFromNodeId:child->id()]];
-    if (child->is_url())
-      [item setToolTip:[BookmarkMenuCocoaController tooltipForNode:child]];
-  }
-}
-
-// Empty menus are odd; if empty, add something to look at.
-// Matches windows behavior.
-- (void)tagEmptyMenu:(NSMenu*)menu {
-  NSString* empty_menu_title = l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU);
-  [menu addItem:[[[NSMenuItem alloc] initWithTitle:empty_menu_title
-                                            action:NULL
-                                     keyEquivalent:@""] autorelease]];
-}
-
-// Add the children of the given bookmark node (and their children...)
-// to menu, one menu item per node.
-- (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu {
-  for (int i = 0; i < node->child_count(); i++) {
-    const BookmarkNode* child = node->GetChild(i);
-    [self addNode:child toMenu:menu];
-  }
-}
-
-// Return an autoreleased NSMenu that represents the given bookmark
-// folder node.
-- (NSMenu *)menuForFolderNode:(const BookmarkNode*)node {
-  if (!node->is_folder())
-    return nil;
-  NSString* title = base::SysUTF16ToNSString(node->GetTitle());
-  NSMenu* menu = [[[NSMenu alloc] initWithTitle:title] autorelease];
-  [self addFolderNode:node toMenu:menu];
-
-  if (![menu numberOfItems]) {
-    [self tagEmptyMenu:menu];
-  }
-  return menu;
 }
 
 // Return an appropriate width for the given bookmark button cell.

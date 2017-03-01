@@ -460,8 +460,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (BOOL)shrinkOrHideView:(NSView*)view forMaxX:(CGFloat)maxViewX;
 - (void)unhighlightBookmark:(const bookmarks::BookmarkNode*)node;
 
-// The following are for testing purposes only and are not used internally.
-- (NSMenu *)menuForFolderNode:(const bookmarks::BookmarkNode*)node;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONTROLLER_H_
