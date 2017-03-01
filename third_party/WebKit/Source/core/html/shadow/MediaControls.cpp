@@ -688,6 +688,27 @@ bool MediaControls::containsRelatedTarget(Event* event) {
   return contains(relatedTarget->toNode());
 }
 
+void MediaControls::onInsertedIntoDocument() {
+  // TODO(mlamouri): we should show the controls instead of having
+  // HTMLMediaElement do it.
+
+  // m_windowEventListener doesn't need to be re-attached as it's only needed
+  // when a menu is visible.
+  m_mediaEventListener->attach();
+  if (m_orientationLockDelegate)
+    m_orientationLockDelegate->attach();
+}
+
+void MediaControls::onRemovedFromDocument() {
+  // TODO(mlamouri): we hide show the controls instead of having
+  // HTMLMediaElement do it.
+
+  m_windowEventListener->stop();
+  m_mediaEventListener->detach();
+  if (m_orientationLockDelegate)
+    m_orientationLockDelegate->detach();
+}
+
 void MediaControls::onVolumeChange() {
   m_muteButton->updateDisplayType();
   m_volumeSlider->setVolume(mediaElement().muted() ? 0

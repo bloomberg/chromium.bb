@@ -166,6 +166,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   bool containsRelatedTarget(Event*);
 
   // Methods called by MediaControlsMediaEventListener.
+  void onInsertedIntoDocument();
+  void onRemovedFromDocument();
   void onVolumeChange();
   void onFocusIn();
   void onTimeUpdate();

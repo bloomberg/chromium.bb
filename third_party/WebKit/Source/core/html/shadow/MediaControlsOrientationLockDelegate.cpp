@@ -64,10 +64,23 @@ class DummyScreenOrientationCallback : public WebLockOrientationCallback {
 MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
     HTMLVideoElement& video)
     : EventListener(CPPEventListenerType), m_videoElement(video) {
+  if (videoElement().isConnected())
+    attach();
+}
+
+void MediaControlsOrientationLockDelegate::attach() {
   document().addEventListener(EventTypeNames::fullscreenchange, this, true);
   videoElement().addEventListener(EventTypeNames::webkitfullscreenchange, this,
                                   true);
   videoElement().addEventListener(EventTypeNames::loadedmetadata, this, true);
+}
+
+void MediaControlsOrientationLockDelegate::detach() {
+  document().removeEventListener(EventTypeNames::fullscreenchange, this, true);
+  videoElement().removeEventListener(EventTypeNames::webkitfullscreenchange,
+                                     this, true);
+  videoElement().removeEventListener(EventTypeNames::loadedmetadata, this,
+                                     true);
 }
 
 bool MediaControlsOrientationLockDelegate::operator==(

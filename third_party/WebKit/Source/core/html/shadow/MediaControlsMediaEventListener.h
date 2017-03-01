@@ -16,6 +16,15 @@ class MediaControlsMediaEventListener final : public EventListener {
  public:
   explicit MediaControlsMediaEventListener(MediaControls*);
 
+  // Called by MediaControls when the HTMLMediaElement is added to a document
+  // document. All event listeners should be added.
+  void attach();
+
+  // Called by MediaControls when the HTMLMediaElement is no longer in the
+  // document. All event listeners should be removed in order to prepare the
+  // object to be garbage collected.
+  void detach();
+
   bool operator==(const EventListener&) const override;
 
   DECLARE_VIRTUAL_TRACE();
