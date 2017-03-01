@@ -59,10 +59,6 @@ import java.util.List;
  * The main implementation of the {@link ExternalNavigationDelegate}.
  */
 public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
-    // Instant Apps system resolver activity on N-MR1+.
-    @VisibleForTesting
-    static final String EPHEMERAL_INSTALLER_CLASS =
-            "com.google.android.gms.instantapps.routing.EphemeralInstallerActivity";
     private static final String PDF_VIEWER = "com.google.android.apps.docs";
     private static final String PDF_MIME = "application/pdf";
     private static final String PDF_SUFFIX = ".pdf";
@@ -287,7 +283,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             }
 
             if (info.activityInfo != null) {
-                if (EPHEMERAL_INSTALLER_CLASS.equals(info.activityInfo.name)) {
+                if (InstantAppsHandler.getInstance().isInstantAppResolveInfo(info)) {
                     // Don't consider the Instant Apps resolver a specialized application.
                     continue;
                 }

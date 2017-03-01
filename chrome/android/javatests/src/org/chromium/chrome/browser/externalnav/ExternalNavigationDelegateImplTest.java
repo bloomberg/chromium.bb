@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
 import java.util.ArrayList;
@@ -102,7 +103,7 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
         info.filter = new IntentFilter();
         info.filter.addDataPath("somepath", 2);
         info.activityInfo = new ActivityInfo();
-        info.activityInfo.name = ExternalNavigationDelegateImpl.EPHEMERAL_INSTALLER_CLASS;
+        info.activityInfo.name = InstantAppsHandler.EPHEMERAL_INSTALLER_CLASS;
         info.activityInfo.packageName = "com.google.android.gms";
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
         // Ephemeral resolver is not counted as a specialized handler.

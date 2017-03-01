@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.instantapps;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -14,6 +15,7 @@ import android.provider.Browser;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.chrome.browser.AppHooks;
@@ -57,6 +59,17 @@ public class InstantAppsHandler {
 
     private static final String BROWSER_LAUNCH_REASON =
             "com.google.android.gms.instantapps.BROWSER_LAUNCH_REASON";
+
+    private static final String SUPERVISOR_PKG = "com.google.android.instantapps.supervisor";
+
+    private static final String[] SUPERVISOR_START_ACTIONS = {
+            "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
+            "com.google.android.instantapps.nmr1.VIEW"};
+
+    // Instant Apps system resolver activity on N-MR1+.
+    @VisibleForTesting
+    public static final String EPHEMERAL_INSTALLER_CLASS =
+            "com.google.android.gms.instantapps.routing.EphemeralInstallerActivity";
 
     /** Finch experiment name. */
     private static final String INSTANT_APPS_EXPERIMENT_NAME = "InstantApps";
@@ -107,6 +120,23 @@ public class InstantAppsHandler {
             }
         }
         return sInstance;
+    }
+
+    /**
+     * Checks whether {@param intent} is for an Instant App. Considers both package and actions that
+     * would resolve to Supervisor.
+     * @return Whether the given intent is going to open an Instant App.
+     */
+    public static boolean isIntentToInstantApp(Intent intent) {
+        if (SUPERVISOR_PKG.equals(intent.getPackage())) return true;
+
+        String intentAction = intent.getAction();
+        for (String action : SUPERVISOR_START_ACTIONS) {
+            if (action.equals(intentAction)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -322,5 +352,14 @@ public class InstantAppsHandler {
      */
     public Intent getInstantAppIntentForUrl(String url) {
         return null;
+    }
+
+    /**
+     * Whether the given ResolveInfo object refers to Instant Apps as a launcher.
+     * @param info The resolve info.
+     */
+    public boolean isInstantAppResolveInfo(ResolveInfo info) {
+        if (info == null || info.activityInfo == null) return false;
+        return EPHEMERAL_INSTALLER_CLASS.equals(info.activityInfo.name);
     }
 }

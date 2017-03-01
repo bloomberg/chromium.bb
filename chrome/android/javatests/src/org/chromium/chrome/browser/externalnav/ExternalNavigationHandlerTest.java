@@ -99,6 +99,10 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     private static final String COUNTERFEIT_WEBAPK_PACKAGE_NAME =
             "org.chromium.webapk.counterfeit";
 
+    private static final String[] SUPERVISOR_START_ACTIONS = {
+            "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
+            "com.google.android.instantapps.nmr1.VIEW"};
+
     private final TestExternalNavigationDelegate mDelegate;
     private ExternalNavigationHandler mUrlHandler;
 
@@ -623,7 +627,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
 
         // Check that Supervisor is detected by action even without package
-        for (String action : ExternalNavigationHandler.SUPERVISOR_START_ACTIONS) {
+        for (String action : SUPERVISOR_START_ACTIONS) {
             String intentWithoutPackage = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
                     + "action=" + action + ";"
                     + "S.com.google.android.instantapps.FALLBACK_PACKAGE="
