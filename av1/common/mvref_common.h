@@ -255,18 +255,6 @@ static const POSITION mv_ref_blocks[BLOCK_SIZES][MVREF_NEIGHBOURS] = {
 };
 #endif
 
-#if CONFIG_GLOBAL_MOTION
-static INLINE int block_center_x(int mi_col, BLOCK_SIZE bs) {
-  const int bw = block_size_wide[bs];
-  return mi_col * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2;
-}
-
-static INLINE int block_center_y(int mi_row, BLOCK_SIZE bs) {
-  const int bh = block_size_high[bs];
-  return mi_row * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2;
-}
-#endif  // CONFIG_GLOBAL_MOTION
-
 static const int idx_n_column_to_subblock[4][2] = {
   { 1, 2 }, { 1, 3 }, { 3, 2 }, { 3, 3 }
 };

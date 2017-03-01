@@ -767,6 +767,20 @@ void av1_highbd_build_inter_predictor(
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
+#if CONFIG_GLOBAL_MOTION
+static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
+                                     TransformationType type) {
+  PREDICTION_MODE mode = get_y_mode(mi, block);
+#if GLOBAL_SUB8X8_USED
+  const int block_size_allowed = 1;
+#else
+  const BLOCK_SIZE bsize = mi->mbmi.sb_type;
+  const int block_size_allowed = (bsize >= BLOCK_8X8);
+#endif  // GLOBAL_SUB8X8_USED
+  return mode == ZEROMV && type > TRANSLATION && block_size_allowed;
+}
+#endif  // CONFIG_GLOBAL_MOTION
+
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *src_mv,
                                const struct scale_factors *sf, int w, int h,
@@ -822,8 +836,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
   int is_global[2];
   for (ref = 0; ref < 1 + is_compound; ++ref) {
     WarpedMotionParams *const wm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
-    is_global[ref] =
-        (get_y_mode(mi, block) == ZEROMV && wm->wmtype > TRANSLATION);
+    is_global[ref] = is_global_mv_block(mi, block, wm->wmtype);
   }
 #endif  // CONFIG_GLOBAL_MOTION
 
@@ -2750,8 +2763,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   ConvolveParams conv_params = get_conv_params(0, plane);
 #if CONFIG_GLOBAL_MOTION
   WarpedMotionParams *const wm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
-  const int is_global =
-      (get_y_mode(mi, block) == ZEROMV && wm->wmtype > TRANSLATION);
+  const int is_global = is_global_mv_block(mi, block, wm->wmtype);
 #endif  // CONFIG_GLOBAL_MOTION
 
   if (is_scaled) {

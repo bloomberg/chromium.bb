@@ -13,6 +13,7 @@
 #define AV1_COMMON_MV_H_
 
 #include "av1/common/common.h"
+#include "av1/common/common_data.h"
 #include "aom_dsp/aom_filter.h"
 
 #ifdef __cplusplus
@@ -146,12 +147,37 @@ typedef struct {
 #define GM_VERTRAPEZOID_BITS \
   (GM_AFFINE_BITS - GM_ABS_ALPHA_BITS + GM_ABS_ROW3HOMO_BITS)
 
+// Use global motion parameters for sub8x8 blocks
+#define GLOBAL_SUB8X8_USED 0
+
+static INLINE int block_center_x(int mi_col, BLOCK_SIZE bs) {
+  const int bw = block_size_wide[bs];
+  return mi_col * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2;
+}
+
+static INLINE int block_center_y(int mi_row, BLOCK_SIZE bs) {
+  const int bh = block_size_high[bs];
+  return mi_row * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2;
+}
+
 // Convert a global motion translation vector (which may have more bits than a
 // regular motion vector) into a motion vector
 static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
-                                          int allow_hp, int x, int y) {
+                                          int allow_hp, BLOCK_SIZE bsize,
+                                          int mi_col, int mi_row) {
+#if !GLOBAL_SUB8X8_USED
+  if (bsize < BLOCK_8X8) {
+    int_mv res_zero;
+    res_zero.as_mv.row = 0;
+    res_zero.as_mv.col = 0;
+    return res_zero;
+  }
+#endif
+
   int_mv res;
   const int32_t *mat = gm->wmmat;
+  const int x = block_center_x(mi_col, bsize);
+  const int y = block_center_y(mi_row, bsize);
   int xc, yc;
   int shift = allow_hp ? WARPEDMODEL_PREC_BITS - 3 : WARPEDMODEL_PREC_BITS - 2;
   int scale = allow_hp ? 0 : 1;
