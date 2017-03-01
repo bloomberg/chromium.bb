@@ -55,8 +55,8 @@ struct Header {
   uint32_t padding;
 };
 
-static_assert(sizeof(Header) % kChannelMessageAlignment == 0,
-    "Invalid header size.");
+static_assert(IsAlignedForChannelMessage(sizeof(Header)),
+              "Invalid header size.");
 
 struct AcceptChildData {
   ports::NodeName parent_name;

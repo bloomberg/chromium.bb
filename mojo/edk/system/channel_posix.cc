@@ -387,7 +387,7 @@ class ChannelPosix : public Channel,
           }
           MessagePtr fds_message(
               new Channel::Message(sizeof(fds[0]) * fds.size(), 0,
-                                   Message::Header::MessageType::HANDLES_SENT));
+                                   Message::MessageType::HANDLES_SENT));
           memcpy(fds_message->mutable_payload(), fds.data(),
                  sizeof(fds[0]) * fds.size());
           outgoing_messages_.emplace_back(std::move(fds_message), 0);
@@ -462,22 +462,22 @@ class ChannelPosix : public Channel,
   }
 
 #if defined(OS_MACOSX)
-  bool OnControlMessage(Message::Header::MessageType message_type,
+  bool OnControlMessage(Message::MessageType message_type,
                         const void* payload,
                         size_t payload_size,
                         ScopedPlatformHandleVectorPtr handles) override {
     switch (message_type) {
-      case Message::Header::MessageType::HANDLES_SENT: {
+      case Message::MessageType::HANDLES_SENT: {
         if (payload_size == 0)
           break;
         MessagePtr message(new Channel::Message(
-            payload_size, 0, Message::Header::MessageType::HANDLES_SENT_ACK));
+            payload_size, 0, Message::MessageType::HANDLES_SENT_ACK));
         memcpy(message->mutable_payload(), payload, payload_size);
         Write(std::move(message));
         return true;
       }
 
-      case Message::Header::MessageType::HANDLES_SENT_ACK: {
+      case Message::MessageType::HANDLES_SENT_ACK: {
         size_t num_fds = payload_size / sizeof(int);
         if (num_fds == 0 || payload_size % sizeof(int) != 0)
           break;

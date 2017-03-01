@@ -18,53 +18,70 @@ namespace edk {
 
 const size_t kChannelMessageAlignment = 8;
 
+constexpr bool IsAlignedForChannelMessage(size_t n) {
+  return n % kChannelMessageAlignment == 0;
+}
+
 // Channel provides a thread-safe interface to read and write arbitrary
 // delimited messages over an underlying I/O channel, optionally transferring
 // one or more platform handles in the process.
-class Channel : public base::RefCountedThreadSafe<Channel> {
+class MOJO_SYSTEM_IMPL_EXPORT Channel
+    : public base::RefCountedThreadSafe<Channel> {
  public:
   struct Message;
 
   using MessagePtr = std::unique_ptr<Message>;
 
   // A message to be written to a channel.
-  struct Message {
-#pragma pack(push, 1)
-    struct Header {
-      enum class MessageType : uint16_t {
-        // A normal message.
-        NORMAL = 0,
+  struct MOJO_SYSTEM_IMPL_EXPORT Message {
+    enum class MessageType : uint16_t {
+      // An old format normal message, that uses the LegacyHeader.
+      // Only used on Android and ChromeOS.
+      // TODO(jcivelli): remove legacy support when Arc++ has updated to Mojo
+      //                 with normal versioned messages. crbug.com/695645
+      NORMAL_LEGACY = 0,
 #if defined(OS_MACOSX)
-        // A control message containing handles to echo back.
-        HANDLES_SENT,
-        // A control message containing handles that can now be closed.
-        HANDLES_SENT_ACK,
+      // A control message containing handles to echo back.
+      HANDLES_SENT,
+      // A control message containing handles that can now be closed.
+      HANDLES_SENT_ACK,
 #endif
-      };
+      // A normal message that uses Header and can contain extra header values.
+      NORMAL,
+    };
 
+#pragma pack(push, 1)
+    // Old message wire format for ChromeOS and Android, used by NORMAL_LEGACY
+    // messages.
+    struct LegacyHeader {
       // Message size in bytes, including the header.
       uint32_t num_bytes;
 
-#if defined(MOJO_EDK_LEGACY_PROTOCOL)
-      // Old message wire format for ChromeOS and Android.
       // Number of attached handles.
       uint16_t num_handles;
 
       MessageType message_type;
-#else
+    };
+
+    // Header used by NORMAL messages.
+    // To preserve backward compatibility with LegacyHeader, the num_bytes and
+    // message_type field must be at the same offset as in LegacyHeader.
+    struct Header {
+      // Message size in bytes, including the header.
+      uint32_t num_bytes;
+
       // Total size of header, including extra header data (i.e. HANDLEs on
       // windows).
       uint16_t num_header_bytes;
+
+      MessageType message_type;
 
       // Number of attached handles. May be less than the reserved handle
       // storage size in this message on platforms that serialise handles as
       // data (i.e. HANDLEs on Windows, Mach ports on OSX).
       uint16_t num_handles;
 
-      MessageType message_type;
-
       char padding[6];
-#endif  // defined(MOJO_EDK_LEGACY_PROTOCOL)
     };
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -104,10 +121,8 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
 
     // Allocates and owns a buffer for message data with enough capacity for
     // |payload_size| bytes plus a header, plus |max_handles| platform handles.
-    Message(size_t payload_size,
-            size_t max_handles,
-            Header::MessageType message_type = Header::MessageType::NORMAL);
-
+    Message(size_t payload_size, size_t max_handles);
+    Message(size_t payload_size, size_t max_handles, MessageType message_type);
     ~Message();
 
     // Constructs a Message from serialized message data.
@@ -116,29 +131,23 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     const void* data() const { return data_; }
     size_t data_num_bytes() const { return size_; }
 
-#if defined(MOJO_EDK_LEGACY_PROTOCOL)
-    void* mutable_payload() { return static_cast<void*>(header_ + 1); }
-    const void* payload() const {
-      return static_cast<const void*>(header_ + 1);
-    }
-    size_t payload_size() const;
-#else
-    const void* extra_header() const { return data_ + sizeof(Header); }
-    void* mutable_extra_header() { return data_ + sizeof(Header); }
-    size_t extra_header_size() const {
-      return header_->num_header_bytes - sizeof(Header);
-    }
+    const void* extra_header() const;
+    void* mutable_extra_header();
+    size_t extra_header_size() const;
 
-    void* mutable_payload() { return data_ + header_->num_header_bytes; }
-    const void* payload() const { return data_ + header_->num_header_bytes; }
+    void* mutable_payload();
+    const void* payload() const;
     size_t payload_size() const;
-#endif  // defined(MOJO_EDK_LEGACY_PROTOCOL)
 
-    size_t num_handles() const { return header_->num_handles; }
-    bool has_handles() const { return header_->num_handles > 0; }
+    size_t num_handles() const;
+    bool has_handles() const;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     bool has_mach_ports() const;
 #endif
+
+    bool is_legacy_message() const;
+    LegacyHeader* legacy_header() const;
+    Header* header() const;
 
     // Note: SetHandles() and TakeHandles() invalidate any previous value of
     // handles().
@@ -161,11 +170,12 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
                                PlatformHandleVector* handles);
 #endif
 
+    void SetVersionForTest(uint16_t version_number);
+
    private:
-    size_t size_;
-    size_t max_handles_;
-    char* data_;
-    Header* header_;
+    size_t size_ = 0;
+    size_t max_handles_ = 0;
+    char* data_ = nullptr;
 
     ScopedPlatformHandleVectorPtr handle_vector_;
 
@@ -270,7 +280,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
 
   // Handles a received control message. Returns |true| if the message is
   // accepted, or |false| otherwise.
-  virtual bool OnControlMessage(Message::Header::MessageType message_type,
+  virtual bool OnControlMessage(Message::MessageType message_type,
                                 const void* payload,
                                 size_t payload_size,
                                 ScopedPlatformHandleVectorPtr handles);

@@ -154,6 +154,7 @@ source_set("test_utils") {
 test("mojo_system_unittests") {
   sources = [
     "awakable_list_unittest.cc",
+    "channel_unittest.cc",
     "core_test_base.cc",
     "core_test_base.h",
     "core_unittest.cc",
@@ -186,6 +187,7 @@ test("mojo_system_unittests") {
     "//mojo/edk/system/ports:tests",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 

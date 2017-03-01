@@ -23,7 +23,7 @@ struct BrokerMessageHeader {
   uint32_t padding;
 };
 
-static_assert(sizeof(BrokerMessageHeader) % kChannelMessageAlignment == 0,
+static_assert(IsAlignedForChannelMessage(sizeof(BrokerMessageHeader)),
               "Invalid header size.");
 
 struct BufferRequestData {
