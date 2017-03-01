@@ -61,7 +61,10 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
     : m_ownerElement(ownerElement),
       m_localFrame(frame),
       m_webView(webView),
-      m_dispatchEventTimer(this, &ExternalPopupMenu::dispatchEvent),
+      m_dispatchEventTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
+          this,
+          &ExternalPopupMenu::dispatchEvent),
       m_webExternalPopupMenu(0) {}
 
 ExternalPopupMenu::~ExternalPopupMenu() {}

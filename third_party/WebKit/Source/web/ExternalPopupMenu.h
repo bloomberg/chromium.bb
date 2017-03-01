@@ -88,7 +88,7 @@ class WEB_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
   Member<LocalFrame> m_localFrame;
   WebViewImpl& m_webView;
   std::unique_ptr<WebMouseEvent> m_syntheticEvent;
-  Timer<ExternalPopupMenu> m_dispatchEventTimer;
+  TaskRunnerTimer<ExternalPopupMenu> m_dispatchEventTimer;
   // The actual implementor of the show menu.
   WebExternalPopupMenu* m_webExternalPopupMenu;
   bool m_needsUpdate = false;
