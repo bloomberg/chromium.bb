@@ -6,7 +6,6 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
@@ -18,6 +17,7 @@
 #include "components/sessions/core/session_types.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/test/fake_server/fake_server_verifier.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 
 #if defined(OS_CHROMEOS)
@@ -32,12 +32,7 @@ using sessions_helper::CheckInitialState;
 using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
 using sessions_helper::ModelAssociatorHasTabWithUrl;
-using sessions_helper::MoveTab;
-using sessions_helper::NavigateTab;
-using sessions_helper::NavigateTabBack;
-using sessions_helper::NavigateTabForward;
-using sessions_helper::OpenTab;
-using sessions_helper::OpenTabAtIndex;
+using sessions_helper::OpenTabAndGetLocalWindows;
 using sessions_helper::ScopedWindowMap;
 using sessions_helper::SessionWindowMap;
 using sessions_helper::SyncedSessionVector;
@@ -86,36 +81,6 @@ class SingleClientSessionsSyncTest : public SyncTest {
 #endif
   }
 
-  void ExpectNavigationChain(const std::vector<GURL>& urls) {
-    ScopedWindowMap windows;
-    ASSERT_TRUE(GetLocalWindows(0, &windows));
-    ASSERT_EQ(windows.begin()->second->tabs.size(), 1u);
-    sessions::SessionTab* tab = windows.begin()->second->tabs[0].get();
-
-    int index = 0;
-    EXPECT_EQ(urls.size(), tab->navigations.size());
-    for (auto it = tab->navigations.begin(); it != tab->navigations.end();
-         ++it, ++index) {
-      EXPECT_EQ(urls[index], it->virtual_url());
-    }
-  }
-
-  // Block until the expected hierarchy is recorded on the FakeServer for
-  // profile 0. This will time out if the hierarchy is never
-  // recorded.
-  void WaitForHierarchyOnServer(
-      const fake_server::SessionsHierarchy& hierarchy) {
-    SessionHierarchyMatchChecker checker(hierarchy, GetSyncService(0),
-                                         GetFakeServer());
-    EXPECT_TRUE(checker.Wait());
-  }
-
-  // Shortcut to call WaitForHierarchyOnServer for only |url| in a single
-  // window.
-  void WaitForURLOnServer(const GURL& url) {
-    WaitForHierarchyOnServer({{url.spec()}});
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTest);
 };
@@ -128,8 +93,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, Sanity) {
   // Add a new session to client 0 and wait for it to sync.
   ScopedWindowMap old_windows;
   GURL url = GURL("http://127.0.0.1/bubba");
-  ASSERT_TRUE(OpenTab(0, url));
-  ASSERT_TRUE(GetLocalWindows(0, &old_windows));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   // Get foreign session data from client 0.
@@ -142,13 +106,18 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, Sanity) {
   ASSERT_TRUE(GetLocalWindows(0, &new_windows));
   ASSERT_TRUE(WindowsMatch(old_windows, new_windows));
 
-  WaitForURLOnServer(url);
+  fake_server::FakeServerVerifier fake_server_verifier(GetFakeServer());
+  SessionsHierarchy expected_sessions;
+  expected_sessions.AddWindow(url.spec());
+  ASSERT_TRUE(fake_server_verifier.VerifySessions(expected_sessions));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NoSessions) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  WaitForHierarchyOnServer(SessionsHierarchy());
+  fake_server::FakeServerVerifier fake_server_verifier(GetFakeServer());
+  SessionsHierarchy expected_sessions;
+  ASSERT_TRUE(fake_server_verifier.VerifySessions(expected_sessions));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ChromeHistory) {
@@ -156,8 +125,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ChromeHistory) {
 
   ASSERT_TRUE(CheckInitialState(0));
 
-  ASSERT_TRUE(OpenTab(0, GURL(chrome::kChromeUIHistoryURL)));
-  WaitForURLOnServer(GURL(chrome::kChromeUIHistoryURL));
+  // Add a new session to client 0 and wait for it to sync.
+  ScopedWindowMap old_windows;
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(chrome::kChromeUIHistoryURL),
+                                        &old_windows));
+  std::vector<GURL> urls;
+  urls.push_back(GURL(chrome::kChromeUIHistoryURL));
+  ASSERT_TRUE(WaitForTabsToLoad(0, urls));
+
+  // Verify the chrome history page synced.
+  ASSERT_TRUE(ModelAssociatorHasTabWithUrl(0,
+                                           GURL(chrome::kChromeUIHistoryURL)));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {
@@ -169,8 +147,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {
   const GURL url("data:text/html,<html><title>Test</title></html>");
 
   ScopedWindowMap windows;
-  ASSERT_TRUE(OpenTab(0, url));
-  ASSERT_TRUE(GetLocalWindows(0, &windows));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &windows));
 
   int found_navigations = 0;
   for (auto it = windows.begin(); it != windows.end(); ++it) {
@@ -201,8 +178,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ResponseCodeIsPreserved) {
   const GURL url("data:text/html,<html><title>Test</title></html>");
 
   ScopedWindowMap windows;
-  ASSERT_TRUE(OpenTab(0, url));
-  ASSERT_TRUE(GetLocalWindows(0, &windows));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &windows));
 
   int found_navigations = 0;
   for (auto it = windows.begin(); it != windows.end(); ++it) {
@@ -216,132 +192,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ResponseCodeIsPreserved) {
     }
   }
   ASSERT_EQ(1, found_navigations);
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, FragmentURLNavigation) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  GURL url = GURL("http://127.0.0.1/bubba");
-  ASSERT_TRUE(OpenTab(0, url));
-  WaitForURLOnServer(url);
-
-  GURL fragment_url = GURL("http://127.0.0.1/bubba#fragment");
-  NavigateTab(0, fragment_url);
-  WaitForURLOnServer(fragment_url);
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       NavigationChainForwardBack) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  GURL first_url = GURL("http://127.0.0.1/foobar");
-  ASSERT_TRUE(OpenTab(0, first_url));
-  WaitForURLOnServer(first_url);
-
-  GURL second_url = GURL("http://127.0.0.1/barbaz");
-  NavigateTab(0, second_url);
-  WaitForURLOnServer(second_url);
-
-  NavigateTabBack(0);
-  WaitForURLOnServer(first_url);
-
-  ExpectNavigationChain({first_url, second_url});
-
-  NavigateTabForward(0);
-  WaitForURLOnServer(second_url);
-
-  ExpectNavigationChain({first_url, second_url});
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       NavigationChainAlteredDestructively) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  GURL base_url = GURL("http://127.0.0.1/bubba");
-  ASSERT_TRUE(OpenTab(0, base_url));
-  WaitForURLOnServer(base_url);
-
-  GURL first_url = GURL("http://127.0.0.1/foobar");
-  ASSERT_TRUE(NavigateTab(0, first_url));
-  WaitForURLOnServer(first_url);
-
-  // Check that the navigation chain matches the above sequence of {base_url,
-  // first_url}.
-  ExpectNavigationChain({base_url, first_url});
-
-  NavigateTabBack(0);
-  WaitForURLOnServer(base_url);
-
-  GURL second_url = GURL("http://127.0.0.1/barbaz");
-  NavigateTab(0, second_url);
-  WaitForURLOnServer(second_url);
-
-  NavigateTabBack(0);
-  WaitForURLOnServer(base_url);
-
-  // Check that the navigation chain contains second_url where first_url was
-  // before.
-  ExpectNavigationChain({base_url, second_url});
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, OpenNewTab) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  GURL base_url = GURL("http://127.0.0.1/bubba");
-  ASSERT_TRUE(OpenTabAtIndex(0, 0, base_url));
-
-  WaitForURLOnServer(base_url);
-
-  GURL new_tab_url = GURL("http://127.0.0.1/foobar");
-  ASSERT_TRUE(OpenTabAtIndex(0, 1, new_tab_url));
-
-  WaitForHierarchyOnServer(
-      SessionsHierarchy({{base_url.spec(), new_tab_url.spec()}}));
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, OpenNewWindow) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  GURL base_url = GURL("http://127.0.0.1/bubba");
-  ASSERT_TRUE(OpenTab(0, base_url));
-
-  WaitForURLOnServer(base_url);
-
-  GURL new_window_url = GURL("http://127.0.0.1/foobar");
-  AddBrowser(0);
-  ASSERT_TRUE(OpenTab(1, new_window_url));
-
-  WaitForHierarchyOnServer(
-      SessionsHierarchy({{base_url.spec()}, {new_window_url.spec()}}));
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  GURL base_url = GURL("http://127.0.0.1/bubba");
-  GURL moved_tab_url = GURL("http://127.0.0.1/foobar");
-
-  ASSERT_TRUE(OpenTab(0, base_url));
-  ASSERT_TRUE(OpenTabAtIndex(0, 1, moved_tab_url));
-
-  GURL new_window_url = GURL("http://127.0.0.1/barbaz");
-  AddBrowser(0);
-  ASSERT_TRUE(OpenTab(1, new_window_url));
-
-  WaitForHierarchyOnServer(SessionsHierarchy(
-      {{base_url.spec(), moved_tab_url.spec()}, {new_window_url.spec()}}));
-
-  // Move tab 1 in browser 0 to browser 1.
-  MoveTab(0, 1, 1);
-
-  WaitForHierarchyOnServer(SessionsHierarchy(
-      {{base_url.spec()}, {new_window_url.spec(), moved_tab_url.spec()}}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
@@ -358,8 +208,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
 
     // Add a new session to client 0 and wait for it to sync.
     GURL url = GURL("http://127.0.0.1/bubba");
-    ASSERT_TRUE(OpenTab(0, url));
-    WaitForURLOnServer(url);
+    ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
+    TriggerSyncForModelTypes(0, syncer::ModelTypeSet(syncer::SESSIONS));
+    ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
     // The cookie jar mismatch value will be true by default due to
     // the way integration tests trigger signin (which does not involve a normal
@@ -368,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
     ASSERT_TRUE(message.commit().config_params().cookie_jar_mismatch());
 
     // It is possible that multiple sync cycles occured during the call to
-    // OpenTab, which would cause multiple identical samples.
+    // OpenTabAndGetLocalWindows, which would cause multiple identical samples.
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
                          false, 1);
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarEmptyOnMismatch",
@@ -391,8 +242,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
 
     // Trigger a sync and wait for it.
     GURL url = GURL("http://127.0.0.1/bubba2");
-    ASSERT_TRUE(OpenTab(0, url));
-    ASSERT_TRUE(GetLocalWindows(0, &old_windows));
+    ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
     TriggerSyncForModelTypes(0, syncer::ModelTypeSet(syncer::SESSIONS));
     ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 

@@ -126,11 +126,11 @@ class SyncTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* cl) override;
 
   // Used to get the number of sync clients used by a test.
-  int num_clients() { return num_clients_; }
+  int num_clients() WARN_UNUSED_RESULT { return num_clients_; }
 
   // Returns a pointer to a particular sync profile. Callee owns the object
   // and manages its lifetime.
-  Profile* GetProfile(int index);
+  Profile* GetProfile(int index) WARN_UNUSED_RESULT;
 
   // Returns a list of all profiles including the verifier if available. Callee
   // owns the objects and manages its lifetime.
@@ -138,23 +138,17 @@ class SyncTest : public InProcessBrowserTest {
 
   // Returns a pointer to a particular browser. Callee owns the object
   // and manages its lifetime.
-  Browser* GetBrowser(int index);
-
-  // Adds a new browser belonging to the profile at |profile_index|, and appends
-  // it to the list of browsers. Creates a copy of the Profile pointer in
-  // position |profile_index| and appends it to the list of profiles. This is
-  // done so that the profile associated with the new browser can be found at
-  // the same index as it. Tests typically use browser indexes and profile
-  // indexes interchangeably; this allows them to do so freely.
-  Browser* AddBrowser(int profile_index);
+  Browser* GetBrowser(int index) WARN_UNUSED_RESULT;
 
   // Returns a pointer to a particular sync client. Callee owns the object
   // and manages its lifetime.
-  ProfileSyncServiceHarness* GetClient(int index);
+  ProfileSyncServiceHarness* GetClient(int index) WARN_UNUSED_RESULT;
 
   // Returns a reference to the collection of sync clients. Callee owns the
   // object and manages its lifetime.
-  std::vector<ProfileSyncServiceHarness*>& clients() { return clients_.get(); }
+  std::vector<ProfileSyncServiceHarness*>& clients() WARN_UNUSED_RESULT {
+    return clients_.get();
+  }
 
   // Returns a ProfileSyncService at the given index.
   browser_sync::ProfileSyncService* GetSyncService(int index);
@@ -164,10 +158,10 @@ class SyncTest : public InProcessBrowserTest {
 
   // Returns a pointer to the sync profile that is used to verify changes to
   // individual sync profiles. Callee owns the object and manages its lifetime.
-  Profile* verifier();
+  Profile* verifier() WARN_UNUSED_RESULT;
 
   // Used to determine whether the verifier profile should be updated or not.
-  bool use_verifier() { return use_verifier_; }
+  bool use_verifier() WARN_UNUSED_RESULT { return use_verifier_; }
 
   // After calling this method, changes made to a profile will no longer be
   // reflected in the verifier profile. Note: Not all datatypes use this.

@@ -419,14 +419,11 @@ Profile* SyncTest::MakeTestProfile(base::FilePath profile_path, int index) {
 }
 
 Profile* SyncTest::GetProfile(int index) {
-  EXPECT_FALSE(profiles_.empty()) << "SetupClients() has not yet been called.";
-  EXPECT_FALSE(index < 0 || index >= static_cast<int>(profiles_.size()))
-      << "GetProfile(): Index is out of bounds.";
-
-  Profile* profile = profiles_[index];
-  EXPECT_NE(nullptr, profile) << "No profile found at index: " << index;
-
-  return profile;
+  if (profiles_.empty())
+    LOG(FATAL) << "SetupClients() has not yet been called.";
+  if (index < 0 || index >= static_cast<int>(profiles_.size()))
+    LOG(FATAL) << "GetProfile(): Index is out of bounds.";
+  return profiles_[index];
 }
 
 std::vector<Profile*> SyncTest::GetAllProfiles() {
@@ -441,22 +438,11 @@ std::vector<Profile*> SyncTest::GetAllProfiles() {
 }
 
 Browser* SyncTest::GetBrowser(int index) {
-  EXPECT_FALSE(browsers_.empty()) << "SetupClients() has not yet been called.";
-  EXPECT_FALSE(index < 0 || index >= static_cast<int>(browsers_.size()))
-      << "GetBrowser(): Index is out of bounds.";
-
-  Browser* browser = browsers_[index];
-  EXPECT_NE(browser, nullptr);
-
+  if (browsers_.empty())
+    LOG(FATAL) << "SetupClients() has not yet been called.";
+  if (index < 0 || index >= static_cast<int>(browsers_.size()))
+    LOG(FATAL) << "GetBrowser(): Index is out of bounds.";
   return browsers_[index];
-}
-
-Browser* SyncTest::AddBrowser(int profile_index) {
-  Profile* profile = GetProfile(profile_index);
-  browsers_.push_back(new Browser(Browser::CreateParams(profile, true)));
-  profiles_.push_back(profile);
-
-  return browsers_[browsers_.size() - 1];
 }
 
 ProfileSyncServiceHarness* SyncTest::GetClient(int index) {
@@ -501,6 +487,7 @@ bool SyncTest::SetupClients() {
   profiles_.resize(num_clients_);
   profile_delegates_.resize(num_clients_ + 1);  // + 1 for the verifier.
   tmp_profile_paths_.resize(num_clients_);
+  browsers_.resize(num_clients_);
   clients_.resize(num_clients_);
   invalidation_forwarders_.resize(num_clients_);
   sync_refreshers_.resize(num_clients_);
@@ -541,7 +528,11 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   DCHECK(profile);
   profiles_[index] = profile;
 
-  AddBrowser(index);
+  // CheckInitialState() assumes that no windows are open at startup.
+  browsers_[index] =
+      new Browser(Browser::CreateParams(GetProfile(index), true));
+
+  EXPECT_NE(nullptr, GetBrowser(index)) << "Could not create Browser " << index;
 
   // Make sure the ProfileSyncService has been created before creating the
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
