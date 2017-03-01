@@ -1,0 +1,7 @@
+PASS
+
+Tests the gutter decorations in target source code after ScriptFormatterEditorAction
+
+Numbers of lines that were not used in the formatted script:
+3,4,5,11,12,13,17,18,19,27,28,29
+
