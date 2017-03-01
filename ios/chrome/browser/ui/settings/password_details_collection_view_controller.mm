@@ -37,8 +37,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeHeader = kItemTypeEnumZero,
   ItemTypeUsername,
   ItemTypePassword,
-  ItemTypeShow,
-  ItemTypeHide,
+  ItemTypeShowHide,
   ItemTypeCopy,
   ItemTypeDelete,
 };
@@ -148,9 +147,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 
   // TODO(crbug.com/159166): Change the style of the buttons once there are
   // final mocks.
-  [model addItem:[self showPasswordButtonItem]
-      toSectionWithIdentifier:SectionIdentifierPassword];
-  [model addItem:[self hidePasswordButtonItem]
+  [model addItem:[self showHidePasswordButtonItem]
       toSectionWithIdentifier:SectionIdentifierPassword];
   [model addItem:[self passwordCopyButtonItem]
       toSectionWithIdentifier:SectionIdentifierPassword];
@@ -165,14 +162,6 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 
 #pragma mark - Items
 
-- (CollectionViewItem*)showPasswordButtonItem {
-  CollectionViewTextItem* item =
-      [[[CollectionViewTextItem alloc] initWithType:ItemTypeShow] autorelease];
-  item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON);
-  item.accessibilityTraits |= UIAccessibilityTraitButton;
-  return item;
-}
-
 - (CollectionViewItem*)passwordCopyButtonItem {
   CollectionViewTextItem* item =
       [[[CollectionViewTextItem alloc] initWithType:ItemTypeCopy] autorelease];
@@ -181,10 +170,10 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   return item;
 }
 
-- (CollectionViewItem*)hidePasswordButtonItem {
-  CollectionViewTextItem* item =
-      [[[CollectionViewTextItem alloc] initWithType:ItemTypeHide] autorelease];
-  item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDE_BUTTON);
+- (CollectionViewItem*)showHidePasswordButtonItem {
+  CollectionViewTextItem* item = [[[CollectionViewTextItem alloc]
+      initWithType:ItemTypeShowHide] autorelease];
+  item.text = [self showHideButtonText];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
@@ -198,6 +187,28 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 }
 
 #pragma mark - Actions
+
+- (NSString*)showHideButtonText {
+  if (_plainTextPasswordShown) {
+    return l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDE_BUTTON);
+  }
+  return l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON);
+}
+
+// Changes the text on the Show/Hide button appropriately according to
+// |_plainTextPasswordShown|.
+- (void)toggleShowHideButton {
+  CollectionViewModel* model = self.collectionViewModel;
+  NSIndexPath* path = [model indexPathForItemType:ItemTypeShowHide
+                                sectionIdentifier:SectionIdentifierPassword];
+  CollectionViewTextItem* item =
+      base::mac::ObjCCastStrict<CollectionViewTextItem>(
+          [model itemAtIndexPath:path]);
+  item.text = [self showHideButtonText];
+  [self reconfigureCellsForItems:@[ item ]
+         inSectionWithIdentifier:SectionIdentifierPassword];
+  [self.collectionView.collectionViewLayout invalidateLayout];
+}
 
 - (void)showPassword {
   if (_plainTextPasswordShown) {
@@ -217,6 +228,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
                    inSectionWithIdentifier:SectionIdentifierPassword];
       [[strongSelf collectionView].collectionViewLayout invalidateLayout];
       strongSelf.get()->_plainTextPasswordShown = YES;
+      [strongSelf toggleShowHideButton];
     };
 
     [_weakReauthenticationModule
@@ -235,6 +247,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
          inSectionWithIdentifier:SectionIdentifierPassword];
   [self.collectionView.collectionViewLayout invalidateLayout];
   _plainTextPasswordShown = NO;
+  [self toggleShowHideButton];
 }
 
 - (void)copyPassword {
@@ -322,11 +335,12 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
-    case ItemTypeShow:
-      [self showPassword];
-      break;
-    case ItemTypeHide:
-      [self hidePassword];
+    case ItemTypeShowHide:
+      if (_plainTextPasswordShown) {
+        [self hidePassword];
+      } else {
+        [self showPassword];
+      }
       break;
     case ItemTypeCopy:
       [self copyPassword];
