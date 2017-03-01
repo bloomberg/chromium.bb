@@ -58,7 +58,7 @@ body {
   width: 80%;
   height: 100%;
   background: -webkit-linear-gradient(#aaa, white);
-  -webkit-transition: margin 0.25s ease-in-out;
+  transition: margin 0.25s ease-in-out;
 }
 
 .channelSlide.far-left {

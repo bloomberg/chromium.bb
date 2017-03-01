@@ -481,7 +481,7 @@ function playMedia(data) {
         mediaEl.play();
 
         //clear listeners
-        playerCt.removeEventListener( 'webkitTransitionEnd', animEnd, false );
+        playerCt.removeEventListener( 'transitionend', animEnd, false );
         animEnd = null;
     };
 
@@ -490,8 +490,8 @@ function playMedia(data) {
     mediaEl.load();
 
     //animate in player
-    playerCt.addEventListener( 'webkitTransitionEnd', animEnd, false );
-    playerCt.style.webkitTransform = "translateY(0)";
+    playerCt.addEventListener( 'transitionend', animEnd, false );
+    playerCt.style.transform = "translateY(0)";
 
     //reply postmessage
     data.result = true;
