@@ -973,7 +973,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.domModel = SDK.DOMModel.fromTarget(target);
         InspectorTest.cssModel = target.model(SDK.CSSModel);
         InspectorTest.powerProfiler = target.powerProfiler;
-        InspectorTest.cpuProfilerModel = target.cpuProfilerModel;
+        InspectorTest.cpuProfilerModel = target.model(SDK.CPUProfilerModel);
         InspectorTest.heapProfilerModel = target.heapProfilerModel;
         InspectorTest.animationModel = target.animationModel;
         InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;
