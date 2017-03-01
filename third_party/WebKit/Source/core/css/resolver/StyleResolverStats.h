@@ -71,6 +71,7 @@ class StyleResolverStats {
   unsigned pseudoElementsStyled;
   unsigned baseStylesUsed;
   unsigned independentInheritedStylesPropagated;
+  unsigned customPropertiesApplied;
 
  private:
   StyleResolverStats() { reset(); }

@@ -56,6 +56,7 @@ void StyleResolverStats::reset() {
   pseudoElementsStyled = 0;
   baseStylesUsed = 0;
   independentInheritedStylesPropagated = 0;
+  customPropertiesApplied = 0;
 }
 
 bool StyleResolverStats::allCountersEnabled() const {
@@ -95,6 +96,7 @@ std::unique_ptr<TracedValue> StyleResolverStats::toTracedValue() const {
   tracedValue->setInteger("baseStylesUsed", baseStylesUsed);
   tracedValue->setInteger("independentInheritedStylesPropagated",
                           independentInheritedStylesPropagated);
+  tracedValue->setInteger("customPropertiesApplied", customPropertiesApplied);
   return tracedValue;
 }
 

@@ -19,6 +19,8 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/css/resolver/StyleResolverStats.h"
+#include "core/dom/StyleEngine.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleNonInheritedVariables.h"
 #include "wtf/Vector.h"
@@ -289,14 +291,19 @@ void CSSVariableResolver::resolveVariableDefinitions(
     return;
 
   CSSVariableResolver resolver(state);
+  int variableCount = 0;
   if (inheritedVariables) {
     for (auto& variable : inheritedVariables->m_data)
       resolver.valueForCustomProperty(variable.key);
+    variableCount += inheritedVariables->m_data.size();
   }
   if (nonInheritedVariables) {
     for (auto& variable : nonInheritedVariables->m_data)
       resolver.valueForCustomProperty(variable.key);
+    variableCount += nonInheritedVariables->m_data.size();
   }
+  INCREMENT_STYLE_STATS_COUNTER(state.document().styleEngine(),
+                                customPropertiesApplied, variableCount);
 }
 
 void CSSVariableResolver::computeRegisteredVariables(
