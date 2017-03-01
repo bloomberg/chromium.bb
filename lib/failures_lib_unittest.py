@@ -8,6 +8,7 @@ from __future__ import print_function
 
 from chromite.lib import constants
 from chromite.lib import failures_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 
@@ -75,40 +76,53 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     self.assertTrue('foo1' in str(exc))
     self.assertTrue('foo2' in str(exc))
 
-  def testReportStageFailureToCIDB(self):
-    """Tests that the reporting fuction reports all included exceptions."""
+
+class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
+  """Tests for ReportStageFailureToCIDB."""
+
+  def testReportStageFailureToCIDBOnCompoundFailure(self):
+    """Tests ReportStageFailureToCIDB on CompoundFailure."""
     fake_db = fake_cidb.FakeCIDBConnection()
     inner_exception_1 = failures_lib.TestLabFailure()
     inner_exception_2 = TypeError()
     exc_infos = failures_lib.CreateExceptInfo(inner_exception_1, None)
     exc_infos += failures_lib.CreateExceptInfo(inner_exception_2, None)
     outer_exception = failures_lib.GoBFailure(exc_infos=exc_infos)
-
     mock_build_stage_id = 9345
+    outer_failure_id = failures_lib.ReportStageFailureToCIDB(
+        fake_db, mock_build_stage_id, outer_exception)
 
-    failures_lib.ReportStageFailureToCIDB(fake_db,
-                                          mock_build_stage_id,
-                                          outer_exception)
     self.assertEqual(3, len(fake_db.failureTable))
-    self.assertEqual(
-        set([mock_build_stage_id]),
-        set([x['build_stage_id'] for x in fake_db.failureTable.values()]))
-    self.assertEqual(
-        set([constants.EXCEPTION_CATEGORY_INFRA,
-             constants.EXCEPTION_CATEGORY_UNKNOWN,
-             constants.EXCEPTION_CATEGORY_LAB]),
-        set([x['exception_category'] for x in fake_db.failureTable.values()]))
-
-    # Find the outer failure id.
     for failure_id, failure in fake_db.failureTable.iteritems():
-      if failure['outer_failure_id'] is None:
-        outer_failure_id = failure_id
-        break
+      self.assertEqual(failure['build_stage_id'], mock_build_stage_id)
 
-    # Now verify inner failures reference this failure.
-    for failure_id, failure in fake_db.failureTable.iteritems():
-      if failure_id != outer_failure_id:
-        self.assertEqual(outer_failure_id, failure['outer_failure_id'])
+      if failure_id == outer_failure_id:
+        self.assertEqual(failure_id, outer_failure_id)
+        self.assertEqual(failure['exception_message'],
+                         outer_exception.ToSummaryString())
+      elif failure['exception_type'] == failures_lib.TestLabFailure.__name__:
+        self.assertEqual(failure['outer_failure_id'], outer_failure_id)
+        self.assertEqual(failure['exception_category'],
+                         constants.EXCEPTION_CATEGORY_LAB)
+      elif failure['exception_type'] == TypeError.__name__:
+        self.assertEqual(failure['outer_failure_id'], outer_failure_id)
+        self.assertEqual(failure['exception_category'],
+                         constants.EXCEPTION_CATEGORY_UNKNOWN)
+
+  def testReportStageFailureToCIDBOnNonCompoundFailure(self):
+    """Test ReportStageFailureToCIDB On Non-CompoundFailure"""
+    fake_db = fake_cidb.FakeCIDBConnection()
+    msg = 'run command error'
+    error = cros_build_lib.RunCommandError(msg, cros_build_lib.CommandResult())
+    build_failure = failures_lib.BuildScriptFailure(error, 'short name')
+    mock_build_stage_id = 1
+    failure_id = failures_lib.ReportStageFailureToCIDB(
+        fake_db, mock_build_stage_id, build_failure)
+
+    self.assertEqual(len(fake_db.failureTable), 1)
+    values = fake_db.failureTable[failure_id]
+    self.assertEqual(values['exception_message'], msg)
+    self.assertEqual(values['outer_failure_id'], None)
 
 
 class SetFailureTypeTest(cros_test_lib.TestCase):

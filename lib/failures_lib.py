@@ -464,10 +464,18 @@ def ReportStageFailureToCIDB(db, build_stage_id, exception):
     db: A valid cidb handle.
     build_stage_id: The cidb id for the build stage that failed.
     exception: The failure exception to report.
+
+  Returns:
+    The Integer id of this exception in the failureTable (outer_failure_id if
+    it's a CompoundFailure).
   """
+  exception_message = (exception.ToSummaryString()
+                       if isinstance(exception, CompoundFailure)
+                       else str(exception))
+
   outer_failure_id = db.InsertFailure(build_stage_id,
                                       type(exception).__name__,
-                                      str(exception),
+                                      exception_message,
                                       _GetExceptionCategory(type(exception)))
 
   # This assumes that CompoundFailure can't be nested.
@@ -478,6 +486,8 @@ def ReportStageFailureToCIDB(db, build_stage_id, exception):
                        exc_str,
                        _GetExceptionCategory(exc_class),
                        outer_failure_id)
+
+  return outer_failure_id
 
 
 def _GetExceptionCategory(exception_class):
