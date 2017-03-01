@@ -32,7 +32,7 @@
 #include "core/html/parser/HTMLEntityParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
-#include "core/xml/parser/MarkupTokenizerInlines.h"
+#include "core/html/parser/MarkupTokenizerInlines.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/text/Unicode.h"
 

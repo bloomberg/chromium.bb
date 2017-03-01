@@ -414,6 +414,7 @@ blink_core_sources("html") {
     "parser/HTMLViewSourceParser.cpp",
     "parser/HTMLViewSourceParser.h",
     "parser/InputStreamPreprocessor.h",
+    "parser/MarkupTokenizerInlines.h",
     "parser/NestingLevelIncrementer.h",
     "parser/PreloadRequest.cpp",
     "parser/ResourcePreloader.cpp",

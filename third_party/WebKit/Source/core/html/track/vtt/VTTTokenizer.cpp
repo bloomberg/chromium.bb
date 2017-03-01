@@ -30,7 +30,7 @@
 
 #include "core/html/track/vtt/VTTTokenizer.h"
 
-#include "core/xml/parser/MarkupTokenizerInlines.h"
+#include "core/html/parser/MarkupTokenizerInlines.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
 
