@@ -6,8 +6,8 @@ EXTRA_DIST =					\
 	da-dk-g18-dictionary_harness.yaml	\
 	da-dk-g26-dictionary_harness.yaml	\
 	da-dk-g28-dictionary_harness.yaml	\
-	el-backward.yaml                 	\
-	el-forward.yaml                  	\
+	el-backward.yaml			\
+	el-forward.yaml				\
 	emphasis-full.yaml			\
 	emphasis-no-context.yaml		\
 	en-GB-g2_backward.yaml			\
@@ -37,6 +37,8 @@ EXTRA_DIST =					\
 	fi_harness.yaml				\
 	foo.yaml				\
 	fr-bfu-g2_harness.yaml			\
+	fr-fr-g1_backward.yaml			\
+	fr-fr-g1_harness.yaml			\
 	ga-g1_harness.yaml			\
 	ga-g2_harness.yaml			\
 	hr-8dots_harness.yaml			\
@@ -51,11 +53,11 @@ EXTRA_DIST =					\
 	letterDefTest_harness.yaml		\
 	lt_harness.yaml				\
 	mn-MN_harness.yaml			\
-	multipass.yaml			\
 	multipass-backward.yaml			\
 	multipass-forward.yaml			\
-	nl-g0_harness.yaml			\
+	multipass.yaml				\
 	nl-NL-g0_harness.yaml			\
+	nl-g0_harness.yaml			\
 	no_8dot_harness.yaml			\
 	no_g1_harness.yaml			\
 	no_g2_harness.yaml			\
@@ -63,4 +65,6 @@ EXTRA_DIST =					\
 	nocross_harness.yaml			\
 	pl-pl-comp8_harness.yaml		\
 	sr-g1_harness.yaml			\
-	ta-ta-g1_harness.yaml
+	ta-ta-g1_harness.yaml			\
+	vi-g1_backward.yaml			\
+	vi-g1_harness.yaml
