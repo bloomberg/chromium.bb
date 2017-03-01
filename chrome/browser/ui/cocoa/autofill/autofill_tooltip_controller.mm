@@ -102,10 +102,12 @@ CGFloat kTooltipInset = 10;
 @implementation AutofillTooltipController
 
 @synthesize message = message_;
+@synthesize maxTooltipWidth = maxTooltipWidth_;
 
 - (id)initWithArrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation {
   if ((self = [super init])) {
     arrowLocation_ = arrowLocation;
+    maxTooltipWidth_ = CGFLOAT_MAX;
     view_.reset([[AutofillTooltip alloc] init]);
     [self setView:view_];
     [view_ setTooltipController:self];
@@ -134,12 +136,12 @@ CGFloat kTooltipInset = 10;
 
 - (void)displayHover {
   [bubbleController_ close];
-  bubbleController_ =
-    [[AutofillBubbleController alloc]
-        initWithParentWindow:[[self view] window]
-                     message:[self message]
-                       inset:NSMakeSize(kTooltipInset, kTooltipInset)
-               arrowLocation:arrowLocation_];
+  bubbleController_ = [[AutofillBubbleController alloc]
+      initWithParentWindow:[[self view] window]
+                   message:[self message]
+                     inset:NSMakeSize(kTooltipInset, kTooltipInset)
+             maxLabelWidth:maxTooltipWidth_
+             arrowLocation:arrowLocation_];
   [bubbleController_ setShouldCloseOnResignKey:NO];
 
   // Handle bubble self-deleting.

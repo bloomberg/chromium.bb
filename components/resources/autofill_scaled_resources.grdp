@@ -36,7 +36,7 @@
   <if expr="is_ios or is_android">
     <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOFILL_CC" file="autofill/infobar_autofill_cc.png" />
   </if>
-  <if expr="is_macosx or is_ios">
+  <if expr="is_ios">
     <structure type="chrome_scaled_image" name="IDR_AUTOFILL_TOOLTIP_ICON" file="autofill/autofill_tooltip_icon.png" />
     <structure type="chrome_scaled_image" name="IDR_AUTOFILL_TOOLTIP_ICON_H" file="autofill/autofill_tooltip_icon_hover.png" />
   </if>

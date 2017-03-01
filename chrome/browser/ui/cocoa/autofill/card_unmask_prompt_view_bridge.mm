@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/cocoa/autofill/card_unmask_prompt_view_bridge.h"
+
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_pop_up_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
-#include "chrome/browser/ui/cocoa/autofill/card_unmask_prompt_view_bridge.h"
 #include "chrome/browser/ui/cocoa/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
@@ -29,6 +31,9 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace {
@@ -492,12 +497,15 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [storageCheckbox_ sizeToFit];
   [box addSubview:storageCheckbox_];
 
-  // Add "?" icon with tooltip.
+  // Add "i" icon with tooltip.
   storageTooltip_.reset([[AutofillTooltipController alloc]
       initWithArrowLocation:info_bubble::kTopTrailing]);
-  [storageTooltip_ setImage:ui::ResourceBundle::GetSharedInstance()
-                                .GetNativeImageNamed(IDR_AUTOFILL_TOOLTIP_ICON)
-                                .ToNSImage()];
+  [storageTooltip_ setMaxTooltipWidth:2 * autofill::kFieldWidth +
+                                      autofill::kHorizontalFieldPadding];
+  [storageTooltip_
+      setImage:gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
+                   gfx::VectorIconId::INFO_OUTLINE, autofill::kInfoIconSize,
+                   gfx::kChromeIconGrey))];
   [storageTooltip_
       setMessage:base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
                      IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP))];

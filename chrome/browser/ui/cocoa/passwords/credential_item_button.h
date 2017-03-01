@@ -22,6 +22,11 @@ struct PasswordForm;
 - (id)initWithFrame:(NSRect)frameRect
     backgroundColor:(NSColor*)backgroundColor
          hoverColor:(NSColor*)hoverColor;
+
+// Adds (i) icon with a tooltip to the view.
+- (NSView*)addInfoIcon:(NSString*)tooltip;
+
+// Returns an image to be used as a default avatar.
 + (NSImage*)defaultAvatar;
 @end
 

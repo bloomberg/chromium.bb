@@ -31,6 +31,9 @@ const CGFloat kFieldWidth = 104;
 // Horizontal padding between fields
 const CGFloat kHorizontalFieldPadding = 8;
 
+// Size of the information icon in the footer.
+const CGFloat kInfoIconSize = 16;
+
 }  // autofill
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_CONSTANTS_H_

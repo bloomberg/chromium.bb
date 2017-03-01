@@ -29,10 +29,8 @@
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    message:(NSString*)message
                      inset:(NSSize)inset
+             maxLabelWidth:(CGFloat)maxLabelWidth
              arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation;
-
-// Maximum width that the bubble will occupy, regardless of message size.
-- (CGFloat)maxWidth;
 
 // Update the current text with |message|.
 - (void)setMessage:(NSString*)message;

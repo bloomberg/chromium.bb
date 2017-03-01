@@ -33,6 +33,9 @@
 // |message| to display in the tooltip.
 @property(copy, nonatomic) NSString* message;
 
+// Maximal width of the text excluding insets.
+@property(nonatomic) CGFloat maxTooltipWidth;
+
 - (id)initWithArrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation;
 - (void)setImage:(NSImage*)image;
 

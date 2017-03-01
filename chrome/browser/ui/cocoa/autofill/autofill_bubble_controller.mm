@@ -13,12 +13,11 @@ namespace {
 // Border inset for error label.
 const CGFloat kLabelInset = 3.0;
 
-const CGFloat kMaxLabelWidth =
-    2 * autofill::kFieldWidth + autofill::kHorizontalFieldPadding;
-
 }  // namespace
 
-@interface AutofillBubbleController ()
+@interface AutofillBubbleController () {
+  CGFloat maxLabelWidth_;
+}
 
 // Update the current message, keeping arrow location in place.
 - (void)updateMessage:(NSString*)message display:(BOOL)display;
@@ -32,12 +31,14 @@ const CGFloat kMaxLabelWidth =
   return [self initWithParentWindow:parentWindow
                             message:message
                               inset:NSMakeSize(kLabelInset, kLabelInset)
+                      maxLabelWidth:CGFLOAT_MAX
                       arrowLocation:info_bubble::kTopCenter];
 }
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    message:(NSString*)message
                      inset:(NSSize)inset
+             maxLabelWidth:(CGFloat)maxLabelWidth
              arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation {
   base::scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc] initWithContentRect:NSMakeRect(0, 0, 200, 100)
@@ -49,6 +50,7 @@ const CGFloat kMaxLabelWidth =
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
     inset_ = inset;
+    maxLabelWidth_ = maxLabelWidth;
     [self setShouldOpenAsKeyWindow:NO];
     [[self bubble] setArrowLocation:arrowLocation];
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
@@ -64,10 +66,6 @@ const CGFloat kMaxLabelWidth =
   return self;
 }
 
-- (CGFloat)maxWidth {
-  return kMaxLabelWidth + 2 * inset_.width;
-}
-
 - (void)setMessage:(NSString*)message {
   if ([[label_ stringValue] isEqualToString:message])
     return;
@@ -78,8 +76,8 @@ const CGFloat kMaxLabelWidth =
   [label_ setStringValue:message];
 
   NSRect labelFrame = NSMakeRect(inset_.width, inset_.height, 0, 0);
-  labelFrame.size = [[label_ cell] cellSizeForBounds:
-      NSMakeRect(0, 0, kMaxLabelWidth, CGFLOAT_MAX)];
+  labelFrame.size = [[label_ cell]
+      cellSizeForBounds:NSMakeRect(0, 0, maxLabelWidth_, CGFLOAT_MAX)];
   [label_ setFrame:labelFrame];
 
   // Update window's size, but ensure the origin is maintained so that the arrow
@@ -87,9 +85,9 @@ const CGFloat kMaxLabelWidth =
   NSRect windowFrame = [[self window] frame];
   NSPoint origin = windowFrame.origin;
   origin.y += NSHeight(windowFrame);
-  windowFrame.size = NSMakeSize(
-      NSMaxX([label_ frame]),
-      NSHeight([label_ frame]) + info_bubble::kBubbleArrowHeight);
+  windowFrame.size =
+      NSMakeSize(NSWidth([label_ frame]),
+                 NSHeight([label_ frame]) + info_bubble::kBubbleArrowHeight);
   windowFrame = NSInsetRect(windowFrame, -inset_.width, -inset_.height);
   origin.y -= NSHeight(windowFrame);
   windowFrame.origin = origin;

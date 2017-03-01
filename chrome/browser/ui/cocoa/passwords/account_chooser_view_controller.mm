@@ -23,10 +23,6 @@
 #include "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -38,37 +34,6 @@ constexpr CGFloat kCredentialHeight =
 
 // Maximum height of the credential list. The unit is one row height.
 constexpr CGFloat kMaxHeightAccounts = 3.5;
-
-}  // namespace
-
-// An image view that consumes the mouse click.
-@interface InfoImageView : NSImageView
-@end
-
-@implementation InfoImageView
-- (void)mouseDown:(NSEvent*)theEvent {
-  if (theEvent.type != NSLeftMouseDown) {
-    [super mouseDown:theEvent];
-  }
-}
-@end
-
-namespace {
-
-NSImageView* IconForPSL(const NSRect& parentRect, const std::string& tooltip) {
-  NSImage* image = gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
-      gfx::VectorIconId::INFO_OUTLINE, gfx::kChromeIconGrey));
-  NSRect rect = NSMakeRect(
-      base::i18n::IsRTL() ? kFramePadding
-                          : NSMaxX(parentRect) - kInfoIconSize - kFramePadding,
-      NSMinY(parentRect) + (NSHeight(parentRect) - kInfoIconSize) / 2,
-      kInfoIconSize, kInfoIconSize);
-  base::scoped_nsobject<NSImageView> icon(
-      [[InfoImageView alloc] initWithFrame:rect]);
-  [icon setImage:image];
-  [icon setToolTip:base::SysUTF8ToNSString(tooltip)];
-  return icon.autorelease();
-}
 
 }  // namespace
 
@@ -107,9 +72,9 @@ NSImageView* IconForPSL(const NSRect& parentRect, const std::string& tooltip) {
   // | Choose an account etc etc        |
   // |                                  |
   // | ----                             |
-  // | |  |  credential view            |
+  // | |  |  credential view       (i)  |
   // | ----                             |
-  // | |  |  credential view            |
+  // | |  |  credential view       (i)  |
   // | ----                             |
   // |                                  |
   // |             [ Cancel ] [Sign In] |
@@ -177,9 +142,15 @@ NSImageView* IconForPSL(const NSRect& parentRect, const std::string& tooltip) {
     [button setFrame:NSMakeRect(0, curY, buttonWidth,
                                 cellHeight + 2 * kVerticalAvatarMargin)];
     if (button.passwordForm->is_public_suffix_match) {
-      NSImageView* icon = IconForPSL(
-          [button frame], button.passwordForm->origin.GetOrigin().spec());
-      [documentView addSubview:icon];
+      NSRect rect = NSMakeRect(
+          base::i18n::IsRTL() ? kFramePadding
+                              : buttonWidth - kInfoIconSize - kFramePadding,
+          (NSHeight([button frame]) - kInfoIconSize) / 2, kInfoIconSize,
+          kInfoIconSize);
+      NSView* icon = [button
+          addInfoIcon:base::SysUTF8ToNSString(
+                          button.passwordForm->origin.GetOrigin().spec())];
+      [icon setFrame:rect];
     }
     curY = NSMaxY([button frame]);
   }
