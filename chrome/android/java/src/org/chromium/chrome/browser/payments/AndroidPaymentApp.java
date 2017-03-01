@@ -145,13 +145,13 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         } else {
             ContentViewCore contentView = ContentViewCore.fromWebContents(mWebContents);
             if (contentView == null) {
-                notifyError();
+                respondToGetInstrumentsQuery(null);
                 return;
             }
 
             WindowAndroid window = contentView.getWindowAndroid();
             if (window == null) {
-                notifyError();
+                respondToGetInstrumentsQuery(null);
                 return;
             }
 
