@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_widget_host.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

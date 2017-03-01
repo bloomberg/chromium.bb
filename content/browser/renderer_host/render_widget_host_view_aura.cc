@@ -58,6 +58,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "media/base/video_frame.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -737,8 +738,9 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return delegated_frame_host_ ? delegated_frame_host_->CanCopyToBitmap()
-                               : false;
+  if (!delegated_frame_host_)
+    return false;
+  return delegated_frame_host_->CanCopyFromCompositingSurface();
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {
@@ -850,30 +852,29 @@ gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
              : RenderWidgetHostViewBase::GetRequestedRendererSize();
 }
 
-void RenderWidgetHostViewAura::CopyFromCompositingSurface(
+void RenderWidgetHostViewAura::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
-  if (!delegated_frame_host_)
+  if (!IsSurfaceAvailableForCopy()) {
+    callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
+  }
   delegated_frame_host_->CopyFromCompositingSurface(
       src_subrect, dst_size, callback, preferred_color_type);
 }
 
-void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
+void RenderWidgetHostViewAura::CopyFromSurfaceToVideoFrame(
     const gfx::Rect& src_subrect,
-    const scoped_refptr<media::VideoFrame>& target,
+    scoped_refptr<media::VideoFrame> target,
     const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  if (!delegated_frame_host_)
+  if (!IsSurfaceAvailableForCopy()) {
+    callback.Run(gfx::Rect(), false);
     return;
+  }
   delegated_frame_host_->CopyFromCompositingSurfaceToVideoFrame(
-      src_subrect, target, callback);
-}
-
-bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
-  return delegated_frame_host_ ? delegated_frame_host_->CanCopyToVideoFrame()
-                               : false;
+      src_subrect, std::move(target), callback);
 }
 
 void RenderWidgetHostViewAura::BeginFrameSubscription(

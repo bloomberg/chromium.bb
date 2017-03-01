@@ -581,8 +581,8 @@ void RenderWidgetHostViewChildFrame::RegisterFrameSwappedCallback(
   frame_swapped_callbacks_.push_back(std::move(callback));
 }
 
-void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
-    const gfx::Rect& src_subrect,
+void RenderWidgetHostViewChildFrame::CopyFromSurface(
+    const gfx::Rect& src_rect,
     const gfx::Size& output_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
@@ -591,11 +591,11 @@ void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
     // point we should be guaranteed that the surface is available.
     RegisterFrameSwappedCallback(base::MakeUnique<base::Closure>(base::Bind(
         &RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest, AsWeakPtr(),
-        src_subrect, output_size, callback, preferred_color_type)));
+        src_rect, output_size, callback, preferred_color_type)));
     return;
   }
 
-  SubmitSurfaceCopyRequest(src_subrect, output_size, callback,
+  SubmitSurfaceCopyRequest(src_rect, output_size, callback,
                            preferred_color_type);
 }
 
@@ -615,18 +615,6 @@ void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
     request->set_area(src_subrect);
 
   support_->RequestCopyOfSurface(std::move(request));
-}
-
-void RenderWidgetHostViewChildFrame::CopyFromCompositingSurfaceToVideoFrame(
-    const gfx::Rect& src_subrect,
-    const scoped_refptr<media::VideoFrame>& target,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(gfx::Rect(), false);
-}
-
-bool RenderWidgetHostViewChildFrame::CanCopyToVideoFrame() const {
-  return false;
 }
 
 bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(

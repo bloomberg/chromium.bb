@@ -311,10 +311,11 @@ bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
   }
 
   is_guest_transparent_ = guest->allow_transparency();
-  return CaptureAsync(guest->web_contents(), image_details.get(),
-                      base::Bind(&WebViewInternalCaptureVisibleRegionFunction::
-                                     CopyFromBackingStoreComplete,
-                                 this));
+  return CaptureAsync(
+      guest->web_contents(), image_details.get(),
+      base::Bind(
+          &WebViewInternalCaptureVisibleRegionFunction::CopyFromSurfaceComplete,
+          this));
 }
 bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() {
   // TODO(wjmaclean): Is it ok to always return true here?

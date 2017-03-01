@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
+#include "media/base/video_frame.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -154,6 +155,27 @@ void RenderWidgetHostViewBase::SetIsInVR(bool is_in_vr) {
 bool RenderWidgetHostViewBase::IsInVR() const {
   NOTIMPLEMENTED();
   return false;
+}
+
+bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() const {
+  return false;
+}
+
+void RenderWidgetHostViewBase::CopyFromSurface(
+    const gfx::Rect& src_rect,
+    const gfx::Size& output_size,
+    const ReadbackRequestCallback& callback,
+    const SkColorType color_type) {
+  NOTIMPLEMENTED();
+  callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
+}
+
+void RenderWidgetHostViewBase::CopyFromSurfaceToVideoFrame(
+    const gfx::Rect& src_rect,
+    scoped_refptr<media::VideoFrame> target,
+    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(gfx::Rect(), false);
 }
 
 bool RenderWidgetHostViewBase::IsShowingContextMenu() const {

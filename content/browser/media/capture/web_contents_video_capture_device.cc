@@ -196,7 +196,7 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   // Computes the preferred size of the target RenderWidget for optimal capture.
   gfx::Size ComputeOptimalViewSize() const;
 
-  // Response callback for RWHVP::CopyFromCompositingSurfaceToVideoFrame().
+  // Response callback for RWHV::CopyFromSurfaceToVideoFrame().
   void DidCopyToVideoFrame(
       const base::TimeTicks& start_time,
       const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
@@ -545,16 +545,11 @@ void WebContentsCaptureMachine::Capture(
         deliver_frame_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto* const view =
-      static_cast<RenderWidgetHostViewBase*>(tracker_->GetTargetView());
-  if (!view || !view->CanCopyToVideoFrame()) {
-    deliver_frame_cb.Run(base::TimeTicks(), gfx::Rect(), false);
+  RenderWidgetHostView* const view = tracker_->GetTargetView();
+  if (!view)
     return;
-  }
-
-  const gfx::Size view_size = view->GetViewBounds().size();
-  view->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(view_size), std::move(target),
+  view->CopyFromSurfaceToVideoFrame(
+      gfx::Rect(), std::move(target),
       base::Bind(&WebContentsCaptureMachine::DidCopyToVideoFrame,
                  weak_ptr_factory_.GetWeakPtr(), start_time, deliver_frame_cb));
 }
@@ -632,7 +627,8 @@ void WebContentsCaptureMachine::DidCopyToVideoFrame(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Capture can fail due to transient issues, so just skip this frame.
-  DVLOG_IF(1, !success) << "CopyFromCompositingSurface failed; skipping frame.";
+  DVLOG_IF(1, !success)
+      << "CopyFromSurfaceToVideoFrame() failed; skipping frame.";
   deliver_frame_cb.Run(start_time, region_in_frame, success);
 }
 

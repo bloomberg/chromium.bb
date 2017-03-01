@@ -75,7 +75,7 @@ SkBitmap SimpleThumbnailCrop::GetClippedBitmap(const SkBitmap& bitmap,
   return clipped_bitmap;
 }
 
-// RenderWidgetHost::CopyFromBackingStore can be costly especially when it is
+// RenderWidgetHostView::CopyFromSurface() can be costly especially when it is
 // necessary to read back the web contents image data from GPU. As the cost is
 // roughly proportional to the number of the copied pixels, the size of the
 // copied pixels should be as small as possible.

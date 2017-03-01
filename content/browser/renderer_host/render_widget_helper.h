@@ -29,36 +29,6 @@ class SessionStorageNamespace;
 // behalf of a RenderWidgetHost.  This class bridges between the IO thread
 // where the RenderProcessHost's MessageFilter lives and the UI thread where
 // the RenderWidgetHost lives.
-//
-//
-// OPTIMIZED TAB SWITCHING
-//
-//   When a RenderWidgetHost is in a background tab, it is flagged as hidden.
-//   This causes the corresponding RenderWidget to stop sending BackingStore
-//   messages. The RenderWidgetHost also discards its backingstore when it is
-//   hidden, which helps free up memory.  As a result, when a RenderWidgetHost
-//   is restored, it can be momentarily be without a backingstore.  (Restoring
-//   a RenderWidgetHost results in a WasShown message being sent to the
-//   RenderWidget, which triggers a full BackingStore message.)  This can lead
-//   to an observed rendering glitch as the WebContentsImpl will just have to
-//   fill white overtop the RenderWidgetHost until the RenderWidgetHost
-//   receives a BackingStore message to refresh its backingstore.
-//
-//   To avoid this 'white flash', the RenderWidgetHost again makes use of the
-//   RenderWidgetHelper's WaitForBackingStoreMsg method.  When the
-//   RenderWidgetHost's GetBackingStore method is called, it will call
-//   WaitForBackingStoreMsg if it has no backingstore.
-//
-// TRANSPORT DIB CREATION
-//
-//   On some platforms (currently the Mac) the renderer cannot create transport
-//   DIBs because of sandbox limitations. Thus, it has to make synchronous IPCs
-//   to the browser for them. Since these requests are synchronous, they cannot
-//   terminate on the UI thread. Thus, in this case, this object performs the
-//   allocation and maintains the set of allocated transport DIBs which the
-//   renderers can refer to.
-//
-
 class RenderWidgetHelper
     : public base::RefCountedThreadSafe<RenderWidgetHelper,
                                         BrowserThread::DeleteOnIOThread> {

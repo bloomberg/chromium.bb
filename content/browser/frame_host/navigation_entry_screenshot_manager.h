@@ -38,8 +38,10 @@ class CONTENT_EXPORT NavigationEntryScreenshotManager {
   void ClearAllScreenshots();
 
  protected:
-  virtual void TakeScreenshotImpl(RenderViewHost* host,
-                                  NavigationEntryImpl* entry);
+  // Overridden by tests to be notified when a screenshot will be taken. Tests
+  // can override OnScreenshotSet() to be notified after the screenshot is
+  // taken.
+  virtual void WillTakeScreenshot(RenderViewHost* host) {}
 
   // Called after a screenshot has been set on an NavigationEntryImpl.
   // Overridden in tests to get notified of when a screenshot is set.

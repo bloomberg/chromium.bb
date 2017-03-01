@@ -47,23 +47,24 @@ namespace android {
 
 class TabContentManager::TabReadbackRequest {
  public:
-  TabReadbackRequest(content::RenderWidgetHost* rwh,
+  TabReadbackRequest(content::RenderWidgetHostView* rwhv,
                      float thumbnail_scale,
                      const TabReadbackCallback& end_callback)
       : thumbnail_scale_(thumbnail_scale),
         end_callback_(end_callback),
         drop_after_readback_(false),
         weak_factory_(this) {
-    DCHECK(rwh);
+    DCHECK(rwhv);
     content::ReadbackRequestCallback result_callback =
         base::Bind(&TabReadbackRequest::OnFinishGetTabThumbnailBitmap,
                    weak_factory_.GetWeakPtr());
 
     SkColorType color_type = kN32_SkColorType;
-    gfx::Rect src_rect = rwh->GetView()->GetViewBounds();
-    gfx::Size dst_size(
-        gfx::ScaleToCeiledSize(src_rect.size(), thumbnail_scale_));
-    rwh->CopyFromBackingStore(src_rect, dst_size, result_callback, color_type);
+    gfx::Size view_size_on_screen = rwhv->GetViewBounds().size();
+    gfx::Size thumbnail_size(
+        gfx::ScaleToCeiledSize(view_size_on_screen, thumbnail_scale_));
+    rwhv->CopyFromSurface(gfx::Rect(), thumbnail_size, result_callback,
+                          color_type);
   }
 
   virtual ~TabReadbackRequest() {}
@@ -213,8 +214,11 @@ void TabContentManager::CacheTab(JNIEnv* env,
                                  jfloat thumbnail_scale) {
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   DCHECK(tab_android);
-  int tab_id = tab_android->GetAndroidId();
-  GURL url = tab_android->GetURL();
+  const int tab_id = tab_android->GetAndroidId();
+  if (pending_tab_readbacks_.find(tab_id) != pending_tab_readbacks_.end() ||
+      pending_tab_readbacks_.size() >= kMaxReadbacks) {
+    return;
+  }
 
   content::WebContents* web_contents = tab_android->web_contents();
   DCHECK(web_contents);
@@ -227,20 +231,21 @@ void TabContentManager::CacheTab(JNIEnv* env,
     rvh = web_contents->GetInterstitialPage()->GetMainFrame()->
         GetRenderViewHost();
   }
-
-  if (!rvh || !rvh->GetWidget() ||
-      !rvh->GetWidget()->CanCopyFromBackingStore() ||
-      pending_tab_readbacks_.find(tab_id) != pending_tab_readbacks_.end() ||
-      pending_tab_readbacks_.size() >= kMaxReadbacks) {
+  if (!rvh)
     return;
-  }
 
-  if (thumbnail_cache_->CheckAndUpdateThumbnailMetaData(tab_id, url)) {
+  content::RenderWidgetHost* rwh = rvh->GetWidget();
+  content::RenderWidgetHostView* rwhv = rwh ? rwh->GetView() : nullptr;
+  if (!rwhv || !rwhv->IsSurfaceAvailableForCopy())
+    return;
+
+  if (thumbnail_cache_->CheckAndUpdateThumbnailMetaData(
+          tab_id, tab_android->GetURL())) {
     TabReadbackCallback readback_done_callback =
         base::Bind(&TabContentManager::PutThumbnailIntoCache,
                    weak_factory_.GetWeakPtr(), tab_id);
     pending_tab_readbacks_[tab_id] = base::MakeUnique<TabReadbackRequest>(
-        rvh->GetWidget(), thumbnail_scale, readback_done_callback);
+        rwhv, thumbnail_scale, readback_done_callback);
   }
 }
 

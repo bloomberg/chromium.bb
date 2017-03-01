@@ -104,10 +104,6 @@ bool TestRenderWidgetHostView::HasFocus() const {
   return true;
 }
 
-bool TestRenderWidgetHostView::IsSurfaceAvailableForCopy() const {
-  return true;
-}
-
 void TestRenderWidgetHostView::Show() {
   is_showing_ = true;
   is_occluded_ = false;
@@ -138,25 +134,6 @@ void TestRenderWidgetHostView::Destroy() { delete this; }
 
 gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
   return gfx::Rect();
-}
-
-void TestRenderWidgetHostView::CopyFromCompositingSurface(
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
-    const ReadbackRequestCallback& callback,
-    const SkColorType preferred_color_type) {
-  callback.Run(SkBitmap(), content::READBACK_FAILED);
-}
-
-void TestRenderWidgetHostView::CopyFromCompositingSurfaceToVideoFrame(
-    const gfx::Rect& src_subrect,
-    const scoped_refptr<media::VideoFrame>& target,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  callback.Run(gfx::Rect(), false);
-}
-
-bool TestRenderWidgetHostView::CanCopyToVideoFrame() const {
-  return false;
 }
 
 bool TestRenderWidgetHostView::HasAcceleratedSurface(

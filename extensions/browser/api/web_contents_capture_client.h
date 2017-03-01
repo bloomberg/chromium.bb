@@ -41,8 +41,8 @@ class WebContentsCaptureClient {
   bool EncodeBitmap(const SkBitmap& bitmap, std::string* base64_result);
   virtual void OnCaptureFailure(FailureReason reason) = 0;
   virtual void OnCaptureSuccess(const SkBitmap& bitmap) = 0;
-  void CopyFromBackingStoreComplete(const SkBitmap& bitmap,
-                                    content::ReadbackResponse response);
+  void CopyFromSurfaceComplete(const SkBitmap& bitmap,
+                               content::ReadbackResponse response);
 
  private:
   // The format (JPEG vs PNG) of the resulting image.  Set in RunAsync().

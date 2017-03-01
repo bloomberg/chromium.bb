@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/ppapi/ppapi_test.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
@@ -248,23 +247,21 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
   bool IsObservingFlashFillColor(SkColor expected_color) const {
     content::RenderWidgetHostView* const flash_fs_view =
         GetActiveWebContents()->GetFullscreenRenderWidgetHostView();
-    content::RenderWidgetHost* const flash_fs_host =
-        flash_fs_view ? flash_fs_view->GetRenderWidgetHost() : nullptr;
-    if (!flash_fs_host) {
-      ADD_FAILURE() << "Flash fullscreen RenderWidgetHost is gone.";
+    if (!flash_fs_view) {
+      ADD_FAILURE() << "Flash fullscreen RenderWidgetHostView is gone.";
       return false;
     }
 
     // When a widget is first shown, it can take some time before it is ready
     // for copying from its backing store.  This is a transient condition, and
     // so it is not being treated as a test failure.
-    if (!flash_fs_host->CanCopyFromBackingStore())
+    if (!flash_fs_view->IsSurfaceAvailableForCopy())
       return false;
 
     // Copy and examine the upper-left pixel of the widget and compare it to the
     // |expected_color|.
     bool is_expected_color = false;
-    flash_fs_host->CopyFromBackingStore(
+    flash_fs_view->CopyFromSurface(
         gfx::Rect(0, 0, 1, 1), gfx::Size(1, 1),
         base::Bind(
             &FlashFullscreenInteractiveBrowserTest::CheckBitmapForFillColor,

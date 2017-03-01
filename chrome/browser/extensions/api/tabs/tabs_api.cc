@@ -1663,7 +1663,7 @@ bool TabsCaptureVisibleTabFunction::RunAsync() {
 
   return CaptureAsync(
       contents, image_details.get(),
-      base::Bind(&TabsCaptureVisibleTabFunction::CopyFromBackingStoreComplete,
+      base::Bind(&TabsCaptureVisibleTabFunction::CopyFromSurfaceComplete,
                  this));
 }
 

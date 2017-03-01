@@ -22,8 +22,7 @@ namespace content {
 // content::RenderWidgetHostView implementation that supports frame subscription
 // (via BeginFrameSubscription()), and can perform read-back into
 // media::VideoFrames (i.e.,
-// RenderWidgetHostViewBase::CopyFromCompositingSurfaceToVideoFrame() is
-// functional).
+// RenderWidgetHostViewBase::CopyFromSurfaceToVideoFrame() is functional).
 //
 // An instance is created by providing a device_id.  The device_id contains
 // information necessary for finding a WebContents instance.  From then on,

@@ -550,8 +550,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
       gfx::ScaleToCeiledSize(src_subrect.size(), scale / device_scale_factor));
   src_subrect = gfx::ConvertRectToDIP(device_scale_factor, src_subrect);
 
-  CopyFromCompositingSurface(src_subrect, dst_size, result_callback,
-                             preferred_color_type);
+  CopyFromSurface(src_subrect, dst_size, result_callback, preferred_color_type);
 }
 
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
@@ -919,12 +918,12 @@ void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {
   UpdateBackgroundColor(color);
 }
 
-void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
+void RenderWidgetHostViewAndroid::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
-  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurface");
+  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromSurface");
   if (!host_ || !IsSurfaceAvailableForCopy()) {
     callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
@@ -962,18 +961,6 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       compositor, src_subrect_in_pixel,
       base::Bind(&PrepareTextureCopyOutputResult, dst_size_in_pixel,
                  preferred_color_type, start_time, callback, readback_lock));
-}
-
-void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
-    const gfx::Rect& src_subrect,
-    const scoped_refptr<media::VideoFrame>& target,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(gfx::Rect(), false);
-}
-
-bool RenderWidgetHostViewAndroid::CanCopyToVideoFrame() const {
-  return false;
 }
 
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(

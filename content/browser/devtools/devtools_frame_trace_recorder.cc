@@ -83,7 +83,7 @@ void FrameCaptured(base::TimeTicks timestamp, const SkBitmap& bitmap,
 }
 
 void CaptureFrame(RenderFrameHostImpl* host,
-    const cc::CompositorFrameMetadata& metadata) {
+                  const cc::CompositorFrameMetadata& metadata) {
   RenderWidgetHostViewBase* view =
       static_cast<RenderWidgetHostViewBase*>(host->GetView());
   if (!view)
@@ -92,21 +92,20 @@ void CaptureFrame(RenderFrameHostImpl* host,
   if (current_frame_count >= kMaximumFrameDataCount)
     return;
 
-  gfx::Size src_size = gfx::ToCeiledSize(gfx::ScaleSize(
+  gfx::Size predicted_bitmap_size = gfx::ToCeiledSize(gfx::ScaleSize(
       metadata.scrollable_viewport_size, metadata.page_scale_factor));
   gfx::Size snapshot_size;
-  float area = src_size.GetArea();
+  float area = predicted_bitmap_size.GetArea();
   if (area <= kFrameAreaLimit) {
-    snapshot_size = src_size;
+    snapshot_size = predicted_bitmap_size;
   } else {
     double scale = sqrt(kFrameAreaLimit / area);
-    snapshot_size = gfx::ScaleToCeiledSize(src_size, scale);
+    snapshot_size = gfx::ScaleToCeiledSize(predicted_bitmap_size, scale);
   }
 
-  view->CopyFromCompositingSurface(
-      gfx::Rect(gfx::Point(), src_size), snapshot_size,
-      base::Bind(FrameCaptured, base::TimeTicks::Now()),
-      kN32_SkColorType);
+  view->CopyFromSurface(gfx::Rect(), snapshot_size,
+                        base::Bind(FrameCaptured, base::TimeTicks::Now()),
+                        kN32_SkColorType);
 }
 
 bool ScreenshotCategoryEnabled() {

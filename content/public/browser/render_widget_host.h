@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/common/drop_data.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sender.h"
@@ -18,13 +17,8 @@
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/surface/transport_dib.h"
-
-namespace gfx {
-class Rect;
-}
 
 namespace blink {
 class WebMouseEvent;
@@ -162,27 +156,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // window will show active controls even if the focus is not in the web
   // contents, but e.g. in the omnibox.
   virtual void SetActive(bool active) = 0;
-
-  // Copies the given subset of the backing store, and passes the result as a
-  // bitmap to a callback.
-  //
-  // If |src_rect| is empty, the whole contents is copied. If non empty
-  // |accelerated_dst_size| is given and accelerated compositing is active, the
-  // content is shrunk so that it fits in |accelerated_dst_size|. If
-  // |accelerated_dst_size| is larger than the content size, the content is not
-  // resized. If |accelerated_dst_size| is empty, the size copied from the
-  // source contents is used. |callback| is invoked with true on success, false
-  // otherwise, along with a SkBitmap containing the copied pixel data.
-  //
-  // NOTE: |callback| is called synchronously if the backing store is available.
-  // When accelerated compositing is active, |callback| may be called
-  // asynchronously.
-  virtual void CopyFromBackingStore(const gfx::Rect& src_rect,
-                                    const gfx::Size& accelerated_dst_size,
-                                    const ReadbackRequestCallback& callback,
-                                    const SkColorType color_type) = 0;
-  // Ensures that the view does not drop the backing store even when hidden.
-  virtual bool CanCopyFromBackingStore() = 0;
 
   // Forwards the given message to the renderer. These are called by
   // the view when it has received a message.

@@ -150,6 +150,9 @@ void ThumbnailTabHelper::AsyncProcessThumbnail(
     return;
   }
 
+  // TODO(miu): This is the wrong size. It's the size of the view on-screen, and
+  // not the rendering size of the view. This will be replaced with the view's
+  // actual rendering size in a later change. http://crbug.com/73362
   gfx::Rect copy_rect = gfx::Rect(view->GetViewBounds().size());
   // Clip the pixels that will commonly hold a scrollbar, which looks bad in
   // thumbnails.
@@ -175,13 +178,10 @@ void ThumbnailTabHelper::AsyncProcessThumbnail(
       scale_factor,
       &copy_rect,
       &thumbnailing_context_->requested_copy_size);
-  render_widget_host->CopyFromBackingStore(
-      copy_rect,
-      thumbnailing_context_->requested_copy_size,
-      base::Bind(&ThumbnailTabHelper::ProcessCapturedBitmap,
-                 weak_factory_.GetWeakPtr(),
-                 algorithm),
-      kN32_SkColorType);
+  view->CopyFromSurface(copy_rect, thumbnailing_context_->requested_copy_size,
+                        base::Bind(&ThumbnailTabHelper::ProcessCapturedBitmap,
+                                   weak_factory_.GetWeakPtr(), algorithm),
+                        kN32_SkColorType);
 }
 
 void ThumbnailTabHelper::ProcessCapturedBitmap(

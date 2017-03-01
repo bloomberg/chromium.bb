@@ -99,9 +99,9 @@ media::VideoCaptureParams DefaultCaptureParams() {
 }
 
 // A stub implementation which fills solid-colors into VideoFrames in calls to
-// CopyFromCompositingSurfaceToVideoFrame(). The colors are changed by tests
-// in-between draw events to confirm that the right frames have the right
-// content and in the right sequence.
+// CopyFromSurfaceToVideoFrame(). The colors are changed by tests in-between
+// draw events to confirm that the right frames have the right content and in
+// the right sequence.
 class CaptureTestView : public TestRenderWidgetHostView {
  public:
   explicit CaptureTestView(RenderWidgetHostImpl* rwh)
@@ -124,12 +124,21 @@ class CaptureTestView : public TestRenderWidgetHostView {
     fake_bounds_ = rect;
   }
 
-  bool CanCopyToVideoFrame() const override { return true; }
+  bool IsSurfaceAvailableForCopy() const override { return true; }
 
-  void CopyFromCompositingSurfaceToVideoFrame(
+  void CopyFromSurface(const gfx::Rect& src_rect,
+                       const gfx::Size& output_size,
+                       const ReadbackRequestCallback& callback,
+                       const SkColorType color_type) override {
+    // WebContentsVideoCaptureDevice implementation does not use this.
+    NOTREACHED();
+  }
+
+  void CopyFromSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
-      const scoped_refptr<media::VideoFrame>& target,
+      scoped_refptr<media::VideoFrame> target,
       const base::Callback<void(const gfx::Rect&, bool)>& callback) override {
+    ASSERT_TRUE(src_subrect.IsEmpty());
     media::FillYUV(target.get(), SkColorGetR(yuv_color_),
                    SkColorGetG(yuv_color_), SkColorGetB(yuv_color_));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -155,8 +164,8 @@ class CaptureTestView : public TestRenderWidgetHostView {
     scoped_refptr<media::VideoFrame> target;
     if (subscriber_ && subscriber_->ShouldCaptureFrame(
             gfx::Rect(), present_time, &target, &callback)) {
-      CopyFromCompositingSurfaceToVideoFrame(
-          gfx::Rect(), target, base::Bind(callback, present_time));
+      CopyFromSurfaceToVideoFrame(gfx::Rect(), target,
+                                  base::Bind(callback, present_time));
     }
   }
 
@@ -451,11 +460,11 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     // TODO(nick): Sadness and woe! Much "mock-the-world" boilerplate could be
     // eliminated here, if only we could use RenderViewHostTestHarness. The
     // catch is that we need to inject our CaptureTestView::
-    // CopyFromCompositingSurfaceToVideoFrame() mock. To accomplish that,
-    // either RenderViewHostTestHarness would have to support installing a
-    // custom RenderViewHostFactory, or else we implant some kind of delegated
-    // CopyFromCompositingSurfaceToVideoFrame functionality into
-    // TestRenderViewHostView itself.
+    // CopyFromSurfaceToVideoFrame() mock. To accomplish that, either
+    // RenderViewHostTestHarness would have to support installing a custom
+    // RenderViewHostFactory, or else we implant some kind of delegated
+    // CopyFromSurfaceToVideoFrame functionality into TestRenderWidgetHostView
+    // itself.
 
     render_process_host_factory_.reset(new MockRenderProcessHostFactory());
     // Create our (self-registering) RVH factory, so that when we create a

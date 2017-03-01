@@ -19,9 +19,9 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -65,6 +65,7 @@
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "media/base/video_frame.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -861,7 +862,8 @@ bool RenderWidgetHostViewMac::HasFocus() const {
 }
 
 bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
-  return browser_compositor_->GetDelegatedFrameHost()->CanCopyToBitmap();
+  return browser_compositor_->GetDelegatedFrameHost()
+      ->CanCopyFromCompositingSurface();
 }
 
 bool RenderWidgetHostViewMac::IsShowing() {
@@ -1174,7 +1176,7 @@ bool RenderWidgetHostViewMac::IsPopup() const {
   return popup_type_ != blink::WebPopupTypeNone;
 }
 
-void RenderWidgetHostViewMac::CopyFromCompositingSurface(
+void RenderWidgetHostViewMac::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const ReadbackRequestCallback& callback,
@@ -1183,16 +1185,12 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
       src_subrect, dst_size, callback, preferred_color_type);
 }
 
-void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
+void RenderWidgetHostViewMac::CopyFromSurfaceToVideoFrame(
     const gfx::Rect& src_subrect,
-    const scoped_refptr<media::VideoFrame>& target,
+    scoped_refptr<media::VideoFrame> target,
     const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  browser_compositor_->CopyFromCompositingSurfaceToVideoFrame(src_subrect,
-                                                              target, callback);
-}
-
-bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
-  return browser_compositor_->GetDelegatedFrameHost()->CanCopyToVideoFrame();
+  browser_compositor_->CopyFromCompositingSurfaceToVideoFrame(
+      src_subrect, std::move(target), callback);
 }
 
 void RenderWidgetHostViewMac::BeginFrameSubscription(

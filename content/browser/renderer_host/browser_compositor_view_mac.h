@@ -90,7 +90,7 @@ class BrowserCompositorMac : public cc::BeginFrameObserver,
                                   SkColorType preferred_color_type);
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
-      const scoped_refptr<media::VideoFrame>& target,
+      scoped_refptr<media::VideoFrame> target,
       const base::Callback<void(const gfx::Rect&, bool)>& callback);
 
   // Indicate that the recyclable compositor should be destroyed, and no future

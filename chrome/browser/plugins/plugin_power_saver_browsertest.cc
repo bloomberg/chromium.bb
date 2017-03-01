@@ -28,6 +28,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -366,13 +367,13 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     content::RenderWidgetHost* rwh =
         GetActiveWebContents()->GetRenderViewHost()->GetWidget();
 
-    if (!rwh->CanCopyFromBackingStore()) {
-      ADD_FAILURE() << "Could not copy from backing store.";
+    if (!rwh->GetView() || !rwh->GetView()->IsSurfaceAvailableForCopy()) {
+      ADD_FAILURE() << "RWHV surface not available for copy.";
       return false;
     }
 
     bool snapshot_matches = false;
-    rwh->CopyFromBackingStore(
+    rwh->GetView()->CopyFromSurface(
         gfx::Rect(), gfx::Size(),
         base::Bind(&CompareSnapshotToReference, reference, &snapshot_matches,
                    base::MessageLoop::QuitWhenIdleClosure()),

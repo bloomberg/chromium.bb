@@ -121,8 +121,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void WillDrawSurface(const cc::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override;
 
-  bool CanCopyToBitmap() const;
-
   // Public interface exposed to RenderWidgetHostView.
 
   void SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
@@ -135,17 +133,18 @@ class CONTENT_EXPORT DelegatedFrameHost
   gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
   void ResetCompositor();
-  // Note: |src_subset| is specified in DIP dimensions while |output_size|
-  // expects pixels.
+  // Note: |src_subrect| is specified in DIP dimensions while |output_size|
+  // expects pixels. If |src_subrect| is empty, the entire surface area is
+  // copied.
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& output_size,
                                   const ReadbackRequestCallback& callback,
                                   const SkColorType preferred_color_type);
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
-      const scoped_refptr<media::VideoFrame>& target,
+      scoped_refptr<media::VideoFrame> target,
       const base::Callback<void(const gfx::Rect&, bool)>& callback);
-  bool CanCopyToVideoFrame() const;
+  bool CanCopyFromCompositingSurface() const;
   void BeginFrameSubscription(
       std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription();

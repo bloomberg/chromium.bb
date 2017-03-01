@@ -24,7 +24,6 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/screen_info.h"
 #include "ipc/ipc_listener.h"
@@ -102,6 +101,15 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   bool IsMouseLocked() override;
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;
+  bool IsSurfaceAvailableForCopy() const override;
+  void CopyFromSurface(const gfx::Rect& src_rect,
+                       const gfx::Size& output_size,
+                       const ReadbackRequestCallback& callback,
+                       const SkColorType color_type) override;
+  void CopyFromSurfaceToVideoFrame(
+      const gfx::Rect& src_rect,
+      scoped_refptr<media::VideoFrame> target,
+      const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   void BeginFrameSubscription(
       std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;
@@ -346,43 +354,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Tells the View that the tooltip text for the current mouse position over
   // the page has changed.
   virtual void SetTooltipText(const base::string16& tooltip_text) = 0;
-
-  // Copies the contents of the compositing surface, providing a new SkBitmap
-  // result via an asynchronously-run |callback|. |src_subrect| is specified in
-  // layer space coordinates for the current platform (e.g., DIP for Aura/Mac,
-  // physical for Android), and is the region to be copied from this view. When
-  // |src_subrect| is empty then the whole surface will be copied. The copy is
-  // then scaled to a SkBitmap of size |dst_size|. If |dst_size| is empty then
-  // output will be unscaled. |callback| is run with true on success,
-  // false otherwise. A smaller region than |src_subrect| may be copied
-  // if the underlying surface is smaller than |src_subrect|.
-  virtual void CopyFromCompositingSurface(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      const ReadbackRequestCallback& callback,
-      const SkColorType preferred_color_type) = 0;
-
-  // Copies the contents of the compositing surface, populating the given
-  // |target| with YV12 image data. |src_subrect| is specified in layer space
-  // coordinates for the current platform (e.g., DIP for Aura/Mac, physical for
-  // Android), and is the region to be copied from this view. The copy is then
-  // scaled and letterboxed with black borders to fit |target|. Finally,
-  // |callback| is asynchronously run with true/false for
-  // success/failure. |target| must point to an allocated, YV12 video frame of
-  // the intended size. This operation will fail if there is no available
-  // compositing surface.
-  virtual void CopyFromCompositingSurfaceToVideoFrame(
-      const gfx::Rect& src_subrect,
-      const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(const gfx::Rect&, bool)>& callback) = 0;
-
-  // Returns true if CopyFromCompositingSurfaceToVideoFrame() is likely to
-  // succeed.
-  //
-  // TODO(nick): When VideoFrame copies are broadly implemented, this method
-  // should be renamed to HasCompositingSurface(), or unified with
-  // IsSurfaceAvailableForCopy() and HasAcceleratedSurface().
-  virtual bool CanCopyToVideoFrame() const = 0;
 
   // Return true if the view has an accelerated surface that contains the last
   // presented frame for the view. If |desired_size| is non-empty, true is

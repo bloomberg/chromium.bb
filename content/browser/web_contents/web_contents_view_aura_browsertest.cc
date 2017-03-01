@@ -136,11 +136,9 @@ class ScreenshotTracker : public NavigationEntryScreenshotManager {
 
  private:
   // Overridden from NavigationEntryScreenshotManager:
-  void TakeScreenshotImpl(RenderViewHost* host,
-                          NavigationEntryImpl* entry) override {
+  void WillTakeScreenshot(RenderViewHost* host) override {
     ++waiting_for_screenshots_;
     screenshot_taken_for_ = host;
-    NavigationEntryScreenshotManager::TakeScreenshotImpl(host, entry);
   }
 
   void OnScreenshotSet(NavigationEntryImpl* entry) override {

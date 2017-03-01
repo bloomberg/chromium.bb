@@ -136,7 +136,7 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
                          (preferred_color_type == kRGB_565_SkColorType) ||
                          (preferred_color_type == kN32_SkColorType));
   DCHECK(format_support);
-  if (!CanCopyToBitmap()) {
+  if (!CanCopyFromCompositingSurface()) {
     callback.Run(SkBitmap(), content::READBACK_SURFACE_UNAVAILABLE);
     return;
   }
@@ -152,9 +152,9 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
 
 void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
     const gfx::Rect& src_subrect,
-    const scoped_refptr<media::VideoFrame>& target,
+    scoped_refptr<media::VideoFrame> target,
     const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  if (!CanCopyToVideoFrame()) {
+  if (!CanCopyFromCompositingSurface()) {
     callback.Run(gfx::Rect(), false);
     return;
   }
@@ -163,17 +163,13 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
           AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
-          nullptr, target, callback));
-  request->set_area(src_subrect);
+          nullptr, std::move(target), callback));
+  if (!src_subrect.IsEmpty())
+    request->set_area(src_subrect);
   RequestCopyOfOutput(std::move(request));
 }
 
-bool DelegatedFrameHost::CanCopyToBitmap() const {
-  return compositor_ &&
-         client_->DelegatedFrameHostGetLayer()->has_external_content();
-}
-
-bool DelegatedFrameHost::CanCopyToVideoFrame() const {
+bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
   return compositor_ &&
          client_->DelegatedFrameHostGetLayer()->has_external_content();
 }
@@ -297,7 +293,6 @@ void DelegatedFrameHost::UpdateGutters() {
     bottom_gutter_->SetBounds(
         gfx::Rect(0, current_frame_size_in_dip_.height(), width, height));
     client_->DelegatedFrameHostGetLayer()->Add(bottom_gutter_.get());
-
   } else {
     bottom_gutter_.reset();
   }
@@ -323,7 +318,7 @@ void DelegatedFrameHost::CheckResizeLock() {
 
 void DelegatedFrameHost::AttemptFrameSubscriberCapture(
     const gfx::Rect& damage_rect) {
-  if (!frame_subscriber() || !CanCopyToVideoFrame())
+  if (!frame_subscriber() || !CanCopyFromCompositingSurface())
     return;
 
   const base::TimeTicks now = tick_clock_->NowTicks();
@@ -369,16 +364,12 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
         subscriber_texture->target()));
   }
 
-  if (local_surface_id_.is_valid()) {
-    // To avoid unnecessary composites, go directly to the Surface rather than
-    // through RequestCopyOfOutput (which goes through the browser
-    // compositor).
-    if (!request_copy_of_output_callback_for_testing_.is_null())
-      request_copy_of_output_callback_for_testing_.Run(std::move(request));
-    else
-      support_->RequestCopyOfSurface(std::move(request));
+  // To avoid unnecessary browser composites, try to go directly to the Surface
+  // rather than through the Layer (which goes through the browser compositor).
+  if (local_surface_id_.is_valid() &&
+      request_copy_of_output_callback_for_testing_.is_null()) {
+    support_->RequestCopyOfSurface(std::move(request));
   } else {
-    request->set_area(gfx::Rect(current_frame_size_in_dip_));
     RequestCopyOfOutput(std::move(request));
   }
 }
@@ -682,6 +673,10 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
             ? display_compositor::GLHelper::SCALER_QUALITY_BEST
             : display_compositor::GLHelper::SCALER_QUALITY_FAST;
 
+    DVLOG(1) << "Re-creating YUV readback pipeline for source rect "
+             << result_rect.ToString() << " and destination size "
+             << region_in_frame.size().ToString();
+
     dfh->yuv_readback_pipeline_.reset(gl_helper->CreateReadbackPipelineYUV(
         quality, result_rect.size(), result_rect, region_in_frame.size(), true,
         true));
@@ -822,11 +817,16 @@ void DelegatedFrameHost::LockResources() {
 
 void DelegatedFrameHost::RequestCopyOfOutput(
     std::unique_ptr<cc::CopyOutputRequest> request) {
-  if (!request_copy_of_output_callback_for_testing_.is_null()) {
-    request_copy_of_output_callback_for_testing_.Run(std::move(request));
-  } else {
+  // If a specific area has not been requested, set one to ensure correct
+  // clipping occurs.
+  if (!request->has_area())
+    request->set_area(gfx::Rect(current_frame_size_in_dip_));
+
+  if (request_copy_of_output_callback_for_testing_.is_null()) {
     client_->DelegatedFrameHostGetLayer()->RequestCopyOfOutput(
         std::move(request));
+  } else {
+    request_copy_of_output_callback_for_testing_.Run(std::move(request));
   }
 }
 

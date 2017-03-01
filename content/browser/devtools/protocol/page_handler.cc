@@ -470,6 +470,8 @@ void PageHandler::InnerSwapCompositorFrame() {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       host_->GetView());
   // TODO(vkuzkokov): do not use previous frame metadata.
+  // TODO(miu): RWHV to provide an API to provide actual rendering size.
+  // http://crbug.com/73362
   cc::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
 
   gfx::SizeF viewport_size_dip = gfx::ScaleSize(
@@ -499,9 +501,8 @@ void PageHandler::InnerSwapCompositorFrame() {
       gfx::ScaleSize(viewport_size_dip, scale)));
 
   if (snapshot_size_dip.width() > 0 && snapshot_size_dip.height() > 0) {
-    gfx::Rect viewport_bounds_dip(gfx::ToRoundedSize(viewport_size_dip));
-    view->CopyFromCompositingSurface(
-        viewport_bounds_dip, snapshot_size_dip,
+    view->CopyFromSurface(
+        gfx::Rect(), snapshot_size_dip,
         base::Bind(&PageHandler::ScreencastFrameCaptured,
                    weak_factory_.GetWeakPtr(),
                    base::Passed(last_compositor_frame_metadata_.Clone())),

@@ -111,10 +111,10 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
         GetRenderViewHost()->GetWidget()->GetView());
   }
 
-  // Callback when using CopyFromBackingStore() API.
-  void FinishCopyFromBackingStore(const base::Closure& quit_closure,
-                                  const SkBitmap& bitmap,
-                                  ReadbackResponse response) {
+  // Callback when using CopyFromSurface() API.
+  void FinishCopyFromSurface(const base::Closure& quit_closure,
+                             const SkBitmap& bitmap,
+                             ReadbackResponse response) {
     ++callback_invoke_count_;
     if (response == READBACK_SUCCESS) {
       ++frames_captured_;
@@ -124,10 +124,10 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
       quit_closure.Run();
   }
 
-  // Callback when using CopyFromCompositingSurfaceToVideoFrame() API.
-  void FinishCopyFromCompositingSurface(const base::Closure& quit_closure,
-                                        const gfx::Rect& region_in_frame,
-                                        bool frame_captured) {
+  // Callback when using CopyFromSurfaceToVideoFrame() API.
+  void FinishCopyFromSurfaceToVideoFrame(const base::Closure& quit_closure,
+                                         const gfx::Rect& region_in_frame,
+                                         bool frame_captured) {
     ++callback_invoke_count_;
     if (frame_captured)
       ++frames_captured_;
@@ -149,8 +149,8 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
       task_runner->PostTask(FROM_HERE, quit_closure);
   }
 
-  // Copy one frame using the CopyFromBackingStore API.
-  void RunBasicCopyFromBackingStoreTest() {
+  // Copy one frame using the CopyFromSurface API.
+  void RunBasicCopyFromSurfaceTest() {
     SET_UP_SURFACE_OR_PASS_TEST(NULL);
 
     // Repeatedly call CopyFromBackingStore() since, on some platforms (e.g.,
@@ -160,11 +160,10 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
     while (true) {
       ++count_attempts;
       base::RunLoop run_loop;
-      GetRenderViewHost()->GetWidget()->CopyFromBackingStore(
+      GetRenderWidgetHostView()->CopyFromSurface(
           gfx::Rect(), frame_size(),
-          base::Bind(
-              &RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
-              base::Unretained(this), run_loop.QuitClosure()),
+          base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
+                     base::Unretained(this), run_loop.QuitClosure()),
           kN32_SkColorType);
       run_loop.Run();
 
@@ -283,23 +282,23 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // Disable tests for Android as it has an incomplete implementation.
 #if !defined(OS_ANDROID)
 
-// The CopyFromBackingStore() API should work on all platforms when compositing
-// is enabled.
+// The CopyFromSurface() API should work on all platforms when compositing is
+// enabled.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
-                       CopyFromBackingStore) {
-  RunBasicCopyFromBackingStoreTest();
+                       CopyFromSurface) {
+  RunBasicCopyFromSurfaceTest();
 }
 
-// Tests that the callback passed to CopyFromBackingStore is always called,
-// even when the RenderWidgetHost is deleting in the middle of an async copy.
+// Tests that the callback passed to CopyFromSurface is always called, even
+// when the RenderWidgetHostView is deleting in the middle of an async copy.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
-                       CopyFromBackingStore_CallbackDespiteDelete) {
+                       CopyFromSurface_CallbackDespiteDelete) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
 
   base::RunLoop run_loop;
-  GetRenderViewHost()->GetWidget()->CopyFromBackingStore(
+  GetRenderWidgetHostView()->CopyFromSurface(
       gfx::Rect(), frame_size(),
-      base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
+      base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
                  base::Unretained(this), run_loop.QuitClosure()),
       kN32_SkColorType);
   run_loop.Run();
@@ -307,26 +306,20 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
   EXPECT_EQ(1, callback_invoke_count());
 }
 
-// Tests that the callback passed to CopyFromCompositingSurfaceToVideoFrame is
-// always called, even when the RenderWidgetHost is deleting in the middle of
-// an async copy.
+// Tests that the callback passed to CopyFromSurfaceToVideoFrame is always
+// called, even when the RenderWidgetHostView is deleting in the middle of an
+// async copy.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
-                       CopyFromCompositingSurface_CallbackDespiteDelete) {
+                       CopyFromSurfaceToVideoFrame_CallbackDespiteDelete) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
-  RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
-  if (!view->CanCopyToVideoFrame()) {
-    LOG(WARNING) <<
-        ("Blindly passing this test: CopyFromCompositingSurfaceToVideoFrame() "
-         "not supported on this platform.");
-    return;
-  }
 
   base::RunLoop run_loop;
   scoped_refptr<media::VideoFrame> dest =
       media::VideoFrame::CreateBlackFrame(frame_size());
-  view->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(view->GetViewBounds().size()), dest, base::Bind(
-          &RenderWidgetHostViewBrowserTest::FinishCopyFromCompositingSurface,
+  GetRenderWidgetHostView()->CopyFromSurfaceToVideoFrame(
+      gfx::Rect(), dest,
+      base::Bind(
+          &RenderWidgetHostViewBrowserTest::FinishCopyFromSurfaceToVideoFrame,
           base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -357,12 +350,6 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
-  if (!view->CanCopyToVideoFrame()) {
-    LOG(WARNING) << ("Blindly passing this test: "
-                     "CopyFromCompositingSurfaceToVideoFrame() not supported "
-                     "on this platform.");
-    return;
-  }
 
   base::RunLoop run_loop;
   scoped_refptr<media::VideoFrame> first_output =
@@ -372,13 +359,13 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
       media::VideoFrame::CreateBlackFrame(frame_size());
   ASSERT_TRUE(second_output.get());
   base::Closure closure = base::BarrierClosure(2, run_loop.QuitClosure());
-  view->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(view->GetViewBounds().size()), first_output,
+  view->CopyFromSurfaceToVideoFrame(
+      gfx::Rect(), first_output,
       base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
                  base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),
                  closure, base::TimeTicks::Now()));
-  view->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(view->GetViewBounds().size()), second_output,
+  view->CopyFromSurfaceToVideoFrame(
+      gfx::Rect(), second_output,
       base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
                  base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),
                  closure, base::TimeTicks::Now()));
@@ -570,7 +557,6 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       return;
 
     RenderWidgetHostViewBase* rwhv = GetRenderWidgetHostView();
-    ASSERT_TRUE(!video_frame || rwhv->CanCopyToVideoFrame());
 
     SetupLeftRightBitmap(output_size,
                          &expected_copy_from_compositing_surface_bitmap_);
@@ -617,8 +603,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                            ReadbackRequestCallbackForVideo,
                        base::Unretained(this), video_frame,
                        run_loop.QuitClosure());
-        rwhv->CopyFromCompositingSurfaceToVideoFrame(
-            copy_rect, video_frame, callback);
+        rwhv->CopyFromSurfaceToVideoFrame(copy_rect, video_frame, callback);
       } else {
         if (!content::GpuDataManager::GetInstance()
                  ->CanUseGpuBrowserCompositor()) {
@@ -634,8 +619,8 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                            ReadbackRequestCallbackTest,
                        base::Unretained(this),
                        run_loop.QuitClosure());
-        rwhv->CopyFromCompositingSurface(
-            copy_rect, output_size, callback, kN32_SkColorType);
+        rwhv->CopyFromSurface(copy_rect, output_size, callback,
+                              kN32_SkColorType);
       }
       run_loop.Run();
 
@@ -705,7 +690,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
 };
 
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Origin_Unscaled) {
+                       CopyFromSurface_Origin_Unscaled) {
   gfx::Rect copy_rect(400, 300);
   gfx::Size output_size = copy_rect.size();
   gfx::Size html_rect_size(400, 300);
@@ -717,7 +702,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Origin_Scaled) {
+                       CopyFromSurface_Origin_Scaled) {
   gfx::Rect copy_rect(400, 300);
   gfx::Size output_size(200, 100);
   gfx::Size html_rect_size(400, 300);
@@ -729,7 +714,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Cropped_Unscaled) {
+                       CopyFromSurface_Cropped_Unscaled) {
   // Grab 60x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(30, 30),
@@ -744,7 +729,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_Cropped_Scaled) {
+                       CopyFromSurface_Cropped_Scaled) {
   // Grab 60x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(30, 30),
@@ -759,7 +744,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_ForVideoFrame) {
+                       CopyFromSurface_ForVideoFrame) {
   // Grab 90x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(45, 30),
@@ -774,7 +759,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 }
 
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                       CopyFromCompositingSurface_ForVideoFrame_Scaled) {
+                       CopyFromSurface_ForVideoFrame_Scaled) {
   // Grab 90x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(45, 30),
