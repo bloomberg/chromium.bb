@@ -774,41 +774,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         </message>
       </if>
 
-      <!-- Settings reset prompt dialog messages -->
-      <message name="IDS_SETTINGS_RESET_PROMPT_TITLE" desc="The title for the settings reset dialog. The dialog alerts users that some of their settings may be unwanted and asks if they want to restore some of their settings to their original default values.">
-        Chrome has detected potentially unwanted settings
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_MULTIPLE_SETTINGS" desc="Text shown in the settings reset dialog explaining that some of the user's settings may have been modified by unwanted software or extensions.">
-        The following Chrome settings may have been modified by unwanted software or extensions:
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_SEARCH_ENGINE_NO_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their search engine.">
-        Do you want to restore Chrome's default search engine?
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_SEARCH_ENGINE_ONE_EXTENSION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their search engine.">
-        Do you want to restore Chrome's default search engine? This will also disable one extension.
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_SEARCH_ENGINE_MULTIPLE_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their search engine.">
-        Do you want to restore Chrome's default search engine? This will also disable <ph name="NUM_EXTENSIONS">$1<ex>3</ex></ph> extensions.
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_STARTUP_PAGE_NO_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their startup page.">
-        Do you want to restore Chrome's default startup page?
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_STARTUP_PAGE_ONE_EXTENSION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their startup page.">
-        Do you want to restore Chrome's default startup page? This will also disable one extension.
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_STARTUP_PAGE_MULTIPLE_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their startup page.">
-        Do you want to restore Chrome's default startup page? This will also disable <ph name="NUM_EXTENSIONS">$1<ex>3</ex></ph> extensions.
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_HOMEPAGE_NO_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their homepage.">
-        Do you want to restore Chrome's default homepage?
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_HOMEPAGE_ONE_EXTENSION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their homepage.">
-        Do you want to restore Chrome's default homepage? This will also disable one extension.
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_HOMEPAGE_MULTIPLE_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset their homepage.">
-        Do you want to restore Chrome's default homepage? This will also disable <ph name="NUM_EXTENSIONS">$1<ex>3</ex></ph> extensions.
-      </message>
-
       <!-- Sync/sign-in error messages -->
       <if expr="not chromeos">
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">

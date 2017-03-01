@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "ui/gfx/range/range.h"
 
 class Browser;
 
@@ -24,39 +25,21 @@ class SettingsResetPromptModel;
 // |Cancel()| has been called.
 class SettingsResetPromptController {
  public:
-  // A simple struct representing text to be displayed in the dialog.
-  struct LabelInfo {
-    enum LabelType {
-      // Strings of type PARAGRAPH will be displayed by multiline labels.
-      PARAGRAPH,
-      // Strings of type BULLET_ITEM will be displayed as a (possibly elided)
-      // single-line label starting with a bullet point.
-      BULLET_ITEM,
-    };
-
-    LabelInfo(LabelType type, const base::string16& text);
-    // Convenience constructor for displaying resource strings.
-    LabelInfo(LabelType type, int message_id);
-    ~LabelInfo();
-
-    LabelType type;
-    base::string16 text;
-  };
-
   // A controller should be created only if |model->ShouldPromptforReset()|
   // is true.
   explicit SettingsResetPromptController(
       std::unique_ptr<SettingsResetPromptModel> model);
+
   static void ShowSettingsResetPrompt(
       Browser* browser,
       SettingsResetPromptController* controller);
 
   base::string16 GetWindowTitle() const;
   base::string16 GetButtonLabel() const;
-  base::string16 GetShowDetailsLabel() const;
-  base::string16 GetHideDetailsLabel() const;
-  const std::vector<LabelInfo>& GetMainText() const;
-  const std::vector<LabelInfo>& GetDetailsText() const;
+  base::string16 GetMainText() const;
+  // Returns the offset into the main text string where a URL was inserted. To
+  // be used by the dialog to apply an appropriate style to the URL text.
+  gfx::Range GetMainTextUrlRange() const;
   // |Accept()| will be called by the dialog when the user clicks the main
   // button, after which the dialog will be closed.
   void Accept();
@@ -67,15 +50,14 @@ class SettingsResetPromptController {
  private:
   ~SettingsResetPromptController();
   void InitMainText();
-  void InitDetailsText();
   // Function to be called sometime after |Accept()| or |Cancel()| has been
   // called to perform any final tasks (such as metrcis reporting) and delete
   // this object.
   void OnInteractionDone();
 
   std::unique_ptr<SettingsResetPromptModel> model_;
-  std::vector<SettingsResetPromptController::LabelInfo> details_text_;
-  std::vector<SettingsResetPromptController::LabelInfo> main_text_;
+  base::string16 main_text_;
+  gfx::Range main_text_url_range_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptController);
 };

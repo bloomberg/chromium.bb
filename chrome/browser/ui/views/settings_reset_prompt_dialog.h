@@ -9,8 +9,6 @@
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
@@ -20,7 +18,6 @@ class SettingsResetPromptController;
 }
 
 namespace views {
-class Link;
 class View;
 }
 
@@ -29,8 +26,7 @@ class View;
 // 1. Main section with an explanation text
 // 2. An expandable details section containing the details of the reset
 //    operation.
-class SettingsResetPromptDialog : public views::DialogDelegateView,
-                                  public views::LinkListener {
+class SettingsResetPromptDialog : public views::DialogDelegateView {
  public:
   explicit SettingsResetPromptDialog(
       safe_browsing::SettingsResetPromptController* controller);
@@ -41,7 +37,6 @@ class SettingsResetPromptDialog : public views::DialogDelegateView,
   // views::WidgetDelegate overrides.
   ui::ModalType GetModalType() const override;
   bool ShouldShowWindowIcon() const override;
-  gfx::ImageSkia GetWindowIcon() override;
   base::string16 GetWindowTitle() const override;
 
   // ui::DialogModel overrides.
@@ -49,28 +44,16 @@ class SettingsResetPromptDialog : public views::DialogDelegateView,
 
   // views::DialogDelegate overrides.
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  views::View* CreateExtraView() override;
   bool Accept() override;
   bool Cancel() override;
 
   // views::View overrides.
   gfx::Size GetPreferredSize() const override;
 
-  // views::LinkListener overrides.
-  void LinkClicked(views::Link* source, int event_flags) override;
-
  private:
-  class ExpandableMessageView;
-
-  int ContentWidth() const;
-
   Browser* browser_;
   safe_browsing::SettingsResetPromptController* controller_;
   bool interaction_done_;
-
-  ExpandableMessageView* details_view_;
-  // The link that expands or hides the details section.
-  views::Link* details_link_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptDialog);
 };

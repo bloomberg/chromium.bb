@@ -521,38 +521,79 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
 // Some tests should run only on platforms where settings override for
 // extensions is available. See comment at the top for more details.
 #if defined(OS_WIN) || defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest, PerformReset) {
-  // Load an extension that does not override settings and three extensions that
-  // each override one of homepage, default search and startup URLs.
+IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
+                       PerformReset_DefaultSearch) {
+  // Load an extension that does not override settings and two extensions that
+  // override default search.
   const Extension* safe_extension = nullptr;
   LoadManifest(kManifestNoOverride, &safe_extension);
-  const Extension* homepage_extension = nullptr;
-  LoadHomepageExtension(kHomepage1, &homepage_extension);
-  const Extension* startup_url_extension = nullptr;
-  LoadStartupUrlExtension(kStartupUrl1, &startup_url_extension);
-  const Extension* default_search_extension = nullptr;
-  LoadSearchExtension(kSearchUrl1, &default_search_extension);
+  const Extension* default_search_extension1 = nullptr;
+  LoadSearchExtension(kSearchUrl1, &default_search_extension1);
+  const Extension* default_search_extension2 = nullptr;
+  LoadSearchExtension(kSearchUrl2, &default_search_extension2);
 
-  // Let all overridden URLs require reset.
   ProfileResetter::ResettableFlags expected_reset_flags =
-      ProfileResetter::HOMEPAGE | ProfileResetter::DEFAULT_SEARCH_ENGINE |
+      ProfileResetter::DEFAULT_SEARCH_ENGINE;
+  auto mock_resetter =
+      base::MakeUnique<NiceMock<MockProfileResetter>>(profile());
+  EXPECT_CALL(*mock_resetter.get(), MockReset(expected_reset_flags, _, _))
+      .Times(1);
+  ModelPointer model = CreateModel({kSearchUrl2}, std::move(mock_resetter));
+
+  EXPECT_TRUE(model->ShouldPromptForReset());
+  EXPECT_THAT(model->extensions_to_disable(),
+              UnorderedElementsAre(Pair(default_search_extension1->id(), _),
+                                   Pair(default_search_extension2->id(), _)));
+  EXPECT_EQ(model->default_search_reset_state(),
+            SettingsResetPromptModel::RESET_REQUIRED);
+
+  // The |PerformReset()| function uses |ExtensionService| directly to disable
+  // extensions so that we can expect the extensions to be disabled after the
+  // reset even though we are mocking the |ProfileResetter|.
+  model->PerformReset(
+      base::Bind(&SettingsResetPromptModelBrowserTest::OnResetDone,
+                 base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(reset_callbacks_, 1);
+
+  // After the reset, should no longer need any resets and all
+  // settings-overriding extensions should be disabled.
+  ModelPointer model2 = CreateModel({kSearchUrl2});
+
+  EXPECT_FALSE(model2->ShouldPromptForReset());
+  EXPECT_EQ(
+      model2->default_search_reset_state(),
+      SettingsResetPromptModel::NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
+  EXPECT_FALSE(
+      extension_service()->IsExtensionEnabled(default_search_extension1->id()));
+  EXPECT_FALSE(
+      extension_service()->IsExtensionEnabled(default_search_extension2->id()));
+  EXPECT_TRUE(extension_service()->IsExtensionEnabled(safe_extension->id()));
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
+                       PerformReset_StartupUrls) {
+  // Load an extension that does not override settings and two extensions that
+  // override startup URLs.
+  const Extension* safe_extension = nullptr;
+  LoadManifest(kManifestNoOverride, &safe_extension);
+  const Extension* startup_urls_extension1 = nullptr;
+  LoadStartupUrlExtension(kStartupUrl1, &startup_urls_extension1);
+  const Extension* startup_urls_extension2 = nullptr;
+  LoadStartupUrlExtension(kStartupUrl2, &startup_urls_extension2);
+
+  ProfileResetter::ResettableFlags expected_reset_flags =
       ProfileResetter::STARTUP_PAGES;
   auto mock_resetter =
       base::MakeUnique<NiceMock<MockProfileResetter>>(profile());
   EXPECT_CALL(*mock_resetter.get(), MockReset(expected_reset_flags, _, _))
       .Times(1);
-  ModelPointer model = CreateModel({kHomepage1, kStartupUrl1, kSearchUrl1},
-                                   std::move(mock_resetter));
+  ModelPointer model = CreateModel({kStartupUrl2}, std::move(mock_resetter));
 
   EXPECT_TRUE(model->ShouldPromptForReset());
   EXPECT_THAT(model->extensions_to_disable(),
-              UnorderedElementsAre(Pair(homepage_extension->id(), _),
-                                   Pair(startup_url_extension->id(), _),
-                                   Pair(default_search_extension->id(), _)));
-  EXPECT_EQ(model->homepage_reset_state(),
-            SettingsResetPromptModel::RESET_REQUIRED);
-  EXPECT_EQ(model->default_search_reset_state(),
-            SettingsResetPromptModel::RESET_REQUIRED);
+              UnorderedElementsAre(Pair(startup_urls_extension1->id(), _),
+                                   Pair(startup_urls_extension2->id(), _)));
   EXPECT_EQ(model->startup_urls_reset_state(),
             SettingsResetPromptModel::RESET_REQUIRED);
 
@@ -567,24 +608,67 @@ IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest, PerformReset) {
 
   // After the reset, should no longer need any resets and all
   // settings-overriding extensions should be disabled.
-  ModelPointer model2 = CreateModel({kHomepage1, kStartupUrl1, kSearchUrl1});
+  ModelPointer model2 = CreateModel({kStartupUrl2});
+
+  EXPECT_FALSE(model2->ShouldPromptForReset());
+  EXPECT_EQ(
+      model2->startup_urls_reset_state(),
+      SettingsResetPromptModel::NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
+  EXPECT_FALSE(
+      extension_service()->IsExtensionEnabled(startup_urls_extension1->id()));
+  EXPECT_FALSE(
+      extension_service()->IsExtensionEnabled(startup_urls_extension2->id()));
+  EXPECT_TRUE(extension_service()->IsExtensionEnabled(safe_extension->id()));
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsResetPromptModelBrowserTest,
+                       PerformReset_Homepage) {
+  // Load an extension that does not override settings and two extensions that
+  // override startup URLs.
+  const Extension* safe_extension = nullptr;
+  LoadManifest(kManifestNoOverride, &safe_extension);
+  const Extension* homepage_extension1 = nullptr;
+  LoadHomepageExtension(kHomepage1, &homepage_extension1);
+  const Extension* homepage_extension2 = nullptr;
+  LoadHomepageExtension(kHomepage2, &homepage_extension2);
+
+  ProfileResetter::ResettableFlags expected_reset_flags =
+      ProfileResetter::HOMEPAGE;
+  auto mock_resetter =
+      base::MakeUnique<NiceMock<MockProfileResetter>>(profile());
+  EXPECT_CALL(*mock_resetter.get(), MockReset(expected_reset_flags, _, _))
+      .Times(1);
+  ModelPointer model = CreateModel({kHomepage2}, std::move(mock_resetter));
+
+  EXPECT_TRUE(model->ShouldPromptForReset());
+  EXPECT_THAT(model->extensions_to_disable(),
+              UnorderedElementsAre(Pair(homepage_extension1->id(), _),
+                                   Pair(homepage_extension2->id(), _)));
+  EXPECT_EQ(model->homepage_reset_state(),
+            SettingsResetPromptModel::RESET_REQUIRED);
+
+  // The |PerformReset()| function uses |ExtensionService| directly to disable
+  // extensions so that we can expect the extensions to be disabled after the
+  // reset even though we are mocking the |ProfileResetter|.
+  model->PerformReset(
+      base::Bind(&SettingsResetPromptModelBrowserTest::OnResetDone,
+                 base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(reset_callbacks_, 1);
+
+  // After the reset, should no longer need any resets and all
+  // settings-overriding extensions should be disabled.
+  ModelPointer model2 = CreateModel({kHomepage2});
 
   EXPECT_FALSE(model2->ShouldPromptForReset());
   EXPECT_EQ(
       model2->homepage_reset_state(),
       SettingsResetPromptModel::NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
-  EXPECT_EQ(
-      model2->default_search_reset_state(),
-      SettingsResetPromptModel::NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
-  EXPECT_EQ(
-      model2->startup_urls_reset_state(),
-      SettingsResetPromptModel::NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
   EXPECT_FALSE(
-      extension_service()->IsExtensionEnabled(homepage_extension->id()));
+      extension_service()->IsExtensionEnabled(homepage_extension1->id()));
   EXPECT_FALSE(
-      extension_service()->IsExtensionEnabled(default_search_extension->id()));
-  EXPECT_FALSE(
-      extension_service()->IsExtensionEnabled(startup_url_extension->id()));
+      extension_service()->IsExtensionEnabled(homepage_extension2->id()));
+  EXPECT_TRUE(extension_service()->IsExtensionEnabled(safe_extension->id()));
 }
 
 const char kManifestToOverrideAll[] =
@@ -612,9 +696,9 @@ class ExtensionSettingsOverrideTest
  protected:
   void SetUpOnMainThread() override {
     SettingsResetPromptModelBrowserTest::SetUpOnMainThread();
-    homepage_requires_reset_ = testing::get<0>(GetParam());
-    default_search_requires_reset_ = testing::get<1>(GetParam());
-    startup_urls_requires_reset_ = testing::get<2>(GetParam());
+    homepage_matches_config_ = testing::get<0>(GetParam());
+    default_search_matches_config_ = testing::get<1>(GetParam());
+    startup_urls_matches_config_ = testing::get<2>(GetParam());
 
     // Always set up these extensions, but only require reset for their URLs
     // based on the parameters of the test:
@@ -638,9 +722,9 @@ class ExtensionSettingsOverrideTest
     LoadStartupUrlExtension(kStartupUrl2, &startup_urls2_);
   }
 
-  bool homepage_requires_reset_;
-  bool default_search_requires_reset_;
-  bool startup_urls_requires_reset_;
+  bool homepage_matches_config_;
+  bool default_search_matches_config_;
+  bool startup_urls_matches_config_;
   const Extension* overrides_all_;
   const Extension* homepage1_;
   const Extension* homepage2_;
@@ -653,54 +737,42 @@ class ExtensionSettingsOverrideTest
 IN_PROC_BROWSER_TEST_P(ExtensionSettingsOverrideTest, ExtensionsToDisable) {
   // Prepare the reset URLs based on the test parameters.
   std::unordered_set<std::string> reset_urls;
-  if (homepage_requires_reset_)
+  if (homepage_matches_config_)
     reset_urls.insert(kHomepage2);
-  if (default_search_requires_reset_)
+  if (default_search_matches_config_)
     reset_urls.insert(kSearchUrl2);
-  if (startup_urls_requires_reset_)
+  if (startup_urls_matches_config_)
     reset_urls.insert(kStartupUrl2);
 
   {
     ModelPointer model = CreateModel(reset_urls);
     EXPECT_EQ(model->homepage(), GURL(kHomepage2));
-    EXPECT_EQ(model->homepage_reset_state(),
-              homepage_requires_reset_
-                  ? SettingsResetPromptModel::RESET_REQUIRED
-                  : SettingsResetPromptModel::
-                        NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
-
     EXPECT_EQ(model->default_search(), GURL(kSearchUrl2));
-    EXPECT_EQ(model->default_search_reset_state(),
-              default_search_requires_reset_
-                  ? SettingsResetPromptModel::RESET_REQUIRED
-                  : SettingsResetPromptModel::
-                        NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
-
     EXPECT_THAT(model->startup_urls(), ElementsAre(GURL(kStartupUrl2)));
-    if (startup_urls_requires_reset_) {
+    if (startup_urls_matches_config_) {
       EXPECT_THAT(model->startup_urls_to_reset(),
                   ElementsAre(GURL(kStartupUrl2)));
     } else {
       EXPECT_THAT(model->startup_urls_to_reset(), IsEmpty());
     }
-    EXPECT_EQ(model->startup_urls_reset_state(),
-              startup_urls_requires_reset_
-                  ? SettingsResetPromptModel::RESET_REQUIRED
-                  : SettingsResetPromptModel::
-                        NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
 
+    // We can assume that the model correctly determines which setting requires
+    // reset, since that is tested in the model's unit tests.
     std::unordered_set<extensions::ExtensionId> expected_extension_ids;
-    if (homepage_requires_reset_) {
+    if (model->homepage_reset_state() ==
+        SettingsResetPromptModel::RESET_REQUIRED) {
       expected_extension_ids.insert(homepage1_->id());
       expected_extension_ids.insert(homepage2_->id());
       expected_extension_ids.insert(overrides_all_->id());
     }
-    if (default_search_requires_reset_) {
+    if (model->default_search_reset_state() ==
+        SettingsResetPromptModel::RESET_REQUIRED) {
       expected_extension_ids.insert(default_search1_->id());
       expected_extension_ids.insert(default_search2_->id());
       expected_extension_ids.insert(overrides_all_->id());
     }
-    if (startup_urls_requires_reset_) {
+    if (model->startup_urls_reset_state() ==
+        SettingsResetPromptModel::RESET_REQUIRED) {
       expected_extension_ids.insert(startup_urls1_->id());
       expected_extension_ids.insert(startup_urls2_->id());
       expected_extension_ids.insert(overrides_all_->id());

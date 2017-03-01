@@ -30,11 +30,19 @@ class SettingsResetPromptConfig;
 
 // Encapsulates information about settings needed for the settings reset prompt
 // and implements the reset logic.
+//
+// When more than one setting has a match in the list of domains in the config
+// object, the model chooses one of the settings for reset based on the
+// following priority list:
+// 1. Default search engine
+// 2. Startup URLs
+// 3. Homepage
 class SettingsResetPromptModel {
  public:
   enum ResetState {
     RESET_REQUIRED = 1,
     NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED = 2,
+    NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET = 3,
   };
 
   using ExtensionMap =
@@ -103,10 +111,16 @@ class SettingsResetPromptModel {
       SettingsResetPromptModel::CreateCallback callback,
       std::unique_ptr<BrandcodedDefaultSettings> default_settings);
 
-  void InitHomepageData();
+  // Functions to be called by the constructor to initialize the model
+  // object. These functions should be called in the order in which they are
+  // declared here so that the correct setting is chosen for the prompt when
+  // more than one setting requires reset (see also the class description).
   void InitDefaultSearchData();
-  void InitExtensionData();
   void InitStartupUrlsData();
+  void InitHomepageData();
+  void InitExtensionData();
+  // Return true if any setting's reset state is set to |RESET_REQUIRED|.
+  bool SomeSettingRequiresReset() const;
 
   Profile* const profile_;
   std::unique_ptr<SettingsResetPromptConfig> prompt_config_;

@@ -185,9 +185,7 @@ SettingsResetPromptConfig* SettingsResetPromptModel::config() const {
 }
 
 bool SettingsResetPromptModel::ShouldPromptForReset() const {
-  return homepage_reset_state() == RESET_REQUIRED ||
-         default_search_reset_state() == RESET_REQUIRED ||
-         startup_urls_reset_state() == RESET_REQUIRED;
+  return SomeSettingRequiresReset();
 }
 
 void SettingsResetPromptModel::PerformReset(
@@ -301,9 +299,9 @@ SettingsResetPromptModel::SettingsResetPromptModel(
   DCHECK(default_settings_);
   DCHECK(profile_resetter_);
 
-  InitHomepageData();
   InitDefaultSearchData();
   InitStartupUrlsData();
+  InitHomepageData();
   DCHECK_EQ(settings_types_initialized_, SETTINGS_TYPE_ALL);
 
   InitExtensionData();
@@ -312,8 +310,52 @@ SettingsResetPromptModel::SettingsResetPromptModel(
   // due to policy or extensions that cannot be disabled.
 }
 
+void SettingsResetPromptModel::InitDefaultSearchData() {
+  // Default search data must be the first setting type to be initialized.
+  DCHECK_EQ(settings_types_initialized_, 0U);
+
+  settings_types_initialized_ |= SETTINGS_TYPE_DEFAULT_SEARCH;
+
+  default_search_url_ = FixupUrl(settings_snapshot_->dse_url());
+  default_search_reset_domain_id_ =
+      prompt_config_->UrlToResetDomainId(default_search_url_);
+  if (default_search_reset_domain_id_ < 0)
+    return;
+
+  default_search_reset_state_ = RESET_REQUIRED;
+}
+
+void SettingsResetPromptModel::InitStartupUrlsData() {
+  // Default search data must have been initialized before startup URLs data.
+  DCHECK_EQ(settings_types_initialized_, SETTINGS_TYPE_DEFAULT_SEARCH);
+
+  settings_types_initialized_ |= SETTINGS_TYPE_STARTUP_URLS;
+
+  // Only the SessionStartupPref::URLS startup type is a candidate for
+  // resetting.
+  if (settings_snapshot_->startup_type() != SessionStartupPref::URLS)
+    return;
+
+  for (const GURL& startup_url : settings_snapshot_->startup_urls()) {
+    GURL fixed_url = FixupUrl(startup_url.possibly_invalid_spec());
+    startup_urls_.push_back(fixed_url);
+    int reset_domain_id = prompt_config_->UrlToResetDomainId(fixed_url);
+    if (reset_domain_id >= 0) {
+      startup_urls_reset_state_ =
+          SomeSettingRequiresReset()
+              ? NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET
+              : RESET_REQUIRED;
+      startup_urls_to_reset_.push_back(fixed_url);
+      domain_ids_for_startup_urls_to_reset_.insert(reset_domain_id);
+    }
+  }
+}
+
 void SettingsResetPromptModel::InitHomepageData() {
-  DCHECK(!(settings_types_initialized_ & SETTINGS_TYPE_HOMEPAGE));
+  // Homepage data must be initialized after default search and startup URLs
+  // data.
+  DCHECK_EQ(settings_types_initialized_,
+            SETTINGS_TYPE_DEFAULT_SEARCH | SETTINGS_TYPE_STARTUP_URLS);
 
   settings_types_initialized_ |= SETTINGS_TYPE_HOMEPAGE;
 
@@ -333,41 +375,10 @@ void SettingsResetPromptModel::InitHomepageData() {
   if (homepage_reset_domain_id_ < 0)
     return;
 
-  homepage_reset_state_ = RESET_REQUIRED;
-}
-
-void SettingsResetPromptModel::InitDefaultSearchData() {
-  DCHECK(!(settings_types_initialized_ & SETTINGS_TYPE_DEFAULT_SEARCH));
-
-  settings_types_initialized_ |= SETTINGS_TYPE_DEFAULT_SEARCH;
-
-  default_search_url_ = FixupUrl(settings_snapshot_->dse_url());
-  default_search_reset_domain_id_ =
-      prompt_config_->UrlToResetDomainId(default_search_url_);
-  if (default_search_reset_domain_id_ < 0)
-    return;
-
-  default_search_reset_state_ = RESET_REQUIRED;
-}
-
-void SettingsResetPromptModel::InitStartupUrlsData() {
-  DCHECK(!(settings_types_initialized_ & SETTINGS_TYPE_STARTUP_URLS));
-
-  settings_types_initialized_ |= SETTINGS_TYPE_STARTUP_URLS;
-
-  // Only the URLS startup type is a candidate for resetting.
-  if (settings_snapshot_->startup_type() == SessionStartupPref::URLS) {
-    for (const GURL& startup_url : settings_snapshot_->startup_urls()) {
-      GURL fixed_url = FixupUrl(startup_url.possibly_invalid_spec());
-      startup_urls_.push_back(fixed_url);
-      int reset_domain_id = prompt_config_->UrlToResetDomainId(fixed_url);
-      if (reset_domain_id >= 0) {
-        startup_urls_reset_state_ = RESET_REQUIRED;
-        startup_urls_to_reset_.push_back(fixed_url);
-        domain_ids_for_startup_urls_to_reset_.insert(reset_domain_id);
-      }
-    }
-  }
+  homepage_reset_state_ =
+      SomeSettingRequiresReset()
+          ? NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET
+          : RESET_REQUIRED;
 }
 
 // Populate |extensions_to_disable_| with all enabled extensions that override
@@ -407,6 +418,12 @@ void SettingsResetPromptModel::InitExtensionData() {
           std::make_pair(extension_info.id, extension_info));
     }
   }
+}
+
+bool SettingsResetPromptModel::SomeSettingRequiresReset() const {
+  return default_search_reset_state_ == RESET_REQUIRED ||
+         startup_urls_reset_state_ == RESET_REQUIRED ||
+         homepage_reset_state_ == RESET_REQUIRED;
 }
 
 }  // namespace safe_browsing.
