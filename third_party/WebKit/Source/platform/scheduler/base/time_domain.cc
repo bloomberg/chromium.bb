@@ -31,9 +31,10 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
   CancelDelayedWork(queue);
 }
 
-void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
-                                     base::TimeTicks delayed_run_time,
-                                     base::TimeTicks now) {
+void TimeDomain::ScheduleDelayedWork(
+    internal::TaskQueueImpl* queue,
+    internal::TaskQueueImpl::DelayedWakeUp wake_up,
+    base::TimeTicks now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
   DCHECK(queue->IsQueueEnabled());
@@ -43,18 +44,17 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
     DCHECK_NE(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
 
     // O(log n)
-    delayed_wakeup_queue_.ChangeKey(queue->heap_handle(),
-                                    {delayed_run_time, queue});
+    delayed_wakeup_queue_.ChangeKey(queue->heap_handle(), {wake_up, queue});
   } else {
     // O(log n)
-    delayed_wakeup_queue_.insert({delayed_run_time, queue});
+    delayed_wakeup_queue_.insert({wake_up, queue});
   }
 
-  queue->set_scheduled_time_domain_wakeup(delayed_run_time);
+  queue->set_scheduled_time_domain_wakeup(wake_up.time);
 
   // If |queue| is the first wakeup then request the wakeup.
   if (delayed_wakeup_queue_.min().queue == queue)
-    RequestWakeupAt(now, delayed_run_time);
+    RequestWakeupAt(now, wake_up.time);
 
   if (observer_)
     observer_->OnTimeDomainHasDelayedWork(queue);
@@ -75,34 +75,34 @@ void TimeDomain::CancelDelayedWork(internal::TaskQueueImpl* queue) {
 
   DCHECK_NE(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
   DCHECK(!delayed_wakeup_queue_.empty());
-  base::TimeTicks prev_first_wakeup = delayed_wakeup_queue_.min().time;
+  base::TimeTicks prev_first_wakeup = delayed_wakeup_queue_.min().wake_up.time;
 
   // O(log n)
   delayed_wakeup_queue_.erase(queue->heap_handle());
 
   if (delayed_wakeup_queue_.empty()) {
     CancelWakeupAt(prev_first_wakeup);
-  } else if (prev_first_wakeup != delayed_wakeup_queue_.min().time) {
+  } else if (prev_first_wakeup != delayed_wakeup_queue_.min().wake_up.time) {
     CancelWakeupAt(prev_first_wakeup);
-    RequestWakeupAt(Now(), delayed_wakeup_queue_.min().time);
+    RequestWakeupAt(Now(), delayed_wakeup_queue_.min().wake_up.time);
   }
 }
 
 void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  // Wake up any queues with pending delayed work.  Note std::multipmap stores
+  // Wake up any queues with pending delayed work.  Note std::multimap stores
   // the elements sorted by key, so the begin() iterator points to the earliest
   // queue to wakeup.
   while (!delayed_wakeup_queue_.empty() &&
-         delayed_wakeup_queue_.min().time <= lazy_now->Now()) {
+         delayed_wakeup_queue_.min().wake_up.time <= lazy_now->Now()) {
     internal::TaskQueueImpl* queue = delayed_wakeup_queue_.min().queue;
-    base::Optional<base::TimeTicks> next_wakeup =
+    base::Optional<internal::TaskQueueImpl::DelayedWakeUp> next_wake_up =
         queue->WakeUpForDelayedWork(lazy_now);
 
-    if (next_wakeup) {
+    if (next_wake_up) {
       // O(log n)
-      delayed_wakeup_queue_.ReplaceMin({next_wakeup.value(), queue});
-      queue->set_scheduled_time_domain_wakeup(next_wakeup.value());
+      delayed_wakeup_queue_.ReplaceMin({*next_wake_up, queue});
+      queue->set_scheduled_time_domain_wakeup(next_wake_up->time);
     } else {
       // O(log n)
       delayed_wakeup_queue_.pop();
@@ -116,7 +116,7 @@ bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
   if (delayed_wakeup_queue_.empty())
     return false;
 
-  *out_time = delayed_wakeup_queue_.min().time;
+  *out_time = delayed_wakeup_queue_.min().wake_up.time;
   return true;
 }
 
@@ -134,7 +134,7 @@ void TimeDomain::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetString("name", GetName());
   state->SetInteger("registered_delay_count", delayed_wakeup_queue_.size());
   if (!delayed_wakeup_queue_.empty()) {
-    base::TimeDelta delay = delayed_wakeup_queue_.min().time - Now();
+    base::TimeDelta delay = delayed_wakeup_queue_.min().wake_up.time - Now();
     state->SetDouble("next_delay_ms", delay.InMillisecondsF());
   }
   AsValueIntoInternal(state);

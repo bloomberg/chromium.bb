@@ -94,7 +94,7 @@ TEST_F(TimeDomainTest, ScheduleDelayedWork) {
   base::TimeTicks delayed_runtime = time_domain_->Now() + delay;
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, delayed_runtime));
   base::TimeTicks now = time_domain_->Now();
-  time_domain_->ScheduleDelayedWork(task_queue_.get(), now + delay, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), {now + delay, 0}, now);
 
   base::TimeTicks next_scheduled_runtime;
   EXPECT_TRUE(time_domain_->NextScheduledRunTime(&next_scheduled_runtime));
@@ -115,7 +115,8 @@ TEST_F(TimeDomainTest, ScheduleDelayedWorkSupersedesPreviousWakeup) {
   base::TimeTicks delayed_runtime2 = time_domain_->Now() + delay2;
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, delayed_runtime1));
   base::TimeTicks now = time_domain_->Now();
-  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime1, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), {delayed_runtime1, 0},
+                                    now);
 
   base::TimeTicks next_scheduled_runtime;
   EXPECT_TRUE(time_domain_->NextScheduledRunTime(&next_scheduled_runtime));
@@ -126,7 +127,8 @@ TEST_F(TimeDomainTest, ScheduleDelayedWorkSupersedesPreviousWakeup) {
   // Now scheduler a later wakeup, which should replace the previously requested
   // one.
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, delayed_runtime2));
-  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime2, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), {delayed_runtime2, 0},
+                                    now);
 
   EXPECT_TRUE(time_domain_->NextScheduledRunTime(&next_scheduled_runtime));
   EXPECT_EQ(delayed_runtime2, next_scheduled_runtime);
@@ -159,19 +161,19 @@ TEST_F(TimeDomainTest, RequestWakeupAt_OnlyCalledForEarlierTasks) {
   // RequestWakeupAt should always be called if there are no other wakeups.
   base::TimeTicks now = time_domain_->Now();
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, now + delay1));
-  time_domain_->ScheduleDelayedWork(task_queue_.get(), now + delay1, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), {now + delay1, 0}, now);
 
   Mock::VerifyAndClearExpectations(time_domain_.get());
 
   // RequestWakeupAt should not be called when scheduling later tasks.
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, _)).Times(0);
-  time_domain_->ScheduleDelayedWork(task_queue2.get(), now + delay2, now);
-  time_domain_->ScheduleDelayedWork(task_queue3.get(), now + delay3, now);
+  time_domain_->ScheduleDelayedWork(task_queue2.get(), {now + delay2, 0}, now);
+  time_domain_->ScheduleDelayedWork(task_queue3.get(), {now + delay3, 0}, now);
 
   // RequestWakeupAt should be called when scheduling earlier tasks.
   Mock::VerifyAndClearExpectations(time_domain_.get());
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, now + delay4));
-  time_domain_->ScheduleDelayedWork(task_queue4.get(), now + delay4, now);
+  time_domain_->ScheduleDelayedWork(task_queue4.get(), {now + delay4, 0}, now);
 
   Mock::VerifyAndClearExpectations(time_domain_.get());
 
@@ -191,9 +193,9 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   base::TimeTicks now = time_domain_->Now();
   base::TimeTicks wakeup1 = now + base::TimeDelta::FromMilliseconds(10);
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, wakeup1)).Times(1);
-  time_domain_->ScheduleDelayedWork(task_queue_.get(), wakeup1, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), {wakeup1, 0}, now);
   base::TimeTicks wakeup2 = now + base::TimeDelta::FromMilliseconds(100);
-  time_domain_->ScheduleDelayedWork(task_queue2_.get(), wakeup2, now);
+  time_domain_->ScheduleDelayedWork(task_queue2_.get(), {wakeup2, 0}, now);
 
   TaskQueue* next_task_queue;
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
@@ -222,7 +224,8 @@ TEST_F(TimeDomainTest, WakeupReadyDelayedQueues) {
   base::TimeTicks now = time_domain_->Now();
   base::TimeTicks delayed_runtime = now + delay;
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, delayed_runtime));
-  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), {delayed_runtime, 0},
+                                    now);
 
   base::TimeTicks next_run_time;
   ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
@@ -239,12 +242,42 @@ TEST_F(TimeDomainTest, WakeupReadyDelayedQueues) {
   ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 
+TEST_F(TimeDomainTest, WakeupReadyDelayedQueuesWithIdenticalRuntimes) {
+  int sequence_num = 0;
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
+  base::TimeTicks now = time_domain_->Now();
+  base::TimeTicks delayed_runtime = now + delay;
+  EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, delayed_runtime));
+  EXPECT_CALL(*time_domain_.get(), CancelWakeupAt(delayed_runtime));
+
+  scoped_refptr<internal::TaskQueueImpl> task_queue2 = make_scoped_refptr(
+      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
+                                  TaskQueue::Spec(TaskQueue::QueueType::TEST),
+                                  "test.category", "test.category"));
+
+  time_domain_->ScheduleDelayedWork(task_queue2.get(),
+                                    {delayed_runtime, ++sequence_num}, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(),
+                                    {delayed_runtime, ++sequence_num}, now);
+
+  LazyNow lazy_now = time_domain_->CreateLazyNow();
+  time_domain_->WakeupReadyDelayedQueues(&lazy_now);
+
+  // The second task queue should wake up first since it has a lower sequence
+  // number.
+  TaskQueue* next_task_queue;
+  EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
+  EXPECT_EQ(task_queue2.get(), next_task_queue);
+
+  task_queue2->UnregisterTaskQueue();
+}
+
 TEST_F(TimeDomainTest, CancelDelayedWork) {
   base::TimeTicks now = time_domain_->Now();
   base::TimeTicks run_time = now + base::TimeDelta::FromMilliseconds(20);
 
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, run_time));
-  time_domain_->ScheduleDelayedWork(task_queue_.get(), run_time, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), {run_time, 0}, now);
 
   TaskQueue* next_task_queue;
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
@@ -265,11 +298,11 @@ TEST_F(TimeDomainTest, CancelDelayedWork_TwoQueues) {
   base::TimeTicks run_time1 = now + base::TimeDelta::FromMilliseconds(20);
   base::TimeTicks run_time2 = now + base::TimeDelta::FromMilliseconds(40);
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, run_time1));
-  time_domain_->ScheduleDelayedWork(task_queue_.get(), run_time1, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), {run_time1, 0}, now);
   Mock::VerifyAndClearExpectations(time_domain_.get());
 
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, _)).Times(0);
-  time_domain_->ScheduleDelayedWork(task_queue2.get(), run_time2, now);
+  time_domain_->ScheduleDelayedWork(task_queue2.get(), {run_time2, 0}, now);
   Mock::VerifyAndClearExpectations(time_domain_.get());
 
   TaskQueue* next_task_queue;
@@ -327,7 +360,7 @@ TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasDelayedWork) {
   EXPECT_CALL(*time_domain_.get(), RequestWakeupAt(_, _));
   base::TimeTicks now = time_domain_->Now();
   time_domain_->ScheduleDelayedWork(
-      task_queue_.get(), now + base::TimeDelta::FromMilliseconds(10), now);
+      task_queue_.get(), {now + base::TimeDelta::FromMilliseconds(10), 0}, now);
 }
 
 }  // namespace scheduler

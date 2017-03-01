@@ -111,6 +111,21 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     EnqueueOrder enqueue_order_;
   };
 
+  // Represents a time at which a task wants to run. Tasks scheduled for the
+  // same point in time will be ordered by their sequence numbers.
+  struct DelayedWakeUp {
+    base::TimeTicks time;
+    int sequence_num;
+
+    bool operator<=(const DelayedWakeUp& other) const {
+      if (time == other.time) {
+        DCHECK_NE(sequence_num, other.sequence_num);
+        return (sequence_num - other.sequence_num) < 0;
+      }
+      return time < other.time;
+    }
+  };
+
   // TaskQueue implementation.
   void UnregisterTaskQueue() override;
   bool RunsTasksOnCurrentThread() const override;
@@ -177,9 +192,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   }
 
   // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|. Returns the deadline if a subsequent wakeup is
-  // required. Must be called from the main thread.
-  base::Optional<base::TimeTicks> WakeUpForDelayedWork(LazyNow* lazy_now);
+  // |delayed_work_queue|. Returns the subsequent wakeup that is required, if
+  // any. Must be called from the main thread.
+  base::Optional<DelayedWakeUp> WakeUpForDelayedWork(LazyNow* lazy_now);
 
   base::TimeTicks scheduled_time_domain_wakeup() const {
     return main_thread_only().scheduled_time_domain_wakeup;

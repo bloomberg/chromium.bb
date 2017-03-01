@@ -94,7 +94,7 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // TimeDomain reaches |delayed_run_time|.  This supersedes any previously
   // registered wakeup for |queue|.
   void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
-                           base::TimeTicks delayed_run_time,
+                           internal::TaskQueueImpl::DelayedWakeUp wake_up,
                            base::TimeTicks now);
 
   // Cancels any scheduled calls to TaskQueueImpl::WakeUpForDelayedWork for
@@ -137,14 +137,12 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   }
 
  private:
-  struct DelayedWakeup {
-    base::TimeTicks time;
+  struct ScheduledDelayedWakeUp {
+    internal::TaskQueueImpl::DelayedWakeUp wake_up;
     internal::TaskQueueImpl* queue;
 
-    bool operator<=(const DelayedWakeup& other) const {
-      if (time == other.time)
-        return queue <= other.queue;
-      return time < other.time;
+    bool operator<=(const ScheduledDelayedWakeUp& other) const {
+      return wake_up <= other.wake_up;
     }
 
     void SetHeapHandle(HeapHandle handle) {
@@ -161,7 +159,7 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
     }
   };
 
-  IntrusiveHeap<DelayedWakeup> delayed_wakeup_queue_;
+  IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wakeup_queue_;
 
   Observer* const observer_;  // NOT OWNED.
 
