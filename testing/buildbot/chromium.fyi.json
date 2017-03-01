@@ -12482,6 +12482,11 @@
         "name": "webkit_layout_tests_exparchive",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
           "shards": 1
         }
       }
