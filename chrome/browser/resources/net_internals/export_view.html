@@ -18,7 +18,16 @@
 </style>
 
 <div id=export-view-tab-content class=content-box>
-  <div>
+  <div id=export-view-deprecated-notice>
+    <b>WARNING</b>: chrome://net-internals is being deprecated for exporting log files (<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=678386" target="_blank">crbug.com/678386</a>).
+    <p>
+      Use <a href="chrome://net-export" target="_blank">chrome://net-export</a> instead.
+    </p>
+    <button id=export-view-show-deprecated-ui>Show deprecated UI</button>
+  
+  </div>
+
+  <div style="display: none" id=export-view-ui-deprecated>
     <input id=export-view-privacy-stripping-checkbox type=checkbox checked=yes>
     <label for=export-view-privacy-stripping-checkbox>
       Strip private information (cookies and credentials).
@@ -40,7 +49,7 @@
         How to provide data for bug reports
       </a>
     </div>
-
+  
   </div>
 
   <a style="display: none" id=export-view-download-anchor download="net-internals-log.json"></a>
