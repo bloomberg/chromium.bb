@@ -4,6 +4,8 @@
 
 #include "net/ssl/ssl_config_service.h"
 
+#include <tuple>
+
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -84,16 +86,18 @@ SSLConfigService::~SSLConfigService() {
 void SSLConfigService::ProcessConfigUpdate(const SSLConfig& orig_config,
                                            const SSLConfig& new_config) {
   bool config_changed =
-      (orig_config.rev_checking_enabled != new_config.rev_checking_enabled) ||
-      (orig_config.rev_checking_required_local_anchors !=
-       new_config.rev_checking_required_local_anchors) ||
-      (orig_config.version_min != new_config.version_min) ||
-      (orig_config.version_max != new_config.version_max) ||
-      (orig_config.disabled_cipher_suites !=
-       new_config.disabled_cipher_suites) ||
-      (orig_config.channel_id_enabled != new_config.channel_id_enabled) ||
-      (orig_config.false_start_enabled != new_config.false_start_enabled) ||
-      (orig_config.require_ecdhe != new_config.require_ecdhe);
+      std::tie(orig_config.rev_checking_enabled,
+               orig_config.rev_checking_required_local_anchors,
+               orig_config.sha1_local_anchors_enabled, orig_config.version_min,
+               orig_config.version_max, orig_config.disabled_cipher_suites,
+               orig_config.channel_id_enabled, orig_config.false_start_enabled,
+               orig_config.require_ecdhe) !=
+      std::tie(new_config.rev_checking_enabled,
+               new_config.rev_checking_required_local_anchors,
+               new_config.sha1_local_anchors_enabled, new_config.version_min,
+               new_config.version_max, new_config.disabled_cipher_suites,
+               new_config.channel_id_enabled, new_config.false_start_enabled,
+               new_config.require_ecdhe);
 
   if (config_changed)
     NotifySSLConfigChange();
