@@ -52,6 +52,7 @@ check_metadata_SOURCES = check_metadata.c
 # Note that this is not currently included in check_programs below
 # otherwise make check would never complete.
 infiniteTranslationLoop_SOURCES = infiniteTranslationLoop.c
+noinst_PROGRAMS = infiniteTranslationLoop
 
 program_TESTS =					\
 	backtranslate				\
