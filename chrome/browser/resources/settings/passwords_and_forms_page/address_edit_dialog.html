@@ -63,12 +63,13 @@
               <template is="dom-if" if="[[item.isTextArea]]">
                 <paper-textarea label="[[item.component.fieldName]]"
                     value="{{item.value}}" on-value-changed="updateCanSave_"
-                    class$="address-column [[long_(item)]]" always-float-label>
+                    class$="address-column [[long_(item)]]" always-float-label
+                    autofocus>
                 </paper-textarea>
               </template>
               <template is="dom-if" if="[[!item.isTextArea]]">
                 <paper-input type="text" label="[[item.component.fieldName]]"
-                    always-float-label value="{{item.value}}"
+                    always-float-label autofocus value="{{item.value}}"
                     on-value-changed="updateCanSave_"
                     class$="address-column [[long_(item)]]">
                   <iron-a11y-keys keys="enter"
