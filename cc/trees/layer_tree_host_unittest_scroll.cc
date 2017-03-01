@@ -698,12 +698,12 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
             BeginState(scroll_point).get(), InputHandler::TOUCHSCREEN);
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
         impl->ScrollBy(UpdateState(gfx::Point(), scroll_amount_).get());
-        LayerImpl* scrolling_layer = impl->CurrentlyScrollingLayer();
-        CHECK(scrolling_layer);
+        auto* scrolling_node = impl->CurrentlyScrollingNode();
+        CHECK(scrolling_node);
         impl->ScrollEnd(EndState().get());
-        CHECK(!impl->CurrentlyScrollingLayer());
-        EXPECT_EQ(scrolling_layer->id(),
-                  impl->active_tree()->LastScrolledLayerId());
+        CHECK(!impl->CurrentlyScrollingNode());
+        EXPECT_EQ(scrolling_node->id,
+                  impl->active_tree()->LastScrolledScrollNodeIndex());
 
         // Check the scroll is applied as a delta.
         EXPECT_VECTOR_EQ(initial_offset_,

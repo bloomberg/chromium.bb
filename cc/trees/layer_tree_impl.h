@@ -176,10 +176,11 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerImpl* InnerViewportContainerLayer() const;
   LayerImpl* OuterViewportContainerLayer() const;
-  LayerImpl* CurrentlyScrollingLayer() const;
-  int LastScrolledLayerId() const;
-  void SetCurrentlyScrollingLayer(LayerImpl* layer);
-  void ClearCurrentlyScrollingLayer();
+  ScrollNode* CurrentlyScrollingNode();
+  const ScrollNode* CurrentlyScrollingNode() const;
+  int LastScrolledScrollNodeIndex() const;
+  void SetCurrentlyScrollingNode(ScrollNode* node);
+  void ClearCurrentlyScrollingNode();
 
   void SetViewportLayersFromIds(int overscroll_elasticity_layer,
                                 int page_scale_layer_id,
@@ -478,7 +479,7 @@ class CC_EXPORT LayerTreeImpl {
   SkColor background_color_;
   bool has_transparent_background_;
 
-  int last_scrolled_layer_id_;
+  int last_scrolled_scroll_node_index_;
   int overscroll_elasticity_layer_id_;
   int page_scale_layer_id_;
   int inner_viewport_scroll_layer_id_;

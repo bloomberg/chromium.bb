@@ -25,6 +25,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/task_runner_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -504,8 +505,10 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
                           host_impl->active_tree()->root_layer_for_testing(),
                           host_impl->active_tree());
 
-  host_impl->active_tree()->SetCurrentlyScrollingLayer(
-      host_impl->active_tree()->LayerById(scroll_layer->id()));
+  ScrollNode* scroll_node =
+      host_impl->active_tree()->property_trees()->scroll_tree.Node(
+          scroll_layer->scroll_tree_index());
+  host_impl->active_tree()->SetCurrentlyScrollingNode(scroll_node);
   transient_scroll_layer->SetScrollClipLayerId(Layer::INVALID_ID);
   host_->BuildPropertyTreesForTesting();
 
@@ -513,8 +516,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
   host_->CommitAndCreatePendingTree();
   host_impl->ActivateSyncTree();
 
-  EXPECT_EQ(scroll_layer->id(),
-            host_impl->active_tree()->CurrentlyScrollingLayer()->id());
+  EXPECT_EQ(scroll_layer->scroll_tree_index(),
+            host_impl->active_tree()->CurrentlyScrollingNode()->id);
 }
 
 TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
@@ -597,7 +600,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   // More update to ScrollOffset active delta: gfx::ScrollOffset(20, 20)
   scroll_tree.SetScrollOffset(scroll_layer_impl->id(),
                               gfx::ScrollOffset(40, 50));
-  host_impl->active_tree()->SetCurrentlyScrollingLayer(scroll_layer_impl);
+  host_impl->active_tree()->SetCurrentlyScrollingNode(
+      scroll_tree.Node(scroll_layer_impl->scroll_tree_index()));
 
   // Make one layer unscrollable so that scroll tree topology changes
   transient_scroll_layer->SetScrollClipLayerId(Layer::INVALID_ID);
@@ -607,8 +611,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   host_->CommitAndCreatePendingTree();
   host_impl->ActivateSyncTree();
 
-  EXPECT_EQ(scroll_layer->id(),
-            host_impl->active_tree()->CurrentlyScrollingLayer()->id());
+  EXPECT_EQ(scroll_layer->scroll_tree_index(),
+            host_impl->active_tree()->CurrentlyScrollingNode()->id);
   scroll_layer_offset->SetCurrent(gfx::ScrollOffset(20, 30));
   scroll_layer_offset->PullDeltaForMainThread();
   scroll_layer_offset->SetCurrent(gfx::ScrollOffset(40, 50));

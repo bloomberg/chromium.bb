@@ -440,10 +440,12 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void CreatePendingTree();
   virtual void ActivateSyncTree();
 
-  // Shortcuts to layers on the active tree.
+  // Shortcuts to layers/nodes on the active tree.
   LayerImpl* InnerViewportScrollLayer() const;
   LayerImpl* OuterViewportScrollLayer() const;
-  LayerImpl* CurrentlyScrollingLayer() const;
+  ScrollNode* OuterViewportScrollNode() const;
+  ScrollNode* CurrentlyScrollingNode();
+  const ScrollNode* CurrentlyScrollingNode() const;
 
   bool scroll_affects_scroll_handler() const {
     return scroll_affects_scroll_handler_;
@@ -655,7 +657,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   InputHandler::ScrollStatus ScrollBeginImpl(
       ScrollState* scroll_state,
-      LayerImpl* scrolling_layer_impl,
+      ScrollNode* scrolling_node,
       InputHandler::ScrollInputType type);
   bool IsInitialScrollHitTestReliable(LayerImpl* layer, const gfx::PointF&);
   void DistributeScrollDelta(ScrollState* scroll_state);
@@ -674,7 +676,7 @@ class CC_EXPORT LayerTreeHostImpl
   // the frame should be drawn.
   DrawResult CalculateRenderPasses(FrameData* frame);
 
-  void ClearCurrentlyScrollingLayer();
+  void ClearCurrentlyScrollingNode();
 
   LayerImpl* FindScrollLayerForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
@@ -772,7 +774,7 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Vector2dF accumulated_root_overscroll_;
 
   bool pinch_gesture_active_;
-  bool pinch_gesture_end_should_clear_scrolling_layer_;
+  bool pinch_gesture_end_should_clear_scrolling_node_;
 
   std::unique_ptr<BrowserControlsOffsetManager>
       browser_controls_offset_manager_;

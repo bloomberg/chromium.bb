@@ -63,7 +63,7 @@ LayerTreeImpl::LayerTreeImpl(
       hud_layer_(nullptr),
       background_color_(0),
       has_transparent_background_(false),
-      last_scrolled_layer_id_(Layer::INVALID_ID),
+      last_scrolled_scroll_node_index_(ScrollTree::kInvalidNodeId),
       overscroll_elasticity_layer_id_(Layer::INVALID_ID),
       page_scale_layer_id_(Layer::INVALID_ID),
       inner_viewport_scroll_layer_id_(Layer::INVALID_ID),
@@ -436,9 +436,25 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // The request queue should have been processed and does not require a push.
   DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
 
-  LayerImpl* layer = target_tree->CurrentlyScrollingLayer();
+  // To maintain the correct currently scrolling node we need to use layer ids
+  // which are stable across the property tree update in SetPropertyTrees.
+  // TODO(pdr): Remove the use of owning_layer_id.
+  int scrolling_layer_id = Layer::INVALID_ID;
+  if (ScrollNode* node = target_tree->CurrentlyScrollingNode())
+    scrolling_layer_id = node->owning_layer_id;
+
   target_tree->SetPropertyTrees(&property_trees_);
-  target_tree->SetCurrentlyScrollingLayer(layer);
+
+  ScrollNode* scrolling_node = nullptr;
+  auto& scroll_node_index_map =
+      target_tree->property_trees()->layer_id_to_scroll_node_index;
+  auto scrolling_node_it = scroll_node_index_map.find(scrolling_layer_id);
+  if (scrolling_node_it != scroll_node_index_map.end()) {
+    int index = scrolling_node_it->second;
+    scrolling_node = target_tree->property_trees()->scroll_tree.Node(index);
+  }
+  target_tree->SetCurrentlyScrollingNode(scrolling_node);
+
   target_tree->property_trees()->scroll_tree.PushScrollUpdatesFromPendingTree(
       &property_trees_, target_tree);
 
@@ -629,45 +645,47 @@ LayerImpl* LayerTreeImpl::OuterViewportContainerLayer() const {
              : NULL;
 }
 
-LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
+ScrollNode* LayerTreeImpl::CurrentlyScrollingNode() {
   DCHECK(IsActiveTree());
-  const ScrollNode* scroll_node =
-      property_trees_.scroll_tree.CurrentlyScrollingNode();
-  return LayerById(scroll_node ? scroll_node->owning_layer_id
-                               : Layer::INVALID_ID);
+  return property_trees_.scroll_tree.CurrentlyScrollingNode();
 }
 
-int LayerTreeImpl::LastScrolledLayerId() const {
-  return last_scrolled_layer_id_;
+const ScrollNode* LayerTreeImpl::CurrentlyScrollingNode() const {
+  return property_trees_.scroll_tree.CurrentlyScrollingNode();
 }
 
-void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
+int LayerTreeImpl::LastScrolledScrollNodeIndex() const {
+  return last_scrolled_scroll_node_index_;
+}
+
+void LayerTreeImpl::SetCurrentlyScrollingNode(ScrollNode* node) {
+  if (node)
+    last_scrolled_scroll_node_index_ = node->id;
+
   ScrollTree& scroll_tree = property_trees()->scroll_tree;
-  ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-  int old_id = scroll_node ? scroll_node->owning_layer_id : Layer::INVALID_ID;
-  int new_id = layer ? layer->id() : Layer::INVALID_ID;
-  int new_scroll_node_id =
-      layer ? layer->scroll_tree_index() : ScrollTree::kInvalidNodeId;
-  if (layer)
-    last_scrolled_layer_id_ = new_id;
+  ScrollNode* old_node = scroll_tree.CurrentlyScrollingNode();
+  // TODO(pdr): Refactor these to not use owning_layer_id.
+  int old_layer_id = old_node ? old_node->owning_layer_id : Layer::INVALID_ID;
+  int new_layer_id = node ? node->owning_layer_id : Layer::INVALID_ID;
 
-  if (old_id == new_id)
+  if (old_layer_id == new_layer_id)
     return;
 
   ScrollbarAnimationController* old_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForId(old_id);
+      layer_tree_host_impl_->ScrollbarAnimationControllerForId(old_layer_id);
   ScrollbarAnimationController* new_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForId(new_id);
+      layer_tree_host_impl_->ScrollbarAnimationControllerForId(new_layer_id);
 
   if (old_animation_controller)
     old_animation_controller->DidScrollEnd();
-  scroll_tree.set_currently_scrolling_node(new_scroll_node_id);
+  scroll_tree.set_currently_scrolling_node(node ? node->id
+                                                : ScrollTree::kInvalidNodeId);
   if (new_animation_controller)
     new_animation_controller->DidScrollBegin();
 }
 
-void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
-  SetCurrentlyScrollingLayer(NULL);
+void LayerTreeImpl::ClearCurrentlyScrollingNode() {
+  SetCurrentlyScrollingNode(nullptr);
 }
 
 float LayerTreeImpl::ClampPageScaleFactorToLimits(

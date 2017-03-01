@@ -604,11 +604,9 @@ void LayerTreeHostCommon::CalculateDrawProperties(
           layer_tree_impl->FindActiveTreeLayerById(inputs->root_layer->id());
       float jitter = 0.f;
       if (active_tree_root) {
-        LayerImpl* last_scrolled_layer = layer_tree_impl->LayerById(
-            active_tree_root->layer_tree_impl()->LastScrolledLayerId());
-        if (last_scrolled_layer) {
-          const int last_scrolled_scroll_node_id =
-              last_scrolled_layer->scroll_tree_index();
+        int last_scrolled_node_index =
+            active_tree_root->layer_tree_impl()->LastScrolledScrollNodeIndex();
+        if (last_scrolled_node_index != ScrollTree::kInvalidNodeId) {
           std::unordered_set<int> jitter_nodes;
           for (auto* layer : *layer_tree_impl) {
             // Layers that have the same scroll tree index jitter together. So,
@@ -616,7 +614,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
             // after we find a jittering layer, we need not consider other
             // layers with the same scroll tree index.
             int scroll_tree_index = layer->scroll_tree_index();
-            if (last_scrolled_scroll_node_id <= scroll_tree_index &&
+            if (last_scrolled_node_index <= scroll_tree_index &&
                 jitter_nodes.find(scroll_tree_index) == jitter_nodes.end()) {
               float layer_jitter = CalculateLayerJitter(layer);
               if (layer_jitter > 0.f) {
