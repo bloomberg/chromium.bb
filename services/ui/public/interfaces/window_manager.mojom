@@ -60,6 +60,10 @@ interface WindowManager {
   // and the client area should be equivalent to the window area. Type: bool
   const string kRemoveStandardFrame_InitProperty = "init:remove-standard-frame";
 
+  // A flag controlling the window's presence on the mash shelf. Type: bool
+  const string kWindowIgnoredByShelf_InitProperty =
+      "init:window-ignored-by-shelf";
+
   // The window type. This maps to aura::client::kWindowTypeKey as well as
   // Window::type(). This mapping is only done for top-level windows that are
   // created by the window manager at the request of a client.
@@ -134,10 +138,6 @@ interface WindowManager {
 
   // The window icon; typically 16x16 for titlebars. Type: SkBitmap
   const string kWindowIcon_Property = "prop:window-icon";
-
-  // A flag controlling the window's presence on the mash shelf. Type: bool
-  // TODO: convert this to a aura::client property; http://crbug.com/671729.
-  const string kWindowIgnoredByShelf_Property = "prop:window-ignored-by-shelf";
 
   // The window's title. Maps to aura::client::kTitleKey. Type: mojom::String
   const string kWindowTitle_Property = "prop:window-title";

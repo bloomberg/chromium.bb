@@ -224,7 +224,7 @@ void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<aura::PropertyConverter::PrimitiveType>(true));
   init_params.mus_properties
-      [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property] =
+      [ui::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(true);
   init_params.name = "ChromeImmersiveRevealWindow";
   // We want events to fall through to the real views.

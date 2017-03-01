@@ -207,25 +207,28 @@ aura::Window* CreateAndParentTopLevelWindow(
   aura::Window* window = CreateAndParentTopLevelWindowInRoot(
       window_manager, root_window_controller, window_type, properties);
   DisconnectedAppHandler::Create(window);
-  if (properties->count(
-          ui::mojom::WindowManager::kWindowIgnoredByShelf_Property)) {
+
+  auto ignored_by_shelf_iter = properties->find(
+      ui::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty);
+  if (ignored_by_shelf_iter != properties->end()) {
     wm::WindowState* window_state = WmWindow::Get(window)->GetWindowState();
-    window_state->set_ignored_by_shelf(mojo::ConvertTo<bool>(
-        (*properties)
-            [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property]));
+    window_state->set_ignored_by_shelf(
+        mojo::ConvertTo<bool>(ignored_by_shelf_iter->second));
     // No need to persist this value.
-    properties->erase(ui::mojom::WindowManager::kWindowIgnoredByShelf_Property);
+    properties->erase(ignored_by_shelf_iter);
   }
-  if (properties->count(ui::mojom::WindowManager::kFocusable_InitProperty)) {
-    bool can_focus = mojo::ConvertTo<bool>(
-        (*properties)[ui::mojom::WindowManager::kFocusable_InitProperty]);
+
+  auto focusable_iter =
+      properties->find(ui::mojom::WindowManager::kFocusable_InitProperty);
+  if (focusable_iter != properties->end()) {
+    bool can_focus = mojo::ConvertTo<bool>(focusable_iter->second);
     window_manager->window_tree_client()->SetCanFocus(window, can_focus);
     NonClientFrameController* non_client_frame_controller =
         NonClientFrameController::Get(window);
     if (non_client_frame_controller)
       non_client_frame_controller->set_can_activate(can_focus);
     // No need to persist this value.
-    properties->erase(ui::mojom::WindowManager::kFocusable_InitProperty);
+    properties->erase(focusable_iter);
   }
   return window;
 }

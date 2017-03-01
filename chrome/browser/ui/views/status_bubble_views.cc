@@ -655,7 +655,7 @@ void StatusBubbleViews::Init() {
     params.context = frame->GetNativeWindow();
 #if defined(USE_AURA)
     params.mus_properties
-        [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property] =
+        [ui::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(true);
 #endif
     popup_->Init(params);
@@ -663,10 +663,7 @@ void StatusBubbleViews::Init() {
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0.f);
     popup_->SetContentsView(view_);
-#if defined(USE_ASH)
-    // TODO: http://crbug.com/671729 convert to WindowProperty (and then can
-    // remove explicit kWindowIgnoredByShelf_Property above and make this ifdef
-    // USE_AURA).
+#if defined(OS_CHROMEOS)
     if (!service_manager::ServiceManagerIsRemote()) {
       ash::wm::GetWindowState(popup_->GetNativeWindow())
           ->set_ignored_by_shelf(true);

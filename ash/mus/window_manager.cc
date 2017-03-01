@@ -320,13 +320,6 @@ bool WindowManager::OnWmSetProperty(
     aura::Window* window,
     const std::string& name,
     std::unique_ptr<std::vector<uint8_t>>* new_data) {
-  // TODO(sky): constrain this to set of keys we know about, and allowed values.
-  if (name == ui::mojom::WindowManager::kWindowIgnoredByShelf_Property) {
-    wm::WindowState* window_state = WmWindow::Get(window)->GetWindowState();
-    window_state->set_ignored_by_shelf(
-        new_data ? mojo::ConvertTo<bool>(**new_data) : false);
-    return false;  // Won't attempt to map through property converter.
-  }
   if (property_converter_->IsTransportNameRegistered(name))
     return true;
   DVLOG(1) << "unknown property changed, ignoring " << name;
