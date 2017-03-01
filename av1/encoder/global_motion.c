@@ -238,24 +238,6 @@ static INLINE RansacFunc get_ransac_type(TransformationType type) {
   }
 }
 
-// computes global motion parameters by fitting a model using RANSAC
-static int compute_global_motion_params(TransformationType type,
-                                        int *correspondences,
-                                        int num_correspondences,
-                                        double *params) {
-  int result;
-  int num_inliers = 0;
-  RansacFunc ransac = get_ransac_type(type);
-  if (ransac == NULL) return 0;
-
-  result = ransac(correspondences, num_correspondences, &num_inliers, params);
-  if (!result && num_inliers < MIN_INLIER_PROB * num_correspondences) {
-    result = 1;
-    num_inliers = 0;
-  }
-  return num_inliers;
-}
-
 #if CONFIG_AOM_HIGHBITDEPTH
 unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth) {
   int i, j;
@@ -271,20 +253,20 @@ unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth) {
 }
 #endif
 
-int compute_global_motion_feature_based(TransformationType type,
-                                        YV12_BUFFER_CONFIG *frm,
-                                        YV12_BUFFER_CONFIG *ref,
+int compute_global_motion_feature_based(
+    TransformationType type, YV12_BUFFER_CONFIG *frm, YV12_BUFFER_CONFIG *ref,
 #if CONFIG_AOM_HIGHBITDEPTH
-                                        int bit_depth,
+    int bit_depth,
 #endif
-                                        double *params) {
+    int *num_inliers_by_motion, double *params_by_motion, int num_motions) {
+  int i;
   int num_frm_corners, num_ref_corners;
   int num_correspondences;
   int *correspondences;
-  int num_inliers;
   int frm_corners[2 * MAX_CORNERS], ref_corners[2 * MAX_CORNERS];
   unsigned char *frm_buffer = frm->y_buffer;
   unsigned char *ref_buffer = ref->y_buffer;
+  RansacFunc ransac = get_ransac_type(type);
 
 #if CONFIG_AOM_HIGHBITDEPTH
   if (frm->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -317,8 +299,21 @@ int compute_global_motion_feature_based(TransformationType type,
       (int *)ref_corners, num_ref_corners, frm->y_width, frm->y_height,
       frm->y_stride, ref->y_stride, correspondences);
 
-  num_inliers = compute_global_motion_params(type, correspondences,
-                                             num_correspondences, params);
+  ransac(correspondences, num_correspondences, num_inliers_by_motion,
+         params_by_motion, num_motions);
+
   free(correspondences);
-  return (num_inliers > 0);
+
+  // Set num_inliers = 0 for motions with too few inliers so they are ignored.
+  for (i = 0; i < num_motions; ++i) {
+    if (num_inliers_by_motion[i] < MIN_INLIER_PROB * num_correspondences) {
+      num_inliers_by_motion[i] = 0;
+    }
+  }
+
+  // Return true if any one of the motions has inliers.
+  for (i = 0; i < num_motions; ++i) {
+    if (num_inliers_by_motion[i] > 0) return 1;
+  }
+  return 0;
 }

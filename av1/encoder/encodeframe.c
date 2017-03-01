@@ -26,6 +26,7 @@
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/idct.h"
+#include "av1/common/mv.h"
 #include "av1/common/mvref_common.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/quant_common.h"
@@ -5041,23 +5042,45 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       !cpi->global_motion_search_done) {
     YV12_BUFFER_CONFIG *ref_buf;
     int frame;
-    double erroradvantage = 0;
-    double params[8] = { 0, 0, 1, 0, 0, 1, 0, 0 };
+    double params_by_motion[RANSAC_NUM_MOTIONS * (MAX_PARAMDIM - 1)];
+    const double *params_this_motion;
+    int inliers_by_motion[RANSAC_NUM_MOTIONS];
+    WarpedMotionParams tmp_wm_params;
+    static const double kInfiniteErrAdv = 1e12;
+    static const double kIdentityParams[MAX_PARAMDIM - 1] = {
+      0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
+    };
+
     for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
       ref_buf = get_ref_frame_buffer(cpi, frame);
       if (ref_buf) {
         TransformationType model;
         aom_clear_system_state();
         for (model = ROTZOOM; model < GLOBAL_TRANS_TYPES; ++model) {
-          if (compute_global_motion_feature_based(model, cpi->Source, ref_buf,
+          double best_erroradvantage = kInfiniteErrAdv;
+
+          // Initially set all params to identity.
+          for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
+            memcpy(params_by_motion + (MAX_PARAMDIM - 1) * i, kIdentityParams,
+                   (MAX_PARAMDIM - 1) * sizeof(*params_by_motion));
+          }
+
+          compute_global_motion_feature_based(
+              model, cpi->Source, ref_buf,
 #if CONFIG_AOM_HIGHBITDEPTH
-                                                  cpi->common.bit_depth,
+              cpi->common.bit_depth,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-                                                  params)) {
-            convert_model_to_params(params, &cm->global_motion[frame]);
-            if (cm->global_motion[frame].wmtype != IDENTITY) {
-              erroradvantage = refine_integerized_param(
-                  &cm->global_motion[frame], cm->global_motion[frame].wmtype,
+              inliers_by_motion, params_by_motion, RANSAC_NUM_MOTIONS);
+
+          for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
+            if (inliers_by_motion[i] == 0) continue;
+
+            params_this_motion = params_by_motion + (MAX_PARAMDIM - 1) * i;
+            convert_model_to_params(params_this_motion, &tmp_wm_params);
+
+            if (tmp_wm_params.wmtype != IDENTITY) {
+              const double erroradv_this_motion = refine_integerized_param(
+                  &tmp_wm_params, tmp_wm_params.wmtype,
 #if CONFIG_AOM_HIGHBITDEPTH
                   xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -5065,12 +5088,23 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                   ref_buf->y_stride, cpi->Source->y_buffer,
                   cpi->Source->y_width, cpi->Source->y_height,
                   cpi->Source->y_stride, 3);
-              if (erroradvantage >
-                  gm_advantage_thresh[cm->global_motion[frame].wmtype]) {
-                set_default_gmparams(&cm->global_motion[frame]);
+              if (erroradv_this_motion < best_erroradvantage) {
+                best_erroradvantage = erroradv_this_motion;
+                // Save the wm_params modified by refine_integerized_param()
+                // rather than motion index to avoid rerunning refine() below.
+                memcpy(&(cm->global_motion[frame]), &tmp_wm_params,
+                       sizeof(WarpedMotionParams));
               }
             }
           }
+
+          // If the best error advantage found doesn't meet the threshold for
+          // this motion type, revert to IDENTITY.
+          if (best_erroradvantage >
+              gm_advantage_thresh[cm->global_motion[frame].wmtype]) {
+            set_default_gmparams(&cm->global_motion[frame]);
+          }
+
           if (cm->global_motion[frame].wmtype != IDENTITY) break;
         }
         aom_clear_system_state();
