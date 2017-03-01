@@ -4883,14 +4883,6 @@ void WebContentsImpl::RendererUnresponsive(
   if (!GetRenderViewHost() || !GetRenderViewHost()->IsRenderViewLive())
     return;
 
-  // If a page is marked as ignoring input events, it is in a known state of
-  // unresponsiveness. In that case, showing a hung renderer dialog is
-  // inappropriate and shouldn't be happening. http://crbug.com/669881
-  if (render_widget_host->ShouldDropInputEvents()) {
-    base::debug::DumpWithoutCrashing();
-    NOTREACHED();
-  }
-
   if (delegate_) {
     WebContentsUnresponsiveState unresponsive_state;
     unresponsive_state.reason = type;
