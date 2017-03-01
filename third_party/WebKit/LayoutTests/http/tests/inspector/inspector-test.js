@@ -978,7 +978,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.animationModel = target.animationModel;
         InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;
         InspectorTest.serviceWorkerManager = target.model(SDK.ServiceWorkerManager);
-        InspectorTest.tracingManager = target.tracingManager;
+        InspectorTest.tracingManager = target.model(SDK.TracingManager);
         InspectorTest.mainTarget = target;
     },
 

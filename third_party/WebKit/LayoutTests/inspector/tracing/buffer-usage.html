@@ -46,7 +46,7 @@ function test()
         }
     };
     var performanceModel = new Timeline.PerformanceModel();
-    var controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), performanceModel, new TestTimelineControllerClient());
+    var controller = new Timeline.TimelineController(InspectorTest.tracingManager, performanceModel, new TestTimelineControllerClient());
     controller.startRecording({}, []).then(() => {
         InspectorTest.addResult("TimelineControllerClient.recordingStarted");
     });

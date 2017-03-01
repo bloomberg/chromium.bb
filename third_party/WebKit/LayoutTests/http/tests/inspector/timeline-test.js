@@ -134,7 +134,7 @@ InspectorTest.timelineController = function()
 {
     var performanceModel = new Timeline.PerformanceModel();
     UI.panels.timeline._pendingPerformanceModel = performanceModel;
-    return new Timeline.TimelineController(SDK.targetManager.mainTarget(), performanceModel, UI.panels.timeline);
+    return new Timeline.TimelineController(InspectorTest.tracingManager, performanceModel, UI.panels.timeline);
 }
 
 InspectorTest.runWhenTimelineIsReady = function(callback)
