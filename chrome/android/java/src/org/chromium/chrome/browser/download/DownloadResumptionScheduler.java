@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
@@ -58,13 +57,13 @@ public class DownloadResumptionScheduler {
         int networkType = allowMeteredConnection
                 ? Task.NETWORK_STATE_CONNECTED : Task.NETWORK_STATE_UNMETERED;
         OneoffTask task = new OneoffTask.Builder()
-                .setService(ChromeBackgroundService.class)
-                .setExecutionWindow(0, ONE_DAY_IN_SECONDS)
-                .setTag(TASK_TAG)
-                .setUpdateCurrent(true)
-                .setRequiredNetwork(networkType)
-                .setRequiresCharging(false)
-                .build();
+                                  .setService(ChromeBackgroundService.class)
+                                  .setExecutionWindow(0, ONE_DAY_IN_SECONDS)
+                                  .setTag(TASK_TAG)
+                                  .setUpdateCurrent(true)
+                                  .setRequiredNetwork(networkType)
+                                  .setRequiresCharging(false)
+                                  .build();
         try {
             gcmNetworkManager.schedule(task);
         } catch (IllegalArgumentException e) {
@@ -86,10 +85,7 @@ public class DownloadResumptionScheduler {
     public void handleDownloadResumption() {
         // Fire an intent to the DownloadNotificationService so that it will handle download
         // resumption.
-        Intent launchIntent = new Intent(
-                DownloadNotificationService.ACTION_DOWNLOAD_RESUME_ALL);
-        launchIntent.setComponent(new ComponentName(mContext.getPackageName(),
-                DownloadNotificationService.class.getName()));
-        mContext.startService(launchIntent);
+        Intent intent = new Intent(DownloadNotificationService.ACTION_DOWNLOAD_RESUME_ALL);
+        DownloadNotificationService.startDownloadNotificationService(mContext, intent);
     }
 }

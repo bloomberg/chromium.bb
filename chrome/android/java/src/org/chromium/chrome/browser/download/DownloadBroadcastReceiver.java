@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.download;
 
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -75,10 +74,7 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
      */
     private void performDownloadOperation(final Context context, Intent intent) {
         if (DownloadNotificationService.isDownloadOperationIntent(intent)) {
-            Intent launchIntent = new Intent(intent);
-            launchIntent.setComponent(new ComponentName(
-                    context.getPackageName(), DownloadNotificationService.class.getName()));
-            context.startService(launchIntent);
+            DownloadNotificationService.startDownloadNotificationService(context, intent);
         }
     }
 }

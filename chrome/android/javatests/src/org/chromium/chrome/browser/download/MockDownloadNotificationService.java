@@ -27,8 +27,14 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    public void pauseAllDownloads() {
-        super.pauseAllDownloads();
+    public void stopForeground() {}
+
+    @Override
+    public void startForeground() {}
+
+    @Override
+    public void cancelOffTheRecordDownloads() {
+        super.cancelOffTheRecordDownloads();
         mPaused = true;
     }
 

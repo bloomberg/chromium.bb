@@ -13,10 +13,10 @@ import android.os.IBinder;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.download.DownloadNotificationService.Observer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
  * This class creates the {@link DownloadNotificationService} when needed, and binds
  * to the latter to issue calls to show and update notifications.
  */
-public class SystemDownloadNotifier implements DownloadNotifier {
+public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     private static final String TAG = "DownloadNotifier";
     private static final int DOWNLOAD_NOTIFICATION_TYPE_PROGRESS = 0;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_SUCCESS = 1;
@@ -35,12 +35,14 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     private static final int DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL = 4;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_PAUSE = 5;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT = 6;
+
     private final Context mApplicationContext;
     @Nullable private DownloadNotificationService mBoundService;
-    private boolean mServiceStarted;
     private Set<String> mActiveDownloads = new HashSet<String>();
-    private List<PendingNotificationInfo> mPendingNotifications =
+    private ArrayList<PendingNotificationInfo> mPendingNotifications =
             new ArrayList<PendingNotificationInfo>();
+
+    private boolean mIsServiceBound;
 
     /**
      * Pending download notifications to be posted.
@@ -83,16 +85,14 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                 return;
             }
             mBoundService = ((DownloadNotificationService.LocalBinder) service).getService();
+            mBoundService.addObserver(SystemDownloadNotifier.this);
             // updateDownloadNotification() may leave some outstanding notifications
             // before the service is connected, handle them now.
             handlePendingNotifications();
         }
 
         @Override
-        public void onServiceDisconnected(ComponentName className) {
-            mBoundService = null;
-            mServiceStarted = false;
-        }
+        public void onServiceDisconnected(ComponentName className) {}
     };
 
     /**
@@ -110,8 +110,14 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     @VisibleForTesting
     void handlePendingNotifications() {
         if (mPendingNotifications.isEmpty()) return;
-        for (PendingNotificationInfo info : mPendingNotifications) {
-            updateDownloadNotification(info);
+        for (int i = 0; i < mPendingNotifications.size(); i++) {
+            // If we lose the service mid-loop retrigger the service load and quit.
+            if (mBoundService == null) {
+                startAndBindToServiceIfNeeded();
+                return;
+            }
+            updateDownloadNotification(
+                    mPendingNotifications.get(i), i == mPendingNotifications.size() - 1);
         }
         mPendingNotifications.clear();
     }
@@ -120,39 +126,44 @@ public class SystemDownloadNotifier implements DownloadNotifier {
      * Starts and binds to the download notification service if needed.
      */
     private void startAndBindToServiceIfNeeded() {
-        if (mServiceStarted) return;
-        startService();
-        mServiceStarted = true;
+        if (mIsServiceBound) return;
+        startAndBindService();
+        mIsServiceBound = true;
     }
 
     /**
      * Stops the download notification service if there are no download in progress.
      */
-    private void stopServiceIfNeeded() {
-        if (mActiveDownloads.isEmpty() && mServiceStarted) {
-            stopService();
-            mServiceStarted = false;
-        }
+    private void unbindServiceIfNeeded() {
+        if (!mActiveDownloads.isEmpty() || !mIsServiceBound) return;
+        if (mBoundService != null) mBoundService.removeObserver(this);
+        unbindService();
+        mBoundService = null;
+        mIsServiceBound = false;
     }
 
-    /**
-     * Starts and binds to the download notification service.
-     */
     @VisibleForTesting
-    void startService() {
-        mApplicationContext.startService(
-                new Intent(mApplicationContext, DownloadNotificationService.class));
-        mApplicationContext.bindService(new Intent(mApplicationContext,
-                DownloadNotificationService.class), mConnection, Context.BIND_AUTO_CREATE);
+    void startAndBindService() {
+        DownloadNotificationService.startDownloadNotificationService(mApplicationContext, null);
+        mApplicationContext.bindService(
+                new Intent(mApplicationContext, DownloadNotificationService.class), mConnection,
+                Context.BIND_AUTO_CREATE);
     }
 
-    /**
-     * Stops the download notification service.
-     */
     @VisibleForTesting
-    void stopService() {
-        mApplicationContext.stopService(
-                new Intent(mApplicationContext, DownloadNotificationService.class));
+    void unbindService() {
+        mApplicationContext.unbindService(mConnection);
+    }
+
+    @Override
+    public void onServiceShutdownRequested() {
+        unbindServiceIfNeeded();
+    }
+
+    @Override
+    public void onDownloadCanceled(String guid) {
+        mActiveDownloads.remove(guid);
+        if (mActiveDownloads.isEmpty()) unbindServiceIfNeeded();
     }
 
     @Override
@@ -161,7 +172,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                 .setDownloadGuid(downloadGuid)
                 .build();
         updateDownloadNotification(
-                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_CANCEL, downloadInfo));
+                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_CANCEL, downloadInfo), true);
     }
 
     @Override
@@ -172,13 +183,14 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         info.canResolve = canResolve;
         info.systemDownloadId = systemDownloadId;
         info.isSupportedMimeType = isSupportedMimeType;
-        updateDownloadNotification(info);
+        updateDownloadNotification(info, true);
     }
 
     @Override
     public void notifyDownloadFailed(DownloadInfo downloadInfo) {
         updateDownloadNotification(
-                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_FAILURE, downloadInfo));
+                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_FAILURE, downloadInfo),
+                true);
     }
 
     @Override
@@ -188,14 +200,14 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_PROGRESS, downloadInfo);
         info.startTime = startTime;
         info.canDownloadWhileMetered = canDownloadWhileMetered;
-        updateDownloadNotification(info);
+        updateDownloadNotification(info, true);
     }
 
     @Override
     public void notifyDownloadPaused(DownloadInfo downloadInfo) {
         PendingNotificationInfo info =
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_PAUSE, downloadInfo);
-        updateDownloadNotification(info);
+        updateDownloadNotification(info, true);
     }
 
     @Override
@@ -203,13 +215,15 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         PendingNotificationInfo info =
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT, downloadInfo);
         info.isAutoResumable = isAutoResumable;
-        updateDownloadNotification(info);
+        updateDownloadNotification(info, true);
     }
 
     @Override
     public void resumePendingDownloads() {
+        if (!DownloadNotificationService.isTrackingResumableDownloads(mApplicationContext)) return;
+
         updateDownloadNotification(
-                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL, null));
+                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL, null), true);
     }
 
     /**
@@ -228,66 +242,63 @@ public class SystemDownloadNotifier implements DownloadNotifier {
 
     /**
      * Helper method to schedule download notification updates.
-     * @param info Pending notification information to be handled.
+     * @param notificationInfo Pending notification information to be handled.
+     * @param autoRelease Whether or not to allow unbinding the service after processing the action.
      */
     @VisibleForTesting
-    void updateDownloadNotification(final PendingNotificationInfo notificationInfo) {
+    void updateDownloadNotification(
+            final PendingNotificationInfo notificationInfo, boolean autoRelease) {
         assert ThreadUtils.runningOnUiThread();
         startAndBindToServiceIfNeeded();
-        final DownloadInfo info = notificationInfo.downloadInfo;
+
+        if (mBoundService == null) {
+            mPendingNotifications.add(notificationInfo);
+            return;
+        }
+
+        DownloadInfo info = notificationInfo.downloadInfo;
         if (notificationInfo.type == DOWNLOAD_NOTIFICATION_TYPE_PROGRESS) {
             mActiveDownloads.add(info.getDownloadGuid());
         } else if (notificationInfo.type != DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL) {
             mActiveDownloads.remove(info.getDownloadGuid());
         }
-        if (mBoundService == null) {
-            // We need to wait for the service to connect before we can handle
-            // the notification. Put the notification in the pending notifications
-            // list.
-            mPendingNotifications.add(notificationInfo);
-        } else {
-            switch (notificationInfo.type) {
-                case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
-                    mBoundService.notifyDownloadProgress(info.getDownloadGuid(),
-                            info.getFileName(), info.getPercentCompleted(), info.getBytesReceived(),
-                            info.getTimeRemainingInMillis(), notificationInfo.startTime,
-                            info.isOffTheRecord(),
-                            notificationInfo.canDownloadWhileMetered,
-                            info.isOfflinePage());
-                    break;
-                case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
-                    mBoundService.notifyDownloadPaused(info.getDownloadGuid(), true,
-                            false);
-                    break;
-                case DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT:
-                    mBoundService.notifyDownloadPaused(
-                            info.getDownloadGuid(), info.isResumable(),
-                            notificationInfo.isAutoResumable);
-                    break;
-                case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
-                    final int notificationId = mBoundService.notifyDownloadSuccessful(
-                            info.getDownloadGuid(), info.getFilePath(),
-                            info.getFileName(), notificationInfo.systemDownloadId,
-                            info.isOfflinePage(), notificationInfo.isSupportedMimeType);
-                    onSuccessNotificationShown(notificationInfo, notificationId);
-                    stopServiceIfNeeded();
-                    break;
-                case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
-                    mBoundService.notifyDownloadFailed(
-                            info.getDownloadGuid(), info.getFileName());
-                    stopServiceIfNeeded();
-                    break;
-                case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
-                    mBoundService.notifyDownloadCanceled(info.getDownloadGuid());
-                    stopServiceIfNeeded();
-                    break;
-                case DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL:
-                    mBoundService.resumeAllPendingDownloads();
-                    stopServiceIfNeeded();
-                    break;
-                default:
-                    assert false;
-            }
+
+        switch (notificationInfo.type) {
+            case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
+                mBoundService.notifyDownloadProgress(info.getDownloadGuid(), info.getFileName(),
+                        info.getPercentCompleted(), info.getBytesReceived(),
+                        info.getTimeRemainingInMillis(), notificationInfo.startTime,
+                        info.isOffTheRecord(), notificationInfo.canDownloadWhileMetered,
+                        info.isOfflinePage());
+                break;
+            case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
+                mBoundService.notifyDownloadPaused(info.getDownloadGuid(), true, false);
+                break;
+            case DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT:
+                mBoundService.notifyDownloadPaused(info.getDownloadGuid(), info.isResumable(),
+                        notificationInfo.isAutoResumable);
+                break;
+            case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
+                final int notificationId = mBoundService.notifyDownloadSuccessful(
+                        info.getDownloadGuid(), info.getFilePath(), info.getFileName(),
+                        notificationInfo.systemDownloadId, info.isOfflinePage(),
+                        notificationInfo.isSupportedMimeType);
+                onSuccessNotificationShown(notificationInfo, notificationId);
+                break;
+            case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
+                mBoundService.notifyDownloadFailed(info.getDownloadGuid(), info.getFileName());
+                break;
+            case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
+                mBoundService.notifyDownloadCanceled(info.getDownloadGuid());
+                break;
+            case DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL:
+                mBoundService.resumeAllPendingDownloads();
+                break;
+            default:
+                assert false;
         }
+
+        if (mBoundService != null) mBoundService.hideSummaryNotificationIfNecessary();
+        if (autoRelease) unbindServiceIfNeeded();
     }
 }

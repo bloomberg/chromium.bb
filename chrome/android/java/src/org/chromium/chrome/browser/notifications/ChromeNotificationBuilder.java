@@ -34,6 +34,8 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder setGroup(String group);
 
+    ChromeNotificationBuilder setGroupSummary(boolean isGroupSummary);
+
     ChromeNotificationBuilder setOngoing(boolean ongoing);
 
     ChromeNotificationBuilder setVisibility(int visibility);

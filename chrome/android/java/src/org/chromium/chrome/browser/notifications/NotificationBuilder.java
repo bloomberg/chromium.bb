@@ -83,6 +83,14 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder setGroupSummary(boolean isGroupSummary) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            mBuilder.setGroupSummary(isGroupSummary);
+        }
+        return this;
+    }
+
+    @Override
     public ChromeNotificationBuilder setOngoing(boolean ongoing) {
         mBuilder.setOngoing(ongoing);
         return this;

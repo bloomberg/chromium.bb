@@ -77,6 +77,12 @@ public class NotificationCompatBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder setGroupSummary(boolean isGroupSummary) {
+        mBuilder.setGroupSummary(isGroupSummary);
+        return this;
+    }
+
+    @Override
     public ChromeNotificationBuilder setOngoing(boolean ongoing) {
         mBuilder.setOngoing(ongoing);
         return this;

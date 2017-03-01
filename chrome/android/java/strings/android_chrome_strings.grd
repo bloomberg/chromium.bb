@@ -1684,6 +1684,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Download UI -->
+      <message name="IDS_DOWNLOAD_NOTIFICATION_SUMMARY_TITLE" desc="Text that shows up for a summary notification for all downloads.">
+        Chrome downloads (%s active)
+      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_CANCEL_BUTTON" desc="Text on the button that cancels a download.">
         Cancel
       </message>

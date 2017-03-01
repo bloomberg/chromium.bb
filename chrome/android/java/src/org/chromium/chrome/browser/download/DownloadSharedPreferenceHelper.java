@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
 import java.util.ArrayList;
@@ -45,7 +44,6 @@ public class DownloadSharedPreferenceHelper {
      * Creates DownloadSharedPreferenceHelper.
      */
     public static DownloadSharedPreferenceHelper getInstance() {
-        ThreadUtils.assertOnUiThread();
         return LazyHolder.INSTANCE;
     }
 
@@ -60,7 +58,6 @@ public class DownloadSharedPreferenceHelper {
      * @param pendingEntry A DownloadSharedPreferenceEntry to be added.
      */
     public void addOrReplaceSharedPreferenceEntry(DownloadSharedPreferenceEntry pendingEntry) {
-        ThreadUtils.assertOnUiThread();
         Iterator<DownloadSharedPreferenceEntry> iterator =
                 mDownloadSharedPreferenceEntries.iterator();
         while (iterator.hasNext()) {
@@ -84,7 +81,6 @@ public class DownloadSharedPreferenceHelper {
      * @param guid Download GUID to be removed.
      */
     public void removeSharedPreferenceEntry(String guid) {
-        ThreadUtils.assertOnUiThread();
         Iterator<DownloadSharedPreferenceEntry> iterator =
                 mDownloadSharedPreferenceEntries.iterator();
         boolean found = false;
@@ -106,7 +102,6 @@ public class DownloadSharedPreferenceHelper {
      * @param a list of DownloadSharedPreferenceEntry stored in SharedPrefs.
      */
     public List<DownloadSharedPreferenceEntry> getEntries() {
-        ThreadUtils.assertOnUiThread();
         return mDownloadSharedPreferenceEntries;
     }
 
@@ -133,7 +128,6 @@ public class DownloadSharedPreferenceHelper {
      * @return a DownloadSharedPreferenceEntry that has the specified GUID.
      */
     public DownloadSharedPreferenceEntry getDownloadSharedPreferenceEntry(String guid) {
-        ThreadUtils.assertOnUiThread();
         for (int i = 0; i < mDownloadSharedPreferenceEntries.size(); ++i) {
             if (mDownloadSharedPreferenceEntries.get(i).downloadGuid.equals(guid)) {
                 return mDownloadSharedPreferenceEntries.get(i);

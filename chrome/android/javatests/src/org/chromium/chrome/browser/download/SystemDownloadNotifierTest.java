@@ -32,12 +32,12 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
         }
 
         @Override
-        void startService() {
+        void startAndBindService() {
             mStarted = true;
         }
 
         @Override
-        void stopService() {
+        void unbindService() {
             mStarted = false;
         }
 
@@ -48,11 +48,13 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
         }
 
         @Override
-        void updateDownloadNotification(final PendingNotificationInfo notificationInfo) {
+        void updateDownloadNotification(
+                final PendingNotificationInfo notificationInfo, final boolean autoRelease) {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    MockSystemDownloadNotifier.super.updateDownloadNotification(notificationInfo);
+                    MockSystemDownloadNotifier.super.updateDownloadNotification(
+                            notificationInfo, autoRelease);
                 }
             });
         }
