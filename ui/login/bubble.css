@@ -18,6 +18,10 @@
   transition: opacity 200ms ease-in-out;
 }
 
+body.chromeos .bubble {
+  padding: 16px;
+}
+
 /* --- oldstyle begin --- */
 
 .bubble[oldstyle] {
@@ -124,7 +128,7 @@ html[dir=rtl] .bubble-right::after {
 
 /* --- oldstyle end --- */
 
-.error-message-bubble::before {
+body.chromeos .error-message-bubble::before {
   -webkit-mask-image: url(../../ui/webui/resources/images/warning.svg);
   -webkit-mask-position: left top;
   -webkit-mask-repeat: no-repeat;
@@ -139,7 +143,13 @@ html[dir=rtl] .bubble-right::after {
   width: 20px;
 }
 
-.error-message-bubble {
+body:not(.chromeos) .error-message-bubble {
+  -webkit-padding-start: 30px;
+  background: url(chrome://theme/IDR_WARNING) left top no-repeat;
+  background-size: 24px;
+}
+
+body.chromeos .error-message-bubble {
   -webkit-padding-start: 20px;
 }
 
@@ -148,7 +158,7 @@ html[dir=rtl] .bubble-right::after {
   padding-top: 20px;
 }
 
-.bubble a {
+body.chromeos .bubble a {
   color: #7baaf7;
   text-decoration: none;
 }
