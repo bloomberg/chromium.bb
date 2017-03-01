@@ -81,7 +81,9 @@ typedef enum {
   pass1Only = 16,
   compbrlLeftCursor = 32,
   otherTrans = 64,
-  ucBrl = 128
+  ucBrl = 128,
+  noUndefinedDots = 256,
+  partialTrans = 512
 } translationModes;
 
 char *EXPORT_CALL lou_version();
