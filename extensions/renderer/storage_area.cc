@@ -153,6 +153,7 @@ v8::Local<v8::Object> StorageArea::CreateStorageArea(
     v8::Local<v8::Context> context,
     const std::string& property_name,
     APIRequestHandler* request_handler,
+    APIEventHandler* event_handler,
     APITypeReferenceMap* type_refs) {
   v8::Context::Scope context_scope(context);
   v8::Local<v8::Object> object;

@@ -131,7 +131,7 @@ v8::Local<v8::Object> APIBindingsSystem::CreateCustomType(
   auto iter = custom_types_.find(type_name);
   DCHECK(iter != custom_types_.end()) << "Custom type not found: " << type_name;
   return iter->second.Run(context, property_name, &request_handler_,
-                          &type_reference_map_);
+                          &event_handler_, &type_reference_map_);
 }
 
 }  // namespace extensions

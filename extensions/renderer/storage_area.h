@@ -16,6 +16,7 @@ class Arguments;
 }
 
 namespace extensions {
+class APIEventHandler;
 class APIRequestHandler;
 class APITypeReferenceMap;
 
@@ -33,6 +34,7 @@ class StorageArea {
       v8::Local<v8::Context> context,
       const std::string& property_name,
       APIRequestHandler* request_handler,
+      APIEventHandler* event_handler,
       APITypeReferenceMap* type_refs);
 
   void HandleFunctionCall(const std::string& method_name,

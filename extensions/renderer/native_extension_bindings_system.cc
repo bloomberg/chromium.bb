@@ -13,6 +13,7 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/renderer/api_binding_bridge.h"
 #include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/chrome_setting.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -335,6 +336,8 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
       weak_factory_(this) {
   api_system_.RegisterCustomType("storage.StorageArea",
                                  base::Bind(&StorageArea::CreateStorageArea));
+  api_system_.RegisterCustomType("types.ChromeSetting",
+                                 base::Bind(&ChromeSetting::Create));
 }
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}

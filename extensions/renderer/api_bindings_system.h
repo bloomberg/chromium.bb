@@ -37,6 +37,7 @@ class APIBindingsSystem {
       base::Callback<v8::Local<v8::Object>(v8::Local<v8::Context> context,
                                            const std::string& property_name,
                                            APIRequestHandler* request_handler,
+                                           APIEventHandler* event_handler,
                                            APITypeReferenceMap* type_refs)>;
 
   APIBindingsSystem(const binding::RunJSFunction& call_js,

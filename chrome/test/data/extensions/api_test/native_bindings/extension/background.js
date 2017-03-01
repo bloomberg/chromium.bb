@@ -156,6 +156,56 @@ var tests = [
     // browserAction.setIcon uses a custom hook that calls sendRequest().
     chrome.browserAction.setIcon({path: 'icon.png'}, chrome.test.succeed);
   },
+  function testChromeSetting() {
+    chrome.test.assertTrue(!!chrome.privacy, 'privacy');
+    chrome.test.assertTrue(!!chrome.privacy.websites, 'websites');
+    var cookiePolicy = chrome.privacy.websites.thirdPartyCookiesAllowed;
+    chrome.test.assertTrue(!!cookiePolicy, 'cookie policy');
+    chrome.test.assertTrue(!!cookiePolicy.get, 'get');
+    chrome.test.assertTrue(!!cookiePolicy.set, 'set');
+    chrome.test.assertTrue(!!cookiePolicy.clear, 'clear');
+    chrome.test.assertTrue(!!cookiePolicy.onChange, 'onchange');
+
+    // The JSON spec for ChromeSettings is weird, because it claims it allows
+    // any type for <val> in ChromeSetting.set({value: <val>}), but this is just
+    // a hack in our schema generation because we curry in the different types
+    // of restrictions. Trying to pass in the wrong type for value should fail
+    // (synchronously).
+    var caught = false;
+    try {
+      cookiePolicy.set({value: 'not a bool'});
+    } catch (e) {
+      caught = true;
+    }
+    chrome.test.assertTrue(caught, 'caught');
+
+    var listenerPromise = new Promise((resolve, reject) => {
+      cookiePolicy.onChange.addListener(function listener(details) {
+        chrome.test.assertTrue(!!details, 'listener details');
+        chrome.test.assertEq(false, details.value);
+        cookiePolicy.onChange.removeListener(listener);
+        resolve();
+      });
+    });
+
+    var methodPromise = new Promise((resolve, reject) => {
+      cookiePolicy.get({}, (details) => {
+        chrome.test.assertTrue(!!details, 'get details');
+        chrome.test.assertTrue(details.value, 'details value true');
+        cookiePolicy.set({value: false}, () => {
+          cookiePolicy.get({}, (details) => {
+            chrome.test.assertTrue(!!details, 'get details');
+            chrome.test.assertFalse(details.value, 'details value false');
+            resolve();
+          });
+        });
+      });
+    });
+
+    Promise.all([listenerPromise, methodPromise]).then(() => {
+      chrome.test.succeed();
+    });
+  },
 ];
 
 chrome.test.getConfig(config => {
