@@ -628,17 +628,22 @@ void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
       selection_rect.bottom());
 }
 
-void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
+bool ContentViewCoreImpl::ShowPastePopup(const ContextMenuParams& params) {
+  // Display paste pop-up only when selection is empty and editable.
+  if (!(params.is_editable && params.selection_text.empty()))
+    return false;
+
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view)
-    return;
+    return false;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
-    return;
-  Java_ContentViewCore_showPastePopup(env, obj, x_dip,
-                                      y_dip);
+    return false;
+  Java_ContentViewCore_showPastePopup(env, obj, params.selection_start.x(),
+                                      params.selection_start.y());
+  return true;
 }
 
 void ContentViewCoreImpl::ShowDisambiguationPopup(

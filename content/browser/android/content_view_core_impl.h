@@ -38,6 +38,7 @@ namespace content {
 class GinJavaBridgeDispatcherHost;
 class RenderFrameHost;
 class RenderWidgetHostViewAndroid;
+struct ContextMenuParams;
 struct MenuItem;
 
 class ContentViewCoreImpl : public ContentViewCore,
@@ -55,7 +56,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   WebContents* GetWebContents() const override;
   ui::WindowAndroid* GetWindowAndroid() const override;
-  void ShowPastePopup(int x, int y) override;
+  bool ShowPastePopup(const ContextMenuParams& params) override;
 
   void AddObserver(ContentViewCoreImplObserver* observer);
   void RemoveObserver(ContentViewCoreImplObserver* observer);

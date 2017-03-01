@@ -22,6 +22,7 @@ class WindowAndroid;
 namespace content {
 
 class WebContents;
+struct ContextMenuParams;
 
 // DEPRECATED. Do not add methods.
 // Refer to the public WebContents interface or elsewhere instead.
@@ -34,7 +35,7 @@ class CONTENT_EXPORT ContentViewCore {
 
   // May return null reference.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
-  virtual void ShowPastePopup(int x, int y) = 0;
+  virtual bool ShowPastePopup(const ContextMenuParams& params) = 0;
 
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
 
