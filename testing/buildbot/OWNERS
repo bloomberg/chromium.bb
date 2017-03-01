@@ -22,6 +22,8 @@ per-file chromium.fyi.json=nick@chromium.org
 
 per-file *chromium.perf*.json=dtu@chromium.org
 per-file *chromium.perf*.json=eyaich@chromium.org
+per-file *chromium.perf*.json=martiniss@chromium.org
+per-file *chromium.perf*.json=nednguyen@google.com
 per-file chromium.perf.json=eakuefner@chromium.org
 per-file chromium.perf.json=fmeawad@chromium.org
 per-file chromium.perf.json=simonhatch@chromium.org
