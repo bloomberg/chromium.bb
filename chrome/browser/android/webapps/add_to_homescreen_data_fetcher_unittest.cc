@@ -33,6 +33,9 @@
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 
+// TODO(zpeng): Effectively test scenarios where both timeout callback and
+// success callback are invoked. See crbug.com/697228.
+
 namespace {
 
 const char* kDefaultManifestUrl = "https://www.example.com/manifest.json";

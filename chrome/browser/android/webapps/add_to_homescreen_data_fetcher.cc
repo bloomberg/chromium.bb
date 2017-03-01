@@ -201,7 +201,7 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
     const InstallableData& data) {
   badge_icon_.reset();
 
-  if (!web_contents() || !weak_observer_)
+  if (!web_contents() || !weak_observer_ || is_installable_check_complete_)
     return;
 
   is_installable_check_complete_ = true;
