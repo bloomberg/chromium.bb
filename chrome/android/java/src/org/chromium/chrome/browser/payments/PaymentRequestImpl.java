@@ -457,7 +457,7 @@ public class PaymentRequestImpl
                 new FaviconHelper.FaviconImageCallback() {
                     @Override
                     public void onFaviconAvailable(Bitmap bitmap, String iconUrl) {
-                        if (bitmap != null) mUI.setTitleBitmap(bitmap);
+                        if (mUI != null && bitmap != null) mUI.setTitleBitmap(bitmap);
                         faviconHelper.destroy();
                     }
                 });
@@ -832,7 +832,7 @@ public class PaymentRequestImpl
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                providePaymentInformation();
+                if (mUI != null) providePaymentInformation();
             }
         });
     }
