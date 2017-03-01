@@ -24,8 +24,7 @@ class SyncedWindowDelegatesGetterAndroid
   ~SyncedWindowDelegatesGetterAndroid() override;
 
   // SyncedWindowDelegatesGetter implementation
-  std::set<const sync_sessions::SyncedWindowDelegate*>
-  GetSyncedWindowDelegates() override;
+  SyncedWindowDelegateMap GetSyncedWindowDelegates() override;
   const sync_sessions::SyncedWindowDelegate* FindById(
       SessionID::id_type id) override;
 

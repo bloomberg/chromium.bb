@@ -44,11 +44,10 @@ bool SessionDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
   SyncedWindowDelegatesGetter* synced_window_getter =
       sync_client_->GetSyncSessionsClient()->GetSyncedWindowDelegatesGetter();
-  std::set<const SyncedWindowDelegate*> window =
+  SyncedWindowDelegatesGetter::SyncedWindowDelegateMap windows =
       synced_window_getter->GetSyncedWindowDelegates();
-  for (std::set<const SyncedWindowDelegate*>::const_iterator i = window.begin();
-       i != window.end(); ++i) {
-    if ((*i)->IsSessionRestoreInProgress()) {
+  for (const auto& window_iter_pair : windows) {
+    if (window_iter_pair.second->IsSessionRestoreInProgress()) {
       waiting_on_session_restore_ = true;
       break;
     }

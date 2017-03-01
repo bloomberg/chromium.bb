@@ -66,7 +66,7 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
 
 class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
  public:
-  std::set<const SyncedWindowDelegate*> GetSyncedWindowDelegates() override {
+  SyncedWindowDelegateMap GetSyncedWindowDelegates() override {
     return delegates_;
   }
 
@@ -74,10 +74,12 @@ class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
     return nullptr;
   }
 
-  void Add(SyncedWindowDelegate* delegate) { delegates_.insert(delegate); }
+  void Add(SyncedWindowDelegate* delegate) {
+    delegates_[delegate->GetSessionId()] = delegate;
+  }
 
  private:
-  std::set<const SyncedWindowDelegate*> delegates_;
+  SyncedWindowDelegateMap delegates_;
 };
 
 class TestSyncSessionsClient : public FakeSyncSessionsClient {

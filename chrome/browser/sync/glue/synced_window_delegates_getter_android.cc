@@ -15,11 +15,12 @@ namespace browser_sync {
 SyncedWindowDelegatesGetterAndroid::SyncedWindowDelegatesGetterAndroid() {}
 SyncedWindowDelegatesGetterAndroid::~SyncedWindowDelegatesGetterAndroid() {}
 
-std::set<const SyncedWindowDelegate*>
+SyncedWindowDelegatesGetterAndroid::SyncedWindowDelegateMap
 SyncedWindowDelegatesGetterAndroid::GetSyncedWindowDelegates() {
-  std::set<SyncedWindowDelegate const*> synced_window_delegates;
+  SyncedWindowDelegateMap synced_window_delegates;
   for (auto i = TabModelList::begin(); i != TabModelList::end(); ++i) {
-    synced_window_delegates.insert((*i)->GetSyncedWindowDelegate());
+    synced_window_delegates[(*i)->GetSyncedWindowDelegate()->GetSessionId()] =
+        (*i)->GetSyncedWindowDelegate();
   }
   return synced_window_delegates;
 }

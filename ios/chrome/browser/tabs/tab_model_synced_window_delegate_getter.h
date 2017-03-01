@@ -22,8 +22,7 @@ class TabModelSyncedWindowDelegatesGetter
   ~TabModelSyncedWindowDelegatesGetter() override;
 
   // sync_sessions::SyncedWindowDelegatesGetter:
-  std::set<const sync_sessions::SyncedWindowDelegate*>
-  GetSyncedWindowDelegates() override;
+  SyncedWindowDelegateMap GetSyncedWindowDelegates() override;
   const sync_sessions::SyncedWindowDelegate* FindById(
       SessionID::id_type session_id) override;
 

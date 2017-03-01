@@ -54,7 +54,7 @@ message SessionWindow {
 
 message SessionTab {
   // Unique (to the owner) id for this tab.
-  optional int32 tab_id = 1;
+  optional int32 tab_id = 1 [default = -1];
   // The unique id for the window this tab belongs to.
   optional int32 window_id = 2;
   // Visual index of the tab within its window. There may be gaps in these
