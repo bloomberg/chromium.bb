@@ -310,8 +310,8 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     : node_(node),
       constraint_space_(constraint_space),
       break_token_(break_token),
-      builder_(WTF::wrapUnique(
-          new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox, node))) {}
+      builder_(NGPhysicalFragment::kFragmentBox, node),
+      space_builder_(constraint_space_) {}
 
 Optional<MinAndMaxContentSizes>
 NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes() const {
@@ -360,20 +360,20 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
   LayoutUnit block_offset = content_size_;
   if (known_fragment_offset) {
     block_offset = known_fragment_offset.value().block_offset -
-                   builder_->BfcOffset().value().block_offset;
+                   builder_.BfcOffset().value().block_offset;
   }
   return {inline_offset, block_offset};
 }
 
 void NGBlockLayoutAlgorithm::UpdateFragmentBfcOffset(
     const NGLogicalOffset& offset) {
-  if (!builder_->BfcOffset()) {
+  if (!builder_.BfcOffset()) {
     NGLogicalOffset bfc_offset = offset;
     if (ConstraintSpace().ClearanceOffset()) {
       bfc_offset.block_offset = std::max(
           ConstraintSpace().ClearanceOffset().value(), offset.block_offset);
     }
-    builder_->SetBfcOffset(bfc_offset);
+    builder_.SetBfcOffset(bfc_offset);
   }
 }
 
@@ -400,16 +400,15 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (adjusted_block_size != NGSizeIndefinite)
     adjusted_block_size -= border_and_padding_.BlockSum();
 
-  space_builder_ = new NGConstraintSpaceBuilder(constraint_space_);
   space_builder_
-      ->SetAvailableSize(
+      .SetAvailableSize(
           NGLogicalSize(adjusted_inline_size, adjusted_block_size))
       .SetPercentageResolutionSize(
           NGLogicalSize(adjusted_inline_size, adjusted_block_size));
 
-  builder_->SetDirection(constraint_space_->Direction());
-  builder_->SetWritingMode(constraint_space_->WritingMode());
-  builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
+  builder_.SetDirection(constraint_space_->Direction());
+  builder_.SetWritingMode(constraint_space_->WritingMode());
+  builder_.SetInlineSize(inline_size).SetBlockSize(block_size);
 
   NGBlockChildIterator child_iterator(node_->FirstChild(), break_token_);
   NGBlockChildIterator::Entry entry = child_iterator.NextChild();
@@ -437,7 +436,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // still {} as the margin strut from the constraint space must also be empty.
   if (ConstraintSpace().IsNewFormattingContext()) {
     UpdateFragmentBfcOffset(curr_bfc_offset_);
-    DCHECK_EQ(builder_->BfcOffset().value(), NGLogicalOffset());
+    DCHECK_EQ(builder_.BfcOffset().value(), NGLogicalOffset());
     DCHECK_EQ(curr_margin_strut_, NGMarginStrut());
   }
 
@@ -448,8 +447,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       NGBlockNode* current_block_child = toNGBlockNode(child);
       EPosition position = current_block_child->Style().position();
       if (position == EPosition::kAbsolute || position == EPosition::kFixed) {
-        builder_->AddOutOfFlowChildCandidate(current_block_child,
-                                             GetChildSpaceOffset());
+        builder_.AddOutOfFlowChildCandidate(current_block_child,
+                                            GetChildSpaceOffset());
         NGBlockChildIterator::Entry entry = child_iterator.NextChild();
         child = entry.node;
         child_break_token = entry.token;
@@ -491,17 +490,17 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Recompute the block-axis size now that we know our content size.
   block_size =
       ComputeBlockSizeForFragment(ConstraintSpace(), Style(), content_size_);
-  builder_->SetBlockSize(block_size);
+  builder_.SetBlockSize(block_size);
 
   // Layout our absolute and fixed positioned children.
-  NGOutOfFlowLayoutPart(ConstraintSpace(), Style(), builder_.get()).Run();
+  NGOutOfFlowLayoutPart(ConstraintSpace(), Style(), &builder_).Run();
 
   // Non-empty blocks always know their position in space:
   if (block_size) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     UpdateFragmentBfcOffset(curr_bfc_offset_);
     PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
-                          builder_.get());
+                          &builder_);
   }
 
   // Margins collapsing:
@@ -511,14 +510,14 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     // TODO(glebl): handle minLogicalHeight, maxLogicalHeight.
     curr_margin_strut_ = NGMarginStrut();
   }
-  builder_->SetEndMarginStrut(curr_margin_strut_);
+  builder_.SetEndMarginStrut(curr_margin_strut_);
 
-  builder_->SetInlineOverflow(max_inline_size_).SetBlockOverflow(content_size_);
+  builder_.SetInlineOverflow(max_inline_size_).SetBlockOverflow(content_size_);
 
   if (ConstraintSpace().HasBlockFragmentation())
     FinalizeForFragmentation();
 
-  return builder_->ToBoxFragment();
+  return builder_.ToBoxFragment();
 }
 
 void NGBlockLayoutAlgorithm::LayoutInlineChildren(
@@ -553,7 +552,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
   // Pull out unpositioned floats to the current fragment. This may needed if
   // for example the child fragment could not position its floats because it's
   // empty and therefore couldn't determine its position in space.
-  builder_->MutableUnpositionedFloats().appendVector(
+  builder_.MutableUnpositionedFloats().appendVector(
       layout_result->UnpositionedFloats());
 
   if (child->Type() == NGLayoutInputNode::kLegacyBlock &&
@@ -562,16 +561,16 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
         layout_result->PhysicalFragment().get(), child_space, constraint_space_,
         toNGBlockNode(child), toNGBlockNode(child)->Style(),
         curr_child_margins_);
-    builder_->AddUnpositionedFloat(floating_object);
+    builder_.AddUnpositionedFloat(floating_object);
     // No need to postpone the positioning if we know the correct offset.
-    if (builder_->BfcOffset()) {
+    if (builder_.BfcOffset()) {
       NGLogicalOffset origin_point = curr_bfc_offset_;
       // Adjust origin point to the margins of the last child.
       // Example: <div style="margin-bottom: 20px"><float></div>
       //          <div style="margin-bottom: 30px"></div>
       origin_point.block_offset += curr_margin_strut_.Sum();
       PositionPendingFloats(origin_point.block_offset, ConstraintSpace(),
-                            builder_.get());
+                            &builder_);
     }
     return;
   }
@@ -589,7 +588,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
     // Fragment that knows its offset can be used to set parent's BFC position.
     curr_bfc_offset_.block_offset = fragment.BfcOffset().value().block_offset;
     bfc_offset = curr_bfc_offset_;
-  } else if (builder_->BfcOffset()) {
+  } else if (builder_.BfcOffset()) {
     // Fragment doesn't know its offset but we can still calculate its BFC
     // position because the parent fragment's BFC is known.
     // Example:
@@ -602,7 +601,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
   if (bfc_offset) {
     UpdateFragmentBfcOffset(curr_bfc_offset_);
     PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
-                          builder_.get());
+                          &builder_);
   }
   NGLogicalOffset logical_offset = CalculateLogicalOffset(bfc_offset);
 
@@ -624,7 +623,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
                                      curr_child_margins_.InlineSum() +
                                      border_and_padding_.InlineSum());
 
-  builder_->AddChild(layout_result, logical_offset);
+  builder_.AddChild(layout_result, logical_offset);
 }
 
 void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
@@ -638,33 +637,33 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
       << "Adding and subtracting the used_block_size shouldn't leave the "
          "block_size for this fragment smaller than zero.";
 
-  DCHECK(builder_->BfcOffset()) << "We must have our BfcOffset by this point "
-                                   "to determine the space left in the flow.";
+  DCHECK(builder_.BfcOffset()) << "We must have our BfcOffset by this point "
+                                  "to determine the space left in the flow.";
   LayoutUnit space_left = ConstraintSpace().FragmentainerSpaceAvailable() -
-                          builder_->BfcOffset().value().block_offset;
+                          builder_.BfcOffset().value().block_offset;
   DCHECK_GE(space_left, LayoutUnit());
 
-  if (builder_->DidBreak()) {
+  if (builder_.DidBreak()) {
     // One of our children broke. Even if we fit within the remaining space we
     // need to prepare a break token.
-    builder_->SetUsedBlockSize(std::min(space_left, block_size) +
-                               used_block_size);
-    builder_->SetBlockSize(std::min(space_left, block_size));
-    builder_->SetBlockOverflow(space_left);
+    builder_.SetUsedBlockSize(std::min(space_left, block_size) +
+                              used_block_size);
+    builder_.SetBlockSize(std::min(space_left, block_size));
+    builder_.SetBlockOverflow(space_left);
     return;
   }
 
   if (block_size > space_left) {
     // Need a break inside this block.
-    builder_->SetUsedBlockSize(space_left + used_block_size);
-    builder_->SetBlockSize(space_left);
-    builder_->SetBlockOverflow(space_left);
+    builder_.SetUsedBlockSize(space_left + used_block_size);
+    builder_.SetBlockSize(space_left);
+    builder_.SetBlockOverflow(space_left);
     return;
   }
 
   // The end of the block fits in the current fragmentainer.
-  builder_->SetBlockSize(block_size);
-  builder_->SetBlockOverflow(content_size_);
+  builder_.SetBlockSize(block_size);
+  builder_.SetBlockOverflow(content_size_);
 }
 
 NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
@@ -698,10 +697,10 @@ NGConstraintSpace* NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     UpdateFragmentBfcOffset(curr_bfc_offset_);
     PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
-                          builder_.get());
+                          &builder_);
     curr_margin_strut_ = {};
 
-    return space_builder_->ToConstraintSpace(
+    return space_builder_.ToConstraintSpace(
         FromPlatformWritingMode(Style().getWritingMode()));
   }
 
@@ -710,12 +709,12 @@ NGConstraintSpace* NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
   // Calculate margins in parent's writing mode.
   curr_child_margins_ = CalculateMargins(
-      block_child, *space_builder_->ToConstraintSpace(
+      block_child, *space_builder_.ToConstraintSpace(
                        FromPlatformWritingMode(Style().getWritingMode())));
 
   bool is_new_bfc = IsNewFormattingContextForInFlowBlockLevelChild(
       ConstraintSpace(), child_style);
-  space_builder_->SetIsNewFormattingContext(is_new_bfc)
+  space_builder_.SetIsNewFormattingContext(is_new_bfc)
       .SetIsShrinkToFit(ShouldShrinkToFit(ConstraintSpace(), child_style))
       .SetTextDirection(child_style.direction());
 
@@ -732,15 +731,15 @@ NGConstraintSpace* NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
       curr_child_margins_.block_start = LayoutUnit();
     }
     PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
-                          builder_.get());
+                          &builder_);
     WTF::Optional<LayoutUnit> clearance_offset =
         GetClearanceOffset(constraint_space_->Exclusions(), child_style);
-    space_builder_->SetClearanceOffset(clearance_offset);
+    space_builder_.SetClearanceOffset(clearance_offset);
   }
 
   // Set estimated BFC offset to the next child's constraint space.
-  curr_bfc_offset_ = builder_->BfcOffset() ? builder_->BfcOffset().value()
-                                           : ConstraintSpace().BfcOffset();
+  curr_bfc_offset_ = builder_.BfcOffset() ? builder_.BfcOffset().value()
+                                          : ConstraintSpace().BfcOffset();
   curr_bfc_offset_.block_offset += content_size_;
   curr_bfc_offset_.inline_offset += border_and_padding_.inline_start;
 
@@ -753,10 +752,10 @@ NGConstraintSpace* NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // Non empty border/padding use cases are handled inside of the child's
     // layout.
     curr_margin_strut_.Append(curr_child_margins_.block_start);
-    space_builder_->SetMarginStrut(curr_margin_strut_);
+    space_builder_.SetMarginStrut(curr_margin_strut_);
   }
 
-  space_builder_->SetBfcOffset(curr_bfc_offset_);
+  space_builder_.SetBfcOffset(curr_bfc_offset_);
 
   LayoutUnit space_available;
   if (constraint_space_->HasBlockFragmentation()) {
@@ -765,13 +764,13 @@ NGConstraintSpace* NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // position in the formatting context, and are able to adjust the
     // fragmentation line.
     if (is_new_bfc) {
-      DCHECK(builder_->BfcOffset());
+      DCHECK(builder_.BfcOffset());
       space_available -= curr_bfc_offset_.block_offset;
     }
   }
-  space_builder_->SetFragmentainerSpaceAvailable(space_available);
+  space_builder_.SetFragmentainerSpaceAvailable(space_available);
 
-  return space_builder_->ToConstraintSpace(
+  return space_builder_.ToConstraintSpace(
       FromPlatformWritingMode(child_style.getWritingMode()));
 }
 }  // namespace blink

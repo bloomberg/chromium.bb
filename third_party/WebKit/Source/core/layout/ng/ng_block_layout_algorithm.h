@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "core/layout/ng/ng_units.h"
@@ -18,7 +19,6 @@ namespace blink {
 class ComputedStyle;
 class NGBlockBreakToken;
 class NGConstraintSpace;
-class NGConstraintSpaceBuilder;
 class NGInlineNode;
 class NGLayoutResult;
 
@@ -82,8 +82,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // The break token from which we are currently resuming layout.
   Persistent<NGBlockBreakToken> break_token_;
 
-  std::unique_ptr<NGFragmentBuilder> builder_;
-  Persistent<NGConstraintSpaceBuilder> space_builder_;
+  NGFragmentBuilder builder_;
+  NGConstraintSpaceBuilder space_builder_;
 
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;

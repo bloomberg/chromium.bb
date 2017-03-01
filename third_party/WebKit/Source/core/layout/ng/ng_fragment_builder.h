@@ -10,6 +10,7 @@
 #include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_units.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -17,6 +18,8 @@ class NGLayoutResult;
 class NGPhysicalTextFragment;
 
 class CORE_EXPORT NGFragmentBuilder final {
+  DISALLOW_NEW();
+
  public:
   NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, NGLayoutInputNode*);
 

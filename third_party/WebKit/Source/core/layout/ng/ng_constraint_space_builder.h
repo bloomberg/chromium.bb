@@ -7,12 +7,14 @@
 
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_units.h"
+#include "wtf/Allocator.h"
 #include "wtf/Optional.h"
 
 namespace blink {
 
-class CORE_EXPORT NGConstraintSpaceBuilder final
-    : public GarbageCollectedFinalized<NGConstraintSpaceBuilder> {
+class CORE_EXPORT NGConstraintSpaceBuilder final {
+  DISALLOW_NEW();
+
  public:
   NGConstraintSpaceBuilder(const NGConstraintSpace* parent_space);
 
@@ -62,8 +64,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   //
   // NGWritingMode specifies the writing mode of the generated space.
   NGConstraintSpace* ToConstraintSpace(NGWritingMode);
-
-  DEFINE_INLINE_TRACE() {}
 
  private:
   // Relative to parent_writing_mode_.
