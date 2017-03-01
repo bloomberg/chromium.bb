@@ -693,7 +693,7 @@ session_notify(struct wl_listener *listener, void *data)
 
 		wl_list_for_each(output,
 				 &compositor->output_list, link) {
-			output->repaint_needed = 0;
+			output->repaint_needed = false;
 		}
 	}
 }

@@ -2310,7 +2310,7 @@ weston_output_repaint(struct weston_output *output)
 
 	pixman_region32_fini(&output_damage);
 
-	output->repaint_needed = 0;
+	output->repaint_needed = false;
 
 	weston_compositor_repick(ec);
 
@@ -2549,7 +2549,7 @@ weston_output_schedule_repaint(struct weston_output *output)
 		TL_POINT("core_repaint_req", TLP_OUTPUT(output), TLP_END);
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
-	output->repaint_needed = 1;
+	output->repaint_needed = true;
 	if (output->repaint_scheduled)
 		return;
 

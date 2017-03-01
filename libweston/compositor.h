@@ -170,7 +170,10 @@ struct weston_output {
 	pixman_region32_t region;
 
 	pixman_region32_t previous_damage;
-	int repaint_needed;
+
+	/** True if damage has occurred since the last repaint for this output;
+	 *  if set, a repaint will eventually occur. */
+	bool repaint_needed;
 	int repaint_scheduled;
 	struct wl_event_source *repaint_timer;
 	struct weston_output_zoom zoom;

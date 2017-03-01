@@ -2995,7 +2995,7 @@ session_notify(struct wl_listener *listener, void *data)
 		 * pending frame callbacks. */
 
 		wl_list_for_each(output, &compositor->output_list, base.link) {
-			output->base.repaint_needed = 0;
+			output->base.repaint_needed = false;
 			drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
 		}
 
