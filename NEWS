@@ -79,7 +79,8 @@ test data. Refer to the documentation for the details
   to Davy Kager. The table is tailored for use on Windows (CP-1252)
   and uses dot patterns from Windows screen readers, but should be
   useful on other platforms too.
-- New Greek table thanks to Dave Mielke
+- New Greek table that is better than the existing Greek Grade 1
+  Braille Table (gr-gr-g1.utb) thanks to Dave Mielke.
 ** License changes
 - DocArch has agreed to relicense their tables, so we have 8 more
   tables under the LGPLv2.1+.
