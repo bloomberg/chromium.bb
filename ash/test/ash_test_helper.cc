@@ -235,6 +235,13 @@ aura::Window* AshTestHelper::CurrentContext() {
 }
 
 void AshTestHelper::UpdateDisplayForMash(const std::string& display_spec) {
+  // TODO(erg): This is not equivalent to display::DisplayManager::
+  // UpdateDisplaysWith(). This does not calculate all the internal metric
+  // changes, does not calculate focus changes and does not dispatch to all the
+  // observers in ash which want to be notified about the previous two.
+  //
+  // Once this is fixed, RootWindowControllerTest.MoveWindows_Basic, among
+  // other unit tests, should work. http://crbug.com/695632.
   CHECK(IsMash());
   const std::vector<std::string> parts = base::SplitString(
       display_spec, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
