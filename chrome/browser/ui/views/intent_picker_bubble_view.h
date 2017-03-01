@@ -24,7 +24,6 @@ class WebContents;
 }  // namespace content
 
 namespace views {
-class View;
 class Widget;
 }  // namespace views
 
@@ -96,9 +95,6 @@ class IntentPickerBubbleView : public views::BubbleDialogDelegateView,
   // Similar to ButtonPressed, except this controls the up/down/right/left input
   // while focusing on the |scroll_view_|.
   void ArrowButtonPressed(int index);
-
-  // views::View overrides:
-  gfx::Size GetPreferredSize() const override;
 
   // content::WebContentsObserver overrides:
   void WebContentsDestroyed() override;

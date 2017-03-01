@@ -31,6 +31,7 @@ namespace {
 // Using |kMaxAppResults| as a measure of how many apps we want to show.
 constexpr size_t kMaxAppResults = arc::ArcNavigationThrottle::kMaxAppResults;
 // Main components sizes
+constexpr int kTitlePadding = 16;
 constexpr int kDialogDelegateInsets = 16;
 constexpr int kRowHeight = 40;
 constexpr int kMaxWidth = 320;
@@ -103,10 +104,12 @@ void IntentPickerBubbleView::ShowBubble(
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   IntentPickerBubbleView* delegate =
       new IntentPickerBubbleView(app_info, intent_picker_cb, web_contents);
-  delegate->set_margins(gfx::Insets(16, 0, 0, 0));
+  delegate->set_margins(gfx::Insets());
   delegate->set_parent_window(browser_view->GetNativeWindow());
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(delegate);
+  delegate->GetDialogClientView()->set_button_row_insets(
+      gfx::Insets(kDialogDelegateInsets));
 
   delegate->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   delegate->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
@@ -120,8 +123,6 @@ void IntentPickerBubbleView::ShowBubble(
                 browser_view->GetTopContainerBoundsInScreen().width(),
                 browser_view->GetTopContainerBoundsInScreen().height() -
                     kTopContainerMerge));
-  delegate->GetDialogClientView()->set_button_row_insets(
-      gfx::Insets(kDialogDelegateInsets));
   delegate->GetDialogClientView()->Layout();
   delegate->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   delegate->GetIntentPickerLabelButtonAt(0)->MarkAsSelected(nullptr);
@@ -161,9 +162,8 @@ bool IntentPickerBubbleView::Close() {
 }
 
 void IntentPickerBubbleView::Init() {
-  views::BoxLayout* general_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
-  SetLayoutManager(general_layout);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
 
   // Creates a view to hold the views for each app.
   views::View* scrollable_view = new views::View();
@@ -193,7 +193,15 @@ void IntentPickerBubbleView::Init() {
   } else {
     scroll_view_->ClipHeightTo(kRowHeight, (kMaxAppResults + 0.5) * kRowHeight);
   }
-  AddChildView(scroll_view_);
+
+  const int cs_id = 0;
+  views::ColumnSet* cs = layout->AddColumnSet(cs_id);
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
+                views::GridLayout::FIXED, kMaxWidth, 0);
+
+  layout->AddPaddingRow(0, kTitlePadding);
+  layout->StartRow(0, cs_id);
+  layout->AddView(scroll_view_);
 }
 
 base::string16 IntentPickerBubbleView::GetWindowTitle() const {
@@ -239,21 +247,6 @@ void IntentPickerBubbleView::ButtonPressed(views::Button* sender,
 void IntentPickerBubbleView::ArrowButtonPressed(int index) {
   SetSelectedAppIndex(index, nullptr);
   AdjustScrollViewVisibleRegion();
-}
-
-gfx::Size IntentPickerBubbleView::GetPreferredSize() const {
-  gfx::Size ps;
-  ps.set_width(kMaxWidth);
-  int apps_height = app_info_.size();
-  // We are showing |kMaxAppResults| + 0.5 rows at max, the extra 0.5 is used so
-  // the user can notice that more options are available.
-  if (app_info_.size() > kMaxAppResults) {
-    apps_height = (kMaxAppResults + 0.5) * kRowHeight;
-  } else {
-    apps_height *= kRowHeight;
-  }
-  ps.set_height(apps_height + kDialogDelegateInsets);
-  return ps;
 }
 
 // If the actual web_contents gets destroyed in the middle of the process we
