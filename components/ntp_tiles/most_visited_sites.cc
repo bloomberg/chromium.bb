@@ -419,6 +419,11 @@ void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
     LOG(WARNING) << "Download of popular sites failed";
     return;
   }
+
+  for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
+    // Ignore callback; these icons will be seen on the *next* NTP.
+    icon_cacher_->StartFetch(popular_site, base::Closure(), base::Closure());
+  }
 }
 
 void MostVisitedSites::OnIconMadeAvailable(const GURL& site_url) {
