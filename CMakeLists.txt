@@ -19,6 +19,7 @@ include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
 include("${AOM_ROOT}/aom_mem/aom_mem.cmake")
 include("${AOM_ROOT}/aom_ports/aom_ports.cmake")
+include("${AOM_ROOT}/aom_scale/aom_scale.cmake")
 include("${AOM_ROOT}/av1/av1.cmake")
 include("${AOM_ROOT}/test/test.cmake")
 
@@ -98,19 +99,10 @@ set(AOM_SOURCES
     "${AOM_ROOT}/aom/src/aom_encoder.c"
     "${AOM_ROOT}/aom/src/aom_image.c")
 
-set(AOM_SCALE_SOURCES
-    "${AOM_ROOT}/aom_scale/aom_scale.h"
-    "${AOM_ROOT}/aom_scale/generic/aom_scale.c"
-    "${AOM_ROOT}/aom_scale/generic/gen_scalers.c"
-    "${AOM_ROOT}/aom_scale/generic/yv12config.c"
-    "${AOM_ROOT}/aom_scale/generic/yv12extend.c"
-    "${AOM_ROOT}/aom_scale/yv12config.h")
-
 set(AOM_UTIL_SOURCES
     "${AOM_ROOT}/aom_util/aom_thread.c"
     "${AOM_ROOT}/aom_util/aom_thread.h"
     "${AOM_ROOT}/aom_util/endian_inl.h")
-
 
 set(AOM_COMMON_APP_UTIL_SOURCES
     "${AOM_ROOT}/args.c"
@@ -156,7 +148,8 @@ set(AOM_WEBM_ENCODER_SOURCES
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
 
 # Targets
-# TODO(tomfinegan): Add support for enable/disable encoder/decoder.
+# TODO(tomfinegan): Move rtcd target setup where it belongs for each rtcd
+# source.
 add_rtcd_build_step("${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
                     "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
                     "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
@@ -173,11 +166,9 @@ add_rtcd_build_step("${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
 add_library(aom_rtcd OBJECT ${AOM_RTCD_SOURCES})
 add_library(aom_util OBJECT ${AOM_UTIL_SOURCES})
 add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES})
-add_library(aom_scale OBJECT ${AOM_SCALE_SOURCES})
 add_library(aom
             ${AOM_SOURCES}
             $<TARGET_OBJECTS:aom_rtcd>
-            $<TARGET_OBJECTS:aom_scale>
             $<TARGET_OBJECTS:aom_util>)
 
 # List of object and static library targets.
@@ -188,6 +179,7 @@ set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_util aom_encoder_stats
 setup_aom_dsp_targets()
 setup_aom_mem_targets()
 setup_aom_ports_targets()
+setup_aom_scale_targets()
 setup_av1_targets()
 
 # Make all library targets depend on aom_rtcd to make sure it builds first.
