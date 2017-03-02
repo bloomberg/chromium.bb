@@ -90,7 +90,10 @@ class ChromeBrowserState;
 // Displays an error message. Invokes |callback| when the message is dismissed.
 - (void)displayErrorWithCallback:(ProceduralBlock)callback;
 
-// Called when a credit card has been successfully unmasked.
+// Called when a credit card has been successfully unmasked. Note that |card|
+// may be different from what's returned by the selected_credit_card() method of
+// |paymentRequest|, because CVC unmasking process may update the credit card
+// number and expiration date.
 - (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
                                       CVC:(const base::string16&)cvc;
 

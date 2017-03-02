@@ -47,6 +47,10 @@ using ::payment_request_util::GetNameLabelFromAutofillProfile;
 using ::payment_request_util::GetAddressLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 using ::payment_request_util::GetEmailLabelFromAutofillProfile;
+using ::payment_request_util::GetShippingSectionTitle;
+using ::payment_request_util::GetShippingAddressSelectorTitle;
+using ::payment_request_util::GetShippingOptionSelectorTitle;
+
 }  // namespace
 
 NSString* const kPaymentRequestCollectionViewID =
@@ -224,8 +228,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   CollectionViewTextItem* shippingTitle =
       [[CollectionViewTextItem alloc] initWithType:ItemTypeShippingTitle];
-  shippingTitle.text =
-      payment_request_util::GetShippingSectionTitle(_paymentRequest);
+  shippingTitle.text = GetShippingSectionTitle(*_paymentRequest);
   [model setHeader:shippingTitle
       forSectionWithIdentifier:SectionIdentifierShipping];
 
@@ -245,8 +248,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     CollectionViewDetailItem* addAddressItem = [[CollectionViewDetailItem alloc]
         initWithType:ItemTypeAddShippingAddress];
     shippingAddressItem = addAddressItem;
-    addAddressItem.text =
-        payment_request_util::GetShippingAddressSelectorTitle(_paymentRequest);
+    addAddressItem.text = GetShippingAddressSelectorTitle(*_paymentRequest);
     addAddressItem.detailText = [l10n_util::GetNSString(IDS_ADD)
         uppercaseStringWithLocale:[NSLocale currentLocale]];
     addAddressItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -272,7 +274,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             initWithType:ItemTypeSelectShippingOption];
     shippingOptionItem = selectShippingOptionItem;
     selectShippingOptionItem.text =
-        payment_request_util::GetShippingOptionSelectorTitle(_paymentRequest);
+        GetShippingOptionSelectorTitle(*_paymentRequest);
     selectShippingOptionItem.accessoryType =
         MDCCollectionViewCellAccessoryDisclosureIndicator;
     selectShippingOptionItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -416,9 +418,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)fillShippingAddressItem:(AutofillProfileItem*)item
             withAutofillProfile:(autofill::AutofillProfile*)profile {
-  item.name = GetNameLabelFromAutofillProfile(profile);
-  item.address = GetAddressLabelFromAutofillProfile(profile);
-  item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(profile);
+  DCHECK(profile);
+  item.name = GetNameLabelFromAutofillProfile(*profile);
+  item.address = GetAddressLabelFromAutofillProfile(*profile);
+  item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*profile);
 }
 
 - (void)fillShippingOptionItem:(CollectionViewTextItem*)item
@@ -443,9 +446,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)fillContactInfoItem:(AutofillProfileItem*)item
         withAutofillProfile:(autofill::AutofillProfile*)profile {
-  item.name = GetNameLabelFromAutofillProfile(profile);
-  item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(profile);
-  item.email = GetEmailLabelFromAutofillProfile(profile);
+  DCHECK(profile);
+  item.name = GetNameLabelFromAutofillProfile(*profile);
+  item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*profile);
+  item.email = GetEmailLabelFromAutofillProfile(*profile);
 }
 
 #pragma mark UICollectionViewDataSource

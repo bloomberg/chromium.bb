@@ -82,6 +82,11 @@ void PaymentRequest::PopulateCreditCardCache() {
   std::vector<autofill::CreditCard*> credit_cards =
       personal_data_manager_->GetCreditCardsToSuggest();
 
+  // TODO(crbug.com/602666): Update the following logic to allow basic card
+  // payment. https://w3c.github.io/webpayments-methods-card/
+  // new PaymentRequest([{supportedMethods: ['basic-card'],
+  //                      data: {supportedNetworks:['visa']}]}], ...);
+
   for (const auto* credit_card : credit_cards) {
     std::string spec_card_type =
         autofill::data_util::GetPaymentRequestData(credit_card->type())

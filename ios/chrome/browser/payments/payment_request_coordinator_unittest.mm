@@ -178,12 +178,11 @@ TEST(PaymentRequestCoordinatorTest, DidSelectShippingAddress) {
          EXPECT_EQ(base::ASCIIToUTF16("John Mitchell Doe"),
                    shippingAddress.recipient);
          EXPECT_EQ(base::ASCIIToUTF16("Fox"), shippingAddress.organization);
-         ASSERT_EQ(3U, shippingAddress.address_line.size());
+         ASSERT_EQ(2U, shippingAddress.address_line.size());
          EXPECT_EQ(base::ASCIIToUTF16("123 Zoo St"),
                    shippingAddress.address_line[0]);
          EXPECT_EQ(base::ASCIIToUTF16("unit 5"),
                    shippingAddress.address_line[1]);
-         EXPECT_EQ(base::ASCIIToUTF16(""), shippingAddress.address_line[2]);
          EXPECT_EQ(base::ASCIIToUTF16("12345678910"), shippingAddress.phone);
          EXPECT_EQ(base::ASCIIToUTF16("Hollywood"), shippingAddress.city);
          EXPECT_EQ(base::ASCIIToUTF16("CA"), shippingAddress.region);

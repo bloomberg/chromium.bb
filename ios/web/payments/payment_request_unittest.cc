@@ -293,13 +293,15 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
 
 // PaymentResponse serialization tests.
 
-// Tests that serializing a default PaymentResponse yields an empty dictionary.
+// Tests that serializing a default PaymentResponse yields the expected result.
 TEST(PaymentRequestTest, EmptyResponseDictionary) {
   base::DictionaryValue expected_value;
+
   std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
-  std::unique_ptr<base::DictionaryValue> address(new base::DictionaryValue);
-  details->Set("billingAddress", std::move(address));
+  details->SetString("cardNumber", "");
   expected_value.Set("details", std::move(details));
+  expected_value.SetString("paymentRequestID", "");
+  expected_value.SetString("methodName", "");
 
   PaymentResponse payment_response;
   EXPECT_TRUE(
@@ -310,24 +312,45 @@ TEST(PaymentRequestTest, EmptyResponseDictionary) {
 // result.
 TEST(PaymentRequestTest, PopulatedResponseDictionary) {
   base::DictionaryValue expected_value;
+
   std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
-  std::unique_ptr<base::DictionaryValue> address(new base::DictionaryValue);
-  details->Set("billingAddress", std::move(address));
+  details->SetString("cardNumber", "1111-1111-1111-1111");
+  details->SetString("cardholderName", "Jon Doe");
+  details->SetString("expiryMonth", "02");
+  details->SetString("expiryYear", "2090");
+  details->SetString("cardSecurityCode", "111");
+  std::unique_ptr<base::DictionaryValue> billing_address(
+      new base::DictionaryValue);
+  billing_address->SetString("postalCode", "90210");
+  details->Set("billingAddress", std::move(billing_address));
   expected_value.Set("details", std::move(details));
-
+  expected_value.SetString("paymentRequestID", "12345");
   expected_value.SetString("methodName", "American Express");
-  PaymentResponse payment_response;
-  payment_response.method_name = base::ASCIIToUTF16("American Express");
-  EXPECT_TRUE(
-      expected_value.Equals(payment_response.ToDictionaryValue().get()));
+  std::unique_ptr<base::DictionaryValue> shipping_address(
+      new base::DictionaryValue);
+  shipping_address->SetString("postalCode", "94115");
+  expected_value.Set("shippingAddress", std::move(shipping_address));
+  expected_value.SetString("shippingOption", "666");
+  expected_value.SetString("payerName", "Jane Doe");
+  expected_value.SetString("payerEmail", "jane@example.com");
+  expected_value.SetString("payerPhone", "1234-567-890");
 
-  details.reset(new base::DictionaryValue);
-  address.reset(new base::DictionaryValue);
-  address->SetString("postalCode", "90210");
-  details->Set("billingAddress", std::move(address));
-  expected_value.Set("details", std::move(details));
+  PaymentResponse payment_response;
+  payment_response.payment_request_id = base::ASCIIToUTF16("12345");
+  payment_response.method_name = base::ASCIIToUTF16("American Express");
+  payment_response.details.card_number =
+      base::ASCIIToUTF16("1111-1111-1111-1111");
+  payment_response.details.cardholder_name = base::ASCIIToUTF16("Jon Doe");
+  payment_response.details.expiry_month = base::ASCIIToUTF16("02");
+  payment_response.details.expiry_year = base::ASCIIToUTF16("2090");
+  payment_response.details.card_security_code = base::ASCIIToUTF16("111");
   payment_response.details.billing_address.postal_code =
       base::ASCIIToUTF16("90210");
+  payment_response.shipping_address.postal_code = base::ASCIIToUTF16("94115");
+  payment_response.shipping_option = base::ASCIIToUTF16("666");
+  payment_response.payer_name = base::ASCIIToUTF16("Jane Doe");
+  payment_response.payer_email = base::ASCIIToUTF16("jane@example.com");
+  payment_response.payer_phone = base::ASCIIToUTF16("1234-567-890");
   EXPECT_TRUE(
       expected_value.Equals(payment_response.ToDictionaryValue().get()));
 }

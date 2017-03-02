@@ -30,10 +30,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+using ::payment_request_util::GetShippingOptionSelectorTitle;
+
 NSString* const kShippingOptionSelectionCollectionViewID =
     @"kShippingOptionSelectionCollectionViewID";
-
-namespace {
 
 const CGFloat kSeparatorEdgeInset = 14;
 
@@ -71,8 +72,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    self.title =
-        payment_request_util::GetShippingOptionSelectorTitle(paymentRequest);
+    self.title = GetShippingOptionSelectorTitle(*paymentRequest);
 
     // Set up leading (return) button.
     UIBarButtonItem* returnButton =
@@ -117,7 +117,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         toSectionWithIdentifier:SectionIdentifierShippingOption];
   }
 
-  for (const auto& shippingOption : _paymentRequest->shipping_options()) {
+  for (const auto* shippingOption : _paymentRequest->shipping_options()) {
     CollectionViewTextItem* item =
         [[CollectionViewTextItem alloc] initWithType:ItemTypeShippingOption];
     item.text = base::SysUTF16ToNSString(shippingOption->label);

@@ -311,6 +311,10 @@ class PaymentRequest {
   // if the required values are present.
   bool FromDictionaryValue(const base::DictionaryValue& value);
 
+  // The unique ID for this PaymentRequest. If it is not provided during
+  // construction, one is generated.
+  base::string16 payment_request_id;
+
   // Properties set in order to communicate user choices back to the page.
   PaymentAddress shipping_address;
   base::string16 shipping_option;
@@ -371,6 +375,9 @@ class PaymentResponse {
   // Populates |value| with the properties of this PaymentResponse.
   std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
+  // The same paymentRequestID present in the original PaymentRequest.
+  base::string16 payment_request_id;
+
   // The payment method identifier for the payment method that the user selected
   // to fulfil the transaction.
   base::string16 method_name;
@@ -378,6 +385,31 @@ class PaymentResponse {
   // A credit card response object used by the merchant to process the
   // transaction and determine successful fund transfer.
   BasicCardResponse details;
+
+  // If request_shipping was set to true in the PaymentOptions passed to the
+  // PaymentRequest constructor, this will be the full and final shipping
+  // address chosen by the user.
+  PaymentAddress shipping_address;
+
+  // If the request_shipping flag was set to true in the PaymentOptions passed
+  // to the PaymentRequest constructor, this will be the id attribute of the
+  // selected shipping option.
+  base::string16 shipping_option;
+
+  // If the request_payer_name flag was set to true in the PaymentOptions passed
+  // to the PaymentRequest constructor, this will be the name provided by the
+  // user.
+  base::string16 payer_name;
+
+  // If the request_payer_email flag was set to true in the PaymentOptions
+  // passed to the PaymentRequest constructor, this will be the email address
+  // chosen by the user.
+  base::string16 payer_email;
+
+  // If the request_payer_phone flag was set to true in the PaymentOptions
+  // passed to the PaymentRequest constructor, this will be the phone number
+  // chosen by the user.
+  base::string16 payer_phone;
 };
 
 }  // namespace web

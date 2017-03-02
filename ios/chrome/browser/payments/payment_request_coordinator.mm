@@ -31,6 +31,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+using ::payment_request_util::GetBasicCardResponseFromAutofillCreditCard;
+using ::payment_request_util::GetPaymentAddressFromAutofillProfile;
+}  // namespace
+
 // The unmask prompt UI for Payment Request.
 class PRCardUnmaskPromptViewBridge
     : public autofill::CardUnmaskPromptViewBridge {
@@ -185,23 +190,58 @@ class FullCardRequester
 - (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
                                       CVC:(const base::string16&)cvc {
   web::PaymentResponse paymentResponse;
-  paymentResponse.details.cardholder_name =
-      card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
-  paymentResponse.details.card_number =
-      card.GetRawInfo(autofill::CREDIT_CARD_NUMBER);
-  paymentResponse.details.expiry_month =
-      card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH);
-  paymentResponse.details.expiry_year =
-      card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
-  paymentResponse.details.card_security_code = cvc;
-  if (!card.billing_address_id().empty()) {
-    autofill::AutofillProfile* address =
-        autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
-            card.billing_address_id(), _paymentRequest->billing_profiles());
-    if (address) {
-      paymentResponse.details.billing_address =
-          payment_request_util::GetPaymentAddressFromAutofillProfile(address);
-    }
+
+  paymentResponse.method_name =
+      base::ASCIIToUTF16(autofill::data_util::GetPaymentRequestData(card.type())
+                             .basic_card_payment_type);
+
+  paymentResponse.details =
+      GetBasicCardResponseFromAutofillCreditCard(*_paymentRequest, card, cvc);
+
+  if (_paymentRequest->payment_options().request_shipping) {
+    autofill::AutofillProfile* shippingAddress =
+        _paymentRequest->selected_shipping_profile();
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a shipping address.
+    DCHECK(shippingAddress);
+    paymentResponse.shipping_address =
+        GetPaymentAddressFromAutofillProfile(*shippingAddress);
+
+    web::PaymentShippingOption* shippingOption =
+        _paymentRequest->selected_shipping_option();
+    DCHECK(shippingOption);
+    paymentResponse.shipping_option = shippingOption->id;
+  }
+
+  if (_paymentRequest->payment_options().request_payer_name) {
+    autofill::AutofillProfile* contactInfo =
+        _paymentRequest->selected_contact_profile();
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a contact info.
+    DCHECK(contactInfo);
+    paymentResponse.payer_name =
+        contactInfo->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                             GetApplicationContext()->GetApplicationLocale());
+  }
+
+  if (_paymentRequest->payment_options().request_payer_email) {
+    autofill::AutofillProfile* contactInfo =
+        _paymentRequest->selected_contact_profile();
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a contact info.
+    DCHECK(contactInfo);
+    paymentResponse.payer_email =
+        contactInfo->GetRawInfo(autofill::EMAIL_ADDRESS);
+  }
+
+  if (_paymentRequest->payment_options().request_payer_phone) {
+    autofill::AutofillProfile* contactInfo =
+        _paymentRequest->selected_contact_profile();
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a contact info.
+    DCHECK(contactInfo);
+    paymentResponse.payer_phone =
+        contactInfo->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
   }
 
   _viewController.view.userInteractionEnabled = NO;
@@ -355,10 +395,9 @@ class FullCardRequester
                    didSelectShippingAddress:
                        (autofill::AutofillProfile*)shippingAddress {
   _pendingShippingAddress = shippingAddress;
-
+  DCHECK(shippingAddress);
   web::PaymentAddress address =
-      payment_request_util::GetPaymentAddressFromAutofillProfile(
-          shippingAddress);
+      GetPaymentAddressFromAutofillProfile(*shippingAddress);
   [_delegate paymentRequestCoordinator:self didSelectShippingAddress:address];
 }
 

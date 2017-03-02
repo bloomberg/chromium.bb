@@ -34,12 +34,11 @@ namespace {
 using ::payment_request_util::GetNameLabelFromAutofillProfile;
 using ::payment_request_util::GetAddressLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
-}  // namespace
+using ::payment_request_util::GetShippingAddressSelectorTitle;
+using ::payment_request_util::GetShippingAddressSelectorInfoMessage;
 
 NSString* const kShippingAddressSelectionCollectionViewID =
     @"kShippingAddressSelectionCollectionViewID";
-
-namespace {
 
 const CGFloat kSeparatorEdgeInset = 14;
 
@@ -78,8 +77,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    self.title =
-        payment_request_util::GetShippingAddressSelectorTitle(paymentRequest);
+    self.title = GetShippingAddressSelectorTitle(*paymentRequest);
 
     // Set up leading (return) button.
     UIBarButtonItem* returnButton =
@@ -121,20 +119,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
     messageItem.text = _errorMessage;
     messageItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
   } else {
-    messageItem.text =
-        payment_request_util::GetShippingAddressSelectorInfoMessage(
-            _paymentRequest);
+    messageItem.text = GetShippingAddressSelectorInfoMessage(*_paymentRequest);
   }
   [model addItem:messageItem
       toSectionWithIdentifier:SectionIdentifierShippingAddress];
 
   for (auto* shippingAddress : _paymentRequest->shipping_profiles()) {
+    DCHECK(shippingAddress);
     AutofillProfileItem* item =
         [[AutofillProfileItem alloc] initWithType:ItemTypeShippingAddress];
     item.accessibilityTraits |= UIAccessibilityTraitButton;
-    item.name = GetNameLabelFromAutofillProfile(shippingAddress);
-    item.address = GetAddressLabelFromAutofillProfile(shippingAddress);
-    item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(shippingAddress);
+    item.name = GetNameLabelFromAutofillProfile(*shippingAddress);
+    item.address = GetAddressLabelFromAutofillProfile(*shippingAddress);
+    item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*shippingAddress);
     if (_paymentRequest->selected_shipping_profile() == shippingAddress) {
       item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
       _selectedItem = item;

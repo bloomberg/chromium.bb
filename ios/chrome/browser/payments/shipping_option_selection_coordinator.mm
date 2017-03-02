@@ -11,6 +11,10 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+using ::payment_request_util::GetShippingOptionSelectorErrorMessage;
+}  // namespace
+
 @interface ShippingOptionSelectionCoordinator ()
 
 @property(nonatomic, strong)
@@ -54,9 +58,9 @@
   _viewController.view.userInteractionEnabled = YES;
 
   [_viewController setPending:NO];
-  [_viewController setErrorMessage:payment_request_util::
-                                       GetShippingOptionSelectorErrorMessage(
-                                           _paymentRequest)];
+  DCHECK(_paymentRequest);
+  [_viewController
+      setErrorMessage:GetShippingOptionSelectorErrorMessage(*_paymentRequest)];
   [_viewController loadModel];
   [[_viewController collectionView] reloadData];
 }

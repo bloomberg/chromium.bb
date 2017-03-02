@@ -142,8 +142,14 @@ var SerializedPaymentRequest;
  * A simple object representation of |window.PaymentResponse| meant for
  * communication to the app side.
  * @typedef {{
+ *   paymentRequestId: string,
  *   methodName: string,
- *   details: Object
+ *   details: Object,
+ *   shippingAddress: (!window.PaymentAddress|undefined),
+ *   shippingOption: (string|undefined),
+ *   payerName: (string|undefined),
+ *   payerEmail: (string|undefined),
+ *   payerPhone: (string|undefined)
  * }}
  */
 var SerializedPaymentResponse;
@@ -196,8 +202,21 @@ var SerializedPaymentResponse;
    */
   __gCrWeb['paymentRequestManager'].parsePaymentResponseData = function(
       paymentResponseData) {
-    return new window.PaymentResponse(
+    var response = new window.PaymentResponse(
+        paymentResponseData['paymentRequestID'],
         paymentResponseData['methodName'], paymentResponseData['details']);
+    if (paymentResponseData['shippingAddress'])
+      response.shippingAddress = paymentResponseData['shippingAddress'];
+    if (paymentResponseData['shippingOption'])
+      response.shippingOption = paymentResponseData['shippingOption'];
+    if (paymentResponseData['payerName'])
+      response.payerName = paymentResponseData['payerName'];
+    if (paymentResponseData['payerEmail'])
+      response.payerEmail = paymentResponseData['payerEmail'];
+    if (paymentResponseData['payerPhone'])
+      response.payerPhone = paymentResponseData['payerPhone'];
+
+    return response;
   };
 
   /**
@@ -645,7 +664,6 @@ window.PaymentOptions;
  */
 window.PaymentItem;
 
-// TODO(crbug.com/602666): Convert this to a class with readonly properties.
 /**
  * @typedef {{
  *   country: string,
@@ -677,24 +695,73 @@ window.PaymentShippingOption;
  * A response to a request to make a payment. Represents the choices made by the
  * user and provided to the web page through the resolve function of the Promise
  * returned by PaymentRequest.show().
- * @param {string} methodName The payment method identifier for the payment
- *     method that the user selected to fulfil the transaction.
- * @param {Object} details An object that provides a payment method specific
- *     message used by the merchant to process the transaction and determine
- *     successful fund transfer.
+ * https://w3c.github.io/browser-payment-api/#paymentresponse-interface
+ * @param {string} methodName
+ * @param {Object} details
  * @constructor
  * @private
  */
-window.PaymentResponse = function(methodName, details) {
+window.PaymentResponse = function(paymentRequestID, methodName, details) {
   /**
+   * The same paymentRequestID present in the original window.PaymentRequest.
+   * @type {string}
+   */
+  this.paymentRequestID = paymentRequestID;
+
+  /**
+   * The payment method identifier for the payment method that the user selected
+   * to fulfil the transaction.
    * @type {string}
    */
   this.methodName = methodName;
 
   /**
+   * An object that provides a payment method specific message used by the
+   * merchant to process the transaction and determine successful fund transfer.
+   * the payment request.
    * @type {Object}
    */
   this.details = details;
+
+  /**
+   * If the requestShipping flag was set to true in the window.PaymentOptions
+   * passed to the window.PaymentRequest constructor, this will be the full and
+   * final shipping address chosen by the user.
+   * @type {?window.PaymentAddress}
+   */
+   this.shippingAddress = null;
+
+  /**
+   * If the requestShipping flag was set to true in the window.PaymentOptions
+   * passed to the window.PaymentRequest constructor, this will be the id
+   * attribute of the selected shipping option.
+   * @type {?string}
+   */
+   this.shippingOption = null;
+
+  /**
+   * If the requestPayerName flag was set to true in the window.PaymentOptions
+   * passed to the window.PaymentRequest constructor, this will be the name
+   * provided by the user.
+   * @type {?string}
+   */
+   this.payerName = null;
+
+  /**
+   * If the requestPayerEmail flag was set to true in the window.PaymentOptions
+   * passed to the window.PaymentRequest constructor, this will be the email
+   * address chosen by the user.
+   * @type {?string}
+   */
+   this.payerEmail = null;
+
+  /**
+   * If the requestPayerPhone flag was set to true in the window.PaymentOptions
+   * passed to the window.PaymentRequest constructor, this will be the phone
+   * number chosen by the user.
+   * @type {?string}
+   */
+   this.payerPhone = null;
 };
 
 /**

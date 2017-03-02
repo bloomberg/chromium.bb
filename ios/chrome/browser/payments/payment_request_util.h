@@ -7,11 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/web/public/payments/payment_request.h"
+#include "base/strings/string16.h"
 
 namespace autofill {
 class AutofillProfile;
+class CreditCard;
 }  // namespace autofill
+
+namespace web {
+class BasicCardResponse;
+class PaymentAddress;
+}  // namespace web
 
 class PaymentRequest;
 
@@ -19,51 +25,63 @@ namespace payment_request_util {
 
 // Helper function to get the name label from an autofill profile. Returns nil
 // if the name field is empty.
-NSString* GetNameLabelFromAutofillProfile(autofill::AutofillProfile* profile);
+NSString* GetNameLabelFromAutofillProfile(
+    const autofill::AutofillProfile& profile);
 
 // Helper function to get the address label from an autofill profile. Returns
 // nil if the address field is empty.
 NSString* GetAddressLabelFromAutofillProfile(
-    autofill::AutofillProfile* profile);
+    const autofill::AutofillProfile& profile);
 
 // Helper function to get the phone number label from an autofill profile.
 // Returns nil if the phone number field is empty.
 NSString* GetPhoneNumberLabelFromAutofillProfile(
-    autofill::AutofillProfile* profile);
+    const autofill::AutofillProfile& profile);
 
 // Helper function to get the email label from an autofill profile. Returns nil
 // if the email field is empty.
-NSString* GetEmailLabelFromAutofillProfile(autofill::AutofillProfile* profile);
+NSString* GetEmailLabelFromAutofillProfile(
+    const autofill::AutofillProfile& profile);
 
 // Helper function to get an instance of web::PaymentAddress from an autofill
 // profile.
 web::PaymentAddress GetPaymentAddressFromAutofillProfile(
-    autofill::AutofillProfile* profile);
+    const autofill::AutofillProfile& profile);
+
+// Helper function to get an instance of web::BasicCardResponse from an autofill
+// credit card.
+web::BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
+    const PaymentRequest& payment_request,
+    const autofill::CreditCard& card,
+    const base::string16& cvc);
 
 // Returns the title for the shipping section of the payment summary view given
 // the shipping type specified in |payment_request|.
-NSString* GetShippingSectionTitle(PaymentRequest* payment_request);
+NSString* GetShippingSectionTitle(const PaymentRequest& payment_request);
 
 // Returns the title for the shipping address selection view given the shipping
 // type specified in |payment_request|.
-NSString* GetShippingAddressSelectorTitle(PaymentRequest* payment_request);
+NSString* GetShippingAddressSelectorTitle(
+    const PaymentRequest& payment_request);
 
 // Returns the informational message to be displayed in the shipping address
 // selection view given the shipping type specified in |payment_request|.
-NSString* GetShippingAddressSelectorInfoMessage(PaymentRequest* paymentRequest);
+NSString* GetShippingAddressSelectorInfoMessage(
+    const PaymentRequest& payment_request);
 
 // Returns the error message to be displayed in the shipping address selection
 // view given the shipping type specified in |payment_request|.
 NSString* GetShippingAddressSelectorErrorMessage(
-    PaymentRequest* paymentRequest);
+    const PaymentRequest& payment_request);
 
 // Returns the title for the shipping option selection view given the shipping
 // type specified in |payment_request|.
-NSString* GetShippingOptionSelectorTitle(PaymentRequest* payment_request);
+NSString* GetShippingOptionSelectorTitle(const PaymentRequest& payment_request);
 
 // Returns the error message to be displayed in the shipping option selection
 // view given the shipping type specified in |payment_request|.
-NSString* GetShippingOptionSelectorErrorMessage(PaymentRequest* paymentRequest);
+NSString* GetShippingOptionSelectorErrorMessage(
+    const PaymentRequest& payment_request);
 
 }  // namespace payment_request_util
 
