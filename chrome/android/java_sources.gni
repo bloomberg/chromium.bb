@@ -1603,6 +1603,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactTest.java",
   "junit/src/org/chromium/chrome/browser/payments/AutofillContactUnitTest.java",
   "junit/src/org/chromium/chrome/browser/physicalweb/PwsClientImplTest.java",
+  "junit/src/org/chromium/chrome/browser/physicalweb/PwsResultTest.java",
   "junit/src/org/chromium/chrome/browser/physicalweb/UrlInfoTest.java",
   "junit/src/org/chromium/chrome/browser/snackbar/SnackbarCollectionUnitTest.java",
   "junit/src/org/chromium/chrome/browser/suggestions/TileGroupTest.java",

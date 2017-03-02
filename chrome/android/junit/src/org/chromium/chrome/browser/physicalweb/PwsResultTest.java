@@ -4,55 +4,56 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.support.test.filters.SmallTest;
-
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
+
 /**
  * Tests for {@link PwsResult}.
  */
-public class PwsResultTest extends TestCase {
+@RunWith(BlockJUnit4ClassRunner.class)
+public class PwsResultTest {
     PwsResult mReferencePwsResult = null;
     JSONObject mReferenceJsonObject = null;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mReferencePwsResult = new PwsResult(
-                "https://shorturl.com",
-                "https://longurl.com",
-                "https://longurl.com/favicon.ico",
-                "This is a page",
-                "Pages are the best",
+    @Before
+    public void setUp() throws Exception {
+        mReferencePwsResult = new PwsResult("https://shorturl.com", "https://longurl.com",
+                "https://longurl.com/favicon.ico", "This is a page", "Pages are the best",
                 "group1");
         // Because we can't print JSON sorted by keys, the order is important here.
         mReferenceJsonObject = new JSONObject("{"
                 + "    \"scannedUrl\": \"https://shorturl.com\","
                 + "    \"resolvedUrl\": \"https://longurl.com\","
-                + "    \"icon\": \"https://longurl.com/favicon.ico\","
-                + "    \"title\": \"This is a page\","
-                + "    \"description\": \"Pages are the best\","
-                + "    \"group\": \"group1\""
+                + "    \"pageInfo\": {"
+                + "        \"icon\": \"https://longurl.com/favicon.ico\","
+                + "        \"title\": \"This is a page\","
+                + "        \"description\": \"Pages are the best\","
+                + "        \"groupId\": \"group1\""
+                + "    }"
                 + "}");
     }
 
-    @SmallTest
+    @Test
     public void testJsonSerializeWorks() throws JSONException {
-        assertEquals(mReferenceJsonObject.toString(),
-                mReferencePwsResult.jsonSerialize().toString());
+        assertEquals(
+                mReferenceJsonObject.toString(), mReferencePwsResult.jsonSerialize().toString());
     }
 
-    @SmallTest
+    @Test
     public void testJsonDeserializeWorks() throws JSONException {
         PwsResult pwsResult = PwsResult.jsonDeserialize(mReferenceJsonObject);
         assertEquals(mReferencePwsResult.requestUrl, pwsResult.requestUrl);
-        assertEquals(mReferencePwsResult.responseUrl, pwsResult.responseUrl);
+        assertEquals(mReferencePwsResult.siteUrl, pwsResult.siteUrl);
         assertEquals(mReferencePwsResult.iconUrl, pwsResult.iconUrl);
         assertEquals(mReferencePwsResult.title, pwsResult.title);
         assertEquals(mReferencePwsResult.description, pwsResult.description);
-        assertEquals(mReferencePwsResult.group, pwsResult.group);
+        assertEquals(mReferencePwsResult.groupId, pwsResult.groupId);
     }
 }
