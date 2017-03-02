@@ -1664,6 +1664,27 @@ ivi_layout_screen_add_layer(struct weston_output *output,
 }
 
 static int32_t
+ivi_layout_screen_remove_layer(struct weston_output *output,
+			    struct ivi_layout_layer *removelayer)
+{
+	struct ivi_layout_screen *iviscrn;
+
+	if (output == NULL || removelayer == NULL) {
+		weston_log("ivi_layout_screen_remove_layer: invalid argument\n");
+		return IVI_FAILED;
+	}
+
+	iviscrn = get_screen_from_output(output);
+
+	wl_list_remove(&removelayer->pending.link);
+	wl_list_init(&removelayer->pending.link);
+
+	iviscrn->order.dirty = 1;
+
+	return IVI_SUCCEEDED;
+}
+
+static int32_t
 ivi_layout_screen_set_render_order(struct weston_output *output,
 				   struct ivi_layout_layer **pLayer,
 				   const int32_t number)
@@ -2088,6 +2109,7 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	 */
 	.get_screens_under_layer	= ivi_layout_get_screens_under_layer,
 	.screen_add_layer		= ivi_layout_screen_add_layer,
+	.screen_remove_layer		= ivi_layout_screen_remove_layer,
 	.screen_set_render_order	= ivi_layout_screen_set_render_order,
 
 	/**

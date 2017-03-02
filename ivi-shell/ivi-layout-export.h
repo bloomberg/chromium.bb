@@ -578,6 +578,16 @@ struct ivi_layout_interface {
 	 */
 	struct ivi_layout_surface *
 		(*get_surface)(struct weston_surface *surface);
+
+	/**
+	 * \brief Remove a ivi_layer to a weston_output which is currently managed
+	 * by the service
+	 *
+	 * \return IVI_SUCCEEDED if the method call was successful
+	 * \return IVI_FAILED if the method call was failed
+	 */
+	int32_t (*screen_remove_layer)(struct weston_output *output,
+				       struct ivi_layout_layer *removelayer);
 };
 
 #ifdef __cplusplus
