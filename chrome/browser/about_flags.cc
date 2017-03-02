@@ -2329,6 +2329,12 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
         // defined(OS_WIN)
 
+#if defined(OS_ANDROID)
+    {"enable-custom-feedback-ui", IDS_FLAGS_ENABLE_CUSTOM_FEEDBACK_UI_NAME,
+     IDS_FLAGS_ENABLE_CUSTOM_FEEDBACK_UI_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCustomFeedbackUi)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
