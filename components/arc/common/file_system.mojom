@@ -37,9 +37,9 @@ enum ChangeType {
   CHANGED = 0,
 
   // Indicates that the watched document itself was deleted.
-  // When OnDocumentChanged() is called with this change type, the corresponding
-  // watcher has been already uninstalled and the host should not call
-  // RemoveWatcher().
+  // Even if OnDocumentChanged() is called with this change type, the
+  // corresponding watcher is not uninstalled automatically. The host must
+  // call RemoveWatcher() to clean up an orphaned watcher.
   DELETED = 1,
 };
 
@@ -47,9 +47,7 @@ enum ChangeType {
 // Next method ID: 1
 interface FileSystemHost {
   // Called when a watched document was changed.
-  // |type| describes the type of change made to the document. If |type| is
-  // DELETED, the watcher has been already removed and the host should not call
-  // RemoveWatcher().
+  // |type| describes the type of change made to the document.
   [MinVersion=3] OnDocumentChanged@0(int64 watcher_id, ChangeType type);
 };
 
@@ -73,7 +71,7 @@ interface FileSystemInstance {
 
   // Installs a document watcher to watch updates of a document.
   //
-  // Note: Currently, watchers can be installed only on directories, and only
+  // Currently, watchers can be installed only on directories, and only
   // directory content changes are notified.
   //
   // On success, a positive unique integer is returned as a watcher ID.
@@ -83,6 +81,9 @@ interface FileSystemInstance {
   //
   // It is allowed to install multiple watchers to the same directory. In that
   // case, different watcher IDs are returned.
+  //
+  // Watchers are not persistent. When the Mojo connection is lost, all
+  // watchers are cleared. Also, after reconnecting, watcher IDs can be reused.
   [MinVersion=3] AddWatcher@6(string authority, string document_id) =>
       (int64 watcher_id);
 
@@ -117,9 +118,7 @@ interface FileSystemInstance {
   // with the watcher ID. Whether OnDocumentChanged() is called or not after
   // this method is called and before this method returns is undefined.
   //
-  // It fails if the specified watcher does not exist. Note that a watcher
-  // can be automatically uninstalled when a watched document is deleted
-  // (notified by OnDocumentChanged() with |type| = DELETED).
+  // It fails if the specified watcher does not exist.
   [MinVersion=3] RemoveWatcher@7(int64 watcher_id) => (bool success);
 
   // Requests MediaProvider to scan specified files.
