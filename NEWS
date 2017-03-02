@@ -84,6 +84,8 @@ test data. Refer to the documentation for the details
   Braille Table (gr-gr-g1.utb) thanks to Dave Mielke.
 - Improved number back-translations on fr-fr-g1 and vi-g1 tables
   thanks to Victor Montalvao.
+- New Chinese Braille table for use in the mainland of China thanks to
+  Kaifang Bao of RejoinTech.
 ** License changes
 - DocArch has agreed to relicense their tables, so we have 8 more
   tables under the LGPLv2.1+.
