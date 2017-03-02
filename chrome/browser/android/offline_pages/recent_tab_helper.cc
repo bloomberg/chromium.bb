@@ -44,9 +44,6 @@ class DefaultDelegate: public offline_pages::RecentTabHelper::Delegate {
     return base::MakeUnique<offline_pages::OfflinePageMHTMLArchiver>(
         web_contents);
   }
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
-    return base::ThreadTaskRunnerHandle::Get();
-  }
   bool GetTabId(content::WebContents* web_contents, int* tab_id) override {
     return offline_pages::OfflinePageUtils::GetTabId(web_contents, tab_id);
   }
@@ -167,7 +164,7 @@ bool RecentTabHelper::EnsureInitialized() {
     return snapshots_enabled_;
 
   snapshot_controller_.reset(
-      new SnapshotController(delegate_->GetTaskRunner(), this));
+      new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this));
   snapshot_controller_->Stop();  // It is reset when navigation commits.
 
   int tab_id_number = 0;

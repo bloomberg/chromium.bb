@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,8 +18,7 @@ namespace policy {
 class ServerBackedStateKeysBrokerTest : public testing::Test {
  public:
   ServerBackedStateKeysBrokerTest()
-      : task_runner_(new base::TestSimpleTaskRunner()),
-        broker_(&fake_session_manager_client_, task_runner_),
+      : broker_(&fake_session_manager_client_),
         updated_(false),
         callback_invoked_(false) {
     state_keys_.push_back("1");
@@ -47,7 +46,7 @@ class ServerBackedStateKeysBrokerTest : public testing::Test {
 
  protected:
   base::MessageLoop loop_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ScopedMockTimeMessageLoopTaskRunner mocked_main_runner_;
   chromeos::FakeSessionManagerClient fake_session_manager_client_;
   ServerBackedStateKeysBroker broker_;
   std::vector<std::string> state_keys_;
@@ -69,7 +68,7 @@ TEST_F(ServerBackedStateKeysBrokerTest, Load) {
       broker_.RegisterUpdateCallback(
           base::Bind(&ServerBackedStateKeysBrokerTest::StateKeysUpdated,
                      base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+  mocked_main_runner_->RunUntilIdle();
   EXPECT_TRUE(updated_);
   ExpectGood();
 }
@@ -82,7 +81,7 @@ TEST_F(ServerBackedStateKeysBrokerTest, Retry) {
       broker_.RegisterUpdateCallback(
           base::Bind(&ServerBackedStateKeysBrokerTest::StateKeysUpdated,
                      base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+  mocked_main_runner_->RunUntilIdle();
   EXPECT_TRUE(updated_);
 
   EXPECT_FALSE(broker_.pending());
@@ -94,7 +93,7 @@ TEST_F(ServerBackedStateKeysBrokerTest, Retry) {
   updated_ = false;
   ServerBackedStateKeysBroker::Subscription subscription2 =
       broker_.RegisterUpdateCallback(base::Bind(&base::DoNothing));
-  base::RunLoop().RunUntilIdle();
+  mocked_main_runner_->RunUntilIdle();
   EXPECT_TRUE(updated_);
   ExpectGood();
 }
@@ -104,7 +103,7 @@ TEST_F(ServerBackedStateKeysBrokerTest, Refresh) {
       broker_.RegisterUpdateCallback(
           base::Bind(&ServerBackedStateKeysBrokerTest::StateKeysUpdated,
                      base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+  mocked_main_runner_->RunUntilIdle();
   EXPECT_TRUE(updated_);
   ExpectGood();
 
@@ -113,15 +112,15 @@ TEST_F(ServerBackedStateKeysBrokerTest, Refresh) {
   state_keys_.push_back("4");
   fake_session_manager_client_.set_server_backed_state_keys(state_keys_);
   updated_ = false;
-  task_runner_->RunPendingTasks();
-  base::RunLoop().RunUntilIdle();
+  mocked_main_runner_->FastForwardBy(
+      ServerBackedStateKeysBroker::GetPollIntervalForTesting());
   EXPECT_TRUE(updated_);
   ExpectGood();
 
   // No update callback if the keys are unchanged.
   updated_ = false;
-  task_runner_->RunPendingTasks();
-  base::RunLoop().RunUntilIdle();
+  mocked_main_runner_->FastForwardBy(
+      ServerBackedStateKeysBroker::GetPollIntervalForTesting());
   EXPECT_FALSE(updated_);
   ExpectGood();
 }
@@ -130,7 +129,7 @@ TEST_F(ServerBackedStateKeysBrokerTest, Request) {
   broker_.RequestStateKeys(
       base::Bind(&ServerBackedStateKeysBrokerTest::HandleStateKeysCallback,
                  base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+  mocked_main_runner_->RunUntilIdle();
   ExpectGood();
   EXPECT_TRUE(callback_invoked_);
   EXPECT_EQ(state_keys_, callback_state_keys_);
@@ -143,7 +142,7 @@ TEST_F(ServerBackedStateKeysBrokerTest, RequestFailure) {
   broker_.RequestStateKeys(
       base::Bind(&ServerBackedStateKeysBrokerTest::HandleStateKeysCallback,
                  base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+  mocked_main_runner_->RunUntilIdle();
   EXPECT_TRUE(callback_invoked_);
   EXPECT_TRUE(callback_state_keys_.empty());
 }

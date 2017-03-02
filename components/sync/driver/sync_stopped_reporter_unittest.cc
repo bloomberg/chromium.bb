@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "net/http/http_status_code.h"
@@ -152,23 +152,18 @@ TEST_F(SyncStoppedReporterTest, DestructionDuringRequestHandler) {
 }
 
 TEST_F(SyncStoppedReporterTest, Timeout) {
+  // Mock the underlying loop's clock to trigger the timer at will.
+  base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
+
   SyncStoppedReporter ssr(test_url(), user_agent(), request_context(),
                           callback());
-
-  // A task runner that can trigger the timeout immediately.
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner(
-      new base::TestSimpleTaskRunner());
-  ssr.SetTimerTaskRunnerForTest(task_runner);
 
   // Begin request.
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
 
   // Trigger the timeout.
-  ASSERT_TRUE(task_runner->HasPendingTask());
-  task_runner->RunPendingTasks();
-
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  ASSERT_TRUE(mock_main_runner->HasPendingTask());
+  mock_main_runner->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(SyncStoppedReporter::RESULT_TIMEOUT, request_result());
 }
 
@@ -183,20 +178,18 @@ TEST_F(SyncStoppedReporterTest, NoCallback) {
 }
 
 TEST_F(SyncStoppedReporterTest, NoCallbackTimeout) {
+  // Mock the underlying loop's clock to trigger the timer at will.
+  base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
+
   SyncStoppedReporter ssr(GURL(kTestURL), user_agent(), request_context(),
                           SyncStoppedReporter::ResultCallback());
-
-  // A task runner that can trigger the timeout immediately.
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner(
-      new base::TestSimpleTaskRunner());
-  ssr.SetTimerTaskRunnerForTest(task_runner);
 
   // Begin request.
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
 
   // Trigger the timeout.
-  ASSERT_TRUE(task_runner->HasPendingTask());
-  task_runner->RunPendingTasks();
+  ASSERT_TRUE(mock_main_runner->HasPendingTask());
+  mock_main_runner->FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace syncer

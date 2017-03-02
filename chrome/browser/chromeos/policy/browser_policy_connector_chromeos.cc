@@ -123,8 +123,7 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
           device_active_directory_policy_manager_));
     } else {
       state_keys_broker_ = base::MakeUnique<ServerBackedStateKeysBroker>(
-          chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-          base::ThreadTaskRunnerHandle::Get());
+          chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
 
       device_cloud_policy_manager_ = new DeviceCloudPolicyManagerChromeOS(
           std::move(device_cloud_policy_store),

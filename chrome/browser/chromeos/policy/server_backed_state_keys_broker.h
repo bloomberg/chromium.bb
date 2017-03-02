@@ -12,12 +12,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-
-namespace base {
-class TaskRunner;
-}
 
 namespace chromeos {
 class SessionManagerClient;
@@ -36,8 +31,7 @@ class ServerBackedStateKeysBroker {
       StateKeysCallback;
 
   ServerBackedStateKeysBroker(
-      chromeos::SessionManagerClient* session_manager_client,
-      scoped_refptr<base::TaskRunner> delayed_task_runner);
+      chromeos::SessionManagerClient* session_manager_client);
   ~ServerBackedStateKeysBroker();
 
   // Registers a callback to be invoked whenever the state keys get updated.
@@ -53,6 +47,8 @@ class ServerBackedStateKeysBroker {
   // sync fails / the network is not established, then the |callback| is never
   // invoked. See http://crbug.com/649422 for more context.
   void RequestStateKeys(const StateKeysCallback& callback);
+
+  static base::TimeDelta GetPollIntervalForTesting();
 
   // Get the set of current state keys. Empty if state keys are unavailable
   // or pending retrieval.
@@ -78,8 +74,6 @@ class ServerBackedStateKeysBroker {
   void StoreStateKeys(const std::vector<std::string>& state_keys);
 
   chromeos::SessionManagerClient* session_manager_client_;
-
-  scoped_refptr<base::TaskRunner> delayed_task_runner_;
 
   // The current set of state keys.
   std::vector<std::string> state_keys_;

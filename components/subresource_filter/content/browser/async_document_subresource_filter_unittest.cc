@@ -11,6 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
@@ -22,10 +24,7 @@ namespace subresource_filter {
 
 class AsyncDocumentSubresourceFilterTest : public ::testing::Test {
  public:
-  AsyncDocumentSubresourceFilterTest()
-      : reply_task_runner_(new base::TestSimpleTaskRunner),
-        reply_task_runner_handle_(reply_task_runner_),
-        blocking_task_runner_(new base::TestSimpleTaskRunner) {}
+  AsyncDocumentSubresourceFilterTest() = default;
 
  protected:
   void SetUp() override {
@@ -52,10 +51,10 @@ class AsyncDocumentSubresourceFilterTest : public ::testing::Test {
   }
 
   void RunUntilIdle() {
-    while (blocking_task_runner_->HasPendingTask() ||
-           reply_task_runner_->HasPendingTask()) {
+    base::RunLoop().RunUntilIdle();
+    while (blocking_task_runner_->HasPendingTask()) {
       blocking_task_runner_->RunUntilIdle();
-      reply_task_runner_->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 
@@ -72,9 +71,11 @@ class AsyncDocumentSubresourceFilterTest : public ::testing::Test {
   testing::TestRulesetPair test_ruleset_pair_;
 
   // Note: ADSF assumes a task runner is associated with the current thread.
-  scoped_refptr<base::TestSimpleTaskRunner> reply_task_runner_;
-  base::SequencedTaskRunnerHandle reply_task_runner_handle_;
-  scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner_;
+  // Instantiate a MessageLoop on the current thread and use RunLoop to handle
+  // the replies ADSF tasks generate.
+  base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner_ =
+      new base::TestSimpleTaskRunner;
 
   std::unique_ptr<VerifiedRulesetDealer::Handle> dealer_handle_;
 

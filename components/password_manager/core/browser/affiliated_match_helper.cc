@@ -33,13 +33,12 @@ bool IsAndroidApplicationCredential(const autofill::PasswordForm& form,
 }  // namespace
 
 // static
-const int64_t AffiliatedMatchHelper::kInitializationDelayOnStartupInSeconds;
+constexpr base::TimeDelta AffiliatedMatchHelper::kInitializationDelayOnStartup;
 
 AffiliatedMatchHelper::AffiliatedMatchHelper(
     PasswordStore* password_store,
     std::unique_ptr<AffiliationService> affiliation_service)
     : password_store_(password_store),
-      task_runner_for_waiting_(base::ThreadTaskRunnerHandle::Get()),
       affiliation_service_(std::move(affiliation_service)),
       weak_ptr_factory_(this) {}
 
@@ -51,10 +50,11 @@ AffiliatedMatchHelper::~AffiliatedMatchHelper() {
 void AffiliatedMatchHelper::Initialize() {
   DCHECK(password_store_);
   DCHECK(affiliation_service_);
-  task_runner_for_waiting_->PostDelayedTask(
-      FROM_HERE, base::Bind(&AffiliatedMatchHelper::DoDeferredInitialization,
-                            weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kInitializationDelayOnStartupInSeconds));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AffiliatedMatchHelper::DoDeferredInitialization,
+                 weak_ptr_factory_.GetWeakPtr()),
+      kInitializationDelayOnStartup);
 }
 
 void AffiliatedMatchHelper::GetAffiliatedAndroidRealms(
@@ -142,11 +142,6 @@ bool AffiliatedMatchHelper::IsValidWebCredential(
   FacetURI facet_uri(FacetURI::FromPotentiallyInvalidSpec(form.signon_realm));
   return form.scheme == autofill::PasswordForm::SCHEME_HTML &&
          facet_uri.IsValidWebFacetURI();
-}
-
-void AffiliatedMatchHelper::SetTaskRunnerUsedForWaitingForTesting(
-    const scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  task_runner_for_waiting_ = task_runner;
 }
 
 void AffiliatedMatchHelper::DoDeferredInitialization() {

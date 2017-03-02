@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/wallpaper/wallpaper_color_calculator_observer.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +53,8 @@ class WallPaperColorCalculatorTest : public testing::Test {
   ~WallPaperColorCalculatorTest() override;
 
  protected:
-  void InstallTaskRunner(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  void InstallTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   gfx::ImageSkia image_;
 
@@ -65,7 +66,7 @@ class WallPaperColorCalculatorTest : public testing::Test {
 
  private:
   // Required by PostTaskAndReplyImpl.
-  std::unique_ptr<base::SequencedTaskRunnerHandle> task_runner_handle_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> task_runner_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WallPaperColorCalculatorTest);
 };
@@ -95,10 +96,10 @@ WallPaperColorCalculatorTest::WallPaperColorCalculatorTest()
 WallPaperColorCalculatorTest::~WallPaperColorCalculatorTest() {}
 
 void WallPaperColorCalculatorTest::InstallTaskRunner(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   task_runner_handle_.reset();
   task_runner_handle_ =
-      base::MakeUnique<base::SequencedTaskRunnerHandle>(task_runner);
+      base::MakeUnique<base::ThreadTaskRunnerHandle>(task_runner);
   calculator_->SetTaskRunnerForTest(task_runner);
 }
 

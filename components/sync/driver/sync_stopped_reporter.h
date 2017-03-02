@@ -43,10 +43,6 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Override the timer's task runner so it can be triggered in tests.
-  void SetTimerTaskRunnerForTest(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
  private:
   // Convert the base sync URL into the sync event URL.
   static GURL GetSyncEventURL(const GURL& sync_service_url);

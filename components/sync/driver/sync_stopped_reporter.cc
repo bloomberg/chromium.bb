@@ -111,9 +111,4 @@ GURL SyncStoppedReporter::GetSyncEventURL(const GURL& sync_service_url) {
   return sync_service_url.ReplaceComponents(replacements);
 }
 
-void SyncStoppedReporter::SetTimerTaskRunnerForTest(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  timer_.SetTaskRunner(task_runner);
-}
-
 }  // namespace syncer

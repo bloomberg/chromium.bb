@@ -56,7 +56,6 @@ class RecentTabHelper
     virtual ~Delegate() {}
     virtual std::unique_ptr<OfflinePageArchiver> CreatePageArchiver(
         content::WebContents* web_contents) = 0;
-    virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
     // There is no expectations that tab_id is always present.
     virtual bool GetTabId(content::WebContents* web_contents, int* tab_id) = 0;
     virtual bool IsLowEndDevice() = 0;

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/session_manager_client.h"
 
 namespace policy {
@@ -19,19 +19,16 @@ namespace {
 // state key generation, so they rotate over time. The quantum size is pretty
 // coarse though (currently 2^23 seconds), so simply polling for a new state
 // keys once a day is good enough.
-const int kPollIntervalSeconds = 60 * 60 * 24;
+constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromDays(1);
 
 }  // namespace
 
 ServerBackedStateKeysBroker::ServerBackedStateKeysBroker(
-    chromeos::SessionManagerClient* session_manager_client,
-    scoped_refptr<base::TaskRunner> delayed_task_runner)
+    chromeos::SessionManagerClient* session_manager_client)
     : session_manager_client_(session_manager_client),
-      delayed_task_runner_(delayed_task_runner),
       requested_(false),
       initial_retrieval_completed_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ServerBackedStateKeysBroker::~ServerBackedStateKeysBroker() {
 }
@@ -55,6 +52,11 @@ void ServerBackedStateKeysBroker::RequestStateKeys(
   if (!callback.is_null())
     callback.Run(state_keys_);
   return;
+}
+
+// static
+base::TimeDelta ServerBackedStateKeysBroker::GetPollIntervalForTesting() {
+  return kPollInterval;
 }
 
 void ServerBackedStateKeysBroker::FetchStateKeys() {
@@ -95,11 +97,11 @@ void ServerBackedStateKeysBroker::StoreStateKeys(
       callback->Run(state_keys_);
   }
 
-  delayed_task_runner_->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ServerBackedStateKeysBroker::FetchStateKeys,
                  weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kPollIntervalSeconds));
+      kPollInterval);
 }
 
 }  // namespace policy
