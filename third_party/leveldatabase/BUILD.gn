@@ -14,6 +14,21 @@ config("leveldatabase_config") {
   ]
 }
 
+source_set("leveldatabase_opts.sse42") {
+  sources = [
+    "src/port/port_posix_sse.cc",
+  ]
+
+  configs += [ ":leveldatabase_config" ]
+
+  if (target_cpu == "x86" || target_cpu == "x64") {
+    defines += [ "LEVELDB_PLATFORM_POSIX_SSE" ]
+    if (!is_win || is_clang) {
+      cflags = [ "-msse4.2" ]
+    }
+  }
+}
+
 static_library("leveldatabase") {
   sources = [
     "env_chromium.cc",
@@ -108,6 +123,7 @@ static_library("leveldatabase") {
   public_configs = [ ":leveldatabase_config" ]
 
   deps = [
+    ":leveldatabase_opts.sse42",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//third_party/re2",
@@ -188,6 +204,14 @@ if (!is_android) {
     deps = [
       ":leveldb_testutil",
     ]
+
+    # TODO(crbug.com/698013): Fix leveldb to remove the need for suppressing
+    #                         warnings.
+    if (is_win) {
+      # util\cache_test.cc(167): warning C4018: '<': signed/unsigned mismatch
+      # util\cache_test.cc(171): warning C4018: '<': signed/unsigned mismatch
+      cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
+    }
   }
 
   test("leveldb_corruption_test") {
@@ -340,16 +364,26 @@ if (!is_android) {
     ]
   }
 
-  test("leveldb_bench") {
-    sources = [
-      "src/db/db_bench.cc",
-    ]
-
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
-
+  group("leveldb_test_targets") {
+    testonly = true
     deps = [
-      ":leveldb_testutil",
+      ":env_chromium_unittests",
+      ":leveldb_arena_test",
+      ":leveldb_bloom_test",
+      ":leveldb_cache_test",
+      ":leveldb_corruption_test",
+      ":leveldb_crc32c_test",
+      ":leveldb_db_bench",
+      ":leveldb_db_test",
+      ":leveldb_dbformat_test",
+      ":leveldb_env_test",
+      ":leveldb_filename_test",
+      ":leveldb_filter_block_test",
+      ":leveldb_log_test",
+      ":leveldb_skiplist_test",
+      ":leveldb_table_test",
+      ":leveldb_version_edit_test",
+      ":leveldb_write_batch_test",
     ]
   }
 }
