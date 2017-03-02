@@ -1653,10 +1653,10 @@ A metadata field must be defined on its own line, starting with
 @code{#+}. It has the following syntax:
 
 @example
-#+@emph{<key>}: @emph{<value>}
+#+<key>: <value>
 @end example
 
-where @samp{@emph{<key>}} and @samp{@emph{<value>}} are sequences of
+where @samp{<key>} and @samp{<value>} are sequences of
 one or more characters @code{0} to @code{9}, @code{a} to @code{z},
 @code{A} tot @code{Z}, @code{-} and @code{_}. The colon that separates
 the key and value may have zero or more spaces or tabs on either side.
@@ -1665,15 +1665,14 @@ A value is optional. In case of no value the colon must be omitted as
 well:
 
 @example
-#+@emph{<key>}
+#+<key>
 @end example
 
 There is no restriction on which keys and values are allowed, as long
 as the syntax is correct. However in order to be really useful there
 must be some standard keys and values. A possible grammar is proposed
 on the wiki page
-@url{https://github.com/liblouis/liblouis/wiki/Table-discovery-based-on-table-metadata#standard-metadata-tags,Standard
-metadata tags}.
+@url{https://github.com/liblouis/liblouis/wiki/Table-discovery-based-on-table-metadata#standard-metadata-tags, Standard metadata tags}.
 
 @anchor{Query Syntax}
 @section Query Syntax
@@ -1682,19 +1681,19 @@ A query that is passed to the @ref{lou_findTable,@code{lou_findTable}}
 function must have the following syntax:
 
 @example
-@emph{<feature1>} @emph{<feature2>} @emph{<feature3>} ...
+<feature1> <feature2> <feature3> ...
 @end example
 
-where @samp{@emph{<feature>}} is either:
+where @samp{<feature>} is either:
 
 @example
-@emph{<key>}:@emph{<value>}
+<key>: <value>
 @end example
 
 or:
 
 @example
-@emph{<key>}
+<key>
 @end example
 
 Features are separated by one or more spaces or tabs. No spaces are
