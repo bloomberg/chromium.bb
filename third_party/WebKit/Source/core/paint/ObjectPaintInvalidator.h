@@ -74,8 +74,8 @@ class CORE_EXPORT ObjectPaintInvalidator {
   void invalidatePaintIncludingNonSelfPaintingLayerDescendants(
       const LayoutBoxModelObject& paintInvalidationContainer);
 
-  LayoutPoint previousLocationInBacking() const;
-  void setPreviousLocationInBacking(const LayoutPoint&);
+  LayoutPoint locationInBacking() const;
+  void setLocationInBacking(const LayoutPoint&);
 
  private:
   void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(

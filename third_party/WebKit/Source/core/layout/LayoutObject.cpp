@@ -1093,10 +1093,6 @@ String LayoutObject::debugName() const {
   return name.toString();
 }
 
-LayoutRect LayoutObject::visualRect() const {
-  return previousVisualRect();
-}
-
 bool LayoutObject::isPaintInvalidationContainer() const {
   return hasLayer() &&
          toLayoutBoxModelObject(this)->layer()->isPaintInvalidationContainer();
@@ -1200,8 +1196,8 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
   DCHECK(paintInvalidationContainer == containerForPaintInvalidation());
 
   ObjectPaintInvalidator paintInvalidator(*this);
-  context.oldVisualRect = previousVisualRect();
-  context.oldLocation = paintInvalidator.previousLocationInBacking();
+  context.oldVisualRect = visualRect();
+  context.oldLocation = paintInvalidator.locationInBacking();
   context.newVisualRect = paintInvalidationState.computeVisualRectInBacking();
   context.newLocation = paintInvalidationState.computeLocationInBacking(
       context.newVisualRect.location());
@@ -1213,8 +1209,8 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
 
   adjustVisualRectForRasterEffects(context.newVisualRect);
 
-  setPreviousVisualRect(context.newVisualRect);
-  paintInvalidator.setPreviousLocationInBacking(context.newLocation);
+  setVisualRect(context.newVisualRect);
+  paintInvalidator.setLocationInBacking(context.newLocation);
 
   if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() &&
       paintInvalidationState
@@ -1244,16 +1240,16 @@ void LayoutObject::adjustVisualRectForCompositedScrolling(
   }
 }
 
-LayoutRect LayoutObject::previousVisualRectIncludingCompositedScrolling(
+LayoutRect LayoutObject::visualRectIncludingCompositedScrolling(
     const LayoutBoxModelObject& paintInvalidationContainer) const {
-  LayoutRect rect = previousVisualRect();
+  LayoutRect rect = visualRect();
   adjustVisualRectForCompositedScrolling(rect, paintInvalidationContainer);
   return rect;
 }
 
 void LayoutObject::clearPreviousVisualRects() {
-  setPreviousVisualRect(LayoutRect());
-  ObjectPaintInvalidator(*this).setPreviousLocationInBacking(LayoutPoint());
+  setVisualRect(LayoutRect());
+  ObjectPaintInvalidator(*this).setLocationInBacking(LayoutPoint());
   // Ensure check paint invalidation of subtree that would be triggered by
   // location change if we had valid previous location.
   setMayNeedPaintInvalidationSubtree();

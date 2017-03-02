@@ -354,8 +354,8 @@ void PaintInvalidator::updateVisualRect(const LayoutObject& object,
   }
 
   ObjectPaintInvalidator objectPaintInvalidator(object);
-  context.oldVisualRect = object.previousVisualRect();
-  context.oldLocation = objectPaintInvalidator.previousLocationInBacking();
+  context.oldVisualRect = object.visualRect();
+  context.oldLocation = objectPaintInvalidator.locationInBacking();
 
   IntSize adjustment = object.scrollAdjustmentForPaintInvalidation(
       *context.paintInvalidationContainer);
@@ -377,8 +377,8 @@ void PaintInvalidator::updateVisualRect(const LayoutObject& object,
       context.newVisualRect.setLocation(context.newLocation);
   }
 
-  object.getMutableForPainting().setPreviousVisualRect(context.newVisualRect);
-  objectPaintInvalidator.setPreviousLocationInBacking(context.newLocation);
+  object.getMutableForPainting().setVisualRect(context.newVisualRect);
+  objectPaintInvalidator.setLocationInBacking(context.newLocation);
 }
 
 void PaintInvalidator::invalidatePaintIfNeeded(

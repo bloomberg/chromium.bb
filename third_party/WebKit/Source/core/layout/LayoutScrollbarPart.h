@@ -81,7 +81,7 @@ class LayoutScrollbarPart final : public LayoutBlock {
 
   // Expose for LayoutScrollbar and PaintInvalidationCapableScrollableArea for
   // paint invalidation.
-  using LayoutObject::setPreviousVisualRect;
+  using LayoutObject::setVisualRect;
 
  protected:
   void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;

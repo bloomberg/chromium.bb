@@ -410,8 +410,8 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
   const LayoutBoxModelObject& paintInvalidationContainer =
       box().containerForPaintInvalidation();
 
-  FloatQuad quadForFakeMouseMoveEvent = FloatQuad(FloatRect(
-      layer()->layoutObject().previousVisualRectIncludingCompositedScrolling(
+  FloatQuad quadForFakeMouseMoveEvent = FloatQuad(
+      FloatRect(layer()->layoutObject().visualRectIncludingCompositedScrolling(
           paintInvalidationContainer)));
 
   quadForFakeMouseMoveEvent =

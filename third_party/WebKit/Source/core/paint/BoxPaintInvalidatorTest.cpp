@@ -181,7 +181,7 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
 
   Element* target = document().getElementById("target");
   LayoutObject* targetObject = target->layoutObject();
-  EXPECT_EQ(LayoutRect(0, 0, 70, 140), targetObject->previousVisualRect());
+  EXPECT_EQ(LayoutRect(0, 0, 70, 140), targetObject->visualRect());
 
   document().view()->setTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr,
@@ -189,7 +189,7 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
   document().view()->updateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(LayoutUnit(), LayoutUnit(0.6), LayoutUnit(70),
                        LayoutUnit(139.3)),
-            targetObject->previousVisualRect());
+            targetObject->visualRect());
   const auto* rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
   ASSERT_EQ(1u, rasterInvalidations->size());
@@ -203,7 +203,7 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
   document().view()->updateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(LayoutUnit(), LayoutUnit(0.6), LayoutUnit(69.3),
                        LayoutUnit(138.5)),
-            targetObject->previousVisualRect());
+            targetObject->visualRect());
   rasterInvalidations =
       &getRasterInvalidationTracking()->trackedRasterInvalidations;
   ASSERT_EQ(2u, rasterInvalidations->size());

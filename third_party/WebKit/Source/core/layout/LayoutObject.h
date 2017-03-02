@@ -213,7 +213,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   String decoratedName() const;
 
   // DisplayItemClient methods.
-  LayoutRect visualRect() const final;
+  LayoutRect visualRect() const final { return m_visualRect; }
   String debugName() const final;
 
   LayoutObject* parent() const { return m_parent; }
@@ -1619,13 +1619,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool isRelayoutBoundaryForInspector() const;
 
-  // The previous visual rect, in the the space of the paint invalidation
-  // container (*not* the graphics layer that paints this object).
-  LayoutRect previousVisualRectIncludingCompositedScrolling(
+  // The visual rect, in the the space of the paint invalidation container
+  // (*not* the graphics layer that paints this object).
+  LayoutRect visualRectIncludingCompositedScrolling(
       const LayoutBoxModelObject& paintInvalidationContainer) const;
-
-  // The returned rect does *not* account for composited scrolling.
-  const LayoutRect& previousVisualRect() const { return m_previousVisualRect; }
 
   // Called when the previous visual rect(s) is no longer valid.
   virtual void clearPreviousVisualRects();
@@ -1731,9 +1728,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     // The following setters store the current values as calculated during the
     // pre-paint tree walk. TODO(wangxianzhu): Add check of lifecycle states.
-    void setPreviousVisualRect(const LayoutRect& r) {
-      m_layoutObject.setPreviousVisualRect(r);
-    }
+    void setVisualRect(const LayoutRect& r) { m_layoutObject.setVisualRect(r); }
     void setPaintOffset(const LayoutPoint& p) {
       DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
       DCHECK_EQ(m_layoutObject.document().lifecycle().state(),
@@ -1859,10 +1854,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Paint invalidators will access the internal global map storing the data
   // only when the flag is set, to avoid unnecessary map lookups.
-  bool hasPreviousLocationInBacking() const {
+  bool hasLocationInBacking() const {
     return m_bitfields.hasPreviousLocationInBacking();
   }
-  bool hasPreviousSelectionVisualRect() const {
+  bool hasSelectionVisualRect() const {
     return m_bitfields.hasPreviousSelectionVisualRect();
   }
 
@@ -2010,9 +2005,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void computeSelfHitTestRects(Vector<LayoutRect>&,
                                        const LayoutPoint& layerOffset) const {}
 
-  void setPreviousVisualRect(const LayoutRect& rect) {
-    m_previousVisualRect = rect;
-  }
+  void setVisualRect(const LayoutRect& rect) { m_visualRect = rect; }
 
 #if DCHECK_IS_ON()
   virtual bool paintInvalidationStateIsDirty() const {
@@ -2067,7 +2060,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
  private:
-  // Adjusts a visual rect in the space of |m_previousVisualRect| to be in the
+  // Adjusts a visual rect in the space of |m_visualRect| to be in the
   // space of the |paintInvalidationContainer|, if needed. They can be different
   // only if |paintInvalidationContainer| is a composited scroller.
   void adjustVisualRectForCompositedScrolling(
@@ -2544,7 +2537,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // This stores the visual rect computed by the latest paint invalidation.
   // This rect does *not* account for composited scrolling. See
   // adjustVisualRectForCompositedScrolling().
-  LayoutRect m_previousVisualRect;
+  LayoutRect m_visualRect;
 
   // This stores the paint offset computed by the latest paint property tree
   // building. It is relative to the containing transform space. It is the same
