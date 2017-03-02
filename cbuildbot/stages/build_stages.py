@@ -14,6 +14,7 @@ from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import repository
+from chromite.cbuildbot import topology
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import config_lib
@@ -440,7 +441,22 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')
+      #TODO: @chingcodes Remove upload after events DB is final
       self.UploadArtifact(event_filename, archive=False, strict=True)
+
+      creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)
+
+      build_id, db = self._run.GetCIDBHandle()
+      if db and creds_file:
+        parent_key = ('Build',
+                      build_id,
+                      'BuildStage',
+                      self._build_stage_id)
+
+        commands.ExportToGCloud(self._build_root,
+                                creds_file,
+                                event_filename,
+                                parent_key=parent_key)
     else:
       logging.info('No build-events.json file to archive')
 
