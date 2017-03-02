@@ -42,8 +42,14 @@ ShelfAction AppListShelfItemDelegate::ItemSelected(ui::EventType event_type,
 
 ShelfAppMenuItemList AppListShelfItemDelegate::GetAppMenuItems(
     int event_flags) {
-  // AppList does not show an application menu.
+  // Return an empty item list to avoid showing an application menu.
   return ShelfAppMenuItemList();
+}
+
+void AppListShelfItemDelegate::ExecuteCommand(uint32_t command_id,
+                                              int event_flags) {
+  // This delegate does not support showing an application menu.
+  NOTIMPLEMENTED();
 }
 
 void AppListShelfItemDelegate::Close() {}

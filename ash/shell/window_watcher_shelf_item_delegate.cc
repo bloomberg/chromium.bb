@@ -40,6 +40,12 @@ ShelfAppMenuItemList WindowWatcherShelfItemDelegate::GetAppMenuItems(
   return ShelfAppMenuItemList();
 }
 
+void WindowWatcherShelfItemDelegate::ExecuteCommand(uint32_t command_id,
+                                                    int event_flags) {
+  // This delegate does not support showing an application menu.
+  NOTIMPLEMENTED();
+}
+
 void WindowWatcherShelfItemDelegate::Close() {}
 
 }  // namespace shell

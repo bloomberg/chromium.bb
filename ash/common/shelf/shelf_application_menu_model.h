@@ -13,9 +13,10 @@
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class ShelfApplicationMenuModelTestAPI;
-
 namespace ash {
+
+class ShelfApplicationMenuModelTestAPI;
+class ShelfItemDelegate;
 
 // A menu model listing open applications associated with a shelf item. Layout:
 // +---------------------------+
@@ -30,9 +31,11 @@ class ASH_EXPORT ShelfApplicationMenuModel
     : public ui::SimpleMenuModel,
       public ui::SimpleMenuModel::Delegate {
  public:
-  // Makes a menu with a |title|, separators, and the specified |items|.
+  // Makes a menu with a |title|, separators, and |items| for |delegate|.
+  // |delegate| may be null in unit tests that do not execute commands.
   ShelfApplicationMenuModel(const base::string16& title,
-                            ShelfAppMenuItemList items);
+                            ShelfAppMenuItemList items,
+                            ShelfItemDelegate* delegate);
   ~ShelfApplicationMenuModel() override;
 
   // ui::SimpleMenuModel::Delegate:
@@ -49,6 +52,9 @@ class ASH_EXPORT ShelfApplicationMenuModel
 
   // The list of menu items as returned from the shelf item's controller.
   ShelfAppMenuItemList items_;
+
+  // The shelf item delegate that created the menu and executes its commands.
+  ShelfItemDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfApplicationMenuModel);
 };

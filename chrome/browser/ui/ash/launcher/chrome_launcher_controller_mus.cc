@@ -38,7 +38,7 @@ class ChromeShelfItemDelegate : public ash::mojom::ShelfItemDelegate {
     controller_->LaunchApp(ash::AppLauncherId(app_id_),
                            ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE);
   }
-  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {
+  void ExecuteCommand(uint32_t command_id, int event_flags) override {
     NOTIMPLEMENTED();
   }
   void ItemPinned() override { NOTIMPLEMENTED(); }
@@ -182,9 +182,9 @@ void ChromeLauncherControllerMus::AdditionalUserAddedToSession(
   NOTIMPLEMENTED();
 }
 
-ash::ShelfAppMenuItemList ChromeLauncherControllerMus::GetAppMenuItems(
-    const ash::ShelfItem& item,
-    int event_flags) {
+ash::ShelfAppMenuItemList
+ChromeLauncherControllerMus::GetAppMenuItemsForTesting(
+    const ash::ShelfItem& item) {
   NOTIMPLEMENTED();
   return ash::ShelfAppMenuItemList();
 }

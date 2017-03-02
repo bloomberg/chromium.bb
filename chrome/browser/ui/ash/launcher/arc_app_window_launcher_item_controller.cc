@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/window.h"
@@ -63,10 +62,11 @@ ash::ShelfAppMenuItemList ArcAppWindowLauncherItemController::GetAppMenuItems(
     size_t i = std::distance(windows().begin(), it);
     gfx::Image image;
     aura::Window* window = (*it)->GetNativeWindow();
-    items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemV2App>(
+    items.push_back(base::MakeUnique<ash::ShelfApplicationMenuItem>(
+        base::checked_cast<uint32_t>(i),
         ((window && !window->GetTitle().empty()) ? window->GetTitle()
                                                  : app_title),
-        &image, app_id(), launcher_controller(), i));
+        &image));
   }
   return items;
 }

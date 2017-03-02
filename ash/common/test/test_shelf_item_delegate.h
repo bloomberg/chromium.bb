@@ -26,6 +26,7 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
                            int64_t display_id,
                            ShelfLaunchSource source) override;
   ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
+  void ExecuteCommand(uint32_t command_id, int event_flags) override;
   void Close() override;
 
  private:

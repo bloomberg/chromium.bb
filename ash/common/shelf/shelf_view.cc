@@ -1615,19 +1615,18 @@ bool ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     const ui::Event& event,
                                     views::InkDrop* ink_drop) {
   ShelfItemDelegate* item_delegate = model_->GetShelfItemDelegate(item.id);
-  ShelfAppMenuItemList menu_items =
-      item_delegate->GetAppMenuItems(event.flags());
+  ShelfAppMenuItemList items = item_delegate->GetAppMenuItems(event.flags());
 
   // The application list menu should only show for two or more items; return
   // false here to ensure that other behavior is triggered (eg. activating or
   // minimizing a single associated window, or launching a pinned shelf item).
-  if (menu_items.size() < 2)
+  if (items.size() < 2)
     return false;
 
   ink_drop->AnimateToState(views::InkDropState::ACTIVATED);
   context_menu_id_ = item.id;
-  ShowMenu(base::MakeUnique<ShelfApplicationMenuModel>(item.title,
-                                                       std::move(menu_items)),
+  ShowMenu(base::MakeUnique<ShelfApplicationMenuModel>(
+               item.title, std::move(items), item_delegate),
            source, gfx::Point(), false, ui::GetMenuSourceTypeForEvent(event),
            ink_drop);
   return true;

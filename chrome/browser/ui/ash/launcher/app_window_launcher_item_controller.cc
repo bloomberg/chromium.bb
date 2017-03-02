@@ -96,7 +96,14 @@ ash::ShelfAction AppWindowLauncherItemController::ItemSelected(
 
 ash::ShelfAppMenuItemList AppWindowLauncherItemController::GetAppMenuItems(
     int event_flags) {
+  // Return an empty item list to avoid showing an application menu.
   return ash::ShelfAppMenuItemList();
+}
+
+void AppWindowLauncherItemController::ExecuteCommand(uint32_t command_id,
+                                                     int event_flags) {
+  // This delegate does not support showing an application menu.
+  NOTIMPLEMENTED();
 }
 
 void AppWindowLauncherItemController::Close() {

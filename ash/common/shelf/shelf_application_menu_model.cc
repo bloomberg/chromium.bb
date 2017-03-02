@@ -9,6 +9,7 @@
 #include <limits>
 #include <utility>
 
+#include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_application_menu_item.h"
 #include "base/metrics/histogram_macros.h"
 
@@ -22,8 +23,9 @@ namespace ash {
 
 ShelfApplicationMenuModel::ShelfApplicationMenuModel(
     const base::string16& title,
-    ShelfAppMenuItemList items)
-    : ui::SimpleMenuModel(this), items_(std::move(items)) {
+    ShelfAppMenuItemList items,
+    ShelfItemDelegate* delegate)
+    : ui::SimpleMenuModel(this), items_(std::move(items)), delegate_(delegate) {
   AddSeparator(ui::SPACING_SEPARATOR);
   AddItem(kInvalidCommandId, title);
   AddSeparator(ui::SPACING_SEPARATOR);
@@ -53,8 +55,10 @@ bool ShelfApplicationMenuModel::IsCommandIdEnabled(int command_id) const {
 
 void ShelfApplicationMenuModel::ExecuteCommand(int command_id,
                                                int event_flags) {
+  DCHECK(delegate_);
   DCHECK(IsCommandIdEnabled(command_id));
-  items_[command_id]->Execute(event_flags);
+  // Have the delegate execute its own custom command id for the given item.
+  delegate_->ExecuteCommand(items_[command_id]->command_id(), event_flags);
   RecordMenuItemSelectedMetrics(command_id, items_.size());
 }
 

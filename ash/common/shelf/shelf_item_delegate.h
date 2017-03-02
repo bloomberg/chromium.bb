@@ -5,6 +5,8 @@
 #ifndef ASH_COMMON_SHELF_SHELF_ITEM_DELEGATE_H_
 #define ASH_COMMON_SHELF_SHELF_ITEM_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -34,6 +36,9 @@ class ASH_EXPORT ShelfItemDelegate {
   // Returns any application menu items that should appear for this shelf item.
   // |event_flags| specifies the flags of the event which triggered this menu.
   virtual ShelfAppMenuItemList GetAppMenuItems(int event_flags) = 0;
+
+  // Called on invocation of a shelf item's application menu command.
+  virtual void ExecuteCommand(uint32_t command_id, int event_flags) = 0;
 
   // Closes all windows associated with this item.
   virtual void Close() = 0;

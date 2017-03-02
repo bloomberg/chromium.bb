@@ -6,12 +6,13 @@
 
 namespace ash {
 
-ShelfApplicationMenuItem::ShelfApplicationMenuItem(const base::string16 title,
+ShelfApplicationMenuItem::ShelfApplicationMenuItem(uint32_t command_id,
+                                                   const base::string16& title,
                                                    const gfx::Image* icon)
-    : title_(title), icon_(icon ? gfx::Image(*icon) : gfx::Image()) {}
+    : command_id_(command_id),
+      title_(title),
+      icon_(icon ? gfx::Image(*icon) : gfx::Image()) {}
 
 ShelfApplicationMenuItem::~ShelfApplicationMenuItem() {}
-
-void ShelfApplicationMenuItem::Execute(int event_flags) {}
 
 }  // namespace ash

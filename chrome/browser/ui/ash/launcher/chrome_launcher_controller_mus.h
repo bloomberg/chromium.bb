@@ -54,8 +54,8 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
       bool allow_minimize) override;
   void ActiveUserChanged(const std::string& user_email) override;
   void AdditionalUserAddedToSession(Profile* profile) override;
-  ash::ShelfAppMenuItemList GetAppMenuItems(const ash::ShelfItem& item,
-                                            int event_flags) override;
+  ash::ShelfAppMenuItemList GetAppMenuItemsForTesting(
+      const ash::ShelfItem& item) override;
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
       const std::string& app_id) override;
   void ActivateShellApp(const std::string& app_id, int window_index) override;

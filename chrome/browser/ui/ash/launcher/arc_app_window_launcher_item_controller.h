@@ -13,6 +13,7 @@
 
 class ChromeLauncherController;
 
+// Shelf item delegate for ARC app windows.
 class ArcAppWindowLauncherItemController
     : public AppWindowLauncherItemController {
  public:

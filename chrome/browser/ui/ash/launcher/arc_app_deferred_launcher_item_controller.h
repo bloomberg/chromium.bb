@@ -38,6 +38,7 @@ class ArcAppDeferredLauncherItemController : public LauncherItemController {
                                 int64_t display_id,
                                 ash::ShelfLaunchSource source) override;
   ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
+  void ExecuteCommand(uint32_t command_id, int event_flags) override;
   void Close() override;
 
  private:

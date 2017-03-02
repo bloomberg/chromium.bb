@@ -270,11 +270,12 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
     ash::ShelfAppMenuItemList items;
     items.push_back(
-        base::MakeUnique<ash::ShelfApplicationMenuItem>(base::string16()));
+        base::MakeUnique<ash::ShelfApplicationMenuItem>(0, base::string16()));
     items.push_back(
-        base::MakeUnique<ash::ShelfApplicationMenuItem>(base::string16()));
+        base::MakeUnique<ash::ShelfApplicationMenuItem>(1, base::string16()));
     return items;
   }
+  void ExecuteCommand(uint32_t command_id, int event_flags) override {}
   void Close() override {}
 
  private:
@@ -2812,7 +2813,7 @@ void CheckAppMenu(ChromeLauncherControllerImpl* controller,
                   const ash::ShelfItem& item,
                   size_t expected_item_count,
                   base::string16 expected_item_titles[]) {
-  ash::ShelfAppMenuItemList items = controller->GetAppMenuItems(item, 0);
+  ash::ShelfAppMenuItemList items = controller->GetAppMenuItemsForTesting(item);
   ASSERT_EQ(expected_item_count, items.size());
   for (size_t i = 0; i < expected_item_count; i++)
     EXPECT_EQ(expected_item_titles[i], items[i]->title());
@@ -3264,12 +3265,17 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuExecution) {
   item_gmail.id = gmail_id;
   base::string16 two_menu_items[] = {title1, title2};
   CheckAppMenu(launcher_controller_.get(), item_gmail, 2, two_menu_items);
+  LauncherItemController* item_controller =
+      launcher_controller_->GetLauncherItemController(gmail_id);
+  ASSERT_TRUE(item_controller);
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   // Execute the second item in the menu, after the title and two separators,
   // this shouldn't do anything since that item is already the active tab.
   {
     ash::ShelfApplicationMenuModel menu(
-        base::string16(), launcher_controller_->GetAppMenuItems(item_gmail, 0));
+        base::string16(),
+        launcher_controller_->GetAppMenuItemsForTesting(item_gmail),
+        item_controller);
     menu.ActivatedAt(4);
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
@@ -3278,7 +3284,9 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuExecution) {
   // this should activate the other tab.
   {
     ash::ShelfApplicationMenuModel menu(
-        base::string16(), launcher_controller_->GetAppMenuItems(item_gmail, 0));
+        base::string16(),
+        launcher_controller_->GetAppMenuItemsForTesting(item_gmail),
+        item_controller);
     menu.ActivatedAt(3);
   }
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
@@ -3306,20 +3314,23 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuDeletionExecution) {
   base::string16 two_menu_items[] = {title1, title2};
   CheckAppMenu(launcher_controller_.get(), item_gmail, 2, two_menu_items);
 
+  LauncherItemController* item_controller =
+      launcher_controller_->GetLauncherItemController(gmail_id);
+  ASSERT_TRUE(item_controller);
   int tabs = browser()->tab_strip_model()->count();
   // Activate the proper tab through the menu item.
   {
     ash::ShelfAppMenuItemList items =
-        launcher_controller_->GetAppMenuItems(item_gmail, 0);
-    items[1]->Execute(0);
+        launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
+    item_controller->ExecuteCommand(items[1]->command_id(), ui::EF_NONE);
     EXPECT_EQ(tabs, browser()->tab_strip_model()->count());
   }
 
   // Delete one tab through the menu item.
   {
     ash::ShelfAppMenuItemList items =
-        launcher_controller_->GetAppMenuItems(item_gmail, 0);
-    items[1]->Execute(ui::EF_SHIFT_DOWN);
+        launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
+    item_controller->ExecuteCommand(items[1]->command_id(), ui::EF_SHIFT_DOWN);
     EXPECT_EQ(--tabs, browser()->tab_strip_model()->count());
   }
 }
@@ -3397,7 +3408,8 @@ TEST_F(ChromeLauncherControllerImplTest, GmailMatching) {
   ash::ShelfItem item_gmail;
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
-  EXPECT_EQ(1U, launcher_controller_->GetAppMenuItems(item_gmail, 0).size());
+  EXPECT_EQ(1U,
+            launcher_controller_->GetAppMenuItemsForTesting(item_gmail).size());
 }
 
 // Tests that the Gmail extension does not match the offline verison.

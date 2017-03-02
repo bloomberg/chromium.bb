@@ -1983,8 +1983,8 @@ class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
   ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
     ShelfAppMenuItemList items;
     base::string16 title = base::ASCIIToUTF16("title");
-    items.push_back(base::MakeUnique<ShelfApplicationMenuItem>(title));
-    items.push_back(base::MakeUnique<ShelfApplicationMenuItem>(title));
+    items.push_back(base::MakeUnique<ShelfApplicationMenuItem>(0, title));
+    items.push_back(base::MakeUnique<ShelfApplicationMenuItem>(1, title));
     return items;
   }
 

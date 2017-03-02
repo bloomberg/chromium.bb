@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_playstore_shortcut_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
@@ -126,15 +125,44 @@ ash::ShelfAction AppShortcutLauncherItemController::ItemSelected(
 ash::ShelfAppMenuItemList AppShortcutLauncherItemController::GetAppMenuItems(
     int event_flags) {
   ash::ShelfAppMenuItemList items;
-  std::vector<content::WebContents*> content_list = GetRunningApplications();
-  for (size_t i = 0; i < content_list.size(); i++) {
-    content::WebContents* web_contents = content_list[i];
-    gfx::Image app_icon = launcher_controller()->GetAppListIcon(web_contents);
+  app_menu_items_ = GetRunningApplications();
+  for (size_t i = 0; i < app_menu_items_.size(); i++) {
+    content::WebContents* web_contents = app_menu_items_[i];
+    gfx::Image icon = launcher_controller()->GetAppListIcon(web_contents);
     base::string16 title = launcher_controller()->GetAppListTitle(web_contents);
-    items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemTab>(
-        title, &app_icon, web_contents));
+    items.push_back(base::MakeUnique<ash::ShelfApplicationMenuItem>(
+        base::checked_cast<uint32_t>(i), title, &icon));
   }
   return items;
+}
+
+void AppShortcutLauncherItemController::ExecuteCommand(uint32_t command_id,
+                                                       int event_flags) {
+  if (static_cast<size_t>(command_id) >= app_menu_items_.size()) {
+    app_menu_items_.clear();
+    return;
+  }
+
+  // If the web contents was destroyed while the menu was open, then the invalid
+  // pointer cached in |app_menu_items_| should yield a null browser or kNoTab.
+  content::WebContents* web_contents = app_menu_items_[command_id];
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  TabStripModel* tab_strip = browser ? browser->tab_strip_model() : nullptr;
+  const int index = tab_strip ? tab_strip->GetIndexOfWebContents(web_contents)
+                              : TabStripModel::kNoTab;
+  if (index != TabStripModel::kNoTab) {
+    if (event_flags & (ui::EF_SHIFT_DOWN | ui::EF_MIDDLE_MOUSE_BUTTON)) {
+      tab_strip->CloseWebContentsAt(index, TabStripModel::CLOSE_USER_GESTURE);
+    } else {
+      multi_user_util::MoveWindowToCurrentDesktop(
+          browser->window()->GetNativeWindow());
+      tab_strip->ActivateTabAt(index, false);
+      browser->window()->Show();
+      browser->window()->Activate();
+    }
+  }
+
+  app_menu_items_.clear();
 }
 
 void AppShortcutLauncherItemController::Close() {

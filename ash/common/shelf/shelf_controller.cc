@@ -71,12 +71,13 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
   }
 
   ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
-    ShelfAppMenuItemList items;
-    for (const auto& window : window_id_to_title_) {
-      items.push_back(
-          base::MakeUnique<ShelfApplicationMenuItem>(window.second));
-    }
-    return items;
+    // Return an empty item list to avoid showing an application menu.
+    return ShelfAppMenuItemList();
+  }
+
+  void ExecuteCommand(uint32_t command_id, int event_flags) override {
+    // This delegate does not support showing an application menu.
+    NOTIMPLEMENTED();
   }
 
   void Close() override { NOTIMPLEMENTED(); }

@@ -48,8 +48,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
@@ -617,11 +615,11 @@ void ChromeLauncherControllerImpl::AdditionalUserAddedToSession(
     controller->AdditionalUserAddedToSession(profile);
 }
 
-ash::ShelfAppMenuItemList ChromeLauncherControllerImpl::GetAppMenuItems(
-    const ash::ShelfItem& item,
-    int event_flags) {
+ash::ShelfAppMenuItemList
+ChromeLauncherControllerImpl::GetAppMenuItemsForTesting(
+    const ash::ShelfItem& item) {
   LauncherItemController* controller = GetLauncherItemController(item.id);
-  return controller ? controller->GetAppMenuItems(event_flags)
+  return controller ? controller->GetAppMenuItems(ui::EF_NONE)
                     : ash::ShelfAppMenuItemList();
 }
 

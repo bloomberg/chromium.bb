@@ -15,23 +15,23 @@
 
 namespace ash {
 
-// The title, icon, and execute function for shelf application menu items.
+// The command id, title, and icon for shelf application menu items.
 class ASH_PUBLIC_EXPORT ShelfApplicationMenuItem {
  public:
-  // Creates an item with a |title| and optional |icon| (pass nullptr for none).
-  explicit ShelfApplicationMenuItem(const base::string16 title,
-                                    const gfx::Image* icon = nullptr);
-  virtual ~ShelfApplicationMenuItem();
+  // Creates an item with a client-specific |command_id|, a |title|, and an
+  // optional |icon| (pass nullptr for no icon).
+  ShelfApplicationMenuItem(uint32_t command_id,
+                           const base::string16& title,
+                           const gfx::Image* icon = nullptr);
+  ~ShelfApplicationMenuItem();
 
   // The title and icon for this menu item.
+  uint32_t command_id() const { return command_id_; }
   const base::string16& title() const { return title_; }
   const gfx::Image& icon() const { return icon_; }
 
-  // Executes the menu item; |event_flags| can be used to check additional
-  // keyboard modifiers from the event that issued this command.
-  virtual void Execute(int event_flags);
-
  private:
+  const uint32_t command_id_;
   const base::string16 title_;
   const gfx::Image icon_;
 

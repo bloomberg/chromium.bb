@@ -34,6 +34,12 @@ ShelfAppMenuItemList TestShelfItemDelegate::GetAppMenuItems(int event_flags) {
   return ShelfAppMenuItemList();
 }
 
+void TestShelfItemDelegate::ExecuteCommand(uint32_t command_id,
+                                           int event_flags) {
+  // This delegate does not support showing an application menu.
+  NOTIMPLEMENTED();
+}
+
 void TestShelfItemDelegate::Close() {}
 
 }  // namespace test

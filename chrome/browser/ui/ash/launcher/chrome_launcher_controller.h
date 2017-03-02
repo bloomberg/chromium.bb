@@ -180,10 +180,8 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   virtual void AdditionalUserAddedToSession(Profile* profile) = 0;
 
   // Get the list of all running incarnations of this item.
-  // |event_flags| specifies the flags which were set by the event which
-  // triggered this menu generation. It can be used to generate different lists.
-  virtual ash::ShelfAppMenuItemList GetAppMenuItems(const ash::ShelfItem& item,
-                                                    int event_flags) = 0;
+  virtual ash::ShelfAppMenuItemList GetAppMenuItemsForTesting(
+      const ash::ShelfItem& item) = 0;
 
   // Get the list of all tabs which belong to a certain application type.
   virtual std::vector<content::WebContents*> GetV1ApplicationsFromAppId(

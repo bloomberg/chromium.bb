@@ -552,21 +552,21 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
   ash::ShelfID item_id = item1.id;
   EXPECT_EQ(ash::TYPE_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
-  EXPECT_EQ(1u, controller_->GetAppMenuItems(item1, 0).size());  // 1 window
+  EXPECT_EQ(1u, controller_->GetAppMenuItemsForTesting(item1).size());
 
   // Add a second window; confirm the shelf item stays; check the app menu.
   AppWindow* window2 = CreateAppWindow(browser()->profile(), extension);
   ASSERT_EQ(item_count + 1, shelf_model()->item_count());
   const ash::ShelfItem& item2 = *shelf_model()->ItemByID(item_id);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
-  EXPECT_EQ(2u, controller_->GetAppMenuItems(item2, 0).size());  // 2 windows
+  EXPECT_EQ(2u, controller_->GetAppMenuItemsForTesting(item2).size());
 
   // Close the second window; confirm the shelf item stays; check the app menu.
   CloseAppWindow(window2);
   ASSERT_EQ(item_count + 1, shelf_model()->item_count());
   const ash::ShelfItem& item3 = *shelf_model()->ItemByID(item_id);
   EXPECT_EQ(ash::STATUS_ACTIVE, item3.status);
-  EXPECT_EQ(1u, controller_->GetAppMenuItems(item3, 0).size());  // 1 window
+  EXPECT_EQ(1u, controller_->GetAppMenuItemsForTesting(item3).size());
 
   // Close the first window; the shelf item should be removed.
   CloseAppWindow(window1);
