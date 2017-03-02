@@ -213,8 +213,6 @@ service_test("mus_ws_unittests") {
     "event_dispatcher_unittest.cc",
     "event_matcher_unittest.cc",
     "focus_controller_unittest.cc",
-    "server_window_compositor_frame_sink_manager_test_api.cc",
-    "server_window_compositor_frame_sink_manager_test_api.h",
     "server_window_drawn_tracker_unittest.cc",
     "test_server_window_delegate.cc",
     "test_server_window_delegate.h",

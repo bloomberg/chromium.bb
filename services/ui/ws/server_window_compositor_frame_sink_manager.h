@@ -17,20 +17,6 @@ namespace ui {
 namespace ws {
 
 class ServerWindow;
-class ServerWindowCompositorFrameSink;
-class ServerWindowCompositorFrameSinkManagerTestApi;
-
-struct CompositorFrameSinkData {
-  CompositorFrameSinkData();
-  CompositorFrameSinkData(CompositorFrameSinkData&& other);
-  ~CompositorFrameSinkData();
-
-  CompositorFrameSinkData& operator=(CompositorFrameSinkData&& other);
-
-  cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink;
-  cc::mojom::MojoCompositorFrameSinkPrivateRequest
-      pending_compositor_frame_sink_request;
-};
 
 // ServerWindowCompositorFrameSinkManager tracks the surfaces associated with a
 // ServerWindow.
@@ -52,12 +38,10 @@ class ServerWindowCompositorFrameSinkManager {
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
  private:
-  friend class ServerWindowCompositorFrameSinkManagerTestApi;
-  friend class ServerWindowCompositorFrameSink;
-
-  ServerWindow* window_;
-
-  std::unique_ptr<CompositorFrameSinkData> frame_sink_data_;
+  ServerWindow* const window_;
+  cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink_;
+  cc::mojom::MojoCompositorFrameSinkPrivateRequest
+      pending_compositor_frame_sink_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowCompositorFrameSinkManager);
 };
