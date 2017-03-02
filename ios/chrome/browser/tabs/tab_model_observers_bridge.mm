@@ -80,9 +80,13 @@
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                  userAction:(BOOL)userAction {
-  DCHECK_GE(atIndex, 0);
   if (!newWebState)
     return;
+
+  // If there is no new active WebState, then it means that the atIndex will be
+  // set to WebStateList::kInvalidIndex, so only check for a positive index if
+  // there is a new WebState.
+  DCHECK_GE(atIndex, 0);
 
   Tab* oldTab =
       oldWebState ? LegacyTabHelper::GetTabForWebState(oldWebState) : nil;
