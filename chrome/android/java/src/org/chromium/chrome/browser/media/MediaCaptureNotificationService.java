@@ -17,7 +17,7 @@ import android.util.SparseIntArray;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.tab.Tab;
@@ -163,7 +163,7 @@ public class MediaCaptureNotificationService extends Service {
      */
     private void createNotification(int notificationId, int mediaType, String url) {
         ChromeNotificationBuilder builder =
-                ((ChromeApplication) mContext)
+                AppHooks.get()
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 NotificationConstants.CATEGORY_ID_BROWSER,
                                 mContext.getString(R.string.notification_category_browser),

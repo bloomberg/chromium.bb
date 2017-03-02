@@ -165,7 +165,7 @@ public class DownloadNotificationService extends Service {
                 context.getResources().getString(R.string.download_notification_summary_title,
                         DownloadSharedPreferenceHelper.getInstance().getEntries().size());
         ChromeNotificationBuilder builder =
-                ((ChromeApplication) context.getApplicationContext())
+                AppHooks.get()
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 NotificationConstants.CATEGORY_ID_BROWSER,
                                 context.getString(R.string.notification_category_browser),
@@ -760,7 +760,7 @@ public class DownloadNotificationService extends Service {
     private ChromeNotificationBuilder buildNotification(
             int iconId, String title, String contentText) {
         ChromeNotificationBuilder builder =
-                ((ChromeApplication) mContext)
+                AppHooks.get()
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 NotificationConstants.CATEGORY_ID_BROWSER,
                                 mContext.getString(R.string.notification_category_browser),

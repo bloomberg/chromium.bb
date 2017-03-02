@@ -8,7 +8,7 @@ import android.app.Notification;
 import android.content.Context;
 import android.os.Build;
 
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 
 /**
  * Builds a notification using the standard Notification.BigTextStyle layout.
@@ -26,15 +26,12 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         // Note: this is not a NotificationCompat builder so be mindful of the
         // API level of methods you call on the builder.
         // TODO(crbug.com/697104) We should probably use a Compat builder.
-        ChromeNotificationBuilder builder =
-                ((ChromeApplication) mContext.getApplicationContext())
-                        .createChromeNotificationBuilder(false /* preferCompat */,
-                                NotificationConstants.CATEGORY_ID_SITES,
-                                mContext.getString(
-                                        org.chromium.chrome.R.string.notification_category_sites),
-                                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
-                                mContext.getString(org.chromium.chrome.R.string
-                                                           .notification_category_group_general));
+        ChromeNotificationBuilder builder = AppHooks.get().createChromeNotificationBuilder(
+                false /* preferCompat */, NotificationConstants.CATEGORY_ID_SITES,
+                mContext.getString(org.chromium.chrome.R.string.notification_category_sites),
+                NotificationConstants.CATEGORY_GROUP_ID_GENERAL,
+                mContext.getString(
+                        org.chromium.chrome.R.string.notification_category_group_general));
 
         builder.setContentTitle(mTitle);
         builder.setContentText(mBody);

@@ -10,7 +10,7 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 
@@ -31,7 +31,7 @@ public class IncognitoNotificationManager {
         String title = context.getResources().getString(R.string.app_name);
 
         ChromeNotificationBuilder builder =
-                ((ChromeApplication) context)
+                AppHooks.get()
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 NotificationConstants.CATEGORY_ID_BROWSER,
                                 context.getString(R.string.notification_category_browser),
