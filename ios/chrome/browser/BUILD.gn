@@ -147,6 +147,7 @@ source_set("browser_impl") {
     "//components/prefs",
     "//components/rappor",
     "//components/translate/core/browser",
+    "//components/ukm",
     "//components/update_client",
     "//components/variations",
     "//components/variations/field_trial_config",

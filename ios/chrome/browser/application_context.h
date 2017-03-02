@@ -49,6 +49,10 @@ namespace rappor {
 class RapporServiceImpl;
 }
 
+namespace ukm {
+class UkmService;
+}
+
 namespace variations {
 class VariationsService;
 }
@@ -98,6 +102,9 @@ class ApplicationContext {
 
   // Gets the MetricsService used by this application.
   virtual metrics::MetricsService* GetMetricsService() = 0;
+
+  // Gets the UkmService used by this application.
+  virtual ukm::UkmService* GetUkmService() = 0;
 
   // Gets the VariationsService used by this application.
   virtual variations::VariationsService* GetVariationsService() = 0;

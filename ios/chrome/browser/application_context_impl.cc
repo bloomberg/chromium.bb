@@ -31,6 +31,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/ukm/ukm_service.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_query_params.h"
 #include "components/variations/service/variations_service.h"
@@ -131,16 +132,18 @@ void ApplicationContextImpl::OnAppEnterForeground() {
   PrefService* local_state = GetLocalState();
   local_state->SetBoolean(prefs::kLastSessionExitedCleanly, false);
 
-  // Tell the metrics service that the application resumes.
+  // Tell the metrics services that the application resumes.
   metrics::MetricsService* metrics_service = GetMetricsService();
   if (metrics_service && local_state) {
     metrics_service->OnAppEnterForeground();
     local_state->CommitPendingWrite();
   }
-
   variations::VariationsService* variations_service = GetVariationsService();
   if (variations_service)
     variations_service->OnAppEnterForeground();
+  ukm::UkmService* ukm_service = GetUkmService();
+  if (ukm_service)
+    ukm_service->OnAppEnterForeground();
 }
 
 void ApplicationContextImpl::OnAppEnterBackground() {
@@ -163,10 +166,13 @@ void ApplicationContextImpl::OnAppEnterBackground() {
   PrefService* local_state = GetLocalState();
   local_state->SetBoolean(prefs::kLastSessionExitedCleanly, true);
 
-  // Tell the metrics service it was cleanly shutdown.
+  // Tell the metrics services they were cleanly shutdown.
   metrics::MetricsService* metrics_service = GetMetricsService();
   if (metrics_service && local_state)
     metrics_service->OnAppEnterBackground();
+  ukm::UkmService* ukm_service = GetUkmService();
+  if (ukm_service)
+    ukm_service->OnAppEnterBackground();
 
   // Persisting to disk is protected by a critical task, so no other special
   // handling is necessary on iOS.
@@ -221,6 +227,11 @@ ApplicationContextImpl::GetMetricsServicesManager() {
 metrics::MetricsService* ApplicationContextImpl::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetMetricsServicesManager()->GetMetricsService();
+}
+
+ukm::UkmService* ApplicationContextImpl::GetUkmService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return GetMetricsServicesManager()->GetUkmService();
 }
 
 variations::VariationsService* ApplicationContextImpl::GetVariationsService() {

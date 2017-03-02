@@ -198,6 +198,36 @@ void UkmService::DisableReporting() {
   Flush();
 }
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+void UkmService::OnAppEnterForeground() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "UkmService::OnAppEnterForeground";
+
+  // If initialize_started_ is false, UKM has not yet been started, so bail. The
+  // scheduler will instead be started via EnableReporting().
+  if (!initialize_started_)
+    return;
+
+  scheduler_->Start();
+}
+
+void UkmService::OnAppEnterBackground() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "UkmService::OnAppEnterBackground";
+
+  if (!initialize_started_)
+    return;
+
+  scheduler_->Stop();
+
+  // Give providers a chance to persist ukm data as part of being backgrounded.
+  for (auto& provider : metrics_providers_)
+    provider->OnAppEnterBackground();
+
+  Flush();
+}
+#endif
+
 void UkmService::Flush() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (initialize_complete_)

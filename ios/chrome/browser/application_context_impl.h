@@ -50,6 +50,7 @@ class ApplicationContextImpl : public ApplicationContext {
   metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
       override;
   metrics::MetricsService* GetMetricsService() override;
+  ukm::UkmService* GetUkmService() override;
   variations::VariationsService* GetVariationsService() override;
   rappor::RapporServiceImpl* GetRapporServiceImpl() override;
   net_log::ChromeNetLog* GetNetLog() override;

@@ -105,6 +105,11 @@ metrics::MetricsService* TestingApplicationContext::GetMetricsService() {
   return nullptr;
 }
 
+ukm::UkmService* TestingApplicationContext::GetUkmService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
 variations::VariationsService*
 TestingApplicationContext::GetVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());

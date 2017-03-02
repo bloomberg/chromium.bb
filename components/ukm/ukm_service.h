@@ -69,6 +69,11 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   void EnableReporting();
   void DisableReporting();
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  void OnAppEnterBackground();
+  void OnAppEnterForeground();
+#endif
+
   // Records any collected data into logs, and writes to disk.
   void Flush();
 
