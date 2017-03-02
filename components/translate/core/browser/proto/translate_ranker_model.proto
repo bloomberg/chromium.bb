@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 package chrome_intelligence;
 
-// Defines a Chrome Ranker Translate model.
+// Defines a Chrome Ranker Translate Model.
 // Next tag: 12
 message TranslateRankerModel {
   // A number that identifies the version of this model.
@@ -36,5 +36,8 @@ message TranslateRankerModel {
     map<string, float> country_weight = 7;
     map<string, float> locale_weight = 8;
   }
-  optional LogisticRegressionModel logistic_regression_model = 2;
+
+  oneof model_revision {
+    LogisticRegressionModel logistic_regression_model = 2;
+  }
 }

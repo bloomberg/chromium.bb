@@ -131,17 +131,16 @@ TranslateManager::RegisterTranslateErrorCallback(
 
 TranslateManager::TranslateManager(
     TranslateClient* translate_client,
+    TranslateRanker* translate_ranker,
     const std::string& accept_languages_pref_name)
     : page_seq_no_(0),
       accept_languages_pref_name_(accept_languages_pref_name),
       translate_client_(translate_client),
       translate_driver_(translate_client_->GetTranslateDriver()),
+      translate_ranker_(translate_ranker),
       language_state_(translate_driver_),
       translate_event_(base::MakeUnique<metrics::TranslateEventProto>()),
-      weak_method_factory_(this) {
-  if (TranslateRanker::IsEnabled())
-    TranslateRanker::GetInstance()->FetchModelData();  // Asynchronous.
-}
+      weak_method_factory_(this) {}
 
 base::WeakPtr<TranslateManager> TranslateManager::GetWeakPtr() {
   return weak_method_factory_.GetWeakPtr();
@@ -232,6 +231,20 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
         TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
     return;
   }
+
+  bool ranker_should_offer_translation = true;
+  if (translate_ranker_->IsQueryEnabled()) {
+    ranker_should_offer_translation = translate_ranker_->ShouldOfferTranslation(
+        *translate_prefs, language_code, target_lang);
+    translate_event_->set_ranker_request_timestamp_sec(
+        (base::TimeTicks::Now() - base::TimeTicks()).InSeconds());
+    translate_event_->set_ranker_version(translate_ranker_->GetModelVersion());
+    translate_event_->set_ranker_response(
+        ranker_should_offer_translation
+            ? metrics::TranslateEventProto::SHOW
+            : metrics::TranslateEventProto::DONT_SHOW);
+  }
+
   // Nothing to do if either the language Chrome is in or the language of the
   // page is not supported by the translation server.
   if (target_lang.empty() ||
@@ -302,22 +315,12 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  if (TranslateRanker::IsEnabled()) {
-    TranslateRanker* translate_ranker = TranslateRanker::GetInstance();
-    bool should_offer_translation = translate_ranker->ShouldOfferTranslation(
-        *translate_prefs, language_code, target_lang);
-    translate_event_->set_ranker_request_timestamp_sec(
-        (base::TimeTicks::Now() - base::TimeTicks()).InSeconds());
-    translate_event_->set_ranker_version(translate_ranker->GetModelVersion());
-    translate_event_->set_ranker_response(
-        should_offer_translation ? metrics::TranslateEventProto::SHOW
-                                 : metrics::TranslateEventProto::DONT_SHOW);
-    if (!should_offer_translation && TranslateRanker::IsEnforcementEnabled()) {
-      TranslateBrowserMetrics::ReportInitiationStatus(
-          TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_RANKER);
-      RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_RANKER);
-      return;
-    }
+  if (!ranker_should_offer_translation &&
+      translate_ranker_->IsEnforcementEnabled()) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_RANKER);
+    RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_RANKER);
+    return;
   }
 
   TranslateBrowserMetrics::ReportInitiationStatus(
@@ -604,7 +607,7 @@ void TranslateManager::RecordTranslateEvent(int event_type) {
       static_cast<metrics::TranslateEventProto::EventType>(event_type));
   translate_event_->set_event_timestamp_sec(
       (base::TimeTicks::Now() - base::TimeTicks()).InSeconds());
-  TranslateRanker::GetInstance()->RecordTranslateEvent(*translate_event_);
+  translate_ranker_->AddTranslateEvent(*translate_event_);
 }
 
 }  // namespace translate
