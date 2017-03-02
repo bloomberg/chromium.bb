@@ -240,7 +240,7 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
         'CorrectEventFiringTest.testSendingKeysToAFocusedElementShouldNotBlurThatElement',
         'JavascriptEnabledDriverTest.testShouldBeAbleToClickOnSubmitButtons',
-        'JavascriptEinabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
+        'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
         'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
         'TypingTest.testShiftSelectionDeletes',
     ]
@@ -258,6 +258,7 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
         'CorrectEventFiringTest.testClickEventsShouldBubble',
         'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
         'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
+        'CorrectEventFiringTest.testSendingKeysToAFocusedElementShouldNotBlurThatElement',
         'ImplicitWaitTest.testShouldImplicitlyWaitUntilAtLeastOneElementIsFoundWhenSearchingForMany',
         'ImplicitWaitTest.testShouldImplicitlyWaitForAnElementToBeVisibleBeforeInteracting',
         'JavascriptEnabledDriverTest.testShouldBeAbleToClickOnSubmitButtons',
