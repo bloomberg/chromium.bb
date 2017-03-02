@@ -336,17 +336,16 @@ void GetShortcutLocationsAndDeleteShortcuts(
   }
 }
 
-void CreateIconAndSetRelaunchDetails(
-    const base::FilePath& web_app_path,
-    const base::FilePath& icon_file,
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
-    HWND hwnd) {
+void CreateIconAndSetRelaunchDetails(const base::FilePath& web_app_path,
+                                     const base::FilePath& icon_file,
+                                     const web_app::ShortcutInfo& shortcut_info,
+                                     HWND hwnd) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   base::CommandLine command_line =
-      shell_integration::CommandLineArgsForLauncher(
-          shortcut_info->url, shortcut_info->extension_id,
-          shortcut_info->profile_path);
+      shell_integration::CommandLineArgsForLauncher(shortcut_info.url,
+                                                    shortcut_info.extension_id,
+                                                    shortcut_info.profile_path);
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -355,13 +354,13 @@ void CreateIconAndSetRelaunchDetails(
   }
   command_line.SetProgram(chrome_exe);
   ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
-                                       shortcut_info->title, hwnd);
+                                       shortcut_info.title, hwnd);
 
   if (!base::PathExists(web_app_path) && !base::CreateDirectory(web_app_path))
     return;
 
   ui::win::SetAppIconForWindow(icon_file, 0, hwnd);
-  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info->favicon, true);
+  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon, true);
 }
 
 void OnShortcutInfoLoadedForSetRelaunchDetails(
@@ -376,9 +375,13 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
       shortcut_info->url);
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&CreateIconAndSetRelaunchDetails, web_app_path,
-                            icon_file, base::Passed(&shortcut_info), hwnd));
+  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
+  content::BrowserThread::PostBlockingPoolTaskAndReply(
+      FROM_HERE,
+      base::Bind(&CreateIconAndSetRelaunchDetails, web_app_path, icon_file,
+                 base::ConstRef(shortcut_info_ref), hwnd),
+      base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
+                 base::Passed(&shortcut_info), base::Closure()));
 }
 
 }  // namespace
@@ -442,11 +445,10 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
   return true;
 }
 
-bool CreatePlatformShortcuts(
-    const base::FilePath& web_app_path,
-    std::unique_ptr<ShortcutInfo> shortcut_info,
-    const ShortcutLocations& creation_locations,
-    ShortcutCreationReason creation_reason) {
+bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
+                             const ShortcutInfo& shortcut_info,
+                             const ShortcutLocations& creation_locations,
+                             ShortcutCreationReason creation_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   // Nothing to do on Windows for hidden apps.
@@ -470,12 +472,12 @@ bool CreatePlatformShortcuts(
   if (shortcut_paths.empty())
     return false;
 
-  if (!CreateShortcutsInPaths(web_app_path, *shortcut_info, shortcut_paths,
+  if (!CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths,
                               creation_reason, NULL))
     return false;
 
   if (pin_to_taskbar) {
-    base::FilePath file_name = GetSanitizedFileName(shortcut_info->title);
+    base::FilePath file_name = GetSanitizedFileName(shortcut_info.title);
     // Use the web app path shortcut for pinning to avoid having unique numbers
     // in the application name.
     base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
@@ -489,29 +491,29 @@ bool CreatePlatformShortcuts(
 
 void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
                              const base::string16& old_app_title,
-                             std::unique_ptr<ShortcutInfo> shortcut_info) {
+                             const ShortcutInfo& shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   // Generates file name to use with persisted ico and shortcut file.
   base::FilePath file_name =
-      web_app::internals::GetSanitizedFileName(shortcut_info->title);
+      web_app::internals::GetSanitizedFileName(shortcut_info.title);
 
-  if (old_app_title != shortcut_info->title) {
+  if (old_app_title != shortcut_info.title) {
     // The app's title has changed. Delete all existing app shortcuts and
     // recreate them in any locations they already existed (but do not add them
     // to locations where they do not currently exist).
     bool was_pinned_to_taskbar;
     std::vector<base::FilePath> shortcut_paths;
     GetShortcutLocationsAndDeleteShortcuts(
-        web_app_path, shortcut_info->profile_path, old_app_title,
+        web_app_path, shortcut_info.profile_path, old_app_title,
         &was_pinned_to_taskbar, &shortcut_paths);
-    CreateShortcutsInPaths(web_app_path, *shortcut_info, shortcut_paths,
+    CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths,
                            SHORTCUT_CREATION_BY_USER, NULL);
     // If the shortcut was pinned to the taskbar,
     // GetShortcutLocationsAndDeleteShortcuts will have deleted it. In that
     // case, re-pin it.
     if (was_pinned_to_taskbar && base::win::CanPinShortcutToTaskbar()) {
-      base::FilePath file_name = GetSanitizedFileName(shortcut_info->title);
+      base::FilePath file_name = GetSanitizedFileName(shortcut_info.title);
       // Use the web app path shortcut for pinning to avoid having unique
       // numbers in the application name.
       base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
@@ -521,16 +523,15 @@ void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
   }
 
   // Update the icon if necessary.
-  base::FilePath icon_file =
-      GetIconFilePath(web_app_path, shortcut_info->title);
-  CheckAndSaveIcon(icon_file, shortcut_info->favicon, true);
+  base::FilePath icon_file = GetIconFilePath(web_app_path, shortcut_info.title);
+  CheckAndSaveIcon(icon_file, shortcut_info.favicon, true);
 }
 
 void DeletePlatformShortcuts(const base::FilePath& web_app_path,
-                             std::unique_ptr<ShortcutInfo> shortcut_info) {
+                             const ShortcutInfo& shortcut_info) {
   GetShortcutLocationsAndDeleteShortcuts(web_app_path,
-                                         shortcut_info->profile_path,
-                                         shortcut_info->title, NULL, NULL);
+                                         shortcut_info.profile_path,
+                                         shortcut_info.title, NULL, NULL);
 
   // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
   base::FilePath chrome_apps_dir;

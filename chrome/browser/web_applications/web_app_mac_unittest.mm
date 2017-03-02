@@ -25,6 +25,7 @@
 #import "chrome/common/mac/app_mode_common.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/version_info/version_info.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -86,6 +87,9 @@ class WebAppShortcutCreatorTest : public testing::Test {
     internal_shim_path_ = app_data_dir_.Append(shim_base_name_);
     shim_path_ = destination_dir_.Append(shim_base_name_);
   }
+
+  // Needed by DCHECK_CURRENTLY_ON in ShortcutInfo destructor.
+  content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_app_data_dir_;
   base::ScopedTempDir temp_destination_dir_;

@@ -58,8 +58,9 @@ struct ShortcutInfo {
 
  private:
   // ShortcutInfo must not be copied; generally it is passed around via
-  // scoped_ptrs. This is to allow passing ShortcutInfos between threads,
-  // despite ImageFamily having a non-thread-safe reference count.
+  // unique_ptr. Since ImageFamily has a non-thread-safe reference count in
+  // its member and is bound to UI thread, destroy ShortcutInfo instance
+  // on UI thread.
   DISALLOW_COPY_AND_ASSIGN(ShortcutInfo);
 };
 
@@ -229,24 +230,23 @@ std::vector<base::FilePath> GetShortcutPaths(
 // shortcut, and is also used as the UserDataDir for platform app shortcuts.
 // |shortcut_info| contains info about the shortcut to create, and
 // |creation_locations| contains information about where to create them.
-bool CreatePlatformShortcuts(
-    const base::FilePath& shortcut_data_path,
-    std::unique_ptr<ShortcutInfo> shortcut_info,
-    const ShortcutLocations& creation_locations,
-    ShortcutCreationReason creation_reason);
+bool CreatePlatformShortcuts(const base::FilePath& shortcut_data_path,
+                             const ShortcutInfo& shortcut_info,
+                             const ShortcutLocations& creation_locations,
+                             ShortcutCreationReason creation_reason);
 
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and
 // is executed on the FILE thread.
 void DeletePlatformShortcuts(const base::FilePath& shortcut_data_path,
-                             std::unique_ptr<ShortcutInfo> shortcut_info);
+                             const ShortcutInfo& shortcut_info);
 
 // Updates all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the UpdateAllShortcuts function, and
 // is executed on the FILE thread.
 void UpdatePlatformShortcuts(const base::FilePath& shortcut_data_path,
                              const base::string16& old_app_title,
-                             std::unique_ptr<ShortcutInfo> shortcut_info);
+                             const ShortcutInfo& shortcut_info);
 
 // Delete all the shortcuts for an entire profile.
 // This is executed on the FILE thread.
@@ -255,6 +255,10 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path);
 // Sanitizes |name| and returns a version of it that is safe to use as an
 // on-disk file name .
 base::FilePath GetSanitizedFileName(const base::string16& name);
+
+// Clears |shortcut_info| and invokes |callback| unless it's null.
+void DeleteShortcutInfoOnUIThread(std::unique_ptr<ShortcutInfo> shortcut_info,
+                                  const base::Closure& callback);
 
 }  // namespace internals
 
