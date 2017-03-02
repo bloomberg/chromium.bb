@@ -243,8 +243,6 @@ ContentSuggestion RecentTabSuggestionsProvider::ConvertUIItem(
     const DownloadUIItem& ui_item) const {
   // UI items have the Tab ID embedded in the GUID and the offline ID is
   // available by querying.
-  //
-  // TODO(vitaliii): Make sure the URL is opened in the existing tab.
   int64_t offline_page_id =
       recent_tabs_ui_adapter_->GetOfflineIdByGuid(ui_item.guid);
   ContentSuggestion suggestion(provided_category_,

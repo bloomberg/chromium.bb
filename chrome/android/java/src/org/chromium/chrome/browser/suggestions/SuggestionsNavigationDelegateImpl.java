@@ -104,9 +104,8 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
 
         if (article.isRecentTab()) {
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB;
-            // TODO(vitaliii): Add a debug check that the result is true after crbug.com/662924
-            // is resolved.
-            openRecentTabSnippet(article);
+            boolean success = openRecentTabSnippet(article);
+            assert success;
             return;
         }
 
