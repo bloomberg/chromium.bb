@@ -4,6 +4,7 @@
 
 #include "media/audio/mock_audio_manager.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_parameters.h"
@@ -115,6 +116,14 @@ std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
     AudioLogFactory::AudioComponent component) {
   return nullptr;
 }
+
+void MockAudioManager::InitializeOutputDebugRecording(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {}
+
+void MockAudioManager::EnableOutputDebugRecording(
+    const base::FilePath& base_file_name) {}
+
+void MockAudioManager::DisableOutputDebugRecording() {}
 
 const char* MockAudioManager::GetName() {
   return nullptr;

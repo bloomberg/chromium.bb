@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "media/audio/audio_debug_file_writer.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_sample_types.h"
 #include "media/base/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -167,10 +168,10 @@ class AudioDebugFileWriterTest
       std::unique_ptr<AudioBus> bus =
           AudioBus::Create(params_.channels(), params_.frames_per_buffer());
 
-      bus->FromInterleaved(
+      bus->FromInterleaved<media::SignedInt16SampleTypeTraits>(
           source_interleaved_.get() +
               i * params_.channels() * params_.frames_per_buffer(),
-          params_.frames_per_buffer(), kBytesPerSample);
+          params_.frames_per_buffer());
 
       debug_writer_->Write(std::move(bus));
     }
@@ -244,8 +245,14 @@ class AudioDebugFileWriterBehavioralTest : public AudioDebugFileWriterTest {};
 TEST_P(AudioDebugFileWriterTest, WaveRecordingTest) {
   debug_writer_.reset(
       new AudioDebugFileWriter(params_, file_thread_.task_runner()));
-
   RecordAndVerifyOnce();
+}
+
+TEST_P(AudioDebugFileWriterTest, GetFileNameExtension) {
+  debug_writer_.reset(
+      new AudioDebugFileWriter(params_, file_thread_.task_runner()));
+  EXPECT_EQ(FILE_PATH_LITERAL("wav"),
+            base::FilePath::StringType(debug_writer_->GetFileNameExtension()));
 }
 
 TEST_P(AudioDebugFileWriterBehavioralTest,

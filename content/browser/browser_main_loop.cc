@@ -1778,6 +1778,7 @@ void BrowserMainLoop::CreateAudioManager() {
     audio_thread_ = base::MakeUnique<AudioManagerThread>();
     audio_manager_ = media::AudioManager::Create(
         audio_thread_->task_runner(), audio_thread_->worker_task_runner(),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
         MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);

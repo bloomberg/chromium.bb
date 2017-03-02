@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "media/audio/audio_debug_recording_helper.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
@@ -31,11 +32,18 @@ class OnMoreDataConverter;
 // parameters. If opening still fails, it will fallback to AUDIO_FAKE.
 class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
  public:
+  // Callback type to register an AudioDebugRecorder.
+  using RegisterDebugRecordingSourceCallback =
+      base::RepeatingCallback<std::unique_ptr<AudioDebugRecorder>(
+          const AudioParameters&)>;
+
   AudioOutputResampler(AudioManager* audio_manager,
                        const AudioParameters& input_params,
                        const AudioParameters& output_params,
                        const std::string& output_device_id,
-                       const base::TimeDelta& close_delay);
+                       base::TimeDelta close_delay,
+                       const RegisterDebugRecordingSourceCallback&
+                           register_debug_recording_source_callback);
   ~AudioOutputResampler() override;
 
   // AudioOutputDispatcher interface.
@@ -89,6 +97,10 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   // have been created within |close_delay_|.  Without this, audio may be lost
   // to a fake stream indefinitely for transient errors.
   base::Timer reinitialize_timer_;
+
+  // Callback for registering a debug recording source.
+  RegisterDebugRecordingSourceCallback
+      register_debug_recording_source_callback_;
 
   base::WeakPtrFactory<AudioOutputResampler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AudioOutputResampler);

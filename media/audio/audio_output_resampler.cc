@@ -33,7 +33,8 @@ class OnMoreDataConverter
       public AudioConverter::InputCallback {
  public:
   OnMoreDataConverter(const AudioParameters& input_params,
-                      const AudioParameters& output_params);
+                      const AudioParameters& output_params,
+                      std::unique_ptr<AudioDebugRecorder> debug_recorder);
   ~OnMoreDataConverter() override;
 
   // AudioSourceCallback interface.
@@ -83,6 +84,9 @@ class OnMoreDataConverter
   // Information about input and output buffer sizes to be traced.
   const int input_buffer_size_;
   const int output_buffer_size_;
+
+  // For audio debug recordings.
+  std::unique_ptr<AudioDebugRecorder> debug_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(OnMoreDataConverter);
 };
@@ -215,11 +219,14 @@ void AudioOutputResampler::SetupFallbackParams() {
 #endif
 }
 
-AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
-                                           const AudioParameters& input_params,
-                                           const AudioParameters& output_params,
-                                           const std::string& output_device_id,
-                                           const base::TimeDelta& close_delay)
+AudioOutputResampler::AudioOutputResampler(
+    AudioManager* audio_manager,
+    const AudioParameters& input_params,
+    const AudioParameters& output_params,
+    const std::string& output_device_id,
+    base::TimeDelta close_delay,
+    const RegisterDebugRecordingSourceCallback&
+        register_debug_recording_source_callback)
     : AudioOutputDispatcher(audio_manager, input_params, output_device_id),
       close_delay_(close_delay),
       output_params_(output_params),
@@ -230,10 +237,13 @@ AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
                           base::Bind(&AudioOutputResampler::Reinitialize,
                                      base::Unretained(this)),
                           false),
+      register_debug_recording_source_callback_(
+          register_debug_recording_source_callback),
       weak_factory_(this) {
   DCHECK(input_params.IsValid());
   DCHECK(output_params.IsValid());
   DCHECK_EQ(output_params_.format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
+  DCHECK(register_debug_recording_source_callback_);
 
   // Record UMA statistics for the hardware configuration.
   RecordStats(output_params);
@@ -341,7 +351,12 @@ bool AudioOutputResampler::StartStream(
   OnMoreDataConverter* resampler_callback = nullptr;
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
   if (it == callbacks_.end()) {
-    resampler_callback = new OnMoreDataConverter(params_, output_params_);
+    // If a register callback has been given, register and pass the returned
+    // recoder to the converter. Data is fed to same recorder for the lifetime
+    // of the converter, which is until the stream is closed.
+    resampler_callback = new OnMoreDataConverter(
+        params_, output_params_,
+        register_debug_recording_source_callback_.Run(output_params_));
     callbacks_[stream_proxy] =
         base::WrapUnique<OnMoreDataConverter>(resampler_callback);
   } else {
@@ -408,8 +423,10 @@ void AudioOutputResampler::StopStreamInternal(
     dispatcher_->CloseAllIdleStreams();
 }
 
-OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
-                                         const AudioParameters& output_params)
+OnMoreDataConverter::OnMoreDataConverter(
+    const AudioParameters& input_params,
+    const AudioParameters& output_params,
+    std::unique_ptr<AudioDebugRecorder> debug_recorder)
     : io_ratio_(static_cast<double>(input_params.GetBytesPerSecond()) /
                 output_params.GetBytesPerSecond()),
       source_callback_(nullptr),
@@ -417,7 +434,8 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
       audio_converter_(input_params, output_params, false),
       error_occurred_(false),
       input_buffer_size_(input_params.frames_per_buffer()),
-      output_buffer_size_(output_params.frames_per_buffer()) {
+      output_buffer_size_(output_params.frames_per_buffer()),
+      debug_recorder_(std::move(debug_recorder)) {
   RecordRebufferingStats(input_params, output_params);
 }
 
@@ -453,6 +471,9 @@ int OnMoreDataConverter::OnMoreData(base::TimeDelta delay,
   current_delay_ = delay;
   current_delay_timestamp_ = delay_timestamp;
   audio_converter_.Convert(dest);
+
+  if (debug_recorder_)
+    debug_recorder_->OnData(dest);
 
   // Always return the full number of frames requested, ProvideInput()
   // will pad with silence if it wasn't able to acquire enough data.

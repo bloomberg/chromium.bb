@@ -18,12 +18,16 @@
 
 namespace content {
 class RenderProcessHost;
-}  // namespace content
+}
+
+namespace media {
+class AudioManager;
+}
 
 class Profile;
 
 // AudioDebugRecordingsHandler provides an interface to start and stop
-// AudioDebugRecordings, including WebRTC AEC dumps.
+// AudioDebugRecordings, including WebRTC AEC dumps. Lives on the UI thread.
 class AudioDebugRecordingsHandler
     : public base::RefCountedThreadSafe<AudioDebugRecordingsHandler> {
  public:
@@ -35,7 +39,8 @@ class AudioDebugRecordingsHandler
   // Key used to attach the handler to the RenderProcessHost
   static const char kAudioDebugRecordingsHandlerKey[];
 
-  explicit AudioDebugRecordingsHandler(Profile* profile);
+  AudioDebugRecordingsHandler(Profile* profile,
+                              media::AudioManager* audio_manager);
 
   // Starts an audio debug recording. The recording lasts the given |delay|,
   // unless |delay| is zero, in which case recording will continue until
@@ -81,13 +86,15 @@ class AudioDebugRecordingsHandler
   // The profile associated with our renderer process.
   Profile* const profile_;
 
-  // Must be accessed on the UI thread.
+  // Set if recordings are in progress.
   bool is_audio_debug_recordings_in_progress_;
 
   // This counter allows saving each debug recording in separate files.
   uint64_t current_audio_debug_recordings_id_;
 
-  base::ThreadChecker thread_checker_;
+  // Audio manager, used for enabling output recordings.
+  media::AudioManager* const audio_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingsHandler);
 };
 

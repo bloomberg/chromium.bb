@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "media/audio/audio_debug_recording_manager.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_dispatcher.h"
@@ -67,6 +68,8 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       const std::string& input_device_id) override;
   std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
+  void EnableOutputDebugRecording(const base::FilePath& base_file_name) final;
+  void DisableOutputDebugRecording() final;
 
   void SetMaxStreamCountForTesting(int max_input, int max_output) final;
 
@@ -153,11 +156,22 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // Implementations that don't yet support this should return an empty string.
   virtual std::string GetDefaultOutputDeviceID();
 
+  virtual std::unique_ptr<AudioDebugRecordingManager>
+  CreateAudioDebugRecordingManager(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(AudioManagerTest, AudioDebugRecording);
+
   struct DispatcherParams;
   typedef ScopedVector<DispatcherParams> AudioOutputDispatchers;
 
   class CompareByParams;
+
+  // AudioManager:
+  void InitializeOutputDebugRecording(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) final;
 
   // These functions assign group ids to devices based on their device ids.
   // The default implementation is an attempt to do this based on
@@ -188,6 +202,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
 
   // Proxy for creating AudioLog objects.
   AudioLogFactory* const audio_log_factory_;
+
+  // Debug recording manager.
+  std::unique_ptr<AudioDebugRecordingManager> debug_recording_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerBase);
 };

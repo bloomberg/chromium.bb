@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_sample_types.h"
 
 namespace media {
 
@@ -170,7 +171,8 @@ class AudioDebugFileWriter::AudioFileWriter {
   // Number of written samples.
   uint64_t samples_;
 
-  // Input audio parameters required to build wave header.
+  // Audio parameters required to build wave header. Number of channels and
+  // sample rate are used.
   const AudioParameters params_;
 
   // Intermediate buffer to be written to file. Interleaved 16 bit audio data.
@@ -230,9 +232,7 @@ AudioDebugFileWriter::AudioFileWriter::AudioFileWriter(
     : samples_(0),
       params_(params),
       interleaved_data_size_(0),
-      task_runner_(std::move(task_runner)) {
-  DCHECK_EQ(params.bits_per_sample(), kBytesPerSample * 8);
-}
+      task_runner_(std::move(task_runner)) {}
 
 AudioDebugFileWriter::AudioFileWriter::~AudioFileWriter() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -242,6 +242,7 @@ AudioDebugFileWriter::AudioFileWriter::~AudioFileWriter() {
 
 void AudioDebugFileWriter::AudioFileWriter::Write(const AudioBus* data) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(params_.channels(), data->channels());
   if (!file_.IsValid())
     return;
 
@@ -252,8 +253,8 @@ void AudioDebugFileWriter::AudioFileWriter::Write(const AudioBus* data) {
     interleaved_data_size_ = data_size;
   }
   samples_ += data_size;
-  data->ToInterleaved(data->frames(), sizeof(interleaved_data_[0]),
-                      interleaved_data_.get());
+  data->ToInterleaved<media::SignedInt16SampleTypeTraits>(
+      data->frames(), interleaved_data_.get());
 
 #ifndef ARCH_CPU_LITTLE_ENDIAN
   static_assert(sizeof(interleaved_data_[0]) == sizeof(uint16_t),
@@ -347,6 +348,10 @@ bool AudioDebugFileWriter::WillWrite() {
   // here, but it's fine: we can afford missing some data or scheduling some
   // no-op writes.
   return !!file_writer_;
+}
+
+const base::FilePath::CharType* AudioDebugFileWriter::GetFileNameExtension() {
+  return FILE_PATH_LITERAL("wav");
 }
 
 }  // namspace media

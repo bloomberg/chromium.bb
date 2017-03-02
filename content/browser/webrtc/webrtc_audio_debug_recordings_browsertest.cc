@@ -26,7 +26,14 @@
 namespace {
 
 const int kExpectedConsumerId = 1;
-const int kExpectedStreamId = 1;
+const int kExpectedInputStreamId = 1;
+const int kExpectedFirstOutputStreamId = 1;
+
+const int kWaveHeaderSizeBytes = 44;
+
+const base::FilePath::CharType kBaseFilename[] =
+    FILE_PATH_LITERAL("audio_debug");
+const base::FilePath::CharType kWaveExtension[] = FILE_PATH_LITERAL("wav");
 
 // Get the ID for the render process host when there should only be one.
 bool GetRenderProcessHostId(base::ProcessId* id) {
@@ -44,22 +51,34 @@ bool GetRenderProcessHostId(base::ProcessId* id) {
 // Get the expected AEC dump file name. The name will be
 // <temporary path>.<render process id>.aec_dump.<consumer id>, for example
 // "/tmp/.com.google.Chrome.Z6UC3P.12345.aec_dump.1".
-base::FilePath GetExpectedAecDumpFileName(const base::FilePath& base_file,
+base::FilePath GetExpectedAecDumpFileName(const base::FilePath& base_file_path,
                                           int render_process_id) {
-  return base_file.AddExtension(IntToStringType(render_process_id))
-                  .AddExtension(FILE_PATH_LITERAL("aec_dump"))
-                  .AddExtension(IntToStringType(kExpectedConsumerId));
+  return base_file_path.AddExtension(IntToStringType(render_process_id))
+      .AddExtension(FILE_PATH_LITERAL("aec_dump"))
+      .AddExtension(IntToStringType(kExpectedConsumerId));
 }
 
 // Get the expected input audio file name. The name will be
-// <temporary path>.<render process id>.source_input.<stream id>.pcm, for
-// example "/tmp/.com.google.Chrome.Z6UC3P.12345.source_input.1.pcm".
-base::FilePath GetExpectedInputAudioFileName(const base::FilePath& base_file,
-                                             int render_process_id) {
-  return base_file.AddExtension(IntToStringType(render_process_id))
-                  .AddExtension(FILE_PATH_LITERAL("source_input"))
-                  .AddExtension(IntToStringType(kExpectedStreamId))
-                  .AddExtension(FILE_PATH_LITERAL("wav"));
+// <temporary path>.<render process id>.source_input.<stream id>.wav, for
+// example "/tmp/.com.google.Chrome.Z6UC3P.12345.source_input.1.wav".
+base::FilePath GetExpectedInputAudioFileName(
+    const base::FilePath& base_file_path,
+    int render_process_id) {
+  return base_file_path.AddExtension(IntToStringType(render_process_id))
+      .AddExtension(FILE_PATH_LITERAL("source_input"))
+      .AddExtension(IntToStringType(kExpectedInputStreamId))
+      .AddExtension(kWaveExtension);
+}
+
+// Get the expected output audio file name. The name will be
+// <temporary path>.output.<running stream id>.wav, for example
+// "/tmp/.com.google.Chrome.Z6UC3P.output.1.wav".
+base::FilePath GetExpectedOutputAudioFileName(
+    const base::FilePath& base_file_path,
+    int id) {
+  return base_file_path.AddExtension(FILE_PATH_LITERAL("output"))
+      .AddExtension(IntToStringType(id))
+      .AddExtension(kWaveExtension);
 }
 
 }  // namespace
@@ -78,6 +97,7 @@ class WebRtcAudioDebugRecordingsBrowserTest
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
+// TODO(grunell): Re-enable for ARM Linux. Bug is closed as fixed.
 #define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
@@ -90,62 +110,76 @@ class WebRtcAudioDebugRecordingsBrowserTest
 #endif
 
 // This tests will make a complete PeerConnection-based call, verify that
-// video is playing for the call, and verify that a non-empty AEC dump file
-// exists. The AEC dump is enabled through webrtc-internals. The HTML and
-// Javascript is bypassed since it would trigger a file picker dialog. Instead,
-// the dialog callback FileSelected() is invoked directly. In fact, there's
-// never a webrtc-internals page opened at all since that's not needed.
+// video is playing for the call, and verify that non-empty audio debug
+// recording files exist. The recording is enabled through webrtc-internals. The
+// HTML and Javascript is bypassed since it would trigger a file picker dialog.
+// Instead, the dialog callback FileSelected() is invoked directly. In fact,
+// there's never a webrtc-internals page opened at all since that's not needed.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        MAYBE_CallWithAudioDebugRecordings) {
-  bool prev = base::ThreadRestrictions::SetIOAllowed(true);
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
   }
+
+  bool prev_io_allowed = base::ThreadRestrictions::SetIOAllowed(true);
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // We must navigate somewhere first so that the render process is created.
   NavigateToURL(shell(), GURL(""));
 
-  base::FilePath base_file;
-  ASSERT_TRUE(CreateTemporaryFile(&base_file));
-  base::DeleteFile(base_file, false);
+  // Create a temp directory and setup base file path.
+  base::FilePath temp_dir_path;
+  ASSERT_TRUE(
+      CreateNewTempDirectory(base::FilePath::StringType(), &temp_dir_path));
+  base::FilePath base_file_path = temp_dir_path.Append(kBaseFilename);
 
   // This fakes the behavior of another open tab with webrtc-internals, and
-  // enabling AEC dump in that tab.
-  WebRTCInternals::GetInstance()->FileSelected(base_file, -1, NULL);
+  // enabling audio debug recordings in that tab.
+  WebRTCInternals::GetInstance()->FileSelected(base_file_path, -1, NULL);
 
+  // Make a call.
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
-  EXPECT_FALSE(base::PathExists(base_file));
-
   // Verify that the expected AEC dump file exists and contains some data.
   base::ProcessId render_process_id = base::kNullProcessId;
   EXPECT_TRUE(GetRenderProcessHostId(&render_process_id));
-  base::FilePath aec_dump_file = GetExpectedAecDumpFileName(base_file,
-                                                            render_process_id);
-
-  EXPECT_TRUE(base::PathExists(aec_dump_file));
+  base::FilePath file_path =
+      GetExpectedAecDumpFileName(base_file_path, render_process_id);
+  EXPECT_TRUE(base::PathExists(file_path));
   int64_t file_size = 0;
-  EXPECT_TRUE(base::GetFileSize(aec_dump_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
   EXPECT_GT(file_size, 0);
-
-  base::DeleteFile(aec_dump_file, false);
+  EXPECT_TRUE(base::DeleteFile(file_path, false));
 
   // Verify that the expected input audio file exists and contains some data.
-  base::FilePath input_audio_file =
-      GetExpectedInputAudioFileName(base_file, render_process_id);
-
-  EXPECT_TRUE(base::PathExists(input_audio_file));
+  file_path = GetExpectedInputAudioFileName(base_file_path, render_process_id);
+  EXPECT_TRUE(base::PathExists(file_path));
   file_size = 0;
-  EXPECT_TRUE(base::GetFileSize(input_audio_file, &file_size));
-  EXPECT_GT(file_size, 0);
+  EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
+  EXPECT_GT(file_size, kWaveHeaderSizeBytes);
+  EXPECT_TRUE(base::DeleteFile(file_path, false));
 
-  base::DeleteFile(input_audio_file, false);
-  base::ThreadRestrictions::SetIOAllowed(prev);
+  // Verify that the expected output audio files exists and contains some data.
+  // Two files are expected, one for each peer in the call.
+  for (int i = 0; i < 2; ++i) {
+    file_path = GetExpectedOutputAudioFileName(
+        base_file_path, kExpectedFirstOutputStreamId + i);
+    EXPECT_TRUE(base::PathExists(file_path));
+    file_size = 0;
+    EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
+    EXPECT_GT(file_size, kWaveHeaderSizeBytes);
+    EXPECT_TRUE(base::DeleteFile(file_path, false));
+  }
+
+  // Verify that no other files exist and remove temp dir.
+  EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
+  EXPECT_TRUE(base::DeleteFile(temp_dir_path, false));
+
+  base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
 
 // TODO(grunell): Add test for multiple dumps when re-use of
@@ -153,6 +187,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
+// TODO(grunell): Re-enable for ARM Linux. Bug is closed as fixed.
 #define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
@@ -161,59 +196,57 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 #define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled CallWithAudioDebugRecordingsEnabledThenDisabled
 #endif
 
-// As above, but enable and disable dump before starting a call. The file should
-// be created, but should be empty.
+// As above, but enable and disable recordings before starting a call. No files
+// should be created.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled) {
-  bool prev = base::ThreadRestrictions::SetIOAllowed(true);
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
   }
+
+  bool prev_io_allowed = base::ThreadRestrictions::SetIOAllowed(true);
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // We must navigate somewhere first so that the render process is created.
   NavigateToURL(shell(), GURL(""));
 
-  base::FilePath base_file;
-  ASSERT_TRUE(CreateTemporaryFile(&base_file));
-  base::DeleteFile(base_file, false);
+  // Create a temp directory and setup base file path.
+  base::FilePath temp_dir_path;
+  ASSERT_TRUE(
+      CreateNewTempDirectory(base::FilePath::StringType(), &temp_dir_path));
+  base::FilePath base_file_path = temp_dir_path.Append(kBaseFilename);
 
   // This fakes the behavior of another open tab with webrtc-internals, and
-  // enabling AEC dump in that tab, then disabling it.
-  WebRTCInternals::GetInstance()->FileSelected(base_file, -1, NULL);
+  // enabling audio debug recordings in that tab, then disabling it.
+  WebRTCInternals::GetInstance()->FileSelected(base_file_path, -1, NULL);
   WebRTCInternals::GetInstance()->DisableAudioDebugRecordings();
 
+  // Make a call.
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
-  // Verify that the expected AEC dump file doesn't exist.
-  base::ProcessId render_process_id = base::kNullProcessId;
-  EXPECT_TRUE(GetRenderProcessHostId(&render_process_id));
-  base::FilePath aec_dump_file = GetExpectedAecDumpFileName(base_file,
-                                                            render_process_id);
-  EXPECT_FALSE(base::PathExists(aec_dump_file));
-  base::DeleteFile(aec_dump_file, false);
+  // Verify that no files exist and remove temp dir.
+  EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
+  EXPECT_TRUE(base::DeleteFile(temp_dir_path, false));
 
-  // Verify that the expected input audio file doesn't exist.
-  base::FilePath input_audio_file =
-      GetExpectedInputAudioFileName(base_file, render_process_id);
-  EXPECT_FALSE(base::PathExists(input_audio_file));
-  base::DeleteFile(input_audio_file, false);
-  base::ThreadRestrictions::SetIOAllowed(prev);
+  base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
 
 // Timing out on ARM linux bot: http://crbug.com/238490
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
+// TODO(grunell): Re-enable on all but Android ASAN. ARM Linux bug is closed
+// as fixed. See conditions for the above two tests.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        DISABLED_TwoCallsWithAudioDebugRecordings) {
-  bool prev = base::ThreadRestrictions::SetIOAllowed(true);
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
   }
+
+  bool prev_io_allowed = base::ThreadRestrictions::SetIOAllowed(true);
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -224,16 +257,18 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   Shell* shell2 = CreateBrowser();
   NavigateToURL(shell2, GURL(""));
 
-  base::FilePath base_file;
-  ASSERT_TRUE(CreateTemporaryFile(&base_file));
-  base::DeleteFile(base_file, false);
+  // Create a temp directory and setup base file path.
+  base::FilePath temp_dir_path;
+  ASSERT_TRUE(
+      CreateNewTempDirectory(base::FilePath::StringType(), &temp_dir_path));
+  base::FilePath base_file_path = temp_dir_path.Append(kBaseFilename);
 
   // This fakes the behavior of another open tab with webrtc-internals, and
-  // enabling AEC dump in that tab.
-  WebRTCInternals::GetInstance()->FileSelected(base_file, -1, NULL);
+  // enabling audio debug recordings in that tab.
+  WebRTCInternals::GetInstance()->FileSelected(base_file_path, -1, NULL);
 
+  // Make the calls.
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
-
   NavigateToURL(shell(), url);
   NavigateToURL(shell2, url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
@@ -242,10 +277,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
       shell2, "call({video: true, audio: true});", &result));
   ASSERT_STREQ("OK", result.c_str());
 
-  EXPECT_FALSE(base::PathExists(base_file));
-
   RenderProcessHost::iterator it =
       content::RenderProcessHost::AllHostsIterator();
+  base::FilePath file_path;
+  int64_t file_size = 0;
 
   for (; !it.IsAtEnd(); it.Advance()) {
     base::ProcessId render_process_id =
@@ -253,28 +288,41 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     EXPECT_NE(base::kNullProcessId, render_process_id);
 
     // Verify that the expected AEC dump file exists and contains some data.
-    base::FilePath aec_dump_file =
-        GetExpectedAecDumpFileName(base_file, render_process_id);
-
-    EXPECT_TRUE(base::PathExists(aec_dump_file));
-    int64_t file_size = 0;
-    EXPECT_TRUE(base::GetFileSize(aec_dump_file, &file_size));
+    file_path = GetExpectedAecDumpFileName(base_file_path, render_process_id);
+    EXPECT_TRUE(base::PathExists(file_path));
+    file_size = 0;
+    EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, 0);
-
-    base::DeleteFile(aec_dump_file, false);
+    EXPECT_TRUE(base::DeleteFile(file_path, false));
 
     // Verify that the expected input audio file exists and contains some data.
-    base::FilePath input_audio_file =
-        GetExpectedInputAudioFileName(base_file, render_process_id);
-
-    EXPECT_TRUE(base::PathExists(input_audio_file));
+    file_path =
+        GetExpectedInputAudioFileName(base_file_path, render_process_id);
+    EXPECT_TRUE(base::PathExists(file_path));
     file_size = 0;
-    EXPECT_TRUE(base::GetFileSize(input_audio_file, &file_size));
-    EXPECT_GT(file_size, 0);
-
-    base::DeleteFile(input_audio_file, false);
+    EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
+    EXPECT_GT(file_size, kWaveHeaderSizeBytes);
+    EXPECT_TRUE(base::DeleteFile(file_path, false));
   }
-  base::ThreadRestrictions::SetIOAllowed(prev);
+
+  // Verify that the expected output audio files exists and contains some data.
+  // Four files are expected, one for each peer in each call. (Two calls * two
+  // peers.)
+  for (int i = 0; i < 4; ++i) {
+    file_path = GetExpectedOutputAudioFileName(
+        base_file_path, kExpectedFirstOutputStreamId + i);
+    EXPECT_TRUE(base::PathExists(file_path));
+    file_size = 0;
+    EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
+    EXPECT_GT(file_size, kWaveHeaderSizeBytes);
+    EXPECT_TRUE(base::DeleteFile(file_path, false));
+  }
+
+  // Verify that no other files exist and remove temp dir.
+  EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
+  EXPECT_TRUE(base::DeleteFile(temp_dir_path, false));
+
+  base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
 
 }  // namespace content

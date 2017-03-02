@@ -22,6 +22,7 @@
 #include "media/base/media_switches.h"
 
 namespace media {
+
 namespace {
 
 const int kStreamCloseDelaySeconds = 5;
@@ -35,6 +36,13 @@ const int kDefaultMaxOutputStreams = 32;
 const int kDefaultMaxInputStreams = 32;
 
 const int kMaxInputChannels = 3;
+
+// Helper function to pass as callback when the audio debug recording is not
+// enabled.
+std::unique_ptr<AudioDebugRecorder> GetNullptrAudioDebugRecorder(
+    const AudioParameters& params) {
+  return nullptr;
+}
 
 }  // namespace
 
@@ -84,8 +92,7 @@ AudioManagerBase::AudioManagerBase(
       max_num_input_streams_(kDefaultMaxInputStreams),
       num_output_streams_(0),
       // TODO(dalecurtis): Switch this to an base::ObserverListThreadSafe, so we
-      // don't
-      // block the UI thread when swapping devices.
+      // don't block the UI thread when swapping devices.
       output_listeners_(
           base::ObserverList<AudioDeviceListener>::NOTIFY_EXISTING_ONLY),
       audio_log_factory_(audio_log_factory) {}
@@ -285,8 +292,16 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
       base::TimeDelta::FromSeconds(kStreamCloseDelaySeconds);
   std::unique_ptr<AudioOutputDispatcher> dispatcher;
   if (output_params.format() != AudioParameters::AUDIO_FAKE) {
+    // Using unretained for |debug_recording_manager_| is safe since it
+    // outlives the dispatchers (cleared in Shutdown()).
     dispatcher = base::MakeUnique<AudioOutputResampler>(
-        this, params, output_params, output_device_id, kCloseDelay);
+        this, params, output_params, output_device_id, kCloseDelay,
+        debug_recording_manager_
+            ? base::BindRepeating(
+                  &AudioDebugRecordingManager::RegisterDebugRecordingSource,
+                  base::Unretained(debug_recording_manager_.get()),
+                  FILE_PATH_LITERAL("output"))
+            : base::BindRepeating(&GetNullptrAudioDebugRecorder));
   } else {
     dispatcher = base::MakeUnique<AudioOutputDispatcherImpl>(
         this, output_params, output_device_id, kCloseDelay);
@@ -431,6 +446,45 @@ int AudioManagerBase::GetUserBufferSize() {
 std::unique_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
     AudioLogFactory::AudioComponent component) {
   return audio_log_factory_->CreateAudioLog(component);
+}
+
+void AudioManagerBase::InitializeOutputDebugRecording(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
+  if (!GetTaskRunner()->BelongsToCurrentThread()) {
+    // AudioManager is deleted on the audio thread, so it's safe to post
+    // unretained.
+    GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&AudioManagerBase::InitializeOutputDebugRecording,
+                   base::Unretained(this), std::move(file_task_runner)));
+    return;
+  }
+
+  DCHECK(!debug_recording_manager_);
+  debug_recording_manager_ = CreateAudioDebugRecordingManager(
+      GetTaskRunner(), std::move(file_task_runner));
+}
+
+void AudioManagerBase::EnableOutputDebugRecording(
+    const base::FilePath& base_file_name) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(debug_recording_manager_)
+      << "InitializeOutputDebugRecording() must be called before enabling";
+  debug_recording_manager_->EnableDebugRecording(base_file_name);
+}
+
+void AudioManagerBase::DisableOutputDebugRecording() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  if (debug_recording_manager_)
+    debug_recording_manager_->DisableDebugRecording();
+}
+
+std::unique_ptr<AudioDebugRecordingManager>
+AudioManagerBase::CreateAudioDebugRecordingManager(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
+  return base::MakeUnique<AudioDebugRecordingManager>(
+      std::move(task_runner), std::move(file_task_runner));
 }
 
 void AudioManagerBase::SetMaxStreamCountForTesting(int max_input,

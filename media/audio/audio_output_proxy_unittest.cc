@@ -51,6 +51,12 @@ static const int kOnMoreDataCallbackDelayMs = 10;
 // Let start run long enough for many OnMoreData callbacks to occur.
 static const int kStartRunTimeMs = kOnMoreDataCallbackDelayMs * 10;
 
+// Dummy function.
+std::unique_ptr<media::AudioDebugRecorder> RegisterDebugRecording(
+    const media::AudioParameters& params) {
+  return nullptr;
+}
+
 class MockAudioOutputStream : public AudioOutputStream {
  public:
   MockAudioOutputStream(AudioManagerBase* manager,
@@ -499,7 +505,8 @@ class AudioOutputResamplerTest : public AudioOutputProxyTest {
         AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
         16000, 16, 1024);
     resampler_ = base::MakeUnique<AudioOutputResampler>(
-        &manager(), params_, resampler_params_, std::string(), close_delay);
+        &manager(), params_, resampler_params_, std::string(), close_delay,
+        base::BindRepeating(&RegisterDebugRecording));
   }
 
   void OnStart() override {

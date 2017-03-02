@@ -185,6 +185,7 @@
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "extensions/features/features.h"
 #include "gpu/config/gpu_switches.h"
+#include "media/audio/audio_manager.h"
 #include "media/media_features.h"
 #include "net/base/mime_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -1183,8 +1184,10 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
                     new base::UserDataAdapter<WebRtcLoggingHandlerHost>(
                         webrtc_logging_handler_host));
 
+  // The audio manager outlives the host, so it's safe to hand a raw pointer to
+  // it to the AudioDebugRecordingsHandler, which is owned by the host.
   AudioDebugRecordingsHandler* audio_debug_recordings_handler =
-      new AudioDebugRecordingsHandler(profile);
+      new AudioDebugRecordingsHandler(profile, media::AudioManager::Get());
   host->SetUserData(
       AudioDebugRecordingsHandler::kAudioDebugRecordingsHandlerKey,
       new base::UserDataAdapter<AudioDebugRecordingsHandler>(
