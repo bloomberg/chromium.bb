@@ -152,33 +152,33 @@ typedef struct {
 
 static INLINE int block_center_x(int mi_col, BLOCK_SIZE bs) {
   const int bw = block_size_wide[bs];
-  return mi_col * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2;
+  return mi_col * MI_SIZE + bw / 2;
 }
 
 static INLINE int block_center_y(int mi_row, BLOCK_SIZE bs) {
   const int bh = block_size_high[bs];
-  return mi_row * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2;
+  return mi_row * MI_SIZE + bh / 2;
 }
 
 // Convert a global motion translation vector (which may have more bits than a
 // regular motion vector) into a motion vector
 static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
                                           int allow_hp, BLOCK_SIZE bsize,
-                                          int mi_col, int mi_row) {
-#if !GLOBAL_SUB8X8_USED
-  if (bsize < BLOCK_8X8) {
-    int_mv res_zero;
-    res_zero.as_mv.row = 0;
-    res_zero.as_mv.col = 0;
-    return res_zero;
-  }
-#endif
-
+                                          int mi_col, int mi_row,
+                                          int block_idx) {
+  const int unify_bsize = CONFIG_CB4X4;
   int_mv res;
   const int32_t *mat = gm->wmmat;
-  const int x = block_center_x(mi_col, bsize);
-  const int y = block_center_y(mi_row, bsize);
-  int xc, yc;
+  int xc, yc, x, y;
+  if (bsize >= BLOCK_8X8 || unify_bsize) {
+    x = block_center_x(mi_col, bsize);
+    y = block_center_y(mi_row, bsize);
+  } else {
+    x = block_center_x(mi_col, bsize);
+    y = block_center_y(mi_row, bsize);
+    x += (block_idx & 1) * MI_SIZE / 2;
+    y += (block_idx & 2) * MI_SIZE / 4;
+  }
   int shift = allow_hp ? WARPEDMODEL_PREC_BITS - 3 : WARPEDMODEL_PREC_BITS - 2;
   int scale = allow_hp ? 0 : 1;
 
