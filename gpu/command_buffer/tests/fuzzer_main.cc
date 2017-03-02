@@ -88,7 +88,7 @@ class CommandBufferSetup {
  public:
   CommandBufferSetup()
       : atexit_manager_(),
-        sync_point_manager_(new SyncPointManager(false)),
+        sync_point_manager_(new SyncPointManager()),
         sync_point_order_data_(SyncPointOrderData::Create()),
         mailbox_manager_(new gles2::MailboxManagerImpl),
         share_group_(new gl::GLShareGroup),
@@ -120,9 +120,9 @@ class CommandBufferSetup {
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 #endif
 
-    sync_point_client_ = sync_point_manager_->CreateSyncPointClient(
-        sync_point_order_data_, CommandBufferNamespace::IN_PROCESS,
-        command_buffer_id_);
+    sync_point_client_ = base::MakeUnique<SyncPointClient>(
+        sync_point_manager_.get(), sync_point_order_data_,
+        CommandBufferNamespace::IN_PROCESS, command_buffer_id_);
 
     translator_cache_ = new gles2::ShaderTranslatorCache(gpu_preferences_);
     completeness_cache_ = new gles2::FramebufferCompletenessCache;
@@ -151,8 +151,8 @@ class CommandBufferSetup {
     decoder_->set_engine(executor_.get());
     decoder_->SetFenceSyncReleaseCallback(base::Bind(
         &CommandBufferSetup::OnFenceSyncRelease, base::Unretained(this)));
-    decoder_->SetWaitFenceSyncCallback(base::Bind(
-        &CommandBufferSetup::OnWaitFenceSync, base::Unretained(this)));
+    decoder_->SetWaitSyncTokenCallback(base::Bind(
+        &CommandBufferSetup::OnWaitSyncToken, base::Unretained(this)));
     decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
     gles2::ContextCreationAttribHelper attrib_helper;
@@ -241,21 +241,12 @@ class CommandBufferSetup {
     sync_point_client_->ReleaseFenceSync(release);
   }
 
-  bool OnWaitFenceSync(CommandBufferNamespace namespace_id,
-                       CommandBufferId command_buffer_id,
-                       uint64_t release) {
-    CHECK(sync_point_client_);
-    scoped_refptr<gpu::SyncPointClientState> release_state =
-        sync_point_manager_->GetSyncPointClientState(namespace_id,
-                                                     command_buffer_id);
-    if (!release_state)
-      return true;
-
-    if (release_state->IsFenceSyncReleased(release))
-      return true;
-
+  bool OnWaitSyncToken(const SyncToken& sync_token) {
+    CHECK(sync_point_manager_);
+    if (sync_point_manager_->IsSyncTokenReleased(sync_token))
+      return false;
     executor_->SetScheduled(false);
-    return false;
+    return true;
   }
 
   void CreateTransferBuffer(size_t size, int32_t id) {

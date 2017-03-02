@@ -276,7 +276,10 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
       message.type() != GpuCommandBufferMsg_WaitForTokenInRange::ID &&
       message.type() != GpuCommandBufferMsg_WaitForGetOffsetInRange::ID &&
       message.type() != GpuCommandBufferMsg_RegisterTransferBuffer::ID &&
-      message.type() != GpuCommandBufferMsg_DestroyTransferBuffer::ID) {
+      message.type() != GpuCommandBufferMsg_DestroyTransferBuffer::ID &&
+      message.type() != GpuCommandBufferMsg_WaitSyncToken::ID &&
+      message.type() != GpuCommandBufferMsg_SignalSyncToken::ID &&
+      message.type() != GpuCommandBufferMsg_SignalQuery::ID) {
     if (!MakeCurrent())
       return false;
     have_context = true;
@@ -642,7 +645,8 @@ bool GpuCommandBufferStub::Initialize(
   decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
   executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get(),
                                       decoder_.get()));
-  sync_point_client_ = channel_->sync_point_manager()->CreateSyncPointClient(
+  sync_point_client_ = base::MakeUnique<SyncPointClient>(
+      channel_->sync_point_manager(),
       channel_->GetSyncPointOrderData(stream_id_),
       CommandBufferNamespace::GPU_IO, command_buffer_id_);
 
@@ -783,8 +787,8 @@ bool GpuCommandBufferStub::Initialize(
                  base::Unretained(this)));
   decoder_->SetFenceSyncReleaseCallback(base::Bind(
       &GpuCommandBufferStub::OnFenceSyncRelease, base::Unretained(this)));
-  decoder_->SetWaitFenceSyncCallback(base::Bind(
-      &GpuCommandBufferStub::OnWaitFenceSync, base::Unretained(this)));
+  decoder_->SetWaitSyncTokenCallback(base::Bind(
+      &GpuCommandBufferStub::OnWaitSyncToken, base::Unretained(this)));
   decoder_->SetDescheduleUntilFinishedCallback(
       base::Bind(&GpuCommandBufferStub::OnDescheduleUntilFinished,
                  base::Unretained(this)));
@@ -1002,34 +1006,12 @@ void GpuCommandBufferStub::PutChanged() {
   executor_->PutChanged();
 }
 
-void GpuCommandBufferStub::PullTextureUpdates(
-    CommandBufferNamespace namespace_id,
-    CommandBufferId command_buffer_id,
-    uint32_t release) {
-  gles2::MailboxManager* mailbox_manager =
-      context_group_->mailbox_manager();
-  if (mailbox_manager->UsesSync() && MakeCurrent()) {
-    SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
-    mailbox_manager->PullTextureUpdates(sync_token);
-  }
-}
-
-void GpuCommandBufferStub::OnWaitSyncToken(const SyncToken& sync_token) {
-  OnWaitFenceSync(sync_token.namespace_id(), sync_token.command_buffer_id(),
-                  sync_token.release_count());
-}
-
 void GpuCommandBufferStub::OnSignalSyncToken(const SyncToken& sync_token,
                                              uint32_t id) {
-  scoped_refptr<SyncPointClientState> release_state =
-      channel_->sync_point_manager()->GetSyncPointClientState(
-          sync_token.namespace_id(), sync_token.command_buffer_id());
-
-  if (release_state) {
-    sync_point_client_->Wait(release_state.get(), sync_token.release_count(),
-                             base::Bind(&GpuCommandBufferStub::OnSignalAck,
-                                        this->AsWeakPtr(), id));
-  } else {
+  if (!sync_point_client_->WaitNonThreadSafe(
+          sync_token, channel_->task_runner(),
+          base::Bind(&GpuCommandBufferStub::OnSignalAck, this->AsWeakPtr(),
+                     id))) {
     OnSignalAck(id);
   }
 }
@@ -1058,18 +1040,11 @@ void GpuCommandBufferStub::OnSignalQuery(uint32_t query_id, uint32_t id) {
 }
 
 void GpuCommandBufferStub::OnFenceSyncRelease(uint64_t release) {
-  if (sync_point_client_->client_state()->IsFenceSyncReleased(release)) {
-    DLOG(ERROR) << "Fence Sync has already been released.";
-    return;
-  }
-
-  gles2::MailboxManager* mailbox_manager =
-      context_group_->mailbox_manager();
-  if (mailbox_manager->UsesSync() && MakeCurrent()) {
-    SyncToken sync_token(CommandBufferNamespace::GPU_IO, 0,
-                              command_buffer_id_, release);
+  SyncToken sync_token(CommandBufferNamespace::GPU_IO, 0, command_buffer_id_,
+                       release);
+  gles2::MailboxManager* mailbox_manager = context_group_->mailbox_manager();
+  if (mailbox_manager->UsesSync() && MakeCurrent())
     mailbox_manager->PushTextureUpdates(sync_token);
-  }
 
   command_buffer_->SetReleaseCount(release);
   sync_point_client_->ReleaseFenceSync(release);
@@ -1090,50 +1065,40 @@ void GpuCommandBufferStub::OnRescheduleAfterFinished() {
   channel_->OnStreamRescheduled(stream_id_, true);
 }
 
-bool GpuCommandBufferStub::OnWaitFenceSync(
-    CommandBufferNamespace namespace_id,
-    CommandBufferId command_buffer_id,
-    uint64_t release) {
+bool GpuCommandBufferStub::OnWaitSyncToken(const SyncToken& sync_token) {
   DCHECK(!waiting_for_sync_point_);
   DCHECK(executor_->scheduled());
+  TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitSyncToken", this, "GpuCommandBufferStub",
+                           this);
 
-  scoped_refptr<SyncPointClientState> release_state =
-      channel_->sync_point_manager()->GetSyncPointClientState(
-          namespace_id, command_buffer_id);
+  waiting_for_sync_point_ = sync_point_client_->WaitNonThreadSafe(
+      sync_token, channel_->task_runner(),
+      base::Bind(&GpuCommandBufferStub::OnWaitSyncTokenCompleted, AsWeakPtr(),
+                 sync_token));
 
-  if (!release_state)
-    return true;
-
-  if (release_state->IsFenceSyncReleased(release)) {
-    PullTextureUpdates(namespace_id, command_buffer_id, release);
+  if (waiting_for_sync_point_) {
+    executor_->SetScheduled(false);
+    channel_->OnStreamRescheduled(stream_id_, false);
     return true;
   }
 
-  TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitFenceSync", this, "GpuCommandBufferStub",
-                           this);
-  waiting_for_sync_point_ = true;
-  sync_point_client_->WaitNonThreadSafe(
-      release_state.get(), release, channel_->task_runner(),
-      base::Bind(&GpuCommandBufferStub::OnWaitFenceSyncCompleted,
-                 this->AsWeakPtr(), namespace_id, command_buffer_id, release));
-
-  if (!waiting_for_sync_point_)
-    return true;
-
-  executor_->SetScheduled(false);
-  channel_->OnStreamRescheduled(stream_id_, false);
+  gles2::MailboxManager* mailbox_manager = context_group_->mailbox_manager();
+  if (mailbox_manager->UsesSync() && MakeCurrent())
+    mailbox_manager->PullTextureUpdates(sync_token);
   return false;
 }
 
-void GpuCommandBufferStub::OnWaitFenceSyncCompleted(
-    CommandBufferNamespace namespace_id,
-    CommandBufferId command_buffer_id,
-    uint64_t release) {
+void GpuCommandBufferStub::OnWaitSyncTokenCompleted(
+    const SyncToken& sync_token) {
   DCHECK(waiting_for_sync_point_);
-  TRACE_EVENT_ASYNC_END1("gpu", "WaitFenceSync", this, "GpuCommandBufferStub",
-                         this);
-  PullTextureUpdates(namespace_id, command_buffer_id, release);
+  TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncTokenCompleted", this,
+                         "GpuCommandBufferStub", this);
   waiting_for_sync_point_ = false;
+
+  gles2::MailboxManager* mailbox_manager = context_group_->mailbox_manager();
+  if (mailbox_manager->UsesSync() && MakeCurrent())
+    mailbox_manager->PullTextureUpdates(sync_token);
+
   executor_->SetScheduled(true);
   channel_->OnStreamRescheduled(stream_id_, true);
 }
@@ -1181,13 +1146,8 @@ void GpuCommandBufferStub::OnCreateImage(
     return;
 
   image_manager->AddImage(image.get(), id);
-  if (image_release_count) {
-    DLOG_IF(ERROR,
-            image_release_count !=
-                sync_point_client_->client_state()->fence_sync_release() + 1)
-        << "Client released fences out of order.";
+  if (image_release_count)
     sync_point_client_->ReleaseFenceSync(image_release_count);
-  }
 }
 
 void GpuCommandBufferStub::OnDestroyImage(int32_t id) {
@@ -1211,14 +1171,14 @@ void GpuCommandBufferStub::SendConsoleMessage(int32_t id,
   GPUCommandBufferConsoleMessage console_message;
   console_message.id = id;
   console_message.message = message;
-  IPC::Message* msg = new GpuCommandBufferMsg_ConsoleMsg(
-      route_id_, console_message);
+  IPC::Message* msg =
+      new GpuCommandBufferMsg_ConsoleMsg(route_id_, console_message);
   msg->set_unblock(true);
   Send(msg);
 }
 
-void GpuCommandBufferStub::SendCachedShader(
-    const std::string& key, const std::string& shader) {
+void GpuCommandBufferStub::SendCachedShader(const std::string& key,
+                                            const std::string& shader) {
   channel_->CacheShader(key, shader);
 }
 

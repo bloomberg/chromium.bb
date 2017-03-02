@@ -425,9 +425,9 @@ void GLES2DecoderPassthroughImpl::SetFenceSyncReleaseCallback(
   fence_sync_release_callback_ = callback;
 }
 
-void GLES2DecoderPassthroughImpl::SetWaitFenceSyncCallback(
-    const WaitFenceSyncCallback& callback) {
-  wait_fence_sync_callback_ = callback;
+void GLES2DecoderPassthroughImpl::SetWaitSyncTokenCallback(
+    const WaitSyncTokenCallback& callback) {
+  wait_sync_token_callback_ = callback;
 }
 
 void GLES2DecoderPassthroughImpl::SetDescheduleUntilFinishedCallback(

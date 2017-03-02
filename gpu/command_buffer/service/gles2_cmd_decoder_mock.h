@@ -149,8 +149,8 @@ class MockGLES2Decoder : public GLES2Decoder {
                void(const ShaderCacheCallback& callback));
   MOCK_METHOD1(SetFenceSyncReleaseCallback,
                void(const FenceSyncReleaseCallback& callback));
-  MOCK_METHOD1(SetWaitFenceSyncCallback,
-               void(const WaitFenceSyncCallback& callback));
+  MOCK_METHOD1(SetWaitSyncTokenCallback,
+               void(const WaitSyncTokenCallback& callback));
   MOCK_METHOD1(SetDescheduleUntilFinishedCallback,
                void(const NoParamCallback& callback));
   MOCK_METHOD1(SetRescheduleAfterFinishedCallback,

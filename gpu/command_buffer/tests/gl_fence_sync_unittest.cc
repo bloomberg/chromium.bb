@@ -23,7 +23,7 @@ namespace gpu {
 class GLFenceSyncTest : public testing::Test {
  protected:
   void SetUp() override {
-    sync_point_manager_.reset(new SyncPointManager(false));
+    sync_point_manager_.reset(new SyncPointManager());
 
     GLManager::Options options;
     options.sync_point_manager = sync_point_manager_.get();
@@ -53,20 +53,11 @@ TEST_F(GLFenceSyncTest, SimpleReleaseWait) {
   ASSERT_TRUE(GL_NO_ERROR == glGetError());
 
   // Make sure it is actually released.
-  scoped_refptr<SyncPointClientState> gl1_client_state =
-      sync_point_manager_->GetSyncPointClientState(gl1_.GetNamespaceID(),
-                                                   gl1_.GetCommandBufferID());
-  EXPECT_TRUE(gl1_client_state->IsFenceSyncReleased(fence_sync));
+  EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
 
   gl2_.MakeCurrent();
   glWaitSyncTokenCHROMIUM(sync_token.GetConstData());
   glFinish();
-
-  // gl2 should not have released anything.
-  scoped_refptr<SyncPointClientState> gl2_client_state =
-      sync_point_manager_->GetSyncPointClientState(gl2_.GetNamespaceID(),
-                                                   gl2_.GetCommandBufferID());
-  EXPECT_EQ(0u, gl2_client_state->fence_sync_release());
 }
 
 static void TestCallback(int* storage, int assign) {

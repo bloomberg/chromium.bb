@@ -39,7 +39,6 @@ class GLShareGroup;
 namespace gpu {
 struct GpuPreferences;
 class PreemptionFlag;
-class SyncPointClient;
 class SyncPointManager;
 struct SyncToken;
 namespace gles2 {
@@ -188,7 +187,6 @@ class GPU_EXPORT GpuChannelManager {
   GpuMemoryManager gpu_memory_manager_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
   SyncPointManager* sync_point_manager_;
-  std::unique_ptr<SyncPointClient> sync_point_client_waiter_;
   std::unique_ptr<gles2::ProgramCache> program_cache_;
   scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<gles2::FramebufferCompletenessCache>

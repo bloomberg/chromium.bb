@@ -71,8 +71,7 @@ DeferredGpuCommandService* DeferredGpuCommandService::GetInstance() {
 DeferredGpuCommandService::DeferredGpuCommandService()
     : gpu::InProcessCommandBuffer::Service(
           content::GetGpuPreferencesFromCommandLine()),
-      sync_point_manager_(new gpu::SyncPointManager(true)) {
-}
+      sync_point_manager_(new gpu::SyncPointManager()) {}
 
 DeferredGpuCommandService::~DeferredGpuCommandService() {
   base::AutoLock lock(tasks_lock_);

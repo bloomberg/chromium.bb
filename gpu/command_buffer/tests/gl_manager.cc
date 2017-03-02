@@ -185,30 +185,11 @@ scoped_refptr<gl::GLShareGroup>* GLManager::base_share_group_;
 scoped_refptr<gl::GLSurface>* GLManager::base_surface_;
 scoped_refptr<gl::GLContext>* GLManager::base_context_;
 
-GLManager::Options::Options()
-    : size(4, 4),
-      sync_point_manager(NULL),
-      share_group_manager(NULL),
-      share_mailbox_manager(NULL),
-      virtual_manager(NULL),
-      bind_generates_resource(false),
-      lose_context_when_out_of_memory(false),
-      context_lost_allowed(false),
-      context_type(gles2::CONTEXT_TYPE_OPENGLES2),
-      force_shader_name_hashing(false),
-      multisampled(false),
-      backbuffer_alpha(true),
-      image_factory(nullptr),
-      preserve_backbuffer(false) {}
+GLManager::Options::Options() = default;
 
 GLManager::GLManager()
-    : sync_point_manager_(nullptr),
-      context_lost_allowed_(false),
-      pause_commands_(false),
-      paused_order_num_(0),
-      command_buffer_id_(
-          CommandBufferId::FromUnsafeValue(g_next_command_buffer_id++)),
-      next_fence_sync_release_(1) {
+    : command_buffer_id_(
+          CommandBufferId::FromUnsafeValue(g_next_command_buffer_id++)) {
   SetupBaseContext();
 }
 
@@ -369,13 +350,14 @@ void GLManager::InitializeWithCommandLine(
   if (options.sync_point_manager) {
     sync_point_manager_ = options.sync_point_manager;
     sync_point_order_data_ = SyncPointOrderData::Create();
-    sync_point_client_ = sync_point_manager_->CreateSyncPointClient(
-        sync_point_order_data_, GetNamespaceID(), GetCommandBufferID());
+    sync_point_client_ = base::MakeUnique<SyncPointClient>(
+        sync_point_manager_, sync_point_order_data_, GetNamespaceID(),
+        GetCommandBufferID());
 
     decoder_->SetFenceSyncReleaseCallback(
         base::Bind(&GLManager::OnFenceSyncRelease, base::Unretained(this)));
-    decoder_->SetWaitFenceSyncCallback(
-        base::Bind(&GLManager::OnWaitFenceSync, base::Unretained(this)));
+    decoder_->SetWaitSyncTokenCallback(
+        base::Bind(&GLManager::OnWaitSyncToken, base::Unretained(this)));
   } else {
     sync_point_manager_ = nullptr;
     sync_point_order_data_ = nullptr;
@@ -428,25 +410,16 @@ void GLManager::SetupBaseContext() {
 
 void GLManager::OnFenceSyncRelease(uint64_t release) {
   DCHECK(sync_point_client_);
-  DCHECK(!sync_point_client_->client_state()->IsFenceSyncReleased(release));
   command_buffer_->SetReleaseCount(release);
   sync_point_client_->ReleaseFenceSync(release);
 }
 
-bool GLManager::OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
-                                gpu::CommandBufferId command_buffer_id,
-                                uint64_t release) {
-  DCHECK(sync_point_client_);
-  scoped_refptr<gpu::SyncPointClientState> release_state =
-      sync_point_manager_->GetSyncPointClientState(namespace_id,
-                                                   command_buffer_id);
-  if (!release_state)
-    return true;
-
+bool GLManager::OnWaitSyncToken(const SyncToken& sync_token) {
+  DCHECK(sync_point_manager_);
   // GLManager does not support being multithreaded at this point, so the fence
   // sync must be released by the time wait is called.
-  DCHECK(release_state->IsFenceSyncReleased(release));
-  return true;
+  DCHECK(sync_point_manager_->IsSyncTokenReleased(sync_token));
+  return false;
 }
 
 void GLManager::MakeCurrent() {
@@ -636,19 +609,16 @@ bool GLManager::IsFenceSyncReleased(uint64_t release) {
 void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
                                 const base::Closure& callback) {
   if (sync_point_manager_) {
-    scoped_refptr<gpu::SyncPointClientState> release_state =
-        sync_point_manager_->GetSyncPointClientState(
-            sync_token.namespace_id(), sync_token.command_buffer_id());
-
-    if (release_state) {
-      sync_point_client_->WaitOutOfOrder(release_state.get(),
-                                         sync_token.release_count(), callback);
-      return;
-    }
+    DCHECK(!paused_order_num_);
+    uint32_t order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber(
+        sync_point_manager_);
+    sync_point_order_data_->BeginProcessingOrderNumber(order_num);
+    if (!sync_point_client_->Wait(sync_token, callback))
+      callback.Run();
+    sync_point_order_data_->FinishProcessingOrderNumber(order_num);
+  } else {
+    callback.Run();
   }
-
-  // Something went wrong, just run the callback now.
-  callback.Run();
 }
 
 bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {

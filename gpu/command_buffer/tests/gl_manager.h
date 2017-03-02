@@ -54,32 +54,32 @@ class GLManager : private GpuControl {
   struct Options {
     Options();
     // The size of the backbuffer.
-    gfx::Size size;
+    gfx::Size size = gfx::Size(4, 4);
     // If not null will have a corresponding sync point manager.
-    SyncPointManager* sync_point_manager;
+    SyncPointManager* sync_point_manager = nullptr;
     // If not null will share resources with this context.
-    GLManager* share_group_manager;
+    GLManager* share_group_manager = nullptr;
     // If not null will share a mailbox manager with this context.
-    GLManager* share_mailbox_manager;
+    GLManager* share_mailbox_manager = nullptr;
     // If not null will create a virtual manager based on this context.
-    GLManager* virtual_manager;
+    GLManager* virtual_manager = nullptr;
     // Whether or not glBindXXX generates a resource.
-    bool bind_generates_resource;
+    bool bind_generates_resource = false;
     // Whether or not the context is auto-lost when GL_OUT_OF_MEMORY occurs.
-    bool lose_context_when_out_of_memory;
+    bool lose_context_when_out_of_memory = false;
     // Whether or not it's ok to lose the context.
-    bool context_lost_allowed;
-    gles2::ContextType context_type;
+    bool context_lost_allowed = false;
+    gles2::ContextType context_type = gles2::CONTEXT_TYPE_OPENGLES2;
     // Force shader name hashing for all context types.
-    bool force_shader_name_hashing;
+    bool force_shader_name_hashing = false;
     // Whether the buffer is multisampled.
-    bool multisampled;
+    bool multisampled = false;
     // Whether the backbuffer has an alpha channel.
-    bool backbuffer_alpha;
+    bool backbuffer_alpha = true;
     // The ImageFactory to use to generate images for the backbuffer.
-    gpu::ImageFactory* image_factory;
+    gpu::ImageFactory* image_factory = nullptr;
     // Whether to preserve the backbuffer after a call to SwapBuffers().
-    bool preserve_backbuffer;
+    bool preserve_backbuffer = false;
   };
   GLManager();
   ~GLManager() override;
@@ -153,13 +153,11 @@ class GLManager : private GpuControl {
   bool GetBufferChanged(int32_t transfer_buffer_id);
   void SetupBaseContext();
   void OnFenceSyncRelease(uint64_t release);
-  bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
-                       gpu::CommandBufferId command_buffer_id,
-                       uint64_t release);
+  bool OnWaitSyncToken(const SyncToken& sync_token);
 
   gpu::GpuPreferences gpu_preferences_;
 
-  SyncPointManager* sync_point_manager_;  // Non-owning.
+  SyncPointManager* sync_point_manager_ = nullptr;  // Non-owning.
 
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
   std::unique_ptr<SyncPointClient> sync_point_client_;
@@ -173,12 +171,12 @@ class GLManager : private GpuControl {
   std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<TransferBuffer> transfer_buffer_;
   std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
-  bool context_lost_allowed_;
-  bool pause_commands_;
-  uint32_t paused_order_num_;
+  bool context_lost_allowed_ = false;
+  bool pause_commands_ = false;
+  uint32_t paused_order_num_ = 0;
 
   const CommandBufferId command_buffer_id_;
-  uint64_t next_fence_sync_release_;
+  uint64_t next_fence_sync_release_ = 1;
 
   bool use_iosurface_memory_buffers_ = false;
 

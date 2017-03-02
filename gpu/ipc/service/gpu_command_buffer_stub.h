@@ -167,21 +167,16 @@ class GPU_EXPORT GpuCommandBufferStub
                                 uint32_t size);
   void OnDestroyTransferBuffer(int32_t id);
   void OnGetTransferBuffer(int32_t id, IPC::Message* reply_message);
+  bool OnWaitSyncToken(const SyncToken& sync_token);
 
   void OnEnsureBackbuffer();
 
-  void OnWaitSyncToken(const SyncToken& sync_token);
   void OnSignalSyncToken(const SyncToken& sync_token, uint32_t id);
   void OnSignalAck(uint32_t id);
   void OnSignalQuery(uint32_t query, uint32_t id);
 
   void OnFenceSyncRelease(uint64_t release);
-  bool OnWaitFenceSync(CommandBufferNamespace namespace_id,
-                       CommandBufferId command_buffer_id,
-                       uint64_t release);
-  void OnWaitFenceSyncCompleted(CommandBufferNamespace namespace_id,
-                                CommandBufferId command_buffer_id,
-                                uint64_t release);
+  void OnWaitSyncTokenCompleted(const SyncToken& sync_token);
 
   void OnDescheduleUntilFinished();
   void OnRescheduleAfterFinished();
@@ -211,9 +206,6 @@ class GPU_EXPORT GpuCommandBufferStub
 
   bool CheckContextLost();
   void CheckCompleteWaits();
-  void PullTextureUpdates(CommandBufferNamespace namespace_id,
-                          CommandBufferId command_buffer_id,
-                          uint32_t release);
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they

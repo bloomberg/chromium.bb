@@ -83,9 +83,7 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
 
   sync_point_manager_ = sync_point_manager;
   if (!sync_point_manager_) {
-    const bool allow_threaded_wait = false;
-    owned_sync_point_manager_ =
-        base::MakeUnique<gpu::SyncPointManager>(allow_threaded_wait);
+    owned_sync_point_manager_ = base::MakeUnique<gpu::SyncPointManager>();
     sync_point_manager_ = owned_sync_point_manager_.get();
   }
 

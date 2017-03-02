@@ -31,6 +31,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
@@ -594,7 +595,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void SetShaderCacheCallback(const ShaderCacheCallback& callback) override;
   void SetFenceSyncReleaseCallback(
       const FenceSyncReleaseCallback& callback) override;
-  void SetWaitFenceSyncCallback(const WaitFenceSyncCallback& callback) override;
+  void SetWaitSyncTokenCallback(const WaitSyncTokenCallback& callback) override;
 
   void SetDescheduleUntilFinishedCallback(
       const NoParamCallback& callback) override;
@@ -2302,7 +2303,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   std::unique_ptr<ImageManager> image_manager_;
 
   FenceSyncReleaseCallback fence_sync_release_callback_;
-  WaitFenceSyncCallback wait_fence_sync_callback_;
+  WaitSyncTokenCallback wait_sync_token_callback_;
   NoParamCallback deschedule_until_finished_callback_;
   NoParamCallback reschedule_after_finished_callback_;
 
@@ -4660,9 +4661,9 @@ void GLES2DecoderImpl::SetFenceSyncReleaseCallback(
   fence_sync_release_callback_ = callback;
 }
 
-void GLES2DecoderImpl::SetWaitFenceSyncCallback(
-    const WaitFenceSyncCallback& callback) {
-  wait_fence_sync_callback_ = callback;
+void GLES2DecoderImpl::SetWaitSyncTokenCallback(
+    const WaitSyncTokenCallback& callback) {
+  wait_sync_token_callback_ = callback;
 }
 
 void GLES2DecoderImpl::SetDescheduleUntilFinishedCallback(
@@ -15822,12 +15823,14 @@ error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
   const CommandBufferId command_buffer_id =
       CommandBufferId::FromUnsafeValue(c.command_buffer_id());
   const uint64_t release = c.release_count();
-  if (wait_fence_sync_callback_.is_null())
+  if (wait_sync_token_callback_.is_null())
     return error::kNoError;
 
-  return wait_fence_sync_callback_.Run(namespace_id, command_buffer_id, release)
-             ? error::kNoError
-             : error::kDeferCommandUntilLater;
+  gpu::SyncToken sync_token;
+  sync_token.Set(namespace_id, 0, command_buffer_id, release);
+  return wait_sync_token_callback_.Run(sync_token)
+             ? error::kDeferCommandUntilLater
+             : error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleDiscardBackbufferCHROMIUM(

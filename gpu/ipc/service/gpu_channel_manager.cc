@@ -64,8 +64,6 @@ GpuChannelManager::GpuChannelManager(
       mailbox_manager_(gles2::MailboxManager::Create(gpu_preferences)),
       gpu_memory_manager_(this),
       sync_point_manager_(sync_point_manager),
-      sync_point_client_waiter_(
-          sync_point_manager->CreateSyncPointClientWaiter()),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
       exiting_for_lost_context_(false),
@@ -174,21 +172,13 @@ void GpuChannelManager::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
     const SyncToken& sync_token) {
-  if (sync_token.HasData()) {
-    scoped_refptr<SyncPointClientState> release_state =
-        sync_point_manager()->GetSyncPointClientState(
-            sync_token.namespace_id(), sync_token.command_buffer_id());
-    if (release_state) {
-      sync_point_client_waiter_->WaitOutOfOrder(
-          release_state.get(), sync_token.release_count(),
+  if (!sync_point_manager_->WaitOutOfOrder(
+          sync_token,
           base::Bind(&GpuChannelManager::InternalDestroyGpuMemoryBuffer,
-                     base::Unretained(this), id, client_id));
-      return;
-    }
+                     base::Unretained(this), id, client_id))) {
+    // No sync token or invalid sync token, destroy immediately.
+    InternalDestroyGpuMemoryBuffer(id, client_id);
   }
-
-  // No sync token or invalid sync token, destroy immediately.
-  InternalDestroyGpuMemoryBuffer(id, client_id);
 }
 
 void GpuChannelManager::PopulateShaderCache(const std::string& program_proto) {

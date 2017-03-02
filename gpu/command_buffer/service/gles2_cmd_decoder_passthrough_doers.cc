@@ -3097,13 +3097,13 @@ error::Error GLES2DecoderPassthroughImpl::DoWaitSyncTokenCHROMIUM(
     CommandBufferNamespace namespace_id,
     CommandBufferId command_buffer_id,
     GLuint64 release_count) {
-  if (wait_fence_sync_callback_.is_null()) {
+  if (wait_sync_token_callback_.is_null()) {
     return error::kNoError;
   }
-  return wait_fence_sync_callback_.Run(namespace_id, command_buffer_id,
-                                       release_count)
-             ? error::kNoError
-             : error::kDeferCommandUntilLater;
+  SyncToken sync_token(namespace_id, 0, command_buffer_id, release_count);
+  return wait_sync_token_callback_.Run(sync_token)
+             ? error::kDeferCommandUntilLater
+             : error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDrawBuffersEXT(

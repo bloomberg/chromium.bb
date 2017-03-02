@@ -77,8 +77,7 @@ static void RunTaskWithResult(base::Callback<T(void)> task,
 class GpuInProcessThreadHolder : public base::Thread {
  public:
   GpuInProcessThreadHolder()
-      : base::Thread("GpuThread"),
-        sync_point_manager_(new SyncPointManager(false)) {
+      : base::Thread("GpuThread"), sync_point_manager_(new SyncPointManager()) {
     Start();
   }
 
@@ -349,8 +348,9 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   sync_point_order_data_ = SyncPointOrderData::Create();
-  sync_point_client_ = service_->sync_point_manager()->CreateSyncPointClient(
-      sync_point_order_data_, GetNamespaceID(), GetCommandBufferID());
+  sync_point_client_ = base::MakeUnique<SyncPointClient>(
+      service_->sync_point_manager(), sync_point_order_data_, GetNamespaceID(),
+      GetCommandBufferID());
 
   if (service_->UseVirtualizedGLContexts() ||
       decoder_->GetContextGroup()
@@ -417,8 +417,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_->SetFenceSyncReleaseCallback(
       base::Bind(&InProcessCommandBuffer::FenceSyncReleaseOnGpuThread,
                  base::Unretained(this)));
-  decoder_->SetWaitFenceSyncCallback(
-      base::Bind(&InProcessCommandBuffer::WaitFenceSyncOnGpuThread,
+  decoder_->SetWaitSyncTokenCallback(
+      base::Bind(&InProcessCommandBuffer::WaitSyncTokenOnGpuThread,
                  base::Unretained(this)));
   decoder_->SetDescheduleUntilFinishedCallback(
       base::Bind(&InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread,
@@ -801,9 +801,8 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     }
   }
 
-  if (fence_sync) {
+  if (fence_sync)
     sync_point_client_->ReleaseFenceSync(fence_sync);
-  }
 }
 
 void InProcessCommandBuffer::DestroyImage(int32_t id) {
@@ -828,81 +827,57 @@ void InProcessCommandBuffer::DestroyImageOnGpuThread(int32_t id) {
 }
 
 void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
-  DCHECK(!sync_point_client_->client_state()->IsFenceSyncReleased(release));
+  SyncToken sync_token(GetNamespaceID(), GetExtraCommandBufferData(),
+                       GetCommandBufferID(), release);
+
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();
-  if (mailbox_manager->UsesSync()) {
-    SyncToken sync_token(GetNamespaceID(), GetExtraCommandBufferData(),
-                         GetCommandBufferID(), release);
-    mailbox_manager->PushTextureUpdates(sync_token);
-  }
+  mailbox_manager->PushTextureUpdates(sync_token);
 
   sync_point_client_->ReleaseFenceSync(release);
 }
 
-bool InProcessCommandBuffer::WaitFenceSyncOnGpuThread(
-    gpu::CommandBufferNamespace namespace_id,
-    gpu::CommandBufferId command_buffer_id,
-    uint64_t release) {
+bool InProcessCommandBuffer::WaitSyncTokenOnGpuThread(
+    const SyncToken& sync_token) {
   DCHECK(!waiting_for_sync_point_);
   gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
   DCHECK(sync_point_manager);
 
-  scoped_refptr<gpu::SyncPointClientState> release_state =
-      sync_point_manager->GetSyncPointClientState(namespace_id,
-                                                  command_buffer_id);
-
-  if (!release_state)
-    return true;
+  gles2::MailboxManager* mailbox_manager =
+      decoder_->GetContextGroup()->mailbox_manager();
+  DCHECK(mailbox_manager);
 
   if (service_->BlockThreadOnWaitSyncToken()) {
-    if (!release_state->IsFenceSyncReleased(release)) {
-      // Use waitable event which is signalled when the release fence is
-      // released.
-      sync_point_client_->Wait(
-          release_state.get(), release,
-          base::Bind(&base::WaitableEvent::Signal,
-                     base::Unretained(&fence_sync_wait_event_)));
+    // Wait if sync point wait is valid.
+    if (sync_point_client_->Wait(
+            sync_token,
+            base::Bind(&base::WaitableEvent::Signal,
+                       base::Unretained(&fence_sync_wait_event_)))) {
       fence_sync_wait_event_.Wait();
     }
 
-    gles2::MailboxManager* mailbox_manager =
-        decoder_->GetContextGroup()->mailbox_manager();
-    SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
     mailbox_manager->PullTextureUpdates(sync_token);
-    return true;
+    return false;
   }
 
-  if (release_state->IsFenceSyncReleased(release)) {
-    gles2::MailboxManager* mailbox_manager =
-        decoder_->GetContextGroup()->mailbox_manager();
-    SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
+  waiting_for_sync_point_ = sync_point_client_->Wait(
+      sync_token,
+      base::Bind(&InProcessCommandBuffer::OnWaitSyncTokenCompleted,
+                 gpu_thread_weak_ptr_factory_.GetWeakPtr(), sync_token));
+  if (!waiting_for_sync_point_) {
     mailbox_manager->PullTextureUpdates(sync_token);
-    return true;
+    return false;
   }
-
-  waiting_for_sync_point_ = true;
-  sync_point_client_->Wait(
-      release_state.get(), release,
-      base::Bind(&InProcessCommandBuffer::OnWaitFenceSyncCompleted,
-                 gpu_thread_weak_ptr_factory_.GetWeakPtr(), namespace_id,
-                 command_buffer_id, release));
-
-  if (!waiting_for_sync_point_)
-    return true;
 
   executor_->SetScheduled(false);
-  return false;
+  return true;
 }
 
-void InProcessCommandBuffer::OnWaitFenceSyncCompleted(
-    CommandBufferNamespace namespace_id,
-    CommandBufferId command_buffer_id,
-    uint64_t release) {
+void InProcessCommandBuffer::OnWaitSyncTokenCompleted(
+    const SyncToken& sync_token) {
   DCHECK(waiting_for_sync_point_);
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();
-  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
   mailbox_manager->PullTextureUpdates(sync_token);
   waiting_for_sync_point_ = false;
   executor_->SetScheduled(true);
@@ -931,20 +906,8 @@ void InProcessCommandBuffer::RescheduleAfterFinishedOnGpuThread() {
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
     const SyncToken& sync_token,
     const base::Closure& callback) {
-  gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
-  DCHECK(sync_point_manager);
-
-  scoped_refptr<gpu::SyncPointClientState> release_state =
-      sync_point_manager->GetSyncPointClientState(
-          sync_token.namespace_id(), sync_token.command_buffer_id());
-
-  if (!release_state) {
+  if (!sync_point_client_->Wait(sync_token, WrapCallback(callback)))
     callback.Run();
-    return;
-  }
-
-  sync_point_client_->WaitOutOfOrder(
-      release_state.get(), sync_token.release_count(), WrapCallback(callback));
 }
 
 void InProcessCommandBuffer::SignalQuery(unsigned query_id,
@@ -1013,7 +976,7 @@ void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
                                              const base::Closure& callback) {
   CheckSequencedThread();
   QueueTask(
-      true,
+      false,
       base::Bind(&InProcessCommandBuffer::SignalSyncTokenOnGpuThread,
                  base::Unretained(this), sync_token, WrapCallback(callback)));
 }
