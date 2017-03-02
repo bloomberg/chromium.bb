@@ -178,3 +178,55 @@ class ManagerTest(unittest.TestCase):
             if not port.host.filesystem.exists(dir_name):
                 deleted_dir_count = deleted_dir_count + 1
         self.assertEqual(deleted_dir_count, 5)
+
+    # Tests for protected methods - pylint: disable=protected-access
+
+    def test_ensure_manifest_copies_new_manifest(self):
+        host = MockHost()
+        port = host.port_factory.get()
+
+        manifest_path = '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/MANIFEST.json'
+        self.assertFalse(port.host.filesystem.exists(manifest_path))
+        manager = Manager(port, options=optparse.Values({'max_locked_shards': 1}), printer=FakePrinter())
+        manager._ensure_manifest()
+        self.assertTrue(port.host.filesystem.exists(manifest_path))
+
+        webkit_base = '/mock-checkout/third_party/WebKit'
+        self.assertEqual(
+            port.host.executive.calls,
+            [
+                [
+                    'python',
+                    webkit_base + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
+                    '--work',
+                    '--tests-root',
+                    webkit_base + '/LayoutTests/external/wpt',
+                ]
+            ]
+        )
+
+    def test_ensure_manifest_updates_manifest_if_it_exists(self):
+        host = MockHost()
+        port = host.port_factory.get('test-mac-mac10.10')
+        manifest_path = '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/MANIFEST.json'
+
+        host.filesystem.write_binary_file(manifest_path, '{}')
+        self.assertTrue(port.host.filesystem.exists(manifest_path))
+
+        manager = Manager(port, options=optparse.Values({'max_locked_shards': 1}), printer=FakePrinter())
+        manager._ensure_manifest()
+        self.assertTrue(port.host.filesystem.exists(manifest_path))
+
+        webkit_base = '/mock-checkout/third_party/WebKit'
+        self.assertEqual(
+            port.host.executive.calls,
+            [
+                [
+                    'python',
+                    webkit_base + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
+                    '--work',
+                    '--tests-root',
+                    webkit_base + '/LayoutTests/external/wpt',
+                ]
+            ]
+        )

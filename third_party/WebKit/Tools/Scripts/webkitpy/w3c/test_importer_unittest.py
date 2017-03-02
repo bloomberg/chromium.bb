@@ -151,6 +151,7 @@ class TestImporterTest(LoggingTestCase):
             host.executive.calls,
             [
                 [
+                    'python',
                     '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
                     '--work',
                     '--tests-root',

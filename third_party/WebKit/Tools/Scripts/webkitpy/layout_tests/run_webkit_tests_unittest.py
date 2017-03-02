@@ -1086,7 +1086,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 7)
+        self.assertEqual(len(file_list), 8)
         self.assert_baselines(file_list, "passes/image", [".txt", ".png"], err)
 
     def test_missing_results(self):
@@ -1100,7 +1100,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
                                       tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 3)
-        self.assertEqual(len(file_list), 11)
+        self.assertEqual(len(file_list), 12)
         self.assert_baselines(file_list, "failures/unexpected/missing_text", [".txt"], err)
         self.assert_baselines(file_list, "platform/test/failures/unexpected/missing_image", [".png"], err)
         self.assert_baselines(file_list, "platform/test/failures/unexpected/missing_render_tree_dump", [".txt"], err)
@@ -1114,7 +1114,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host, new_results=True)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 7)
+        self.assertEqual(len(file_list), 8)
         self.assert_baselines(file_list,
                              "platform/test-mac-mac10.10/passes/image", [".txt", ".png"], err)
 
@@ -1125,7 +1125,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         details, err, _ = logging_run(['--reset-results', 'passes/reftest.html'], tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 5)
+        self.assertEqual(len(file_list), 6)
         self.assert_baselines(file_list, '', [], err)
 
         host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', '')
@@ -1143,7 +1143,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         details, err, _ = logging_run(['--new-baseline', 'passes/reftest.html'], tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 5)
+        self.assertEqual(len(file_list), 6)
         self.assert_baselines(file_list, '', [], err)
 
         host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', '')

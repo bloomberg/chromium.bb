@@ -31,6 +31,7 @@ from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.system_host_mock import MockSystemHost
+from webkitpy.common.webkit_finder import WebKitFinder
 
 # New-style ports need to move down into webkitpy.common.
 from webkitpy.layout_tests.builder_list import BuilderList
@@ -54,6 +55,7 @@ class MockHost(MockSystemHost):
             time_return_val=time_return_val)
 
         add_unit_tests_to_mock_filesystem(self.filesystem)
+        self._add_base_manifest_to_mock_filesystem(self.filesystem)
         self.web = web or MockWeb()
         self._git = git
 
@@ -74,3 +76,12 @@ class MockHost(MockSystemHost):
         # Making the checkout_root exist in the mock filesystem makes that chdir not raise.
         self.filesystem.maybe_make_directory(self._git.checkout_root)
         return self._git
+
+    def _add_base_manifest_to_mock_filesystem(self, filesystem):
+        webkit_finder = WebKitFinder(filesystem)
+
+        external_dir = webkit_finder.path_from_webkit_base('LayoutTests', 'external')
+        filesystem.maybe_make_directory(filesystem.join(external_dir, 'wpt'))
+
+        manifest_base_path = filesystem.join(external_dir, 'WPT_BASE_MANIFEST.json')
+        filesystem.files[manifest_base_path] = '{}'

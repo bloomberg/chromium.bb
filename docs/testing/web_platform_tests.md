@@ -92,19 +92,8 @@ Any changes outside of
 upstreamed, and any changes `*-expected.txt`, `OWNERS`, and `MANIFEST.json`,
 will also not be upstreamed.
 
-Note: if you're adding a new test in `external/wpt`, you'll need to re-generate
-MANIFEST.json manually until [CL 2644783003](https://crrev.com/2644783003) is
-landed. The command to do so is:
-
-```bash
-Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest --work \
-    --tests-root=LayoutTests/external/wpt
-```
-
-Note: the `--work` argument is important even if you have no local changes.
-Without it the `manifest` script will try to generate a manifest for all files
-in the Chromium tree and take a very long time.
-See [wpt-tools issue #171](https://github.com/w3c/wpt-tools/issues/171).
+Running the layout tests will automatically regenerate MANIFEST.json to pick up
+any local modifications.
 
 Most tests are written using testharness.js, see
 [Writing Layout Tests](./writing_layout_tests.md) and
