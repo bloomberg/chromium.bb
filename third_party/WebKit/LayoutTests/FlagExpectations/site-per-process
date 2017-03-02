@@ -1,6 +1,11 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/697513: transfers fail for data URLs with plugin mime types.
+crbug.com/697513 fast/frames/iframe-plugin-load-remove-document-crash.html [ Timeout ]
+crbug.com/697513 plugins/iframe-plugin-bgcolor.html [ Timeout ]
+crbug.com/697513 plugins/plugin-document-back-forward.html [ Timeout ]
+
 # https://crbug.com/697111: assert failures in test added in r451938.
 crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
 
