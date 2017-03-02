@@ -18,6 +18,7 @@ include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
 include("${AOM_ROOT}/aom_mem/aom_mem.cmake")
+include("${AOM_ROOT}/aom_ports/aom_ports.cmake")
 include("${AOM_ROOT}/av1/av1.cmake")
 include("${AOM_ROOT}/test/test.cmake")
 
@@ -106,15 +107,6 @@ set(AOM_SCALE_SOURCES
     "${AOM_ROOT}/aom_scale/yv12config.h")
 
 set(AOM_UTIL_SOURCES
-    "${AOM_ROOT}/aom_ports/aom_once.h"
-    "${AOM_ROOT}/aom_ports/aom_timer.h"
-    "${AOM_ROOT}/aom_ports/bitops.h"
-    "${AOM_ROOT}/aom_ports/emmintrin_compat.h"
-    "${AOM_ROOT}/aom_ports/mem.h"
-    "${AOM_ROOT}/aom_ports/mem_ops.h"
-    "${AOM_ROOT}/aom_ports/mem_ops_aligned.h"
-    "${AOM_ROOT}/aom_ports/msvc.h"
-    "${AOM_ROOT}/aom_ports/system_state.h"
     "${AOM_ROOT}/aom_util/aom_thread.c"
     "${AOM_ROOT}/aom_util/aom_thread.h"
     "${AOM_ROOT}/aom_util/endian_inl.h")
@@ -161,11 +153,6 @@ set(AOM_WEBM_ENCODER_SOURCES
     "${AOM_ROOT}/webmenc.cc"
     "${AOM_ROOT}/webmenc.h")
 
-set(AOM_PORTS_ASM_X86 "${AOM_ROOT}/aom_ports/x86_abi_support.asm")
-set(AOM_PORTS_ASM_MMX "${AOM_ROOT}/aom_ports/emms.asm")
-
-
-
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
 
 # Targets
@@ -197,19 +184,10 @@ add_library(aom
 set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_util aom_encoder_stats
     aom_mem aom_scale aom)
 
-#
-# Assembly and intrinsic targets.
-#
-if ("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
-  add_asm_library("aom_util_x86" "AOM_PORTS_ASM_X86" "aom")
-endif ()
-
-if (HAVE_MMX)
-  add_asm_library("aom_util_mmx" "AOM_PORTS_ASM_MMX" "aom")
-endif ()
-
+# Setup dependencies.
 setup_aom_dsp_targets()
 setup_aom_mem_targets()
+setup_aom_ports_targets()
 setup_av1_targets()
 
 # Make all library targets depend on aom_rtcd to make sure it builds first.
