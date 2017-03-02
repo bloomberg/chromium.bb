@@ -41,7 +41,7 @@ const CGFloat kViewportBorderShadowRadius = 10.0;
 // Padding of the viewport caption, below the viewport.
 const CGFloat kViewportCaptionVerticalPadding = 14.0;
 // Padding of the viewport caption from the edges of the superview.
-const CGFloat kViewportCaptionHorizontalPadding = 20.0;
+const CGFloat kViewportCaptionHorizontalPadding = 31.0;
 // Shadow opacity of the viewport caption.
 const CGFloat kViewportCaptionShadowOpacity = 1.0;
 // Shadow radius of the viewport caption.
