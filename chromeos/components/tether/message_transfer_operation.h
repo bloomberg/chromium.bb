@@ -76,6 +76,7 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
 
  private:
   friend class MessageTransferOperationTest;
+  friend class ConnectTetheringOperationTest;
 
   static uint32_t kMaxConnectionAttemptsPerDevice;
 
