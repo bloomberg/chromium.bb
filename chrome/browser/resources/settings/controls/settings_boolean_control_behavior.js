@@ -122,7 +122,7 @@ var SettingsBooleanControlBehaviorImpl = {
   },
 
   /**
-   * @return {boolean} Whether the checkbox should be disabled.
+   * @return {boolean} Whether the control should be disabled.
    * @private
    */
   controlDisabled_: function() {
