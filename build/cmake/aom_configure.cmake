@@ -112,6 +112,10 @@ else ()
   # Flag(s) added here negate CMake defaults and produce build output similar
   # to the existing configure/make build system.
   add_compiler_flag_if_supported("-Wno-unused-function")
+
+  if (CMAKE_C_COMPILER_ID MATCHES "GNU\|Clang")
+    set(CONFIG_GCC 1)
+  endif ()
 endif ()
 
 # Test compiler support.
