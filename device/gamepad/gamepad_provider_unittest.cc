@@ -110,7 +110,8 @@ TEST_F(GamepadProviderTest, PollingAccess) {
   EXPECT_EQ(0.5f, output.items[0].axes[1]);
 }
 
-TEST_F(GamepadProviderTest, ConnectDisconnectMultiple) {
+// Flaky on all platforms: http://crbug.com/692219
+TEST_F(GamepadProviderTest, DISABLED_ConnectDisconnectMultiple) {
   WebGamepads test_data;
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
