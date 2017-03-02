@@ -730,41 +730,6 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     work_to_schedule.tiles_to_raster.push_back(prioritized_tile);
   }
 
-  // Debugging to check that remaining tiles in the priority queue are not in
-  // the NOW bin and are required for neither activation nor draw.
-  // This runs if the following conditions hold:
-  //  - check_tile_priority_inversion has been enabled.
-  //  - the loop above has processed all tiles that would be needed for any
-  //    signals to fire (that is,
-  //    all_tiles_that_need_to_be_rasterized_are_scheduled_ is true)
-  //  - Memory limit policy allows for any tiles to be scheduled at all (ie it's
-  //    not ALLOW_NOTHING).
-  if (tile_manager_settings_.check_tile_priority_inversion &&
-      all_tiles_that_need_to_be_rasterized_are_scheduled_ &&
-      global_state_.memory_limit_policy != ALLOW_NOTHING) {
-    TilePriority::PriorityBin highest_bin_found = TilePriority::NOW;
-    for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
-      const PrioritizedTile& prioritized_tile = raster_priority_queue->Top();
-      Tile* tile = prioritized_tile.tile();
-      TilePriority priority = prioritized_tile.priority();
-
-      if (priority.priority_bin > highest_bin_found)
-        highest_bin_found = priority.priority_bin;
-
-      CHECK_NE(TilePriority::NOW, priority.priority_bin)
-          << "mode: " << global_state_.tree_priority
-          << " highest bin: " << highest_bin_found;
-      CHECK(!tile->required_for_activation())
-          << "mode: " << global_state_.tree_priority
-          << " bin: " << priority.priority_bin
-          << " highest bin: " << highest_bin_found;
-      CHECK(!tile->required_for_draw())
-          << "mode: " << global_state_.tree_priority
-          << " bin: " << priority.priority_bin
-          << " highest bin: " << highest_bin_found;
-    }
-  }
-
   // Note that we should try and further reduce memory in case the above loop
   // didn't reduce memory. This ensures that we always release as many resources
   // as possible to stay within the memory limit.

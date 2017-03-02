@@ -336,8 +336,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->GetBufferToTextureTargetMap();
   settings.image_decode_tasks_enabled =
       compositor_deps->AreImageDecodeTasksEnabled();
-  settings.check_tile_priority_inversion =
-      cmd.HasSwitch(cc::switches::kCheckTilePriorityInversion);
 
   // Build LayerTreeSettings from command line args.
   LayerTreeSettingsFactory::SetBrowserControlsSettings(settings, cmd);

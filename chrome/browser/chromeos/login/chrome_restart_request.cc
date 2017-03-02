@@ -192,7 +192,6 @@ void DeriveCommandLine(const GURL& start_url,
     // Please keep these in alphabetical order. Non-UI Compositor switches
     // here should also be added to
     // content/browser/renderer_host/render_process_host_impl.cc.
-    cc::switches::kCheckTilePriorityInversion,
     cc::switches::kDisableCompositedAntialiasing,
     cc::switches::kDisableMainFrameBeforeActivation,
     cc::switches::kDisableThreadedAnimation,

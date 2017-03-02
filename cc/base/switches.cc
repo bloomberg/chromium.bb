@@ -54,9 +54,6 @@ const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 // with physically correct blending and interpolation.
 const char kEnableTrueColorRendering[] = "enable-true-color-rendering";
 
-// Enables CHECKs to ensure that tile priorities are not inverted.
-const char kCheckTilePriorityInversion[] = "check-tile-priority-inversion";
-
 // Renders a border around compositor layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";

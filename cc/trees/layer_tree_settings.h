@@ -98,10 +98,6 @@ class CC_EXPORT LayerTreeSettings {
 
   bool enable_color_correct_rendering = false;
 
-  // If set to true, this causes TileManager to verify that all required and NOW
-  // tiles come before lower priority tiles.
-  bool check_tile_priority_inversion = false;
-
   // TODO(sunxd): remove this flag when filter demoting and aa of mask layers
   // are implemented.
   bool enable_mask_tiling = false;

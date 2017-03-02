@@ -11,7 +11,6 @@ namespace cc {
 
 struct CC_EXPORT TileManagerSettings {
   bool use_partial_raster = false;
-  bool check_tile_priority_inversion = false;
   bool enable_checker_imaging = false;
 };
 
