@@ -3090,7 +3090,7 @@ static void update_coef_probs_common(aom_writer *const bc, AV1_COMP *cpi,
   }
 }
 #endif
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
 // Calculate the token counts between subsequent subframe updates.
 static void get_coef_counts_diff(
     AV1_COMP *cpi, int index,
@@ -3296,14 +3296,14 @@ static void update_coef_probs_subframe(
     default: assert(0);
   }
 }
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
 #if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   const TX_MODE tx_mode = cpi->common.tx_mode;
   const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
   TX_SIZE tx_size;
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   AV1_COMMON *cm = &cpi->common;
   SUBFRAME_STATS *subframe_stats = &cpi->subframe_stats;
   int i;
@@ -3318,7 +3318,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
                            cpi->wholeframe_stats.eob_counts_buf[i]);
     }
   }
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
   for (tx_size = 0; tx_size <= max_tx_size; ++tx_size) {
     av1_coeff_stats frame_branch_ct[PLANE_TYPES];
@@ -3327,7 +3327,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
         (tx_size >= TX_16X16 && cpi->sf.tx_size_search_method == USE_TX_8X8)) {
       aom_write_bit(w, 0);
     } else {
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
       if (cm->do_subframe_update &&
           cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
         unsigned int this_eob_counts_copy[PLANE_TYPES][REF_TYPES][COEF_BANDS]
@@ -3351,18 +3351,18 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
         update_coef_probs_subframe(w, cpi, tx_size, cpi->branch_ct_buf,
                                    frame_coef_probs);
       } else {
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
         build_tree_distribution(cpi, tx_size, frame_branch_ct,
                                 frame_coef_probs);
         update_coef_probs_common(w, cpi, tx_size, frame_branch_ct,
                                  frame_coef_probs);
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
       }
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
     }
   }
 
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   av1_copy(cm->starting_coef_probs, cm->fc->coef_probs);
   av1_copy(subframe_stats->coef_probs_buf[0], cm->fc->coef_probs);
   if (cm->do_subframe_update &&
@@ -3381,7 +3381,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
     av1_copy(cm->fc->coef_probs, subframe_stats->coef_probs_buf[0]);
     av1_copy(cm->counts.eob_branch, eob_counts_copy);
   }
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 }
 #endif
 #endif  // !CONFIG_EC_ADAPT

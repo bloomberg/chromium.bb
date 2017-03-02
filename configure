@@ -280,6 +280,8 @@ EXPERIMENT_LIST="
     ncobmc
     warped_motion
     entropy
+    q_adapt_probs
+    subframe_prob_update
     bitstream_debug
     alt_intra
     palette

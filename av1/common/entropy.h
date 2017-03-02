@@ -26,11 +26,14 @@ extern "C" {
 #define DIFF_UPDATE_PROB 252
 #define GROUP_DIFF_UPDATE_PROB 252
 
-#if CONFIG_ENTROPY
-#define COEF_PROBS_BUFS 16
+#if CONFIG_Q_ADAPT_PROBS
 #define QCTX_BIN_BITS 2
 #define QCTX_BINS (1 << QCTX_BIN_BITS)
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_Q_ADAPT_PROBS
+
+#if CONFIG_SUBFRAME_PROB_UPDATE
+#define COEF_PROBS_BUFS 16
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
 // Coefficient token alphabet
 #define ZERO_TOKEN 0        // 0     Extra Bits 0+0
@@ -172,9 +175,9 @@ typedef unsigned int av1_coeff_stats[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
 struct AV1Common;
 void av1_default_coef_probs(struct AV1Common *cm);
 void av1_adapt_coef_probs(struct AV1Common *cm);
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
 void av1_partial_adapt_probs(struct AV1Common *cm, int mi_row, int mi_col);
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
 // This is the index in the scan order beyond which all coefficients for
 // 8x8 transform and above are in the top band.

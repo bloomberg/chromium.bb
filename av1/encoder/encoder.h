@@ -338,7 +338,7 @@ typedef struct {
   YV12_BUFFER_CONFIG buf;
 } EncRefCntBuffer;
 
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
 typedef struct SUBFRAME_STATS {
   av1_coeff_probs_model coef_probs_buf[COEF_PROBS_BUFS][TX_SIZES][PLANE_TYPES];
   av1_coeff_count coef_counts_buf[COEF_PROBS_BUFS][TX_SIZES][PLANE_TYPES];
@@ -346,7 +346,7 @@ typedef struct SUBFRAME_STATS {
                              [COEF_BANDS][COEFF_CONTEXTS];
   av1_coeff_probs_model enc_starting_coef_probs[TX_SIZES][PLANE_TYPES];
 } SUBFRAME_STATS;
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
 typedef struct TileBufferEnc {
   uint8_t *data;
@@ -642,12 +642,12 @@ typedef struct AV1_COMP {
   AVxWorker *workers;
   struct EncWorkerData *tile_thr_data;
   AV1LfSync lf_row_sync;
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   SUBFRAME_STATS subframe_stats;
   // TODO(yaowu): minimize the size of count buffers
   SUBFRAME_STATS wholeframe_stats;
   av1_coeff_stats branch_ct_buf[COEF_PROBS_BUFS][TX_SIZES][PLANE_TYPES];
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 #if CONFIG_ANS
   struct BufAnsCoder buf_ans;
 #endif

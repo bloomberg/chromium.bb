@@ -179,7 +179,7 @@ int av1_prob_diff_update_savings_search_model(const unsigned int *ct,
   return bestsavings;
 }
 
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
 static int get_cost(unsigned int ct[][2], aom_prob p, int n) {
   int i, p0 = p;
   unsigned int total_ct[2] = { 0, 0 };
@@ -254,7 +254,7 @@ int av1_prob_update_search_model_subframe(
   *bestp = bestnewp;
   return bestsavings;
 }
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
 void av1_cond_prob_diff_update(aom_writer *w, aom_prob *oldp,
                                const unsigned int ct[2], int probwt) {

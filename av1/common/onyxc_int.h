@@ -345,7 +345,7 @@ typedef struct AV1Common {
   unsigned int frame_context_idx; /* Context to use/update */
   FRAME_COUNTS counts;
 
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   // The initial probabilities for a frame, before any subframe backward update,
   // and after forward update.
   av1_coeff_probs_model starting_coef_probs[TX_SIZES][PLANE_TYPES];
@@ -355,7 +355,7 @@ typedef struct AV1Common {
   uint8_t partial_prob_update;
   // Frame level flag to turn on/off subframe backward update
   uint8_t do_subframe_update;
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
   unsigned int current_video_frame;
   BITSTREAM_PROFILE profile;

@@ -1079,7 +1079,7 @@ const aom_cdf_prob
 #endif  // CONFIG_NEW_TOKENSET
 
 /* clang-format off */
-#if CONFIG_ENTROPY
+#if CONFIG_Q_ADAPT_PROBS
 const av1_coeff_probs_model
 default_qctx_coef_probs[QCTX_BINS][TX_SIZES][PLANE_TYPES] = {
     {  // Q_Index 0
@@ -4597,7 +4597,7 @@ static const av1_coeff_probs_model default_coef_probs_64x64[PLANE_TYPES] = {
   }
 };
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_Q_ADAPT_PROBS
 #if CONFIG_NEW_TOKENSET
 static const aom_prob av1_default_blockzero_probs[TX_SIZES][PLANE_TYPES]
                                            [REF_TYPES][BLOCKZ_CONTEXTS] = {
@@ -5490,7 +5490,7 @@ void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
 #endif
 
 void av1_default_coef_probs(AV1_COMMON *cm) {
-#if CONFIG_ENTROPY
+#if CONFIG_Q_ADAPT_PROBS
   const int index = AOMMIN(
       ROUND_POWER_OF_TWO(cm->base_qindex, 8 - QCTX_BIN_BITS), QCTX_BINS - 1);
   av1_copy(cm->fc->coef_probs, default_qctx_coef_probs[index]);
@@ -5505,7 +5505,7 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
 #if CONFIG_TX64X64
   av1_copy(cm->fc->coef_probs[TX_64X64], default_coef_probs_64x64);
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_Q_ADAPT_PROBS
 #if CONFIG_NEW_TOKENSET
   av1_copy(cm->fc->blockzero_probs, av1_default_blockzero_probs);
 #endif
@@ -5523,14 +5523,14 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
                              unsigned int update_factor) {
   const FRAME_CONTEXT *pre_fc = &cm->frame_contexts[cm->frame_context_idx];
   av1_coeff_probs_model *const probs = cm->fc->coef_probs[tx_size];
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   const av1_coeff_probs_model *const pre_probs =
       cm->partial_prob_update
           ? (const av1_coeff_probs_model *)cm->starting_coef_probs[tx_size]
           : pre_fc->coef_probs[tx_size];
 #else
   const av1_coeff_probs_model *const pre_probs = pre_fc->coef_probs[tx_size];
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
   const av1_coeff_count_model *const counts =
       (const av1_coeff_count_model *)cm->counts.coef[tx_size];
   const unsigned int(*eob_counts)[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS] =
@@ -5595,16 +5595,16 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
     update_factor = COEF_MAX_UPDATE_FACTOR;
     count_sat = COEF_COUNT_SAT;
   }
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   if (cm->partial_prob_update == 1) update_factor = COEF_MAX_UPDATE_FACTOR;
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
   for (tx_size = 0; tx_size < TX_SIZES; tx_size++)
     adapt_coef_probs(cm, tx_size, count_sat, update_factor);
 
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   if (cm->partial_prob_update == 0)
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
   {
 #if CONFIG_ADAPT_SCAN
     for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
@@ -5622,7 +5622,7 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
   }
 }
 
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
 void av1_partial_adapt_probs(AV1_COMMON *cm, int mi_row, int mi_col) {
   (void)mi_row;
   (void)mi_col;
@@ -5632,4 +5632,4 @@ void av1_partial_adapt_probs(AV1_COMMON *cm, int mi_row, int mi_col) {
     av1_adapt_coef_probs(cm);
   }
 }
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE

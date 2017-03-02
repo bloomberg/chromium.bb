@@ -4673,7 +4673,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                         INT64_MAX, pc_root);
     }
   }
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   if (cm->do_subframe_update &&
       cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
     const int mi_rows_per_update =
@@ -4698,7 +4698,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);
     }
   }
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 }
 
 static void init_encode_frame_mb_context(AV1_COMP *cpi) {

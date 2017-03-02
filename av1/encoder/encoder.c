@@ -4038,13 +4038,13 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
 
   setup_frame(cpi);
 
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
   cm->do_subframe_update = cm->tile_cols == 1 && cm->tile_rows == 1;
   av1_copy(cm->starting_coef_probs, cm->fc->coef_probs);
   av1_copy(cpi->subframe_stats.enc_starting_coef_probs, cm->fc->coef_probs);
   cm->coef_probs_update_idx = 0;
   av1_copy(cpi->subframe_stats.coef_probs_buf[0], cm->fc->coef_probs);
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
   suppress_active_map(cpi);
   // Variance adaptive and in frame q adjustment experiments are mutually
@@ -4152,7 +4152,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
     if (loop_count == 0) setup_frame(cpi);
 
-#if CONFIG_ENTROPY
+#if CONFIG_Q_ADAPT_PROBS
     // Base q-index may have changed, so we need to assign proper default coef
     // probs before every iteration.
     if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
@@ -4165,7 +4165,9 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
         cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
       }
     }
+#endif  // CONFIG_Q_ADAPT_PROBS
 
+#if CONFIG_SUBFRAME_PROB_UPDATE
     cm->do_subframe_update = cm->tile_cols == 1 && cm->tile_rows == 1;
     if (loop_count == 0 || frame_is_intra_only(cm) ||
         cm->error_resilient_mode) {
@@ -4183,7 +4185,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
     }
     cm->coef_probs_update_idx = 0;
     av1_copy(cpi->subframe_stats.coef_probs_buf[0], cm->fc->coef_probs);
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
     // Variance adaptive and in frame q adjustment experiments are mutually
     // exclusive.
@@ -4916,9 +4918,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   av1_accumulate_frame_counts(&aggregate_fc, &cm->counts);
 #endif  // CONFIG_ENTROPY_STATS
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-#if CONFIG_ENTROPY
+#if CONFIG_SUBFRAME_PROB_UPDATE
     cm->partial_prob_update = 0;
-#endif  // CONFIG_ENTROPY
+#endif  // CONFIG_SUBFRAME_PROB_UPDATE
     av1_adapt_coef_probs(cm);
     av1_adapt_intra_frame_probs(cm);
   }
