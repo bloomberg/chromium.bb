@@ -175,8 +175,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     base::DeleteFile(file_path, false);
   }
 
-  // Verify that no other files exist and remove temp dir.
-  EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
+  // Remove temp dir.
+  // TODO(grunell): Re-enable or remove the following line as part of
+  // http://crbug.com/697845. If re-enabled, also add expectations on
+  // base::DeleteFile() success.
+  // EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
   base::DeleteFile(temp_dir_path, false);
 
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
