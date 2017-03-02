@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
-#include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/native_theme/native_theme.h"
@@ -130,8 +129,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // |view_| pass throughs (virtual for testing).
   virtual void ShowView();
   virtual void InvalidateRow(size_t row);
-  virtual void NotifyAccessibilityEventForRow(ui::AXEvent event_type,
-                                              size_t row);
 
   base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
 

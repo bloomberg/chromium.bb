@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
-#include "ui/accessibility/ax_enums.h"
 
 @class AutofillPopupViewCocoa;
 @class NSWindow;
@@ -52,8 +51,6 @@ class AutofillPopupViewBridge : public AutofillPopupView,
   void Show() override;
   void InvalidateRow(size_t row) override;
   void UpdateBoundsAndRedrawPopup() override;
-  void NotifyAccessibilityEventForRow(ui::AXEvent event_type,
-                                      size_t row) override {}
 
   // Set the initial bounds of the popup, including its placement.
   void SetInitialBounds();

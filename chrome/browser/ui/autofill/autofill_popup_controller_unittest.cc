@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_utils.h"
 
@@ -97,7 +96,6 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   using AutofillPopupControllerImpl::SetValues;
   using AutofillPopupControllerImpl::GetWeakPtr;
   MOCK_METHOD1(InvalidateRow, void(size_t));
-  MOCK_METHOD2(NotifyAccessibilityEventForRow, void(ui::AXEvent, size_t));
   MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
   MOCK_METHOD0(Hide, void());
 
@@ -199,21 +197,15 @@ TEST_F(AutofillPopupControllerUnitTest, RedrawSelectedLine) {
   // be updated to show it is selected.
   int selected_line = 0;
   EXPECT_CALL(*autofill_popup_controller_, InvalidateRow(selected_line));
-  EXPECT_CALL(*autofill_popup_controller_, NotifyAccessibilityEventForRow(
-      ui::AX_EVENT_SELECTION, selected_line));
   autofill_popup_controller_->SetSelectedLine(selected_line);
 
   // Ensure that the row isn't invalidated if it didn't change.
   EXPECT_CALL(*autofill_popup_controller_,
               InvalidateRow(selected_line)).Times(0);
-  EXPECT_CALL(*autofill_popup_controller_, NotifyAccessibilityEventForRow(
-      _, _)).Times(0);
   autofill_popup_controller_->SetSelectedLine(selected_line);
 
   // Change back to no selection.
   EXPECT_CALL(*autofill_popup_controller_, InvalidateRow(selected_line));
-  EXPECT_CALL(*autofill_popup_controller_, NotifyAccessibilityEventForRow(_, _))
-      .Times(0);
   autofill_popup_controller_->SetSelectedLine(-1);
 }
 
@@ -262,8 +254,6 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveOnlyLine) {
   // should then be hidden since there are no Autofill entries left.
   EXPECT_CALL(*autofill_popup_controller_, Hide());
   EXPECT_CALL(*autofill_popup_controller_, InvalidateRow(_)).Times(0);
-  EXPECT_CALL(*autofill_popup_controller_, NotifyAccessibilityEventForRow(_, _))
-      .Times(0);
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
 }
 

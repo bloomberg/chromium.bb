@@ -6,11 +6,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
-#include "ui/accessibility/ax_node_data.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -19,76 +16,27 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/border.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
 
-namespace {
-
-// Child view only for triggering accessibility events. Rendering is handled
-// by |AutofillPopupViewViews|.
-class AutofillPopupChildView : public views::View {
- public:
-  // Internal class name.
-  static const char kViewClassName[];
-
-  // |controller| should not be NULL.
-  AutofillPopupChildView(AutofillPopupController* controller, size_t index)
-      : controller_(controller), index_(index) {
-    SetFocusBehavior(FocusBehavior::ALWAYS);
-  }
-
- private:
-  ~AutofillPopupChildView() override {}
-
-  // views::Views implementation
-  const char *GetClassName() const override {
-    return kViewClassName;
-  }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    // We do not special case |POPUP_ITEM_ID_SEPARATOR| suggestion because we
-    // skip that suggestion when the user navigates through the popup
-    // suggestions. See | AutofillPopupControllerImpl::CanAccept|.
-    node_data->role = ui::AX_ROLE_MENU_ITEM;
-    node_data->SetName(controller_->GetElidedValueAt(index_));
-  }
-
-  AutofillPopupController* controller_;  // Weak reference.
-  const size_t index_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillPopupChildView);
-};
-
-// static
-const char AutofillPopupChildView::kViewClassName[] = "AutofillPopupChildView";
-
-}  // namespace
-
 AutofillPopupViewViews::AutofillPopupViewViews(
-    AutofillPopupController* controller, views::Widget* parent_widget)
+    AutofillPopupController* controller,
+    views::Widget* parent_widget)
     : AutofillPopupBaseView(controller, parent_widget),
-      controller_(controller) {
-  for (size_t i = 0; i < controller_->GetLineCount(); ++i) {
-    AutofillPopupChildView* child = new AutofillPopupChildView(controller, i);
-    AddChildView(child);
-  }
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-}
+      controller_(controller) {}
 
 AutofillPopupViewViews::~AutofillPopupViewViews() {}
 
 void AutofillPopupViewViews::Show() {
   DoShow();
-  NotifyAccessibilityEvent(ui::AX_EVENT_MENU_START, true);
 }
 
 void AutofillPopupViewViews::Hide() {
   // The controller is no longer valid after it hides us.
   controller_ = NULL;
+
   DoHide();
-  NotifyAccessibilityEvent(ui::AX_EVENT_MENU_END, true);
 }
 
 void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
@@ -120,15 +68,6 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 
 void AutofillPopupViewViews::InvalidateRow(size_t row) {
   SchedulePaintInRect(controller_->layout_model().GetRowBounds(row));
-}
-
-void AutofillPopupViewViews::NotifyAccessibilityEventForRow(
-    ui::AXEvent event_type, size_t row) {
-  views::View* child = child_at(row);
-  DCHECK_EQ(child->GetClassName(), AutofillPopupChildView::kViewClassName);
-  AutofillPopupChildView* child_view =
-      static_cast<AutofillPopupChildView*>(child);
-  child_view->NotifyAccessibilityEvent(event_type, true);
 }
 
 /**
@@ -248,12 +187,6 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
                   entry_rect.height()),
         text_align);
   }
-}
-
-void AutofillPopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_MENU;
-  node_data->SetName(l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
 AutofillPopupView* AutofillPopupView::Create(

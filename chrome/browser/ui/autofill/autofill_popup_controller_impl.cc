@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "ui/accessibility/ax_enums.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_elider.h"
@@ -402,9 +401,7 @@ void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
   if (selected_line != kNoSelection) {
     InvalidateRow(selected_line);
 
-    if (CanAccept(suggestions_[selected_line].frontend_id))
-      NotifyAccessibilityEventForRow(ui::AX_EVENT_SELECTION, selected_line);
-    else
+    if (!CanAccept(suggestions_[selected_line].frontend_id))
       selected_line = kNoSelection;
   }
 
@@ -490,16 +487,9 @@ void AutofillPopupControllerImpl::ShowView() {
 }
 
 void AutofillPopupControllerImpl::InvalidateRow(size_t row) {
-  DCHECK_GE(row, (size_t) 0);
-  DCHECK_LT(row, suggestions_.size());
+  DCHECK(0 <= row);
+  DCHECK(row < suggestions_.size());
   view_->InvalidateRow(row);
-}
-
-void AutofillPopupControllerImpl::NotifyAccessibilityEventForRow(
-    ui::AXEvent event_type, size_t row) {
-  DCHECK_GE(row, (size_t) 0);
-  DCHECK_LT(row, suggestions_.size());
-  view_->NotifyAccessibilityEventForRow(event_type, row);
 }
 
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
