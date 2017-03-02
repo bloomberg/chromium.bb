@@ -36,6 +36,7 @@ extern "C" {
 #define BO_USE_HW_CAMERA_READ		(1ull << 14)
 #define BO_USE_HW_CAMERA_ZSL		(1ull << 15)
 #define BO_USE_RENDERSCRIPT		(1ull << 16)
+#define BO_USE_TEXTURE			(1ull << 17)
 
 /* This is our extension to <drm_fourcc.h>.  We need to make sure we don't step
  * on the namespace of already defined formats, which can be done by using invalid

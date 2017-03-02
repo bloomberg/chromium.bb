@@ -26,7 +26,7 @@ uint64_t cros_gralloc_convert_flags(int flags)
 	if ((flags & sw_write()) == GRALLOC_USAGE_SW_WRITE_OFTEN)
 		usage |= BO_USE_SW_WRITE_OFTEN;
 	if (flags & GRALLOC_USAGE_HW_TEXTURE)
-		usage |= BO_USE_RENDERING;
+		usage |= BO_USE_TEXTURE;
 	if (flags & GRALLOC_USAGE_HW_RENDER)
 		usage |= BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_2D)
