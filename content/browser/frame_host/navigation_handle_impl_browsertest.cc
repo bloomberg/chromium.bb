@@ -30,18 +30,8 @@ class NavigationHandleObserver : public WebContentsObserver {
   NavigationHandleObserver(WebContents* web_contents,
                            const GURL& expected_start_url)
       : WebContentsObserver(web_contents),
-        handle_(nullptr),
-        has_committed_(false),
-        is_error_(false),
-        is_main_frame_(false),
-        is_parent_main_frame_(false),
-        is_renderer_initiated_(true),
-        is_same_page_(false),
-        was_redirected_(false),
-        frame_tree_node_id_(-1),
         page_transition_(ui::PAGE_TRANSITION_LINK),
-        expected_start_url_(expected_start_url),
-        net_error_code_(net::OK) {}
+        expected_start_url_(expected_start_url) {}
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
     if (handle_ || navigation_handle->GetURL() != expected_start_url_)
@@ -109,19 +99,19 @@ class NavigationHandleObserver : public WebContentsObserver {
   // A reference to the NavigationHandle so this class will track only
   // one navigation at a time. It is set at DidStartNavigation and cleared
   // at DidFinishNavigation before the NavigationHandle is destroyed.
-  NavigationHandle* handle_;
-  bool has_committed_;
-  bool is_error_;
-  bool is_main_frame_;
-  bool is_parent_main_frame_;
-  bool is_renderer_initiated_;
-  bool is_same_page_;
-  bool was_redirected_;
-  int frame_tree_node_id_;
-  ui::PageTransition page_transition_;
+  NavigationHandle* handle_ = nullptr;
+  bool has_committed_ = false;
+  bool is_error_ = false;
+  bool is_main_frame_ = false;
+  bool is_parent_main_frame_ = false;
+  bool is_renderer_initiated_ = true;
+  bool is_same_page_ = false;
+  bool was_redirected_ = false;
+  int frame_tree_node_id_ = -1;
+  ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
   GURL expected_start_url_;
   GURL last_committed_url_;
-  net::Error net_error_code_;
+  net::Error net_error_code_ = net::OK;
 };
 
 // A test NavigationThrottle that will return pre-determined checks and run
@@ -191,7 +181,7 @@ class TestNavigationThrottle : public NavigationThrottle {
   base::Closure did_call_will_start_;
   base::Closure did_call_will_redirect_;
   base::Closure did_call_will_process_;
-  RequestContextType request_context_type_;
+  RequestContextType request_context_type_ = REQUEST_CONTEXT_TYPE_UNSPECIFIED;
 };
 
 // Install a TestNavigationThrottle on all following requests and allows waiting
@@ -209,10 +199,6 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
         will_start_result_(will_start_result),
         will_redirect_result_(will_redirect_result),
         will_process_result_(will_process_result),
-        will_start_called_(0),
-        will_redirect_called_(0),
-        will_process_called_(0),
-        navigation_throttle_(nullptr),
         weak_factory_(this) {}
   ~TestNavigationThrottleInstaller() override {}
 
@@ -246,6 +232,8 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
   int will_redirect_called() { return will_redirect_called_; }
   int will_process_called() { return will_process_called_; }
 
+  int install_count() { return install_count_; }
+
  private:
   void DidStartNavigation(NavigationHandle* handle) override {
     std::unique_ptr<NavigationThrottle> throttle(new TestNavigationThrottle(
@@ -258,6 +246,7 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
                    weak_factory_.GetWeakPtr())));
     navigation_throttle_ = static_cast<TestNavigationThrottle*>(throttle.get());
     handle->RegisterThrottleForTesting(std::move(throttle));
+    ++install_count_;
   }
 
   void DidFinishNavigation(NavigationHandle* handle) override {
@@ -289,10 +278,11 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
   NavigationThrottle::ThrottleCheckResult will_start_result_;
   NavigationThrottle::ThrottleCheckResult will_redirect_result_;
   NavigationThrottle::ThrottleCheckResult will_process_result_;
-  int will_start_called_;
-  int will_redirect_called_;
-  int will_process_called_;
-  TestNavigationThrottle* navigation_throttle_;
+  int will_start_called_ = 0;
+  int will_redirect_called_ = 0;
+  int will_process_called_ = 0;
+  TestNavigationThrottle* navigation_throttle_ = nullptr;
+  int install_count_ = 0;
   scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_redirect_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_process_loop_runner_;
@@ -725,17 +715,9 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
             GURL(embedded_test_server()->GetURL("bar.com", "/title2.html")));
 }
 
-#if defined(OS_WIN)
-#define MAYBE_VerifyRequestContextTypeForFrameTree \
-  DISABLED_VerifyRequestContextTypeForFrameTree
-#else
-#define MAYBE_VerifyRequestContextTypeForFrameTree \
-  VerifyRequestContextTypeForFrameTree
-#endif
-
 // Checks that the RequestContextType value is properly set.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
-                       MAYBE_VerifyRequestContextTypeForFrameTree) {
+                       VerifyRequestContextTypeForFrameTree) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
   GURL b_url(embedded_test_server()->GetURL(
@@ -750,36 +732,32 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   TestNavigationManager b_manager(shell()->web_contents(), b_url);
   TestNavigationManager c_manager(shell()->web_contents(), c_url);
   NavigationStartUrlRecorder url_recorder(shell()->web_contents());
-  TestNavigationThrottle* previous_throttle = nullptr;
 
   // Starts and verifies the main frame navigation.
   shell()->LoadURL(main_url);
   EXPECT_TRUE(main_manager.WaitForRequestStart());
-  // The throttle should not be null.
-  EXPECT_NE(previous_throttle, installer.navigation_throttle());
+  // For each navigation a new throttle should have been installed.
+  EXPECT_EQ(1, installer.install_count());
   // Checks the only URL recorded so far is the one expected for the main frame.
   EXPECT_EQ(main_url, url_recorder.urls().back());
   EXPECT_EQ(1ul, url_recorder.urls().size());
   // Checks the main frame RequestContextType.
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
             installer.navigation_throttle()->request_context_type());
-  // For each navigations the throttle should be a different instance.
-  previous_throttle = installer.navigation_throttle();
 
   // Ditto for frame b navigation.
   main_manager.WaitForNavigationFinished();
   EXPECT_TRUE(b_manager.WaitForRequestStart());
-  EXPECT_NE(previous_throttle, installer.navigation_throttle());
+  EXPECT_EQ(2, installer.install_count());
   EXPECT_EQ(b_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
             installer.navigation_throttle()->request_context_type());
-  previous_throttle = installer.navigation_throttle();
 
   // Ditto for frame c navigation.
   b_manager.WaitForNavigationFinished();
   EXPECT_TRUE(c_manager.WaitForRequestStart());
-  EXPECT_NE(previous_throttle, installer.navigation_throttle());
+  EXPECT_EQ(3, installer.install_count());
   EXPECT_EQ(c_url, url_recorder.urls().back());
   EXPECT_EQ(3ul, url_recorder.urls().size());
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
