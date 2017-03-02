@@ -1909,8 +1909,8 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
     NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
   }
   if (cursor_changed) {
-    cursor_view_.SetVisible(ShouldShowCursor());
     UpdateCursorView();
+    cursor_view_.SetVisible(ShouldShowCursor());
     if (ShouldBlinkCursor())
       StartBlinkingCursor();
     else
@@ -2067,7 +2067,7 @@ void Textfield::OnEditFailed() {
 
 bool Textfield::ShouldShowCursor() const {
   return HasFocus() && !HasSelection() && enabled() && !read_only() &&
-         !drop_cursor_visible_;
+         !drop_cursor_visible_ && GetRenderText()->cursor_enabled();
 }
 
 bool Textfield::ShouldBlinkCursor() const {

@@ -47,6 +47,8 @@ class TextfieldTestApi {
 
   gfx::Point GetCursorViewOrigin() { return textfield_->cursor_view_.origin(); }
 
+  bool IsCursorVisible() const { return textfield_->cursor_view_.visible(); }
+
  private:
   Textfield* textfield_;
 
