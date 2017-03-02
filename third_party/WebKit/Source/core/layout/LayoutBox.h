@@ -1381,7 +1381,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
   void updateFromStyle() override;
 
-  virtual ItemPosition selfAlignmentNormalBehavior() const {
+  virtual ItemPosition selfAlignmentNormalBehavior(
+      const LayoutBox* child = nullptr) const {
+    DCHECK(!child);
     return ItemPositionStretch;
   }
 

@@ -2756,11 +2756,11 @@ bool LayoutBox::hasStretchedLogicalWidth() const {
   const ComputedStyle* parentStyle = isAnonymous() ? cb->style() : nullptr;
   if (cb->isHorizontalWritingMode() != isHorizontalWritingMode())
     return style
-               .resolvedAlignSelf(cb->selfAlignmentNormalBehavior(),
+               .resolvedAlignSelf(cb->selfAlignmentNormalBehavior(this),
                                   parentStyle)
                .position() == ItemPositionStretch;
   return style
-             .resolvedJustifySelf(cb->selfAlignmentNormalBehavior(),
+             .resolvedJustifySelf(cb->selfAlignmentNormalBehavior(this),
                                   parentStyle)
              .position() == ItemPositionStretch;
 }

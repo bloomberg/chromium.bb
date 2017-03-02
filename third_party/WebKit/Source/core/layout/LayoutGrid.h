@@ -96,6 +96,13 @@ class LayoutGrid final : public LayoutBlock {
   bool cachedHasDefiniteLogicalHeight() const;
   bool isOrthogonalChild(const LayoutBox&) const;
 
+ protected:
+  ItemPosition selfAlignmentNormalBehavior(
+      const LayoutBox* child = nullptr) const override {
+    DCHECK(child);
+    return child->isLayoutReplaced() ? ItemPositionStart : ItemPositionStretch;
+  }
+
  private:
   bool isOfType(LayoutObjectType type) const override {
     return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type);

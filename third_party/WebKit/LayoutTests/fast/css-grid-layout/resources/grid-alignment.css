@@ -93,6 +93,16 @@
 .justifyContentStretch { justify-content: stretch; }
 
 /* Both align-items and justify-items */
+.itemsNormal {
+    align-items: normal;
+    justify-items: normal;
+}
+
+.itemsStretch {
+    align-items: stretch;
+    justify-items: stretch;
+}
+
 .itemsStart {
     align-items: start;
     justify-items: start;

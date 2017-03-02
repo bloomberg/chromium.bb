@@ -1418,24 +1418,28 @@ LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(
 
 StyleSelfAlignmentData LayoutGrid::alignSelfForChild(
     const LayoutBox& child) const {
-  if (!child.isAnonymous())
-    return child.styleRef().resolvedAlignSelf(selfAlignmentNormalBehavior());
+  if (!child.isAnonymous()) {
+    return child.styleRef().resolvedAlignSelf(
+        selfAlignmentNormalBehavior(&child));
+  }
   // All the 'auto' values has been solved by the StyleAdjuster, but it's
   // possible that some grid items generate Anonymous boxes, which need to be
   // solved during layout.
-  return child.styleRef().resolvedAlignSelf(selfAlignmentNormalBehavior(),
+  return child.styleRef().resolvedAlignSelf(selfAlignmentNormalBehavior(&child),
                                             style());
 }
 
 StyleSelfAlignmentData LayoutGrid::justifySelfForChild(
     const LayoutBox& child) const {
-  if (!child.isAnonymous())
-    return child.styleRef().resolvedJustifySelf(ItemPositionStretch);
+  if (!child.isAnonymous()) {
+    return child.styleRef().resolvedJustifySelf(
+        selfAlignmentNormalBehavior(&child));
+  }
   // All the 'auto' values has been solved by the StyleAdjuster, but it's
   // possible that some grid items generate Anonymous boxes, which need to be
   // solved during layout.
-  return child.styleRef().resolvedJustifySelf(selfAlignmentNormalBehavior(),
-                                              style());
+  return child.styleRef().resolvedJustifySelf(
+      selfAlignmentNormalBehavior(&child), style());
 }
 
 GridTrackSizingDirection LayoutGrid::flowAwareDirectionForChild(

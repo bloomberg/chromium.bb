@@ -141,6 +141,10 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 
   PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectLayoutReplaced || LayoutBox::isOfType(type);
+  }
+
  private:
   void computePreferredLogicalWidths() final;
 

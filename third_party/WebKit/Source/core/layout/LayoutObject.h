@@ -512,6 +512,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool isLayoutMultiColumnSpannerPlaceholder() const {
     return isOfType(LayoutObjectLayoutMultiColumnSpannerPlaceholder);
   }
+  bool isLayoutReplaced() const { return isOfType(LayoutObjectLayoutReplaced); }
   bool isLayoutScrollbarPart() const {
     return isOfType(LayoutObjectLayoutScrollbarPart);
   }
@@ -1910,6 +1911,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     LayoutObjectLayoutMultiColumnSet,
     LayoutObjectLayoutMultiColumnSpannerPlaceholder,
     LayoutObjectLayoutPart,
+    LayoutObjectLayoutReplaced,
     LayoutObjectLayoutScrollbarPart,
     LayoutObjectLayoutView,
     LayoutObjectRuby,
