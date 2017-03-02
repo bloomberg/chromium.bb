@@ -64,6 +64,26 @@ cr.define('settings_toggle_button', function() {
         assertFalse(testElement.$.control.checked);
       });
 
+      test('inverted', function() {
+        testElement.inverted = true;
+        testElement.set('pref', {
+          key: 'test',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: true
+        });
+
+        assertTrue(testElement.pref.value);
+        assertFalse(testElement.checked);
+
+        MockInteractions.tap(testElement.$.control);
+        assertFalse(testElement.pref.value);
+        assertTrue(testElement.checked);
+
+        MockInteractions.tap(testElement.$.control);
+        assertTrue(testElement.pref.value);
+        assertFalse(testElement.checked);
+      });
+
       test('numerical pref', function() {
         var prefNum = {
           key: 'test',
