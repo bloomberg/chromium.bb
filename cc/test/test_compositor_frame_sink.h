@@ -10,10 +10,11 @@
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
+#include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
 
 namespace base {
@@ -21,7 +22,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
-class CompositorFrameSinkSupport;
 class CopyOutputRequest;
 class OutputSurface;
 
@@ -42,9 +42,8 @@ class TestCompositorFrameSinkClient {
 
 // CompositorFrameSink that owns and forwards frames to a Display.
 class TestCompositorFrameSink : public CompositorFrameSink,
-                                public CompositorFrameSinkSupportClient,
-                                public DisplayClient,
-                                public ExternalBeginFrameSourceClient {
+                                public SurfaceFactoryClient,
+                                public DisplayClient {
  public:
   // Pass true for |force_disable_reclaim_resources| to act like the Display
   // is out-of-process and can't return resources synchronously.
@@ -78,12 +77,9 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   void SubmitCompositorFrame(CompositorFrame frame) override;
   void ForceReclaimResources() override;
 
-  // CompositorFrameSinkSupportClient implementation.
-  void DidReceiveCompositorFrameAck() override;
-  void OnBeginFrame(const BeginFrameArgs& args) override;
-  void ReclaimResources(const ReturnedResourceArray& resources) override;
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
+  // SurfaceFactoryClient implementation.
+  void ReturnResources(const ReturnedResourceArray& resources) override;
+  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
 
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
@@ -92,11 +88,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   void DisplayDidDrawAndSwap() override;
 
  private:
-  // ExternalBeginFrameSource implementation.
-  void OnNeedsBeginFrames(bool needs_begin_frames) override;
-  void OnDidFinishFrame(const BeginFrameAck& ack) override;
-
-  void SendCompositorFrameAckToClient();
+  void DidDrawCallback();
 
   const bool synchronous_composite_;
   const RendererSettings renderer_settings_;
@@ -111,14 +103,14 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   LocalSurfaceId delegated_local_surface_id_;
 
   // Uses surface_manager_.
-  std::unique_ptr<CompositorFrameSinkSupport> support_;
+  std::unique_ptr<SurfaceFactory> surface_factory_;
 
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source_;
-  ExternalBeginFrameSource external_begin_frame_source_;
 
   // Uses surface_manager_ and begin_frame_source_.
   std::unique_ptr<Display> display_;
 
+  bool bound_ = false;
   TestCompositorFrameSinkClient* test_client_ = nullptr;
   gfx::Size enlarge_pass_texture_amount_;
 

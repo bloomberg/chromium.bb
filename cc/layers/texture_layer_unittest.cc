@@ -1176,16 +1176,6 @@ class TextureLayerChangeInvisibleMailboxTest
   void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {
     EXPECT_TRUE(sync_token.HasData());
     ++mailbox_returned_;
-    switch (mailbox_returned_) {
-      case 1:
-        break;
-      case 2:
-        EXPECT_EQ(commit_count_, 5);
-        EndTest();
-        break;
-      default:
-        NOTREACHED();
-    }
   }
 
   void SetupTree() override {
@@ -1250,6 +1240,8 @@ class TextureLayerChangeInvisibleMailboxTest
         texture_layer_->ClearClient();
         break;
       case 5:
+        EXPECT_EQ(2, mailbox_returned_);
+        EndTest();
         break;
       default:
         NOTREACHED();
