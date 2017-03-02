@@ -52,7 +52,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
     return opportunity_tree_root_.get();
   }
 
-  Persistent<NGConstraintSpace> constraint_space_;
+  NGConstraintSpace* constraint_space_;
 
   NGLayoutOpportunities opportunities_;
   NGLayoutOpportunities::const_iterator opportunity_iter_;

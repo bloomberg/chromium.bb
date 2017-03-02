@@ -116,21 +116,21 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
     return sizes;
   }
 
-  NGConstraintSpace* constraint_space =
+  RefPtr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(
           FromPlatformWritingMode(Style().getWritingMode()))
           .SetTextDirection(Style().direction())
           .ToConstraintSpace(FromPlatformWritingMode(Style().getWritingMode()));
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
-  NGBlockLayoutAlgorithm minmax_algorithm(this, constraint_space);
+  NGBlockLayoutAlgorithm minmax_algorithm(this, constraint_space.get());
   Optional<MinAndMaxContentSizes> maybe_sizes =
       minmax_algorithm.ComputeMinAndMaxContentSizes();
   if (maybe_sizes.has_value())
     return *maybe_sizes;
 
   // Have to synthesize this value.
-  RefPtr<NGLayoutResult> layout_result = Layout(constraint_space);
+  RefPtr<NGLayoutResult> layout_result = Layout(constraint_space.get());
   NGPhysicalFragment* physical_fragment =
       layout_result->PhysicalFragment().get();
   NGBoxFragment min_fragment(FromPlatformWritingMode(Style().getWritingMode()),
@@ -146,7 +146,7 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace(FromPlatformWritingMode(Style().getWritingMode()));
 
-  layout_result = Layout(constraint_space);
+  layout_result = Layout(constraint_space.get());
   physical_fragment = layout_result->PhysicalFragment().get();
   NGBoxFragment max_fragment(FromPlatformWritingMode(Style().getWritingMode()),
                              toNGPhysicalBoxFragment(physical_fragment));

@@ -20,14 +20,15 @@ bool LayoutNGBlockFlow::isOfType(LayoutObjectType type) const {
 void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
-  auto* constraint_space = NGConstraintSpace::CreateFromLayoutObject(*this);
+  RefPtr<NGConstraintSpace> constraint_space =
+      NGConstraintSpace::CreateFromLayoutObject(*this);
 
   // TODO(layout-dev): This should be created in the constructor once instead.
   // There is some internal state which needs to be cleared between layout
   // passes (probably FirstChild(), etc).
   m_box = new NGBlockNode(this);
 
-  RefPtr<NGLayoutResult> result = m_box->Layout(constraint_space);
+  RefPtr<NGLayoutResult> result = m_box->Layout(constraint_space.get());
 
   if (isOutOfFlowPositioned()) {
     // In legacy layout, abspos differs from regular blocks in that abspos

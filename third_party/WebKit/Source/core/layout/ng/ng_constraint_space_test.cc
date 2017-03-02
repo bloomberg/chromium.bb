@@ -13,9 +13,9 @@ namespace blink {
 
 namespace {
 
-NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
-                                            TextDirection direction,
-                                            NGLogicalSize size) {
+RefPtr<NGConstraintSpace> ConstructConstraintSpace(NGWritingMode writing_mode,
+                                                   TextDirection direction,
+                                                   NGLogicalSize size) {
   return NGConstraintSpaceBuilder(writing_mode)
       .SetTextDirection(direction)
       .SetAvailableSize(size)
@@ -34,10 +34,10 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
   NGLogicalSize size;
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
-  auto* space =
+  RefPtr<NGConstraintSpace> space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
 
-  NGLayoutOpportunityIterator iterator(space);
+  NGLayoutOpportunityIterator iterator(space.get());
   EXPECT_EQ("0,0 600x400", OpportunityToString(iterator.Next()));
   EXPECT_EQ("(empty)", OpportunityToString(iterator.Next()));
 }
@@ -47,7 +47,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
   // Create a space with a 100x100 exclusion in the top right corner.
-  auto* space =
+  RefPtr<NGConstraintSpace> space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
@@ -56,7 +56,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
                            /* block_offset */ LayoutUnit(0)};
   space->AddExclusion(exclusion);
 
-  NGLayoutOpportunityIterator iterator(space);
+  NGLayoutOpportunityIterator iterator(space.get());
   // First opportunity should be to the left of the exclusion.
   EXPECT_EQ("0,0 500x400", OpportunityToString(iterator.Next()));
   // Second opportunity should be below the exclusion.
@@ -70,7 +70,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
   // Create a space with a 100x100 exclusion in the top left corner.
-  auto* space =
+  RefPtr<NGConstraintSpace> space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
@@ -79,7 +79,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
                            /* block_offset */ LayoutUnit(0)};
   space->AddExclusion(exclusion);
 
-  NGLayoutOpportunityIterator iterator(space);
+  NGLayoutOpportunityIterator iterator(space.get());
   // First opportunity should be to the right of the exclusion.
   EXPECT_EQ("100,0 500x400", OpportunityToString(iterator.Next()));
   // Second opportunity should be below the exclusion.
@@ -115,7 +115,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
   NGLogicalSize size;
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
-  auto* space =
+  RefPtr<NGConstraintSpace> space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   // Add exclusions
   NGExclusion exclusion1;
@@ -131,7 +131,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
                             /* block_offset */ LayoutUnit(350)};
   space->AddExclusion(exclusion2);
 
-  NGLayoutOpportunityIterator iterator(space);
+  NGLayoutOpportunityIterator iterator(space.get());
   // 1st Start point
   EXPECT_EQ("0,0 600x200", OpportunityToString(iterator.Next()));
   EXPECT_EQ("0,0 150x400", OpportunityToString(iterator.Next()));
@@ -165,7 +165,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOriginAndLeader) {
   NGLogicalSize size;
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
-  auto* space =
+  RefPtr<NGConstraintSpace> space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   // Add exclusions
   NGExclusion exclusion1;
@@ -183,7 +183,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOriginAndLeader) {
 
   const NGLogicalOffset origin_point = {LayoutUnit(0), LayoutUnit(200)};
   const NGLogicalOffset leader_point = {LayoutUnit(250), LayoutUnit(300)};
-  NGLayoutOpportunityIterator iterator(space, origin_point, leader_point);
+  NGLayoutOpportunityIterator iterator(space.get(), origin_point, leader_point);
   // 1st Start Point
   EXPECT_EQ("250,200 350x150", OpportunityToString(iterator.Next()));
   EXPECT_EQ("250,200 250x400", OpportunityToString(iterator.Next()));
@@ -218,7 +218,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
   NGLogicalSize size;
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(100);
-  auto* space =
+  RefPtr<NGConstraintSpace> space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
@@ -227,7 +227,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
                            /* block_offset */ LayoutUnit(150)};
   space->AddExclusion(exclusion);
 
-  NGLayoutOpportunityIterator iterator(space);
+  NGLayoutOpportunityIterator iterator(space.get());
   EXPECT_EQ("0,0 600x100", OpportunityToString(iterator.Next()));
   EXPECT_EQ("(empty)", OpportunityToString(iterator.Next()));
 }

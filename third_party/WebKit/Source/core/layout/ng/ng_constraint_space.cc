@@ -51,7 +51,7 @@ NGConstraintSpace::NGConstraintSpace(
       exclusions_(exclusions),
       clearance_offset_(clearance_offset) {}
 
-NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
+RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
   auto writing_mode = FromPlatformWritingMode(box.styleRef().getWritingMode());
   bool parallel_containing_block = IsParallelWritingMode(

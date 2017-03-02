@@ -82,10 +82,10 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
 
   RefPtr<ComputedStyle> style_;
   NGLogicalSize container_size_;
-  Persistent<NGConstraintSpace> ltr_space_;
-  Persistent<NGConstraintSpace> rtl_space_;
-  Persistent<NGConstraintSpace> vertical_lr_space_;
-  Persistent<NGConstraintSpace> vertical_rl_space_;
+  RefPtr<NGConstraintSpace> ltr_space_;
+  RefPtr<NGConstraintSpace> rtl_space_;
+  RefPtr<NGConstraintSpace> vertical_lr_space_;
+  RefPtr<NGConstraintSpace> vertical_rl_space_;
 };
 
 TEST_F(NGAbsoluteUtilsTest, Horizontal) {

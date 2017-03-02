@@ -63,7 +63,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   //  - Has its size is determined by its parent layout (flex, abs-pos).
   //
   // NGWritingMode specifies the writing mode of the generated space.
-  NGConstraintSpace* ToConstraintSpace(NGWritingMode);
+  RefPtr<NGConstraintSpace> ToConstraintSpace(NGWritingMode);
 
  private:
   // Relative to parent_writing_mode_.

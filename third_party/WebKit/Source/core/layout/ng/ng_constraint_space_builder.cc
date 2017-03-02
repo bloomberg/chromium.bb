@@ -137,7 +137,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsAnonymous(
   return *this;
 }
 
-NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
+RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
     NGWritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
@@ -182,7 +182,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
       is_new_fc_ ? WTF::nullopt : clearance_offset_;
 
   if (is_in_parallel_flow) {
-    return new NGConstraintSpace(
+    return adoptRef(new NGConstraintSpace(
         static_cast<NGWritingMode>(out_writing_mode),
         static_cast<TextDirection>(text_direction_), available_size,
         percentage_resolution_size, initial_containing_block_size_,
@@ -191,9 +191,9 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset);
+        is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset));
   }
-  return new NGConstraintSpace(
+  return adoptRef(new NGConstraintSpace(
       out_writing_mode, static_cast<TextDirection>(text_direction_),
       available_size, percentage_resolution_size,
       initial_containing_block_size_, fragmentainer_space_available_,
@@ -201,7 +201,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset);
+      is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset));
 }
 
 }  // namespace blink

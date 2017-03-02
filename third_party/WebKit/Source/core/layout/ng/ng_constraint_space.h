@@ -8,8 +8,8 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/layout/ng/ng_writing_mode.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Optional.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -27,11 +27,11 @@ enum NGFragmentationType {
 // The NGConstraintSpace represents a set of constraints and available space
 // which a layout algorithm may produce a NGFragment within.
 class CORE_EXPORT NGConstraintSpace final
-    : public GarbageCollectedFinalized<NGConstraintSpace> {
+    : public RefCounted<NGConstraintSpace> {
  public:
   // This should live on NGBlockNode or another layout bridge and probably take
   // a root NGConstraintSpace.
-  static NGConstraintSpace* CreateFromLayoutObject(const LayoutBox&);
+  static RefPtr<NGConstraintSpace> CreateFromLayoutObject(const LayoutBox&);
 
   const std::shared_ptr<NGExclusions>& Exclusions() const {
     return exclusions_;
@@ -120,8 +120,6 @@ class CORE_EXPORT NGConstraintSpace final
   WTF::Optional<LayoutUnit> ClearanceOffset() const {
     return clearance_offset_;
   }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   String ToString() const;
 

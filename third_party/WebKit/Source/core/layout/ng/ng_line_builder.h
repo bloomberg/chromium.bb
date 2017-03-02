@@ -140,7 +140,7 @@ class CORE_EXPORT NGLineBuilder final {
                            LineBoxData*);
 
   Persistent<NGInlineNode> inline_box_;
-  Persistent<const NGConstraintSpace> constraint_space_;
+  const NGConstraintSpace* constraint_space_;  // Not owned as STACK_ALLOCATED.
   Vector<RefPtr<NGPhysicalFragment>, 32> fragments_;
   Vector<NGLogicalOffset, 32> offsets_;
   Vector<LineBoxData, 32> line_box_data_list_;

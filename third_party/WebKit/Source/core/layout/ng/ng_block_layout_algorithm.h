@@ -43,7 +43,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                               const NGConstraintSpace& space);
 
   // Creates a new constraint space for the current child.
-  NGConstraintSpace* CreateConstraintSpaceForChild(NGLayoutInputNode*);
+  RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(NGLayoutInputNode*);
   void FinishChildLayout(NGLayoutInputNode*,
                          NGConstraintSpace*,
                          RefPtr<NGLayoutResult>);
@@ -71,13 +71,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   }
 
   const NGConstraintSpace& ConstraintSpace() const {
+    DCHECK(constraint_space_);
     return *constraint_space_;
   }
 
   const ComputedStyle& Style() const { return node_->Style(); }
 
   Persistent<NGBlockNode> node_;
-  Persistent<NGConstraintSpace> constraint_space_;
+  NGConstraintSpace* constraint_space_;
 
   // The break token from which we are currently resuming layout.
   Persistent<NGBlockBreakToken> break_token_;

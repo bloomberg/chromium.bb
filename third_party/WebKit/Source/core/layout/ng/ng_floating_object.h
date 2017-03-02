@@ -38,11 +38,11 @@ struct CORE_EXPORT NGFloatingObject
 
   RefPtr<NGPhysicalFragment> fragment;
   // TODO(glebl): Constraint space should be const here.
-  Member<NGConstraintSpace> space;
+  RefPtr<NGConstraintSpace> space;
 
   // Parent space is used so we can calculate the inline offset relative to
   // the original parent of this float.
-  Member<const NGConstraintSpace> original_parent_space;
+  RefPtr<const NGConstraintSpace> original_parent_space;
   Member<NGBlockNode> node;
   NGExclusion::Type exclusion_type;
   EClear clear_type;
@@ -58,8 +58,6 @@ struct CORE_EXPORT NGFloatingObject
   LayoutUnit left_offset;
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(space);
-    visitor->trace(original_parent_space);
     visitor->trace(node);
   }
 };

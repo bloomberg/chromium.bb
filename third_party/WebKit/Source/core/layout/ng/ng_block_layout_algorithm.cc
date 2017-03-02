@@ -187,7 +187,7 @@ NGLogicalOffset CalculateLogicalOffsetForOpportunity(
 NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
                               const NGLogicalOffset& from_offset,
                               NGFloatingObject* floating_object) {
-  NGConstraintSpace* float_space = floating_object->space;
+  NGConstraintSpace* float_space = floating_object->space.get();
   DCHECK(floating_object->fragment) << "Fragment cannot be null here";
 
   // TODO(ikilpatrick): The writing mode switching here looks wrong.
@@ -196,9 +196,8 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
       toNGPhysicalBoxFragment(floating_object->fragment.get()));
 
   // Find a layout opportunity that will fit our float.
-  const NGLayoutOpportunity opportunity =
-      FindLayoutOpportunityForFragment(floating_object->space, float_fragment,
-                                       origin_point, floating_object->margins);
+  const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
+      float_space, float_fragment, origin_point, floating_object->margins);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
   // Calculate the float offset if needed.
@@ -241,9 +240,9 @@ void PositionPendingFloats(const LayoutUnit origin_point_block_offset,
   LayoutUnit bfc_block_offset = builder->BfcOffset().value().block_offset;
 
   for (auto& floating_object : builder->UnpositionedFloats()) {
-    Member<NGConstraintSpace> float_space = floating_object->space;
-    Member<const NGConstraintSpace> original_parent_space =
-        floating_object->original_parent_space;
+    NGConstraintSpace* float_space = floating_object->space.get();
+    const NGConstraintSpace* original_parent_space =
+        floating_object->original_parent_space.get();
 
     NGLogicalOffset origin_point = {float_space->BfcOffset().inline_offset,
                                     origin_point_block_offset};
@@ -456,17 +455,18 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       }
     }
 
-    NGConstraintSpace* child_space = CreateConstraintSpaceForChild(child);
+    RefPtr<NGConstraintSpace> child_space =
+        CreateConstraintSpaceForChild(child);
 
     if (child->Type() == NGLayoutInputNode::kLegacyInline) {
-      LayoutInlineChildren(toNGInlineNode(child), child_space);
+      LayoutInlineChildren(toNGInlineNode(child), child_space.get());
       break;
     }
 
     RefPtr<NGLayoutResult> layout_result =
-        child->Layout(child_space, child_break_token);
+        child->Layout(child_space.get(), child_break_token);
 
-    FinishChildLayout(child, child_space, layout_result);
+    FinishChildLayout(child, child_space.get(), layout_result);
 
     entry = child_iterator.NextChild();
     child = entry.node;
@@ -686,7 +686,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   return margins;
 }
 
-NGConstraintSpace* NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
+RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     NGLayoutInputNode* child) {
   DCHECK(child);
 

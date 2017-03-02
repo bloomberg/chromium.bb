@@ -268,13 +268,13 @@ MinAndMaxContentSizes NGInlineNode::ComputeMinAndMaxContentSizes() {
   // opportunity.
   NGWritingMode writing_mode =
       FromPlatformWritingMode(BlockStyle()->getWritingMode());
-  NGConstraintSpace* constraint_space =
+  RefPtr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(writing_mode)
           .SetTextDirection(BlockStyle()->direction())
           .SetAvailableSize({LayoutUnit(), NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
-  NGLineBuilder line_builder(this, constraint_space);
-  LayoutInline(constraint_space, &line_builder);
+  NGLineBuilder line_builder(this, constraint_space.get());
+  LayoutInline(constraint_space.get(), &line_builder);
   MinAndMaxContentSizes sizes;
   sizes.min_content = line_builder.MaxInlineSize();
 
