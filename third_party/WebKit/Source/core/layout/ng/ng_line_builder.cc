@@ -289,7 +289,11 @@ void NGLineBuilder::InlineItemMetrics::Initialize(
   ascent = font_metrics.floatAscent(baseline_type);
   descent = font_metrics.floatDescent(baseline_type);
   float half_leading = (line_height - (ascent + descent)) / 2;
-  ascent_and_leading = ascent + half_leading;
+  // Ensure the top and the baseline is snapped to CSS pixel.
+  // TODO(kojii): How to handle fractional ascent isn't determined yet. Should
+  // we snap top or baseline? If baseline, top needs fractional. If top,
+  // baseline may not align across fonts.
+  ascent_and_leading = ascent + floor(half_leading);
   descent_and_leading = line_height - ascent_and_leading;
 }
 
