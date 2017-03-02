@@ -800,12 +800,12 @@ class HashTable final
     DCHECK_EQ(mods, m_modifications);
   }
 #else
-  void enterAccessForbiddenScope() {}
-  void leaveAccessForbiddenScope() {}
-  bool accessForbidden() const { return false; }
-  int64_t modifications() const { return 0; }
-  void registerModification() {}
-  void checkModifications(int64_t mods) const {}
+  ALWAYS_INLINE void enterAccessForbiddenScope() {}
+  ALWAYS_INLINE void leaveAccessForbiddenScope() {}
+  ALWAYS_INLINE bool accessForbidden() const { return false; }
+  ALWAYS_INLINE int64_t modifications() const { return 0; }
+  ALWAYS_INLINE void registerModification() {}
+  ALWAYS_INLINE void checkModifications(int64_t mods) const {}
 #endif
 
  private:
