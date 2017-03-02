@@ -115,7 +115,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void removeFormattingAndStyle();
 
   void registerCommandGroup(CompositeEditCommand* commandGroupWrapper);
-  void clearLastEditCommand();
 
   bool deleteWithDirection(DeleteDirection,
                            TextGranularity,

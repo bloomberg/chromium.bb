@@ -754,10 +754,6 @@ void Editor::registerCommandGroup(CompositeEditCommand* commandGroupWrapper) {
   m_lastEditCommand = commandGroupWrapper;
 }
 
-void Editor::clearLastEditCommand() {
-  m_lastEditCommand.clear();
-}
-
 Element* Editor::findEventTargetFrom(const VisibleSelection& selection) const {
   Element* target = selection.hasEditableStyle()
                         ? associatedElementOf(selection.start())
@@ -1007,6 +1003,7 @@ void Editor::clear() {
   frame().inputMethodController().clear();
   m_shouldStyleWithCSS = false;
   m_defaultParagraphSeparator = EditorParagraphSeparatorIsDiv;
+  m_lastEditCommand = nullptr;
   m_undoStack->clear();
 }
 

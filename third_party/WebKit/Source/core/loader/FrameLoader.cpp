@@ -1388,8 +1388,6 @@ void FrameLoader::commitProvisionalLoad() {
   if (!m_isNavigationHandledByClient)
     m_frame->navigationScheduler().cancel();
 
-  m_frame->editor().clearLastEditCommand();
-
   // If we are still in the process of initializing an empty document then its
   // frame is not in a consistent state for rendering, so avoid
   // setJSStatusBarText since it may cause clients to attempt to render the
