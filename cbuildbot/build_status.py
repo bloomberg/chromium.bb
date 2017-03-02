@@ -88,7 +88,7 @@ class SlaveStatus(object):
     self.UpdateSlaveStatus()
 
   def _GetAllSlaveCIDBStatusInfo(self, all_buildbucket_info_dict):
-    """Get all slaves status information from CIDB.
+    """Get build status information from CIDB for all slaves.
 
     Args:
       all_buildbucket_info_dict: A dict mapping all build config names to their
@@ -98,7 +98,8 @@ class SlaveStatus(object):
     Returns:
       A dict mapping build config names to their cidb infos (in the format of
       CIDBStatusInfo). If all_buildbucket_info_dict is not None, the returned
-      map only contains the builds in all_buildbucket_info_dict.
+      map only contains slave builds which are associated with buildbucket_ids
+      recorded in all_buildbucket_info_dict.
     """
     all_cidb_status_dict = {}
     if self.db is not None:
@@ -110,33 +111,25 @@ class SlaveStatus(object):
 
       all_cidb_status_dict = {
           s['build_config']: CIDBStatusInfo(s['id'], s['status'])
-          for s in slave_statuses
-          if s['build_config'] not in self.completed_builds}
+          for s in slave_statuses}
 
     return all_cidb_status_dict
 
-  def _GetNewSlaveCIDBStatusInfo(self, all_cidb_status_dict,
-                                 new_buildbucket_info_dict):
-    """Get new slave CIDB status information given buildbucket_info_dict.
+  def _GetNewSlaveCIDBStatusInfo(self, all_cidb_status_dict, completed_builds):
+    """Get build status information for new slaves not in completed_builds.
 
     Args:
       all_cidb_status_dict: A dict mapping all build config names to their
         information fetched from CIDB (in the format of CIDBStatusInfo).
-      new_buildbucket_info_dict: A dict mapping build config names to their
-        information fetched from Buildbucket server (in the format of
-        BuildbucketInfo). The dict only contains newly completed builds.
+      completed_builds: A set of slave build configs (strings) completed before.
 
     Returns:
       A dict mapping the build config names to their cidb infos (in the format
-      of CIDBStatusInfo). If new_buildbucket_info_dict is not None, the returned
-      map only contains the builds in new_buildbucket_info_dict.
+      of CIDBStatusInfo).
     """
-    if new_buildbucket_info_dict is not None:
-      return {build_config: status_info
-              for build_config, status_info in all_cidb_status_dict.iteritems()
-              if build_config in new_buildbucket_info_dict}
-    else:
-      return all_cidb_status_dict
+    return {build_config: status_info
+            for build_config, status_info in all_cidb_status_dict.iteritems()
+            if build_config not in completed_builds}
 
   def _GetAllSlaveBuildbucketInfo(self, scheduled_buildbucket_info_dict):
     """Get buildbucket info from Buildbucket for all scheduled slave builds.
@@ -224,7 +217,7 @@ class SlaveStatus(object):
     self.all_cidb_status_dict = self._GetAllSlaveCIDBStatusInfo(
         self.all_buildbucket_info_dict)
     self.new_cidb_status_dict = self._GetNewSlaveCIDBStatusInfo(
-        self.all_cidb_status_dict, self.buildbucket_info_dict)
+        self.all_cidb_status_dict, self.completed_builds)
 
     self.missing_builds = self._GetMissingBuilds()
     self.scheduled_builds = self._GetScheduledBuilds()
