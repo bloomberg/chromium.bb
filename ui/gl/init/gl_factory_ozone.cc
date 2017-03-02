@@ -7,19 +7,14 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_context_osmesa.h"
 #include "ui/gl/gl_context_stub.h"
-#include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/init/ozone_util.h"
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace gl {
 namespace init {
@@ -72,14 +67,7 @@ bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
   if (HasGLOzone())
     return GetGLOzone()->GetGLWindowSystemBindingInfo(info);
 
-  // TODO(kylechar): This is deprecated and can be removed once all Ozone
-  // platforms use GLOzone instead.
-  switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2:
-      return GetGLWindowSystemBindingInfoEGL(info);
-    default:
-      return false;
-  }
+  return false;
 }
 
 scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
@@ -104,9 +92,6 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
     case kGLImplementationOSMesaGL:
       return InitializeGLContext(new GLContextOSMesa(share_group),
                                  compatible_surface, attribs);
-    case kGLImplementationEGLGLES2:
-      return InitializeGLContext(new GLContextEGL(share_group),
-                                 compatible_surface, attribs);
     default:
       NOTREACHED();
   }
@@ -122,10 +107,7 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
   if (HasDefaultImplementation(GetGLImplementation()))
     return CreateDefaultViewGLSurface(window);
 
-  // TODO(kylechar): This is deprecated and can be removed once all Ozone
-  // platforms use GLOzone instead.
-  return GetSurfaceFactoryOzone()->CreateViewGLSurface(GetGLImplementation(),
-                                                       window);
+  return nullptr;
 }
 
 scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
@@ -135,10 +117,7 @@ scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
   if (HasGLOzone())
     return GetGLOzone()->CreateSurfacelessViewGLSurface(window);
 
-  // TODO(kylechar): This is deprecated and can be removed once all Ozone
-  // platforms use GLOzone instead.
-  return GetSurfaceFactoryOzone()->CreateSurfacelessViewGLSurface(
-      GetGLImplementation(), window);
+  return nullptr;
 }
 
 scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
@@ -156,10 +135,7 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
   if (HasDefaultImplementation(GetGLImplementation()))
     return CreateDefaultOffscreenGLSurface(size);
 
-  // TODO(kylechar): This is deprecated and can be removed once all Ozone
-  // platforms use GLOzone instead.
-  return GetSurfaceFactoryOzone()->CreateOffscreenGLSurface(
-      GetGLImplementation(), size);
+  return nullptr;
 }
 
 }  // namespace init
