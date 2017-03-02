@@ -1,5 +1,7 @@
 # Use Visual Studio Code on Chromium code base
 
+[TOC]
+
 [Visual Studio Code](http://code.visualstudio.com/)
 ([Wikipedia](https://en.wikipedia.org/wiki/Visual_Studio_Code)) is a
 multi-platform code editor that is itself based on Electron which is based on 
@@ -8,7 +10,7 @@ extensions and themes. It works without too much setup.
 
 ## Install extensions
 
-`ctrl+p` paste `ext install cpptools you-complete-me` then enter. 
+`ctrl+p` paste `ext install cpptools you-complete-me clang-format` then enter. 
 For more extensions: https://marketplace.visualstudio.com/search?target=vscode
 
 Highly recommend you also install your favorite keymap. 
@@ -27,9 +29,6 @@ settings.
 {
   "editor.tabSize": 2,
   "editor.rulers": [80],
-  // CPP
-  "C_Cpp.clang_format_path": "<your_depot_tools_path>/clang-format",
-  "C_Cpp.clang_format_fallbackStyle": "Chromium",
   // Exclude
   "files.exclude": {
     "**/.git": true,
@@ -43,7 +42,10 @@ settings.
   "ycmd.global_extra_config": 
       "<your_chromium_path>/src/tools/vim/chromium.ycm_extra_conf.py",
   "ycmd.confirm_extra_conf": false,
-  "ycmd.use_imprecise_get_type": true
+  "ycmd.use_imprecise_get_type": true,
+  // clang-format
+  "clang-format.style": "Chromium",
+  "editor.formatOnSave": true
 }
 ```
 
@@ -58,15 +60,27 @@ $ ./build.py --clang-completer
 ## Work flow
 
 1. `ctrl+p` open file.
-2. `ctrl+shift+o` goto symbol. `ctrl+l` goto line.
+2. `ctrl+o` goto symbol. `ctrl+l` goto line.
 3. <code>ctrl+`</code> toggle terminal.
 
 ## Tips
 
 ### On laptop
 
-Because we use ycmd to enable auto completion. we can disable CPP autocomplete 
-to save battery. `"C_Cpp.autocomplete": "Disabled"`
+Because we use ycmd to enable auto completion. We can disable CPP autocomplete 
+and index to save battery. 
+
+```
+"C_Cpp.autocomplete": "Disabled",
+"C_Cpp.addWorkspaceRootToIncludePath": false
+```
+
+### Enable Sublime-like minimap
+
+```
+"editor.minimap.enabled": true,
+"editor.minimap.renderCharacters": false
+```
 
 ### More
 
