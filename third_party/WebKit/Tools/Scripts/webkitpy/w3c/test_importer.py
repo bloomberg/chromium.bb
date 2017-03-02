@@ -429,7 +429,7 @@ class TestImporter(object):
         expectation_updater.run(args=[])
         message = 'Update test expectations and baselines.'
         self.check_run(['git', 'commit', '-a', '-m', message])
-        self.git_cl.run(['upload', '-m', message, '--gerrit'])
+        self.git_cl.run(['upload', '-t', message, '--gerrit'])
 
     def update_all_test_expectations_files(self, deleted_tests, renamed_tests):
         """Updates all test expectations files for tests that have been deleted or renamed."""
