@@ -438,6 +438,10 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "for more details.",
           milestoneString(M60));
 
+    case UseCounter::V8IDBFactory_WebkitGetDatabaseNames_Method:
+      return willBeRemoved("indexedDB.webkitGetDatabaseNames()", M60,
+                           "5725741740195840");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();

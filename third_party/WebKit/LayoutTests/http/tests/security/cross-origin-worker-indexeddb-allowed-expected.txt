@@ -1,3 +1,6 @@
+CONSOLE WARNING: line 4: indexedDB.webkitGetDatabaseNames() is deprecated and will be removed in M60, around August 2017. See https://www.chromestatus.com/features/5725741740195840 for more details.
+CONSOLE WARNING: indexedDB.webkitGetDatabaseNames() is deprecated and will be removed in M60, around August 2017. See https://www.chromestatus.com/features/5725741740195840 for more details.
+CONSOLE WARNING: line 4: indexedDB.webkitGetDatabaseNames() is deprecated and will be removed in M60, around August 2017. See https://www.chromestatus.com/features/5725741740195840 for more details.
 Both of these frames should successfully open the database:
 
   
