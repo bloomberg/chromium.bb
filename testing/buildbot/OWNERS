@@ -30,3 +30,5 @@ per-file chromium.perf.json=simonhatch@chromium.org
 per-file chromium.perf.json=sullivan@chromium.org
 per-file chromium.webrtc.json=kjellander@chromium.org
 per-file chromium.webrtc.fyi.json=kjellander@chromium.org
+
+# COMPONENT: Infra>Client
