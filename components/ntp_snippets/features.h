@@ -19,6 +19,7 @@ class Clock;
 namespace ntp_snippets {
 
 // Features to turn individual providers/categories on/off.
+// TODO(jkrcal): Rename to kRemoteSuggestionsFeature.
 extern const base::Feature kArticleSuggestionsFeature;
 extern const base::Feature kBookmarkSuggestionsFeature;
 extern const base::Feature kRecentOfflineTabSuggestionsFeature;
@@ -31,11 +32,6 @@ extern const base::Feature kSaveToOfflineFeature;
 
 // Feature to allow offline badges to appear on snippets.
 extern const base::Feature kOfflineBadgeFeature;
-
-// Feature to allow specification of content suggestions source.
-// TODO(peconn): Figure out how to remove this, it is useful to specify the
-// source, but you shouldn't be able to disable it.
-extern const base::Feature kContentSuggestionsSource;
 
 // Feature to allow UI as specified here: https://crbug.com/660837.
 extern const base::Feature kIncreasedVisibility;

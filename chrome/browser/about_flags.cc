@@ -561,22 +561,20 @@ const FeatureEntry::FeatureVariation
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationChromeReader[] = {
-    {"content_suggestions_backend", ntp_snippets::kChromeReaderServer}};
+const FeatureEntry::FeatureParam
+    kRemoteSuggestionsFeatureVariationContentSuggestionsServer[] = {
+        {"content_suggestions_backend",
+         ntp_snippets::kContentSuggestionsServer}};
 
-const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationServer[] = {
-    {"content_suggestions_backend",
-     ntp_snippets::kContentSuggestionsServer}};
-
-const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {
-    {"via ChromeReader", kNTPSnippetsFeatureVariationChromeReader,
-     arraysize(kNTPSnippetsFeatureVariationChromeReader), nullptr},
+const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
     {"via content suggestion server (backed by ChromeReader)",
-     kNTPSnippetsFeatureVariationServer,
-     arraysize(kNTPSnippetsFeatureVariationServer), nullptr},
+     kRemoteSuggestionsFeatureVariationContentSuggestionsServer,
+     arraysize(kRemoteSuggestionsFeatureVariationContentSuggestionsServer),
+     nullptr},
     {"via content suggestion server (backed by Google Now)",
-     kNTPSnippetsFeatureVariationServer,
-     arraysize(kNTPSnippetsFeatureVariationServer), "3313279"}};
+     kRemoteSuggestionsFeatureVariationContentSuggestionsServer,
+     arraysize(kRemoteSuggestionsFeatureVariationContentSuggestionsServer),
+     "3313279"}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -1886,11 +1884,6 @@ const FeatureEntry kFeatureEntries[] = {
          ntp_snippets::kCategoryRanker,
          kContentSuggestionsCategoryRankerFeatureVariations,
          ntp_snippets::kStudyName)},
-    {"override-ntp-suggestions-source", IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_NAME,
-     IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_DESCRIPTION, kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(ntp_snippets::kContentSuggestionsSource,
-                                        kNTPSnippetsFeatureVariations,
-                                        ntp_snippets::kStudyName)},
     {"enable-ntp-snippets-increased-visibility",
      IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_NAME,
      IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_DESCRIPTION, kOsAndroid,
@@ -1901,6 +1894,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ntp-offline-badge", IDS_FLAGS_ENABLE_NTP_OFFLINE_BADGE_NAME,
      IDS_FLAGS_ENABLE_NTP_OFFLINE_BADGE_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_snippets::kOfflineBadgeFeature)},
+    {"enable-ntp-remote-suggestions",
+     IDS_FLAGS_ENABLE_NTP_REMOTE_SUGGESTIONS_NAME,
+     IDS_FLAGS_ENABLE_NTP_REMOTE_SUGGESTIONS_DESCRIPTION, kOsAndroid,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         ntp_snippets::kArticleSuggestionsFeature,
+         kRemoteSuggestionsFeatureVariations,
+         ntp_snippets::kStudyName)},
     {"enable-ntp-recent-offline-tab-suggestions",
      IDS_FLAGS_ENABLE_NTP_RECENT_OFFLINE_TAB_SUGGESTIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_RECENT_OFFLINE_TAB_SUGGESTIONS_DESCRIPTION,

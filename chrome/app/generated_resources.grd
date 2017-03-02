@@ -14370,17 +14370,17 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_DESCRIPTION" desc="Description for the flag to choose a category ranker for content suggestions, e.g. on the New Tab page." translateable="false">
         Set category ranker to order categories of content suggestions (e.g. on the NTP).
       </message>
-      <message name="IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_NAME" desc="Name for flag to override the NTP snippets source" translateable="false">
-        Override New Tab Page suggestions snippets source
-      </message>
-      <message name="IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_DESCRIPTION" desc="Description for the flag to override the NTP snippets source." translateable="false">
-        If set to something other than enabled, default or disabled, this will override the source used to retrieve content suggestions on the New Tab Page.
-      </message>
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_NAME" desc="Name for the flag to enable increased visibilty for snippets on the New Tab Page." translateable="false">
         Make New Tab Page Snippets more visible.
       </message>
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_DESCRIPTION" desc="Description for the flag to enable increased visibility for recently viewed tabs on the New Tab page." translateable="false">
         If enabled, the NTP snippets will become more discoverable with a larger portion of the first card above the fold.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_REMOTE_SUGGESTIONS_NAME" desc="Name for the flag to enable server-side suggestions on the New Tab Page." translateable="false">
+        Show server-side suggestions on the New Tab page
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_REMOTE_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable server-side suggestions on the New Tab Page." translateable="false">
+        If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain server-side suggestions (e.g., Articles for you). Furthermore, it allows to override the source used to retrieve these server-side suggestions.
       </message>
       <message name="IDS_FLAGS_ENABLE_NTP_RECENT_OFFLINE_TAB_SUGGESTIONS_NAME" desc="Name for the flag to enable suggestions for recently viewed tabs, which were captured offline, on the New Tab page." translateable="false">
         Show recent offline tabs on the New Tab page
