@@ -153,10 +153,18 @@ class CompositorFrameSinkSupportTest : public testing::Test,
         this, &surface_manager_, kChildFrameSink2, false /* is_root */,
         true /* handles_frame_sink_id_invalidation */,
         true /* needs_sync_points */));
+
+    // Normally, the BeginFrameSource would be registered by the Display. We
+    // register it here so that BeginFrames are received by the display support,
+    // for use in the PassesOnBeginFrameAcks test. Other supports do not receive
+    // BeginFrames, since the frame sink hierarchy is not set up in this test.
+    surface_manager_.RegisterBeginFrameSource(begin_frame_source_.get(),
+                                              kDisplayFrameSink);
   }
 
   void TearDown() override {
     surface_manager_.SetDependencyTracker(nullptr);
+    surface_manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
 
     // SurfaceDependencyTracker depends on this BeginFrameSource and so it must
     // be destroyed AFTER the dependency tracker is destroyed.
@@ -922,6 +930,21 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
   EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
+}
+
+TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
+  // Request BeginFrames.
+  display_support().SetNeedsBeginFrame(true);
+
+  // Issue a BeginFrame.
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  begin_frame_source()->TestOnBeginFrame(args);
+
+  // Check that the support forwards our ack to the BeginFrameSource.
+  BeginFrameAck ack(0, 1, 1, 0, false);
+  display_support().DidFinishFrame(ack);
+  EXPECT_EQ(ack, begin_frame_source()->LastAckForObserver(&display_support()));
 }
 
 }  // namespace test

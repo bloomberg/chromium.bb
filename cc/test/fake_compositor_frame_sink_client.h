@@ -14,7 +14,7 @@ class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
  public:
   FakeCompositorFrameSinkClient() : memory_policy_(0) {}
 
-  void SetBeginFrameSource(BeginFrameSource* source) override {}
+  void SetBeginFrameSource(BeginFrameSource* source) override;
   void DidReceiveCompositorFrameAck() override;
   void ReclaimResources(const ReturnedResourceArray& resources) override {}
   void DidLoseCompositorFrameSink() override;
@@ -35,10 +35,13 @@ class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
 
   const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
 
+  BeginFrameSource* begin_frame_source() const { return begin_frame_source_; }
+
  private:
   int ack_count_ = 0;
   bool did_lose_compositor_frame_sink_called_ = false;
   ManagedMemoryPolicy memory_policy_;
+  BeginFrameSource* begin_frame_source_;
 };
 
 }  // namespace cc

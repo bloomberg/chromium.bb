@@ -67,6 +67,11 @@ void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
   UpdateNeedsBeginFramesInternal();
 }
 
+void CompositorFrameSinkSupport::DidFinishFrame(const BeginFrameAck& ack) {
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(this, ack);
+}
+
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame) {

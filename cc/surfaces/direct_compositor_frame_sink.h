@@ -59,6 +59,9 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
                               const RenderPassList& render_passes) override;
   void DisplayDidDrawAndSwap() override;
 
+ protected:
+  std::unique_ptr<CompositorFrameSinkSupport> support_;  // protected for test.
+
  private:
   // CompositorFrameSinkSupportClient implementation:
   void DidReceiveCompositorFrameAck() override;
@@ -81,7 +84,6 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   Display* display_;
   gfx::Size last_swap_frame_size_;
   bool is_lost_ = false;
-  std::unique_ptr<CompositorFrameSinkSupport> support_;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectCompositorFrameSink);

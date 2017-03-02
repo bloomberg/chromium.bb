@@ -7,6 +7,11 @@
 
 namespace cc {
 
+void FakeCompositorFrameSinkClient::SetBeginFrameSource(
+    BeginFrameSource* source) {
+  begin_frame_source_ = source;
+}
+
 void FakeCompositorFrameSinkClient::DidReceiveCompositorFrameAck() {
   ack_count_++;
 }

@@ -151,7 +151,7 @@ void DirectCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
 }
 
 void DirectCompositorFrameSink::OnDidFinishFrame(const BeginFrameAck& ack) {
-  // TODO(eseckler): Pass on the ack to support_ and its BeginFrameSource.
+  support_->DidFinishFrame(ack);
 }
 
 }  // namespace cc
