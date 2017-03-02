@@ -34,4 +34,7 @@ void DesktopPromotionSyncService::RegisterDesktopPromotionUserPrefs(
   registry->RegisterBooleanPref(
       prefs::kDesktopIOSPromotionDone, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kDesktopIOSPromotionVariationId, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }

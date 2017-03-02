@@ -163,4 +163,9 @@ const char kDesktopIOSPromotionDone[] = "ios.desktop_ios_promo_done";
 // True if the user is eligible to recieve "desktop to iOS" promotion.
 const char kDesktopIOSPromotionEligible[] = "ios.desktoptomobileeligible";
 
+// Integer that represents which variation of title and text of the
+// "desktop to iOS" promotion was presented to the user on desktop.
+const char kDesktopIOSPromotionVariationId[] =
+    "ios.desktop_ios_promo_variation_id";
+
 }  // namespace prefs

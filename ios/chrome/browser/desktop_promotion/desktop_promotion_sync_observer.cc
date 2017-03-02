@@ -93,6 +93,23 @@ void DesktopPromotionSyncObserver::OnStateChanged(syncer::SyncService* sync) {
                                   i, entrypoint_prefixes_count + 1);
     }
   }
+
+  // Check the variation id preference, if it's set then log to UMA that the
+  // user has seen this promotion variation on desktop.
+  int promo_variation_id =
+      pref_service_->GetInteger(prefs::kDesktopIOSPromotionVariationId);
+  if (promo_variation_id != 0) {
+    if (sms_entrypoint != 0) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "DesktopIOSPromotion.SMSSent.VariationSigninReason",
+          promo_variation_id);
+    } else {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "DesktopIOSPromotion.NoSMS.VariationSigninReason",
+          promo_variation_id);
+    }
+  }
+
   pref_service_->SetBoolean(prefs::kDesktopIOSPromotionDone, true);
   sync_service_->RemoveObserver(this);
 }
