@@ -27,8 +27,14 @@ VideoCaptureDeviceFactory::CreateFactory(
       return std::unique_ptr<VideoCaptureDeviceFactory>(
           new media::FileVideoCaptureDeviceFactory());
     } else {
-      return std::unique_ptr<VideoCaptureDeviceFactory>(
-          new media::FakeVideoCaptureDeviceFactory());
+      std::vector<FakeVideoCaptureDeviceSettings> config;
+      FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
+          command_line->GetSwitchValueASCII(
+              switches::kUseFakeDeviceForMediaStream),
+          &config);
+      auto result = base::MakeUnique<media::FakeVideoCaptureDeviceFactory>();
+      result->SetToCustomDevicesConfig(config);
+      return std::move(result);
     }
   } else {
     // |ui_task_runner| is needed for the Linux ChromeOS factory to retrieve

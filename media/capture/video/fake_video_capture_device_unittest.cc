@@ -260,24 +260,23 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
   const scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
   const scoped_refptr<ImageCaptureClient> image_capture_client_;
   VideoCaptureFormat last_format_;
-  const std::unique_ptr<VideoCaptureDeviceFactory>
+  const std::unique_ptr<FakeVideoCaptureDeviceFactory>
       video_capture_device_factory_;
 };
 
 class FakeVideoCaptureDeviceTest
     : public FakeVideoCaptureDeviceBase,
       public ::testing::WithParamInterface<
-          ::testing::tuple<FakeVideoCaptureDeviceMaker::PixelFormat,
-                           FakeVideoCaptureDeviceMaker::DeliveryMode,
+          ::testing::tuple<VideoPixelFormat,
+                           FakeVideoCaptureDevice::DeliveryMode,
                            float>> {};
 
 // Tests that a frame is delivered with the expected settings.
 // Sweeps through a fixed set of requested/expected resolutions.
 TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
-  if (testing::get<1>(GetParam()) == FakeVideoCaptureDeviceMaker::DeliveryMode::
-                                         USE_CLIENT_PROVIDED_BUFFERS &&
-      testing::get<0>(GetParam()) ==
-          FakeVideoCaptureDeviceMaker::PixelFormat::MJPEG) {
+  if (testing::get<1>(GetParam()) ==
+          FakeVideoCaptureDevice::DeliveryMode::USE_CLIENT_PROVIDED_BUFFERS &&
+      testing::get<0>(GetParam()) == media::PIXEL_FORMAT_MJPEG) {
     // Unsupported case
     return;
   }
@@ -286,9 +285,10 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
       EnumerateDevices());
   ASSERT_FALSE(descriptors->empty());
 
-  auto device = FakeVideoCaptureDeviceMaker::MakeInstance(
-      testing::get<0>(GetParam()), testing::get<1>(GetParam()),
-      testing::get<2>(GetParam()));
+  auto device =
+      FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
+          testing::get<0>(GetParam()), testing::get<1>(GetParam()),
+          testing::get<2>(GetParam()));
   ASSERT_TRUE(device);
 
   // First: Requested, Second: Expected
@@ -313,8 +313,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
     WaitForCapturedFrame();
     EXPECT_EQ(resolution.second.width(), last_format().frame_size.width());
     EXPECT_EQ(resolution.second.height(), last_format().frame_size.height());
-    EXPECT_EQ(last_format().pixel_format,
-              static_cast<VideoPixelFormat>(testing::get<0>(GetParam())));
+    EXPECT_EQ(last_format().pixel_format, testing::get<0>(GetParam()));
     EXPECT_EQ(last_format().frame_rate, testing::get<2>(GetParam()));
     device->StopAndDeAllocate();
   }
@@ -323,18 +322,15 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
 INSTANTIATE_TEST_CASE_P(
     ,
     FakeVideoCaptureDeviceTest,
-    Combine(Values(FakeVideoCaptureDeviceMaker::PixelFormat::I420,
-                   FakeVideoCaptureDeviceMaker::PixelFormat::Y16,
-                   FakeVideoCaptureDeviceMaker::PixelFormat::MJPEG),
-            Values(FakeVideoCaptureDeviceMaker::DeliveryMode::
-                       USE_DEVICE_INTERNAL_BUFFERS,
-                   FakeVideoCaptureDeviceMaker::DeliveryMode::
-                       USE_CLIENT_PROVIDED_BUFFERS),
-            Values(20, 29.97, 30, 50, 60)));
+    Combine(
+        Values(PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, PIXEL_FORMAT_MJPEG),
+        Values(
+            FakeVideoCaptureDevice::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS,
+            FakeVideoCaptureDevice::DeliveryMode::USE_CLIENT_PROVIDED_BUFFERS),
+        Values(20, 29.97, 30, 50, 60)));
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kUseFakeDeviceForMediaStream, "device-count=4");
+  video_capture_device_factory_->SetToDefaultDevicesConfig(4);
   std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
       EnumerateDevices());
   ASSERT_EQ(4u, descriptors->size());
@@ -375,11 +371,11 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
 }
 
 TEST_F(FakeVideoCaptureDeviceTest, GetCameraCalibration) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kUseFakeDeviceForMediaStream, "device-count=2");
+  const size_t device_count = 2;
+  video_capture_device_factory_->SetToDefaultDevicesConfig(device_count);
   std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
       EnumerateDevices());
-  ASSERT_EQ(2u, descriptors->size());
+  ASSERT_EQ(device_count, descriptors->size());
   ASSERT_FALSE(descriptors->at(0).camera_calibration);
   const VideoCaptureDeviceDescriptor& depth_device = descriptors->at(1);
   EXPECT_EQ("/dev/video1", depth_device.device_id);
@@ -390,11 +386,22 @@ TEST_F(FakeVideoCaptureDeviceTest, GetCameraCalibration) {
   EXPECT_EQ(65.535, depth_device.camera_calibration->depth_far);
 }
 
+TEST_F(FakeVideoCaptureDeviceTest, ErrorDeviceReportsError) {
+  auto device = FakeVideoCaptureDeviceFactory::CreateErrorDevice();
+  ASSERT_TRUE(device);
+  EXPECT_CALL(*client_, OnError(_, _));
+  VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(640, 480);
+  capture_params.requested_format.frame_rate = 30.0;
+  device->AllocateAndStart(capture_params, std::move(client_));
+}
+
 TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
-  auto device = FakeVideoCaptureDeviceMaker::MakeInstance(
-      FakeVideoCaptureDeviceMaker::PixelFormat::I420,
-      FakeVideoCaptureDeviceMaker::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS,
-      30.0);
+  auto device =
+      FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
+          PIXEL_FORMAT_I420,
+          FakeVideoCaptureDevice::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS,
+          30.0);
   ASSERT_TRUE(device);
 
   VideoCaptureParams capture_params;
@@ -503,10 +510,11 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
 }
 
 TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
-  auto device = FakeVideoCaptureDeviceMaker::MakeInstance(
-      FakeVideoCaptureDeviceMaker::PixelFormat::I420,
-      FakeVideoCaptureDeviceMaker::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS,
-      30.0);
+  auto device =
+      FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
+          PIXEL_FORMAT_I420,
+          FakeVideoCaptureDevice::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS,
+          30.0);
   ASSERT_TRUE(device);
 
   VideoCaptureParams capture_params;
@@ -539,15 +547,41 @@ class FakeVideoCaptureDeviceFactoryTest
     : public FakeVideoCaptureDeviceBase,
       public ::testing::WithParamInterface<CommandLineTestData> {};
 
+TEST_F(FakeVideoCaptureDeviceFactoryTest, DeviceWithNoSupportedFormats) {
+  std::vector<FakeVideoCaptureDeviceSettings> config;
+  FakeVideoCaptureDeviceSettings device_setting;
+  device_setting.device_id = "Device with no supported formats";
+  config.emplace_back(device_setting);
+  video_capture_device_factory_->SetToCustomDevicesConfig(config);
+
+  const std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
+      EnumerateDevices());
+  EXPECT_EQ(1u, descriptors->size());
+  media::VideoCaptureFormats supported_formats;
+  video_capture_device_factory_->GetSupportedFormats(descriptors->at(0),
+                                                     &supported_formats);
+  EXPECT_EQ(0u, supported_formats.size());
+  auto device = video_capture_device_factory_->CreateDevice(descriptors->at(0));
+  EXPECT_TRUE(device.get());
+
+  auto client = CreateClient();
+  EXPECT_CALL(*client, OnError(_, _));
+  VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(1280, 720);
+  device->AllocateAndStart(capture_params, std::move(client));
+}
+
 // Tests that the FakeVideoCaptureDeviceFactory delivers the expected number
 // of devices and formats when being configured using command-line switches.
 TEST_P(FakeVideoCaptureDeviceFactoryTest, FrameRateAndDeviceCount) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kUseFakeDeviceForMediaStream, GetParam().switch_value_string);
+  std::vector<FakeVideoCaptureDeviceSettings> config;
+  FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
+      GetParam().switch_value_string, &config);
+  video_capture_device_factory_->SetToCustomDevicesConfig(config);
+
   const std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
       EnumerateDevices());
   EXPECT_EQ(GetParam().expected_device_count, descriptors->size());
-  ASSERT_FALSE(descriptors->empty());
 
   int device_index = 0;
   for (const auto& descriptors_iterator : *descriptors) {
@@ -602,14 +636,12 @@ INSTANTIATE_TEST_CASE_P(
            CommandLineTestData{"device-count=4",
                                20,
                                4u,
-
                                {PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16,
                                 PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_I420}},
            CommandLineTestData{"device-count=4,ownership=client",
                                20,
                                4u,
-
                                {PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16,
                                 PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_I420}},
-           CommandLineTestData{"device-count=0", 20, 1u, {PIXEL_FORMAT_I420}}));
+           CommandLineTestData{"device-count=0", 20, 0u, {PIXEL_FORMAT_I420}}));
 };  // namespace media

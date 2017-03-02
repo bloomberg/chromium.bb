@@ -202,7 +202,8 @@ class VideoCaptureManagerTest : public testing::Test {
     video_capture_device_factory_ = static_cast<WrappedDeviceFactory*>(
         vcm_->video_capture_device_factory());
     const int32_t kNumberOfFakeDevices = 2;
-    video_capture_device_factory_->set_number_of_devices(kNumberOfFakeDevices);
+    video_capture_device_factory_->SetToDefaultDevicesConfig(
+        kNumberOfFakeDevices);
     vcm_->RegisterListener(listener_.get());
     frame_observer_.reset(new MockFrameObserver());
 
@@ -404,7 +405,7 @@ TEST_F(VideoCaptureManagerTest, ConnectAndDisconnectDevices) {
     video_capture_device_factory_->number_of_devices();
 
   // Simulate we remove 1 fake device.
-  video_capture_device_factory_->set_number_of_devices(1);
+  video_capture_device_factory_->SetToDefaultDevicesConfig(1);
   base::RunLoop run_loop;
   vcm_->EnumerateDevices(
       base::Bind(&VideoCaptureManagerTest::HandleEnumerationResult,
@@ -413,7 +414,7 @@ TEST_F(VideoCaptureManagerTest, ConnectAndDisconnectDevices) {
   ASSERT_EQ(devices_.size(), 1u);
 
   // Simulate we add 2 fake devices.
-  video_capture_device_factory_->set_number_of_devices(3);
+  video_capture_device_factory_->SetToDefaultDevicesConfig(3);
   base::RunLoop run_loop2;
   vcm_->EnumerateDevices(
       base::Bind(&VideoCaptureManagerTest::HandleEnumerationResult,
@@ -422,7 +423,8 @@ TEST_F(VideoCaptureManagerTest, ConnectAndDisconnectDevices) {
   ASSERT_EQ(devices_.size(), 3u);
 
   vcm_->UnregisterListener();
-  video_capture_device_factory_->set_number_of_devices(number_of_devices_keep);
+  video_capture_device_factory_->SetToDefaultDevicesConfig(
+      number_of_devices_keep);
 }
 
 // Enumerate devices and open the first, then check the list of supported

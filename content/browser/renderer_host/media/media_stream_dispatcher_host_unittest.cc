@@ -473,7 +473,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithDepthVideo) {
   // Video device on index 1 is depth video capture device.  The number of fake
   // devices is 2.
   physical_video_devices_.clear();
-  video_capture_device_factory_->set_number_of_devices(2);
+  video_capture_device_factory_->SetToDefaultDevicesConfig(2);
   video_capture_device_factory_->GetDeviceDescriptors(&physical_video_devices_);
   // We specify to generate both audio and video stream.
   StreamControls controls(true, true);
@@ -680,7 +680,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithInvalidAudioSourceId) {
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
   physical_video_devices_.clear();
-  video_capture_device_factory_->set_number_of_devices(0);
+  video_capture_device_factory_->SetToDefaultDevicesConfig(0);
   video_capture_device_factory_->GetDeviceDescriptors(&physical_video_devices_);
   StreamControls controls(true, true);
 
@@ -837,7 +837,7 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
   EXPECT_EQ(host_->audio_devices_.size(), 1u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 
-  video_capture_device_factory_->set_number_of_devices(0);
+  video_capture_device_factory_->SetToDefaultDevicesConfig(0);
 
   base::RunLoop run_loop;
   EXPECT_CALL(*host_.get(), OnDeviceStopped(kRenderId))
