@@ -24,7 +24,6 @@ Polymer({
     /** Reflects the bluetooth-page property. */
     bluetoothEnabled: {
       type: Boolean,
-      observer: 'bluetoothEnabledChanged_',
       notify: true,
     },
 
@@ -148,21 +147,22 @@ Polymer({
 
   /**
    * Listener for chrome.bluetooth.onBluetoothDeviceAdded/Changed events.
-   * @type {function(!chrome.bluetooth.Device)|undefined}
+   * @type {?function(!chrome.bluetooth.Device)}
    * @private
    */
-  bluetoothDeviceUpdatedListener_: undefined,
+  bluetoothDeviceUpdatedListener_: null,
 
   /**
    * Listener for chrome.bluetooth.onBluetoothDeviceRemoved events.
-   * @type {function(!chrome.bluetooth.Device)|undefined}
+   * @type {?function(!chrome.bluetooth.Device)}
    * @private
    */
-  bluetoothDeviceRemovedListener_: undefined,
+  bluetoothDeviceRemovedListener_: null,
 
   /** @override */
   attached: function() {
     this.bluetoothDeviceUpdatedListener_ =
+        this.bluetoothDeviceUpdatedListener_ ||
         this.onBluetoothDeviceUpdated_.bind(this);
     this.bluetooth.onDeviceAdded.addListener(
         this.bluetoothDeviceUpdatedListener_);
@@ -170,6 +170,7 @@ Polymer({
         this.bluetoothDeviceUpdatedListener_);
 
     this.bluetoothDeviceRemovedListener_ =
+        this.bluetoothDeviceRemovedListener_ ||
         this.onBluetoothDeviceRemoved_.bind(this);
     this.bluetooth.onDeviceRemoved.addListener(
         this.bluetoothDeviceRemovedListener_);
@@ -177,16 +178,12 @@ Polymer({
 
   /** @override */
   detached: function() {
-    if (this.bluetoothAdapterStateChangedListener_) {
-      this.bluetooth.onAdapterStateChanged.removeListener(
-          this.bluetoothAdapterStateChangedListener_);
-    }
-    if (this.bluetoothDeviceUpdatedListener_) {
-      this.bluetooth.onDeviceAdded.removeListener(
-          this.bluetoothDeviceUpdatedListener_);
-      this.bluetooth.onDeviceChanged.removeListener(
-          this.bluetoothDeviceUpdatedListener_);
-    }
+    this.bluetooth.onDeviceAdded.removeListener(
+        assert(this.bluetoothDeviceUpdatedListener_));
+    this.bluetooth.onDeviceChanged.removeListener(
+        assert(this.bluetoothDeviceUpdatedListener_));
+    this.bluetooth.onDeviceRemoved.removeListener(
+        assert(this.bluetoothDeviceRemovedListener_));
   },
 
   /**
@@ -195,12 +192,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(route) {
-    if (route == settings.Route.BLUETOOTH_DEVICES) {
-      if (this.bluetoothEnabled)
-        this.startDiscovery_();
-    } else {
-      this.stopDiscovery_();
-    }
+    this.updateDiscovery_();
   },
 
   /** @private */
@@ -210,17 +202,8 @@ Polymer({
 
   /** @private */
   adapterStateChanged_: function() {
+    this.updateDiscovery_();
     this.updateDeviceList_();
-  },
-
-  /** @private */
-  bluetoothEnabledChanged_: function() {
-    if (settings.getCurrentRoute() == settings.Route.BLUETOOTH_DEVICES &&
-        this.bluetoothEnabled) {
-      this.startDiscovery_();
-    } else {
-      this.stopDiscovery_();
-    }
   },
 
   /** @private */
@@ -248,6 +231,16 @@ Polymer({
   selectedUnpairedItemChanged_: function() {
     if (this.selectedUnpairedItem_)
       this.connectDevice_(this.selectedUnpairedItem_);
+  },
+
+  /** @private */
+  updateDiscovery_: function() {
+    if (!this.adapterState || !this.adapterState.powered)
+      return;
+    if (settings.getCurrentRoute() == settings.Route.BLUETOOTH_DEVICES)
+      this.startDiscovery_();
+    else
+      this.stopDiscovery_();
   },
 
   /**
