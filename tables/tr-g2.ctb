@@ -1,6 +1,6 @@
 # liblouis: Türkçe Tam Kısaltmalı Braille
 #
-#  Copyright (C) 2009 SBS Schweizerische Bibliothek für Blinde und Sehbehinderte
+#  Copyright (C) 2015 Braille Teknik Ltd. www.brailleteknik.com
 #
 #  This file is part of liblouis.
 #
@@ -18,7 +18,8 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 #
-#--------------------------------# Bu dosya, Braille Teknik Ltd. - Uğur Gürbüz tarafından hazırlanmıştır. www.brailleteknik.com
+#--------------------------------
+# Bu dosya, Braille Teknik Ltd. - Uğur Gürbüz tarafından hazırlanmıştır. www.brailleteknik.com
 #
 # Bu dosyanın içeriği, yanlızca izin verilen firma ya da şahıslar tarafından kullanılabilir; ücretli projelerde izinsiz kullanımı yasaktır.
 #
