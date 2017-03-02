@@ -116,6 +116,10 @@ id<GREYMatcher> PrivacyButton() {
   return ButtonWithAccessibilityLabelId(
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
 }
+// Matcher for the Send Usage Data cell on the Privacy screen.
+id<GREYMatcher> SendUsageDataButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_OPTIONS_SEND_USAGE_DATA);
+}
 // Matcher for the Clear Browsing Data cell on the Privacy screen.
 id<GREYMatcher> ClearBrowsingDataCell() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
@@ -1051,6 +1055,19 @@ bool IsCertificateCleared() {
   // Verify that the Settings register keyboard commands.
   GREYAssertNotNil(settings.keyCommands,
                    @"Settings should register key commands when presented.");
+}
+
+// Verifies the UI elements are accessible on the Send Usage Data page.
+- (void)testAccessibilityOnSendUsageData {
+  [ChromeEarlGreyUI openToolsMenu];
+  [[EarlGrey selectElementWithMatcher:SettingsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:PrivacyButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SendUsageDataButton()]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [self closeSubSettingsMenu];
 }
 
 @end
