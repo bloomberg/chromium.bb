@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.sync.SyncController;
-import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
@@ -226,13 +225,6 @@ public class ProcessInitializationHandler {
                             R.string.error_printing_failed);
                     PrintingControllerImpl.create(new PrintDocumentAdapterWrapper(), errorText);
                 }
-            }
-        });
-
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                ChromeWebApkHost.initGooglePlayInstallState();
             }
         });
     }
