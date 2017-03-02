@@ -27,7 +27,7 @@ size_t threadStackSize();
 // Returns true if the function is not called on the main thread. Note carefully
 // that this function may have false positives, i.e. it can return true even if
 // we are on the main thread. If the function returns false, we are certainly
-// not on the main thread. Must be WTF_EXPORT due to template inlining in
+// on the main thread. Must be WTF_EXPORT due to template inlining in
 // ThreadSpecific.
 inline WTF_EXPORT bool mayNotBeMainThread() {
   // getStackStart is exclusive, not inclusive (i.e. it points past the last
