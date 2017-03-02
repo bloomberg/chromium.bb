@@ -8,6 +8,8 @@ recordActionTaken:
     ConnectToNodeJSDirectly : 20
     ConnectToNodeJSFromFrontend : 19
     ConsoleEvaluated : 8
+    CpuProfileNodeExcluded : 23
+    CpuProfileNodeFocused : 22
     CpuThrottlingEnabled : 21
     DOMPropertiesExpanded : 16
     DeviceModeEnabled : 10
