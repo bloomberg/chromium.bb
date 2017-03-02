@@ -75,12 +75,8 @@ void ZipFileCreator::CreateZipFile(base::File file) {
 void ZipFileCreator::ReportDone(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // The current user of this class holds no reference to |this| so resetting
-  // the |utility_process_mojo_client_| here could release the last reference
-  // and delete |this|. So save |callback_| before resetting the client.
-  auto callback = base::ResetAndReturn(&callback_);
   utility_process_mojo_client_.reset();
-  callback.Run(success);
+  base::ResetAndReturn(&callback_).Run(success);
 }
 
 }  // namespace file_manager
