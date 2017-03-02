@@ -2573,7 +2573,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.ENABLE_TRANSLATION + "=true")
     public void testTapWithLanguage() throws InterruptedException, TimeoutException {
         // Tapping a German word should trigger translation.
         simulateTapSearch("german");
@@ -2585,11 +2584,24 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
+     * Tests translation with a simple Tap can be disabled.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.DISABLE_TRANSLATION + "=true")
+    public void testTapDisabled() throws InterruptedException, TimeoutException {
+        // Tapping a German word would normally trigger translation, but not with the above flag.
+        simulateTapSearch("german");
+
+        // Make sure we did not try to trigger translate.
+        assertFalse(mManager.getRequest().isTranslationForced());
+    }
+
+    /**
      * Tests that a simple Tap without language determination does not trigger translation.
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.ENABLE_TRANSLATION + "=true")
     public void testTapWithoutLanguage() throws InterruptedException, TimeoutException {
         // Tapping an English word should NOT trigger translation.
         simulateTapSearch("search");
@@ -2599,27 +2611,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Tests that the server-controlled-onebox flag can override behavior on a simple Tap
-     * without language determination.
-     */
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add({ContextualSearchFieldTrial.ENABLE_TRANSLATION + "=true",
-            ContextualSearchFieldTrial.ENABLE_SERVER_CONTROLLED_ONEBOX + "=true"})
-    public void testTapWithoutLanguageCanBeForced() throws InterruptedException, TimeoutException {
-        // Tapping an English word should trigger translation.
-        simulateTapSearch("search");
-
-        // Make sure we did try to trigger translate.
-        assertTrue(mManager.getRequest().isTranslationForced());
-    }
-
-    /**
      * Tests that a long-press does trigger translation.
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.ENABLE_TRANSLATION + "=true")
     public void testLongpressTranslates() throws InterruptedException, TimeoutException {
         // LongPress on any word should trigger translation.
         simulateLongPressSearch("search");
@@ -2629,31 +2624,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Tests that a long-press does NOT trigger translation when auto-detect is disabled.
+     * Tests that a long-press does NOT trigger translation when disabled.
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add({ContextualSearchFieldTrial.ENABLE_TRANSLATION + "=true",
-            ContextualSearchFieldTrial.DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX + "=true"})
-    public void testLongpressAutoDetectDisabledDoesNotTranslate()
-            throws InterruptedException, TimeoutException {
-        // Unless disabled, LongPress on any word should trigger translation.
-        simulateLongPressSearch("search");
-
-        // Make sure we did not try to trigger translate.
-        assertFalse(mManager.getRequest().isTranslationForced());
-    }
-
-    /**
-     * Tests that a long-press does NOT trigger translation when general one-box is disabled.
-     */
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add({ContextualSearchFieldTrial.ENABLE_TRANSLATION + "=true",
-            ContextualSearchFieldTrial.DISABLE_FORCE_TRANSLATION_ONEBOX + "=true"})
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.DISABLE_TRANSLATION + "=true")
     public void testLongpressTranslateDisabledDoesNotTranslate()
             throws InterruptedException, TimeoutException {
-        // Unless disabled, LongPress on any word should trigger translation.
+        // When disabled, LongPress on any word should not trigger translation.
         simulateLongPressSearch("search");
 
         // Make sure we did not try to trigger translate.

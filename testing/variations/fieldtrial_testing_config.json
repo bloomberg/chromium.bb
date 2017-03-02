@@ -403,10 +403,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Expected",
-                    "params": {
-                        "enable_translation": "true"
-                    }
+                    "name": "Expected"
                 }
             ]
         }

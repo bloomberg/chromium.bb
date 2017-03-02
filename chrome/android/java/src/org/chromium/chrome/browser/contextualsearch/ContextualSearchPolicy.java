@@ -479,25 +479,8 @@ class ContextualSearchPolicy {
     /**
      * @return Whether any translation feature for Contextual Search is enabled.
      */
-    boolean isTranslationEnabled() {
-        return ContextualSearchFieldTrial.isTranslationEnabled();
-    }
-
-    /**
-     * @return Whether forcing a translation Onebox is disabled.
-     */
-    boolean isForceTranslationOneboxDisabled() {
-        return ContextualSearchFieldTrial.isForceTranslationOneboxDisabled();
-    }
-
-    /**
-     * @return Whether forcing a translation Onebox based on auto-detection of the source language
-     *         is disabled.
-     */
-    boolean isAutoDetectTranslationOneboxDisabled() {
-        if (isForceTranslationOneboxDisabled()) return true;
-
-        return ContextualSearchFieldTrial.isAutoDetectTranslationOneboxDisabled();
+    boolean isTranslationDisabled() {
+        return ContextualSearchFieldTrial.isTranslationDisabled();
     }
 
     /**
@@ -505,7 +488,7 @@ class ContextualSearchPolicy {
      *         available or privacy-enabled.
      */
     String getHomeCountry(Context context) {
-        if (!ContextualSearchFieldTrial.isSendHomeCountryEnabled()) return "";
+        if (ContextualSearchFieldTrial.isSendHomeCountryDisabled()) return "";
 
         TelephonyManager telephonyManager =
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

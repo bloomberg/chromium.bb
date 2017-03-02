@@ -39,20 +39,16 @@ public class ContextualSearchTranslateController  {
 
     /**
      * Force translation from the given language for the current search request,
-     * unless disabled by experiment.  Also log whenever conditions are right to translate.
+     * unless disabled by a Chrome Variation.  Also log whenever conditions are right to translate.
      * @param searchRequest The search request to force translation upon.
      * @param sourceLanguage The language to translate from, or an empty string if not known.
      */
-    void forceTranslateIfNeeded(ContextualSearchRequest searchRequest,
-            String sourceLanguage) {
-        if (!mPolicy.isTranslationEnabled()) return;
+    void forceTranslateIfNeeded(ContextualSearchRequest searchRequest, String sourceLanguage) {
+        if (mPolicy.isTranslationDisabled()) return;
 
         // Force translation if not disabled and server controlled or client logic says required.
-        boolean doForceTranslate = !mPolicy.isForceTranslationOneboxDisabled()
-                && (ContextualSearchFieldTrial.isServerControlledOneboxEnabled()
-                           || !TextUtils.isEmpty(sourceLanguage)
-                                   && mPolicy.needsTranslation(
-                                              sourceLanguage, getReadableLanguages()));
+        boolean doForceTranslate = !TextUtils.isEmpty(sourceLanguage)
+                && mPolicy.needsTranslation(sourceLanguage, getReadableLanguages());
         if (doForceTranslate && searchRequest != null) {
             searchRequest.forceTranslation(
                     sourceLanguage, mPolicy.bestTargetLanguage(getProficientLanguageList()));
@@ -70,10 +66,9 @@ public class ContextualSearchTranslateController  {
     void forceAutoDetectTranslateUnlessDisabled(ContextualSearchRequest searchRequest) {
         // Always trigger translation using auto-detect when we're not resolving,
         // unless disabled by policy.
-        if (!mPolicy.isTranslationEnabled()) return;
+        if (mPolicy.isTranslationDisabled()) return;
 
-        boolean shouldAutoDetectTranslate = !mPolicy.isAutoDetectTranslationOneboxDisabled();
-        if (shouldAutoDetectTranslate && searchRequest != null) {
+        if (searchRequest != null) {
             // The translation one-box won't actually show when the source text ends up being
             // the same as the target text, so we err on over-triggering.
             searchRequest.forceAutoDetectTranslation(
@@ -81,19 +76,17 @@ public class ContextualSearchTranslateController  {
         }
         // Log that conditions were right for translation, even though it may be disabled
         // for an experiment so we can compare with the counter factual data.
-        ContextualSearchUma.logTranslateOnebox(shouldAutoDetectTranslate);
+        ContextualSearchUma.logTranslateOnebox(true);
     }
 
     /**
      * Caches all the native translate language info, so we can avoid repeated JNI calls.
      */
     void cacheNativeTranslateData() {
-        if (!mPolicy.isTranslationEnabled()) return;
+        if (mPolicy.isTranslationDisabled()) return;
 
-        if (!mPolicy.isForceTranslationOneboxDisabled()) {
-            getNativeTranslateServiceTargetLanguage();
-            getNativeAcceptLanguages();
-        }
+        getNativeTranslateServiceTargetLanguage();
+        getNativeAcceptLanguages();
     }
 
     /**
@@ -138,12 +131,10 @@ public class ContextualSearchTranslateController  {
             uniqueLanguages.add(trimLocaleToLanguage(primaryLanguage));
         }
         // Merge in the IME locales, if possible.
-        if (!ContextualSearchFieldTrial.isKeyboardLanguagesForTranslationDisabled()) {
-            Context context = mActivity.getApplicationContext();
-            if (context != null) {
-                for (String locale : UiUtils.getIMELocales(context)) {
-                    if (isValidLocale(locale)) uniqueLanguages.add(trimLocaleToLanguage(locale));
-                }
+        Context context = mActivity.getApplicationContext();
+        if (context != null) {
+            for (String locale : UiUtils.getIMELocales(context)) {
+                if (isValidLocale(locale)) uniqueLanguages.add(trimLocaleToLanguage(locale));
             }
         }
         return uniqueLanguages;
@@ -155,12 +146,10 @@ public class ContextualSearchTranslateController  {
      */
     private List<String> getAcceptLanguages() {
         List<String> result = new ArrayList<String>();
-        if (!ContextualSearchFieldTrial.isAcceptLanguagesForTranslationDisabled()) {
-            String acceptLanguages = getNativeAcceptLanguages();
-            if (!TextUtils.isEmpty(acceptLanguages)) {
-                for (String language : acceptLanguages.split(",")) {
-                    result.add(language);
-                }
+        String acceptLanguages = getNativeAcceptLanguages();
+        if (!TextUtils.isEmpty(acceptLanguages)) {
+            for (String language : acceptLanguages.split(",")) {
+                result.add(language);
             }
         }
         return result;

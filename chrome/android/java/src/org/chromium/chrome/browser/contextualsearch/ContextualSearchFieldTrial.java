@@ -35,30 +35,14 @@ public class ContextualSearchFieldTrial {
     private static final String ENABLE_BLACKLIST = "enable_blacklist";
 
     // Translation.  All these members are private, except for usage by testing.
-    // Master switch, needed to enable any translate code for Contextual Search.
+    // Master switch, needed to disable all translate code for Contextual Search in case of an
+    // emergency.
     @VisibleForTesting
-    static final String ENABLE_TRANSLATION = "enable_translation";
-    // Switch to disable translation, but not logging, used for experiment comparison.
-    @VisibleForTesting
-    static final String DISABLE_FORCE_TRANSLATION_ONEBOX = "disable_force_translation_onebox";
-    // Disables translation when we need to auto-detect the source language (when we don't resolve).
-    @VisibleForTesting
-    static final String DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX =
-            "disable_auto_detect_translation_onebox";
-    // Disables using the keyboard languages to determine the target language.
-    private static final String DISABLE_KEYBOARD_LANGUAGES_FOR_TRANSLATION =
-            "disable_keyboard_languages_for_translation";
-    // Disables using the accept-languages list to determine the target language.
-    private static final String DISABLE_ACCEPT_LANGUAGES_FOR_TRANSLATION =
-            "disable_accept_languages_for_translation";
+    static final String DISABLE_TRANSLATION = "disable_translation";
     // Enables usage of English as the target language even when it's the primary UI language.
     @VisibleForTesting
     static final String ENABLE_ENGLISH_TARGET_TRANSLATION =
             "enable_english_target_translation";
-    // Enables relying on the server to control whether the onebox is actually shown, rather
-    // than checking if translation is needed client-side based on source/target languages.
-    @VisibleForTesting
-    static final String ENABLE_SERVER_CONTROLLED_ONEBOX = "enable_server_controlled_onebox";
 
     // TODO(donnd): remove all supporting code once short-lived data collection is done.
     private static final String SCREEN_TOP_SUPPRESSION_DPS = "screen_top_suppression_dps";
@@ -73,7 +57,7 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLE_AMP_AS_SEPARATE_TAB = "disable_amp_as_separate_tab";
 
     // Privacy-related flags
-    private static final String ENABLE_SEND_HOME_COUNTRY = "enable_send_home_country";
+    private static final String DISABLE_SEND_HOME_COUNTRY = "disable_send_home_country";
 
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
@@ -82,20 +66,15 @@ public class ContextualSearchFieldTrial {
     private static Integer sMandatoryPromoLimit;
     private static Boolean sIsPeekPromoEnabled;
     private static Integer sPeekPromoMaxCount;
-    private static Boolean sIsTranslationEnabled;
-    private static Boolean sIsForceTranslationOneboxDisabled;
-    private static Boolean sIsAutoDetectTranslationOneboxDisabled;
-    private static Boolean sIsAcceptLanguagesForTranslationDisabled;
-    private static Boolean sIsKeyboardLanguagesForTranslationDisabled;
+    private static Boolean sIsTranslationDisabled;
     private static Boolean sIsEnglishTargetTranslationEnabled;
-    private static Boolean sIsServerControlledOneboxEnabled;
     private static Integer sScreenTopSuppressionDps;
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabDisabled;
     private static Boolean sContextualSearchSingleActionsEnabled;
-    private static Boolean sCanSendHomeCountry;
+    private static Boolean sIsSendHomeCountryDisabled;
     private static Boolean sContextualSearchUrlActionsEnabled;
 
     /**
@@ -212,57 +191,13 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether any translate code is enabled.
+     * @return Whether all translate code is disabled.
      */
-    static boolean isTranslationEnabled() {
-        if (sIsTranslationEnabled == null) {
-            sIsTranslationEnabled = getBooleanParam(ENABLE_TRANSLATION);
+    static boolean isTranslationDisabled() {
+        if (sIsTranslationDisabled == null) {
+            sIsTranslationDisabled = getBooleanParam(DISABLE_TRANSLATION);
         }
-        return sIsTranslationEnabled.booleanValue();
-    }
-
-    /**
-     * @return Whether forcing a translation Onebox is disabled.
-     */
-    static boolean isForceTranslationOneboxDisabled() {
-        if (sIsForceTranslationOneboxDisabled == null) {
-            sIsForceTranslationOneboxDisabled = getBooleanParam(DISABLE_FORCE_TRANSLATION_ONEBOX);
-        }
-        return sIsForceTranslationOneboxDisabled.booleanValue();
-    }
-
-    /**
-     * @return Whether forcing a translation Onebox based on auto-detection of the source language
-     *         is disabled.
-     */
-    static boolean isAutoDetectTranslationOneboxDisabled() {
-        if (sIsAutoDetectTranslationOneboxDisabled == null) {
-            sIsAutoDetectTranslationOneboxDisabled = getBooleanParam(
-                    DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX);
-        }
-        return sIsAutoDetectTranslationOneboxDisabled.booleanValue();
-    }
-
-    /**
-     * @return Whether considering accept-languages for translation is disabled.
-     */
-    static boolean isAcceptLanguagesForTranslationDisabled() {
-        if (sIsAcceptLanguagesForTranslationDisabled == null) {
-            sIsAcceptLanguagesForTranslationDisabled = getBooleanParam(
-                    DISABLE_ACCEPT_LANGUAGES_FOR_TRANSLATION);
-        }
-        return sIsAcceptLanguagesForTranslationDisabled.booleanValue();
-    }
-
-    /**
-     * @return Whether considering keyboards for translation is disabled.
-     */
-    static boolean isKeyboardLanguagesForTranslationDisabled() {
-        if (sIsKeyboardLanguagesForTranslationDisabled == null) {
-            sIsKeyboardLanguagesForTranslationDisabled =
-                    getBooleanParam(DISABLE_KEYBOARD_LANGUAGES_FOR_TRANSLATION);
-        }
-        return sIsKeyboardLanguagesForTranslationDisabled.booleanValue();
+        return sIsTranslationDisabled.booleanValue();
     }
 
     /**
@@ -273,16 +208,6 @@ public class ContextualSearchFieldTrial {
             sIsEnglishTargetTranslationEnabled = getBooleanParam(ENABLE_ENGLISH_TARGET_TRANSLATION);
         }
         return sIsEnglishTargetTranslationEnabled.booleanValue();
-    }
-
-    /**
-     * @return Whether relying on server-control of showing the translation one-box is enabled.
-     */
-    static boolean isServerControlledOneboxEnabled() {
-        if (sIsServerControlledOneboxEnabled == null) {
-            sIsServerControlledOneboxEnabled = getBooleanParam(ENABLE_SERVER_CONTROLLED_ONEBOX);
-        }
-        return sIsServerControlledOneboxEnabled.booleanValue();
     }
 
     /**
@@ -340,13 +265,13 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether sending the "home country" to Google is enabled.
+     * @return Whether sending the "home country" to Google is disabled.
      */
-    static boolean isSendHomeCountryEnabled() {
-        if (sCanSendHomeCountry == null) {
-            sCanSendHomeCountry = getBooleanParam(ENABLE_SEND_HOME_COUNTRY);
+    static boolean isSendHomeCountryDisabled() {
+        if (sIsSendHomeCountryDisabled == null) {
+            sIsSendHomeCountryDisabled = getBooleanParam(DISABLE_SEND_HOME_COUNTRY);
         }
-        return sCanSendHomeCountry.booleanValue();
+        return sIsSendHomeCountryDisabled.booleanValue();
     }
 
     // ---------------
