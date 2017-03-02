@@ -480,6 +480,7 @@ post_process_cmdline() {
     soft_enable filter_7bit
     soft_enable reference_buffer
     soft_enable delta_q
+    soft_enable tile_groups
 
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
@@ -504,6 +505,12 @@ post_process_cmdline() {
       log_echo "disabling reference_buffer"
       disable_feature reference_buffer
     fi
+    if enabled ext_tile; then
+      log_echo "ext_tile not compatible with tile_groups, so"
+      log_echo "disabling tile_groups"
+      disable_feature tile_groups
+    fi
+
 }
 
 
