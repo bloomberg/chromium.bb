@@ -49,9 +49,9 @@ def GetParser():
   parser.add_argument('--json_file', type=str, action='store',
                       help='JSON file to send.')
   parser.add_argument('builds', type=str, nargs='*', action='store',
-                      metavar='WATERFALL,TREE,SEVERITY',
+                      metavar='WATERFALL,TREE,SEVERITY|BUILD_ID,SEVERITY',
                       help='Builds to report on.  eg chromeos,elm-release,1000 '
-                           'or chromeos,master-paladin,1001')
+                           'or chromeos,master-paladin,1001 or 1234567,,1000')
   return parser
 
 
@@ -286,10 +286,26 @@ def GenerateAlertsSummary(db, builds=None,
   alerts = []
   now = datetime.datetime.utcnow()
 
-  # Iterate over relvevant masters.
-  for waterfall, build_config, severity in builds:
-    # Find the most recent build, their slaves, and the individual slave stages.
-    master = db.GetMostRecentBuild(waterfall, build_config)
+  # Iterate over relevant masters.
+  # build_tuple is either: waterfall, build_config, severity
+  #  or: build_id, severity
+  for build_tuple in builds:
+    # Find the specified build.
+    if len(build_tuple) == 2:
+      # pylint: disable=unbalanced-tuple-unpacking
+      build_id, severity = build_tuple
+      # pylint: enable=unbalanced-tuple-unpacking
+      master = db.GetBuildStatus(build_id)
+      waterfall = master['waterfall']
+      build_config = master['build_config']
+    elif len(build_tuple) == 3:
+      waterfall, build_config, severity = build_tuple
+      master = db.GetMostRecentBuild(waterfall, build_config)
+    else:
+      logging.error('Invalid build tuple: %s' % str(build_tuple))
+      continue
+
+    # Find any slave builds, and the individual slave stages.
     statuses = db.GetSlaveStatuses(master['id'])
     if len(statuses):
       stages = db.GetSlaveStages(master['id'])
