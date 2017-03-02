@@ -278,11 +278,16 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
                      kDetailCellTopPadding, labelWidth, labelHeight);
   detailTextLabel.frame = LayoutRectGetRect(detailTextLabelLayout);
 
-  // Details should be the URL (|match.contents|). For searches |match.contents|
-  // is the default search engine name, which for mobile we suppress.
-  NSString* detailText = ![self isSearchMatch:match.type]
-                             ? base::SysUTF16ToNSString(match.contents)
-                             : nil;
+  // The detail text should be the URL (|match.contents|) for non-search
+  // suggestions and the entity type (|match.description|) for search entity
+  // suggestions. For all other search suggestions, |match.description| is the
+  // name of the currently selected search engine, which for mobile we suppress.
+  NSString* detailText = nil;
+  if (![self isSearchMatch:match.type])
+    detailText = base::SysUTF16ToNSString(match.contents);
+  else if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY)
+    detailText = base::SysUTF16ToNSString(match.description);
+
   if (answerPresent) {
     detailTextLabel.attributedText =
         [self attributedStringWithAnswerLine:match.answer->second_line()];
@@ -298,11 +303,22 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   } else {
     const ACMatchClassifications* classifications =
         ![self isSearchMatch:match.type] ? &match.contents_class : nil;
+    // The suggestion detail color should match the main text color for entity
+    // suggestions. For non-search suggestions (URLs), a highlight color is used
+    // instead.
+    UIColor* suggestionDetailTextColor = nil;
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
+      suggestionDetailTextColor =
+          _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
+    } else {
+      suggestionDetailTextColor = SuggestionDetailTextColor();
+    }
+    DCHECK(suggestionDetailTextColor);
     detailTextLabel.attributedText =
         [self attributedStringWithString:detailText
                          classifications:classifications
                                smallFont:YES
-                                   color:SuggestionDetailTextColor()
+                                   color:suggestionDetailTextColor
                                 dimColor:DimColor()];
   }
   [detailTextLabel setNeedsDisplay];
@@ -314,7 +330,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
                      0, labelWidth, kTextLabelHeight);
   textLabel.frame = LayoutRectGetRect(textLabelLayout);
 
-  // Match should be search term (match.contents) for searches, otherwise
+  // The text should be search term (|match.contents|) for searches, otherwise
   // page title (|match.description|).
   base::string16 textString =
       [self isSearchMatch:match.type] ? match.contents : match.description;
@@ -363,9 +379,11 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
 
   // Show append button for search history/search suggestions/Physical Web as
   // the right control element (aka an accessory element of a table view cell).
-  BOOL appendableMatch = match.type == AutocompleteMatchType::SEARCH_HISTORY ||
-                         match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
-                         match.type == AutocompleteMatchType::PHYSICAL_WEB;
+  BOOL appendableMatch =
+      match.type == AutocompleteMatchType::SEARCH_HISTORY ||
+      match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
+      match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
+      match.type == AutocompleteMatchType::PHYSICAL_WEB;
   row.appendButton.hidden = !appendableMatch;
   [row.appendButton cancelTrackingWithEvent:nil];
 
@@ -652,6 +670,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
           type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
           type == AutocompleteMatchType::SEARCH_HISTORY ||
           type == AutocompleteMatchType::SEARCH_SUGGEST ||
+          type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
           type == AutocompleteMatchType::SEARCH_OTHER_ENGINE);
 }
 
