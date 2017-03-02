@@ -11,14 +11,14 @@
 #include "android_webview/browser/compositor_id.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 
 struct AwDrawGLInfo;
 
 namespace cc {
-class SurfaceFactory;
+class CompositorFrameSinkSupport;
 class LocalSurfaceIdAllocator;
 }
 
@@ -28,7 +28,7 @@ class ChildFrame;
 class RenderThreadManager;
 class SurfacesInstance;
 
-class HardwareRenderer : public cc::SurfaceFactoryClient {
+class HardwareRenderer : public cc::CompositorFrameSinkSupportClient {
  public:
   // Two rules:
   // 1) Never wait on |new_frame| on the UI thread, or in kModeSync. Otherwise
@@ -49,9 +49,12 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   void CommitFrame();
 
  private:
-  // cc::SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+  // cc::CompositorFrameSinkSupportClient implementation.
+  void DidReceiveCompositorFrameAck() override;
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override;
 
   void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);
   void ReturnResourcesToCompositor(const cc::ReturnedResourceArray& resources,
@@ -60,6 +63,8 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
 
   void AllocateSurface();
   void DestroySurface();
+
+  void CreateNewCompositorFrameSinkSupport();
 
   RenderThreadManager* render_thread_manager_;
 
@@ -83,7 +88,7 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   cc::FrameSinkId frame_sink_id_;
   const std::unique_ptr<cc::LocalSurfaceIdAllocator>
       local_surface_id_allocator_;
-  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   cc::LocalSurfaceId child_id_;
   CompositorID compositor_id_;
   // HardwareRenderer guarantees resources are returned in the order of

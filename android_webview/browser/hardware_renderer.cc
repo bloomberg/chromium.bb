@@ -15,8 +15,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
@@ -30,15 +30,11 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       frame_sink_id_(surfaces_->AllocateFrameSinkId()),
       local_surface_id_allocator_(
           base::MakeUnique<cc::LocalSurfaceIdAllocator>()),
-      surface_factory_(new cc::SurfaceFactory(frame_sink_id_,
-                                              surfaces_->GetSurfaceManager(),
-                                              this)),
       last_committed_compositor_frame_sink_id_(0u),
       last_submitted_compositor_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
   surfaces_->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
-  surfaces_->GetSurfaceManager()->RegisterSurfaceFactoryClient(frame_sink_id_,
-                                                               this);
+  CreateNewCompositorFrameSinkSupport();
 }
 
 HardwareRenderer::~HardwareRenderer() {
@@ -46,9 +42,7 @@ HardwareRenderer::~HardwareRenderer() {
   // resources are returned before resetting.
   if (child_id_.is_valid())
     DestroySurface();
-  surface_factory_.reset();
-  surfaces_->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
-      frame_sink_id_);
+  support_.reset();
   surfaces_->GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 
   // Reset draw constraints.
@@ -115,8 +109,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
       if (child_id_.is_valid())
         DestroySurface();
 
-      // This will return all the resources to the previous compositor.
-      surface_factory_->Reset();
+      CreateNewCompositorFrameSinkSupport();
       compositor_id_ = child_frame_->compositor_id;
       last_submitted_compositor_frame_sink_id_ =
           child_frame_->compositor_frame_sink_id;
@@ -135,9 +128,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
       AllocateSurface();
     }
 
-    surface_factory_->SubmitCompositorFrame(child_id_,
-                                            std::move(*child_compositor_frame),
-                                            cc::SurfaceFactory::DrawCallback());
+    support_->SubmitCompositorFrame(child_id_,
+                                    std::move(*child_compositor_frame));
   }
 
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
@@ -175,23 +167,27 @@ void HardwareRenderer::DestroySurface() {
   DCHECK(child_id_.is_valid());
 
   // Submit an empty frame to force any existing resources to be returned.
-  surface_factory_->SubmitCompositorFrame(child_id_, cc::CompositorFrame(),
-                                          cc::SurfaceFactory::DrawCallback());
+  support_->SubmitCompositorFrame(child_id_, cc::CompositorFrame());
   surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
-  surface_factory_->EvictSurface();
+  support_->EvictFrame();
   child_id_ = cc::LocalSurfaceId();
 }
 
-void HardwareRenderer::ReturnResources(
+void HardwareRenderer::DidReceiveCompositorFrameAck() {}
+
+void HardwareRenderer::OnBeginFrame(const cc::BeginFrameArgs& args) {
+  // TODO(tansell): Hook this up.
+}
+
+void HardwareRenderer::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   ReturnResourcesToCompositor(resources, compositor_id_,
                               last_submitted_compositor_frame_sink_id_);
 }
 
-void HardwareRenderer::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {
-  // TODO(tansell): Hook this up.
-}
+void HardwareRenderer::WillDrawSurface(
+    const cc::LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {}
 
 // static
 ChildFrameQueue HardwareRenderer::WaitAndPruneFrameQueue(
@@ -253,6 +249,14 @@ void HardwareRenderer::ReturnResourcesToCompositor(
     return;
   render_thread_manager_->InsertReturnedResourcesOnRT(resources, compositor_id,
                                                       compositor_frame_sink_id);
+}
+
+void HardwareRenderer::CreateNewCompositorFrameSinkSupport() {
+  support_.reset();
+  support_ = base::MakeUnique<cc::CompositorFrameSinkSupport>(
+      this, surfaces_->GetSurfaceManager(), frame_sink_id_, false /* is_root */,
+      false /* handles_frame_sink_id_invalidation */,
+      true /* needs_sync_points */);
 }
 
 }  // namespace android_webview
