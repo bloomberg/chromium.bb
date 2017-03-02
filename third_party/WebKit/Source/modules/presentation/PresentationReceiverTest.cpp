@@ -86,9 +86,10 @@ class MockWebPresentationClient : public WebPresentationClient {
                     size_t length,
                     const WebPresentationConnectionProxy* proxy));
 
-  MOCK_METHOD2(closeSession,
+  MOCK_METHOD3(closeSession,
                void(const WebURL& presentationUrl,
-                    const WebString& presentationId));
+                    const WebString& presentationId,
+                    const WebPresentationConnectionProxy*));
 
   MOCK_METHOD2(terminateSession,
                void(const WebURL& presentationUrl,

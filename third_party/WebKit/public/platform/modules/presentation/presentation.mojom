@@ -63,6 +63,9 @@ interface PresentationConnection {
 
    // Called when target connection notifies connection state change.
    DidChangeState(PresentationConnectionState state);
+
+   // Called when target connection calls close().
+   OnClose();
 };
 
 interface PresentationService {

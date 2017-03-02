@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <deque>
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -129,8 +129,10 @@ class CONTENT_EXPORT PresentationDispatcher
       const uint8_t* data,
       size_t length,
       const blink::WebPresentationConnectionProxy* connection_proxy) override;
-  void closeSession(const blink::WebURL& presentationUrl,
-                    const blink::WebString& presentationId) override;
+  void closeSession(
+      const blink::WebURL& presentationUrl,
+      const blink::WebString& presentationId,
+      const blink::WebPresentationConnectionProxy* connection_proxy) override;
   void terminateSession(const blink::WebURL& presentationUrl,
                         const blink::WebString& presentationId) override;
   void getAvailability(
@@ -201,7 +203,7 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // Message requests are queued here and only one message at a time is sent
   // over mojo channel.
-  using MessageRequestQueue = std::queue<std::unique_ptr<SendMessageRequest>>;
+  using MessageRequestQueue = std::deque<std::unique_ptr<SendMessageRequest>>;
   MessageRequestQueue message_request_queue_;
 
   enum class ListeningState {

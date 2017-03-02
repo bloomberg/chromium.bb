@@ -162,8 +162,9 @@ void PresentationDispatcher::sendString(
     return;
   }
 
-  message_request_queue_.push(base::WrapUnique(CreateSendTextMessageRequest(
-      presentationUrl, presentationId, message, connection_proxy)));
+  message_request_queue_.push_back(
+      base::WrapUnique(CreateSendTextMessageRequest(
+          presentationUrl, presentationId, message, connection_proxy)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
     DoSendMessage(message_request_queue_.front().get());
@@ -182,10 +183,11 @@ void PresentationDispatcher::sendArrayBuffer(
     return;
   }
 
-  message_request_queue_.push(base::WrapUnique(CreateSendBinaryMessageRequest(
-      presentationUrl, presentationId,
-      blink::mojom::PresentationMessageType::BINARY, data, length,
-      connection_proxy)));
+  message_request_queue_.push_back(
+      base::WrapUnique(CreateSendBinaryMessageRequest(
+          presentationUrl, presentationId,
+          blink::mojom::PresentationMessageType::BINARY, data, length,
+          connection_proxy)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
     DoSendMessage(message_request_queue_.front().get());
@@ -204,10 +206,11 @@ void PresentationDispatcher::sendBlobData(
     return;
   }
 
-  message_request_queue_.push(base::WrapUnique(CreateSendBinaryMessageRequest(
-      presentationUrl, presentationId,
-      blink::mojom::PresentationMessageType::BINARY, data, length,
-      connection_proxy)));
+  message_request_queue_.push_back(
+      base::WrapUnique(CreateSendBinaryMessageRequest(
+          presentationUrl, presentationId,
+          blink::mojom::PresentationMessageType::BINARY, data, length,
+          connection_proxy)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
     DoSendMessage(message_request_queue_.front().get());
@@ -239,7 +242,7 @@ void PresentationDispatcher::HandleSendMessageRequests(bool success) {
     return;
   }
 
-  message_request_queue_.pop();
+  message_request_queue_.pop_front();
   if (!message_request_queue_.empty()) {
     DoSendMessage(message_request_queue_.front().get());
   }
@@ -261,7 +264,19 @@ void PresentationDispatcher::SetControllerConnection(
 
 void PresentationDispatcher::closeSession(
     const blink::WebURL& presentationUrl,
-    const blink::WebString& presentationId) {
+    const blink::WebString& presentationId,
+    const blink::WebPresentationConnectionProxy* connection_proxy) {
+  message_request_queue_.erase(
+      std::remove_if(message_request_queue_.begin(),
+                     message_request_queue_.end(),
+                     [&connection_proxy](
+                         const std::unique_ptr<SendMessageRequest>& request) {
+                       return request->connection_proxy == connection_proxy;
+                     }),
+      message_request_queue_.end());
+
+  connection_proxy->close();
+
   ConnectToPresentationServiceIfNeeded();
   presentation_service_->CloseConnection(presentationUrl,
                                          presentationId.utf8());

@@ -162,8 +162,6 @@ PresentationConnection::~PresentationConnection() {
 void PresentationConnection::bindProxy(
     std::unique_ptr<WebPresentationConnectionProxy> proxy) {
   DCHECK(proxy);
-  // TODO(zhaobin): Restore to DCHECK(!m_proxy) when reconnect() is properly
-  // implemented.
   m_proxy = std::move(proxy);
 }
 
@@ -401,7 +399,7 @@ void PresentationConnection::close() {
   }
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (client)
-    client->closeSession(m_url, m_id);
+    client->closeSession(m_url, m_id, m_proxy.get());
 
   tearDown();
 }

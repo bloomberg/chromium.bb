@@ -31,6 +31,7 @@ class MockPresentationConnectionProxy
                     const OnMessageCallback&));
   MOCK_METHOD1(DidChangeState,
                void(content::PresentationConnectionState state));
+  MOCK_METHOD0(OnClose, void());
 };
 
 class BrowserPresentationConnectionProxyTest : public ::testing::Test {

@@ -13,6 +13,9 @@ namespace blink {
 class WebPresentationConnectionProxy {
  public:
   virtual ~WebPresentationConnectionProxy() = default;
+
+  // Close target connection.
+  virtual void close() const = 0;
 };
 
 }  // namespace blink

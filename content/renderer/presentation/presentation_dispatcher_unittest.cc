@@ -110,6 +110,7 @@ class TestPresentationConnectionProxy : public PresentationConnectionProxy {
   MOCK_CONST_METHOD2(SendConnectionMessageInternal,
                      void(blink::mojom::ConnectionMessage*,
                           const OnMessageCallback&));
+  MOCK_CONST_METHOD0(close, void());
 };
 
 class TestPresentationReceiver : public blink::WebPresentationReceiver {
@@ -492,9 +493,12 @@ TEST_F(PresentationDispatcherTest, TestOnReceiverConnectionAvailable) {
 
 TEST_F(PresentationDispatcherTest, TestCloseSession) {
   base::RunLoop run_loop;
+  TestPresentationConnection connection;
+  TestPresentationConnectionProxy test_proxy(&connection);
+  EXPECT_CALL(test_proxy, close());
   EXPECT_CALL(presentation_service_,
               CloseConnection(gurl1_, presentation_id_.utf8()));
-  dispatcher_.closeSession(url1_, presentation_id_);
+  dispatcher_.closeSession(url1_, presentation_id_, &test_proxy);
   run_loop.RunUntilIdle();
 }
 

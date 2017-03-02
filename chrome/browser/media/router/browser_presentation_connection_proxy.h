@@ -62,6 +62,10 @@ class BrowserPresentationConnectionProxy
   // support state change.
   void DidChangeState(content::PresentationConnectionState state) override {}
 
+  // Underlying media route is always connected. Media route class does not
+  // support state change.
+  void OnClose() override {}
+
  private:
   // |router_| not owned by this class.
   MediaRouter* const router_;

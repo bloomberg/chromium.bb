@@ -187,6 +187,7 @@ class MockPresentationConnection : public blink::mojom::PresentationConnection {
   MOCK_METHOD1(OnConnectionMessageReceived,
                void(const blink::mojom::ConnectionMessage& message));
   MOCK_METHOD1(DidChangeState, void(PresentationConnectionState state));
+  MOCK_METHOD0(OnClose, void());
 };
 
 class MockPresentationServiceClient

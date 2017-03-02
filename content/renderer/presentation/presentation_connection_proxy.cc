@@ -63,15 +63,28 @@ void PresentationConnectionProxy::OnMessage(
 // in a single place.
 void PresentationConnectionProxy::DidChangeState(
     content::PresentationConnectionState state) {
-  if (state != content::PRESENTATION_CONNECTION_STATE_CONNECTED) {
-    // |DidChangeState| should only handle state transition from connecting ->
-    // connected. PresentationService and MRP handles other state transitions.
+  if (state == content::PRESENTATION_CONNECTION_STATE_CONNECTED) {
+    source_connection_->didChangeState(
+        blink::WebPresentationConnectionState::Connected);
+  } else if (state == content::PRESENTATION_CONNECTION_STATE_CLOSED) {
+    source_connection_->didChangeState(
+        blink::WebPresentationConnectionState::Closed);
+  } else {
     NOTREACHED();
-    return;
   }
+}
 
+void PresentationConnectionProxy::OnClose() {
+  DCHECK(target_connection_ptr_);
   source_connection_->didChangeState(
-      blink::WebPresentationConnectionState::Connected);
+      blink::WebPresentationConnectionState::Closed);
+  target_connection_ptr_->DidChangeState(
+      content::PRESENTATION_CONNECTION_STATE_CLOSED);
+}
+
+void PresentationConnectionProxy::close() const {
+  DCHECK(target_connection_ptr_);
+  target_connection_ptr_->OnClose();
 }
 
 ControllerConnectionProxy::ControllerConnectionProxy(
