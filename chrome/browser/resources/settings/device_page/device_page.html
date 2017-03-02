@@ -81,7 +81,7 @@
           <settings-keyboard prefs="{{prefs}}"></settings-keyboard>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/stylus">
+      <template is="dom-if" route-path="/stylus" no-search$="[[!hasStylus_]]">
         <settings-subpage
             associated-control="[[$$('#stylusRow')]]"
             page-title="$i18n{stylusTitle}">

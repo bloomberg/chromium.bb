@@ -334,11 +334,11 @@
             </settings-lock-screen>
           </settings-subpage>
         </template>
-      </template>
-      <template is="dom-if" route-path="/lockScreen/fingerprint">
-        <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
-          <settings-fingerprint-list></settings-fingerprint-list>
-        </settings-subpage>
+        <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
+          <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
+            <settings-fingerprint-list></settings-fingerprint-list>
+          </settings-subpage>
+        </template>
       </template>
       <template is="dom-if" route-path="/accounts">
         <settings-subpage

@@ -18,7 +18,8 @@
     </style>
     <settings-animated-pages id="pages" section="bluetooth">
       <neon-animatable route-path="default">
-        <div class="settings-box two-line" actionable on-tap="onTap_">
+        <div id="bluetoothDevices"
+            class="settings-box two-line" actionable on-tap="onTap_">
           <iron-icon icon="[[getIcon_(bluetoothEnabled_)]]"></iron-icon>
           <div class="middle">
             $i18n{bluetoothPageTitle}
