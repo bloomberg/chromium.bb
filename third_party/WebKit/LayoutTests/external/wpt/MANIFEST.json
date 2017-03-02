@@ -8629,6 +8629,11 @@
      {}
     ]
    ],
+   "dom/nodes/Document-createElement-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/Document-createElement-namespace-expected.txt": [
     [
      {}
@@ -8934,6 +8939,11 @@
      {}
     ]
    ],
+   "dom/nodes/Node-removeChild-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/Node-replaceChild-expected.txt": [
     [
      {}
@@ -9145,231 +9155,6 @@
     ]
    ],
    "domparsing/insert_adjacent_html.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/README": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/backcolor.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/bold.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/createlink.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/delete.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/fontname.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/fontsize.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/forecolor.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/formatblock.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/forwarddelete.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/hilitecolor.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/indent.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/inserthorizontalrule.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/inserthtml.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/insertimage.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/insertlinebreak.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/insertorderedlist.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/insertparagraph.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/inserttext.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/insertunorderedlist.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/italic.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/justifycenter.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/justifyfull.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/justifyleft.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/justifyright.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/misc.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/multitest.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/outdent.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/removeformat.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/strikethrough.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/subscript.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/superscript.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/underline.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/data/unlink.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/include/implementation.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/include/manualtest.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/include/reset.css": [
-    [
-     {}
-    ]
-   ],
-   "editing/include/tests.css": [
-    [
-     {}
-    ]
-   ],
-   "editing/include/tests.js": [
-    [
-     {}
-    ]
-   ],
-   "editing/manual/delete.manual.html": [
-    [
-     {}
-    ]
-   ],
-   "editing/manual/forwarddelete.manual.html": [
-    [
-     {}
-    ]
-   ],
-   "editing/manual/insertlinebreak.manual.html": [
-    [
-     {}
-    ]
-   ],
-   "editing/manual/insertparagraph.manual.html": [
-    [
-     {}
-    ]
-   ],
-   "editing/manual/inserttext.manual.html": [
-    [
-     {}
-    ]
-   ],
-   "editing/manual/inserttext2.manual.html": [
     [
      {}
     ]
@@ -10135,6 +9920,11 @@
     ]
    ],
    "html/browsers/browsing-the-web/navigating-across-documents/href.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling-expected.txt": [
     [
      {}
     ]
@@ -21719,6 +21509,56 @@
      {}
     ]
    ],
+   "selection/Document-open-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-00-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-04-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-12-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-16-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-20-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-24-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-28-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-32-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-36-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "selection/addRange.js": [
     [
      {}
@@ -21939,6 +21779,16 @@
      {}
     ]
    ],
+   "service-workers/service-worker/controller-on-load.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/controller-on-reload.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/extendable-event-async-waituntil.https-expected.txt": [
     [
      {}
@@ -22005,6 +21855,11 @@
     ]
    ],
    "service-workers/service-worker/multi-globals/test-sw.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/multi-globals/url-parsing.https-expected.txt": [
     [
      {}
     ]
@@ -32064,226 +31919,6 @@
    "domxpath/interfaces.html": [
     [
      "/domxpath/interfaces.html",
-     {}
-    ]
-   ],
-   "editing/event.html": [
-    [
-     "/editing/event.html",
-     {}
-    ]
-   ],
-   "editing/other/delete.html": [
-    [
-     "/editing/other/delete.html",
-     {}
-    ]
-   ],
-   "editing/other/restoration.html": [
-    [
-     "/editing/other/restoration.html",
-     {}
-    ]
-   ],
-   "editing/run/backcolor.html": [
-    [
-     "/editing/run/backcolor.html",
-     {}
-    ]
-   ],
-   "editing/run/bold.html": [
-    [
-     "/editing/run/bold.html",
-     {}
-    ]
-   ],
-   "editing/run/createlink.html": [
-    [
-     "/editing/run/createlink.html",
-     {}
-    ]
-   ],
-   "editing/run/delete.html": [
-    [
-     "/editing/run/delete.html",
-     {}
-    ]
-   ],
-   "editing/run/fontname.html": [
-    [
-     "/editing/run/fontname.html",
-     {}
-    ]
-   ],
-   "editing/run/fontsize.html": [
-    [
-     "/editing/run/fontsize.html",
-     {}
-    ]
-   ],
-   "editing/run/forecolor.html": [
-    [
-     "/editing/run/forecolor.html",
-     {}
-    ]
-   ],
-   "editing/run/formatblock.html": [
-    [
-     "/editing/run/formatblock.html",
-     {}
-    ]
-   ],
-   "editing/run/forwarddelete.html": [
-    [
-     "/editing/run/forwarddelete.html",
-     {}
-    ]
-   ],
-   "editing/run/hilitecolor.html": [
-    [
-     "/editing/run/hilitecolor.html",
-     {}
-    ]
-   ],
-   "editing/run/indent.html": [
-    [
-     "/editing/run/indent.html",
-     {}
-    ]
-   ],
-   "editing/run/inserthorizontalrule.html": [
-    [
-     "/editing/run/inserthorizontalrule.html",
-     {}
-    ]
-   ],
-   "editing/run/inserthtml.html": [
-    [
-     "/editing/run/inserthtml.html",
-     {}
-    ]
-   ],
-   "editing/run/insertimage.html": [
-    [
-     "/editing/run/insertimage.html",
-     {}
-    ]
-   ],
-   "editing/run/insertlinebreak.html": [
-    [
-     "/editing/run/insertlinebreak.html",
-     {}
-    ]
-   ],
-   "editing/run/insertorderedlist.html": [
-    [
-     "/editing/run/insertorderedlist.html",
-     {}
-    ]
-   ],
-   "editing/run/insertparagraph.html": [
-    [
-     "/editing/run/insertparagraph.html",
-     {}
-    ]
-   ],
-   "editing/run/inserttext.html": [
-    [
-     "/editing/run/inserttext.html",
-     {}
-    ]
-   ],
-   "editing/run/insertunorderedlist.html": [
-    [
-     "/editing/run/insertunorderedlist.html",
-     {}
-    ]
-   ],
-   "editing/run/italic.html": [
-    [
-     "/editing/run/italic.html",
-     {}
-    ]
-   ],
-   "editing/run/justifycenter.html": [
-    [
-     "/editing/run/justifycenter.html",
-     {
-      "timeout": "long"
-     }
-    ]
-   ],
-   "editing/run/justifyfull.html": [
-    [
-     "/editing/run/justifyfull.html",
-     {}
-    ]
-   ],
-   "editing/run/justifyleft.html": [
-    [
-     "/editing/run/justifyleft.html",
-     {}
-    ]
-   ],
-   "editing/run/justifyright.html": [
-    [
-     "/editing/run/justifyright.html",
-     {}
-    ]
-   ],
-   "editing/run/misc.html": [
-    [
-     "/editing/run/misc.html",
-     {}
-    ]
-   ],
-   "editing/run/multitest.html": [
-    [
-     "/editing/run/multitest.html",
-     {
-      "timeout": "long"
-     }
-    ]
-   ],
-   "editing/run/outdent.html": [
-    [
-     "/editing/run/outdent.html",
-     {}
-    ]
-   ],
-   "editing/run/removeformat.html": [
-    [
-     "/editing/run/removeformat.html",
-     {}
-    ]
-   ],
-   "editing/run/strikethrough.html": [
-    [
-     "/editing/run/strikethrough.html",
-     {}
-    ]
-   ],
-   "editing/run/subscript.html": [
-    [
-     "/editing/run/subscript.html",
-     {}
-    ]
-   ],
-   "editing/run/superscript.html": [
-    [
-     "/editing/run/superscript.html",
-     {}
-    ]
-   ],
-   "editing/run/underline.html": [
-    [
-     "/editing/run/underline.html",
-     {}
-    ]
-   ],
-   "editing/run/unlink.html": [
-    [
-     "/editing/run/unlink.html",
      {}
     ]
    ],
@@ -55320,6 +54955,10 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
+  "./MANIFEST.json": [
+   "49ed1806559e344b58eda2479a32992e41b5ecdd",
+   "support"
+  ],
   "./README.md": [
    "f7f7d6a2bc0bc23e1c5fa3e812f710dc29ed6711",
    "support"
@@ -59948,6 +59587,10 @@
    "996b9979785402a50c73e289f02f6a907ee9c32d",
    "testharness"
   ],
+  "dom/nodes/Document-createElement-expected.txt": [
+   "1f12026ef687874032bd4b392ad586f8d0430696",
+   "support"
+  ],
   "dom/nodes/Document-createElement-namespace-expected.txt": [
    "995a4c14a9eecbdff5730fac16fc8a5adb139ca0",
    "support"
@@ -60527,6 +60170,10 @@
   "dom/nodes/Node-properties.html": [
    "3f783d0f1fdf80fb65598d4d5cb1ff4be11de4a1",
    "testharness"
+  ],
+  "dom/nodes/Node-removeChild-expected.txt": [
+   "ad8e5a08f289c6a795b7accfab81a9f4ae7edd43",
+   "support"
   ],
   "dom/nodes/Node-removeChild.html": [
    "dfeb84db96081cfa4e705457b649a13c3a2c0be8",
@@ -61158,330 +60805,6 @@
   ],
   "domxpath/interfaces.html": [
    "6848bd27f62d93fa527684c5625a42f4dc6470c2",
-   "testharness"
-  ],
-  "editing/README": [
-   "faf2706da35ec626faa833c0498ef1e356584d27",
-   "support"
-  ],
-  "editing/data/backcolor.js": [
-   "a988f4c9e1ee5aa5c1ef1159b4b8b9c260bc8272",
-   "support"
-  ],
-  "editing/data/bold.js": [
-   "42c827538938e385a2c0f33e7fcbf26820fad74c",
-   "support"
-  ],
-  "editing/data/createlink.js": [
-   "3fd0f1356c1036f83f4151790dc3d989b47b7b6a",
-   "support"
-  ],
-  "editing/data/delete.js": [
-   "fef65beefeb76d9fdafd9afbb0fc70a9de3a61f5",
-   "support"
-  ],
-  "editing/data/fontname.js": [
-   "c436324c10eb0b76cae3bb6d162776e8af62ac91",
-   "support"
-  ],
-  "editing/data/fontsize.js": [
-   "0a1a242603bea5199a334843f33a7bc757423ea1",
-   "support"
-  ],
-  "editing/data/forecolor.js": [
-   "4704c7d76160f9fca158bdbe2d84117706aaadd2",
-   "support"
-  ],
-  "editing/data/formatblock.js": [
-   "7ec42b88c07ea41a37ee890bdc9ac5730f5edbb5",
-   "support"
-  ],
-  "editing/data/forwarddelete.js": [
-   "f6495290991e83aa0438e100d1ad8286f44b00b3",
-   "support"
-  ],
-  "editing/data/hilitecolor.js": [
-   "bcf7e39416f394bf2120b04ccb3edaeca7b7f863",
-   "support"
-  ],
-  "editing/data/indent.js": [
-   "10bb2567852a40d480785cd147a0f5cbe888d19b",
-   "support"
-  ],
-  "editing/data/inserthorizontalrule.js": [
-   "1db27b1d9ace51dc47cb1b5f51e2827357a73dd5",
-   "support"
-  ],
-  "editing/data/inserthtml.js": [
-   "8e8c02364a0f5ff7bff12a5446c9896fca5e6886",
-   "support"
-  ],
-  "editing/data/insertimage.js": [
-   "c2e2ad08ea335bb3be59d99de96132366f446eda",
-   "support"
-  ],
-  "editing/data/insertlinebreak.js": [
-   "fd09fb1a5c1f24f53b9a896c073dc3eed5d8cfd5",
-   "support"
-  ],
-  "editing/data/insertorderedlist.js": [
-   "99217ac94529676adc19b8a49460becf92a9d7c4",
-   "support"
-  ],
-  "editing/data/insertparagraph.js": [
-   "6e70f6c308844af53888cd4093580242fd73a275",
-   "support"
-  ],
-  "editing/data/inserttext.js": [
-   "5a0ceb860b775c14a2a096edfc75881eea1909f5",
-   "support"
-  ],
-  "editing/data/insertunorderedlist.js": [
-   "259f57149badc8c124f3e963b6f1d5fbe4e9dbdb",
-   "support"
-  ],
-  "editing/data/italic.js": [
-   "6677c18d063d0444cba053e082edce38ad60822b",
-   "support"
-  ],
-  "editing/data/justifycenter.js": [
-   "d61ca0251b32c1d11db99222bb48dfec4a18c6fa",
-   "support"
-  ],
-  "editing/data/justifyfull.js": [
-   "5f39fc5babb2d785f63a74989bf4d900a03f932d",
-   "support"
-  ],
-  "editing/data/justifyleft.js": [
-   "413a8ebf1501bd136bd4b789c5cec272a9204e9d",
-   "support"
-  ],
-  "editing/data/justifyright.js": [
-   "563d0d450b72d94cf062ec6c74ee1160ed8fc13a",
-   "support"
-  ],
-  "editing/data/misc.js": [
-   "d890db05d5166992d6a9aa5269d60f51a277de8a",
-   "support"
-  ],
-  "editing/data/multitest.js": [
-   "a7a7c79afbc60598311ec40ee630d119653684c8",
-   "support"
-  ],
-  "editing/data/outdent.js": [
-   "98d12d9e2eaadb98ab9580ebac19c1bf372ea5c7",
-   "support"
-  ],
-  "editing/data/removeformat.js": [
-   "a7dce438b92b252bccabaf86488428008df2d721",
-   "support"
-  ],
-  "editing/data/strikethrough.js": [
-   "e6d44fd95d818454b9c84ab76449be23ed7e1c94",
-   "support"
-  ],
-  "editing/data/subscript.js": [
-   "adfce261588df0b26fd2cdd881453a49caa7075d",
-   "support"
-  ],
-  "editing/data/superscript.js": [
-   "0640a4319d8a788e90adfcd8662ec7191080bcce",
-   "support"
-  ],
-  "editing/data/underline.js": [
-   "15c33ca88e2d4a797327cd72b6aba8c2d8aa838a",
-   "support"
-  ],
-  "editing/data/unlink.js": [
-   "b15636f4a5dc2a56712aa5133139244d0ba77624",
-   "support"
-  ],
-  "editing/event.html": [
-   "3b5d234da97509398df8faa0b9070219f785e0b2",
-   "testharness"
-  ],
-  "editing/include/implementation.js": [
-   "70e4aa6c7b5de97024917d05d3a652a30152ded9",
-   "support"
-  ],
-  "editing/include/manualtest.js": [
-   "c1e83d21d815eb57a5b940eae22d0d81680e5cb1",
-   "support"
-  ],
-  "editing/include/reset.css": [
-   "0b33f2454ee6bc4a306092f53b7672a98a27b257",
-   "support"
-  ],
-  "editing/include/tests.css": [
-   "62c0a6151ac8f59e962861b968757a712ecd48e0",
-   "support"
-  ],
-  "editing/include/tests.js": [
-   "30ccc3c37af706c78276459eb5b539262eddb3a8",
-   "support"
-  ],
-  "editing/manual/delete.manual.html": [
-   "2c11496c5db12571faacaebd6bb7b1f756dbf338",
-   "support"
-  ],
-  "editing/manual/forwarddelete.manual.html": [
-   "4ed58171d88661ab0939d5aeb6340e2f24bdcd5d",
-   "support"
-  ],
-  "editing/manual/insertlinebreak.manual.html": [
-   "c83f9b87e0a59246e779795d2f15740b54008d8f",
-   "support"
-  ],
-  "editing/manual/insertparagraph.manual.html": [
-   "b4555f993dccee606bff36076e6605b83f044b25",
-   "support"
-  ],
-  "editing/manual/inserttext.manual.html": [
-   "c1488f03b3319e4f1a2cfb71ebeddde6b0ca96d4",
-   "support"
-  ],
-  "editing/manual/inserttext2.manual.html": [
-   "7a5589f41ab8405d6ed09a4b83bd0c60e2a59677",
-   "support"
-  ],
-  "editing/other/delete.html": [
-   "c812df13215631719f8ff17eee4e0a854684670d",
-   "testharness"
-  ],
-  "editing/other/restoration.html": [
-   "432d9d66ec7621faf22a31960816290193b60aed",
-   "testharness"
-  ],
-  "editing/run/backcolor.html": [
-   "72840bfcf7e62249773e925f79ba196218964373",
-   "testharness"
-  ],
-  "editing/run/bold.html": [
-   "afd5a6f83bea4869dd3e26c3155f42fa97825f31",
-   "testharness"
-  ],
-  "editing/run/createlink.html": [
-   "ec46bf84c1e1a93884e84cd8508fb80954e5509e",
-   "testharness"
-  ],
-  "editing/run/delete.html": [
-   "453817d93bbee28d068b35b79ef2708046380d6e",
-   "testharness"
-  ],
-  "editing/run/fontname.html": [
-   "17e45bc9d2a9fd68eed1ed0f667ad6c594245f69",
-   "testharness"
-  ],
-  "editing/run/fontsize.html": [
-   "ddbe2003d7750c2cae2e314d725a3ec18fe58803",
-   "testharness"
-  ],
-  "editing/run/forecolor.html": [
-   "c30cfc807ebfaff9a0035ffdad4bb594a9fc3c36",
-   "testharness"
-  ],
-  "editing/run/formatblock.html": [
-   "22b79f3cc4c50b902679315d9c391785bfd4b407",
-   "testharness"
-  ],
-  "editing/run/forwarddelete.html": [
-   "8f038ec65ff7ee900792053c87d5a43997f9513c",
-   "testharness"
-  ],
-  "editing/run/hilitecolor.html": [
-   "267c72c439d1b10fa29431cf4051a21e1188aada",
-   "testharness"
-  ],
-  "editing/run/indent.html": [
-   "1bed1283ad3b220b2949c0720cba60105c888ec2",
-   "testharness"
-  ],
-  "editing/run/inserthorizontalrule.html": [
-   "49b66e6425c8d7d8c3c7b63070a745483bcfc46f",
-   "testharness"
-  ],
-  "editing/run/inserthtml.html": [
-   "030d9b7c2a4beeb59771824026bbeca52412f11e",
-   "testharness"
-  ],
-  "editing/run/insertimage.html": [
-   "3e0e8ba9ead38584dd2aff90dcaef951e5516ad0",
-   "testharness"
-  ],
-  "editing/run/insertlinebreak.html": [
-   "03dab78410d2b46b1207f98b0c7558476272eb6c",
-   "testharness"
-  ],
-  "editing/run/insertorderedlist.html": [
-   "4bbd92617b99dcc52e8ec30578293c9807485f4f",
-   "testharness"
-  ],
-  "editing/run/insertparagraph.html": [
-   "85fc96c65b9b7ebde21e6d01f1987ef1eca1de7c",
-   "testharness"
-  ],
-  "editing/run/inserttext.html": [
-   "9d67c24d5c6d3ff7b43b92c6c2a22543a04a5f05",
-   "testharness"
-  ],
-  "editing/run/insertunorderedlist.html": [
-   "3f714f7a4def53a2daa9d44712b76061e2ca7552",
-   "testharness"
-  ],
-  "editing/run/italic.html": [
-   "6a4b267457182ea6de8835db633c1420b84c1c05",
-   "testharness"
-  ],
-  "editing/run/justifycenter.html": [
-   "8cd4e2356ad9f624c3dd60fe3c11879144667ade",
-   "testharness"
-  ],
-  "editing/run/justifyfull.html": [
-   "86c11e290c9cd638d47772f5d768a85032959255",
-   "testharness"
-  ],
-  "editing/run/justifyleft.html": [
-   "ae457fa7fd35d9f8a23c491e0c34035ecaecf910",
-   "testharness"
-  ],
-  "editing/run/justifyright.html": [
-   "a2b6ddbde460033add9355db7667fa01808cf163",
-   "testharness"
-  ],
-  "editing/run/misc.html": [
-   "0120aa0c66d6e53d77cb12f60759138bdd06d19d",
-   "testharness"
-  ],
-  "editing/run/multitest.html": [
-   "76f32abdd5a42bc72e3af19c906a6a4ea85b1758",
-   "testharness"
-  ],
-  "editing/run/outdent.html": [
-   "0888d3530c6a646218f7c5267916dd98960796e7",
-   "testharness"
-  ],
-  "editing/run/removeformat.html": [
-   "2bc4c61e197ef3591509cd7cad0484f879d0bb26",
-   "testharness"
-  ],
-  "editing/run/strikethrough.html": [
-   "b702fc2dfff8245ec6d91f0ab79566ff92a131b3",
-   "testharness"
-  ],
-  "editing/run/subscript.html": [
-   "3c0bb1665e110da97b1d4466dfb3f9baa8d2ade3",
-   "testharness"
-  ],
-  "editing/run/superscript.html": [
-   "1dfa51b6575d008f018c48681c1510e0dc20acc0",
-   "testharness"
-  ],
-  "editing/run/underline.html": [
-   "ac6b3430cf6f21e3d2a09567a6c14ff45ddef913",
-   "testharness"
-  ],
-  "editing/run/unlink.html": [
-   "43917206cc52c52334fdb3112dc6ffc1ce9c0d3c",
    "testharness"
   ],
   "encoding/api-basics.html": [
@@ -62899,6 +62222,10 @@
   "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-query-fragment-components.html": [
    "1278f37be250f761f84bf352ebff8ed4c8a04e96",
    "testharness"
+  ],
+  "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling-expected.txt": [
+   "d9484e71c07c7bbf7e8d7becb940517a501ead4c",
+   "support"
   ],
   "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling.html": [
    "a30db313246ebd786edcc062aed486a954f6f27f",
@@ -84016,13 +83343,25 @@
    "3d220a3cc0e6a05fbc40c0ab0e46a2e60162b2be",
    "testharness"
   ],
+  "selection/Document-open-expected.txt": [
+   "4450a2a693582cf892a9e1b1877250402fbf0ea7",
+   "support"
+  ],
   "selection/Document-open.html": [
    "31a5ee7a3619c62dbd35eafb66725bf4192639a0",
    "testharness"
   ],
+  "selection/addRange-00-expected.txt": [
+   "eedac4c59c749216666bcd60a08711810db36e73",
+   "support"
+  ],
   "selection/addRange-00.html": [
    "e99b95a6bdcba9f4945fb9b03de34ff54469012a",
    "testharness"
+  ],
+  "selection/addRange-04-expected.txt": [
+   "cdd195d7aadd66603ca9c0f5bf2b52cf054b92f2",
+   "support"
   ],
   "selection/addRange-04.html": [
    "c241e1c3a82f09c14bbf217350b2ee0b58c17178",
@@ -84032,29 +83371,57 @@
    "6d51d9f4042e5590483fae60d19351602d6b0aa2",
    "testharness"
   ],
+  "selection/addRange-12-expected.txt": [
+   "c37408236a59467912d31966c48e105b372be787",
+   "support"
+  ],
   "selection/addRange-12.html": [
    "add2e904651f3564741742dc5e1dcb7e3debc50c",
    "testharness"
+  ],
+  "selection/addRange-16-expected.txt": [
+   "d8e9f67a786aea3ea8b94f942663ad69a419c52a",
+   "support"
   ],
   "selection/addRange-16.html": [
    "b8357b81e8cff46960b158f2eff40950aba04158",
    "testharness"
   ],
+  "selection/addRange-20-expected.txt": [
+   "2bc82fd38cd3bd635d3bda05fe3d92bc99f5e98a",
+   "support"
+  ],
   "selection/addRange-20.html": [
    "88fb182b058eae495b92c10a1ddc2bd7768e96cd",
    "testharness"
+  ],
+  "selection/addRange-24-expected.txt": [
+   "fd4aabd6d0ed1531e3adc99411095b501e2be0de",
+   "support"
   ],
   "selection/addRange-24.html": [
    "d6c0ce809239b2bafda14dab540bda45e3e89752",
    "testharness"
   ],
+  "selection/addRange-28-expected.txt": [
+   "a0eb6bab0cdc1093ccad3c96eef6e99895d1a537",
+   "support"
+  ],
   "selection/addRange-28.html": [
    "a2583e4f46561f8b09183186aed7ca137fab26dd",
    "testharness"
   ],
+  "selection/addRange-32-expected.txt": [
+   "c5bc03594b1095dedab19073232291b45f73a31a",
+   "support"
+  ],
   "selection/addRange-32.html": [
    "431ec670ebbcd0d0032fc416bd0910507fa76680",
    "testharness"
+  ],
+  "selection/addRange-36-expected.txt": [
+   "fbed318b78eb54ba405d9b055d92f66bf899cf0a",
+   "support"
   ],
   "selection/addRange-36.html": [
    "9572f7b20ee6891157025e576cf837e496a61669",
@@ -84081,7 +83448,7 @@
    "testharness"
   ],
   "selection/addRange.js": [
-   "36982e3d91452822913d41c41c36d28339cab8a2",
+   "67bd52a4653938061f121ed57ead8d768acdde2b",
    "support"
   ],
   "selection/collapse-00.html": [
@@ -84101,7 +83468,7 @@
    "testharness"
   ],
   "selection/common.js": [
-   "faf1740b23010409c1a26f7e847b75268b947d16",
+   "279c4bf2f03cb1caa26b83a5898adfbf8bef2a5f",
    "support"
   ],
   "selection/deleteFromDocument.html": [
@@ -84137,7 +83504,7 @@
    "testharness"
   ],
   "selection/interfaces-expected.txt": [
-   "db570dc214d7d94698ee7215f8ea35d6e8f23bb5",
+   "ba5cf4a994fc761670c2c21dce9853c8f7acd10e",
    "support"
   ],
   "selection/interfaces.html": [
@@ -84157,7 +83524,7 @@
    "testharness"
   ],
   "selection/removeRange.html": [
-   "c67aebaddeb575fe92b7339f0c2e67209faf468a",
+   "9a4f6531d510b781edd02acae9ffd2453bf48423",
    "testharness"
   ],
   "selection/selectAllChildren.html": [
@@ -84496,12 +83863,20 @@
    "fe9bcecbb8c7379a6f8da0420cc15a36a9e8060b",
    "testharness"
   ],
+  "service-workers/service-worker/controller-on-load.https-expected.txt": [
+   "79771bd7f1231f950e0e5ed72b52d901cbe237d1",
+   "support"
+  ],
   "service-workers/service-worker/controller-on-load.https.html": [
    "57749cf6d4c71446dbe7de7292cb2880a36a9ee2",
    "testharness"
   ],
+  "service-workers/service-worker/controller-on-reload.https-expected.txt": [
+   "ef0dfc48b1396655dfdf7ab6f56325b547587839",
+   "support"
+  ],
   "service-workers/service-worker/controller-on-reload.https.html": [
-   "8402c159967bb6e91903adc52e7d68c8d2443a72",
+   "54a7f90d5d19ca0ecef1c6c4bba8d648268759a5",
    "testharness"
   ],
   "service-workers/service-worker/extendable-event-async-waituntil.https-expected.txt": [
@@ -84714,6 +84089,10 @@
   ],
   "service-workers/service-worker/multi-globals/test-sw.js": [
    "dac89a5658bdfac4df0600647d1fbf82602c4d0b",
+   "support"
+  ],
+  "service-workers/service-worker/multi-globals/url-parsing.https-expected.txt": [
+   "4f9dab45796f2cd0b72fc0816216186b0e4ce75f",
    "support"
   ],
   "service-workers/service-worker/multi-globals/url-parsing.https.html": [

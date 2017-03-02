@@ -243,8 +243,7 @@ external/wpt/dom [ Pass ]
 # external/wpt/domxpath [ Pass ]
 external/wpt/dpub-aam [ Skip ]
 external/wpt/dpub-aria [ Skip ]
-## Owners: dom-dev@chromium.org
-# external/wpt/editing [ Skip ]
+external/wpt/editing [ Skip ]
 ## Owners: jsbell@chromium.org
 # external/wpt/encoding [ Pass ]
 ## Owners: jrummell@chromium.org
