@@ -13,12 +13,24 @@ UkmSource::UkmSource() = default;
 
 UkmSource::~UkmSource() = default;
 
+void UkmSource::UpdateUrl(const GURL& url) {
+  DCHECK(!url_.is_empty());
+  if (url_ == url)
+    return;
+  if (initial_url_.is_empty())
+    initial_url_ = url_;
+  url_ = url;
+}
+
 void UkmSource::PopulateProto(Source* proto_source) const {
   DCHECK(!proto_source->has_id());
   DCHECK(!proto_source->has_url());
+  DCHECK(!proto_source->has_initial_url());
 
   proto_source->set_id(id_);
   proto_source->set_url(url_.spec());
+  if (!initial_url_.is_empty())
+    proto_source->set_initial_url(initial_url_.spec());
 }
 
 }  // namespace ukm

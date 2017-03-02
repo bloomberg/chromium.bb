@@ -9,6 +9,7 @@ namespace ukm {
 UkmServiceTestingHarness::UkmServiceTestingHarness() {
   UkmService::RegisterPrefs(test_prefs_.registry());
   test_prefs_.ClearPref(prefs::kUkmClientId);
+  test_prefs_.ClearPref(prefs::kUkmSessionId);
   test_prefs_.ClearPref(prefs::kUkmPersistedLogs);
 
   test_ukm_service_ = base::MakeUnique<TestUkmService>(&test_prefs_);

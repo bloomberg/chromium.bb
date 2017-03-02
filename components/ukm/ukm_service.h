@@ -158,6 +158,9 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // The UKM client id stored in prefs.
   uint64_t client_id_;
 
+  // The UKM session id stored in prefs.
+  int32_t session_id_;
+
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
   metrics::MetricsServiceClient* const client_;

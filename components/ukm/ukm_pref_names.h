@@ -12,6 +12,7 @@ namespace prefs {
 // component. Keep alphabetized, and document each in the .cc file.
 extern const char kUkmClientId[];
 extern const char kUkmPersistedLogs[];
+extern const char kUkmSessionId[];
 
 }  // namespace prefs
 }  // namespace ukm

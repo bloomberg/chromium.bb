@@ -9,7 +9,7 @@ package ukm;
 option optimize_for = LITE_RUNTIME;
 
 // Source contains data related to a top-level navigation.
-// Next tag: 6
+// Next tag: 7
 message Source {
   // An identifier for the source. This should be unique within a session.
   optional int32 id = 1;
@@ -21,6 +21,11 @@ message Source {
   // The origin of the URL. This is reserved to be used by server side only.
   reserved 5;
   reserved "url_origin";
+
+  // The initial URL of the source. Set in cases where the source URL changed
+  // (e.g. it was redirected), otherwise unset. If this URL has not been
+  // discovered by Google's crawler, it should not be recorded.
+  optional string initial_url = 6;
 
   // Timestamp of navigation to this Source, as seen by the client. Time of
   // events related to this Source will generally be relative to this timestamp.

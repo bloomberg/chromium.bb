@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,7 +31,6 @@
 #include "components/ukm/ukm_entry_builder.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_source.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace ukm {
 
@@ -71,10 +71,20 @@ const size_t kMaxEntries = 5000;
 
 std::string GetServerUrl() {
   std::string server_url =
-      variations::GetVariationParamValueByFeature(kUkmFeature, "ServerUrl");
+      base::GetFieldTrialParamValueByFeature(kUkmFeature, "ServerUrl");
   if (!server_url.empty())
     return server_url;
   return kDefaultServerUrl;
+}
+
+bool ShouldRecordInitialUrl() {
+  return base::GetFieldTrialParamByFeatureAsBool(kUkmFeature,
+                                                 "RecordInitialUrl", false);
+}
+
+bool ShouldRecordSessionId() {
+  return base::GetFieldTrialParamByFeatureAsBool(kUkmFeature, "RecordSessionId",
+                                                 false);
 }
 
 // Generates a new client id and stores it in prefs.
@@ -83,6 +93,9 @@ uint64_t GenerateClientId(PrefService* pref_service) {
   while (!client_id)
     client_id = base::RandUint64();
   pref_service->SetInt64(prefs::kUkmClientId, client_id);
+
+  // Also reset the session id counter.
+  pref_service->SetInteger(prefs::kUkmSessionId, 0);
   return client_id;
 }
 
@@ -91,6 +104,13 @@ uint64_t LoadOrGenerateClientId(PrefService* pref_service) {
   if (!client_id)
     client_id = GenerateClientId(pref_service);
   return client_id;
+}
+
+int32_t LoadSessionId(PrefService* pref_service) {
+  int32_t session_id = pref_service->GetInteger(prefs::kUkmSessionId);
+  ++session_id;  // increment session id, once per session
+  pref_service->SetInteger(prefs::kUkmSessionId, session_id);
+  return session_id;
 }
 
 enum class DroppedDataReason {
@@ -120,6 +140,8 @@ UkmService::UkmService(PrefService* pref_service,
                        metrics::MetricsServiceClient* client)
     : pref_service_(pref_service),
       recording_enabled_(false),
+      client_id_(0),
+      session_id_(0),
       client_(client),
       persisted_logs_(std::unique_ptr<ukm::PersistedLogsMetricsImpl>(
                           new ukm::PersistedLogsMetricsImpl()),
@@ -158,6 +180,7 @@ UkmService::~UkmService() {
 
 void UkmService::Initialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!initialize_started_);
   DVLOG(1) << "UkmService::Initialize";
   initialize_started_ = true;
 
@@ -244,8 +267,11 @@ void UkmService::Purge() {
   entries_.clear();
 }
 
+// TODO(bmcquade): rename this to something more generic, like
+// ResetClientState. Consider resetting all prefs here.
 void UkmService::ResetClientId() {
   client_id_ = GenerateClientId(pref_service_);
+  session_id_ = LoadSessionId(pref_service_);
 }
 
 void UkmService::RegisterMetricsProvider(
@@ -256,6 +282,7 @@ void UkmService::RegisterMetricsProvider(
 // static
 void UkmService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUkmClientId, 0);
+  registry->RegisterIntegerPref(prefs::kUkmSessionId, 0);
   registry->RegisterListPref(prefs::kUkmPersistedLogs);
 }
 
@@ -263,6 +290,7 @@ void UkmService::StartInitTask() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::StartInitTask";
   client_id_ = LoadOrGenerateClientId(pref_service_);
+  session_id_ = LoadSessionId(pref_service_);
   client_->InitializeSystemProfileMetrics(base::Bind(
       &UkmService::FinishedInitTask, self_ptr_factory_.GetWeakPtr()));
 }
@@ -294,10 +322,14 @@ void UkmService::BuildAndStoreLog() {
 
   Report report;
   report.set_client_id(client_id_);
+  if (ShouldRecordSessionId())
+    report.set_session_id(session_id_);
 
   for (const auto& source : sources_) {
     Source* proto_source = report.add_sources();
     source->PopulateProto(proto_source);
+    if (!ShouldRecordInitialUrl())
+      proto_source->clear_initial_url();
   }
   for (const auto& entry : entries_) {
     Entry* proto_entry = report.add_entries();
@@ -423,7 +455,7 @@ void UkmService::UpdateSourceURL(int32_t source_id, const GURL& url) {
     if (source_id != source->id())
       continue;
 
-    source->set_url(url);
+    source->UpdateUrl(url);
     return;
   }
 

@@ -13,11 +13,17 @@ import "ukm/source.proto";
 import "system_profile.proto";
 
 // This is the message type sent from Chrome to the UKM collector.
-// Next tag: 5
+// Next tag: 6
 message Report {
   // A unique identifier for a Chrome install. This ID should be used only
   // in UKM reports, and not linked to any other data sources.
   optional fixed64 client_id = 1;
+
+  // The session id for this record. This id is unique within a
+  // particular Chrome session. The client keeps track of the session id
+  // and sends it with each record. The session id is simply an integer
+  // that is incremented each time the user relaunches Chrome.
+  optional int32 session_id = 5;
 
   // Information about the user's browser and system configuration.
   optional metrics.SystemProfileProto system_profile = 2;

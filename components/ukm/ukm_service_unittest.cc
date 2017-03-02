@@ -4,11 +4,13 @@
 
 #include "components/ukm/ukm_service.h"
 
+#include <map>
 #include <string>
 #include <utility>
 
 #include "base/hash.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/proto/ukm/report.pb.h"
@@ -20,6 +22,7 @@
 #include "components/ukm/ukm_entry_builder.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_source.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 
@@ -27,13 +30,63 @@ namespace ukm {
 
 namespace {
 
+// TODO(rkaplow): consider making this a generic testing class in
+// components/variations.
+class ScopedUkmFeatureParams {
+ public:
+  ScopedUkmFeatureParams(
+      base::FeatureList::OverrideState feature_state,
+      const std::map<std::string, std::string>& variation_params) {
+    static const char kTestFieldTrialName[] = "TestTrial";
+    static const char kTestExperimentGroupName[] = "TestGroup";
+
+    variations::testing::ClearAllVariationParams();
+
+    EXPECT_TRUE(variations::AssociateVariationParams(
+        kTestFieldTrialName, kTestExperimentGroupName, variation_params));
+
+    base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
+        kTestFieldTrialName, kTestExperimentGroupName);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(kUkmFeature.name, feature_state,
+                                             field_trial);
+
+    // Since we are adding a scoped feature list after browser start, copy over
+    // the existing feature list to prevent inconsistency.
+    base::FeatureList* existing_feature_list = base::FeatureList::GetInstance();
+    if (existing_feature_list) {
+      std::string enabled_features;
+      std::string disabled_features;
+      base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
+                                                            &disabled_features);
+      feature_list->InitializeFromCommandLine(enabled_features,
+                                              disabled_features);
+    }
+
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
+  ~ScopedUkmFeatureParams() { variations::testing::ClearAllVariationParams(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedUkmFeatureParams);
+};
+
 class UkmServiceTest : public testing::Test {
  public:
   UkmServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         task_runner_handle_(task_runner_) {
     UkmService::RegisterPrefs(prefs_.registry());
+    ClearPrefs();
+  }
+
+  void ClearPrefs() {
     prefs_.ClearPref(prefs::kUkmClientId);
+    prefs_.ClearPref(prefs::kUkmSessionId);
     prefs_.ClearPref(prefs::kUkmPersistedLogs);
   }
 
@@ -126,6 +179,8 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   service.EnableReporting();
 
   int32_t id = UkmService::GetNewSourceID();
+  service.UpdateSourceURL(id, GURL("https://google.com/initial"));
+  service.UpdateSourceURL(id, GURL("https://google.com/intermediate"));
   service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   service.Flush();
@@ -133,10 +188,12 @@ TEST_F(UkmServiceTest, SourceSerialization) {
 
   Report proto_report = GetPersistedReport();
   EXPECT_EQ(1, proto_report.sources_size());
+  EXPECT_FALSE(proto_report.has_session_id());
   const Source& proto_source = proto_report.sources(0);
 
   EXPECT_EQ(id, proto_source.id());
   EXPECT_EQ(GURL("https://google.com/foobar").spec(), proto_source.url());
+  EXPECT_FALSE(proto_source.has_initial_url());
 }
 
 TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
@@ -318,6 +375,69 @@ TEST_F(UkmServiceTest, GetNewSourceID) {
   EXPECT_NE(id1, id2);
   EXPECT_NE(id1, id3);
   EXPECT_NE(id2, id3);
+}
+
+TEST_F(UkmServiceTest, RecordInitialUrl) {
+  for (bool should_record_initial_url : {true, false}) {
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    ScopedUkmFeatureParams params(
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        {{"RecordInitialUrl", should_record_initial_url ? "true" : "false"}});
+
+    ClearPrefs();
+    UkmService service(&prefs_, &client_);
+    EXPECT_EQ(GetPersistedLogCount(), 0);
+    service.Initialize();
+    task_runner_->RunUntilIdle();
+    service.EnableRecording();
+    service.EnableReporting();
+
+    int32_t id = UkmService::GetNewSourceID();
+    service.UpdateSourceURL(id, GURL("https://google.com/initial"));
+    service.UpdateSourceURL(id, GURL("https://google.com/intermediate"));
+    service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+
+    service.Flush();
+    EXPECT_EQ(GetPersistedLogCount(), 1);
+
+    Report proto_report = GetPersistedReport();
+    EXPECT_EQ(1, proto_report.sources_size());
+    const Source& proto_source = proto_report.sources(0);
+
+    EXPECT_EQ(id, proto_source.id());
+    EXPECT_EQ(GURL("https://google.com/foobar").spec(), proto_source.url());
+    EXPECT_EQ(should_record_initial_url, proto_source.has_initial_url());
+    if (should_record_initial_url) {
+      EXPECT_EQ(GURL("https://google.com/initial").spec(),
+                proto_source.initial_url());
+    }
+  }
+}
+
+TEST_F(UkmServiceTest, RecordSessionId) {
+  for (bool should_record_session_id : {true, false}) {
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    ScopedUkmFeatureParams params(
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        {{"RecordSessionId", should_record_session_id ? "true" : "false"}});
+
+    ClearPrefs();
+    UkmService service(&prefs_, &client_);
+    EXPECT_EQ(GetPersistedLogCount(), 0);
+    service.Initialize();
+    task_runner_->RunUntilIdle();
+    service.EnableRecording();
+    service.EnableReporting();
+
+    int32_t id = UkmService::GetNewSourceID();
+    service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+
+    service.Flush();
+    EXPECT_EQ(GetPersistedLogCount(), 1);
+
+    Report proto_report = GetPersistedReport();
+    EXPECT_EQ(should_record_session_id, proto_report.has_session_id());
+  }
 }
 
 }  // namespace ukm
