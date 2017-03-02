@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/selection_bound.h"
 
@@ -29,13 +29,15 @@ class ViewAndroid;
 class WindowAndroidCompositor;
 
 class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
-    : public cc::SurfaceFactoryClient {
+    : public cc::CompositorFrameSinkSupportClient,
+      public cc::ExternalBeginFrameSourceClient {
  public:
   class Client {
    public:
     virtual void SetBeginFrameSource(
         cc::BeginFrameSource* begin_frame_source) = 0;
-    virtual void ReturnResources(const cc::ReturnedResourceArray&) = 0;
+    virtual void DidReceiveCompositorFrameAck() = 0;
+    virtual void ReclaimResources(const cc::ReturnedResourceArray&) = 0;
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
@@ -45,8 +47,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   ~DelegatedFrameHostAndroid() override;
 
-  void SubmitCompositorFrame(cc::CompositorFrame frame,
-                             cc::SurfaceFactory::DrawCallback draw_callback);
+  void SubmitCompositorFrame(cc::CompositorFrame frame);
 
   void DestroyDelegatedContent();
 
@@ -68,9 +69,18 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void DetachFromCompositor();
 
  private:
-  // cc::SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+  // cc::CompositorFrameSinkSupportClient implementation.
+  void DidReceiveCompositorFrameAck() override;
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override;
+
+  // cc::ExternalBeginFrameSourceClient implementation.
+  void OnNeedsBeginFrames(bool needs_begin_frames) override;
+  void OnDidFinishFrame(const cc::BeginFrameAck& ack) override;
+
+  void CreateNewCompositorFrameSinkSupport();
 
   const cc::FrameSinkId frame_sink_id_;
 
@@ -81,7 +91,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 
-  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
+  cc::ExternalBeginFrameSource begin_frame_source_;
 
   struct FrameData {
     FrameData();

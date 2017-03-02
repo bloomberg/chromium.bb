@@ -983,7 +983,11 @@ void RenderWidgetHostViewAndroid::SendReclaimCompositorResources(
   surface_returned_resources_.clear();
 }
 
-void RenderWidgetHostViewAndroid::ReturnResources(
+void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck() {
+  RunAckCallbacks();
+}
+
+void RenderWidgetHostViewAndroid::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   if (resources.empty())
     return;
@@ -1034,11 +1038,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   if (!has_content) {
     DestroyDelegatedContent();
   } else {
-    cc::SurfaceFactory::DrawCallback ack_callback =
-        base::Bind(&RenderWidgetHostViewAndroid::RunAckCallbacks,
-                   weak_ptr_factory_.GetWeakPtr());
-    delegated_frame_host_->SubmitCompositorFrame(std::move(frame),
-                                                 ack_callback);
+    delegated_frame_host_->SubmitCompositorFrame(std::move(frame));
     frame_evictor_->SwappedFrame(!host_->is_hidden());
   }
 

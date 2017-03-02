@@ -58,20 +58,20 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     : frame_sink_id_(frame_sink_id),
       view_(view),
       surface_manager_(surface_manager),
-      client_(client) {
+      client_(client),
+      begin_frame_source_(this) {
   DCHECK(view_);
   DCHECK(client_);
 
   local_surface_id_allocator_.reset(new cc::LocalSurfaceIdAllocator());
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
-  surface_factory_ = base::WrapUnique(
-      new cc::SurfaceFactory(frame_sink_id_, surface_manager_, this));
+  CreateNewCompositorFrameSinkSupport();
 }
 
 DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
   DestroyDelegatedContent();
-  surface_factory_.reset();
   DetachFromCompositor();
+  support_.reset();
   surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
@@ -80,8 +80,7 @@ DelegatedFrameHostAndroid::FrameData::FrameData() = default;
 DelegatedFrameHostAndroid::FrameData::~FrameData() = default;
 
 void DelegatedFrameHostAndroid::SubmitCompositorFrame(
-    cc::CompositorFrame frame,
-    cc::SurfaceFactory::DrawCallback draw_callback) {
+    cc::CompositorFrame frame) {
   cc::RenderPass* root_pass = frame.render_pass_list.back().get();
   gfx::Size surface_size = root_pass->output_rect.size();
 
@@ -115,18 +114,18 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     current_frame_->has_transparent_background =
         root_pass->has_transparent_background;
     current_frame_->viewport_selection = frame.metadata.selection;
-    surface_factory_->SubmitCompositorFrame(current_frame_->local_surface_id,
-                                            std::move(frame), draw_callback);
+    support_->SubmitCompositorFrame(current_frame_->local_surface_id,
+                                    std::move(frame));
 
     content_layer_ = CreateSurfaceLayer(
-        surface_manager_, cc::SurfaceId(surface_factory_->frame_sink_id(),
-                                        current_frame_->local_surface_id),
+        surface_manager_,
+        cc::SurfaceId(frame_sink_id_, current_frame_->local_surface_id),
         current_frame_->surface_size,
         !current_frame_->has_transparent_background);
     view_->GetLayer()->AddChild(content_layer_);
   } else {
-    surface_factory_->SubmitCompositorFrame(current_frame_->local_surface_id,
-                                            std::move(frame), draw_callback);
+    support_->SubmitCompositorFrame(current_frame_->local_surface_id,
+                                    std::move(frame));
   }
 }
 
@@ -142,8 +141,8 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
   DCHECK(!result_callback.is_null());
 
   scoped_refptr<cc::Layer> readback_layer = CreateSurfaceLayer(
-      surface_manager_, cc::SurfaceId(surface_factory_->frame_sink_id(),
-                                      current_frame_->local_surface_id),
+      surface_manager_,
+      cc::SurfaceId(frame_sink_id_, current_frame_->local_surface_id),
       current_frame_->surface_size,
       !current_frame_->has_transparent_background);
   readback_layer->SetHideLayerAndSubtree(true);
@@ -155,7 +154,7 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
   if (!src_subrect_in_pixel.IsEmpty())
     copy_output_request->set_area(src_subrect_in_pixel);
 
-  surface_factory_->RequestCopyOfSurface(std::move(copy_output_request));
+  support_->RequestCopyOfSurface(std::move(copy_output_request));
 }
 
 void DelegatedFrameHostAndroid::DestroyDelegatedContent() {
@@ -166,7 +165,7 @@ void DelegatedFrameHostAndroid::DestroyDelegatedContent() {
 
   content_layer_->RemoveFromParent();
   content_layer_ = nullptr;
-  surface_factory_->EvictSurface();
+  support_->EvictFrame();
   current_frame_.reset();
 }
 
@@ -176,34 +175,59 @@ bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
 
 void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
   DestroyDelegatedContent();
-  surface_factory_->Reset();
+  CreateNewCompositorFrameSinkSupport();
+  if (registered_parent_compositor_)
+    AttachToCompositor(registered_parent_compositor_);
 }
 
 void DelegatedFrameHostAndroid::AttachToCompositor(
     WindowAndroidCompositor* compositor) {
   if (registered_parent_compositor_)
     DetachFromCompositor();
-  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
   compositor->AddChildFrameSink(frame_sink_id_);
+  client_->SetBeginFrameSource(&begin_frame_source_);
   registered_parent_compositor_ = compositor;
 }
 
 void DelegatedFrameHostAndroid::DetachFromCompositor() {
   if (!registered_parent_compositor_)
     return;
-  surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
+  client_->SetBeginFrameSource(nullptr);
+  support_->SetNeedsBeginFrame(false);
   registered_parent_compositor_->RemoveChildFrameSink(frame_sink_id_);
   registered_parent_compositor_ = nullptr;
 }
 
-void DelegatedFrameHostAndroid::ReturnResources(
-    const cc::ReturnedResourceArray& resources) {
-  client_->ReturnResources(resources);
+void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck() {
+  client_->DidReceiveCompositorFrameAck();
 }
 
-void DelegatedFrameHostAndroid::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {
-  client_->SetBeginFrameSource(begin_frame_source);
+void DelegatedFrameHostAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
+  begin_frame_source_.OnBeginFrame(args);
+}
+
+void DelegatedFrameHostAndroid::ReclaimResources(
+    const cc::ReturnedResourceArray& resources) {
+  client_->ReclaimResources(resources);
+}
+
+void DelegatedFrameHostAndroid::WillDrawSurface(
+    const cc::LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {}
+
+void DelegatedFrameHostAndroid::OnNeedsBeginFrames(bool needs_begin_frames) {
+  support_->SetNeedsBeginFrame(needs_begin_frames);
+}
+
+void DelegatedFrameHostAndroid::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
+}
+
+void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
+  support_.reset();
+  support_ = base::MakeUnique<cc::CompositorFrameSinkSupport>(
+      this, surface_manager_, frame_sink_id_, false /* is_root */,
+      false /* handles_frame_sink_id_invalidation */,
+      true /* needs_sync_points */);
 }
 
 }  // namespace ui
