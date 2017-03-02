@@ -224,6 +224,8 @@ blink_core_sources("html") {
     "LinkStyle.h",
     "ListedElement.cpp",
     "ListedElement.h",
+    "MediaCustomControlsFullscreenDetector.cpp",
+    "MediaCustomControlsFullscreenDetector.h",
     "MediaDocument.cpp",
     "MediaDocument.h",
     "MediaError.h",

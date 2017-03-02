@@ -272,6 +272,14 @@ class WebMediaPlayer {
   // WebMediaPlayerClient::activateViewportIntersectionMonitoring().
   virtual void becameDominantVisibleContent(bool isDominant) {}
 
+  // Inform WebMediaPlayer when the element starts/stops being the effectively
+  // fullscreen video, i.e. being the fullscreen element or child of the
+  // fullscreen element, and being dominant in the viewport.
+  //
+  // TODO(zqzhang): merge with becameDominantVisibleContent(). See
+  // https://crbug.com/696211
+  virtual void setIsEffectivelyFullscreen(bool) {}
+
   virtual void enabledAudioTracksChanged(
       const WebVector<TrackId>& enabledTrackIds) {}
   // |selectedTrackId| is null if no track is selected.

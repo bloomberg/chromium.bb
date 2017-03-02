@@ -42,6 +42,7 @@ class GLES2Interface;
 namespace blink {
 class ExceptionState;
 class ImageBitmapOptions;
+class MediaCustomControlsFullscreenDetector;
 
 class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                                            public CanvasImageSource,
@@ -121,6 +122,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                                   ExceptionState&) override;
 
  private:
+  friend class MediaCustomControlsFullscreenDetectorTest;
+
   HTMLVideoElement(Document&);
 
   bool layoutObjectIsNeeded(const ComputedStyle&) override;
@@ -139,6 +142,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void setDisplayMode(DisplayMode) override;
 
   Member<HTMLImageLoader> m_imageLoader;
+  Member<MediaCustomControlsFullscreenDetector>
+      m_customControlsFullscreenDetector;
 
   AtomicString m_defaultPosterURL;
 };

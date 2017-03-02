@@ -25,6 +25,7 @@
 
 #include "core/html/HTMLVideoElement.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
@@ -36,6 +37,7 @@
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
+#include "core/html/MediaCustomControlsFullscreenDetector.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/layout/LayoutImage.h"
@@ -46,14 +48,15 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/WebCanvas.h"
-#include <memory>
 
 namespace blink {
 
 using namespace HTMLNames;
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
-    : HTMLMediaElement(videoTag, document) {
+    : HTMLMediaElement(videoTag, document),
+      m_customControlsFullscreenDetector(
+          new MediaCustomControlsFullscreenDetector(*this)) {
   if (document.settings()) {
     m_defaultPosterURL =
         AtomicString(document.settings()->getDefaultVideoPosterURL());
@@ -69,6 +72,7 @@ HTMLVideoElement* HTMLVideoElement::create(Document& document) {
 
 DEFINE_TRACE(HTMLVideoElement) {
   visitor->trace(m_imageLoader);
+  visitor->trace(m_customControlsFullscreenDetector);
   HTMLMediaElement::trace(visitor);
 }
 
@@ -277,6 +281,7 @@ bool HTMLVideoElement::usesOverlayFullscreenVideo() const {
 void HTMLVideoElement::didMoveToNewDocument(Document& oldDocument) {
   if (m_imageLoader)
     m_imageLoader->elementDidMoveToNewDocument();
+
   HTMLMediaElement::didMoveToNewDocument(oldDocument);
 }
 

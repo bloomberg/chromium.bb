@@ -365,7 +365,6 @@ void WebMediaPlayerImpl::enteredFullscreen() {
   }
   if (observer_)
     observer_->OnEnteredFullscreen();
-  delegate_->SetIsEffectivelyFullscreen(delegate_id_, true);
 }
 
 void WebMediaPlayerImpl::exitedFullscreen() {
@@ -375,12 +374,16 @@ void WebMediaPlayerImpl::exitedFullscreen() {
     DisableOverlay();
   if (observer_)
     observer_->OnExitedFullscreen();
-  delegate_->SetIsEffectivelyFullscreen(delegate_id_, false);
 }
 
 void WebMediaPlayerImpl::becameDominantVisibleContent(bool isDominant) {
   if (observer_)
     observer_->OnBecameDominantVisibleContent(isDominant);
+}
+
+void WebMediaPlayerImpl::setIsEffectivelyFullscreen(
+    bool isEffectivelyFullscreen) {
+  delegate_->SetIsEffectivelyFullscreen(delegate_id_, isEffectivelyFullscreen);
 }
 
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,

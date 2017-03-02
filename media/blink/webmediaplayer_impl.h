@@ -184,6 +184,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void enteredFullscreen() override;
   void exitedFullscreen() override;
   void becameDominantVisibleContent(bool isDominant) override;
+  void setIsEffectivelyFullscreen(bool isEffectivelyFullscreen) override;
 
   void setPoster(const blink::WebURL& poster) override;
 
