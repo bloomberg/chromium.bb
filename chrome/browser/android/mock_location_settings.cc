@@ -32,3 +32,14 @@ bool MockLocationSettings::CanSitesRequestLocationPermission(
   return IsMasterLocationSettingEnabled() &&
       IsGoogleAppsLocationSettingEnabled();
 }
+
+bool MockLocationSettings::CanPromptToEnableSystemLocationSetting() {
+  return false;
+}
+
+void MockLocationSettings::PromptToEnableSystemLocationSetting(
+    const LocationSettingsDialogContext prompt_context,
+    content::WebContents* web_contents,
+    LocationSettingsDialogOutcomeCallback callback) {
+  std::move(callback).Run(LocationSettingsDialogOutcome::NO_PROMPT);
+}

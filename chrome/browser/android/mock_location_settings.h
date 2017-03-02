@@ -19,6 +19,13 @@ class MockLocationSettings : public LocationSettings {
   bool CanSitesRequestLocationPermission(
       content::WebContents* web_contents) override;
 
+  bool CanPromptToEnableSystemLocationSetting() override;
+
+  void PromptToEnableSystemLocationSetting(
+      const LocationSettingsDialogContext prompt_context,
+      content::WebContents* web_contents,
+      LocationSettingsDialogOutcomeCallback callback) override;
+
   bool IsMasterLocationSettingEnabled();
   bool IsGoogleAppsLocationSettingEnabled();
 

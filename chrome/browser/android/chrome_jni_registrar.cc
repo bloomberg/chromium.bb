@@ -56,6 +56,7 @@
 #include "chrome/browser/android/instantapps/instant_apps_settings.h"
 #include "chrome/browser/android/large_icon_bridge.h"
 #include "chrome/browser/android/locale/special_locale_handler.h"
+#include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/logo_bridge.h"
 #include "chrome/browser/android/metrics/launch_metrics.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
@@ -312,6 +313,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"LaunchMetrics", metrics::RegisterLaunchMetrics},
     {"LayerTitleCache", RegisterLayerTitleCache},
     {"SpecialLocaleHandler", RegisterSpecialLocaleHandler},
+    {"LocationSettingsImpl", LocationSettingsImpl::Register},
     {"LogoBridge", RegisterLogoBridge},
     {"MediaDrmCredentialManager",
      MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},

@@ -14,10 +14,14 @@ import android.provider.Settings;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.components.location.LocationSettingsDialogContext.LocationSettingsDialogContextEnum;
+import org.chromium.components.location.LocationSettingsDialogOutcome.LocationSettingsDialogOutcomeEnum;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Provides methods for querying Chrome's ability to use Android's location services.
@@ -80,6 +84,31 @@ public class LocationUtils {
             return !TextUtils.isEmpty(Settings.Secure.getString(
                     context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED));
         }
+    }
+
+    /**
+     * Returns true iff a prompt can be triggered to ask the user to turn on the system location
+     * setting on their device.
+     *
+     * <p>In particular, returns false if the system location setting is already enabled or if some
+     * of the features required to trigger a system location setting prompt are not available.
+     */
+    public boolean canPromptToEnableSystemLocationSetting() {
+        return false;
+    }
+
+    /**
+     * Triggers a prompt to ask the user to turn on the system location setting on their device.
+     *
+     * <p>The prompt will be triggered within the specified window.
+     *
+     * <p>The callback is guaranteed to be called unless the user never replies to the prompt
+     * dialog, which in practice happens very infrequently since the dialog is modal.
+     */
+    public void promptToEnableSystemLocationSetting(
+            @LocationSettingsDialogContextEnum int promptContext, WindowAndroid window,
+            @LocationSettingsDialogOutcomeEnum Callback<Integer> callback) {
+        callback.onResult(LocationSettingsDialogOutcome.NO_PROMPT);
     }
 
     /**
