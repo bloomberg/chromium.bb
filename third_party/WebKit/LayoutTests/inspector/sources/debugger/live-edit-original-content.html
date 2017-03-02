@@ -1,0 +1,53 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/live-edit-test.js"></script>
+<script src="resources/edit-me.js"></script>
+
+<script>
+
+function test() {
+  InspectorTest.startDebuggerTest(testStarted);
+  function testStarted() {
+    InspectorTest.showScriptSource('edit-me.js', didShowScriptSource);
+  }
+
+  function didShowScriptSource(sourceFrame) {
+    replaceInSource(sourceFrame, 'return 0;', 'return "live-edited string";', didEditScriptSource);
+  }
+
+  function didEditScriptSource() {
+    UI.panels.sources.sourcesView().currentUISourceCode().requestOriginalContent().then(gotOriginalContent)
+  }
+
+  function gotOriginalContent(originalContent) {
+    InspectorTest.addResult('==== Original Content ====');
+    InspectorTest.addResult(originalContent);
+    UI.panels.sources.sourcesView().currentUISourceCode().requestContent().then(gotContent)
+  }
+
+  function gotContent(content) {
+    InspectorTest.addResult('');
+    InspectorTest.addResult('');
+    InspectorTest.addResult('==== Current Content ====');
+    InspectorTest.addResult(content);
+    InspectorTest.completeDebuggerTest();
+  }
+
+  function replaceInSource(sourceFrame, string, replacement, callback) {
+    InspectorTest.addSniffer(InspectorTest.debuggerModel, '_didEditScriptSource', callback);
+    InspectorTest.replaceInSource(sourceFrame, string, replacement);
+    InspectorTest.commitSource(sourceFrame);
+  }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests that the original content is accessible on live edited scripts.</p>
+
+</body>
+</html>
