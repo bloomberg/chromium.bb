@@ -58,6 +58,7 @@ class EditorClient;
 class FocusController;
 class Frame;
 class FrameHost;
+struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class PluginData;
 class PointerLockController;
@@ -225,6 +226,10 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   bool isCursorVisible() const;
   void setIsCursorVisible(bool isVisible) { m_isCursorVisible = isVisible; }
+
+  void setDefaultPageScaleLimits(float minScale, float maxScale);
+  void setUserAgentPageScaleConstraints(
+      const PageScaleConstraints& newConstraints);
 
 #if DCHECK_IS_ON()
   void setIsPainting(bool painting) { m_isPainting = painting; }

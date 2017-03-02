@@ -34,7 +34,6 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/PageScaleConstraints.h"
-#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/VisualViewport.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
@@ -156,45 +155,12 @@ int FrameHost::subframeCount() const {
 }
 
 void FrameHost::setDefaultPageScaleLimits(float minScale, float maxScale) {
-  PageScaleConstraints newDefaults =
-      pageScaleConstraintsSet().defaultConstraints();
-  newDefaults.minimumScale = minScale;
-  newDefaults.maximumScale = maxScale;
-
-  if (newDefaults == pageScaleConstraintsSet().defaultConstraints())
-    return;
-
-  pageScaleConstraintsSet().setDefaultConstraints(newDefaults);
-  pageScaleConstraintsSet().computeFinalConstraints();
-  pageScaleConstraintsSet().setNeedsReset(true);
-
-  if (!page().mainFrame() || !page().mainFrame()->isLocalFrame())
-    return;
-
-  FrameView* rootView = page().deprecatedLocalMainFrame()->view();
-
-  if (!rootView)
-    return;
-
-  rootView->setNeedsLayout();
+  page().setDefaultPageScaleLimits(minScale, maxScale);
 }
 
 void FrameHost::setUserAgentPageScaleConstraints(
     const PageScaleConstraints& newConstraints) {
-  if (newConstraints == pageScaleConstraintsSet().userAgentConstraints())
-    return;
-
-  pageScaleConstraintsSet().setUserAgentConstraints(newConstraints);
-
-  if (!page().mainFrame() || !page().mainFrame()->isLocalFrame())
-    return;
-
-  FrameView* rootView = page().deprecatedLocalMainFrame()->view();
-
-  if (!rootView)
-    return;
-
-  rootView->setNeedsLayout();
+  page().setUserAgentPageScaleConstraints(newConstraints);
 }
 
 }  // namespace blink

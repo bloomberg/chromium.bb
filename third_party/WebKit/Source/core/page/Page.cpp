@@ -34,6 +34,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/PageScaleConstraints.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
@@ -254,6 +255,48 @@ void Page::setSuspended(bool suspended) {
     localFrame->loader().setDefersLoading(suspended);
     localFrame->frameScheduler()->setSuspended(suspended);
   }
+}
+
+void Page::setDefaultPageScaleLimits(float minScale, float maxScale) {
+  PageScaleConstraints newDefaults =
+      pageScaleConstraintsSet().defaultConstraints();
+  newDefaults.minimumScale = minScale;
+  newDefaults.maximumScale = maxScale;
+
+  if (newDefaults == pageScaleConstraintsSet().defaultConstraints())
+    return;
+
+  pageScaleConstraintsSet().setDefaultConstraints(newDefaults);
+  pageScaleConstraintsSet().computeFinalConstraints();
+  pageScaleConstraintsSet().setNeedsReset(true);
+
+  if (!mainFrame() || !mainFrame()->isLocalFrame())
+    return;
+
+  FrameView* rootView = deprecatedLocalMainFrame()->view();
+
+  if (!rootView)
+    return;
+
+  rootView->setNeedsLayout();
+}
+
+void Page::setUserAgentPageScaleConstraints(
+    const PageScaleConstraints& newConstraints) {
+  if (newConstraints == pageScaleConstraintsSet().userAgentConstraints())
+    return;
+
+  pageScaleConstraintsSet().setUserAgentConstraints(newConstraints);
+
+  if (!mainFrame() || !mainFrame()->isLocalFrame())
+    return;
+
+  FrameView* rootView = deprecatedLocalMainFrame()->view();
+
+  if (!rootView)
+    return;
+
+  rootView->setNeedsLayout();
 }
 
 void Page::setPageScaleFactor(float scale) {
