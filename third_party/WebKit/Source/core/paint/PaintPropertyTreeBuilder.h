@@ -116,7 +116,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE static void updatePaintOffsetTranslation(
       const LayoutBoxModelObject&,
       PaintPropertyTreeBuilderContext&);
-  ALWAYS_INLINE static void updateForObjectLocation(
+  ALWAYS_INLINE static void updateForObjectLocationAndSize(
       const LayoutObject&,
       PaintPropertyTreeBuilderContext&);
   ALWAYS_INLINE static void updateTransform(const LayoutObject&,

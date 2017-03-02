@@ -356,6 +356,7 @@ class CORE_EXPORT FrameView final
 
   bool scrollbarsCanBeActive() const override;
   void scrollbarVisibilityChanged() override;
+  void scrollbarFrameRectChanged() override;
 
   // FIXME: Remove this method once plugin loading is decoupled from layout.
   void flushAnyPendingPostLayoutTasks();

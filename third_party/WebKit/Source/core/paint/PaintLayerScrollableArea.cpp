@@ -563,6 +563,12 @@ IntSize PaintLayerScrollableArea::contentsSize() const {
   return IntSize(pixelSnappedScrollWidth(), pixelSnappedScrollHeight());
 }
 
+void PaintLayerScrollableArea::contentsResized() {
+  ScrollableArea::contentsResized();
+  // Need to update the bounds of the scroll property.
+  box().setNeedsPaintPropertyUpdate();
+}
+
 bool PaintLayerScrollableArea::isScrollable() const {
   return scrollsOverflow();
 }
@@ -590,6 +596,12 @@ void PaintLayerScrollableArea::scrollbarVisibilityChanged() {
 
   if (LayoutView* view = box().view())
     return view->clearHitTestCache();
+}
+
+void PaintLayerScrollableArea::scrollbarFrameRectChanged() {
+  // Size of non-overlay scrollbar affects overflow clip rect.
+  if (!hasOverlayScrollbars())
+    box().setNeedsPaintPropertyUpdate();
 }
 
 bool PaintLayerScrollableArea::scrollbarsCanBeActive() const {

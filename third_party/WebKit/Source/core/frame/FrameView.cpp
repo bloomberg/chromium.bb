@@ -2619,6 +2619,10 @@ void FrameView::scrollbarVisibilityChanged() {
     viewItem.clearHitTestCache();
 }
 
+void FrameView::scrollbarFrameRectChanged() {
+  setNeedsPaintPropertyUpdate();
+}
+
 IntRect FrameView::scrollableAreaBoundingBox() const {
   LayoutPartItem ownerLayoutItem = frame().ownerLayoutItem();
   if (ownerLayoutItem.isNull())

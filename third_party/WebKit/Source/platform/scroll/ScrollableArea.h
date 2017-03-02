@@ -373,6 +373,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   // Callback for compositor-side scrolling.
   void didScroll(const gfx::ScrollOffset&) override;
 
+  virtual void scrollbarFrameRectChanged() {}
+
  protected:
   ScrollableArea();
 

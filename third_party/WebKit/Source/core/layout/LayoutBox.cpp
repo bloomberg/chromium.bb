@@ -1728,26 +1728,6 @@ void LayoutBox::sizeChanged() {
     Element& element = toElement(*node());
     element.setNeedsResizeObserverUpdate();
   }
-
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    if (shouldClipOverflow()) {
-      // The overflow clip paint property depends on the border box rect through
-      // overflowClipRect(). The border box rect's size equals the frame rect's
-      // size so we trigger a paint property update when the frame rect changes.
-      setNeedsPaintPropertyUpdate();
-    } else if (hasClip()) {
-      // The used value of CSS clip may depend on size of the box, e.g. for
-      // clip: rect(auto auto auto -5px).
-      setNeedsPaintPropertyUpdate();
-    } else if (styleRef().hasTransform() || styleRef().hasPerspective()) {
-      // Relative lengths (e.g., percentage values) in transform, perspective,
-      // transform-origin, and perspective-origin can depend on the size of the
-      // frame rect, so force a property update if it changes.
-      // TODO(pdr): We only need to update properties if there are relative
-      // lengths.
-      setNeedsPaintPropertyUpdate();
-    }
-  }
 }
 
 bool LayoutBox::intersectsVisibleViewport() const {

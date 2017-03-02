@@ -1043,7 +1043,7 @@ void PaintPropertyTreeBuilder::updatePaintOffset(
   }
 }
 
-void PaintPropertyTreeBuilder::updateForObjectLocation(
+void PaintPropertyTreeBuilder::updateForObjectLocationAndSize(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
   if (object.isBoxModelObject()) {
@@ -1051,18 +1051,37 @@ void PaintPropertyTreeBuilder::updateForObjectLocation(
     updatePaintOffsetTranslation(toLayoutBoxModelObject(object), context);
   }
 
-  if (object.paintOffset() == context.current.paintOffset)
+  if (object.paintOffset() != context.current.paintOffset) {
+    // Many paint properties depend on paint offset so we force an update of
+    // the entire subtree on paint offset changes.
+    context.forceSubtreeUpdate = true;
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      object.getMutableForPainting().setShouldDoFullPaintInvalidation(
+          PaintInvalidationLocationChange);
+    }
+    object.getMutableForPainting().setPaintOffset(context.current.paintOffset);
+  }
+
+  if (!object.isBox())
+    return;
+  const LayoutBox& box = toLayoutBox(object);
+  if (box.size() == box.previousSize())
     return;
 
-  // Many paint properties depend on paint offset so we force an update of
-  // the entire subtree on paint offset changes.
-  context.forceSubtreeUpdate = true;
-
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    object.getMutableForPainting().setShouldDoFullPaintInvalidation(
-        PaintInvalidationLocationChange);
-  }
-  object.getMutableForPainting().setPaintOffset(context.current.paintOffset);
+  // The overflow clip paint property depends on the border box rect through
+  // overflowClipRect(). The border box rect's size equals the frame rect's
+  // size so we trigger a paint property update when the frame rect changes.
+  if (box.shouldClipOverflow() ||
+      // The used value of CSS clip may depend on size of the box, e.g. for
+      // clip: rect(auto auto auto -5px).
+      box.hasClip() ||
+      // Relative lengths (e.g., percentage values) in transform, perspective,
+      // transform-origin, and perspective-origin can depend on the size of the
+      // frame rect, so force a property update if it changes. TODO(pdr): We
+      // only need to update properties if there are relative lengths.
+      box.styleRef().hasTransform() || box.styleRef().hasPerspective())
+    box.getMutableForPainting().setNeedsPaintPropertyUpdate();
 }
 
 void PaintPropertyTreeBuilder::updatePropertiesForSelf(
@@ -1070,7 +1089,7 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
     PaintPropertyTreeBuilderContext& context) {
   // This is not in FindObjectPropertiesNeedingUpdateScope because paint offset
   // can change without needsPaintPropertyUpdate.
-  updateForObjectLocation(object, context);
+  updateForObjectLocationAndSize(object, context);
 
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope checkNeedsUpdateScope(object, context);

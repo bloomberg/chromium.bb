@@ -95,6 +95,8 @@ void Scrollbar::setFrameRect(const IntRect& frameRect) {
 
   FrameViewBase::setFrameRect(frameRect);
   setNeedsPaintInvalidation(AllParts);
+  if (m_scrollableArea)
+    m_scrollableArea->scrollbarFrameRectChanged();
 }
 
 ScrollbarOverlayColorTheme Scrollbar::getScrollbarOverlayColorTheme() const {

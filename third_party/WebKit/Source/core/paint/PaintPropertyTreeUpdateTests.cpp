@@ -679,4 +679,47 @@ TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {
             clip->paintProperties()->cssClip()->clipRect().rect());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
+  setBodyInnerHTML(
+      "<div id='container'"
+      "    style='width: 100px; height: 100px; overflow: scroll'>"
+      "  <div id='content' style='width: 200px; height: 200px'></div>"
+      "</div>");
+
+  auto* container = getLayoutObjectByElementId("container");
+  auto* scrollNode =
+      container->paintProperties()->scrollTranslation()->scrollNode();
+  EXPECT_EQ(IntSize(100, 100), scrollNode->clip());
+  EXPECT_EQ(IntSize(200, 200), scrollNode->bounds());
+
+  document().getElementById("content")->setAttribute(
+      HTMLNames::styleAttr, "width: 200px; height: 300px");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(scrollNode,
+            container->paintProperties()->scrollTranslation()->scrollNode());
+  EXPECT_EQ(IntSize(100, 100), scrollNode->clip());
+  EXPECT_EQ(IntSize(200, 300), scrollNode->bounds());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
+  setBodyInnerHTML(
+      "<style>::-webkit-scrollbar {width: 20px; height: 20px}</style>"
+      "<div id='container'"
+      "    style='width: 100px; height: 100px; overflow: scroll'>"
+      "  <div id='content' style='width: 200px; height: 200px'></div>"
+      "</div>");
+
+  auto* container = getLayoutObjectByElementId("container");
+  auto* overflowClip = container->paintProperties()->overflowClip();
+  EXPECT_EQ(FloatSize(80, 80), overflowClip->clipRect().rect().size());
+
+  auto* newStyle = document().createElement("style");
+  newStyle->setTextContent("::-webkit-scrollbar {width: 40px; height: 40px}");
+  document().body()->appendChild(newStyle);
+
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(overflowClip, container->paintProperties()->overflowClip());
+  EXPECT_EQ(FloatSize(60, 60), overflowClip->clipRect().rect().size());
+}
+
 }  // namespace blink
