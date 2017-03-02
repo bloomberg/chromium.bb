@@ -223,7 +223,8 @@
     [printActivity setResponder:controller];
     [applicationActivities addObject:printActivity];
   }
-  if (reading_list::switches::IsReadingListEnabled()) {
+  if (reading_list::switches::IsReadingListEnabled() &&
+      data.url.SchemeIsHTTPOrHTTPS()) {
     ReadingListActivity* readingListActivity =
         [[ReadingListActivity alloc] initWithURL:data.url
                                            title:data.title
