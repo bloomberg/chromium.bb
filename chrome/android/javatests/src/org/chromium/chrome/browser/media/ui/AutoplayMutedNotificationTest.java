@@ -11,6 +11,7 @@ import android.media.AudioManager;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -22,6 +23,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 /**
  * Integration test that checks that autoplay muted doesn't show a notification nor take audio focus
  */
+@RetryOnFailure
 public class AutoplayMutedNotificationTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PATH = "/content/test/data/media/session/autoplay-muted.html";
     private static final String VIDEO_ID = "video";
