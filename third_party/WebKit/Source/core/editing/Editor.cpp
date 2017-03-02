@@ -1753,6 +1753,10 @@ void Editor::replaceSelection(const String& text) {
                            InputEvent::InputType::InsertReplacementText);
 }
 
+TypingCommand* Editor::lastTypingCommandIfStillOpenForTyping() const {
+  return TypingCommand::lastTypingCommandIfStillOpenForTyping(&frame());
+}
+
 DEFINE_TRACE(Editor) {
   visitor->trace(m_frame);
   visitor->trace(m_lastEditCommand);

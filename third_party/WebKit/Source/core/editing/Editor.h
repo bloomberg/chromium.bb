@@ -55,6 +55,7 @@ class Pasteboard;
 class SpellChecker;
 class StylePropertySet;
 class TextEvent;
+class TypingCommand;
 class UndoStack;
 class UndoStep;
 
@@ -79,6 +80,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   EditorClient& client() const;
 
   CompositeEditCommand* lastEditCommand() { return m_lastEditCommand.get(); }
+  TypingCommand* lastTypingCommandIfStillOpenForTyping() const;
 
   void handleKeyboardEvent(KeyboardEvent*);
   bool handleTextEvent(TextEvent*);

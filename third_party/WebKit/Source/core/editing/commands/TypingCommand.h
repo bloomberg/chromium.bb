@@ -82,6 +82,8 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   static bool insertParagraphSeparatorInQuotedContent(Document&);
   static void closeTyping(LocalFrame*);
 
+  static TypingCommand* lastTypingCommandIfStillOpenForTyping(LocalFrame*);
+
   void insertText(const String& text, bool selectInsertedText, EditingState*);
   void insertTextRunWithoutNewlines(const String& text,
                                     bool selectInsertedText,
@@ -134,8 +136,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   void setSmartDelete(bool smartDelete) { m_smartDelete = smartDelete; }
   bool isOpenForMoreTyping() const { return m_openForMoreTyping; }
   void closeTyping() { m_openForMoreTyping = false; }
-
-  static TypingCommand* lastTypingCommandIfStillOpenForTyping(LocalFrame*);
 
   void doApply(EditingState*) override;
   InputEvent::InputType inputType() const override;
