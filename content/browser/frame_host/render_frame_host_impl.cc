@@ -2469,8 +2469,10 @@ void RenderFrameHostImpl::Navigate(
   //
   // Blink doesn't send throb notifications for JavaScript URLs, so it is not
   // done here either.
-  if (!common_params.url.SchemeIs(url::kJavaScriptScheme))
+  if (!common_params.url.SchemeIs(url::kJavaScriptScheme) &&
+      (!navigation_handle_ || !navigation_handle_->is_transferring())) {
     OnDidStartLoading(true);
+  }
 }
 
 void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {

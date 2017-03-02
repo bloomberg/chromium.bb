@@ -665,7 +665,9 @@ void NavigationHandleImpl::Transfer() {
   // transferring, the URLRequest can no longer be cancelled by its original
   // RenderFrame. Instead it will persist until being picked up by the transfer
   // RenderFrame, even if the original RenderFrame is destroyed.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, transfer_callback_);
+  // Note: |transfer_callback_| can be null in unit tests.
+  if (!transfer_callback_.is_null())
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, transfer_callback_);
   transfer_callback_.Reset();
 }
 

@@ -76,19 +76,28 @@ class RenderFrameHostTester {
 
   // Simulates a renderer-initiated navigation to |url| starting in the
   // RenderFrameHost.
+  // DEPRECATED: use NavigationSimulator instead.
   virtual void SimulateNavigationStart(const GURL& url) = 0;
 
   // Simulates a redirect to |new_url| for the navigation in the
   // RenderFrameHost.
+  // Note: this is deprecated for simulating renderer-initiated navigations. Use
+  // NavigationSimulator instead.
   virtual void SimulateRedirect(const GURL& new_url) = 0;
 
   // Simulates a navigation to |url| committing in the RenderFrameHost.
+  // Note: this is deprecated for simulating renderer-initiated navigations. Use
+  // NavigationSimulator instead.
   virtual void SimulateNavigationCommit(const GURL& url) = 0;
 
   // Simulates a navigation to |url| failing with the error code |error_code|.
+  // Note: this is deprecated for simulating renderer-initiated navigations. Use
+  // NavigationSimulator instead.
   virtual void SimulateNavigationError(const GURL& url, int error_code) = 0;
 
   // Simulates the commit of an error page following a navigation failure.
+  // Note: this is deprecated for simulating renderer-initiated navigations. Use
+  // NavigationSimulator instead.
   virtual void SimulateNavigationErrorPageCommit() = 0;
 
   // Simulates a navigation stopping in the RenderFrameHost.

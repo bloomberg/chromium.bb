@@ -95,6 +95,21 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool started_from_context_menu);
   ~NavigationHandleImpl() override;
 
+  // Used to track the state the navigation is currently in.
+  enum State {
+    INITIAL = 0,
+    WILL_SEND_REQUEST,
+    DEFERRING_START,
+    WILL_REDIRECT_REQUEST,
+    DEFERRING_REDIRECT,
+    CANCELING,
+    WILL_PROCESS_RESPONSE,
+    DEFERRING_RESPONSE,
+    READY_TO_COMMIT,
+    DID_COMMIT,
+    DID_COMMIT_ERROR_PAGE,
+  };
+
   // NavigationHandle implementation:
   const GURL& GetURL() override;
   SiteInstance* GetStartingSiteInstance() override;
@@ -150,6 +165,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GlobalRequestID& GetGlobalRequestID() override;
 
   NavigationData* GetNavigationData() override;
+
+  // Used in tests.
+  State state_for_testing() const { return state_; }
 
   // The NavigatorDelegate to notify/query for various navigation events.
   // Normally this is the WebContents, except if this NavigationHandle was
@@ -330,21 +348,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
  private:
   friend class NavigationHandleImplTest;
-
-  // Used to track the state the navigation is currently in.
-  enum State {
-    INITIAL = 0,
-    WILL_SEND_REQUEST,
-    DEFERRING_START,
-    WILL_REDIRECT_REQUEST,
-    DEFERRING_REDIRECT,
-    CANCELING,
-    WILL_PROCESS_RESPONSE,
-    DEFERRING_RESPONSE,
-    READY_TO_COMMIT,
-    DID_COMMIT,
-    DID_COMMIT_ERROR_PAGE,
-  };
 
   NavigationHandleImpl(const GURL& url,
                        const std::vector<GURL>& redirect_chain,

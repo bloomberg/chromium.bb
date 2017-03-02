@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
-#include "net/url_request/url_request.h"
 
 namespace content {
 
@@ -84,40 +83,37 @@ void Referrer::SetReferrerForRequest(net::URLRequest* request,
     request->SetReferrer(referrer.url.spec());
   }
 
-  net::URLRequest::ReferrerPolicy net_referrer_policy =
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+  request->set_referrer_policy(ReferrerPolicyForUrlRequest(referrer));
+}
+
+// static
+net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
+    const Referrer& referrer) {
   switch (referrer.policy) {
     case blink::WebReferrerPolicyAlways:
-      net_referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
-      break;
+      return net::URLRequest::NEVER_CLEAR_REFERRER;
     case blink::WebReferrerPolicyNever:
-      net_referrer_policy = net::URLRequest::NO_REFERRER;
-      break;
+      return net::URLRequest::NO_REFERRER;
     case blink::WebReferrerPolicyOrigin:
-      net_referrer_policy = net::URLRequest::ORIGIN;
-      break;
+      return net::URLRequest::ORIGIN;
     case blink::WebReferrerPolicyNoReferrerWhenDowngrade:
-      net_referrer_policy =
-          net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-      break;
+      return net::URLRequest::
+          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
     case blink::WebReferrerPolicyOriginWhenCrossOrigin:
-      net_referrer_policy =
-          net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
-      break;
+      return net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
     case blink::WebReferrerPolicyDefault:
-      net_referrer_policy =
-          command_line->HasSwitch(switches::kReducedReferrerGranularity)
-              ? net::URLRequest::
-                    REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN
-              : net::URLRequest::
-                    CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-      break;
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kReducedReferrerGranularity)) {
+        return net::URLRequest::
+            REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
+      }
+      return net::URLRequest::
+          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
     case blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-      net_referrer_policy = net::URLRequest::
+      return net::URLRequest::
           REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
-      break;
   }
-  request->set_referrer_policy(net_referrer_policy);
+  return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 }
 
 }  // namespace content
