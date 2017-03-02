@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
+#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -165,6 +166,7 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
     std::unique_ptr<translate::TranslatePrefs> translatePrefs(
         ChromeIOSTranslateClient::CreateTranslatePrefs(_prefs));
     translatePrefs->ResetToDefaults();
+    TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
     NSString* messageText =
         l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING_RESET_NOTIFICATION);
     MDCSnackbarMessage* message =

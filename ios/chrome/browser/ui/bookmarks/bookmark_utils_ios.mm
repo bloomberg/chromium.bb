@@ -271,6 +271,7 @@ void PresentUndoToastWithWrapper(UndoManagerWrapper* wrapper, NSString* text) {
   action.accessibilityIdentifier = @"Undo";
   action.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_UNDO_BUTTON_TITLE);
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
   MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
   message.action = action;
   message.category = kBookmarksSnackbarCategory;

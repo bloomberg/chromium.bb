@@ -1448,6 +1448,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   action.title = l10n_util::GetNSString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE);
   action.accessibilityIdentifier = @"Undo";
 
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
   MDCSnackbarMessage* message = [MDCSnackbarMessage
       messageWithText:l10n_util::GetNSString(
                           IDS_IOS_NEW_TAB_MOST_VISITED_ITEM_REMOVED)];

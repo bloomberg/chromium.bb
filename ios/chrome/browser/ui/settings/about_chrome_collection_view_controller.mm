@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/version_item.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
+#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -157,6 +158,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)copyVersionToPasteboard {
   [[UIPasteboard generalPasteboard] setString:[self versionOnlyString]];
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
   NSString* messageText = l10n_util::GetNSString(IDS_IOS_VERSION_COPIED);
   MDCSnackbarMessage* message =
       [MDCSnackbarMessage messageWithText:messageText];
