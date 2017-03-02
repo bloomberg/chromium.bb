@@ -287,6 +287,8 @@ Polymer({
   showAddButton_: function(deviceState, globalPolicy) {
     if (!deviceState || deviceState.Type != CrOnc.Type.WI_FI)
       return false;
+    if (!this.deviceIsEnabled_(deviceState))
+      return false;
     return this.allowAddConnection_(globalPolicy);
   },
 

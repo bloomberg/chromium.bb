@@ -48,13 +48,15 @@
             </cr-expand-button>
           </div>
           <template is="dom-if" if="[[addConnectionExpanded_]]">
-            <div actionable class="settings-box continuation center"
-                on-tap="onAddWiFiTap_">
-              <div class="start add-no-icon">$i18n{internetAddWiFi}</div>
-              <button class="icon-external" is="paper-icon-button-light"
-                  aria-label="$i18n{internetAddWiFi}">
-              </button>
-            </div>
+            <template is="dom-if" if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
+              <div actionable class="settings-box continuation center"
+                  on-tap="onAddWiFiTap_">
+                <div class="start add-no-icon">$i18n{internetAddWiFi}</div>
+                <button class="icon-external" is="paper-icon-button-light"
+                    aria-label="$i18n{internetAddWiFi}">
+                </button>
+              </div>
+            </template>
             <div actionable class="settings-box continuation center"
                 on-tap="onAddVPNTap_">
               <div class="start add-no-icon">$i18n{internetAddVPN}</div>

@@ -315,6 +315,16 @@ Polymer({
   },
 
   /**
+   * @param {!chrome.networkingPrivate.DeviceStateProperties} deviceState
+   * @return {boolean}
+   * @private
+   */
+  deviceIsEnabled_: function(deviceState) {
+    return deviceState.State ==
+        chrome.networkingPrivate.DeviceStateType.ENABLED;
+  },
+
+  /**
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @return {boolean}
    */
