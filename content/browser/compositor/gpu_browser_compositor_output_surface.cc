@@ -96,6 +96,8 @@ void GpuBrowserCompositorOutputSurface::Reshape(
     const gfx::ColorSpace& color_space,
     bool has_alpha,
     bool use_stencil) {
+  size_ = size;
+  has_set_draw_rectangle_since_last_resize_ = false;
   context_provider()->ContextGL()->ResizeCHROMIUM(
       size.width(), size.height(), device_scale_factor, has_alpha);
 }
@@ -114,6 +116,8 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
       reflector_->OnSourceSwapBuffers(surface_size);
     }
   }
+
+  set_draw_rectangle_for_frame_ = false;
 
   if (frame.sub_buffer_rect) {
     DCHECK(frame.content_bounds.empty());
@@ -147,6 +151,19 @@ bool GpuBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle() const {
 void GpuBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
     bool suspended) {}
 #endif
+
+void GpuBrowserCompositorOutputSurface::SetDrawRectangle(
+    const gfx::Rect& rect) {
+  if (set_draw_rectangle_for_frame_)
+    return;
+  DCHECK(gfx::Rect(size_).Contains(rect));
+  DCHECK(has_set_draw_rectangle_since_last_resize_ ||
+         (gfx::Rect(size_) == rect));
+  set_draw_rectangle_for_frame_ = true;
+  has_set_draw_rectangle_since_last_resize_ = true;
+  context_provider()->ContextGL()->SetDrawRectangleCHROMIUM(
+      rect.x(), rect.y(), rect.width(), rect.height());
+}
 
 gpu::CommandBufferProxyImpl*
 GpuBrowserCompositorOutputSurface::GetCommandBufferProxy() {

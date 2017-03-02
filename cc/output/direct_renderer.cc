@@ -84,9 +84,12 @@ void DirectRenderer::Initialize() {
 
   use_partial_swap_ = settings_->partial_swap_enabled && CanPartialSwap();
   allow_empty_swap_ = use_partial_swap_;
-  if (context_provider &&
-      context_provider->ContextCapabilities().commit_overlay_planes)
-    allow_empty_swap_ = true;
+  if (context_provider) {
+    if (context_provider->ContextCapabilities().commit_overlay_planes)
+      allow_empty_swap_ = true;
+    if (context_provider->ContextCapabilities().set_draw_rectangle)
+      use_set_draw_rectangle_ = true;
+  }
 
   initialized_ = true;
 }
@@ -511,10 +514,16 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
         current_frame()->ComputeScissorRectForRenderPass());
   }
 
-  bool render_pass_is_clipped =
-      !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
   bool is_root_render_pass =
       current_frame()->current_render_pass == current_frame()->root_render_pass;
+
+  // The SetDrawRectangleCHROMIUM spec requires that the scissor bit is always
+  // set on the root framebuffer or else the rendering may modify something
+  // outside the damage rectangle, even if the damage rectangle is the size of
+  // the full backbuffer.
+  bool render_pass_is_clipped =
+      (use_set_draw_rectangle_ && is_root_render_pass) ||
+      !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
   bool has_external_stencil_test =
       is_root_render_pass && output_surface_->HasExternalStencilTest();
   bool should_clear_surface =
@@ -583,9 +592,12 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
 
 bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
-  current_frame()->current_texture = NULL;
+  current_frame()->current_texture = nullptr;
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
+
+    if (use_set_draw_rectangle_)
+      output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),
                        current_frame()->device_viewport_size);

@@ -54,17 +54,32 @@ void DisplayOutputSurface::BindFramebuffer() {
   context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void DisplayOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
+  if (set_draw_rectangle_for_frame_)
+    return;
+  DCHECK(gfx::Rect(size_).Contains(rect));
+  DCHECK(has_set_draw_rectangle_since_last_resize_ ||
+         (gfx::Rect(size_) == rect));
+  set_draw_rectangle_for_frame_ = true;
+  has_set_draw_rectangle_since_last_resize_ = true;
+  context_provider()->ContextGL()->SetDrawRectangleCHROMIUM(
+      rect.x(), rect.y(), rect.width(), rect.height());
+}
+
 void DisplayOutputSurface::Reshape(const gfx::Size& size,
                                    float device_scale_factor,
                                    const gfx::ColorSpace& color_space,
                                    bool has_alpha,
                                    bool use_stencil) {
+  size_ = size;
+  has_set_draw_rectangle_since_last_resize_ = false;
   context_provider()->ContextGL()->ResizeCHROMIUM(
       size.width(), size.height(), device_scale_factor, has_alpha);
 }
 
 void DisplayOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
+  set_draw_rectangle_for_frame_ = false;
   if (frame.sub_buffer_rect) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
         *frame.sub_buffer_rect);

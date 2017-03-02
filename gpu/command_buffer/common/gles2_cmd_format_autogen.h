@@ -15689,4 +15689,49 @@ static_assert(
     offsetof(SwapBuffersWithBoundsCHROMIUMImmediate, count) == 4,
     "offset of SwapBuffersWithBoundsCHROMIUMImmediate count should be 4");
 
+struct SetDrawRectangleCHROMIUM {
+  typedef SetDrawRectangleCHROMIUM ValueType;
+  static const CommandId kCmdId = kSetDrawRectangleCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _x, GLint _y, GLint _width, GLint _height) {
+    SetHeader();
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd, GLint _x, GLint _y, GLint _width, GLint _height) {
+    static_cast<ValueType*>(cmd)->Init(_x, _y, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+};
+
+static_assert(sizeof(SetDrawRectangleCHROMIUM) == 20,
+              "size of SetDrawRectangleCHROMIUM should be 20");
+static_assert(offsetof(SetDrawRectangleCHROMIUM, header) == 0,
+              "offset of SetDrawRectangleCHROMIUM header should be 0");
+static_assert(offsetof(SetDrawRectangleCHROMIUM, x) == 4,
+              "offset of SetDrawRectangleCHROMIUM x should be 4");
+static_assert(offsetof(SetDrawRectangleCHROMIUM, y) == 8,
+              "offset of SetDrawRectangleCHROMIUM y should be 8");
+static_assert(offsetof(SetDrawRectangleCHROMIUM, width) == 12,
+              "offset of SetDrawRectangleCHROMIUM width should be 12");
+static_assert(offsetof(SetDrawRectangleCHROMIUM, height) == 16,
+              "offset of SetDrawRectangleCHROMIUM height should be 16");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

@@ -58,6 +58,10 @@ void FakeOutputSurface::BindFramebuffer() {
   context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 }
 
+void FakeOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
+  last_set_draw_rectangle_ = rect;
+}
+
 uint32_t FakeOutputSurface::GetFramebufferCopyTextureFormat() {
   if (framebuffer_)
     return framebuffer_format_;

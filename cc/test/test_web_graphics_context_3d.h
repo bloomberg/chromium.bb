@@ -347,6 +347,9 @@ class TestWebGraphicsContext3D {
   void set_gpu_rasterization(bool gpu_rasterization) {
     test_capabilities_.gpu_rasterization = gpu_rasterization;
   }
+  void set_support_set_draw_rectangle(bool support) {
+    test_capabilities_.set_draw_rectangle = support;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(TestWebGraphicsContext3D* context3d) {

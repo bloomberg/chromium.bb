@@ -30,6 +30,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
+  void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
@@ -61,6 +62,10 @@ class DisplayOutputSurface : public cc::OutputSurface {
 
   cc::OutputSurfaceClient* client_ = nullptr;
   cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
+  bool set_draw_rectangle_for_frame_ = false;
+  // True if the draw rectangle has been set at all since the last resize.
+  bool has_set_draw_rectangle_since_last_resize_ = false;
+  gfx::Size size_;
 
   base::WeakPtrFactory<DisplayOutputSurface> weak_ptr_factory_;
 };

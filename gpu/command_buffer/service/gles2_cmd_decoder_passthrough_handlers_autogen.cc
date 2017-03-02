@@ -4368,5 +4368,22 @@ GLES2DecoderPassthroughImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleSetDrawRectangleCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::SetDrawRectangleCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::SetDrawRectangleCHROMIUM*>(
+          cmd_data);
+  GLint x = static_cast<GLint>(c.x);
+  GLint y = static_cast<GLint>(c.y);
+  GLint width = static_cast<GLint>(c.width);
+  GLint height = static_cast<GLint>(c.height);
+  error::Error error = DoSetDrawRectangleCHROMIUM(x, y, width, height);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

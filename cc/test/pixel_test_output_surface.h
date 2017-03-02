@@ -24,6 +24,7 @@ class PixelTestOutputSurface : public OutputSurface {
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
+  void SetDrawRectangle(const gfx::Rect& rect) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,

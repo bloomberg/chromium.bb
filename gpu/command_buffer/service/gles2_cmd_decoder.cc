@@ -1693,6 +1693,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                       GLint display_x,
                                       GLint display_y);
 
+  // Wrapper for glSetDrawRectangleCHROMIUM
+  void DoSetDrawRectangleCHROMIUM(GLint x, GLint y, GLint width, GLint height);
+
   // Wrapper for glReadBuffer
   void DoReadBuffer(GLenum src);
 
@@ -2349,6 +2352,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool supports_swap_buffers_with_bounds_;
   bool supports_commit_overlay_planes_;
   bool supports_async_swap_;
+  bool supports_set_draw_rectangle_ = false;
 
   // These flags are used to override the state of the shared feature_info_
   // member.  Because the same FeatureInfo instance may be shared among many
@@ -3563,6 +3567,9 @@ bool GLES2DecoderImpl::Initialize(
 
   supports_async_swap_ = surface->SupportsAsyncSwap();
 
+  supports_set_draw_rectangle_ =
+      !offscreen && surface->SupportsSetDrawRectangle();
+
   if (workarounds().reverse_point_sprite_coord_origin) {
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
   }
@@ -3737,6 +3744,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   caps.flips_vertically = !is_offscreen && surface_->FlipsVertically();
   caps.msaa_is_slow = workarounds().msaa_is_slow;
+  caps.set_draw_rectangle = supports_set_draw_rectangle_;
 
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;
@@ -8687,6 +8695,28 @@ void GLES2DecoderImpl::DoOverlayPromotionHintCHROMIUM(GLuint client_id,
   }
 
   image->NotifyPromotionHint(promotion_hint != GL_FALSE, display_x, display_y);
+}
+
+void GLES2DecoderImpl::DoSetDrawRectangleCHROMIUM(GLint x,
+                                                  GLint y,
+                                                  GLint width,
+                                                  GLint height) {
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  if (framebuffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSetDrawRectangleCHROMIUM",
+                       "framebuffer must not be bound");
+    return;
+  }
+  if (!supports_set_draw_rectangle_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSetDrawRectangleCHROMIUM",
+                       "surface doesn't support SetDrawRectangle");
+    return;
+  }
+  gfx::Rect rect(x, y, width, height);
+  if (!surface_->SetDrawRectangle(rect)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSetDrawRectangleCHROMIUM",
+                       "failed on surface");
+  }
 }
 
 void GLES2DecoderImpl::DoReadBuffer(GLenum src) {

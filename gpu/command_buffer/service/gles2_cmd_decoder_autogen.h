@@ -5158,6 +5158,20 @@ error::Error GLES2DecoderImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleSetDrawRectangleCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::SetDrawRectangleCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::SetDrawRectangleCHROMIUM*>(
+          cmd_data);
+  GLint x = static_cast<GLint>(c.x);
+  GLint y = static_cast<GLint>(c.y);
+  GLint width = static_cast<GLint>(c.width);
+  GLint height = static_cast<GLint>(c.height);
+  DoSetDrawRectangleCHROMIUM(x, y, width, height);
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:

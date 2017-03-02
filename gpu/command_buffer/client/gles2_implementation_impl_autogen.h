@@ -3513,4 +3513,15 @@ void GLES2Implementation::OverlayPromotionHintCHROMIUM(GLuint texture,
   CheckGLError();
 }
 
+void GLES2Implementation::SetDrawRectangleCHROMIUM(GLint x,
+                                                   GLint y,
+                                                   GLint width,
+                                                   GLint height) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glSetDrawRectangleCHROMIUM(" << x
+                     << ", " << y << ", " << width << ", " << height << ")");
+  helper_->SetDrawRectangleCHROMIUM(x, y, width, height);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

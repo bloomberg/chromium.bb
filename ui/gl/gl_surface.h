@@ -205,6 +205,11 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // the next buffer may be 2 frames old.
   virtual bool BuffersFlipped() const;
 
+  virtual bool SupportsSetDrawRectangle() const;
+
+  // Set the rectangle that will be drawn into on the surface.
+  virtual bool SetDrawRectangle(const gfx::Rect& rect);
+
   static GLSurface* GetCurrent();
 
   // Called when the swap interval for the associated context changes.
@@ -275,6 +280,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool IsSurfaceless() const override;
   bool FlipsVertically() const override;
   bool BuffersFlipped() const override;
+  bool SupportsSetDrawRectangle() const override;
+  bool SetDrawRectangle(const gfx::Rect& rect) override;
   void OnSetSwapInterval(int interval) override;
 
   GLSurface* surface() const { return surface_.get(); }

@@ -32,6 +32,8 @@ void ParentOutputSurface::BindFramebuffer() {
   context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void ParentOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {}
+
 void ParentOutputSurface::Reshape(const gfx::Size& size,
                                   float scale_factor,
                                   const gfx::ColorSpace& color_space,

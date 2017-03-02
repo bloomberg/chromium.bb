@@ -4526,6 +4526,10 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
+  'SetDrawRectangleCHROMIUM': {
+    'decoder_func': 'DoSetDrawRectangleCHROMIUM',
+    'extension': 'CHROMIUM_set_draw_rectangle',
+  },
 }
 
 

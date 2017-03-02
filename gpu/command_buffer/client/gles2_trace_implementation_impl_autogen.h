@@ -2503,4 +2503,12 @@ void GLES2TraceImplementation::SwapBuffersWithBoundsCHROMIUM(
   gl_->SwapBuffersWithBoundsCHROMIUM(count, rects);
 }
 
+void GLES2TraceImplementation::SetDrawRectangleCHROMIUM(GLint x,
+                                                        GLint y,
+                                                        GLint width,
+                                                        GLint height) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SetDrawRectangleCHROMIUM");
+  gl_->SetDrawRectangleCHROMIUM(x, y, width, height);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

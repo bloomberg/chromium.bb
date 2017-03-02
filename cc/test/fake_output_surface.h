@@ -62,6 +62,7 @@ class FakeOutputSurface : public OutputSurface {
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override;
+  void SetDrawRectangle(const gfx::Rect& rect) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
@@ -97,6 +98,10 @@ class FakeOutputSurface : public OutputSurface {
     return last_reshape_color_space_;
   }
 
+  const gfx::Rect& last_set_draw_rectangle() {
+    return last_set_draw_rectangle_;
+  }
+
  protected:
   explicit FakeOutputSurface(scoped_refptr<ContextProvider> context_provider);
   explicit FakeOutputSurface(
@@ -111,6 +116,7 @@ class FakeOutputSurface : public OutputSurface {
   GLenum framebuffer_format_ = 0;
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   gfx::ColorSpace last_reshape_color_space_;
+  gfx::Rect last_set_draw_rectangle_;
 
  private:
   void SwapBuffersAck();

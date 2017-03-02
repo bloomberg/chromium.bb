@@ -54,6 +54,11 @@ void SoftwareBrowserCompositorOutputSurface::BindFramebuffer() {
   NOTREACHED();
 }
 
+void SoftwareBrowserCompositorOutputSurface::SetDrawRectangle(
+    const gfx::Rect& draw_rectangle) {
+  NOTREACHED();
+}
+
 void SoftwareBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,
     float device_scale_factor,

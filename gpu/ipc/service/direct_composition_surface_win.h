@@ -5,17 +5,21 @@
 #ifndef GPU_IPC_SERVICE_DIRECT_COMPOSITION_SURFACE_WIN_H_
 #define GPU_IPC_SERVICE_DIRECT_COMPOSITION_SURFACE_WIN_H_
 
+#include <d3d11.h>
+#include <dcomp.h>
+#include <windows.h>
+
 #include "base/memory/weak_ptr.h"
+#include "base/win/scoped_comptr.h"
+#include "gpu/gpu_export.h"
 #include "gpu/ipc/service/child_window_win.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface_egl.h"
 
-#include <windows.h>
-
 namespace gpu {
 
-class DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
+class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
  public:
   DirectCompositionSurfaceWin(
       base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
@@ -41,7 +45,11 @@ class DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
                             gl::GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
+  bool FlipsVertically() const override;
   bool SupportsPostSubBuffer() override;
+  bool OnMakeCurrent(gl::GLContext* context) override;
+  bool SupportsSetDrawRectangle() const override;
+  bool SetDrawRectangle(const gfx::Rect& rect) override;
 
   bool Initialize(std::unique_ptr<gfx::VSyncProvider> vsync_provider);
 
@@ -67,15 +75,34 @@ class DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   };
 
   bool CommitAndClearPendingOverlays();
+  void InitializeSurface();
+  void ReleaseDrawTexture();
 
   ChildWindowWin child_window_;
 
-  HWND window_;
-  EGLSurface surface_;
-  gfx::Size size_;
-  bool first_swap_;
+  HWND window_ = nullptr;
+  // This is a placeholder surface used when not rendering to the
+  // DirectComposition surface.
+  EGLSurface default_surface_ = 0;
+
+  // This is the real surface representing the backbuffer. It may be null
+  // outside of a BeginDraw/EndDraw pair.
+  EGLSurface real_surface_ = 0;
+  gfx::Size size_ = gfx::Size(1, 1);
+  bool first_swap_ = true;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   std::vector<Overlay> pending_overlays_;
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
+  base::win::ScopedComPtr<IDCompositionDevice2> dcomp_device_;
+  base::win::ScopedComPtr<IDCompositionTarget> dcomp_target_;
+  base::win::ScopedComPtr<IDCompositionVisual2> visual_;
+  base::win::ScopedComPtr<IDCompositionSurface> dcomp_surface_;
+  base::win::ScopedComPtr<ID3D11Texture2D> draw_texture_;
+
+  // Keep track of whether the texture has been rendered to, as the first draw
+  // to it must overwrite the entire thing.
+  bool has_been_rendered_to_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionSurfaceWin);
 };

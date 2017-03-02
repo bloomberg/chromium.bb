@@ -229,6 +229,8 @@ class AndroidOutputSurface : public cc::OutputSurface {
     context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
+  void SetDrawRectangle(const gfx::Rect& rect) override {}
+
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,

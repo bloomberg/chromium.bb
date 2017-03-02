@@ -172,6 +172,7 @@ class OverlayOutputSurface : public OutputSurface {
   void BindFramebuffer() override {
     bind_framebuffer_count_ += 1;
   }
+  void SetDrawRectangle(const gfx::Rect& rect) override {}
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,

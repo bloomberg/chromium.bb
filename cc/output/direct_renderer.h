@@ -177,11 +177,13 @@ class CC_EXPORT DirectRenderer {
 
   // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
   // using partial swap.
-  bool allow_empty_swap_;
+  bool allow_empty_swap_ = false;
   // Whether partial swap can be used.
-  bool use_partial_swap_;
+  bool use_partial_swap_ = false;
   // Whether overdraw feedback is enabled and can be used.
   bool overdraw_feedback_ = false;
+  // Whether the SetDrawRectangle command is in use.
+  bool use_set_draw_rectangle_ = false;
 
   // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
   std::unordered_map<int, std::unique_ptr<ScopedResource>>

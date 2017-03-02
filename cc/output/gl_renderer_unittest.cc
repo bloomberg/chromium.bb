@@ -1532,6 +1532,7 @@ class MockOutputSurface : public OutputSurface {
                     bool has_alpha,
                     bool use_stencil));
   MOCK_METHOD0(BindFramebuffer, void());
+  MOCK_METHOD1(SetDrawRectangle, void(const gfx::Rect&));
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
   MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
   void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
@@ -1899,19 +1900,27 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
 class PartialSwapMockGLES2Interface : public TestGLES2Interface {
  public:
+  explicit PartialSwapMockGLES2Interface(bool support_set_draw_rectangle)
+      : support_set_draw_rectangle_(support_set_draw_rectangle) {}
+
   void InitializeTestContext(TestWebGraphicsContext3D* context) override {
     context->set_have_post_sub_buffer(true);
+    context->set_support_set_draw_rectangle(support_set_draw_rectangle_);
   }
 
   MOCK_METHOD1(Enable, void(GLenum cap));
   MOCK_METHOD1(Disable, void(GLenum cap));
   MOCK_METHOD4(Scissor, void(GLint x, GLint y, GLsizei width, GLsizei height));
+
+ private:
+  bool support_set_draw_rectangle_;
 };
 
 class GLRendererPartialSwapTest : public GLRendererTest {
  protected:
-  void RunTest(bool partial_swap) {
-    auto gl_owned = base::MakeUnique<PartialSwapMockGLES2Interface>();
+  void RunTest(bool partial_swap, bool set_draw_rectangle) {
+    auto gl_owned =
+        base::MakeUnique<PartialSwapMockGLES2Interface>(set_draw_rectangle);
     auto* gl = gl_owned.get();
 
     auto provider = TestContextProvider::Create(std::move(gl_owned));
@@ -1955,12 +1964,19 @@ class GLRendererPartialSwapTest : public GLRendererTest {
       // Partial frame, we should use a scissor to swap only that part when
       // partial swap is enabled.
       root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
+      gfx::Rect output_rectangle =
+          partial_swap ? root_pass->damage_rect : gfx::Rect(viewport_size);
 
-      if (partial_swap) {
+      if (partial_swap || set_draw_rectangle) {
         EXPECT_CALL(*gl, Enable(GL_SCISSOR_TEST)).InSequence(seq);
         // The scissor is flipped, so subtract the y coord and height from the
         // bottom of the GL viewport.
-        EXPECT_CALL(*gl, Scissor(2, viewport_size.height() - 3 - 2, 3, 3))
+        EXPECT_CALL(
+            *gl,
+            Scissor(output_rectangle.x(),
+                    viewport_size.height() - output_rectangle.y() -
+                        output_rectangle.height(),
+                    output_rectangle.width(), output_rectangle.height()))
             .InSequence(seq);
       }
 
@@ -1973,16 +1989,27 @@ class GLRendererPartialSwapTest : public GLRendererTest {
       renderer.DecideRenderPassAllocationsForFrame(
           render_passes_in_draw_order_);
       DrawFrame(&renderer, viewport_size);
+      if (set_draw_rectangle) {
+        EXPECT_EQ(output_rectangle, output_surface->last_set_draw_rectangle());
+      }
     }
   }
 };
 
 TEST_F(GLRendererPartialSwapTest, PartialSwap) {
-  RunTest(true);
+  RunTest(true, false);
 }
 
 TEST_F(GLRendererPartialSwapTest, NoPartialSwap) {
-  RunTest(false);
+  RunTest(false, false);
+}
+
+TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_PartialSwap) {
+  RunTest(true, true);
+}
+
+TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_NoPartialSwap) {
+  RunTest(false, true);
 }
 
 class GLRendererWithMockContextTest : public ::testing::Test {

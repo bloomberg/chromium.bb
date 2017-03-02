@@ -76,6 +76,7 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   bool SurfaceIsSuspendForRecycle() const override;
+  void SetDrawRectangle(const gfx::Rect& rect) override;
 
   // GpuVSyncControl implementation.
   void SetNeedsVSync(bool needs_vsync) override;
@@ -85,6 +86,10 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
 
   cc::OutputSurfaceClient* client_ = nullptr;
   std::unique_ptr<ReflectorTexture> reflector_texture_;
+  bool set_draw_rectangle_for_frame_ = false;
+  // True if the draw rectangle has been set at all since the last resize.
+  bool has_set_draw_rectangle_since_last_resize_ = false;
+  gfx::Size size_;
   base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_;
 
  private:

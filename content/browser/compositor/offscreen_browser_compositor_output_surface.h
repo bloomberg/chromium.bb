@@ -39,6 +39,7 @@ class OffscreenBrowserCompositorOutputSurface
   void BindToClient(cc::OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
+  void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,

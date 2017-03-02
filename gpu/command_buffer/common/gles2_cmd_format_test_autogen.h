@@ -5261,4 +5261,19 @@ TEST_F(GLES2FormatTest, SwapBuffersWithBoundsCHROMIUMImmediate) {
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
 
+TEST_F(GLES2FormatTest, SetDrawRectangleCHROMIUM) {
+  cmds::SetDrawRectangleCHROMIUM& cmd =
+      *GetBufferAs<cmds::SetDrawRectangleCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(11), static_cast<GLint>(12),
+                           static_cast<GLint>(13), static_cast<GLint>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::SetDrawRectangleCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(11), cmd.x);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.y);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.width);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.height);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

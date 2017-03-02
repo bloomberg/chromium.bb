@@ -3468,5 +3468,14 @@ error::Error GLES2DecoderPassthroughImpl::DoOverlayPromotionHintCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoSetDrawRectangleCHROMIUM(
+    GLint x,
+    GLint y,
+    GLint width,
+    GLint height) {
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

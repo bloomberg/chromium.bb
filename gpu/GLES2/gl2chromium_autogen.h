@@ -384,5 +384,6 @@
   GLES2_GET_FUN(OverlayPromotionHintCHROMIUM)
 #define glSwapBuffersWithBoundsCHROMIUM \
   GLES2_GET_FUN(SwapBuffersWithBoundsCHROMIUM)
+#define glSetDrawRectangleCHROMIUM GLES2_GET_FUN(SetDrawRectangleCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

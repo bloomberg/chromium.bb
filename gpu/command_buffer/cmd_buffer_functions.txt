@@ -363,3 +363,6 @@ GL_APICALL void         GL_APIENTRY glUniformMatrix4fvStreamTextureMatrixCHROMIU
 GL_APICALL void         GL_APIENTRY glOverlayPromotionHintCHROMIUM (GLidBindTexture texture, GLboolean promotion_hint, GLint display_x, GLint display_y);
 
 GL_APICALL void         GL_APIENTRY glSwapBuffersWithBoundsCHROMIUM (GLsizei count, const GLint* rects);
+
+// Extension CHROMIUM_set_draw_rectangle
+GL_APICALL void         GL_APIENTRY glSetDrawRectangleCHROMIUM (GLint x, GLint y, GLint width, GLint height);

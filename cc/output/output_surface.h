@@ -83,6 +83,11 @@ class CC_EXPORT OutputSurface {
   // OutputSurfaces.
   virtual void BindFramebuffer() = 0;
 
+  // Marks that the given rectangle will be drawn to on the default, bound
+  // framebuffer. Only valid for surfaces with set_draw_rectangle in the
+  // context capabilities.
+  virtual void SetDrawRectangle(const gfx::Rect& rect) = 0;
+
   // Get the class capable of informing cc of hardware overlay capability.
   virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const = 0;
 

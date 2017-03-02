@@ -22,6 +22,7 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
+  void SetDrawRectangle(const gfx::Rect& rect) override;
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,

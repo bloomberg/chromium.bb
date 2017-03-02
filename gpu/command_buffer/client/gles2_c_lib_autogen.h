@@ -1720,6 +1720,12 @@ void GL_APIENTRY GLES2SwapBuffersWithBoundsCHROMIUM(GLsizei count,
                                                     const GLint* rects) {
   gles2::GetGLContext()->SwapBuffersWithBoundsCHROMIUM(count, rects);
 }
+void GL_APIENTRY GLES2SetDrawRectangleCHROMIUM(GLint x,
+                                               GLint y,
+                                               GLint width,
+                                               GLint height) {
+  gles2::GetGLContext()->SetDrawRectangleCHROMIUM(x, y, width, height);
+}
 
 namespace gles2 {
 
@@ -3021,6 +3027,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glSwapBuffersWithBoundsCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glSwapBuffersWithBoundsCHROMIUM),
+    },
+    {
+        "glSetDrawRectangleCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glSetDrawRectangleCHROMIUM),
     },
     {
         NULL, NULL,

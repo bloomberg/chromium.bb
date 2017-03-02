@@ -168,6 +168,14 @@ bool GLSurface::BuffersFlipped() const {
   return false;
 }
 
+bool GLSurface::SupportsSetDrawRectangle() const {
+  return false;
+}
+
+bool GLSurface::SetDrawRectangle(const gfx::Rect& rect) {
+  return false;
+}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -347,6 +355,14 @@ bool GLSurfaceAdapter::FlipsVertically() const {
 
 bool GLSurfaceAdapter::BuffersFlipped() const {
   return surface_->BuffersFlipped();
+}
+
+bool GLSurfaceAdapter::SupportsSetDrawRectangle() const {
+  return surface_->SupportsSetDrawRectangle();
+}
+
+bool GLSurfaceAdapter::SetDrawRectangle(const gfx::Rect& rect) {
+  return surface_->SetDrawRectangle(rect);
 }
 
 void GLSurfaceAdapter::OnSetSwapInterval(int interval) {

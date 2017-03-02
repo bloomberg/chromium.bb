@@ -1170,4 +1170,8 @@ void GLES2InterfaceStub::OverlayPromotionHintCHROMIUM(
 void GLES2InterfaceStub::SwapBuffersWithBoundsCHROMIUM(
     GLsizei /* count */,
     const GLint* /* rects */) {}
+void GLES2InterfaceStub::SetDrawRectangleCHROMIUM(GLint /* x */,
+                                                  GLint /* y */,
+                                                  GLint /* width */,
+                                                  GLint /* height */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

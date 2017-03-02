@@ -329,7 +329,8 @@
   OP(GetFragDataIndexEXT)                                  /* 570 */ \
   OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 571 */ \
   OP(OverlayPromotionHintCHROMIUM)                         /* 572 */ \
-  OP(SwapBuffersWithBoundsCHROMIUMImmediate)               /* 573 */
+  OP(SwapBuffersWithBoundsCHROMIUMImmediate)               /* 573 */ \
+  OP(SetDrawRectangleCHROMIUM)                             /* 574 */
 
 enum CommandId {
   kOneBeforeStartPoint =

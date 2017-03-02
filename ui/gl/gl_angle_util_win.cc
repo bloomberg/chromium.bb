@@ -82,4 +82,54 @@ base::win::ScopedComPtr<IDirect3DDevice9> QueryD3D9DeviceObjectFromANGLE() {
   return d3d9_device;
 }
 
+base::win::ScopedComPtr<IDCompositionDevice2> QueryDirectCompositionDevice(
+    base::win::ScopedComPtr<ID3D11Device> d3d11_device) {
+  // Each D3D11 device will have a DirectComposition device stored in its
+  // private data under this GUID.
+  // {CF81D85A-8D30-4769-8509-B9D73898D870}
+  static const GUID kDirectCompositionGUID = {
+      0xcf81d85a,
+      0x8d30,
+      0x4769,
+      {0x85, 0x9, 0xb9, 0xd7, 0x38, 0x98, 0xd8, 0x70}};
+
+  base::win::ScopedComPtr<IDCompositionDevice2> dcomp_device;
+  if (!d3d11_device)
+    return dcomp_device;
+
+  UINT data_size = sizeof(dcomp_device.get());
+  HRESULT hr = d3d11_device->GetPrivateData(kDirectCompositionGUID, &data_size,
+                                            dcomp_device.ReceiveVoid());
+  if (SUCCEEDED(hr) && dcomp_device)
+    return dcomp_device;
+
+  // Allocate a new DirectComposition device if none currently exists.
+  HMODULE dcomp_module = ::GetModuleHandle(L"dcomp.dll");
+  if (!dcomp_module)
+    return dcomp_device;
+
+  using PFN_DCOMPOSITION_CREATE_DEVICE2 = HRESULT(WINAPI*)(
+      IUnknown * renderingDevice, REFIID iid, void** dcompositionDevice);
+  PFN_DCOMPOSITION_CREATE_DEVICE2 create_device_function =
+      reinterpret_cast<PFN_DCOMPOSITION_CREATE_DEVICE2>(
+          ::GetProcAddress(dcomp_module, "DCompositionCreateDevice2"));
+  if (!create_device_function)
+    return dcomp_device;
+
+  base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
+  d3d11_device.QueryInterface(dxgi_device.Receive());
+  base::win::ScopedComPtr<IDCompositionDesktopDevice> desktop_device;
+  hr = create_device_function(dxgi_device.get(),
+                              IID_PPV_ARGS(desktop_device.Receive()));
+  if (FAILED(hr))
+    return dcomp_device;
+
+  hr = desktop_device.QueryInterface(dcomp_device.Receive());
+  CHECK(SUCCEEDED(hr));
+  d3d11_device->SetPrivateDataInterface(kDirectCompositionGUID,
+                                        dcomp_device.get());
+
+  return dcomp_device;
+}
+
 }  // namespace gl
