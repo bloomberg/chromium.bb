@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_service.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_mounter.h"
 
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
@@ -15,10 +15,10 @@ using content::BrowserThread;
 namespace arc {
 
 // static
-const char ArcFileSystemService::kArcServiceName[] =
-    "arc::ArcFileSystemService";
+const char ArcFileSystemMounter::kArcServiceName[] =
+    "arc::ArcFileSystemMounter";
 
-ArcFileSystemService::ArcFileSystemService(ArcBridgeService* bridge_service)
+ArcFileSystemMounter::ArcFileSystemMounter(ArcBridgeService* bridge_service)
     : ArcService(bridge_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -36,7 +36,7 @@ ArcFileSystemService::ArcFileSystemService(ArcBridgeService* bridge_service)
       base::FilePath(kDocumentsProviderMountPointPath));
 }
 
-ArcFileSystemService::~ArcFileSystemService() {
+ArcFileSystemMounter::~ArcFileSystemMounter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   storage::ExternalMountPoints* mount_points =
