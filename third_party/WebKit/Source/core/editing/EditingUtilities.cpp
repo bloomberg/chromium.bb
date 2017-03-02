@@ -291,6 +291,15 @@ int comparePositions(const VisiblePosition& a, const VisiblePosition& b) {
   return comparePositions(a.deepEquivalent(), b.deepEquivalent());
 }
 
+// TODO(editing-dev): We should implement real version which refers
+// "user-select" CSS property.
+// TODO(editing-dev): We should make |SelectionAdjuster| to use this funciton
+// instead of |isSelectionBondary()|.
+bool isUserSelectContain(const Node& node) {
+  return isHTMLTextAreaElement(node) || isHTMLInputElement(node) ||
+         isHTMLSelectElement(node);
+}
+
 enum EditableLevel { Editable, RichlyEditable };
 static bool hasEditableLevel(const Node& node, EditableLevel editableLevel) {
   DCHECK(node.document().isActive());

@@ -220,6 +220,37 @@ TEST_F(VisibleSelectionTest, Initialisation) {
   EXPECT_EQ(NoSelection, noSelection.getSelectionType());
 }
 
+// For http://crbug.com/695317
+TEST_F(VisibleSelectionTest, SelectAllWithInputElement) {
+  setBodyContent("<input>123");
+  Element* const htmlElement = document().documentElement();
+  Element* const input = document().querySelector("input");
+  Node* const lastChild = document().body()->lastChild();
+
+  const VisibleSelection& visibleSelectinInDOMTree = createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position::firstPositionInNode(htmlElement))
+          .extend(Position::lastPositionInNode(htmlElement))
+          .build());
+  EXPECT_EQ(SelectionInDOMTree::Builder()
+                .collapse(Position::beforeNode(input))
+                .extend(Position(lastChild, 3))
+                .build(),
+            visibleSelectinInDOMTree.asSelection());
+
+  const VisibleSelectionInFlatTree& visibleSelectinInFlatTree =
+      createVisibleSelection(
+          SelectionInFlatTree::Builder()
+              .collapse(PositionInFlatTree::firstPositionInNode(htmlElement))
+              .extend(PositionInFlatTree::lastPositionInNode(htmlElement))
+              .build());
+  EXPECT_EQ(SelectionInFlatTree::Builder()
+                .collapse(PositionInFlatTree::beforeNode(input))
+                .extend(PositionInFlatTree(lastChild, 3))
+                .build(),
+            visibleSelectinInFlatTree.asSelection());
+}
+
 TEST_F(VisibleSelectionTest, ShadowCrossing) {
   const char* bodyContent =
       "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";

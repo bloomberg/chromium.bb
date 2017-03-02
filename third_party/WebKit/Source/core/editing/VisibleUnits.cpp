@@ -2874,6 +2874,18 @@ static bool isStreamer(const PositionIteratorAlgorithm<Strategy>& pos) {
 }
 
 template <typename Strategy>
+static PositionTemplate<Strategy> adjustPositionForBackwardIteration(
+    const PositionTemplate<Strategy>& position) {
+  DCHECK(!position.isNull());
+  if (!position.isAfterAnchor())
+    return position;
+  if (isUserSelectContain(*position.anchorNode()))
+    return position.toOffsetInAnchor();
+  return PositionTemplate<Strategy>::editingPositionOf(
+      position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode()));
+}
+
+template <typename Strategy>
 static PositionTemplate<Strategy> mostBackwardCaretPosition(
     const PositionTemplate<Strategy>& position,
     EditingBoundaryCrossingRule rule) {
@@ -2888,11 +2900,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(
   Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
   // FIXME: PositionIterator should respect Before and After positions.
   PositionIteratorAlgorithm<Strategy> lastVisible(
-      position.isAfterAnchor()
-          ? PositionTemplate<Strategy>::editingPositionOf(
-                position.anchorNode(),
-                Strategy::caretMaxOffset(*position.anchorNode()))
-          : position);
+      adjustPositionForBackwardIteration<Strategy>(position));
   PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
   bool startEditable = hasEditableStyle(*startNode);
   Node* lastNode = startNode;

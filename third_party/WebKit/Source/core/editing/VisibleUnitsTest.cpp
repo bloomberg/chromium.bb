@@ -235,6 +235,20 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithHTMLHtmlElement) {
             canonicalPositionOf(Position(two, 1)));
 }
 
+// For http://crbug.com/695317
+TEST_F(VisibleUnitsTest, canonicalPositionOfWithInputElement) {
+  setBodyContent("<input>123");
+  Element* const input = document().querySelector("input");
+
+  EXPECT_EQ(Position::beforeNode(input),
+            canonicalPositionOf(
+                Position::firstPositionInNode(document().documentElement())));
+
+  EXPECT_EQ(PositionInFlatTree::beforeNode(input),
+            canonicalPositionOf(PositionInFlatTree::firstPositionInNode(
+                document().documentElement())));
+}
+
 TEST_F(VisibleUnitsTest, characterBefore) {
   const char* bodyContent =
       "<p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";

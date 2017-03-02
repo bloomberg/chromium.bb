@@ -218,6 +218,28 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
   EXPECT_EQ_SELECTED_TEXT("Foo Bar");
 }
 
+// For http://crbug.com/695317
+TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
+  setBodyContent("<input>123");
+  Element* const input = document().querySelector("input");
+  Node* const lastChild = document().body()->lastChild();
+  selection().selectAll();
+  const SelectionInDOMTree& resultInDOMTree =
+      selection().computeVisibleSelectionInDOMTree().asSelection();
+  const SelectionInFlatTree& resultInFlatTree =
+      selection().computeVisibleSelectionInFlatTree().asSelection();
+  EXPECT_EQ(SelectionInDOMTree::Builder(resultInDOMTree)
+                .collapse(Position::beforeNode(input))
+                .extend(Position(lastChild, 3))
+                .build(),
+            resultInDOMTree);
+  EXPECT_EQ(SelectionInFlatTree::Builder(resultInFlatTree)
+                .collapse(PositionInFlatTree::beforeNode(input))
+                .extend(PositionInFlatTree(lastChild, 3))
+                .build(),
+            resultInFlatTree);
+}
+
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
   Element* select = document().createElement("select");
   document().replaceChild(select, document().documentElement());

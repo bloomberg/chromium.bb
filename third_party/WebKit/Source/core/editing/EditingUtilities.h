@@ -74,6 +74,9 @@ CORE_EXPORT bool needsLayoutTreeUpdate(const PositionInFlatTree&);
 // Node
 // -------------------------------------------------------------------------
 
+// Returns true if |node| has "user-select:contain".
+bool isUserSelectContain(const Node& /* node */);
+
 CORE_EXPORT bool hasEditableStyle(const Node&);
 CORE_EXPORT bool hasRichlyEditableStyle(const Node&);
 CORE_EXPORT bool isRootEditableElement(const Node&);
