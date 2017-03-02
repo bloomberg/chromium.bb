@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/task_scheduler/scheduler_worker_params.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -41,8 +42,8 @@ class BASE_EXPORT SchedulerWorkerPoolParams final {
       TimeDelta suggested_reclaim_time,
       SchedulerBackwardCompatibility backward_compatibility =
           SchedulerBackwardCompatibility::DISABLED);
-  SchedulerWorkerPoolParams(const SchedulerWorkerPoolParams& other);
-  SchedulerWorkerPoolParams& operator=(const SchedulerWorkerPoolParams& other);
+  SchedulerWorkerPoolParams(SchedulerWorkerPoolParams&& other);
+  SchedulerWorkerPoolParams& operator=(SchedulerWorkerPoolParams&& other);
 
   const std::string& name() const { return name_; }
   ThreadPriority priority_hint() const { return priority_hint_; }
@@ -62,6 +63,8 @@ class BASE_EXPORT SchedulerWorkerPoolParams final {
   size_t max_threads_;
   TimeDelta suggested_reclaim_time_;
   SchedulerBackwardCompatibility backward_compatibility_;
+
+  DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPoolParams);
 };
 
 }  // namespace base
