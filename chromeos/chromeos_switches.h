@@ -24,7 +24,6 @@ namespace switches {
 CHROMEOS_EXPORT extern const char kAggressiveCacheDiscardThreshold[];
 CHROMEOS_EXPORT extern const char kAggressiveTabDiscardThreshold[];
 CHROMEOS_EXPORT extern const char kAggressiveThreshold[];
-CHROMEOS_EXPORT extern const char kAllowDataRoamingByDefault[];
 CHROMEOS_EXPORT extern const char kAllowFailedPolicyFetchForTest[];
 CHROMEOS_EXPORT extern const char kAllowRAInDevMode[];
 CHROMEOS_EXPORT extern const char kAppAutoLaunched[];
@@ -33,6 +32,7 @@ CHROMEOS_EXPORT extern const char kArcAvailability[];
 CHROMEOS_EXPORT extern const char kArcAvailable[];
 CHROMEOS_EXPORT extern const char kArtifactsDir[];
 CHROMEOS_EXPORT extern const char kAshWebUIInit[];
+CHROMEOS_EXPORT extern const char kCellularFirst[];
 CHROMEOS_EXPORT extern const char kChildWallpaperLarge[];
 CHROMEOS_EXPORT extern const char kChildWallpaperSmall[];
 CHROMEOS_EXPORT extern const char kConservativeThreshold[];
@@ -146,6 +146,9 @@ GetMemoryPressureThresholds();
 // Returns true if flags are set indicating that stored user keys are being
 // converted to GAIA IDs.
 CHROMEOS_EXPORT bool IsGaiaIdMigrationStarted();
+
+// Returns true if this is a Cellular First device.
+CHROMEOS_EXPORT bool IsCellularFirstDevice();
 
 }  // namespace switches
 }  // namespace chromeos

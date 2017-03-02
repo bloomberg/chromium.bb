@@ -184,6 +184,7 @@ class WizardController : public BaseScreenDelegate,
 
   // Shows update screen and starts update process.
   void InitiateOOBEUpdate();
+  void StartOOBEUpdate();
 
   // Actions that should be done right after EULA is accepted,
   // before update check.

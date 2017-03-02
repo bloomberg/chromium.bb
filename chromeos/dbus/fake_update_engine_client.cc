@@ -87,6 +87,12 @@ void FakeUpdateEngineClient::GetEolStatus(
       base::Bind(callback, update_engine::EndOfLifeStatus::kSupported));
 }
 
+void FakeUpdateEngineClient::SetUpdateOverCellularPermission(
+    bool allowed,
+    const base::Closure& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+}
+
 void FakeUpdateEngineClient::set_default_status(
     const UpdateEngineClient::Status& status) {
   default_status_ = status;

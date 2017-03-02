@@ -516,6 +516,57 @@ class WizardControllerFlowTest : public WizardControllerTest {
         OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   }
 
+  void TestControlFlowMain() {
+    CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+
+    WaitUntilJSIsReady();
+
+    // Check visibility of the header bar.
+    ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
+
+    EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+    EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+    OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
+
+    CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+
+    // Header bar should still be visible.
+    ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
+
+    EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+    EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+    EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+    // Enable TimeZone resolve
+    InitTimezoneResolver();
+    OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+    EXPECT_TRUE(GetGeolocationProvider());
+
+    // Let update screen smooth time process (time = 0ms).
+    content::RunAllPendingInMessageLoop();
+
+    CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+    EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+    EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
+    OnExit(*mock_update_screen_, ScreenExitCode::UPDATE_INSTALLED);
+
+    CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+    EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(0);
+    EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
+    OnExit(*mock_auto_enrollment_check_screen_,
+           ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+
+    EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
+    EXPECT_EQ("ethernet,wifi,cellular", NetworkHandler::Get()
+                                            ->network_state_handler()
+                                            ->GetCheckPortalListForTest());
+
+    WaitUntilTimezoneResolved();
+    EXPECT_EQ(
+        "America/Anchorage",
+        base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
+                              ->GetCurrentTimezoneID()));
+  }
+
   linked_ptr<MockNetworkScreen> mock_network_screen_;
   MockOutShowHide<MockUpdateScreen, MockUpdateView>* mock_update_screen_;
   MockOutShowHide<MockEulaScreen, MockEulaView>* mock_eula_screen_;
@@ -543,53 +594,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-
-  WaitUntilJSIsReady();
-
-  // Check visibility of the header bar.
-  ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
-
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
-  OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
-
-  // Header bar should still be visible.
-  ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
-
-  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  // Enable TimeZone resolve
-  InitTimezoneResolver();
-  OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
-  EXPECT_TRUE(GetGeolocationProvider());
-
-  // Let update screen smooth time process (time = 0ms).
-  content::RunAllPendingInMessageLoop();
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
-  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(*mock_update_screen_, ScreenExitCode::UPDATE_INSTALLED);
-
-  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(0);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
-  OnExit(*mock_auto_enrollment_check_screen_,
-         ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
-
-  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-  EXPECT_EQ("ethernet,wifi,cellular",
-            NetworkHandler::Get()->network_state_handler()
-            ->GetCheckPortalListForTest());
-
-  WaitUntilTimezoneResolved();
-  EXPECT_EQ("America/Anchorage",
-            base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
-                                  ->GetCurrentTimezoneID()));
+  TestControlFlowMain();
 }
 
 // This test verifies that if WizardController fails to apply a non-critical
@@ -1297,6 +1302,22 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
                        ControlFlowResumeInterruptedOobe) {
   EXPECT_EQ(OobeScreen::SCREEN_OOBE_ENROLLMENT, GetFirstScreen());
+}
+
+class WizardControllerCellularFirstTest : public WizardControllerFlowTest {
+ protected:
+  WizardControllerCellularFirstTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kCellularFirst);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerCellularFirstTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerCellularFirstTest, CellularFirstFlow) {
+  TestControlFlowMain();
 }
 
 // TODO(dzhioev): Add test emaulating device with wrong HWID.

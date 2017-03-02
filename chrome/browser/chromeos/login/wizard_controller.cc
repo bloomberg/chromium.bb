@@ -877,7 +877,21 @@ void WizardController::InitiateOOBEUpdate() {
     return;
   }
 
-  VLOG(1) << "InitiateOOBEUpdate";
+  // If this is a Cellular First device, instruct UpdateEngine to allow
+  // updates over cellular data connections.
+  if (chromeos::switches::IsCellularFirstDevice()) {
+    DBusThreadManager::Get()
+        ->GetUpdateEngineClient()
+        ->SetUpdateOverCellularPermission(
+            true, base::Bind(&WizardController::StartOOBEUpdate,
+                             weak_factory_.GetWeakPtr()));
+  } else {
+    StartOOBEUpdate();
+  }
+}
+
+void WizardController::StartOOBEUpdate() {
+  VLOG(1) << "StartOOBEUpdate";
   SetCurrentScreenSmooth(GetScreen(OobeScreen::SCREEN_OOBE_UPDATE), true);
   UpdateScreen::Get(this)->StartNetworkCheck();
 }

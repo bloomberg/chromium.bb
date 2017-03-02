@@ -15,6 +15,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 
 namespace chromeos {
@@ -141,6 +142,12 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
 
   // Get EndOfLife status of the device and calls |callback| when completed.
   virtual void GetEolStatus(const GetEolStatusCallback& callback) = 0;
+
+  // Either allow or disallow receiving updates over cellular connections.
+  // Synchronous (blocking) method.
+  virtual void SetUpdateOverCellularPermission(
+      bool allowed,
+      const base::Closure& callback) = 0;
 
   // Returns an empty UpdateCheckCallback that does nothing.
   static UpdateCheckCallback EmptyUpdateCheckCallback();

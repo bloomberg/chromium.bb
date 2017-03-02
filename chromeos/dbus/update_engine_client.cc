@@ -218,6 +218,23 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void SetUpdateOverCellularPermission(bool allowed,
+                                       const base::Closure& callback) override {
+    dbus::MethodCall method_call(
+        update_engine::kUpdateEngineInterface,
+        update_engine::kSetUpdateOverCellularPermission);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(allowed);
+
+    VLOG(1) << "Requesting UpdateEngine to " << (allowed ? "allow" : "prohibit")
+            << " updates over cellular.";
+
+    return update_engine_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpdateEngineClientImpl::OnSetUpdateOverCellularPermission,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     update_engine_proxy_ = bus->GetObjectProxy(
@@ -394,6 +411,35 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     callback.Run(static_cast<update_engine::EndOfLifeStatus>(status));
   }
 
+  // Called when a response for SetUpdateOverCellularPermission() is received.
+  void OnSetUpdateOverCellularPermission(const base::Closure& callback,
+                                         dbus::Response* response) {
+    constexpr char kFailureMessage[] =
+        "Failed to set UpdateEngine to allow updates over cellular: ";
+
+    if (response) {
+      switch (response->GetMessageType()) {
+        case dbus::Message::MESSAGE_ERROR:
+          LOG(ERROR) << kFailureMessage
+                     << "DBus responded with error: " << response->ToString();
+          break;
+        case dbus::Message::MESSAGE_INVALID:
+          LOG(ERROR) << kFailureMessage
+                     << "Invalid response from DBus (cannot be parsed).";
+          break;
+        default:
+          VLOG(1) << "Successfully set UpdateEngine to allow update over cell.";
+          break;
+      }
+    } else {
+      LOG(ERROR) << kFailureMessage << "No response from DBus.";
+    }
+
+    // Callback should run anyway, regardless of whether DBus call to enable
+    // update over cellular succeeded or failed.
+    callback.Run();
+  }
+
   // Called when a status update signal is received.
   void StatusUpdateReceived(dbus::Signal* signal) {
     VLOG(1) << "Status update signal received: " << signal->ToString();
@@ -485,6 +531,11 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
 
   void GetEolStatus(const GetEolStatusCallback& callback) override {
     callback.Run(update_engine::EndOfLifeStatus::kSupported);
+  }
+
+  void SetUpdateOverCellularPermission(bool allowed,
+                                       const base::Closure& callback) override {
+    callback.Run();
   }
 
   std::string current_channel_;

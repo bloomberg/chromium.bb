@@ -59,14 +59,14 @@ DeviceNetworkConfigurationUpdater::DeviceNetworkConfigurationUpdater(
 void DeviceNetworkConfigurationUpdater::Init() {
   NetworkConfigurationUpdater::Init();
 
-  // TODO(xdai): kAllowDataRoamingByDefault is only used by Rialto devices for
-  // development/testing purpose. After Rialto migrates to use KIOSK app mode,
-  // remove this part of logic.
   const policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+  // The highest authority regarding whether cellular data roaming should be
+  // allowed is the Device Policy. If there is no Device Policy, then
+  // data roaming should be allowed if this is a Cellular First device.
   if (!connector->IsEnterpriseManaged() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kAllowDataRoamingByDefault)) {
+      chromeos::switches::IsCellularFirstDevice()) {
     network_device_handler_->SetCellularAllowRoaming(true);
   } else {
     // Apply the roaming setting initially.
@@ -74,6 +74,7 @@ void DeviceNetworkConfigurationUpdater::Init() {
   }
 
   // Set up MAC address randomization if we are not enterprise managed.
+
   network_device_handler_->SetMACAddressRandomizationEnabled(
       !connector->IsEnterpriseManaged());
 }
