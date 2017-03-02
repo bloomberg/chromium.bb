@@ -777,8 +777,8 @@ android_library("android_webview_commandline_java") {
 android_library("android_webview_crash_services_java") {
   java_files = [
     "java/src/org/chromium/android_webview/crash/AwMinidumpUploadJobService.java",
+    "java/src/org/chromium/android_webview/crash/AwMinidumpUploaderDelegate.java",
     "java/src/org/chromium/android_webview/crash/CrashReceiverService.java",
-    "java/src/org/chromium/android_webview/crash/MinidumpUploaderImpl.java",
   ]
   deps = [
     ":android_webview_commandline_java",

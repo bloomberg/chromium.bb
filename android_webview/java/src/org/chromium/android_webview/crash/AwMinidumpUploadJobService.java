@@ -10,6 +10,7 @@ import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.components.minidump_uploader.MinidumpUploadJobService;
 import org.chromium.components.minidump_uploader.MinidumpUploader;
+import org.chromium.components.minidump_uploader.MinidumpUploaderImpl;
 
 /**
  * Class that interacts with the Android JobScheduler to upload Minidumps at appropriate times.
@@ -31,6 +32,6 @@ public class AwMinidumpUploadJobService extends MinidumpUploadJobService {
         // Ensure we can use ContextUtils later on (from the minidump_uploader component).
         ContextUtils.initApplicationContext(this.getApplicationContext());
 
-        return new MinidumpUploaderImpl(this);
+        return new MinidumpUploaderImpl(new AwMinidumpUploaderDelegate(this));
     }
 }
