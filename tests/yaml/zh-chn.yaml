@@ -1,7 +1,7 @@
-tables: [tables/unicode.dis, tables/zh-chn.ctb]
+table: [tables/unicode.dis, tables/zh-chn.ctb]
 tests:
   - [八,⠃⠔]
-  - [8,⠼⠓]
+  - [8,⠼⠓, {xfail: true}]
   - [白,⠃⠪]
   - [门,⠍⠴]
   - [特,⠞⠢]
