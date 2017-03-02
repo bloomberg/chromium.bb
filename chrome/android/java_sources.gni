@@ -526,6 +526,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/ui/MediaSessionTabHelper.java",
   "java/src/org/chromium/chrome/browser/metrics/ActivityStopMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/LaunchMetrics.java",
+  "java/src/org/chromium/chrome/browser/metrics/MainIntentBehaviorMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/MediaSessionUMA.java",
   "java/src/org/chromium/chrome/browser/metrics/MediaNotificationUma.java",
   "java/src/org/chromium/chrome/browser/metrics/MemoryUma.java",

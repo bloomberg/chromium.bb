@@ -10261,6 +10261,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileStartup.MainIntentReceived">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    An ACTION_MAIN intent was received by Chrome.  This is the best indicator we
+    have to signal the user tapped on the Chrome icon from the launcher.
+  </description>
+</action>
+
 <action name="MobileTabClobbered">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -467,8 +467,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mAppMenuPropertiesDelegate = createAppMenuPropertiesDelegate();
         mAppMenuHandler = sAppMenuHandlerFactory.get(this, mAppMenuPropertiesDelegate,
                 getAppMenuLayoutId());
+        Callback<Boolean> urlFocusChangedCallback = new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean hasFocus) {
+                onOmniboxFocusChanged(hasFocus);
+            }
+        };
         mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
-                mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator());
+                mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator(),
+                urlFocusChangedCallback);
         mAppMenuHandler.addObserver(new AppMenuObserver() {
             @Override
             public void onMenuVisibilityChanged(boolean isVisible) {
@@ -1594,6 +1601,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onOrientationChange(int orientation) {
         if (mToolbarManager != null) mToolbarManager.onOrientationChange();
     }
+
+    /**
+     * Notified when the focus of the omnibox has changed.
+     *
+     * @param hasFocus Whether the omnibox currently has focus.
+     */
+    protected void onOmniboxFocusChanged(boolean hasFocus) {}
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {

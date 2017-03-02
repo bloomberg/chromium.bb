@@ -78,6 +78,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.VideoPersister;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
+import org.chromium.chrome.browser.metrics.MainIntentBehaviorMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
@@ -206,7 +207,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     /** The task id of the activity that tabs were merged into. */
     private static int sMergedInstanceTaskId;
 
-    private final ActivityStopMetrics mActivityStopMetrics = new ActivityStopMetrics();
+    private final ActivityStopMetrics mActivityStopMetrics;
+    private final MainIntentBehaviorMetrics mMainIntentMetrics;
 
     private FindToolbarManager mFindToolbarManager;
 
@@ -307,6 +309,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         return TextUtils.equals(className, ChromeTabbedActivity.class.getName())
                 || TextUtils.equals(className, MultiInstanceChromeTabbedActivity.class.getName())
                 || TextUtils.equals(className, ChromeTabbedActivity2.class.getName());
+    }
+
+    /**
+     * Constructs a ChromeTabbedActivity.
+     */
+    public ChromeTabbedActivity() {
+        mActivityStopMetrics = new ActivityStopMetrics();
+        mMainIntentMetrics = new MainIntentBehaviorMetrics(this);
     }
 
     @Override
@@ -569,7 +579,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         try {
             TraceEvent.begin("ChromeTabbedActivity.onNewIntentWithNative");
 
-            if (!maybeLaunchNtpFromIntent(intent)) super.onNewIntentWithNative(intent);
+            super.onNewIntentWithNative(intent);
+            if (isMainIntent(intent)) {
+                if (IntentHandler.getUrlFromIntent(intent) == null) {
+                    maybeLaunchNtpFromMainIntent(intent);
+                }
+                logMainIntentBehavior(intent);
+            }
 
             if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS)) {
                 handleDebugIntent(intent);
@@ -705,16 +721,27 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         }
     }
 
+    private boolean isMainIntent(Intent intent) {
+        return intent != null && TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN);
+    }
+
+    private void logMainIntentBehavior(Intent intent) {
+        assert isMainIntent(intent);
+        long currentTime = System.currentTimeMillis();
+        long lastBackgroundedTimeMs = ContextUtils.getAppSharedPreferences().getLong(
+                LAST_BACKGROUNDED_TIME_MS_PREF, currentTime);
+        mMainIntentMetrics.onMainIntentWithNative(currentTime - lastBackgroundedTimeMs);
+    }
+
     /**
      * Determines if the intent should trigger an NTP and launches it if applicable.
      *
      * @param intent The intent to check whether an NTP should be triggered.
      * @return Whether an NTP was triggered as a result of this intent.
      */
-    private boolean maybeLaunchNtpFromIntent(Intent intent) {
-        if (intent == null || !TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN)) {
-            return false;
-        }
+    private boolean maybeLaunchNtpFromMainIntent(Intent intent) {
+        assert isMainIntent(intent);
+
         if (!mIntentHandler.isIntentUserVisible()) return false;
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY)) {
@@ -741,13 +768,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return false;
         }
 
-        PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
-            @Override
-            public void run() {
-                createInitialTab();
-            }
-        }, INITIAL_TAB_CREATION_TIMEOUT_MS);
-
+        getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
         return true;
     }
 
@@ -795,10 +816,17 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     // TODO(mthiesse): Improve startup when started from a VR intent. Right now
                     // we launch out of VR, partially load out of VR, then switch into VR.
                     mVrShellDelegate.enterVRIfNecessary();
-                } else if (maybeLaunchNtpFromIntent(getIntent())) {
-                    mIntentWithEffect = true;
                 } else if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(intent);
+                }
+
+                if (isMainIntent(intent)) {
+                    if (IntentHandler.getUrlFromIntent(intent) == null) {
+                        assert !mIntentWithEffect
+                                : "ACTION_MAIN should not have triggered any prior action";
+                        mIntentWithEffect = maybeLaunchNtpFromMainIntent(intent);
+                    }
+                    logMainIntentBehavior(intent);
                 }
             }
 
@@ -825,6 +853,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         new Runnable() {
                             @Override
                             public void run() {
+                                mMainIntentMetrics.ignorePendingAddTab();
                                 createInitialTab();
                             }
                         }, INITIAL_TAB_CREATION_TIMEOUT_MS);
@@ -1389,6 +1418,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
         return true;
+    }
+
+    @Override
+    protected void onOmniboxFocusChanged(boolean hasFocus) {
+        super.onOmniboxFocusChanged(hasFocus);
+
+        mMainIntentMetrics.onOmniboxFocused();
     }
 
     private void recordBackPressedUma(String logMessage, @BackPressedResult int action) {
