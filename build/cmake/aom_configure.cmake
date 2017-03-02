@@ -17,7 +17,6 @@ include(FindPerl)
 # aom_config_defaults.cmake (because it turns every config variable into a cache
 # variable with its own help string).
 get_cmake_property(cmake_cache_vars CACHE_VARIABLES)
-
 foreach(cache_var ${cmake_cache_vars})
   get_property(cache_var_helpstring CACHE ${cache_var} PROPERTY HELPSTRING)
   set(cmdline_helpstring  "No help, variable specified on the command line.")
@@ -25,6 +24,7 @@ foreach(cache_var ${cmake_cache_vars})
     set(AOM_CMAKE_CONFIG "${AOM_CMAKE_CONFIG} -D${cache_var}=${${cache_var}}")
   endif ()
 endforeach()
+string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 
 include("${AOM_ROOT}/build/cmake/aom_config_defaults.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
@@ -51,10 +51,16 @@ if (NOT AOM_TARGET_CPU)
   endif ()
 endif ()
 
-# Add generator and target to the config string.
+if (CMAKE_TOOLCHAIN_FILE)
+  # Add toolchain file to config string.
+  set(toolchain_string "-DCMAKE_TOOLCHAIN_FILE=\\\"${CMAKE_TOOLCHAIN_FILE}\\\"")
+  set(AOM_CMAKE_CONFIG "${toolchain_string} ${AOM_CMAKE_CONFIG}")
+else ()
+  # Add detected CPU to the config string.
+  set(AOM_CMAKE_CONFIG "-DAOM_TARGET_CPU=${AOM_TARGET_CPU} ${AOM_CMAKE_CONFIG}")
+endif ()
+set(AOM_CMAKE_CONFIG "-G \\\"${CMAKE_GENERATOR}\\\" ${AOM_CMAKE_CONFIG}")
 string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
-set(AOM_CMAKE_CONFIG "CMAKE_GENERATOR=${CMAKE_GENERATOR} ${AOM_CMAKE_CONFIG}")
-set(AOM_CMAKE_CONFIG "AOM_TARGET_CPU=${AOM_TARGET_CPU} ${AOM_CMAKE_CONFIG}")
 
 message("--- aom_configure: Detected CPU: ${AOM_TARGET_CPU}")
 set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
