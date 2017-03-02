@@ -3414,6 +3414,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // redirection to an un-printable page can happen before it is reflected in
   // the UI.
   if (![currentTab viewForPrinting]) {
+    TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeError);
     [self showSnackbar:l10n_util::GetNSString(IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
     return;
   }
@@ -3438,6 +3439,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   readingModel->AddEntry(URL, base::SysNSStringToUTF8(title),
                          reading_list::ADDED_VIA_CURRENT_APP);
 
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
   [self showSnackbar:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
 }
@@ -4851,8 +4853,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   switch (shareStatus) {
     case ShareTo::SHARE_SUCCESS:
-      if ([message length])
+      if ([message length]) {
+        TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
         [self showSnackbar:message];
+      }
       break;
     case ShareTo::SHARE_ERROR:
       [self showErrorAlert:IDS_IOS_SHARE_TO_ERROR_ALERT_TITLE
@@ -4886,6 +4890,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                                  completionHandler:^(BOOL completed) {
                                    if (shown || !completed || ![message length])
                                      return;
+                                   TriggerHapticFeedbackForNotification(
+                                       UINotificationFeedbackTypeSuccess);
                                    [self showSnackbar:message];
                                    shown = YES;
                                  }];

@@ -681,3 +681,13 @@ void TriggerHapticFeedbackForSelectionChange() {
     [generator selectionChanged];
   }
 }
+
+// On iOS10 and above, trigger a haptic vibration for a notification.
+// This is a no-op for devices that do not support it.
+void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type) {
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    UINotificationFeedbackGenerator* generator =
+        [[UINotificationFeedbackGenerator alloc] init];
+    [generator notificationOccurred:type];
+  }
+}

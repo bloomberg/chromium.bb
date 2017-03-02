@@ -279,5 +279,6 @@ UIResponder* GetFirstResponder();
 // actions. This is a no-op for devices that do not support haptic feedback.
 void TriggerHapticFeedbackForAction();
 void TriggerHapticFeedbackForSelectionChange();
+void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type);
 
 #endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_
