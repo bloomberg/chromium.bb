@@ -9,12 +9,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "cc/output/context_provider.h"
+#include "cc/surfaces/frame_sink_id_allocator.h"
+#include "cc/surfaces/surface_manager.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -22,9 +25,10 @@
 namespace mash {
 namespace test {
 
-class TestContextFactory : public ui::ContextFactory {
+class TestContextFactory : public ui::ContextFactory,
+                           public ui::ContextFactoryPrivate {
  public:
-  TestContextFactory() {}
+  TestContextFactory() : frame_sink_id_allocator_(0) {}
   ~TestContextFactory() override {}
 
  private:
@@ -50,8 +54,33 @@ class TestContextFactory : public ui::ContextFactory {
   void AddObserver(ui::ContextFactoryObserver* observer) override {}
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
+  // ui::ContextFactoryPrivate:
+  std::unique_ptr<ui::Reflector> CreateReflector(
+      ui::Compositor* mirrored_compositor,
+      ui::Layer* mirroring_layer) override {
+    return nullptr;
+  }
+  void RemoveReflector(ui::Reflector* reflector) override {}
+  cc::FrameSinkId AllocateFrameSinkId() override {
+    return frame_sink_id_allocator_.NextFrameSinkId();
+  }
+  cc::SurfaceManager* GetSurfaceManager() override { return &surface_manager_; }
+  void SetDisplayVisible(ui::Compositor* compositor, bool visible) override {}
+  void ResizeDisplay(ui::Compositor* compositor,
+                     const gfx::Size& size) override {}
+  void SetDisplayColorSpace(ui::Compositor* compositor,
+                            const gfx::ColorSpace& color_space) override {}
+  void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
+                                     base::TimeDelta interval) override {}
+  void SetDisplayVSyncParameters(ui::Compositor* compositor,
+                                 base::TimeTicks timebase,
+                                 base::TimeDelta interval) override {}
+  void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
+
   cc::TestTaskGraphRunner task_graph_runner_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  cc::FrameSinkIdAllocator frame_sink_id_allocator_;
+  cc::SurfaceManager surface_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextFactory);
 };
@@ -78,6 +107,7 @@ void MashTestSuite::Initialize() {
 
   compositor_context_factory_ = base::MakeUnique<TestContextFactory>();
   env_->set_context_factory(compositor_context_factory_.get());
+  env_->set_context_factory_private(compositor_context_factory_.get());
 }
 
 void MashTestSuite::Shutdown() {
