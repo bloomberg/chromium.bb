@@ -875,13 +875,20 @@ char16* WriteInto(string16* str, size_t length_with_null) {
 template <typename list_type, typename string_type>
 static string_type JoinStringT(const list_type& parts,
                                BasicStringPiece<string_type> sep) {
-  auto iter = parts.begin();
-  // Early-exit to avoid bad access to the first element.
-  if (iter == parts.end())
+  if (parts.size() == 0)
     return string_type();
 
-  // Begin constructing the result from the first element.
-  string_type result(iter->data(), iter->size());
+  // Pre-allocate the eventual size of the string. Start with the size of all of
+  // the separators (note that this *assumes* parts.size() > 0).
+  size_t total_size = (parts.size() - 1) * sep.size();
+  for (const auto& part : parts)
+    total_size += part.size();
+  string_type result;
+  result.reserve(total_size);
+
+  auto iter = parts.begin();
+  DCHECK(iter != parts.end());
+  AppendToString(&result, *iter);
   ++iter;
 
   for (; iter != parts.end(); ++iter) {
@@ -891,6 +898,9 @@ static string_type JoinStringT(const list_type& parts,
     // StringPiece object.
     AppendToString(&result, *iter);
   }
+
+  // Sanity-check that we pre-allocated correctly.
+  DCHECK_EQ(total_size, result.size());
 
   return result;
 }
