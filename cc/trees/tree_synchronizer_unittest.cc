@@ -493,6 +493,9 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
   transient_scroll_layer->AddChild(scroll_clip_layer);
   scroll_clip_layer->AddChild(scroll_layer);
 
+  ElementId scroll_element_id = ElementId(5, 4);
+  scroll_layer->SetElementId(scroll_element_id);
+
   transient_scroll_layer->SetScrollClipLayerId(
       transient_scroll_clip_layer->id());
   scroll_layer->SetScrollClipLayerId(scroll_clip_layer->id());
@@ -536,6 +539,9 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   scoped_refptr<Layer> scroll_layer = Layer::Create();
   scoped_refptr<Layer> transient_scroll_clip_layer = Layer::Create();
   scoped_refptr<Layer> transient_scroll_layer = Layer::Create();
+
+  ElementId scroll_element_id = ElementId(5, 4);
+  scroll_layer->SetElementId(scroll_element_id);
 
   layer_tree_root->AddChild(transient_scroll_clip_layer);
   transient_scroll_clip_layer->AddChild(transient_scroll_layer);

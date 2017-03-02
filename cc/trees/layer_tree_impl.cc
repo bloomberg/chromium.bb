@@ -436,22 +436,23 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // The request queue should have been processed and does not require a push.
   DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
 
-  // To maintain the correct currently scrolling node we need to use layer ids
-  // which are stable across the property tree update in SetPropertyTrees.
-  // TODO(pdr): Remove the use of owning_layer_id.
-  int scrolling_layer_id = Layer::INVALID_ID;
-  if (ScrollNode* node = target_tree->CurrentlyScrollingNode())
-    scrolling_layer_id = node->owning_layer_id;
+  // To maintain the current scrolling node we need to use element ids which
+  // are stable across the property tree update in SetPropertyTrees.
+  ElementId scrolling_element_id;
+  if (ScrollNode* scrolling_node = target_tree->CurrentlyScrollingNode())
+    scrolling_element_id = scrolling_node->element_id;
 
   target_tree->SetPropertyTrees(&property_trees_);
 
   ScrollNode* scrolling_node = nullptr;
-  auto& scroll_node_index_map =
-      target_tree->property_trees()->layer_id_to_scroll_node_index;
-  auto scrolling_node_it = scroll_node_index_map.find(scrolling_layer_id);
-  if (scrolling_node_it != scroll_node_index_map.end()) {
-    int index = scrolling_node_it->second;
-    scrolling_node = target_tree->property_trees()->scroll_tree.Node(index);
+  if (scrolling_element_id) {
+    auto& scroll_node_index_map =
+        target_tree->property_trees()->element_id_to_scroll_node_index;
+    auto scrolling_node_it = scroll_node_index_map.find(scrolling_element_id);
+    if (scrolling_node_it != scroll_node_index_map.end()) {
+      int index = scrolling_node_it->second;
+      scrolling_node = target_tree->property_trees()->scroll_tree.Node(index);
+    }
   }
   target_tree->SetCurrentlyScrollingNode(scrolling_node);
 
