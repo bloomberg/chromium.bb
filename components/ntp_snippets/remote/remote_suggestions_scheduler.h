@@ -12,6 +12,23 @@ namespace ntp_snippets {
 // Interface for informing the scheduler.
 class RemoteSuggestionsScheduler {
  public:
+  // Internal triggers to consider fetching content suggestions.
+
+  // Called whenever the remote suggestions provider becomes active (on startup,
+  // or later on).
+  virtual void OnProviderActivated() = 0;
+
+  // Called whenever the remote suggestions provider becomes inactive (on
+  // startup, or later on).
+  virtual void OnProviderDeactivated() = 0;
+
+  // Called whenever the remote suggestions provider clears all suggestions.
+  virtual void OnSuggestionsCleared() = 0;
+
+  // Called whenever the remote suggestions provider clears all suggestions
+  // because history gets cleared (and we must not show them any more).
+  virtual void OnHistoryCleared() = 0;
+
   // External triggers to consider fetching content suggestions.
 
   // Called whenever chrome is started warm or the user switches to Chrome.

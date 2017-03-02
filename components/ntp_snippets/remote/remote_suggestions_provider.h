@@ -19,28 +19,12 @@ class RemoteSuggestionsFetcher;
 // provides them as content suggestions.
 class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
  public:
-  // TODO(jkrcal): Would be nice to get rid of this another level of statuses.
-  // Maybe possible while refactoring the RemoteSuggestionsStatusService? (and
-  // letting it notify both the SchedulingRemoteSuggestionsProvider and
-  // RemoteSuggestionsProviderImpl or just the scheduling one).
-  enum class ProviderStatus { ACTIVE, INACTIVE };
-  using ProviderStatusCallback =
-      base::RepeatingCallback<void(ProviderStatus status)>;
-
   // Callback to notify with the result of a fetch.
   // TODO(jkrcal): Change to OnceCallback? A OnceCallback does only have a
   // move-constructor which seems problematic for google mock.
   using FetchStatusCallback = base::Callback<void(Status status_code)>;
 
   ~RemoteSuggestionsProvider() override;
-
-  // Set a callback to be notified whenever the status of the provider changes.
-  // The initial change is also notified (switching from an initial undecided
-  // status). If the callback is set after the first change, it is called back
-  // immediately.
-  // TODO(treib): Get rid of unique_ptrs to callbacks.
-  virtual void SetProviderStatusCallback(
-      std::unique_ptr<ProviderStatusCallback> callback) = 0;
 
   // Fetches suggestions from the server for all remote categories and replaces
   // old suggestions by the new ones. The request to the server is performed as

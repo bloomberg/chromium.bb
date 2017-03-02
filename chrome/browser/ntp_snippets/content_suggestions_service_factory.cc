@@ -216,10 +216,12 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   scheduler = NTPSnippetsLauncher::Get();
 #endif  // OS_ANDROID
 
+  RemoteSuggestionsProviderImpl* provider_raw = provider.get();
   auto scheduling_provider =
       base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
           service, std::move(provider), scheduler, service->user_classifier(),
           pref_service, base::MakeUnique<base::DefaultClock>());
+  provider_raw->SetRemoteSuggestionsScheduler(scheduling_provider.get());
   service->set_remote_suggestions_provider(scheduling_provider.get());
   service->set_remote_suggestions_scheduler(scheduling_provider.get());
   service->RegisterProvider(std::move(scheduling_provider));

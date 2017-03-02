@@ -174,11 +174,13 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
                                                          prefs));
 
     // TODO(jkrcal): Implement a persistent scheduler for iOS. crbug.com/676249
+    RemoteSuggestionsProviderImpl* provider_raw = provider.get();
     auto scheduling_provider =
         base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
             service.get(), std::move(provider),
             /*persistent_scheduler=*/nullptr, service->user_classifier(), prefs,
             base::MakeUnique<base::DefaultClock>());
+    provider_raw->SetRemoteSuggestionsScheduler(scheduling_provider.get());
     service->set_remote_suggestions_provider(scheduling_provider.get());
     service->set_remote_suggestions_scheduler(scheduling_provider.get());
     service->RegisterProvider(std::move(scheduling_provider));

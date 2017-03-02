@@ -51,6 +51,9 @@ class UserClassifier;
 // unsafe to derive from it.
 // TODO(jkrcal): Introduce two-phase initialization and make the class not
 // final? (see the same comment for RemoteSuggestionsProvider)
+// TODO(jkrcal): Change the interface to ContentSuggestionsProvider. We do not
+// need any special functionality, all special should be exposed in the
+// Scheduler interface. crbug.com/695447
 class SchedulingRemoteSuggestionsProvider final
     : public RemoteSuggestionsProvider,
       public RemoteSuggestionsScheduler {
@@ -68,6 +71,10 @@ class SchedulingRemoteSuggestionsProvider final
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // RemoteSuggestionsScheduler implementation.
+  void OnProviderActivated() override;
+  void OnProviderDeactivated() override;
+  void OnSuggestionsCleared() override;
+  void OnHistoryCleared() override;
   void RescheduleFetching() override;
   void OnPersistentSchedulerWakeUp() override;
   void OnBrowserForegrounded() override;
@@ -75,8 +82,6 @@ class SchedulingRemoteSuggestionsProvider final
   void OnNTPOpened() override;
 
   // RemoteSuggestionsProvider implementation.
-  void SetProviderStatusCallback(
-      std::unique_ptr<ProviderStatusCallback> callback) override;
   void RefetchInTheBackground(
       std::unique_ptr<FetchStatusCallback> callback) override;
   const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
@@ -119,10 +124,6 @@ class SchedulingRemoteSuggestionsProvider final
 
   enum class TriggerType;
 
-  // Callback that is notified whenever the status of |provider_| changes.
-  void OnProviderStatusChanged(
-      RemoteSuggestionsProvider::ProviderStatus status);
-
   // After the call, updates will be scheduled in the future. Idempotent, can be
   // run any time later without impacting the current schedule.
   // If you want to enforce rescheduling, call Unschedule() and then Schedule().
@@ -156,6 +157,10 @@ class SchedulingRemoteSuggestionsProvider final
   // Common function to call after a fetch of any type is finished.
   void OnFetchCompleted(Status fetch_status);
 
+  // Clears the time of the last fetch so that the provider is ready to make a
+  // soft fetch at any later time (upon a trigger).
+  void ClearLastFetchAttemptTime();
+
   FetchingSchedule GetDesiredFetchingSchedule() const;
 
   // Load and store |schedule_|.
@@ -187,6 +192,8 @@ class SchedulingRemoteSuggestionsProvider final
   PrefService* pref_service_;
   std::unique_ptr<base::Clock> clock_;
   std::set<SchedulingRemoteSuggestionsProvider::TriggerType> enabled_triggers_;
+
+  base::Time background_fetches_allowed_after_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulingRemoteSuggestionsProvider);
 };

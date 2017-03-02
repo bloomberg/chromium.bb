@@ -26,6 +26,7 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
+#include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -284,8 +285,8 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       fetch_when_ready_(false),
       fetch_when_ready_interactive_(false),
       fetch_when_ready_callback_(nullptr),
-      provider_status_callback_(nullptr),
-      nuke_when_initialized_(false),
+      remote_suggestions_scheduler_(nullptr),
+      clear_history_dependent_state_when_initialized_(false),
       clock_(base::MakeUnique<base::DefaultClock>()) {
   RestoreCategoriesFromPrefs();
   // The articles category always exists. Add it if we didn't get it from prefs.
@@ -326,9 +327,9 @@ void RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
   RemoteSuggestionsStatusService::RegisterProfilePrefs(registry);
 }
 
-void RemoteSuggestionsProviderImpl::SetProviderStatusCallback(
-    std::unique_ptr<ProviderStatusCallback> callback) {
-  provider_status_callback_ = std::move(callback);
+void RemoteSuggestionsProviderImpl::SetRemoteSuggestionsScheduler(
+    RemoteSuggestionsScheduler* scheduler) {
+  remote_suggestions_scheduler_ = scheduler;
   // Call the observer right away if we've reached any final state.
   NotifyStateChanged();
 }
@@ -447,13 +448,7 @@ void RemoteSuggestionsProviderImpl::ClearHistory(
   // Both time range and the filter are ignored and all suggestions are removed,
   // because it is not known which history entries were used for the suggestions
   // personalization.
-  if (!ready()) {
-    // No need to refresh the UI afterwards as we didn't provide any data to the
-    // UI so far.
-    nuke_when_initialized_ = true;
-  } else {
-    NukeAllSuggestions();
-  }
+  ClearHistoryDependentState();
 }
 
 void RemoteSuggestionsProviderImpl::ClearCachedSuggestions(Category category) {
@@ -881,6 +876,27 @@ void RemoteSuggestionsProviderImpl::ClearOrphanedImages() {
   database_->GarbageCollectImages(std::move(alive_suggestions));
 }
 
+void RemoteSuggestionsProviderImpl::ClearHistoryDependentState() {
+  if (!initialized()) {
+    clear_history_dependent_state_when_initialized_ = true;
+    return;
+  }
+
+  NukeAllSuggestions();
+  if (remote_suggestions_scheduler_) {
+    remote_suggestions_scheduler_->OnHistoryCleared();
+  }
+}
+
+void RemoteSuggestionsProviderImpl::ClearSuggestions() {
+  DCHECK(initialized());
+
+  NukeAllSuggestions();
+  if (remote_suggestions_scheduler_) {
+    remote_suggestions_scheduler_->OnSuggestionsCleared();
+  }
+}
+
 void RemoteSuggestionsProviderImpl::NukeAllSuggestions() {
   for (const auto& item : category_contents_) {
     Category category = item.first;
@@ -919,20 +935,14 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionImage(
 }
 
 void RemoteSuggestionsProviderImpl::EnterStateReady() {
-  if (nuke_when_initialized_) {
-    NukeAllSuggestions();
-    nuke_when_initialized_ = false;
+  if (clear_history_dependent_state_when_initialized_) {
+    clear_history_dependent_state_when_initialized_ = false;
+    ClearHistoryDependentState();
   }
 
   auto article_category_it = category_contents_.find(articles_category_);
   DCHECK(article_category_it != category_contents_.end());
-  if (article_category_it->second.suggestions.empty() || fetch_when_ready_) {
-    // TODO(jkrcal): Fetching suggestions automatically upon creation of this
-    // lazily created service can cause troubles, e.g. in unit tests where
-    // network I/O is not allowed.
-    // Either add a DCHECK here that we actually are allowed to do network I/O
-    // or change the logic so that some explicit call is always needed for the
-    // network request.
+  if (fetch_when_ready_) {
     FetchSuggestions(fetch_when_ready_interactive_,
                      std::move(fetch_when_ready_callback_));
     fetch_when_ready_ = false;
@@ -950,7 +960,7 @@ void RemoteSuggestionsProviderImpl::EnterStateReady() {
 }
 
 void RemoteSuggestionsProviderImpl::EnterStateDisabled() {
-  NukeAllSuggestions();
+  ClearSuggestions();
 }
 
 void RemoteSuggestionsProviderImpl::EnterStateError() {
@@ -958,11 +968,11 @@ void RemoteSuggestionsProviderImpl::EnterStateError() {
 }
 
 void RemoteSuggestionsProviderImpl::FinishInitialization() {
-  if (nuke_when_initialized_) {
-    // We nuke here in addition to EnterStateReady, so that it happens even if
+  if (clear_history_dependent_state_when_initialized_) {
+    // We clear here in addition to EnterStateReady, so that it happens even if
     // we enter the DISABLED state below.
-    NukeAllSuggestions();
-    nuke_when_initialized_ = false;
+    clear_history_dependent_state_when_initialized_ = false;
+    ClearHistoryDependentState();
   }
 
   // Note: Initializing the status service will run the callback right away with
@@ -990,12 +1000,9 @@ void RemoteSuggestionsProviderImpl::OnStatusChanged(
     case RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN:
       if (old_status == RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT) {
         DCHECK(state_ == State::READY);
-        // Clear nonpersonalized suggestions.
-        NukeAllSuggestions();
-        // Fetch personalized ones.
-        // TODO(jkrcal): Loop in SchedulingRemoteSuggestionsProvider somehow.
-        FetchSuggestions(/*interactive_request=*/true,
-                         /*callback=*/nullptr);
+        // Clear nonpersonalized suggestions (and notify the scheduler there are
+        // no suggestions).
+        ClearSuggestions();
       } else {
         // Do not change the status. That will be done in EnterStateReady().
         EnterState(State::READY);
@@ -1005,12 +1012,9 @@ void RemoteSuggestionsProviderImpl::OnStatusChanged(
     case RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT:
       if (old_status == RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN) {
         DCHECK(state_ == State::READY);
-        // Clear personalized suggestions.
-        NukeAllSuggestions();
-        // Fetch nonpersonalized ones.
-        // TODO(jkrcal): Loop in SchedulingRemoteSuggestionsProvider somehow.
-        FetchSuggestions(/*interactive_request=*/true,
-                         /*callback=*/nullptr);
+        // Clear personalized suggestions (and notify the scheduler there are
+        // no suggestions).
+        ClearSuggestions();
       } else {
         // Do not change the status. That will be done in EnterStateReady().
         EnterState(State::READY);
@@ -1070,7 +1074,7 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
 }
 
 void RemoteSuggestionsProviderImpl::NotifyStateChanged() {
-  if (!provider_status_callback_) {
+  if (!remote_suggestions_scheduler_) {
     return;
   }
 
@@ -1079,13 +1083,13 @@ void RemoteSuggestionsProviderImpl::NotifyStateChanged() {
       // Initial state, not sure yet whether active or not.
       break;
     case State::READY:
-      provider_status_callback_->Run(ProviderStatus::ACTIVE);
+      remote_suggestions_scheduler_->OnProviderActivated();
       break;
     case State::DISABLED:
-      provider_status_callback_->Run(ProviderStatus::INACTIVE);
+      remote_suggestions_scheduler_->OnProviderDeactivated();
       break;
     case State::ERROR_OCCURRED:
-      provider_status_callback_->Run(ProviderStatus::INACTIVE);
+      remote_suggestions_scheduler_->OnProviderDeactivated();
       break;
     case State::COUNT:
       NOTREACHED();

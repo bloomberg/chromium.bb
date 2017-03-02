@@ -95,6 +95,8 @@ const char* kTriggerTypeNames[] = {"persistent_scheduler_wake_up", "ntp_opened",
 const char* kTriggerTypesParamName = "scheduler_trigger_types";
 const char* kTriggerTypesParamValueForEmptyList = "-";
 
+const int kBlockBackgroundFetchesMinutesAfterClearingHistory = 30;
+
 // Returns the time interval to use for scheduling remote suggestion fetches for
 // the given interval and user_class.
 base::TimeDelta GetDesiredFetchingInterval(
@@ -191,12 +193,6 @@ SchedulingRemoteSuggestionsProvider::SchedulingRemoteSuggestionsProvider(
   DCHECK(pref_service);
 
   LoadLastFetchingSchedule();
-
-  provider_->SetProviderStatusCallback(
-      base::MakeUnique<RemoteSuggestionsProvider::ProviderStatusCallback>(
-          base::BindRepeating(
-              &SchedulingRemoteSuggestionsProvider::OnProviderStatusChanged,
-              base::Unretained(this))));
 }
 
 SchedulingRemoteSuggestionsProvider::~SchedulingRemoteSuggestionsProvider() =
@@ -213,6 +209,30 @@ void SchedulingRemoteSuggestionsProvider::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSnippetLastFetchAttempt, 0);
   registry->RegisterInt64Pref(prefs::kSnippetSoftFetchingIntervalOnNtpOpened,
                               0);
+}
+
+void SchedulingRemoteSuggestionsProvider::OnProviderActivated() {
+  StartScheduling();
+}
+
+void SchedulingRemoteSuggestionsProvider::OnProviderDeactivated() {
+  StopScheduling();
+}
+
+void SchedulingRemoteSuggestionsProvider::OnSuggestionsCleared() {
+  // There are no suggestions, be as eager to fetch as possible.
+  ClearLastFetchAttemptTime();
+}
+
+void SchedulingRemoteSuggestionsProvider::OnHistoryCleared() {
+  // Due to privacy, we should not fetch for a while (unless the user explicitly
+  // asks for new suggestions) to give sync the time to propagate the changes in
+  // history to the server.
+  background_fetches_allowed_after_ =
+      clock_->Now() + base::TimeDelta::FromMinutes(
+                          kBlockBackgroundFetchesMinutesAfterClearingHistory);
+  // After that time elapses, we should fetch as soon as possible.
+  ClearLastFetchAttemptTime();
 }
 
 void SchedulingRemoteSuggestionsProvider::RescheduleFetching() {
@@ -251,11 +271,6 @@ void SchedulingRemoteSuggestionsProvider::OnNTPOpened() {
   }
 
   RefetchInTheBackgroundIfEnabled(TriggerType::NTP_OPENED);
-}
-
-void SchedulingRemoteSuggestionsProvider::SetProviderStatusCallback(
-    std::unique_ptr<ProviderStatusCallback> callback) {
-  provider_->SetProviderStatusCallback(std::move(callback));
 }
 
 void SchedulingRemoteSuggestionsProvider::RefetchInTheBackground(
@@ -342,19 +357,6 @@ void SchedulingRemoteSuggestionsProvider::GetDismissedSuggestionsForDebugging(
 void SchedulingRemoteSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
     Category category) {
   provider_->ClearDismissedSuggestionsForDebugging(category);
-}
-
-void SchedulingRemoteSuggestionsProvider::OnProviderStatusChanged(
-    RemoteSuggestionsProvider::ProviderStatus status) {
-  switch (status) {
-    case RemoteSuggestionsProvider::ProviderStatus::ACTIVE:
-      StartScheduling();
-      return;
-    case RemoteSuggestionsProvider::ProviderStatus::INACTIVE:
-      StopScheduling();
-      return;
-  }
-  NOTREACHED();
 }
 
 void SchedulingRemoteSuggestionsProvider::StartScheduling() {
@@ -469,7 +471,10 @@ bool SchedulingRemoteSuggestionsProvider::ShouldRefetchInTheBackgroundNow(
       NOTREACHED();
       break;
   }
-  return first_allowed_fetch_time <= clock_->Now();
+  base::Time now = clock_->Now();
+
+  return background_fetches_allowed_after_ <= now &&
+         first_allowed_fetch_time <= now;
 }
 
 bool SchedulingRemoteSuggestionsProvider::BackgroundFetchesDisabled(
@@ -517,6 +522,10 @@ void SchedulingRemoteSuggestionsProvider::OnFetchCompleted(
     return;
   }
   ApplyPersistentFetchingSchedule();
+}
+
+void SchedulingRemoteSuggestionsProvider::ClearLastFetchAttemptTime() {
+  pref_service_->ClearPref(prefs::kSnippetLastFetchAttempt);
 }
 
 std::set<SchedulingRemoteSuggestionsProvider::TriggerType>
