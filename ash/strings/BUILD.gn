@@ -8,7 +8,7 @@ import("//tools/grit/repack.gni")
 assert(is_chromeos)
 
 grit("strings") {
-  source = "../../ash_strings.grd"
+  source = "../ash_strings.grd"
   use_qualified_include = true
   outputs = [
     "grit/ash_strings.h",
@@ -77,7 +77,7 @@ template("repack_one_locale_ash") {
   repack(target_name) {
     # Each input pak file should also have a deps line for completeness.
     sources = [
-      "$root_gen_dir/ash/common/strings/ash_strings_${locale}.pak",
+      "$root_gen_dir/ash/strings/ash_strings_${locale}.pak",
       "$root_gen_dir/device/bluetooth/strings/bluetooth_strings_${locale}.pak",
       "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_${locale}.pak",
       "$root_gen_dir/ui/strings/app_locale_settings_${locale}.pak",
@@ -85,7 +85,7 @@ template("repack_one_locale_ash") {
     ]
 
     deps = [
-      "//ash/common/strings",
+      "//ash/strings",
       "//device/bluetooth/strings",
       "//ui/chromeos/strings",
       "//ui/strings:app_locale_settings",

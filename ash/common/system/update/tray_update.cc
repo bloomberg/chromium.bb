@@ -5,7 +5,6 @@
 #include "ash/common/system/update/tray_update.h"
 
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_controller.h"
@@ -16,6 +15,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/update.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"

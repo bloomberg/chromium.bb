@@ -4,9 +4,9 @@
 
 #include "ash/display/resolution_notification_controller.h"
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"

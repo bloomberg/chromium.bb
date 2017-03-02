@@ -11,11 +11,11 @@
 #include <string>
 #include <utility>
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"

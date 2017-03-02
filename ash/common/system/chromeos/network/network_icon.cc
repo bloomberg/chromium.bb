@@ -4,12 +4,12 @@
 
 #include "ash/common/system/chromeos/network/network_icon.h"
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/device_state.h"

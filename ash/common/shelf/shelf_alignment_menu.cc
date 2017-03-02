@@ -6,9 +6,9 @@
 
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/strings/grit/ash_strings.h"
 
 namespace ash {
 

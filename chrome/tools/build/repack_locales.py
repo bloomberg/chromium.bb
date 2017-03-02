@@ -98,8 +98,8 @@ def calc_inputs(locale):
                 'components_%s_strings_%s.pak' % (BRANDING, locale)))
 
   if USE_ASH:
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash/common/strings/ash_strings_da.pak',
-    inputs.append(os.path.join(SHARE_INT_DIR, 'ash', 'common', 'strings',
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash/strings/ash_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ash', 'strings',
                   'ash_strings_%s.pak' % locale))
 
   if CHROMEOS:

@@ -4,10 +4,10 @@
 
 #include "ash/common/system/chromeos/power/battery_notification.h"
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"

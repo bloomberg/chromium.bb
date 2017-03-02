@@ -6,12 +6,12 @@
 
 #include <set>
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"

@@ -6,7 +6,6 @@
 
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -14,6 +13,7 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"

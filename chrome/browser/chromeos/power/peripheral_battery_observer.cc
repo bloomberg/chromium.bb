@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"

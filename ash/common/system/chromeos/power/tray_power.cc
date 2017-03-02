@@ -8,7 +8,6 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_switches.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/chromeos/power/battery_notification.h"
 #include "ash/common/system/chromeos/power/dual_role_notification.h"
@@ -19,6 +18,7 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"

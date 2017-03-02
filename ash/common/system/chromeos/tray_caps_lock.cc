@@ -5,7 +5,6 @@
 #include "ash/common/system/chromeos/tray_caps_lock.h"
 
 #include "ash/common/accessibility_delegate.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -15,6 +14,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/sys_info.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"

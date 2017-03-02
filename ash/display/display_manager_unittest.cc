@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/common/ash_switches.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_util.h"
@@ -14,6 +13,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "ash/wm/window_state_aura.h"

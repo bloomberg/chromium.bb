@@ -149,8 +149,8 @@ service_manifest("manifest") {
 repack("resources") {
   output = "$root_out_dir/ash_mus_resources.pak"
   sources = [
-    "$root_gen_dir/ash/common/strings/ash_strings_en-US.pak",
     "$root_gen_dir/ash/resources/ash_resources_100_percent.pak",
+    "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
     "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
     "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
@@ -159,8 +159,8 @@ repack("resources") {
     "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
   ]
   deps = [
-    "//ash/common/strings",
     "//ash/resources",
+    "//ash/strings",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/resources",

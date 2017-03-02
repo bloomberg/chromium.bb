@@ -5,11 +5,11 @@
 #include "ash/common/system/chromeos/audio/audio_detailed_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "ui/base/l10n/l10n_util.h"

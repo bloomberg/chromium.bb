@@ -4,11 +4,11 @@
 
 #include "ash/system/chromeos/screen_layout_observer.h"
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

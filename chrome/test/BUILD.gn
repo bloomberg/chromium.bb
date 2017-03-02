@@ -4179,8 +4179,8 @@ test("unit_tests") {
       "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
     ]
     deps += [
-      "//ash/common/strings",
       "//ash/resources",
+      "//ash/strings",
       "//ash/test:ash_with_aura_test_support",
       "//ash/test:test_support_with_content",
     ]

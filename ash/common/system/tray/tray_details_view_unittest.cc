@@ -5,7 +5,6 @@
 #include "ash/common/system/tray/tray_details_view.h"
 
 #include "ash/common/ash_view_ids.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -14,6 +13,7 @@
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"

@@ -4,7 +4,7 @@
 
 #include "ash/common/system/chromeos/devicetype_utils.h"
 
-#include "ash/common/strings/grit/ash_strings.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "chromeos/system/devicetype.h"
 #include "ui/base/l10n/l10n_util.h"
 

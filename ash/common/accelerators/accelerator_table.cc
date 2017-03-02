@@ -4,7 +4,7 @@
 
 #include "ash/common/accelerators/accelerator_table.h"
 
-#include "ash/common/strings/grit/ash_strings.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 
 namespace ash {

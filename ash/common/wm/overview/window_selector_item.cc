@@ -9,7 +9,6 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm/overview/cleanup_animation_observer.h"
 #include "ash/common/wm/overview/overview_animation_type.h"
 #include "ash/common/wm/overview/scoped_overview_animation_settings.h"
@@ -25,6 +24,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/auto_reset.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

@@ -8,9 +8,9 @@
 #include <cmath>
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

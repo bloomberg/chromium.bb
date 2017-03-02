@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "ash/common/strings/grit/ash_strings.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"

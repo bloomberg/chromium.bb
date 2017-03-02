@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
@@ -20,6 +19,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

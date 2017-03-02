@@ -4,10 +4,10 @@
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"

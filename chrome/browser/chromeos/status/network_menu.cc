@@ -8,8 +8,8 @@
 
 #include <algorithm>
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"

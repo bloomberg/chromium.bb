@@ -4,11 +4,11 @@
 
 #include "ash/display/display_configuration_controller.h"
 
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/display/display_animator.h"
 #include "ash/display/display_animator_chromeos.h"
 #include "ash/display/display_util.h"
 #include "ash/rotator/screen_rotation_animator.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/base/l10n/l10n_util.h"

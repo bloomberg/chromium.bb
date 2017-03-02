@@ -841,10 +841,10 @@ component("ash") {
   defines = [ "ASH_IMPLEMENTATION" ]
 
   public_deps = [
-    "//ash/common/strings",
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/shared:app_types",
+    "//ash/strings",
   ]
   deps = [
     "//ash/autoclick/common:autoclick",
@@ -1145,7 +1145,7 @@ test("ash_content_unittests") {
   ]
 
   data_deps = [
-    "//ash/common/strings:ash_test_strings",
+    "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_with_content_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
   ]
@@ -1389,10 +1389,10 @@ test("ash_unittests") {
     ":ash",
     ":common_unittests",
     "//ash/autoclick/common:autoclick",
-    "//ash/common/strings",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/resources",
     "//ash/resources/vector_icons",
+    "//ash/strings",
     "//ash/test:ash_with_aura_test_support",
     "//ash/test:test_support_without_content",
     "//ash/touch_hud",
@@ -1445,7 +1445,7 @@ test("ash_unittests") {
   ]
 
   data_deps = [
-    "//ash/common/strings:ash_test_strings",
+    "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
   ]
@@ -1479,7 +1479,7 @@ executable("ash_shell_with_content") {
   ]
 
   data_deps = [
-    "//ash/common/strings:ash_test_strings",
+    "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_with_content_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
   ]

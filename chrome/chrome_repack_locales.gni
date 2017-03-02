@@ -42,8 +42,8 @@ template("chrome_repack_locales") {
     }
 
     if (use_ash) {
-      source_patterns += [ "${root_gen_dir}/ash/common/strings/ash_strings_" ]
-      deps += [ "//ash/common/strings" ]
+      source_patterns += [ "${root_gen_dir}/ash/strings/ash_strings_" ]
+      deps += [ "//ash/strings" ]
     }
     if (is_chromeos) {
       source_patterns += [

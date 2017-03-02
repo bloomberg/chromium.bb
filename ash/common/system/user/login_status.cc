@@ -5,8 +5,8 @@
 #include "ash/common/system/user/login_status.h"
 
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm_shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"

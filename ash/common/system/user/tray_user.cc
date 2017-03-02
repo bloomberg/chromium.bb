@@ -6,7 +6,6 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
@@ -16,6 +15,7 @@
 #include "ash/common/system/user/rounded_image_view.h"
 #include "ash/common/system/user/user_view.h"
 #include "ash/common/wm_shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "components/signin/core/account_id/account_id.h"

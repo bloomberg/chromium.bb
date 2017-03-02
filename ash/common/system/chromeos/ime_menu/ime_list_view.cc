@@ -5,7 +5,6 @@
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_menu_button.h"
@@ -18,6 +17,7 @@
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

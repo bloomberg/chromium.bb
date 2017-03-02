@@ -18,8 +18,8 @@ source_set("chromeos") {
 
   public_deps = [
     ":device_policy_proto",
-    "//ash/common/strings",
     "//ash/resources",
+    "//ash/strings",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",

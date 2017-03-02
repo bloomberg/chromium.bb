@@ -5,11 +5,11 @@
 #include "ash/mus/context_menu_mus.h"
 
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/strings/grit/ash_strings.h"
 
 namespace ash {
 
