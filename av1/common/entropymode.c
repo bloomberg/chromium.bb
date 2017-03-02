@@ -2012,12 +2012,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
           av1_switchable_interp_tree, pre_fc->switchable_interp_prob[i],
           counts->switchable_interp[i], fc->switchable_interp_prob[i]);
   }
-
-#if CONFIG_DELTA_Q
-  for (i = 0; i < DELTA_Q_PROBS; ++i)
-    fc->delta_q_prob[i] =
-        mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
-#endif
 }
 
 void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
