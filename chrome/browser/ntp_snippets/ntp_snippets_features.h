@@ -13,6 +13,11 @@ namespace ntp_snippets {
 // Enables and configures notifications for content suggestions.
 extern const base::Feature kNotificationsFeature;
 
+// An integer. The priority of the notification, ranging from -2 (PRIORITY_MIN)
+// to 2 (PRIORITY_MAX). Vibrates and makes sound if >= 0.
+extern const char kNotificationsPriorityParam[];
+constexpr int kNotificationsDefaultPriority = -1;
+
 // "false": use server signals to decide whether to send a notification
 // "true": always send a notification when we receive ARTICLES suggestions
 extern const char kNotificationsAlwaysNotifyParam[];

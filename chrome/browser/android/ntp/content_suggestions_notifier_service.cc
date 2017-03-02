@@ -32,10 +32,12 @@ using ntp_snippets::KnownCategories;
 using params::ntp_snippets::kNotificationsAlwaysNotifyParam;
 using params::ntp_snippets::kNotificationsDailyLimit;
 using params::ntp_snippets::kNotificationsDefaultDailyLimit;
+using params::ntp_snippets::kNotificationsDefaultPriority;
 using params::ntp_snippets::kNotificationsFeature;
 using params::ntp_snippets::kNotificationsKeepWhenFrontmostParam;
-using params::ntp_snippets::kNotificationsUseSnippetAsTextParam;
 using params::ntp_snippets::kNotificationsOpenToNTPParam;
+using params::ntp_snippets::kNotificationsPriorityParam;
+using params::ntp_snippets::kNotificationsUseSnippetAsTextParam;
 
 namespace {
 
@@ -228,8 +230,11 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     DVLOG(1) << "Fetched " << image.Size().width() << "x"
              << image.Size().height() << " image for " << url.spec();
     ConsumeQuota(profile_->GetPrefs());
+    int priority = variations::GetVariationParamByFeatureAsInt(
+        kNotificationsFeature, kNotificationsPriorityParam,
+        kNotificationsDefaultPriority);
     if (ContentSuggestionsNotificationHelper::SendNotification(
-            id, url, title, text, CropSquare(image), timeout_at)) {
+            id, url, title, text, CropSquare(image), timeout_at, priority)) {
       RecordContentSuggestionsNotificationImpression(
           id.category().IsKnownCategory(KnownCategories::ARTICLES)
               ? CONTENT_SUGGESTIONS_ARTICLE

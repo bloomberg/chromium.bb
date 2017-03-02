@@ -48,7 +48,8 @@ bool ContentSuggestionsNotificationHelper::SendNotification(
     const base::string16& title,
     const base::string16& text,
     const gfx::Image& image,
-    base::Time timeout_at) {
+    base::Time timeout_at,
+    int priority) {
   JNIEnv* env = base::android::AttachCurrentThread();
   SkBitmap skimage = image.AsImageSkia().GetRepresentation(1.0f).sk_bitmap();
   if (skimage.empty())
@@ -65,7 +66,7 @@ bool ContentSuggestionsNotificationHelper::SendNotification(
           base::android::ConvertUTF8ToJavaString(env, url.spec()),
           base::android::ConvertUTF16ToJavaString(env, title),
           base::android::ConvertUTF16ToJavaString(env, text),
-          gfx::ConvertToJavaBitmap(&skimage), timeout_at_millis)) {
+          gfx::ConvertToJavaBitmap(&skimage), timeout_at_millis, priority)) {
     DVLOG(1) << "Displayed notification for " << id;
     return true;
   } else {

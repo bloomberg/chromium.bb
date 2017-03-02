@@ -30,7 +30,8 @@ class ContentSuggestionsNotificationHelper {
                                const base::string16& title,
                                const base::string16& text,
                                const gfx::Image& image,
-                               base::Time timeout_at);
+                               base::Time timeout_at,
+                               int priority);
   static void HideNotification(const ContentSuggestion::ID& id,
                                ContentSuggestionsNotificationAction why);
   static void HideAllNotifications(ContentSuggestionsNotificationAction why);

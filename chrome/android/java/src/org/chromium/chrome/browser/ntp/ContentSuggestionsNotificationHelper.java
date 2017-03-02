@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -128,7 +129,7 @@ public class ContentSuggestionsNotificationHelper {
 
     @CalledByNative
     private static boolean showNotification(int category, String idWithinCategory, String url,
-            String title, String text, Bitmap image, long timeoutAtMillis) {
+            String title, String text, Bitmap image, long timeoutAtMillis, int priority) {
         if (findActiveNotification(category, idWithinCategory) != null) return false;
 
         // Post notification.
@@ -161,9 +162,12 @@ public class ContentSuggestionsNotificationHelper {
                         .setContentTitle(title)
                         .setContentText(text)
                         .setGroup(NOTIFICATION_TAG)
-                        .setPriority(-1)
+                        .setPriority(priority)
                         .setLargeIcon(image)
                         .setSmallIcon(R.drawable.ic_chrome);
+        if (priority >= 0) {
+            builder.setDefaults(Notification.DEFAULT_ALL);
+        }
         manager.notify(NOTIFICATION_TAG, nextId, builder.build());
         addActiveNotification(new ActiveNotification(nextId, category, idWithinCategory, uri));
 
