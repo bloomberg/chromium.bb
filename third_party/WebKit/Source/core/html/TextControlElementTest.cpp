@@ -27,9 +27,6 @@ class TextControlElementTest : public ::testing::Test {
   TextControlElement& textControl() const { return *m_textControl; }
   HTMLInputElement& input() const { return *m_input; }
 
-  int layoutCount() const { return page().frameView().layoutCount(); }
-  void forceLayoutFlag();
-
  private:
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 
@@ -52,15 +49,6 @@ void TextControlElementTest::SetUp() {
   m_input = toHTMLInputElement(m_document->getElementById("input"));
 }
 
-void TextControlElementTest::forceLayoutFlag() {
-  FrameView& frameView = page().frameView();
-  IntRect frameRect = frameView.frameRect();
-  frameRect.setWidth(frameRect.width() + 1);
-  frameRect.setHeight(frameRect.height() + 1);
-  page().frameView().setFrameRect(frameRect);
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-}
-
 TEST_F(TextControlElementTest, SetSelectionRange) {
   EXPECT_EQ(0u, textControl().selectionStart());
   EXPECT_EQ(0u, textControl().selectionEnd());
@@ -78,24 +66,14 @@ TEST_F(TextControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
   input().focus();
   input().setValue("Hello, input form.");
   input().setSelectionRange(1, 1);
-  FrameSelection& frameSelection = document().frame()->selection();
-  forceLayoutFlag();
-  LayoutRect oldCaretRect(frameSelection.absoluteCaretBounds());
-  EXPECT_FALSE(oldCaretRect.isEmpty());
-  int startLayoutCount = layoutCount();
-  input().setSelectionRange(1, 1);
-  EXPECT_EQ(startLayoutCount, layoutCount());
-  LayoutRect newCaretRect(frameSelection.absoluteCaretBounds());
-  EXPECT_EQ(oldCaretRect, newCaretRect);
 
-  forceLayoutFlag();
-  oldCaretRect = LayoutRect(frameSelection.absoluteCaretBounds());
-  EXPECT_FALSE(oldCaretRect.isEmpty());
-  startLayoutCount = layoutCount();
+  // Force layout if document().updateStyleAndLayoutIgnorePendingStylesheets()
+  // is called.
+  document().body()->appendChild(document().createTextNode("foo"));
+  const int startLayoutCount = page().frameView().layoutCount();
+  EXPECT_TRUE(document().needsLayoutTreeUpdate());
   input().setSelectionRange(2, 2);
-  EXPECT_EQ(startLayoutCount, layoutCount());
-  newCaretRect = LayoutRect(frameSelection.absoluteCaretBounds());
-  EXPECT_NE(oldCaretRect, newCaretRect);
+  EXPECT_EQ(startLayoutCount, page().frameView().layoutCount());
 }
 
 TEST_F(TextControlElementTest, IndexForPosition) {
