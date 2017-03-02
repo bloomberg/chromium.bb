@@ -12,9 +12,9 @@
 # exec_python -- Execute Python module inside of virtualenv
 set -eu
 
-virtualenv_dir=../../infra_virtualenv
-venv_dir=../venv/.venv
-reqs_file=../venv/requirements.txt
+readonly virtualenv_dir=../../infra_virtualenv
+readonly venv_dir=../venv/.venv
+readonly reqs_file=../venv/requirements.txt
 
 _create_venv() {
     "$virtualenv_dir/create_venv" "$venv_dir" "$reqs_file" >&2
