@@ -226,8 +226,8 @@ table_files = \
 	ks-in-g1.utb \
 	latinLetterDef6Dots.uti \
 	latinLetterDef8Dots.uti \
-	litdigits6Dots.uti \
 	litdigits6DotsPlusDot6.uti \
+	litdigits6Dots.uti \
 	loweredDigits6Dots.uti \
 	loweredDigits8Dots.uti \
 	lt.ctb \
@@ -361,6 +361,8 @@ table_files = \
 	wiskunde-chardefs.cti \
 	wiskunde.ctb \
 	wiskunde-translation.cti \
+	zh-chn.ctb \
+	zh_CHN.tbl \
 	zh-hk.ctb \
 	zh_HK.tbl \
 	zh-tw.ctb \
