@@ -34,6 +34,7 @@ const CGFloat kAppendButtonSize = 48.0;
 
 @synthesize textTruncatingLabel = _textTruncatingLabel;
 @synthesize detailTruncatingLabel = _detailTruncatingLabel;
+@synthesize detailAnswerLabel = _detailAnswerLabel;
 @synthesize appendButton = _appendButton;
 @synthesize answerImageView = _answerImageView;
 @synthesize imageView = _imageView;
@@ -65,6 +66,14 @@ const CGFloat kAppendButtonSize = 48.0;
     _detailTruncatingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _detailTruncatingLabel.userInteractionEnabled = NO;
     [self addSubview:_detailTruncatingLabel];
+
+    // Answers use a UILabel with NSLineBreakByTruncatingTail to produce a
+    // truncation with an ellipse instead of fading on multi-line text.
+    _detailAnswerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _detailAnswerLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    _detailAnswerLabel.userInteractionEnabled = NO;
+    _detailAnswerLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+    [self addSubview:_detailAnswerLabel];
 
     _appendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [_appendButton setContentMode:UIViewContentModeRight];
@@ -164,7 +173,9 @@ const CGFloat kAppendButtonSize = 48.0;
 }
 
 - (NSString*)accessibilityValue {
-  return _detailTruncatingLabel.attributedText.string;
+  return _detailTruncatingLabel.hidden
+             ? _detailAnswerLabel.attributedText.string
+             : _detailTruncatingLabel.attributedText.string;
 }
 
 @end

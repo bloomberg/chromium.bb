@@ -12,12 +12,16 @@
 // View used to display an omnibox autocomplete match in the omnibox popup.
 @interface OmniboxPopupMaterialRow : UITableViewCell
 
-// A truncating version of the textLabel of a UITableViewCell.
+// A truncate-by-fading version of the textLabel of a UITableViewCell.
 @property(nonatomic, readonly, retain)
     OmniboxPopupTruncatingLabel* textTruncatingLabel;
-// A truncating version of the detailTextLabel of a UITableViewCell.
+// A truncate-by-fading version of the detailTextLabel of a UITableViewCell.
 @property(nonatomic, readonly, retain)
     OmniboxPopupTruncatingLabel* detailTruncatingLabel;
+// A standard UILabel for answers, which truncates with ellipses to support
+// multi-line text.
+@property(nonatomic, readonly, retain) UILabel* detailAnswerLabel;
+
 @property(nonatomic, readonly, retain) UIImageView* imageView;
 @property(nonatomic, readonly, retain) UIImageView* answerImageView;
 @property(nonatomic, readonly, retain) UIButton* appendButton;

@@ -201,12 +201,11 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   const CGFloat kTextLabelHeight = 24;
   const CGFloat kTextDetailLabelHeight = 22;
   const CGFloat kAppendButtonWidth = 40;
-  const CGFloat kAnswerLabelHeight = 50;
+  const CGFloat kAnswerLabelHeight = 36;
   const CGFloat kAnswerImageWidth = 30;
   const CGFloat kAnswerImageLeftPadding = -1;
   const CGFloat kAnswerImageRightPadding = 4;
-  const CGFloat kAnswerImageTopPadding = -3;
-  const CGFloat kAnswerRowPadding = 4;
+  const CGFloat kAnswerImageTopPadding = 2;
   const BOOL alignmentRight = _alignment == NSTextAlignmentRight;
 
   BOOL LTRTextInRTLLayout = _alignment == NSTextAlignmentLeft && UseRTLLayout();
@@ -214,9 +213,6 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   // Update the frame to reflect whether we have an answer or not.
   const BOOL answerPresent = match.answer.get() != nil;
   row.rowHeight = answerPresent ? kAnswerRowHeight : kRowHeight;
-
-  [row.detailTruncatingLabel setTextAlignment:_alignment];
-  [row.textTruncatingLabel setTextAlignment:_alignment];
 
   // Fetch the answer image if specified.  Currently, no answer types specify an
   // image on the first line so for now we only look at the second line.
@@ -243,8 +239,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
       imageLeftPadding =
           row.frame.size.width - (kAnswerImageWidth + kAppendButtonWidth);
     }
-    CGFloat imageTopPadding =
-        kDetailCellTopPadding + kAnswerRowPadding + kAnswerImageTopPadding;
+    CGFloat imageTopPadding = kDetailCellTopPadding + kAnswerImageTopPadding;
     row.answerImageView.frame =
         CGRectMake(imageLeftPadding, imageTopPadding, kAnswerImageWidth,
                    kAnswerImageWidth);
@@ -256,7 +251,18 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   // DetailTextLabel and textLabel are fading labels placed in each row. The
   // textLabel is layed out above the detailTextLabel, and vertically centered
   // if the detailTextLabel is empty.
-  OmniboxPopupTruncatingLabel* detailTextLabel = row.detailTruncatingLabel;
+  // For the detail text label, we use either the regular detail label, which
+  // truncates by fading, or the answer label, which uses UILabel's standard
+  // truncation by ellipse for the multi-line text sometimes shown in answers.
+  row.detailTruncatingLabel.hidden = answerPresent;
+  row.detailAnswerLabel.hidden = !answerPresent;
+  // TODO(crbug.com/697647): The complexity of managing these two separate
+  // labels could probably be encapusulated in the row class if we moved the
+  // layout logic there.
+  UILabel* detailTextLabel =
+      answerPresent ? row.detailAnswerLabel : row.detailTruncatingLabel;
+  [detailTextLabel setTextAlignment:_alignment];
+
   // The width must be positive for CGContextRef to be valid.
   CGFloat labelWidth =
       MAX(40, floorf(row.frame.size.width) - kTextCellLeadingPadding);
@@ -266,12 +272,10 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   CGFloat leadingPadding =
       (answerImagePresent && !alignmentRight ? answerImagePadding : 0) +
       kTextCellLeadingPadding;
-  CGFloat topPadding =
-      (answerPresent ? kAnswerRowPadding : 0) + kDetailCellTopPadding;
 
   LayoutRect detailTextLabelLayout =
       LayoutRectMake(leadingPadding, CGRectGetWidth(self.view.bounds),
-                     topPadding, labelWidth, labelHeight);
+                     kDetailCellTopPadding, labelWidth, labelHeight);
   detailTextLabel.frame = LayoutRectGetRect(detailTextLabelLayout);
 
   // Details should be the URL (|match.contents|). For searches |match.contents|
@@ -282,6 +286,15 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   if (answerPresent) {
     detailTextLabel.attributedText =
         [self attributedStringWithAnswerLine:match.answer->second_line()];
+
+    // Answers specify their own limit on the number of lines to show but we
+    // additionally cap this at 3 to guard against unreasonable values.
+    const SuggestionAnswer::TextField& first_text_field =
+        match.answer->second_line().text_fields()[0];
+    if (first_text_field.has_num_lines() && first_text_field.num_lines() > 1)
+      detailTextLabel.numberOfLines = MIN(3, first_text_field.num_lines());
+    else
+      detailTextLabel.numberOfLines = 1;
   } else {
     const ACMatchClassifications* classifications =
         ![self isSearchMatch:match.type] ? &match.contents_class : nil;
@@ -295,6 +308,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   [detailTextLabel setNeedsDisplay];
 
   OmniboxPopupTruncatingLabel* textLabel = row.textTruncatingLabel;
+  [textLabel setTextAlignment:_alignment];
   LayoutRect textLabelLayout =
       LayoutRectMake(kTextCellLeadingPadding, CGRectGetWidth(self.view.bounds),
                      0, labelWidth, kTextLabelHeight);
