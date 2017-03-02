@@ -15,7 +15,9 @@ First follow the public instructions for
 
 Create a GN configuration with "chromeos" as the target OS, for example:
 
-```> gn args out/ChromeOSRelease```
+```
+gn args out/cros
+```
 
 ...in editor, add this line:
 
@@ -27,82 +29,85 @@ is_debug = false
 
 Note: Only ```target_os = "chromeos"``` is required, the others are recommended
 for a good experience but you can configure Chrome however you like otherwise.
-Note that Native Client is required, so do not put enable_nacl = false in
+Note that Native Client is required, so do not put `enable_nacl = false` in
 your file anywhere!
 
 Now build Chrome as usual, e.g.:
 
-```ninja -C out/cros chrome```
+```
+ninja -C out/cros chrome
+```
 
 And run it as usual to see a mostly-complete Chrome OS desktop inside
 of a window:
 
-```out/cros/chrome```
+```
+out/cros/chrome
+```
 
 By default you'll be logged in as the default user. If you want to
 simulate the login manager too, run it like this:
 
-```out/cros/chrome --login-manager```
+```
+out/cros/chrome --login-manager
+```
 
-You can run any of the above under it’s own X session (avoiding any
-window manager key combo conflicts) by doing something like
+You can run any of the above under it’s own X session (avoiding any window
+manager key combo conflicts) by doing something like
 
-```startx out/cros/chrome```
+```
+startx out/cros/chrome
+```
 
 ## Speech
 
-If you want speech, you just need to copy the speech synthesis data
-files to /usr/share like it would be on a Chrome OS device:
+If you want speech, you just need to copy the speech synthesis data files to
+/usr/share like it would be on a Chrome OS device:
 
 ```
-git clone https://chromium.googlesource.com/chromiumos/platform/assets
-sudo cp assets /usr/share/chromeos-assets
+sudo git clone https://chromium.googlesource.com/chromiumos/platform/assets /usr/share/chromeos-assets
 ```
 
-Next, move to that directory and unzip the NaCl executables. You only need
-to do the one for your host architecture:
+Change the permissions:
 
 ```
-cd /usr/share/chromeos-assets/speech_synthesis/patts
-unzip tts_service_x86-64.nexe.zip
+sudo find /usr/share/chromeos-assets -type f -exec chmod 644 {} \;
+sudo find /usr/share/chromeos-assets -type d -exec chmod 755 {} \;
 ```
 
-Finally, fix the permissions:
+Next, unzip the NaCl executables. You only need to do the one for your host
+architecture:
 
 ```
-sudo chmod oug+r -R /usr/share/chromeos-assets
+PATTS_DIR=/usr/share/chromeos-assets/speech_synthesis/patts
+sudo unzip $PATTS_DIR/tts_service_x86-64.nexe.zip -d $PATTS_DIR 
 ```
 
-**Be sure to check permissions of /usr/share/chromeos-assets, some
-  users report they need to chmod or chown too, it really depends
-  on your system.**
+**Be sure to check permissions of /usr/share/chromeos-assets, some users report
+they need to chmod or chown too, it really depends on your system.**
 
-After you do that, just run "chrome" as above
-(e.g. out/cros/chrome) and press Ctrl+Alt+Z, and you should hear it
-speak! If not, check the logs.
+After you do that, just run "chrome" as above (e.g. out/cros/chrome) and press
+Ctrl+Alt+Z, and you should hear it speak! If not, check the logs.
 
 ## Braille
 
-ChromeVox uses extension APIs to deliver braille to Brltty through
-libbrlapi and uses Liblouis to perform translation and
-backtranslation.
+ChromeVox uses extension APIs to deliver braille to Brltty through libbrlapi
+and uses Liblouis to perform translation and backtranslation.
 
-Once built, Chrome and ChromeVox will use your machine’s running
-Brltty daemon to display braille if ChromeVox is running. Simply
-ensure you have a display connected before running Chrome and that
-Brltty is running.
+Once built, Chrome and ChromeVox will use your machine’s running Brltty
+daemon to display braille if ChromeVox is running. Simply ensure you have a
+display connected before running Chrome and that Brltty is running.
 
-Testing against the latest releases of Brltty (e.g. 5.4 at time of
-writing) is encouraged.
+Testing against the latest releases of Brltty (e.g. 5.4 at time of writing) is
+encouraged.
 
 For more general information, see [ChromeVox](chromevox.md)
 
 # Using ChromeVox
 
-ChromeVox keyboard shortcuts use Search. On Linux that's usually your
-Windows key. If some shortcuts don't work, you may need to remove
-Gnome keyboard shortcut bindings, or use "startx", as suggested above,
-or remap it.
+ChromeVox keyboard shortcuts use Search. On Linux that's usually your Windows
+key. If some shortcuts don't work, you may need to remove Gnome keyboard
+shortcut bindings, or use "startx", as suggested above, or remap it.
 
 * Search+Space: Click
 * Search+Left/Right: navigate linearly
