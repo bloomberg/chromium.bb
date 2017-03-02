@@ -490,6 +490,12 @@
         <structure name="IDR_SETTINGS_DEVICE_KEYBOARD_JS"
                    file="device_page/keyboard.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_POWER_HTML"
+                   file="device_page/power.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_POWER_JS"
+                   file="device_page/power.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_STORAGE_HTML"
                    file="device_page/storage.html"
                    type="chrome_html" />

@@ -588,7 +588,8 @@ cr.define('device_page_tests', function() {
       });
 
       suite('power settings', function() {
-        var powerRow;
+        var powerPage;
+        var powerSourceRow;
         var powerSourceWrapper;
         var powerSourceSelect;
 
@@ -600,13 +601,18 @@ cr.define('device_page_tests', function() {
         });
 
         setup(function() {
-          powerRow = assert(devicePage.$$('#powerRow'));
-          powerSourceWrapper =
-              assert(powerRow.querySelector('.md-select-wrapper'));
-          powerSourceSelect = assert(devicePage.$$('#powerSource'));
-          assertEquals(1,
-              settings.DevicePageBrowserProxyImpl.getInstance()
-              .updatePowerStatusCalled_);
+          return showAndGetDeviceSubpage('power', settings.Route.POWER)
+              .then(function(page) {
+                powerPage = page;
+                powerSourceRow = assert(powerPage.$$('#powerSourceRow'));
+                powerSourceWrapper =
+                    assert(powerSourceRow.querySelector('.md-select-wrapper'));
+                powerSourceSelect = assert(powerPage.$$('#powerSource'));
+                assertEquals(
+                    1,
+                    settings.DevicePageBrowserProxyImpl.getInstance()
+                        .updatePowerStatusCalled_);
+              });
         });
 
         test('power sources', function() {

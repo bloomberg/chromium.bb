@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
@@ -8,6 +7,7 @@
 <link rel="import" href="display.html">
 <link rel="import" href="keyboard.html">
 <link rel="import" href="pointers.html">
+<link rel="import" href="power.html">
 <link rel="import" href="storage.html">
 <link rel="import" href="stylus.html">
 <link rel="import" href="../prefs/prefs.html">
@@ -18,7 +18,7 @@
 
 <dom-module id="settings-device-page">
   <template>
-    <style include="settings-shared md-select"></style>
+    <style include="settings-shared"></style>
     <settings-animated-pages id="pages" section="device">
       <neon-animatable id="main" route-path="default">
         <div id="pointersRow" class="settings-box first"
@@ -57,31 +57,11 @@
               aria-label="$i18n{storageTitle}"></button>
         </div>
         <template is="dom-if" if="[[enablePowerSettings_]]">
-          <div id="powerRow" class="settings-box two-line">
-            <div class="start">
-              <div>[[powerLabel_]]</div>
-              <div class="secondary">[[batteryStatus_.statusText]]</div>
-            </div>
-            <div class="md-select-wrapper"
-                hidden$="[[!showPowerDropdown_]]">
-              <select id="powerSource" class="md-select"
-                  on-change="onPowerSourceChange_">
-                <option value=""
-                    selected$="[[isEqual_('', selectedPowerSourceId_)]]">
-                  $i18n{powerSourceBattery}
-                </option>
-                <template is="dom-repeat" items="[[powerSources_]]">
-                  <option value="[[item.id]]"
-                      selected$="[[isEqual_(item.id, selectedPowerSourceId_)]]">
-                    [[item.description]]
-                  </option>
-                </template>
-              </select>
-              <span class="md-select-underline"></span>
-            </div>
-            <div hidden$="[[showPowerDropdown_]]">
-              [[powerSourceName_]]
-            </div>
+          <div id="powerRow" class="settings-box" on-tap="onPowerTap_"
+              actionable>
+            <div class="start">$i18n{powerTitle}</div>
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                arial-label="$i18n{powerTitle}"></button>
           </div>
         </template>
       </neon-animatable>
@@ -120,6 +100,15 @@
             associated-control="[[$$('#storageRow')]]"
             page-title="$i18n{storageTitle}">
           <settings-storage></settings-storage>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" route-path="/power">
+        <settings-subpage
+            associated-control="[[$$('#powerRow')]]"
+            no-search$="[[!enablePowerSettings_]]"
+            page-title="$i18n{powerTitle}">
+          <settings-power enable-power-settings="[[enablePowerSettings_]]">
+          </settings-power>
         </settings-subpage>
       </template>
     </settings-animated-pages>

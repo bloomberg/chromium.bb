@@ -2884,19 +2884,22 @@
     </message>
 
     <!-- Power -->
-    <message name="IDS_SETTINGS_POWER_SOURCE_LABEL" desc="The label for the power source dropdown in the Power overlay.">
+    <message name="IDS_SETTINGS_POWER_TITLE" desc="In Device Settings, the title for power management.">
+      Power
+    </message>
+    <message name="IDS_SETTINGS_POWER_SOURCE_LABEL" desc="In Device Settings > Power, the label for the power source dropdown.">
       Power source
     </message>
-    <message name="IDS_SETTINGS_POWER_SOURCE_BATTERY" desc="The text referring to the battery as the power source.">
+    <message name="IDS_SETTINGS_POWER_SOURCE_BATTERY" desc="In Device Settings > Power, the text referring to the battery as the power source.">
       Battery
     </message>
-    <message name="IDS_SETTINGS_POWER_SOURCE_AC_ADAPTER" desc="The text referring to a dedicated charger like an AC adapter as the power source.">
+    <message name="IDS_SETTINGS_POWER_SOURCE_AC_ADAPTER" desc="In Device Settings > Power, the text referring to a dedicated charger like an AC adapter as the power source.">
       AC adapter
     </message>
-    <message name="IDS_SETTINGS_POWER_SOURCE_LOW_POWER_CHARGER" desc="The text referring to a low-power charger like a USB charger as the power source.">
+    <message name="IDS_SETTINGS_POWER_SOURCE_LOW_POWER_CHARGER" desc="In Device Settings > Power, the text referring to a low-power charger like a USB charger as the power source.">
       Low-power charger
     </message>
-    <message name="IDS_SETTINGS_POWER_SOURCE_CALCULATING" desc="The description in the 'Power' overlay when the power status is being determined.">
+    <message name="IDS_SETTINGS_POWER_SOURCE_CALCULATING" desc="In Device Settings > Power, the power source description when the power status is being determined.">
       Checking...
     </message>
   </if>

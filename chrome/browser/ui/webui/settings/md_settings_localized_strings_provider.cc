@@ -679,6 +679,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
                           arraysize(storage_strings));
 
   LocalizedString power_strings[] = {
+      {"powerTitle", IDS_SETTINGS_POWER_TITLE},
       {"powerSourceLabel", IDS_SETTINGS_POWER_SOURCE_LABEL},
       {"powerSourceBattery", IDS_SETTINGS_POWER_SOURCE_BATTERY},
       {"powerSourceAcAdapter", IDS_SETTINGS_POWER_SOURCE_AC_ADAPTER},

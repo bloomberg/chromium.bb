@@ -1,0 +1,38 @@
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="../route.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-power">
+  <template>
+    <style include="settings-shared md-select"></style>
+    <div id="powerSourceRow" class="settings-box first two-line">
+      <div class="start">
+        <div>[[powerSourceLabel_]]</div>
+        <div class="secondary">[[batteryStatus_.statusText]]</div>
+      </div>
+      <div class="md-select-wrapper" hidden$="[[!showPowerSourceDropdown_]]">
+        <select id="powerSource" class="md-select"
+            on-change="onPowerSourceChange_">
+          <option value="" selected$="[[isEqual_('', selectedPowerSourceId_)]]">
+            $i18n{powerSourceBattery}
+          </option>
+          <template is="dom-repeat" items="[[powerSources_]]">
+            <option value="[[item.id]]"
+                selected$="[[isEqual_(item.id, selectedPowerSourceId_)]]">
+              [[item.description]]
+            </option>
+          </template>
+        </select>
+        <span class="md-select-underline"></span>
+      </div>
+      <div hidden$="[[showPowerSourceDropdown_]]">
+        [[powerSourceName_]]
+      </div>
+    </div>
+  </template>
+  <script src="power.js"></script>
+</dom-module>
