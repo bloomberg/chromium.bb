@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -3521,5 +3522,42 @@ TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
       metrics::OmniboxEventProto::INVALID_SPEC, false, true, true, true, true,
       ChromeAutocompleteSchemeClassifier(&profile_));
   provider_->Start(input, false);
+  EXPECT_TRUE(provider_->matches().empty());
+}
+
+TEST_F(SearchProviderTest, SendsWarmUpRequestOnFocus) {
+  AutocompleteInput input(
+      base::ASCIIToUTF16("f"), base::string16::npos, std::string(), GURL(),
+      metrics::OmniboxEventProto::INVALID_SPEC, false, true, true, true, true,
+      ChromeAutocompleteSchemeClassifier(&profile_));
+
+  // First, verify that without the warm-up feature enabled, the provider
+  // immediately terminates with no matches.
+  provider_->Start(input, false);
+  // RunUntilIdle so that SearchProvider has a chance to create the URLFetchers
+  // (if it wants to, which it shouldn't in this case).
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(provider_->done());
+  EXPECT_TRUE(provider_->matches().empty());
+
+  // Then, check the behavior with the warm-up feature enabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kSearchProviderWarmUpOnFocus);
+  provider_->Start(input, false);
+  // RunUntilIdle so that SearchProvider create the URLFetcher.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(provider_->done());
+  EXPECT_TRUE(provider_->matches().empty());
+  // Make sure the default provider's suggest service was queried.
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  EXPECT_TRUE(fetcher);
+  // Even if the fetcher returns results, we should still have no suggestions
+  // (though the provider should now be done).
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(R"(["",["a", "b"],[],[],{}])");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  RunTillProviderDone();
+  EXPECT_TRUE(provider_->done());
   EXPECT_TRUE(provider_->matches().empty());
 }

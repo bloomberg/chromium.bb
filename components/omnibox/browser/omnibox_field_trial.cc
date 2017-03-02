@@ -53,6 +53,14 @@ const base::Feature kEnableClipboardProvider {
 #endif
 };
 
+// Feature to enable the search provider to send a request to the suggest
+// server on focus.  This allows the suggest server to warm up, by, for
+// example, loading per-user models into memory.  Having a per-user model
+// in memory allows the suggest server to respond more quickly with
+// personalized suggestions as the user types.
+const base::Feature kSearchProviderWarmUpOnFocus{
+    "OmniboxWarmUpSearchProviderOnFocus", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox
 
 namespace {
