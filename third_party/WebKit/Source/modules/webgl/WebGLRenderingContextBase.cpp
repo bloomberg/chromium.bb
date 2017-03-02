@@ -660,9 +660,8 @@ WebGLRenderingContextBase::createContextProviderInternal(
   }
   if (contextProvider && !contextProvider->bindToCurrentThread()) {
     contextProvider = nullptr;
-    String errorString(glInfo.errorMessage.utf8().data());
-    errorString.insert("bindToCurrentThread failed: ", 0);
-    glInfo.errorMessage = errorString;
+    glInfo.errorMessage =
+        String("bindToCurrentThread failed: " + String(glInfo.errorMessage));
   }
   if (!contextProvider || shouldFailContextCreationForTesting) {
     shouldFailContextCreationForTesting = false;
