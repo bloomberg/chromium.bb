@@ -376,8 +376,18 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::minSizeForChild(
       isRowAxis
           ? child.styleRef().overflowInlineDirection() == EOverflow::kVisible
           : child.styleRef().overflowBlockDirection() == EOverflow::kVisible;
-  if (!childSize.isAuto() || (childMinSize.isAuto() && overflowIsVisible))
+  if (!childSize.isAuto() || (childMinSize.isAuto() && overflowIsVisible)) {
+    if (child.isLayoutReplaced() && childSize.isAuto()) {
+      // If the box has an aspect ratio and no specified size, its automatic
+      // minimum size is the smaller of its content size and its transferred
+      // size.
+      return isRowAxis ? std::min(child.intrinsicLogicalWidth(),
+                                  minContentForChild(child))
+                       : std::min(child.intrinsicLogicalHeight(),
+                                  minContentForChild(child));
+    }
     return minContentForChild(child);
+  }
 
   bool overrideSizeHasChanged =
       updateOverrideContainingBlockContentSizeForChild(child,

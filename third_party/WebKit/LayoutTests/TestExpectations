@@ -2359,8 +2359,6 @@ crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-c
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
 crbug.com/511177 external/csswg-test/css-grid-1/grid-layout-properties.html [ Failure ]
-crbug.com/555027 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-007.xht [ Failure ]
-crbug.com/555027 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-009.xht [ Failure ]
 
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)
