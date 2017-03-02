@@ -1321,6 +1321,8 @@
     },
     {
       name: "offset-anchor",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "convertPositionOrAuto",
       interpolable: true,
       runtime_flag: "CSSOffsetPositionAnchor",

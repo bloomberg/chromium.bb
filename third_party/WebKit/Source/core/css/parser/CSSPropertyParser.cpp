@@ -912,14 +912,6 @@ static CSSValue* consumeOffsetRotate(CSSParserTokenRange& range) {
   return list;
 }
 
-static CSSValue* consumeOffsetAnchor(CSSParserTokenRange& range,
-                                     CSSParserMode cssParserMode) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueAuto)
-    return consumeIdent(range);
-  return consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
-}
-
 static CSSValue* consumeOffsetPath(CSSParserTokenRange& range,
                                    const CSSParserContext* context,
                                    bool isMotionPath) {
@@ -2158,8 +2150,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
       return consumeTextDecorationLine(m_range);
-    case CSSPropertyOffsetAnchor:
-      return consumeOffsetAnchor(m_range, m_context->mode());
     case CSSPropertyD:
       return consumePathOrNone(m_range);
     case CSSPropertyOffsetPath:
