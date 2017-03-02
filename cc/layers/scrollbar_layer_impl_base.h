@@ -54,6 +54,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   }
   bool SetThumbThicknessScaleFactor(float thumb_thickness_scale_factor);
 
+  virtual int ThumbThickness() const = 0;
+
  protected:
   ScrollbarLayerImplBase(LayerTreeImpl* tree_impl,
                          int id,
@@ -62,7 +64,6 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
                          bool is_overlay);
   ~ScrollbarLayerImplBase() override;
 
-  virtual int ThumbThickness() const = 0;
   virtual int ThumbLength() const = 0;
   virtual float TrackLength() const = 0;
   virtual int TrackStart() const = 0;

@@ -26,6 +26,9 @@ const float kIdleThicknessScale =
 const float kDefaultMouseMoveDistanceToTriggerAnimation =
     SingleScrollbarAnimationControllerThinning::
         kDefaultMouseMoveDistanceToTriggerAnimation;
+const float kMouseMoveDistanceToTriggerShow =
+    ScrollbarAnimationController::kMouseMoveDistanceToTriggerShow;
+const int kThumbThickness = 10;
 
 class MockScrollbarAnimationControllerClient
     : public ScrollbarAnimationControllerClient {
@@ -67,10 +70,10 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
   }
 
  protected:
-  const base::TimeDelta kDelayBeforeStarting = base::TimeDelta::FromSeconds(2);
-  const base::TimeDelta kResizeDelayBeforeStarting =
-      base::TimeDelta::FromSeconds(5);
-  const base::TimeDelta kFadeDuration = base::TimeDelta::FromSeconds(3);
+  const base::TimeDelta kShowDelay = base::TimeDelta::FromSeconds(4);
+  const base::TimeDelta kFadeOutDelay = base::TimeDelta::FromSeconds(2);
+  const base::TimeDelta kResizeFadeOutDelay = base::TimeDelta::FromSeconds(5);
+  const base::TimeDelta kFadeOutDuration = base::TimeDelta::FromSeconds(3);
   const base::TimeDelta kThinningDuration = base::TimeDelta::FromSeconds(2);
 
   void SetUp() override {
@@ -82,7 +85,6 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
 
-    const int kThumbThickness = 10;
     const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = true;
@@ -113,8 +115,8 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
 
     scrollbar_controller_ = ScrollbarAnimationController::
         CreateScrollbarAnimationControllerAuraOverlay(
-            scroll_layer_ptr->id(), &client_, kDelayBeforeStarting,
-            kResizeDelayBeforeStarting, kFadeDuration, kThinningDuration);
+            scroll_layer_ptr->id(), &client_, kShowDelay, kFadeOutDelay,
+            kResizeFadeOutDelay, kFadeOutDuration, kThinningDuration);
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
@@ -213,14 +215,14 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, BasicAppearAndFadeOut) {
   ExpectScrollbarsOpacity(1);
   EXPECT_FALSE(scrollbar_controller_->ScrollbarsHidden());
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   client_.start_fade().Run();
 
-  // Scrollbar should fade out over kFadeDuration.
+  // Scrollbar should fade out over kFadeOutDuration.
   scrollbar_controller_->Animate(time);
-  time += kFadeDuration;
+  time += kFadeOutDuration;
   scrollbar_controller_->Animate(time);
 
   ExpectScrollbarsOpacity(0);
@@ -237,8 +239,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, MoveNearAndDontFadeOut) {
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
 
@@ -262,8 +264,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, MoveNearAndDontFadeOut) {
                   h_scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Mouse is still near the Scrollbar. Once the thickness animation is
-  // complete, the queued delayed fade animation should be either cancelled or
-  // null.
+  // complete, the queued delayed fade out animation should be either cancelled
+  // or null.
   EXPECT_TRUE(client_.start_fade().is_null() ||
               client_.start_fade().IsCancelled());
 }
@@ -278,8 +280,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, MoveOverAndDontFadeOut) {
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
 
@@ -303,8 +305,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, MoveOverAndDontFadeOut) {
                   h_scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Mouse is still over the Scrollbar. Once the thickness animation is
-  // complete, the queued delayed fade animation should be either cancelled or
-  // null.
+  // complete, the queued delayed fade out animation should be either cancelled
+  // or null.
   EXPECT_TRUE(client_.start_fade().is_null() ||
               client_.start_fade().IsCancelled());
 }
@@ -320,8 +322,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
 
   // Now move the mouse over the scrollbar and capture it. It should become
@@ -333,7 +335,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_FLOAT_EQ(kIdleThicknessScale,
                   h_scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // The fade animation should have been cleared or cancelled.
+  // The fade out animation should have been cleared or cancelled.
   EXPECT_TRUE(client_.start_fade().is_null() ||
               client_.start_fade().IsCancelled());
 }
@@ -348,8 +350,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
 
   // Now move the mouse over the scrollbar and capture it. It should become
@@ -361,11 +363,11 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_FLOAT_EQ(kIdleThicknessScale,
                   h_scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // The fade animation should have been cleared or cancelled.
+  // The fade out animation should have been cleared or cancelled.
   EXPECT_TRUE(client_.start_fade().is_null() ||
               client_.start_fade().IsCancelled());
 
-  // Then move mouse away, The fade animation should have been cleared or
+  // Then move mouse away, The fade out animation should have been cleared or
   // cancelled.
   scrollbar_controller_->DidMouseMoveNear(
       VERTICAL, kDefaultMouseMoveDistanceToTriggerAnimation);
@@ -384,8 +386,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, DontFadeWhileCaptured) {
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
 
@@ -404,7 +406,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, DontFadeWhileCaptured) {
   EXPECT_TRUE(client_.start_fade().is_null() ||
               client_.start_fade().IsCancelled());
 
-  // Make sure the queued fade animation is still null or cancelled after
+  // Make sure the queued fade out animation is still null or cancelled after
   // capturing the scrollbar.
   scrollbar_controller_->DidMouseDown();
   EXPECT_TRUE(client_.start_fade().is_null() ||
@@ -421,8 +423,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, FadeAfterReleasedFar) {
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
 
@@ -472,8 +474,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, DontFadeAfterReleasedNear) {
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
 
@@ -511,8 +513,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  // A fade animation should have been enqueued. Start it.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // A fade out animation should have been enqueued. Start it.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   client_.start_fade().Run();
 
@@ -520,7 +522,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   ExpectScrollbarsOpacity(1);
 
   // Proceed half way through the fade out animation.
-  time += kFadeDuration / 2;
+  time += kFadeOutDuration / 2;
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(.5f);
 
@@ -551,7 +553,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, TestCantCaptureWhenFaded) {
   scrollbar_controller_->DidScrollUpdate(false);
   scrollbar_controller_->DidScrollEnd();
 
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
   client_.start_fade().Run();
@@ -559,7 +561,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, TestCantCaptureWhenFaded) {
   ExpectScrollbarsOpacity(1);
 
   // Fade the scrollbar out completely.
-  time += kFadeDuration;
+  time += kFadeOutDuration;
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(0);
 
@@ -630,7 +632,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, ScrollWithMouseNear) {
                   h_scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Scrollbar should still be thick and visible.
-  time += kFadeDuration;
+  time += kFadeOutDuration;
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(1);
   EXPECT_FLOAT_EQ(1, v_scrollbar_layer_->thumb_thickness_scale_factor());
@@ -638,29 +640,29 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, ScrollWithMouseNear) {
                   h_scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
-// Tests that main thread scroll updates immediatley queue a fade animation
+// Tests that main thread scroll updates immediatley queue a fade out animation
 // without requiring a ScrollEnd.
 TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
        MainThreadScrollQueuesFade) {
   ASSERT_TRUE(client_.start_fade().is_null());
 
   // A ScrollUpdate without a ScrollBegin indicates a main thread scroll update
-  // so we should schedule a fade animation without waiting for a ScrollEnd
+  // so we should schedule a fade out animation without waiting for a ScrollEnd
   // (which will never come).
   scrollbar_controller_->DidScrollUpdate(false);
   EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
 
   client_.start_fade().Reset();
 
-  // If we got a ScrollBegin, we shouldn't schedule the fade animation until we
-  // get a corresponding ScrollEnd.
+  // If we got a ScrollBegin, we shouldn't schedule the fade out animation until
+  // we get a corresponding ScrollEnd.
   scrollbar_controller_->DidScrollBegin();
   scrollbar_controller_->DidScrollUpdate(false);
   EXPECT_TRUE(client_.start_fade().is_null());
   scrollbar_controller_->DidScrollEnd();
   EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
 }
 
 // Make sure that if the scroll update is as a result of a resize, we use the
@@ -670,7 +672,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, ResizeFadeDuration) {
 
   scrollbar_controller_->DidScrollUpdate(true);
   EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kResizeDelayBeforeStarting, client_.delay());
+  EXPECT_EQ(kResizeFadeOutDelay, client_.delay());
 
   client_.delay() = base::TimeDelta();
 
@@ -681,7 +683,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, ResizeFadeDuration) {
   scrollbar_controller_->DidScrollEnd();
 
   EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
 }
 
 // Tests that the fade effect is animated.
@@ -697,8 +699,8 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, FadeAnimated) {
   // Appearance is instant.
   ExpectScrollbarsOpacity(1);
 
-  // An animation should have been enqueued.
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  // An fade out animation should have been enqueued.
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   client_.start_fade().Run();
 
@@ -706,11 +708,11 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, FadeAnimated) {
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(1);
 
-  time += kFadeDuration / 2;
+  time += kFadeOutDuration / 2;
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(.5f);
 
-  time += kFadeDuration / 2;
+  time += kFadeOutDuration / 2;
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(0);
 }
@@ -729,27 +731,27 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, NotifyChangedVisibility) {
 
   scrollbar_controller_->DidScrollEnd();
 
-  // Play out the fade animation. We shouldn't notify that the scrollbars are
-  // hidden until the animation is completly over. We can (but don't have to)
-  // notify during the animation that the scrollbars are still visible.
+  // Play out the fade out animation. We shouldn't notify that the scrollbars
+  // are hidden until the animation is completly over. We can (but don't have
+  // to) notify during the animation that the scrollbars are still visible.
   EXPECT_CALL(client_, DidChangeScrollbarVisibility()).Times(0);
   ASSERT_FALSE(client_.start_fade().is_null());
   client_.start_fade().Run();
   scrollbar_controller_->Animate(time);
-  time += kFadeDuration / 4;
+  time += kFadeOutDuration / 4;
   EXPECT_FALSE(scrollbar_controller_->ScrollbarsHidden());
   scrollbar_controller_->Animate(time);
-  time += kFadeDuration / 4;
+  time += kFadeOutDuration / 4;
   EXPECT_FALSE(scrollbar_controller_->ScrollbarsHidden());
   scrollbar_controller_->Animate(time);
-  time += kFadeDuration / 4;
+  time += kFadeOutDuration / 4;
   EXPECT_FALSE(scrollbar_controller_->ScrollbarsHidden());
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(.25f);
   Mock::VerifyAndClearExpectations(&client_);
 
   EXPECT_CALL(client_, DidChangeScrollbarVisibility()).Times(1);
-  time += kFadeDuration / 4;
+  time += kFadeOutDuration / 4;
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(scrollbar_controller_->ScrollbarsHidden());
   ExpectScrollbarsOpacity(0);
@@ -852,9 +854,9 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, MouseNearEach) {
   EXPECT_FLOAT_EQ(kIdleThicknessScale,
                   h_scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // An animation should have been enqueued.
+  // An fade out animation should have been enqueued.
   EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
 }
 
 // Move mouse near both scrollbars at the same time.
@@ -944,9 +946,9 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_FLOAT_EQ(kIdleThicknessScale,
                   h_scrollbar_layer_->thumb_thickness_scale_factor());
 
-  // An animation should have been enqueued.
+  // An fade out animation should have been enqueued.
   EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
 }
 
 // Ensure we have a delay fadeout animation after mouse leave without a mouse
@@ -970,9 +972,72 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, MouseLeaveFadeOut) {
   // Mouse leave.
   scrollbar_controller_->DidMouseLeave();
 
-  // An animation should have been enqueued.
+  // An fade out animation should have been enqueued.
   EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kDelayBeforeStarting, client_.delay());
+  EXPECT_EQ(kFadeOutDelay, client_.delay());
+}
+
+// Scrollbars should schedule a delay show when mouse hover hidden scrollbar.
+TEST_F(ScrollbarAnimationControllerAuraOverlayTest, BasicMouseHoverShow) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+
+  // Move mouse over scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+
+  // An show animation should have been enqueued.
+  EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
+  EXPECT_EQ(kShowDelay, client_.delay());
+
+  // Play the delay animation.
+  client_.start_fade().Run();
+  EXPECT_FALSE(scrollbar_controller_->ScrollbarsHidden());
+}
+
+// Scrollbars should not schedule a new delay show when the mouse hovers inside
+// a scrollbar already scheduled a delay show.
+TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
+       MouseHoverScrollbarAndMoveInside) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+
+  // Move mouse over scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+
+  // An show animation should have been enqueued.
+  EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
+  EXPECT_EQ(kShowDelay, client_.delay());
+
+  base::Closure& fade = client_.start_fade();
+  // Move mouse inside scrollbar. should not post a new show.
+  scrollbar_controller_->DidMouseMoveNear(
+      VERTICAL, kMouseMoveDistanceToTriggerShow - kThumbThickness - 1);
+
+  EXPECT_TRUE(fade.Equals(client_.start_fade()));
+}
+
+// Scrollbars should cancel delay show when mouse hover hidden scrollbar then
+// move out.
+TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
+       MouseHoverThenOutShouldCancelShow) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+
+  // Move mouse over scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+
+  // An show animation should have been enqueued.
+  EXPECT_FALSE(client_.start_fade().is_null());
+  EXPECT_FALSE(client_.start_fade().IsCancelled());
+  EXPECT_EQ(kShowDelay, client_.delay());
+
+  // Move mouse out of scrollbar，delay show should be canceled.
+  scrollbar_controller_->DidMouseMoveNear(
+      VERTICAL, kMouseMoveDistanceToTriggerShow - kThumbThickness);
+  EXPECT_TRUE(client_.start_fade().is_null() ||
+              client_.start_fade().IsCancelled());
 }
 
 class ScrollbarAnimationControllerAndroidTest
@@ -1002,7 +1067,6 @@ class ScrollbarAnimationControllerAndroidTest
 
  protected:
   void SetUp() override {
-    const int kThumbThickness = 10;
     const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = true;  // Allow opacity animations.

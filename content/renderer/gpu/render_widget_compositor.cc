@@ -93,13 +93,13 @@ bool GetSwitchValueAsInt(const base::CommandLine& command_line,
                          int* result) {
   std::string string_value = command_line.GetSwitchValueASCII(switch_string);
   int int_value;
-  if (base::StringToInt(string_value, &int_value) &&
-      int_value >= min_value && int_value <= max_value) {
+  if (base::StringToInt(string_value, &int_value) && int_value >= min_value &&
+      int_value <= max_value) {
     *result = int_value;
     return true;
   } else {
-    LOG(WARNING) << "Failed to parse switch " << switch_string  << ": " <<
-        string_value;
+    LOG(WARNING) << "Failed to parse switch " << switch_string << ": "
+                 << string_value;
     return false;
   }
 }
@@ -310,8 +310,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
                         &max_untiled_layer_height);
   }
 
-  settings.max_untiled_layer_size = gfx::Size(max_untiled_layer_width,
-                                           max_untiled_layer_height);
+  settings.max_untiled_layer_size =
+      gfx::Size(max_untiled_layer_width, max_untiled_layer_height);
 
   settings.gpu_rasterization_msaa_sample_count =
       compositor_deps->GetGpuRasterizationMSAASampleCount();
@@ -393,10 +393,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
   } else {
     settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
-    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
-    settings.scrollbar_fade_resize_delay =
+    settings.scrollbar_fade_out_delay = base::TimeDelta::FromMilliseconds(300);
+    settings.scrollbar_fade_out_resize_delay =
         base::TimeDelta::FromMilliseconds(2000);
-    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
+    settings.scrollbar_fade_out_duration =
+        base::TimeDelta::FromMilliseconds(300);
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }
   settings.renderer_settings.highp_threshold_min = 2048;
@@ -432,11 +433,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 #if !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::AURA_OVERLAY;
-    settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeOutDelay;
-    settings.scrollbar_fade_resize_delay =
+    settings.scrollbar_show_delay = ui::kOverlayScrollbarShowDelay;
+    settings.scrollbar_fade_out_delay = ui::kOverlayScrollbarFadeOutDelay;
+    settings.scrollbar_fade_out_resize_delay =
         ui::kOverlayScrollbarFadeOutDelay;
-    settings.scrollbar_fade_duration =
-        ui::kOverlayScrollbarFadeOutDuration;
+    settings.scrollbar_fade_out_duration = ui::kOverlayScrollbarFadeOutDuration;
     settings.scrollbar_thinning_duration =
         ui::kOverlayScrollbarThinningDuration;
   } else {
@@ -444,10 +445,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     // animations for non overlay scrollbars.
     settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
-    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
-    settings.scrollbar_fade_resize_delay =
+    settings.scrollbar_fade_out_delay = base::TimeDelta::FromMilliseconds(500);
+    settings.scrollbar_fade_out_resize_delay =
         base::TimeDelta::FromMilliseconds(500);
-    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
+    settings.scrollbar_fade_out_duration =
+        base::TimeDelta::FromMilliseconds(300);
   }
 #endif  // !defined(OS_MACOSX)
 
@@ -700,7 +702,9 @@ void RenderWidgetCompositor::setVisible(bool visible) {
 }
 
 void RenderWidgetCompositor::setPageScaleFactorAndLimits(
-    float page_scale_factor, float minimum, float maximum) {
+    float page_scale_factor,
+    float minimum,
+    float maximum) {
   layer_tree_host_->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
                                                 maximum);
 }
@@ -749,11 +753,10 @@ void RenderWidgetCompositor::registerViewportLayers(
       // registers its layers.
       // The scroll elasticity layer will only exist when using pinch virtual
       // viewports.
-      overscrollElasticityLayer
-          ? static_cast<const cc_blink::WebLayerImpl*>(
-                overscrollElasticityLayer)
-                ->layer()
-          : NULL,
+      overscrollElasticityLayer ? static_cast<const cc_blink::WebLayerImpl*>(
+                                      overscrollElasticityLayer)
+                                      ->layer()
+                                : NULL,
       static_cast<const cc_blink::WebLayerImpl*>(pageScaleLayer)->layer(),
       static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
           ->layer(),
@@ -1016,8 +1019,7 @@ void RenderWidgetCompositor::WillBeginMainFrame() {
   delegate_->WillBeginCompositorFrame();
 }
 
-void RenderWidgetCompositor::DidBeginMainFrame() {
-}
+void RenderWidgetCompositor::DidBeginMainFrame() {}
 
 void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
   compositor_deps_->GetRendererScheduler()->WillBeginFrame(args);
@@ -1117,8 +1119,7 @@ void RenderWidgetCompositor::SetFrameSinkId(
   layer_tree_host_->SetFrameSinkId(frame_sink_id);
 }
 
-void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(
-    float device_scale) {
+void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(float device_scale) {
   layer_tree_host_->SetPaintedDeviceScaleFactor(device_scale);
 }
 

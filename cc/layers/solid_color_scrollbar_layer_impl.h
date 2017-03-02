@@ -29,6 +29,8 @@ class CC_EXPORT SolidColorScrollbarLayerImpl : public ScrollbarLayerImplBase {
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
+  int ThumbThickness() const override;
+
  protected:
   SolidColorScrollbarLayerImpl(LayerTreeImpl* tree_impl,
                                int id,
@@ -39,7 +41,6 @@ class CC_EXPORT SolidColorScrollbarLayerImpl : public ScrollbarLayerImplBase {
                                bool is_overlay);
 
   // ScrollbarLayerImplBase implementation.
-  int ThumbThickness() const override;
   int ThumbLength() const override;
   float TrackLength() const override;
   int TrackStart() const override;

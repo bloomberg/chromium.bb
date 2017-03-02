@@ -55,6 +55,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
     internal_content_bounds_ = content_bounds;
   }
 
+  int ThumbThickness() const override;
+
  protected:
   PaintedScrollbarLayerImpl(LayerTreeImpl* tree_impl,
                             int id,
@@ -63,7 +65,6 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
                             bool is_overlay);
 
   // ScrollbarLayerImplBase implementation.
-  int ThumbThickness() const override;
   int ThumbLength() const override;
   float TrackLength() const override;
   int TrackStart() const override;

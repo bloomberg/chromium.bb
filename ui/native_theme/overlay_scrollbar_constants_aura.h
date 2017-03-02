@@ -14,6 +14,10 @@ constexpr int kOverlayScrollbarThumbWidthNormal = 6;
 constexpr int kOverlayScrollbarThumbWidthHovered = 10;
 constexpr int kOverlayScrollbarThumbWidthPressed = 10;
 
+// kOverlayScrollbarShowDelay is only for the case where the mouse hovers near
+// the screen edge.
+constexpr base::TimeDelta kOverlayScrollbarShowDelay =
+    base::TimeDelta::FromMilliseconds(1000);
 constexpr base::TimeDelta kOverlayScrollbarFadeOutDelay =
     base::TimeDelta::FromMilliseconds(1000);
 constexpr base::TimeDelta kOverlayScrollbarFadeOutDuration =
@@ -22,6 +26,6 @@ constexpr base::TimeDelta kOverlayScrollbarFadeOutDuration =
 constexpr base::TimeDelta kOverlayScrollbarThinningDuration =
     base::TimeDelta::FromMilliseconds(200);
 
-} // namespace ui
+}  // namespace ui
 
-#endif // UI_NATIVE_THEME_OVERLAY_SCROLLBAR_CONSTANTS_AURA_H_
+#endif  // UI_NATIVE_THEME_OVERLAY_SCROLLBAR_CONSTANTS_AURA_H_

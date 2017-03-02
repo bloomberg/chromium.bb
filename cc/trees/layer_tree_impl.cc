@@ -1047,8 +1047,8 @@ bool LayerTreeImpl::UpdateDrawProperties(
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
         settings().verify_clip_tree_calculations,
-        verify_visible_rect_calculations,
-        &render_surface_layer_list_, &property_trees_);
+        verify_visible_rect_calculations, &render_surface_layer_list_,
+        &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
       UMA_HISTOGRAM_COUNTS(
@@ -1413,25 +1413,29 @@ const gfx::Rect LayerTreeImpl::ViewportRectForTilePriority() const {
 
 std::unique_ptr<ScrollbarAnimationController>
 LayerTreeImpl::CreateScrollbarAnimationController(int scroll_layer_id) {
-  DCHECK(!settings().scrollbar_fade_delay.is_zero());
-  DCHECK(!settings().scrollbar_fade_duration.is_zero());
-  base::TimeDelta delay = settings().scrollbar_fade_delay;
-  base::TimeDelta resize_delay = settings().scrollbar_fade_resize_delay;
-  base::TimeDelta fade_duration = settings().scrollbar_fade_duration;
+  DCHECK(!settings().scrollbar_fade_out_delay.is_zero());
+  DCHECK(!settings().scrollbar_fade_out_duration.is_zero());
+  base::TimeDelta fade_out_delay = settings().scrollbar_fade_out_delay;
+  base::TimeDelta fade_out_resize_delay =
+      settings().scrollbar_fade_out_resize_delay;
+  base::TimeDelta fade_out_duration = settings().scrollbar_fade_out_duration;
   switch (settings().scrollbar_animator) {
     case LayerTreeSettings::ANDROID_OVERLAY: {
       return ScrollbarAnimationController::
           CreateScrollbarAnimationControllerAndroid(
-              scroll_layer_id, layer_tree_host_impl_, delay, resize_delay,
-              fade_duration);
+              scroll_layer_id, layer_tree_host_impl_, fade_out_delay,
+              fade_out_resize_delay, fade_out_duration);
     }
     case LayerTreeSettings::AURA_OVERLAY: {
+      DCHECK(!settings().scrollbar_show_delay.is_zero());
+      base::TimeDelta show_delay = settings().scrollbar_show_delay;
       base::TimeDelta thinning_duration =
           settings().scrollbar_thinning_duration;
       return ScrollbarAnimationController::
           CreateScrollbarAnimationControllerAuraOverlay(
-              scroll_layer_id, layer_tree_host_impl_, delay, resize_delay,
-              fade_duration, thinning_duration);
+              scroll_layer_id, layer_tree_host_impl_, show_delay,
+              fade_out_delay, fade_out_resize_delay, fade_out_duration,
+              thinning_duration);
     }
     case LayerTreeSettings::NO_ANIMATOR:
       NOTREACHED();
