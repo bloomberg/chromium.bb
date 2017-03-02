@@ -166,7 +166,7 @@ function sendReport() {
 
   feedbackInfo.description = $('description-text').value;
   feedbackInfo.pageUrl = $('page-url-text').value;
-  feedbackInfo.email = $('user-email-text').value;
+  feedbackInfo.email = $('user-email-drop-down').value;
 
   var useSystemInfo = false;
   var useHistograms = false;
@@ -344,7 +344,13 @@ function initialize() {
       });
 
       chrome.feedbackPrivate.getUserEmail(function(email) {
-        $('user-email-text').value = email;
+        var optionElement = document.createElement('option');
+        optionElement.value = email;
+        optionElement.text = email;
+        optionElement.selected = true;
+        // Make sure the "Report anonymously" option comes last.
+        $('user-email-drop-down').insertBefore(optionElement,
+            $('anonymous-user-option'));
       });
 
       // Initiate getting the system info.

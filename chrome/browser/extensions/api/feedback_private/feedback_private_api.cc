@@ -166,9 +166,12 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
   dict->SetString(id, l10n_util::GetStringUTF16(idr))
   SET_STRING("page-title", IDS_FEEDBACK_REPORT_PAGE_TITLE);
   SET_STRING("additionalInfo", IDS_FEEDBACK_ADDITIONAL_INFO_LABEL);
+  SET_STRING("minimize-btn-label", IDS_FEEDBACK_MINIMIZE_BUTTON_LABEL);
+  SET_STRING("close-btn-label", IDS_FEEDBACK_CLOSE_BUTTON_LABEL);
   SET_STRING("page-url", IDS_FEEDBACK_REPORT_URL_LABEL);
   SET_STRING("screenshot", IDS_FEEDBACK_SCREENSHOT_LABEL);
   SET_STRING("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
+  SET_STRING("anonymous-user", IDS_FEEDBACK_ANONYMOUS_EMAIL_OPTION);
 #if defined(OS_CHROMEOS)
   if (arc::IsArcPlayStoreEnabledForProfile(
           Profile::FromBrowserContext(browser_context()))) {

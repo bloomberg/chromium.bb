@@ -73,6 +73,14 @@ body {
   width: 100px;
 }
 
+.content .text-field-container > select {
+  -webkit-padding-start: 5px;
+  border: 1px solid #c8c8c8;
+  color: #585858;
+  flex: 1 1 auto;
+  height: 100%;
+}
+
 .content .text-field-container > input[type=text] {
   -webkit-flex: 1 1 auto;
   -webkit-padding-start: 5px;

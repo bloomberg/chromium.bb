@@ -19,9 +19,11 @@
   <div id="title-bar" class="title-bar">
     <span id="page-title" i18n-content="page-title"></span>
     <span class="topbutton-bar">
-      <button class="minimize-button" id="minimize-button" tabindex="-1">
+      <button class="minimize-button" id="minimize-button" tabindex="-1"
+              i18n-values="aria-label:minimize-btn-label">
       </button>
-      <button class="close-button" id="close-button" tabindex="-1">
+      <button class="close-button" id="close-button" tabindex="-1"
+              i18n-values="aria-label:close-btn-label">
       </button>
     </span>
   </div>
@@ -49,7 +51,10 @@
     <!-- User e-mail -->
     <div id="user-email" class="text-field-container">
       <label id="user-email-label" i18n-content="user-email"></label>
-      <input id="user-email-text" aria-labelledby="user-email-label" type="text">
+      <select id="user-email-drop-down" aria-labelledby="user-email-label">
+        <option id="anonymous-user-option" value="anonymous_user"
+                i18n-content="anonymous-user"></option>
+      </select>
     </div>
     <!-- Attach a file -->
     <div id="attach-file-container" class="text-field-container">
