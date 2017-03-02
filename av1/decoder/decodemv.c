@@ -67,16 +67,33 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   const int b_col = mi_col & MAX_MIB_MASK;
   const int b_row = mi_row & MAX_MIB_MASK;
   const int read_delta_q_flag = (b_col == 0 && b_row == 0);
-  int rem_bits, thr, bit = 1;
+  int rem_bits, thr;
+  int i, smallval;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  (void)cm;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
 
   if ((bsize != BLOCK_64X64 || mbmi->skip == 0) && read_delta_q_flag) {
+#if !CONFIG_EC_MULTISYMBOL
+    int bit = 1;
     abs = 0;
     while (abs < DELTA_Q_SMALL && bit) {
-      bit = aom_read(r, cm->fc->delta_q_prob[abs], ACCT_STR);
-      if (counts) counts->delta_q[abs][bit]++;
+      bit = aom_read(r, ec_ctx->delta_q_prob[abs], ACCT_STR);
       abs += bit;
     }
-    if (abs == DELTA_Q_SMALL) {
+#else
+    abs = aom_read_symbol(r, ec_ctx->delta_q_cdf, DELTA_Q_PROBS + 1, ACCT_STR);
+#endif
+    smallval = (abs < DELTA_Q_SMALL);
+    if (counts) {
+      for (i = 0; i < abs; ++i) counts->delta_q[i][1]++;
+      if (smallval) counts->delta_q[abs][0]++;
+    }
+
+    if (!smallval) {
       rem_bits = aom_read_literal(r, 3, ACCT_STR);
       thr = (1 << rem_bits) + 1;
       abs = aom_read_literal(r, rem_bits, ACCT_STR) + thr;

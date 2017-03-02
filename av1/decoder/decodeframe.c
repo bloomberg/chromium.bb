@@ -4609,7 +4609,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   for (k = 0; k < SKIP_CONTEXTS; ++k)
     av1_diff_update_prob(&r, &fc->skip_probs[k], ACCT_STR);
 
-#if CONFIG_DELTA_Q
+#if CONFIG_DELTA_Q && !CONFIG_EC_ADAPT
   for (k = 0; k < DELTA_Q_PROBS; ++k)
     av1_diff_update_prob(&r, &fc->delta_q_prob[k], ACCT_STR);
 #endif

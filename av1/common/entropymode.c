@@ -627,6 +627,11 @@ static const aom_prob default_obmc_prob[BLOCK_SIZES] = {
 
 #if CONFIG_DELTA_Q
 static const aom_prob default_delta_q_probs[DELTA_Q_PROBS] = { 220, 220, 220 };
+#if CONFIG_EC_MULTISYMBOL
+static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
+  28160, 32120, 32677, 32768, 0
+};
+#endif
 #endif
 #if CONFIG_EC_MULTISYMBOL
 int av1_intra_mode_ind[INTRA_MODES];
@@ -1827,6 +1832,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif
 #if CONFIG_DELTA_Q
   av1_copy(fc->delta_q_prob, default_delta_q_probs);
+#if CONFIG_EC_MULTISYMBOL
+  av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
+#endif
 #endif
 }
 
