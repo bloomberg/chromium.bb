@@ -365,6 +365,7 @@
 
     'client.v8.chromium': {
       'Linux - Future': 'v8_future_release_bot',
+      'Linux - Future (dbg)': 'v8_future_debug_bot',
     },
 
     'client.v8.fyi': {
@@ -1514,6 +1515,10 @@
 
     'ubsan_vptr_release_trybot': [
       'ubsan_vptr', 'ubsan_no_recover_hack', 'release_trybot',
+    ],
+
+    'v8_future_debug_bot': [
+      'v8_future', 'debug_bot',
     ],
 
     'v8_future_release_bot': [
