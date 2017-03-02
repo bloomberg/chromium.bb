@@ -581,6 +581,7 @@ static_library("constants") {
     "//content/public/common:result_codes",
     "//extensions/features",
     "//printing/features",
+    "//rlz/features",
   ]
   deps = [
     ":version_header",

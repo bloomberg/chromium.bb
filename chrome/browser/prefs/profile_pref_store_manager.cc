@@ -170,23 +170,18 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
 }
 
 bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
-    const base::DictionaryValue& master_prefs) {
+    std::unique_ptr<base::DictionaryValue> master_prefs) {
   // Create the profile directory if it doesn't exist yet (very possible on
   // first run).
   if (!base::CreateDirectory(profile_path_))
     return false;
 
-  const base::DictionaryValue* to_serialize = &master_prefs;
-  std::unique_ptr<base::DictionaryValue> copy;
-
   if (kPlatformSupportsPreferenceTracking) {
-    copy.reset(master_prefs.DeepCopy());
-    to_serialize = copy.get();
     PrefHashFilter(GetPrefHashStore(false),
                    GetExternalVerificationPrefHashStorePair(),
                    tracking_configuration_, base::Closure(), NULL,
                    reporting_ids_count_, false)
-        .Initialize(copy.get());
+        .Initialize(master_prefs.get());
   }
 
   // This will write out to a single combined file which will be immediately
@@ -199,7 +194,7 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
   // complete before Chrome can start (as master preferences seed the Local
   // State and Preferences files). This won't trip ThreadIORestrictions as they
   // won't have kicked in yet on the main thread.
-  bool success = serializer.Serialize(*to_serialize);
+  bool success = serializer.Serialize(*master_prefs);
 
   UMA_HISTOGRAM_BOOLEAN("Settings.InitializedFromMasterPrefs", success);
   return success;

@@ -51,6 +51,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
+#include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
@@ -112,6 +113,7 @@
 #include "net/http/http_server_properties_manager.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
+#include "rlz/features/features.h"
 
 #if BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/apps/drive/drive_app_mapping.h"
@@ -262,36 +264,48 @@ namespace {
 
 #if BUILDFLAG(ENABLE_GOOGLE_NOW)
 // Deprecated 3/2016
-const char kGoogleGeolocationAccessEnabled[] =
+constexpr char kGoogleGeolocationAccessEnabled[] =
     "googlegeolocationaccess.enabled";
 #endif
 
 // Deprecated 4/2016.
-const char kCheckDefaultBrowser[] = "browser.check_default_browser";
+constexpr char kCheckDefaultBrowser[] = "browser.check_default_browser";
 
 // Deprecated 5/2016.
-const char kDesktopSearchRedirectionInfobarShownPref[] =
+constexpr char kDesktopSearchRedirectionInfobarShownPref[] =
     "desktop_search_redirection_infobar_shown";
 
 // Deprecated 7/2016.
-const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
-const char kDisableSpdy[] = "spdy.disabled";
+constexpr char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
+constexpr char kDisableSpdy[] = "spdy.disabled";
 
 // Deprecated 8/2016.
-const char kRecentlySelectedEncoding[] = "profile.recently_selected_encodings";
-const char kStaticEncodings[] = "intl.static_encodings";
+constexpr char kRecentlySelectedEncoding[] =
+    "profile.recently_selected_encodings";
+constexpr char kStaticEncodings[] = "intl.static_encodings";
 
 // Deprecated 9/2016.
-const char kWebKitUsesUniversalDetector[] =
+constexpr char kWebKitUsesUniversalDetector[] =
     "webkit.webprefs.uses_universal_detector";
-const char kWebKitAllowDisplayingInsecureContent[] =
+constexpr char kWebKitAllowDisplayingInsecureContent[] =
     "webkit.webprefs.allow_displaying_insecure_content";
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Deprecated 2/2017.
-const char kToolbarMigratedComponentActionStatus[] =
+constexpr char kToolbarMigratedComponentActionStatus[] =
     "toolbar_migrated_component_action_status";
 #endif
+
+#if BUILDFLAG(ENABLE_RLZ)
+// Migrated out of kDistroDict as of 2/2017.
+constexpr char kDistroRlzPingDelay[] = "ping_delay";
+#endif  // BUILDFLAG(ENABLE_RLZ)
+
+// master_preferences used to be mapped as-is to Preferences on first run but
+// the "distribution" dictionary was never used beyond first run. It is now
+// stripped in first_run.cc prior to applying this mapping. Cleanup for existing
+// Preferences files added here 2/2017.
+constexpr char kDistroDict[] = "distribution";
 
 void DeleteWebRTCIdentityStoreDBOnFileThread(
     const base::FilePath& profile_path) {
@@ -546,7 +560,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
-  first_run::RegisterProfilePrefs(registry);
   NewTabUI::RegisterProfilePrefs(registry);
   PepperFlashSettingsManager::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
@@ -597,6 +610,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ArcAppListPrefs::RegisterProfilePrefs(registry);
 #endif
 
+#if BUILDFLAG(ENABLE_RLZ)
+  ChromeRLZTrackerDelegate::RegisterProfilePrefs(registry);
+#endif
+
 #if defined(OS_WIN)
   component_updater::RegisterProfilePrefsForSwReporter(registry);
   desktop_ios_promotion::RegisterProfilePrefs(registry);
@@ -639,6 +656,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   registry->RegisterDictionaryPref(kToolbarMigratedComponentActionStatus);
 #endif
+
+  registry->RegisterDictionaryPref(kDistroDict);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -731,6 +750,20 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 2/2017.
   profile_prefs->ClearPref(kToolbarMigratedComponentActionStatus);
 #endif
+
+  // Added 2/2017.
+  {
+#if BUILDFLAG(ENABLE_RLZ)
+    const base::DictionaryValue* distro_dict =
+        profile_prefs->GetDictionary(kDistroDict);
+    int rlz_ping_delay = 0;
+    if (distro_dict &&
+        distro_dict->GetInteger(kDistroRlzPingDelay, &rlz_ping_delay)) {
+      profile_prefs->SetInteger(prefs::kRlzPingDelaySeconds, rlz_ping_delay);
+    }
+#endif  // BUILDFLAG(ENABLE_RLZ)
+    profile_prefs->ClearPref(kDistroDict);
+  }
 }
 
 }  // namespace chrome

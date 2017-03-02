@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -319,10 +320,11 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectValues) {
 }
 
 TEST_F(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
-  base::DictionaryValue master_prefs;
-  master_prefs.Set(kTrackedAtomic, new base::StringValue(kFoobar));
-  master_prefs.Set(kProtectedAtomic, new base::StringValue(kHelloWorld));
-  EXPECT_TRUE(manager_->InitializePrefsFromMasterPrefs(master_prefs));
+  auto master_prefs = base::MakeUnique<base::DictionaryValue>();
+  master_prefs->Set(kTrackedAtomic, new base::StringValue(kFoobar));
+  master_prefs->Set(kProtectedAtomic, new base::StringValue(kHelloWorld));
+  EXPECT_TRUE(
+      manager_->InitializePrefsFromMasterPrefs(std::move(master_prefs)));
 
   LoadExistingPrefs();
 

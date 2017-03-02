@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // ChromeRLZTrackerDelegate implements RLZTrackerDelegate abstract interface
 // and provides access to Chrome features.
 class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
@@ -21,6 +25,8 @@ class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
  public:
   ChromeRLZTrackerDelegate();
   ~ChromeRLZTrackerDelegate() override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static bool IsGoogleDefaultSearch(Profile* profile);
   static bool IsGoogleHomepage(Profile* profile);

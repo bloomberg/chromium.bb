@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_log.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
+#include "rlz/features/features.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/google_update_settings.h"
@@ -38,6 +40,14 @@ ChromeRLZTrackerDelegate::ChromeRLZTrackerDelegate() {
 }
 
 ChromeRLZTrackerDelegate::~ChromeRLZTrackerDelegate() {
+}
+
+// static
+void ChromeRLZTrackerDelegate::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+#if BUILDFLAG(ENABLE_RLZ)
+  registry->RegisterIntegerPref(prefs::kRlzPingDelaySeconds, 90);
+#endif
 }
 
 // static

@@ -186,6 +186,11 @@ const char kSupervisedUserSharedSettings[] = "profile.managed.shared_settings";
 // (currently the name).
 const char kSupervisedUserWhitelists[] = "profile.managed.whitelists";
 
+#if BUILDFLAG(ENABLE_RLZ)
+// Integer. RLZ ping delay in seconds.
+const char kRlzPingDelaySeconds[] = "rlz_ping_delay";
+#endif  // BUILDFLAG(ENABLE_RLZ)
+
 // The application locale.
 // For OS_CHROMEOS we maintain the kApplicationLocale property in both local
 // state and the user's profile.  The global property determines the locale of

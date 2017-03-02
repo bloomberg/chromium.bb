@@ -88,7 +88,7 @@ void DisableDomainCheckForTesting();
 // preference values in |master_prefs|. Returns true on success.
 bool InitializePrefsFromMasterPrefs(
     const base::FilePath& profile_path,
-    const base::DictionaryValue& master_prefs);
+    std::unique_ptr<base::DictionaryValue> master_prefs);
 
 // Retrieves the time of the last preference reset event, if any, for the
 // provided profile. If no reset has occurred, returns a null |Time|.

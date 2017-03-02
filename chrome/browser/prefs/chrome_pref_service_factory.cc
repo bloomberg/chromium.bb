@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -513,9 +514,9 @@ void DisableDomainCheckForTesting() {
 
 bool InitializePrefsFromMasterPrefs(
     const base::FilePath& profile_path,
-    const base::DictionaryValue& master_prefs) {
+    std::unique_ptr<base::DictionaryValue> master_prefs) {
   return CreateProfilePrefStoreManager(profile_path)
-      ->InitializePrefsFromMasterPrefs(master_prefs);
+      ->InitializePrefsFromMasterPrefs(std::move(master_prefs));
 }
 
 base::Time GetResetTime(Profile* profile) {

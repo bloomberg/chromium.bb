@@ -92,7 +92,7 @@ class ProfilePrefStoreManager {
   // values in |master_prefs|. Acts synchronously, including blocking IO.
   // Returns true on success.
   bool InitializePrefsFromMasterPrefs(
-      const base::DictionaryValue& master_prefs);
+      std::unique_ptr<base::DictionaryValue> master_prefs);
 
   // Creates a single-file PrefStore as was used in M34 and earlier. Used only
   // for testing migration.
