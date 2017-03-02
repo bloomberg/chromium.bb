@@ -186,6 +186,12 @@
               </a>
             </div>
           </div>
+          <div class="settings-box">
+            <settings-toggle-button class="start"
+                pref="{{prefs.settings.language.ime_menu_activated}}"
+                label="$i18n{showImeMenu}">
+            </settings-toggle-button>
+          </div>
         </iron-collapse>
 </if>
 <if expr="not is_macosx">

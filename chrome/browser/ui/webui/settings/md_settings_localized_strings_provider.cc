@@ -962,6 +962,7 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
     {"manageInputMethods", IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE},
     {"manageInputMethodsPageTitle",
      IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE},
+    {"showImeMenu", IDS_SETTINGS_LANGUAGES_SHOW_IME_MENU},
 #endif
     {"addLanguagesDialogTitle", IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
     {"allLanguages", IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES},

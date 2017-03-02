@@ -155,6 +155,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kSearchSuggestEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
+  // Languages page
   (*s_whitelist)[spellcheck::prefs::kSpellCheckDictionaries] =
       settings_private::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[spellcheck::prefs::kSpellCheckUseSpellingService] =
@@ -163,6 +165,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[translate::TranslatePrefs::kPrefTranslateBlockedLanguages] =
       settings_private::PrefType::PREF_TYPE_LIST;
+#if defined(OS_CHROMEOS)
+  (*s_whitelist)[::prefs::kLanguageImeMenuActivated] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+#endif
 
   // Search page.
   (*s_whitelist)[::prefs::kDefaultSearchProviderEnabled] =
