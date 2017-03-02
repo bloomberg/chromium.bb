@@ -34,6 +34,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/Settings.h"
@@ -99,6 +100,7 @@ Page::Page(PageClients& pageClients)
       m_focusController(FocusController::create(this)),
       m_contextMenuController(
           ContextMenuController::create(this, pageClients.contextMenuClient)),
+      m_pageScaleConstraintsSet(PageScaleConstraintsSet::create()),
       m_pointerLockController(PointerLockController::create(this)),
       m_mainFrame(nullptr),
       m_editorClient(pageClients.editorClient),
@@ -148,6 +150,14 @@ ScrollingCoordinator* Page::scrollingCoordinator() {
     m_scrollingCoordinator = ScrollingCoordinator::create(this);
 
   return m_scrollingCoordinator.get();
+}
+
+PageScaleConstraintsSet& Page::pageScaleConstraintsSet() {
+  return *m_pageScaleConstraintsSet;
+}
+
+const PageScaleConstraintsSet& Page::pageScaleConstraintsSet() const {
+  return *m_pageScaleConstraintsSet;
 }
 
 ClientRectList* Page::nonFastScrollableRects(const LocalFrame* frame) {

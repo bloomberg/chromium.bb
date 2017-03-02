@@ -114,7 +114,6 @@ class CORE_EXPORT FrameHost final
 
   const Member<Page> m_page;
   const Member<BrowserControls> m_browserControls;
-  const std::unique_ptr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
   const Member<VisualViewport> m_visualViewport;
   const Member<OverscrollController> m_overscrollController;
   const Member<EventHandlerRegistry> m_eventHandlerRegistry;

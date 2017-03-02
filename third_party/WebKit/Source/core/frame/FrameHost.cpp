@@ -52,7 +52,6 @@ FrameHost* FrameHost::create(Page& page) {
 FrameHost::FrameHost(Page& page)
     : m_page(&page),
       m_browserControls(BrowserControls::create(*this)),
-      m_pageScaleConstraintsSet(PageScaleConstraintsSet::create()),
       m_visualViewport(VisualViewport::create(*this)),
       m_overscrollController(
           OverscrollController::create(*m_visualViewport,
@@ -99,11 +98,11 @@ const VisualViewport& FrameHost::visualViewport() const {
 }
 
 PageScaleConstraintsSet& FrameHost::pageScaleConstraintsSet() {
-  return *m_pageScaleConstraintsSet;
+  return page().pageScaleConstraintsSet();
 }
 
 const PageScaleConstraintsSet& FrameHost::pageScaleConstraintsSet() const {
-  return *m_pageScaleConstraintsSet;
+  return page().pageScaleConstraintsSet();
 }
 
 EventHandlerRegistry& FrameHost::eventHandlerRegistry() {

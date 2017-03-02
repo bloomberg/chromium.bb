@@ -58,6 +58,7 @@ class EditorClient;
 class FocusController;
 class Frame;
 class FrameHost;
+class PageScaleConstraintsSet;
 class PluginData;
 class PointerLockController;
 class ScopedPageSuspender;
@@ -180,6 +181,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Deprecation& deprecation() { return m_deprecation; }
   HostsUsingFeatures& hostsUsingFeatures() { return m_hostsUsingFeatures; }
 
+  PageScaleConstraintsSet& pageScaleConstraintsSet();
+  const PageScaleConstraintsSet& pageScaleConstraintsSet() const;
+
   void setTabKeyCyclesThroughElements(bool b) {
     m_tabKeyCyclesThroughElements = b;
   }
@@ -258,6 +262,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const Member<DragController> m_dragController;
   const Member<FocusController> m_focusController;
   const Member<ContextMenuController> m_contextMenuController;
+  const std::unique_ptr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
   const Member<PointerLockController> m_pointerLockController;
   Member<ScrollingCoordinator> m_scrollingCoordinator;
 
