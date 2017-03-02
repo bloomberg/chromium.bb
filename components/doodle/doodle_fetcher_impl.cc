@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
-#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -80,7 +79,6 @@ DoodleFetcherImpl::DoodleFetcherImpl(
     : download_context_(download_context),
       json_parsing_callback_(json_parsing_callback),
       google_url_tracker_(google_url_tracker),
-      clock_(new base::DefaultClock()),
       weak_ptr_factory_(this) {
   DCHECK(google_url_tracker_);
 }
@@ -205,14 +203,15 @@ void DoodleFetcherImpl::ParseBaseInformation(
   // The JSON doesn't guarantee the number to fit into an int.
   double ttl = 0;  // Expires immediately if the parameter is missing.
   if (!ddljson.GetDouble("time_to_live_ms", &ttl) || ttl < 0) {
-    DLOG(WARNING) << "No valid Doodle image TTL present in ddljson!";
+    DLOG(WARNING) << "No valid Doodle TTL present in ddljson!";
     ttl = 0;
   }
+  // TODO(treib,fhorschig): Move this logic into the service.
   if (ttl > kMaxTimeToLiveMS) {
     ttl = kMaxTimeToLiveMS;
-    DLOG(WARNING) << "Clamping Doodle image TTL to 30 days!";
+    DLOG(WARNING) << "Clamping Doodle TTL to 30 days!";
   }
-  config->expiry_date = clock_->Now() + base::TimeDelta::FromMillisecondsD(ttl);
+  config->time_to_live = base::TimeDelta::FromMillisecondsD(ttl);
 }
 
 GURL DoodleFetcherImpl::ParseRelativeUrl(

@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/time/clock.h"
 #include "components/doodle/doodle_fetcher.h"
 #include "components/doodle/doodle_types.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -54,11 +53,6 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
   // result from the next completed request.
   void FetchDoodle(FinishedCallback callback) override;
 
-  // Overrides internal clock for testing purposes.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-    clock_ = std::move(clock);
-  }
-
  private:
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -90,9 +84,6 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> const download_context_;
   ParseJSONCallback json_parsing_callback_;
   GoogleURLTracker* google_url_tracker_;
-
-  // Allow for an injectable clock for testing.
-  std::unique_ptr<base::Clock> clock_;
 
   std::vector<FinishedCallback> callbacks_;
   std::unique_ptr<net::URLFetcher> fetcher_;

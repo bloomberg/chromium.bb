@@ -12,7 +12,6 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_url_tracker.h"
@@ -77,13 +76,7 @@ class DoodleFetcherImplTest : public testing::Test {
         doodle_fetcher_(
             new net::TestURLRequestContextGetter(message_loop_.task_runner()),
             &google_url_tracker_,
-            base::Bind(ParseJson)) {
-    // Random difference to ensure that expiry_dates are really relative.
-    auto clock = base::MakeUnique<base::SimpleTestClock>();
-    clock_ = clock.get();
-    clock_->Advance(base::TimeDelta::FromMilliseconds(1123581321));
-    doodle_fetcher_.SetClockForTesting(std::move(clock));
-  }
+            base::Bind(ParseJson)) {}
 
   void RespondWithData(const std::string& data) {
     RespondToFetcherWithData(GetRunningFetcher(), data);
@@ -133,15 +126,10 @@ class DoodleFetcherImplTest : public testing::Test {
 
   GURL GetGoogleBaseURL() { return google_url_tracker_.google_url(); }
 
-  base::Time TimeFromNow(uint64_t milliseconds) {
-    return clock_->Now() + base::TimeDelta::FromMilliseconds(milliseconds);
-  }
-
  private:
   base::MessageLoop message_loop_;
   GURL url_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  base::SimpleTestClock* clock_;  // Owned by the doodle_fetcher.
   GoogleURLTracker google_url_tracker_;
   DoodleFetcherImpl doodle_fetcher_;
 };
@@ -232,7 +220,8 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
   EXPECT_THAT(config.interactive_html,
               Eq("\u003cstyle\u003e\u003c/style\u003e"));
 
-  EXPECT_THAT(config.expiry_date, Eq(TimeFromNow(55000)));
+  EXPECT_THAT(config.time_to_live,
+              Eq(base::TimeDelta::FromMilliseconds(55000)));
 }
 
 TEST_F(DoodleFetcherImplTest, DoodleExpiresWithinThirtyDaysForTooLargeTTL) {
@@ -248,11 +237,12 @@ TEST_F(DoodleFetcherImplTest, DoodleExpiresWithinThirtyDaysForTooLargeTTL) {
 
   EXPECT_THAT(state, Eq(DoodleState::AVAILABLE));
   ASSERT_TRUE(response.has_value());
-  EXPECT_THAT(response.value().expiry_date,
-              Eq(TimeFromNow(30ul * 24 * 60 * 60 * 1000 /* ms */)));  // 30 days
+  EXPECT_THAT(response.value().time_to_live,
+              Eq(base::TimeDelta::FromMilliseconds(30ul * 24 * 60 * 60 *
+                                                   1000)));  // 30 days
 }
 
-TEST_F(DoodleFetcherImplTest, DoodleExpiresNowWithNegativeTTL) {
+TEST_F(DoodleFetcherImplTest, DoodleExpiresImmediatelyWithNegativeTTL) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -265,10 +255,11 @@ TEST_F(DoodleFetcherImplTest, DoodleExpiresNowWithNegativeTTL) {
 
   EXPECT_THAT(state, Eq(DoodleState::AVAILABLE));
   ASSERT_TRUE(response.has_value());
-  EXPECT_THAT(response.value().expiry_date, Eq(TimeFromNow(0)));
+  EXPECT_THAT(response.value().time_to_live,
+              Eq(base::TimeDelta::FromMilliseconds(0)));
 }
 
-TEST_F(DoodleFetcherImplTest, DoodleExpiresNowWithoutValidTTL) {
+TEST_F(DoodleFetcherImplTest, DoodleExpiresImmediatelyWithoutValidTTL) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -280,7 +271,8 @@ TEST_F(DoodleFetcherImplTest, DoodleExpiresNowWithoutValidTTL) {
 
   EXPECT_THAT(state, Eq(DoodleState::AVAILABLE));
   ASSERT_TRUE(response.has_value());
-  EXPECT_THAT(response.value().expiry_date, Eq(TimeFromNow(0)));
+  EXPECT_THAT(response.value().time_to_live,
+              Eq(base::TimeDelta::FromMilliseconds(0)));
 }
 
 TEST_F(DoodleFetcherImplTest, ReturnsNoDoodleForMissingLargeImageUrl) {

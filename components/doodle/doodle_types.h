@@ -69,7 +69,7 @@ struct DoodleConfig {
   DoodleImage transparent_large_image;
 
   // TODO(treib,fhorschig): Don't expose this? Clients don't care about it.
-  base::Time expiry_date;
+  base::TimeDelta time_to_live;
 
   // Copying and assignment allowed.
 };

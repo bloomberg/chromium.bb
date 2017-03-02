@@ -16,10 +16,9 @@ bool DoodleImage::operator!=(const DoodleImage& other) const {
 }
 
 bool DoodleConfig::IsEquivalent(const DoodleConfig& other) const {
-  // Note: This compares all fields except for |expiry_date|. The reason is that
-  // |expiry_date| gets computed as "now + time_to_live", so when an identical
-  // config gets re-fetched, the expiry date will generally end up slightly
-  // different.
+  // Note: This compares all fields except for |time_to_live|, which by
+  // definition isn't constant over time, and shouldn't be in DoodleConfig in
+  // the first place.
   return doodle_type == other.doodle_type && alt_text == other.alt_text &&
          interactive_html == other.interactive_html &&
          search_url == other.search_url && target_url == other.target_url &&
