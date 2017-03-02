@@ -572,7 +572,7 @@ Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(
 void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   gfx::Rect tabstrip_bounds = GetBoundsForTabStrip(browser_view()->tabstrip());
 
-  SkPaint paint;
+  cc::PaintFlags flags;
   gfx::ScopedCanvas scoped_canvas(canvas);
   float scale = canvas->UndoDeviceScaleFactor();
   // This is the pixel-accurate version of WindowTopY(). Scaling the DIP values
@@ -601,18 +601,18 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   // are #565656 with 80% alpha. We copy Edge (which also custom-draws its top
   // border) and use #A2A2A2 instead.
   constexpr SkColor inactive_border_color = 0xFFA2A2A2;
-  paint.setColor(
+  flags.setColor(
       ShouldPaintAsActive()
           ? GetThemeProvider()->GetColor(ThemeProperties::COLOR_ACCENT_BORDER)
           : inactive_border_color);
-  canvas->DrawRect(gfx::RectF(0, 0, width() * scale, y), paint);
+  canvas->DrawRect(gfx::RectF(0, 0, width() * scale, y), flags);
 
   const gfx::Rect titlebar_rect = gfx::ToEnclosingRect(
       gfx::RectF(0, y, width() * scale, tabstrip_bounds.bottom() * scale - y));
   // Paint the titlebar first so we have a background if an area isn't covered
   // by the theme image.
-  paint.setColor(GetTitlebarColor());
-  canvas->DrawRect(titlebar_rect, paint);
+  flags.setColor(GetTitlebarColor());
+  canvas->DrawRect(titlebar_rect, flags);
   const gfx::ImageSkia frame_image = GetFrameImage();
   if (!frame_image.isNull()) {
     canvas->TileImageInt(frame_image, 0, 0, scale, scale, titlebar_rect.x(),

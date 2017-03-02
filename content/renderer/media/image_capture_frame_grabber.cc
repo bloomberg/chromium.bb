@@ -70,12 +70,12 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
   const SkImageInfo info = SkImageInfo::MakeN32(
       frame->visible_rect().width(), frame->visible_rect().height(), alpha);
 
-  sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRaster(info);
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   DCHECK(surface);
 
   SkPixmap pixmap;
-  if (!cc::ToPixmap(surface->getCanvas(), &pixmap)) {
-    DLOG(ERROR) << "Error trying to map PaintSurface's pixels";
+  if (!skia::GetWritablePixels(surface->getCanvas(), &pixmap)) {
+    DLOG(ERROR) << "Error trying to map SkSurface's pixels";
     callback.Run(sk_sp<SkImage>());
     return;
   }

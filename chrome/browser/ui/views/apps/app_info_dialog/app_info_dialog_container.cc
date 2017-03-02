@@ -60,11 +60,11 @@ class AppListOverlayBackground : public views::Background {
     // 1px smaller on platforms that support shadows.
     const int kAppListOverlayBorderRadius = 3;
 
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(app_list::kContentsBackgroundColor);
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(app_list::kContentsBackgroundColor);
     canvas->DrawRoundRect(view->GetContentsBounds(),
-                          kAppListOverlayBorderRadius, paint);
+                          kAppListOverlayBorderRadius, flags);
   }
 
  private:

@@ -151,8 +151,8 @@ class CircularThrobberView : public views::View, public gfx::AnimationDelegate {
   // Maximum radius for outer animated circle.
   const int largest_radius_animated_circle_;
 
-  SkPaint inner_circle_paint_;
-  SkPaint outer_circle_paint_;
+  cc::PaintFlags inner_circle_flags_;
+  cc::PaintFlags outer_circle_flags_;
 
   std::unique_ptr<gfx::ThrobAnimation> animation_;
 
@@ -173,13 +173,13 @@ CircularThrobberView::CircularThrobberView(int width,
       center_(gfx::Point(width / 2, width / 2)) {
   SetSize(gfx::Size(width, width));
 
-  inner_circle_paint_.setColor(inner_circle_color);
-  inner_circle_paint_.setStyle(SkPaint::kFill_Style);
-  inner_circle_paint_.setFlags(SkPaint::kAntiAlias_Flag);
+  inner_circle_flags_.setColor(inner_circle_color);
+  inner_circle_flags_.setAntiAlias(true);
+  inner_circle_flags_.setStyle(cc::PaintFlags::kFill_Style);
 
-  outer_circle_paint_.setColor(outer_circle_color);
-  outer_circle_paint_.setStyle(SkPaint::kFill_Style);
-  outer_circle_paint_.setFlags(SkPaint::kAntiAlias_Flag);
+  outer_circle_flags_.setColor(outer_circle_color);
+  outer_circle_flags_.setAntiAlias(true);
+  outer_circle_flags_.setStyle(cc::PaintFlags::kFill_Style);
 
   animation_.reset(new gfx::ThrobAnimation(this));
   animation_->SetThrobDuration(animation_duration);
@@ -191,8 +191,8 @@ CircularThrobberView::CircularThrobberView(int width,
 CircularThrobberView::~CircularThrobberView() {}
 
 void CircularThrobberView::OnPaint(gfx::Canvas* canvas) {
-  canvas->DrawCircle(center_, outer_radius_, outer_circle_paint_);
-  canvas->DrawCircle(center_, inner_radius_, inner_circle_paint_);
+  canvas->DrawCircle(center_, outer_radius_, outer_circle_flags_);
+  canvas->DrawCircle(center_, inner_radius_, inner_circle_flags_);
 }
 
 void CircularThrobberView::AnimationProgressed(
@@ -303,7 +303,7 @@ class HintBox : public views::View {
   gfx::Rect label_text_bounds_;
   gfx::Rect sublabel_text_bounds_;
 
-  SkPaint paint_;
+  cc::PaintFlags flags_;
 
   DISALLOW_COPY_AND_ASSIGN(HintBox);
 };
@@ -329,9 +329,9 @@ HintBox::HintBox(const gfx::Rect& bounds, int border_radius)
   rounded_rect_bounds_ = GetLocalBounds();
   rounded_rect_bounds_.Inset(GetInsets());
 
-  paint_.setColor(SK_ColorWHITE);
-  paint_.setStyle(SkPaint::kFill_Style);
-  paint_.setFlags(SkPaint::kAntiAlias_Flag);
+  flags_.setColor(SK_ColorWHITE);
+  flags_.setStyle(cc::PaintFlags::kFill_Style);
+  flags_.setAntiAlias(true);
 
   horizontal_offset_ =
       arrow_width_ + base_border_ + rounded_rect_bounds_.width() * 0.08f;
@@ -399,7 +399,7 @@ void HintBox::SetSubLabel(const base::string16& text, const SkColor& color) {
 
 void HintBox::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
-  canvas->DrawRoundRect(rounded_rect_bounds_, border_radius_, paint_);
+  canvas->DrawRoundRect(rounded_rect_bounds_, border_radius_, flags_);
   canvas->DrawStringRectWithFlags(label_text_, label_font_list_, label_color_,
                                   label_text_bounds_, gfx::Canvas::NO_ELLIPSIS);
   canvas->DrawStringRectWithFlags(sublabel_text_, sublabel_font_list_,
@@ -423,7 +423,7 @@ class CompletionMessageView : public views::View {
 
   gfx::ImageSkia check_icon_;
 
-  SkPaint paint_;
+  cc::PaintFlags flags_;
 
   DISALLOW_COPY_AND_ASSIGN(CompletionMessageView);
 };
@@ -445,9 +445,9 @@ CompletionMessageView::CompletionMessageView(const gfx::Rect& bounds,
   check_icon_ = gfx::CreateVectorIcon(ash::kTouchCalibrationCompleteCheckIcon,
                                       SK_ColorWHITE);
 
-  paint_.setColor(SK_ColorWHITE);
-  paint_.setStyle(SkPaint::kFill_Style);
-  paint_.setFlags(SkPaint::kAntiAlias_Flag);
+  flags_.setColor(SK_ColorWHITE);
+  flags_.setStyle(cc::PaintFlags::kFill_Style);
+  flags_.setAntiAlias(true);
 }
 
 CompletionMessageView::~CompletionMessageView() {}
@@ -457,7 +457,7 @@ void CompletionMessageView::OnPaint(gfx::Canvas* canvas) {
 
   // TODO(malaykeshav): Work with elizabethchiu@ to get better UX for RTL.
   canvas->DrawStringRectWithFlags(
-      message_, font_list_, paint_.getColor(), text_bounds_,
+      message_, font_list_, flags_.getColor(), text_bounds_,
       gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::NO_SUBPIXEL_RENDERING);
 }
 
@@ -635,9 +635,9 @@ void TouchCalibratorView::OnPaintBackground(gfx::Canvas* canvas) {
     opacity = state_ == BACKGROUND_FADING_OUT ? 0.f : kBackgroundFinalOpacity;
   }
 
-  paint_.setColor(SkColorSetA(SK_ColorBLACK,
+  flags_.setColor(SkColorSetA(SK_ColorBLACK,
                               std::numeric_limits<uint8_t>::max() * opacity));
-  canvas->DrawRect(background_rect_, paint_);
+  canvas->DrawRect(background_rect_, flags_);
 }
 
 void TouchCalibratorView::AnimationProgressed(const gfx::Animation* animation) {
@@ -715,7 +715,7 @@ void TouchCalibratorView::AdvanceToNextState() {
       start_opacity_value_ = 0.f;
       end_opacity_value_ = kBackgroundFinalOpacity;
 
-      paint_.setStyle(SkPaint::kFill_Style);
+      flags_.setStyle(cc::PaintFlags::kFill_Style);
       animator_->SetDuration(kFadeDurationInMs);
       animator_->Start();
       return;
@@ -781,7 +781,7 @@ void TouchCalibratorView::AdvanceToNextState() {
       start_opacity_value_ = kBackgroundFinalOpacity;
       end_opacity_value_ = 0.f;
 
-      paint_.setStyle(SkPaint::kFill_Style);
+      flags_.setStyle(cc::PaintFlags::kFill_Style);
       animator_->SetDuration(kFadeDurationInMs);
       animator_->Start();
       return;

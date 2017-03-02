@@ -182,8 +182,8 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
   path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
                     scaled_corner_radius);
 
-  SkPaint flags;
-  flags.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(1);
   flags.setAntiAlias(true);
 
@@ -192,7 +192,7 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
 
   SkPath fill_path;
   Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
-  flags.setStyle(SkPaint::kFill_Style);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(get_color());
   canvas->sk_canvas()->drawPath(fill_path, flags);
 

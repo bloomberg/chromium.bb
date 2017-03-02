@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "cc/paint/paint_canvas.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -16,8 +17,6 @@
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/thunk/ppb_browser_font_trusted_api.h"
-
-class SkCanvas;
 
 namespace blink {
 class WebFont;
@@ -60,8 +59,8 @@ class BrowserFontResource_Trusted
  private:
   ~BrowserFontResource_Trusted() override;
 
-  // Internal version of DrawTextAt that takes a mapped PlatformCanvas.
-  void DrawTextToCanvas(SkCanvas* destination,
+  // Internal version of DrawTextAt that takes a mapped PaintCanvas.
+  void DrawTextToCanvas(cc::PaintCanvas* destination,
                         const PP_BrowserFont_Trusted_TextRun& text,
                         const PP_Point* position,
                         uint32_t color,

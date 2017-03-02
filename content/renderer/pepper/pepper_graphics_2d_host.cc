@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/resources/texture_mailbox.h"
 #include "content/child/child_shared_bitmap_manager.h"
@@ -327,7 +328,7 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
   gfx::Rect invalidate_rect = plugin_rect;
   invalidate_rect.Intersect(paint_rect);
   SkRect sk_invalidate_rect = gfx::RectToSkRect(invalidate_rect);
-  SkAutoCanvasRestore auto_restore(canvas, true);
+  cc::PaintCanvasAutoRestore auto_restore(canvas, true);
   canvas->clipRect(sk_invalidate_rect);
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
   gfx::Size image_size = gfx::ScaleToFlooredSize(pixel_image_size, scale_);
@@ -343,22 +344,22 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
     // show white (typically less jarring) rather than black or uninitialized.
     // We don't do this for non-full-frame plugins since we specifically want
     // the page background to show through.
-    SkAutoCanvasRestore auto_restore(canvas, true);
+    cc::PaintCanvasAutoRestore auto_restore(canvas, true);
     SkRect image_data_rect =
         gfx::RectToSkRect(gfx::Rect(plugin_rect.origin(), image_size));
     canvas->clipRect(image_data_rect, SkClipOp::kDifference);
 
-    SkPaint paint;
-    paint.setBlendMode(SkBlendMode::kSrc);
-    paint.setColor(SK_ColorWHITE);
-    canvas->drawRect(sk_invalidate_rect, paint);
+    cc::PaintFlags flags;
+    flags.setBlendMode(SkBlendMode::kSrc);
+    flags.setColor(SK_ColorWHITE);
+    canvas->drawRect(sk_invalidate_rect, flags);
   }
 
-  SkPaint paint;
+  cc::PaintFlags flags;
   if (is_always_opaque_) {
     // When we know the device is opaque, we can disable blending for slightly
     // more optimized painting.
-    paint.setBlendMode(SkBlendMode::kSrc);
+    flags.setBlendMode(SkBlendMode::kSrc);
   }
 
   SkPoint pixel_origin(PointToSkPoint(plugin_rect.origin()));
@@ -367,7 +368,7 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
     pixel_origin.scale(1.0f / scale_);
   }
   canvas->drawBitmap(backing_bitmap, pixel_origin.x(), pixel_origin.y(),
-                     &paint);
+                     &flags);
 }
 
 void PepperGraphics2DHost::ViewInitiatedPaint() {

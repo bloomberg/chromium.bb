@@ -309,18 +309,18 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
     const SkScalar kStartAngle = 180.f + kAngleAboveHorizontal;
     const SkScalar kSweepAngle = 180.f - 2 * kAngleAboveHorizontal;
 
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kFill_Style);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     // Background. Skip drawing for full signal.
     if (signal_strength_ != kNumNetworkImages - 1) {
-      paint.setColor(SkColorSetA(color_, kBgAlpha));
+      flags.setColor(SkColorSetA(color_, kBgAlpha));
       canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
-                                   kSweepAngle, true, paint);
+                                   kSweepAngle, true, flags);
     }
     // Foreground (signal strength).
     if (signal_strength_ != 0) {
-      paint.setColor(color_);
+      flags.setColor(color_);
       // Percent of the height of the background wedge that we draw the
       // foreground wedge, indexed by signal strength.
       static const float kWedgeHeightPercentages[] = {0.f, 0.375f, 0.5833f,
@@ -329,7 +329,7 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
       oval_bounds.Inset(
           gfx::InsetsF((oval_bounds.height() / 2) * (1.f - wedge_percent)));
       canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
-                                   kSweepAngle, true, paint);
+                                   kSweepAngle, true, flags);
     }
   }
 

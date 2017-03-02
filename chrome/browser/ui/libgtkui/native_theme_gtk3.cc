@@ -424,7 +424,7 @@ SkColor NativeThemeGtk3::GetSystemColor(ColorId color_id) const {
   return color;
 }
 
-void NativeThemeGtk3::PaintArrowButton(SkCanvas* canvas,
+void NativeThemeGtk3::PaintArrowButton(cc::PaintCanvas* canvas,
                                        const gfx::Rect& rect,
                                        Part direction,
                                        State state) const {
@@ -457,7 +457,7 @@ void NativeThemeGtk3::PaintArrowButton(SkCanvas* canvas,
 }
 
 void NativeThemeGtk3::PaintScrollbarTrack(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
@@ -470,7 +470,7 @@ void NativeThemeGtk3::PaintScrollbarTrack(
 }
 
 void NativeThemeGtk3::PaintScrollbarThumb(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     Part part,
     State state,
     const gfx::Rect& rect,
@@ -483,7 +483,7 @@ void NativeThemeGtk3::PaintScrollbarThumb(
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
 }
 
-void NativeThemeGtk3::PaintScrollbarCorner(SkCanvas* canvas,
+void NativeThemeGtk3::PaintScrollbarCorner(cc::PaintCanvas* canvas,
                                            State state,
                                            const gfx::Rect& rect) const {
   auto context = GetStyleContextFromCss(
@@ -512,7 +512,7 @@ void NativeThemeGtk3::PaintMenuItemBackground(
 }
 
 void NativeThemeGtk3::PaintMenuSeparator(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuSeparatorExtraParams& menu_separator) const {
@@ -562,9 +562,9 @@ void NativeThemeGtk3::PaintMenuSeparator(
     if (wide_separators) {
       PaintWidget(canvas, gfx::Rect(x, y, w, h), context, BG_RENDER_NONE, true);
     } else {
-      SkPaint paint;
-      paint.setColor(GetFgColorFromStyleContext(context));
-      canvas->drawLine(x, y, x + w, y, paint);
+      cc::PaintFlags flags;
+      flags.setColor(GetFgColorFromStyleContext(context));
+      canvas->drawLine(x, y, x + w, y, flags);
     }
   }
 }

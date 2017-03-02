@@ -128,7 +128,7 @@ class TrayBackground : public views::Background {
 
   void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
     cc::PaintFlags background_flags;
-    background_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+    background_flags.setAntiAlias(true);
     background_flags.setColor(color_);
     gfx::Insets insets =
         GetMirroredBackgroundInsets(GetShelf()->GetAlignment());
@@ -138,7 +138,7 @@ class TrayBackground : public views::Background {
 
     if (draws_active_ && tray_background_view_->is_active()) {
       cc::PaintFlags highlight_flags;
-      highlight_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+      highlight_flags.setAntiAlias(true);
       highlight_flags.setColor(kShelfButtonActivatedHighlightColor);
       canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, highlight_flags);
     }

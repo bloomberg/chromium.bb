@@ -128,7 +128,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // WebGL texImage2D, ImageBitmap, printing and capturing capabilities.
   void paint(blink::WebCanvas* canvas,
              const blink::WebRect& rect,
-             SkPaint& paint) override;
+             cc::PaintFlags& flags) override;
 
   // True if the loaded media has a playable video/audio track.
   bool hasVideo() const override;

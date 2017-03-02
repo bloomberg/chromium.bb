@@ -21,22 +21,22 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
 
   // Overridden from ui::NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
-  void PaintArrowButton(SkCanvas* canvas,
+  void PaintArrowButton(cc::PaintCanvas* canvas,
                         const gfx::Rect& rect,
                         Part direction,
                         State state) const override;
-  void PaintScrollbarTrack(SkCanvas* canvas,
+  void PaintScrollbarTrack(cc::PaintCanvas* canvas,
                            Part part,
                            State state,
                            const ScrollbarTrackExtraParams& extra_params,
                            const gfx::Rect& rect) const override;
   void PaintScrollbarThumb(
-      SkCanvas* canvas,
+      cc::PaintCanvas* canvas,
       Part part,
       State state,
       const gfx::Rect& rect,
       NativeTheme::ScrollbarOverlayColorTheme theme) const override;
-  void PaintScrollbarCorner(SkCanvas* canvas,
+  void PaintScrollbarCorner(cc::PaintCanvas* canvas,
                             State state,
                             const gfx::Rect& rect) const override;
   void PaintMenuPopupBackground(
@@ -44,7 +44,7 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
       const gfx::Size& size,
       const MenuBackgroundExtraParams& menu_background) const override;
   void PaintMenuSeparator(
-      SkCanvas* canvas,
+      cc::PaintCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const MenuSeparatorExtraParams& menu_separator) const override;
@@ -54,7 +54,7 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;
   void PaintFrameTopArea(
-      SkCanvas* canvas,
+      cc::PaintCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const FrameTopAreaExtraParams& frame_top_area) const override;

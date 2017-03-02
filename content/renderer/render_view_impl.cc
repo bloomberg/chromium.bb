@@ -2538,8 +2538,7 @@ bool RenderViewImpl::didTapMultipleTargets(
         SkImageInfo info = SkImageInfo::MakeN32Premul(canvas_size.width(),
                                                       canvas_size.height());
         bitmap.installPixels(info, shared_bitmap->pixels(), info.minRowBytes());
-        SkCanvas sk_canvas(bitmap);
-        cc::PaintCanvasPassThrough canvas(&sk_canvas);
+        cc::PaintCanvas canvas(bitmap);
 
         // TODO(trchen): Cleanup the device scale factor mess.
         // device scale will be applied in WebKit

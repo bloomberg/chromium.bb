@@ -60,23 +60,23 @@ SkPath MakeRoundRectPath(const gfx::Rect& bounds,
 void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
                                  const gfx::ImageSkia& frame_image,
                                  const gfx::ImageSkia& frame_overlay_image,
-                                 const SkPaint& paint,
+                                 const cc::PaintFlags& flags,
                                  const gfx::Rect& bounds,
                                  int corner_radius,
                                  int image_inset_x) {
   SkPath frame_path = MakeRoundRectPath(bounds, corner_radius, corner_radius);
-  // If |paint| is using an unusual SkBlendMode (this is the case while
+  // If |flags| is using an unusual SkBlendMode (this is the case while
   // crossfading), we must create a new canvas to overlay |frame_image| and
   // |frame_overlay_image| using |kSrcOver| and then paint the result
   // using the unusual mode. We try to avoid this because creating a new
   // browser-width canvas is expensive.
-  bool fast_path = (frame_overlay_image.isNull() || paint.isSrcOver());
+  bool fast_path = (frame_overlay_image.isNull() || flags.isSrcOver());
   if (fast_path) {
     if (frame_image.isNull()) {
-      canvas->DrawPath(frame_path, paint);
+      canvas->DrawPath(frame_path, flags);
     } else {
       canvas->DrawImageInPath(frame_image, -image_inset_x, 0, frame_path,
-                              paint);
+                              flags);
     }
 
     if (!frame_overlay_image.isNull()) {
@@ -92,19 +92,19 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
           frame_overlay_image, 0, 0,
           MakeRoundRectPath(overlay_bounds, top_left_corner_radius,
                             top_right_corner_radius),
-          paint);
+          flags);
     }
   } else {
     gfx::Canvas temporary_canvas(bounds.size(), canvas->image_scale(), false);
     if (frame_image.isNull()) {
-      temporary_canvas.DrawColor(paint.getColor());
+      temporary_canvas.DrawColor(flags.getColor());
     } else {
       temporary_canvas.TileImageInt(frame_image, image_inset_x, 0, 0, 0,
                                     bounds.width(), bounds.height());
     }
     temporary_canvas.DrawImageInt(frame_overlay_image, 0, 0);
     canvas->DrawImageInPath(gfx::ImageSkia(temporary_canvas.ExtractImageRep()),
-                            0, 0, frame_path, paint);
+                            0, 0, frame_path, flags);
   }
 }
 
@@ -260,13 +260,13 @@ void BrowserHeaderPainterAsh::PaintFrameImages(gfx::Canvas* canvas,
   gfx::ImageSkia frame_image = view_->GetFrameImage(active);
   gfx::ImageSkia frame_overlay_image = view_->GetFrameOverlayImage(active);
 
-  SkPaint paint;
-  paint.setBlendMode(SkBlendMode::kPlus);
-  paint.setAlpha(alpha);
-  paint.setColor(SkColorSetA(view_->GetFrameColor(active), alpha));
-  paint.setAntiAlias(round_corners);
+  cc::PaintFlags flags;
+  flags.setBlendMode(SkBlendMode::kPlus);
+  flags.setAlpha(alpha);
+  flags.setColor(SkColorSetA(view_->GetFrameColor(active), alpha));
+  flags.setAntiAlias(round_corners);
   PaintFrameImagesInRoundRect(
-      canvas, frame_image, frame_overlay_image, paint, GetPaintedBounds(),
+      canvas, frame_image, frame_overlay_image, flags, GetPaintedBounds(),
       round_corners ? ash::HeaderPainterUtil::GetTopCornerRadiusWhenRestored()
                     : 0,
       ash::HeaderPainterUtil::GetThemeBackgroundXInset());

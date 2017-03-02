@@ -57,10 +57,10 @@ class KioskExternalUpdateNotificationView : public views::WidgetDelegateView {
 
   // views::WidgetDelegateView overrides:
   void OnPaint(gfx::Canvas* canvas) override {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(kWindowBackgroundColor);
-    canvas->DrawRoundRect(GetLocalBounds(), kWindowCornerRadius, paint);
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(kWindowBackgroundColor);
+    canvas->DrawRoundRect(GetLocalBounds(), kWindowCornerRadius, flags);
     views::WidgetDelegateView::OnPaint(canvas);
   }
 

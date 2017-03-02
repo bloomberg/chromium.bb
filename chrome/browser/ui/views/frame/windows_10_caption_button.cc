@@ -115,11 +115,11 @@ namespace {
 // rectangle inset such that the result is constrained to |rect|'s size.
 void DrawRect(gfx::Canvas* canvas,
               const gfx::Rect& rect,
-              const SkPaint& paint) {
+              const cc::PaintFlags& flags) {
   gfx::RectF rect_f(rect);
-  float stroke_half_width = paint.getStrokeWidth() / 2;
+  float stroke_half_width = flags.getStrokeWidth() / 2;
   rect_f.Inset(stroke_half_width, stroke_half_width);
-  canvas->DrawRect(rect_f, paint);
+  canvas->DrawRect(rect_f, flags);
 }
 
 }  // namespace
@@ -148,48 +148,48 @@ void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
   symbol_rect.ClampToCenteredSize(
       gfx::Size(symbol_size_pixels, symbol_size_pixels));
 
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  paint.setColor(symbol_color);
-  paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(false);
+  flags.setColor(symbol_color);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
   // Stroke width jumps up a pixel every time we reach a new integral scale.
   const int stroke_width = std::floor(scale);
-  paint.setStrokeWidth(stroke_width);
+  flags.setStrokeWidth(stroke_width);
 
   switch (button_type_) {
     case VIEW_ID_MINIMIZE_BUTTON: {
       const int y = symbol_rect.CenterPoint().y();
       const gfx::Point p1 = gfx::Point(symbol_rect.x(), y);
       const gfx::Point p2 = gfx::Point(symbol_rect.right(), y);
-      canvas->DrawLine(p1, p2, paint);
+      canvas->DrawLine(p1, p2, flags);
       return;
     }
 
     case VIEW_ID_MAXIMIZE_BUTTON:
-      DrawRect(canvas, symbol_rect, paint);
+      DrawRect(canvas, symbol_rect, flags);
       return;
 
     case VIEW_ID_RESTORE_BUTTON: {
       // Bottom left ("in front") square.
       const int separation = std::floor(2 * scale);
       symbol_rect.Inset(0, separation, separation, 0);
-      DrawRect(canvas, symbol_rect, paint);
+      DrawRect(canvas, symbol_rect, flags);
 
       // Top right ("behind") square.
       canvas->ClipRect(symbol_rect, SkClipOp::kDifference);
       symbol_rect.Offset(separation, -separation);
-      DrawRect(canvas, symbol_rect, paint);
+      DrawRect(canvas, symbol_rect, flags);
       return;
     }
 
     case VIEW_ID_CLOSE_BUTTON: {
-      paint.setAntiAlias(true);
+      flags.setAntiAlias(true);
       // The close button's X is surrounded by a "halo" of transparent pixels.
       // When the X is white, the transparent pixels need to be a bit brighter
       // to be visible.
       const float stroke_halo =
           stroke_width * (symbol_color == SK_ColorWHITE ? 0.1f : 0.05f);
-      paint.setStrokeWidth(stroke_width + stroke_halo);
+      flags.setStrokeWidth(stroke_width + stroke_halo);
 
       // TODO(bsep): This sometimes draws misaligned at fractional device scales
       // because the button's origin isn't necessarily aligned to pixels.
@@ -199,7 +199,7 @@ void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
       path.lineTo(symbol_rect.right(), symbol_rect.bottom());
       path.moveTo(symbol_rect.right(), symbol_rect.y());
       path.lineTo(symbol_rect.x(), symbol_rect.bottom());
-      canvas->DrawPath(path, paint);
+      canvas->DrawPath(path, flags);
       return;
     }
 

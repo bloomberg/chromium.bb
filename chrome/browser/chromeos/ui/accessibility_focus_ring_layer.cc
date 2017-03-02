@@ -114,21 +114,20 @@ void AccessibilityFocusRingLayer::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
 
-  SkPaint paint;
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(2);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(2);
 
   SkPath path;
   gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
   const int w = kGradientWidth;
   for (int i = 0; i < w; ++i) {
-    paint.setColor(
-        SkColorSetARGBMacro(
-            255 * (w - i) * (w - i) / (w * w),
-            kFocusRingColorRed, kFocusRingColorGreen, kFocusRingColorBlue));
+    flags.setColor(SkColorSetARGBMacro(255 * (w - i) * (w - i) / (w * w),
+                                       kFocusRingColorRed, kFocusRingColorGreen,
+                                       kFocusRingColorBlue));
     path = MakePath(ring_, i, offset);
-    recorder.canvas()->DrawPath(path, paint);
+    recorder.canvas()->DrawPath(path, flags);
   }
 }
 

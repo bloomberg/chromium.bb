@@ -60,22 +60,22 @@ void AccessibilityCursorRingLayer::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
 
-  SkPaint paint;
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(2);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(2);
 
   gfx::Rect r = layer()->bounds();
   r.Offset(-r.OffsetFromOrigin());
   r.Inset(kLayerMargin, kLayerMargin, kLayerMargin, kLayerMargin);
   const int w = kGradientWidth;
   for (int i = 0; i < w; ++i) {
-    paint.setColor(
+    flags.setColor(
         SkColorSetARGBMacro(255 * (i) * (i) / (w * w), red_, green_, blue_));
     SkPath path;
     path.addOval(SkRect::MakeXYWH(r.x(), r.y(), r.width(), r.height()));
     r.Inset(1, 1, 1, 1);
-    recorder.canvas()->DrawPath(path, paint);
+    recorder.canvas()->DrawPath(path, flags);
   }
 }
 

@@ -125,7 +125,7 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
   // Paint the circular background.
   cc::PaintFlags bg_flags;
   bg_flags.setColor(background_color_);
-  bg_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  bg_flags.setAntiAlias(true);
   bg_flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_flags);
 
@@ -138,7 +138,7 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
   circle_center.Scale(dsf);
 
   cc::PaintFlags fg_flags;
-  fg_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  fg_flags.setAntiAlias(true);
   fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
   fg_flags.setColor(kShelfIconColor);
   const float thickness = std::ceil(kRingThicknessDp * dsf);

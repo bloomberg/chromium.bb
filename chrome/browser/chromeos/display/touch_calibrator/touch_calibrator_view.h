@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_VIEW_H_
 
 #include "base/macros.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -112,7 +113,7 @@ class TouchCalibratorView : public views::View,
 
   std::unique_ptr<views::Widget> widget_;
 
-  SkPaint paint_;
+  cc::PaintFlags flags_;
 
   // Defines the bounds for the background animation.
   gfx::RectF background_rect_;

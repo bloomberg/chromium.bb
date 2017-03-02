@@ -90,20 +90,20 @@ void FocusRingLayer::OnPaintLayer(const ui::PaintContext& context) {
 
   ui::PaintRecorder recorder(context, layer_->size());
 
-  SkPaint paint;
-  paint.setColor(kShadowColor);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(2);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(kShadowColor);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(2);
 
   gfx::Rect bounds = focus_ring_ - layer_->bounds().OffsetFromOrigin();
   int r = kShadowRadius;
   for (int i = 0; i < r; i++) {
     // Fade out alpha quadratically.
-    paint.setAlpha((kShadowAlpha * (r - i) * (r - i)) / (r * r));
+    flags.setAlpha((kShadowAlpha * (r - i) * (r - i)) / (r * r));
     gfx::Rect outsetRect = bounds;
     outsetRect.Inset(-i, -i, -i, -i);
-    recorder.canvas()->DrawRect(outsetRect, paint);
+    recorder.canvas()->DrawRect(outsetRect, flags);
   }
 }
 

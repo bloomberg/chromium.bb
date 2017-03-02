@@ -221,6 +221,7 @@ target(link_target_type, "child") {
 
   deps = [
     "//base",
+    "//cc/paint",
     "//components/discardable_memory/client",
     "//components/discardable_memory/public/interfaces",
     "//components/mime_util",

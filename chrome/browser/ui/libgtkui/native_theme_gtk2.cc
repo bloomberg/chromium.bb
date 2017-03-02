@@ -77,7 +77,7 @@ void NativeThemeGtk2::PaintMenuPopupBackground(
   if (menu_background.corner_radius > 0) {
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+    flags.setAntiAlias(true);
     flags.setColor(GetSystemColor(kColorId_MenuBackgroundColor));
 
     gfx::Path path;

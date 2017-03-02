@@ -53,8 +53,8 @@ const int kIconPaddingVertical = 8;
 // Paints an activity indicator on |canvas| whose |size| is specified in DIP.
 void PaintIndicatorOnCanvas(gfx::Canvas* canvas, const gfx::Size& size) {
   cc::PaintFlags flags;
+  flags.setAntiAlias(true);
   flags.setColor(kIndicatorColor);
-  flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
   canvas->DrawCircle(
       gfx::Point(size.width() / 2,
                  size.height() - kIndicatorOffsetFromBottom - kIndicatorRadius),

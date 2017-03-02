@@ -82,8 +82,7 @@ WallPaperColorCalculatorTest::WallPaperColorCalculatorTest()
   canvas.FillRect(gfx::Rect(kImageSize), kGray);
   canvas.FillRect(gfx::Rect(0, 1, 300, 1), kVibrantGreen);
 
-  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
-  image_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  image_ = gfx::ImageSkia::CreateFrom1xBitmap(canvas.ToBitmap());
 
   calculator_ = base::MakeUnique<WallpaperColorCalculator>(
       image_, color_utils::LumaRange::NORMAL,
