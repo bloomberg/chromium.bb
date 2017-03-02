@@ -197,6 +197,7 @@ std::unique_ptr<TickClock> TestMockTimeTaskRunner::GetMockTickClock() const {
 }
 
 std::deque<TestPendingTask> TestMockTimeTaskRunner::TakePendingTasks() {
+  AutoLock scoped_lock(tasks_lock_);
   std::deque<TestPendingTask> tasks;
   while (!tasks_.empty()) {
     // It's safe to remove const and consume |task| here, since |task| is not
@@ -266,6 +267,7 @@ void TestMockTimeTaskRunner::OnAfterTaskRun() {
 }
 
 void TestMockTimeTaskRunner::ProcessAllTasksNoLaterThan(TimeDelta max_delta) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(max_delta, TimeDelta());
 
   // Multiple test task runners can share the same thread for determinism in
@@ -292,6 +294,7 @@ void TestMockTimeTaskRunner::ProcessAllTasksNoLaterThan(TimeDelta max_delta) {
 }
 
 void TestMockTimeTaskRunner::ForwardClocksUntilTickTime(TimeTicks later_ticks) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (later_ticks <= now_ticks_)
     return;
 
