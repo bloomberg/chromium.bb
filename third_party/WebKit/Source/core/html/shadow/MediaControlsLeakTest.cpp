@@ -61,9 +61,13 @@ TEST_F(MediaControlsLeakTest, ReInsertingInDocumentCollectsControls) {
   EXPECT_NE(controls(), nullptr);
   EXPECT_TRUE(document().hasEventListeners());
 
-  // This should be a no-op.
-  document().body()->removeChild(video());
-  document().body()->appendChild(video());
+  // This should be a no-op. We keep a reference on the VideoElement to avoid an
+  // unexpected GC.
+  {
+    Persistent<HTMLVideoElement> videoHolder = video();
+    document().body()->removeChild(video());
+    document().body()->appendChild(video());
+  }
 
   EXPECT_TRUE(document().hasEventListeners());
   EXPECT_TRUE(video()->hasEventListeners());
