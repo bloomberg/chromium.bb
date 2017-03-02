@@ -11,8 +11,15 @@
 namespace internal {
 
 const char kUkmPageLoadEventName[] = "PageLoad";
+const char kUkmParseStartName[] = "ParseTiming.ParseStart";
+const char kUkmDomContentLoadedName[] =
+    "DocumentTiming.NavigationToDOMContentLoadedEventFired";
+const char kUkmLoadEventName[] = "DocumentTiming.NavigationToLoadEventFired";
 const char kUkmFirstContentfulPaintName[] =
     "PaintTiming.NavigationToFirstContentfulPaint";
+const char kUkmFirstMeaningfulPaintName[] =
+    "Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
+const char kUkmForegroundDurationName[] = "PageTiming.ForegroundDuration";
 
 }  // namespace internal
 
@@ -48,7 +55,7 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordTimingMetrics(timing);
-  RecordPageLoadExtraInfoMetrics(info);
+  RecordPageLoadExtraInfoMetrics(info, base::TimeTicks::Now());
   return STOP_OBSERVING;
 }
 
@@ -56,37 +63,68 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordTimingMetrics(timing);
-  RecordPageLoadExtraInfoMetrics(info);
+  RecordPageLoadExtraInfoMetrics(
+      info, base::TimeTicks() /* no app_background_time */);
   return STOP_OBSERVING;
 }
 
 void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
     const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  RecordPageLoadExtraInfoMetrics(extra_info);
+  RecordPageLoadExtraInfoMetrics(
+      extra_info, base::TimeTicks() /* no app_background_time */);
 }
 
 void UkmPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordTimingMetrics(timing);
-  RecordPageLoadExtraInfoMetrics(info);
+  RecordPageLoadExtraInfoMetrics(
+      info, base::TimeTicks() /* no app_background_time */);
 }
 
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     const page_load_metrics::PageLoadTiming& timing) {
-  if (!timing.first_contentful_paint)
-    return;
-
   ukm::UkmService* ukm_service = g_browser_process->ukm_service();
   std::unique_ptr<ukm::UkmEntryBuilder> builder =
       ukm_service->GetEntryBuilder(source_id_, internal::kUkmPageLoadEventName);
-  builder->AddMetric(internal::kUkmFirstContentfulPaintName,
-                     timing.first_contentful_paint.value().InMilliseconds());
+  if (timing.parse_start) {
+    builder->AddMetric(internal::kUkmParseStartName,
+                       timing.parse_start.value().InMilliseconds());
+  }
+  if (timing.dom_content_loaded_event_start) {
+    builder->AddMetric(
+        internal::kUkmDomContentLoadedName,
+        timing.dom_content_loaded_event_start.value().InMilliseconds());
+  }
+  if (timing.load_event_start) {
+    builder->AddMetric(internal::kUkmLoadEventName,
+                       timing.load_event_start.value().InMilliseconds());
+  }
+  if (timing.first_contentful_paint) {
+    builder->AddMetric(internal::kUkmFirstContentfulPaintName,
+                       timing.first_contentful_paint.value().InMilliseconds());
+  }
+  if (timing.first_meaningful_paint) {
+    builder->AddMetric(internal::kUkmFirstMeaningfulPaintName,
+                       timing.first_meaningful_paint.value().InMilliseconds());
+  }
 }
 
 void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::PageLoadExtraInfo& info,
+    base::TimeTicks app_background_time) {
   ukm::UkmService* ukm_service = g_browser_process->ukm_service();
   ukm_service->UpdateSourceURL(source_id_, info.url);
+
+  base::Optional<base::TimeDelta> foreground_duration =
+      page_load_metrics::GetInitialForegroundDuration(info,
+                                                      app_background_time);
+  if (foreground_duration) {
+    std::unique_ptr<ukm::UkmEntryBuilder> builder =
+        ukm_service->GetEntryBuilder(source_id_,
+                                     internal::kUkmPageLoadEventName);
+    builder->AddMetric(internal::kUkmForegroundDurationName,
+                       foreground_duration.value().InMilliseconds());
+  }
 }

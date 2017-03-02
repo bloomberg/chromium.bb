@@ -51,9 +51,49 @@ class UkmPageLoadMetricsObserverTest
     return ukm_service_test_harness_.test_ukm_service()->GetEntry(entry_index);
   }
 
+  std::vector<const ukm::UkmEntry*> GetUkmEntriesForSourceID(
+      int32_t source_id) {
+    std::vector<const ukm::UkmEntry*> entries;
+    for (size_t i = 0; i < ukm_entry_count(); ++i) {
+      const ukm::UkmEntry* entry = GetUkmEntry(i);
+      if (entry->source_id() == source_id)
+        entries.push_back(entry);
+    }
+    return entries;
+  }
+
+  // Provides a single merged ukm::Entry proto that contains all metrics from
+  // the given |entries|. |entries| must be non-empty, and all |entries| must
+  // have the same |source_id| and |event_hash|.
+  ukm::Entry GetMergedEntryProto(
+      const std::vector<const ukm::UkmEntry*>& entries) {
+    EXPECT_FALSE(entries.empty());
+    ukm::Entry merged_entry;
+    for (auto* entry : entries) {
+      ukm::Entry entry_proto;
+      entry->PopulateProto(&entry_proto);
+      EXPECT_TRUE(entry_proto.has_source_id());
+      EXPECT_TRUE(entry_proto.has_event_hash());
+      if (merged_entry.has_source_id()) {
+        EXPECT_EQ(merged_entry.source_id(), entry_proto.source_id());
+        EXPECT_EQ(merged_entry.event_hash(), entry_proto.event_hash());
+      }
+      merged_entry.MergeFrom(entry_proto);
+    }
+    return merged_entry;
+  }
+
+  ukm::Entry GetMergedEntryProtoForSourceID(int32_t source_id) {
+    ukm::Entry entry = GetMergedEntryProto(GetUkmEntriesForSourceID(source_id));
+    EXPECT_EQ(source_id, entry.source_id());
+    EXPECT_TRUE(entry.has_event_hash());
+    return entry;
+  }
+
   static const ukm::Entry_Metric* FindMetric(
       const char* name,
-      const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics) {
+      const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics)
+      WARN_UNUSED_RESULT {
     for (const auto& metric : metrics) {
       if (metric.metric_hash() == base::HashMetricName(name))
         return &metric;
@@ -63,7 +103,8 @@ class UkmPageLoadMetricsObserverTest
 
   static bool HasMetric(
       const char* name,
-      const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics) {
+      const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics)
+      WARN_UNUSED_RESULT {
     return FindMetric(name, metrics) != nullptr;
   }
 
@@ -85,10 +126,18 @@ TEST_F(UkmPageLoadMetricsObserverTest, NoMetrics) {
   EXPECT_EQ(0ul, ukm_entry_count());
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, FirstContentfulPaint) {
+TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
+  // PageLoadTiming with all recorded metrics other than FMP. This allows us to
+  // verify both that all metrics are logged, and that we don't log metrics that
+  // aren't present in the PageLoadTiming struct. Logging of FMP is verified in
+  // the FirstMeaningfulPaint test below.
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_start = base::TimeDelta::FromMilliseconds(100);
+  timing.dom_content_loaded_event_start =
+      base::TimeDelta::FromMilliseconds(200);
   timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(300);
+  timing.load_event_start = base::TimeDelta::FromMilliseconds(500);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kTestUrl1));
@@ -101,18 +150,49 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstContentfulPaint) {
   const ukm::UkmSource* source = GetUkmSource(0);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
-  EXPECT_EQ(1ul, ukm_entry_count());
-  const ukm::UkmEntry* entry = GetUkmEntry(0);
-  EXPECT_EQ(entry->source_id(), source->id());
-
-  ukm::Entry entry_proto;
-  entry->PopulateProto(&entry_proto);
+  EXPECT_GE(ukm_entry_count(), 1ul);
+  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
   EXPECT_EQ(entry_proto.source_id(), source->id());
   EXPECT_EQ(entry_proto.event_hash(),
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_GE(entry_proto.metrics_size(), 1);
+  EXPECT_FALSE(entry_proto.metrics().empty());
+  ExpectMetric(internal::kUkmParseStartName, 100, entry_proto.metrics());
+  ExpectMetric(internal::kUkmDomContentLoadedName, 200, entry_proto.metrics());
   ExpectMetric(internal::kUkmFirstContentfulPaintName, 300,
                entry_proto.metrics());
+  ExpectMetric(internal::kUkmLoadEventName, 500, entry_proto.metrics());
+  EXPECT_FALSE(
+      HasMetric(internal::kUkmFirstMeaningfulPaintName, entry_proto.metrics()));
+  EXPECT_TRUE(
+      HasMetric(internal::kUkmForegroundDurationName, entry_proto.metrics()));
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_meaningful_paint = base::TimeDelta::FromMilliseconds(600);
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL(kTestUrl1));
+  SimulateTimingUpdate(timing);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  EXPECT_EQ(1ul, ukm_source_count());
+  const ukm::UkmSource* source = GetUkmSource(0);
+  EXPECT_EQ(GURL(kTestUrl1), source->url());
+
+  EXPECT_GE(ukm_entry_count(), 1ul);
+  ukm::Entry entry_proto = GetMergedEntryProtoForSourceID(source->id());
+  EXPECT_EQ(entry_proto.source_id(), source->id());
+  EXPECT_EQ(entry_proto.event_hash(),
+            base::HashMetricName(internal::kUkmPageLoadEventName));
+  EXPECT_FALSE(entry_proto.metrics().empty());
+  ExpectMetric(internal::kUkmFirstMeaningfulPaintName, 600,
+               entry_proto.metrics());
+  EXPECT_TRUE(
+      HasMetric(internal::kUkmForegroundDurationName, entry_proto.metrics()));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
@@ -124,7 +204,6 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   // Second navigation reports no timing metrics.
   page_load_metrics::PageLoadTiming timing2;
   timing2.navigation_start = base::Time::FromDoubleT(1);
-  timing2.first_contentful_paint = base::TimeDelta::FromMilliseconds(300);
   PopulateRequiredTimingFields(&timing2);
 
   NavigateAndCommit(GURL(kTestUrl1));
@@ -143,30 +222,31 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   EXPECT_EQ(GURL(kTestUrl2), source2->url());
   EXPECT_NE(source1->id(), source2->id());
 
-  EXPECT_EQ(2ul, ukm_entry_count());
-  const ukm::UkmEntry* entry1 = GetUkmEntry(0);
-  const ukm::UkmEntry* entry2 = GetUkmEntry(1);
-  EXPECT_EQ(entry1->source_id(), source1->id());
-  EXPECT_EQ(entry2->source_id(), source2->id());
-  EXPECT_NE(entry1->source_id(), entry2->source_id());
-
-  ukm::Entry entry1_proto;
-  entry1->PopulateProto(&entry1_proto);
-  ukm::Entry entry2_proto;
-  entry2->PopulateProto(&entry2_proto);
+  EXPECT_GE(ukm_entry_count(), 2ul);
+  ukm::Entry entry1_proto = GetMergedEntryProtoForSourceID(source1->id());
+  ukm::Entry entry2_proto = GetMergedEntryProtoForSourceID(source2->id());
   EXPECT_NE(entry1_proto.source_id(), entry2_proto.source_id());
 
   EXPECT_EQ(entry1_proto.source_id(), source1->id());
   EXPECT_EQ(entry1_proto.event_hash(),
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_GE(entry1_proto.metrics_size(), 1);
+  EXPECT_FALSE(entry1_proto.metrics().empty());
   ExpectMetric(internal::kUkmFirstContentfulPaintName, 200,
                entry1_proto.metrics());
+  EXPECT_FALSE(HasMetric(internal::kUkmFirstMeaningfulPaintName,
+                         entry2_proto.metrics()));
+  EXPECT_TRUE(
+      HasMetric(internal::kUkmForegroundDurationName, entry1_proto.metrics()));
 
   EXPECT_EQ(entry2_proto.source_id(), source2->id());
   EXPECT_EQ(entry2_proto.event_hash(),
             base::HashMetricName(internal::kUkmPageLoadEventName));
-  EXPECT_GE(entry2_proto.metrics_size(), 1);
-  ExpectMetric(internal::kUkmFirstContentfulPaintName, 300,
-               entry2_proto.metrics());
+  EXPECT_FALSE(entry2_proto.metrics().empty());
+  EXPECT_FALSE(HasMetric(internal::kUkmParseStartName, entry2_proto.metrics()));
+  EXPECT_FALSE(HasMetric(internal::kUkmFirstContentfulPaintName,
+                         entry2_proto.metrics()));
+  EXPECT_FALSE(HasMetric(internal::kUkmFirstMeaningfulPaintName,
+                         entry2_proto.metrics()));
+  EXPECT_TRUE(
+      HasMetric(internal::kUkmForegroundDurationName, entry2_proto.metrics()));
 }

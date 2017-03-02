@@ -12,7 +12,12 @@ namespace internal {
 
 // Name constants are exposed here so they can be referenced from tests.
 extern const char kUkmPageLoadEventName[];
+extern const char kUkmParseStartName[];
+extern const char kUkmDomContentLoadedName[];
+extern const char kUkmLoadEventName[];
 extern const char kUkmFirstContentfulPaintName[];
+extern const char kUkmFirstMeaningfulPaintName[];
+extern const char kUkmForegroundDurationName[];
 
 }  // namespace internal
 
@@ -54,9 +59,11 @@ class UkmPageLoadMetricsObserver
   void RecordTimingMetrics(const page_load_metrics::PageLoadTiming& timing);
 
   // Records metrics based on the PageLoadExtraInfo struct, as well as updating
-  // the URL.
+  // the URL. |app_background_time| should be set to a timestamp if the app was
+  // backgrounded, otherwise it should be set to a null TimeTicks.
   void RecordPageLoadExtraInfoMetrics(
-      const page_load_metrics::PageLoadExtraInfo& info);
+      const page_load_metrics::PageLoadExtraInfo& info,
+      base::TimeTicks app_background_time);
 
   // Unique UKM identifier for the page load we are recording metrics for.
   const int32_t source_id_;
