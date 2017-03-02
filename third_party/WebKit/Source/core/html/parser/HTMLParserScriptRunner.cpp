@@ -306,8 +306,8 @@ void emitWarningForDocWriteScripts(const String& url, Document& document) {
 
 void emitErrorForDocWriteScripts(const String& url, Document& document) {
   String message =
-      "The Parser-blocking, cross site (i.e. different eTLD+1) "
-      "script, " +
+      "Network request for the parser-blocking, cross site "
+      "(i.e. different eTLD+1) script, " +
       url +
       ", invoked via document.write was BLOCKED by the browser due to poor "
       "network connectivity. ";
