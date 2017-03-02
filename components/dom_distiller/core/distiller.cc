@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -95,7 +96,7 @@ bool DistillerImpl::IsPageNumberInUse(int page_num) const {
 DistillerImpl::DistilledPageData* DistillerImpl::GetPageAtIndex(size_t index)
     const {
   DCHECK_LT(index, pages_.size());
-  DistilledPageData* page_data = pages_[index];
+  DistilledPageData* page_data = pages_[index].get();
   DCHECK(page_data);
   return page_data;
 }
@@ -124,7 +125,7 @@ void DistillerImpl::DistillNextPage() {
     DCHECK(started_pages_index_.find(page_num) == started_pages_index_.end());
     DCHECK(finished_pages_index_.find(page_num) == finished_pages_index_.end());
     seen_urls_.insert(url.spec());
-    pages_.push_back(new DistilledPageData());
+    pages_.push_back(base::MakeUnique<DistilledPageData>());
     started_pages_index_[page_num] = pages_.size() - 1;
     distiller_page_->DistillPage(
         url,
@@ -291,7 +292,7 @@ void DistillerImpl::FetchImage(int page_num,
   DistilledPageData* page_data = GetPageAtIndex(started_pages_index_[page_num]);
   DistillerURLFetcher* fetcher =
       distiller_url_fetcher_factory_.CreateDistillerURLFetcher();
-  page_data->image_fetchers_.push_back(fetcher);
+  page_data->image_fetchers_.push_back(base::WrapUnique(fetcher));
 
   fetcher->FetchURL(image_url,
                     base::Bind(&DistillerImpl::OnFetchImageDone,
@@ -311,15 +312,17 @@ void DistillerImpl::OnFetchImageDone(int page_num,
   DistilledPageData* page_data = GetPageAtIndex(started_pages_index_[page_num]);
   DCHECK(page_data->distilled_page_proto.get());
   DCHECK(url_fetcher);
-  ScopedVector<DistillerURLFetcher>::iterator fetcher_it =
-      std::find(page_data->image_fetchers_.begin(),
-                page_data->image_fetchers_.end(),
-                url_fetcher);
+  auto fetcher_it = std::find_if(
+      page_data->image_fetchers_.begin(), page_data->image_fetchers_.end(),
+      [url_fetcher](const std::unique_ptr<DistillerURLFetcher>& f) {
+        return url_fetcher == f.get();
+      });
 
   DCHECK(fetcher_it != page_data->image_fetchers_.end());
   // Delete the |url_fetcher| by DeleteSoon since the OnFetchImageDone
   // callback is invoked by the |url_fetcher|.
-  page_data->image_fetchers_.weak_erase(fetcher_it);
+  fetcher_it->release();
+  page_data->image_fetchers_.erase(fetcher_it);
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, url_fetcher);
 
   DistilledPageProto_Image* image =

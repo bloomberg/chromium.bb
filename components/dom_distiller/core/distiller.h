@@ -10,12 +10,12 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/distiller_page.h"
@@ -96,7 +96,7 @@ class DistillerImpl : public Distiller {
     virtual ~DistilledPageData();
     // Relative page number of the page.
     int page_num;
-    ScopedVector<DistillerURLFetcher> image_fetchers_;
+    std::vector<std::unique_ptr<DistillerURLFetcher>> image_fetchers_;
     scoped_refptr<base::RefCountedData<DistilledPageProto> >
         distilled_page_proto;
 
@@ -162,7 +162,7 @@ class DistillerImpl : public Distiller {
   // Set of pages that are under distillation or have finished distillation.
   // |started_pages_index_| and |finished_pages_index_| maintains the mapping
   // from page number to the indices in |pages_|.
-  ScopedVector<DistilledPageData> pages_;
+  std::vector<std::unique_ptr<DistilledPageData>> pages_;
 
   // Maps page numbers of finished pages to the indices in |pages_|.
   std::map<int, size_t> finished_pages_index_;

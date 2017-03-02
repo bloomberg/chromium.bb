@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
@@ -215,9 +216,9 @@ bool DomDistillerService::GetOrCreateTaskTrackerForUrl(
 }
 
 TaskTracker* DomDistillerService::GetTaskTrackerForUrl(const GURL& url) const {
-  for (TaskList::const_iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
+  for (auto it = tasks_.begin(); it != tasks_.end(); ++it) {
     if ((*it)->HasUrl(url)) {
-      return *it;
+      return (*it).get();
     }
   }
   return nullptr;
@@ -226,9 +227,9 @@ TaskTracker* DomDistillerService::GetTaskTrackerForUrl(const GURL& url) const {
 TaskTracker* DomDistillerService::GetTaskTrackerForEntry(
     const ArticleEntry& entry) const {
   const std::string& entry_id = entry.entry_id();
-  for (TaskList::const_iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
+  for (auto it = tasks_.begin(); it != tasks_.end(); ++it) {
     if ((*it)->HasEntryId(entry_id)) {
-      return *it;
+      return (*it).get();
     }
   }
   return nullptr;
@@ -248,16 +249,19 @@ bool DomDistillerService::GetOrCreateTaskTrackerForEntry(
 TaskTracker* DomDistillerService::CreateTaskTracker(const ArticleEntry& entry) {
   TaskTracker::CancelCallback cancel_callback =
       base::Bind(&DomDistillerService::CancelTask, base::Unretained(this));
-  TaskTracker* tracker =
-      new TaskTracker(entry, cancel_callback, content_store_.get());
-  tasks_.push_back(tracker);
-  return tracker;
+  tasks_.push_back(base::MakeUnique<TaskTracker>(entry, cancel_callback,
+                                                 content_store_.get()));
+  return tasks_.back().get();
 }
 
 void DomDistillerService::CancelTask(TaskTracker* task) {
-  TaskList::iterator it = std::find(tasks_.begin(), tasks_.end(), task);
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                         [task](const std::unique_ptr<TaskTracker>& t) {
+                           return task == t.get();
+                         });
   if (it != tasks_.end()) {
-    tasks_.weak_erase(it);
+    it->release();
+    tasks_.erase(it);
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, task);
   }
 }

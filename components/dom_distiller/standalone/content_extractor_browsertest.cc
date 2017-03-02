@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/id_map.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -249,16 +250,16 @@ class ContentExtractionRequest : public ViewRequestDelegate {
     return *article_proto_;
   }
 
-  static ScopedVector<ContentExtractionRequest> CreateForCommandLine(
-      const base::CommandLine& command_line,
-      FileToUrlMap* file_to_url_map) {
-    ScopedVector<ContentExtractionRequest> requests;
+  static std::vector<std::unique_ptr<ContentExtractionRequest>>
+  CreateForCommandLine(const base::CommandLine& command_line,
+                       FileToUrlMap* file_to_url_map) {
+    std::vector<std::unique_ptr<ContentExtractionRequest>> requests;
     if (command_line.HasSwitch(kUrlSwitch)) {
       GURL url;
       std::string url_string = command_line.GetSwitchValueASCII(kUrlSwitch);
       url = GURL(url_string);
       if (url.is_valid()) {
-        requests.push_back(new ContentExtractionRequest(url));
+        requests.push_back(base::WrapUnique(new ContentExtractionRequest(url)));
         if (command_line.HasSwitch(kOriginalUrl)) {
           (*file_to_url_map)[url.spec()] =
               command_line.GetSwitchValueASCII(kOriginalUrl);
@@ -284,7 +285,8 @@ class ContentExtractionRequest : public ViewRequestDelegate {
       for (size_t i = 0; i < urls.size(); ++i) {
         GURL url(urls[i]);
         if (url.is_valid()) {
-          requests.push_back(new ContentExtractionRequest(url));
+          requests.push_back(
+              base::WrapUnique(new ContentExtractionRequest(url)));
           // Only regard non-empty original urls.
           if (!original_urls.empty() && !original_urls[i].empty()) {
               (*file_to_url_map)[url.spec()] = original_urls[i];
@@ -432,7 +434,7 @@ class ContentExtractor : public ContentBrowserTest {
   std::unique_ptr<net::ScopedDefaultHostResolverProc>
       mock_host_resolver_override_;
   std::unique_ptr<DomDistillerService> service_;
-  ScopedVector<ContentExtractionRequest> requests_;
+  std::vector<std::unique_ptr<ContentExtractionRequest>> requests_;
 
   std::string output_data_;
   std::unique_ptr<google::protobuf::io::StringOutputStream>
