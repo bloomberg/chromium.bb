@@ -38,7 +38,7 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
  private:
   Persistent<NGInlineNode> inline_box_;
   NGConstraintSpace* constraint_space_;
-  Persistent<NGBreakToken> break_token_;
+  NGBreakToken* break_token_;
 
   friend class NGInlineNodeTest;
 };

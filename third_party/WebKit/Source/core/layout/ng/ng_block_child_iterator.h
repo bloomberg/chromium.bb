@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -20,6 +21,8 @@ class NGBlockBreakToken;
 // This class does not handle modifications to its arguments after it has been
 // constructed.
 class CORE_EXPORT NGBlockChildIterator {
+  STACK_ALLOCATED();
+
  public:
   NGBlockChildIterator(NGLayoutInputNode* first_child,
                        NGBlockBreakToken* break_token);
@@ -31,7 +34,7 @@ class CORE_EXPORT NGBlockChildIterator {
 
  private:
   Persistent<NGLayoutInputNode> child_;
-  Persistent<NGBlockBreakToken> break_token_;
+  NGBlockBreakToken* break_token_;
 
   // An index into break_token_'s ChildBreakTokens() vector. Used for keeping
   // track of the next child break token to inspect.
@@ -39,11 +42,13 @@ class CORE_EXPORT NGBlockChildIterator {
 };
 
 struct NGBlockChildIterator::Entry {
+  STACK_ALLOCATED();
+
   Entry(NGLayoutInputNode* node, NGBreakToken* token)
       : node(node), token(token) {}
 
   Persistent<NGLayoutInputNode> node;
-  Persistent<NGBreakToken> token;
+  NGBreakToken* token;
 
   bool operator==(const NGBlockChildIterator::Entry& other) const {
     return node == other.node && token == other.token;

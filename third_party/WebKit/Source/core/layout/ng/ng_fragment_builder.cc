@@ -22,7 +22,6 @@ NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
       direction_(TextDirection::kLtr),
       node_(node),
       did_break_(false) {
-  child_break_tokens_ = new HeapVector<Member<NGBreakToken>>();
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetWritingMode(
@@ -84,7 +83,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   // Update if we have fragmented in this flow.
   did_break_ |= child->IsBox() && !child->BreakToken()->IsFinished();
 
-  child_break_tokens_->push_back(child->BreakToken());
+  child_break_tokens_.push_back(child->BreakToken());
   children_.push_back(std::move(child));
   offsets_.push_back(child_offset);
 
@@ -177,13 +176,12 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   Vector<Persistent<NGFloatingObject>> positioned_floats;
   positioned_floats.reserveCapacity(positioned_floats_.size());
 
-  Persistent<NGBreakToken> break_token;
+  RefPtr<NGBreakToken> break_token;
   if (did_break_) {
-    break_token =
-        new NGBlockBreakToken(toNGBlockNode(node_.get()), used_block_size_,
-                              *child_break_tokens_.get());
+    break_token = NGBlockBreakToken::create(
+        toNGBlockNode(node_.get()), used_block_size_, child_break_tokens_);
   } else {
-    break_token = new NGBlockBreakToken(node_.get());
+    break_token = NGBlockBreakToken::create(node_.get());
   }
 
   for (size_t i = 0; i < positioned_floats_.size(); ++i) {
@@ -197,7 +195,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   RefPtr<NGPhysicalBoxFragment> fragment = adoptRef(new NGPhysicalBoxFragment(
       node_->GetLayoutObject(), physical_size,
       overflow_.ConvertToPhysical(writing_mode_), children_, positioned_floats_,
-      bfc_offset_, end_margin_strut_, break_token));
+      bfc_offset_, end_margin_strut_, std::move(break_token)));
 
   return adoptRef(
       new NGLayoutResult(std::move(fragment), out_of_flow_descendants_,

@@ -6,16 +6,17 @@
 #define NGPhysicalFragment_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class ComputedStyle;
 class LayoutObject;
-class NGBreakToken;
 
 // The NGPhysicalFragment contains the output geometry from layout. The
 // fragment stores all of its information in the physical coordinate system for
@@ -79,7 +80,7 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
     is_placed_ = true;
   }
 
-  NGBreakToken* BreakToken() const { return break_token_; }
+  NGBreakToken* BreakToken() const { return break_token_.get(); }
 
   const ComputedStyle& Style() const;
 
@@ -94,13 +95,13 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
                      NGPhysicalSize size,
                      NGPhysicalSize overflow,
                      NGFragmentType type,
-                     NGBreakToken* break_token = nullptr);
+                     RefPtr<NGBreakToken> break_token = nullptr);
 
   LayoutObject* layout_object_;
   NGPhysicalSize size_;
   NGPhysicalSize overflow_;
   NGPhysicalOffset offset_;
-  Persistent<NGBreakToken> break_token_;
+  RefPtr<NGBreakToken> break_token_;
 
   unsigned type_ : 1;
   unsigned is_placed_ : 1;

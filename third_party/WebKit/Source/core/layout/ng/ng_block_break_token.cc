@@ -11,7 +11,7 @@ namespace blink {
 NGBlockBreakToken::NGBlockBreakToken(
     NGBlockNode* node,
     LayoutUnit used_block_size,
-    HeapVector<Member<NGBreakToken>>& child_break_tokens)
+    Vector<RefPtr<NGBreakToken>>& child_break_tokens)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node),
       used_block_size_(used_block_size) {
   child_break_tokens_.swap(child_break_tokens);

@@ -16,12 +16,12 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     Vector<Persistent<NGFloatingObject>>& positioned_floats,
     const WTF::Optional<NGLogicalOffset>& bfc_offset,
     const NGMarginStrut& end_margin_strut,
-    NGBreakToken* break_token)
+    RefPtr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
                          size,
                          overflow,
                          kFragmentBox,
-                         break_token),
+                         std::move(break_token)),
       positioned_floats_(positioned_floats),
       bfc_offset_(bfc_offset),
       end_margin_strut_(end_margin_strut) {

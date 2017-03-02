@@ -21,12 +21,18 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   //
   // The NGBlockBreakToken takes ownership of child_break_tokens, leaving it
   // empty for the caller.
-  NGBlockBreakToken(NGBlockNode* node,
-                    LayoutUnit used_block_size,
-                    HeapVector<Member<NGBreakToken>>& child_break_tokens);
+  static RefPtr<NGBlockBreakToken> create(
+      NGBlockNode* node,
+      LayoutUnit used_block_size,
+      Vector<RefPtr<NGBreakToken>>& child_break_tokens) {
+    return adoptRef(
+        new NGBlockBreakToken(node, used_block_size, child_break_tokens));
+  }
 
   // Creates a break token for a node which cannot produce any more fragments.
-  explicit NGBlockBreakToken(NGLayoutInputNode* node);
+  static RefPtr<NGBlockBreakToken> create(NGLayoutInputNode* node) {
+    return adoptRef(new NGBlockBreakToken(node));
+  }
 
   // Represents the amount of block size used in previous fragments.
   //
@@ -43,18 +49,19 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   // this child).
   //
   // A child which we haven't visited yet doesn't have a break token here.
-  const HeapVector<Member<NGBreakToken>>& ChildBreakTokens() const {
+  const Vector<RefPtr<NGBreakToken>>& ChildBreakTokens() const {
     return child_break_tokens_;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    NGBreakToken::trace(visitor);
-    visitor->trace(child_break_tokens_);
-  }
-
  private:
+  NGBlockBreakToken(NGBlockNode* node,
+                    LayoutUnit used_block_size,
+                    Vector<RefPtr<NGBreakToken>>& child_break_tokens);
+
+  explicit NGBlockBreakToken(NGLayoutInputNode* node);
+
   LayoutUnit used_block_size_;
-  HeapVector<Member<NGBreakToken>> child_break_tokens_;
+  Vector<RefPtr<NGBreakToken>> child_break_tokens_;
 };
 
 DEFINE_TYPE_CASTS(NGBlockBreakToken,

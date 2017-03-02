@@ -14,11 +14,11 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGPhysicalSize size,
                                        NGPhysicalSize overflow,
                                        NGFragmentType type,
-                                       NGBreakToken* break_token)
+                                       RefPtr<NGBreakToken> break_token)
     : layout_object_(layout_object),
       size_(size),
       overflow_(overflow),
-      break_token_(break_token),
+      break_token_(std::move(break_token)),
       type_(type),
       is_placed_(false) {}
 

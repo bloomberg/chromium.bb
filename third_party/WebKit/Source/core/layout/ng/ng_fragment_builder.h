@@ -153,7 +153,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   bool did_break_;
   LayoutUnit used_block_size_;
 
-  Persistent<HeapVector<Member<NGBreakToken>>> child_break_tokens_;
+  Vector<RefPtr<NGBreakToken>> child_break_tokens_;
 
   WeakBoxList out_of_flow_descendant_candidates_;
   Vector<OutOfFlowPlacement> out_of_flow_candidate_placements_;

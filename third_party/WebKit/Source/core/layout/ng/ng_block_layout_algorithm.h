@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
@@ -81,7 +80,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   NGConstraintSpace* constraint_space_;
 
   // The break token from which we are currently resuming layout.
-  Persistent<NGBlockBreakToken> break_token_;
+  NGBlockBreakToken* break_token_;
 
   NGFragmentBuilder builder_;
   NGConstraintSpaceBuilder space_builder_;

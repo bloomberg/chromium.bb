@@ -18,15 +18,14 @@ struct NGFloatingObject;
 class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
  public:
   // This modifies the passed-in children vector.
-  NGPhysicalBoxFragment(
-      LayoutObject* layout_object,
-      NGPhysicalSize size,
-      NGPhysicalSize overflow,
-      Vector<RefPtr<NGPhysicalFragment>>& children,
-      Vector<Persistent<NGFloatingObject>>& positioned_floats,
-      const WTF::Optional<NGLogicalOffset>& bfc_offset,
-      const NGMarginStrut& end_margin_strut,
-      NGBreakToken* break_token = nullptr);
+  NGPhysicalBoxFragment(LayoutObject* layout_object,
+                        NGPhysicalSize size,
+                        NGPhysicalSize overflow,
+                        Vector<RefPtr<NGPhysicalFragment>>& children,
+                        Vector<Persistent<NGFloatingObject>>& positioned_floats,
+                        const WTF::Optional<NGLogicalOffset>& bfc_offset,
+                        const NGMarginStrut& end_margin_strut,
+                        RefPtr<NGBreakToken> break_token = nullptr);
 
   const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
     return children_;
