@@ -375,20 +375,34 @@ void AppBannerInfoBarDelegateAndroid::SendBannerAccepted() {
 void AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished(
     bool success,
     const std::string& webapk_package_name) {
-  JNIEnv* env = base::android::AttachCurrentThread();
   if (!success) {
-    DVLOG(1) << "The WebAPK installation failed.";
-    Java_AppBannerInfoBarDelegateAndroid_showWebApkInstallFailureToast(env);
-    webapk::TrackInstallEvent(webapk::INSTALL_FAILED);
-    if (infobar())
-      infobar()->RemoveSelf();
+    OnWebApkInstallFailed();
     return;
   }
-
   UpdateStateForInstalledWebAPK(webapk_package_name);
   webapk::TrackInstallDuration(timer_->Elapsed());
   timer_.reset();
   webapk::TrackInstallEvent(webapk::INSTALL_COMPLETED);
+}
+
+void AppBannerInfoBarDelegateAndroid::OnWebApkInstallFailed() {
+  DVLOG(1) << "The WebAPK installation failed.";
+  webapk::TrackInstallEvent(webapk::INSTALL_FAILED);
+
+  if (!infobar())
+    return;
+
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  // Add webapp shortcut to the homescreen.
+  // TODO(pkotwicz): Only add webapp shortcut to the homescreen if
+  // WebAPK install did not timeout. If the WebAPK install timed out
+  // it is possible that Google Play is taking a long time and will
+  // eventually installs the WebAPK.
+  ShortcutHelper::AddToLauncherWithSkBitmap(web_contents, *shortcut_info_,
+                                            *icon_.get());
+
+  infobar()->RemoveSelf();
 }
 
 void AppBannerInfoBarDelegateAndroid::TrackWebApkInstallationDismissEvents(

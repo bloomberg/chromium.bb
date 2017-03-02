@@ -14,16 +14,13 @@ import android.os.Looper;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.AppData;
 import org.chromium.chrome.browser.banners.InstallerDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.widget.Toast;
 
 /**
  * Handles the promotion and installation of an app specified by the current web page.  This Java
@@ -190,19 +187,6 @@ public class AppBannerInfoBarDelegateAndroid {
     /** Sets the WebAPK package name. */
     private void setWebApkPackageName(String webApkPackage) {
         mWebApkPackage = webApkPackage;
-    }
-
-    @CalledByNative
-    private static void showWebApkInstallFailureToast() {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Context applicationContext = ContextUtils.getApplicationContext();
-                Toast toast = Toast.makeText(applicationContext, R.string.fail_to_install_webapk,
-                        Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
     }
 
     private PackageManager getPackageManager(Context context) {
