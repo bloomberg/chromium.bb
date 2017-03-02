@@ -249,11 +249,10 @@ base::string16 PrependWindowsSessionPath(const base::char16* object) {
   return base::StringPrintf(L"\\Sessions\\%lu%ls", s_session_id, object);
 }
 
-// Checks if the sandbox should be let to run without a job object assigned.
+// Checks if the sandbox can be let to run without a job object assigned.
+// Returns true if the job object has to be applied to the sandbox and false
+// otherwise.
 bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
-  if (!cmd_line.HasSwitch(switches::kAllowNoSandboxJob))
-    return true;
-
   // Windows 8 allows nested jobs so we don't need to check if we are in other
   // job.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8)
@@ -277,6 +276,25 @@ bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
   if (job_info.BasicLimitInformation.LimitFlags & JOB_OBJECT_LIMIT_BREAKAWAY_OK)
     return true;
 
+  // Lastly in place of the flag which was supposed to be used only for running
+  // Chrome in remote sessions we do this check explicitly here.
+  // According to MS this flag can be false for a remote session only on Windows
+  // Server 2012 and newer so if we do the check last we should be on the safe
+  // side. See: https://msdn.microsoft.com/en-us/library/aa380798.aspx.
+  if (!::GetSystemMetrics(SM_REMOTESESSION)) {
+    // Measure how often we would have decided to apply the sandbox but the
+    // user actually wanted to avoid it.
+    // TODO(pastarmovj): Remove this check and the flag altogether once we are
+    // convinced that the automatic logic is good enough.
+    bool set_job = !cmd_line.HasSwitch(switches::kAllowNoSandboxJob);
+    UMA_HISTOGRAM_BOOLEAN("Process.Sandbox.FlagOverrodeRemoteSessionCheck",
+                          !set_job);
+    return set_job;
+  }
+
+  // Allow running without the sandbox in this case. This slightly reduces the
+  // ability of the sandbox to protect its children from spawning new processes
+  // or preventing them from shutting down Windows or accessing the clipboard.
   return false;
 }
 
