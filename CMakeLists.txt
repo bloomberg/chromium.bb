@@ -20,6 +20,7 @@ include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
 include("${AOM_ROOT}/aom_mem/aom_mem.cmake")
 include("${AOM_ROOT}/aom_ports/aom_ports.cmake")
 include("${AOM_ROOT}/aom_scale/aom_scale.cmake")
+include("${AOM_ROOT}/aom_util/aom_util.cmake")
 include("${AOM_ROOT}/av1/av1.cmake")
 include("${AOM_ROOT}/test/test.cmake")
 
@@ -99,11 +100,6 @@ set(AOM_SOURCES
     "${AOM_ROOT}/aom/src/aom_encoder.c"
     "${AOM_ROOT}/aom/src/aom_image.c")
 
-set(AOM_UTIL_SOURCES
-    "${AOM_ROOT}/aom_util/aom_thread.c"
-    "${AOM_ROOT}/aom_util/aom_thread.h"
-    "${AOM_ROOT}/aom_util/endian_inl.h")
-
 set(AOM_COMMON_APP_UTIL_SOURCES
     "${AOM_ROOT}/args.c"
     "${AOM_ROOT}/args.h"
@@ -164,21 +160,18 @@ add_rtcd_build_step("${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
                     "av1_rtcd")
 
 add_library(aom_rtcd OBJECT ${AOM_RTCD_SOURCES})
-add_library(aom_util OBJECT ${AOM_UTIL_SOURCES})
 add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES})
-add_library(aom
-            ${AOM_SOURCES}
-            $<TARGET_OBJECTS:aom_rtcd>
-            $<TARGET_OBJECTS:aom_util>)
+add_library(aom ${AOM_SOURCES} $<TARGET_OBJECTS:aom_rtcd>)
 
 # List of object and static library targets.
-set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_util aom_encoder_stats
-    aom_mem aom_scale aom)
+set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_encoder_stats aom_mem
+    aom_scale aom)
 
 # Setup dependencies.
 setup_aom_dsp_targets()
 setup_aom_mem_targets()
 setup_aom_ports_targets()
+setup_aom_util_targets()
 setup_aom_scale_targets()
 setup_av1_targets()
 
