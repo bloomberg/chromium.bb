@@ -1176,6 +1176,7 @@ void av1_build_inter_predictors_sbuv(MACROBLOCKD *xd, int mi_row, int mi_col,
 #endif  // CONFIG_EXT_INTER
 }
 
+// TODO(afergs): Check if ctx can be made constant
 void av1_build_inter_predictors_sb(MACROBLOCKD *xd, int mi_row, int mi_col,
                                    BUFFER_SET *ctx, BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, 0,
