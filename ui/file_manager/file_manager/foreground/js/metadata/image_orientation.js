@@ -73,21 +73,7 @@ ImageOrientation.fromExifOrientation = function(orientation) {
  * @return {!ImageOrientation}
  */
 ImageOrientation.fromDriveOrientation = function(rotation90) {
-  // TODO(yamaguchi): Examine the spec of Drive Orientation and share logic
-  // with |fromClockwiseRotation|. This looks (counterclockwise / 90) actually.
-  switch (~~(rotation90 % 4)) {
-    case 0:
-      return new ImageOrientation(1, 0, 0, 1);
-    case 1:
-      return new ImageOrientation(0, -1, 1, 0);
-    case 2:
-      return new ImageOrientation(-1, 0, 0, -1);
-    case 3:
-      return new ImageOrientation(0, 1, -1, 0);
-    default:
-      console.error('Invalid orientation number.');
-      return new ImageOrientation(1, 0, 0, 1);
-  }
+  return ImageOrientation.fromClockwiseRotation(rotation90);
 };
 
 /**
