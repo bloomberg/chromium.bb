@@ -201,15 +201,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to import the browsing data during the switch.
-// TODO(crbug.com/681130): Re-enable this test on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testSignInSwitchAccountsAndImportData \
-  testSignInSwitchAccountsAndImportData
-#else
-#define MAYBE_testSignInSwitchAccountsAndImportData \
-  FLAKY_testSignInSwitchAccountsAndImportData
-#endif
-- (void)MAYBE_testSignInSwitchAccountsAndImportData {
+- (void)testSignInSwitchAccountsAndImportData {
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
