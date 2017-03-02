@@ -30,7 +30,7 @@ TEST_F(ChromeWebClientTest, UserAgent) {
 
   // Check if the pieces of the user agent string come in the correct order.
   ChromeWebClient web_client;
-  std::string buffer = web_client.GetUserAgent(false);
+  std::string buffer = web_client.GetUserAgent(web::UserAgentType::MOBILE);
 
   pieces = base::SplitStringUsingSubstr(
       buffer, "Mozilla/5.0 (", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);

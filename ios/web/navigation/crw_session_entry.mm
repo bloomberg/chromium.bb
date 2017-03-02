@@ -53,14 +53,15 @@
   return [NSString
       stringWithFormat:
           @"url:%@ originalurl:%@ title:%@ transition:%d displayState:%@ "
-          @"desktopUA:%d",
+          @"userAgentType:%s",
           base::SysUTF8ToNSString(_navigationItem->GetURL().spec()),
           base::SysUTF8ToNSString(
               _navigationItem->GetOriginalRequestURL().spec()),
           base::SysUTF16ToNSString(_navigationItem->GetTitle()),
           _navigationItem->GetTransitionType(),
           _navigationItem->GetPageDisplayState().GetDescription(),
-          _navigationItem->IsOverridingUserAgent()];
+          web::GetUserAgentTypeDescription(_navigationItem->GetUserAgentType())
+              .c_str()];
 }
 
 - (web::NavigationItem*)navigationItem {

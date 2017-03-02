@@ -47,5 +47,5 @@ std::string IOSChromeHttpUserAgentSettings::GetAcceptLanguage() const {
 
 std::string IOSChromeHttpUserAgentSettings::GetUserAgent() const {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  return web::GetWebClient()->GetUserAgent(false);
+  return web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE);
 }

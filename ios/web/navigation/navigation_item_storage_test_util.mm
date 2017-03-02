@@ -17,7 +17,7 @@ BOOL ItemStoragesAreEqual(CRWNavigationItemStorage* item1,
          item1.displayState == item2.displayState &&
          item1.shouldSkipRepostFormConfirmation ==
              item2.shouldSkipRepostFormConfirmation &&
-         item1.overridingUserAgent == item2.overridingUserAgent &&
+         item1.userAgentType == item2.userAgentType &&
          [item1.POSTData isEqualToData:item2.POSTData] &&
          [item1.HTTPRequestHeaders
              isEqualToDictionary:item2.HTTPRequestHeaders];

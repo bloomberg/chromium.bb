@@ -77,8 +77,9 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
 #endif
   html_source->AddLocalizedString(version_ui::kUserAgentName,
                                   IDS_VERSION_UI_USER_AGENT);
-  html_source->AddString(version_ui::kUserAgent,
-                         web::GetWebClient()->GetUserAgent(false));
+  html_source->AddString(
+      version_ui::kUserAgent,
+      web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE));
   html_source->AddLocalizedString(version_ui::kCommandLineName,
                                   IDS_VERSION_UI_COMMAND_LINE);
 

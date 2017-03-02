@@ -52,7 +52,7 @@ std::string WebClient::GetProduct() const {
   return std::string();
 }
 
-std::string WebClient::GetUserAgent(bool desktop_user_agent) const {
+std::string WebClient::GetUserAgent(UserAgentType type) const {
   return std::string();
 }
 

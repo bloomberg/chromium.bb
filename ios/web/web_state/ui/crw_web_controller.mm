@@ -2332,7 +2332,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)usesDesktopUserAgent {
   web::NavigationItem* item = [self currentNavItem];
-  return item && item->IsOverridingUserAgent();
+  return item && item->GetUserAgentType() == web::UserAgentType::DESKTOP;
 }
 
 - (web::MojoFacade*)mojoFacade {
@@ -2382,12 +2382,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                              fromEntry:(CRWSessionEntry*)fromEntry {
   web::NavigationItemImpl* item = entry.navigationItemImpl;
   web::NavigationItemImpl* fromItem = fromEntry.navigationItemImpl;
-  if (!item || !fromItem)
+  web::UserAgentType itemUserAgentType = item->GetUserAgentType();
+  if (!item || !fromItem || itemUserAgentType == web::UserAgentType::NONE)
     return;
-  bool useDesktopUserAgent = item->IsOverridingUserAgent();
-  if (useDesktopUserAgent != fromItem->IsOverridingUserAgent()) {
+  if (itemUserAgentType != fromItem->GetUserAgentType())
     [self requirePageReconstruction];
-  }
 }
 
 #pragma mark -

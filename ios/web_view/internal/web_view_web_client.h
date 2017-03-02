@@ -24,7 +24,7 @@ class WebViewWebClient : public web::WebClient {
   // WebClient implementation.
   web::WebMainParts* CreateWebMainParts() override;
   std::string GetProduct() const override;
-  std::string GetUserAgent(bool desktop_user_agent) const override;
+  std::string GetUserAgent(web::UserAgentType type) const override;
 
   // Normal browser state associated with the receiver.
   WebViewBrowserState* browser_state() const;

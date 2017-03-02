@@ -9,6 +9,25 @@
 
 namespace web {
 
+// Enum type specifying a user agent's type.
+enum class UserAgentType : short {
+  // Used for pages that are generated for app-specific URLs.
+  NONE = 0,
+
+  // The default user agent type.  Used to specify a mobile browser user agent.
+  MOBILE,
+
+  // Used to specify a desktop browser user agent.
+  DESKTOP
+};
+
+// Returns a string representation of |type|.
+std::string GetUserAgentTypeDescription(UserAgentType type);
+
+// Returns a UserAgentType with the given description.  If |description| doesn't
+// correspond with a UserAgentType, UserAgentType::NONE will be returned.
+UserAgentType GetUserAgentTypeWithDescription(const std::string& description);
+
 // Returns the os cpu info portion for a user agent.
 std::string BuildOSCpuInfo();
 

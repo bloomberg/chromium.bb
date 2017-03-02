@@ -23,7 +23,7 @@ class ShellWebClient : public WebClient {
   // WebClient implementation.
   WebMainParts* CreateWebMainParts() override;
   std::string GetProduct() const override;
-  std::string GetUserAgent(bool desktop_user_agent) const override;
+  std::string GetUserAgent(UserAgentType type) const override;
   void AllowCertificateError(
       WebState* web_state,
       int cert_error,

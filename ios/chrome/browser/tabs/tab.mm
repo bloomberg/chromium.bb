@@ -1564,7 +1564,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     return NO;
 
   web::NavigationItem* visibleItem = self.navigationManager->GetVisibleItem();
-  return visibleItem && visibleItem->IsOverridingUserAgent();
+  return visibleItem &&
+         visibleItem->GetUserAgentType() == web::UserAgentType::DESKTOP;
 }
 
 - (void)enableDesktopUserAgent {

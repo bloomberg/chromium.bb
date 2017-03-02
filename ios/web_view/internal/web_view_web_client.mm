@@ -38,7 +38,7 @@ std::string WebViewWebClient::GetProduct() const {
   return base::SysNSStringToUTF8([delegate_ partialUserAgent]);
 }
 
-std::string WebViewWebClient::GetUserAgent(bool desktop_user_agent) const {
+std::string WebViewWebClient::GetUserAgent(web::UserAgentType type) const {
   return web::BuildUserAgentFromProduct(GetProduct());
 }
 

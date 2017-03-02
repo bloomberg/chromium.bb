@@ -10,6 +10,7 @@
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
+#include "ios/web/test/test_url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -512,7 +513,90 @@ TEST_F(NavigationManagerTest, OverrideDesktopUserAgent) {
       web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
   NavigationItem* visible_item = navigation_manager()->GetVisibleItem();
-  EXPECT_TRUE(visible_item->IsOverridingUserAgent());
+  EXPECT_EQ(visible_item->GetUserAgentType(), UserAgentType::DESKTOP);
+}
+
+// Tests that the UserAgentType is propagated to subsequent NavigationItems.
+TEST_F(NavigationManagerTest, UserAgentTypePropagation) {
+  // Add and commit two NavigationItems.
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  web::NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
+  ASSERT_EQ(web::UserAgentType::MOBILE, item1->GetUserAgentType());
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  web::NavigationItem* item2 = navigation_manager()->GetLastCommittedItem();
+
+  // Verify that the second item's UserAgentType is equal to the first.
+  EXPECT_EQ(item1->GetUserAgentType(), item2->GetUserAgentType());
+
+  // Update |item2|'s UA type to DESKTOP and commit a new item.
+  item2->SetUserAgentType(web::UserAgentType::DESKTOP);
+  ASSERT_EQ(web::UserAgentType::DESKTOP, item2->GetUserAgentType());
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.3.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  web::NavigationItem* item3 = navigation_manager()->GetLastCommittedItem();
+
+  // Verify that the third item's UserAgentType is equal to the second.
+  EXPECT_EQ(item2->GetUserAgentType(), item3->GetUserAgentType());
+}
+
+// Tests that the UserAgentType is propagated to subsequent NavigationItems if
+// a native URL exists in between naviations.
+TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
+  // GURL::Replacements that will replace a GURL's scheme with the test native
+  // scheme.
+  GURL::Replacements native_scheme_replacement;
+  native_scheme_replacement.SetSchemeStr(kTestNativeContentScheme);
+
+  // Create two non-native navigations that are separated by a native one.
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  web::NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
+  ASSERT_EQ(web::UserAgentType::MOBILE, item1->GetUserAgentType());
+  navigation_manager()->AddPendingItem(
+      item1->GetURL().ReplaceComponents(native_scheme_replacement), Referrer(),
+      ui::PAGE_TRANSITION_TYPED, web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  web::NavigationItem* native_item1 =
+      navigation_manager()->GetLastCommittedItem();
+  ASSERT_EQ(web::UserAgentType::NONE, native_item1->GetUserAgentType());
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  web::NavigationItem* item2 = navigation_manager()->GetLastCommittedItem();
+
+  // Verify that |item1|'s UserAgentType is propagated to |item2|.
+  EXPECT_EQ(item1->GetUserAgentType(), item2->GetUserAgentType());
+
+  // Update |item2|'s UA type to DESKTOP and add a third non-native navigation,
+  // once again separated by a native one.
+  item2->SetUserAgentType(web::UserAgentType::DESKTOP);
+  ASSERT_EQ(web::UserAgentType::DESKTOP, item2->GetUserAgentType());
+  navigation_manager()->AddPendingItem(
+      item2->GetURL().ReplaceComponents(native_scheme_replacement), Referrer(),
+      ui::PAGE_TRANSITION_TYPED, web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  web::NavigationItem* native_item2 =
+      navigation_manager()->GetLastCommittedItem();
+  ASSERT_EQ(web::UserAgentType::NONE, native_item2->GetUserAgentType());
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.3.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  web::NavigationItem* item3 = navigation_manager()->GetLastCommittedItem();
+
+  // Verify that |item2|'s UserAgentType is propagated to |item3|.
+  EXPECT_EQ(item2->GetUserAgentType(), item3->GetUserAgentType());
 }
 
 }  // namespace web

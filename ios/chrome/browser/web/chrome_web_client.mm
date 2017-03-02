@@ -108,12 +108,14 @@ std::string ChromeWebClient::GetProduct() const {
   return product;
 }
 
-std::string ChromeWebClient::GetUserAgent(bool desktop_user_agent) const {
+std::string ChromeWebClient::GetUserAgent(web::UserAgentType type) const {
+  // The user agent should not be requested for app-specific URLs.
+  DCHECK_NE(type, web::UserAgentType::NONE);
+
   // Using desktop user agent overrides a command-line user agent, so that
   // request desktop site can still work when using an overridden UA.
-  if (desktop_user_agent) {
+  if (type == web::UserAgentType::DESKTOP)
     return base::SysNSStringToUTF8(ChromeWebView::kDesktopUserAgent);
-  }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUserAgent)) {
@@ -124,8 +126,7 @@ std::string ChromeWebClient::GetUserAgent(bool desktop_user_agent) const {
     LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
   }
 
-  std::string product = GetProduct();
-  return web::BuildUserAgentFromProduct(product);
+  return web::BuildUserAgentFromProduct(GetProduct());
 }
 
 base::string16 ChromeWebClient::GetLocalizedString(int message_id) const {

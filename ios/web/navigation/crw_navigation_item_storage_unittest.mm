@@ -36,6 +36,7 @@ class CRWNavigationItemStorageTest : public PlatformTest {
     [item_storage_
         setPOSTData:[@"Test data" dataUsingEncoding:NSUTF8StringEncoding]];
     [item_storage_ setHTTPRequestHeaders:@{ @"HeaderKey" : @"HeaderValue" }];
+    [item_storage_ setUserAgentType:web::UserAgentType::DESKTOP];
   }
 
   // Convenience getter to facilitate dot notation in tests.
@@ -66,9 +67,9 @@ TEST_F(CRWNavigationItemStorageTest, InitWithCoderLegacy) {
       item_storage().displayState.GetSerialization();
   [archiver encodeObject:display_state_dict
                   forKey:web::kNavigationItemStoragePageDisplayStateKey];
-  BOOL overriding_user_agent = item_storage().overridingUserAgent;
-  [archiver encodeBool:overriding_user_agent
-                forKey:web::kNavigationItemStorageUseDesktopUserAgentKey];
+  [archiver
+      encodeBool:YES
+          forKey:web::kNavigationItemStorageUseDesktopUserAgentDeprecatedKey];
   NSDictionary* request_headers = item_storage().HTTPRequestHeaders;
   [archiver encodeObject:request_headers
                   forKey:web::kNavigationItemStorageHTTPRequestHeadersKey];

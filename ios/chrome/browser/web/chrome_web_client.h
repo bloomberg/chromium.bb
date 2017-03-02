@@ -24,7 +24,7 @@ class ChromeWebClient : public web::WebClient {
   bool IsAppSpecificURL(const GURL& url) const override;
   base::string16 GetPluginNotSupportedText() const override;
   std::string GetProduct() const override;
-  std::string GetUserAgent(bool desktop_user_agent) const override;
+  std::string GetUserAgent(web::UserAgentType type) const override;
   base::string16 GetLocalizedString(int message_id) const override;
   base::StringPiece GetDataResource(
       int resource_id,

@@ -388,7 +388,8 @@ void IOSChromeIOThread::Init() {
   globals_->system_cookie_store->SetChannelIDServiceID(
       globals_->system_channel_id_service->GetUniqueID());
   globals_->http_user_agent_settings.reset(new net::StaticHttpUserAgentSettings(
-      std::string(), web::GetWebClient()->GetUserAgent(false)));
+      std::string(),
+      web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE)));
   if (command_line.HasSwitch(switches::kIOSTestingFixedHttpPort)) {
     params_.testing_fixed_http_port =
         GetSwitchValueAsInt(command_line, switches::kIOSTestingFixedHttpPort);

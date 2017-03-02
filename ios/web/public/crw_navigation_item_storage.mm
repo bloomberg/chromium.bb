@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/nscoder_util.h"
+#import "ios/web/public/web_client.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,7 +28,8 @@ NSString* const kNavigationItemStoragePOSTDataKey = @"POSTData";
 NSString* const kNavigationItemStorageHTTPRequestHeadersKey = @"httpHeaders";
 NSString* const kNavigationItemStorageSkipRepostFormConfirmationKey =
     @"skipResubmitDataConfirmation";
-NSString* const kNavigationItemStorageUseDesktopUserAgentKey =
+NSString* const kNavigationItemStorageUserAgentTypeKey = @"userAgentType";
+NSString* const kNavigationItemStorageUseDesktopUserAgentDeprecatedKey =
     @"useDesktopUserAgent";
 
 }  // namespace web
@@ -41,7 +43,7 @@ NSString* const kNavigationItemStorageUseDesktopUserAgentKey =
 @synthesize displayState = _displayState;
 @synthesize shouldSkipRepostFormConfirmation =
     _shouldSkipRepostFormConfirmation;
-@synthesize overridingUserAgent = _overridingUserAgent;
+@synthesize userAgentType = _userAgentType;
 @synthesize POSTData = _POSTData;
 @synthesize HTTPRequestHeaders = _HTTPRequestHeaders;
 
@@ -59,7 +61,8 @@ NSString* const kNavigationItemStorageUseDesktopUserAgentKey =
   [description appendFormat:@"skipRepostConfirmation : %@, ",
                             @(_shouldSkipRepostFormConfirmation)];
   [description
-      appendFormat:@"overridingUserAgent : %@, ", @(_overridingUserAgent)];
+      appendFormat:@"userAgentType : %s, ",
+                   web::GetUserAgentTypeDescription(_userAgentType).c_str()];
   [description appendFormat:@"POSTData : %@, ", _POSTData];
   [description appendFormat:@"HTTPRequestHeaders : %@", _HTTPRequestHeaders];
   return description;
@@ -105,6 +108,27 @@ NSString* const kNavigationItemStorageUseDesktopUserAgentKey =
       _timestamp = base::Time::FromInternalValue(us);
     }
 
+    if ([aDecoder
+            containsValueForKey:web::kNavigationItemStorageUserAgentTypeKey]) {
+      std::string userAgentDescription = web::nscoder_util::DecodeString(
+          aDecoder, web::kNavigationItemStorageUserAgentTypeKey);
+      _userAgentType =
+          web::GetUserAgentTypeWithDescription(userAgentDescription);
+    } else if (web::GetWebClient()->IsAppSpecificURL(_virtualURL)) {
+      // Legacy CRWNavigationItemStorages didn't have the concept of a NONE
+      // user agent for app-specific URLs, so check decoded virtual URL before
+      // attempting to decode the deprecated key.
+      _userAgentType = web::UserAgentType::NONE;
+    } else {
+      // The user agent type was previously recorded as a BOOL, where YES meant
+      // desktop user agent, and NO meant mobile user agent.
+      BOOL useDesktopUA = [aDecoder
+          decodeBoolForKey:
+              web::kNavigationItemStorageUseDesktopUserAgentDeprecatedKey];
+      _userAgentType = useDesktopUA ? web::UserAgentType::DESKTOP
+                                    : web::UserAgentType::MOBILE;
+    }
+
     NSString* title =
         [aDecoder decodeObjectForKey:web::kNavigationItemStorageTitleKey];
     // Use a transition type of reload so that we don't incorrectly increase
@@ -116,8 +140,6 @@ NSString* const kNavigationItemStorageUseDesktopUserAgentKey =
     _shouldSkipRepostFormConfirmation =
         [aDecoder decodeBoolForKey:
                       web::kNavigationItemStorageSkipRepostFormConfirmationKey];
-    _overridingUserAgent = [aDecoder
-        decodeBoolForKey:web::kNavigationItemStorageUseDesktopUserAgentKey];
     _POSTData =
         [aDecoder decodeObjectForKey:web::kNavigationItemStoragePOSTDataKey];
     _HTTPRequestHeaders = [aDecoder
@@ -144,8 +166,9 @@ NSString* const kNavigationItemStorageUseDesktopUserAgentKey =
                 forKey:web::kNavigationItemStoragePageDisplayStateKey];
   [aCoder encodeBool:_shouldSkipRepostFormConfirmation
               forKey:web::kNavigationItemStorageSkipRepostFormConfirmationKey];
-  [aCoder encodeBool:_overridingUserAgent
-              forKey:web::kNavigationItemStorageUseDesktopUserAgentKey];
+  web::nscoder_util::EncodeString(
+      aCoder, web::kNavigationItemStorageUserAgentTypeKey,
+      web::GetUserAgentTypeDescription(_userAgentType));
   [aCoder encodeObject:_POSTData forKey:web::kNavigationItemStoragePOSTDataKey];
   [aCoder encodeObject:_HTTPRequestHeaders
                 forKey:web::kNavigationItemStorageHTTPRequestHeadersKey];

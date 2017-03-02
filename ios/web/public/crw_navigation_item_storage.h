@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ios/web/public/referrer.h"
+#include "ios/web/public/user_agent.h"
 #import "ios/web/public/web_state/page_display_state.h"
 #include "url/gurl.h"
 
@@ -25,6 +26,7 @@ extern NSString* const kNavigationItemStorageURLDeperecatedKey;
 // Page referrer URL (std::string).
 extern NSString* const kNavigationItemStorageReferrerURLKey;
 // Page referrer URL (NSURL). Deprecated, used for backward compatibility.
+// TODO(crbug.com/696125): Remove this key.
 extern NSString* const kNavigationItemStorageReferrerURLDeprecatedKey;
 // Page referrer policy (int).
 extern NSString* const kNavigationItemStorageReferrerPolicyKey;
@@ -41,8 +43,12 @@ extern NSString* const kNavigationItemStorageHTTPRequestHeadersKey;
 // Whether or not to bypass showing the resubmit data confirmation when loading
 // a POST request (BOOL).
 extern NSString* const kNavigationItemStorageSkipRepostFormConfirmationKey;
-// Should desktop user agent be used (BOOL)?
-extern NSString* const kNavigationItemStorageUseDesktopUserAgentKey;
+// The user agent type (std::string).
+extern NSString* const kNavigationItemStorageUserAgentTypeKey;
+// Should desktop user agent be used (BOOL).  Deprecated, used for backward
+// compatibility.
+// TODO(crbug.com/696125): remove this key.
+extern NSString* const kNavigationItemStorageUseDesktopUserAgentDeprecatedKey;
 
 }  // namespace web
 
@@ -56,8 +62,7 @@ extern NSString* const kNavigationItemStorageUseDesktopUserAgentKey;
 @property(nonatomic, assign) base::string16 title;
 @property(nonatomic, assign) web::PageDisplayState displayState;
 @property(nonatomic, assign) BOOL shouldSkipRepostFormConfirmation;
-@property(nonatomic, assign, getter=isOverridingUserAgent)
-    BOOL overridingUserAgent;
+@property(nonatomic, assign) web::UserAgentType userAgentType;
 @property(nonatomic, copy) NSData* POSTData;
 @property(nonatomic, copy) NSDictionary* HTTPRequestHeaders;
 

@@ -40,6 +40,7 @@ class CRWSessionEntryTest : public PlatformTest {
     item->SetTransitionType(transition);
     item->SetTimestamp(base::Time::Now());
     item->SetPostData([@"Test data" dataUsingEncoding:NSUTF8StringEncoding]);
+    item->SetUserAgentType(web::UserAgentType::MOBILE);
     session_entry_.reset(
         [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
   }
@@ -62,8 +63,7 @@ void CRWSessionEntryTest::expectEqualSessionEntries(
   EXPECT_EQ(navItem1->GetPageDisplayState(), navItem2->GetPageDisplayState());
   EXPECT_EQ(navItem1->ShouldSkipRepostFormConfirmation(),
             navItem2->ShouldSkipRepostFormConfirmation());
-  EXPECT_EQ(navItem1->IsOverridingUserAgent(),
-            navItem2->IsOverridingUserAgent());
+  EXPECT_EQ(navItem1->GetUserAgentType(), navItem2->GetUserAgentType());
   EXPECT_TRUE((!navItem1->HasPostData() && !navItem2->HasPostData()) ||
               [navItem1->GetPostData() isEqualToData:navItem2->GetPostData()]);
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
@@ -77,7 +77,8 @@ TEST_F(CRWSessionEntryTest, Description) {
   EXPECT_NSEQ([session_entry_ description],
               @"url:http://init.test/ originalurl:http://init.test/ "
               @"title:Title transition:2 displayState:{ scrollOffset:(nan, "
-              @"nan), zoomScaleRange:(nan, nan), zoomScale:nan } desktopUA:0");
+              @"nan), zoomScaleRange:(nan, nan), zoomScale:nan } "
+              @"userAgentType:MOBILE");
 }
 
 TEST_F(CRWSessionEntryTest, EmptyVirtualUrl) {

@@ -85,7 +85,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         new net::CookieStoreIOSPersistent(persistent_store.get()));
     storage_->set_cookie_store(std::move(cookie_store));
 
-    std::string user_agent = web::GetWebClient()->GetUserAgent(false);
+    std::string user_agent =
+        web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE);
 
     storage_->set_http_user_agent_settings(
         base::MakeUnique<net::StaticHttpUserAgentSettings>("en-us,en",

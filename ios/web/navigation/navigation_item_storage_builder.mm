@@ -24,7 +24,7 @@ CRWNavigationItemStorage* NavigationItemStorageBuilder::BuildStorage(
   storage.displayState = navigation_item->GetPageDisplayState();
   storage.shouldSkipRepostFormConfirmation =
       navigation_item->ShouldSkipRepostFormConfirmation();
-  storage.overridingUserAgent = navigation_item->IsOverridingUserAgent();
+  storage.userAgentType = navigation_item->GetUserAgentType();
   storage.POSTData = navigation_item->GetPostData();
   storage.HTTPRequestHeaders = navigation_item->GetHttpRequestHeaders();
   return storage;
@@ -46,7 +46,7 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   item->page_display_state_ = navigation_item_storage.displayState;
   item->should_skip_repost_form_confirmation_ =
       navigation_item_storage.shouldSkipRepostFormConfirmation;
-  item->is_overriding_user_agent_ = navigation_item_storage.overridingUserAgent;
+  item->user_agent_type_ = navigation_item_storage.userAgentType;
   item->post_data_.reset(navigation_item_storage.POSTData);
   item->http_request_headers_.reset(
       [navigation_item_storage.HTTPRequestHeaders mutableCopy]);

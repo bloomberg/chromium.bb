@@ -24,6 +24,11 @@
 
 namespace {
 
+// UserAgentType description strings.
+const char kUserAgentTypeNoneDescription[] = "NONE";
+const char kUserAgentTypeMobileDescription[] = "MOBILE";
+const char kUserAgentTypeDesktopDescription[] = "DESKTOP";
+
 struct UAVersions {
   const char* safari_version_string;
   const char* webkit_version_string;
@@ -69,6 +74,27 @@ const UAVersions& GetUAVersionsForCurrentOS() {
 }  // namespace
 
 namespace web {
+
+std::string GetUserAgentTypeDescription(UserAgentType type) {
+  switch (type) {
+    case UserAgentType::NONE:
+      return std::string(kUserAgentTypeNoneDescription);
+      break;
+    case UserAgentType::MOBILE:
+      return std::string(kUserAgentTypeMobileDescription);
+      break;
+    case UserAgentType::DESKTOP:
+      return std::string(kUserAgentTypeDesktopDescription);
+  }
+}
+
+UserAgentType GetUserAgentTypeWithDescription(const std::string& description) {
+  if (description == std::string(kUserAgentTypeMobileDescription))
+    return UserAgentType::MOBILE;
+  if (description == std::string(kUserAgentTypeDesktopDescription))
+    return UserAgentType::DESKTOP;
+  return UserAgentType::NONE;
+}
 
 std::string BuildOSCpuInfo() {
   int32_t os_major_version = 0;

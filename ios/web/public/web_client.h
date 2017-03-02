@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "ios/web/public/user_agent.h"
 #include "ui/base/layout.h"
 #include "url/url_util.h"
 
@@ -79,9 +80,8 @@ class WebClient {
   // form "productname/version".  Used as part of the user agent string.
   virtual std::string GetProduct() const;
 
-  // Returns the user agent. |desktop_user_agent| is true if desktop user agent
-  // is requested.
-  virtual std::string GetUserAgent(bool desktop_user_agent) const;
+  // Returns the user agent string for the specified type.
+  virtual std::string GetUserAgent(UserAgentType type) const;
 
   // Returns a string resource given its id.
   virtual base::string16 GetLocalizedString(int message_id) const;

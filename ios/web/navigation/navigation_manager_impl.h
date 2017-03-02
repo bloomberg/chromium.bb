@@ -174,6 +174,10 @@ class NavigationManagerImpl : public NavigationManager {
   // |index| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
   bool IsRedirectItemAtIndex(int index) const;
 
+  // Returns the most recent NavigationItem that does not have an app-specific
+  // URL.
+  NavigationItem* GetLastCommittedNonAppSpecificItem() const;
+
   // If true, override navigation item's useDesktopUserAgent flag and always
   // create the pending entry using the desktop user agent.
   // TODO(crbug.com/692303): Remove this when overriding the user agent doesn't

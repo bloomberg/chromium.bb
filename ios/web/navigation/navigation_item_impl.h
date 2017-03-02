@@ -65,8 +65,8 @@ class NavigationItemImpl : public web::NavigationItem {
   SSLStatus& GetSSL() override;
   void SetTimestamp(base::Time timestamp) override;
   base::Time GetTimestamp() const override;
-  void SetIsOverridingUserAgent(bool is_overriding_user_agent) override;
-  bool IsOverridingUserAgent() const override;
+  void SetUserAgentType(UserAgentType type) override;
+  UserAgentType GetUserAgentType() const override;
   bool HasPostData() const override;
   NSDictionary* GetHttpRequestHeaders() const override;
   void AddHttpRequestHeaders(NSDictionary* additional_headers) override;
@@ -135,7 +135,7 @@ class NavigationItemImpl : public web::NavigationItem {
   FaviconStatus favicon_;
   SSLStatus ssl_;
   base::Time timestamp_;
-  bool is_overriding_user_agent_;
+  UserAgentType user_agent_type_;
   base::scoped_nsobject<NSMutableDictionary> http_request_headers_;
 
   base::scoped_nsobject<NSString> serialized_state_object_;

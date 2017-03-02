@@ -91,8 +91,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
       assertWithMatcher:grey_notNil()];
 
   // Verify that mobile User Agent string is present on the page.
-  const bool isDesktopUA = false;
-  const std::string userAgent = web::GetWebClient()->GetUserAgent(isDesktopUA);
+  const std::string userAgent =
+      web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE);
   [[EarlGrey selectElementWithMatcher:WebViewContainingText(userAgent)]
       assertWithMatcher:grey_notNil()];
 }

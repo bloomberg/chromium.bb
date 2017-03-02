@@ -34,7 +34,7 @@ std::string ShellWebClient::GetProduct() const {
   return "CriOS/36.77.34.45";
 }
 
-std::string ShellWebClient::GetUserAgent(bool desktop_user_agent) const {
+std::string ShellWebClient::GetUserAgent(UserAgentType type) const {
   std::string product = GetProduct();
   return web::BuildUserAgentFromProduct(product);
 }

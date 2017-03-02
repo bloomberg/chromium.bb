@@ -27,6 +27,7 @@
 #include "ios/web/public/browser_url_rewriter.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/ssl_status.h"
+#import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -473,8 +474,7 @@
            initiationType:web::NavigationInitiationType::USER_INITIATED]);
 
   web::NavigationItemImpl* pushedItem = [pushedEntry navigationItemImpl];
-  pushedItem->SetIsOverridingUserAgent(
-      lastCommittedItem->IsOverridingUserAgent());
+  pushedItem->SetUserAgentType(lastCommittedItem->GetUserAgentType());
   pushedItem->SetSerializedStateObject(stateObject);
   pushedItem->SetIsCreatedFromPushState(true);
   pushedItem->GetSSL() = lastCommittedItem->GetSSL();
@@ -678,6 +678,8 @@
   item->SetReferrer(referrer);
   item->SetTransitionType(transition);
   item->SetNavigationInitiationType(initiationType);
+  if (web::GetWebClient()->IsAppSpecificURL(loaded_url))
+    item->SetUserAgentType(web::UserAgentType::NONE);
   return [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)];
 }
 
