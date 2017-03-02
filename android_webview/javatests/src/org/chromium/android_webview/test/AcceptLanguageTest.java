@@ -98,7 +98,7 @@ public class AcceptLanguageTest extends AwTestBase {
 
         // Test locale change at run time
         Locale.setDefault(new Locale("de", "DE"));
-        mAwContents.updateDefaultLocale();
+        AwContents.updateDefaultLocale();
         mAwContents.getSettings().updateAcceptLanguages();
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
@@ -143,7 +143,7 @@ public class AcceptLanguageTest extends AwTestBase {
 
         // Test locales that contain "en-US" change at run time
         LocaleList.setDefault(new LocaleList(new Locale("de", "DE"), new Locale("en", "US")));
-        mAwContents.updateDefaultLocale();
+        AwContents.updateDefaultLocale();
         mAwContents.getSettings().updateAcceptLanguages();
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
@@ -156,7 +156,7 @@ public class AcceptLanguageTest extends AwTestBase {
 
         // Test locales that contain "en-us" change at run time
         LocaleList.setDefault(new LocaleList(new Locale("de", "DE"), new Locale("en", "us")));
-        mAwContents.updateDefaultLocale();
+        AwContents.updateDefaultLocale();
         mAwContents.getSettings().updateAcceptLanguages();
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
@@ -169,7 +169,7 @@ public class AcceptLanguageTest extends AwTestBase {
 
         // Test locales that do not contain "en-us" or "en-US" change at run time
         LocaleList.setDefault(new LocaleList(new Locale("de", "DE"), new Locale("ja", "JP")));
-        mAwContents.updateDefaultLocale();
+        AwContents.updateDefaultLocale();
         mAwContents.getSettings().updateAcceptLanguages();
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
