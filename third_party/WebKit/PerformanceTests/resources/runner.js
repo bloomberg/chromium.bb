@@ -163,6 +163,11 @@ if (window.testRunner) {
 
     function scheduleNextRun(scheduler, runner) {
         scheduler(function () {
+            // This will be used by tools/perf/benchmarks/blink_perf.py to find
+            // traces during the measured runs.
+            if (completedIterations >= 0)
+                console.time("blink_perf");
+
             try {
                 if (currentTest.setup)
                     currentTest.setup();
@@ -204,6 +209,7 @@ if (window.testRunner) {
 
     function finish() {
         try {
+            console.timeEnd("blink_perf");
             if (currentTest.description)
                 PerfTestRunner.log("Description: " + currentTest.description);
             PerfTestRunner.logStatistics(results, PerfTestRunner.unit, "Time:");

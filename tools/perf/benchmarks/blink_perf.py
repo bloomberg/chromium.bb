@@ -13,8 +13,10 @@ from telemetry.page import legacy_page_test
 from telemetry.page import shared_page_state
 from telemetry import story
 from telemetry.value import list_of_scalar_values
+from telemetry.value import scalar
 
 from benchmarks import pywebsocket_server
+from measurements import timeline_controller
 from page_sets import webgl_supported_shared_state
 
 
@@ -119,6 +121,48 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     print log
 
 
+# TODO(wangxianzhu): Convert the paint benchmarks to use the new blink_perf
+# tracing once it's ready.
+class _BlinkPerfPaintMeasurement(_BlinkPerfMeasurement):
+  """Also collects prePaint and paint timing from traces."""
+
+  def __init__(self):
+    super(_BlinkPerfPaintMeasurement, self).__init__()
+    self._controller = None
+
+  def WillNavigateToPage(self, page, tab):
+    super(_BlinkPerfPaintMeasurement, self).WillNavigateToPage(page, tab)
+    self._controller = timeline_controller.TimelineController()
+    self._controller.trace_categories = 'blink,blink.console'
+    self._controller.SetUp(page, tab)
+    self._controller.Start(tab)
+
+  def DidRunPage(self, platform):
+    if self._controller:
+      self._controller.CleanUp(platform)
+
+  def ValidateAndMeasurePage(self, page, tab, results):
+    super(_BlinkPerfPaintMeasurement, self).ValidateAndMeasurePage(
+        page, tab, results)
+    self._controller.Stop(tab, results)
+    renderer = self._controller.model.GetRendererThreadFromTabId(tab.id)
+    # The marker marks the beginning and ending of the measured runs.
+    marker = next(event for event in renderer.async_slices
+                  if event.name == 'blink_perf'
+                  and event.category == 'blink.console')
+    assert marker
+
+    for event in renderer.all_slices:
+      if event.start < marker.start or event.end > marker.end:
+        continue
+      if event.name == 'FrameView::prePaint':
+        results.AddValue(
+            scalar.ScalarValue(page, 'prePaint', 'ms', event.duration))
+      if event.name == 'FrameView::paintTree':
+        results.AddValue(
+            scalar.ScalarValue(page, 'paint', 'ms', event.duration))
+
+
 class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
   test = _BlinkPerfMeasurement
 
@@ -210,6 +254,7 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
 
 
 class BlinkPerfPaint(_BlinkPerfBenchmark):
+  test = _BlinkPerfPaintMeasurement
   tag = 'paint'
   subdir = 'Paint'
 

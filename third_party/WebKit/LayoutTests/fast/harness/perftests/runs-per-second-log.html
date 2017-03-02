@@ -6,6 +6,10 @@
 <script src="../../../../PerformanceTests/resources/runner.js"></script>
 <script type="text/javascript">
 
+// Suppress JavaScript trace event console messages.
+console.time = function() {};
+console.timeEnd = function() {};
+
 var logLines = [];
 var initial = true;
 var runs = 0;

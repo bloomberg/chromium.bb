@@ -9,6 +9,10 @@
 
 description("This test verifies PerfTestRunner.runPerSecond() calls runFunction as many times as expected.");
 
+// Suppress JavaScript trace event console messages.
+console.time = function() {};
+console.timeEnd = function() {};
+
 var iteration = 0;
 var currentTime = 100;
 var callsInIterations = [];
