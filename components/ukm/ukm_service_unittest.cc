@@ -100,7 +100,7 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = 1;
+  int32_t id = UkmService::GetNewSourceID();
   service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Should init, generate a log, and start an upload for source.
   task_runner_->RunPendingTasks();
@@ -125,7 +125,7 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = 1;
+  int32_t id = UkmService::GetNewSourceID();
   service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   service.Flush();
@@ -147,7 +147,7 @@ TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = 1;
+  int32_t id = UkmService::GetNewSourceID();
   service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   {
     std::unique_ptr<UkmEntryBuilder> foo_builder =
@@ -210,7 +210,7 @@ TEST_F(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics) {
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = 1;
+  int32_t id = UkmService::GetNewSourceID();
   service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   {
@@ -249,7 +249,7 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   service.EnableRecording();
   service.EnableReporting();
 
-  int32_t id = 1;
+  int32_t id = UkmService::GetNewSourceID();
   service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   {
     std::unique_ptr<UkmEntryBuilder> builder =
@@ -281,7 +281,7 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 0);
 
-  int32_t id = 1;
+  int32_t id = UkmService::GetNewSourceID();
   service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Includes a Source, so will persist.
   service.Flush();
@@ -309,6 +309,15 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   // Current log has no Sources.
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 3);
+}
+
+TEST_F(UkmServiceTest, GetNewSourceID) {
+  int32_t id1 = UkmService::GetNewSourceID();
+  int32_t id2 = UkmService::GetNewSourceID();
+  int32_t id3 = UkmService::GetNewSourceID();
+  EXPECT_NE(id1, id2);
+  EXPECT_NE(id1, id3);
+  EXPECT_NE(id2, id3);
 }
 
 }  // namespace ukm

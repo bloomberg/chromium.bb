@@ -49,6 +49,10 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   UkmService(PrefService* pref_service, metrics::MetricsServiceClient* client);
   virtual ~UkmService();
 
+  // Get the new source ID, which is unique for the duration of a browser
+  // session.
+  static int32_t GetNewSourceID();
+
   // Update the URL on the source keyed to the given source ID. If the source
   // does not exist, it will create a new UkmSource object.
   void UpdateSourceURL(int32_t source_id, const GURL& url);

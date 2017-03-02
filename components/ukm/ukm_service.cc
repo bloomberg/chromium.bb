@@ -364,6 +364,12 @@ void UkmService::RecordSource(std::unique_ptr<UkmSource> source) {
   sources_.push_back(std::move(source));
 }
 
+// static
+int32_t UkmService::GetNewSourceID() {
+  static int32_t next_source_id = 0;
+  return next_source_id++;
+}
+
 std::unique_ptr<UkmEntryBuilder> UkmService::GetEntryBuilder(
     int32_t source_id,
     const char* event_name) {
