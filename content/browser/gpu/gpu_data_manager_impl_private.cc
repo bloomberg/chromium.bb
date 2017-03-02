@@ -365,27 +365,29 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
     return false;
   }
 
-  // We only need to block GPU process if more features are disallowed other
-  // than those in the preliminary gpu feature flags because the latter work
-  // through renderer commandline switches. WebGL and WebGL2 should not matter
-  // because their context creation can always be rejected on the GPU process
-  // side.
-  std::set<int> feature_diffs;
-  std::set_difference(blacklisted_features_.begin(),
-                      blacklisted_features_.end(),
-                      preliminary_blacklisted_features_.begin(),
-                      preliminary_blacklisted_features_.end(),
-                      std::inserter(feature_diffs, feature_diffs.begin()));
-  if (feature_diffs.size()) {
-    // TODO(zmo): Other features might also be OK to ignore here.
-    feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL);
-    feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL2);
-  }
-  if (feature_diffs.size()) {
-    if (reason) {
-      *reason = "Features are disabled on full but not preliminary GPU info.";
+  if (preliminary_blacklisted_features_initialized_) {
+    // We only need to block GPU process if more features are disallowed other
+    // than those in the preliminary gpu feature flags because the latter work
+    // through renderer commandline switches. WebGL and WebGL2 should not matter
+    // because their context creation can always be rejected on the GPU process
+    // side.
+    std::set<int> feature_diffs;
+    std::set_difference(blacklisted_features_.begin(),
+                        blacklisted_features_.end(),
+                        preliminary_blacklisted_features_.begin(),
+                        preliminary_blacklisted_features_.end(),
+                        std::inserter(feature_diffs, feature_diffs.begin()));
+    if (feature_diffs.size()) {
+      // TODO(zmo): Other features might also be OK to ignore here.
+      feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL);
+      feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL2);
     }
-    return false;
+    if (feature_diffs.size()) {
+      if (reason) {
+        *reason = "Features are disabled on full but not preliminary GPU info.";
+      }
+      return false;
+    }
   }
 
   if (blacklisted_features_.size() == gpu::NUMBER_OF_GPU_FEATURE_TYPES) {
@@ -1135,6 +1137,7 @@ GpuDataManagerImplPrivate* GpuDataManagerImplPrivate::Create(
 
 GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
     : complete_gpu_info_already_requested_(false),
+      preliminary_blacklisted_features_initialized_(false),
       observer_list_(new GpuDataManagerObserverList),
       use_swiftshader_(false),
       card_blacklisted_(false),
@@ -1232,6 +1235,7 @@ void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(
 
 void GpuDataManagerImplPrivate::UpdatePreliminaryBlacklistedFeatures() {
   preliminary_blacklisted_features_ = blacklisted_features_;
+  preliminary_blacklisted_features_initialized_ = true;
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuSwitchingManager(

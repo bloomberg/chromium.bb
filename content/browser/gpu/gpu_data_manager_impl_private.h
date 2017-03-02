@@ -233,6 +233,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   std::set<int> blacklisted_features_;
   std::set<int> preliminary_blacklisted_features_;
+  bool preliminary_blacklisted_features_initialized_;
+
   // Eventually |blacklisted_features_| should be folded in to this.
   gpu::GpuFeatureInfo gpu_feature_info_;
 
