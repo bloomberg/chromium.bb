@@ -15,12 +15,14 @@ from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
 from chromite.lib import ts_mon_config
+from infra_libs.ts_mon.common import interface
+
 from chromite.scripts.sysmon import loop
+from chromite.scripts.sysmon import net_metrics
 from chromite.scripts.sysmon import osinfo_metrics
 from chromite.scripts.sysmon import prod_metrics
 from chromite.scripts.sysmon import puppet_metrics
 from chromite.scripts.sysmon import system_metrics
-from infra_libs.ts_mon.common import interface
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,7 @@ class _MetricCollector(object):
     system_metrics.collect_cpu_info()
     system_metrics.collect_disk_info()
     system_metrics.collect_mem_info()
-    system_metrics.collect_net_info()
+    net_metrics.collect_net_info()
     system_metrics.collect_proc_info()
     system_metrics.collect_load_avg()
     puppet_metrics.collect_puppet_summary()
