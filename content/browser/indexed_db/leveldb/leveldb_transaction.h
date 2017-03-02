@@ -20,6 +20,7 @@
 
 namespace content {
 
+class LevelDBTransactionRangeTest;
 class LevelDBWriteBatch;
 
 class CONTENT_EXPORT LevelDBTransaction
@@ -27,9 +28,12 @@ class CONTENT_EXPORT LevelDBTransaction
  public:
   void Put(const base::StringPiece& key, std::string* value);
 
-  // Returns true if this operation performs a change, where the value wasn't
-  // already deleted.
-  bool Remove(const base::StringPiece& key);
+  void Remove(const base::StringPiece& key);
+
+  leveldb::Status RemoveRange(const base::StringPiece& begin,
+                              const base::StringPiece& end,
+                              bool upper_open);
+
   virtual leveldb::Status Get(const base::StringPiece& key,
                               std::string* value,
                               bool* found);
@@ -45,16 +49,17 @@ class CONTENT_EXPORT LevelDBTransaction
 
  private:
   friend class base::RefCounted<LevelDBTransaction>;
-  FRIEND_TEST_ALL_PREFIXES(LevelDBDatabaseTest, Transaction);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBDatabaseTest, TransactionCommitTest);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBDatabaseTest, TransactionIterator);
+  friend class content::LevelDBTransactionRangeTest;
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, GetAndPut);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, Commit);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, Iterator);
 
   struct Record {
     Record();
     ~Record();
     std::string key;
     std::string value;
-    bool deleted;
+    bool deleted = false;
   };
 
   class Comparator {
@@ -73,12 +78,14 @@ class CONTENT_EXPORT LevelDBTransaction
   typedef std::map<base::StringPiece, std::unique_ptr<Record>, Comparator>
       DataType;
 
+  // A DataIterator walks the uncommitted data in a transaction. It wraps a
+  // std::map::iterator and provides the LevelDBIterator API. It is only used
+  // internally as part of the implementation of TransactionIterator.
   class DataIterator : public LevelDBIterator {
    public:
     static std::unique_ptr<DataIterator> Create(
         LevelDBTransaction* transaction);
     ~DataIterator() override;
-
     bool IsValid() const override;
     leveldb::Status SeekToLast() override;
     leveldb::Status Seek(const base::StringPiece& slice) override;
@@ -88,6 +95,9 @@ class CONTENT_EXPORT LevelDBTransaction
     base::StringPiece Value() const override;
     bool IsDeleted() const;
 
+    // Mark the current record as deleted.
+    void Delete();
+
    private:
     explicit DataIterator(LevelDBTransaction* transaction);
     DataType* data_;
@@ -96,6 +106,10 @@ class CONTENT_EXPORT LevelDBTransaction
     DISALLOW_COPY_AND_ASSIGN(DataIterator);
   };
 
+  // A TransactionIterator wraps a pair of a DataIterator (which walks the
+  // uncommitted data) and LevelDBIterator wrapping a leveldb::Iterator (which
+  // walks the data previously committed to the backing store). This provides
+  // a unified view on committed and uncommitted data.
   class TransactionIterator : public LevelDBIterator {
    public:
     ~TransactionIterator() override;
@@ -110,6 +124,11 @@ class CONTENT_EXPORT LevelDBTransaction
     base::StringPiece Key() const override;
     base::StringPiece Value() const override;
     void DataChanged();
+
+    // Mark the current record as deleted. If an existing record
+    // is present in the uncommitted data this will convert it to
+    // a deletion record, otherwise it will insert a new one.
+    void Delete();
 
    private:
     enum Direction { FORWARD, REVERSE };
@@ -126,15 +145,15 @@ class CONTENT_EXPORT LevelDBTransaction
     const LevelDBComparator* comparator_;
     mutable std::unique_ptr<DataIterator> data_iterator_;
     std::unique_ptr<LevelDBIterator> db_iterator_;
-    LevelDBIterator* current_;
+    LevelDBIterator* current_ = nullptr;
 
-    Direction direction_;
-    mutable bool data_changed_;
+    Direction direction_ = FORWARD;
+    mutable bool data_changed_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(TransactionIterator);
   };
-  // Returns true if the key was originally marked deleted, false otherwise.
-  bool Set(const base::StringPiece& key, std::string* value, bool deleted);
+
+  void Set(const base::StringPiece& key, std::string* value, bool deleted);
   void RegisterIterator(TransactionIterator* iterator);
   void UnregisterIterator(TransactionIterator* iterator);
   void NotifyIterators();
@@ -144,7 +163,7 @@ class CONTENT_EXPORT LevelDBTransaction
   const LevelDBComparator* comparator_;
   Comparator data_comparator_;
   DataType data_;
-  bool finished_;
+  bool finished_ = false;
   std::set<TransactionIterator*> iterators_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBTransaction);
@@ -169,7 +188,7 @@ class LevelDBDirectTransaction {
 
   LevelDBDatabase* db_;
   std::unique_ptr<LevelDBWriteBatch> write_batch_;
-  bool finished_;
+  bool finished_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBDirectTransaction);
 };

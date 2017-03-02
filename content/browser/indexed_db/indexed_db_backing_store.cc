@@ -699,20 +699,8 @@ WARN_UNUSED_RESULT Status GetNewDatabaseId(LevelDBTransaction* transaction,
 Status DeleteRangeBasic(LevelDBTransaction* transaction,
                         const std::string& begin,
                         const std::string& end,
-                        bool upper_open,
-                        size_t* delete_count) {
-  DCHECK(delete_count);
-  std::unique_ptr<LevelDBIterator> it = transaction->CreateIterator();
-  Status s;
-  *delete_count = 0;
-  for (s = it->Seek(begin); s.ok() && it->IsValid() &&
-                            (upper_open ? CompareKeys(it->Key(), end) < 0
-                                        : CompareKeys(it->Key(), end) <= 0);
-       s = it->Next()) {
-    if (transaction->Remove(it->Key()))
-      (*delete_count)++;
-  }
-  return s;
+                        bool upper_open) {
+  return transaction->RemoveRange(begin, end, upper_open);
 }
 
 Status DeleteBlobsInRange(IndexedDBBackingStore::Transaction* transaction,
@@ -2000,7 +1988,6 @@ Status IndexedDBBackingStore::DeleteObjectStore(
   LevelDBTransaction* leveldb_transaction = transaction->transaction();
 
   base::string16 object_store_name;
-  size_t delete_count = 0;
   bool found = false;
   Status s = GetString(leveldb_transaction, ObjectStoreMetaDataKey::Encode(
                                                 database_id, object_store_id,
@@ -2024,8 +2011,7 @@ Status IndexedDBBackingStore::DeleteObjectStore(
   s = DeleteRangeBasic(
       leveldb_transaction,
       ObjectStoreMetaDataKey::Encode(database_id, object_store_id, 0),
-      ObjectStoreMetaDataKey::EncodeMaxKey(database_id, object_store_id), true,
-      &delete_count);
+      ObjectStoreMetaDataKey::EncodeMaxKey(database_id, object_store_id), true);
 
   if (s.ok()) {
     leveldb_transaction->Remove(
@@ -2034,16 +2020,14 @@ Status IndexedDBBackingStore::DeleteObjectStore(
     s = DeleteRangeBasic(
         leveldb_transaction,
         IndexFreeListKey::Encode(database_id, object_store_id, 0),
-        IndexFreeListKey::EncodeMaxKey(database_id, object_store_id), true,
-        &delete_count);
+        IndexFreeListKey::EncodeMaxKey(database_id, object_store_id), true);
   }
 
   if (s.ok()) {
     s = DeleteRangeBasic(
         leveldb_transaction,
         IndexMetaDataKey::Encode(database_id, object_store_id, 0, 0),
-        IndexMetaDataKey::EncodeMaxKey(database_id, object_store_id), true,
-        &delete_count);
+        IndexMetaDataKey::EncodeMaxKey(database_id, object_store_id), true);
   }
 
   if (!s.ok()) {
@@ -2190,9 +2174,8 @@ Status IndexedDBBackingStore::ClearObjectStore(
       KeyPrefix(database_id, object_store_id).Encode();
   const std::string stop_key =
       KeyPrefix(database_id, object_store_id + 1).Encode();
-  size_t delete_count = 0;
-  Status s = DeleteRangeBasic(transaction->transaction(), start_key, stop_key,
-                              true, &delete_count);
+  Status s =
+      DeleteRangeBasic(transaction->transaction(), start_key, stop_key, true);
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR(CLEAR_OBJECT_STORE);
     return s;
@@ -2228,11 +2211,8 @@ Status IndexedDBBackingStore::DeleteRange(
     IndexedDBBackingStore::Transaction* transaction,
     int64_t database_id,
     int64_t object_store_id,
-    const IndexedDBKeyRange& key_range,
-    size_t* exists_delete_count) {
-  DCHECK(exists_delete_count);
+    const IndexedDBKeyRange& key_range) {
   Status s;
-  *exists_delete_count = 0;
   std::unique_ptr<IndexedDBBackingStore::Cursor> start_cursor =
       OpenObjectStoreCursor(transaction, database_id, object_store_id,
                             key_range, blink::WebIDBCursorDirectionNext, &s);
@@ -2269,9 +2249,7 @@ Status IndexedDBBackingStore::DeleteRange(
                          false);
   if (!s.ok())
     return s;
-  size_t data_delete_count = 0;
-  s = DeleteRangeBasic(transaction->transaction(), start_key, stop_key, false,
-                       &data_delete_count);
+  s = DeleteRangeBasic(transaction->transaction(), start_key, stop_key, false);
   if (!s.ok())
     return s;
   start_key =
@@ -2279,9 +2257,7 @@ Status IndexedDBBackingStore::DeleteRange(
   stop_key =
       ExistsEntryKey::Encode(database_id, object_store_id, end_cursor->key());
 
-  s = DeleteRangeBasic(transaction->transaction(), start_key, stop_key, false,
-                       exists_delete_count);
-  DCHECK_EQ(data_delete_count, *exists_delete_count);
+  s = DeleteRangeBasic(transaction->transaction(), start_key, stop_key, false);
   return s;
 }
 
@@ -3029,13 +3005,12 @@ Status IndexedDBBackingStore::DeleteIndex(
     return InvalidDBKeyStatus();
   LevelDBTransaction* leveldb_transaction = transaction->transaction();
 
-  size_t delete_count = 0;
   const std::string index_meta_data_start =
       IndexMetaDataKey::Encode(database_id, object_store_id, index_id, 0);
   const std::string index_meta_data_end =
       IndexMetaDataKey::EncodeMaxKey(database_id, object_store_id, index_id);
   Status s = DeleteRangeBasic(leveldb_transaction, index_meta_data_start,
-                              index_meta_data_end, true, &delete_count);
+                              index_meta_data_end, true);
 
   if (s.ok()) {
     const std::string index_data_start =
@@ -3043,7 +3018,7 @@ Status IndexedDBBackingStore::DeleteIndex(
     const std::string index_data_end =
         IndexDataKey::EncodeMaxKey(database_id, object_store_id, index_id);
     s = DeleteRangeBasic(leveldb_transaction, index_data_start, index_data_end,
-                         true, &delete_count);
+                         true);
   }
 
   if (!s.ok())
