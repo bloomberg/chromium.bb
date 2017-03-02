@@ -64,19 +64,16 @@
       </div>
       <div class="list-frame menu-content vertical-list" id="listContainer">
         <template is="dom-repeat" items="[[sites]]">
-          <div class="list-item">
-            <div class="start layout horizontal center" on-tap="onOriginTap_"
-                actionable$="[[enableSiteSettings_]]">
-              <div class="favicon-image"
-                  style$="[[computeSiteIcon(item.origin)]]">
-              </div>
-              <div class="middle">
-                <div class="selectable">[[item.displayName]]</div>
+          <div class="list-item" actionable$="[[enableSiteSettings_]]" on-tap="onOriginTap_">
+            <div class="favicon-image"
+                style$="[[computeSiteIcon(item.origin)]]">
+            </div>
+            <div class="middle no-min-width">
+              <div class="selectable text-elide">[[item.displayName]]</div>
 
-                <!-- This div must not contain extra whitespace. -->
-                <div class="selectable secondary" id="siteDescription"
-                    >[[computeSiteDescription_(item)]]</div>
-              </div>
+              <!-- This div must not contain extra whitespace. -->
+              <div class="selectable secondary text-elide" id="siteDescription"
+                  >[[computeSiteDescription_(item)]]</div>
             </div>
 
             <template is="dom-if" if="[[!!computeIconControlledBy_(item)]]">
