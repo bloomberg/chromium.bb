@@ -470,6 +470,7 @@
       'network/network_cert_migrator_unittest.cc',
       'network/network_change_notifier_chromeos_unittest.cc',
       'network/network_configuration_handler_unittest.cc',
+      'network/network_connect_unittest.cc',
       'network/network_connection_handler_unittest.cc',
       'network/network_device_handler_unittest.cc',
       'network/network_sms_handler_unittest.cc',
