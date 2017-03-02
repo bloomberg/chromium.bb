@@ -45,7 +45,8 @@ class CoreOobeHandler : public BaseScreenHandler,
     virtual void OnCurrentScreenChanged(OobeScreen screen) = 0;
   };
 
-  explicit CoreOobeHandler(OobeUI* oobe_ui);
+  explicit CoreOobeHandler(OobeUI* oobe_ui,
+                           JSCallsContainer* js_calls_container);
   ~CoreOobeHandler() override;
 
   void SetDelegate(Delegate* delegate);
@@ -80,23 +81,6 @@ class CoreOobeHandler : public BaseScreenHandler,
   void UpdateShutdownAndRebootVisibility(bool reboot_on_shutdown);
 
  private:
-  // Calls javascript method.
-  //
-  // Note that the Args template parameter pack should consist of types
-  // convertible to base::Value.
-  template <typename... Args>
-  void ExecuteDeferredJSCall(const std::string& function_name,
-                             std::unique_ptr<Args>... args);
-
-  // Calls javascript method if the instance is already initialized, or defers
-  // the call until it gets initialized.
-  template <typename... Args>
-  void CallJSOrDefer(const std::string& function_name, const Args&... args);
-
-  // Executes javascript calls that were deferred while the instance was not
-  // initialized yet.
-  void ExecuteDeferredJSCalls();
-
   // CoreOobeActor implementation:
   void ShowSignInError(int login_attempts,
                        const std::string& error_text,
@@ -167,16 +151,6 @@ class CoreOobeHandler : public BaseScreenHandler,
   // Notification of a change in the accessibility settings.
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
-
-  // Whether the instance is initialized.
-  //
-  // The instance becomes initialized after the corresponding message is
-  // received from javascript side.
-  bool is_initialized_ = false;
-
-  // Javascript calls that have been deferred while the instance was not
-  // initialized yet.
-  std::vector<base::Closure> deferred_js_calls_;
 
   // Owner of this handler.
   OobeUI* oobe_ui_ = nullptr;

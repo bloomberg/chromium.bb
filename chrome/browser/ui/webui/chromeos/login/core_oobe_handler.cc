@@ -55,8 +55,12 @@ namespace chromeos {
 
 // Note that show_oobe_ui_ defaults to false because WizardController assumes
 // OOBE UI is not visible by default.
-CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
-    : oobe_ui_(oobe_ui), version_info_updater_(this) {
+CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
+                                 JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(js_calls_container),
+      oobe_ui_(oobe_ui),
+      version_info_updater_(this) {
+  DCHECK(js_calls_container);
   set_call_js_prefix(kJsScreenPath);
   if (!ash_util::IsRunningInMash()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
@@ -164,37 +168,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleSetOobeBootstrappingSlave);
 }
 
-template <typename... Args>
-void CoreOobeHandler::ExecuteDeferredJSCall(const std::string& function_name,
-                                            std::unique_ptr<Args>... args) {
-  CallJS(function_name, *args...);
-}
-
-template <typename... Args>
-void CoreOobeHandler::CallJSOrDefer(const std::string& function_name,
-                                    const Args&... args) {
-  if (is_initialized_) {
-    CallJS(function_name, args...);
-  } else {
-    // Note that std::conditional is used here in order to obtain a sequence of
-    // base::Value types with the length equal to sizeof...(Args); the C++
-    // template parameter pack expansion rules require that the name of the
-    // parameter pack appears in the pattern, even though the elements of the
-    // Args pack are not actually in this code.
-    deferred_js_calls_.push_back(base::Bind(
-        &CoreOobeHandler::ExecuteDeferredJSCall<
-            typename std::conditional<true, base::Value, Args>::type...>,
-        base::Unretained(this), function_name,
-        base::Passed(::login::MakeValue(args).CreateDeepCopy())...));
-  }
-}
-
-void CoreOobeHandler::ExecuteDeferredJSCalls() {
-  for (const auto& deferred_js_call : deferred_js_calls_)
-    deferred_js_call.Run();
-  deferred_js_calls_.clear();
-}
-
 void CoreOobeHandler::ShowSignInError(
     int login_attempts,
     const std::string& error_text,
@@ -295,8 +268,6 @@ void CoreOobeHandler::SetClientAreaSize(int width, int height) {
 }
 
 void CoreOobeHandler::HandleInitialized() {
-  DCHECK(!is_initialized_);
-  is_initialized_ = true;
   ExecuteDeferredJSCalls();
   oobe_ui_->InitializeHandlers();
 }

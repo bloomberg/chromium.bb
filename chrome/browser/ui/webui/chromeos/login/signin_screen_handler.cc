@@ -291,8 +291,10 @@ SigninScreenHandler::SigninScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen,
     CoreOobeView* core_oobe_view,
-    GaiaScreenHandler* gaia_screen_handler)
-    : network_state_informer_(network_state_informer),
+    GaiaScreenHandler* gaia_screen_handler,
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(js_calls_container),
+      network_state_informer_(network_state_informer),
       error_screen_(error_screen),
       core_oobe_view_(core_oobe_view),
       caps_lock_enabled_(chromeos::input_method::InputMethodManager::Get()
@@ -306,6 +308,7 @@ SigninScreenHandler::SigninScreenHandler(
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
   DCHECK(core_oobe_view_);
+  DCHECK(js_calls_container);
   gaia_screen_handler_->set_signin_screen_handler(this);
   network_state_informer_->AddObserver(this);
 
@@ -1136,7 +1139,7 @@ void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
 
 void SigninScreenHandler::OnTouchViewToggled(bool enabled) {
   touch_view_enabled_ = enabled;
-  CallJS("login.AccountPickerScreen.setTouchViewState", enabled);
+  CallJSOrDefer("login.AccountPickerScreen.setTouchViewState", enabled);
 }
 
 bool SigninScreenHandler::ShouldLoadGaia() const {

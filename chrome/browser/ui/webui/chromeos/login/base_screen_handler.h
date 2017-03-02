@@ -32,11 +32,40 @@ namespace chromeos {
 class BaseScreen;
 class OobeUI;
 
+// A helper class to store deferred Javascript calls, shared by subclasses of
+// BaseScreenHandler.
+class JSCallsContainer {
+ public:
+  JSCallsContainer();
+  ~JSCallsContainer();
+
+  // Used to decide whether the JS call should be deferred.
+  bool is_initialized() { return is_initialized_; }
+
+  // Used to mark the instance as intialized.
+  void mark_initialized() { is_initialized_ = true; }
+
+  // Used to add deferred calls to.
+  std::vector<base::Closure>& deferred_js_calls() { return deferred_js_calls_; }
+
+ private:
+  // Whether the instance is initialized.
+  //
+  // The instance becomes initialized after the corresponding message is
+  // received from Javascript side.
+  bool is_initialized_ = false;
+
+  // Javascript calls that have been deferred while the instance was not
+  // initialized yet.
+  std::vector<base::Closure> deferred_js_calls_;
+};
+
 // Base class for the OOBE/Login WebUI handlers.
 class BaseScreenHandler : public content::WebUIMessageHandler,
                           public ModelViewChannel {
  public:
   BaseScreenHandler();
+  explicit BaseScreenHandler(JSCallsContainer* js_calls_container);
   ~BaseScreenHandler() override;
 
   // Gets localized strings to be used on the page.
@@ -122,6 +151,29 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
         ::login::MakeValue(arg4));
   }
 
+  template <typename... Args>
+  void CallJSOrDefer(const std::string& function_name, const Args&... args) {
+    DCHECK(js_calls_container_);
+    if (js_calls_container_->is_initialized()) {
+      CallJS(function_name, args...);
+    } else {
+      // Note that std::conditional is used here in order to obtain a sequence
+      // of base::Value types with the length equal to sizeof...(Args); the C++
+      // template parameter pack expansion rules require that the name of the
+      // parameter pack appears in the pattern, even though the elements of the
+      // Args pack are not actually in this code.
+      js_calls_container_->deferred_js_calls().push_back(base::Bind(
+          &BaseScreenHandler::ExecuteDeferredJSCall<
+              typename std::conditional<true, base::Value, Args>::type...>,
+          base::Unretained(this), function_name,
+          base::Passed(::login::MakeValue(args).CreateDeepCopy())...));
+    }
+  }
+
+  // Executes Javascript calls that were deferred while the instance was not
+  // initialized yet.
+  void ExecuteDeferredJSCalls();
+
   // Shortcut methods for adding WebUI callbacks.
   template<typename T>
   void AddRawCallback(const std::string& name,
@@ -169,6 +221,16 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
   void SetBaseScreen(BaseScreen* base_screen);
 
  private:
+  // Calls Javascript method.
+  //
+  // Note that the Args template parameter pack should consist of types
+  // convertible to base::Value.
+  template <typename... Args>
+  void ExecuteDeferredJSCall(const std::string& function_name,
+                             std::unique_ptr<Args>... args) {
+    CallJS(function_name, *args...);
+  }
+
   // Returns full name of JS method based on screen and method
   // names.
   std::string FullMethodPath(const std::string& method) const;
@@ -196,6 +258,8 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
 
   // Pending changes to context which will be sent when the page will be ready.
   base::DictionaryValue pending_context_changes_;
+
+  JSCallsContainer* js_calls_container_ = nullptr;  // non-owning pointers.
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreenHandler);
 };

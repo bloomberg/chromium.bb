@@ -260,6 +260,10 @@ class OobeUI : public content::WebUIController,
 
   std::unique_ptr<ash::ScreenDimmer> screen_dimmer_;
 
+  // Store the deferred JS calls before the screen handler instance is
+  // initialized.
+  std::unique_ptr<JSCallsContainer> js_calls_container;
+
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };
 

@@ -213,7 +213,10 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
 
-  auto core_handler = base::MakeUnique<CoreOobeHandler>(this);
+  js_calls_container = base::MakeUnique<JSCallsContainer>();
+
+  auto core_handler =
+      base::MakeUnique<CoreOobeHandler>(this, js_calls_container.get());
   core_handler_ = core_handler.get();
   AddScreenHandler(std::move(core_handler));
   core_handler_->SetDelegate(this);
@@ -315,7 +318,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   auto signin_screen_handler = base::MakeUnique<SigninScreenHandler>(
       network_state_informer_, error_screen, core_handler_,
-      gaia_screen_handler_);
+      gaia_screen_handler_, js_calls_container.get());
   signin_screen_handler_ = signin_screen_handler.get();
   AddScreenHandler(std::move(signin_screen_handler));
 

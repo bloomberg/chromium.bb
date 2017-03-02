@@ -231,7 +231,8 @@ class SigninScreenHandler
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen,
       CoreOobeView* core_oobe_view,
-      GaiaScreenHandler* gaia_screen_handler);
+      GaiaScreenHandler* gaia_screen_handler,
+      JSCallsContainer* js_calls_container);
   ~SigninScreenHandler() override;
 
   static std::string GetUserLRUInputMethod(const std::string& username);

@@ -19,7 +19,14 @@ namespace {
 const char kMethodContextChanged[] = "contextChanged";
 }  // namespace
 
+JSCallsContainer::JSCallsContainer() = default;
+
+JSCallsContainer::~JSCallsContainer() = default;
+
 BaseScreenHandler::BaseScreenHandler() = default;
+
+BaseScreenHandler::BaseScreenHandler(JSCallsContainer* js_calls_container)
+    : js_calls_container_(js_calls_container) {}
 
 BaseScreenHandler::~BaseScreenHandler() {
   if (base_screen_)
@@ -119,6 +126,14 @@ void BaseScreenHandler::HandleContextChanged(
     const base::DictionaryValue* diff) {
   if (diff && base_screen_)
     base_screen_->OnContextChanged(*diff);
+}
+
+void BaseScreenHandler::ExecuteDeferredJSCalls() {
+  DCHECK(!js_calls_container_->is_initialized());
+  js_calls_container_->mark_initialized();
+  for (const auto& deferred_js_call : js_calls_container_->deferred_js_calls())
+    deferred_js_call.Run();
+  js_calls_container_->deferred_js_calls().clear();
 }
 
 }  // namespace chromeos
