@@ -144,11 +144,11 @@ _python_arch_metric = ts_mon.StringMetric(
     'architecture on this machine')
 
 
-def get_uptime():
+def collect_uptime():
   _uptime_metric.set(int(time.time() - BOOT_TIME))
 
 
-def get_cpu_info():
+def collect_cpu_info():
   _cpu_count_metric.set(psutil.cpu_count())
 
   times = psutil.cpu_times_percent()
@@ -156,16 +156,16 @@ def get_cpu_info():
     _cpu_time_metric.set(getattr(times, mode), {'mode': mode})
 
 
-def get_disk_info(mountpoints=None):
+def collect_disk_info(mountpoints=None):
   if mountpoints is None:
     mountpoints = [disk.mountpoint for disk in psutil.disk_partitions()]
   for mountpoint in mountpoints:
-    _get_disk_info_single(mountpoint)
-    _get_fs_inode_info(mountpoint)
-  _get_disk_io_info()
+    _collect_disk_info_single(mountpoint)
+    _collect_fs_inode_info(mountpoint)
+  _collect_disk_io_info()
 
 
-def _get_disk_info_single(mountpoint):
+def _collect_disk_info_single(mountpoint):
   fields = {'path': mountpoint}
 
   try:
@@ -183,17 +183,17 @@ def _get_disk_info_single(mountpoint):
 
   # inode counts are only available on Unix.
   if os.name == 'posix':
-    _get_fs_inode_info(mountpoint)
+    _collect_fs_inode_info(mountpoint)
 
 
-def _get_fs_inode_info(mountpoint):
+def _collect_fs_inode_info(mountpoint):
   fields = {'path': mountpoint}
   stats = os.statvfs(mountpoint)
   _inodes_free_metric.set(stats.f_favail, fields=fields)
   _inodes_total_metric.set(stats.f_files, fields=fields)
 
 
-def _get_disk_io_info():
+def _collect_disk_io_info():
   try:
     disk_counters = psutil.disk_io_counters(perdisk=True).iteritems()
   except RuntimeError as ex:
@@ -209,7 +209,7 @@ def _get_disk_io_info():
       _disk_write_metric.set(counters.write_bytes, fields=fields)
 
 
-def get_mem_info():
+def collect_mem_info():
   # We don't report mem.used because (due to virtual memory) it is not
   # useful.
   mem = psutil.virtual_memory()
@@ -217,7 +217,7 @@ def get_mem_info():
   _mem_total_metric.set(mem.total)
 
 
-def get_net_info():
+def collect_net_info():
   metric_counter_names = [
       (_net_up_metric, 'bytes_sent'),
       (_net_down_metric, 'bytes_recv'),
@@ -244,7 +244,7 @@ def get_net_info():
         logger.warning(str(ex))
 
 
-def get_proc_info():
+def collect_proc_info():
   autoserv_count = 0
   sysmon_count = 0
   total = 0
@@ -279,7 +279,7 @@ def _is_sysmon(proc):
   return proc.cmdline()[:3] == ['python', '-m', 'chromite.scripts.sysmon']
 
 
-def get_load_avg():
+def collect_load_avg():
   try:
     avg1, avg5, avg15 = os.getloadavg()
   except OSError:
@@ -290,5 +290,5 @@ def get_load_avg():
     _load_average_metric.set(avg15, fields={'minutes': 15})
 
 
-def get_unix_time():
+def collect_unix_time():
   _unix_time_metric.set(int(time.time() * 1000))

@@ -29,30 +29,30 @@ class _MetricCollector(object):
   """Metric collector class."""
 
   def __init__(self, collect_prod_hosts=False):
-    self._get_osinfo = _TimedCallback(
-        callback=osinfo_metrics.get_os_info,
+    self._collect_osinfo = _TimedCallback(
+        callback=osinfo_metrics.collect_os_info,
         interval=60 * 60)
     if collect_prod_hosts:
       logger.info('Enabling prod host metric collection.')
-      self._get_prod_hosts = _TimedCallback(
-          callback=prod_metrics.get_prod_hosts,
+      self._collect_prod_hosts = _TimedCallback(
+          callback=prod_metrics.collect_prod_hosts,
           interval=10 * 60)
     else:
-      self._get_prod_hosts = lambda: None
+      self._collect_prod_hosts = lambda: None
 
   def __call__(self):
     """Collect metrics."""
-    system_metrics.get_uptime()
-    system_metrics.get_cpu_info()
-    system_metrics.get_disk_info()
-    system_metrics.get_mem_info()
-    system_metrics.get_net_info()
-    system_metrics.get_proc_info()
-    system_metrics.get_load_avg()
-    puppet_metrics.get_puppet_summary()
-    self._get_prod_hosts()
-    self._get_osinfo()
-    system_metrics.get_unix_time()  # must be just before flush
+    system_metrics.collect_uptime()
+    system_metrics.collect_cpu_info()
+    system_metrics.collect_disk_info()
+    system_metrics.collect_mem_info()
+    system_metrics.collect_net_info()
+    system_metrics.collect_proc_info()
+    system_metrics.collect_load_avg()
+    puppet_metrics.collect_puppet_summary()
+    self._collect_prod_hosts()
+    self._collect_osinfo()
+    system_metrics.collect_unix_time()  # must be just before flush
     metrics.Flush()
 
   @property

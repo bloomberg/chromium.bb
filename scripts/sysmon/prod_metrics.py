@@ -139,6 +139,6 @@ class _LoggingSink(object):
       logger.debug('Server: %r', server)
 
 
-get_prod_hosts = _ProdHostReporter(
+collect_prod_hosts = _ProdHostReporter(
     source=_AtestSource(_ATEST_PROGRAM),
     sinks=(_TsMonSink(_METRIC_ROOT_PATH), _LoggingSink()))
