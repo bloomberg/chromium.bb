@@ -78,37 +78,31 @@ public interface WebContents extends Parcelable {
      */
     void stop();
 
-    // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
      * Cut the selected content.
      */
     void cut();
 
-    // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
      * Copy the selected content.
      */
     void copy();
 
-    // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
      * Paste content from the clipboard.
      */
     void paste();
 
-    // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
      * Replace the selected text with the {@code word}.
      */
     void replace(String word);
 
-    // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
      * Select all content.
      */
     void selectAll();
 
-    // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
      * Clear the selection. This includes the cursor which is a zero-sized selection, and keyboard
      * will be hidden as a result.
@@ -125,17 +119,10 @@ public interface WebContents extends Parcelable {
      */
     void onShow();
 
-    // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
      * Removes handles used in text selection.
      */
     void dismissTextHandles();
-
-    // TODO (amaralp): Only used in content. Should be moved out of public interface.
-    /**
-     * Shows paste popup menu at point
-     */
-    void showContextMenuAtPoint(int x, int y);
 
     /**
      * Suspends all media players for this WebContents.  Note: There may still
