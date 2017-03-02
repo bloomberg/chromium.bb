@@ -166,7 +166,7 @@ const base::Feature kRafAlignedMouseInputEvents{
 
 // RAF aligned touch input events support.
 const base::Feature kRafAlignedTouchInputEvents{
-    "RafAlignedTouchInput", base::FEATURE_ENABLED_BY_DEFAULT};
+    "RafAlignedTouchInput", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.
