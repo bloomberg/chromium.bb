@@ -20,6 +20,7 @@ sys.path.append(os.path.join(_CATAPULT_DIR, 'devil'))
 from devil.android import device_utils
 from devil.android import flag_changer
 from devil.android import forwarder
+from devil.android.sdk import adb_wrapper
 from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
@@ -318,7 +319,8 @@ def RemoteWprHost(device, wpr_archive_path, record=False,
   certutils.write_dummy_ca_cert(*certutils.generate_dummy_ca_cert(),
                                 cert_path=wpr_ca_cert_path)
   device_cert_util = adb_install_cert.AndroidCertInstaller(
-      device.adb.GetDeviceSerial(), None, wpr_ca_cert_path)
+      device.adb.GetDeviceSerial(), None, wpr_ca_cert_path,
+      adb_wrapper.AdbWrapper.GetAdbPath())
   device_cert_util.install_cert(overwrite_cert=True)
   try:
     # Set up WPR server
