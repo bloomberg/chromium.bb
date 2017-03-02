@@ -19,11 +19,14 @@
 #  <http://www.gnu.org/licenses/>.
 #
 #--------------------------------
-# Bu dosya, Braille Teknik Ltd. - Uğur Gürbüz tarafından hazırlanmıştır. www.brailleteknik.com
+# Bu dosya, Braille Teknik Ltd. - Uğur Gürbüz tarafından
+# hazırlanmıştır. www.brailleteknik.com
 #
-# Bu dosyanın içeriği, yanlızca izin verilen firma ya da şahıslar tarafından kullanılabilir; ücretli projelerde izinsiz kullanımı yasaktır.
+# Bu dosyanın içeriği, yanlızca izin verilen firma ya da şahıslar
+# tarafından kullanılabilir; ücretli projelerde izinsiz kullanımı
+# yasaktır.
 #
-# ugur.gurbuz39@brailleteknik.com
+# ugur.gurbuz@brailleteknik.com
 # Son Değiştirilme Tarihi 23.10.2015
 include litdigits6Dots.uti
 
