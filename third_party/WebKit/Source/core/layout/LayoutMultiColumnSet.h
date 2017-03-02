@@ -136,10 +136,10 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   LayoutMultiColumnSet* nextSiblingMultiColumnSet() const;
   LayoutMultiColumnSet* previousSiblingMultiColumnSet() const;
 
-  // Return true if we have a fragmentainer group that can hold a column at the
-  // specified flow thread block offset.
-  bool hasFragmentainerGroupForColumnAt(LayoutUnit bottomOffsetInFlowThread,
-                                        PageBoundaryRule) const;
+  // Return true if we need to create additional fragmentainer group(s) to hold
+  // a column at the specified flow thread block offset.
+  bool needsNewFragmentainerGroupAt(LayoutUnit bottomOffsetInFlowThread,
+                                    PageBoundaryRule) const;
 
   MultiColumnFragmentainerGroup& appendNewFragmentainerGroup();
 

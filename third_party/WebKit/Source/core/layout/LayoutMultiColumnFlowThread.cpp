@@ -627,19 +627,18 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(
   if (!columnSet->newFragmentainerGroupsAllowed())
     return;
 
-  if (!columnSet->hasFragmentainerGroupForColumnAt(offsetInFlowThread,
-                                                   pageBoundaryRule)) {
-    FragmentationContext* enclosingFragmentationContext =
-        this->enclosingFragmentationContext();
-    // Not nested. We'll never need more rows than the one we already have then.
-    if (!enclosingFragmentationContext)
-      return;
-    ASSERT(!isLayoutPagedFlowThread());
+  if (columnSet->needsNewFragmentainerGroupAt(offsetInFlowThread,
+                                              pageBoundaryRule)) {
+    // We should never create additional fragmentainer groups unless we're in a
+    // nested fragmentation context.
+    DCHECK(enclosingFragmentationContext());
+
+    DCHECK(!isLayoutPagedFlowThread());
 
     // We have run out of columns here, so we need to add at least one more row
     // to hold more columns.
     LayoutMultiColumnFlowThread* enclosingFlowThread =
-        enclosingFragmentationContext->associatedFlowThread();
+        enclosingFragmentationContext()->associatedFlowThread();
     do {
       if (enclosingFlowThread) {
         // When we add a new row here, it implicitly means that we're inserting
@@ -667,8 +666,8 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(
       ASSERT(newRow.logicalHeight() > 0);
       if (newRow.logicalHeight() <= 0)
         break;
-    } while (!columnSet->hasFragmentainerGroupForColumnAt(offsetInFlowThread,
-                                                          pageBoundaryRule));
+    } while (columnSet->needsNewFragmentainerGroupAt(offsetInFlowThread,
+                                                     pageBoundaryRule));
   }
 }
 
