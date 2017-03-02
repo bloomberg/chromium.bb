@@ -58,13 +58,11 @@ namespace blink {
 
 GraphicsContext::GraphicsContext(PaintController& paintController,
                                  DisabledMode disableContextOrPainting,
-                                 SkMetaData* metaData,
-                                 ColorBehavior colorBehavior)
+                                 SkMetaData* metaData)
     : m_canvas(nullptr),
       m_paintController(paintController),
       m_paintStateStack(),
       m_paintStateIndex(0),
-      m_colorBehavior(colorBehavior),
 #if DCHECK_IS_ON()
       m_layerCount(0),
       m_disableDestructionChecks(false),
@@ -828,7 +826,7 @@ void GraphicsContext::drawImage(
   imageFlags.setFilterQuality(computeFilterQuality(image, dest, src));
   imageFlags.setAntiAlias(shouldAntialias());
   image->draw(m_canvas, imageFlags, dest, src, shouldRespectImageOrientation,
-              Image::ClampImageToSourceRect, m_colorBehavior);
+              Image::ClampImageToSourceRect);
   m_paintController.setImagePainted();
 }
 
@@ -864,7 +862,7 @@ void GraphicsContext::drawImageRRect(
   if (useShader) {
     const SkMatrix localMatrix = SkMatrix::MakeRectToRect(
         visibleSrc, dest.rect(), SkMatrix::kFill_ScaleToFit);
-    useShader = image->applyShader(imageFlags, localMatrix, m_colorBehavior);
+    useShader = image->applyShader(imageFlags, localMatrix);
   }
 
   if (useShader) {
@@ -875,7 +873,7 @@ void GraphicsContext::drawImageRRect(
     PaintCanvasAutoRestore autoRestore(m_canvas, true);
     m_canvas->clipRRect(dest, imageFlags.isAntiAlias());
     image->draw(m_canvas, imageFlags, dest.rect(), srcRect, respectOrientation,
-                Image::ClampImageToSourceRect, m_colorBehavior);
+                Image::ClampImageToSourceRect);
   }
 
   m_paintController.setImagePainted();

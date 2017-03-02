@@ -115,8 +115,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode,
-            const ColorBehavior&) override;
+            ImageClampingMode) override;
 
   size_t currentFrame() const { return m_currentFrame; }
   size_t frameCount();

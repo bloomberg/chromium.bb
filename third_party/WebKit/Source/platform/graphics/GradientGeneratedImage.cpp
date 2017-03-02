@@ -36,10 +36,7 @@ void GradientGeneratedImage::draw(PaintCanvas* canvas,
                                   const FloatRect& destRect,
                                   const FloatRect& srcRect,
                                   RespectImageOrientationEnum,
-                                  ImageClampingMode,
-                                  const ColorBehavior& colorBehavior) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/672306
+                                  ImageClampingMode) {
   SkRect visibleSrcRect = srcRect;
   if (!visibleSrcRect.intersect(
           SkRect::MakeIWH(m_size.width(), m_size.height())))
@@ -66,10 +63,7 @@ void GradientGeneratedImage::drawTile(GraphicsContext& context,
 }
 
 bool GradientGeneratedImage::applyShader(PaintFlags& flags,
-                                         const SkMatrix& localMatrix,
-                                         const ColorBehavior& colorBehavior) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/672306
+                                         const SkMatrix& localMatrix) {
   DCHECK(m_gradient);
   m_gradient->applyToFlags(flags, localMatrix);
 

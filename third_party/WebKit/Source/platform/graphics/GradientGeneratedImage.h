@@ -44,7 +44,7 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
 
   ~GradientGeneratedImage() override {}
 
-  bool applyShader(PaintFlags&, const SkMatrix&, const ColorBehavior&) override;
+  bool applyShader(PaintFlags&, const SkMatrix&) override;
 
  protected:
   void draw(PaintCanvas*,
@@ -52,8 +52,7 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
-            ImageClampingMode,
-            const ColorBehavior&) override;
+            ImageClampingMode) override;
   void drawTile(GraphicsContext&, const FloatRect&) override;
 
   GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)

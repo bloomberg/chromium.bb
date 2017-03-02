@@ -70,11 +70,9 @@ class PLATFORM_EXPORT GraphicsContext {
                           // the context from performance tests.
   };
 
-  explicit GraphicsContext(
-      PaintController&,
-      DisabledMode = NothingDisabled,
-      SkMetaData* = 0,
-      ColorBehavior = ColorBehavior::transformToGlobalTarget());
+  explicit GraphicsContext(PaintController&,
+                           DisabledMode = NothingDisabled,
+                           SkMetaData* = 0);
 
   ~GraphicsContext();
 
@@ -82,7 +80,6 @@ class PLATFORM_EXPORT GraphicsContext {
   const PaintCanvas* canvas() const { return m_canvas; }
 
   PaintController& getPaintController() { return m_paintController; }
-  const ColorBehavior& getColorBehavior() const { return m_colorBehavior; }
 
   bool contextDisabled() const { return m_disabledState; }
 
@@ -435,8 +432,6 @@ class PLATFORM_EXPORT GraphicsContext {
   PaintRecorder m_paintRecorder;
 
   SkMetaData m_metaData;
-
-  const ColorBehavior m_colorBehavior;
 
 #if DCHECK_IS_ON()
   int m_layerCount;

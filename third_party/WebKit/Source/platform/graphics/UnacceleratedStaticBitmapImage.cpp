@@ -34,10 +34,7 @@ void UnacceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
                                           const FloatRect& dstRect,
                                           const FloatRect& srcRect,
                                           RespectImageOrientationEnum,
-                                          ImageClampingMode clampMode,
-                                          const ColorBehavior& colorBehavior) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/672306
+                                          ImageClampingMode clampMode) {
   StaticBitmapImage::drawHelper(canvas, flags, dstRect, srcRect, clampMode,
                                 m_image);
 }

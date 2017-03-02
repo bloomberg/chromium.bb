@@ -266,11 +266,11 @@ void BitmapImage::draw(
     const FloatRect& dstRect,
     const FloatRect& srcRect,
     RespectImageOrientationEnum shouldRespectImageOrientation,
-    ImageClampingMode clampMode,
-    const ColorBehavior& colorBehavior) {
+    ImageClampingMode clampMode) {
   TRACE_EVENT0("skia", "BitmapImage::draw");
 
-  sk_sp<SkImage> image = imageForCurrentFrame(colorBehavior);
+  sk_sp<SkImage> image =
+      imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
   if (!image)
     return;  // It's too early and we don't have an image yet.
 

@@ -60,8 +60,7 @@ class TestImageAnimated : public Image {
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode,
-            const ColorBehavior&) override {}
+            ImageClampingMode) override {}
   sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override {
     return nullptr;
   }
@@ -91,8 +90,7 @@ class TestImageWithContrast : public Image {
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode,
-            const ColorBehavior&) override {}
+            ImageClampingMode) override {}
 
   bool isBitmapImage() const override { return true; }
   sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override {
@@ -126,8 +124,7 @@ class TestImageLowQuality : public Image {
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode,
-            const ColorBehavior&) override {}
+            ImageClampingMode) override {}
 
   bool isBitmapImage() const override { return true; }
   sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override {

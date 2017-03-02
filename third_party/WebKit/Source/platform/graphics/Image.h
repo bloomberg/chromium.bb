@@ -165,12 +165,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                     const FloatRect& dstRect,
                     const FloatRect& srcRect,
                     RespectImageOrientationEnum,
-                    ImageClampingMode,
-                    const ColorBehavior&) = 0;
+                    ImageClampingMode) = 0;
 
-  virtual bool applyShader(PaintFlags&,
-                           const SkMatrix& localMatrix,
-                           const ColorBehavior&);
+  virtual bool applyShader(PaintFlags&, const SkMatrix& localMatrix);
 
   // Compute the tile which contains a given point (assuming a repeating tile
   // grid). The point and returned value are in destination grid space.

@@ -111,18 +111,11 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       m_contentsLayerId(0),
       m_scrollableArea(nullptr),
       m_renderingContext3d(0),
-      m_colorBehavior(ColorBehavior::transformToGlobalTarget()),
       m_hasPreferredRasterBounds(false) {
 #if DCHECK_IS_ON()
   if (m_client)
     m_client->verifyNotPainting();
 #endif
-
-  // In true color mode, no inputs are adjusted, and all colors are converted
-  // at rasterization time.
-  if (RuntimeEnabledFeatures::trueColorRenderingEnabled())
-    m_colorBehavior = ColorBehavior::tag();
-
   m_contentLayerDelegate = WTF::makeUnique<ContentLayerDelegate>(this);
   m_layer = Platform::current()->compositorSupport()->createContentLayer(
       m_contentLayerDelegate.get());
@@ -334,8 +327,7 @@ bool GraphicsLayer::paintWithoutCommit(
     return false;
   }
 
-  GraphicsContext context(getPaintController(), disabledMode, nullptr,
-                          m_colorBehavior);
+  GraphicsContext context(getPaintController(), disabledMode, nullptr);
 
   m_previousInterestRect = *interestRect;
   m_client->paintContents(this, context, m_paintingPhase, *interestRect);
@@ -1072,8 +1064,9 @@ void GraphicsLayer::setContentsRect(const IntRect& rect) {
 void GraphicsLayer::setContentsToImage(
     Image* image,
     RespectImageOrientationEnum respectImageOrientation) {
-  sk_sp<SkImage> skImage =
-      image ? image->imageForCurrentFrame(m_colorBehavior) : nullptr;
+  sk_sp<SkImage> skImage = image ? image->imageForCurrentFrame(
+                                       ColorBehavior::transformToGlobalTarget())
+                                 : nullptr;
 
   if (image && skImage && image->isBitmapImage()) {
     if (respectImageOrientation == RespectImageOrientation) {
@@ -1208,8 +1201,7 @@ sk_sp<PaintRecord> GraphicsLayer::captureRecord() {
 
   IntSize intSize = expandedIntSize(size());
   GraphicsContext graphicsContext(getPaintController(),
-                                  GraphicsContext::NothingDisabled, nullptr,
-                                  m_colorBehavior);
+                                  GraphicsContext::NothingDisabled, nullptr);
   graphicsContext.beginRecording(IntRect(IntPoint(0, 0), intSize));
   getPaintController().paintArtifact().replay(graphicsContext);
   return graphicsContext.endRecording();

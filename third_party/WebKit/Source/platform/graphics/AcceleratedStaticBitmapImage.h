@@ -46,8 +46,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode,
-            const ColorBehavior&) override;
+            ImageClampingMode) override;
 
   void copyToTexture(WebGraphicsContext3DProvider*,
                      GLuint destTextureId,

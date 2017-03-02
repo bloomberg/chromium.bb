@@ -4629,8 +4629,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(
   // TODO(ccameron): WebGL should produce sRGB images.
   // https://crbug.com/672299
   image->draw(buf->canvas(), flags, destRect, srcRect,
-              DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect,
-              ColorBehavior::transformToGlobalTarget());
+              DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
   return buf->newImageSnapshot(PreferNoAcceleration,
                                SnapshotReasonWebGLDrawImageIntoBuffer);
 }

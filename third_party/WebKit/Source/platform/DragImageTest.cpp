@@ -82,8 +82,7 @@ class TestImage : public Image {
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
-            ImageClampingMode,
-            const ColorBehavior&) override {
+            ImageClampingMode) override {
     // Image pure virtual stub.
   }
 

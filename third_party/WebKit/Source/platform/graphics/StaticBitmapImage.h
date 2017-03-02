@@ -28,8 +28,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode,
-            const ColorBehavior&) = 0;
+            ImageClampingMode) = 0;
 
   // Methods have common implementation for all sub-classes
   bool currentFrameIsComplete() override { return true; }

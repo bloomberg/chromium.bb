@@ -1082,7 +1082,7 @@ void BaseRenderingContext2D::drawImageInternal(PaintCanvas* c,
   if (!imageSource->isVideoElement()) {
     imageFlags.setAntiAlias(shouldDrawImageAntialiased(dstRect));
     image->draw(c, imageFlags, dstRect, srcRect, DoNotRespectImageOrientation,
-                Image::DoNotClampImageToSourceRect, drawImageColorBehavior());
+                Image::DoNotClampImageToSourceRect);
   } else {
     c->save();
     c->clipRect(dstRect);

@@ -363,10 +363,7 @@ void SVGImage::draw(PaintCanvas* canvas,
                     const FloatRect& dstRect,
                     const FloatRect& srcRect,
                     RespectImageOrientationEnum shouldRespectImageOrientation,
-                    ImageClampingMode clampMode,
-                    const ColorBehavior& colorBehavior) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/667431
+                    ImageClampingMode clampMode) {
   if (!m_page)
     return;
 

@@ -15,10 +15,7 @@ void PaintGeneratedImage::draw(PaintCanvas* canvas,
                                const FloatRect& destRect,
                                const FloatRect& srcRect,
                                RespectImageOrientationEnum,
-                               ImageClampingMode,
-                               const ColorBehavior& colorBehavior) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/672306
+                               ImageClampingMode) {
   PaintCanvasAutoRestore ar(canvas, true);
   canvas->clipRect(destRect);
   canvas->translate(destRect.x(), destRect.y());
@@ -31,8 +28,6 @@ void PaintGeneratedImage::draw(PaintCanvas* canvas,
 
 void PaintGeneratedImage::drawTile(GraphicsContext& context,
                                    const FloatRect& srcRect) {
-  // TODO(ccameron): This function should not ignore |context|'s color behavior.
-  // https://crbug.com/672306
   context.drawRecord(m_record.get());
 }
 

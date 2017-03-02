@@ -281,8 +281,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void setPreferredRasterBounds(const IntSize&);
   void clearPreferredRasterBounds();
 
-  const ColorBehavior& colorBehavior() const { return m_colorBehavior; }
-
  protected:
   String debugName(cc::Layer*) const;
   bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
@@ -396,8 +394,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   int m_renderingContext3d;
 
   std::unique_ptr<PaintController> m_paintController;
-
-  ColorBehavior m_colorBehavior;
 
   IntRect m_previousInterestRect;
   IntSize m_preferredRasterBounds;

@@ -38,10 +38,7 @@ void SVGImageForContainer::draw(PaintCanvas* canvas,
                                 const FloatRect& dstRect,
                                 const FloatRect& srcRect,
                                 RespectImageOrientationEnum,
-                                ImageClampingMode,
-                                const ColorBehavior& colorBehavior) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/667431
+                                ImageClampingMode) {
   m_image->drawForContainer(canvas, flags, m_containerSize, m_zoom, dstRect,
                             srcRect, m_url);
 }
