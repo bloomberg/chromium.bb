@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import datetime
+import os
 import re
 
 from chromite.lib import cros_logging as logging
@@ -46,32 +47,24 @@ DEVSERVER_IP_RE = re.compile(r'Staging autotest artifacts for .* on devserver '
 NETWORK_RE = re.compile('Returned update_engine error code: ERROR_CODE=37')
 SERVICE_FILE_RE = re.compile('The name org.chromium.UpdateEngine '
                              'was not provided by any .service files')
+MYSQL_IP_RE = re.compile(r'Can\'t connect to MySQL server on '
+                         r'\'(\d+\.\d+\.\d+\.\d+)\'')
+AUTOTEST_TIMEOUT_RE = re.compile(
+    r'autotest_lib.client.common_lib.error.TimeoutException')
 
 
-def GetTestRootCause(job_id, dut):
-  """Attempts to get the root cause of a test failure.
+def ClassifyDUTAutoservLog(log_content):
+  """Attempts to classify any failures in the DUT's autoserv.DEBUG logs.
 
   Args:
-    job_id: Job that failed.
-    dut: DUT that the test was being performed by.
+    log_content: string iterator.
 
   Returns:
     string of root cause, None otherwise.
   """
-  # Currently rely on DUT to root cause any test.
-  if dut is None:
-    return None
+  devserver = 'unknown'
 
-  # Grab autoserv.DEBUG log.
-  gs_path = ('gs://chromeos-autotest-results'
-             '/%(job)s-chromeos-test/%(dut)s/debug/autoserv.DEBUG' % {
-                 'job': job_id,
-                 'dut': dut,
-             })
-  ctx = gs.GSContext()
-  debug_log_content = ctx.Cat(gs_path)
-
-  for line in debug_log_content.splitlines():
+  for line in log_content:
     m = DEVSERVER_IP_RE.search(line)
     if m:
       # saving devserver value for other errors below.
@@ -84,6 +77,89 @@ def GetTestRootCause(job_id, dut):
     m = SERVICE_FILE_RE.search(line)
     if m:
       return 'dot-service'
+
+  return None
+
+def ClassifyDUTTKOParseLog(log_content):
+  """Attempts to classify any failures in the TKO parse .parse.log file.
+
+  Args:
+    log_content: string iterator.
+
+  Returns:
+    string of root cause, None otherwise.
+  """
+  server = 'unknown'
+
+  for line in log_content:
+    m = MYSQL_IP_RE.search(line)
+    if m:
+      # saving devserver value for other errors below.
+      server = m.group(1)
+
+    m = AUTOTEST_TIMEOUT_RE.search(line)
+    if m:
+      return 'TKOParseTimeout: %s' % (server)
+
+  return None
+
+def ClassifyGSFile(gs_path, handler):
+  """Attempts to classify a log file from GS storage.
+
+  Args:
+    gs_path: GS path.
+    handler: Handler which takes log content and returns a classification.
+
+  Returns:
+    result from handler or None if the file cannot be retrieved.
+  """
+  ctx = gs.GSContext()
+  try:
+    log_content = ctx.Cat(gs_path)
+  except gs.GSNoSuchKey:
+    return None
+  return handler(log_content.splitlines())
+
+def GetTestRootCause(job_id, dut):
+  """Attempts to get the root cause of a test failure.
+
+  Args:
+    job_id: Job that failed.
+    dut: Device that was running the test.
+
+  Returns:
+    string with root cause, or None if the root cause is unknown.
+  """
+  test_path = ('gs://chromeos-autotest-results/%(job)s-chromeos-test' %
+               {'job': job_id})
+
+  # DUT is required to access logs.  If not specified, try and
+  # determine it based on contents of test directory.
+  ctx = gs.GSContext()
+  if dut is None:
+    try:
+      files = ctx.LS(test_path)
+    except gs.GSNoSuchKey:
+      return None
+    if len(files) == 0:
+      return None
+    else:
+      base_path = files[0]
+  else:
+    base_path = os.path.join(test_path, dut)
+
+  # Grab autoserv.DEBUG log.
+  classification = ClassifyGSFile(os.path.join(base_path,
+                                               'debug/autoserv.DEBUG'),
+                                  ClassifyDUTAutoservLog)
+  if classification:
+    return classification
+
+  # Grab .parse.log log.
+  classification = ClassifyGSFile(os.path.join(base_path, '.parse.log'),
+                                  ClassifyDUTTKOParseLog)
+  if classification:
+    return classification
 
   return None
 
@@ -255,9 +331,7 @@ def ClassifyTestFailure(log_content):
       # Record the ordering of the test logs so they can be reconciled.
       autotest_name = m.group(1)
       autotest_job_id = m.group(2)
-      if autotest_name not in test_jobs:
-        test_jobs[autotest_name] = []
-      test_jobs[autotest_name].append(autotest_job_id)
+      test_jobs.setdefault(autotest_name, []).append(autotest_job_id)
 
   # Find the root cause for failed test runs.
   root_caused_jobs = set()
