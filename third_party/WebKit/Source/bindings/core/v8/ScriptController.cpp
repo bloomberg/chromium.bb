@@ -252,12 +252,16 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,
   if (!url.protocolIsJavaScript())
     return false;
 
+  const int javascriptSchemeLength = sizeof("javascript:") - 1;
+  String scriptSource = decodeURLEscapeSequences(url.getString())
+                            .substring(javascriptSchemeLength);
+
   bool shouldBypassMainWorldContentSecurityPolicy =
       ContentSecurityPolicy::shouldBypassMainWorld(frame()->document());
   if (!frame()->page() ||
       (!shouldBypassMainWorldContentSecurityPolicy &&
        !frame()->document()->contentSecurityPolicy()->allowJavaScriptURLs(
-           element, frame()->document()->url(),
+           element, scriptSource, frame()->document()->url(),
            eventHandlerPosition().m_line))) {
     return true;
   }
@@ -270,16 +274,13 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,
 
   Document* ownerDocument = frame()->document();
 
-  const int javascriptSchemeLength = sizeof("javascript:") - 1;
-
   bool locationChangeBefore =
       frame()->navigationScheduler().locationChangePending();
 
-  String decodedURL = decodeURLEscapeSequences(url.getString());
   v8::HandleScope handleScope(isolate());
   v8::Local<v8::Value> result = evaluateScriptInMainWorld(
-      ScriptSourceCode(decodedURL.substring(javascriptSchemeLength)),
-      NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
+      ScriptSourceCode(scriptSource), NotSharableCrossOrigin,
+      DoNotExecuteScriptWhenScriptsDisabled);
 
   // If executing script caused this frame to be removed from the page, we
   // don't want to try to replace its document!

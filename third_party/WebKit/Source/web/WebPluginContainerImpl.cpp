@@ -468,16 +468,16 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url,
   if (!frame)
     return WebString();
 
-  if (!m_element->document().contentSecurityPolicy()->allowJavaScriptURLs(
-          m_element, m_element->document().url(), OrdinalNumber())) {
-    return WebString();
-  }
-
   const KURL& kurl = url;
   DCHECK(kurl.protocolIs("javascript"));
 
   String script = decodeURLEscapeSequences(
       kurl.getString().substring(strlen("javascript:")));
+
+  if (!m_element->document().contentSecurityPolicy()->allowJavaScriptURLs(
+          m_element, script, m_element->document().url(), OrdinalNumber())) {
+    return WebString();
+  }
 
   UserGestureIndicator gestureIndicator(
       popupsAllowed ? DocumentUserGestureToken::create(

@@ -18,4 +18,6 @@ dictionary SecurityPolicyViolationEventInit : EventInit {
     unsigned short statusCode;
     long      lineNumber;
     long      columnNumber;
+    
+    [RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] DOMString sample;
 };

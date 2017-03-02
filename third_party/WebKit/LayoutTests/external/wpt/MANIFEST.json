@@ -29777,6 +29777,18 @@
      {}
     ]
    ],
+   "content-security-policy/securitypolicyviolation/script-sample-no-opt-in.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/script-sample-no-opt-in.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/script-sample.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/script-sample.html",
+     {}
+    ]
+   ],
    "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image-from-script.sub.html": [
     [
      "/content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image-from-script.sub.html",
@@ -29798,6 +29810,18 @@
    "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image.sub.html": [
     [
      "/content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/style-sample-no-opt-in.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/style-sample-no-opt-in.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/style-sample.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/style-sample.html",
      {}
     ]
    ],
@@ -58900,6 +58924,14 @@
    "fb7fc789e44d9f17ff508cc9a080c23aec5e1597",
    "testharness"
   ],
+  "content-security-policy/securitypolicyviolation/script-sample-no-opt-in.html": [
+   "44cad18dc963c49062c0f3b7ea7a8951157cbcb7",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/script-sample.html": [
+   "009e5de237b0aa1d3b7e2c100cb8fdf9bb1080a5",
+   "testharness"
+  ],
   "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image-from-script.sub.html": [
    "156d207242f9cfaf200f442a6c7756ad4504f026",
    "testharness"
@@ -58914,6 +58946,14 @@
   ],
   "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image.sub.html": [
    "38b10d421ec3e2e156180db3cfab54291f22074d",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/style-sample-no-opt-in.html": [
+   "b2d6d11fc189d78f5ea623c52e1d1f64fe53a772",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/style-sample.html": [
+   "e570217f560f6e7a8917e79266ac9d2e8ea078f6",
    "testharness"
   ],
   "content-security-policy/securitypolicyviolation/support/inside-worker.sub.js": [

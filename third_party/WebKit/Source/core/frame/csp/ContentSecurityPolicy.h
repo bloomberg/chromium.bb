@@ -134,6 +134,7 @@ class CORE_EXPORT ContentSecurityPolicy
   // as those checks happen in the middle of the navigation algorithm,
   // and we generally don't have access to the responsible element.
   bool allowJavaScriptURLs(Element*,
+                           const String& source,
                            const String& contextURL,
                            const WTF::OrdinalNumber& contextLine,
                            SecurityViolationReportingPolicy =
@@ -339,7 +340,8 @@ class CORE_EXPORT ContentSecurityPolicy
                        LocalFrame* = nullptr,
                        RedirectStatus = RedirectStatus::FollowedRedirect,
                        int contextLine = 0,
-                       Element* = nullptr);
+                       Element* = nullptr,
+                       const String& source = emptyString);
 
   // Called when mixed content is detected on a page; will trigger a violation
   // report if the 'block-all-mixed-content' directive is specified for a

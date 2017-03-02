@@ -50,6 +50,7 @@ class SecurityPolicyViolationEvent final : public Event {
   const String& originalPolicy() const { return m_originalPolicy; }
   const String& disposition() const;
   const String& sourceFile() const { return m_sourceFile; }
+  const String& sample() const { return m_sample; }
   int lineNumber() const { return m_lineNumber; }
   int columnNumber() const { return m_columnNumber; }
   uint16_t statusCode() const { return m_statusCode; }
@@ -73,6 +74,7 @@ class SecurityPolicyViolationEvent final : public Event {
   String m_originalPolicy;
   ContentSecurityPolicyHeaderType m_disposition;
   String m_sourceFile;
+  String m_sample;
   int m_lineNumber;
   int m_columnNumber;
   int m_statusCode;

@@ -46,10 +46,12 @@ class CORE_EXPORT CSPDirectiveList
   }
 
   bool allowJavaScriptURLs(Element*,
+                           const String& source,
                            const String& contextURL,
                            const WTF::OrdinalNumber& contextLine,
                            SecurityViolationReportingPolicy) const;
   bool allowInlineEventHandlers(Element*,
+                                const String& source,
                                 const String& contextURL,
                                 const WTF::OrdinalNumber& contextLine,
                                 SecurityViolationReportingPolicy) const;
@@ -226,7 +228,8 @@ class CORE_EXPORT CSPDirectiveList
                                    const KURL& blockedURL,
                                    const String& contextURL,
                                    const WTF::OrdinalNumber& contextLine,
-                                   Element*) const;
+                                   Element*,
+                                   const String& source) const;
   void reportViolationWithState(
       const String& directiveText,
       const ContentSecurityPolicy::DirectiveType&,
@@ -262,6 +265,7 @@ class CORE_EXPORT CSPDirectiveList
   bool checkInlineAndReportViolation(SourceListDirective*,
                                      const String& consoleMessage,
                                      Element*,
+                                     const String& source,
                                      const String& contextURL,
                                      const WTF::OrdinalNumber& contextLine,
                                      bool isScript,

@@ -66,6 +66,8 @@ SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
     m_columnNumber = initializer.columnNumber();
   if (initializer.hasStatusCode())
     m_statusCode = initializer.statusCode();
+  if (initializer.hasSample())
+    m_sample = initializer.sample();
 }
 
 const String& SecurityPolicyViolationEvent::disposition() const {

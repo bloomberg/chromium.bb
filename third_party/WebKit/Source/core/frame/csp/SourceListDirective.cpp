@@ -29,6 +29,7 @@ SourceListDirective::SourceListDirective(const String& name,
       m_allowEval(false),
       m_allowDynamic(false),
       m_allowHashedAttributes(false),
+      m_reportSample(false),
       m_hashAlgorithmsUsed(0) {
   Vector<UChar> characters;
   value.appendTo(characters);
@@ -101,6 +102,12 @@ bool SourceListDirective::allowHash(const CSPHashValue& hashValue) const {
 
 bool SourceListDirective::allowHashedAttributes() const {
   return m_allowHashedAttributes;
+}
+
+bool SourceListDirective::allowReportSample() const {
+  if (!m_policy->experimentalFeaturesEnabled())
+    return false;
+  return m_reportSample;
 }
 
 bool SourceListDirective::isNone() const {
@@ -208,6 +215,11 @@ bool SourceListDirective::parseSource(
 
   if (equalIgnoringCase("'unsafe-hashed-attributes'", token)) {
     addSourceUnsafeHashedAttributes();
+    return true;
+  }
+
+  if (equalIgnoringCase("'report-sample'", token)) {
+    addReportSample();
     return true;
   }
 
@@ -558,6 +570,10 @@ void SourceListDirective::addSourceStrictDynamic() {
 
 void SourceListDirective::addSourceUnsafeHashedAttributes() {
   m_allowHashedAttributes = true;
+}
+
+void SourceListDirective::addReportSample() {
+  m_reportSample = true;
 }
 
 void SourceListDirective::addSourceNonce(const String& nonce) {

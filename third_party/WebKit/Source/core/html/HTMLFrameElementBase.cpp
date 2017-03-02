@@ -97,7 +97,7 @@ void HTMLFrameElementBase::openURL(bool replaceCurrentItem) {
     // so that the frame is populated with something reasonable.
     if (ContentSecurityPolicy::shouldBypassMainWorld(&document()) ||
         document().contentSecurityPolicy()->allowJavaScriptURLs(
-            this, document().url(), OrdinalNumber::first())) {
+            this, url.getString(), document().url(), OrdinalNumber::first())) {
       scriptURL = url;
     } else {
       if (contentFrame())

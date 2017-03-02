@@ -413,18 +413,20 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
 
 template <bool (CSPDirectiveList::*allowed)(Element*,
                                             const String&,
+                                            const String&,
                                             const WTF::OrdinalNumber&,
                                             SecurityViolationReportingPolicy)
               const>
 bool isAllowedByAll(const CSPDirectiveListVector& policies,
                     Element* element,
+                    const String& source,
                     const String& contextURL,
                     const WTF::OrdinalNumber& contextLine,
                     SecurityViolationReportingPolicy reportingPolicy) {
   bool isAllowed = true;
   for (const auto& policy : policies) {
-    isAllowed &= (policy.get()->*allowed)(element, contextURL, contextLine,
-                                          reportingPolicy);
+    isAllowed &= (policy.get()->*allowed)(element, source, contextURL,
+                                          contextLine, reportingPolicy);
   }
   return isAllowed;
 }
@@ -617,11 +619,12 @@ bool checkDigest(const String& source,
 
 bool ContentSecurityPolicy::allowJavaScriptURLs(
     Element* element,
+    const String& source,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
     SecurityViolationReportingPolicy reportingPolicy) const {
   return isAllowedByAll<&CSPDirectiveList::allowJavaScriptURLs>(
-      m_policies, element, contextURL, contextLine, reportingPolicy);
+      m_policies, element, source, contextURL, contextLine, reportingPolicy);
 }
 
 bool ContentSecurityPolicy::allowInlineEventHandler(
@@ -639,7 +642,7 @@ bool ContentSecurityPolicy::allowInlineEventHandler(
           m_policies))
     return true;
   return isAllowedByAll<&CSPDirectiveList::allowInlineEventHandlers>(
-      m_policies, element, contextURL, contextLine, reportingPolicy);
+      m_policies, element, source, contextURL, contextLine, reportingPolicy);
 }
 
 bool ContentSecurityPolicy::allowInlineScript(
@@ -1040,7 +1043,8 @@ static void gatherSecurityPolicyViolationEventData(
     RedirectStatus redirectStatus,
     ContentSecurityPolicyHeaderType headerType,
     ContentSecurityPolicy::ViolationType violationType,
-    int contextLine) {
+    int contextLine,
+    const String& scriptSource) {
   if (effectiveType == ContentSecurityPolicy::DirectiveType::FrameAncestors) {
     // If this load was blocked via 'frame-ancestors', then the URL of
     // |document| has not yet been initialized. In this case, we'll set both
@@ -1094,6 +1098,9 @@ static void gatherSecurityPolicyViolationEventData(
     init.setLineNumber(location->lineNumber());
     init.setColumnNumber(location->columnNumber());
   }
+
+  if (!scriptSource.isEmpty())
+    init.setSample(scriptSource.stripWhiteSpace().left(40));
 }
 
 void ContentSecurityPolicy::reportViolation(
@@ -1108,7 +1115,8 @@ void ContentSecurityPolicy::reportViolation(
     LocalFrame* contextFrame,
     RedirectStatus redirectStatus,
     int contextLine,
-    Element* element) {
+    Element* element,
+    const String& source) {
   ASSERT(violationType == URLViolation || blockedURL.isEmpty());
 
   // TODO(lukasza): Support sending reports from OOPIFs -
@@ -1133,7 +1141,7 @@ void ContentSecurityPolicy::reportViolation(
   DCHECK(relevantContext);
   gatherSecurityPolicyViolationEventData(
       violationData, relevantContext, directiveText, effectiveType, blockedURL,
-      header, redirectStatus, headerType, violationType, contextLine);
+      header, redirectStatus, headerType, violationType, contextLine, source);
 
   // TODO(mkwst): Obviously, we shouldn't hit this check, as extension-loaded
   // resources should be allowed regardless. We apparently do, however, so
@@ -1194,6 +1202,9 @@ void ContentSecurityPolicy::postViolationReport(
   if (!violationData.sourceFile().isEmpty())
     cspReport->setString("source-file", violationData.sourceFile());
   cspReport->setInteger("status-code", violationData.statusCode());
+
+  if (experimentalFeaturesEnabled())
+    cspReport->setString("sample", violationData.sample());
 
   std::unique_ptr<JSONObject> reportObject = JSONObject::create();
   reportObject->setObject("csp-report", std::move(cspReport));

@@ -44,6 +44,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   bool allowNonce(const String& nonce) const;
   bool allowHash(const CSPHashValue&) const;
   bool allowHashedAttributes() const;
+  bool allowReportSample() const;
   bool isNone() const;
   bool isHashOrNoncePresent() const;
   uint8_t hashAlgorithmsUsed() const;
@@ -100,6 +101,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   void addSourceUnsafeEval();
   void addSourceStrictDynamic();
   void addSourceUnsafeHashedAttributes();
+  void addReportSample();
   void addSourceNonce(const String& nonce);
   void addSourceHash(const ContentSecurityPolicyHashAlgorithm&,
                      const DigestValue& hash);
@@ -128,6 +130,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   bool m_allowEval;
   bool m_allowDynamic;
   bool m_allowHashedAttributes;
+  bool m_reportSample;
   HashSet<String> m_nonces;
   HashSet<CSPHashValue> m_hashes;
   uint8_t m_hashAlgorithmsUsed;

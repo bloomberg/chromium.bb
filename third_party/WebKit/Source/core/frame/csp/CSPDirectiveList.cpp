@@ -124,7 +124,8 @@ void CSPDirectiveList::reportViolationWithLocation(
     const KURL& blockedURL,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
-    Element* element) const {
+    Element* element,
+    const String& source) const {
   String message =
       isReportOnly() ? "[Report Only] " + consoleMessage : consoleMessage;
   m_policy->logToConsole(ConsoleMessage::create(
@@ -133,7 +134,7 @@ void CSPDirectiveList::reportViolationWithLocation(
   m_policy->reportViolation(
       directiveText, effectiveType, message, blockedURL, m_reportEndpoints,
       m_header, m_headerType, ContentSecurityPolicy::InlineViolation, nullptr,
-      RedirectStatus::NoRedirect, contextLine.oneBasedInt(), element);
+      RedirectStatus::NoRedirect, contextLine.oneBasedInt(), element, source);
 }
 
 void CSPDirectiveList::reportViolationWithState(
@@ -376,6 +377,7 @@ bool CSPDirectiveList::checkInlineAndReportViolation(
     SourceListDirective* directive,
     const String& consoleMessage,
     Element* element,
+    const String& source,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
     bool isScript,
@@ -406,7 +408,8 @@ bool CSPDirectiveList::checkInlineAndReportViolation(
       isScript ? ContentSecurityPolicy::DirectiveType::ScriptSrc
                : ContentSecurityPolicy::DirectiveType::StyleSrc,
       consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(),
-      contextURL, contextLine, element);
+      contextURL, contextLine, element,
+      directive->allowReportSample() ? source : emptyString);
 
   if (!isReportOnly()) {
     if (isScript)
@@ -503,6 +506,7 @@ bool CSPDirectiveList::checkAncestorsAndReportViolation(
 
 bool CSPDirectiveList::allowJavaScriptURLs(
     Element* element,
+    const String& source,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
     SecurityViolationReportingPolicy reportingPolicy) const {
@@ -512,7 +516,7 @@ bool CSPDirectiveList::allowJavaScriptURLs(
         directive,
         "Refused to execute JavaScript URL because it violates the following "
         "Content Security Policy directive: ",
-        element, contextURL, contextLine, true, "sha256-...");
+        element, source, contextURL, contextLine, true, "sha256-...");
   }
 
   return !directive || directive->allowAllInline();
@@ -520,6 +524,7 @@ bool CSPDirectiveList::allowJavaScriptURLs(
 
 bool CSPDirectiveList::allowInlineEventHandlers(
     Element* element,
+    const String& source,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
     SecurityViolationReportingPolicy reportingPolicy) const {
@@ -529,7 +534,7 @@ bool CSPDirectiveList::allowInlineEventHandlers(
         operativeDirective(m_scriptSrc.get()),
         "Refused to execute inline event handler because it violates the "
         "following Content Security Policy directive: ",
-        element, contextURL, contextLine, true, "sha256-...");
+        element, source, contextURL, contextLine, true, "sha256-...");
   }
 
   return !directive || directive->allowAllInline();
@@ -555,7 +560,8 @@ bool CSPDirectiveList::allowInlineScript(
         directive,
         "Refused to execute inline script because it violates the following "
         "Content Security Policy directive: ",
-        element, contextURL, contextLine, true, getSha256String(content));
+        element, content, contextURL, contextLine, true,
+        getSha256String(content));
   }
 
   return !directive || directive->allowAllInline();
@@ -576,7 +582,8 @@ bool CSPDirectiveList::allowInlineStyle(
         directive,
         "Refused to apply inline style because it violates the following "
         "Content Security Policy directive: ",
-        element, contextURL, contextLine, false, getSha256String(content));
+        element, content, contextURL, contextLine, false,
+        getSha256String(content));
   }
 
   return !directive || directive->allowAllInline();
