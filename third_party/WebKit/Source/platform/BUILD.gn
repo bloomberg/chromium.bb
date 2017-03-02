@@ -313,7 +313,6 @@ component("platform") {
     "WebThreadSupportingGC.h",
     "WebTouchEvent.cpp",
     "WebURLLoader.cpp",
-    "Widget.h",
     "WindowsKeyboardCodes.h",
     "animation/AnimationTranslationUtil.cpp",
     "animation/AnimationTranslationUtil.h",
