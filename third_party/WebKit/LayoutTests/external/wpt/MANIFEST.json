@@ -325,9 +325,9 @@
      {}
     ]
    ],
-   "mediacapture-streams/MediaStreamTrack-end-manual.html": [
+   "mediacapture-streams/MediaStreamTrack-end-manual.https.html": [
     [
-     "/mediacapture-streams/MediaStreamTrack-end-manual.html",
+     "/mediacapture-streams/MediaStreamTrack-end-manual.https.html",
      {}
     ]
    ],
@@ -376,12 +376,6 @@
    "pointerevents/pointerevent_click_during_capture-manual.html": [
     [
      "/pointerevents/pointerevent_click_during_capture-manual.html",
-     {}
-    ]
-   ],
-   "pointerevents/pointerevent_disabled_form_control-manual.html": [
-    [
-     "/pointerevents/pointerevent_disabled_form_control-manual.html",
      {}
     ]
    ],
@@ -697,9 +691,9 @@
      {}
     ]
    ],
-   "service-workers/service-worker/fetch-event-within-sw-manual.html": [
+   "service-workers/service-worker/fetch-event-within-sw-manual.https.html": [
     [
-     "/service-workers/service-worker/fetch-event-within-sw-manual.html",
+     "/service-workers/service-worker/fetch-event-within-sw-manual.https.html",
      {}
     ]
    ],
@@ -5781,6 +5775,18 @@
      {}
     ]
    ],
+   "webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector.html": [
+    [
+     "/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector.html",
+     [
+      [
+       "/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector-ref.html",
+       "=="
+      ]
+     ],
+     {}
+    ]
+   ],
    "webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/voice_object/voice_animation_with_timestamp.html": [
     [
      "/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/voice_object/voice_animation_with_timestamp.html",
@@ -6123,6 +6129,18 @@
      [
       [
        "/webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/bold_object_default_font-style-ref.html",
+       "=="
+      ]
+     ],
+     {}
+    ]
+   ],
+   "webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element.html": [
+    [
+     "/webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element.html",
+     [
+      [
+       "/webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element-ref.html",
        "=="
       ]
      ],
@@ -6555,11 +6573,6 @@
     ]
    ],
    "./diff-manifest.py": [
-    [
-     {}
-    ]
-   ],
-   "./test_keys_wdspec.html": [
     [
      {}
     ]
@@ -8629,11 +8642,6 @@
      {}
     ]
    ],
-   "dom/nodes/Document-createElement-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/nodes/Document-createElement-namespace-expected.txt": [
     [
      {}
@@ -8939,11 +8947,6 @@
      {}
     ]
    ],
-   "dom/nodes/Node-removeChild-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/nodes/Node-replaceChild-expected.txt": [
     [
      {}
@@ -9155,6 +9158,11 @@
     ]
    ],
    "domparsing/insert_adjacent_html.js": [
+    [
+     {}
+    ]
+   ],
+   "domxpath/xml_xpath_tests.xml": [
     [
      {}
     ]
@@ -9924,11 +9932,6 @@
      {}
     ]
    ],
-   "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/browsers/browsing-the-web/navigating-across-documents/navigation-unload-form-submit-1.html": [
     [
      {}
@@ -10020,6 +10023,11 @@
     ]
    ],
    "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling-1.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling-expected.txt": [
     [
      {}
     ]
@@ -10559,6 +10567,11 @@
      {}
     ]
    ],
+   "html/browsers/history/the-location-interface/location-valueof-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/browsers/history/the-location-interface/location_assign_about_blank-1.html": [
     [
      {}
@@ -10660,6 +10673,11 @@
     ]
    ],
    "html/browsers/offline/manifests/contains.json": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/offline/no-appcache-in-shared-workers-historical.js": [
     [
      {}
     ]
@@ -11755,6 +11773,11 @@
     ]
    ],
    "html/dom/resources/untested-interfaces.idl": [
+    [
+     {}
+    ]
+   ],
+   "html/dom/self-origin.sub-expected.txt": [
     [
      {}
     ]
@@ -16384,6 +16407,11 @@
      {}
     ]
    ],
+   "html/semantics/embedded-content/the-embed-element/embed-in-object-fallback-2-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/embedded-content/the-embed-element/embed-in-object-fallback-subdocument.html": [
     [
      {}
@@ -16560,6 +16588,11 @@
     ]
    ],
    "html/semantics/embedded-content/the-object-element/object-attributes-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/the-object-element/object-in-object-fallback-2-expected.txt": [
     [
      {}
     ]
@@ -17149,6 +17182,11 @@
      {}
     ]
    ],
+   "html/semantics/scripting-1/the-script-element/module/execorder-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/scripting-1/the-script-element/module/execorder-parsedordered2.js": [
     [
      {}
@@ -17190,6 +17228,11 @@
     ]
    ],
    "html/semantics/scripting-1/the-script-element/module/imports-cycle.js": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/module/imports-expected.txt": [
     [
      {}
     ]
@@ -17889,6 +17932,11 @@
      {}
     ]
    ],
+   "html/webappapis/idle-callbacks/callback-suspended-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/webappapis/idle-callbacks/resources/post_name_on_load.html": [
     [
      {}
@@ -17960,6 +18008,16 @@
     ]
    ],
    "html/webappapis/scripting/events/onerroreventhandler-frame.html": [
+    [
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/resources/compiled-event-handler-settings-objects-support.html": [
+    [
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/resources/open-window.html": [
     [
      {}
     ]
@@ -19094,7 +19152,17 @@
      {}
     ]
    ],
+   "mixed-content/optionally-blockable/http-csp/cross-origin-http/link-prefetch-tag/top-level/keep-scheme-redirect/opt-in-blocks.https.html.headers": [
+    [
+     {}
+    ]
+   ],
    "mixed-content/optionally-blockable/http-csp/cross-origin-http/link-prefetch-tag/top-level/no-redirect/opt-in-blocks.https.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/http-csp/cross-origin-http/link-prefetch-tag/top-level/swap-scheme-redirect/opt-in-blocks.https.html.headers": [
     [
      {}
     ]
@@ -19484,12 +19552,32 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html.headers": [
     [
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/iframe-tag/insecure-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/iframe-tag/insecure-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/iframe-tag/insecure-protocol.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -19509,7 +19597,22 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/script-tag/insecure-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/script-tag/insecure-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/script-tag/insecure-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/xhr-request/insecure-protocol.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -19519,12 +19622,37 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/xhr-request/insecure-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html.headers": [
     [
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -19544,7 +19672,22 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -19554,7 +19697,22 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -19604,12 +19762,32 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/xhr-request/insecure-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/xhr-request/insecure-protocol.no-redirect.http.html.headers": [
     [
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/xhr-request/insecure-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -19659,7 +19837,17 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20114,12 +20302,32 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-origin-insecure.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-origin-insecure.no-redirect.http.html.headers": [
     [
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-origin-insecure.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-origin-insecure.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-origin-insecure.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20139,7 +20347,22 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-origin-insecure.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-origin-insecure.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-origin-insecure.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20149,7 +20372,32 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-downgrade.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-downgrade.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-downgrade.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-upgrade.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20159,12 +20407,42 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-upgrade.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-downgrade.no-redirect.http.html.headers": [
     [
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-downgrade.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-upgrade.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-upgrade.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-upgrade.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20204,7 +20482,27 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-downgrade.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-downgrade.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-downgrade.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-upgrade.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20214,12 +20512,42 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-upgrade.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-downgrade.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-downgrade.no-redirect.http.html.headers": [
     [
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-downgrade.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-upgrade.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-upgrade.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-upgrade.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20784,12 +21112,32 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/fetch-request/cross-insecure.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/fetch-request/cross-insecure.no-redirect.http.html.headers": [
     [
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/fetch-request/cross-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/iframe-tag/cross-insecure.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20809,7 +21157,22 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/script-tag/cross-insecure.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/script-tag/cross-insecure.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/script-tag/cross-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/xhr-request/cross-insecure.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20819,7 +21182,27 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/xhr-request/cross-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20829,7 +21212,27 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20839,7 +21242,27 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-insecure.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20849,7 +21272,22 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-insecure.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-insecure.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-insecure.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20869,7 +21307,22 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-insecure.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-insecure.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-insecure.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20879,7 +21332,27 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-insecure.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20889,7 +21362,27 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -20899,7 +21392,22 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
     [
      {}
     ]
@@ -21509,56 +22017,6 @@
      {}
     ]
    ],
-   "selection/Document-open-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-00-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-04-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-12-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-16-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-20-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-24-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-28-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-32-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-36-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "selection/addRange.js": [
     [
      {}
@@ -21779,16 +22237,6 @@
      {}
     ]
    ],
-   "service-workers/service-worker/controller-on-load.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "service-workers/service-worker/controller-on-reload.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "service-workers/service-worker/extendable-event-async-waituntil.https-expected.txt": [
     [
      {}
@@ -21855,11 +22303,6 @@
     ]
    ],
    "service-workers/service-worker/multi-globals/test-sw.js": [
-    [
-     {}
-    ]
-   ],
-   "service-workers/service-worker/multi-globals/url-parsing.https-expected.txt": [
     [
      {}
     ]
@@ -22754,6 +23197,11 @@
      {}
     ]
    ],
+   "storage/opaque-origin.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/README.md": [
     [
      {}
@@ -23144,12 +23592,32 @@
      {}
     ]
    ],
+   "streams/writable-streams/bad-strategies-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/bad-strategies.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/bad-strategies.js": [
     [
      {}
     ]
    ],
    "streams/writable-streams/bad-strategies.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/bad-strategies.serviceworker.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/bad-strategies.sharedworker-expected.txt": [
     [
      {}
     ]
@@ -23949,6 +24417,11 @@
      {}
     ]
    ],
+   "web-animations/timing-model/animation-effects/local-time-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "web-animations/timing-model/animation-effects/phases-and-states-expected.txt": [
     [
      {}
@@ -23970,6 +24443,11 @@
     ]
    ],
    "web-animations/timing-model/animations/set-the-timeline-of-an-animation-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "web-animations/timing-model/time-transformations/transformed-progress-expected.txt": [
     [
      {}
     ]
@@ -24165,6 +24643,56 @@
     ]
    ],
    "webvr/idlharness-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/align-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/constructor-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/getCueAsHTML-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/line-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/lineAlign-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/positionAlign-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/region-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/snapToLines-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/text-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/api/VTTCue/vertical-expected.txt": [
     [
      {}
     ]
@@ -25144,6 +25672,11 @@
      {}
     ]
    ],
+   "webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector-ref.html": [
+    [
+     {}
+    ]
+   ],
    "webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/voice_object/voice_animation_with_timestamp-ref.html": [
     [
      {}
@@ -25285,6 +25818,11 @@
     ]
    ],
    "webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/bold_object_default_font-style-ref.html": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element-ref.html": [
     [
      {}
     ]
@@ -31922,6 +32460,12 @@
      {}
     ]
    ],
+   "domxpath/xml_xpath_runner.html": [
+    [
+     "/domxpath/xml_xpath_runner.html",
+     {}
+    ]
+   ],
    "encoding/api-basics.html": [
     [
      "/encoding/api-basics.html",
@@ -33819,6 +34363,12 @@
    "html/browsers/offline/manifest_url_check.html": [
     [
      "/html/browsers/offline/manifest_url_check.html",
+     {}
+    ]
+   ],
+   "html/browsers/offline/no-appcache-in-shared-workers-historical.html": [
+    [
+     "/html/browsers/offline/no-appcache-in-shared-workers-historical.html",
      {}
     ]
    ],
@@ -35998,6 +36548,12 @@
      {}
     ]
    ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-fragment-into-document.html": [
+    [
+     "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-fragment-into-document.html",
+     {}
+    ]
+   ],
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-into-document.html": [
     [
      "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-into-document.html",
@@ -36010,6 +36566,12 @@
      {}
     ]
    ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-parent-into-document.html": [
+    [
+     "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-parent-into-document.html",
+     {}
+    ]
+   ],
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-in-div.html": [
     [
      "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-in-div.html",
@@ -36019,6 +36581,18 @@
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-in-namespace.html": [
     [
      "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-in-namespace.html",
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html": [
+    [
+     "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html",
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-not-in-document.html": [
+    [
+     "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-not-in-document.html",
      {}
     ]
    ],
@@ -36049,6 +36623,12 @@
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-play.html": [
     [
      "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-play.html",
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document-networkState.html": [
+    [
+     "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document-networkState.html",
      {}
     ]
    ],
@@ -36109,6 +36689,12 @@
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-text.html": [
     [
      "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-text.html",
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-after.html": [
+    [
+     "/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-after.html",
      {}
     ]
    ],
@@ -39480,6 +40066,12 @@
      {}
     ]
    ],
+   "html/webappapis/scripting/events/compile-event-handler-settings-objects.html": [
+    [
+     "/html/webappapis/scripting/events/compile-event-handler-settings-objects.html",
+     {}
+    ]
+   ],
    "html/webappapis/scripting/events/event-handler-attributes-body-window.html": [
     [
      "/html/webappapis/scripting/events/event-handler-attributes-body-window.html",
@@ -42698,9 +43290,21 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -42776,9 +43380,21 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -42854,9 +43470,21 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -42932,9 +43560,21 @@
      {}
     ]
    ],
+   "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -43982,9 +44622,21 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.no-redirect.http.html": [
     [
      "/referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -44714,9 +45366,21 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.no-redirect.http.html": [
     [
      "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -44792,9 +45456,33 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.no-redirect.http.html": [
     [
      "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-insecure.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-upgrade.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-upgrade.keep-origin-redirect.http.html",
      {}
     ]
    ],
@@ -44804,9 +45492,27 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-upgrade.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-upgrade.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.no-redirect.http.html": [
     [
      "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -44876,9 +45582,21 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.no-redirect.http.html": [
     [
      "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -44906,9 +45624,27 @@
      {}
     ]
    ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.no-redirect.http.html": [
     [
      "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-insecure.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -46514,9 +47250,21 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -46538,15 +47286,39 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html",
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -46586,9 +47358,21 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -46700,9 +47484,21 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -46958,15 +47754,39 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.no-redirect.http.html",
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -46988,9 +47808,27 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/xhr-request/cross-insecure.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/xhr-request/cross-insecure.keep-origin-redirect.http.html",
      {}
     ]
    ],
@@ -47000,9 +47838,33 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/xhr-request/cross-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/xhr-request/cross-insecure.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html",
      {}
     ]
    ],
@@ -47012,9 +47874,33 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html",
      {}
     ]
    ],
@@ -47024,15 +47910,45 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html",
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -47108,15 +48024,39 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html",
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -47138,15 +48078,39 @@
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.no-redirect.http.html",
      {}
     ]
    ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html",
+     {}
+    ]
+   ],
    "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html": [
     [
      "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html",
+     {}
+    ]
+   ],
+   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html": [
+    [
+     "/referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html",
      {}
     ]
    ],
@@ -50396,9 +51360,9 @@
      {}
     ]
    ],
-   "service-workers/service-worker/fetch-event-within-sw.html": [
+   "service-workers/service-worker/fetch-event-within-sw.https.html": [
     [
-     "/service-workers/service-worker/fetch-event-within-sw.html",
+     "/service-workers/service-worker/fetch-event-within-sw.https.html",
      {}
     ]
    ],
@@ -54955,10 +55919,6 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
-  "./MANIFEST.json": [
-   "49ed1806559e344b58eda2479a32992e41b5ecdd",
-   "support"
-  ],
   "./README.md": [
    "f7f7d6a2bc0bc23e1c5fa3e812f710dc29ed6711",
    "support"
@@ -54981,10 +55941,6 @@
   ],
   "./diff-manifest.py": [
    "94689a9853ab8d0ddcd85b2a8db4b6f2c9045b4a",
-   "support"
-  ],
-  "./test_keys_wdspec.html": [
-   "13e6f15dcfe080bff5f3b3cbaf9b9f679915aca3",
    "support"
   ],
   "./testharness_runner.html": [
@@ -55020,7 +55976,7 @@
    "testharness"
   ],
   "FileAPI/blob/Blob-XHR-revoke-expected.txt": [
-   "ca6d78e8c57e84d86745e9914448645b18a497bd",
+   "787131c00ad00d2365cdd58bc29f30a9fb1f0a87",
    "support"
   ],
   "FileAPI/blob/Blob-XHR-revoke.html": [
@@ -59587,10 +60543,6 @@
    "996b9979785402a50c73e289f02f6a907ee9c32d",
    "testharness"
   ],
-  "dom/nodes/Document-createElement-expected.txt": [
-   "1f12026ef687874032bd4b392ad586f8d0430696",
-   "support"
-  ],
   "dom/nodes/Document-createElement-namespace-expected.txt": [
    "995a4c14a9eecbdff5730fac16fc8a5adb139ca0",
    "support"
@@ -59788,7 +60740,7 @@
    "testharness"
   ],
   "dom/nodes/Document-getElementsByTagName-expected.txt": [
-   "1b1a84690a3b6167d2518d6701e58a97d30bc500",
+   "dc9806c46b97d93eb3f72fc8422c8147014a4f58",
    "support"
   ],
   "dom/nodes/Document-getElementsByTagName-xhtml-expected.txt": [
@@ -59924,7 +60876,7 @@
    "testharness"
   ],
   "dom/nodes/Element-getElementsByTagName-expected.txt": [
-   "d8255734d74ac7013f8cad97b88d01ed165f9a45",
+   "282f3fc010d2db0858a8b8bb141028a3c0d03361",
    "support"
   ],
   "dom/nodes/Element-getElementsByTagName.html": [
@@ -60171,10 +61123,6 @@
    "3f783d0f1fdf80fb65598d4d5cb1ff4be11de4a1",
    "testharness"
   ],
-  "dom/nodes/Node-removeChild-expected.txt": [
-   "ad8e5a08f289c6a795b7accfab81a9f4ae7edd43",
-   "support"
-  ],
   "dom/nodes/Node-removeChild.html": [
    "dfeb84db96081cfa4e705457b649a13c3a2c0be8",
    "testharness"
@@ -60268,7 +61216,7 @@
    "support"
   ],
   "dom/nodes/case-expected.txt": [
-   "aa4ef5f9f3b634e11a25de7c593add9e0075f728",
+   "a69d54b7c153ff65eb2ae91802681fca13517866",
    "support"
   ],
   "dom/nodes/case.html": [
@@ -60806,6 +61754,14 @@
   "domxpath/interfaces.html": [
    "6848bd27f62d93fa527684c5625a42f4dc6470c2",
    "testharness"
+  ],
+  "domxpath/xml_xpath_runner.html": [
+   "63bb2439149f9fafbfeea5e17028823496f02fd2",
+   "testharness"
+  ],
+  "domxpath/xml_xpath_tests.xml": [
+   "daef25b99b0e26c6bf726cb2efb8f903337746dd",
+   "support"
   ],
   "encoding/api-basics.html": [
    "f941c016bd9f6117af2e28652c770613c475b064",
@@ -62223,10 +63179,6 @@
    "1278f37be250f761f84bf352ebff8ed4c8a04e96",
    "testharness"
   ],
-  "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling-expected.txt": [
-   "d9484e71c07c7bbf7e8d7becb940517a501ead4c",
-   "support"
-  ],
   "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling.html": [
    "a30db313246ebd786edcc062aed486a954f6f27f",
    "testharness"
@@ -62413,6 +63365,10 @@
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling-1.html": [
    "a80c64c5fc7755e2f332e0383b13f5ef4af44f18",
+   "support"
+  ],
+  "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling-expected.txt": [
+   "5d8984acc4456c9be1b86609f2c28c9acfb4215c",
    "support"
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling.html": [
@@ -63139,6 +64095,10 @@
    "caeb36aec042ae39289becc4250f941822973fdb",
    "testharness"
   ],
+  "html/browsers/history/the-location-interface/location-valueof-expected.txt": [
+   "751ddd4ac1ba02ad00497019c8a166423bb61a0d",
+   "support"
+  ],
   "html/browsers/history/the-location-interface/location-valueof.html": [
    "f192bc7f3ab76ba77002a00086a62088e46ad777",
    "testharness"
@@ -63353,6 +64313,14 @@
   ],
   "html/browsers/offline/manifests/contains.json": [
    "f844a4d122bf6a46e2ccd4725483a72f8ebb9f42",
+   "support"
+  ],
+  "html/browsers/offline/no-appcache-in-shared-workers-historical.html": [
+   "2c48e76225b084b3a13b7d9f52c95a98463e4bee",
+   "testharness"
+  ],
+  "html/browsers/offline/no-appcache-in-shared-workers-historical.js": [
+   "097443ac350588c2dcfb6909269cf9be8ad9b84c",
    "support"
   ],
   "html/browsers/offline/resources/css/clock.css": [
@@ -65526,6 +66494,10 @@
   "html/dom/self-origin.any.js": [
    "187b3657775b815f9360c01d2ddb358a53e1f920",
    "testharness"
+  ],
+  "html/dom/self-origin.sub-expected.txt": [
+   "3290e26b35ce68236d0b3067e949a725601ee5a1",
+   "support"
   ],
   "html/dom/self-origin.sub.html": [
    "d821d4b41ac8517d345f86a9f8298f67284d1967",
@@ -69887,6 +70859,10 @@
    "317f1da711daa3a399d9dcf36918ded4d06b138a",
    "testharness"
   ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-fragment-into-document.html": [
+   "780fb8e617b405c2e1ab932e88c249657bd2fa84",
+   "testharness"
+  ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-into-document.html": [
    "149165755580a519e99a9557bcabbc52606787e8",
    "testharness"
@@ -69899,12 +70875,24 @@
    "0b315498fc0b28c6ce1c41a88015446a8acff87f",
    "testharness"
   ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-parent-into-document.html": [
+   "630a1a04c54af53f594da6328cb71304561997e6",
+   "testharness"
+  ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-in-div.html": [
    "9c34d3e7eaf90aaa6b4084eb580bc45866b5e226",
    "testharness"
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-in-namespace.html": [
    "f3bbb0f87c26f01b76c6e032891bbbc45b964f77",
+   "testharness"
+  ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html": [
+   "faf29cdae002b841d0e38ac7291c08ae56619b4d",
+   "testharness"
+  ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-not-in-document.html": [
+   "0f7a3dc91ac80277bb8c1acd93c329ec0bb01839",
    "testharness"
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source.html": [
@@ -69937,6 +70925,10 @@
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-play.html": [
    "98c517d032c0035e6924d031cc439624990dbe47",
+   "testharness"
+  ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document-networkState.html": [
+   "048f5673796e00337dce9ea6b4ceef8310717591",
    "testharness"
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document.html": [
@@ -70001,6 +70993,10 @@
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-text.html": [
    "964479f38332cebf9dea9312f28d47836203dad5",
+   "testharness"
+  ],
+  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-after.html": [
+   "665427ef1cdad4fc4648f11ba7322156afcfbebf",
    "testharness"
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-expected.txt": [
@@ -70198,6 +71194,10 @@
   "html/semantics/embedded-content/the-embed-element/embed-ignored-in-media-element.html": [
    "cb57cbe52e4f586006461b8eae6bc233b5ed5ad5",
    "testharness"
+  ],
+  "html/semantics/embedded-content/the-embed-element/embed-in-object-fallback-2-expected.txt": [
+   "4507f2ce29b8eaedbc194287091c55a3441e834e",
+   "support"
   ],
   "html/semantics/embedded-content/the-embed-element/embed-in-object-fallback-2.html": [
    "a7da1fefb2403084205bf1ead77b422e69dc33b6",
@@ -70503,6 +71503,10 @@
    "62a6c079bc00ae6ebeca363fd42d8701c4791222",
    "testharness"
   ],
+  "html/semantics/embedded-content/the-object-element/object-in-object-fallback-2-expected.txt": [
+   "e7a7496f56154ca3bccaae866af05937790bcb1d",
+   "support"
+  ],
   "html/semantics/embedded-content/the-object-element/object-in-object-fallback-2.html": [
    "a5bb885111ac7ea02241957ee7233491c2277516",
    "testharness"
@@ -70748,7 +71752,7 @@
    "support"
   ],
   "html/semantics/forms/textfieldselection/select-event.html": [
-   "b2fa892891df602217e65baf22d6e4610b18bbd6",
+   "90528b5c92d94342b3fe2ef248d90d6a4d397377",
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/selection-after-content-change.html": [
@@ -70768,11 +71772,11 @@
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/textfieldselection-setRangeText.html": [
-   "0caf2b08ccc5a35578291af8f5adaf7de9537d66",
+   "b715f32cbedd8ff2b92f476032544b4e793e7288",
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/textfieldselection-setSelectionRange.html": [
-   "462049246a2ef3e66c22017ec6ad362e07b467e6",
+   "9185143b495f110c289b1f8f4dc3d93821ff36fb",
    "testharness"
   ],
   "html/semantics/forms/the-button-element/button-activate-frame.html": [
@@ -71771,6 +72775,10 @@
    "6c182afdedd7375b913a17e41b66f5e498ea2ff5",
    "support"
   ],
+  "html/semantics/scripting-1/the-script-element/module/execorder-expected.txt": [
+   "95a926672c5f966658f8e6ae069d2ca2e874f432",
+   "support"
+  ],
   "html/semantics/scripting-1/the-script-element/module/execorder-parsedordered2.js": [
    "fd738beae746d319cfd2dedc71b38b37a26d4c82",
    "support"
@@ -71809,6 +72817,10 @@
   ],
   "html/semantics/scripting-1/the-script-element/module/imports-cycle.js": [
    "462fe462bf92e1df232228cc1ce338ff522febbd",
+   "support"
+  ],
+  "html/semantics/scripting-1/the-script-element/module/imports-expected.txt": [
+   "6e1f3f4de6fcaa07c06137a315bdaabc3e294afb",
    "support"
   ],
   "html/semantics/scripting-1/the-script-element/module/imports-inc-a.js": [
@@ -73291,6 +74303,10 @@
    "6375309c43a1e7c9fafdc95f01fcccb4c92f8afc",
    "testharness"
   ],
+  "html/webappapis/idle-callbacks/callback-suspended-expected.txt": [
+   "d370f6b87d60ab1b859ec7fe84bba7449ed4a8e0",
+   "support"
+  ],
   "html/webappapis/idle-callbacks/callback-suspended.html": [
    "f3f9eeda9e2d47825c77eaf278be6e976a8e1715",
    "testharness"
@@ -73345,6 +74361,10 @@
   ],
   "html/webappapis/scripting/events/body-onload.html": [
    "c8e48064f18b1d1eb13e151b69ee60b8d68f4dab",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/compile-event-handler-settings-objects.html": [
+   "43a17069cb0d3c819d1b55eaa4616af0b0a338b7",
    "testharness"
   ],
   "html/webappapis/scripting/events/contains.json": [
@@ -73438,6 +74458,14 @@
   "html/webappapis/scripting/events/onerroreventhandler.html": [
    "8ade4c9c6b63935d437cc4c045b22512207e3ee0",
    "testharness"
+  ],
+  "html/webappapis/scripting/events/resources/compiled-event-handler-settings-objects-support.html": [
+   "bec82bc1771743c4262af46e36eaf68a3e2cf9be",
+   "support"
+  ],
+  "html/webappapis/scripting/events/resources/open-window.html": [
+   "f8ea32a9c2fe17f1ed0459f222e5f3151c286caa",
+   "support"
   ],
   "html/webappapis/scripting/events/uncompiled_event_handler_with_scripting_disabled.html": [
    "875ab8aa7b99cec015d82bcfe9ef4133b7adf97f",
@@ -74235,7 +75263,7 @@
    "ff30dfac08aae859ad469c15fd7e5469b830d3a9",
    "testharness"
   ],
-  "mediacapture-streams/MediaStreamTrack-end-manual.html": [
+  "mediacapture-streams/MediaStreamTrack-end-manual.https.html": [
    "e5550adb1a9ce03ba672271aa1cdcec7ffde27d6",
    "manual"
   ],
@@ -75607,6 +76635,10 @@
    "013eb078c215d37a8a52f266beaf9d3871fee401",
    "testharness"
   ],
+  "mixed-content/optionally-blockable/http-csp/cross-origin-http/link-prefetch-tag/top-level/keep-scheme-redirect/opt-in-blocks.https.html.headers": [
+   "562977daf4fd9e09dc6153058804bc247cbe5354",
+   "support"
+  ],
   "mixed-content/optionally-blockable/http-csp/cross-origin-http/link-prefetch-tag/top-level/no-redirect/opt-in-blocks.https.html": [
    "c10fe679c6cb2d69d5c6eaaa985d7d0aebf9e86a",
    "testharness"
@@ -75618,6 +76650,10 @@
   "mixed-content/optionally-blockable/http-csp/cross-origin-http/link-prefetch-tag/top-level/swap-scheme-redirect/opt-in-blocks.https.html": [
    "f07bd06527b7c4210c408a3593f5142f5ad47213",
    "testharness"
+  ],
+  "mixed-content/optionally-blockable/http-csp/cross-origin-http/link-prefetch-tag/top-level/swap-scheme-redirect/opt-in-blocks.https.html.headers": [
+   "562977daf4fd9e09dc6153058804bc247cbe5354",
+   "support"
   ],
   "mixed-content/optionally-blockable/http-csp/cross-origin-http/video-tag/top-level/keep-scheme-redirect/opt-in-blocks.https.html": [
    "7d8287e92f8bf9390ee288859bce6a53e2ef10f5",
@@ -76174,10 +77210,6 @@
   "pointerevents/pointerevent_constructor.html": [
    "0b247d3b7dfd047c217a78c59652a3c32df0fcfa",
    "testharness"
-  ],
-  "pointerevents/pointerevent_disabled_form_control-manual.html": [
-   "3f243b91d34f5ea8124a0ac78bf464ba67c75456",
-   "manual"
   ],
   "pointerevents/pointerevent_element_haspointercapture-manual.html": [
    "fd7ceeb1f55491c3082a0171951a9bc1489500cc",
@@ -76771,6 +77803,10 @@
    "3ab7f6838a511559f3125294c30377173c4b16a6",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html": [
    "825773ee108dc5f0660f73b1b64a707380fccd93",
    "testharness"
@@ -76783,9 +77819,17 @@
    "736685b379cf172888788682a1fd71117bf4f9ce",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/iframe-tag/insecure-protocol.keep-origin-redirect.http.html": [
    "30533c056b3831a9d8101fcc5a850b668b803da8",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/iframe-tag/insecure-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/iframe-tag/insecure-protocol.no-redirect.http.html": [
    "d33291145890031b30995a98a77591fdd6ee1e11",
@@ -76798,6 +77842,10 @@
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/iframe-tag/insecure-protocol.swap-origin-redirect.http.html": [
    "0c082c66984df81dd8e81f24840eaa88a4b21d4c",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/iframe-tag/insecure-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/img-tag/insecure-protocol.keep-origin-redirect.http.html": [
    "2af1eb3b81dc2218d68365e4944e880848c63974",
@@ -76827,6 +77875,10 @@
    "2fc133a04c056c4e2d90142b12d7e3341dd6d2af",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/script-tag/insecure-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/script-tag/insecure-protocol.no-redirect.http.html": [
    "0a98d6043714bcb96b31febcedb5a7c6f809c5e6",
    "testharness"
@@ -76839,9 +77891,17 @@
    "75a100beaa5bd09be3b786b99173c9dbadf47ec2",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/script-tag/insecure-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/xhr-request/insecure-protocol.keep-origin-redirect.http.html": [
    "e2f1546235517c50bb955940d1af2e6606f24d06",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/xhr-request/insecure-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/xhr-request/insecure-protocol.no-redirect.http.html": [
    "74f5dc76e3b59043f81fe863693a1466d1cc5c09",
@@ -76855,9 +77915,17 @@
    "8d1a24af6c001dd50e2e677dad462d502ff55849",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/xhr-request/insecure-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
    "801724d16cca8b3ac626f93729e97a8b0136572f",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
    "dd552432e8013d49ad0454d987996b29675aa5ed",
@@ -76871,9 +77939,17 @@
    "28004bbc84cfd65f9e4d2dbd1841841947c9ebef",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "962b113c7d7e2f87e132f26e65f0012cfbdf8827",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
    "76b78bce8fa811869626e6af2a158ace2af416b5",
@@ -76886,6 +77962,10 @@
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
    "cfe7d85725e4b533876b94662f3fdb9c0cab8a65",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "f6e3307bf1ac9e6ffdc7a86606803c8a4e5ace03",
@@ -76915,6 +77995,10 @@
    "1944f550c19992d7bfa22a128d859fe366454eb8",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.no-redirect.http.html": [
    "12e7ef3bdc86ad502f2a631872027b603dcab9a5",
    "testharness"
@@ -76927,9 +78011,17 @@
    "f8062f964e516c00157d0d147e1e7fb7139d3bde",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html": [
    "81ef78bc0d400db0cab61f78f00563acf9bfd998",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html": [
    "ef433aa0d38c37c9e1dc34af533c094e42e1323a",
@@ -76943,9 +78035,17 @@
    "0ad5761313a8f64d5eaa9dc93d172e13c0fcc68f",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html": [
    "db44d32484f7e6eecaa69ec3e5e750194b956dcb",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html": [
    "258df64bc606d7cede6432daea7de96478948566",
@@ -76958,6 +78058,10 @@
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html": [
    "ef1227e12f14c9eda200abb04988a84894e40efc",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/iframe-tag/insecure-protocol.keep-origin-redirect.http.html": [
    "a1a054b4179f1d825c1dca82fc8f752568ebe2c2",
@@ -77035,6 +78139,10 @@
    "0f50f962e60e0be8d459c82dc758ed40f1b6c276",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/xhr-request/insecure-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/xhr-request/insecure-protocol.no-redirect.http.html": [
    "d150a7677f7872dabe0e9baaa3b82a450303c1f2",
    "testharness"
@@ -77047,9 +78155,17 @@
    "d437d696508260b9e6411a832f344dc6d55df2d6",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/xhr-request/insecure-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
    "8c8f5a09e3a7ea914b7de73aaec35c2b72f97fbe",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
    "df75dc7430bd91337a4c49feec0f40e5c10a1d67",
@@ -77062,6 +78178,10 @@
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
    "9170b60eae05ab1a27024d33f389396786794986",
    "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
   ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "d5503368554843f1025bae00afe0b639fdd58f01",
@@ -77139,6 +78259,10 @@
    "411898e98bc195eb698a4ae47524b126cfee9bc8",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
   "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html": [
    "4e54c97faf5a6901dc0bf7b80ecc1a82b7135477",
    "testharness"
@@ -77151,8 +78275,20 @@
    "b0acbf14167a111547c1b123f575532737829751",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "9e78567993310dccad7def841ab31041549ec83c",
+   "support"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html": [
+   "ca6d798b206041f96e31e09f9b3c1cd7fadf808b",
+   "testharness"
+  ],
   "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html": [
    "89bff22ca5a188d2dcba3a5eaba2efa56d5dede3",
+   "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html": [
+   "cdd79fda4c0a0e8394b357181f6762dccb2a6d2d",
    "testharness"
   ],
   "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-http/iframe-tag/insecure-protocol.keep-origin-redirect.http.html": [
@@ -77203,8 +78339,16 @@
    "f246078323e529ed7181bd7fc8c03648265bf2c5",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+   "44484c0605fa7893fcda9626288b0813f3ef3d01",
+   "testharness"
+  ],
   "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
    "fffda1a05cc17cad42806d20b5ecc5e682a924ef",
+   "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+   "6fb7fefce64bafe0971930e29fa589b202a0a6df",
    "testharness"
   ],
   "referrer-policy/no-referrer-when-downgrade/meta-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
@@ -77255,8 +78399,16 @@
    "90f6010b4f021f3f8a7e8898ccac00233a762022",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.keep-origin-redirect.http.html": [
+   "d758f19e0a27d1fc2eaadfd4e5f4b317a11c4cad",
+   "testharness"
+  ],
   "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.no-redirect.http.html": [
    "0c36616c9380fde1bd143ca5ffc5d117dd8bf67a",
+   "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/fetch-request/insecure-protocol.swap-origin-redirect.http.html": [
+   "5667c0b9a0f74a90f06359479327a8ad57c18669",
    "testharness"
   ],
   "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/iframe-tag/insecure-protocol.keep-origin-redirect.http.html": [
@@ -77307,8 +78459,16 @@
    "bb031f6e7fee5dad27b14fb441d725ea31de59b6",
    "testharness"
   ],
+  "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+   "f87da3e9a2e4b7533aff022a0a41ee2498a7eb74",
+   "testharness"
+  ],
   "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
    "c53dbd94d2ad47700ee2a910dad82b11d4b9a270",
+   "testharness"
+  ],
+  "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+   "205dd1e8ca80cebed46209bcb53f55136622ae8f",
    "testharness"
   ],
   "referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
@@ -78247,8 +79407,16 @@
    "9cfd20b265862f0d88681ab583a37dc2dbadf342",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html": [
+   "59aee1151b51e5d28470c27107798b538b8507af",
+   "testharness"
+  ],
   "referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.no-redirect.http.html": [
    "8fe5ece3c0869977681d57fbd4dba1d4cbd2d95d",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.swap-origin-redirect.http.html": [
+   "a25fc3b561fbd358ad1195ca8ca4c32560349294",
    "testharness"
   ],
   "referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/same-origin-insecure.swap-origin-redirect.http.html": [
@@ -78539,6 +79707,10 @@
    "1f6b2bdf4514621cee285a100e5ed12a0520c426",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-origin-insecure.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-origin-insecure.no-redirect.http.html": [
    "f0524986e00dbe76a7d4ec59236d794488f54dee",
    "testharness"
@@ -78551,9 +79723,17 @@
    "ec7918f64dfdb3e2345e1393d7ce8ca80eef0326",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-origin-insecure.keep-origin-redirect.http.html": [
    "a208a7a63f16fbc3e74fb79458e5a9f3f0d1a973",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-origin-insecure.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-origin-insecure.no-redirect.http.html": [
    "91fa0d5cad783a7e9858d351abc2361536fe9e1b",
@@ -78566,6 +79746,10 @@
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-origin-insecure.swap-origin-redirect.http.html": [
    "f9df6ba38e690b3bb4c2bc150f331098bc0de5ce",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/img-tag/same-origin-insecure.keep-origin-redirect.http.html": [
    "85e9a74d8d0269fbdf64288b58be0034099a4932",
@@ -78595,6 +79779,10 @@
    "ab6113afbbb6288e264fc80b45a42d2a868ea776",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-origin-insecure.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-origin-insecure.no-redirect.http.html": [
    "bc09f44746be4457379f1dd69d777da7b8609e84",
    "testharness"
@@ -78607,9 +79795,17 @@
    "e24d0c9981b0b699a14743878661c6ec05e622c9",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-origin-insecure.keep-origin-redirect.http.html": [
    "feba742b69809a85b0e42a733a9ba5886f5ad2ec",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-origin-insecure.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-origin-insecure.no-redirect.http.html": [
    "b00e293aa34dc2472962faa56f230fbe9592b0be",
@@ -78623,9 +79819,17 @@
    "e99685cec4de77df7a6e08aa5ee5dd042a982a8a",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-downgrade.keep-origin-redirect.http.html": [
    "c6fca09163da7cea18434551a4a2d5d2d26cb2a0",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-downgrade.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-downgrade.no-redirect.http.html": [
    "bc35b5ca5213ed99b7aca1ab4b3f784ac9b304a5",
@@ -78639,13 +79843,25 @@
    "9b7b92eb1cddab8df578770f3b1b8332b8689f1c",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-downgrade.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-insecure.swap-origin-redirect.http.html": [
    "9b7b92eb1cddab8df578770f3b1b8332b8689f1c",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-upgrade.keep-origin-redirect.http.html": [
    "c6fca09163da7cea18434551a4a2d5d2d26cb2a0",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-upgrade.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-upgrade.no-redirect.http.html": [
    "bc35b5ca5213ed99b7aca1ab4b3f784ac9b304a5",
@@ -78659,9 +79875,17 @@
    "9b7b92eb1cddab8df578770f3b1b8332b8689f1c",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/same-origin-upgrade.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html": [
    "a3f9fd2c7157005ff43fc29791f16b21ad7b2e4b",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-downgrade.no-redirect.http.html": [
    "671a1c6aeadc7414febad850178cc41aa58a0140",
@@ -78675,13 +79899,25 @@
    "182a1a24a1df3ae5a5428c132b455ed5741a423b",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-downgrade.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-insecure.swap-origin-redirect.http.html": [
    "182a1a24a1df3ae5a5428c132b455ed5741a423b",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-upgrade.keep-origin-redirect.http.html": [
    "a3f9fd2c7157005ff43fc29791f16b21ad7b2e4b",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-upgrade.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-upgrade.no-redirect.http.html": [
    "671a1c6aeadc7414febad850178cc41aa58a0140",
@@ -78694,6 +79930,10 @@
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-upgrade.swap-origin-redirect.http.html": [
    "182a1a24a1df3ae5a5428c132b455ed5741a423b",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/same-origin-upgrade.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/img-tag/same-origin-downgrade.keep-origin-redirect.http.html": [
    "36513d413770a7cc283747caa6d7d21908717bd5",
@@ -78755,6 +79995,10 @@
    "c66aa2699c3317fea2d7b4cf57ae5b30c9132985",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-downgrade.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-downgrade.no-redirect.http.html": [
    "aa7ef6d126bc6e69507a8567c08caaff471cfddc",
    "testharness"
@@ -78767,13 +80011,25 @@
    "2d0cde235c97d73dafd65a216ce0f826d6e19710",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-downgrade.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-insecure.swap-origin-redirect.http.html": [
    "2d0cde235c97d73dafd65a216ce0f826d6e19710",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-upgrade.keep-origin-redirect.http.html": [
    "c66aa2699c3317fea2d7b4cf57ae5b30c9132985",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-upgrade.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-upgrade.no-redirect.http.html": [
    "aa7ef6d126bc6e69507a8567c08caaff471cfddc",
@@ -78787,9 +80043,17 @@
    "2d0cde235c97d73dafd65a216ce0f826d6e19710",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/same-origin-upgrade.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-downgrade.keep-origin-redirect.http.html": [
    "a1fd7737828fa5471f3d300a4aae7bb5d35175f9",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-downgrade.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-downgrade.no-redirect.http.html": [
    "b2959278df9a30011d35fb0507d44fd38cb81280",
@@ -78803,13 +80067,25 @@
    "e2652164420a9cd378cacfac91c466d9ec0f52e3",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-downgrade.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-insecure.swap-origin-redirect.http.html": [
    "e2652164420a9cd378cacfac91c466d9ec0f52e3",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-insecure.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
+  ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-upgrade.keep-origin-redirect.http.html": [
    "a1fd7737828fa5471f3d300a4aae7bb5d35175f9",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-upgrade.keep-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-upgrade.no-redirect.http.html": [
    "b2959278df9a30011d35fb0507d44fd38cb81280",
@@ -78822,6 +80098,10 @@
   "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-upgrade.swap-origin-redirect.http.html": [
    "e2652164420a9cd378cacfac91c466d9ec0f52e3",
    "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/same-origin-upgrade.swap-origin-redirect.http.html.headers": [
+   "c3f2602e1fb7fadc614525b1d477c1676efdca3e",
+   "support"
   ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-origin.keep-origin-redirect.http.html": [
    "25940376684067aadeb080660f1eeb487d629d85",
@@ -78943,8 +80223,16 @@
    "a3f30c843cbbc626dc9da5056632a11b4b7eda0b",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.keep-origin-redirect.http.html": [
+   "faee8f5c9f7f9838811a00a5ff4e74c7fb3b9e8d",
+   "testharness"
+  ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.no-redirect.http.html": [
    "7fc438eb71f6042fa26729298c21cd5a85c2f24d",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-origin-insecure.swap-origin-redirect.http.html": [
+   "37df19a9b4660443d47ce3797e98baaff263ac0c",
    "testharness"
   ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/iframe-tag/same-origin-insecure.keep-origin-redirect.http.html": [
@@ -78995,16 +80283,44 @@
    "ba004b636880408c01d8012a2f0475d327630690",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.keep-origin-redirect.http.html": [
+   "7538339251a48b37f0f3ccd476e0170d970329a3",
+   "testharness"
+  ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.no-redirect.http.html": [
    "a134c9c0a5e240ebca2e379b4fda7f7cef56ff3c",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-downgrade.swap-origin-redirect.http.html": [
+   "1f6c65c0961cf605a03038752b8dd516d052e90b",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-insecure.swap-origin-redirect.http.html": [
+   "1f6c65c0961cf605a03038752b8dd516d052e90b",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-upgrade.keep-origin-redirect.http.html": [
+   "7538339251a48b37f0f3ccd476e0170d970329a3",
    "testharness"
   ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-upgrade.no-redirect.http.html": [
    "a134c9c0a5e240ebca2e379b4fda7f7cef56ff3c",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/same-origin-upgrade.swap-origin-redirect.http.html": [
+   "1f6c65c0961cf605a03038752b8dd516d052e90b",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.keep-origin-redirect.http.html": [
+   "268889004132c996a4f93b1921b28bd680f018a9",
+   "testharness"
+  ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.no-redirect.http.html": [
    "73d50f7ce183cf7211c0f2812da3e6e2d5bf5f36",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-downgrade.swap-origin-redirect.http.html": [
+   "9834e82abbb6d7104f3beb40cd5b04fab4729606",
    "testharness"
   ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/same-origin-insecure.swap-origin-redirect.http.html": [
@@ -79051,8 +80367,16 @@
    "1d0ec3e8e8cd570e7fabd998327a6adfbf6f280b",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.keep-origin-redirect.http.html": [
+   "2df0e916ea8121e12d7378e403b9c41551f38789",
+   "testharness"
+  ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.no-redirect.http.html": [
    "9bd49a26b0bfbb58deb3fc0654a7916295dcda9a",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-downgrade.swap-origin-redirect.http.html": [
+   "2c680caaeb43d2e133fe118aa1b879f8b67577a8",
    "testharness"
   ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/same-origin-insecure.swap-origin-redirect.http.html": [
@@ -79071,8 +80395,20 @@
    "2c680caaeb43d2e133fe118aa1b879f8b67577a8",
    "testharness"
   ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.keep-origin-redirect.http.html": [
+   "c9711c1c59a4deee743ddf375bb31c10c0a51a6c",
+   "testharness"
+  ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.no-redirect.http.html": [
    "3dc68a55ec7bf2bdfa115fc493bfbee7ae8a52c8",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-downgrade.swap-origin-redirect.http.html": [
+   "96a3608a5b0818ec83a13d107fda43f6cfcea5e4",
+   "testharness"
+  ],
+  "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-insecure.swap-origin-redirect.http.html": [
+   "96a3608a5b0818ec83a13d107fda43f6cfcea5e4",
    "testharness"
   ],
   "referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/same-origin-upgrade.keep-origin-redirect.http.html": [
@@ -80591,8 +81927,16 @@
    "694f076b518353393a87dbfd5b8a5d094382325c",
    "support"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html": [
+   "e2833a95f5054d05713a2bd75ed80f8c1a4992bb",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.no-redirect.http.html": [
    "16491aac2d925f6320196af804f2407acedc5341",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html": [
+   "910e4978d09a6a4b9eaa4df9f0f2a67cd1aa4c2c",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-http/img-tag/cross-insecure.keep-origin-redirect.http.html": [
@@ -80607,12 +81951,28 @@
    "6a7100c237cdc1c1b5af77e89f4c0e39ce04e79c",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+   "2aaf8a7146d61fa3c5130c24fc7206bc8ad53251",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
    "b51b15e7721c9692cf0bf4c5122f4bdd202acbe4",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+   "a8cf8bbf8dad9f27f94f18e353aba1689e6c55ef",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+   "d9afff022eb048edaf4cf15e75e7ee39a253bd35",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html": [
    "c0efd3a7b0f325f84608f4f4b374bbe821379eab",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/attr-referrer/cross-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+   "2f30bdfdfaee06724331f3457abb6896bfd3ed91",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/iframe-tag/same-insecure.keep-origin-redirect.http.html": [
@@ -80639,8 +81999,16 @@
    "1e2c351cedb2c31974281cfb95f1c0745f74464a",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+   "abf47572e186e29b04be5ac8c7db3d8fd9567711",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
    "e4aa3aecc550b15000c9f91afd834901a28ea8b6",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+   "6e7053409af46e9aaa22269a20f888a35fb04c3c",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
@@ -80659,6 +82027,10 @@
    "625d5298b385892aa49ac074791b04f6d00a514c",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/fetch-request/cross-insecure.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/fetch-request/cross-insecure.no-redirect.http.html": [
    "f6b90ce44347b90daee81fc7b29664568a32c20f",
    "testharness"
@@ -80671,9 +82043,17 @@
    "022d6d8fe209c0f80d789c5028e663c0d762ac1f",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/fetch-request/cross-insecure.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html": [
    "5d8f5eb6d8a4ddc810cdbbee732e7e636de554ee",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/iframe-tag/cross-insecure.no-redirect.http.html": [
    "450220a5d61d4d26c4de7565ddb1ef668baa2d88",
@@ -80686,6 +82066,10 @@
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html": [
    "c187fd8ce830547d70d15d22b4cecaabeeb294ad",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/img-tag/cross-insecure.keep-origin-redirect.http.html": [
    "45f3fb86366e8ea74874ab350d6bc6fa621b25f1",
@@ -80715,6 +82099,10 @@
    "8ed63de50cfcfeddf2be60843374dbf01d93cd5b",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/script-tag/cross-insecure.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/script-tag/cross-insecure.no-redirect.http.html": [
    "5cd5b0837af671e3f534f2e6b8c9f85ff62b7eb3",
    "testharness"
@@ -80727,9 +82115,17 @@
    "13196b38880a4d800b3e89ff07295c10723de706",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/script-tag/cross-insecure.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/xhr-request/cross-insecure.keep-origin-redirect.http.html": [
    "da2bb67313e0410899e8bbd1f386fe4b8a9447b8",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/xhr-request/cross-insecure.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/xhr-request/cross-insecure.no-redirect.http.html": [
    "f05d4f209f6d42ce6af983d3d6716a4c80c13a85",
@@ -80743,6 +82139,18 @@
    "041af9eb2a203fee50d12e768ddb36cad173262b",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-http/xhr-request/cross-insecure.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+   "52dc43aee19b07ad14e792b51239e1c45226e1e9",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
    "271ce777279f4c8d9c0dd816996bf757b3c8bada",
    "testharness"
@@ -80751,9 +82159,21 @@
    "e343a00f0413388302ea4484bdbe65efb241ec9c",
    "support"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+   "00553bb4b73ee6953cbe63e0c55d7fc93e2e2356",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "95d8b4a0733a133ad98ab364ee4638cd7d70aadd",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
    "927b84e460f1839fc7acd0399a35c56215f19ed5",
@@ -80767,9 +82187,17 @@
    "79ed58761b34f97820ef2fd8698615420549774b",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "4f48e9d5b68a351088891e20ddf53bad8ea56ff3",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html": [
    "fa1ed66b030602f1df1ce12e22f4bb193913e7c0",
@@ -80783,9 +82211,17 @@
    "295850814043e9b3177febbdcd9884010064fe6c",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "d68b05e5dc8914b4eb31afcee6b14b3f2d8cddcd",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.no-redirect.http.html": [
    "dc7358b8108cb854531da951227d0e84914c7695",
@@ -80799,9 +82235,17 @@
    "aa0c41df1ba9a0d075ec73b4d7f7980fb767196f",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html": [
    "a24d4564a1913e4b5d3506b302ad602ad1158bad",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html": [
    "8ee49c12dbfb32d5ca2a93b76d7446653ffe03c4",
@@ -80815,9 +82259,17 @@
    "5dc33b90bcf1b3f6b5eddfd57392d84c3d84fb11",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/cross-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-insecure.keep-origin-redirect.http.html": [
    "cb71905b142805f5d800135ea7beb17931c5cd7b",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-insecure.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-insecure.no-redirect.http.html": [
    "9fdf39985d2c1ba3e5550c77b2602ae9116218b3",
@@ -80831,9 +82283,17 @@
    "0464c3cab82442a74bb1be955a591de8faf8162d",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/fetch-request/same-insecure.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-insecure.keep-origin-redirect.http.html": [
    "7d6ea404cbea9d55d774354df394bc8f9b7c7ee2",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-insecure.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-insecure.no-redirect.http.html": [
    "71a75f90f542f2ac0420d3a6f6f46fd64a6a2e92",
@@ -80846,6 +82306,10 @@
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-insecure.swap-origin-redirect.http.html": [
    "0aaa5d52e1267d80d6b59e207238cba4a4b91c26",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/iframe-tag/same-insecure.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/img-tag/same-insecure.keep-origin-redirect.http.html": [
    "7850d9252b3f361482f9f491135febd2b211e548",
@@ -80875,6 +82339,10 @@
    "b7bf8b701c4dd840f83f8919fc854fc65c906c05",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-insecure.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-insecure.no-redirect.http.html": [
    "56201162c7981c4c2fcd0fc87f50fd48faf71a1c",
    "testharness"
@@ -80887,9 +82355,17 @@
    "e948811a409350523beb88f3aa6cff6e9db2851d",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/script-tag/same-insecure.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-insecure.keep-origin-redirect.http.html": [
    "4d209181e056b0f5eba95b82511b01d299524203",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-insecure.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-insecure.no-redirect.http.html": [
    "f6a17f0c520385c333ec44a38a43a06811fb09d8",
@@ -80903,9 +82379,17 @@
    "0d676443e16cee6d43f2ec86274ce8c524745991",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-http/xhr-request/same-insecure.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
    "415cfbc6d685749ee10faf31a0573edc174f57b5",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
    "f60e409f0da5e03e679689b53a70d49656ad4d11",
@@ -80919,9 +82403,17 @@
    "acc2f3014bfd82aed10d0ec393527ebff41b6f32",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "bd9f05391a7bd9db9c9c029edccc1e3cc26db7af",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
    "5da5fe7da1c5f0739d7437dd72925379f3359f6a",
@@ -80935,9 +82427,17 @@
    "c5f46402400ad0e99fe927c51b049da62bff71c6",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "22de6c92a2d458385414b6a4912b8104cd49eeff",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html": [
    "b516497327084b1c0472c35a544bb4b3078b26d0",
@@ -80951,9 +82451,17 @@
    "115495582120fa566cd392071e8ec25fda6dcdaf",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html": [
    "8e9dde8d3018fc11a4f8da55a18e83d81b946db9",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/upgrade-protocol.no-redirect.http.html": [
    "0c9e1d77780e06526cc0bb03569c88391fc13416",
@@ -80967,9 +82475,17 @@
    "c48fd26a176fbc19a3a534bffc141588412a772a",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html": [
    "0dd58db37f78ef79b3df7c6d91b407ba24c4bf4d",
    "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
   ],
   "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html": [
    "59f76f64058b008fe17bb6ca1159a62616f110a9",
@@ -80983,12 +82499,32 @@
    "735236a6b24009e963f1bab11f54232a17ab1ac5",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/http-rp/same-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html.headers": [
+   "e343a00f0413388302ea4484bdbe65efb241ec9c",
+   "support"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.keep-origin-redirect.http.html": [
+   "512a1227656c620147aeeea6b719cbc03487817a",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.no-redirect.http.html": [
    "6bc7b972f3a4f3c3a01308787f1f9adca1da383e",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/fetch-request/cross-insecure.swap-origin-redirect.http.html": [
+   "6fc8e8c1fe90365cabe434e6a8a1ef4543d9aa97",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.keep-origin-redirect.http.html": [
+   "bf1d71108270adbf4747c571c84329ac3f901857",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.no-redirect.http.html": [
    "d1191e175a28687633f804b66454538db426a516",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/cross-insecure.swap-origin-redirect.http.html": [
+   "33e6d7f3ddf878b94a05c9f34d067a7bf86bb6e5",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/img-tag/cross-insecure.keep-origin-redirect.http.html": [
@@ -81003,36 +82539,100 @@
    "2be5c0bff918512251df646cb2a367acec4844ad",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.keep-origin-redirect.http.html": [
+   "e7aefdd9119289ae621485ba6dee468a88e2a275",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.no-redirect.http.html": [
    "5a79e8da13200225eb46ffb81d3be434c3ce319c",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/script-tag/cross-insecure.swap-origin-redirect.http.html": [
+   "9f43d1df5b09cd65ec9ed39df61f4322b1e95e8a",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/xhr-request/cross-insecure.keep-origin-redirect.http.html": [
+   "09f61dc2f7de25119565088675fac966298b8b2e",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/xhr-request/cross-insecure.no-redirect.http.html": [
    "d34e4b61d705f1a4ca9a8ae386da9a0ae120857b",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-http/xhr-request/cross-insecure.swap-origin-redirect.http.html": [
+   "195bbe14d13956191d2743e89eb69df2ecd19cab",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+   "5eaf43f1860cc6b7e83f30e87dc9ea818bf65699",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
    "6d581df689bcc560cc3c0855784ec881db909775",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+   "b8e98302d7c47c780d5f42ca1da245e65a6c0ed3",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+   "6b5d005786391df9e7aec156590b6b328f0e8e6d",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
    "94c736c0295208ca13c6e291bc77b861a904cb33",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+   "ceab5cdcdd6a5817aa10ae975ee7e82a676d0d22",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+   "1deffcef2dc7527d6c31e3af67b7d20f17f87d05",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.no-redirect.http.html": [
    "ed7192378ce4387e8b508623b3c4aa62dd4213f6",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/img-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+   "4891c37fa835ba796fd9b92198a8996559863e5e",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+   "dec4459cb2721d3dd99070ac0aafd63f1ff95981",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/script-tag/upgrade-protocol.no-redirect.http.html": [
    "9b5fc45fc66adfe4109f452955f93e54266e44fd",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+   "4f62c926807a98dbdbe04835f08201aa99aec0d4",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html": [
+   "dbb9b909fc2801866ac419d1e38c0edc29a2296b",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html": [
    "91647b5b81fdc7c27f5122857b575b0d4750f276",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/cross-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html": [
+   "41b10c9ac92c50e0dcb2bea612100944988c7e67",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.keep-origin-redirect.http.html": [
+   "884e052969e1f8f2b7ae6d5f80898bea230e4188",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.no-redirect.http.html": [
    "2eb1ea87e35e289f3d243c1405d17a5b664d4010",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/fetch-request/same-insecure.swap-origin-redirect.http.html": [
+   "92acff494b307f05c5ec4879a7f49b9709873495",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-http/iframe-tag/same-insecure.keep-origin-redirect.http.html": [
@@ -81083,12 +82683,28 @@
    "f0e1e87fdf916ac59278950ad702176f64646693",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.keep-origin-redirect.http.html": [
+   "4e415232359f282c6df1b38f81c82675c2302174",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.no-redirect.http.html": [
    "35697ef3c3a08994b59c6b1f8da11584f33eef12",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/fetch-request/upgrade-protocol.swap-origin-redirect.http.html": [
+   "4f6461c9f3540bfcd6ed9c2618fbd24c06c62e69",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+   "bb34c901df117b2b566025df6e09bc0f88d05d0e",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.no-redirect.http.html": [
    "399423815f7cb5a9be13536adbdff868e1df6af5",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/iframe-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+   "1369f36fd977f22aeb916856a9f7009f61d455c3",
    "testharness"
   ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/img-tag/upgrade-protocol.keep-origin-redirect.http.html": [
@@ -81103,12 +82719,28 @@
    "2e8f9fa300a16a44241e2d681adde0a775c94438",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.keep-origin-redirect.http.html": [
+   "b6941371bcde02134a8d677878d046adfd66994f",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.no-redirect.http.html": [
    "289d01179ab602d40b337b821adbfb13fa4d2709",
    "testharness"
   ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/script-tag/upgrade-protocol.swap-origin-redirect.http.html": [
+   "e66f529a972fa007bf9d1948d911d4df42253f6c",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.keep-origin-redirect.http.html": [
+   "156b2519148a73c20ec27b91a7e0909cc0f75704",
+   "testharness"
+  ],
   "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.no-redirect.http.html": [
    "855c2394e591506f01024b7d8eea434e135cfd0f",
+   "testharness"
+  ],
+  "referrer-policy/strict-origin-when-cross-origin/meta-referrer/same-origin/http-https/xhr-request/upgrade-protocol.swap-origin-redirect.http.html": [
+   "8eb66733259b2b663190c240feccc6895ac0e046",
    "testharness"
   ],
   "referrer-policy/strict-origin/attr-referrer/cross-origin/http-http/iframe-tag/insecure-protocol.keep-origin-redirect.http.html": [
@@ -83343,25 +84975,13 @@
    "3d220a3cc0e6a05fbc40c0ab0e46a2e60162b2be",
    "testharness"
   ],
-  "selection/Document-open-expected.txt": [
-   "4450a2a693582cf892a9e1b1877250402fbf0ea7",
-   "support"
-  ],
   "selection/Document-open.html": [
    "31a5ee7a3619c62dbd35eafb66725bf4192639a0",
    "testharness"
   ],
-  "selection/addRange-00-expected.txt": [
-   "eedac4c59c749216666bcd60a08711810db36e73",
-   "support"
-  ],
   "selection/addRange-00.html": [
    "e99b95a6bdcba9f4945fb9b03de34ff54469012a",
    "testharness"
-  ],
-  "selection/addRange-04-expected.txt": [
-   "cdd195d7aadd66603ca9c0f5bf2b52cf054b92f2",
-   "support"
   ],
   "selection/addRange-04.html": [
    "c241e1c3a82f09c14bbf217350b2ee0b58c17178",
@@ -83371,57 +84991,29 @@
    "6d51d9f4042e5590483fae60d19351602d6b0aa2",
    "testharness"
   ],
-  "selection/addRange-12-expected.txt": [
-   "c37408236a59467912d31966c48e105b372be787",
-   "support"
-  ],
   "selection/addRange-12.html": [
    "add2e904651f3564741742dc5e1dcb7e3debc50c",
    "testharness"
-  ],
-  "selection/addRange-16-expected.txt": [
-   "d8e9f67a786aea3ea8b94f942663ad69a419c52a",
-   "support"
   ],
   "selection/addRange-16.html": [
    "b8357b81e8cff46960b158f2eff40950aba04158",
    "testharness"
   ],
-  "selection/addRange-20-expected.txt": [
-   "2bc82fd38cd3bd635d3bda05fe3d92bc99f5e98a",
-   "support"
-  ],
   "selection/addRange-20.html": [
    "88fb182b058eae495b92c10a1ddc2bd7768e96cd",
    "testharness"
-  ],
-  "selection/addRange-24-expected.txt": [
-   "fd4aabd6d0ed1531e3adc99411095b501e2be0de",
-   "support"
   ],
   "selection/addRange-24.html": [
    "d6c0ce809239b2bafda14dab540bda45e3e89752",
    "testharness"
   ],
-  "selection/addRange-28-expected.txt": [
-   "a0eb6bab0cdc1093ccad3c96eef6e99895d1a537",
-   "support"
-  ],
   "selection/addRange-28.html": [
    "a2583e4f46561f8b09183186aed7ca137fab26dd",
    "testharness"
   ],
-  "selection/addRange-32-expected.txt": [
-   "c5bc03594b1095dedab19073232291b45f73a31a",
-   "support"
-  ],
   "selection/addRange-32.html": [
    "431ec670ebbcd0d0032fc416bd0910507fa76680",
    "testharness"
-  ],
-  "selection/addRange-36-expected.txt": [
-   "fbed318b78eb54ba405d9b055d92f66bf899cf0a",
-   "support"
   ],
   "selection/addRange-36.html": [
    "9572f7b20ee6891157025e576cf837e496a61669",
@@ -83504,7 +85096,7 @@
    "testharness"
   ],
   "selection/interfaces-expected.txt": [
-   "ba5cf4a994fc761670c2c21dce9853c8f7acd10e",
+   "db570dc214d7d94698ee7215f8ea35d6e8f23bb5",
    "support"
   ],
   "selection/interfaces.html": [
@@ -83524,7 +85116,7 @@
    "testharness"
   ],
   "selection/removeRange.html": [
-   "9a4f6531d510b781edd02acae9ffd2453bf48423",
+   "c67aebaddeb575fe92b7339f0c2e67209faf468a",
    "testharness"
   ],
   "selection/selectAllChildren.html": [
@@ -83863,20 +85455,12 @@
    "fe9bcecbb8c7379a6f8da0420cc15a36a9e8060b",
    "testharness"
   ],
-  "service-workers/service-worker/controller-on-load.https-expected.txt": [
-   "79771bd7f1231f950e0e5ed72b52d901cbe237d1",
-   "support"
-  ],
   "service-workers/service-worker/controller-on-load.https.html": [
    "57749cf6d4c71446dbe7de7292cb2880a36a9ee2",
    "testharness"
   ],
-  "service-workers/service-worker/controller-on-reload.https-expected.txt": [
-   "ef0dfc48b1396655dfdf7ab6f56325b547587839",
-   "support"
-  ],
   "service-workers/service-worker/controller-on-reload.https.html": [
-   "54a7f90d5d19ca0ecef1c6c4bba8d648268759a5",
+   "8402c159967bb6e91903adc52e7d68c8d2443a72",
    "testharness"
   ],
   "service-workers/service-worker/extendable-event-async-waituntil.https-expected.txt": [
@@ -83927,11 +85511,11 @@
    "2feaa5022ee31fb980f97075d932b0d87d6efe75",
    "testharness"
   ],
-  "service-workers/service-worker/fetch-event-within-sw-manual.html": [
+  "service-workers/service-worker/fetch-event-within-sw-manual.https.html": [
    "6bdea01ca619a894d07364a0485f717b46afe585",
    "manual"
   ],
-  "service-workers/service-worker/fetch-event-within-sw.html": [
+  "service-workers/service-worker/fetch-event-within-sw.https.html": [
    "0dfff8289762988423eb8fda40ef47884c243427",
    "testharness"
   ],
@@ -84091,16 +85675,12 @@
    "dac89a5658bdfac4df0600647d1fbf82602c4d0b",
    "support"
   ],
-  "service-workers/service-worker/multi-globals/url-parsing.https-expected.txt": [
-   "4f9dab45796f2cd0b72fc0816216186b0e4ce75f",
-   "support"
-  ],
   "service-workers/service-worker/multi-globals/url-parsing.https.html": [
    "eac6d03a6baa43a8f326abc30a5e1244da2d0e55",
    "testharness"
   ],
   "service-workers/service-worker/multiple-register.https.html": [
-   "fe3fe5f2c11f721c8686553587534c2679f670ed",
+   "3c4ec4fc7c72408211ff954b5a54ede3e5b0c656",
    "testharness"
   ],
   "service-workers/service-worker/multiple-update.https.html": [
@@ -84204,7 +85784,7 @@
    "testharness"
   ],
   "service-workers/service-worker/registration-iframe.https.html": [
-   "5e438b64917501911ec5168c5fa3310a966d87d8",
+   "f92f5aada1175b76624dc91b760e34fdd0bf3047",
    "testharness"
   ],
   "service-workers/service-worker/registration-service-worker-attributes.https.html": [
@@ -85579,6 +87159,10 @@
    "da11cf56486fe08214f91d181b3a19775f6aa59c",
    "testharness"
   ],
+  "storage/opaque-origin.https-expected.txt": [
+   "d33853b6c37f68b0d903be4323d3abd506f49675",
+   "support"
+  ],
   "storage/opaque-origin.https.html": [
    "6ce5a9b14d80030f0adfa1808857294e8c923cb2",
    "testharness"
@@ -86295,6 +87879,14 @@
    "9e792fad19cd10a96440478cb7e0486f41b70bf4",
    "testharness"
   ],
+  "streams/writable-streams/bad-strategies-expected.txt": [
+   "198832f2e65d637b0eeca87b66fd99f525caceeb",
+   "support"
+  ],
+  "streams/writable-streams/bad-strategies.dedicatedworker-expected.txt": [
+   "198832f2e65d637b0eeca87b66fd99f525caceeb",
+   "support"
+  ],
   "streams/writable-streams/bad-strategies.dedicatedworker.html": [
    "269e32606201603b326048f42573c8535c060a18",
    "testharness"
@@ -86311,9 +87903,17 @@
    "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
+  "streams/writable-streams/bad-strategies.serviceworker.https-expected.txt": [
+   "5be0e879d35214475aabb71a92a25fdd2d3aca33",
+   "support"
+  ],
   "streams/writable-streams/bad-strategies.serviceworker.https.html": [
    "1cc76d2d9135082afcaba8e45de4a4cbdf0c35e0",
    "testharness"
+  ],
+  "streams/writable-streams/bad-strategies.sharedworker-expected.txt": [
+   "198832f2e65d637b0eeca87b66fd99f525caceeb",
+   "support"
   ],
   "streams/writable-streams/bad-strategies.sharedworker.html": [
    "a4692c839ca53134bc5036b2f813e2311db3f2d0",
@@ -87400,7 +89000,7 @@
    "testharness"
   ],
   "web-animations/interfaces/AnimationEffectTiming/iterationStart-expected.txt": [
-   "23ffdb367e71c6574f4e76d964f67e7a19d0901b",
+   "013cbd10904b6320d62f086ac5c37d4c4fba66ef",
    "support"
   ],
   "web-animations/interfaces/AnimationEffectTiming/iterationStart.html": [
@@ -87539,6 +89139,10 @@
    "b08a35ae832ce33da7fe7fee22e589a6b85a6353",
    "testharness"
   ],
+  "web-animations/timing-model/animation-effects/local-time-expected.txt": [
+   "a84af3e2e735115ace5b0667c966e2d71dae1600",
+   "support"
+  ],
   "web-animations/timing-model/animation-effects/local-time.html": [
    "4b24cf2374a690395398f8caed9d340667dd0a9d",
    "testharness"
@@ -87590,6 +89194,10 @@
   "web-animations/timing-model/animations/updating-the-finished-state.html": [
    "266f1b793aa74a59486081f3ba8f6cbb482e714b",
    "testharness"
+  ],
+  "web-animations/timing-model/time-transformations/transformed-progress-expected.txt": [
+   "722aa62582cb856a726a00c7b39abe32e6850099",
+   "support"
   ],
   "web-animations/timing-model/time-transformations/transformed-progress.html": [
    "6eebd47c9e60c9590de4d1747f8b8b7866a4a275",
@@ -88048,7 +89656,7 @@
    "testharness"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-constructor-expected.txt": [
-   "ae19b2abd560bd378b5a4dc0afde8763fd09cdc2",
+   "b18ac0a88bcca09362db052949635a8aec707550",
    "support"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-constructor.html": [
@@ -88335,21 +89943,41 @@
    "ecfd51818c20d46b9983bb1d045a9308fc9a26b7",
    "testharness"
   ],
+  "webvtt/api/VTTCue/align-expected.txt": [
+   "131f744febd82a1ec7672df3b3e0c2b050cabd60",
+   "support"
+  ],
   "webvtt/api/VTTCue/align.html": [
    "be0efb52616f9447139c536269f8365cf78027d0",
    "testharness"
+  ],
+  "webvtt/api/VTTCue/constructor-expected.txt": [
+   "4ff0d66c5acf66b7e45082fc0ce0a26bc24a84e4",
+   "support"
   ],
   "webvtt/api/VTTCue/constructor.html": [
    "c844f513868cbf4053c70f37bbb630b53a763a2a",
    "testharness"
   ],
+  "webvtt/api/VTTCue/getCueAsHTML-expected.txt": [
+   "1ad453df49e45ff18cd6a6681ecad254f18c10ee",
+   "support"
+  ],
   "webvtt/api/VTTCue/getCueAsHTML.html": [
    "2c4a14607efdc17772f2878e9c0943300a2f8840",
    "testharness"
   ],
+  "webvtt/api/VTTCue/line-expected.txt": [
+   "3e11ceaab25e30c8c1aabed811b884bdccda9441",
+   "support"
+  ],
   "webvtt/api/VTTCue/line.html": [
    "2b57866c1bec1c074f18218a994194c9adfc4b7a",
    "testharness"
+  ],
+  "webvtt/api/VTTCue/lineAlign-expected.txt": [
+   "bc91a54160ee1124b1b370eb1d19cbb6189a4fbb",
+   "support"
   ],
   "webvtt/api/VTTCue/lineAlign.html": [
    "72c3bc90e36c046c170e5c5cfb035c3efc990068",
@@ -88359,9 +89987,17 @@
    "af2af913e9d0bd5bc52f7900fe35ed6ab5a405c6",
    "testharness"
   ],
+  "webvtt/api/VTTCue/positionAlign-expected.txt": [
+   "9330303c727375a34ad94308ce55ec32adcbacb4",
+   "support"
+  ],
   "webvtt/api/VTTCue/positionAlign.html": [
    "8629fc577988d8594f550d12b8ffc1a45bc3e376",
    "testharness"
+  ],
+  "webvtt/api/VTTCue/region-expected.txt": [
+   "44e6b7eaa3ba5c2f13afec8993f57bf6ee86d4cf",
+   "support"
   ],
   "webvtt/api/VTTCue/region.html": [
    "13857e6b5fdd7091ea05829c333f90575f3502f4",
@@ -88371,13 +90007,25 @@
    "54aecea9f627426c7126fa15b4e0295417d68874",
    "testharness"
   ],
+  "webvtt/api/VTTCue/snapToLines-expected.txt": [
+   "c456dfc5bb6f8a876ed57b51c7158f5e88e3fff3",
+   "support"
+  ],
   "webvtt/api/VTTCue/snapToLines.html": [
    "aaca4c55f900600f7334f196d7275d69ffe7f0f9",
    "testharness"
   ],
+  "webvtt/api/VTTCue/text-expected.txt": [
+   "c070481c2ea2189090684786662a3009d3ba544a",
+   "support"
+  ],
   "webvtt/api/VTTCue/text.html": [
    "d7597ca893a7d2be17b908efa55cb70727d64f0b",
    "testharness"
+  ],
+  "webvtt/api/VTTCue/vertical-expected.txt": [
+   "8db8dc0caa62b5aa1cad3ef4d283cecddd4f44ce",
+   "support"
   ],
   "webvtt/api/VTTCue/vertical.html": [
    "9f415b3a239e0a380a03411827c38abd4532ef1a",
@@ -89939,6 +91587,14 @@
    "cb99c6415afcb090b4fe325bcdf741eded26c394",
    "reftest"
   ],
+  "webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector-ref.html": [
+   "c8b696718325cd0fd898481cdb6dc4db50df09e5",
+   "support"
+  ],
+  "webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector.html": [
+   "89473cb28a7442d31b0acfc5fcabb60fd90269ef",
+   "reftest"
+  ],
   "webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/voice_object/voice_animation_with_timestamp-ref.html": [
    "e014b78bbf6fec2e809565f54665dde19403ef68",
    "support"
@@ -90169,6 +91825,14 @@
   ],
   "webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/bold_object_default_font-style.html": [
    "6b3506dda9ed6b83b1c4118345d26a348ae5b9c6",
+   "reftest"
+  ],
+  "webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element-ref.html": [
+   "6b7d0bc69d6a2dfbca110bad97db95bc13e9a534",
+   "support"
+  ],
+  "webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element.html": [
+   "de5442c4ae809d95993db80a8e4b53c41f541499",
    "reftest"
   ],
   "webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/italic_object_default_font-style-ref.html": [
@@ -90964,7 +92628,7 @@
    "testharness"
   ],
   "workers/constructors/SharedWorker/global-members.html": [
-   "d432270dba50e06e0640623bd64b500894497a57",
+   "a5a1d5bfb927545460fcec7f84fa934bce132c4c",
    "testharness"
   ],
   "workers/constructors/SharedWorker/interface-objects.html": [

@@ -1,0 +1,76 @@
+This is a testharness.js-based test.
+Found 72 tests; 36 PASS, 36 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS textarea: select() 
+FAIL textarea: select() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS textarea: selectionStart 
+FAIL textarea: selectionStart a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS textarea: selectionEnd 
+FAIL textarea: selectionEnd a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS textarea: selectionDirection 
+FAIL textarea: selectionDirection a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS textarea: setSelectionRange() 
+FAIL textarea: setSelectionRange() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS textarea: setRangeText() 
+FAIL textarea: setRangeText() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type text: select() 
+FAIL input type text: select() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type text: selectionStart 
+FAIL input type text: selectionStart a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type text: selectionEnd 
+FAIL input type text: selectionEnd a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type text: selectionDirection 
+FAIL input type text: selectionDirection a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type text: setSelectionRange() 
+FAIL input type text: setSelectionRange() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type text: setRangeText() 
+FAIL input type text: setRangeText() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type search: select() 
+FAIL input type search: select() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type search: selectionStart 
+FAIL input type search: selectionStart a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type search: selectionEnd 
+FAIL input type search: selectionEnd a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type search: selectionDirection 
+FAIL input type search: selectionDirection a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type search: setSelectionRange() 
+FAIL input type search: setSelectionRange() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type search: setRangeText() 
+FAIL input type search: setRangeText() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type tel: select() 
+FAIL input type tel: select() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type tel: selectionStart 
+FAIL input type tel: selectionStart a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type tel: selectionEnd 
+FAIL input type tel: selectionEnd a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type tel: selectionDirection 
+FAIL input type tel: selectionDirection a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type tel: setSelectionRange() 
+FAIL input type tel: setSelectionRange() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type tel: setRangeText() 
+FAIL input type tel: setRangeText() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type url: select() 
+FAIL input type url: select() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type url: selectionStart 
+FAIL input type url: selectionStart a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type url: selectionEnd 
+FAIL input type url: selectionEnd a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type url: selectionDirection 
+FAIL input type url: selectionDirection a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type url: setSelectionRange() 
+FAIL input type url: setSelectionRange() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type url: setRangeText() 
+FAIL input type url: setRangeText() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type password: select() 
+FAIL input type password: select() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type password: selectionStart 
+FAIL input type password: selectionStart a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type password: selectionEnd 
+FAIL input type password: selectionEnd a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type password: selectionDirection 
+FAIL input type password: selectionDirection a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type password: setSelectionRange() 
+FAIL input type password: setSelectionRange() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+PASS input type password: setRangeText() 
+FAIL input type password: setRangeText() a second time (must not fire select) assert_unreached: the select event must not fire the second time Reached unreachable code
+Harness: the test ran to completion.
+
