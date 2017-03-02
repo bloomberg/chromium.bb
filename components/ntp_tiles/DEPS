@@ -17,5 +17,6 @@ include_rules = [
   "+jni",
   "+net",
   "+ui/gfx",
-  "+ui/base/resource",
+  "+ui/base",
 ]
+

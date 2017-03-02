@@ -1,42 +1,42 @@
 [
-  {
-    "title": "Facebook - Log In or Sign Up",
-    "url": "https://m.facebook.com/",
-    "large_icon_url": "https://static.xx.fbcdn.net/rsrc.php/v3/ya/r/O2aKM2iSbOw.png"
-  },
-  {
-    "title": "YouTube",
-    "url": "https://m.youtube.com/",
-    "large_icon_url": "https://s.ytimg.com/yts/mobile/img/apple-touch-icon-144x144-precomposed-vflwq-hLZ.png"
-  },
-  {
-    "title": "Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs \u0026 more",
-    "url": "https://www.amazon.com/",
-    "large_icon_url": "https://images-na.ssl-images-amazon.com/images/G/01/anywhere/a_smile_196x196._CB368246573_.png"
-  },
-  {
-    "title": "Wikipedia, the free encyclopedia",
-    "url": "https://en.m.wikipedia.org/",
-    "large_icon_url": "https://en.m.wikipedia.org/static/apple-touch/wikipedia.png"
-  },
-  {
-    "title": "ESPN: The Worldwide Leader in Sports",
-    "url": "http://www.espn.com/",
-    "large_icon_url": "http://a.espncdn.com/wireless/mw5/r1/images/bookmark-icons/espn_icon-152x152.min.png"
-  },
-  {
-    "title": "Yahoo",
-    "url": "https://www.yahoo.com/",
-    "large_icon_url": "https://s.yimg.com/dh/ap/default/130909/y_200_a.png"
-  },
-  {
-    "title": "Instagram",
-    "url": "https://www.instagram.com/",
-    "large_icon_url": "https://instagramstatic-a.akamaihd.net/h1/images/ico/favicon-192.png/b407fa101800.png"
-  },
-  {
-    "title": "Electronics, Cars, Fashion, Collectibles, Coupons and More | eBay",
-    "url": "http://m.ebay.com/",
-    "large_icon_url": "http://ir.ebaystatic.com/pictures/aw/pics/mobile/images/apple-touch-icon.png"
-  }
+    {
+        "large_icon_url": "https://www.chromium.org/_/rsrc/1484148948583/apple-touch-icon.png",
+        "title": "The Chromium Projects `",
+        "url": "https://www.chromium.org/"
+    },
+    {
+        "favicon_url": "https://codereview.chromium.org/static/favicon.ico",
+        "title": "Chromium Code Reviews",
+        "url": "https://codereview.chromium.org/"
+    },
+    {
+        "large_icon_url": "https://www.chromium.org/_/rsrc/1484148948583/apple-touch-icon.png",
+        "title": "Git Repositories on chromium",
+        "url": "https://chromium.googlesource.com/"
+    },
+    {
+        "large_icon_url": "https://developers.google.com/_static/9bce7b6017/images/touch-icon.png",
+        "title": "Google Open Soruce Programs Office",
+        "url": "https://developers.google.com/open-source/"
+    },
+    {
+        "large_icon_url": "https://freenode.net/static/img/logos/coloured-alphabg-sq-120.png",
+        "title": "freenode",
+        "url": "https://freenode.net/"
+    },
+    {
+        "large_icon_url": "https://assets-cdn.github.com/pinned-octocat.svg",
+        "title": "Github Page of the Chromium Project",
+        "url": "https://github.com/chromium/"
+    },
+    {
+        "large_icon_url": "https://cdn2.iconfinder.com/data/icons/minimalism/512/Chromium.png",
+        "title": "Chrome Flags",
+        "url": "chrome://flags"
+    },
+    {
+        "large_icon_url": "https://cdn2.iconfinder.com/data/icons/minimalism/512/Chromium.png",
+        "title": "Chrome Version",
+        "url": "chrome://version/"
+    }
 ]

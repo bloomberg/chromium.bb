@@ -130,21 +130,46 @@ PopularSites::SitesVector ParseSiteList(const base::ListValue& list) {
 
     sites.emplace_back(title, GURL(url), GURL(favicon_url),
                        GURL(large_icon_url), GURL(thumbnail_url));
+    item->GetInteger("default_icon_resource",
+                     &sites.back().default_icon_resource);
   }
   return sites;
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_ANDROID) || defined(OS_IOS))
+void SetDefaultResourceForSite(int index,
+                               int resource_id,
+                               base::ListValue* sites) {
+  base::DictionaryValue* site;
+  if (!sites->GetDictionary(index, &site)) {
+    return;
+  }
+  site->SetInteger("default_icon_resource", resource_id);
+}
+#endif
+
 // Creates the list of popular sites based on a snapshot available for mobile.
 std::unique_ptr<base::ListValue> DefaultPopularSites() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  return base::MakeUnique<base::ListValue>();
+#else
   std::unique_ptr<base::ListValue> sites =
-      base::ListValue::From(base::JSONReader().ReadToValue(
+      base::ListValue::From(base::JSONReader::Read(
           ResourceBundle::GetSharedInstance().GetRawDataResource(
               IDR_DEFAULT_POPULAR_SITES_JSON)));
   DCHECK(sites);
+#if defined(GOOGLE_CHROME_BUILD)
+  int index = 0;
+  for (int icon_resource :
+       {IDR_DEFAULT_POPULAR_SITES_ICON0, IDR_DEFAULT_POPULAR_SITES_ICON1,
+        IDR_DEFAULT_POPULAR_SITES_ICON2, IDR_DEFAULT_POPULAR_SITES_ICON3,
+        IDR_DEFAULT_POPULAR_SITES_ICON4, IDR_DEFAULT_POPULAR_SITES_ICON5,
+        IDR_DEFAULT_POPULAR_SITES_ICON6, IDR_DEFAULT_POPULAR_SITES_ICON7}) {
+    SetDefaultResourceForSite(index++, icon_resource, sites.get());
+  }
+#endif  // GOOGLE_CHROME_BUILD
   return sites;
-#endif
-  return base::MakeUnique<base::ListValue>();
+#endif  // OS_ANDROID || OS_IOS
 }
 
 }  // namespace
@@ -158,7 +183,8 @@ PopularSites::Site::Site(const base::string16& title,
       url(url),
       favicon_url(favicon_url),
       large_icon_url(large_icon_url),
-      thumbnail_url(thumbnail_url) {}
+      thumbnail_url(thumbnail_url),
+      default_icon_resource(-1) {}
 
 PopularSites::Site::Site(const Site& other) = default;
 

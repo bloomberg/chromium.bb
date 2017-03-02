@@ -193,9 +193,10 @@ class MockMostVisitedSitesObserver : public MostVisitedSites::Observer {
 
 class MockIconCacher : public IconCacher {
  public:
-  MOCK_METHOD2(StartFetch,
+  MOCK_METHOD3(StartFetch,
                void(PopularSites::Site site,
-                    const base::Callback<void(bool)>& done));
+                    const base::Closure& icon_available,
+                    const base::Closure& preliminary_icon_available));
 };
 
 class PopularSitesFactoryForTest {
@@ -311,7 +312,7 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
           .WillRepeatedly(Return(false));
       // Mock icon cacher never replies, and we also don't verify whether the
       // code uses it correctly.
-      EXPECT_CALL(*icon_cacher, StartFetch(_, _)).Times(AtLeast(0));
+      EXPECT_CALL(*icon_cacher, StartFetch(_, _, _)).Times(AtLeast(0));
     }
 
     most_visited_sites_ = base::MakeUnique<MostVisitedSites>(

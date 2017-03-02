@@ -39,18 +39,23 @@ class IconCacherImpl : public IconCacher {
   ~IconCacherImpl() override;
 
   void StartFetch(PopularSites::Site site,
-                  const base::Callback<void(bool)>& done) override;
+                  const base::Closure& icon_available,
+                  const base::Closure& preliminary_icon_available) override;
 
  private:
   void OnGetFaviconImageForPageURLFinished(
       PopularSites::Site site,
-      const base::Callback<void(bool)>& done,
+      const base::Closure& icon_available,
+      const base::Closure& preliminary_icon_available,
       const favicon_base::FaviconImageResult& result);
 
   void OnFaviconDownloaded(PopularSites::Site site,
-                           const base::Callback<void(bool)>& done,
+                           const base::Closure& icon_available,
                            const std::string& id,
                            const gfx::Image& fetched_image);
+
+  bool ProvideDefaultIcon(const PopularSites::Site& site);
+  void SaveIconForSite(const PopularSites::Site& site, const gfx::Image image);
 
   base::CancelableTaskTracker tracker_;
   favicon::FaviconService* const favicon_service_;

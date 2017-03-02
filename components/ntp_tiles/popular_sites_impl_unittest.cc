@@ -34,6 +34,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Eq;
+using testing::Gt;
 using testing::IsEmpty;
 
 namespace ntp_tiles {
@@ -169,7 +170,17 @@ class PopularSitesTest : public ::testing::Test {
   net::FakeURLFetcherFactory url_fetcher_factory_;
 };
 
-TEST_F(PopularSitesTest, Basic) {
+TEST_F(PopularSitesTest, ContainsDefaultTilesRightAfterConstruction) {
+  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
+      new net::TestURLRequestContextGetter(
+          base::ThreadTaskRunnerHandle::Get()));
+
+  auto popular_sites = CreatePopularSites(url_request_context.get());
+  EXPECT_THAT(popular_sites->sites().size(),
+              Eq(GetNumberOfDefaultPopularSitesForPlatform()));
+}
+
+TEST_F(PopularSitesTest, Zasic) {
   SetCountryAndVersion("ZZ", "9");
   RespondWithJSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",
@@ -185,15 +196,6 @@ TEST_F(PopularSitesTest, Basic) {
   EXPECT_THAT(sites[0].large_icon_url,
               URLEq("https://zz.m.wikipedia.org/wikipedia.png"));
   EXPECT_THAT(sites[0].favicon_url, URLEq(""));
-}
-
-TEST_F(PopularSitesTest, ContainsDefaultTilesRightAfterConstruction) {
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
-      new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get()));
-
-  EXPECT_THAT(CreatePopularSites(url_request_context.get())->sites().size(),
-              Eq(GetNumberOfDefaultPopularSitesForPlatform()));
 }
 
 TEST_F(PopularSitesTest, Fallback) {
@@ -232,6 +234,21 @@ TEST_F(PopularSitesTest, PopulatesWithDefaultResoucesOnFailure) {
   EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
               Eq(base::Optional<bool>(false)));
   EXPECT_THAT(sites.size(), Eq(GetNumberOfDefaultPopularSitesForPlatform()));
+}
+
+TEST_F(PopularSitesTest, AddsIconResourcesToDefaultPages) {
+  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
+      new net::TestURLRequestContextGetter(
+          base::ThreadTaskRunnerHandle::Get()));
+  std::unique_ptr<PopularSites> popular_sites =
+      CreatePopularSites(url_request_context.get());
+
+#if defined(GOOGLE_CHROME_BUILD)
+  ASSERT_FALSE(popular_sites->sites().empty());
+  for (const auto& site : popular_sites->sites()) {
+    EXPECT_THAT(site.default_icon_resource, Gt(0));
+  }
+#endif
 }
 
 TEST_F(PopularSitesTest, ProvidesDefaultSitesUntilCallbackReturns) {

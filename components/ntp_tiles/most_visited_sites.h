@@ -181,7 +181,7 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   void OnPopularSitesDownloaded(bool success);
 
-  void OnIconMadeAvailable(const GURL& site_url, bool newly_available);
+  void OnIconMadeAvailable(const GURL& site_url);
 
   // history::TopSitesObserver implementation.
   void TopSitesLoaded(history::TopSites* top_sites) override;

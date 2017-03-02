@@ -359,9 +359,10 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
       tile.source = NTPTileSource::POPULAR;
 
       popular_sites_tiles.push_back(std::move(tile));
-      icon_cacher_->StartFetch(
-          popular_site, base::Bind(&MostVisitedSites::OnIconMadeAvailable,
-                                   base::Unretained(this), popular_site.url));
+      base::Closure icon_available =
+          base::Bind(&MostVisitedSites::OnIconMadeAvailable,
+                     base::Unretained(this), popular_site.url);
+      icon_cacher_->StartFetch(popular_site, icon_available, icon_available);
       if (popular_sites_tiles.size() >= num_popular_sites_tiles)
         break;
     }
@@ -420,10 +421,8 @@ void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
   }
 }
 
-void MostVisitedSites::OnIconMadeAvailable(const GURL& site_url,
-                                           bool newly_available) {
-  if (newly_available)
-    observer_->OnIconMadeAvailable(site_url);
+void MostVisitedSites::OnIconMadeAvailable(const GURL& site_url) {
+  observer_->OnIconMadeAvailable(site_url);
 }
 
 void MostVisitedSites::TopSitesLoaded(TopSites* top_sites) {}

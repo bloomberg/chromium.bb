@@ -37,6 +37,7 @@ class PopularSites {
     GURL favicon_url;
     GURL large_icon_url;
     GURL thumbnail_url;
+    int default_icon_resource;  // < 0 if there is none. Used for popular sites.
   };
 
   using SitesVector = std::vector<Site>;
