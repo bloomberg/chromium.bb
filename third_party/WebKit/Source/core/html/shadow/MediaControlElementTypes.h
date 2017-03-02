@@ -85,7 +85,7 @@ class MediaControlElement : public GarbageCollectedMixin {
  public:
   // These hold the state about whether this control should be shown if
   // space permits.  These will also show / hide as needed.
-  void setIsWanted(bool);
+  virtual void setIsWanted(bool);
   bool isWanted();
 
   // Tell us whether we fit or not.  This will hide / show the control as

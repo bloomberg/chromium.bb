@@ -17,6 +17,7 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "platform/testing/HistogramTester.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebSize.h"
@@ -140,6 +141,13 @@ bool isElementVisible(Element& element) {
   return true;
 }
 
+// This must match MediaControlDownloadButtonElement::DownloadActionMetrics.
+enum DownloadActionMetrics {
+  Shown = 0,
+  Clicked,
+  Count  // Keep last.
+};
+
 }  // namespace
 
 class MediaControlsTest : public ::testing::Test {
@@ -182,9 +190,12 @@ class MediaControlsTest : public ::testing::Test {
   }
   Document& document() { return m_pageHolder->document(); }
 
+  HistogramTester& histogramTester() { return m_histogramTester; }
+
  private:
   std::unique_ptr<DummyPageHolder> m_pageHolder;
   Persistent<MediaControls> m_mediaControls;
+  HistogramTester m_histogramTester;
 };
 
 TEST_F(MediaControlsTest, HideAndShow) {
@@ -369,6 +380,66 @@ TEST_F(MediaControlsTest, DownloadButtonNotDisplayedEmptyUrl) {
   testing::runPendingTasks();
   simulateLoadedMetadata();
   EXPECT_FALSE(isElementVisible(*downloadButton));
+}
+
+TEST_F(MediaControlsTest, DownloadButtonDisplayedHiddenAndDisplayed) {
+  ensureLayout();
+
+  Element* downloadButton = getElementByShadowPseudoId(
+      mediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, downloadButton);
+
+  // Initially show button.
+  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
+  testing::runPendingTasks();
+  simulateLoadedMetadata();
+  EXPECT_TRUE(isElementVisible(*downloadButton));
+  histogramTester().expectBucketCount("Media.Controls.Download",
+                                      DownloadActionMetrics::Shown, 1);
+
+  // Hide button.
+  mediaControls().mediaElement().setSrc("");
+  testing::runPendingTasks();
+  EXPECT_TRUE(isElementVisible(*downloadButton));
+  histogramTester().expectBucketCount("Media.Controls.Download",
+                                      DownloadActionMetrics::Shown, 1);
+
+  // Showing button again should not increment Shown count.
+  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
+  testing::runPendingTasks();
+  EXPECT_TRUE(isElementVisible(*downloadButton));
+  histogramTester().expectBucketCount("Media.Controls.Download",
+                                      DownloadActionMetrics::Shown, 1);
+}
+
+TEST_F(MediaControlsTest, DownloadButtonRecordsClickOnlyOnce) {
+  ensureLayout();
+
+  MediaControlDownloadButtonElement* downloadButton =
+      static_cast<MediaControlDownloadButtonElement*>(
+          getElementByShadowPseudoId(
+              mediaControls(), "-internal-media-controls-download-button"));
+  ASSERT_NE(nullptr, downloadButton);
+
+  // Initially show button.
+  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
+  testing::runPendingTasks();
+  simulateLoadedMetadata();
+  EXPECT_TRUE(isElementVisible(*downloadButton));
+  histogramTester().expectBucketCount("Media.Controls.Download",
+                                      DownloadActionMetrics::Shown, 1);
+
+  // Click button once.
+  downloadButton->dispatchSimulatedClick(
+      Event::createBubble(EventTypeNames::click), SendNoEvents);
+  histogramTester().expectBucketCount("Media.Controls.Download",
+                                      DownloadActionMetrics::Clicked, 1);
+
+  // Clicking button again should not increment Clicked count.
+  downloadButton->dispatchSimulatedClick(
+      Event::createBubble(EventTypeNames::click), SendNoEvents);
+  histogramTester().expectBucketCount("Media.Controls.Download",
+                                      DownloadActionMetrics::Clicked, 1);
 }
 
 TEST_F(MediaControlsTest, DownloadButtonNotDisplayedInfiniteDuration) {

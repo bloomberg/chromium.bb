@@ -703,12 +703,29 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
   return true;
 }
 
+void MediaControlDownloadButtonElement::setIsWanted(bool wanted) {
+  MediaControlElement::setIsWanted(wanted);
+
+  if (!isWanted())
+    return;
+
+  DCHECK(isWanted());
+  if (!m_showUseCounted) {
+    m_showUseCounted = true;
+    recordMetrics(DownloadActionMetrics::Shown);
+  }
+}
+
 void MediaControlDownloadButtonElement::defaultEventHandler(Event* event) {
   const KURL& url = mediaElement().currentSrc();
   if (event->type() == EventTypeNames::click &&
       !(url.isNull() || url.isEmpty())) {
     Platform::current()->recordAction(
         UserMetricsAction("Media.Controls.Download"));
+    if (!m_clickUseCounted) {
+      m_clickUseCounted = true;
+      recordMetrics(DownloadActionMetrics::Clicked);
+    }
     if (!m_anchor) {
       HTMLAnchorElement* anchor = HTMLAnchorElement::create(document());
       anchor->setAttribute(HTMLNames::downloadAttr, "");
@@ -723,6 +740,14 @@ void MediaControlDownloadButtonElement::defaultEventHandler(Event* event) {
 DEFINE_TRACE(MediaControlDownloadButtonElement) {
   visitor->trace(m_anchor);
   MediaControlInputElement::trace(visitor);
+}
+
+void MediaControlDownloadButtonElement::recordMetrics(
+    DownloadActionMetrics metric) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, downloadActionHistogram,
+                      ("Media.Controls.Download",
+                       static_cast<int>(DownloadActionMetrics::Count)));
+  downloadActionHistogram.count(static_cast<int>(metric));
 }
 
 // ----------------------------

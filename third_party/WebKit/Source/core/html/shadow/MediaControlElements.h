@@ -235,6 +235,8 @@ class MediaControlDownloadButtonElement final
   // show the button for only non-MSE, non-EME, and non-MediaStream content.
   bool shouldDisplayDownloadButton();
 
+  void setIsWanted(bool) override;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -244,6 +246,20 @@ class MediaControlDownloadButtonElement final
 
   // Points to an anchor element that contains the URL of the media file.
   Member<HTMLAnchorElement> m_anchor;
+
+  // This is used for UMA histogram (Media.Controls.Download). New values should
+  // be appended only and must be added before |Count|.
+  enum class DownloadActionMetrics {
+    Shown = 0,
+    Clicked,
+    Count  // Keep last.
+  };
+  void recordMetrics(DownloadActionMetrics);
+
+  // UMA related boolean. They are used to prevent counting something twice
+  // for the same media element.
+  bool m_clickUseCounted = false;
+  bool m_showUseCounted = false;
 };
 
 class MediaControlTimelineElement final : public MediaControlInputElement {
