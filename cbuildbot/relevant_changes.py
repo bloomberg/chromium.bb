@@ -175,7 +175,7 @@ class TriageRelevantChanges(object):
       changes: A list of changes (GerritPatch instances) which have been applied
         to this build.
       buildbucket_info_dict: A dict mapping all slave build config names to
-        their BuildbucketInfos (See SlaveStatus._GetAllSlaveBuildbucketInfo
+        their BuildbucketInfos (See SlaveStatus.GetAllSlaveBuildbucketInfo
         for details).
       cidb_status_dict: A dict mapping all slave build config names to their
         CIDBStatusInfos (See SlaveStatus._GetAllSlaveCIDBStatusInfo for details)
@@ -251,7 +251,7 @@ class TriageRelevantChanges(object):
       master_build_id: The build_id of the master build.
       db: An instance of cidb.CIDBConnection to fetch data from CIDB.
       buildbucket_info_dict: A dict mapping all slave build config names to
-        their BuildbucketInfos (See SlaveStatus._GetAllSlaveBuildbucketInfo
+        their BuildbucketInfos (See SlaveStatus.GetAllSlaveBuildbucketInfo
         for details).
 
     Returns:

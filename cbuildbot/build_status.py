@@ -135,26 +135,30 @@ class SlaveStatus(object):
             for build_config, status_info in all_cidb_status_dict.iteritems()
             if build_config not in completed_builds}
 
-  def _GetAllSlaveBuildbucketInfo(self, scheduled_buildbucket_info_dict):
+  @staticmethod
+  def GetAllSlaveBuildbucketInfo(buildbucket_client,
+                                 scheduled_buildbucket_info_dict,
+                                 dry_run=True):
     """Get buildbucket info from Buildbucket for all scheduled slave builds.
 
     For each build in the scheduled builds dict, get build status and build
     result from Buildbucket and return a updated buildbucket_info_dict.
 
     Args:
+      buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
       scheduled_buildbucket_info_dict: A dict mapping scheduled slave build
         config name to its buildbucket information in the format of
         BuildbucketInfo (see buildbucket.GetBuildInfoDict for details).
+      dry_run: Boolean indicating whether it's a dry run. Default to True.
 
     Returns:
       A dict mapping all scheduled slave build config names to their
       BuildbucketInfos (The BuildbucketInfo of the most recently retried one of
       there're multiple retries for a slave build config).
     """
-    assert self.buildbucket_client is not None, 'buildbucket_client is None'
+    assert buildbucket_client is not None, 'buildbucket_client is None'
 
     all_buildbucket_info_dict = {}
-
     for build_config, build_info in scheduled_buildbucket_info_dict.iteritems():
       buildbucket_id = build_info.buildbucket_id
       retry = build_info.retry
@@ -163,8 +167,7 @@ class SlaveStatus(object):
       result = None
 
       try:
-        content = self.buildbucket_client.GetBuildRequest(
-            buildbucket_id, self.dry_run)
+        content = buildbucket_client.GetBuildRequest(buildbucket_id, dry_run)
         status = buildbucket_lib.GetBuildStatus(content)
         result = buildbucket_lib.GetBuildResult(content)
       except buildbucket_lib.BuildbucketResponseException as e:
@@ -212,8 +215,9 @@ class SlaveStatus(object):
       scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
           self.metadata)
       self.builders_array = scheduled_buildbucket_info_dict.keys()
-      self.all_buildbucket_info_dict = self._GetAllSlaveBuildbucketInfo(
-          scheduled_buildbucket_info_dict)
+      self.all_buildbucket_info_dict = self.GetAllSlaveBuildbucketInfo(
+          self.buildbucket_client, scheduled_buildbucket_info_dict,
+          dry_run=self.dry_run)
       self.buildbucket_info_dict = self._GetNewlyCompletedSlaveBuildbucketInfo(
           self.all_buildbucket_info_dict, self.completed_builds)
       self._SetStatusBuildsDict()

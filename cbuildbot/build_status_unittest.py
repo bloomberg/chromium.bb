@@ -137,7 +137,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
 
   def _Mock_GetSlaveStatusesFromBuildbucket(self, buildbucket_info_dict=None):
     self.PatchObject(build_status.SlaveStatus,
-                     '_GetAllSlaveBuildbucketInfo')
+                     'GetAllSlaveBuildbucketInfo')
     self.PatchObject(build_status.SlaveStatus,
                      '_GetNewlyCompletedSlaveBuildbucketInfo',
                      return_value=buildbucket_info_dict)
@@ -1049,8 +1049,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
                      'retry_id')
     self.assertEqual(buildbucket_info_dict['canceled'].retry, 2)
 
-  def test_GetAllSlaveBuildbucketInfo(self):
-    """Test _GetAllSlaveBuildbucketInfo."""
+  def testGetAllSlaveBuildbucketInfo(self):
+    """Test GetAllSlaveBuildbucketInfo."""
     self._Mock_GetSlaveStatusesFromCIDB()
     self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
 
@@ -1076,7 +1076,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
         config=self.master_cq_config)
     slave_status.buildbucket_client.GetBuildRequest.return_value = content
     updated_buildbucket_info_dict = (
-        slave_status._GetAllSlaveBuildbucketInfo(buildbucket_info_dict))
+        slave_status.GetAllSlaveBuildbucketInfo(
+            self.buildbucket_client, buildbucket_info_dict))
 
     self.assertEqual(updated_buildbucket_info_dict['build1'].status,
                      expected_status)
@@ -1097,7 +1098,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     }
     slave_status.buildbucket_client.GetBuildRequest.return_value = content
     updated_buildbucket_info_dict = (
-        slave_status._GetAllSlaveBuildbucketInfo(buildbucket_info_dict))
+        slave_status.GetAllSlaveBuildbucketInfo(
+            self.buildbucket_client, buildbucket_info_dict))
 
     self.assertEqual(updated_buildbucket_info_dict['build1'].status,
                      expected_status)
@@ -1112,7 +1114,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     slave_status.buildbucket_client.GetBuildRequest.side_effect = (
         buildbucket_lib.BuildbucketResponseException)
     updated_buildbucket_info_dict = (
-        slave_status._GetAllSlaveBuildbucketInfo(buildbucket_info_dict))
+        slave_status.GetAllSlaveBuildbucketInfo(
+            self.buildbucket_client, buildbucket_info_dict))
     self.assertIsNone(updated_buildbucket_info_dict['build1'].status)
     self.assertIsNone(updated_buildbucket_info_dict['build2'].status)
 
