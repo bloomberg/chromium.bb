@@ -32,6 +32,8 @@ class ShaderDiskCacheEntry : public base::ThreadChecker {
   ~ShaderDiskCacheEntry();
 
   void Cache();
+  void OnOpComplete(int rv);
+  void set_entry(disk_cache::Entry* entry) { entry_ = entry; }
 
  private:
   enum OpType {
@@ -39,8 +41,6 @@ class ShaderDiskCacheEntry : public base::ThreadChecker {
     WRITE_DATA,
     CREATE_ENTRY,
   };
-
-  void OnOpComplete(int rv);
 
   int OpenCallback(int rv);
   int WriteCallback(int rv);
@@ -67,6 +67,8 @@ class ShaderDiskReadHelper : public base::ThreadChecker {
   ~ShaderDiskReadHelper();
 
   void LoadCache();
+  void OnOpComplete(int rv);
+  void set_entry(disk_cache::Entry* entry) { entry_ = entry; }
 
  private:
   enum OpType {
@@ -76,8 +78,6 @@ class ShaderDiskReadHelper : public base::ThreadChecker {
     READ_COMPLETE,
     ITERATION_FINISHED
   };
-
-  void OnOpComplete(int rv);
 
   int OpenNextEntry();
   int OpenNextEntryComplete(int rv);
@@ -124,6 +124,23 @@ class ShaderClearHelper : public base::ThreadChecker {
   DISALLOW_COPY_AND_ASSIGN(ShaderClearHelper);
 };
 
+// When the cache is asked to open an entry an Entry** is passed to it. The
+// underying Entry* must stay alive for the duration of the call, so it is
+// owned by the callback. If the underlying state machine is deleted before
+// the callback runs, close the entry.
+template <typename T>
+void OnEntryOpenComplete(base::WeakPtr<T> state_machine,
+                         std::unique_ptr<disk_cache::Entry*> entry,
+                         int rv) {
+  if (!state_machine) {
+    if (rv == net::OK)
+      (*entry)->Close();
+    return;
+  }
+  state_machine->set_entry(*entry);
+  state_machine->OnOpComplete(rv);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShaderDiskCacheEntry
 
@@ -147,11 +164,22 @@ ShaderDiskCacheEntry::~ShaderDiskCacheEntry() {
 
 void ShaderDiskCacheEntry::Cache() {
   DCHECK(CalledOnValidThread());
-  int rv = cache_->backend()->OpenEntry(
-      key_, &entry_, base::Bind(&ShaderDiskCacheEntry::OnOpComplete,
-                                weak_ptr_factory_.GetWeakPtr()));
-  if (rv != net::ERR_IO_PENDING)
+
+  // The Entry* passed to the cache must stay alive even if this class is
+  // deleted, so store it in the callback.
+  auto entry = base::MakeUnique<disk_cache::Entry*>(nullptr);
+  disk_cache::Entry** closure_owned_entry_ptr = entry.get();
+  auto callback = base::Bind(&OnEntryOpenComplete<ShaderDiskCacheEntry>,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             base::Passed(std::move(entry)));
+
+  int rv =
+      cache_->backend()->OpenEntry(key_, closure_owned_entry_ptr, callback);
+
+  if (rv != net::ERR_IO_PENDING) {
+    entry_ = *closure_owned_entry_ptr;
     OnOpComplete(rv);
+  }
 }
 
 void ShaderDiskCacheEntry::OnOpComplete(int rv) {
@@ -186,9 +214,21 @@ int ShaderDiskCacheEntry::OpenCallback(int rv) {
   }
 
   op_type_ = CREATE_ENTRY;
-  return cache_->backend()->CreateEntry(
-      key_, &entry_, base::Bind(&ShaderDiskCacheEntry::OnOpComplete,
-                                weak_ptr_factory_.GetWeakPtr()));
+
+  // The Entry* passed to the cache must stay alive even if this class is
+  // deleted, so store it in the callback.
+  auto entry = base::MakeUnique<disk_cache::Entry*>(nullptr);
+  disk_cache::Entry** closure_owned_entry_ptr = entry.get();
+  auto callback = base::Bind(&OnEntryOpenComplete<ShaderDiskCacheEntry>,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             base::Passed(std::move(entry)));
+
+  int create_rv =
+      cache_->backend()->CreateEntry(key_, closure_owned_entry_ptr, callback);
+
+  if (create_rv != net::ERR_IO_PENDING)
+    entry_ = *closure_owned_entry_ptr;
+  return create_rv;
 }
 
 int ShaderDiskCacheEntry::WriteCallback(int rv) {
@@ -266,9 +306,20 @@ int ShaderDiskReadHelper::OpenNextEntry() {
   op_type_ = OPEN_NEXT_COMPLETE;
   if (!iter_)
     iter_ = cache_->backend()->CreateIterator();
-  return iter_->OpenNextEntry(&entry_,
-                              base::Bind(&ShaderDiskReadHelper::OnOpComplete,
-                                         weak_ptr_factory_.GetWeakPtr()));
+
+  // The Entry* passed to the cache must stay alive even if this class is
+  // deleted, so store it in the callback.
+  auto entry = base::MakeUnique<disk_cache::Entry*>(nullptr);
+  disk_cache::Entry** closure_owned_entry_ptr = entry.get();
+  auto callback = base::Bind(&OnEntryOpenComplete<ShaderDiskReadHelper>,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             base::Passed(std::move(entry)));
+
+  int rv = iter_->OpenNextEntry(closure_owned_entry_ptr, callback);
+
+  if (rv != net::ERR_IO_PENDING)
+    entry_ = *closure_owned_entry_ptr;
+  return rv;
 }
 
 int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {

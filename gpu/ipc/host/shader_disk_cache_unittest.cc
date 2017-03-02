@@ -79,4 +79,31 @@ TEST_F(ShaderDiskCacheTest, ClearsCache) {
   EXPECT_EQ(0, cache->Size());
 };
 
+// For https://crbug.com/663589.
+TEST_F(ShaderDiskCacheTest, SafeToDeleteCacheMidEntryOpen) {
+  InitCache();
+
+  // Create a cache and wait for it to open.
+  scoped_refptr<ShaderDiskCache> cache = factory()->Get(kDefaultClientId);
+  ASSERT_TRUE(cache.get() != NULL);
+  net::TestCompletionCallback available_cb;
+  int rv = cache->SetAvailableCallback(available_cb.callback());
+  ASSERT_EQ(net::OK, available_cb.GetResult(rv));
+  EXPECT_EQ(0, cache->Size());
+
+  // Start writing an entry to the cache but delete it before the backend has
+  // finished opening the entry. There is a race here, so this usually (but
+  // not always) crashes if there is a problem.
+  cache->Cache(kCacheKey, kCacheValue);
+  cache = nullptr;
+
+  // Open a new cache (to pass time on the cache thread) and verify all is
+  // well.
+  cache = factory()->Get(kDefaultClientId);
+  ASSERT_TRUE(cache.get() != NULL);
+  net::TestCompletionCallback available_cb2;
+  int rv2 = cache->SetAvailableCallback(available_cb2.callback());
+  ASSERT_EQ(net::OK, available_cb2.GetResult(rv2));
+};
+
 }  // namespace gpu
