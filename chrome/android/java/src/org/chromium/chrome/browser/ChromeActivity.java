@@ -108,6 +108,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.OptionalShareTargetsManager;
+import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
@@ -1193,12 +1194,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
 
-        List<Class<? extends Activity>> classesToEnable = new ArrayList<>(2);
+        List<Class<? extends ShareActivity>> classesToEnable = new ArrayList<>(2);
 
-        if (PrintShareActivity.printingIsEnabled(currentTab)) {
+        if (PrintShareActivity.featureIsAvailable(currentTab)) {
             classesToEnable.add(PrintShareActivity.class);
         }
-        if (PhysicalWebShareActivity.sharingIsEnabled(currentTab)) {
+        if (PhysicalWebShareActivity.featureIsAvailable()) {
             classesToEnable.add(PhysicalWebShareActivity.class);
         }
 

@@ -4,41 +4,21 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.content.Intent;
 import android.os.Build;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 
-import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.share.ShareActivity;
 
 /**
  * A simple activity that allows Chrome to start the physical web sharing service.
  */
-public class PhysicalWebShareActivity extends AppCompatActivity {
-    private static final String TAG = "PhysicalWebShareActivity";
-
+public class PhysicalWebShareActivity extends ShareActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        try {
-            Intent intent = getIntent();
-            if (intent == null) return;
-            if (!Intent.ACTION_SEND.equals(intent.getAction())) return;
-            if (!IntentUtils.safeHasExtra(getIntent(), ShareHelper.EXTRA_TASK_ID)) return;
-            handleShareAction();
-        } finally {
-            finish();
-        }
+    protected void handleShareAction(ChromeActivity triggeringActivity) {
+        // TODO(iankc): implement this.
     }
 
-    private void handleShareAction() {
-        // TODO(iankc): implement sharing
-    }
-
-    public static boolean sharingIsEnabled(Tab currentTab) {
+    public static boolean featureIsAvailable() {
         return PhysicalWeb.sharingIsEnabled() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 }
