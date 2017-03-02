@@ -261,15 +261,15 @@ void CupsPrintersHandler::OnAddedPrinter(std::unique_ptr<Printer> printer,
     PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
         std::move(printer));
   }
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback", base::StringValue("on-add-cups-printer"),
-      base::FundamentalValue(success), base::StringValue(printer_name));
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("on-add-cups-printer"),
+                         base::Value(success), base::StringValue(printer_name));
 }
 
 void CupsPrintersHandler::OnAddPrinterError() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("on-add-cups-printer"),
-                         base::FundamentalValue(false), base::StringValue(""));
+                         base::Value(false), base::StringValue(""));
 }
 
 void CupsPrintersHandler::HandleGetCupsPrinterManufacturers(

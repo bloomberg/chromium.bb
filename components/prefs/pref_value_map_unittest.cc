@@ -27,7 +27,7 @@ TEST(PrefValueMapTest, SetValue) {
 
 TEST(PrefValueMapTest, GetAndSetIntegerValue) {
   PrefValueMap map;
-  ASSERT_TRUE(map.SetValue("key", base::MakeUnique<FundamentalValue>(5)));
+  ASSERT_TRUE(map.SetValue("key", base::MakeUnique<Value>(5)));
 
   int int_value = 0;
   EXPECT_TRUE(map.GetInteger("key", &int_value));
@@ -40,7 +40,7 @@ TEST(PrefValueMapTest, GetAndSetIntegerValue) {
 
 TEST(PrefValueMapTest, SetDoubleValue) {
   PrefValueMap map;
-  ASSERT_TRUE(map.SetValue("key", base::MakeUnique<FundamentalValue>(5.5)));
+  ASSERT_TRUE(map.SetValue("key", base::MakeUnique<Value>(5.5)));
 
   const Value* result = NULL;
   ASSERT_TRUE(map.GetValue("key", &result));

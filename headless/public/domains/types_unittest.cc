@@ -197,7 +197,7 @@ TEST(TypesTest, ObjectPropertyParseError) {
 }
 
 TEST(TypesTest, AnyProperty) {
-  std::unique_ptr<base::Value> value(new base::FundamentalValue(123));
+  std::unique_ptr<base::Value> value(new base::Value(123));
   std::unique_ptr<accessibility::AXValue> object(
       accessibility::AXValue::Builder()
           .SetType(accessibility::AXValueType::INTEGER)

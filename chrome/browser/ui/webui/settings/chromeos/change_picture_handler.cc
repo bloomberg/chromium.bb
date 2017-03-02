@@ -248,7 +248,7 @@ void ChangePictureHandler::SendSelectedImage() {
 void ChangePictureHandler::SendProfileImage(const gfx::ImageSkia& image,
                                             bool should_select) {
   base::StringValue data_url(webui::GetBitmapDataUrl(*image.bitmap()));
-  base::FundamentalValue select(should_select);
+  base::Value select(should_select);
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("profile-image-changed"), data_url,
                          select);
@@ -369,7 +369,7 @@ void ChangePictureHandler::SetImageFromCamera(const gfx::ImageSkia& photo) {
 void ChangePictureHandler::SetCameraPresent(bool present) {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("camera-presence-changed"),
-                         base::FundamentalValue(present));
+                         base::Value(present));
 }
 
 void ChangePictureHandler::OnCameraPresenceCheckDone(bool is_camera_present) {

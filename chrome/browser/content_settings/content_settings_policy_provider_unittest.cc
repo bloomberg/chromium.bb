@@ -48,7 +48,7 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 
   // Change the managed value of the default geolocation setting
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
-                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+                        new base::Value(CONTENT_SETTING_BLOCK));
 
   rule_iterator = provider.GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                            std::string(), false);
@@ -71,7 +71,7 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   PolicyProvider provider(prefs);
 
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+                        new base::Value(CONTENT_SETTING_BLOCK));
 
   std::unique_ptr<RuleIterator> rule_iterator(provider.GetRuleIterator(
       CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), false));
@@ -98,9 +98,9 @@ TEST_F(PolicyProviderTest, ManagedDefaultPluginSettingsExperiment) {
 
   // ForceDefaultPluginsSettingAsk overrides this to ASK.
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+                        new base::Value(CONTENT_SETTING_BLOCK));
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
-                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+                        new base::Value(CONTENT_SETTING_BLOCK));
 
   std::unique_ptr<RuleIterator> plugin_rule_iterator(provider.GetRuleIterator(
       CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), false));
@@ -140,7 +140,7 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
 
   // Set the managed default-content-setting.
   prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
-                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+                        new base::Value(CONTENT_SETTING_BLOCK));
   ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(_,
@@ -193,7 +193,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   // enforced via policies and not set by the user or extension. So a call to
   // SetWebsiteSetting does nothing.
   std::unique_ptr<base::Value> value_block(
-      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+      new base::Value(CONTENT_SETTING_BLOCK));
   bool owned = provider.SetWebsiteSetting(yt_url_pattern,
                                           yt_url_pattern,
                                           CONTENT_SETTINGS_TYPE_COOKIES,

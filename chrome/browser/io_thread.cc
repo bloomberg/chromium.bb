@@ -404,8 +404,8 @@ IOThread::IOThread(
           local_state,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
-  base::Value* dns_client_enabled_default = new base::FundamentalValue(
-      chrome_browser_net::ConfigureAsyncDnsFieldTrial());
+  base::Value* dns_client_enabled_default =
+      new base::Value(chrome_browser_net::ConfigureAsyncDnsFieldTrial());
   local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
                                    dns_client_enabled_default);
   chrome_browser_net::LogAsyncDnsPrefSource(

@@ -95,16 +95,16 @@ void TestHarness::InstallStringPolicy(const std::string& policy_name,
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
-  store_.policy_map_.Set(
-      policy_name, policy_level(), policy_scope(), POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::FundamentalValue>(policy_value), nullptr);
+  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
+                         POLICY_SOURCE_CLOUD,
+                         base::MakeUnique<base::Value>(policy_value), nullptr);
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
-  store_.policy_map_.Set(
-      policy_name, policy_level(), policy_scope(), POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::FundamentalValue>(policy_value), nullptr);
+  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
+                         POLICY_SOURCE_CLOUD,
+                         base::MakeUnique<base::Value>(policy_value), nullptr);
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,

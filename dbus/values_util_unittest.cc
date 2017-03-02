@@ -55,50 +55,47 @@ TEST(ValuesUtilTest, PopBasicTypes) {
   // Pop a byte.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kByteValue));
+  expected_value.reset(new base::Value(kByteValue));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a bool.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kBoolValue));
+  expected_value.reset(new base::Value(kBoolValue));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an int16_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kInt16Value));
+  expected_value.reset(new base::Value(kInt16Value));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a uint16_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kUint16Value));
+  expected_value.reset(new base::Value(kUint16Value));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an int32_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kInt32Value));
+  expected_value.reset(new base::Value(kInt32Value));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a uint32_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(
-      new base::FundamentalValue(static_cast<double>(kUint32Value)));
+  expected_value.reset(new base::Value(static_cast<double>(kUint32Value)));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an int64_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(
-      new base::FundamentalValue(static_cast<double>(kInt64Value)));
+  expected_value.reset(new base::Value(static_cast<double>(kInt64Value)));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a uint64_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(
-      new base::FundamentalValue(static_cast<double>(kUint64Value)));
+  expected_value.reset(new base::Value(static_cast<double>(kUint64Value)));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a double.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kDoubleValue));
+  expected_value.reset(new base::Value(kDoubleValue));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a string.
   value = PopDataAsValue(&reader);
@@ -136,17 +133,17 @@ TEST(ValuesUtilTest, PopVariant) {
   // Pop a bool.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kBoolValue));
+  expected_value.reset(new base::Value(kBoolValue));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an int32_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kInt32Value));
+  expected_value.reset(new base::Value(kInt32Value));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a double.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::FundamentalValue(kDoubleValue));
+  expected_value.reset(new base::Value(kDoubleValue));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a string.
   value = PopDataAsValue(&reader);
@@ -173,16 +170,14 @@ TEST(ValuesUtilTest, PopExtremelyLargeIntegers) {
   // Pop an int64_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(
-      new base::FundamentalValue(static_cast<double>(kInt64Value)));
+  expected_value.reset(new base::Value(static_cast<double>(kInt64Value)));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   ASSERT_TRUE(value->GetAsDouble(&double_value));
   EXPECT_NE(kInt64Value, static_cast<int64_t>(double_value));
   // Pop a uint64_t.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(
-      new base::FundamentalValue(static_cast<double>(kUint64Value)));
+  expected_value.reset(new base::Value(static_cast<double>(kUint64Value)));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   ASSERT_TRUE(value->GetAsDouble(&double_value));
   EXPECT_NE(kUint64Value, static_cast<uint64_t>(double_value));
@@ -343,12 +338,10 @@ TEST(ValuesUtilTest, PopDictionaryWithDottedStringKey) {
 
   // Create the expected value.
   base::DictionaryValue dictionary_value;
-  dictionary_value.SetWithoutPathExpansion(
-      kKey1, new base::FundamentalValue(kBoolValue));
-  dictionary_value.SetWithoutPathExpansion(
-      kKey2, new base::FundamentalValue(kInt32Value));
-  dictionary_value.SetWithoutPathExpansion(
-      kKey3, new base::FundamentalValue(kDoubleValue));
+  dictionary_value.SetWithoutPathExpansion(kKey1, new base::Value(kBoolValue));
+  dictionary_value.SetWithoutPathExpansion(kKey2, new base::Value(kInt32Value));
+  dictionary_value.SetWithoutPathExpansion(kKey3,
+                                           new base::Value(kDoubleValue));
 
   // Pop a dictinoary.
   MessageReader reader(response.get());
@@ -383,7 +376,7 @@ TEST(ValuesUtilTest, PopDoubleToIntDictionary) {
   base::DictionaryValue dictionary_value;
   for (size_t i = 0; i != values.size(); ++i) {
     std::string key_string;
-    base::JSONWriter::Write(base::FundamentalValue(keys[i]), &key_string);
+    base::JSONWriter::Write(base::Value(keys[i]), &key_string);
     dictionary_value.SetIntegerWithoutPathExpansion(key_string, values[i]);
   }
 
@@ -395,9 +388,9 @@ TEST(ValuesUtilTest, PopDoubleToIntDictionary) {
 }
 
 TEST(ValuesUtilTest, AppendBasicTypes) {
-  const base::FundamentalValue kBoolValue(false);
-  const base::FundamentalValue kIntegerValue(42);
-  const base::FundamentalValue kDoubleValue(4.2);
+  const base::Value kBoolValue(false);
+  const base::Value kIntegerValue(42);
+  const base::Value kDoubleValue(4.2);
   const base::StringValue kStringValue("string");
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
@@ -424,9 +417,9 @@ TEST(ValuesUtilTest, AppendBasicTypes) {
 }
 
 TEST(ValuesUtilTest, AppendBasicTypesAsVariant) {
-  const base::FundamentalValue kBoolValue(false);
-  const base::FundamentalValue kIntegerValue(42);
-  const base::FundamentalValue kDoubleValue(4.2);
+  const base::Value kBoolValue(false);
+  const base::Value kIntegerValue(42);
+  const base::Value kDoubleValue(4.2);
   const base::StringValue kStringValue("string");
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
@@ -453,9 +446,9 @@ TEST(ValuesUtilTest, AppendBasicTypesAsVariant) {
 }
 
 TEST(ValuesUtilTest, AppendValueDataBasicTypes) {
-  const base::FundamentalValue kBoolValue(false);
-  const base::FundamentalValue kIntegerValue(42);
-  const base::FundamentalValue kDoubleValue(4.2);
+  const base::Value kBoolValue(false);
+  const base::Value kIntegerValue(42);
+  const base::Value kDoubleValue(4.2);
   const base::StringValue kStringValue("string");
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
@@ -482,9 +475,9 @@ TEST(ValuesUtilTest, AppendValueDataBasicTypes) {
 }
 
 TEST(ValuesUtilTest, AppendValueDataAsVariantBasicTypes) {
-  const base::FundamentalValue kBoolValue(false);
-  const base::FundamentalValue kIntegerValue(42);
-  const base::FundamentalValue kDoubleValue(4.2);
+  const base::Value kBoolValue(false);
+  const base::Value kIntegerValue(42);
+  const base::Value kDoubleValue(4.2);
   const base::StringValue kStringValue("string");
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
@@ -543,7 +536,7 @@ TEST(ValuesUtilTest, AppendDictionary) {
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
   AppendValueData(&writer, test_dictionary);
-  base::FundamentalValue int_value(kInt32Value);
+  base::Value int_value(kInt32Value);
   AppendValueData(&writer, int_value);
 
   // Read the data.
@@ -590,7 +583,7 @@ TEST(ValuesUtilTest, AppendDictionaryAsVariant) {
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
   AppendValueDataAsVariant(&writer, test_dictionary);
-  base::FundamentalValue int_value(kInt32Value);
+  base::Value int_value(kInt32Value);
   AppendValueData(&writer, int_value);
 
   // Read the data.
@@ -634,7 +627,7 @@ TEST(ValuesUtilTest, AppendList) {
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
   AppendValueData(&writer, test_list);
-  base::FundamentalValue int_value(kInt32Value);
+  base::Value int_value(kInt32Value);
   AppendValueData(&writer, int_value);
 
   // Read the data.
@@ -678,7 +671,7 @@ TEST(ValuesUtilTest, AppendListAsVariant) {
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
   AppendValueDataAsVariant(&writer, test_list);
-  base::FundamentalValue int_value(kInt32Value);
+  base::Value int_value(kInt32Value);
   AppendValueData(&writer, int_value);
 
   // Read the data.

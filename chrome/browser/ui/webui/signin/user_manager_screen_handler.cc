@@ -361,8 +361,8 @@ void UserManagerScreenHandler::SetAuthType(
   user_auth_type_map_[account_id.GetUserEmail()] = auth_type;
   web_ui()->CallJavascriptFunctionUnsafe(
       "login.AccountPickerScreen.setAuthType",
-      base::StringValue(account_id.GetUserEmail()),
-      base::FundamentalValue(auth_type), base::StringValue(auth_value));
+      base::StringValue(account_id.GetUserEmail()), base::Value(auth_type),
+      base::StringValue(auth_value));
 }
 
 proximity_auth::ScreenlockBridge::LockHandler::AuthType
@@ -400,8 +400,7 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   SendUserList();
   web_ui()->CallJavascriptFunctionUnsafe(
       "cr.ui.UserManager.showUserManagerScreen",
-      base::FundamentalValue(IsGuestModeEnabled()),
-      base::FundamentalValue(IsAddPersonEnabled()));
+      base::Value(IsGuestModeEnabled()), base::Value(IsAddPersonEnabled()));
 
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(this);
 }
@@ -537,8 +536,7 @@ void UserManagerScreenHandler::HandleAreAllProfilesLocked(
   AllowJavascript();
   ResolveJavascriptCallback(
       base::StringValue(webui_callback_id),
-      base::FundamentalValue(
-          profiles::AreAllNonChildNonSupervisedProfilesLocked()));
+      base::Value(profiles::AreAllNonChildNonSupervisedProfilesLocked()));
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
@@ -689,9 +687,9 @@ void UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage(
   base::StringValue message = base::StringValue(
       l10n_util::GetPluralStringFUTF16(message_id, total_count));
 
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "updateRemoveWarningDialogSetMessage", base::StringValue(profile_path),
-      message, base::FundamentalValue(total_count));
+  web_ui()->CallJavascriptFunctionUnsafe("updateRemoveWarningDialogSetMessage",
+                                         base::StringValue(profile_path),
+                                         message, base::Value(total_count));
 }
 
 void UserManagerScreenHandler::OnGetTokenInfoResponse(
@@ -975,9 +973,9 @@ void UserManagerScreenHandler::SendUserList() {
     users_list.Append(std::move(profile_value));
   }
 
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "login.AccountPickerScreen.loadUsers", users_list,
-      base::FundamentalValue(IsGuestModeEnabled()));
+  web_ui()->CallJavascriptFunctionUnsafe("login.AccountPickerScreen.loadUsers",
+                                         users_list,
+                                         base::Value(IsGuestModeEnabled()));
 
   // This is the latest C++ code we have in the flow to show the UserManager.
   // This may be invoked more than once per UserManager lifetime; the
@@ -999,12 +997,12 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
         ProfileMetrics::SWITCH_PROFILE_UNLOCK);
   } else {
     web_ui()->CallJavascriptFunctionUnsafe(
-        "cr.ui.UserManager.showSignInError", base::FundamentalValue(0),
+        "cr.ui.UserManager.showSignInError", base::Value(0),
         base::StringValue(l10n_util::GetStringUTF8(
             auth == ProfileMetrics::AUTH_FAILED_OFFLINE
                 ? IDS_LOGIN_ERROR_AUTHENTICATING_OFFLINE
                 : IDS_LOGIN_ERROR_AUTHENTICATING)),
-        base::StringValue(""), base::FundamentalValue(0));
+        base::StringValue(""), base::Value(0));
   }
 }
 

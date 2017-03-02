@@ -31,8 +31,8 @@ TEST_F(DiskCacheDirPolicyTest, Default) {
 TEST_F(DiskCacheDirPolicyTest, SetPolicyInvalid) {
   // DiskCacheDir policy expects a string; give it a boolean.
   policy_.Set(key::kDiskCacheDir, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-              POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::FundamentalValue>(false), nullptr);
+              POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+              nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
   EXPECT_FALSE(prefs_.GetValue(prefs::kDiskCacheDir, NULL));
 }

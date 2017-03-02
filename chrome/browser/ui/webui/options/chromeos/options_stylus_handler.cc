@@ -99,7 +99,7 @@ void OptionsStylusHandler::SendHasStylus() {
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setStylusInputStatus",
-      base::FundamentalValue(ash::palette_utils::HasStylusInput()));
+      base::Value(ash::palette_utils::HasStylusInput()));
 }
 
 void OptionsStylusHandler::UpdateNoteTakingApps() {
@@ -127,9 +127,9 @@ void OptionsStylusHandler::UpdateNoteTakingApps() {
     }
   }
 
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "StylusOverlay.updateNoteTakingApps", apps_list,
-      base::FundamentalValue(waiting_for_android));
+  web_ui()->CallJavascriptFunctionUnsafe("StylusOverlay.updateNoteTakingApps",
+                                         apps_list,
+                                         base::Value(waiting_for_android));
 }
 
 void OptionsStylusHandler::SetPreferredNoteTakingApp(

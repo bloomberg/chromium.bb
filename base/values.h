@@ -39,7 +39,6 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
-using FundamentalValue = Value;
 using StringValue = Value;
 using BinaryValue = Value;
 

@@ -156,7 +156,7 @@ void KeyboardHandler::GetLocalizedValues(
 void KeyboardHandler::InitializePage() {
   bool has_diamond_key = base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kHasChromeOSDiamondKey);
-  const base::FundamentalValue show_diamond_key_options(has_diamond_key);
+  const base::Value show_diamond_key_options(has_diamond_key);
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.KeyboardOverlay.showDiamondKeyOptions",
@@ -182,7 +182,7 @@ void KeyboardHandler::HandleShowKeyboardShortcuts(const base::ListValue* args) {
 }
 
 void KeyboardHandler::UpdateCapsLockOptions() const {
-  const base::FundamentalValue show_caps_lock_options(HasExternalKeyboard());
+  const base::Value show_caps_lock_options(HasExternalKeyboard());
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.KeyboardOverlay.showCapsLockOptions", show_caps_lock_options);
 }

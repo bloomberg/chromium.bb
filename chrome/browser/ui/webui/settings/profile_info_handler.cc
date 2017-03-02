@@ -153,7 +153,7 @@ void ProfileInfoHandler::PushProfileStatsCount(
   // the Promise callback approach.
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue(kProfileStatsCountReadyEventName),
-                         base::FundamentalValue(count));
+                         base::Value(count));
 }
 #endif
 
@@ -165,8 +165,8 @@ void ProfileInfoHandler::HandleGetProfileManagesSupervisedUsers(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  ResolveJavascriptCallback(
-      *callback_id, base::FundamentalValue(IsProfileManagingSupervisedUsers()));
+  ResolveJavascriptCallback(*callback_id,
+                            base::Value(IsProfileManagingSupervisedUsers()));
 }
 
 void ProfileInfoHandler::PushProfileInfo() {
@@ -179,7 +179,7 @@ void ProfileInfoHandler::PushProfileManagesSupervisedUsersStatus() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue(kProfileManagesSupervisedUsersChangedEventName),
-      base::FundamentalValue(IsProfileManagingSupervisedUsers()));
+      base::Value(IsProfileManagingSupervisedUsers()));
 }
 
 std::unique_ptr<base::DictionaryValue>

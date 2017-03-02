@@ -42,8 +42,7 @@ CryptotokenPrivateCanOriginAssertAppIdFunction::Run() {
   }
 
   if (origin_url == app_id_url) {
-    return RespondNow(
-        OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+    return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
   }
 
   // Fetch the eTLD+1 of both.
@@ -64,8 +63,7 @@ CryptotokenPrivateCanOriginAssertAppIdFunction::Run() {
         "Could not find an eTLD for appId *", params->app_id_url)));
   }
   if (origin_etldp1 == app_id_etldp1) {
-    return RespondNow(
-        OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+    return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
   }
   // For legacy purposes, allow google.com origins to assert certain
   // gstatic.com appIds.
@@ -75,13 +73,11 @@ CryptotokenPrivateCanOriginAssertAppIdFunction::Run() {
          i < sizeof(kGoogleGstaticAppIds) / sizeof(kGoogleGstaticAppIds[0]);
          i++) {
       if (params->app_id_url == kGoogleGstaticAppIds[i]) {
-        return RespondNow(
-            OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+        return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
       }
     }
   }
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
 }
 
 }  // namespace api

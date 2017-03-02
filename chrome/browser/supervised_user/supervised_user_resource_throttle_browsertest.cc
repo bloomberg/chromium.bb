@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserResourceThrottleTest,
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackDefaultFilteringBehavior,
       std::unique_ptr<base::Value>(
-          new base::FundamentalValue(SupervisedUserURLFilter::BLOCK)));
+          new base::Value(SupervisedUserURLFilter::BLOCK)));
 
   std::unique_ptr<WebContents> web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));

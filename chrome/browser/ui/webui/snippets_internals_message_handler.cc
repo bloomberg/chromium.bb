@@ -328,13 +328,13 @@ void SnippetsInternalsMessageHandler::SendClassification() {
       "chrome.SnippetsInternals.receiveClassification",
       base::StringValue(content_suggestions_service_->user_classifier()
                             ->GetUserClassDescriptionForDebugging()),
-      base::FundamentalValue(
+      base::Value(
           content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
               UserClassifier::Metric::NTP_OPENED)),
-      base::FundamentalValue(
+      base::Value(
           content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
               UserClassifier::Metric::SUGGESTIONS_SHOWN)),
-      base::FundamentalValue(
+      base::Value(
           content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
               UserClassifier::Metric::SUGGESTIONS_USED)));
 }

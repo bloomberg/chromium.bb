@@ -489,15 +489,14 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
                     state == GoogleServiceAuthError::ACCOUNT_DISABLED);
   web_ui()->CallJavascriptFunctionUnsafe(
       "CreateProfileOverlay.updateSignedInStatus", base::StringValue(username),
-      base::FundamentalValue(has_error));
+      base::Value(has_error));
 
   OnCreateSupervisedUserPrefChange();
 }
 
 void ManageProfileHandler::OnCreateSupervisedUserPrefChange() {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  base::FundamentalValue allowed(
-      prefs->GetBoolean(prefs::kSupervisedUserCreationAllowed));
+  base::Value allowed(prefs->GetBoolean(prefs::kSupervisedUserCreationAllowed));
   web_ui()->CallJavascriptFunctionUnsafe(
       "CreateProfileOverlay.updateSupervisedUsersAllowed", allowed);
 }
@@ -505,7 +504,7 @@ void ManageProfileHandler::OnCreateSupervisedUserPrefChange() {
 void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const base::FundamentalValue has_shortcuts_value(has_shortcuts);
+  const base::Value has_shortcuts_value(has_shortcuts);
   web_ui()->CallJavascriptFunctionUnsafe(
       "ManageProfileOverlay.receiveHasProfileShortcuts", has_shortcuts_value);
 }

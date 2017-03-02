@@ -1053,8 +1053,7 @@ void DownloadsDownloadFunction::OnStarted(
   VLOG(1) << __func__ << " " << item << " " << interrupt_reason;
   if (item) {
     DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
-    SetResult(base::MakeUnique<base::FundamentalValue>(
-        static_cast<int>(item->GetId())));
+    SetResult(base::MakeUnique<base::Value>(static_cast<int>(item->GetId())));
     if (!creator_suggested_filename.empty() ||
         (creator_conflict_action !=
          downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY)) {
@@ -1862,10 +1861,10 @@ void ExtensionDownloadsEventRouter::OnDownloadRemoved(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (download_item->IsTemporary())
     return;
-  DispatchEvent(events::DOWNLOADS_ON_ERASED, downloads::OnErased::kEventName,
-                true, Event::WillDispatchCallback(),
-                base::MakeUnique<base::FundamentalValue>(
-                    static_cast<int>(download_item->GetId())));
+  DispatchEvent(
+      events::DOWNLOADS_ON_ERASED, downloads::OnErased::kEventName, true,
+      Event::WillDispatchCallback(),
+      base::MakeUnique<base::Value>(static_cast<int>(download_item->GetId())));
 }
 
 void ExtensionDownloadsEventRouter::DispatchEvent(

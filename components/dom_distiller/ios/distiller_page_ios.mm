@@ -55,16 +55,15 @@ std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result,
   } else if (result_type == CFNumberGetTypeID()) {
     // Different implementation is here.
     if ([wk_result intValue] != [wk_result doubleValue]) {
-      result.reset(new base::FundamentalValue([wk_result doubleValue]));
+      result.reset(new base::Value([wk_result doubleValue]));
       DCHECK(result->IsType(base::Value::Type::DOUBLE));
     } else {
-      result.reset(new base::FundamentalValue([wk_result intValue]));
+      result.reset(new base::Value([wk_result intValue]));
       DCHECK(result->IsType(base::Value::Type::INTEGER));
     }
     // End of different implementation.
   } else if (result_type == CFBooleanGetTypeID()) {
-    result.reset(
-        new base::FundamentalValue(static_cast<bool>([wk_result boolValue])));
+    result.reset(new base::Value(static_cast<bool>([wk_result boolValue])));
     DCHECK(result->IsType(base::Value::Type::BOOLEAN));
   } else if (result_type == CFNullGetTypeID()) {
     result = base::Value::CreateNullValue();

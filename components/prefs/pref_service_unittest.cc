@@ -178,7 +178,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   ASSERT_FALSE(value);
 
   // Set a user-set value.
-  prefs.SetUserPref(kPrefName, new base::FundamentalValue(kUserValue));
+  prefs.SetUserPref(kPrefName, new base::Value(kUserValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();
@@ -193,8 +193,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   ASSERT_FALSE(value);
 
   // Set a recommended value.
-  prefs.SetRecommendedPref(kPrefName,
-                           new base::FundamentalValue(kRecommendedValue));
+  prefs.SetRecommendedPref(kPrefName, new base::Value(kRecommendedValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();

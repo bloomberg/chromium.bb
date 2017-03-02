@@ -217,7 +217,7 @@ StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
   }
 
   return OneArgument(
-      base::MakeUnique<base::FundamentalValue>(static_cast<int>(bytes_in_use)));
+      base::MakeUnique<base::Value>(static_cast<int>(bytes_in_use)));
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunWithStorage(

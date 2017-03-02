@@ -121,9 +121,9 @@ void CrashesDOMHandler::UpdateUI() {
   base::ListValue crash_list;
   if (crash_reporting_enabled)
     crash::UploadListToValue(upload_list_.get(), &crash_list);
-  base::FundamentalValue enabled(crash_reporting_enabled);
-  base::FundamentalValue dynamic_backend(false);
-  base::FundamentalValue manual_uploads(false);
+  base::Value enabled(crash_reporting_enabled);
+  base::Value dynamic_backend(false);
+  base::Value manual_uploads(false);
   base::StringValue version(version_info::GetVersionNumber());
   base::StringValue os_string(base::SysInfo::OperatingSystemName() + " " +
                               base::SysInfo::OperatingSystemVersion());

@@ -221,7 +221,7 @@ void ShillPropertyHandler::SetCheckPortalList(
 }
 
 void ShillPropertyHandler::SetWakeOnLanEnabled(bool enabled) {
-  base::FundamentalValue value(enabled);
+  base::Value value(enabled);
   shill_manager_->SetProperty(
       shill::kWakeOnLanEnabledProperty, value, base::Bind(&base::DoNothing),
       base::Bind(&network_handler::ShillErrorCallbackFunction,

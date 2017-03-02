@@ -37,15 +37,14 @@ class IncognitoModePolicyHandlerTest
     if (incognito_enabled != INCOGNITO_ENABLED_UNKNOWN) {
       policy.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::FundamentalValue>(
-                     incognito_enabled == INCOGNITO_ENABLED_TRUE),
+                 base::MakeUnique<base::Value>(incognito_enabled ==
+                                               INCOGNITO_ENABLED_TRUE),
                  nullptr);
     }
     if (availability >= 0) {
       policy.Set(key::kIncognitoModeAvailability, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::FundamentalValue>(availability),
-                 nullptr);
+                 base::MakeUnique<base::Value>(availability), nullptr);
     }
     UpdateProviderPolicy(policy);
   }
@@ -53,7 +52,7 @@ class IncognitoModePolicyHandlerTest
   void VerifyValues(IncognitoModePrefs::Availability availability) {
     const base::Value* value = NULL;
     EXPECT_TRUE(store_->GetValue(prefs::kIncognitoModeAvailability, &value));
-    EXPECT_TRUE(base::FundamentalValue(availability).Equals(value));
+    EXPECT_TRUE(base::Value(availability).Equals(value));
   }
 };
 

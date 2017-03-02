@@ -95,7 +95,7 @@ void EasyUnlockSettingsHandler::SendEnabledStatus() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("easy-unlock-enabled-status"),
-      base::FundamentalValue(EasyUnlockService::Get(profile_)->IsEnabled()));
+      base::Value(EasyUnlockService::Get(profile_)->IsEnabled()));
 }
 
 std::string EasyUnlockSettingsHandler::GetTurnOffFlowStatus() {
@@ -132,8 +132,7 @@ void EasyUnlockSettingsHandler::HandleGetEnabledStatus(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
   ResolveJavascriptCallback(
-      *callback_id,
-      base::FundamentalValue(EasyUnlockService::Get(profile_)->IsEnabled()));
+      *callback_id, base::Value(EasyUnlockService::Get(profile_)->IsEnabled()));
 }
 
 void EasyUnlockSettingsHandler::HandleStartTurnOnFlow(

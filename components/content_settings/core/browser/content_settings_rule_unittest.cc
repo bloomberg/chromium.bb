@@ -42,17 +42,17 @@ TEST(RuleTest, ConcatenationIterator) {
   std::list<Rule> rules1;
   rules1.push_back(Rule(ContentSettingsPattern::FromString("a"),
                         ContentSettingsPattern::Wildcard(),
-                        new base::FundamentalValue(0)));
+                        new base::Value(0)));
   rules1.push_back(Rule(ContentSettingsPattern::FromString("b"),
                         ContentSettingsPattern::Wildcard(),
-                        new base::FundamentalValue(0)));
+                        new base::Value(0)));
   std::list<Rule> rules2;
   rules2.push_back(Rule(ContentSettingsPattern::FromString("c"),
                         ContentSettingsPattern::Wildcard(),
-                        new base::FundamentalValue(0)));
+                        new base::Value(0)));
   rules2.push_back(Rule(ContentSettingsPattern::FromString("d"),
                         ContentSettingsPattern::Wildcard(),
-                        new base::FundamentalValue(0)));
+                        new base::Value(0)));
 
   std::vector<std::unique_ptr<RuleIterator>> iterators;
   iterators.push_back(std::unique_ptr<RuleIterator>(new ListIterator(rules1)));

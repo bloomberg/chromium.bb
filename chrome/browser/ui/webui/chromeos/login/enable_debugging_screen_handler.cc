@@ -270,7 +270,7 @@ void EnableDebuggingScreenHandler::UpdateUIState(
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "login.EnableDebuggingScreen.updateState",
-      base::FundamentalValue(static_cast<int>(state)));
+      base::Value(static_cast<int>(state)));
 }
 
 void EnableDebuggingScreenHandler::HandleOnLearnMore() {

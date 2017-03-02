@@ -27,7 +27,7 @@ TEST(ContextualSearchPolicyHandlerAndroidTest, Enabled) {
   PolicyMap policy;
   policy.Set(key::kContextualSearchEnabled, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
-             base::MakeUnique<base::FundamentalValue>(true), nullptr);
+             base::MakeUnique<base::Value>(true), nullptr);
   PrefValueMap prefs;
   ContextualSearchPolicyHandlerAndroid handler;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -42,7 +42,7 @@ TEST(ContextualSearchPolicyHandlerAndroidTest, Disabled) {
   PolicyMap policy;
   policy.Set(key::kContextualSearchEnabled, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
+             base::MakeUnique<base::Value>(false), nullptr);
   PrefValueMap prefs;
   ContextualSearchPolicyHandlerAndroid handler;
   handler.ApplyPolicySettings(policy, &prefs);

@@ -129,13 +129,11 @@ void TestingPrefStore::SetString(const std::string& key,
 }
 
 void TestingPrefStore::SetInteger(const std::string& key, int value) {
-  SetValue(key, base::MakeUnique<base::FundamentalValue>(value),
-           DEFAULT_PREF_WRITE_FLAGS);
+  SetValue(key, base::MakeUnique<base::Value>(value), DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void TestingPrefStore::SetBoolean(const std::string& key, bool value) {
-  SetValue(key, base::MakeUnique<base::FundamentalValue>(value),
-           DEFAULT_PREF_WRITE_FLAGS);
+  SetValue(key, base::MakeUnique<base::Value>(value), DEFAULT_PREF_WRITE_FLAGS);
 }
 
 bool TestingPrefStore::GetString(const std::string& key,

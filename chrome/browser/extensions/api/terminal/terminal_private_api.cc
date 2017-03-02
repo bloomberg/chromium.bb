@@ -175,7 +175,7 @@ void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
     Respond(Error("Failed to open process."));
     return;
   }
-  Respond(OneArgument(base::MakeUnique<base::FundamentalValue>(terminal_id)));
+  Respond(OneArgument(base::MakeUnique<base::Value>(terminal_id)));
 }
 
 ExtensionFunction::ResponseAction TerminalPrivateSendInputFunction::Run() {
@@ -202,7 +202,7 @@ void TerminalPrivateSendInputFunction::SendInputOnFileThread(
 }
 
 void TerminalPrivateSendInputFunction::RespondOnUIThread(bool success) {
-  Respond(OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
+  Respond(OneArgument(base::MakeUnique<base::Value>(success)));
 }
 
 TerminalPrivateCloseTerminalProcessFunction::
@@ -236,7 +236,7 @@ void TerminalPrivateCloseTerminalProcessFunction::CloseOnFileThread(
 
 void TerminalPrivateCloseTerminalProcessFunction::RespondOnUIThread(
     bool success) {
-  Respond(OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
+  Respond(OneArgument(base::MakeUnique<base::Value>(success)));
 }
 
 TerminalPrivateOnTerminalResizeFunction::
@@ -269,7 +269,7 @@ void TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread(
 }
 
 void TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread(bool success) {
-  Respond(OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
+  Respond(OneArgument(base::MakeUnique<base::Value>(success)));
 }
 
 TerminalPrivateAckOutputFunction::~TerminalPrivateAckOutputFunction() {}

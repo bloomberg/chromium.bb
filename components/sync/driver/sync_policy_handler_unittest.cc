@@ -30,7 +30,7 @@ TEST_F(SyncPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
+             base::MakeUnique<base::Value>(false), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -43,7 +43,7 @@ TEST_F(SyncPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(true), nullptr);
+             base::MakeUnique<base::Value>(true), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);

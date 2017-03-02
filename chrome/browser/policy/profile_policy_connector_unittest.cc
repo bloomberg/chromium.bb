@@ -93,8 +93,7 @@ TEST_F(ProfilePolicyConnectorTest, IsProfilePolicy) {
   // Set the policy at the cloud provider.
   cloud_policy_store_.policy_map_.Set(
       key::kAutoFillEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(false),
-      nullptr);
+      POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false), nullptr);
   cloud_policy_store_.NotifyStoreLoaded();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(connector.IsProfilePolicy(key::kAutoFillEnabled));
@@ -102,19 +101,18 @@ TEST_F(ProfilePolicyConnectorTest, IsProfilePolicy) {
       connector.policy_service()->GetPolicies(chrome_ns).GetValue(
           key::kAutoFillEnabled);
   ASSERT_TRUE(value);
-  EXPECT_TRUE(base::FundamentalValue(false).Equals(value));
+  EXPECT_TRUE(base::Value(false).Equals(value));
 
   // Now test with a higher-priority provider also setting the policy.
   PolicyMap map;
   map.Set(key::kAutoFillEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(true),
-          nullptr);
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true), nullptr);
   mock_provider_.UpdateChromePolicy(map);
   EXPECT_FALSE(connector.IsProfilePolicy(key::kAutoFillEnabled));
   value = connector.policy_service()->GetPolicies(chrome_ns).GetValue(
       key::kAutoFillEnabled);
   ASSERT_TRUE(value);
-  EXPECT_TRUE(base::FundamentalValue(true).Equals(value));
+  EXPECT_TRUE(base::Value(true).Equals(value));
 
   // Cleanup.
   connector.Shutdown();

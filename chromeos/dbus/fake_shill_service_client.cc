@@ -585,11 +585,8 @@ void FakeShillServiceClient::SetCellularActivated(
               base::StringValue(shill::kActivationStateActivated),
               base::Bind(&base::DoNothing),
               error_callback);
-  SetProperty(service_path,
-              shill::kConnectableProperty,
-              base::FundamentalValue(true),
-              base::Bind(&base::DoNothing),
-              error_callback);
+  SetProperty(service_path, shill::kConnectableProperty, base::Value(true),
+              base::Bind(&base::DoNothing), error_callback);
 }
 
 void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {

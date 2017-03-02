@@ -78,7 +78,7 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
 }
 
 TEST_F(GinJavaBridgeValueTest, BrokenValues) {
-  std::unique_ptr<base::Value> non_binary(new base::FundamentalValue(42));
+  std::unique_ptr<base::Value> non_binary(new base::Value(42));
   EXPECT_FALSE(
       GinJavaBridgeValue::ContainsGinJavaBridgeValue(non_binary.get()));
 

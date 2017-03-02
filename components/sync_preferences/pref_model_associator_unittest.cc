@@ -71,8 +71,8 @@ class AbstractPreferenceMergeTest : public testing::Test {
       expression_dict = new base::DictionaryValue;
       patterns_dict->SetWithoutPathExpansion(expression, expression_dict);
     }
-    expression_dict->SetWithoutPathExpansion(
-        "setting", new base::FundamentalValue(setting));
+    expression_dict->SetWithoutPathExpansion("setting",
+                                             new base::Value(setting));
   }
 
   void SetPrefToEmpty(const std::string& pref_name) {

@@ -136,7 +136,7 @@ TEST_F(PrefClientStoreTest, Initialization) {
   EXPECT_FALSE(observer()->initialized);
 
   const int kValue = 42;
-  base::FundamentalValue pref(kValue);
+  base::Value pref(kValue);
   base::DictionaryValue prefs;
   prefs.Set(key, pref.CreateDeepCopy());
 
@@ -166,7 +166,7 @@ TEST_F(PrefClientStoreTest, SetValueSilently) {
   store()->Subscribe(keys);
 
   const int kValue = 42;
-  base::FundamentalValue pref(kValue);
+  base::Value pref(kValue);
   store()->SetValueSilently(key, pref.CreateDeepCopy(), 0);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(service()->set_preferences_called());
@@ -182,7 +182,7 @@ TEST_F(PrefClientStoreTest, ReportValueChanged) {
   store()->Subscribe(keys);
 
   const int kValue = 42;
-  base::FundamentalValue pref(kValue);
+  base::Value pref(kValue);
   base::DictionaryValue prefs;
   prefs.Set(key, pref.CreateDeepCopy());
   OnPreferencesChanged(prefs);
@@ -208,7 +208,7 @@ TEST_F(PrefClientStoreTest, MultipleKeyInitialization) {
   EXPECT_FALSE(observer()->initialized);
 
   const int kValue = 42;
-  base::FundamentalValue pref1(kValue);
+  base::Value pref1(kValue);
   const std::string kStringValue("look");
   base::StringValue pref2(kStringValue);
 
@@ -239,7 +239,7 @@ TEST_F(PrefClientStoreTest, InvalidInitialization) {
 
   const std::string kInvalidKey("look");
   const int kValue = 42;
-  base::FundamentalValue pref(kValue);
+  base::Value pref(kValue);
   base::DictionaryValue prefs;
   prefs.Set(kInvalidKey, pref.CreateDeepCopy());
 
@@ -262,13 +262,13 @@ TEST_F(PrefClientStoreTest, WriteToNestedPrefs) {
 
   const std::string sub_key1("look");
   const int kValue1 = 42;
-  base::FundamentalValue pref1(kValue1);
+  base::Value pref1(kValue1);
   base::DictionaryValue sub_dictionary1;
   sub_dictionary1.Set(sub_key1, pref1.CreateDeepCopy());
 
   const std::string sub_key2("Watch out!\n");
   const int kValue2 = 1337;
-  base::FundamentalValue pref2(kValue2);
+  base::Value pref2(kValue2);
   base::DictionaryValue sub_dictionary2;
   sub_dictionary2.Set(sub_key2, pref2.CreateDeepCopy());
 
@@ -300,7 +300,7 @@ TEST_F(PrefClientStoreTest, WriteToNestedPrefs) {
 
   const std::string sub_key3("????");
   const int kValue3 = 9001;
-  base::FundamentalValue pref3(kValue3);
+  base::Value pref3(kValue3);
   dictionary_result->Set(sub_key3, pref3.CreateDeepCopy());
 
   observer()->changed_keys.clear();
@@ -323,13 +323,13 @@ TEST_F(PrefClientStoreTest, UpdateOuterNestedPrefs) {
 
   const std::string sub_key1("look");
   const int kValue1 = 42;
-  base::FundamentalValue pref1(kValue1);
+  base::Value pref1(kValue1);
   base::DictionaryValue sub_dictionary1;
   sub_dictionary1.Set(sub_key1, pref1.CreateDeepCopy());
 
   const std::string sub_key2("Watch out!\n");
   const int kValue2 = 1337;
-  base::FundamentalValue pref2(kValue2);
+  base::Value pref2(kValue2);
   base::DictionaryValue sub_dictionary2;
   sub_dictionary2.Set(sub_key2, pref2.CreateDeepCopy());
 
@@ -351,7 +351,7 @@ TEST_F(PrefClientStoreTest, UpdateOuterNestedPrefs) {
 
   observer()->changed_keys.clear();
   const int kValue3 = 9001;
-  base::FundamentalValue pref3(kValue3);
+  base::Value pref3(kValue3);
   store()->SetValue(key1, pref3.CreateDeepCopy(), 0);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, observer()->changed_keys.size());
@@ -390,7 +390,7 @@ TEST_F(PrefClientStoreTest, MultipleObservers) {
   store()->Subscribe(keys);
 
   const int kValue = 42;
-  base::FundamentalValue pref(kValue);
+  base::Value pref(kValue);
   base::DictionaryValue prefs;
   prefs.Set(key, pref.CreateDeepCopy());
 

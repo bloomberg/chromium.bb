@@ -150,9 +150,9 @@ TEST_F(OwnerSettingsServiceChromeOSTest, SingleSetTest) {
 }
 
 TEST_F(OwnerSettingsServiceChromeOSTest, MultipleSetTest) {
-  base::FundamentalValue allow_guest(false);
+  base::Value allow_guest(false);
   base::StringValue release_channel("stable-channel");
-  base::FundamentalValue show_user_names(true);
+  base::Value show_user_names(true);
 
   PrefsChecker checker(service_, provider_.get());
 

@@ -28,8 +28,7 @@ TEST_F(AutofillPolicyHandlerTest, Default) {
 TEST_F(AutofillPolicyHandlerTest, Enabled) {
   PolicyMap policy;
   policy.Set(key::kAutoFillEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(true), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true), nullptr);
   PrefValueMap prefs;
   AutofillPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -41,8 +40,8 @@ TEST_F(AutofillPolicyHandlerTest, Enabled) {
 TEST_F(AutofillPolicyHandlerTest, Disabled) {
   PolicyMap policy;
   policy.Set(key::kAutoFillEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             nullptr);
   PrefValueMap prefs;
   AutofillPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);

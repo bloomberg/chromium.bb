@@ -1430,7 +1430,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
           is_visible);
       service_client->SetServiceProperty(
           fake_network.name, shill::kSignalStrengthProperty,
-          base::FundamentalValue(fake_network.signal_strength));
+          base::Value(fake_network.signal_strength));
       service_client->SetServiceProperty(
           fake_network.name, shill::kDeviceProperty,
           base::StringValue(fake_network.device_path));
@@ -1467,7 +1467,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
         true /* visible */);
     service_client->SetServiceProperty(
         kUnconfiguredNetwork.name, shill::kSignalStrengthProperty,
-        base::FundamentalValue(kUnconfiguredNetwork.signal_strength));
+        base::Value(kUnconfiguredNetwork.signal_strength));
     service_client->SetServiceProperty(
         kUnconfiguredNetwork.name, shill::kDeviceProperty,
         base::StringValue(kUnconfiguredNetwork.device_path));

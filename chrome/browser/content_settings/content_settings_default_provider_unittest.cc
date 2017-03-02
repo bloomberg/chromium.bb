@@ -43,12 +43,10 @@ TEST_F(DefaultProviderTest, DefaultValues) {
             TestUtils::GetContentSetting(&provider_, GURL(), GURL(),
                                          CONTENT_SETTINGS_TYPE_COOKIES,
                                          std::string(), false));
-  provider_.SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES,
-      std::string(),
-      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  provider_.SetWebsiteSetting(ContentSettingsPattern::Wildcard(),
+                              ContentSettingsPattern::Wildcard(),
+                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                              new base::Value(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             TestUtils::GetContentSetting(&provider_, GURL(), GURL(),
                                          CONTENT_SETTINGS_TYPE_COOKIES,
@@ -58,12 +56,10 @@ TEST_F(DefaultProviderTest, DefaultValues) {
             TestUtils::GetContentSetting(&provider_, GURL(), GURL(),
                                          CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                          std::string(), false));
-  provider_.SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  provider_.SetWebsiteSetting(ContentSettingsPattern::Wildcard(),
+                              ContentSettingsPattern::Wildcard(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+                              new base::Value(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             TestUtils::GetContentSetting(&provider_, GURL(), GURL(),
                                          CONTENT_SETTINGS_TYPE_GEOLOCATION,
@@ -83,8 +79,7 @@ TEST_F(DefaultProviderTest, IgnoreNonDefaultSettings) {
             TestUtils::GetContentSetting(&provider_, primary_url, secondary_url,
                                          CONTENT_SETTINGS_TYPE_COOKIES,
                                          std::string(), false));
-  std::unique_ptr<base::Value> value(
-      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_BLOCK));
   bool owned = provider_.SetWebsiteSetting(
       ContentSettingsPattern::FromURL(primary_url),
       ContentSettingsPattern::FromURL(secondary_url),
@@ -104,34 +99,28 @@ TEST_F(DefaultProviderTest, Observer) {
               OnContentSettingChanged(
                   _, _, CONTENT_SETTINGS_TYPE_COOKIES, ""));
   provider_.AddObserver(&mock_observer);
-  provider_.SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES,
-      std::string(),
-      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  provider_.SetWebsiteSetting(ContentSettingsPattern::Wildcard(),
+                              ContentSettingsPattern::Wildcard(),
+                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                              new base::Value(CONTENT_SETTING_BLOCK));
 
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(
                   _, _, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
-  provider_.SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  provider_.SetWebsiteSetting(ContentSettingsPattern::Wildcard(),
+                              ContentSettingsPattern::Wildcard(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+                              new base::Value(CONTENT_SETTING_BLOCK));
 }
 
 
 TEST_F(DefaultProviderTest, ObservePref) {
   PrefService* prefs = profile_.GetPrefs();
 
-  provider_.SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES,
-      std::string(),
-      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  provider_.SetWebsiteSetting(ContentSettingsPattern::Wildcard(),
+                              ContentSettingsPattern::Wildcard(),
+                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                              new base::Value(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             TestUtils::GetContentSetting(&provider_, GURL(), GURL(),
                                          CONTENT_SETTINGS_TYPE_COOKIES,
@@ -198,12 +187,10 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
 
   // Changing content settings on the main provider should also affect the
   // incognito map.
-  provider_.SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES,
-      std::string(),
-      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  provider_.SetWebsiteSetting(ContentSettingsPattern::Wildcard(),
+                              ContentSettingsPattern::Wildcard(),
+                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                              new base::Value(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             TestUtils::GetContentSetting(
                 &provider_, GURL(), GURL(), CONTENT_SETTINGS_TYPE_COOKIES,
@@ -215,8 +202,7 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
                 std::string(), true /* include_incognito */));
 
   // Changing content settings on the incognito provider should be ignored.
-  std::unique_ptr<base::Value> value(
-      new base::FundamentalValue(CONTENT_SETTING_ALLOW));
+  std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_ALLOW));
   bool owned = otr_provider.SetWebsiteSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),

@@ -343,7 +343,7 @@ void TemplateURLServiceTest::SetOverriddenEngines() {
 
   auto* prefs = test_util()->profile()->GetTestingPrefService();
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     new base::FundamentalValue(1));
+                     new base::Value(1));
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides_list.release());
 }
 

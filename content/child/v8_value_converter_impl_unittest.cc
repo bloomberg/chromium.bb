@@ -414,7 +414,7 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   converter.SetDateAllowed(true);
   TestWeirdType(converter, v8::Date::New(isolate_, 1000),
                 base::Value::Type::DOUBLE,
-                std::unique_ptr<base::Value>(new base::FundamentalValue(1.0)));
+                std::unique_ptr<base::Value>(new base::Value(1.0)));
 
   converter.SetRegExpAllowed(true);
   TestWeirdType(converter, regex, base::Value::Type::STRING,

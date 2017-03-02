@@ -29,7 +29,7 @@ class IOSChromeMetricsServiceAccessorTest : public testing::Test {
 TEST_F(IOSChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
 #if defined(GOOGLE_CHROME_BUILD)
   const char* pref = metrics::prefs::kMetricsReportingEnabled;
-  GetLocalState()->SetDefaultPrefValue(pref, new base::FundamentalValue(false));
+  GetLocalState()->SetDefaultPrefValue(pref, new base::Value(false));
 
   GetLocalState()->SetBoolean(pref, false);
   EXPECT_FALSE(

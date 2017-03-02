@@ -115,14 +115,14 @@ class DownloadQueryTest : public testing::Test {
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, bool cpp_value) {
-  std::unique_ptr<base::Value> value(new base::FundamentalValue(cpp_value));
+  std::unique_ptr<base::Value> value(new base::Value(cpp_value));
   CHECK(query_.AddFilter(name, *value.get()));
 }
 
 template <>
 void DownloadQueryTest::AddFilter(DownloadQuery::FilterType name,
                                   double cpp_value) {
-  std::unique_ptr<base::Value> value(new base::FundamentalValue(cpp_value));
+  std::unique_ptr<base::Value> value(new base::Value(cpp_value));
   CHECK(query_.AddFilter(name, *value.get()));
 }
 
@@ -174,7 +174,7 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_ZeroItems) {
 }
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_InvalidFilter) {
-  std::unique_ptr<base::Value> value(new base::FundamentalValue(0));
+  std::unique_ptr<base::Value> value(new base::Value(0));
   EXPECT_FALSE(query()->AddFilter(static_cast<DownloadQuery::FilterType>(
                                       std::numeric_limits<int32_t>::max()),
                                   *value.get()));

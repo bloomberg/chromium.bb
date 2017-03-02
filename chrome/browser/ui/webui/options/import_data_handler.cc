@@ -111,7 +111,7 @@ void ImportDataHandler::StartImport(
   if (importer_host_)
     importer_host_->set_observer(NULL);
 
-  base::FundamentalValue importing(true);
+  base::Value importing(true);
   web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.setImportingState",
                                          importing);
   import_did_succeed_ = false;
@@ -226,7 +226,7 @@ void ImportDataHandler::ImportEnded() {
   if (import_did_succeed_) {
     web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.confirmSuccess");
   } else {
-    base::FundamentalValue state(false);
+    base::Value state(false);
     web_ui()->CallJavascriptFunctionUnsafe(
         "ImportDataOverlay.setImportingState", state);
     web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.dismiss");

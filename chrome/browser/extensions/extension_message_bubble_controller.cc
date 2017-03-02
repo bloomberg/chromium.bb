@@ -77,9 +77,8 @@ void ExtensionMessageBubbleController::Delegate::SetBubbleInfoBeenAcknowledged(
   if (pref_name.empty())
     return;
   extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
-  prefs->UpdateExtensionPref(extension_id,
-                             pref_name,
-                             value ? new base::FundamentalValue(value) : NULL);
+  prefs->UpdateExtensionPref(extension_id, pref_name,
+                             value ? new base::Value(value) : NULL);
 }
 
 std::string

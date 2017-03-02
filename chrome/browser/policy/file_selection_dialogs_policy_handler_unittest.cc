@@ -31,7 +31,7 @@ TEST_F(FileSelectionDialogsPolicyTest, Default) {
 TEST_F(FileSelectionDialogsPolicyTest, EnableFileSelectionDialogs) {
   policy_.Set(key::kAllowFileSelectionDialogs, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::FundamentalValue>(true), nullptr);
+              base::MakeUnique<base::Value>(true), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   // Allowing file-selection dialogs should not influence the PromptForDownload
@@ -42,7 +42,7 @@ TEST_F(FileSelectionDialogsPolicyTest, EnableFileSelectionDialogs) {
 TEST_F(FileSelectionDialogsPolicyTest, DisableFileSelectionDialogs) {
   policy_.Set(key::kAllowFileSelectionDialogs, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::FundamentalValue>(false), nullptr);
+              base::MakeUnique<base::Value>(false), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   // Disabling file-selection dialogs should disable the PromptForDownload pref.

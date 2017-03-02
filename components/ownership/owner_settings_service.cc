@@ -118,19 +118,19 @@ bool OwnerSettingsService::AssembleAndSignPolicyAsync(
 
 bool OwnerSettingsService::SetBoolean(const std::string& setting, bool value) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::FundamentalValue in_value(value);
+  base::Value in_value(value);
   return Set(setting, in_value);
 }
 
 bool OwnerSettingsService::SetInteger(const std::string& setting, int value) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::FundamentalValue in_value(value);
+  base::Value in_value(value);
   return Set(setting, in_value);
 }
 
 bool OwnerSettingsService::SetDouble(const std::string& setting, double value) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::FundamentalValue in_value(value);
+  base::Value in_value(value);
   return Set(setting, in_value);
 }
 

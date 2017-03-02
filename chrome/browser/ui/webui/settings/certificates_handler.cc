@@ -680,7 +680,7 @@ void CertificatesHandler::ImportPersonalFileRead(const int* read_errno,
   file_data_ = *data;
 
   if (CouldBePFX(file_data_)) {
-    ResolveCallback(base::FundamentalValue(true));
+    ResolveCallback(base::Value(true));
     return;
   }
 
@@ -693,7 +693,7 @@ void CertificatesHandler::ImportPersonalFileRead(const int* read_errno,
   int string_id;
   switch (result) {
     case net::OK:
-      ResolveCallback(base::FundamentalValue(false));
+      ResolveCallback(base::Value(false));
       return;
     case net::ERR_NO_PRIVATE_KEY_FOR_CERT:
       string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_MISSING_KEY;
@@ -985,9 +985,9 @@ void CertificatesHandler::OnCertificateManagerModelCreated(
 }
 
 void CertificatesHandler::CertificateManagerModelReady() {
-  base::FundamentalValue user_db_available_value(
+  base::Value user_db_available_value(
       certificate_manager_model_->is_user_db_available());
-  base::FundamentalValue tpm_available_value(
+  base::Value tpm_available_value(
       certificate_manager_model_->is_tpm_available());
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("certificates-model-ready"),

@@ -62,9 +62,9 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     pref_services->SetUserPref(prefs::kDefaultCharset,
                                new base::StringValue("utf8"));
     pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
-                               new base::FundamentalValue(20));
+                               new base::Value(20));
     pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
-                               new base::FundamentalValue(false));
+                               new base::Value(false));
     pref_services->SetUserPref("webkit.webprefs.foo",
                                new base::StringValue("bar"));
   }

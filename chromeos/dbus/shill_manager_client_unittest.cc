@@ -95,7 +95,7 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
 
 TEST_F(ShillManagerClientTest, PropertyChanged) {
   // Create a signal.
-  base::FundamentalValue kOfflineMode(true);
+  base::Value kOfflineMode(true);
   dbus::Signal signal(shill::kFlimflamManagerInterface,
                       shill::kMonitorPropertyChanged);
   dbus::MessageWriter writer(&signal);
@@ -140,7 +140,7 @@ TEST_F(ShillManagerClientTest, GetProperties) {
   // Create the expected value.
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(shill::kOfflineModeProperty,
-                                new base::FundamentalValue(true));
+                                new base::Value(true));
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),

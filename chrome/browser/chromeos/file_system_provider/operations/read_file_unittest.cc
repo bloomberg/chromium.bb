@@ -176,11 +176,11 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
 
   base::ListValue value_as_list;
   value_as_list.Set(0, new base::StringValue(kFileSystemId));
-  value_as_list.Set(1, new base::FundamentalValue(kRequestId));
+  value_as_list.Set(1, new base::Value(kRequestId));
   value_as_list.Set(
       2, base::BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));
-  value_as_list.Set(3, new base::FundamentalValue(has_more));
-  value_as_list.Set(4, new base::FundamentalValue(execution_time));
+  value_as_list.Set(3, new base::Value(has_more));
+  value_as_list.Set(4, new base::Value(execution_time));
 
   std::unique_ptr<Params> params(Params::Create(value_as_list));
   ASSERT_TRUE(params.get());

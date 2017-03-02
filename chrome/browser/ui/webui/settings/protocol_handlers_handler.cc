@@ -151,8 +151,7 @@ void ProtocolHandlersHandler::HandleObserveProtocolHandlersEnabledState(
 void ProtocolHandlersHandler::SendHandlersEnabledValue() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("setHandlersEnabled"),
-                         base::FundamentalValue(
-                             GetProtocolHandlerRegistry()->enabled()));
+                         base::Value(GetProtocolHandlerRegistry()->enabled()));
 }
 
 void ProtocolHandlersHandler::HandleRemoveHandler(const base::ListValue* args) {

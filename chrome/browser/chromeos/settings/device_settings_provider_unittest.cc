@@ -131,12 +131,11 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // decoded.
   void VerifyHeartbeatSettings(bool expected_enable_state,
                                int expected_frequency) {
-
-    const base::FundamentalValue expected_enabled_value(expected_enable_state);
+    const base::Value expected_enabled_value(expected_enable_state);
     EXPECT_TRUE(base::Value::Equals(provider_->Get(kHeartbeatEnabled),
                                     &expected_enabled_value));
 
-    const base::FundamentalValue expected_frequency_value(expected_frequency);
+    const base::Value expected_frequency_value(expected_frequency);
     EXPECT_TRUE(base::Value::Equals(provider_->Get(kHeartbeatFrequency),
                                     &expected_frequency_value));
   }
@@ -159,13 +158,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
       kReportRunningKioskApp
     };
 
-    const base::FundamentalValue expected_enable_value(expected_enable_state);
+    const base::Value expected_enable_value(expected_enable_state);
     for (auto* setting : reporting_settings) {
       EXPECT_TRUE(base::Value::Equals(provider_->Get(setting),
                                       &expected_enable_value))
           << "Value for " << setting << " does not match expected";
     }
-    const base::FundamentalValue expected_frequency_value(expected_frequency);
+    const base::Value expected_frequency_value(expected_frequency);
     EXPECT_TRUE(base::Value::Equals(provider_->Get(kReportUploadFrequency),
                                     &expected_frequency_value));
   }
@@ -173,7 +172,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to ensure log upload policy has been correctly
   // decoded.
   void VerifyLogUploadSettings(bool expected_enable_state) {
-    const base::FundamentalValue expected_enabled_value(expected_enable_state);
+    const base::Value expected_enabled_value(expected_enable_state);
     EXPECT_TRUE(base::Value::Equals(provider_->Get(kSystemLogUploadEnabled),
                                     &expected_enabled_value));
   }
@@ -262,7 +261,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
   SetMetricsReportingSettings(false);
 
   // If we are not the owner no sets should work.
-  base::FundamentalValue value(true);
+  base::Value value(true);
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
   provider_->Set(kStatsReportingPref, value);
   Mock::VerifyAndClearExpectations(this);
@@ -286,7 +285,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
             true);
   FlushDeviceSettings();
 
-  base::FundamentalValue value(true);
+  base::Value value(true);
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
   provider_->Set(kStatsReportingPref, value);
@@ -423,7 +422,7 @@ TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
   Mock::VerifyAndClearExpectations(this);
 
   // Verify that the device state has been decoded correctly.
-  const base::FundamentalValue expected_disabled_value(true);
+  const base::Value expected_disabled_value(true);
   EXPECT_TRUE(base::Value::Equals(provider_->Get(kDeviceDisabled),
                                   &expected_disabled_value));
   const base::StringValue expected_disabled_message_value(kDisabledMessage);

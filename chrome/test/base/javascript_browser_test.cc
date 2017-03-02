@@ -106,7 +106,7 @@ base::string16 JavaScriptBrowserTest::BuildRunTestJSCall(
     const std::string& function_name,
     const ConstValueVector& test_func_args) {
   ConstValueVector arguments;
-  base::FundamentalValue* is_async_arg = new base::FundamentalValue(is_async);
+  base::Value* is_async_arg = new base::Value(is_async);
   arguments.push_back(is_async_arg);
   base::StringValue* function_name_arg = new base::StringValue(function_name);
   arguments.push_back(function_name_arg);

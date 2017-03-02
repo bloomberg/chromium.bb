@@ -252,8 +252,7 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
           bool is_integer = j.value().GetAsInteger(&setting);
           DCHECK(is_integer);
           DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-          std::unique_ptr<base::Value> setting_ptr(
-              new base::FundamentalValue(setting));
+          std::unique_ptr<base::Value> setting_ptr(new base::Value(setting));
           value_map_.SetValue(pattern_pair.first,
                               pattern_pair.second,
                               content_type_,

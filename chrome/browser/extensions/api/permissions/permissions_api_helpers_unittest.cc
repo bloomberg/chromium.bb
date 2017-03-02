@@ -140,14 +140,14 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    value->Set("origins", new base::FundamentalValue(2));
+    value->Set("origins", new base::Value(2));
     EXPECT_FALSE(Permissions::Populate(*value, &permissions_object));
   }
 
   {
     Permissions permissions_object;
     value->Clear();
-    value->Set("permissions", new base::FundamentalValue(2));
+    value->Set("permissions", new base::Value(2));
     EXPECT_FALSE(Permissions::Populate(*value, &permissions_object));
   }
 
@@ -156,7 +156,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     Permissions permissions_object;
     value->Clear();
     value->Set("origins", origins->DeepCopy());
-    value->Set("random", new base::FundamentalValue(3));
+    value->Set("random", new base::Value(3));
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
     EXPECT_TRUE(permissions.get());

@@ -208,7 +208,7 @@ void SiteSettingsHandler::OnGetUsageInfo(
       CallJavascriptFunction("settings.WebsiteUsagePrivateApi.returnUsageTotal",
                              base::StringValue(entry.host),
                              base::StringValue(ui::FormatBytes(entry.usage)),
-                             base::FundamentalValue(entry.type));
+                             base::Value(entry.type));
       return;
     }
   }
@@ -596,8 +596,7 @@ void SiteSettingsHandler::HandleIsPatternValid(
 
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString(pattern_string);
-  ResolveJavascriptCallback(
-      *callback_id, base::FundamentalValue(pattern.IsValid()));
+  ResolveJavascriptCallback(*callback_id, base::Value(pattern.IsValid()));
 }
 
 void SiteSettingsHandler::HandleUpdateIncognitoStatus(
@@ -619,7 +618,7 @@ void SiteSettingsHandler::SendIncognitoStatus(
 
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("onIncognitoStatusChanged"),
-                         base::FundamentalValue(incognito_enabled));
+                         base::Value(incognito_enabled));
 }
 
 void SiteSettingsHandler::HandleFetchZoomLevels(const base::ListValue* args) {

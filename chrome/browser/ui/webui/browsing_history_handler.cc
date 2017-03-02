@@ -552,7 +552,7 @@ void BrowsingHistoryHandler::HistoryDeleted() {
 void BrowsingHistoryHandler::HasOtherFormsOfBrowsingHistory(
     bool has_other_forms,
     bool has_synced_results) {
-    web_ui()->CallJavascriptFunctionUnsafe(
-        "showNotification", base::FundamentalValue(has_synced_results),
-        base::FundamentalValue(has_other_forms));
+  web_ui()->CallJavascriptFunctionUnsafe("showNotification",
+                                         base::Value(has_synced_results),
+                                         base::Value(has_other_forms));
 }

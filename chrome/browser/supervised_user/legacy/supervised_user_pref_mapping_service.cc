@@ -56,7 +56,7 @@ void SupervisedUserPrefMappingService::OnAvatarChanged() {
   // If yes, update the shared settings value.
   shared_settings_->SetValue(supervised_user_id_,
                              supervised_users::kChromeAvatarIndex,
-                             base::FundamentalValue(new_avatar_index));
+                             base::Value(new_avatar_index));
 }
 
 void SupervisedUserPrefMappingService::OnSharedSettingChanged(

@@ -235,10 +235,10 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       VLOG_IF(2, !pattern_pair.second.IsValid())
           << "Replacing invalid secondary pattern '"
           << pattern_pair.second.ToString() << "' with wildcard";
-      value_map->SetValue(pattern_pair.first, secondary_pattern, content_type,
-                          ResourceIdentifier(),
-                          new base::FundamentalValue(
-                              kPrefsForManagedContentSettingsMap[i].setting));
+      value_map->SetValue(
+          pattern_pair.first, secondary_pattern, content_type,
+          ResourceIdentifier(),
+          new base::Value(kPrefsForManagedContentSettingsMap[i].setting));
     }
   }
 }
@@ -358,7 +358,7 @@ void PolicyProvider::UpdateManagedDefaultSetting(
   } else {
     value_map_.SetValue(ContentSettingsPattern::Wildcard(),
                         ContentSettingsPattern::Wildcard(), entry.content_type,
-                        std::string(), new base::FundamentalValue(setting));
+                        std::string(), new base::Value(setting));
   }
 }
 

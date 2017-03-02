@@ -736,12 +736,12 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
 
   int num_int;
   if (StringToInt(num_string, &num_int))
-    return base::MakeUnique<FundamentalValue>(num_int);
+    return base::MakeUnique<Value>(num_int);
 
   double num_double;
   if (StringToDouble(num_string.as_string(), &num_double) &&
       std::isfinite(num_double)) {
-    return base::MakeUnique<FundamentalValue>(num_double);
+    return base::MakeUnique<Value>(num_double);
   }
 
   return nullptr;
@@ -782,7 +782,7 @@ std::unique_ptr<Value> JSONParser::ConsumeLiteral() {
         return nullptr;
       }
       NextNChars(kTrueLen - 1);
-      return base::MakeUnique<FundamentalValue>(true);
+      return base::MakeUnique<Value>(true);
     }
     case 'f': {
       const char kFalseLiteral[] = "false";
@@ -793,7 +793,7 @@ std::unique_ptr<Value> JSONParser::ConsumeLiteral() {
         return nullptr;
       }
       NextNChars(kFalseLen - 1);
-      return base::MakeUnique<FundamentalValue>(false);
+      return base::MakeUnique<Value>(false);
     }
     case 'n': {
       const char kNullLiteral[] = "null";

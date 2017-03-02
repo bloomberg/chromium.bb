@@ -655,7 +655,7 @@ WebstorePrivateIsPendingCustodianApprovalFunction::Run() {
 
 ExtensionFunction::ResponseValue
 WebstorePrivateIsPendingCustodianApprovalFunction::BuildResponse(bool result) {
-  return OneArgument(base::MakeUnique<base::FundamentalValue>(result));
+  return OneArgument(base::MakeUnique<base::Value>(result));
 }
 
 }  // namespace extensions

@@ -32,7 +32,7 @@ namespace {
 template <typename IntegerT>
 std::unique_ptr<base::Value> ValueFromInteger(IntegerT handle) {
   return std::unique_ptr<base::Value>(
-      new base::FundamentalValue(static_cast<int>(handle)));
+      new base::Value(static_cast<int>(handle)));
 }
 
 }  // namespace

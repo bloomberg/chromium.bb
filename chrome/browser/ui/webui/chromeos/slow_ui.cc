@@ -118,7 +118,7 @@ void SlowHandler::LoadComplete(const base::ListValue* args) {
 void SlowHandler::UpdatePage() {
   PrefService* pref_service = profile_->GetPrefs();
   bool enabled = pref_service->GetBoolean(prefs::kPerformanceTracingEnabled);
-  base::FundamentalValue pref_value(enabled);
+  base::Value pref_value(enabled);
   web_ui()->CallJavascriptFunctionUnsafe(kJsApiTracingPrefChanged, pref_value);
 }
 

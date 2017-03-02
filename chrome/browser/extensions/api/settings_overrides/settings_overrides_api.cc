@@ -162,12 +162,12 @@ void SettingsOverridesAPI::OnExtensionLoaded(
               base::MakeUnique<base::StringValue>(SubstituteInstallParam(
                   settings->homepage->spec(), install_parameter)));
       SetPref(extension->id(), prefs::kHomePageIsNewTabPage,
-              base::MakeUnique<base::FundamentalValue>(false));
+              base::MakeUnique<base::Value>(false));
     }
     if (!settings->startup_pages.empty()) {
-      SetPref(extension->id(), prefs::kRestoreOnStartup,
-              base::MakeUnique<base::FundamentalValue>(
-                  SessionStartupPref::kPrefValueURLs));
+      SetPref(
+          extension->id(), prefs::kRestoreOnStartup,
+          base::MakeUnique<base::Value>(SessionStartupPref::kPrefValueURLs));
       if (settings->startup_pages.size() > 1) {
         VLOG(1) << extensions::ErrorUtils::FormatErrorMessage(
                        kManyStartupPagesWarning,
@@ -185,7 +185,7 @@ void SettingsOverridesAPI::OnExtensionLoaded(
       // all search engines.
       if (settings->search_engine->is_default) {
         SetPref(extension->id(), prefs::kDefaultSearchProviderEnabled,
-                base::MakeUnique<base::FundamentalValue>(true));
+                base::MakeUnique<base::Value>(true));
       } else {
         UnsetPref(extension->id(), prefs::kDefaultSearchProviderEnabled);
       }

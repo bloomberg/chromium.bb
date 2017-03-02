@@ -353,14 +353,12 @@ Value* Value::DeepCopy() const {
     case Type::NONE:
       return CreateNullValue().release();
 
-    // For now, make FundamentalValues for backward-compatibility. Convert to
-    // Value when that code is deleted.
     case Type::BOOLEAN:
-      return new FundamentalValue(bool_value_);
+      return new Value(bool_value_);
     case Type::INTEGER:
-      return new FundamentalValue(int_value_);
+      return new Value(int_value_);
     case Type::DOUBLE:
-      return new FundamentalValue(double_value_);
+      return new Value(double_value_);
     // For now, make StringValues for backward-compatibility. Convert to
     // Value when that code is deleted.
     case Type::STRING:
@@ -673,15 +671,15 @@ void DictionaryValue::Set(StringPiece path, Value* in_value) {
 }
 
 void DictionaryValue::SetBoolean(StringPiece path, bool in_value) {
-  Set(path, new FundamentalValue(in_value));
+  Set(path, new Value(in_value));
 }
 
 void DictionaryValue::SetInteger(StringPiece path, int in_value) {
-  Set(path, new FundamentalValue(in_value));
+  Set(path, new Value(in_value));
 }
 
 void DictionaryValue::SetDouble(StringPiece path, double in_value) {
-  Set(path, new FundamentalValue(in_value));
+  Set(path, new Value(in_value));
 }
 
 void DictionaryValue::SetString(StringPiece path, StringPiece in_value) {
@@ -704,20 +702,17 @@ void DictionaryValue::SetWithoutPathExpansion(StringPiece key,
 
 void DictionaryValue::SetBooleanWithoutPathExpansion(StringPiece path,
                                                      bool in_value) {
-  SetWithoutPathExpansion(path,
-                          base::MakeUnique<base::FundamentalValue>(in_value));
+  SetWithoutPathExpansion(path, base::MakeUnique<base::Value>(in_value));
 }
 
 void DictionaryValue::SetIntegerWithoutPathExpansion(StringPiece path,
                                                      int in_value) {
-  SetWithoutPathExpansion(path,
-                          base::MakeUnique<base::FundamentalValue>(in_value));
+  SetWithoutPathExpansion(path, base::MakeUnique<base::Value>(in_value));
 }
 
 void DictionaryValue::SetDoubleWithoutPathExpansion(StringPiece path,
                                                     double in_value) {
-  SetWithoutPathExpansion(path,
-                          base::MakeUnique<base::FundamentalValue>(in_value));
+  SetWithoutPathExpansion(path, base::MakeUnique<base::Value>(in_value));
 }
 
 void DictionaryValue::SetStringWithoutPathExpansion(StringPiece path,
@@ -1274,15 +1269,15 @@ void ListValue::Append(Value* in_value) {
 #endif
 
 void ListValue::AppendBoolean(bool in_value) {
-  Append(MakeUnique<FundamentalValue>(in_value));
+  Append(MakeUnique<Value>(in_value));
 }
 
 void ListValue::AppendInteger(int in_value) {
-  Append(MakeUnique<FundamentalValue>(in_value));
+  Append(MakeUnique<Value>(in_value));
 }
 
 void ListValue::AppendDouble(double in_value) {
-  Append(MakeUnique<FundamentalValue>(in_value));
+  Append(MakeUnique<Value>(in_value));
 }
 
 void ListValue::AppendString(StringPiece in_value) {

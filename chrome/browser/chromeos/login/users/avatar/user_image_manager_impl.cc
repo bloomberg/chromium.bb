@@ -545,7 +545,7 @@ void UserImageManagerImpl::Job::UpdateLocalState() {
 
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   entry->Set(kImagePathNodeName, new base::StringValue(image_path_.value()));
-  entry->Set(kImageIndexNodeName, new base::FundamentalValue(image_index_));
+  entry->Set(kImageIndexNodeName, new base::Value(image_index_));
   if (!image_url_.is_empty())
     entry->Set(kImageURLNodeName, new base::StringValue(image_url_.spec()));
   DictionaryPrefUpdate update(g_browser_process->local_state(),

@@ -30,11 +30,9 @@ TEST_F(DefaultGeolocationPolicyHandlerTest, AllowGeolocation) {
   // should not translate to the ArcLocationServiceEnabled preference.
   EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
   PolicyMap policy;
-  policy.Set(key::kDefaultGeolocationSetting,
-      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(CONTENT_SETTING_ALLOW)),
-      nullptr);
+  policy.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::Value(CONTENT_SETTING_ALLOW)), nullptr);
   UpdateProviderPolicy(policy);
   EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
 }
@@ -44,15 +42,13 @@ TEST_F(DefaultGeolocationPolicyHandlerTest, BlockGeolocation) {
   // should set the ArcLocationServiceEnabled preference to false.
   EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
   PolicyMap policy;
-  policy.Set(key::kDefaultGeolocationSetting,
-      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(CONTENT_SETTING_BLOCK)),
-      nullptr);
+  policy.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::Value(CONTENT_SETTING_BLOCK)), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = nullptr;
   EXPECT_TRUE(store_->GetValue(prefs::kArcLocationServiceEnabled, &value));
-  EXPECT_TRUE(base::FundamentalValue(false).Equals(value));
+  EXPECT_TRUE(base::Value(false).Equals(value));
 }
 
 TEST_F(DefaultGeolocationPolicyHandlerTest, AskGeolocation) {
@@ -60,11 +56,9 @@ TEST_F(DefaultGeolocationPolicyHandlerTest, AskGeolocation) {
   // not translate to the ArcLocationServiceEnabled preference.
   EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
   PolicyMap policy;
-  policy.Set(key::kDefaultGeolocationSetting,
-      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(CONTENT_SETTING_ASK)),
-      nullptr);
+  policy.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::Value(CONTENT_SETTING_ASK)), nullptr);
   UpdateProviderPolicy(policy);
   EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
 }

@@ -178,7 +178,7 @@ void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
     std::unique_ptr<base::ListValue> args_copy(args->DeepCopy());
     int connection_index = 0;
     args_copy->Set(connection_index,
-                   base::MakeUnique<base::FundamentalValue>(connection_id));
+                   base::MakeUnique<base::Value>(connection_id));
     std::unique_ptr<Event> event(
         new Event(histogram_value, event_name, std::move(args_copy)));
     EventRouter::Get(browser_context_)

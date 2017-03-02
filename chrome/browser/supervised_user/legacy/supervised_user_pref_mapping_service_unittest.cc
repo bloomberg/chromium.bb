@@ -61,7 +61,7 @@ TEST_F(SupervisedUserPrefMappingServiceTest, CheckSharedSettingUpdate) {
   EXPECT_EQ(profile_.GetPrefs()->GetInteger(prefs::kProfileAvatarIndex), -1);
   shared_settings_service_->SetValue(kFakeSupervisedUserId,
                                      supervised_users::kChromeAvatarIndex,
-                                     base::FundamentalValue(1));
+                                     base::Value(1));
   mapping_service_->OnSharedSettingChanged(
       kFakeSupervisedUserId,
       supervised_users::kChromeAvatarIndex);

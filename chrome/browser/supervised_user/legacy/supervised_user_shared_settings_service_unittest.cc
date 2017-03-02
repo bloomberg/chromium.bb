@@ -22,7 +22,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
-using base::FundamentalValue;
 using base::StringValue;
 using base::Value;
 using sync_pb::ManagedUserSharedSettingSpecifics;
@@ -162,12 +161,12 @@ TEST_F(SupervisedUserSharedSettingsServiceTest, SetAndGet) {
   const char kIdC[] = "cccccc";
 
   StringValue name("Jack");
-  FundamentalValue age(8);
+  Value age(8);
   StringValue bar("bar");
   settings_service_.SetValue(kIdA, "name", name);
   ASSERT_EQ(1u, sync_processor_->changes().size());
   VerifySyncChangesAndClear();
-  settings_service_.SetValue(kIdA, "age", FundamentalValue(6));
+  settings_service_.SetValue(kIdA, "age", Value(6));
   ASSERT_EQ(1u, sync_processor_->changes().size());
   VerifySyncChangesAndClear();
   settings_service_.SetValue(kIdA, "age", age);
@@ -202,7 +201,7 @@ TEST_F(SupervisedUserSharedSettingsServiceTest, Merge) {
   const char kIdB[] = "bbbbbb";
   const char kIdC[] = "cccccc";
 
-  FundamentalValue age(8);
+  Value age(8);
   StringValue bar("bar");
   settings_service_.SetValue(kIdA, "name", StringValue("Jack"));
   settings_service_.SetValue(kIdA, "age", age);
@@ -252,7 +251,7 @@ TEST_F(SupervisedUserSharedSettingsServiceTest, ProcessChanges) {
   const char kIdB[] = "bbbbbb";
   const char kIdC[] = "cccccc";
 
-  FundamentalValue age(8);
+  Value age(8);
   StringValue bar("bar");
   settings_service_.SetValue(kIdA, "name", StringValue("Jack"));
   settings_service_.SetValue(kIdA, "age", age);

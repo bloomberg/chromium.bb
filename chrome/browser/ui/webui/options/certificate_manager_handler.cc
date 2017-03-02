@@ -606,11 +606,11 @@ void CertificateManagerHandler::GetCATrust(const base::ListValue* args) {
 
   net::NSSCertDatabase::TrustBits trust_bits =
       certificate_manager_model_->cert_db()->GetCertTrust(cert, net::CA_CERT);
-  base::FundamentalValue ssl_value(
+  base::Value ssl_value(
       static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_SSL));
-  base::FundamentalValue email_value(
+  base::Value email_value(
       static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_EMAIL));
-  base::FundamentalValue obj_sign_value(
+  base::Value obj_sign_value(
       static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_OBJ_SIGN));
   web_ui()->CallJavascriptFunctionUnsafe(
       "CertificateEditCaTrustOverlay.populateTrust", ssl_value, email_value,
@@ -1084,9 +1084,9 @@ void CertificateManagerHandler::OnCertificateManagerModelCreated(
 }
 
 void CertificateManagerHandler::CertificateManagerModelReady() {
-  base::FundamentalValue user_db_available_value(
+  base::Value user_db_available_value(
       certificate_manager_model_->is_user_db_available());
-  base::FundamentalValue tpm_available_value(
+  base::Value tpm_available_value(
       certificate_manager_model_->is_tpm_available());
   web_ui()->CallJavascriptFunctionUnsafe("CertificateManager.onModelReady",
                                          user_db_available_value,

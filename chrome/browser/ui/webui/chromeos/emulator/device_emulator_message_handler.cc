@@ -630,14 +630,14 @@ void DeviceEmulatorMessageHandler::TouchpadExists(bool exists) {
   if (!IsJavascriptAllowed())
     return;
   web_ui()->CallJavascriptFunctionUnsafe(kTouchpadExistsCallback,
-      base::FundamentalValue(exists));
+                                         base::Value(exists));
 }
 
 void DeviceEmulatorMessageHandler::MouseExists(bool exists) {
   if (!IsJavascriptAllowed())
     return;
   web_ui()->CallJavascriptFunctionUnsafe(kMouseExistsCallback,
-      base::FundamentalValue(exists));
+                                         base::Value(exists));
 }
 
 }  // namespace chromeos

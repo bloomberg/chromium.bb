@@ -557,9 +557,9 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
   DCHECK_GT(params.page_count, 0);
   if (g_testing_delegate)
     g_testing_delegate->DidGetPreviewPageCount(params.page_count);
-  base::FundamentalValue count(params.page_count);
-  base::FundamentalValue request_id(params.preview_request_id);
-  base::FundamentalValue fit_to_page_scaling(params.fit_to_page_scaling);
+  base::Value count(params.page_count);
+  base::Value request_id(params.preview_request_id);
+  base::Value fit_to_page_scaling(params.fit_to_page_scaling);
   web_ui()->CallJavascriptFunctionUnsafe("onDidGetPreviewPageCount", count,
                                          request_id, fit_to_page_scaling);
 }
@@ -589,7 +589,7 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
   layout.SetInteger(printing::kSettingPrintableAreaHeight,
                     printable_area.height());
 
-  base::FundamentalValue has_page_size_style(has_custom_page_size_style);
+  base::Value has_page_size_style(has_custom_page_size_style);
   web_ui()->CallJavascriptFunctionUnsafe("onDidGetDefaultPageLayout", layout,
                                          has_page_size_style);
 }
@@ -597,9 +597,9 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
 void PrintPreviewUI::OnDidPreviewPage(int page_number,
                                       int preview_request_id) {
   DCHECK_GE(page_number, 0);
-  base::FundamentalValue number(page_number);
-  base::FundamentalValue ui_identifier(id_);
-  base::FundamentalValue request_id(preview_request_id);
+  base::Value number(page_number);
+  base::Value ui_identifier(id_);
+  base::Value request_id(preview_request_id);
   if (g_testing_delegate)
     g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
   web_ui()->CallJavascriptFunctionUnsafe("onDidPreviewPage", number,
@@ -621,8 +621,8 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
         handler_->regenerate_preview_request_count());
     initial_preview_start_time_ = base::TimeTicks();
   }
-  base::FundamentalValue ui_identifier(id_);
-  base::FundamentalValue ui_preview_request_id(preview_request_id);
+  base::Value ui_identifier(id_);
+  base::Value ui_preview_request_id(preview_request_id);
   web_ui()->CallJavascriptFunctionUnsafe("updatePrintPreview", ui_identifier,
                                          ui_preview_request_id);
 }

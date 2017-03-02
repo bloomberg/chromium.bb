@@ -154,11 +154,11 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
   GetExpectedDefaultPolicy(expected);
 
   expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                POLICY_SOURCE_CLOUD,
-                base::MakeUnique<base::FundamentalValue>(true), nullptr);
+                POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+                nullptr);
   expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::MakeUnique<base::FundamentalValue>(4), nullptr);
+                base::MakeUnique<base::Value>(4), nullptr);
   base::ListValue list;
   list.AppendString("dev.chromium.org");
   list.AppendString("youtube.com");
@@ -166,7 +166,7 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
   expected->Set(key::kMaxInvalidationFetchDelay, POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::MakeUnique<base::FundamentalValue>(1000), nullptr);
+                base::MakeUnique<base::Value>(1000), nullptr);
   expected->Set(key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                 base::MakeUnique<base::StringValue>(homepage), nullptr);

@@ -272,7 +272,7 @@ void IndexedDBInternalsUI::OnForcedClose(const base::FilePath& partition_path,
   web_ui()->CallJavascriptFunctionUnsafe(
       "indexeddb.onForcedClose", base::StringValue(partition_path.value()),
       base::StringValue(origin.Serialize()),
-      base::FundamentalValue(static_cast<double>(connection_count)));
+      base::Value(static_cast<double>(connection_count)));
 }
 
 void IndexedDBInternalsUI::OnDownloadDataReady(
@@ -361,7 +361,7 @@ void IndexedDBInternalsUI::OnDownloadStarted(
       "indexeddb.onOriginDownloadReady",
       base::StringValue(partition_path.value()),
       base::StringValue(origin.Serialize()),
-      base::FundamentalValue(static_cast<double>(connection_count)));
+      base::Value(static_cast<double>(connection_count)));
 }
 
 }  // namespace content

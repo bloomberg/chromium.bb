@@ -75,7 +75,7 @@ enum PasswordManagerPreferencesInitialAndFinalValues {
 };
 
 syncer::SyncData CreatePrefSyncData(const std::string& name, bool value) {
-  base::FundamentalValue bool_value(value);
+  base::Value bool_value(value);
   std::string serialized;
   base::JSONWriter::Write(bool_value, &serialized);
   sync_pb::EntitySpecifics specifics;

@@ -291,8 +291,7 @@ void SupervisedUserRegistrationUtilityImpl::Register(
   const char* kAvatarKey = supervised_users::kChromeAvatarIndex;
 #endif
   supervised_user_shared_settings_service_->SetValue(
-      pending_supervised_user_id_, kAvatarKey,
-      base::FundamentalValue(info.avatar_index));
+      pending_supervised_user_id_, kAvatarKey, base::Value(info.avatar_index));
   if (need_password_update) {
     password_update_.reset(new SupervisedUserSharedSettingsUpdate(
         supervised_user_shared_settings_service_, pending_supervised_user_id_,

@@ -62,16 +62,15 @@ bool UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>>::
       return true;
     }
     case common::mojom::ValueDataView::Tag::BOOL_VALUE: {
-      *value_out = base::MakeUnique<base::FundamentalValue>(data.bool_value());
+      *value_out = base::MakeUnique<base::Value>(data.bool_value());
       return true;
     }
     case common::mojom::ValueDataView::Tag::INT_VALUE: {
-      *value_out = base::MakeUnique<base::FundamentalValue>(data.int_value());
+      *value_out = base::MakeUnique<base::Value>(data.int_value());
       return true;
     }
     case common::mojom::ValueDataView::Tag::DOUBLE_VALUE: {
-      *value_out =
-          base::MakeUnique<base::FundamentalValue>(data.double_value());
+      *value_out = base::MakeUnique<base::Value>(data.double_value());
       return true;
     }
     case common::mojom::ValueDataView::Tag::STRING_VALUE: {

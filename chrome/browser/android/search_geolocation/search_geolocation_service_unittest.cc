@@ -195,7 +195,7 @@ TEST_F(SearchGeolocationServiceTest, UseDSEGeolocationSetting) {
   // False if the content setting is enterprise ask.
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kManagedDefaultGeolocationSetting,
-      new base::FundamentalValue(CONTENT_SETTING_ASK));
+      new base::Value(CONTENT_SETTING_ASK));
   EXPECT_FALSE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
 }
 
@@ -245,7 +245,7 @@ TEST_F(SearchGeolocationServiceTest, SetDSEGeolocationSetting) {
   GetService()->SetDSEGeolocationSetting(true);
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kManagedDefaultGeolocationSetting,
-      new base::FundamentalValue(CONTENT_SETTING_ASK));
+      new base::Value(CONTENT_SETTING_ASK));
   EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
   GetService()->SetDSEGeolocationSetting(false);
   EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());

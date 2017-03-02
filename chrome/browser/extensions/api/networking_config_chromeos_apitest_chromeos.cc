@@ -100,9 +100,8 @@ class NetworkingConfigTest
                              true /* add_to_visible */);
     service_test->SetServiceProperty(kWifi1ServicePath, shill::kWifiBSsid,
                                      base::StringValue("01:02:ab:7f:90:00"));
-    service_test->SetServiceProperty(kWifi1ServicePath,
-                                     shill::kSignalStrengthProperty,
-                                     base::FundamentalValue(40));
+    service_test->SetServiceProperty(
+        kWifi1ServicePath, shill::kSignalStrengthProperty, base::Value(40));
     profile_test->AddService(ShillProfileClient::GetSharedProfilePath(),
                              kWifi1ServicePath);
 

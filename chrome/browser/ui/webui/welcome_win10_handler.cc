@@ -171,7 +171,6 @@ void WelcomeWin10Handler::OnIsPinnedToTaskbarDetermined(
 }
 
 void WelcomeWin10Handler::SendPinnedToTaskbarStateResult() {
-  ResolveJavascriptCallback(
-      base::StringValue(pinned_state_callback_id_),
-      base::FundamentalValue(pinned_state_result_.value()));
+  ResolveJavascriptCallback(base::StringValue(pinned_state_callback_id_),
+                            base::Value(pinned_state_result_.value()));
 }

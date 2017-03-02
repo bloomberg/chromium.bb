@@ -170,13 +170,12 @@ class CryptAuthEnrollmentManagerTest
     CryptAuthEnrollmentManager::RegisterPrefs(pref_service_.registry());
     pref_service_.SetUserPref(
         prefs::kCryptAuthEnrollmentIsRecoveringFromFailure,
-        new base::FundamentalValue(false));
+        new base::Value(false));
     pref_service_.SetUserPref(
         prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds,
-        new base::FundamentalValue(kLastEnrollmentTimeSeconds));
-    pref_service_.SetUserPref(
-        prefs::kCryptAuthEnrollmentReason,
-        new base::FundamentalValue(INVOCATION_REASON_UNKNOWN));
+        new base::Value(kLastEnrollmentTimeSeconds));
+    pref_service_.SetUserPref(prefs::kCryptAuthEnrollmentReason,
+                              new base::Value(INVOCATION_REASON_UNKNOWN));
 
     std::string public_key_b64, private_key_b64;
     base::Base64UrlEncode(public_key_,
@@ -336,7 +335,7 @@ TEST_F(CryptAuthEnrollmentManagerTest, InitWithExistingPrefs) {
 TEST_F(CryptAuthEnrollmentManagerTest, InitWithExpiredEnrollment) {
   pref_service_.SetUserPref(
       prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds,
-      new base::FundamentalValue(kLastExpiredEnrollmentTimeSeconds));
+      new base::Value(kLastExpiredEnrollmentTimeSeconds));
 
   EXPECT_CALL(*sync_scheduler(),
               Start(clock_->Now() - base::Time::FromDoubleT(

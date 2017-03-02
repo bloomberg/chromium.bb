@@ -158,7 +158,7 @@ bool DecodePRegValue(uint32_t type,
           val = base::NetToHost32(val);
         else
           val = base::ByteSwapToLE32(val);
-        value->reset(new base::FundamentalValue(static_cast<int>(val)));
+        value->reset(new base::Value(static_cast<int>(val)));
         return true;
       } else {
         LOG(ERROR) << "Bad data size " << data.size();

@@ -35,9 +35,9 @@ GenerateValue([]() {
   return list;
 })
 {%-   elif source|is_number -%}
-base::MakeUnique<base::FundamentalValue>({{source}})
+base::MakeUnique<base::Value>({{source}})
 {%-   elif source|is_bool -%}
-base::MakeUnique<base::FundamentalValue>({{source|lower}})
+base::MakeUnique<base::Value>({{source|lower}})
 {%-   elif source|is_string or source|is_unicode -%}
 base::MakeUnique<base::StringValue>("{{source|make_ascii}}")
 {%-   else %}

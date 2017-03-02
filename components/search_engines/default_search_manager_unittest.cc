@@ -30,7 +30,7 @@ namespace {
 void SetOverrides(sync_preferences::TestingPrefServiceSyncable* prefs,
                   bool update) {
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     new base::FundamentalValue(1));
+                     new base::Value(1));
   base::ListValue* overrides = new base::ListValue;
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
 

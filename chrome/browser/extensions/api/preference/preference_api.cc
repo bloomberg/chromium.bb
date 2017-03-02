@@ -201,7 +201,7 @@ class InvertBooleanTransformer : public PrefTransformerInterface {
     bool bool_value = false;
     bool result = value->GetAsBoolean(&bool_value);
     DCHECK(result);
-    return new base::FundamentalValue(!bool_value);
+    return new base::Value(!bool_value);
   }
 };
 
@@ -214,11 +214,9 @@ class NetworkPredictionTransformer : public PrefTransformerInterface {
     const bool pref_found = extension_pref->GetAsBoolean(&bool_value);
     DCHECK(pref_found) << "Preference not found.";
     if (bool_value) {
-      return new base::FundamentalValue(
-          chrome_browser_net::NETWORK_PREDICTION_DEFAULT);
+      return new base::Value(chrome_browser_net::NETWORK_PREDICTION_DEFAULT);
     } else {
-      return new base::FundamentalValue(
-          chrome_browser_net::NETWORK_PREDICTION_NEVER);
+      return new base::Value(chrome_browser_net::NETWORK_PREDICTION_NEVER);
     }
   }
 
@@ -227,8 +225,8 @@ class NetworkPredictionTransformer : public PrefTransformerInterface {
     int int_value = chrome_browser_net::NETWORK_PREDICTION_DEFAULT;
     const bool pref_found = browser_pref->GetAsInteger(&int_value);
     DCHECK(pref_found) << "Preference not found.";
-    return new base::FundamentalValue(
-        int_value != chrome_browser_net::NETWORK_PREDICTION_NEVER);
+    return new base::Value(int_value !=
+                           chrome_browser_net::NETWORK_PREDICTION_NEVER);
   }
 };
 

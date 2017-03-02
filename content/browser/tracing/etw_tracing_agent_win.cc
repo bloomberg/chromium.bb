@@ -181,7 +181,7 @@ void EtwTracingAgent::AddSyncEventToBuffer() {
 }
 
 void EtwTracingAgent::AppendEventToBuffer(EVENT_TRACE* event) {
-  using base::FundamentalValue;
+  using base::Value;
 
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
@@ -193,13 +193,11 @@ void EtwTracingAgent::AppendEventToBuffer(EVENT_TRACE* event) {
 
   value->Set("guid", new base::StringValue(GuidToString(event->Header.Guid)));
 
-  value->Set("op", new FundamentalValue(event->Header.Class.Type));
-  value->Set("ver", new FundamentalValue(event->Header.Class.Version));
-  value->Set("pid",
-             new FundamentalValue(static_cast<int>(event->Header.ProcessId)));
-  value->Set("tid",
-             new FundamentalValue(static_cast<int>(event->Header.ThreadId)));
-  value->Set("cpu", new FundamentalValue(event->BufferContext.ProcessorNumber));
+  value->Set("op", new Value(event->Header.Class.Type));
+  value->Set("ver", new Value(event->Header.Class.Version));
+  value->Set("pid", new Value(static_cast<int>(event->Header.ProcessId)));
+  value->Set("tid", new Value(static_cast<int>(event->Header.ThreadId)));
+  value->Set("cpu", new Value(event->BufferContext.ProcessorNumber));
 
   // Base64 encode the payload bytes.
   base::StringPiece buffer(static_cast<const char*>(event->MofData),

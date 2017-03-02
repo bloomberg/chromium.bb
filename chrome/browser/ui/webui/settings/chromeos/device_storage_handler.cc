@@ -206,7 +206,7 @@ void StorageHandler::UpdateDriveCacheSize() {
   // Shows the item "Offline cache" and start calculating size.
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("storage-drive-enabled-changed"),
-                         base::FundamentalValue(true));
+                         base::Value(true));
   updating_drive_cache_size_ = true;
   file_system->CalculateCacheSize(
       base::Bind(&StorageHandler::OnGetDriveCacheSize, base::Unretained(this)));
@@ -217,7 +217,7 @@ void StorageHandler::OnGetDriveCacheSize(int64_t size) {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("storage-drive-cache-size-changed"),
                          base::StringValue(ui::FormatBytes(size)),
-                         base::FundamentalValue(size > 0));
+                         base::Value(size > 0));
 }
 
 void StorageHandler::UpdateBrowsingDataSize() {
@@ -354,7 +354,7 @@ void StorageHandler::UpdateAndroidSize() {
   // Shows the item "Android apps and cache" and start calculating size.
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("storage-android-enabled-changed"),
-                         base::FundamentalValue(true));
+                         base::Value(true));
   bool success = arc::ArcStorageManager::Get()->GetApplicationsSize(
       base::Bind(&StorageHandler::OnGetAndroidSize,
                  base::Unretained(this)));

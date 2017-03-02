@@ -433,7 +433,7 @@ void AppCacheInternalsUI::OnAppCacheInfoDeleted(
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnAppCacheInfoDeleted,
       base::StringValue(partition_path.AsUTF8Unsafe()),
-      base::StringValue(manifest_url), base::FundamentalValue(deleted));
+      base::StringValue(manifest_url), base::Value(deleted));
 }
 
 void AppCacheInternalsUI::OnAppCacheDetailsReady(
@@ -496,7 +496,7 @@ void AppCacheInternalsUI::OnFileDetailsFailed(
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnFileDetailsFailed,
       *GetDictionaryValueForResponseEnquiry(response_enquiry),
-      base::FundamentalValue(net_result_code));
+      base::Value(net_result_code));
 }
 
 AppCacheInternalsUI::Proxy* AppCacheInternalsUI::GetProxyForPartitionPath(

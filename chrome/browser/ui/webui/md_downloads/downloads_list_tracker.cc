@@ -129,7 +129,7 @@ void DownloadsListTracker::StartAndSendChunk() {
 
   web_ui_->CallJavascriptFunctionUnsafe(
       "downloads.Manager.insertItems",
-      base::FundamentalValue(static_cast<int>(sent_to_page_)), list);
+      base::Value(static_cast<int>(sent_to_page_)), list);
 
   sent_to_page_ += list.GetSize();
 }
@@ -389,9 +389,9 @@ void DownloadsListTracker::InsertItem(const SortedSet::iterator& insert) {
   base::ListValue list;
   list.Append(CreateDownloadItemValue(*insert));
 
-  web_ui_->CallJavascriptFunctionUnsafe(
-      "downloads.Manager.insertItems",
-      base::FundamentalValue(static_cast<int>(index)), list);
+  web_ui_->CallJavascriptFunctionUnsafe("downloads.Manager.insertItems",
+                                        base::Value(static_cast<int>(index)),
+                                        list);
 
   sent_to_page_++;
 }
@@ -402,7 +402,7 @@ void DownloadsListTracker::UpdateItem(const SortedSet::iterator& update) {
 
   web_ui_->CallJavascriptFunctionUnsafe(
       "downloads.Manager.updateItem",
-      base::FundamentalValue(static_cast<int>(GetIndex(update))),
+      base::Value(static_cast<int>(GetIndex(update))),
       *CreateDownloadItemValue(*update));
 }
 
@@ -416,8 +416,7 @@ void DownloadsListTracker::RemoveItem(const SortedSet::iterator& remove) {
     size_t index = GetIndex(remove);
     if (index < sent_to_page_) {
       web_ui_->CallJavascriptFunctionUnsafe(
-          "downloads.Manager.removeItem",
-          base::FundamentalValue(static_cast<int>(index)));
+          "downloads.Manager.removeItem", base::Value(static_cast<int>(index)));
       sent_to_page_--;
     }
   }

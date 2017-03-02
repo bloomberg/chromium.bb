@@ -286,8 +286,7 @@ void SetManualProxy(base::DictionaryValue* manual,
   uint16_t port = proxy.server.host_port_pair().port();
   base::DictionaryValue* port_dict =
       EnsureDictionaryValue(::onc::proxy::kPort, dict);
-  SetProxyEffectiveValue(port_dict, state,
-                         base::MakeUnique<base::FundamentalValue>(port));
+  SetProxyEffectiveValue(port_dict, state, base::MakeUnique<base::Value>(port));
 }
 
 }  // namespace

@@ -60,7 +60,7 @@ void CommandLinePrefStore::ApplyIntegerSwitches(
         continue;
       }
       SetValue(integer_switch[i].preference_path,
-               base::MakeUnique<base::FundamentalValue>(int_value),
+               base::MakeUnique<base::Value>(int_value),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -72,8 +72,7 @@ void CommandLinePrefStore::ApplyBooleanSwitches(
   for (size_t i = 0; i < size; ++i) {
     if (command_line_->HasSwitch(boolean_switch_map[i].switch_name)) {
       SetValue(boolean_switch_map[i].preference_path,
-               base::MakeUnique<base::FundamentalValue>(
-                   boolean_switch_map[i].set_value),
+               base::MakeUnique<base::Value>(boolean_switch_map[i].set_value),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }

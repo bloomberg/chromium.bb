@@ -92,7 +92,7 @@ bool PrefValueMap::GetBoolean(const std::string& key,
 }
 
 void PrefValueMap::SetBoolean(const std::string& key, bool value) {
-  SetValue(key, base::MakeUnique<base::FundamentalValue>(value));
+  SetValue(key, base::MakeUnique<base::Value>(value));
 }
 
 bool PrefValueMap::GetString(const std::string& key,
@@ -112,11 +112,11 @@ bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
 }
 
 void PrefValueMap::SetInteger(const std::string& key, const int value) {
-  SetValue(key, base::MakeUnique<base::FundamentalValue>(value));
+  SetValue(key, base::MakeUnique<base::Value>(value));
 }
 
 void PrefValueMap::SetDouble(const std::string& key, const double value) {
-  SetValue(key, base::MakeUnique<base::FundamentalValue>(value));
+  SetValue(key, base::MakeUnique<base::Value>(value));
 }
 
 void PrefValueMap::GetDifferingKeys(

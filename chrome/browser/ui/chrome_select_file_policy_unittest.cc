@@ -99,7 +99,7 @@ TEST_F(ChromeSelectFilePolicyTest, MAYBE_ExpectAsynchronousListenerCall) {
 
   // Disallow file-selection dialogs.
   local_state.Get()->SetManagedPref(prefs::kAllowFileSelectionDialogs,
-                                    new base::FundamentalValue(false));
+                                    new base::Value(false));
 
   file_selection_user->StartFileSelection();
 }

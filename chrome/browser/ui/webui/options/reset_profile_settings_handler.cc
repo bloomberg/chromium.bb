@@ -76,7 +76,7 @@ void ResetProfileSettingsHandler::InitializeHandler() {
 void ResetProfileSettingsHandler::InitializePage() {
   web_ui()->CallJavascriptFunctionUnsafe(
       "ResetProfileSettingsOverlay.setResettingState",
-      base::FundamentalValue(resetter_->IsActive()));
+      base::Value(resetter_->IsActive()));
 }
 
 void ResetProfileSettingsHandler::GetLocalizedValues(

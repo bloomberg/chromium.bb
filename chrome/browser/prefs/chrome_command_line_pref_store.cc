@@ -163,7 +163,7 @@ void ChromeCommandLinePrefStore::ApplySSLSwitches() {
 void ChromeCommandLinePrefStore::ApplyBackgroundModeSwitches() {
   if (command_line()->HasSwitch(switches::kDisableExtensions)) {
     SetValue(prefs::kBackgroundModeEnabled,
-             base::MakeUnique<base::FundamentalValue>(false),
+             base::MakeUnique<base::Value>(false),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }

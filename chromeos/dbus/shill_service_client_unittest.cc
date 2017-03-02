@@ -57,7 +57,7 @@ TEST_F(ShillServiceClientTest, PropertyChanged) {
   writer.AppendVariantOfByte(kValue);
 
   // Set expectations.
-  const base::FundamentalValue value(kValue);
+  const base::Value value(kValue);
   MockPropertyChangeObserver observer;
   EXPECT_CALL(observer,
               OnPropertyChanged(
@@ -100,7 +100,7 @@ TEST_F(ShillServiceClientTest, GetProperties) {
   // Set expectations.
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(shill::kSignalStrengthProperty,
-                                new base::FundamentalValue(kValue));
+                                new base::Value(kValue));
   PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());

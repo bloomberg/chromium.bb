@@ -18,7 +18,6 @@
 using base::checked_cast;
 using base::Value;
 using base::DictionaryValue;
-using base::FundamentalValue;
 using base::StringValue;
 
 namespace autofill {
@@ -101,13 +100,13 @@ void SavePasswordProgressLogger::LogURL(
 void SavePasswordProgressLogger::LogBoolean(
     SavePasswordProgressLogger::StringID label,
     bool truth_value) {
-  LogValue(label, FundamentalValue(truth_value));
+  LogValue(label, Value(truth_value));
 }
 
 void SavePasswordProgressLogger::LogNumber(
     SavePasswordProgressLogger::StringID label,
     int signed_number) {
-  LogValue(label, FundamentalValue(signed_number));
+  LogValue(label, Value(signed_number));
 }
 
 void SavePasswordProgressLogger::LogNumber(

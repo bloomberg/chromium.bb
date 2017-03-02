@@ -108,12 +108,12 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
     error_ = ErrorToString(sync_file_system::FileErrorToSyncStatusCode(error));
-    SetResult(base::MakeUnique<base::FundamentalValue>(false));
+    SetResult(base::MakeUnique<base::Value>(false));
     SendResponse(false);
     return;
   }
 
-  SetResult(base::MakeUnique<base::FundamentalValue>(true));
+  SetResult(base::MakeUnique<base::Value>(true));
   SendResponse(true);
 }
 

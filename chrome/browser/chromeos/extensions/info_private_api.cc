@@ -257,7 +257,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
   }
 
   if (property_name == kPropertyOwner) {
-    return new base::FundamentalValue(
+    return new base::Value(
         user_manager::UserManager::Get()->IsCurrentUserOwner());
   }
 
@@ -303,7 +303,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
 
   const char* pref_name = GetBoolPrefNameForApiProperty(property_name.c_str());
   if (pref_name) {
-    return new base::FundamentalValue(
+    return new base::Value(
         Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
             pref_name));
   }

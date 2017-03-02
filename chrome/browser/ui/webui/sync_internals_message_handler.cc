@@ -169,7 +169,7 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(
 void SyncInternalsMessageHandler::OnReceivedAllNodes(
     int request_id,
     std::unique_ptr<base::ListValue> nodes) {
-  base::FundamentalValue id(request_id);
+  base::Value id(request_id);
   web_ui()->CallJavascriptFunctionUnsafe(
       syncer::sync_ui_util::kGetAllNodesCallback, id, *nodes);
 }

@@ -365,7 +365,7 @@ void UserManagerBase::SaveUserOAuthStatus(
                                              kUserOAuthTokenStatus);
     oauth_status_update->SetWithoutPathExpansion(
         account_id.GetUserEmail(),
-        new base::FundamentalValue(static_cast<int>(oauth_token_status)));
+        new base::Value(static_cast<int>(oauth_token_status)));
   }
   GetLocalState()->CommitPendingWrite();
 }
@@ -457,8 +457,7 @@ void UserManagerBase::SaveUserType(const AccountId& account_id,
 
   DictionaryPrefUpdate user_type_update(GetLocalState(), kUserType);
   user_type_update->SetWithoutPathExpansion(
-      account_id.GetUserEmail(),
-      new base::FundamentalValue(static_cast<int>(user_type)));
+      account_id.GetUserEmail(), new base::Value(static_cast<int>(user_type)));
   GetLocalState()->CommitPendingWrite();
 }
 

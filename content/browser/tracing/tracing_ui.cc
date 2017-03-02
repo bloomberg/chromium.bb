@@ -305,7 +305,7 @@ void TracingUI::OnTraceUploadProgress(int64_t current, int64_t total) {
   DCHECK(current <= total);
   int percent = (current / total) * 100;
   web_ui()->CallJavascriptFunctionUnsafe(
-      "onUploadProgress", base::FundamentalValue(percent),
+      "onUploadProgress", base::Value(percent),
       base::StringValue(base::StringPrintf("%" PRId64, current)),
       base::StringValue(base::StringPrintf("%" PRId64, total)));
 }

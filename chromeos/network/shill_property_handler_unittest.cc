@@ -383,7 +383,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   EXPECT_EQ(1, listener_->initial_property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath]);
   // Change a property.
-  base::FundamentalValue scan_interval(3);
+  base::Value scan_interval(3);
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(kTestServicePath),
       shill::kScanIntervalProperty,
@@ -398,10 +398,9 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   // updates.
   listener_->reset_list_updates();
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
-      dbus::ObjectPath(kTestServicePath),
-      shill::kVisibleProperty,
-      base::FundamentalValue(false),
-      base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
+      dbus::ObjectPath(kTestServicePath), shill::kVisibleProperty,
+      base::Value(false), base::Bind(&base::DoNothing),
+      base::Bind(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
 
@@ -433,7 +432,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
       dbus::ObjectPath(kTestIPConfigPath),
       shill::kNameServersProperty, dns_servers,
       base::Bind(&DoNothingWithCallStatus));
-  base::FundamentalValue prefixlen(8);
+  base::Value prefixlen(8);
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(kTestIPConfigPath),
       shill::kPrefixlenProperty, prefixlen,

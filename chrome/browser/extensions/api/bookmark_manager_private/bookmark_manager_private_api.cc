@@ -435,7 +435,7 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
 
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   if (!prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled)) {
-    SetResult(base::MakeUnique<base::FundamentalValue>(false));
+    SetResult(base::MakeUnique<base::Value>(false));
     return true;
   }
 
@@ -447,7 +447,7 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
     return false;
   }
   bool can_paste = bookmarks::CanPasteFromClipboard(model, parent_node);
-  SetResult(base::MakeUnique<base::FundamentalValue>(can_paste));
+  SetResult(base::MakeUnique<base::Value>(can_paste));
   return true;
 }
 
@@ -651,7 +651,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
 
 bool BookmarkManagerPrivateCanEditFunction::RunOnReady() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
-  SetResult(base::MakeUnique<base::FundamentalValue>(
+  SetResult(base::MakeUnique<base::Value>(
       prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled)));
   return true;
 }
@@ -798,7 +798,7 @@ bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunOnReady() {
 
 bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunOnReady() {
   bool can_open_new_windows = true;
-  SetResult(base::MakeUnique<base::FundamentalValue>(can_open_new_windows));
+  SetResult(base::MakeUnique<base::Value>(can_open_new_windows));
   return true;
 }
 

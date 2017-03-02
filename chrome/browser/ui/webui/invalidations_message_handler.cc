@@ -90,7 +90,7 @@ void InvalidationsMessageHandler::OnStateChange(
   std::string state(syncer::InvalidatorStateToString(new_state));
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.invalidations.updateInvalidatorState", base::StringValue(state),
-      base::FundamentalValue(last_changed_timestamp.ToJsTime()));
+      base::Value(last_changed_timestamp.ToJsTime()));
 }
 
 void InvalidationsMessageHandler::OnUpdateIds(

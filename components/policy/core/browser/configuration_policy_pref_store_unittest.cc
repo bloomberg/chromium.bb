@@ -113,8 +113,8 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -125,8 +125,7 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   EXPECT_FALSE(boolean_value);
 
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(true), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policy);
   value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -153,12 +152,11 @@ TEST_F(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
 TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(2),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::FundamentalValue(2).Equals(value));
+  EXPECT_TRUE(base::Value(2).Equals(value));
 }
 
 // Exercises the policy refresh mechanism.

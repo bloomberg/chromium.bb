@@ -18,7 +18,7 @@ namespace {
 TEST(RegistryDictTest, SetAndGetValue) {
   RegistryDict test_dict;
 
-  base::FundamentalValue int_value(42);
+  base::Value int_value(42);
   base::StringValue string_value("fortytwo");
 
   test_dict.SetValue("one", int_value.CreateDeepCopy());
@@ -46,7 +46,7 @@ TEST(RegistryDictTest, SetAndGetValue) {
 TEST(RegistryDictTest, CaseInsensitiveButPreservingValueNames) {
   RegistryDict test_dict;
 
-  base::FundamentalValue int_value(42);
+  base::Value int_value(42);
   base::StringValue string_value("fortytwo");
 
   test_dict.SetValue("One", int_value.CreateDeepCopy());
@@ -69,7 +69,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingValueNames) {
 TEST(RegistryDictTest, SetAndGetKeys) {
   RegistryDict test_dict;
 
-  base::FundamentalValue int_value(42);
+  base::Value int_value(42);
   base::StringValue string_value("fortytwo");
 
   std::unique_ptr<RegistryDict> subdict(new RegistryDict());
@@ -101,7 +101,7 @@ TEST(RegistryDictTest, SetAndGetKeys) {
 TEST(RegistryDictTest, CaseInsensitiveButPreservingKeyNames) {
   RegistryDict test_dict;
 
-  base::FundamentalValue int_value(42);
+  base::Value int_value(42);
 
   test_dict.SetKey("One", base::MakeUnique<RegistryDict>());
   EXPECT_EQ(1u, test_dict.keys().size());
@@ -133,7 +133,7 @@ TEST(RegistryDictTest, Merge) {
   RegistryDict dict_a;
   RegistryDict dict_b;
 
-  base::FundamentalValue int_value(42);
+  base::Value int_value(42);
   base::StringValue string_value("fortytwo");
 
   dict_a.SetValue("one", int_value.CreateDeepCopy());
@@ -166,7 +166,7 @@ TEST(RegistryDictTest, Swap) {
   RegistryDict dict_a;
   RegistryDict dict_b;
 
-  base::FundamentalValue int_value(42);
+  base::Value int_value(42);
   base::StringValue string_value("fortytwo");
 
   dict_a.SetValue("one", int_value.CreateDeepCopy());
@@ -188,7 +188,7 @@ TEST(RegistryDictTest, Swap) {
 TEST(RegistryDictTest, ConvertToJSON) {
   RegistryDict test_dict;
 
-  base::FundamentalValue int_value(42);
+  base::Value int_value(42);
   base::StringValue string_value("fortytwo");
   base::StringValue string_zero("0");
   base::StringValue string_dict("{ \"key\": [ \"value\" ] }");
@@ -238,12 +238,11 @@ TEST(RegistryDictTest, ConvertToJSON) {
   std::unique_ptr<base::ListValue> expected_list(new base::ListValue());
   expected_list->Append(string_value.CreateDeepCopy());
   expected.Set("dict-to-list", std::move(expected_list));
-  expected.Set("int-to-bool", new base::FundamentalValue(true));
-  expected.Set("int-to-double", new base::FundamentalValue(42.0));
-  expected.Set("string-to-bool", new base::FundamentalValue(false));
-  expected.Set("string-to-double", new base::FundamentalValue(0.0));
-  expected.Set("string-to-int",
-               new base::FundamentalValue(static_cast<int>(0)));
+  expected.Set("int-to-bool", new base::Value(true));
+  expected.Set("int-to-double", new base::Value(42.0));
+  expected.Set("string-to-bool", new base::Value(false));
+  expected.Set("string-to-double", new base::Value(0.0));
+  expected.Set("string-to-int", new base::Value(static_cast<int>(0)));
   expected_list.reset(new base::ListValue());
   expected_list->Append(base::MakeUnique<base::StringValue>("value"));
   expected_subdict.reset(new base::DictionaryValue());
@@ -293,7 +292,7 @@ TEST(RegistryDictTest, NonSequentialConvertToJSON) {
 TEST(RegistryDictTest, KeyValueNameClashes) {
   RegistryDict test_dict;
 
-  base::FundamentalValue int_value(42);
+  base::Value int_value(42);
   base::StringValue string_value("fortytwo");
 
   test_dict.SetValue("one", int_value.CreateDeepCopy());

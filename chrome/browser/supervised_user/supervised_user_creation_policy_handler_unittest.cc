@@ -18,8 +18,8 @@ class SupervisedUserCreationPolicyHandlerTest : public ::testing::Test {
  protected:
   void SetUpPolicyAndApply(const char* policy_name, bool value) {
     policies_.Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_PLATFORM,
-                  base::MakeUnique<base::FundamentalValue>(value), nullptr);
+                  POLICY_SOURCE_PLATFORM, base::MakeUnique<base::Value>(value),
+                  nullptr);
     ApplyPolicySettings();
   }
 

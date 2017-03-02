@@ -673,8 +673,8 @@ class ArcSessionOobeOptInNegotiatorTest
               profile());
       connector->OverrideIsManagedForTesting(true);
 
-      profile()->GetTestingPrefService()->SetManagedPref(
-          prefs::kArcEnabled, new base::FundamentalValue(true));
+      profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
+                                                         new base::Value(true));
     }
 
     arc_session_manager()->SetProfile(profile());

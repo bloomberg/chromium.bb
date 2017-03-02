@@ -253,7 +253,7 @@ TEST_F(AppleEventUtilTest, ValueToAppleEventDescriptor) {
 
   const bool all_bools[] = { true, false };
   for (bool b : all_bools) {
-    base::FundamentalValue value(b);
+    base::Value value(b);
     NSAppleEventDescriptor* descriptor =
         chrome::mac::ValueToAppleEventDescriptor(&value);
 

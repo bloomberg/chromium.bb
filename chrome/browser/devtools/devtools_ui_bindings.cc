@@ -289,9 +289,9 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
     base::Base64Encode(chunk, &chunk);
   }
 
-  base::FundamentalValue* id = new base::FundamentalValue(stream_id_);
+  base::Value* id = new base::Value(stream_id_);
   base::StringValue* chunkValue = new base::StringValue(chunk);
-  base::FundamentalValue* encodedValue = new base::FundamentalValue(encoded);
+  base::Value* encodedValue = new base::Value(encoded);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -631,7 +631,7 @@ void DevToolsUIBindings::DispatchProtocolMessage(
     return;
   }
 
-  base::FundamentalValue total_size(static_cast<int>(message.length()));
+  base::Value total_size(static_cast<int>(message.length()));
   for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
     base::StringValue message_value(message.substr(pos, kMaxMessageChunkSize));
     CallClientFunction("DevToolsAPI.dispatchMessageChunk",
@@ -649,7 +649,7 @@ void DevToolsUIBindings::AgentHostClosed(
 
 void DevToolsUIBindings::SendMessageAck(int request_id,
                                         const base::Value* arg) {
-  base::FundamentalValue id_value(request_id);
+  base::Value id_value(request_id);
   CallClientFunction("DevToolsAPI.embedderMessageAck",
                      &id_value, arg, nullptr);
 }
@@ -1117,7 +1117,7 @@ void DevToolsUIBindings::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {
-  base::FundamentalValue value(count);
+  base::Value value(count);
   CallClientFunction("DevToolsAPI.deviceCountUpdated", &value, NULL,
                      NULL);
 }
@@ -1179,9 +1179,9 @@ void DevToolsUIBindings::IndexingTotalWorkCalculated(
     const std::string& file_system_path,
     int total_work) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::FundamentalValue request_id_value(request_id);
+  base::Value request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
-  base::FundamentalValue total_work_value(total_work);
+  base::Value total_work_value(total_work);
   CallClientFunction("DevToolsAPI.indexingTotalWorkCalculated",
                      &request_id_value, &file_system_path_value,
                      &total_work_value);
@@ -1191,9 +1191,9 @@ void DevToolsUIBindings::IndexingWorked(int request_id,
                                         const std::string& file_system_path,
                                         int worked) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::FundamentalValue request_id_value(request_id);
+  base::Value request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
-  base::FundamentalValue worked_value(worked);
+  base::Value worked_value(worked);
   CallClientFunction("DevToolsAPI.indexingWorked", &request_id_value,
                      &file_system_path_value, &worked_value);
 }
@@ -1202,7 +1202,7 @@ void DevToolsUIBindings::IndexingDone(int request_id,
                                       const std::string& file_system_path) {
   indexing_jobs_.erase(request_id);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::FundamentalValue request_id_value(request_id);
+  base::Value request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
   CallClientFunction("DevToolsAPI.indexingDone", &request_id_value,
                      &file_system_path_value, NULL);
@@ -1218,7 +1218,7 @@ void DevToolsUIBindings::SearchCompleted(
        it != file_paths.end(); ++it) {
     file_paths_value.AppendString(*it);
   }
-  base::FundamentalValue request_id_value(request_id);
+  base::Value request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
   CallClientFunction("DevToolsAPI.searchCompleted", &request_id_value,
                      &file_system_path_value, &file_paths_value);
@@ -1277,10 +1277,10 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
         new base::StringValue(extensions::chrome_manifest_urls::GetDevToolsPage(
                                   extension.get()).spec()));
     extension_info->Set("name", new base::StringValue(extension->name()));
-    extension_info->Set("exposeExperimentalAPIs",
-                        new base::FundamentalValue(
-                            extension->permissions_data()->HasAPIPermission(
-                                extensions::APIPermission::kExperimental)));
+    extension_info->Set(
+        "exposeExperimentalAPIs",
+        new base::Value(extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kExperimental)));
     results.Append(std::move(extension_info));
   }
 

@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   // Verify that the pref which controls the large cursor in the login profile
   // has changed to the policy-supplied default.
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityLargeCursorEnabled,
-                                  base::FundamentalValue(true));
+                                  base::Value(true));
 
   // Verify that the large cursor is enabled.
   chromeos::AccessibilityManager* accessibility_manager =
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   // Verify that the pref which controls spoken feedback in the login profile
   // has changed to the policy-supplied default.
   VerifyPrefFollowsRecommendation(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                  base::FundamentalValue(true));
+                                  base::Value(true));
 
   // Verify that spoken feedback is enabled.
   chromeos::AccessibilityManager* accessibility_manager =
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   // Verify that the pref which controls high contrast mode in the login profile
   // has changed to the policy-supplied default.
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityHighContrastEnabled,
-                                  base::FundamentalValue(true));
+                                  base::Value(true));
 
   // Verify that high contrast mode is enabled.
   chromeos::AccessibilityManager* accessibility_manager =
@@ -325,9 +325,9 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   // Verify that the prefs which control the screen magnifier type have changed
   // to the policy-supplied default.
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierEnabled,
-                                  base::FundamentalValue(true));
+                                  base::Value(true));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierType,
-                                  base::FundamentalValue(ash::MAGNIFIER_FULL));
+                                  base::Value(ash::MAGNIFIER_FULL));
 
   // Verify that the full-screen magnifier is enabled.
   chromeos::MagnificationManager* magnification_manager =
@@ -455,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   // Verify that the pref which controls the on-screen keyboard in the login
   // profile has changed to the policy-supplied default.
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityVirtualKeyboardEnabled,
-                                  base::FundamentalValue(true));
+                                  base::Value(true));
 
   // Verify that the on-screen keyboard is enabled.
   chromeos::AccessibilityManager* accessibility_manager =

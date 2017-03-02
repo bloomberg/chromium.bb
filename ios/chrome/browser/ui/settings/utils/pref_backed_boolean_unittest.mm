@@ -33,7 +33,7 @@ class PrefBackedBooleanTest : public PlatformTest {
   bool GetPref() { return pref_service_.GetBoolean(kTestSwitchPref); }
 
   void SetPref(bool value) {
-    base::Value* booleanValue = new base::FundamentalValue(value);
+    base::Value* booleanValue = new base::Value(value);
     pref_service_.SetUserPref(kTestSwitchPref, booleanValue);
   }
 

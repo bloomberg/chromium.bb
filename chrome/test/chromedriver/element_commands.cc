@@ -527,6 +527,6 @@ Status ExecuteElementEquals(Session* session,
   std::string other_element_id;
   if (!params.GetString("other", &other_element_id))
     return Status(kUnknownError, "'other' must be a string");
-  value->reset(new base::FundamentalValue(element_id == other_element_id));
+  value->reset(new base::Value(element_id == other_element_id));
   return Status(kOk);
 }

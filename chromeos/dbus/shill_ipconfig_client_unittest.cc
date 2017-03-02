@@ -50,7 +50,7 @@ class ShillIPConfigClientTest : public ShillClientUnittestBase {
 
 TEST_F(ShillIPConfigClientTest, PropertyChanged) {
   // Create a signal.
-  const base::FundamentalValue kConnected(true);
+  const base::Value kConnected(true);
   dbus::Signal signal(shill::kFlimflamIPConfigInterface,
                       shill::kMonitorPropertyChanged);
   dbus::MessageWriter writer(&signal);
@@ -107,8 +107,7 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(shill::kAddressProperty,
                                 new base::StringValue(kAddress));
-  value.SetWithoutPathExpansion(shill::kMtuProperty,
-                                new base::FundamentalValue(kMtu));
+  value.SetWithoutPathExpansion(shill::kMtuProperty, new base::Value(kMtu));
 
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,

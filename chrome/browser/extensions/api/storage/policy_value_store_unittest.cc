@@ -123,13 +123,13 @@ class PolicyValueStoreTest : public testing::Test {
 
 TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
   policy::PolicyMap policies;
-  base::FundamentalValue expected(123);
+  base::Value expected(123);
   policies.Set("must", policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                expected.CreateDeepCopy(), nullptr);
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::FundamentalValue>(456), nullptr);
+               base::MakeUnique<base::Value>(456), nullptr);
   store_->SetCurrentPolicy(policies);
   ValueStore::ReadResult result = store_->Get();
   ASSERT_TRUE(result->status().ok());

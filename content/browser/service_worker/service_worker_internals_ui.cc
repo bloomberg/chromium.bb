@@ -35,7 +35,6 @@
 #include "content/public/common/url_constants.h"
 
 using base::DictionaryValue;
-using base::FundamentalValue;
 using base::ListValue;
 using base::StringValue;
 using base::Value;
@@ -63,9 +62,8 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (internals) {
     internals->web_ui()->CallJavascriptFunctionUnsafe(
-        "serviceworker.onOperationComplete",
-        FundamentalValue(static_cast<int>(status)),
-        FundamentalValue(callback_id));
+        "serviceworker.onOperationComplete", Value(static_cast<int>(status)),
+        Value(callback_id));
   }
 }
 
@@ -263,7 +261,7 @@ void DidGetRegistrations(
   args.push_back(GetRegistrationListValue(live_registrations));
   args.push_back(GetVersionListValue(live_versions));
   args.push_back(GetRegistrationListValue(stored_registrations));
-  args.push_back(base::MakeUnique<FundamentalValue>(partition_id));
+  args.push_back(base::MakeUnique<Value>(partition_id));
   args.push_back(base::MakeUnique<StringValue>(context_path.value()));
   internals->web_ui()->CallJavascriptFunctionUnsafe(
       "serviceworker.onPartitionData", ConvertToRawPtrVector(args));
@@ -282,14 +280,14 @@ class ServiceWorkerInternalsUI::PartitionObserver
                              EmbeddedWorkerStatus) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
-        "serviceworker.onRunningStateChanged", FundamentalValue(partition_id_),
+        "serviceworker.onRunningStateChanged", Value(partition_id_),
         StringValue(base::Int64ToString(version_id)));
   }
   void OnVersionStateChanged(int64_t version_id,
                              ServiceWorkerVersion::Status) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
-        "serviceworker.onVersionStateChanged", FundamentalValue(partition_id_),
+        "serviceworker.onVersionStateChanged", Value(partition_id_),
         StringValue(base::Int64ToString(version_id)));
   }
   void OnErrorReported(int64_t version_id,
@@ -298,11 +296,11 @@ class ServiceWorkerInternalsUI::PartitionObserver
                        const ErrorInfo& info) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
-    args.push_back(base::MakeUnique<FundamentalValue>(partition_id_));
+    args.push_back(base::MakeUnique<Value>(partition_id_));
     args.push_back(
         base::MakeUnique<StringValue>(base::Int64ToString(version_id)));
-    args.push_back(base::MakeUnique<FundamentalValue>(process_id));
-    args.push_back(base::MakeUnique<FundamentalValue>(thread_id));
+    args.push_back(base::MakeUnique<Value>(process_id));
+    args.push_back(base::MakeUnique<Value>(thread_id));
     auto value = base::MakeUnique<DictionaryValue>();
     value->SetString("message", info.error_message);
     value->SetInteger("lineNumber", info.line_number);
@@ -318,11 +316,11 @@ class ServiceWorkerInternalsUI::PartitionObserver
                               const ConsoleMessage& message) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
-    args.push_back(base::MakeUnique<FundamentalValue>(partition_id_));
+    args.push_back(base::MakeUnique<Value>(partition_id_));
     args.push_back(
         base::MakeUnique<StringValue>(base::Int64ToString(version_id)));
-    args.push_back(base::MakeUnique<FundamentalValue>(process_id));
-    args.push_back(base::MakeUnique<FundamentalValue>(thread_id));
+    args.push_back(base::MakeUnique<Value>(process_id));
+    args.push_back(base::MakeUnique<Value>(thread_id));
     auto value = base::MakeUnique<DictionaryValue>();
     value->SetInteger("sourceIdentifier", message.source_identifier);
     value->SetInteger("message_level", message.message_level);

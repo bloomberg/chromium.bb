@@ -61,7 +61,7 @@ PrefsUtil::SetPrefResult SettingsPrivateDelegate::SetPref(
 std::unique_ptr<base::Value> SettingsPrivateDelegate::GetDefaultZoom() {
   double zoom = content::ZoomLevelToZoomFactor(
       profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref());
-  std::unique_ptr<base::Value> value(new base::FundamentalValue(zoom));
+  std::unique_ptr<base::Value> value(new base::Value(zoom));
   return value;
 }
 

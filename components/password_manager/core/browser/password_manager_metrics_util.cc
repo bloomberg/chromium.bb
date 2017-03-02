@@ -19,7 +19,7 @@
 #include "url/gurl.h"
 
 using base::ListValue;
-using base::FundamentalValue;
+using base::Value;
 
 namespace password_manager {
 

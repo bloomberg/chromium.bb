@@ -118,10 +118,10 @@ bool GetCertificateFields(const net::X509Certificate& cert,
                        serial_number.data(), serial_number.length()));
   fields->SetField(
       PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_BEFORE,
-      base::MakeUnique<base::FundamentalValue>(cert.valid_start().ToDoubleT()));
-  fields->SetField(PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_AFTER,
-                   base::MakeUnique<base::FundamentalValue>(
-                       cert.valid_expiry().ToDoubleT()));
+      base::MakeUnique<base::Value>(cert.valid_start().ToDoubleT()));
+  fields->SetField(
+      PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_AFTER,
+      base::MakeUnique<base::Value>(cert.valid_expiry().ToDoubleT()));
   std::string der;
   net::X509Certificate::GetDEREncoded(cert.os_cert_handle(), &der);
   fields->SetField(

@@ -551,7 +551,7 @@ class KioskTest : public OobeBaseTest {
     bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
     GetLoginUI()->CallJavascriptFunctionUnsafe(
         new_kiosk_ui ? kLaunchAppForTestNewAPI : kLaunchAppForTestOldAPI,
-        base::StringValue(app_id), base::FundamentalValue(diagnostic_mode));
+        base::StringValue(app_id), base::Value(diagnostic_mode));
   }
 
   void ReloadKioskApps() {
@@ -1080,8 +1080,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
       chrome::NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_VISIBLE,
       content::NotificationService::AllSources()).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.AutolaunchScreen.confirmAutoLaunchForTesting",
-      base::FundamentalValue(false));
+      "login.AutolaunchScreen.confirmAutoLaunchForTesting", base::Value(false));
 
   // Wait for the auto launch warning to go away.
   content::WindowedNotificationObserver(
@@ -1112,8 +1111,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
       chrome::NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_VISIBLE,
       content::NotificationService::AllSources()).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.AutolaunchScreen.confirmAutoLaunchForTesting",
-      base::FundamentalValue(true));
+      "login.AutolaunchScreen.confirmAutoLaunchForTesting", base::Value(true));
 
   // Wait for the auto launch warning to go away.
   content::WindowedNotificationObserver(
@@ -1152,8 +1150,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
       chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
       content::NotificationService::AllSources()).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.KioskEnableScreen.enableKioskForTesting",
-      base::FundamentalValue(false));
+      "login.KioskEnableScreen.enableKioskForTesting", base::Value(false));
 
   // Wait for the kiosk_enable screen to disappear.
   content::WindowedNotificationObserver(
@@ -1187,8 +1184,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
       chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
       content::NotificationService::AllSources()).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.KioskEnableScreen.enableKioskForTesting",
-      base::FundamentalValue(true));
+      "login.KioskEnableScreen.enableKioskForTesting", base::Value(true));
 
   // Wait for the signal that indicates Kiosk Mode is enabled.
   content::WindowedNotificationObserver(
@@ -1219,8 +1215,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
       chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
       content::NotificationService::AllSources()).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.KioskEnableScreen.enableKioskForTesting",
-      base::FundamentalValue(false));
+      "login.KioskEnableScreen.enableKioskForTesting", base::Value(false));
 
   // Wait for the kiosk_enable screen to disappear.
   content::WindowedNotificationObserver(
@@ -1282,8 +1277,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoConsumerAutoLaunchWhenUntrusted) {
       chrome::NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_VISIBLE,
       content::NotificationService::AllSources()).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.AutolaunchScreen.confirmAutoLaunchForTesting",
-      base::FundamentalValue(true));
+      "login.AutolaunchScreen.confirmAutoLaunchForTesting", base::Value(true));
 
   // Make cros settings untrusted.
   settings_helper_.SetTrustedStatus(

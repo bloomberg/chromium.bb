@@ -154,7 +154,7 @@ Status CheckSessionCreated(Session* session) {
     return Status(kSessionNotCreatedException, status);
 
   base::ListValue args;
-  std::unique_ptr<base::Value> result(new base::FundamentalValue(0));
+  std::unique_ptr<base::Value> result(new base::Value(0));
   status = web_view->CallFunction(session->GetCurrentFrameId(),
                                   "function(s) { return 1; }", args, &result);
   if (status.IsError())
@@ -509,7 +509,7 @@ Status ExecuteIsLoading(Session* session,
       session->GetCurrentFrameId(), nullptr, &is_pending);
   if (status.IsError())
     return status;
-  value->reset(new base::FundamentalValue(is_pending));
+  value->reset(new base::Value(is_pending));
   return Status(kOk);
 }
 
@@ -544,7 +544,7 @@ Status ExecuteGetNetworkConnection(Session* session,
   int connection_type = 0;
   connection_type = desktop->GetNetworkConnection();
 
-  value->reset(new base::FundamentalValue(connection_type));
+  value->reset(new base::Value(connection_type));
   return Status(kOk);
 }
 
@@ -637,7 +637,7 @@ Status ExecuteSetNetworkConnection(Session* session,
       *session->overridden_network_conditions);
   }
 
-  value->reset(new base::FundamentalValue(connection_type));
+  value->reset(new base::Value(connection_type));
   return Status(kOk);
 }
 
@@ -829,7 +829,7 @@ Status ExecuteUploadFile(Session* session,
 Status ExecuteIsAutoReporting(Session* session,
                               const base::DictionaryValue& params,
                               std::unique_ptr<base::Value>* value) {
-  value->reset(new base::FundamentalValue(session->auto_reporting_enabled));
+  value->reset(new base::Value(session->auto_reporting_enabled));
   return Status(kOk);
 }
 

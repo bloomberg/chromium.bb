@@ -87,7 +87,7 @@ class DeviceCloudPolicyStoreChromeOSTest
     EXPECT_TRUE(store_->has_policy());
     EXPECT_TRUE(store_->is_managed());
     EXPECT_TRUE(store_->policy());
-    base::FundamentalValue expected(false);
+    base::Value expected(false);
     EXPECT_TRUE(
         base::Value::Equals(&expected,
                             store_->policy_map().GetValue(

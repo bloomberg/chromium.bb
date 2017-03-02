@@ -28,12 +28,12 @@ TEST_F(InMemoryPrefStoreTest, SetGetValue) {
   EXPECT_FALSE(store_->GetValue(kTestPref, &value));
   EXPECT_FALSE(store_->GetMutableValue(kTestPref, &mutable_value));
 
-  store_->SetValue(kTestPref, base::MakeUnique<base::FundamentalValue>(42),
+  store_->SetValue(kTestPref, base::MakeUnique<base::Value>(42),
                    WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::FundamentalValue(42).Equals(value));
+  EXPECT_TRUE(base::Value(42).Equals(value));
   EXPECT_TRUE(store_->GetMutableValue(kTestPref, &mutable_value));
-  EXPECT_TRUE(base::FundamentalValue(42).Equals(mutable_value));
+  EXPECT_TRUE(base::Value(42).Equals(mutable_value));
 
   store_->RemoveValue(kTestPref, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_FALSE(store_->GetValue(kTestPref, &value));
@@ -58,7 +58,7 @@ TEST_F(InMemoryPrefStoreTest, CallObserver) {
   store_->AddObserver(&observer_);
 
   // Triggers on SetValue.
-  store_->SetValue(kTestPref, base::MakeUnique<base::FundamentalValue>(42),
+  store_->SetValue(kTestPref, base::MakeUnique<base::Value>(42),
                    WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   observer_.VerifyAndResetChangedKey(kTestPref);
 
@@ -67,8 +67,7 @@ TEST_F(InMemoryPrefStoreTest, CallObserver) {
   observer_.VerifyAndResetChangedKey(kTestPref);
 
   // But not SetValueSilently.
-  store_->SetValueSilently(kTestPref,
-                           base::MakeUnique<base::FundamentalValue>(42),
+  store_->SetValueSilently(kTestPref, base::MakeUnique<base::Value>(42),
                            WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_EQ(0u, observer_.changed_keys.size());
 
@@ -80,7 +79,7 @@ TEST_F(InMemoryPrefStoreTest, CallObserver) {
 
   // Doesn't make call on removed observers.
   store_->RemoveObserver(&observer_);
-  store_->SetValue(kTestPref, base::MakeUnique<base::FundamentalValue>(42),
+  store_->SetValue(kTestPref, base::MakeUnique<base::Value>(42),
                    WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   store_->RemoveValue(kTestPref, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_EQ(0u, observer_.changed_keys.size());

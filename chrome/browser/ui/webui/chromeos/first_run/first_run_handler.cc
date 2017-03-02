@@ -21,20 +21,19 @@ bool FirstRunHandler::IsInitialized() {
 
 void FirstRunHandler::SetBackgroundVisible(bool visible) {
   web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.setBackgroundVisible",
-                                         base::FundamentalValue(visible));
+                                         base::Value(visible));
 }
 
 void FirstRunHandler::AddRectangularHole(int x, int y, int width, int height) {
   web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.FirstRun.addRectangularHole", base::FundamentalValue(x),
-      base::FundamentalValue(y), base::FundamentalValue(width),
-      base::FundamentalValue(height));
+      "cr.FirstRun.addRectangularHole", base::Value(x), base::Value(y),
+      base::Value(width), base::Value(height));
 }
 
 void FirstRunHandler::AddRoundHole(int x, int y, float radius) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.FirstRun.addRoundHole", base::FundamentalValue(x),
-      base::FundamentalValue(y), base::FundamentalValue(radius));
+  web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.addRoundHole",
+                                         base::Value(x), base::Value(y),
+                                         base::Value(radius));
 }
 
 void FirstRunHandler::RemoveBackgroundHoles() {

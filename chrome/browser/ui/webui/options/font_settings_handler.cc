@@ -208,7 +208,7 @@ void FontSettingsHandler::FontsListHasLoaded(
 void FontSettingsHandler::SetUpStandardFontSample() {
   base::StringValue font_value(
       FontSettingsUtilities::ResolveFontList(standard_font_.GetValue()));
-  base::FundamentalValue size_value(default_font_size_.GetValue());
+  base::Value size_value(default_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpStandardFontSample",
                                          font_value, size_value);
 }
@@ -216,7 +216,7 @@ void FontSettingsHandler::SetUpStandardFontSample() {
 void FontSettingsHandler::SetUpSerifFontSample() {
   base::StringValue font_value(
       FontSettingsUtilities::ResolveFontList(serif_font_.GetValue()));
-  base::FundamentalValue size_value(default_font_size_.GetValue());
+  base::Value size_value(default_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpSerifFontSample",
                                          font_value, size_value);
 }
@@ -224,7 +224,7 @@ void FontSettingsHandler::SetUpSerifFontSample() {
 void FontSettingsHandler::SetUpSansSerifFontSample() {
   base::StringValue font_value(
       FontSettingsUtilities::ResolveFontList(sans_serif_font_.GetValue()));
-  base::FundamentalValue size_value(default_font_size_.GetValue());
+  base::Value size_value(default_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe(
       "FontSettings.setUpSansSerifFontSample", font_value, size_value);
 }
@@ -232,13 +232,13 @@ void FontSettingsHandler::SetUpSansSerifFontSample() {
 void FontSettingsHandler::SetUpFixedFontSample() {
   base::StringValue font_value(
       FontSettingsUtilities::ResolveFontList(fixed_font_.GetValue()));
-  base::FundamentalValue size_value(default_fixed_font_size_.GetValue());
+  base::Value size_value(default_fixed_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpFixedFontSample",
                                          font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpMinimumFontSample() {
-  base::FundamentalValue size_value(minimum_font_size_.GetValue());
+  base::Value size_value(minimum_font_size_.GetValue());
   web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpMinimumFontSample",
                                          size_value);
 }
@@ -256,7 +256,7 @@ FontSettingsHandler::GetAdvancedFontSettingsExtension() {
 void FontSettingsHandler::NotifyAdvancedFontSettingsAvailability() {
   web_ui()->CallJavascriptFunctionUnsafe(
       "FontSettings.notifyAdvancedFontSettingsAvailability",
-      base::FundamentalValue(GetAdvancedFontSettingsExtension() != NULL));
+      base::Value(GetAdvancedFontSettingsExtension() != NULL));
 }
 
 void FontSettingsHandler::HandleOpenAdvancedFontSettingsOptions(

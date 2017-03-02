@@ -113,8 +113,7 @@ void FingerprintHandler::HandleGetNumFingerprints(const base::ListValue* args) {
   CHECK(args->GetString(0, &callback_id));
 
   ResolveJavascriptCallback(base::StringValue(callback_id),
-                            base::FundamentalValue(
-                                int{fingerprints_list_.size()}));
+                            base::Value(int{fingerprints_list_.size()}));
 }
 
 void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {
@@ -151,7 +150,7 @@ void FingerprintHandler::HandleRemoveEnrollment(const base::ListValue* args) {
   bool deleteSucessful = true;
   fingerprints_list_.erase(fingerprints_list_.begin() + index);
   ResolveJavascriptCallback(base::StringValue(callback_id),
-                            base::FundamentalValue(deleteSucessful));
+                            base::Value(deleteSucessful));
 }
 
 void FingerprintHandler::HandleChangeEnrollmentLabel(

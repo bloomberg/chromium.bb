@@ -87,18 +87,18 @@ void TranslateInternalsHandler::Observe(
   }
 
   base::DictionaryValue dict;
-  dict.Set("time", new base::FundamentalValue(
-                       language_detection_details->time.ToJsTime()));
+  dict.Set("time",
+           new base::Value(language_detection_details->time.ToJsTime()));
   dict.Set("url",
            new base::StringValue(language_detection_details->url.spec()));
   dict.Set("content_language",
            new base::StringValue(language_detection_details->content_language));
   dict.Set("cld_language",
            new base::StringValue(language_detection_details->cld_language));
-  dict.Set("is_cld_reliable", new base::FundamentalValue(
-                                  language_detection_details->is_cld_reliable));
-  dict.Set("has_notranslate", new base::FundamentalValue(
-                                  language_detection_details->has_notranslate));
+  dict.Set("is_cld_reliable",
+           new base::Value(language_detection_details->is_cld_reliable));
+  dict.Set("has_notranslate",
+           new base::Value(language_detection_details->has_notranslate));
   dict.Set(
       "html_root_language",
       new base::StringValue(language_detection_details->html_root_language));
@@ -112,18 +112,18 @@ void TranslateInternalsHandler::Observe(
 void TranslateInternalsHandler::OnTranslateError(
     const translate::TranslateErrorDetails& details) {
   base::DictionaryValue dict;
-  dict.Set("time", new base::FundamentalValue(details.time.ToJsTime()));
+  dict.Set("time", new base::Value(details.time.ToJsTime()));
   dict.Set("url", new base::StringValue(details.url.spec()));
-  dict.Set("error", new base::FundamentalValue(details.error));
+  dict.Set("error", new base::Value(details.error));
   SendMessageToJs("translateErrorDetailsAdded", dict);
 }
 
 void TranslateInternalsHandler::OnTranslateEvent(
     const translate::TranslateEventDetails& details) {
   base::DictionaryValue dict;
-  dict.Set("time", new base::FundamentalValue(details.time.ToJsTime()));
+  dict.Set("time", new base::Value(details.time.ToJsTime()));
   dict.Set("filename", new base::StringValue(details.filename));
-  dict.Set("line", new base::FundamentalValue(details.line));
+  dict.Set("line", new base::Value(details.line));
   dict.Set("message", new base::StringValue(details.message));
   SendMessageToJs("translateEventDetailsAdded", dict);
 }
@@ -239,7 +239,7 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
 
   dict.Set("languages", languages_list);
   dict.Set("alpha_languages", alpha_languages_list);
-  dict.Set("last_updated", new base::FundamentalValue(last_updated.ToJsTime()));
+  dict.Set("last_updated", new base::Value(last_updated.ToJsTime()));
   SendMessageToJs("supportedLanguagesUpdated", dict);
 }
 
@@ -253,7 +253,7 @@ void TranslateInternalsHandler::SendCountryToJs(bool was_updated) {
   base::DictionaryValue dict;
   if (!country.empty()) {
     dict.Set("country", new base::StringValue(country));
-    dict.Set("update", new base::FundamentalValue(was_updated));
+    dict.Set("update", new base::Value(was_updated));
   }
   SendMessageToJs("countryUpdated", dict);
 }

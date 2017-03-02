@@ -122,9 +122,8 @@ class NetworkConnectTest : public testing::Test {
     service_test_->SetServiceProperty(kWiFi1ServicePath,
                                       shill::kSecurityClassProperty,
                                       base::StringValue(shill::kSecurityWep));
-    service_test_->SetServiceProperty(kWiFi1ServicePath,
-                                      shill::kConnectableProperty,
-                                      base::FundamentalValue(true));
+    service_test_->SetServiceProperty(
+        kWiFi1ServicePath, shill::kConnectableProperty, base::Value(true));
     service_test_->SetServiceProperty(kWiFi1ServicePath,
                                       shill::kPassphraseProperty,
                                       base::StringValue("password"));
@@ -133,15 +132,14 @@ class NetworkConnectTest : public testing::Test {
     service_test_->AddService(kCellular1ServicePath, kCellular1Guid,
                               "cellular1", shill::kTypeCellular,
                               shill::kStateIdle, add_to_visible);
-    service_test_->SetServiceProperty(kCellular1ServicePath,
-                                      shill::kConnectableProperty,
-                                      base::FundamentalValue(true));
+    service_test_->SetServiceProperty(
+        kCellular1ServicePath, shill::kConnectableProperty, base::Value(true));
     service_test_->SetServiceProperty(
         kCellular1ServicePath, shill::kActivationStateProperty,
         base::StringValue(shill::kActivationStateActivated));
     service_test_->SetServiceProperty(kCellular1ServicePath,
                                       shill::kOutOfCreditsProperty,
-                                      base::FundamentalValue(false));
+                                      base::Value(false));
 
     base::RunLoop().RunUntilIdle();
   }
@@ -238,9 +236,8 @@ TEST_F(NetworkConnectTest, ShowNetworkSettings_CellOutOfCredits) {
   EXPECT_CALL(*mock_delegate_, ShowNetworkSettings(kCellular1Guid)).Times(0);
   EXPECT_CALL(*mock_delegate_, ShowMobileSetupDialog(kCellular1Guid));
 
-  service_test_->SetServiceProperty(kCellular1ServicePath,
-                                    shill::kOutOfCreditsProperty,
-                                    base::FundamentalValue(true));
+  service_test_->SetServiceProperty(
+      kCellular1ServicePath, shill::kOutOfCreditsProperty, base::Value(true));
   base::RunLoop().RunUntilIdle();
 
   NetworkConnect::Get()->MaybeShowConfigureUI(
@@ -278,9 +275,8 @@ TEST_F(NetworkConnectTest, ShowMobileSimDialog) {
   NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Cellular(),
                                               false);
 
-  device_test_->SetDeviceProperty(kCellular1DevicePath,
-                                  shill::kSIMPresentProperty,
-                                  base::FundamentalValue(true));
+  device_test_->SetDeviceProperty(
+      kCellular1DevicePath, shill::kSIMPresentProperty, base::Value(true));
   device_test_->SetSimLocked(kCellular1DevicePath, true);
 
   base::RunLoop().RunUntilIdle();
@@ -295,9 +291,8 @@ TEST_F(NetworkConnectTest, ShowMobileSimDialog_SimAbsent) {
   NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Cellular(),
                                               false);
 
-  device_test_->SetDeviceProperty(kCellular1DevicePath,
-                                  shill::kSIMPresentProperty,
-                                  base::FundamentalValue(false));
+  device_test_->SetDeviceProperty(
+      kCellular1DevicePath, shill::kSIMPresentProperty, base::Value(false));
   device_test_->SetSimLocked(kCellular1DevicePath, true);
 
   base::RunLoop().RunUntilIdle();
@@ -312,9 +307,8 @@ TEST_F(NetworkConnectTest, ShowMobileSimDialog_SimUnlocked) {
   NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Cellular(),
                                               false);
 
-  device_test_->SetDeviceProperty(kCellular1DevicePath,
-                                  shill::kSIMPresentProperty,
-                                  base::FundamentalValue(true));
+  device_test_->SetDeviceProperty(
+      kCellular1DevicePath, shill::kSIMPresentProperty, base::Value(true));
   device_test_->SetSimLocked(kCellular1DevicePath, false);
 
   base::RunLoop().RunUntilIdle();

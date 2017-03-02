@@ -335,8 +335,8 @@ void AppLauncherHandler::OnExtensionLoaded(
 
   visible_apps_.insert(extension->id());
   ExtensionPrefs* prefs = ExtensionPrefs::Get(extension_service_->profile());
-  base::FundamentalValue highlight(prefs->IsFromBookmark(extension->id()) &&
-                                   attempted_bookmark_app_install_);
+  base::Value highlight(prefs->IsFromBookmark(extension->id()) &&
+                        attempted_bookmark_app_install_);
   attempted_bookmark_app_install_ = false;
   web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info, highlight);
 }
@@ -797,7 +797,7 @@ void AppLauncherHandler::OnLocalStatePreferenceChanged() {
 #if BUILDFLAG(ENABLE_APP_LIST)
   web_ui()->CallJavascriptFunctionUnsafe(
       "ntp.appLauncherPromoPrefChangeCallback",
-      base::FundamentalValue(g_browser_process->local_state()->GetBoolean(
+      base::Value(g_browser_process->local_state()->GetBoolean(
           prefs::kShowAppLauncherPromo)));
 #endif
 }
@@ -876,8 +876,8 @@ void AppLauncherHandler::AppRemoved(const Extension* extension,
     return;
 
   web_ui()->CallJavascriptFunctionUnsafe(
-      "ntp.appRemoved", *app_info, base::FundamentalValue(is_uninstall),
-      base::FundamentalValue(!extension_id_prompting_.empty()));
+      "ntp.appRemoved", *app_info, base::Value(is_uninstall),
+      base::Value(!extension_id_prompting_.empty()));
 }
 
 bool AppLauncherHandler::ShouldShow(const Extension* extension) const {

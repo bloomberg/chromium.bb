@@ -887,7 +887,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
         !settings->GetInteger(printing::kSettingPageHeight, &height) ||
         width <= 0 || height <= 0) {
       NOTREACHED();
-      base::FundamentalValue http_code_value(-1);
+      base::Value http_code_value(-1);
       web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
                                              http_code_value);
       return;
@@ -1606,7 +1606,7 @@ void PrintPreviewHandler::StartPrivetLocalPrint(const std::string& print_ticket,
   base::string16 title;
 
   if (!GetPreviewDataAndTitle(&data, &title)) {
-    base::FundamentalValue http_code_value(-1);
+    base::Value http_code_value(-1);
     web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
                                            http_code_value);
     return;
@@ -1705,7 +1705,7 @@ void PrintPreviewHandler::OnPrivetPrintingDone(
 void PrintPreviewHandler::OnPrivetPrintingError(
     const cloud_print::PrivetLocalPrintOperation* print_operation,
     int http_code) {
-  base::FundamentalValue http_code_value(http_code);
+  base::Value http_code_value(http_code);
   web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
                                          http_code_value);
 }
@@ -1740,7 +1740,7 @@ void PrintPreviewHandler::OnGotPrintersForExtension(
     const base::ListValue& printers,
     bool done) {
   web_ui()->CallJavascriptFunctionUnsafe("onExtensionPrintersAdded", printers,
-                                         base::FundamentalValue(done));
+                                         base::Value(done));
 }
 
 void PrintPreviewHandler::OnGotExtensionPrinterInfo(

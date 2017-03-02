@@ -512,8 +512,7 @@ void AutomationInternalQuerySelectorFunction::OnResponse(
     return;
   }
 
-  Respond(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(result_acc_obj_id)));
+  Respond(OneArgument(base::MakeUnique<base::Value>(result_acc_obj_id)));
 }
 
 }  // namespace extensions

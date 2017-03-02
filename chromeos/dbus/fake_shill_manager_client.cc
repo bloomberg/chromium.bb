@@ -201,8 +201,8 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
       DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
   std::string device_path = device_client->GetDevicePathForType(device_type);
   if (!device_path.empty()) {
-    device_client->SetDeviceProperty(
-        device_path, shill::kScanningProperty, base::FundamentalValue(true));
+    device_client->SetDeviceProperty(device_path, shill::kScanningProperty,
+                                     base::Value(true));
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -703,9 +703,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->SetServiceProperty(kWifi1Path,
                                  shill::kSecurityClassProperty,
                                  base::StringValue(shill::kSecurityWep));
-    services->SetServiceProperty(kWifi1Path,
-                                 shill::kConnectableProperty,
-                                 base::FundamentalValue(true));
+    services->SetServiceProperty(kWifi1Path, shill::kConnectableProperty,
+                                 base::Value(true));
     profiles->AddService(shared_profile, kWifi1Path);
 
     const std::string kWifi2Path = "/service/wifi2";
@@ -726,8 +725,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       services->SetServiceProperty(kWifi2Path, shill::kSecurityClassProperty,
                                    base::StringValue(shill::kSecurityPsk));
     }
-    services->SetServiceProperty(
-        kWifi2Path, shill::kSignalStrengthProperty, base::FundamentalValue(80));
+    services->SetServiceProperty(kWifi2Path, shill::kSignalStrengthProperty,
+                                 base::Value(80));
     profiles->AddService(shared_profile, kWifi2Path);
 
     const std::string kWifi3Path = "/service/wifi3";
@@ -737,8 +736,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                          shill::kTypeWifi,
                          shill::kStateIdle,
                          add_to_visible);
-    services->SetServiceProperty(
-        kWifi3Path, shill::kSignalStrengthProperty, base::FundamentalValue(40));
+    services->SetServiceProperty(kWifi3Path, shill::kSignalStrengthProperty,
+                                 base::Value(40));
 
     if (portaled) {
       const std::string kPortaledWifiPath = "/service/portaled_wifi";
@@ -751,9 +750,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       services->SetConnectBehavior(
           kPortaledWifiPath,
           base::Bind(&UpdatePortaledWifiState, kPortaledWifiPath));
-      services->SetServiceProperty(kPortaledWifiPath,
-                                   shill::kConnectableProperty,
-                                   base::FundamentalValue(true));
+      services->SetServiceProperty(
+          kPortaledWifiPath, shill::kConnectableProperty, base::Value(true));
       profiles->AddService(shared_profile, kPortaledWifiPath);
     }
 
@@ -778,8 +776,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->AddService(kWimaxPath, "wimax1_guid", "wimax1" /* name */,
                          shill::kTypeWimax, state, add_to_visible);
     services->SetServiceProperty(kWimaxPath, shill::kConnectableProperty,
-                                 base::FundamentalValue(true));
-    base::FundamentalValue strength_value(80);
+                                 base::Value(true));
+    base::Value strength_value(80);
     services->SetServiceProperty(kWimaxPath, shill::kSignalStrengthProperty,
                                  strength_value);
     profiles->AddService(shared_profile, kWimaxPath);
@@ -807,16 +805,15 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                carrier_list);
     devices->SetDeviceProperty("/device/cellular1",
                                shill::kSupportNetworkScanProperty,
-                               base::FundamentalValue(true));
+                               base::Value(true));
     if (roaming_state_ == kRoamingRequired) {
       devices->SetDeviceProperty("/device/cellular1",
                                  shill::kProviderRequiresRoamingProperty,
-                                 base::FundamentalValue(true));
+                                 base::Value(true));
     }
     if (cellular_technology_ == shill::kNetworkTechnologyGsm) {
       devices->SetDeviceProperty("/device/cellular1",
-                                 shill::kSIMPresentProperty,
-                                 base::FundamentalValue(true));
+                                 shill::kSIMPresentProperty, base::Value(true));
       devices->SetSimLocked("/device/cellular1", false);
     }
 
@@ -833,7 +830,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->SetServiceProperty(kCellularServicePath,
                                  shill::kNetworkTechnologyProperty,
                                  technology_value);
-    base::FundamentalValue strength_value(50);
+    base::Value strength_value(50);
     services->SetServiceProperty(
         kCellularServicePath, shill::kSignalStrengthProperty, strength_value);
 
@@ -842,9 +839,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
           kCellularServicePath,
           shill::kActivationStateProperty,
           base::StringValue(shill::kActivationStateActivated));
-      services->SetServiceProperty(kCellularServicePath,
-                                   shill::kConnectableProperty,
-                                   base::FundamentalValue(true));
+      services->SetServiceProperty(
+          kCellularServicePath, shill::kConnectableProperty, base::Value(true));
     } else {
       services->SetServiceProperty(
           kCellularServicePath,
@@ -1058,10 +1054,11 @@ base::ListValue* FakeShillManagerClient::GetEnabledServiceList(
 void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
                                            const base::Closure& callback) {
   if (!device_path.empty()) {
-    DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface()->
-        SetDeviceProperty(device_path,
-                          shill::kScanningProperty,
-                          base::FundamentalValue(false));
+    DBusThreadManager::Get()
+        ->GetShillDeviceClient()
+        ->GetTestInterface()
+        ->SetDeviceProperty(device_path, shill::kScanningProperty,
+                            base::Value(false));
   }
   VLOG(1) << "ScanCompleted";
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
@@ -1121,7 +1118,7 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
     return true;
   } else if (arg0 == "sim_present") {
     bool present = (arg1 == "1");
-    base::FundamentalValue* sim_present = new base::FundamentalValue(present);
+    base::Value* sim_present = new base::Value(present);
     shill_device_property_map_[shill::kTypeCellular]
                               [shill::kSIMPresentProperty] = sim_present;
     return true;

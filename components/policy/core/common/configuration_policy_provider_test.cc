@@ -263,7 +263,7 @@ TEST_P(ConfigurationPolicyProviderTest, StringValue) {
 }
 
 TEST_P(ConfigurationPolicyProviderTest, BooleanValue) {
-  base::FundamentalValue expected_value(true);
+  base::Value expected_value(true);
   CheckValue(test_keys::kKeyBoolean,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallBooleanPolicy,
@@ -273,7 +273,7 @@ TEST_P(ConfigurationPolicyProviderTest, BooleanValue) {
 }
 
 TEST_P(ConfigurationPolicyProviderTest, IntegerValue) {
-  base::FundamentalValue expected_value(42);
+  base::Value expected_value(42);
   CheckValue(test_keys::kKeyInteger,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallIntegerPolicy,

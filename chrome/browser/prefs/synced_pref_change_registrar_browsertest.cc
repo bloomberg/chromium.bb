@@ -51,7 +51,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
   void SetBooleanPrefValueFromSync(const std::string& name, bool value) {
     std::string serialized_value;
     JSONStringValueSerializer json(&serialized_value);
-    json.Serialize(base::FundamentalValue(value));
+    json.Serialize(base::Value(value));
 
     sync_pb::EntitySpecifics specifics;
     sync_pb::PreferenceSpecifics* pref_specifics =
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   policy::PolicyMap policies;
   policies.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::FundamentalValue>(true), nullptr);
+               base::MakeUnique<base::Value>(true), nullptr);
   UpdateChromePolicy(policies);
 
   EXPECT_TRUE(prefs()->IsManagedPreference(prefs::kShowHomeButton));
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   policy::PolicyMap policies;
   policies.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::FundamentalValue>(true), nullptr);
+               base::MakeUnique<base::Value>(true), nullptr);
   UpdateChromePolicy(policies);
 
   EXPECT_TRUE(prefs()->IsManagedPreference(prefs::kShowHomeButton));

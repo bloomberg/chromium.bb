@@ -123,15 +123,15 @@ TEST_F(SyncInternalsUITestWithService, HandleJsReply) {
           ASCIIToUTF16("chrome.sync.testMessage.handleReply(5,true);")));
 
   base::ListValue args;
-  args.Append(new base::FundamentalValue(5));
-  args.Append(new base::FundamentalValue(true));
+  args.Append(new base::Value(5));
+  args.Append(new base::Value(true));
   sync_internals_ui_->HandleJsReply("testMessage", JsArgList(&args));
 }
 
 TEST_F(SyncInternalsUITestWithService, OnWebUISendBasic) {
   const std::string& name = "testName";
   base::ListValue args;
-  args.Append(new base::FundamentalValue(10));
+  args.Append(new base::Value(10));
 
   EXPECT_CALL(mock_js_controller_,
               ProcessJsMessage(name, HasArgsAsList(args), _));
@@ -189,8 +189,8 @@ TEST_F(SyncInternalsUITestWithoutService, HandleJsReply) {
           ASCIIToUTF16("chrome.sync.testMessage.handleReply(5,true);")));
 
   base::ListValue args;
-  args.Append(new base::FundamentalValue(5));
-  args.Append(new base::FundamentalValue(true));
+  args.Append(new base::Value(5));
+  args.Append(new base::Value(true));
   sync_internals_ui_->HandleJsReply(
       "testMessage", JsArgList(&args));
 }
@@ -198,7 +198,7 @@ TEST_F(SyncInternalsUITestWithoutService, HandleJsReply) {
 TEST_F(SyncInternalsUITestWithoutService, OnWebUISendBasic) {
   const std::string& name = "testName";
   base::ListValue args;
-  args.Append(new base::FundamentalValue(5));
+  args.Append(new base::Value(5));
 
   // Should drop the message.
   sync_internals_ui_->OverrideHandleWebUIMessage(GURL(), name, args);

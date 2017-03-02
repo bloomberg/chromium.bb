@@ -740,7 +740,7 @@ class ExtensionServiceTest
     msg += " = ";
     msg += base::IntToString(value);
 
-    SetPref(extension_id, pref_path, new base::FundamentalValue(value), msg);
+    SetPref(extension_id, pref_path, new base::Value(value), msg);
   }
 
   void SetPrefBool(const std::string& extension_id,
@@ -751,7 +751,7 @@ class ExtensionServiceTest
     msg += " = ";
     msg += (value ? "true" : "false");
 
-    SetPref(extension_id, pref_path, new base::FundamentalValue(value), msg);
+    SetPref(extension_id, pref_path, new base::Value(value), msg);
   }
 
   void ClearPref(const std::string& extension_id,

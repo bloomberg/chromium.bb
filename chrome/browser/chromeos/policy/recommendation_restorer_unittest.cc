@@ -186,17 +186,17 @@ void RecommendationRestorerTest::VerifyPrefFollowsUser(
 
 void RecommendationRestorerTest::VerifyPrefsFollowUser() const {
   VerifyPrefFollowsUser(prefs::kAccessibilityLargeCursorEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyPrefFollowsUser(prefs::kAccessibilitySpokenFeedbackEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyPrefFollowsUser(prefs::kAccessibilityHighContrastEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierType,
-                        base::FundamentalValue(ash::MAGNIFIER_FULL));
+                        base::Value(ash::MAGNIFIER_FULL));
   VerifyPrefFollowsUser(prefs::kAccessibilityVirtualKeyboardEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
 }
 
 void RecommendationRestorerTest::VerifyPrefFollowsRecommendation(
@@ -214,17 +214,17 @@ void RecommendationRestorerTest::VerifyPrefFollowsRecommendation(
 
 void RecommendationRestorerTest::VerifyPrefsFollowRecommendations() const {
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityLargeCursorEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityHighContrastEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierType,
-                                  base::FundamentalValue(0));
+                                  base::Value(0));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityVirtualKeyboardEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 }
 
 void RecommendationRestorerTest::VerifyNotListeningForNotifications() const {
@@ -298,55 +298,55 @@ TEST_F(RecommendationRestorerTest, RestoreOnRecommendationChangeOnLoginScreen) {
   recommended_prefs_->SetBoolean(prefs::kAccessibilityLargeCursorEnabled,
                                  false);
   VerifyPrefFollowsUser(prefs::kAccessibilityLargeCursorEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityLargeCursorEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyTimerIsStopped();
   recommended_prefs_->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled,
                                  false);
   VerifyPrefFollowsUser(prefs::kAccessibilitySpokenFeedbackEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyTimerIsStopped();
   recommended_prefs_->SetBoolean(prefs::kAccessibilityHighContrastEnabled,
                                  false);
   VerifyPrefFollowsUser(prefs::kAccessibilityHighContrastEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityHighContrastEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyTimerIsStopped();
   recommended_prefs_->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled,
                                  false);
   recommended_prefs_->SetInteger(prefs::kAccessibilityScreenMagnifierType, 0);
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierType,
-                        base::FundamentalValue(ash::MAGNIFIER_FULL));
+                        base::Value(ash::MAGNIFIER_FULL));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierType,
-                                  base::FundamentalValue(0));
+                                  base::Value(0));
   VerifyTimerIsStopped();
   recommended_prefs_->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled,
                                  false);
   VerifyPrefFollowsUser(prefs::kAccessibilityVirtualKeyboardEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityVirtualKeyboardEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyTimerIsStopped();
 }
 
@@ -360,49 +360,49 @@ TEST_F(RecommendationRestorerTest, RestoreOnRecommendationChangeInUserSession) {
   NotifyOfSessionStart();
 
   VerifyPrefFollowsUser(prefs::kAccessibilityLargeCursorEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   recommended_prefs_->SetBoolean(prefs::kAccessibilityLargeCursorEnabled,
                                  false);
   VerifyTimerIsStopped();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityLargeCursorEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyPrefFollowsUser(prefs::kAccessibilitySpokenFeedbackEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   recommended_prefs_->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled,
                                  false);
   VerifyTimerIsStopped();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyPrefFollowsUser(prefs::kAccessibilityHighContrastEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   recommended_prefs_->SetBoolean(prefs::kAccessibilityHighContrastEnabled,
                                  false);
   VerifyTimerIsStopped();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityHighContrastEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierType,
-                        base::FundamentalValue(ash::MAGNIFIER_FULL));
+                        base::Value(ash::MAGNIFIER_FULL));
   recommended_prefs_->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled,
                                  false);
   recommended_prefs_->SetInteger(prefs::kAccessibilityScreenMagnifierType, 0);
   VerifyTimerIsStopped();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierType,
-                                  base::FundamentalValue(0));
+                                  base::Value(0));
 
   VerifyPrefFollowsUser(prefs::kAccessibilityVirtualKeyboardEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   recommended_prefs_->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled,
                                  false);
   VerifyTimerIsStopped();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityVirtualKeyboardEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 }
 
 TEST_F(RecommendationRestorerTest, DoNothingOnUserChange) {
@@ -414,36 +414,36 @@ TEST_F(RecommendationRestorerTest, DoNothingOnUserChange) {
 
   prefs_->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilityLargeCursorEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsStopped();
 
   prefs_->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilitySpokenFeedbackEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsStopped();
 
   prefs_->SetBoolean(prefs::kAccessibilityHighContrastEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilityHighContrastEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsStopped();
 
   prefs_->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsStopped();
 
   prefs_->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled, true);
   prefs_->SetInteger(prefs::kAccessibilityScreenMagnifierType,
                      ash::MAGNIFIER_FULL);
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierType,
-                        base::FundamentalValue(ash::MAGNIFIER_FULL));
+                        base::Value(ash::MAGNIFIER_FULL));
   VerifyTimerIsStopped();
 
   prefs_->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilityVirtualKeyboardEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsStopped();
 }
 
@@ -459,53 +459,53 @@ TEST_F(RecommendationRestorerTest, RestoreOnUserChange) {
   VerifyTimerIsStopped();
   prefs_->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilityLargeCursorEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityLargeCursorEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyTimerIsStopped();
   prefs_->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilitySpokenFeedbackEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyTimerIsStopped();
   prefs_->SetBoolean(prefs::kAccessibilityHighContrastEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilityHighContrastEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityHighContrastEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyTimerIsStopped();
   prefs_->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled, true);
   prefs_->SetInteger(prefs::kAccessibilityScreenMagnifierType,
                      ash::MAGNIFIER_FULL);
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyPrefFollowsUser(prefs::kAccessibilityScreenMagnifierType,
-                        base::FundamentalValue(ash::MAGNIFIER_FULL));
+                        base::Value(ash::MAGNIFIER_FULL));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierType,
-                                  base::FundamentalValue(0));
+                                  base::Value(0));
 
   VerifyTimerIsStopped();
   prefs_->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled, true);
   VerifyPrefFollowsUser(prefs::kAccessibilityVirtualKeyboardEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityVirtualKeyboardEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
 
   VerifyTimerIsStopped();
 }
@@ -556,13 +556,13 @@ TEST_F(RecommendationRestorerTest, UserActivityResetsTimer) {
   NotifyOfUserActivity();
   runner_->RunPendingTasks();
   VerifyPrefFollowsUser(prefs::kAccessibilityLargeCursorEnabled,
-                        base::FundamentalValue(true));
+                        base::Value(true));
 
   // Fast forward until the reset timer fires.
   VerifyTimerIsRunning();
   runner_->RunUntilIdle();
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityLargeCursorEnabled,
-                                  base::FundamentalValue(false));
+                                  base::Value(false));
   VerifyTimerIsStopped();
 }
 

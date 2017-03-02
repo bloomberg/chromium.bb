@@ -134,7 +134,7 @@ void PowerHandler::SendPowerSources() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::StringValue("power-sources-changed"),
       sources_list, base::StringValue(power_status_->GetCurrentPowerSourceID()),
-      base::FundamentalValue(power_status_->IsUsbChargerConnected()));
+      base::Value(power_status_->IsUsbChargerConnected()));
 }
 
 }  // namespace settings

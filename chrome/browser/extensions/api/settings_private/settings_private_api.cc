@@ -44,12 +44,10 @@ ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
       delegate->SetPref(parameters->name, parameters->value.get());
   switch (result) {
     case PrefsUtil::SUCCESS:
-      return RespondNow(
-          OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+      return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
     case PrefsUtil::PREF_NOT_MODIFIABLE:
       // Not an error, but return false to indicate setting the pref failed.
-      return RespondNow(
-          OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
+      return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
     case PrefsUtil::PREF_NOT_FOUND:
       return RespondNow(Error("Pref not found: *", parameters->name));
     case PrefsUtil::PREF_TYPE_MISMATCH:
@@ -60,8 +58,7 @@ ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
                               parameters->name));
   }
   NOTREACHED();
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -144,8 +141,7 @@ ExtensionFunction::ResponseAction
     return RespondNow(Error(kDelegateIsNull));
 
   delegate->SetDefaultZoom(parameters->zoom);
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
 }
 
 }  // namespace extensions

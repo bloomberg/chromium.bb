@@ -108,11 +108,9 @@ void UserCloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
   // see crbug.com/640950.
   if (store()->has_policy() &&
       !policy_map->Get(key::kNTPContentSuggestionsEnabled)) {
-    policy_map->Set(key::kNTPContentSuggestionsEnabled,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_USER,
-                    POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                    base::MakeUnique<base::FundamentalValue>(false),
+    policy_map->Set(key::kNTPContentSuggestionsEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                    base::MakeUnique<base::Value>(false),
                     nullptr /* external_data_fetcher */);
   }
 }

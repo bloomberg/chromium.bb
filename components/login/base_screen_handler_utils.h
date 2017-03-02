@@ -53,9 +53,9 @@ inline bool GetArg(const base::ListValue* args, size_t index, T* out_value) {
   return ParseValue(value, out_value);
 }
 
-base::FundamentalValue LOGIN_EXPORT MakeValue(bool v);
-base::FundamentalValue LOGIN_EXPORT MakeValue(int v);
-base::FundamentalValue LOGIN_EXPORT MakeValue(double v);
+base::Value LOGIN_EXPORT MakeValue(bool v);
+base::Value LOGIN_EXPORT MakeValue(int v);
+base::Value LOGIN_EXPORT MakeValue(double v);
 base::StringValue LOGIN_EXPORT MakeValue(const std::string& v);
 base::StringValue LOGIN_EXPORT MakeValue(const base::string16& v);
 base::StringValue LOGIN_EXPORT MakeValue(const AccountId& v);

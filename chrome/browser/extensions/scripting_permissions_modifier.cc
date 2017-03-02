@@ -58,10 +58,10 @@ void SetAllowedOnAllUrlsPref(bool by_user,
                              const std::string& id,
                              ExtensionPrefs* prefs) {
   prefs->UpdateExtensionPref(id, kExtensionAllowedOnAllUrlsPrefName,
-                             new base::FundamentalValue(allowed));
+                             new base::Value(allowed));
   if (by_user) {
     prefs->UpdateExtensionPref(id, kHasSetScriptOnAllUrlsPrefName,
-                               new base::FundamentalValue(true));
+                               new base::Value(true));
   }
 }
 
@@ -309,7 +309,7 @@ void ScriptingPermissionsModifier::CleanUpPrefsIfNecessary() {
   DCHECK(ExtensionMustBeAllowedOnAllUrls(*extension_));
   extension_prefs_->UpdateExtensionPref(extension_->id(),
                                         kExtensionAllowedOnAllUrlsPrefName,
-                                        new base::FundamentalValue(true));
+                                        new base::Value(true));
   extension_prefs_->UpdateExtensionPref(
       extension_->id(), kHasSetScriptOnAllUrlsPrefName, nullptr);
 }

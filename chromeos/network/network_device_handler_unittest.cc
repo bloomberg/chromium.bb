@@ -128,11 +128,9 @@ TEST_F(NetworkDeviceHandlerTest, GetDeviceProperties) {
 TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   // Set the shill::kScanIntervalProperty to true. The call
   // should succeed and the value should be set.
-  network_device_handler_->SetDeviceProperty(kDefaultCellularDevicePath,
-                                             shill::kScanIntervalProperty,
-                                             base::FundamentalValue(1),
-                                             success_callback_,
-                                             error_callback_);
+  network_device_handler_->SetDeviceProperty(
+      kDefaultCellularDevicePath, shill::kScanIntervalProperty, base::Value(1),
+      success_callback_, error_callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
 
@@ -148,11 +146,9 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   EXPECT_EQ(1, interval);
 
   // Repeat the same with value false.
-  network_device_handler_->SetDeviceProperty(kDefaultCellularDevicePath,
-                                             shill::kScanIntervalProperty,
-                                             base::FundamentalValue(2),
-                                             success_callback_,
-                                             error_callback_);
+  network_device_handler_->SetDeviceProperty(
+      kDefaultCellularDevicePath, shill::kScanIntervalProperty, base::Value(2),
+      success_callback_, error_callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
 
@@ -166,22 +162,17 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   EXPECT_EQ(2, interval);
 
   // Set property on an invalid path.
-  network_device_handler_->SetDeviceProperty(kUnknownCellularDevicePath,
-                                             shill::kScanIntervalProperty,
-                                             base::FundamentalValue(1),
-                                             success_callback_,
-                                             error_callback_);
+  network_device_handler_->SetDeviceProperty(
+      kUnknownCellularDevicePath, shill::kScanIntervalProperty, base::Value(1),
+      success_callback_, error_callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 
   // Setting a owner-protected device property through SetDeviceProperty must
   // fail.
   network_device_handler_->SetDeviceProperty(
-      kDefaultCellularDevicePath,
-      shill::kCellularAllowRoamingProperty,
-      base::FundamentalValue(true),
-      success_callback_,
-      error_callback_);
+      kDefaultCellularDevicePath, shill::kCellularAllowRoamingProperty,
+      base::Value(true), success_callback_, error_callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(kResultSuccess, result_);
 }
@@ -192,7 +183,7 @@ TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
       fake_device_client_->GetTestInterface();
   device_test->SetDeviceProperty(kDefaultCellularDevicePath,
                                  shill::kCellularAllowRoamingProperty,
-                                 base::FundamentalValue(false));
+                                 base::Value(false));
 
   network_device_handler_->SetCellularAllowRoaming(true);
   base::RunLoop().RunUntilIdle();

@@ -82,7 +82,7 @@ TEST(IPCMessageTest, Bitmap) {
 
 TEST(IPCMessageTest, ListValue) {
   base::ListValue input;
-  input.Set(0, new base::FundamentalValue(42.42));
+  input.Set(0, new base::Value(42.42));
   input.Set(1, new base::StringValue("forty"));
   input.Set(2, base::Value::CreateNullValue());
 
@@ -105,15 +105,15 @@ TEST(IPCMessageTest, ListValue) {
 TEST(IPCMessageTest, DictionaryValue) {
   base::DictionaryValue input;
   input.Set("null", base::Value::CreateNullValue());
-  input.Set("bool", new base::FundamentalValue(true));
-  input.Set("int", new base::FundamentalValue(42));
+  input.Set("bool", new base::Value(true));
+  input.Set("int", new base::Value(42));
 
   std::unique_ptr<base::DictionaryValue> subdict(new base::DictionaryValue());
   subdict->Set("str", new base::StringValue("forty two"));
-  subdict->Set("bool", new base::FundamentalValue(false));
+  subdict->Set("bool", new base::Value(false));
 
   std::unique_ptr<base::ListValue> sublist(new base::ListValue());
-  sublist->Set(0, new base::FundamentalValue(42.42));
+  sublist->Set(0, new base::Value(42.42));
   sublist->Set(1, new base::StringValue("forty"));
   sublist->Set(2, new base::StringValue("two"));
   subdict->Set("list", sublist.release());

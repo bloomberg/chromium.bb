@@ -133,11 +133,11 @@ class PreferenceValidationDelegateValues
       case Value::Type::NONE:
         return Value::CreateNullValue();
       case Value::Type::BOOLEAN:
-        return std::unique_ptr<Value>(new base::FundamentalValue(false));
+        return std::unique_ptr<Value>(new base::Value(false));
       case Value::Type::INTEGER:
-        return std::unique_ptr<Value>(new base::FundamentalValue(47));
+        return std::unique_ptr<Value>(new base::Value(47));
       case Value::Type::DOUBLE:
-        return std::unique_ptr<Value>(new base::FundamentalValue(0.47));
+        return std::unique_ptr<Value>(new base::Value(0.47));
       case Value::Type::STRING:
         return std::unique_ptr<Value>(new base::StringValue("i have a spleen"));
       case Value::Type::DICTIONARY: {

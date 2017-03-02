@@ -241,12 +241,12 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   // Default value is always true.
   EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
 
-  extension_prefs->UpdateExtensionPref(
-      extension1_->id(), rules_stored_key, new base::FundamentalValue(false));
+  extension_prefs->UpdateExtensionPref(extension1_->id(), rules_stored_key,
+                                       new base::Value(false));
   EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
 
-  extension_prefs->UpdateExtensionPref(
-      extension1_->id(), rules_stored_key, new base::FundamentalValue(true));
+  extension_prefs->UpdateExtensionPref(extension1_->id(), rules_stored_key,
+                                       new base::Value(true));
   EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
 
   // 2. Test writing behavior.
@@ -324,8 +324,8 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
   EXPECT_TRUE(cache_delegate2->GetDeclarativeRulesStored(extension1_->id()));
 
   // Update the flag for the first registry.
-  extension_prefs->UpdateExtensionPref(
-      extension1_->id(), rules_stored_key1, new base::FundamentalValue(false));
+  extension_prefs->UpdateExtensionPref(extension1_->id(), rules_stored_key1,
+                                       new base::Value(false));
   EXPECT_FALSE(cache_delegate1->GetDeclarativeRulesStored(extension1_->id()));
   EXPECT_TRUE(cache_delegate2->GetDeclarativeRulesStored(extension1_->id()));
 }

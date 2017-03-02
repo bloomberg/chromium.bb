@@ -448,7 +448,7 @@ TEST_F(NetworkStateHandlerTest, GetVisibleNetworks) {
 
   // Change the visible state of a network.
   SetServiceProperty(kShillManagerClientStubWifi2, shill::kVisibleProperty,
-                     base::FundamentalValue(false));
+                     base::Value(false));
   base::RunLoop().RunUntilIdle();
   network_state_handler_->GetVisibleNetworkList(&networks);
   EXPECT_EQ(kNumShillManagerClientStubImplServices - 1, networks.size());
@@ -712,8 +712,7 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
 
   // No default network updates for signal strength changes.
   test_observer_->reset_change_counts();
-  SetServiceProperty(wifi1, shill::kSignalStrengthProperty,
-                     base::FundamentalValue(32));
+  SetServiceProperty(wifi1, shill::kSignalStrengthProperty, base::Value(32));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, test_observer_->default_network_change_count());
 
@@ -832,8 +831,8 @@ TEST_F(NetworkStateHandlerTest, DeviceListChanged) {
   EXPECT_EQ(stub_device_count + 1, test_observer_->device_count());
   EXPECT_EQ(0, test_observer_->PropertyUpdatesForDevice(wifi_device));
   // Change a device property.
-  device_test_->SetDeviceProperty(
-      wifi_device, shill::kScanningProperty, base::FundamentalValue(true));
+  device_test_->SetDeviceProperty(wifi_device, shill::kScanningProperty,
+                                  base::Value(true));
   UpdateManagerProperties();
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForDevice(wifi_device));
 }

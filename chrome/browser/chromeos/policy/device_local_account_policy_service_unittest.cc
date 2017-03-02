@@ -145,8 +145,7 @@ void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
 
   expected_policy_map_.Set(key::kSearchSuggestEnabled, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                           base::MakeUnique<base::FundamentalValue>(true),
-                           nullptr);
+                           base::MakeUnique<base::Value>(true), nullptr);
 
   device_local_account_policy_.payload()
       .mutable_searchsuggestenabled()
@@ -809,21 +808,21 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
   expected_policy_map_.Set(
       key::kLidCloseAction, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
       POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-      base::MakeUnique<base::FundamentalValue>(
+      base::MakeUnique<base::Value>(
           chromeos::PowerPolicyController::ACTION_STOP_SESSION),
       nullptr);
   expected_policy_map_.Set(
       key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
       POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
       base::MakeUnique<base::StringValue>("Never"), nullptr);
-  expected_policy_map_.Set(
-      key::kShowLogoutButtonInTray, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_MACHINE, POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-      base::MakeUnique<base::FundamentalValue>(true), nullptr);
-  expected_policy_map_.Set(
-      key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-      POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-      base::MakeUnique<base::FundamentalValue>(false), nullptr);
+  expected_policy_map_.Set(key::kShowLogoutButtonInTray, POLICY_LEVEL_MANDATORY,
+                           POLICY_SCOPE_MACHINE,
+                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+                           base::MakeUnique<base::Value>(true), nullptr);
+  expected_policy_map_.Set(key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY,
+                           POLICY_SCOPE_MACHINE,
+                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+                           base::MakeUnique<base::Value>(false), nullptr);
 
   // Policy defaults (for policies not set by admin).
   SetEnterpriseUsersDefaults(&expected_policy_map_);
@@ -901,7 +900,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
       .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(key::kSearchSuggestEnabled, POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-           base::MakeUnique<base::FundamentalValue>(false), nullptr);
+           base::MakeUnique<base::Value>(false), nullptr);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
 
   // Any values set for the |ShelfAutoHideBehavior|, |ShowLogoutButtonInTray|

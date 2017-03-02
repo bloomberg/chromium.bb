@@ -198,10 +198,9 @@ void SearchEnginesHandler::OnModelChanged() {
                          base::StringValue("search-engines-changed"),
                          *GetSearchEnginesList());
   // Google Now availability may have changed.
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("google-now-availability-changed"),
-      base::FundamentalValue(IsGoogleNowAvailable(profile_)));
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("google-now-availability-changed"),
+                         base::Value(IsGoogleNowAvailable(profile_)));
 }
 
 void SearchEnginesHandler::OnItemsChanged(int start, int length) {
@@ -367,8 +366,7 @@ void SearchEnginesHandler::HandleValidateSearchEngineInput(
   CHECK(args->GetString(1, &field_name));
   CHECK(args->GetString(2, &field_value));
   ResolveJavascriptCallback(
-      *callback_id,
-      base::FundamentalValue(CheckFieldValidity(field_name, field_value)));
+      *callback_id, base::Value(CheckFieldValidity(field_name, field_value)));
 }
 
 bool SearchEnginesHandler::CheckFieldValidity(const std::string& field_name,
@@ -454,8 +452,8 @@ void SearchEnginesHandler::HandleGetGoogleNowAvailability(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
   AllowJavascript();
-  ResolveJavascriptCallback(
-      *callback_id, base::FundamentalValue(IsGoogleNowAvailable(profile_)));
+  ResolveJavascriptCallback(*callback_id,
+                            base::Value(IsGoogleNowAvailable(profile_)));
 }
 
 std::unique_ptr<base::DictionaryValue> SearchEnginesHandler::GetHotwordInfo() {

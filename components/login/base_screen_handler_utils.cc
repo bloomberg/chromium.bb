@@ -72,16 +72,16 @@ bool ParseValue(const base::Value* value, AccountId* out_value) {
   return true;
 }
 
-base::FundamentalValue MakeValue(bool v) {
-  return base::FundamentalValue(v);
+base::Value MakeValue(bool v) {
+  return base::Value(v);
 }
 
-base::FundamentalValue MakeValue(int v) {
-  return base::FundamentalValue(v);
+base::Value MakeValue(int v) {
+  return base::Value(v);
 }
 
-base::FundamentalValue MakeValue(double v) {
-  return base::FundamentalValue(v);
+base::Value MakeValue(double v) {
+  return base::Value(v);
 }
 
 base::StringValue MakeValue(const std::string& v) {

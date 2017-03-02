@@ -268,7 +268,7 @@ void HidReceiveFunction::OnFinished(bool success,
     DCHECK_GE(size, 1u);
     int report_id = reinterpret_cast<uint8_t*>(buffer->data())[0];
 
-    Respond(TwoArguments(base::MakeUnique<base::FundamentalValue>(report_id),
+    Respond(TwoArguments(base::MakeUnique<base::Value>(report_id),
                          base::BinaryValue::CreateWithCopiedBuffer(
                              buffer->data() + 1, size - 1)));
   } else {

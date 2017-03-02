@@ -302,7 +302,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
 void ChangePictureOptionsHandler::SendProfileImage(const gfx::ImageSkia& image,
                                                    bool should_select) {
   base::StringValue data_url(webui::GetBitmapDataUrl(*image.bitmap()));
-  base::FundamentalValue select(should_select);
+  base::Value select(should_select);
   web_ui()->CallJavascriptFunctionUnsafe("ChangePictureOptions.setProfileImage",
                                          data_url, select);
 }
@@ -423,7 +423,7 @@ void ChangePictureOptionsHandler::SetImageFromCamera(
 }
 
 void ChangePictureOptionsHandler::SetCameraPresent(bool present) {
-  base::FundamentalValue present_value(present);
+  base::Value present_value(present);
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "ChangePictureOptions.setCameraPresent", present_value);

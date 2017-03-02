@@ -241,9 +241,8 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
   UMA_HISTOGRAM_BOOLEAN(
       "History.ClearBrowsingData.ShownHistoryNoticeAfterClearing", show_notice);
 
-  ResolveJavascriptCallback(
-      base::StringValue(webui_callback_id),
-      base::FundamentalValue(show_notice));
+  ResolveJavascriptCallback(base::StringValue(webui_callback_id),
+                            base::Value(show_notice));
   task_observer_.reset();
 }
 
@@ -273,10 +272,9 @@ void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {
 
 void ClearBrowsingDataHandler::UpdateSyncState() {
   CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("update-footer"),
-      base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()),
-      base::FundamentalValue(show_history_footer_));
+      "cr.webUIListenerCallback", base::StringValue("update-footer"),
+      base::Value(sync_service_ && sync_service_->IsSyncActive()),
+      base::Value(show_history_footer_));
 }
 
 void ClearBrowsingDataHandler::RefreshHistoryNotice() {

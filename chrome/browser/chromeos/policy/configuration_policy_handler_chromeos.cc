@@ -103,20 +103,20 @@ std::unique_ptr<base::Value> GetAction(const base::DictionaryValue* dict,
   if (!value || !value->GetAsString(&action))
     return std::unique_ptr<base::Value>();
   if (action == kActionSuspend) {
-    return std::unique_ptr<base::Value>(new base::FundamentalValue(
-        chromeos::PowerPolicyController::ACTION_SUSPEND));
+    return std::unique_ptr<base::Value>(
+        new base::Value(chromeos::PowerPolicyController::ACTION_SUSPEND));
   }
   if (action == kActionLogout) {
-    return std::unique_ptr<base::Value>(new base::FundamentalValue(
-        chromeos::PowerPolicyController::ACTION_STOP_SESSION));
+    return std::unique_ptr<base::Value>(
+        new base::Value(chromeos::PowerPolicyController::ACTION_STOP_SESSION));
   }
   if (action == kActionShutdown) {
-    return std::unique_ptr<base::Value>(new base::FundamentalValue(
-        chromeos::PowerPolicyController::ACTION_SHUT_DOWN));
+    return std::unique_ptr<base::Value>(
+        new base::Value(chromeos::PowerPolicyController::ACTION_SHUT_DOWN));
   }
   if (action == kActionDoNothing) {
-    return std::unique_ptr<base::Value>(new base::FundamentalValue(
-        chromeos::PowerPolicyController::ACTION_DO_NOTHING));
+    return std::unique_ptr<base::Value>(
+        new base::Value(chromeos::PowerPolicyController::ACTION_DO_NOTHING));
   }
   return std::unique_ptr<base::Value>();
 }

@@ -684,7 +684,7 @@ def _GenerateDefaultValue(value):
 
   |value|: The deserialized value to convert to base::Value."""
   if type(value) == bool or type(value) == int:
-    return [], 'base::MakeUnique<base::FundamentalValue>(%s)' %\
+    return [], 'base::MakeUnique<base::Value>(%s)' %\
                     json.dumps(value)
   elif type(value) == str:
     return [], 'base::MakeUnique<base::StringValue>("%s")' % value
@@ -1133,7 +1133,7 @@ std::unique_ptr<base::Value> DecodeIntegerValue(
   }
 
   return base::WrapUnique(
-      new base::FundamentalValue(static_cast<int>(value)));
+      new base::Value(static_cast<int>(value)));
 }
 
 std::unique_ptr<base::ListValue> DecodeStringList(
@@ -1170,7 +1170,7 @@ CPP_FOOT = '''}
 
 def _CreateValue(type, arg):
   if type == 'Type::BOOLEAN':
-    return 'new base::FundamentalValue(%s)' % arg
+    return 'new base::Value(%s)' % arg
   elif type == 'Type::INTEGER':
     return 'DecodeIntegerValue(%s)' % arg
   elif type == 'Type::STRING':

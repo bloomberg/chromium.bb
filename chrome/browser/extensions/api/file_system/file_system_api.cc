@@ -629,8 +629,7 @@ ExtensionFunction::ResponseAction FileSystemIsWritableEntryFunction::Run() {
   bool is_writable = policy->CanReadWriteFileSystem(renderer_id,
                                                     filesystem_id);
 
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(is_writable)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(is_writable)));
 }
 
 // Handles showing a dialog to the user to ask for the filename for a file to
@@ -1195,7 +1194,7 @@ void FileSystemRetainEntryFunction::RetainFileEntry(
 ExtensionFunction::ResponseAction FileSystemIsRestorableFunction::Run() {
   std::string entry_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &entry_id));
-  return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
       SavedFilesService::Get(Profile::FromBrowserContext(browser_context()))
           ->IsRegistered(extension_->id(), entry_id))));
 }

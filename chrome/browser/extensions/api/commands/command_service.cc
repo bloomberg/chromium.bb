@@ -85,7 +85,7 @@ std::string StripCurrentPlatform(const std::string& key) {
 void SetInitialBindingsHaveBeenAssigned(
     ExtensionPrefs* prefs, const std::string& extension_id) {
   prefs->UpdateExtensionPref(extension_id, kInitialBindingsHaveBeenAssigned,
-                             new base::FundamentalValue(true));
+                             new base::Value(true));
 }
 
 bool InitialBindingsHaveBeenAssigned(

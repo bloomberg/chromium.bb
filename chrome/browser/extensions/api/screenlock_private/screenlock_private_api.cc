@@ -56,7 +56,7 @@ ScreenlockPrivateGetLockedFunction::ScreenlockPrivateGetLockedFunction() {}
 ScreenlockPrivateGetLockedFunction::~ScreenlockPrivateGetLockedFunction() {}
 
 bool ScreenlockPrivateGetLockedFunction::RunAsync() {
-  SetResult(base::MakeUnique<base::FundamentalValue>(
+  SetResult(base::MakeUnique<base::Value>(
       proximity_auth::ScreenlockBridge::Get()->IsLocked()));
   SendResponse(error_.empty());
   return true;
@@ -121,14 +121,14 @@ void ScreenlockPrivateEventRouter::OnScreenDidLock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   DispatchEvent(events::SCREENLOCK_PRIVATE_ON_CHANGED,
                 screenlock::OnChanged::kEventName,
-                base::MakeUnique<base::FundamentalValue>(true));
+                base::MakeUnique<base::Value>(true));
 }
 
 void ScreenlockPrivateEventRouter::OnScreenDidUnlock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   DispatchEvent(events::SCREENLOCK_PRIVATE_ON_CHANGED,
                 screenlock::OnChanged::kEventName,
-                base::MakeUnique<base::FundamentalValue>(false));
+                base::MakeUnique<base::Value>(false));
 }
 
 void ScreenlockPrivateEventRouter::OnFocusedUserChanged(

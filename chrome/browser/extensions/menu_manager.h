@@ -145,7 +145,7 @@ class MenuItem {
 
     std::unique_ptr<base::Value> ToValue() const {
       return std::unique_ptr<base::Value>(
-          new base::FundamentalValue(static_cast<int>(value_)));
+          new base::Value(static_cast<int>(value_)));
     }
 
     bool Populate(const base::Value& value) {

@@ -340,12 +340,11 @@ ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
                                 segments, &error)) {
       std::unique_ptr<base::ListValue> results =
           base::MakeUnique<base::ListValue>();
-      results->Append(base::MakeUnique<base::FundamentalValue>(false));
+      results->Append(base::MakeUnique<base::Value>(false));
       return RespondNow(ErrorWithArguments(std::move(results), error));
     }
   }
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
@@ -361,12 +360,11 @@ ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
     if (!engine->CommitText(params.context_id, params.text.c_str(), &error)) {
       std::unique_ptr<base::ListValue> results =
           base::MakeUnique<base::ListValue>();
-      results->Append(base::MakeUnique<base::FundamentalValue>(false));
+      results->Append(base::MakeUnique<base::Value>(false));
       return RespondNow(ErrorWithArguments(std::move(results), error));
     }
   }
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {

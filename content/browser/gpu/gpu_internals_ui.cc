@@ -127,12 +127,12 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
       "Initialization time",
       base::Int64ToString(gpu_info.initialization_time.InMilliseconds())));
   basic_info->Append(NewDescriptionValuePair(
-      "In-process GPU", new base::FundamentalValue(gpu_info.in_process_gpu)));
+      "In-process GPU", new base::Value(gpu_info.in_process_gpu)));
   basic_info->Append(NewDescriptionValuePair(
       "Passthrough Command Decoder",
-      new base::FundamentalValue(gpu_info.passthrough_cmd_decoder)));
+      new base::Value(gpu_info.passthrough_cmd_decoder)));
   basic_info->Append(NewDescriptionValuePair(
-      "Sandboxed", new base::FundamentalValue(gpu_info.sandboxed)));
+      "Sandboxed", new base::Value(gpu_info.sandboxed)));
   basic_info->Append(NewDescriptionValuePair(
       "GPU0", GPUDeviceToString(gpu_info.gpu)));
   for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
@@ -140,10 +140,12 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
         base::StringPrintf("GPU%d", static_cast<int>(i + 1)),
         GPUDeviceToString(gpu_info.secondary_gpus[i])));
   }
+  basic_info->Append(
+      NewDescriptionValuePair("Optimus", new base::Value(gpu_info.optimus)));
+  basic_info->Append(
+      NewDescriptionValuePair("Optimus", new base::Value(gpu_info.optimus)));
   basic_info->Append(NewDescriptionValuePair(
-      "Optimus", new base::FundamentalValue(gpu_info.optimus)));
-  basic_info->Append(NewDescriptionValuePair(
-      "AMD switchable", new base::FundamentalValue(gpu_info.amd_switchable)));
+      "AMD switchable", new base::Value(gpu_info.amd_switchable)));
 #if defined(OS_WIN)
   std::string compositor =
       ui::win::IsAeroGlassEnabled() ? "Aero Glass" : "none";
@@ -235,9 +237,9 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   basic_info->Append(NewDescriptionValuePair(
       "Reset notification strategy", reset_strategy));
 
-  basic_info->Append(NewDescriptionValuePair(
-      "GPU process crash count",
-      new base::FundamentalValue(gpu_info.process_crash_count)));
+  basic_info->Append(
+      NewDescriptionValuePair("GPU process crash count",
+                              new base::Value(gpu_info.process_crash_count)));
 
   base::DictionaryValue* info = new base::DictionaryValue();
   info->Set("basic_info", basic_info);

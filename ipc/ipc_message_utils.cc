@@ -268,21 +268,21 @@ bool ReadValue(const base::Pickle* m,
       bool val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = new base::FundamentalValue(val);
+      *value = new base::Value(val);
       break;
     }
     case base::Value::Type::INTEGER: {
       int val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = new base::FundamentalValue(val);
+      *value = new base::Value(val);
       break;
     }
     case base::Value::Type::DOUBLE: {
       double val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = new base::FundamentalValue(val);
+      *value = new base::Value(val);
       break;
     }
     case base::Value::Type::STRING: {

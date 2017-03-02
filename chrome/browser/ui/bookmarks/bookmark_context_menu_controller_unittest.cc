@@ -348,13 +348,13 @@ TEST_F(BookmarkContextMenuControllerTest,
 
   // Disabling the shorcut by policy disables the command.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        new base::FundamentalValue(false));
+                        new base::Value(false));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
 
   // And enabling the shortcut by policy disables the command too.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        new base::FundamentalValue(true));
+                        new base::Value(true));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
 }

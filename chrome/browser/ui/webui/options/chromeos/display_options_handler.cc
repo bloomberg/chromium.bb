@@ -318,7 +318,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     display_mode = display::DisplayManager::UNIFIED;
   else
     display_mode = display::DisplayManager::EXTENDED;
-  base::FundamentalValue mode(static_cast<int>(display_mode));
+  base::Value mode(static_cast<int>(display_mode));
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   std::unique_ptr<base::ListValue> js_displays(new base::ListValue);
@@ -393,10 +393,8 @@ void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
   bool mirrored_enabled = display_manager->num_connected_displays() == 2;
 
   web_ui()->CallJavascriptFunctionUnsafe(
-      "options.BrowserOptions.enableDisplaySettings",
-      base::FundamentalValue(ui_enabled),
-      base::FundamentalValue(unified_enabled),
-      base::FundamentalValue(mirrored_enabled));
+      "options.BrowserOptions.enableDisplaySettings", base::Value(ui_enabled),
+      base::Value(unified_enabled), base::Value(mirrored_enabled));
 }
 
 void DisplayOptionsHandler::HandleDisplayInfo(

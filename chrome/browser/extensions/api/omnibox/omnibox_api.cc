@@ -113,7 +113,7 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue(input));
-  args->Set(1, new base::FundamentalValue(suggest_id));
+  args->Set(1, new base::Value(suggest_id));
 
   std::unique_ptr<Event> event = base::MakeUnique<Event>(
       events::OMNIBOX_ON_INPUT_CHANGED, omnibox::OnInputChanged::kEventName,

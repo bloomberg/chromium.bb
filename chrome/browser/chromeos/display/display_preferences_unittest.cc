@@ -156,8 +156,8 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   void StoreDisplayBoolPropertyForList(const display::DisplayIdList& list,
                                        const std::string& key,
                                        bool value) {
-    StoreDisplayPropertyForList(
-        list, key, base::MakeUnique<base::FundamentalValue>(value));
+    StoreDisplayPropertyForList(list, key,
+                                base::MakeUnique<base::Value>(value));
   }
 
   void StoreDisplayLayoutPrefForList(const display::DisplayIdList& list,

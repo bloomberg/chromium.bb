@@ -86,7 +86,7 @@ class TypedArraySerializerImpl : public TypedArraySerializer {
          element != end;
          ++element) {
       const ListType list_value = *element;
-      out->Append(new base::FundamentalValue(list_value));
+      out->Append(new base::Value(list_value));
     }
   }
 

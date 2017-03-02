@@ -246,9 +246,8 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     // Add the Cellular Service.
     AddService(kCellular1ServicePath, "cellular1", shill::kTypeCellular,
                shill::kStateIdle);
-    service_test_->SetServiceProperty(kCellular1ServicePath,
-                                      shill::kAutoConnectProperty,
-                                      base::FundamentalValue(true));
+    service_test_->SetServiceProperty(
+        kCellular1ServicePath, shill::kAutoConnectProperty, base::Value(true));
     service_test_->SetServiceProperty(
         kCellular1ServicePath, shill::kNetworkTechnologyProperty,
         base::StringValue(shill::kNetworkTechnologyGsm));
@@ -351,15 +350,13 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(kWifi1ServicePath,
                                       shill::kWifiBSsid,
                                       base::StringValue("00:01:02:03:04:05"));
-    service_test_->SetServiceProperty(kWifi1ServicePath,
-                                      shill::kSignalStrengthProperty,
-                                      base::FundamentalValue(40));
+    service_test_->SetServiceProperty(
+        kWifi1ServicePath, shill::kSignalStrengthProperty, base::Value(40));
     service_test_->SetServiceProperty(kWifi1ServicePath,
                                       shill::kProfileProperty,
                                       base::StringValue(kUser1ProfilePath));
-    service_test_->SetServiceProperty(kWifi1ServicePath,
-                                      shill::kConnectableProperty,
-                                      base::FundamentalValue(true));
+    service_test_->SetServiceProperty(
+        kWifi1ServicePath, shill::kConnectableProperty, base::Value(true));
     service_test_->SetServiceProperty(kWifi1ServicePath, shill::kDeviceProperty,
                                       base::StringValue(kWifiDevicePath));
     base::DictionaryValue static_ipconfig;
@@ -372,7 +369,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(
         kWifi1ServicePath, shill::kWifiFrequencyListProperty, frequencies1);
     service_test_->SetServiceProperty(kWifi1ServicePath, shill::kWifiFrequency,
-                                      base::FundamentalValue(2400));
+                                      base::Value(2400));
     profile_test_->AddService(kUser1ProfilePath, kWifi1ServicePath);
 
     AddService(kWifi2ServicePath, "wifi2_PSK", shill::kTypeWifi,
@@ -380,21 +377,18 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(kWifi2ServicePath,
                                       shill::kSecurityClassProperty,
                                       base::StringValue(shill::kSecurityPsk));
-    service_test_->SetServiceProperty(kWifi2ServicePath,
-                                      shill::kSignalStrengthProperty,
-                                      base::FundamentalValue(80));
-    service_test_->SetServiceProperty(kWifi2ServicePath,
-                                      shill::kConnectableProperty,
-                                      base::FundamentalValue(true));
+    service_test_->SetServiceProperty(
+        kWifi2ServicePath, shill::kSignalStrengthProperty, base::Value(80));
+    service_test_->SetServiceProperty(
+        kWifi2ServicePath, shill::kConnectableProperty, base::Value(true));
 
     AddService("stub_wimax", "wimax", shill::kTypeWimax, shill::kStateOnline);
-    service_test_->SetServiceProperty("stub_wimax",
-                                      shill::kSignalStrengthProperty,
-                                      base::FundamentalValue(40));
+    service_test_->SetServiceProperty(
+        "stub_wimax", shill::kSignalStrengthProperty, base::Value(40));
     service_test_->SetServiceProperty("stub_wimax", shill::kProfileProperty,
                                       base::StringValue(kUser1ProfilePath));
     service_test_->SetServiceProperty("stub_wimax", shill::kConnectableProperty,
-                                      base::FundamentalValue(true));
+                                      base::Value(true));
     profile_test_->AddService(kUser1ProfilePath, "stub_wimax");
 
     base::ListValue frequencies2;
@@ -403,7 +397,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(
         kWifi2ServicePath, shill::kWifiFrequencyListProperty, frequencies2);
     service_test_->SetServiceProperty(kWifi2ServicePath, shill::kWifiFrequency,
-                                      base::FundamentalValue(5000));
+                                      base::Value(5000));
     service_test_->SetServiceProperty(kWifi2ServicePath,
                                       shill::kProfileProperty,
                                       base::StringValue(kUser1ProfilePath));
@@ -486,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetNetworks) {
   // Hide stub_wifi2.
   service_test_->SetServiceProperty(kWifi2ServicePath, shill::kVisibleProperty,
-                                    base::FundamentalValue(false));
+                                    base::Value(false));
   // Add a couple of additional networks that are not configured (saved).
   AddService("stub_wifi3", "wifi3", shill::kTypeWifi, shill::kStateIdle);
   AddService("stub_wifi4", "wifi4", shill::kTypeWifi, shill::kStateIdle);
@@ -573,9 +567,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
       "}";
   service_test_->SetServiceProperty(kWifi2ServicePath, shill::kUIDataProperty,
                                     base::StringValue(uidata_blob));
-  service_test_->SetServiceProperty(kWifi2ServicePath,
-                                    shill::kAutoConnectProperty,
-                                    base::FundamentalValue(false));
+  service_test_->SetServiceProperty(
+      kWifi2ServicePath, shill::kAutoConnectProperty, base::Value(false));
 
   // Update the profile entry.
   profile_test_->AddService(kUser1ProfilePath, kWifi2ServicePath);

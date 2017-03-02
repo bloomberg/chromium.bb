@@ -245,10 +245,9 @@ void PasswordManagerHandler::ShowPassword(
     const std::string& username,
     const base::string16& password_value) {
   // Call back the front end to reveal the password.
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "PasswordManager.showPassword",
-      base::FundamentalValue(static_cast<int>(index)),
-      base::StringValue(password_value));
+  web_ui()->CallJavascriptFunctionUnsafe("PasswordManager.showPassword",
+                                         base::Value(static_cast<int>(index)),
+                                         base::StringValue(password_value));
 }
 
 void PasswordManagerHandler::HandleUpdatePasswordLists(

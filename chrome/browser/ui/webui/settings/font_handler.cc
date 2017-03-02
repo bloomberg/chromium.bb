@@ -105,7 +105,7 @@ void FontHandler::NotifyAdvancedFontSettingsAvailability() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("advanced-font-settings-installed"),
-      base::FundamentalValue(GetAdvancedFontSettingsExtension() != nullptr));
+      base::Value(GetAdvancedFontSettingsExtension() != nullptr));
 }
 
 void FontHandler::OnExtensionLoaded(content::BrowserContext*,

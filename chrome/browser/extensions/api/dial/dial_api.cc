@@ -181,7 +181,7 @@ void DialDiscoverNowFunction::Work() {
 
 bool DialDiscoverNowFunction::Respond() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SetResult(base::MakeUnique<base::FundamentalValue>(result_));
+  SetResult(base::MakeUnique<base::Value>(result_));
   return true;
 }
 

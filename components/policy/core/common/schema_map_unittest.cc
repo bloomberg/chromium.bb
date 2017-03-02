@@ -163,16 +163,13 @@ TEST_F(SchemaMapTest, FilterBundle) {
   map.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
   map.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(true),
-          nullptr);
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true), nullptr);
   map.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(1),
-          nullptr);
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(1), nullptr);
   map.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           POLICY_SOURCE_CLOUD, base::Value::CreateNullValue(), nullptr);
   map.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(1.2),
-          nullptr);
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(1.2), nullptr);
   base::DictionaryValue dict;
   dict.SetString("a", "b");
   dict.SetInteger("b", 2);
@@ -195,23 +192,22 @@ TEST_F(SchemaMapTest, FilterBundle) {
   bundle.Clear();
   PolicyMap& badmap = bundle.Get(extension_ns);
   badmap.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
-  badmap.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(0),
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
              nullptr);
+  badmap.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(0), nullptr);
   badmap.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             nullptr);
   badmap.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             nullptr);
   badmap.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             nullptr);
   badmap.Set("object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::FundamentalValue>(false), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             nullptr);
   badmap.Set("string", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, nullptr,
              base::MakeUnique<ExternalDataFetcher>(nullptr, std::string()));

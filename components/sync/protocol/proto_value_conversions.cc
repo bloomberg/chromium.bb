@@ -259,13 +259,13 @@ class ToValueVisitor {
   }
 
   std::unique_ptr<base::Value> ToValue(bool value) const {
-    return base::MakeUnique<base::FundamentalValue>(value);
+    return base::MakeUnique<base::Value>(value);
   }
   std::unique_ptr<base::Value> ToValue(float value) const {
-    return base::MakeUnique<base::FundamentalValue>(value);
+    return base::MakeUnique<base::Value>(value);
   }
   std::unique_ptr<base::Value> ToValue(double value) const {
-    return base::MakeUnique<base::FundamentalValue>(value);
+    return base::MakeUnique<base::Value>(value);
   }
 
   // Needs to be here to see all ToValue() overloads above.

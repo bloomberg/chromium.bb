@@ -37,7 +37,7 @@ void InjectPreferenceValueToFakeServer(fake_server::FakeServer* fake_server,
                                        const std::string& name,
                                        bool value) {
   std::string serialized;
-  base::FundamentalValue bool_value(value);
+  base::Value bool_value(value);
   base::JSONWriter::Write(bool_value, &serialized);
   sync_pb::EntitySpecifics specifics;
   sync_pb::PreferenceSpecifics* pref = nullptr;

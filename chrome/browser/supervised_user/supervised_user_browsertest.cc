@@ -162,8 +162,7 @@ class SupervisedUserBlockModeTest : public SupervisedUserTest {
         SupervisedUserSettingsServiceFactory::GetForProfile(profile);
     supervised_user_settings_service->SetLocalSetting(
         supervised_users::kContentPackDefaultFilteringBehavior,
-        base::MakeUnique<base::FundamentalValue>(
-            SupervisedUserURLFilter::BLOCK));
+        base::MakeUnique<base::Value>(SupervisedUserURLFilter::BLOCK));
   }
 };
 

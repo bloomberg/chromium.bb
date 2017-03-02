@@ -38,13 +38,13 @@ void PointerHandler::OnJavascriptDisallowed() {
 void PointerHandler::TouchpadExists(bool exists) {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("has-touchpad-changed"),
-                         base::FundamentalValue(exists));
+                         base::Value(exists));
 }
 
 void PointerHandler::MouseExists(bool exists) {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("has-mouse-changed"),
-                         base::FundamentalValue(exists));
+                         base::Value(exists));
 }
 
 void PointerHandler::HandleInitialize(const base::ListValue* args) {

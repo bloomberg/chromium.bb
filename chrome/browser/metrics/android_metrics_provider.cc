@@ -19,7 +19,7 @@ namespace {
 void IncrementListValue(base::ListValue* counts, int index) {
   int current_count = 0;
   counts->GetInteger(index, &current_count);
-  counts->Set(index, new base::FundamentalValue(current_count + 1));
+  counts->Set(index, new base::Value(current_count + 1));
 }
 
 // Takes an int corresponding to a Type and returns the corresponding flag.

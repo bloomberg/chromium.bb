@@ -109,8 +109,8 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 
   void SetPolicy(const std::string& name) {
     policy_map_.Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::FundamentalValue>(true), nullptr);
+                    POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+                    nullptr);
   }
 
   base::TimeDelta GetFirstDelay() const {

@@ -389,15 +389,15 @@ void PrefService::Set(const std::string& path, const base::Value& value) {
 }
 
 void PrefService::SetBoolean(const std::string& path, bool value) {
-  SetUserPrefValue(path, new base::FundamentalValue(value));
+  SetUserPrefValue(path, new base::Value(value));
 }
 
 void PrefService::SetInteger(const std::string& path, int value) {
-  SetUserPrefValue(path, new base::FundamentalValue(value));
+  SetUserPrefValue(path, new base::Value(value));
 }
 
 void PrefService::SetDouble(const std::string& path, double value) {
-  SetUserPrefValue(path, new base::FundamentalValue(value));
+  SetUserPrefValue(path, new base::Value(value));
 }
 
 void PrefService::SetString(const std::string& path, const std::string& value) {

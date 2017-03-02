@@ -361,8 +361,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
     return base::Value::CreateNullValue();
 
   if (val->IsBoolean())
-    return base::MakeUnique<base::FundamentalValue>(
-        val->ToBoolean(isolate)->Value());
+    return base::MakeUnique<base::Value>(val->ToBoolean(isolate)->Value());
 
   if (val->IsNumber() && strategy_) {
     std::unique_ptr<base::Value> out;
@@ -371,8 +370,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
   }
 
   if (val->IsInt32())
-    return base::MakeUnique<base::FundamentalValue>(
-        val->ToInt32(isolate)->Value());
+    return base::MakeUnique<base::Value>(val->ToInt32(isolate)->Value());
 
   if (val->IsNumber()) {
     double val_as_double = val.As<v8::Number>()->Value();
@@ -382,8 +380,8 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
     // value is -0, it's treated internally as a double. Consumers are allowed
     // to ignore this esoterica and treat it as an integer.
     if (convert_negative_zero_to_int_ && val_as_double == 0.0)
-      return base::MakeUnique<base::FundamentalValue>(0);
-    return base::MakeUnique<base::FundamentalValue>(val_as_double);
+      return base::MakeUnique<base::Value>(0);
+    return base::MakeUnique<base::Value>(val_as_double);
   }
 
   if (val->IsString()) {
@@ -408,7 +406,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
       // consistent within this class.
       return FromV8Object(val->ToObject(isolate), state, isolate);
     v8::Date* date = v8::Date::Cast(*val);
-    return base::MakeUnique<base::FundamentalValue>(date->ValueOf() / 1000.0);
+    return base::MakeUnique<base::Value>(date->ValueOf() / 1000.0);
   }
 
   if (val->IsRegExp()) {

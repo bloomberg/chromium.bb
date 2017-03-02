@@ -166,8 +166,8 @@ void PowerHandler::UpdatePowerSources() {
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.PowerOverlay.setPowerSources", sources_list,
       base::StringValue(status->GetCurrentPowerSourceID()),
-      base::FundamentalValue(status->IsUsbChargerConnected()),
-      base::FundamentalValue(status->IsBatteryTimeBeingCalculated()));
+      base::Value(status->IsUsbChargerConnected()),
+      base::Value(status->IsBatteryTimeBeingCalculated()));
 }
 
 }  // namespace options

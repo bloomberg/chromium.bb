@@ -16,19 +16,19 @@ PrefRegistrySimple::~PrefRegistrySimple() {
 
 void PrefRegistrySimple::RegisterBooleanPref(const std::string& path,
                                              bool default_value) {
-  RegisterPrefAndNotify(path, new base::FundamentalValue(default_value),
+  RegisterPrefAndNotify(path, new base::Value(default_value),
                         NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterIntegerPref(const std::string& path,
                                              int default_value) {
-  RegisterPrefAndNotify(path, new base::FundamentalValue(default_value),
+  RegisterPrefAndNotify(path, new base::Value(default_value),
                         NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterDoublePref(const std::string& path,
                                             double default_value) {
-  RegisterPrefAndNotify(path, new base::FundamentalValue(default_value),
+  RegisterPrefAndNotify(path, new base::Value(default_value),
                         NO_REGISTRATION_FLAGS);
 }
 
@@ -82,19 +82,19 @@ void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
 void PrefRegistrySimple::RegisterBooleanPref(const std::string& path,
                                              bool default_value,
                                              uint32_t flags) {
-  RegisterPrefAndNotify(path, new base::FundamentalValue(default_value), flags);
+  RegisterPrefAndNotify(path, new base::Value(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterIntegerPref(const std::string& path,
                                              int default_value,
                                              uint32_t flags) {
-  RegisterPrefAndNotify(path, new base::FundamentalValue(default_value), flags);
+  RegisterPrefAndNotify(path, new base::Value(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterDoublePref(const std::string& path,
                                             double default_value,
                                             uint32_t flags) {
-  RegisterPrefAndNotify(path, new base::FundamentalValue(default_value), flags);
+  RegisterPrefAndNotify(path, new base::Value(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterStringPref(const std::string& path,

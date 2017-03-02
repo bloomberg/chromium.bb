@@ -1315,12 +1315,11 @@ class ErrorPageOfflineTest : public ErrorPageTest {
       SetEnterpriseUsersDefaults(&policy_map);
 #endif
     if (set_allow_dinosaur_easter_egg_) {
-      policy_map.Set(policy::key::kAllowDinosaurEasterEgg,
-                     policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                     policy::POLICY_SOURCE_CLOUD,
-                     base::MakeUnique<base::FundamentalValue>(
-                         value_of_allow_dinosaur_easter_egg_),
-                     nullptr);
+      policy_map.Set(
+          policy::key::kAllowDinosaurEasterEgg, policy::POLICY_LEVEL_MANDATORY,
+          policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+          base::MakeUnique<base::Value>(value_of_allow_dinosaur_easter_egg_),
+          nullptr);
     }
     policy_provider_.UpdateChromePolicy(policy_map);
 
@@ -1513,7 +1512,7 @@ class ErrorPageWithHttp09OnNonDefaultPortsTest : public InProcessBrowserTest {
     values.Set(policy::key::kHttp09OnNonDefaultPortsEnabled,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
                policy::POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+               base::WrapUnique(new base::Value(true)), nullptr);
     policy_provider_.UpdateChromePolicy(values);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);

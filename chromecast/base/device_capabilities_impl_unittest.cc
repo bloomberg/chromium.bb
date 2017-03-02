@@ -153,7 +153,7 @@ void GetSampleDefaultCapability(std::string* key,
   DCHECK(key);
   DCHECK(init_value);
   *key = DeviceCapabilities::kKeyBluetoothSupported;
-  *init_value = base::MakeUnique<base::FundamentalValue>(true);
+  *init_value = base::MakeUnique<base::Value>(true);
 }
 
 // For test fixtures that test dynamic capabilities, gets a sample key
@@ -163,21 +163,21 @@ void GetSampleDynamicCapability(std::string* key,
   DCHECK(key);
   DCHECK(init_value);
   *key = "dummy_dynamic_key";
-  *init_value = base::MakeUnique<base::FundamentalValue>(99);
+  *init_value = base::MakeUnique<base::Value>(99);
 }
 
 // Gets a value for sample default capability different from |init_value|
 // returned in GetSampleDefaultCapability(). Must be of same type as
 // |init_value| of course.
 std::unique_ptr<base::Value> GetSampleDefaultCapabilityNewValue() {
-  return base::MakeUnique<base::FundamentalValue>(false);
+  return base::MakeUnique<base::Value>(false);
 }
 
 // Gets a value for sample dynamic capability different from |init_value|
 // returned in GetSampleDynamicCapability(). Must be of same type as
 // |init_value| of course.
 std::unique_ptr<base::Value> GetSampleDynamicCapabilityNewValue() {
-  return base::MakeUnique<base::FundamentalValue>(100);
+  return base::MakeUnique<base::Value>(100);
 }
 
 // Tests that |json| string matches contents of a DictionaryValue with one entry
@@ -338,12 +338,11 @@ TEST_F(DeviceCapabilitiesImplTest, GetCapabilityAndSetCapability) {
 TEST_F(DeviceCapabilitiesImplTest, BluetoothSupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
       capabilities(), DeviceCapabilities::kKeyBluetoothSupported,
-      base::WrapUnique(new base::FundamentalValue(true)), true, false);
+      base::WrapUnique(new base::Value(true)), true, false);
 
   EXPECT_TRUE(capabilities()->BluetoothSupported());
-  capabilities()->SetCapability(
-      DeviceCapabilities::kKeyBluetoothSupported,
-      base::WrapUnique(new base::FundamentalValue(false)));
+  capabilities()->SetCapability(DeviceCapabilities::kKeyBluetoothSupported,
+                                base::WrapUnique(new base::Value(false)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(capabilities()->BluetoothSupported());
 }
@@ -352,12 +351,11 @@ TEST_F(DeviceCapabilitiesImplTest, BluetoothSupportedAndSetCapability) {
 TEST_F(DeviceCapabilitiesImplTest, DisplaySupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
       capabilities(), DeviceCapabilities::kKeyDisplaySupported,
-      base::WrapUnique(new base::FundamentalValue(true)), true, false);
+      base::WrapUnique(new base::Value(true)), true, false);
 
   EXPECT_TRUE(capabilities()->DisplaySupported());
-  capabilities()->SetCapability(
-      DeviceCapabilities::kKeyDisplaySupported,
-      base::WrapUnique(new base::FundamentalValue(false)));
+  capabilities()->SetCapability(DeviceCapabilities::kKeyDisplaySupported,
+                                base::WrapUnique(new base::Value(false)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(capabilities()->DisplaySupported());
 }
@@ -366,12 +364,11 @@ TEST_F(DeviceCapabilitiesImplTest, DisplaySupportedAndSetCapability) {
 TEST_F(DeviceCapabilitiesImplTest, HiResAudioSupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
       capabilities(), DeviceCapabilities::kKeyHiResAudioSupported,
-      base::WrapUnique(new base::FundamentalValue(true)), true, false);
+      base::WrapUnique(new base::Value(true)), true, false);
 
   EXPECT_TRUE(capabilities()->HiResAudioSupported());
-  capabilities()->SetCapability(
-      DeviceCapabilities::kKeyHiResAudioSupported,
-      base::WrapUnique(new base::FundamentalValue(false)));
+  capabilities()->SetCapability(DeviceCapabilities::kKeyHiResAudioSupported,
+                                base::WrapUnique(new base::Value(false)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(capabilities()->HiResAudioSupported());
 }
@@ -380,12 +377,11 @@ TEST_F(DeviceCapabilitiesImplTest, HiResAudioSupportedAndSetCapability) {
 TEST_F(DeviceCapabilitiesImplTest, AssistantSupportedAndSetCapability) {
   FakeCapabilityManagerSimple manager(
       capabilities(), DeviceCapabilities::kKeyAssistantSupported,
-      base::WrapUnique(new base::FundamentalValue(true)), true, false);
+      base::WrapUnique(new base::Value(true)), true, false);
 
   EXPECT_TRUE(capabilities()->AssistantSupported());
-  capabilities()->SetCapability(
-      DeviceCapabilities::kKeyAssistantSupported,
-      base::WrapUnique(new base::FundamentalValue(false)));
+  capabilities()->SetCapability(DeviceCapabilities::kKeyAssistantSupported,
+                                base::WrapUnique(new base::Value(false)));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(capabilities()->AssistantSupported());
 }
@@ -428,7 +424,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityUpdatesString) {
 TEST_F(DeviceCapabilitiesImplTest, SetPublicPrivateCapabilities) {
   std::string key_private = "private";
   std::string key_public = "public";
-  std::unique_ptr<base::Value> init_value(new base::FundamentalValue(true));
+  std::unique_ptr<base::Value> init_value(new base::Value(true));
 
   // Dictionary of only public values.
   base::DictionaryValue public_dict;
@@ -452,7 +448,7 @@ TEST_F(DeviceCapabilitiesImplTest, SetPublicPrivateCapabilities) {
 TEST_F(DeviceCapabilitiesImplTest, NoValidatorDefaultsToPublicCapability) {
   std::string key_private = "private";
   std::string key_public = "public";
-  std::unique_ptr<base::Value> init_value(new base::FundamentalValue(true));
+  std::unique_ptr<base::Value> init_value(new base::Value(true));
 
   // Dictionary of only public values.
   base::DictionaryValue public_dict;
@@ -557,9 +553,8 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionary) {
   FakeCapabilityManagerSimple manager(capabilities(), key,
                                       std::move(init_value), true, false);
 
-  capabilities()->SetCapability(
-      "dummy_dictionary_key.dummy_field_bool",
-      base::WrapUnique(new base::FundamentalValue(false)));
+  capabilities()->SetCapability("dummy_dictionary_key.dummy_field_bool",
+                                base::WrapUnique(new base::Value(false)));
   base::RunLoop().RunUntilIdle();
   bool value_bool = true;
   std::unique_ptr<base::Value> value =
@@ -568,9 +563,8 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionary) {
   EXPECT_TRUE(value->GetAsBoolean(&value_bool));
   EXPECT_FALSE(value_bool);
 
-  capabilities()->SetCapability(
-      "dummy_dictionary_key.dummy_field_int",
-      base::WrapUnique(new base::FundamentalValue(100)));
+  capabilities()->SetCapability("dummy_dictionary_key.dummy_field_int",
+                                base::WrapUnique(new base::Value(100)));
   base::RunLoop().RunUntilIdle();
   int value_int = 0;
   value = capabilities()->GetCapability("dummy_dictionary_key.dummy_field_int");
@@ -589,9 +583,8 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionaryInvalid) {
   FakeCapabilityManagerSimple manager(capabilities(), key,
                                       std::move(init_value), false, false);
 
-  capabilities()->SetCapability(
-      "dummy_dictionary_key.dummy_field_bool",
-      base::WrapUnique(new base::FundamentalValue(false)));
+  capabilities()->SetCapability("dummy_dictionary_key.dummy_field_bool",
+                                base::WrapUnique(new base::Value(false)));
   base::RunLoop().RunUntilIdle();
   bool value_bool = false;
   std::unique_ptr<base::Value> value =
@@ -600,9 +593,8 @@ TEST_F(DeviceCapabilitiesImplTest, SetCapabilityDictionaryInvalid) {
   EXPECT_TRUE(value->GetAsBoolean(&value_bool));
   EXPECT_TRUE(value_bool);
 
-  capabilities()->SetCapability(
-      "dummy_dictionary_key.dummy_field_int",
-      base::WrapUnique(new base::FundamentalValue(100)));
+  capabilities()->SetCapability("dummy_dictionary_key.dummy_field_int",
+                                base::WrapUnique(new base::Value(100)));
   base::RunLoop().RunUntilIdle();
   int value_int = 0;
   value = capabilities()->GetCapability("dummy_dictionary_key.dummy_field_int");
@@ -664,8 +656,8 @@ TEST_F(DeviceCapabilitiesImplTest, OnCapabilitiesChangedSafe) {
   FakeCapabilitiesObserver observer(capabilities());
 
   // Trigger FakeCapabilitiesObserver::OnCapabilitiesChanged()
-  capabilities()->SetCapability(
-      "dummy_trigger_key", base::WrapUnique(new base::FundamentalValue(true)));
+  capabilities()->SetCapability("dummy_trigger_key",
+                                base::WrapUnique(new base::Value(true)));
   base::RunLoop().RunUntilIdle();
 
   // Check that FakeCapabilitiesObserver::OnCapabilitiesChanged() ran and that
@@ -680,8 +672,8 @@ TEST_F(DeviceCapabilitiesImplTest, ValidateSafe) {
   FakeCapabilityManagerComplex manager(capabilities(), "dummy_validate_key");
 
   // Trigger FakeCapabilityManagerComplex::Validate()
-  capabilities()->SetCapability(
-      "dummy_validate_key", base::WrapUnique(new base::FundamentalValue(true)));
+  capabilities()->SetCapability("dummy_validate_key",
+                                base::WrapUnique(new base::Value(true)));
   base::RunLoop().RunUntilIdle();
 
   // Check that FakeCapabilityManagerComplex::Validate() ran and that behavior

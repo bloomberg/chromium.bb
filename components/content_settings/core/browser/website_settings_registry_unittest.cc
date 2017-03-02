@@ -88,7 +88,7 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
 
   // Register a new setting.
   registry()->Register(static_cast<ContentSettingsType>(10), "test",
-                       base::MakeUnique<base::FundamentalValue>(999),
+                       base::MakeUnique<base::Value>(999),
                        WebsiteSettingsInfo::SYNCABLE,
                        WebsiteSettingsInfo::LOSSY,
                        WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
@@ -117,7 +117,7 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
 
 TEST_F(WebsiteSettingsRegistryTest, Iteration) {
   registry()->Register(static_cast<ContentSettingsType>(10), "test",
-                       base::MakeUnique<base::FundamentalValue>(999),
+                       base::MakeUnique<base::Value>(999),
                        WebsiteSettingsInfo::SYNCABLE,
                        WebsiteSettingsInfo::LOSSY,
                        WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,

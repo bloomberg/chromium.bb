@@ -85,8 +85,8 @@ class FakeEventRouter : public extensions::EventRouter {
     if (reply_result_ == base::File::FILE_OK) {
       base::ListValue value_as_list;
       value_as_list.Set(0, new base::StringValue(kFileSystemId));
-      value_as_list.Set(1, new base::FundamentalValue(request_id));
-      value_as_list.Set(2, new base::FundamentalValue(0) /* execution_time */);
+      value_as_list.Set(1, new base::Value(request_id));
+      value_as_list.Set(2, new base::Value(0) /* execution_time */);
 
       using extensions::api::file_system_provider_internal::
           OperationRequestedSuccess::Params;

@@ -121,19 +121,19 @@ CrosSettingsProvider::TrustedStatus CrosSettings::PrepareTrustedValues(
 
 void CrosSettings::SetBoolean(const std::string& path, bool in_value) {
   DCHECK(CalledOnValidThread());
-  base::FundamentalValue value(in_value);
+  base::Value value(in_value);
   Set(path, value);
 }
 
 void CrosSettings::SetInteger(const std::string& path, int in_value) {
   DCHECK(CalledOnValidThread());
-  base::FundamentalValue value(in_value);
+  base::Value value(in_value);
   Set(path, value);
 }
 
 void CrosSettings::SetDouble(const std::string& path, double in_value) {
   DCHECK(CalledOnValidThread());
-  base::FundamentalValue value(in_value);
+  base::Value value(in_value);
   Set(path, value);
 }
 

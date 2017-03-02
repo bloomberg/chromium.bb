@@ -641,7 +641,7 @@ TEST(SchemaTest, Validate) {
   bundle.SetBoolean("Boolean", true);
   bundle.SetInteger("Integer", 123);
   bundle.Set("Null", base::Value::CreateNullValue());
-  bundle.Set("Number", new base::FundamentalValue(3.14));
+  bundle.Set("Number", new base::Value(3.14));
   bundle.SetString("String", "omg");
 
   {

@@ -732,7 +732,7 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
           CreateScopedIdentifier(extension_->id(), params_->notification_id),
           NotificationUIManager::GetProfileID(GetProfile()));
   if (!matched_notification) {
-    SetResult(base::MakeUnique<base::FundamentalValue>(false));
+    SetResult(base::MakeUnique<base::Value>(false));
     SendResponse(true);
     return true;
   }
@@ -746,8 +746,7 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
   // TODO(dewittj): Add more human-readable error strings if this fails.
   bool could_update_notification = UpdateNotification(
       params_->notification_id, &params_->options, &notification);
-  SetResult(
-      base::MakeUnique<base::FundamentalValue>(could_update_notification));
+  SetResult(base::MakeUnique<base::Value>(could_update_notification));
   if (!could_update_notification)
     return false;
 
@@ -771,7 +770,7 @@ bool NotificationsClearFunction::RunNotificationsApi() {
       CreateScopedIdentifier(extension_->id(), params_->notification_id),
       NotificationUIManager::GetProfileID(GetProfile()));
 
-  SetResult(base::MakeUnique<base::FundamentalValue>(cancel_result));
+  SetResult(base::MakeUnique<base::Value>(cancel_result));
   SendResponse(true);
 
   return true;

@@ -48,7 +48,7 @@ void MediaInternalsProxy::Observe(int type,
   DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
   CallJavaScriptFunctionOnUIThread("media.onRendererTerminated",
-      new base::FundamentalValue(process->GetID()));
+                                   new base::Value(process->GetID()));
 }
 
 void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {

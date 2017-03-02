@@ -55,17 +55,15 @@ void PluginPolicyHandler::ProcessPolicy(const policy::PolicyMap& policies,
       continue;
     if (base::MatchPattern(ChromeContentClient::kPDFPluginName, plugin) &&
         !policies.GetValue(policy::key::kAlwaysOpenPdfExternally)) {
-      prefs->SetValue(
-          prefs::kPluginsAlwaysOpenPdfExternally,
-          base::MakeUnique<base::FundamentalValue>(disable_pdf_plugin));
+      prefs->SetValue(prefs::kPluginsAlwaysOpenPdfExternally,
+                      base::MakeUnique<base::Value>(disable_pdf_plugin));
     }
     if ((base::MatchPattern(
              PluginMetadata::kAdobeFlashPlayerGroupName, plugin) ||
          base::MatchPattern(content::kFlashPluginName, plugin)) &&
         !policies.GetValue(policy::key::kDefaultPluginsSetting)) {
-      prefs->SetValue(
-          prefs::kManagedDefaultPluginsSetting,
-          base::MakeUnique<base::FundamentalValue>(flash_content_setting));
+      prefs->SetValue(prefs::kManagedDefaultPluginsSetting,
+                      base::MakeUnique<base::Value>(flash_content_setting));
     }
   }
 }

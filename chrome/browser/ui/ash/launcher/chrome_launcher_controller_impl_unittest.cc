@@ -3639,16 +3639,16 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
 
   // ARC is managed and enabled, Play Store pin should be available.
   // Note: SHOWING_TERMS_OF_SERVICE here means that opt-in flow starts.
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, new base::FundamentalValue(true));
+  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
+                                                     new base::Value(true));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(true, true,
                    arc::ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
                    "AppList, Chrome, Play Store");
 
   // ARC is managed and disabled, Play Store pin should not be available.
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, new base::FundamentalValue(false));
+  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
+                                                     new base::Value(false));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(false, true, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome");

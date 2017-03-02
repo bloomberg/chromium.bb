@@ -645,9 +645,8 @@ void ExtensionStorageMonitor::SetStorageNotificationEnabled(
     const std::string& extension_id,
     bool enable_notifications) {
   extension_prefs_->UpdateExtensionPref(
-      extension_id,
-      kPrefDisableStorageNotifications,
-      enable_notifications ? NULL : new base::FundamentalValue(true));
+      extension_id, kPrefDisableStorageNotifications,
+      enable_notifications ? NULL : new base::Value(true));
 }
 
 }  // namespace extensions

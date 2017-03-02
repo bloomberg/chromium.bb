@@ -64,7 +64,7 @@ TEST_F(StubCrosSettingsProviderTest, HandlesSettings) {
 
 TEST_F(StubCrosSettingsProviderTest, Defaults) {
   // Verify default values.
-  const base::FundamentalValue kTrueValue(true);
+  const base::Value kTrueValue(true);
   AssertPref(kAccountsPrefAllowGuest, &kTrueValue);
   AssertPref(kAccountsPrefAllowNewUser, &kTrueValue);
   AssertPref(kAccountsPrefShowUserNamesOnSignIn, &kTrueValue);

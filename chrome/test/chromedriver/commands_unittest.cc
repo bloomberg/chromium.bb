@@ -234,7 +234,7 @@ TEST(CommandsTest, ExecuteSessionCommand) {
 
   base::DictionaryValue params;
   params.SetInteger("param", 5);
-  base::FundamentalValue expected_value(6);
+  base::Value expected_value(6);
   SessionCommand cmd = base::Bind(
       &ExecuteSimpleCommand, id, &params, &expected_value);
 

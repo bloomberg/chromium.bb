@@ -128,15 +128,13 @@ UsersPrivateAddWhitelistedUserFunction::Run() {
 
   // Non-owners should not be able to add users.
   if (!chromeos::ProfileHelper::IsOwnerProfile(chrome_details_.GetProfile())) {
-    return RespondNow(
-        OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
+    return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
   }
 
   std::string username = gaia::CanonicalizeEmail(parameters->email);
   if (chromeos::CrosSettings::Get()->FindEmailInList(
           chromeos::kAccountsPrefUsers, username, NULL)) {
-    return RespondNow(
-        OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
+    return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
   }
 
   base::StringValue username_value(username);
@@ -146,8 +144,7 @@ UsersPrivateAddWhitelistedUserFunction::Run() {
   PrefsUtil* prefs_util = delegate->GetPrefsUtil();
   bool added = prefs_util->AppendToListCrosSetting(chromeos::kAccountsPrefUsers,
                                                    username_value);
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(added)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(added)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -171,8 +168,7 @@ UsersPrivateRemoveWhitelistedUserFunction::Run() {
 
   // Non-owners should not be able to remove users.
   if (!chromeos::ProfileHelper::IsOwnerProfile(chrome_details_.GetProfile())) {
-    return RespondNow(
-        OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
+    return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
   }
 
   base::StringValue canonical_email(gaia::CanonicalizeEmail(parameters->email));
@@ -184,8 +180,7 @@ UsersPrivateRemoveWhitelistedUserFunction::Run() {
       chromeos::kAccountsPrefUsers, canonical_email);
   user_manager::UserManager::Get()->RemoveUser(
       AccountId::FromUserEmail(parameters->email), NULL);
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(removed)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(removed)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,8 +198,7 @@ ExtensionFunction::ResponseAction
 UsersPrivateIsCurrentUserOwnerFunction::Run() {
   bool is_owner =
       chromeos::ProfileHelper::IsOwnerProfile(chrome_details_.GetProfile());
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(is_owner)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(is_owner)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -223,8 +217,7 @@ UsersPrivateIsWhitelistManagedFunction::Run() {
   bool is_managed = g_browser_process->platform_part()
                         ->browser_policy_connector_chromeos()
                         ->IsEnterpriseManaged();
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(is_managed)));
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(is_managed)));
 }
 
 }  // namespace extensions

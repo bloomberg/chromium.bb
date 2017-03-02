@@ -47,8 +47,7 @@ void SafeBrowsingHandler::HandleGetSafeBrowsingExtendedReporting(
   AllowJavascript();
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
-  base::FundamentalValue is_enabled(
-      safe_browsing::IsExtendedReportingEnabled(*prefs_));
+  base::Value is_enabled(safe_browsing::IsExtendedReportingEnabled(*prefs_));
   ResolveJavascriptCallback(*callback_id, is_enabled);
 }
 
@@ -64,8 +63,7 @@ void SafeBrowsingHandler::OnPrefChanged(const std::string& pref_name) {
   DCHECK(pref_name == prefs::kSafeBrowsingExtendedReportingEnabled ||
          pref_name == prefs::kSafeBrowsingScoutReportingEnabled);
 
-  base::FundamentalValue is_enabled(
-      safe_browsing::IsExtendedReportingEnabled(*prefs_));
+  base::Value is_enabled(safe_browsing::IsExtendedReportingEnabled(*prefs_));
   CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("safe-browsing-extended-reporting-change"), is_enabled);

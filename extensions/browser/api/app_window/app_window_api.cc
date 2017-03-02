@@ -198,7 +198,7 @@ bool AppWindowCreateFunction::RunAsync() {
 
           std::unique_ptr<base::DictionaryValue> result(
               new base::DictionaryValue);
-          result->Set("frameId", new base::FundamentalValue(frame_id));
+          result->Set("frameId", new base::Value(frame_id));
           existing_window->GetSerializedState(result.get());
           result->SetBoolean("existingWindow", true);
           SetResult(std::move(result));
@@ -381,7 +381,7 @@ bool AppWindowCreateFunction::RunAsync() {
     frame_id = created_frame->GetRoutingID();
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-  result->Set("frameId", new base::FundamentalValue(frame_id));
+  result->Set("frameId", new base::Value(frame_id));
   result->Set("id", new base::StringValue(app_window->window_key()));
   app_window->GetSerializedState(result.get());
   SetResult(std::move(result));

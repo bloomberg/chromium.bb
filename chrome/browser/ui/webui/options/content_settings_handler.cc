@@ -771,8 +771,7 @@ void ContentSettingsHandler::UpdateMediaSettingsFromPrefs(
 }
 
 void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
-  base::FundamentalValue handlers_enabled(
-      GetProtocolHandlerRegistry()->enabled());
+  base::Value handlers_enabled(GetProtocolHandlerRegistry()->enabled());
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "ContentSettings.updateHandlersEnabledRadios", handlers_enabled);
@@ -1353,8 +1352,7 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
   web_ui()->CallJavascriptFunctionUnsafe(
       "ContentSettings.patternValidityCheckComplete",
       base::StringValue(type_string), base::StringValue(mode_string),
-      base::StringValue(pattern_string),
-      base::FundamentalValue(pattern.IsValid()));
+      base::StringValue(pattern_string), base::Value(pattern.IsValid()));
 }
 
 Profile* ContentSettingsHandler::GetProfile() {
@@ -1420,7 +1418,7 @@ void ContentSettingsHandler::ShowFlashMediaLink(
         base::StringValue(content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
                               ? "mic"
                               : "camera"),
-        base::FundamentalValue(show));
+        base::Value(show));
     show_link = show;
   }
 }
@@ -1478,7 +1476,7 @@ void ContentSettingsHandler::UpdateMediaDeviceDropdownVisibility(
   web_ui()->CallJavascriptFunctionUnsafe(
       "ContentSettings.setDevicesMenuVisibility",
       base::StringValue(site_settings::ContentSettingsTypeToGroupName(type)),
-      base::FundamentalValue(!settings.policy_disable));
+      base::Value(!settings.policy_disable));
 }
 
 void ContentSettingsHandler::UpdateProtectedContentExceptionsButton() {
@@ -1493,7 +1491,7 @@ void ContentSettingsHandler::UpdateProtectedContentExceptionsButton() {
   bool enable_exceptions = prefs->GetBoolean(prefs::kEnableDRM);
   web_ui()->CallJavascriptFunctionUnsafe(
       "ContentSettings.enableProtectedContentExceptions",
-      base::FundamentalValue(enable_exceptions));
+      base::Value(enable_exceptions));
 }
 
 }  // namespace options

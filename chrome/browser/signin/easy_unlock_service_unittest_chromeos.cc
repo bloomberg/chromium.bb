@@ -235,8 +235,8 @@ class EasyUnlockServiceTest : public testing::Test {
   }
 
   void SetEasyUnlockAllowedPolicy(bool allowed) {
-    profile_->GetTestingPrefService()->SetManagedPref(
-        prefs::kEasyUnlockAllowed, new base::FundamentalValue(allowed));
+    profile_->GetTestingPrefService()->SetManagedPref(prefs::kEasyUnlockAllowed,
+                                                      new base::Value(allowed));
   }
 
   void set_is_bluetooth_adapter_present(bool is_present) {

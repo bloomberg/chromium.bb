@@ -62,13 +62,13 @@ std::unique_ptr<DeviceCapabilities> DeviceCapabilities::Create() {
 std::unique_ptr<DeviceCapabilities> DeviceCapabilities::CreateForTesting() {
   DeviceCapabilities* capabilities = new DeviceCapabilitiesImpl;
   capabilities->SetCapability(kKeyBluetoothSupported,
-                              base::MakeUnique<base::FundamentalValue>(false));
+                              base::MakeUnique<base::Value>(false));
   capabilities->SetCapability(kKeyDisplaySupported,
-                              base::MakeUnique<base::FundamentalValue>(true));
+                              base::MakeUnique<base::Value>(true));
   capabilities->SetCapability(kKeyHiResAudioSupported,
-                              base::MakeUnique<base::FundamentalValue>(false));
+                              base::MakeUnique<base::Value>(false));
   capabilities->SetCapability(kKeyAssistantSupported,
-                              base::MakeUnique<base::FundamentalValue>(true));
+                              base::MakeUnique<base::Value>(true));
   return base::WrapUnique(capabilities);
 }
 

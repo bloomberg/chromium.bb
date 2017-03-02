@@ -110,17 +110,15 @@ void ClearBrowserDataHandler::InitializeHandler() {
 
 void ClearBrowserDataHandler::InitializePage() {
   web_ui()->CallJavascriptFunctionUnsafe(
-      "ClearBrowserDataOverlay.createFooter",
-      base::FundamentalValue(AreCountersEnabled()),
-      base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()),
-      base::FundamentalValue(should_show_history_notice_));
+      "ClearBrowserDataOverlay.createFooter", base::Value(AreCountersEnabled()),
+      base::Value(sync_service_ && sync_service_->IsSyncActive()),
+      base::Value(should_show_history_notice_));
   RefreshHistoryNotice();
   UpdateInfoBannerVisibility();
   OnBrowsingHistoryPrefChanged();
   bool removal_in_progress = !!remover_;
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "ClearBrowserDataOverlay.setClearing",
-      base::FundamentalValue(removal_in_progress));
+  web_ui()->CallJavascriptFunctionUnsafe("ClearBrowserDataOverlay.setClearing",
+                                         base::Value(removal_in_progress));
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.markInitializationComplete");
@@ -363,13 +361,13 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
       "History.ClearBrowsingData.ShownHistoryNoticeAfterClearing", show_notice);
 
   web_ui()->CallJavascriptFunctionUnsafe("ClearBrowserDataOverlay.doneClearing",
-                                         base::FundamentalValue(show_notice));
+                                         base::Value(show_notice));
 }
 
 void ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged() {
   web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.setAllowDeletingHistory",
-      base::FundamentalValue(*allow_deleting_browser_history_));
+      base::Value(*allow_deleting_browser_history_));
 }
 
 void ClearBrowserDataHandler::AddCounter(
@@ -398,8 +396,8 @@ void ClearBrowserDataHandler::OnStateChanged(syncer::SyncService* sync) {
 void ClearBrowserDataHandler::UpdateSyncState() {
   web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.updateSyncWarningAndHistoryFooter",
-      base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()),
-      base::FundamentalValue(should_show_history_notice_));
+      base::Value(sync_service_ && sync_service_->IsSyncActive()),
+      base::Value(should_show_history_notice_));
 }
 
 void ClearBrowserDataHandler::RefreshHistoryNotice() {

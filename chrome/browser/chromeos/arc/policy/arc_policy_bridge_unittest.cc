@@ -220,7 +220,7 @@ TEST_F(ArcPolicyBridgeTest, DisableScreenshotsTest) {
   policy_map().Set(policy::key::kDisableScreenshots,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(true), nullptr);
+                   base::MakeUnique<base::Value>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"screenCaptureDisabled\":true}"));
 }
@@ -229,7 +229,7 @@ TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(false), nullptr);
+                   base::MakeUnique<base::Value>(false), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"cameraDisabled\":true}"));
 }
@@ -238,7 +238,7 @@ TEST_F(ArcPolicyBridgeTest, AudioCaptureAllowedTest) {
   policy_map().Set(policy::key::kAudioCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(false), nullptr);
+                   base::MakeUnique<base::Value>(false), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"unmuteMicrophoneDisabled\":true}"));
 }
@@ -247,19 +247,19 @@ TEST_F(ArcPolicyBridgeTest, DefaultGeolocationSettingTest) {
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(1), nullptr);
+                   base::MakeUnique<base::Value>(1), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":false}"));
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(2), nullptr);
+                   base::MakeUnique<base::Value>(2), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":true}"));
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(3), nullptr);
+                   base::MakeUnique<base::Value>(3), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":false}"));
 }
@@ -268,7 +268,7 @@ TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
   policy_map().Set(policy::key::kExternalStorageDisabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(true), nullptr);
+                   base::MakeUnique<base::Value>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"mountPhysicalMediaDisabled\":true}"));
 }
@@ -329,8 +329,7 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   policy_map().Set(
       policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::FundamentalValue>(ArcCertsSyncMode::COPY_CA_CERTS),
-      nullptr);
+      base::MakeUnique<base::Value>(ArcCertsSyncMode::COPY_CA_CERTS), nullptr);
   policy_map().Set(policy::key::kOpenNetworkConfiguration,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
@@ -349,8 +348,7 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   policy_map().Set(
       policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::FundamentalValue>(ArcCertsSyncMode::SYNC_DISABLED),
-      nullptr);
+      base::MakeUnique<base::Value>(ArcCertsSyncMode::SYNC_DISABLED), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
@@ -358,7 +356,7 @@ TEST_F(ArcPolicyBridgeTest, DeveloperToolsDisabledTest) {
   policy_map().Set(policy::key::kDeveloperToolsDisabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(true), nullptr);
+                   base::MakeUnique<base::Value>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"debuggingFeaturesDisabled\":true}"));
 }
@@ -383,7 +381,7 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::FundamentalValue>(false), nullptr);
+                   base::MakeUnique<base::Value>(false), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"applications\":"
       "[{\"installType\":\"REQUIRED\","

@@ -49,8 +49,7 @@ void HistoryLoginHandler::ProfileInfoChanged() {
     signin_callback_.Run();
 
   if (IsJavascriptAllowed()) {
-    CallJavascriptFunction("updateSignInState",
-                           base::FundamentalValue(signed_in));
+    CallJavascriptFunction("updateSignInState", base::Value(signed_in));
   }
 }
 

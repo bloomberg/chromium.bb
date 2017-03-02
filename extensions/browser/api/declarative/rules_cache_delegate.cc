@@ -223,10 +223,8 @@ void RulesCacheDelegate::SetDeclarativeRulesStored(
              ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING));
 
   ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
-  extension_prefs->UpdateExtensionPref(
-      extension_id,
-      rules_stored_key_,
-      new base::FundamentalValue(rules_stored));
+  extension_prefs->UpdateExtensionPref(extension_id, rules_stored_key_,
+                                       new base::Value(rules_stored));
 }
 
 }  // namespace extensions

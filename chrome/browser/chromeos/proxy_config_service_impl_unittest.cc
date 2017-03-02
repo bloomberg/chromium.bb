@@ -522,7 +522,7 @@ TEST_F(ProxyConfigServiceImplTest, SharedEthernetAndUserPolicy) {
   network_configs->Append(std::move(ethernet_policy));
 
   profile_prefs_.SetUserPref(::proxy_config::prefs::kUseSharedProxies,
-                             new base::FundamentalValue(false));
+                             new base::Value(false));
   profile_prefs_.SetManagedPref(::onc::prefs::kOpenNetworkConfiguration,
                                 network_configs.release());
 

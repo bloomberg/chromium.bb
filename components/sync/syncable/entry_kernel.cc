@@ -133,8 +133,8 @@ base::StringValue* IdToValue(const Id& id) {
   return id.ToValue();
 }
 
-base::FundamentalValue* BooleanToValue(bool bool_val) {
-  return new base::FundamentalValue(bool_val);
+base::Value* BooleanToValue(bool bool_val) {
+  return new base::Value(bool_val);
 }
 
 base::StringValue* StringToValue(const std::string& str) {

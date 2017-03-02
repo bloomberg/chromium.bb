@@ -478,7 +478,7 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "help.HelpPage.updateEnableReleaseChannel",
-      base::FundamentalValue(CanChangeChannel(Profile::FromWebUI(web_ui()))));
+      base::Value(CanChangeChannel(Profile::FromWebUI(web_ui()))));
 
   base::Time build_time = base::SysInfo::GetLsbReleaseTime();
   base::string16 build_date = base::TimeFormatFriendlyDate(build_time);
@@ -490,16 +490,16 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "help.HelpPage.setObsoleteSystem",
-      base::FundamentalValue(ObsoleteSystem::IsObsoleteNowOrSoon()));
+      base::Value(ObsoleteSystem::IsObsoleteNowOrSoon()));
   web_ui()->CallJavascriptFunctionUnsafe(
       "help.HelpPage.setObsoleteSystemEndOfTheLine",
-      base::FundamentalValue(ObsoleteSystem::IsObsoleteNowOrSoon() &&
-                             ObsoleteSystem::IsEndOfTheLine()));
+      base::Value(ObsoleteSystem::IsObsoleteNowOrSoon() &&
+                  ObsoleteSystem::IsEndOfTheLine()));
 
 #if defined(OS_CHROMEOS)
   web_ui()->CallJavascriptFunctionUnsafe(
       "help.HelpPage.updateIsEnterpriseManaged",
-      base::FundamentalValue(IsEnterpriseManaged()));
+      base::Value(IsEnterpriseManaged()));
   // First argument to GetChannel() is a flag that indicates whether
   // current channel should be returned (if true) or target channel
   // (otherwise).
@@ -642,7 +642,7 @@ void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
 
   if (status == VersionUpdater::UPDATING) {
     web_ui()->CallJavascriptFunctionUnsafe("help.HelpPage.setProgress",
-                                           base::FundamentalValue(progress));
+                                           base::Value(progress));
   }
 
 #if defined(OS_CHROMEOS)
@@ -655,13 +655,11 @@ void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
           base::StringValue(types_msg));
     } else {
       web_ui()->CallJavascriptFunctionUnsafe(
-          "help.HelpPage.showAllowedConnectionTypesMsg",
-          base::FundamentalValue(false));
+          "help.HelpPage.showAllowedConnectionTypesMsg", base::Value(false));
     }
   } else {
     web_ui()->CallJavascriptFunctionUnsafe(
-        "help.HelpPage.showAllowedConnectionTypesMsg",
-        base::FundamentalValue(false));
+        "help.HelpPage.showAllowedConnectionTypesMsg", base::Value(false));
   }
 #endif  // defined(OS_CHROMEOS)
 }

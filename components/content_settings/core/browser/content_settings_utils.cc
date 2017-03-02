@@ -145,7 +145,7 @@ std::unique_ptr<base::Value> ContentSettingToValue(ContentSetting setting) {
       setting >= CONTENT_SETTING_NUM_SETTINGS) {
     return nullptr;
   }
-  return base::MakeUnique<base::FundamentalValue>(setting);
+  return base::MakeUnique<base::Value>(setting);
 }
 
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,

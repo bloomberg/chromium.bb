@@ -523,7 +523,7 @@ void MobileSetupHandler::HandleGetDeviceInfo(const base::ListValue* args) {
       // For non-LTE networks network state is ignored, so report the portal is
       // reachable, so it gets shown.
       web_ui()->CallJavascriptFunctionUnsafe(kJsConnectivityChangedCallback,
-                                             base::FundamentalValue(true));
+                                             base::Value(true));
     }
   }
 
@@ -603,9 +603,8 @@ void MobileSetupHandler::UpdatePortalReachability(
         nsh->DefaultNetwork()->connection_state() == shill::kStateOnline));
 
   if (force_notification || portal_reachable != lte_portal_reachable_) {
-    web_ui()->CallJavascriptFunctionUnsafe(
-        kJsConnectivityChangedCallback,
-        base::FundamentalValue(portal_reachable));
+    web_ui()->CallJavascriptFunctionUnsafe(kJsConnectivityChangedCallback,
+                                           base::Value(portal_reachable));
   }
 
   lte_portal_reachable_ = portal_reachable;
@@ -638,7 +637,7 @@ void MobileSetupUI::DidFinishNavigation(
   }
 
   if (navigation_handle->IsErrorPage()) {
-    base::FundamentalValue result_value(-navigation_handle->GetNetErrorCode());
+    base::Value result_value(-navigation_handle->GetNetErrorCode());
     web_ui()->CallJavascriptFunctionUnsafe(kJsPortalFrameLoadFailedCallback,
                                            result_value);
     return;

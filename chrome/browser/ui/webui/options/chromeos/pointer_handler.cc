@@ -57,7 +57,7 @@ void PointerHandler::GetLocalizedValues(
 
 void PointerHandler::TouchpadExists(bool exists) {
   has_touchpad_ = exists;
-  base::FundamentalValue val(exists);
+  base::Value val(exists);
   web_ui()->CallJavascriptFunctionUnsafe("PointerOverlay.showTouchpadControls",
                                          val);
   UpdateTitle();
@@ -65,7 +65,7 @@ void PointerHandler::TouchpadExists(bool exists) {
 
 void PointerHandler::MouseExists(bool exists) {
   has_mouse_ = exists;
-  base::FundamentalValue val(exists);
+  base::Value val(exists);
   web_ui()->CallJavascriptFunctionUnsafe("PointerOverlay.showMouseControls",
                                          val);
   UpdateTitle();

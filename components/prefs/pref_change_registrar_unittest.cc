@@ -160,8 +160,7 @@ TEST_F(ObserveSetOfPreferencesTest, IsManaged) {
   pref_service_->SetManagedPref(kHomePage,
                                 new StringValue("http://crbug.com"));
   EXPECT_TRUE(pref_set->IsManaged());
-  pref_service_->SetManagedPref(kHomePageIsNewTabPage,
-                                new FundamentalValue(true));
+  pref_service_->SetManagedPref(kHomePageIsNewTabPage, new Value(true));
   EXPECT_TRUE(pref_set->IsManaged());
   pref_service_->RemoveManagedPref(kHomePage);
   EXPECT_TRUE(pref_set->IsManaged());
@@ -186,8 +185,7 @@ TEST_F(ObserveSetOfPreferencesTest, Observe) {
   Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, OnPreferenceChanged(kHomePageIsNewTabPage));
-  pref_service_->SetUserPref(kHomePageIsNewTabPage,
-                             new FundamentalValue(true));
+  pref_service_->SetUserPref(kHomePageIsNewTabPage, new Value(true));
   Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, OnPreferenceChanged(_)).Times(0);

@@ -77,16 +77,16 @@ void WebUIMessageHandler::ResolveJavascriptCallback(
     const base::Value& callback_id,
     const base::Value& response) {
   // cr.webUIResponse is a global JS function exposed from cr.js.
-  CallJavascriptFunction("cr.webUIResponse", callback_id,
-                         base::FundamentalValue(true), response);
+  CallJavascriptFunction("cr.webUIResponse", callback_id, base::Value(true),
+                         response);
 }
 
 void WebUIMessageHandler::RejectJavascriptCallback(
     const base::Value& callback_id,
     const base::Value& response) {
   // cr.webUIResponse is a global JS function exposed from cr.js.
-  CallJavascriptFunction("cr.webUIResponse", callback_id,
-                         base::FundamentalValue(false), response);
+  CallJavascriptFunction("cr.webUIResponse", callback_id, base::Value(false),
+                         response);
 }
 
 }  // namespace content

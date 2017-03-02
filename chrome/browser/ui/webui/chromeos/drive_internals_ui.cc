@@ -592,7 +592,7 @@ void DriveInternalsWebUIHandler::ResetFinished(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   web_ui()->CallJavascriptFunctionUnsafe("updateResetStatus",
-                                         base::FundamentalValue(success));
+                                         base::Value(success));
 }
 
 void DriveInternalsWebUIHandler::ListFileEntries(const base::ListValue* args) {

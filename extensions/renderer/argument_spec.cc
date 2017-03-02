@@ -26,7 +26,7 @@ bool ParseFundamentalValueHelper(v8::Local<v8::Value> arg,
   if (minimum && val < minimum.value())
     return false;
   if (out_value)
-    *out_value = base::MakeUnique<base::FundamentalValue>(val);
+    *out_value = base::MakeUnique<base::Value>(val);
   return true;
 }
 
@@ -238,8 +238,8 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       if (!value->IsBoolean())
         return false;
       if (out_value) {
-        *out_value = base::MakeUnique<base::FundamentalValue>(
-            value.As<v8::Boolean>()->Value());
+        *out_value =
+            base::MakeUnique<base::Value>(value.As<v8::Boolean>()->Value());
       }
       return true;
     }

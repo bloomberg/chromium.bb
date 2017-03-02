@@ -52,7 +52,7 @@ void CryptohomeWebUIHandler::DidGetNSSUtilInfoOnUIThread(
     bool is_tpm_token_ready) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::FundamentalValue is_tpm_token_ready_value(is_tpm_token_ready);
+  base::Value is_tpm_token_ready_value(is_tpm_token_ready);
   SetCryptohomeProperty("is-tpm-token-ready", is_tpm_token_ready_value);
 }
 
@@ -69,7 +69,7 @@ void CryptohomeWebUIHandler::OnCryptohomeBoolProperty(
     bool value) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS)
     value = false;
-  base::FundamentalValue fundamental_value(value);
+  base::Value fundamental_value(value);
   SetCryptohomeProperty(destination_id, fundamental_value);
 }
 

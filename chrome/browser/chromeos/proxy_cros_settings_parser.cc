@@ -24,7 +24,7 @@ base::Value* CreateServerHostValue(const UIProxyConfig::ManualProxy& proxy) {
 
 base::Value* CreateServerPortValue(const UIProxyConfig::ManualProxy& proxy) {
   return proxy.server.is_valid()
-             ? new base::FundamentalValue(proxy.server.host_port_pair().port())
+             ? new base::Value(proxy.server.host_port_pair().port())
              : NULL;
 }
 
@@ -305,12 +305,12 @@ bool GetProxyPrefValue(const std::string& network_guid,
   } else if (path == kProxyType) {
     if (config.mode == UIProxyConfig::MODE_AUTO_DETECT ||
         config.mode == UIProxyConfig::MODE_PAC_SCRIPT) {
-      data = new base::FundamentalValue(3);
+      data = new base::Value(3);
     } else if (config.mode == UIProxyConfig::MODE_SINGLE_PROXY ||
                config.mode == UIProxyConfig::MODE_PROXY_PER_SCHEME) {
-      data = new base::FundamentalValue(2);
+      data = new base::Value(2);
     } else {
-      data = new base::FundamentalValue(1);
+      data = new base::Value(1);
     }
     switch (config.state) {
       case ProxyPrefs::CONFIG_POLICY:
@@ -328,11 +328,9 @@ bool GetProxyPrefValue(const std::string& network_guid,
         break;
     }
   } else if (path == kProxySingle) {
-    data = new base::FundamentalValue(config.mode ==
-                                      UIProxyConfig::MODE_SINGLE_PROXY);
+    data = new base::Value(config.mode == UIProxyConfig::MODE_SINGLE_PROXY);
   } else if (path == kProxyUsePacUrl) {
-    data = new base::FundamentalValue(config.mode ==
-                                      UIProxyConfig::MODE_PAC_SCRIPT);
+    data = new base::Value(config.mode == UIProxyConfig::MODE_PAC_SCRIPT);
   } else if (path == kProxyFtpUrl) {
     data = CreateServerHostValue(config.ftp_proxy);
   } else if (path == kProxySocks) {

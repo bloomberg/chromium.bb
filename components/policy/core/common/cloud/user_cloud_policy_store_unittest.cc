@@ -101,7 +101,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
     const PolicyMap::Entry* entry =
         store->policy_map().Get(key::kPasswordManagerEnabled);
     ASSERT_TRUE(entry);
-    EXPECT_TRUE(base::FundamentalValue(true).Equals(entry->value.get()));
+    EXPECT_TRUE(base::Value(true).Equals(entry->value.get()));
     ASSERT_TRUE(store->policy_map().Get(key::kURLBlacklist));
   }
 

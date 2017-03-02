@@ -80,17 +80,17 @@ void ScopedCrosSettingsTestHelper::Set(const std::string& path,
 
 void ScopedCrosSettingsTestHelper::SetBoolean(const std::string& path,
                                               bool in_value) {
-  Set(path, base::FundamentalValue(in_value));
+  Set(path, base::Value(in_value));
 }
 
 void ScopedCrosSettingsTestHelper::SetInteger(const std::string& path,
                                               int in_value) {
-  Set(path, base::FundamentalValue(in_value));
+  Set(path, base::Value(in_value));
 }
 
 void ScopedCrosSettingsTestHelper::SetDouble(const std::string& path,
                                              double in_value) {
-  Set(path, base::FundamentalValue(in_value));
+  Set(path, base::Value(in_value));
 }
 
 void ScopedCrosSettingsTestHelper::SetString(const std::string& path,

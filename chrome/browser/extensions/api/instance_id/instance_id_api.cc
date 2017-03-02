@@ -111,8 +111,8 @@ ExtensionFunction::ResponseAction InstanceIDGetCreationTimeFunction::DoWork() {
 
 void InstanceIDGetCreationTimeFunction::GetCreationTimeCompleted(
     const base::Time& creation_time) {
-  Respond(OneArgument(
-      base::MakeUnique<base::FundamentalValue>(creation_time.ToDoubleT())));
+  Respond(
+      OneArgument(base::MakeUnique<base::Value>(creation_time.ToDoubleT())));
 }
 
 InstanceIDGetTokenFunction::InstanceIDGetTokenFunction() {}

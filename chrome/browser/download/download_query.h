@@ -30,7 +30,7 @@ class Value;
 // id ascending.
 //
 // DownloadQuery query;
-// base::FundamentalValue start_time(0);
+// base::Value start_time(0);
 // CHECK(query.AddFilter(FILTER_START_TIME, start_time));
 // bool FilterOutOddDownloads(const DownloadItem& item) {
 //   return 0 == (item.GetId() % 2);

@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
-using base::FundamentalValue;
 using base::ListValue;
 using base::StringValue;
 using base::Value;
@@ -107,15 +106,15 @@ TEST_F(PolicyConverterTest, ConvertToBoolValue) {
   Schema bool_schema = schema_.GetKnownProperty("bool");
   ASSERT_TRUE(bool_schema.valid());
 
-  EXPECT_EQ("true", Convert(new FundamentalValue(true), bool_schema));
-  EXPECT_EQ("false", Convert(new FundamentalValue(false), bool_schema));
+  EXPECT_EQ("true", Convert(new Value(true), bool_schema));
+  EXPECT_EQ("false", Convert(new Value(false), bool_schema));
   EXPECT_EQ("true", Convert(new StringValue("true"), bool_schema));
   EXPECT_EQ("false", Convert(new StringValue("false"), bool_schema));
   EXPECT_EQ("\"narf\"", Convert(new StringValue("narf"), bool_schema));
-  EXPECT_EQ("false", Convert(new FundamentalValue(0), bool_schema));
-  EXPECT_EQ("true", Convert(new FundamentalValue(1), bool_schema));
-  EXPECT_EQ("true", Convert(new FundamentalValue(42), bool_schema));
-  EXPECT_EQ("true", Convert(new FundamentalValue(-1), bool_schema));
+  EXPECT_EQ("false", Convert(new Value(0), bool_schema));
+  EXPECT_EQ("true", Convert(new Value(1), bool_schema));
+  EXPECT_EQ("true", Convert(new Value(42), bool_schema));
+  EXPECT_EQ("true", Convert(new Value(-1), bool_schema));
   EXPECT_EQ("\"1\"", Convert(new StringValue("1"), bool_schema));
   EXPECT_EQ("{}", Convert(new DictionaryValue(), bool_schema));
 }
@@ -124,22 +123,22 @@ TEST_F(PolicyConverterTest, ConvertToIntValue) {
   Schema int_schema = schema_.GetKnownProperty("int");
   ASSERT_TRUE(int_schema.valid());
 
-  EXPECT_EQ("23", Convert(new FundamentalValue(23), int_schema));
+  EXPECT_EQ("23", Convert(new Value(23), int_schema));
   EXPECT_EQ("42", Convert(new StringValue("42"), int_schema));
   EXPECT_EQ("-1", Convert(new StringValue("-1"), int_schema));
   EXPECT_EQ("\"poit\"", Convert(new StringValue("poit"), int_schema));
-  EXPECT_EQ("false", Convert(new FundamentalValue(false), int_schema));
+  EXPECT_EQ("false", Convert(new Value(false), int_schema));
 }
 
 TEST_F(PolicyConverterTest, ConvertToDoubleValue) {
   Schema double_schema = schema_.GetKnownProperty("double");
   ASSERT_TRUE(double_schema.valid());
 
-  EXPECT_EQ("3", Convert(new FundamentalValue(3), double_schema));
-  EXPECT_EQ("3.14", Convert(new FundamentalValue(3.14), double_schema));
+  EXPECT_EQ("3", Convert(new Value(3), double_schema));
+  EXPECT_EQ("3.14", Convert(new Value(3.14), double_schema));
   EXPECT_EQ("2.71", Convert(new StringValue("2.71"), double_schema));
   EXPECT_EQ("\"zort\"", Convert(new StringValue("zort"), double_schema));
-  EXPECT_EQ("true", Convert(new FundamentalValue(true), double_schema));
+  EXPECT_EQ("true", Convert(new Value(true), double_schema));
 }
 
 TEST_F(PolicyConverterTest, ConvertToStringValue) {
@@ -147,7 +146,7 @@ TEST_F(PolicyConverterTest, ConvertToStringValue) {
   ASSERT_TRUE(string_schema.valid());
 
   EXPECT_EQ("\"troz\"", Convert(new StringValue("troz"), string_schema));
-  EXPECT_EQ("4711", Convert(new FundamentalValue(4711), string_schema));
+  EXPECT_EQ("4711", Convert(new Value(4711), string_schema));
 }
 
 TEST_F(PolicyConverterTest, ConvertToListValue) {
@@ -161,7 +160,7 @@ TEST_F(PolicyConverterTest, ConvertToListValue) {
   EXPECT_EQ("[\"baz\",\"blurp\"]",
             Convert(new StringValue("[\"baz\", \"blurp\"]"), list_schema));
   EXPECT_EQ("\"hurz\"", Convert(new StringValue("hurz"), list_schema));
-  EXPECT_EQ("19", Convert(new FundamentalValue(19), list_schema));
+  EXPECT_EQ("19", Convert(new Value(19), list_schema));
 }
 
 TEST_F(PolicyConverterTest, ConvertFromJavaListToListValue) {
@@ -183,7 +182,7 @@ TEST_F(PolicyConverterTest, ConvertToDictionaryValue) {
   EXPECT_EQ("{\"moose\":true}",
             Convert(new StringValue("{\"moose\": true}"), dict_schema));
   EXPECT_EQ("\"fnord\"", Convert(new StringValue("fnord"), dict_schema));
-  EXPECT_EQ("1729", Convert(new FundamentalValue(1729), dict_schema));
+  EXPECT_EQ("1729", Convert(new Value(1729), dict_schema));
 }
 
 }  // namespace android

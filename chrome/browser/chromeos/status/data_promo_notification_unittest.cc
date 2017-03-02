@@ -135,9 +135,8 @@ class DataPromoNotificationTest : public testing::Test {
     service_test->SetServiceProperty(
         kCellularServicePath, shill::kActivationStateProperty,
         base::StringValue(shill::kActivationStateActivated));
-    service_test->SetServiceProperty(kCellularServicePath,
-                                     shill::kConnectableProperty,
-                                     base::FundamentalValue(true));
+    service_test->SetServiceProperty(
+        kCellularServicePath, shill::kConnectableProperty, base::Value(true));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

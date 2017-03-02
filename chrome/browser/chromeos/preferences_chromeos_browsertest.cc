@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesServiceBrowserTest, Basic) {
 
   const int kTestValue = 42;
   pref_store_a->SetValue(prefs::kMouseSensitivity,
-                         base::MakeUnique<base::FundamentalValue>(kTestValue),
+                         base::MakeUnique<base::Value>(kTestValue),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   WaitForPrefChange(pref_store_b.get(), prefs::kMouseSensitivity);
   ASSERT_TRUE(GetIntegerPrefValue(pref_store_b.get(), prefs::kMouseSensitivity,

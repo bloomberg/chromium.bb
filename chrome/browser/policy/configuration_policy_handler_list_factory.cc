@@ -679,7 +679,7 @@ class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {
       if (value->GetAsBoolean(&enabled)) {
         prefs->SetValue(
             prefs::kForceYouTubeRestrict,
-            base::MakeUnique<base::FundamentalValue>(
+            base::MakeUnique<base::Value>(
                 enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
                         : safe_search_util::YOUTUBE_RESTRICT_OFF));
       }
@@ -708,11 +708,10 @@ class ForceYouTubeSafetyModePolicyHandler : public TypeCheckingPolicyHandler {
     const base::Value* value = policies.GetValue(policy_name());
     bool enabled;
     if (value && value->GetAsBoolean(&enabled)) {
-      prefs->SetValue(
-          prefs::kForceYouTubeRestrict,
-          base::MakeUnique<base::FundamentalValue>(
-              enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
-                      : safe_search_util::YOUTUBE_RESTRICT_OFF));
+      prefs->SetValue(prefs::kForceYouTubeRestrict,
+                      base::MakeUnique<base::Value>(
+                          enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
+                                  : safe_search_util::YOUTUBE_RESTRICT_OFF));
     }
   }
 
@@ -754,7 +753,7 @@ void GetExtensionAllowedTypesMap(
     result->push_back(
         base::MakeUnique<StringMappingListPolicyHandler::MappingEntry>(
             entry.name, std::unique_ptr<base::Value>(
-                            new base::FundamentalValue(entry.manifest_type))));
+                            new base::Value(entry.manifest_type))));
   }
 }
 
@@ -775,7 +774,7 @@ class DevToolsExtensionsUIPolicyHandler : public TypeCheckingPolicyHandler {
     if (value && value->GetAsBoolean(&developerToolsDisabled) &&
         developerToolsDisabled) {
       prefs->SetValue(prefs::kExtensionsUIDeveloperMode,
-                      base::MakeUnique<base::FundamentalValue>(false));
+                      base::MakeUnique<base::Value>(false));
     }
   }
 

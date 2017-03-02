@@ -295,7 +295,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, SHA1ForLocalAnchors) {
   // Enabling the local preference should result in SHA-1 local trust anchors
   // being enabled.
   local_state.SetUserPref(ssl_config::prefs::kCertEnableSha1LocalAnchors,
-                          new base::FundamentalValue(true));
+                          new base::Value(true));
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
   // preferences changed.
   base::RunLoop().RunUntilIdle();
@@ -307,7 +307,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, SHA1ForLocalAnchors) {
   // Disabling the local preference should result in SHA-1 local trust
   // anchors being disabled.
   local_state.SetUserPref(ssl_config::prefs::kCertEnableSha1LocalAnchors,
-                          new base::FundamentalValue(false));
+                          new base::Value(false));
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
   // preferences changed.
   base::RunLoop().RunUntilIdle();

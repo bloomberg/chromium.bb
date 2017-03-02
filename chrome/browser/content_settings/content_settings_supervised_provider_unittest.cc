@@ -59,7 +59,7 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
               OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                       std::string()));
   service_.SetLocalSetting(supervised_users::kGeolocationDisabled,
-                           base::MakeUnique<base::FundamentalValue>(true));
+                           base::MakeUnique<base::Value>(true));
 
   rule_iterator = provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                              std::string(), false);
@@ -76,7 +76,7 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
               OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                       std::string()));
   service_.SetLocalSetting(supervised_users::kGeolocationDisabled,
-                           base::MakeUnique<base::FundamentalValue>(false));
+                           base::MakeUnique<base::Value>(false));
 
   rule_iterator = provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                              std::string(), false);
@@ -93,7 +93,7 @@ TEST_F(SupervisedUserProviderTest, CookiesTest) {
               OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_COOKIES,
                                       std::string()));
   service_.SetLocalSetting(supervised_users::kCookiesAlwaysAllowed,
-                           base::MakeUnique<base::FundamentalValue>(true));
+                           base::MakeUnique<base::Value>(true));
 
   rule_iterator = provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES,
                                              std::string(), false);
@@ -110,7 +110,7 @@ TEST_F(SupervisedUserProviderTest, CookiesTest) {
               OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_COOKIES,
                                       std::string()));
   service_.SetLocalSetting(supervised_users::kCookiesAlwaysAllowed,
-                           base::MakeUnique<base::FundamentalValue>(false));
+                           base::MakeUnique<base::Value>(false));
 
   rule_iterator = provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES,
                                              std::string(), false);
@@ -134,7 +134,7 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
               OnContentSettingChanged(
                   _, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string()));
   service_.SetLocalSetting(supervised_users::kCameraMicDisabled,
-                           base::MakeUnique<base::FundamentalValue>(true));
+                           base::MakeUnique<base::Value>(true));
 
   rule_iterator = provider_->GetRuleIterator(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false);
@@ -165,7 +165,7 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
               OnContentSettingChanged(
                   _, _, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string()));
   service_.SetLocalSetting(supervised_users::kCameraMicDisabled,
-                           base::MakeUnique<base::FundamentalValue>(false));
+                           base::MakeUnique<base::Value>(false));
 
   rule_iterator = provider_->GetRuleIterator(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false);

@@ -327,7 +327,7 @@ void PostNotificationCallbackTaskToUIThread(
 void FileWatchFunctionBase::Respond(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  SetResult(base::MakeUnique<base::FundamentalValue>(success));
+  SetResult(base::MakeUnique<base::Value>(success));
   SendResponse(success);
 }
 
@@ -567,7 +567,7 @@ bool FileManagerPrivateInternalValidatePathNameLengthFunction::RunAsync() {
 
   // No explicit limit on the length of Drive file names.
   if (file_system_url.type() == storage::kFileSystemTypeDrive) {
-    SetResult(base::MakeUnique<base::FundamentalValue>(true));
+    SetResult(base::MakeUnique<base::Value>(true));
     SendResponse(true);
     return true;
   }
@@ -585,8 +585,7 @@ bool FileManagerPrivateInternalValidatePathNameLengthFunction::RunAsync() {
 
 void FileManagerPrivateInternalValidatePathNameLengthFunction::
     OnFilePathLimitRetrieved(size_t current_length, size_t max_length) {
-  SetResult(
-      base::MakeUnique<base::FundamentalValue>(current_length <= max_length));
+  SetResult(base::MakeUnique<base::Value>(current_length <= max_length));
   SendResponse(true);
 }
 
@@ -746,7 +745,7 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterStartCopy(
     int operation_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  SetResult(base::MakeUnique<base::FundamentalValue>(operation_id));
+  SetResult(base::MakeUnique<base::Value>(operation_id));
   SendResponse(true);
 }
 
@@ -954,7 +953,7 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsUMAEnabledFunction::Run() {
-  return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())));
 }
 
@@ -1052,8 +1051,7 @@ bool FileManagerPrivateInternalGetDirectorySizeFunction::RunAsync() {
 
 void FileManagerPrivateInternalGetDirectorySizeFunction::
     OnDirectorySizeRetrieved(int64_t size) {
-  SetResult(
-      base::MakeUnique<base::FundamentalValue>(static_cast<double>(size)));
+  SetResult(base::MakeUnique<base::Value>(static_cast<double>(size)));
   SendResponse(true);
 }
 

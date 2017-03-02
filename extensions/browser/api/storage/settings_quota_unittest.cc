@@ -68,7 +68,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
   }
 
   // Values with different serialized sizes.
-  base::FundamentalValue byte_value_1_;
+  base::Value byte_value_1_;
   base::StringValue byte_value_16_;
   base::ListValue byte_value_256_;
 

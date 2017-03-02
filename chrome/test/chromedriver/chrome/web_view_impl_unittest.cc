@@ -206,7 +206,7 @@ TEST(EvaluateScriptAndGetObject, Ok) {
 
 TEST(ParseCallFunctionResult, NotDict) {
   std::unique_ptr<base::Value> result;
-  base::FundamentalValue value(1);
+  base::Value value(1);
   ASSERT_NE(kOk, internal::ParseCallFunctionResult(value, &result).code());
 }
 

@@ -138,7 +138,7 @@ void PreferencesServiceTest::InitObserver(
 
 void PreferencesServiceTest::InitPreference(const std::string& key, int value) {
   registry_->RegisterIntegerPref(key, value);
-  base::FundamentalValue fundamental_value(value);
+  base::Value fundamental_value(value);
   profile_->GetPrefs()->Set(key, fundamental_value);
 }
 

@@ -13,15 +13,15 @@ class CppGenerationTest(unittest.TestCase):
     # Bools
     stmts, expr = generate_policy_source._GenerateDefaultValue(True)
     self.assertListEqual([], stmts)
-    self.assertEqual('base::MakeUnique<base::FundamentalValue>(true)', expr)
+    self.assertEqual('base::MakeUnique<base::Value>(true)', expr)
     stmts, expr = generate_policy_source._GenerateDefaultValue(False)
     self.assertListEqual([], stmts)
-    self.assertEqual('base::MakeUnique<base::FundamentalValue>(false)', expr)
+    self.assertEqual('base::MakeUnique<base::Value>(false)', expr)
 
     # Ints
     stmts, expr = generate_policy_source._GenerateDefaultValue(33)
     self.assertListEqual([], stmts)
-    self.assertEqual('base::MakeUnique<base::FundamentalValue>(33)', expr)
+    self.assertEqual('base::MakeUnique<base::Value>(33)', expr)
 
     # Strings
     stmts, expr = generate_policy_source._GenerateDefaultValue('foo')
@@ -38,7 +38,7 @@ class CppGenerationTest(unittest.TestCase):
     stmts, expr = generate_policy_source._GenerateDefaultValue([1, '2'])
     self.assertListEqual([
         'auto default_value = base::MakeUnique<base::ListValue>();',
-        'default_value->Append(base::MakeUnique<base::FundamentalValue>(1));',
+        'default_value->Append(base::MakeUnique<base::Value>(1));',
         'default_value->Append(base::MakeUnique<base::StringValue>("2"));'
       ], stmts)
     self.assertEqual('std::move(default_value)', expr)

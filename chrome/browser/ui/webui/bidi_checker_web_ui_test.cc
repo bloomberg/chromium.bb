@@ -105,7 +105,7 @@ void WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(
   ui_test_utils::NavigateToURL(browser(), GURL(page_url));
   ASSERT_TRUE(RunJavascriptTest("runBidiChecker",
                                 new base::StringValue(page_url),
-                                new base::FundamentalValue(is_rtl)));
+                                new base::Value(is_rtl)));
 }
 
 void DISABLED_WebUIBidiCheckerBrowserTestLTR::RunBidiCheckerOnPage(
