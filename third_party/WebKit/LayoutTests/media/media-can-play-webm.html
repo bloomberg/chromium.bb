@@ -5,28 +5,28 @@
 <video></video>
 <script>
 test(function() {
-    var video = document.querySelector("video");
+    var video = document.querySelector('video');
     // These tests may be expected to fail if the platform does not support the format.
-    assert_equals(video.canPlayType("audio/webm"), "maybe");
-    assert_equals(video.canPlayType("video/webm"), "maybe");
+    assert_equals(video.canPlayType('audio/webm'), 'maybe');
+    assert_equals(video.canPlayType('video/webm'), 'maybe');
 
-    assert_equals(video.canPlayType("audio/webm; codecs=vorbis"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp8,vorbis"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp8"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp8.0"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp8.0,vorbis"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp8.1"), "");
+    assert_equals(video.canPlayType('audio/webm; codecs=vorbis'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs="vp8,vorbis"'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs=vp8'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs=vp8.0'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs="vp8.0,vorbis"'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs=vp8.1'), '');
 
-    assert_equals(video.canPlayType("video/webm; codecs=vp9"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp9,vorbis"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp9.0"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp9.0,vorbis"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp9.1"), "");
+    assert_equals(video.canPlayType('video/webm; codecs=vp9'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs="vp9,vorbis"'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs=vp9.0'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs="vp9.0,vorbis"'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs=vp9.1'), '');
 
-    assert_equals(video.canPlayType("audio/webm; codecs=opus"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp9,opus"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp9.0,opus"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp8,opus"), "probably");
-    assert_equals(video.canPlayType("video/webm; codecs=vp8.0,opus"), "probably");
+    assert_equals(video.canPlayType('audio/webm; codecs=opus'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs="vp9,opus"'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs="vp9.0,opus"'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs="vp8,opus"'), 'probably');
+    assert_equals(video.canPlayType('video/webm; codecs="vp8.0,opus"'), 'probably');
 });
 </script>

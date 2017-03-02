@@ -5,14 +5,14 @@
 <video></video>
 <script>
 test(function() {
-    var video = document.querySelector("video");
+    var video = document.querySelector('video');
     // These tests may be expected to fail if the platform does not support the format.
-    assert_equals(video.canPlayType("audio/ogg"), "maybe");
-    assert_equals(video.canPlayType("video/ogg"), "maybe");
+    assert_equals(video.canPlayType('audio/ogg'), 'maybe');
+    assert_equals(video.canPlayType('video/ogg'), 'maybe');
 
-    assert_equals(video.canPlayType("audio/ogg; codecs=vorbis"), "probably");
-    assert_equals(video.canPlayType("audio/ogg; codecs=opus"), "probably");
-    assert_equals(video.canPlayType("video/ogg; codecs=theora"), "probably");
-    assert_equals(video.canPlayType("video/ogg; codecs=theora,vorbis"), "probably");
+    assert_equals(video.canPlayType('audio/ogg; codecs=vorbis'), 'probably');
+    assert_equals(video.canPlayType('audio/ogg; codecs=opus'), 'probably');
+    assert_equals(video.canPlayType('video/ogg; codecs=theora'), 'probably');
+    assert_equals(video.canPlayType('video/ogg; codecs="theora,vorbis"'), 'probably');
 });
 </script>
