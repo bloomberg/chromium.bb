@@ -26,4 +26,11 @@ component("ash_public_cpp") {
     "//ui/aura",
     "//ui/views/mus",
   ]
+
+  public_deps = [
+    "//ash/public/interfaces:interfaces_internal",
+  ]
+
+  allow_circular_includes_from =
+      [ "//ash/public/interfaces:interfaces_internal" ]
 }

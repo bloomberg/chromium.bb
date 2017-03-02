@@ -5,9 +5,6 @@
 mojom = "//ash/public/interfaces/shelf.mojom"
 public_headers = [ "//ash/public/cpp/shelf_types.h" ]
 traits_headers = [ "//ash/public/interfaces/shelf_struct_traits.h" ]
-public_deps = [
-  "//ash/public/cpp:ash_public_cpp",
-]
 type_mappings = [
   "ash.mojom.ShelfAlignment=ash::ShelfAlignment",
   "ash.mojom.ShelfAutoHideBehavior=ash::ShelfAutoHideBehavior",

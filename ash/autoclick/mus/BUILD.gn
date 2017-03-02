@@ -17,7 +17,6 @@ source_set("lib") {
     "//ash/autoclick/common:autoclick",
     "//ash/autoclick/mus/public/interfaces",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/public/interfaces",
     "//base",
     "//mash/public/interfaces",
     "//mojo/common",

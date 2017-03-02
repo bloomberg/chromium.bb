@@ -141,7 +141,6 @@ static_library("test_support_common") {
     "//ash/common/test:test_support",
     "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/public/interfaces",
     "//ash/resources",
     "//base:i18n",
     "//base/test:test_support",

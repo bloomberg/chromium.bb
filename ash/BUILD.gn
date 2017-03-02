@@ -849,7 +849,6 @@ component("ash") {
   deps = [
     "//ash/autoclick/common:autoclick",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/public/interfaces",
     "//ash/touch_hud",
     "//base",
     "//base:i18n",
@@ -1240,7 +1239,6 @@ source_set("common_unittests") {
     "//ash",
     "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/public/interfaces",
     "//ash/resources/vector_icons",
     "//ash/test:test_support_without_content",
     "//base",
@@ -1394,7 +1392,6 @@ test("ash_unittests") {
     "//ash/common/strings",
     "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/public/interfaces",
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/test:ash_with_aura_test_support",

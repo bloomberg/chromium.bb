@@ -10,7 +10,6 @@ public_headers = [
 ]
 traits_headers = [ "//ash/public/interfaces/session_controller_traits.h" ]
 public_deps = [
-  "//ash/public/cpp:ash_public_cpp",
   "//components/session_manager:base",
   "//components/user_manager",
 ]

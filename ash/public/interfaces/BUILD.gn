@@ -4,7 +4,13 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+# Depend upon //ash/public/cpp:ash_public_cpp, which has a public_dep on this.
+# The two targets must be bundled together as the typemaps depend upon
+# //ash/public/cpp, and //ash/public/cpp needs to depend on this for generated
+# code (such as enums and constants).
+mojom("interfaces_internal") {
+  visibility = [ "//ash/public/cpp:ash_public_cpp" ]
+
   sources = [
     "accelerator_controller.mojom",
     "cast_config.mojom",
@@ -27,4 +33,8 @@ mojom("interfaces") {
     "//components/signin/public/interfaces",
     "//skia/public/interfaces",
   ]
+
+  export_class_attribute = "ASH_PUBLIC_EXPORT"
+  export_define = "ASH_PUBLIC_IMPLEMENTATION=1"
+  export_header = "ash/public/cpp/ash_public_export.h"
 }

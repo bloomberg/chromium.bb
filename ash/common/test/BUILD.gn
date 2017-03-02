@@ -31,7 +31,6 @@ static_library("test_support") {
   deps = [
     "//ash",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/public/interfaces",
     "//base",
     "//components/signin/core/account_id",
     "//components/user_manager",
