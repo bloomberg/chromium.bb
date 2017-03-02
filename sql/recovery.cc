@@ -22,6 +22,9 @@ namespace sql {
 
 namespace {
 
+// This enum must match the numbering for Sqlite.RecoveryEvents in
+// histograms.xml.  Do not reorder or remove items, only add new items before
+// RECOVERY_EVENT_MAX.
 enum RecoveryEventType {
   // Init() completed successfully.
   RECOVERY_SUCCESS_INIT = 0,
@@ -108,7 +111,22 @@ enum RecoveryEventType {
   // Failed to recover triggers or views or virtual tables.
   RECOVERY_FAILED_AUTORECOVERDB_AUX,
 
-  // Always keep this at the end.
+  // After SQLITE_NOTADB failure setting up for recovery, Delete() failed.
+  RECOVERY_FAILED_AUTORECOVERDB_NOTADB_DELETE,
+
+  // After SQLITE_NOTADB failure setting up for recovery, Delete() succeeded
+  // then Open() failed.
+  RECOVERY_FAILED_AUTORECOVERDB_NOTADB_REOPEN,
+
+  // After SQLITE_NOTADB failure setting up for recovery, Delete() and Open()
+  // succeeded, then querying the database failed.
+  RECOVERY_FAILED_AUTORECOVERDB_NOTADB_QUERY,
+
+  // After SQLITE_NOTADB failure setting up for recovery, the database was
+  // successfully deleted.
+  RECOVERY_SUCCESS_AUTORECOVERDB_NOTADB_DELETE,
+
+  // Add new items before this one, always keep this one at the end.
   RECOVERY_EVENT_MAX,
 };
 
@@ -588,9 +606,50 @@ void Recovery::RecoverDatabase(Connection* db,
                                const base::FilePath& db_path) {
   std::unique_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
   if (!recovery) {
-    // TODO(shess): If recovery can't even get started, Raze() or Delete().
-    RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_BEGIN);
+    // Close the underlying sqlite* handle.  Windows does not allow deleting
+    // open files, and all platforms block opening a second sqlite3* handle
+    // against a database when exclusive locking is set.
     db->Poison();
+
+    // Histograms from Recovery::Begin() show all current failures are in
+    // attaching the corrupt database, with 2/3 being SQLITE_NOTADB.  Don't
+    // delete the database except for that specific failure case.
+    {
+      Connection probe_db;
+      if (!probe_db.OpenInMemory() ||
+          probe_db.AttachDatabase(db_path, "corrupt") ||
+          probe_db.GetErrorCode() != SQLITE_NOTADB) {
+        RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_BEGIN);
+        return;
+      }
+    }
+
+    // The database has invalid data in the SQLite header, so it is almost
+    // certainly not recoverable without manual intervention (and likely not
+    // recoverable _with_ manual intervention).  Clear away the broken database.
+    if (!sql::Connection::Delete(db_path)) {
+      RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_NOTADB_DELETE);
+      return;
+    }
+
+    // Windows deletion is complicated by file scanners and malware - sometimes
+    // Delete() appears to succeed, even though the file remains.  The following
+    // attempts to track if this happens often enough to cause concern.
+    {
+      Connection probe_db;
+      if (!probe_db.Open(db_path)) {
+        RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_NOTADB_REOPEN);
+        return;
+      }
+      if (!probe_db.Execute("PRAGMA auto_vacuum")) {
+        RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_NOTADB_QUERY);
+        return;
+      }
+    }
+
+    // The rest of the recovery code could be run on the re-opened database, but
+    // the database is empty, so there would be no point.
+    RecordRecoveryEvent(RECOVERY_SUCCESS_AUTORECOVERDB_NOTADB_DELETE);
     return;
   }
 

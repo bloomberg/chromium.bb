@@ -164,6 +164,8 @@ class SQL_EXPORT Recovery {
   // table may contain duplication.  If this is not acceptable, the client
   // should use the manual process as described in the example at the top of the
   // file, cleaning up data at the appropriate points.
+  //
+  // In case of SQLITE_NOTADB, the database is deemed unrecoverable and deleted.
   static void RecoverDatabase(Connection* db, const base::FilePath& db_path);
 
   // Returns true for SQLite errors which RecoverDatabase() can plausibly fix.

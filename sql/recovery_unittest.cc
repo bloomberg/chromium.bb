@@ -805,6 +805,35 @@ TEST_F(SQLRecoveryTest, RecoverDatabase) {
   EXPECT_EQ("trailer", ExecuteWithResults(&db(), kVSql, "|", "\n"));
 }
 
+// When RecoverDatabase() encounters SQLITE_NOTADB, the database is deleted.
+TEST_F(SQLRecoveryTest, RecoverDatabaseDelete) {
+  // Create a valid database, then write junk over the header.  This should lead
+  // to SQLITE_NOTADB, which will cause ATTACH to fail.
+  ASSERT_TRUE(db().Execute("CREATE TABLE x (t TEXT)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO x VALUES ('This is a test')"));
+  db().Close();
+  WriteJunkToDatabase(SQLTestBase::TYPE_OVERWRITE);
+
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_NOTADB);
+
+    // Reopen() here because it will see SQLITE_NOTADB.
+    ASSERT_TRUE(Reopen());
+
+    // This should "recover" the database by making it valid, but empty.
+    sql::Recovery::RecoverDatabase(&db(), db_path());
+
+    ASSERT_TRUE(expecter.SawExpectedErrors());
+  }
+
+  // Recovery poisoned the handle, must re-open.
+  db().Close();
+  ASSERT_TRUE(Reopen());
+
+  EXPECT_EQ("", GetSchema(&db()));
+}
+
 // Test histograms recorded when the invalid database cannot be attached.
 TEST_F(SQLRecoveryTest, AttachFailure) {
   // Create a valid database, then write junk over the header.  This should lead
