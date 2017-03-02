@@ -218,6 +218,12 @@ def collect_mem_info():
 
 
 def collect_net_info():
+  """Collect network metrics."""
+  _collect_net_io_counters()
+
+
+def _collect_net_io_counters():
+  """Collect metrics for network IO counters."""
   metric_counter_names = [
       (_net_up_metric, 'bytes_sent'),
       (_net_down_metric, 'bytes_recv'),
