@@ -524,6 +524,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
             answer = SuggestionAnswer::ParseAnswer(answer_json);
             int answer_type = 0;
             if (answer && base::StringToInt(answer_type_str, &answer_type)) {
+              UMA_HISTOGRAM_SPARSE_SLOWLY("Omnibox.AnswerParseType",
+                                          answer_type);
               answer_parsed_successfully = true;
 
               answer->set_type(answer_type);
