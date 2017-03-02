@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
@@ -139,6 +138,11 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
 
 void CompositorFrameSinkSupport::ForceReclaimResources() {
   surface_factory_.ClearSurface();
+}
+
+void CompositorFrameSinkSupport::ClaimTemporaryReference(
+    const SurfaceId& surface_id) {
+  surface_manager_->AssignTemporaryReference(surface_id, frame_sink_id_);
 }
 
 void CompositorFrameSinkSupport::ReferencedSurfacesChanged(

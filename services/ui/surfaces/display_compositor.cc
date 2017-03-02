@@ -103,6 +103,11 @@ void DisplayCompositor::UnregisterFrameSinkHierarchy(
                                         child_frame_sink_id);
 }
 
+void DisplayCompositor::DropTemporaryReference(
+    const cc::SurfaceId& surface_id) {
+  manager_.DropTemporaryReference(surface_id);
+}
+
 std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(
     const cc::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
@@ -158,6 +163,11 @@ void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
 
+  // TODO(kylechar): |client_| will try to find an owner for the temporary
+  // reference to the new surface. With surface synchronization this might not
+  // be necessary, because a surface reference might already exist and no
+  // temporary reference was created. It could be useful to let |client_| know
+  // if it should find an owner.
   if (client_)
     client_->OnSurfaceCreated(surface_info);
 }

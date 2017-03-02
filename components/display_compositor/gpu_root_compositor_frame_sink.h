@@ -9,6 +9,8 @@
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display_client.h"
+#include "cc/surfaces/local_surface_id.h"
+#include "cc/surfaces/surface_id.h"
 #include "components/display_compositor/display_compositor_export.h"
 #include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -18,7 +20,6 @@ namespace cc {
 class BeginFrameSource;
 class CompositorFrameSinkSupport;
 class Display;
-class FrameSinkId;
 class SurfaceManager;
 }
 
@@ -61,6 +62,7 @@ class DISPLAY_COMPOSITOR_EXPORT GpuRootCompositorFrameSink
                              cc::CompositorFrame frame) override;
 
   // cc::mojom::MojoCompositorFrameSinkPrivate:
+  void ClaimTemporaryReference(const cc::SurfaceId& surface_id) override;
   void RequestCopyOfSurface(
       std::unique_ptr<cc::CopyOutputRequest> request) override;
 

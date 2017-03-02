@@ -4,8 +4,6 @@
 
 #include "components/display_compositor/gpu_compositor_frame_sink.h"
 
-#include "cc/surfaces/surface_reference.h"
-
 namespace display_compositor {
 
 GpuCompositorFrameSink::GpuCompositorFrameSink(
@@ -55,6 +53,11 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
 void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
   if (client_)
     client_->DidReceiveCompositorFrameAck();
+}
+
+void GpuCompositorFrameSink::ClaimTemporaryReference(
+    const cc::SurfaceId& surface_id) {
+  support_->ClaimTemporaryReference(surface_id);
 }
 
 void GpuCompositorFrameSink::RequestCopyOfSurface(

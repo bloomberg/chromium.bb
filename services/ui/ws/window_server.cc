@@ -606,6 +606,36 @@ bool WindowServer::IsUserInHighContrastMode(const UserId& user) const {
   return (iter == high_contrast_mode_.end()) ? false : iter->second;
 }
 
+void WindowServer::HandleTemporaryReferenceForNewSurface(
+    const cc::SurfaceId& surface_id,
+    ServerWindow* window) {
+  // TODO(kylechar): Investigate adding tests for this.
+  const ClientSpecificId window_client_id = window->id().client_id;
+
+  // Find the root ServerWindow for the client that embeds |window|, which is
+  // the root of the client that embeds |surface_id|. The client that embeds
+  // |surface_id| created |window|, so |window| will have the client id of the
+  // embedder. The root window of the embedder will have been created by it's
+  // embedder, so the first ServerWindow with a different client id will be the
+  // root of the embedder.
+  ServerWindow* current = window->parent();
+  while (current && current->id().client_id == window_client_id)
+    current = current->parent();
+
+  // The client that embeds |window| is expected to submit a CompositorFrame
+  // that references |surface_id|. Have the parent claim ownership of the
+  // temporary reference to |surface_id|. If the parent client crashes before it
+  // adds a surface reference then the GPU can cleanup temporary references. If
+  // no parent client embeds |window| then tell the GPU to drop the temporary
+  // reference immediately.
+  if (current) {
+    current->GetOrCreateCompositorFrameSinkManager()->ClaimTemporaryReference(
+        surface_id);
+  } else {
+    display_compositor_->DropTemporaryReference(surface_id);
+  }
+}
+
 ServerWindow* WindowServer::GetRootWindow(const ServerWindow* window) {
   Display* display = display_manager_->GetDisplayContaining(window);
   return display ? display->root_window() : nullptr;
@@ -770,8 +800,6 @@ void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
 }
 
 void WindowServer::OnGpuServiceInitialized() {
-  // TODO(kylechar): When gpu channel is removed, this can instead happen
-  // earlier, after GpuHost::OnInitialized().
   delegate_->StartDisplayInit();
 }
 
@@ -779,22 +807,33 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
   WindowId window_id(
       WindowIdFromTransportId(surface_info.id().frame_sink_id().client_id()));
   ServerWindow* window = GetWindow(window_id);
-  // If the window doesn't have a parent then we have nothing to propagate.
-  if (!window)
-    return;
 
-  // FrameGenerator will add an appropriate reference for the new surface.
-  DCHECK(display_manager_->GetDisplayContaining(window));
-  auto* display = display_manager_->GetDisplayContaining(window);
-  if (window == display->GetActiveRootWindow()) {
-    display->platform_display()->GetFrameGenerator()->OnSurfaceCreated(
-        surface_info);
+  // If the window doesn't exist then we have nothing to propagate.
+  if (!window) {
+    display_compositor_->DropTemporaryReference(surface_info.id());
+    return;
   }
 
   // This is only used for testing to observe that a window has a
   // CompositorFrame.
   if (!window_paint_callback_.is_null())
     window_paint_callback_.Run(window);
+
+  auto* display = display_manager_->GetDisplayContaining(window);
+  if (display && window == display->GetActiveRootWindow()) {
+    // A new surface for a WindowManager root has been created. This is a
+    // special case because ServerWindows created by the WindowServer are not
+    // part of a WindowTree. Send the SurfaceId directly to FrameGenerator and
+    // claim the temporary reference for the display root.
+    display->platform_display()->GetFrameGenerator()->OnSurfaceCreated(
+        surface_info);
+    display->root_window()
+        ->GetOrCreateCompositorFrameSinkManager()
+        ->ClaimTemporaryReference(surface_info.id());
+    return;
+  }
+
+  HandleTemporaryReferenceForNewSurface(surface_info.id(), window);
 
   if (!window->parent())
     return;

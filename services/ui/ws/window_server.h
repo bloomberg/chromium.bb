@@ -283,6 +283,13 @@ class WindowServer : public ServerWindowDelegate,
 
   bool IsUserInHighContrastMode(const UserId& user) const;
 
+  // Finds the parent client that will embed |surface_id| and claims ownership
+  // of the temporary reference. If no parent client is found then tell GPU to
+  // immediately drop the temporary reference. |window| is the ServerWindow
+  // that corresponds to |surface_id|.
+  void HandleTemporaryReferenceForNewSurface(const cc::SurfaceId& surface_id,
+                                             ServerWindow* window);
+
   // Overridden from ServerWindowDelegate:
   ServerWindow* GetRootWindow(const ServerWindow* window) override;
 

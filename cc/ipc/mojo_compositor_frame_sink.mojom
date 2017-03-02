@@ -9,7 +9,7 @@ import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/copy_output_request.mojom";
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
-import "cc/ipc/surface_reference.mojom";
+import "cc/ipc/surface_id.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/surface_sequence.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -64,6 +64,10 @@ interface MojoCompositorFrameSinkClient {
 // perform privilieged operations on a CompositorFrameSink such as
 // CopyOutputRequests.
 interface MojoCompositorFrameSinkPrivate {
+  // Claims this FrameSinkId will embed |surface_id| so it should own the
+  // temporary reference to |surface_id|.
+  ClaimTemporaryReference(SurfaceId surface_id);
+
   // Requests that the renderer send back a copy of the surface that this
   // CompositorFrameSink submits to. The result can be in form of a bitmap
   // or a texture. See cc::CopyOutputRequest.

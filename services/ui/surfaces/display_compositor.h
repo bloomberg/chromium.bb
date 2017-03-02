@@ -82,6 +82,7 @@ class DisplayCompositor
   void UnregisterFrameSinkHierarchy(
       const cc::FrameSinkId& parent_frame_sink_id,
       const cc::FrameSinkId& child_frame_sink_id) override;
+  void DropTemporaryReference(const cc::SurfaceId& surface_id) override;
 
  private:
   std::unique_ptr<cc::Display> CreateDisplay(

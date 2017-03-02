@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <unordered_set>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -52,6 +53,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
                              CompositorFrame frame);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
   void ForceReclaimResources();
+  void ClaimTemporaryReference(const SurfaceId& surface_id);
 
  private:
   // Update surface references with SurfaceManager for current CompositorFrame

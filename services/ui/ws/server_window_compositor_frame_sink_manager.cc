@@ -55,5 +55,14 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
       std::move(pending_compositor_frame_sink_request_), std::move(client));
 }
 
+void ServerWindowCompositorFrameSinkManager::ClaimTemporaryReference(
+    const cc::SurfaceId& surface_id) {
+  if (!compositor_frame_sink_.is_bound()) {
+    pending_compositor_frame_sink_request_ =
+        mojo::MakeRequest(&compositor_frame_sink_);
+  }
+  compositor_frame_sink_->ClaimTemporaryReference(surface_id);
+}
+
 }  // namespace ws
 }  // namespace ui

@@ -37,6 +37,10 @@ class ServerWindowCompositorFrameSinkManager {
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
+  // Claims this FrameSinkId will embed |surface_id| so it should own the
+  // temporary reference to |surface_id|.
+  void ClaimTemporaryReference(const cc::SurfaceId& surface_id);
+
  private:
   ServerWindow* const window_;
   cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink_;

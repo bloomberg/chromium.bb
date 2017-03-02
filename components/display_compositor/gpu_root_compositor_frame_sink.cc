@@ -89,6 +89,11 @@ void GpuRootCompositorFrameSink::SubmitCompositorFrame(
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
+void GpuRootCompositorFrameSink::ClaimTemporaryReference(
+    const cc::SurfaceId& surface_id) {
+  support_->ClaimTemporaryReference(surface_id);
+}
+
 void GpuRootCompositorFrameSink::RequestCopyOfSurface(
     std::unique_ptr<cc::CopyOutputRequest> request) {
   support_->RequestCopyOfSurface(std::move(request));

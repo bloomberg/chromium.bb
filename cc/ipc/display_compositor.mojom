@@ -67,6 +67,10 @@ interface DisplayCompositor {
   // Removes a BeginFrame relationship between two FrameSinkIds.
   UnregisterFrameSinkHierarchy(cc.mojom.FrameSinkId parent_frame_sink_id,
                                cc.mojom.FrameSinkId child_frame_sink_id);
+
+  // Drops the temporary reference for |surface_id|. This will get called when
+  // the DisplayCompositorClient doesn't think |surface_id| will be embedded.
+  DropTemporaryReference(cc.mojom.SurfaceId surface_id);
 };
 
 // The DisplayCompositorClient interface is implemented by the Display
