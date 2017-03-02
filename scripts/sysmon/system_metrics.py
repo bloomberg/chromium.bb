@@ -229,9 +229,7 @@ def collect_net_info():
 
   nics = psutil.net_io_counters(pernic=True)
   for nic, counters in nics.iteritems():
-    # TODO(ayatane): Use a different way of identifying virtual interfaces
-    if nic.startswith('veth'):
-      # Skip virtual interfaces
+    if _is_virtual_netif(nic):
       continue
     fields = {'interface': nic}
     for metric, counter_name in metric_counter_names:
@@ -242,6 +240,12 @@ def collect_net_info():
         # driver module is reloaded, so log an error and continue
         # instead of raising an exception.
         logger.warning(str(ex))
+
+
+def _is_virtual_netif(nic):
+    """Return whether the network interface is virtual."""
+    # TODO(ayatane): Use a different way of identifying virtual interfaces
+    return nic.startswith('veth')
 
 
 def collect_proc_info():
