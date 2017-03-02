@@ -5,14 +5,13 @@
 #ifndef UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_
 #define UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_
 
-#include <stdint.h>
-
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/ozone/platform/cast/gl_ozone_egl_cast.h"
+#include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace chromecast {
@@ -30,52 +29,18 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   ~SurfaceFactoryCast() override;
 
   // SurfaceFactoryOzone implementation:
-  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
-      gl::GLImplementation implementation,
-      gfx::AcceleratedWidget widget) override;
-  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
-      gl::GLImplementation implementation,
-      const gfx::Size& size) override;
+  std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
+  GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
-  intptr_t GetNativeDisplay() override;
   scoped_refptr<NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
-  bool LoadEGLGLES2Bindings() override;
-
-  intptr_t GetNativeWindow();
-  bool ResizeDisplay(gfx::Size viewport_size);
-  void ChildDestroyed();
-  void TerminateDisplay();
-  void ShutdownHardware();
-
-  // API for keeping track of overlays per frame for logging purposes
-  void OnSwapBuffers();
-  void OnOverlayScheduled(const gfx::Rect& display_bounds);
 
  private:
-  enum HardwareState { kUninitialized, kInitialized, kFailed };
-
-  void CreateDisplayTypeAndWindowIfNeeded();
-  void DestroyDisplayTypeAndWindow();
-  void DestroyWindow();
-  void InitializeHardware();
-
-  HardwareState state_;
-  void* display_type_;
-  bool have_display_type_;
-  void* window_;
-  gfx::Size display_size_;
-  std::unique_ptr<chromecast::CastEglPlatform> egl_platform_;
-
-  // Overlays scheduled in current and previous frames:
-  int overlay_count_;
-  gfx::Rect overlay_bounds_;
-  int previous_frame_overlay_count_;
-  gfx::Rect previous_frame_overlay_bounds_;
+  std::unique_ptr<GLOzoneEglCast> egl_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceFactoryCast);
 };

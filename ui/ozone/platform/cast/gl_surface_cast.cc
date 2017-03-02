@@ -5,12 +5,12 @@
 #include "ui/ozone/platform/cast/gl_surface_cast.h"
 
 #include "ui/ozone/common/egl_util.h"
-#include "ui/ozone/platform/cast/surface_factory_cast.h"
+#include "ui/ozone/platform/cast/gl_ozone_egl_cast.h"
 
 namespace ui {
 
 GLSurfaceCast::GLSurfaceCast(gfx::AcceleratedWidget widget,
-                             SurfaceFactoryCast* parent)
+                             GLOzoneEglCast* parent)
     : NativeViewGLSurfaceEGL(parent->GetNativeWindow()),
       widget_(widget),
       parent_(parent),

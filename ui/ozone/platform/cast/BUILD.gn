@@ -15,6 +15,8 @@ source_set("cast") {
   sources = [
     "client_native_pixmap_factory_cast.cc",
     "client_native_pixmap_factory_cast.h",
+    "gl_ozone_egl_cast.cc",
+    "gl_ozone_egl_cast.h",
     "gl_surface_cast.cc",
     "gl_surface_cast.h",
     "overlay_manager_cast.cc",

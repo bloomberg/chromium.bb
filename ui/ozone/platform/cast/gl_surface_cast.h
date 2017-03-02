@@ -15,11 +15,11 @@
 
 namespace ui {
 
-class SurfaceFactoryCast;
+class GLOzoneEglCast;
 
 class GLSurfaceCast : public gl::NativeViewGLSurfaceEGL {
  public:
-  GLSurfaceCast(gfx::AcceleratedWidget widget, SurfaceFactoryCast* parent);
+  GLSurfaceCast(gfx::AcceleratedWidget widget, GLOzoneEglCast* parent);
 
   // gl::GLSurface:
   bool SupportsSwapBuffersWithBounds() override;
@@ -40,7 +40,7 @@ class GLSurfaceCast : public gl::NativeViewGLSurfaceEGL {
   ~GLSurfaceCast() override;
 
   gfx::AcceleratedWidget widget_;
-  SurfaceFactoryCast* parent_;
+  GLOzoneEglCast* parent_;
   bool supports_swap_buffer_with_bounds_;
 
  private:
