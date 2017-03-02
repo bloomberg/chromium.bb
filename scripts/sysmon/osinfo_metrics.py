@@ -2,13 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Copyright (c) 2015 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 """System metrics."""
 
+from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import collections
 import platform

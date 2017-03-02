@@ -4,7 +4,9 @@
 
 """Send system monitoring data to the timeseries monitoring API."""
 
+from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import random
 import time
