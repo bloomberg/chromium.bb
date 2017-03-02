@@ -1,4 +1,4 @@
-DumpAccessibilityTreeTest and DumpAccessibilityEventsTest Notes:
+# DumpAccessibilityTreeTest and DumpAccessibilityEventsTest Notes:
 
 Both sets of tests use a similar format for files.
 
@@ -28,6 +28,7 @@ ninja -C out/Debug content_browsertests
 out/Debug/content_browsertests --gtest_filter="DumpAccessibility*"
 
 Files used:
+
 * foo.html -- a file to be tested
 * foo-expected-android.txt -- expected Android AccessibilityNodeInfo output
 * foo-expected-auralinux.txt -- expected Linux ATK output
@@ -36,6 +37,7 @@ Files used:
 * foo-expected-win.txt -- expected Win IAccessible/IAccessible2 output
 
 Format for expected files:
+
 * Blank lines and lines beginning with # are ignored
 * Skipped files: if first line of file begins with #<skip then the
   test passes. This can be used to indicate desired output with a link
@@ -43,6 +45,7 @@ Format for expected files:
 * Use 2 plus signs for indent to show hierarchy
 
 Filters:
+
 * By default only some attributes of nodes in the accessibility tree, or
   events fired (when running DumpAccessibilityEvents) are output.
   This is to keep the tests robust and not prone to failure when unrelated
@@ -51,11 +54,13 @@ Filters:
   They can appear anywhere but typically they're in an HTML comment block,
   and must be one per line.
 * Filters are platform-specific:
+```
     @WIN-
     @MAC-
     @BLINK-
     @ANDROID-
     @AURALINUX-
+```
 * To dump all attributes while writing or debugging a test, add this filter:
     @WIN-ALLOW:*
   (and similarly for other platforms).
@@ -64,16 +69,18 @@ Filters:
   ALLOW filter means to include the attribute, and a DENY filter means to
   exclude it. Filters can contain simple wildcards ('*') only, they're not
   regular expressions. Examples:
+```
   - @WIN-ALLOW:name* - this will output the name attribute on Windows
   - @WIN-ALLOW:name='Foo' - this will only output the name attribute if it
       exactly matches 'Foo'.
   - @WIN-DENY:name='X* - this will skip outputting any name that begins with
       the letter X.
+```
 * By default empty attributes are skipped. To output the value an attribute
   even if it's empty, use @WIN-ALLOW-EMPTY:name, for example, and similarly
   for other platforms.
 
-Advanced:
+## Advanced:
 
 Normally the system waits for the document to finish loading before dumping
 the accessibility tree.
@@ -98,7 +105,7 @@ To load an iframe from a different site, forcing it into a different process,
 use /cross-site/HOSTNAME/ in the url, for example:
   <iframe src="cross-site/1.com/accessibility/html/frame.html"></iframe>
 
-Generating expectations and rebaselining:
+## Generating expectations and rebaselining:
 
 If you want to populate the expectation file directly rather than typing it
 or copying-and-pasting it, first make sure the file exists (it can be empty),
@@ -113,7 +120,7 @@ This will replace the -expected-*.txt file with the current output. It's
 a great way to rebaseline a bunch of tests after making a change. Please
 manually check the diff, of course!
 
-Adding a new test:
+## Adding a new test:
 
 If you are adding a new test file remember to add a corresponding test case in
 content/browser/accessibility/dump_accessibility_events_browsertest.cc

@@ -1,6 +1,7 @@
 # Accessibility
 
 * [Accessibility Overview](accessibility/overview.md)
+* [Accessibility Tests](accessibility/tests.md)
 
 ## Chrome OS
 
