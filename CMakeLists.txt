@@ -17,6 +17,7 @@ set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
+include("${AOM_ROOT}/aom_mem/aom_mem.cmake")
 include("${AOM_ROOT}/av1/av1.cmake")
 include("${AOM_ROOT}/test/test.cmake")
 
@@ -95,11 +96,6 @@ set(AOM_SOURCES
     "${AOM_ROOT}/aom/src/aom_decoder.c"
     "${AOM_ROOT}/aom/src/aom_encoder.c"
     "${AOM_ROOT}/aom/src/aom_image.c")
-
-set(AOM_MEM_SOURCES
-    "${AOM_ROOT}/aom_mem/aom_mem.c"
-    "${AOM_ROOT}/aom_mem/aom_mem.h"
-    "${AOM_ROOT}/aom_mem/include/aom_mem_intrnl.h")
 
 set(AOM_SCALE_SOURCES
     "${AOM_ROOT}/aom_scale/aom_scale.h"
@@ -190,11 +186,9 @@ add_rtcd_build_step("${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
 add_library(aom_rtcd OBJECT ${AOM_RTCD_SOURCES})
 add_library(aom_util OBJECT ${AOM_UTIL_SOURCES})
 add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES})
-add_library(aom_mem OBJECT ${AOM_MEM_SOURCES})
 add_library(aom_scale OBJECT ${AOM_SCALE_SOURCES})
 add_library(aom
             ${AOM_SOURCES}
-            $<TARGET_OBJECTS:aom_mem>
             $<TARGET_OBJECTS:aom_rtcd>
             $<TARGET_OBJECTS:aom_scale>
             $<TARGET_OBJECTS:aom_util>)
@@ -215,6 +209,7 @@ if (HAVE_MMX)
 endif ()
 
 setup_aom_dsp_targets()
+setup_aom_mem_targets()
 setup_av1_targets()
 
 # Make all library targets depend on aom_rtcd to make sure it builds first.
