@@ -920,6 +920,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for build_name, config in self.site_config.iteritems():
       if config.build_type == constants.PFQ_TYPE:
         expected = 20 * 60
+      elif config.build_type == constants.CHROME_PFQ_TYPE:
+        expected = 6 * 60 *  60
       elif config.build_type == constants.CANARY_TYPE:
         if self.isReleaseBranch():
           expected = 12 * 60 * 60

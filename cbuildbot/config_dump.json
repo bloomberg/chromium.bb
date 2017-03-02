@@ -217,6 +217,7 @@
         },
         "chrome_perf": {
             "_template": "chrome_perf",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "tot",
             "chromeos_official": true,
@@ -244,6 +245,7 @@
         },
         "chrome_pfq": {
             "_template": "chrome_pfq",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "latest_release",
             "chrome_sdk": true,
@@ -270,6 +272,7 @@
         },
         "chrome_pfq_cheets_informational": {
             "_template": "chrome_pfq_cheets_informational",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "tot",
             "chromeos_official": true,
@@ -293,6 +296,7 @@
         },
         "chrome_pfq_informational": {
             "_template": "chrome_pfq_informational",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "tot",
             "chromeos_official": true,
@@ -314,6 +318,7 @@
         },
         "chrome_pfq_informational_gn": {
             "_template": "chrome_pfq_informational_gn",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "tot",
             "chromeos_official": true,
@@ -336,6 +341,7 @@
         },
         "chromium_pfq": {
             "_template": "chromium_pfq",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "latest_release",
             "chrome_sdk": true,
@@ -358,6 +364,7 @@
         },
         "chromium_pfq_informational": {
             "_template": "chromium_pfq_informational",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "tot",
             "description": "Informational Chromium Uprev & Build (public)",
@@ -372,6 +379,7 @@
         },
         "chromium_pfq_informational_gn": {
             "_template": "chromium_pfq_informational_gn",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "tot",
             "description": "Informational Chromium Uprev & Build (public)",
@@ -1137,6 +1145,7 @@
         },
         "tot_asan_informational": {
             "_template": "tot_asan_informational",
+            "build_timeout": 21600,
             "build_type": "chrome",
             "chrome_rev": "tot",
             "description": "Build TOT Chrome with Address Sanitizer (Clang)",

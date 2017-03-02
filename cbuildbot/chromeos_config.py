@@ -1196,6 +1196,8 @@ def GeneralTemplates(site_config, ge_build_config):
       build_type=constants.CHROME_PFQ_TYPE,
       important=True,
       uprev=False,
+      # Increase the master timeout to 6 hours crbug.com/611139.
+      build_timeout=6 * 60 * 60,
       overlays=constants.PUBLIC_OVERLAYS,
       manifest_version=True,
       chrome_rev=constants.CHROME_REV_LATEST,
