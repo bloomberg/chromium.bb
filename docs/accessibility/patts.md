@@ -81,3 +81,32 @@ git commit -a
   TEST=Write what you tested here
 repo upload .
 ```
+
+## Ebuild
+
+Note that sometimes you'll have to update the ebuild file that
+takes the patts data files and installs them, unzipping the .nexe
+files in the process.
+
+For example, you'll need to edit the ebuild if you add or remove
+a language code, or if you add or remove a file that needs to be
+installed as part of the extension.
+
+To update the ebuild, edit this file:
+
+```
+/third_party/chromiumos-overlay/chromeos-base/common-assets/common-assets-9999.ebuild
+```
+
+If you need to land changes to both common-assets and chromiumos-assets,
+upload the changes separately and then make them depend on one another
+using this syntax in the changelog:
+
+```
+CQ-DEPEND=CL:12345
+```
+
+Note that you can (and often should) have two changes depend on one another
+so they'll land atomically.
+
+
