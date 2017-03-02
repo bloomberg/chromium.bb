@@ -505,35 +505,25 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     return;
   }
 
-  // If enabled, and no codec delay is present, mark audio packets with
-  // negative timestamps for post-decode discard.
+  // If enabled, and no codec delay is present, mark audio packets with negative
+  // timestamps for post-decode discard. If codec delay is present, discard is
+  // handled by the decoder using that value.
   if (fixup_negative_timestamps_ && is_audio &&
       stream_timestamp < base::TimeDelta() &&
-      buffer->duration() != kNoTimestamp) {
-    if (!audio_decoder_config().codec_delay()) {
-      DCHECK_EQ(buffer->discard_padding().first, base::TimeDelta());
+      buffer->duration() != kNoTimestamp &&
+      !audio_decoder_config().codec_delay()) {
+    DCHECK_EQ(buffer->discard_padding().first, base::TimeDelta());
 
-      if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
-        DCHECK_EQ(buffer->discard_padding().second, base::TimeDelta());
+    if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
+      DCHECK_EQ(buffer->discard_padding().second, base::TimeDelta());
 
-        // Discard the entire packet if it's entirely before zero.
-        buffer->set_discard_padding(
-            std::make_pair(kInfiniteDuration, base::TimeDelta()));
-      } else {
-        // Only discard part of the frame if it overlaps zero.
-        buffer->set_discard_padding(std::make_pair(
-            -stream_timestamp, buffer->discard_padding().second));
-      }
+      // Discard the entire packet if it's entirely before zero.
+      buffer->set_discard_padding(
+          std::make_pair(kInfiniteDuration, base::TimeDelta()));
     } else {
-      // Verify that codec delay would cover discard and that we don't need to
-      // mark the packet for post decode discard.  Since timestamps may be in
-      // milliseconds and codec delay in nanosecond precision, round up to the
-      // nearest millisecond.  See enable_negative_timestamp_fixups().
-      DCHECK_LE(-std::ceil(FramesToTimeDelta(
-                               audio_decoder_config().codec_delay(),
-                               audio_decoder_config().samples_per_second())
-                               .InMillisecondsF()),
-                stream_timestamp.InMillisecondsF());
+      // Only discard part of the frame if it overlaps zero.
+      buffer->set_discard_padding(
+          std::make_pair(-stream_timestamp, buffer->discard_padding().second));
     }
   }
 

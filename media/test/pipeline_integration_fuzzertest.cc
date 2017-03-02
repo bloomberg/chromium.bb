@@ -46,7 +46,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       base::Bind(&OnEncryptedMediaInitData, &test));
 
   media::PipelineStatus pipeline_status =
-      test.Start(data, size, media::PipelineIntegrationTestBase::kClockless);
+      test.Start(data, size,
+                 media::PipelineIntegrationTestBase::kClockless |
+                     media::PipelineIntegrationTestBase::kUnreliableDuration);
   if (pipeline_status != media::PIPELINE_OK)
     return 0;
 
