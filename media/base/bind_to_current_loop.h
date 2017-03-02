@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -21,61 +21,73 @@
 // Typical usage: request to be called back on the current thread:
 // other->StartAsyncProcessAndCallMeBack(
 //    media::BindToCurrentLoop(base::Bind(&MyClass::MyMethod, this)));
-//
-// Note that like base::Bind(), BindToCurrentLoop() can't bind non-constant
-// references, and that *unlike* base::Bind(), BindToCurrentLoop() makes copies
-// of its arguments, and thus can't be used with arrays.
 
 namespace media {
-
-// Mimic base::internal::CallbackForward, replacing std::move(p) with
-// base::Passed(&p) to account for the extra layer of indirection.
 namespace internal {
-template <typename T>
-T& TrampolineForward(T& t) { return t; }
-
-template <typename T, typename R>
-base::internal::PassedWrapper<std::unique_ptr<T, R>> TrampolineForward(
-    std::unique_ptr<T, R>& p) {
-  return base::Passed(&p);
-}
-
-template <typename T>
-base::internal::PassedWrapper<ScopedVector<T> > TrampolineForward(
-    ScopedVector<T>& p) { return base::Passed(&p); }
 
 // First, tell the compiler TrampolineHelper is a struct template with one
 // type parameter.  Then define specializations where the type is a function
 // returning void and taking zero or more arguments.
-template <typename Sig> struct TrampolineHelper;
-
-template <>
-struct TrampolineHelper<void()> {
-  static void Run(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const base::Closure& cb) {
-    task_runner->PostTask(FROM_HERE, cb);
-  }
-};
+template <typename Signature>
+class TrampolineHelper;
 
 template <typename... Args>
-struct TrampolineHelper<void(Args...)> {
-  static void Run(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const base::Callback<void(Args...)>& cb,
-      Args... args) {
-    task_runner->PostTask(FROM_HERE,
-                          base::Bind(cb, TrampolineForward(args)...));
+class TrampolineHelper<void(Args...)> {
+ public:
+  using CallbackType = base::Callback<void(Args...)>;
+
+  TrampolineHelper(const tracked_objects::Location& posted_from,
+                   scoped_refptr<base::SequencedTaskRunner> task_runner,
+                   CallbackType callback)
+      : posted_from_(posted_from),
+        task_runner_(std::move(task_runner)),
+        callback_(std::move(callback)) {
+    DCHECK(task_runner_);
+    DCHECK(callback_);
   }
+
+  inline void Run(Args... args);
+
+  ~TrampolineHelper() {
+    task_runner_->PostTask(
+        posted_from_,
+        base::Bind(&TrampolineHelper::ClearCallbackOnTargetTaskRunner,
+                   base::Passed(&callback_)));
+  }
+
+ private:
+  static void ClearCallbackOnTargetTaskRunner(CallbackType) {}
+  static void RunOnceClosure(base::OnceClosure cb) { std::move(cb).Run(); }
+
+  tracked_objects::Location posted_from_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  CallbackType callback_;
 };
+
+template <>
+inline void TrampolineHelper<void()>::Run() {
+  task_runner_->PostTask(posted_from_, callback_);
+}
+
+template <typename... Args>
+inline void TrampolineHelper<void(Args...)>::Run(Args... args) {
+  // TODO(tzik): Use OnceCallback directly without RunOnceClosure, once
+  // TaskRunner::PostTask migrates to OnceClosure.
+  base::OnceClosure cb = base::BindOnce(callback_, std::forward<Args>(args)...);
+  task_runner_->PostTask(
+      posted_from_,
+      base::Bind(&TrampolineHelper::RunOnceClosure, base::Passed(&cb)));
+}
 
 }  // namespace internal
 
-template<typename T>
-static base::Callback<T> BindToCurrentLoop(
-    const base::Callback<T>& cb) {
-  return base::Bind(&internal::TrampolineHelper<T>::Run,
-                    base::ThreadTaskRunnerHandle::Get(), cb);
+template <typename T>
+inline base::Callback<T> BindToCurrentLoop(base::Callback<T> cb) {
+  return base::Bind(
+      &internal::TrampolineHelper<T>::Run,
+      base::MakeUnique<internal::TrampolineHelper<T>>(
+          FROM_HERE,  // TODO(tzik): Propagate FROM_HERE from the caller.
+          base::ThreadTaskRunnerHandle::Get(), std::move(cb)));
 }
 
 }  // namespace media

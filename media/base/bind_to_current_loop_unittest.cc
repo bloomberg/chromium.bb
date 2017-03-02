@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -41,6 +42,24 @@ void BoundIntegersSet(int* a_var, int* b_var, int a_val, int b_val) {
   *a_var = a_val;
   *b_var = b_val;
 }
+
+struct ThreadRestrictionChecker {
+  ThreadRestrictionChecker() : bound_loop_(base::MessageLoop::current()) {}
+
+  void Run() { EXPECT_EQ(bound_loop_, base::MessageLoop::current()); }
+
+  ~ThreadRestrictionChecker() {
+    EXPECT_EQ(bound_loop_, base::MessageLoop::current());
+  }
+
+  base::MessageLoop* bound_loop_;
+};
+
+void RunAndClearReference(base::Closure cb) {
+  cb.Run();
+}
+
+void ClearReference(base::Closure cb) {}
 
 // Various tests that check that the bound function is only actually executed
 // on the message loop, not during the original Run.
@@ -169,6 +188,38 @@ TEST_F(BindToCurrentLoopTest, Integers) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(a, 1);
   EXPECT_EQ(b, -1);
+}
+
+TEST_F(BindToCurrentLoopTest, DestroyedOnBoundLoop) {
+  base::Thread target_thread("testing");
+  ASSERT_TRUE(target_thread.Start());
+
+  // Ensure that the bound object is also destroyed on the correct thread even
+  // if the last reference to the callback is dropped on the other thread.
+  // TODO(tzik): Remove RunAndClearReference once TaskRunner migrates to
+  // OnceClosure. RunAndCleareReference is needed to ensure no reference to |cb|
+  // is left to the original thread.
+  base::Closure cb = BindToCurrentLoop(
+      base::Bind(&ThreadRestrictionChecker::Run,
+                 base::MakeUnique<ThreadRestrictionChecker>()));
+  target_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&RunAndClearReference, base::Passed(&cb)));
+  ASSERT_FALSE(cb);
+  target_thread.FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure that the bound object is destroyed on the target thread even if
+  // the callback is destroyed without invocation.
+  cb = BindToCurrentLoop(
+      base::Bind(&ThreadRestrictionChecker::Run,
+                 base::MakeUnique<ThreadRestrictionChecker>()));
+  target_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&ClearReference, base::Passed(&cb)));
+  target_thread.FlushForTesting();
+  ASSERT_FALSE(cb);
+  base::RunLoop().RunUntilIdle();
+
+  target_thread.Stop();
 }
 
 }  // namespace media
