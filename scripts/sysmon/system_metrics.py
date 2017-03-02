@@ -222,23 +222,24 @@ def collect_net_info():
   _collect_net_io_counters()
 
 
+_net_io_metrics = (
+  (_net_up_metric, 'bytes_sent'),
+  (_net_down_metric, 'bytes_recv'),
+  (_net_err_up_metric, 'errout'),
+  (_net_err_down_metric, 'errin'),
+  (_net_drop_up_metric, 'dropout'),
+  (_net_drop_down_metric, 'dropin'),
+)
+
+
 def _collect_net_io_counters():
   """Collect metrics for network IO counters."""
-  metric_counter_names = [
-      (_net_up_metric, 'bytes_sent'),
-      (_net_down_metric, 'bytes_recv'),
-      (_net_err_up_metric, 'errout'),
-      (_net_err_down_metric, 'errin'),
-      (_net_drop_up_metric, 'dropout'),
-      (_net_drop_down_metric, 'dropin'),
-  ]
-
   nics = psutil.net_io_counters(pernic=True)
   for nic, counters in nics.iteritems():
     if _is_virtual_netif(nic):
       continue
     fields = {'interface': nic}
-    for metric, counter_name in metric_counter_names:
+    for metric, counter_name in _net_io_metrics:
       try:
         metric.set(getattr(counters, counter_name), fields=fields)
       except ts_mon.MonitoringDecreasingValueError as ex:
