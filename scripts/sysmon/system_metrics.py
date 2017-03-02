@@ -87,6 +87,19 @@ _net_drop_down_metric = ts_mon.CounterMetric(
     description='Total number of incoming '
     'packets that have been dropped.')
 
+_net_if_isup_metric = ts_mon.BooleanMetric(
+    'dev/net/isup',
+    description='Whether interface is up or down.')
+_net_if_duplex_metric = ts_mon.GaugeMetric(
+    'dev/net/duplex',
+    description='Whether interface supports full or half duplex.')
+_net_if_speed_metric = ts_mon.GaugeMetric(
+    'dev/net/speed',
+    description='Network interface speed in Mb.')
+_net_if_mtu_metric = ts_mon.GaugeMetric(
+    'dev/net/mtu',
+    description='Network interface MTU in B.')
+
 _disk_read_metric = ts_mon.CounterMetric(
     'dev/disk/read', start_time=BOOT_TIME,
     description='Number of Bytes read on disk.',
@@ -220,6 +233,7 @@ def collect_mem_info():
 def collect_net_info():
   """Collect network metrics."""
   _collect_net_io_counters()
+  _collect_net_if_stats()
 
 
 _net_io_metrics = (
@@ -247,6 +261,24 @@ def _collect_net_io_counters():
         # driver module is reloaded, so log an error and continue
         # instead of raising an exception.
         logger.warning(str(ex))
+
+
+_net_if_metrics = (
+  (_net_if_isup_metric, 'isup'),
+  (_net_if_duplex_metric, 'duplex'),
+  (_net_if_speed_metric, 'speed'),
+  (_net_if_mtu_metric, 'mtu'),
+)
+
+
+def _collect_net_if_stats():
+  """Collect metrics for network interface stats."""
+  for nic, stats in psutil.net_if_stats().iteritems():
+    if _is_virtual_netif(nic):
+      continue
+    fields = {'interface': nic}
+    for metric, counter_name in _net_if_metrics:
+      metric.set(getattr(stats, counter_name), fields=fields)
 
 
 def _is_virtual_netif(nic):
