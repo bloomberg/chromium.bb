@@ -1584,7 +1584,9 @@ inline bool HTMLTokenizer::isAppropriateEndTag() {
 }
 
 inline void HTMLTokenizer::parseError() {
+#if DCHECK_IS_ON()
   DVLOG(1) << "Not implemented.";
+#endif
 }
 
 }  // namespace blink
