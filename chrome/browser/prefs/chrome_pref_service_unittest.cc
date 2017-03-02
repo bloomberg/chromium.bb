@@ -78,7 +78,13 @@ TEST_F(ChromePrefServiceWebKitPrefs, PrefsCopied) {
 
   // These values have been overridden by the profile preferences.
   EXPECT_EQ("UTF-8", webkit_prefs.default_encoding);
+#if !defined(OS_ANDROID)
   EXPECT_EQ(20, webkit_prefs.default_font_size);
+#else
+  // This pref is not configurable on Android so the default of 16 is always
+  // used.
+  EXPECT_EQ(16, webkit_prefs.default_font_size);
+#endif
   EXPECT_FALSE(webkit_prefs.text_areas_are_resizable);
 
   // These should still be the default values.

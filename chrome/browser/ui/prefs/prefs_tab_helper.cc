@@ -324,6 +324,7 @@ void OverrideFontFamily(WebPreferences* prefs,
   (*map)[script] = base::UTF8ToUTF16(pref_value);
 }
 
+#if !defined(OS_ANDROID)
 void RegisterLocalizedFontPref(user_prefs::PrefRegistrySyncable* registry,
                                const char* path,
                                int default_message_id) {
@@ -333,6 +334,7 @@ void RegisterLocalizedFontPref(user_prefs::PrefRegistrySyncable* registry,
   DCHECK(success);
   registry->RegisterIntegerPref(path, val);
 }
+#endif
 
 }  // namespace
 
@@ -585,10 +587,9 @@ void PrefsTabHelper::RegisterProfilePrefs(
     }
   }
 
-  // Register per-script font prefs that don't have defaults.
+// Register font prefs.  This is only configurable on desktop Chrome.
 #if !defined(OS_ANDROID)
   RegisterFontFamilyPrefs(registry, fonts_with_defaults);
-#endif
 
   RegisterLocalizedFontPref(registry, prefs::kWebKitDefaultFontSize,
                             IDS_DEFAULT_FONT_SIZE);
@@ -598,6 +599,7 @@ void PrefsTabHelper::RegisterProfilePrefs(
                             IDS_MINIMUM_FONT_SIZE);
   RegisterLocalizedFontPref(registry, prefs::kWebKitMinimumLogicalFontSize,
                             IDS_MINIMUM_LOGICAL_FONT_SIZE);
+#endif
 }
 
 // static
