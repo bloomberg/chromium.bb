@@ -315,7 +315,6 @@ DEFINE_TRACE(MutationObserver) {
   visitor->trace(m_callback);
   visitor->trace(m_records);
   visitor->trace(m_registrations);
-  visitor->trace(m_callback);
 }
 
 }  // namespace blink
