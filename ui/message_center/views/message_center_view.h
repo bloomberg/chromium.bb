@@ -15,6 +15,7 @@
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -40,13 +41,16 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
       public MessageCenterObserver,
       public MessageCenterController,
       public MessageListView::Observer,
-      public gfx::AnimationDelegate {
+      public gfx::AnimationDelegate,
+      public views::FocusChangeListener {
  public:
   MessageCenterView(MessageCenter* message_center,
                     MessageCenterTray* tray,
                     int max_height,
                     bool initially_settings_visible);
   ~MessageCenterView() override;
+
+  void Init();
 
   void SetNotifications(const NotificationList::Notifications& notifications);
 
@@ -60,6 +64,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
   MessageCenterTray* tray() { return tray_; }
 
   void SetIsClosing(bool is_closing);
+
+  // Overridden from views::FocusChangeListener
+  void OnWillChangeFocus(views::View* before, views::View* now) override {}
+  void OnDidChangeFocus(views::View* before, views::View* now) override;
 
  protected:
   // Potentially sets the reposition target, and then returns whether or not it
@@ -154,6 +162,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
   Mode mode_ = Mode::BUTTONS_ONLY;
 
   std::unique_ptr<MessageViewContextMenuController> context_menu_controller_;
+
+  views::FocusManager* focus_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterView);
 };

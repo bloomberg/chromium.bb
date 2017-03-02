@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/message_center/message_center_export.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace message_center {
@@ -22,7 +24,11 @@ namespace message_center {
 class MESSAGE_CENTER_EXPORT PaddedButton : public views::ImageButton {
  public:
   PaddedButton(views::ButtonListener* listener);
-  ~PaddedButton() override;
+  ~PaddedButton() override = default;
+
+  // Overridden from InkDropHostView
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaddedButton);

@@ -51,7 +51,7 @@ class ArcCustomNotificationView
   void CreateFloatingControlButtons();
   void SetSurface(exo::NotificationSurface* surface);
   void UpdatePreferredSize();
-  void UpdateControlButtonsVisiblity();
+  void UpdateControlButtonsVisibility();
   void UpdatePinnedState();
   void UpdateSnapshot();
   void AttachSurface();

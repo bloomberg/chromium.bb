@@ -89,6 +89,7 @@ class TestContentViewDelegate : public CustomNotificationContentViewDelegate {
   bool IsCloseButtonFocused() const override { return false; }
   void RequestFocusOnCloseButton() override {}
   bool IsPinned() const override { return false; }
+  void UpdateControlButtonsVisibility() override {}
 };
 
 class TestNotificationDelegate : public NotificationDelegate {

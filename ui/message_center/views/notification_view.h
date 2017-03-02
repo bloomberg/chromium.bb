@@ -46,6 +46,8 @@ class MESSAGE_CENTER_EXPORT NotificationView
   void OnFocus() override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // Overridden from MessageView:
   void UpdateWithNotification(const Notification& notification) override;
@@ -53,6 +55,7 @@ class MESSAGE_CENTER_EXPORT NotificationView
   bool IsCloseButtonFocused() const override;
   void RequestFocusOnCloseButton() override;
   bool IsPinned() const override;
+  void UpdateControlButtonsVisibility() override;
 
  protected:
   views::ImageButton* close_button() { return close_button_.get(); }

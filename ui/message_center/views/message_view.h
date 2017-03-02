@@ -53,6 +53,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView {
   virtual bool IsCloseButtonFocused() const = 0;
   virtual void RequestFocusOnCloseButton() = 0;
   virtual bool IsPinned() const = 0;
+  virtual void UpdateControlButtonsVisibility() = 0;
 
   // Overridden from views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

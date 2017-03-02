@@ -77,7 +77,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
       is_locked_(message_center_->IsLockedState()),
       mode_((!initially_settings_visible || is_locked_) ? Mode::BUTTONS_ONLY
                                                         : Mode::SETTINGS),
-      context_menu_controller_(new MessageViewContextMenuController(this)) {
+      context_menu_controller_(new MessageViewContextMenuController(this)),
+      focus_manager_(nullptr) {
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
   set_background(views::Background::CreateSolidBackground(
@@ -133,6 +134,15 @@ MessageCenterView::~MessageCenterView() {
 
   if (!is_closing_)
     message_center_->RemoveObserver(this);
+
+  if (focus_manager_)
+    focus_manager_->RemoveFocusChangeListener(this);
+}
+
+void MessageCenterView::Init() {
+  focus_manager_ = GetFocusManager();
+  if (focus_manager_)
+    focus_manager_->AddFocusChangeListener(this);
 }
 
 void MessageCenterView::SetNotifications(
@@ -202,6 +212,18 @@ void MessageCenterView::SetIsClosing(bool is_closing) {
     message_center_->RemoveObserver(this);
   else
     message_center_->AddObserver(this);
+}
+
+void MessageCenterView::OnDidChangeFocus(views::View* before,
+                                         views::View* now) {
+  if (message_list_view_ && (message_list_view_->Contains(before) ||
+                             message_list_view_->Contains(now))) {
+    // Focus state of a children of message view center is changed.
+    for (auto pair : notification_views_) {
+      if (pair.second->Contains(before) || pair.second->Contains(now))
+        pair.second->UpdateControlButtonsVisibility();
+    }
+  }
 }
 
 void MessageCenterView::Layout() {

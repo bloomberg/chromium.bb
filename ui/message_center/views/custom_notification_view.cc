@@ -78,6 +78,11 @@ bool CustomNotificationView::IsPinned() const {
   return contents_view_delegate_->IsPinned();
 }
 
+void CustomNotificationView::UpdateControlButtonsVisibility() {
+  if (contents_view_delegate_)
+    contents_view_delegate_->UpdateControlButtonsVisibility();
+}
+
 gfx::Size CustomNotificationView::GetPreferredSize() const {
   const gfx::Insets insets = GetInsets();
   const int contents_width = kNotificationWidth - insets.width();

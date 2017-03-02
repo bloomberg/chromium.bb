@@ -173,11 +173,15 @@ class ArcCustomNotificationView::ContentViewDelegate
   void RequestFocusOnCloseButton() override {
     if (owner_->close_button_)
       owner_->close_button_->RequestFocus();
-    owner_->UpdateControlButtonsVisiblity();
+    owner_->UpdateControlButtonsVisibility();
   }
 
   bool IsPinned() const override {
     return owner_->item_->pinned();
+  }
+
+  void UpdateControlButtonsVisibility() override {
+    owner_->UpdateControlButtonsVisibility();
   }
 
  private:
@@ -194,12 +198,12 @@ class ArcCustomNotificationView::ControlButton
 
   void OnFocus() override {
     message_center::PaddedButton::OnFocus();
-    owner_->UpdateControlButtonsVisiblity();
+    owner_->UpdateControlButtonsVisibility();
   }
 
   void OnBlur() override {
     message_center::PaddedButton::OnBlur();
-    owner_->UpdateControlButtonsVisiblity();
+    owner_->UpdateControlButtonsVisibility();
   }
 
  private:
@@ -331,7 +335,7 @@ void ArcCustomNotificationView::UpdatePreferredSize() {
   SetPreferredSize(preferred_size);
 }
 
-void ArcCustomNotificationView::UpdateControlButtonsVisiblity() {
+void ArcCustomNotificationView::UpdateControlButtonsVisibility() {
   if (!surface_ || !floating_control_buttons_widget_)
     return;
 
@@ -451,7 +455,7 @@ void ArcCustomNotificationView::Layout() {
   control_buttons_bounds.set_width(buttons_width);
   floating_control_buttons_widget_->SetBounds(control_buttons_bounds);
 
-  UpdateControlButtonsVisiblity();
+  UpdateControlButtonsVisibility();
 
   ash::wm::SnapWindowToPixelBoundary(surface_->window());
 }
@@ -484,11 +488,11 @@ void ArcCustomNotificationView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void ArcCustomNotificationView::OnMouseEntered(const ui::MouseEvent&) {
-  UpdateControlButtonsVisiblity();
+  UpdateControlButtonsVisibility();
 }
 
 void ArcCustomNotificationView::OnMouseExited(const ui::MouseEvent&) {
-  UpdateControlButtonsVisiblity();
+  UpdateControlButtonsVisibility();
 }
 
 void ArcCustomNotificationView::OnFocus() {

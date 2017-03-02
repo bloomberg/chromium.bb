@@ -7,6 +7,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/painter.h"
@@ -19,12 +22,28 @@ PaddedButton::PaddedButton(views::ButtonListener* listener)
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor,
       gfx::Insets(1, 2, 2, 2)));
+  set_background(views::Background::CreateSolidBackground(
+      SkColorSetA(SK_ColorWHITE, 0.9 * 0xff)));
   SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kControlButtonPaddingFromBorder)));
   set_animate_on_state_change(false);
+
+  SetInkDropMode(InkDropMode::ON);
+  set_ink_drop_base_color(SkColorSetA(SK_ColorBLACK, 0.6 * 0xff));
 }
 
-PaddedButton::~PaddedButton() {
+std::unique_ptr<views::InkDrop> PaddedButton::CreateInkDrop() {
+  auto ink_drop = CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  ink_drop->SetShowHighlightOnFocus(false);
+  return std::move(ink_drop);
+}
+
+std::unique_ptr<views::InkDropRipple> PaddedButton::CreateInkDropRipple()
+    const {
+  return base::MakeUnique<views::FloodFillInkDropRipple>(
+      size(), GetInkDropCenterBasedOnLastEvent(),
+      SkColorSetA(SK_ColorBLACK, 0.6 * 255), ink_drop_visible_opacity());
 }
 
 }  // namespace message_center

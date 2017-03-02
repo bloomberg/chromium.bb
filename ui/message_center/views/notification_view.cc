@@ -345,6 +345,16 @@ gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
   return views::GetNativeHandCursor();
 }
 
+void NotificationView::OnMouseEntered(const ui::MouseEvent& event) {
+  MessageView::OnMouseEntered(event);
+  UpdateControlButtonsVisibility();
+}
+
+void NotificationView::OnMouseExited(const ui::MouseEvent& event) {
+  MessageView::OnMouseExited(event);
+  UpdateControlButtonsVisibility();
+}
+
 void NotificationView::UpdateWithNotification(
     const Notification& notification) {
   MessageView::UpdateWithNotification(notification);
@@ -525,6 +535,7 @@ void NotificationView::CreateOrUpdateSettingsButtonView(
     settings_button_view_ = settings;
     AddChildView(settings_button_view_);
   }
+  UpdateControlButtonsVisibility();
 }
 
 void NotificationView::CreateOrUpdateProgressBarView(
@@ -689,8 +700,26 @@ void NotificationView::CreateOrUpdateCloseButtonView(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
     close_button_->set_owned_by_client();
     AddChildView(close_button_.get());
+    UpdateControlButtonsVisibility();
   } else if (notification.pinned() && close_button_) {
     close_button_.reset();
+  }
+}
+
+void NotificationView::UpdateControlButtonsVisibility() {
+  const bool target_visibility =
+      IsMouseHovered() || HasFocus() ||
+      (close_button_ && close_button_->HasFocus()) ||
+      (settings_button_view_ && settings_button_view_->HasFocus());
+
+  if (close_button_) {
+    if (target_visibility != close_button_->visible())
+      close_button_->SetVisible(target_visibility);
+  }
+
+  if (settings_button_view_) {
+    if (target_visibility != settings_button_view_->visible())
+      settings_button_view_->SetVisible(target_visibility);
   }
 }
 
