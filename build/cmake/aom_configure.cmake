@@ -30,6 +30,14 @@ include("${AOM_ROOT}/build/cmake/aom_config_defaults.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
 
+# Build a list of all configurable variables.
+get_cmake_property(cmake_cache_vars CACHE_VARIABLES)
+foreach (var ${cmake_cache_vars})
+  if ("${var}" MATCHES "^CONFIG_")
+    list(APPEND AOM_CONFIG_VARS ${var})
+  endif ()
+endforeach ()
+
 # Detect target CPU.
 if (NOT AOM_TARGET_CPU)
   if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR
