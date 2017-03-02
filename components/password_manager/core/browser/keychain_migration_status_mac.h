@@ -29,6 +29,10 @@ enum class MigrationStatus {
   // Best effort migration happened. Some passwords were inaccessible.
   MIGRATED_PARTIALLY,
 
+  // Gave up on migration as the passwords aren't accessible anyway after Chrome
+  // changes the certificate.
+  MIGRATION_STOPPED,
+
   MIGRATION_STATUS_COUNT,
 };
 
