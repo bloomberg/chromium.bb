@@ -593,6 +593,8 @@ source_set("browser") {
     "download/mhtml_generation_manager.h",
     "download/parallel_download_job.cc",
     "download/parallel_download_job.h",
+    "download/parallel_download_utils.cc",
+    "download/parallel_download_utils.h",
     "download/rate_estimator.cc",
     "download/rate_estimator.h",
     "download/save_file.cc",

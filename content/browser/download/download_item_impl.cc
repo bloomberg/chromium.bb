@@ -45,6 +45,7 @@
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -1953,7 +1954,13 @@ void DownloadItemImpl::ResumeInterruptedDownload(
       new DownloadUrlParameters(GetURL(),
                                 storage_partition->GetURLRequestContext()));
   download_params->set_file_path(GetFullPath());
-  download_params->set_offset(GetReceivedBytes());
+  if (received_slices_.size() > 0) {
+    ReceivedSlice next_slice = FindNextSliceToDownload(received_slices_);
+    download_params->set_offset(next_slice.offset);
+    download_params->set_length(next_slice.received_bytes);
+  } else {
+    download_params->set_offset(GetReceivedBytes());
+  }
   download_params->set_last_modified(GetLastModifiedTime());
   download_params->set_etag(GetETag());
   download_params->set_hash_of_partial_file(hash_);
