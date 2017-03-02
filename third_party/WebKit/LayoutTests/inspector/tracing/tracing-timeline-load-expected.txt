@@ -24,11 +24,13 @@ Saved data is equal to restored data: true
 
 Running: testBroken
 TimelineLoaderClient.loadingStarted()
+TimelineLoaderClient.loadingProgress()
 TimelineLoaderClient.processingStarted()
 TimelineLoaderClient.loadingComplete(true)
 Model is empty: true
 
 Running: testMalformedJSON
+TimelineLoaderClient.loadingStarted()
 TimelineLoaderClient.loadingComplete(false)
 Model is empty: true
 
