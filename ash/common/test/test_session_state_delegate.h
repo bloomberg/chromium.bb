@@ -48,7 +48,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   bool ShouldShowAvatar(WmWindow* window) const override;
   gfx::ImageSkia GetAvatarImageForWindow(WmWindow* window) const override;
   void SwitchActiveUser(const AccountId& account_id) override;
-  void CycleActiveUser(CycleUser cycle_user) override;
+  void CycleActiveUser(CycleUserDirection direction) override;
   bool IsMultiProfileAllowedByPrimaryUserPolicy() const override;
   void AddSessionStateObserver(ash::SessionStateObserver* observer) override;
   void RemoveSessionStateObserver(ash::SessionStateObserver* observer) override;

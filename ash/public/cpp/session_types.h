@@ -23,6 +23,12 @@ enum class AddUserSessionPolicy {
   ERROR_MAXIMUM_USERS_REACHED,
 };
 
+// Defines the cycle direction for |CycleActiveUser|.
+enum class CycleUserDirection {
+  NEXT = 0,  // Cycle to the next user.
+  PREVIOUS,  // Cycle to the previous user.
+};
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_SESSION_TYPES_H_

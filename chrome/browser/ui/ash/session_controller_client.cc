@@ -110,8 +110,9 @@ void SessionControllerClient::SwitchActiveUser(const AccountId& account_id) {
   DoSwitchActiveUser(account_id);
 }
 
-void SessionControllerClient::CycleActiveUser(bool next_user) {
-  DoCycleActiveUser(next_user);
+void SessionControllerClient::CycleActiveUser(
+    ash::CycleUserDirection direction) {
+  DoCycleActiveUser(direction);
 }
 
 void SessionControllerClient::ActiveUserChanged(const User* active_user) {
@@ -197,7 +198,8 @@ void SessionControllerClient::DoSwitchActiveUser(const AccountId& account_id) {
 }
 
 // static
-void SessionControllerClient::DoCycleActiveUser(bool next_user) {
+void SessionControllerClient::DoCycleActiveUser(
+    ash::CycleUserDirection direction) {
   const UserList& logged_in_users = UserManager::Get()->GetLoggedInUsers();
   if (logged_in_users.size() <= 1)
     return;
@@ -216,15 +218,18 @@ void SessionControllerClient::DoCycleActiveUser(bool next_user) {
 
   // Get the user's email to select, wrapping to the start/end of the list if
   // necessary.
-  if (next_user) {
+  if (direction == ash::CycleUserDirection::NEXT) {
     if (++it == logged_in_users.end())
       account_id = (*logged_in_users.begin())->GetAccountId();
     else
       account_id = (*it)->GetAccountId();
-  } else {
+  } else if (direction == ash::CycleUserDirection::PREVIOUS) {
     if (it == logged_in_users.begin())
       it = logged_in_users.end();
     account_id = (*(--it))->GetAccountId();
+  } else {
+    NOTREACHED() << "Invalid direction=" << static_cast<int>(direction);
+    return;
   }
 
   DoSwitchActiveUser(account_id);

@@ -139,11 +139,9 @@ TEST_F(SessionStateDelegateChromeOSTest, CyclingOneUser) {
   UserAddedToSession("firstuser@test.com");
 
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(
-      ash::SessionStateDelegate::CYCLE_TO_NEXT_USER);
+  session_state_delegate()->CycleActiveUser(ash::CycleUserDirection::NEXT);
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(
-      ash::SessionStateDelegate::CYCLE_TO_PREVIOUS_USER);
+  session_state_delegate()->CycleActiveUser(ash::CycleUserDirection::PREVIOUS);
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
@@ -152,8 +150,7 @@ TEST_F(SessionStateDelegateChromeOSTest, CyclingThreeUsers) {
   UserAddedToSession("firstuser@test.com");
   UserAddedToSession("seconduser@test.com");
   UserAddedToSession("thirduser@test.com");
-  const ash::SessionStateDelegate::CycleUser forward =
-      ash::SessionStateDelegate::CYCLE_TO_NEXT_USER;
+  const ash::CycleUserDirection forward = ash::CycleUserDirection::NEXT;
 
   // Cycle forward.
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
@@ -165,8 +162,7 @@ TEST_F(SessionStateDelegateChromeOSTest, CyclingThreeUsers) {
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 
   // Cycle backwards.
-  const ash::SessionStateDelegate::CycleUser backward =
-      ash::SessionStateDelegate::CYCLE_TO_PREVIOUS_USER;
+  const ash::CycleUserDirection backward = ash::CycleUserDirection::PREVIOUS;
   session_state_delegate()->CycleActiveUser(backward);
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
   session_state_delegate()->CycleActiveUser(backward);

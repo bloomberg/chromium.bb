@@ -29,12 +29,6 @@ class WmWindow;
 // TODO(xiyuan): Remove this when SessionController etc are ready.
 class ASH_EXPORT SessionStateDelegate {
  public:
-  // Defines the cycle direction for |CycleActiveUser|.
-  enum CycleUser {
-    CYCLE_TO_NEXT_USER = 0,  // Cycle to the next user.
-    CYCLE_TO_PREVIOUS_USER,  // Cycle to the previous user.
-  };
-
   virtual ~SessionStateDelegate() {}
 
   // Returns the maximum possible number of logged in users.
@@ -94,7 +88,7 @@ class ASH_EXPORT SessionStateDelegate {
 
   // Switches the active user to the next or previous user, with the same
   // ordering as GetLoggedInUsers.
-  virtual void CycleActiveUser(CycleUser cycle_user) = 0;
+  virtual void CycleActiveUser(CycleUserDirection direction) = 0;
 
   // Returns true if primary user policy does not forbid multiple signin.
   virtual bool IsMultiProfileAllowedByPrimaryUserPolicy() const = 0;

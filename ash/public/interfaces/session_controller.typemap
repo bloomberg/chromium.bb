@@ -15,6 +15,7 @@ public_deps = [
 ]
 type_mappings = [
   "ash.mojom.AddUserSessionPolicy=ash::AddUserSessionPolicy",
+  "ash.mojom.CycleUserDirection=ash::CycleUserDirection",
   "ash.mojom.SessionState=session_manager::SessionState",
   "ash.mojom.UserType=user_manager::UserType",
 ]

@@ -415,18 +415,18 @@ bool CanHandleCycleUser() {
          WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers() > 1;
 }
 
-void HandleCycleUser(SessionStateDelegate::CycleUser cycle_user) {
+void HandleCycleUser(CycleUserDirection direction) {
   MultiProfileUMA::RecordSwitchActiveUser(
       MultiProfileUMA::SWITCH_ACTIVE_USER_BY_ACCELERATOR);
-  switch (cycle_user) {
-    case SessionStateDelegate::CYCLE_TO_NEXT_USER:
+  switch (direction) {
+    case CycleUserDirection::NEXT:
       base::RecordAction(UserMetricsAction("Accel_Switch_To_Next_User"));
       break;
-    case SessionStateDelegate::CYCLE_TO_PREVIOUS_USER:
+    case CycleUserDirection::PREVIOUS:
       base::RecordAction(UserMetricsAction("Accel_Switch_To_Previous_User"));
       break;
   }
-  WmShell::Get()->GetSessionStateDelegate()->CycleActiveUser(cycle_user);
+  WmShell::Get()->GetSessionStateDelegate()->CycleActiveUser(direction);
 }
 
 bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
@@ -1025,10 +1025,10 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleSwitchIme(ime_control_delegate_.get(), accelerator);
       break;
     case SWITCH_TO_NEXT_USER:
-      HandleCycleUser(SessionStateDelegate::CYCLE_TO_NEXT_USER);
+      HandleCycleUser(CycleUserDirection::NEXT);
       break;
     case SWITCH_TO_PREVIOUS_USER:
-      HandleCycleUser(SessionStateDelegate::CYCLE_TO_PREVIOUS_USER);
+      HandleCycleUser(CycleUserDirection::PREVIOUS);
       break;
     case TOGGLE_APP_LIST:
       HandleToggleAppList(accelerator);

@@ -102,7 +102,7 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
     return gfx::ImageSkia();
   }
   void SwitchActiveUser(const AccountId& account_id) override {}
-  void CycleActiveUser(CycleUser cycle_user) override {}
+  void CycleActiveUser(CycleUserDirection direction) override {}
   bool IsMultiProfileAllowedByPrimaryUserPolicy() const override {
     return true;
   }

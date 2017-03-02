@@ -143,8 +143,9 @@ void SessionStateDelegateChromeos::SwitchActiveUser(
   SessionControllerClient::DoSwitchActiveUser(account_id);
 }
 
-void SessionStateDelegateChromeos::CycleActiveUser(CycleUser cycle_user) {
-  SessionControllerClient::DoCycleActiveUser(cycle_user == CYCLE_TO_NEXT_USER);
+void SessionStateDelegateChromeos::CycleActiveUser(
+    ash::CycleUserDirection direction) {
+  SessionControllerClient::DoCycleActiveUser(direction);
 }
 
 bool SessionStateDelegateChromeos::IsMultiProfileAllowedByPrimaryUserPolicy()

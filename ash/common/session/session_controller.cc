@@ -73,9 +73,9 @@ void SessionController::SwitchActiveUser(const AccountId& account_id) {
     client_->SwitchActiveUser(account_id);
 }
 
-void SessionController::CycleActiveUser(bool next_user) {
+void SessionController::CycleActiveUser(CycleUserDirection direction) {
   if (client_)
-    client_->CycleActiveUser(next_user);
+    client_->CycleActiveUser(direction);
 }
 
 void SessionController::AddSessionStateObserver(

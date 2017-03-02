@@ -34,7 +34,7 @@ class SessionControllerClient
   // ash::mojom::SessionControllerClient:
   void RequestLockScreen() override;
   void SwitchActiveUser(const AccountId& account_id) override;
-  void CycleActiveUser(bool next_user) override;
+  void CycleActiveUser(ash::CycleUserDirection direction) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;
@@ -52,7 +52,7 @@ class SessionControllerClient
   static ash::AddUserSessionPolicy GetAddUserSessionPolicy();
   static void DoLockScreen();
   static void DoSwitchActiveUser(const AccountId& account_id);
-  static void DoCycleActiveUser(bool next_user);
+  static void DoCycleActiveUser(ash::CycleUserDirection direction);
 
   // Flushes the mojo pipe to ash.
   static void FlushForTesting();

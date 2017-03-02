@@ -80,7 +80,7 @@ class ASH_EXPORT SessionController
 
   // Switches the active user to the next or previous user, with the same
   // ordering as user sessions are created.
-  void CycleActiveUser(bool next_user);
+  void CycleActiveUser(CycleUserDirection direction);
 
   void AddSessionStateObserver(SessionStateObserver* observer);
   void RemoveSessionStateObserver(SessionStateObserver* observer);

@@ -234,7 +234,7 @@ void TestSessionStateDelegate::SwitchActiveUser(const AccountId& account_id) {
   NOTREACHED() << "Unknown user:" << account_id.GetUserEmail();
 }
 
-void TestSessionStateDelegate::CycleActiveUser(CycleUser cycle_user) {
+void TestSessionStateDelegate::CycleActiveUser(CycleUserDirection direction) {
   SwitchActiveUser(AccountId::FromUserEmail("someone@tray"));
 }
 

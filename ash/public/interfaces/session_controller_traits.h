@@ -165,6 +165,34 @@ struct EnumTraits<ash::mojom::AddUserSessionPolicy, ash::AddUserSessionPolicy> {
   }
 };
 
+template <>
+struct EnumTraits<ash::mojom::CycleUserDirection, ash::CycleUserDirection> {
+  static ash::mojom::CycleUserDirection ToMojom(ash::CycleUserDirection input) {
+    switch (input) {
+      case ash::CycleUserDirection::NEXT:
+        return ash::mojom::CycleUserDirection::NEXT;
+      case ash::CycleUserDirection::PREVIOUS:
+        return ash::mojom::CycleUserDirection::PREVIOUS;
+    }
+    NOTREACHED();
+    return ash::mojom::CycleUserDirection::NEXT;
+  }
+
+  static bool FromMojom(ash::mojom::CycleUserDirection input,
+                        ash::CycleUserDirection* out) {
+    switch (input) {
+      case ash::mojom::CycleUserDirection::NEXT:
+        *out = ash::CycleUserDirection::NEXT;
+        return true;
+      case ash::mojom::CycleUserDirection::PREVIOUS:
+        *out = ash::CycleUserDirection::PREVIOUS;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
 }  // namespace mojo
 
 #endif  // ASH_PUBLIC_INTERFACES_SESSION_CONTROLLER_TRAITS_H_
