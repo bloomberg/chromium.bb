@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -41,7 +42,8 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
   }
 
   void FetchOnIOThread() {
-    fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+    fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this,
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
     fetcher_->SetRequestContext(getter_);
     fetcher_->Start();
   }
