@@ -269,7 +269,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                          // property
     unsigned m_variableReference : 1;  // A non-inherited property references a
                                        // variable or @apply is used.
-    unsigned m_unique : 1;             // Style can not be shared.
 
     unsigned m_emptyState : 1;
 
@@ -302,7 +301,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_pseudoBits = 0;
     m_nonInheritedData.m_explicitInheritance = false;
     m_nonInheritedData.m_variableReference = false;
-    m_nonInheritedData.m_unique = false;
     m_nonInheritedData.m_emptyState = false;
     m_nonInheritedData.m_hasViewportUnits = false;
     m_nonInheritedData.m_isLink = false;
