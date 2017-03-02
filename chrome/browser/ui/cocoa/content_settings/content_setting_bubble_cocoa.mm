@@ -264,7 +264,6 @@ const ContentTypeToNibPath kNibPaths[] = {
     {CONTENT_SETTINGS_TYPE_GEOLOCATION, @"ContentBlockedGeolocation"},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, @"ContentBlockedMixedScript"},
     {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, @"ContentProtocolHandlers"},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, @"ContentBlockedDownloads"},
     {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, @"ContentBlockedMIDISysEx"},
 };
 
@@ -313,6 +312,9 @@ const ContentTypeToNibPath kNibPaths[] = {
 
   if (model->AsSubresourceFilterBubbleModel())
     nibPath = @"ContentSubresourceFilter";
+
+  if (model->AsDownloadsBubbleModel())
+    nibPath = @"ContentBlockedDownloads";
   return nibPath;
 }
 
@@ -794,7 +796,8 @@ const ContentTypeToNibPath kNibPaths[] = {
   [[self bubble] setArrowLocation:info_bubble::kTopTrailing];
 
   // Adapt window size to bottom buttons. Do this before all other layouting.
-  if (simple_bubble && !simple_bubble->bubble_content().manage_text.empty())
+  if ((simple_bubble && !simple_bubble->bubble_content().manage_text.empty()) ||
+      contentSettingBubbleModel_->AsDownloadsBubbleModel())
     [self initManageDoneButtons];
 
   [self initializeTitle];

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -22,6 +24,12 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
       TabSpecificContentSettings::FromWebContents(web_contents);
   content_settings->BlockAllContentForTesting();
 
+  // Automatic downloads are handled by DownloadRequestLimiter.
+  g_browser_process->download_request_limiter()
+      ->GetDownloadState(web_contents, web_contents, true)
+      ->SetDownloadStatusAndNotify(
+          DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+
   // Test that image models tied to a single content setting create bubbles tied
   // to the same setting.
   static const ContentSettingsType content_settings_to_test[] = {
@@ -32,7 +40,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
       CONTENT_SETTINGS_TYPE_POPUPS,
       CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
       CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
       CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
       CONTENT_SETTINGS_TYPE_MIDI_SYSEX,

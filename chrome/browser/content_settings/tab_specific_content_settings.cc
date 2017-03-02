@@ -238,6 +238,8 @@ bool TabSpecificContentSettings::IsContentBlocked(
   DCHECK_NE(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, content_type)
       << "Notifications settings handled by "
       << "ContentSettingsNotificationsImageModel";
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, content_type)
+      << "Automatic downloads handled by DownloadRequestLimiter";
 
   if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
       content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
@@ -248,7 +250,6 @@ bool TabSpecificContentSettings::IsContentBlocked(
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
       content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
-      content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS ||
       content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
     const auto& it = content_settings_status_.find(content_type);
     if (it != content_settings_status_.end())
@@ -285,13 +286,15 @@ void TabSpecificContentSettings::SetSubresourceBlockageIndicated() {
 
 bool TabSpecificContentSettings::IsContentAllowed(
     ContentSettingsType content_type) const {
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, content_type)
+      << "Automatic downloads handled by DownloadRequestLimiter";
+
   // This method currently only returns meaningful values for the content type
   // cookies, media, PPAPI broker, downloads, and MIDI sysex.
   if (content_type != CONTENT_SETTINGS_TYPE_COOKIES &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
       content_type != CONTENT_SETTINGS_TYPE_PPAPI_BROKER &&
-      content_type != CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS &&
       content_type != CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
     return false;
   }
@@ -694,18 +697,6 @@ void TabSpecificContentSettings::ClearNavigationRelatedContentSettings() {
 void TabSpecificContentSettings::FlashDownloadBlocked() {
   OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_PLUGINS,
                              base::UTF8ToUTF16(content::kFlashPluginName));
-}
-
-void TabSpecificContentSettings::SetDownloadsBlocked(bool blocked) {
-  ContentSettingsStatus& status =
-      content_settings_status_[CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS];
-  status.blocked = blocked;
-  status.allowed = !blocked;
-  status.blockage_indicated_to_user = false;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {

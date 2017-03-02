@@ -9,8 +9,10 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,6 +37,7 @@ using content::WebContents;
 //     ContentSettingGeolocationImageModel       - geolocation
 //     ContentSettingRPHImageModel               - protocol handlers
 //     ContentSettingMIDISysExImageModel         - midi sysex
+//     ContentSettingDownloadsImageModel         - automatic downloads
 //   ContentSettingMediaImageModel             - media
 //   ContentSettingSubresourceFilterImageModel - deceptive content
 
@@ -95,6 +98,17 @@ class ContentSettingMIDISysExImageModel
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMIDISysExImageModel);
 };
 
+class ContentSettingDownloadsImageModel
+    : public ContentSettingSimpleImageModel {
+ public:
+  ContentSettingDownloadsImageModel();
+
+  void UpdateFromWebContents(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingDownloadsImageModel);
+};
+
 namespace {
 
 struct ContentSettingsImageDetails {
@@ -119,9 +133,6 @@ const ContentSettingsImageDetails kImageDetails[] = {
      IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT, 0, 0},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, kExtensionIcon,
      IDS_BLOCKED_PPAPI_BROKER_TITLE, 0, IDS_ALLOWED_PPAPI_BROKER_TITLE},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, kFileDownloadIcon,
-     IDS_BLOCKED_DOWNLOAD_TITLE, IDS_BLOCKED_DOWNLOADS_EXPLANATION,
-     IDS_ALLOWED_DOWNLOAD_TITLE},
 };
 
 // The ordering of the models here influences the order in which icons are
@@ -206,6 +217,9 @@ ContentSettingSimpleImageModel::CreateForContentTypeForTesting(
 
   if (content_settings_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX)
     return base::MakeUnique<ContentSettingMIDISysExImageModel>();
+
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS)
+    return base::MakeUnique<ContentSettingDownloadsImageModel>();
 
   return base::MakeUnique<ContentSettingBlockedImageModel>(
       content_settings_type);
@@ -509,6 +523,44 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
                                             : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
 }
 
+// Automatic downloads ---------------------------------------------------------
+
+ContentSettingDownloadsImageModel::ContentSettingDownloadsImageModel()
+    : ContentSettingSimpleImageModel(
+          CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {}
+
+void ContentSettingDownloadsImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
+  set_visible(false);
+  if (!web_contents)
+    return;
+
+  DownloadRequestLimiter* download_request_limiter =
+      g_browser_process->download_request_limiter();
+
+  // DownloadRequestLimiter can be absent in unit_tests.
+  if (!download_request_limiter)
+    return;
+
+  switch (download_request_limiter->GetDownloadStatus(web_contents)) {
+    case DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS:
+      set_visible(true);
+      set_icon(kFileDownloadIcon, gfx::kNoneIcon);
+      set_explanatory_string_id(0);
+      set_tooltip(l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_TITLE));
+      return;
+    case DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED:
+      set_visible(true);
+      set_icon(kFileDownloadIcon, kBlockedBadgeIcon);
+      set_explanatory_string_id(IDS_BLOCKED_DOWNLOADS_EXPLANATION);
+      set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_TITLE));
+      return;
+    default:
+      // No need to show icon otherwise.
+      return;
+  }
+}
+
 // Base class ------------------------------------------------------------------
 
 gfx::Image ContentSettingImageModel::GetIcon(SkColor nearby_text_color) const {
@@ -550,6 +602,9 @@ ContentSettingImageModel::GenerateContentSettingImageModels() {
         break;
       case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
         model = base::MakeUnique<ContentSettingMIDISysExImageModel>();
+        break;
+      case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+        model = base::MakeUnique<ContentSettingDownloadsImageModel>();
         break;
       default:
         // All other content settings types use ContentSettingBlockedImageModel.

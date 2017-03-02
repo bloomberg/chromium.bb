@@ -20,6 +20,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -148,13 +149,11 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
         IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
         IDS_BLOCKED_PPAPI_BROKER_TITLE},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOAD_TITLE},
   };
   // Fields as for kBlockedTitleIDs, above.
   static const ContentSettingsTypeIdEntry kAccessedTitleIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_TITLE},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_ALLOWED_DOWNLOAD_TITLE},
   };
   const ContentSettingsTypeIdEntry* title_ids = kBlockedTitleIDs;
   size_t num_title_ids = arraysize(kBlockedTitleIDs);
@@ -179,7 +178,6 @@ void ContentSettingSimpleBubbleModel::SetManageText() {
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_LEARN_MORE},
     {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, IDS_HANDLERS_BUBBLE_MANAGE_LINK},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOADS_LINK},
     {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, IDS_MIDI_SYSEX_BUBBLE_MANAGE_LINK},
   };
   set_manage_text(l10n_util::GetStringUTF8(
@@ -292,13 +290,11 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_UNBLOCK_ALL},
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_UNBLOCK},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_UNBLOCK},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOAD_UNBLOCK},
   };
   // Fields as for kBlockedAllowIDs, above.
   static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ALLOWED_COOKIES_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_ALLOWED_DOWNLOAD_NO_ACTION},
   };
 
   std::string radio_allow_label;
@@ -321,12 +317,10 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_NO_ACTION},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOAD_NO_ACTION},
   };
   static const ContentSettingsTypeIdEntry kAllowedBlockIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ALLOWED_COOKIES_BLOCK},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_ALLOWED_DOWNLOAD_BLOCK},
   };
 
   std::string radio_block_label;
@@ -1361,6 +1355,120 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
   }
 }
 
+// ContentSettingDownloadsBubbleModel ------------------------------------------
+
+ContentSettingDownloadsBubbleModel::ContentSettingDownloadsBubbleModel(
+    Delegate* delegate,
+    WebContents* web_contents,
+    Profile* profile)
+    : ContentSettingBubbleModel(delegate, web_contents, profile) {
+  SetTitle();
+  SetManageText();
+  SetRadioGroup();
+}
+
+ContentSettingDownloadsBubbleModel::~ContentSettingDownloadsBubbleModel() {
+  if (profile() &&
+      selected_item_ != bubble_content().radio_group.default_item) {
+    ContentSetting setting = selected_item_ == kAllowButtonIndex
+                                 ? CONTENT_SETTING_ALLOW
+                                 : CONTENT_SETTING_BLOCK;
+    auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+    map->SetNarrowestContentSetting(
+        bubble_content().radio_group.url, bubble_content().radio_group.url,
+        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, setting);
+  }
+}
+
+ContentSettingDownloadsBubbleModel*
+ContentSettingDownloadsBubbleModel::AsDownloadsBubbleModel() {
+  return this;
+}
+
+// Initialize the radio group by setting the appropriate labels for the
+// content type and setting the default value based on the content setting.
+void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
+  GURL url = web_contents()->GetURL();
+  base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(url);
+  if (display_host.empty())
+    display_host = base::ASCIIToUTF16(url.spec());
+
+  DownloadRequestLimiter* download_request_limiter =
+      g_browser_process->download_request_limiter();
+  DCHECK(download_request_limiter);
+
+  RadioGroup radio_group;
+  radio_group.url = url;
+  switch (download_request_limiter->GetDownloadStatus(web_contents())) {
+    case DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS:
+      radio_group.radio_items.push_back(
+          l10n_util::GetStringUTF8(IDS_ALLOWED_DOWNLOAD_NO_ACTION));
+      radio_group.radio_items.push_back(
+          l10n_util::GetStringFUTF8(IDS_ALLOWED_DOWNLOAD_BLOCK, display_host));
+      radio_group.default_item = kAllowButtonIndex;
+      break;
+    case DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED:
+      radio_group.radio_items.push_back(l10n_util::GetStringFUTF8(
+          IDS_BLOCKED_DOWNLOAD_UNBLOCK, display_host));
+      radio_group.radio_items.push_back(
+          l10n_util::GetStringUTF8(IDS_BLOCKED_DOWNLOAD_NO_ACTION));
+      radio_group.default_item = 1;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  set_radio_group(radio_group);
+  selected_item_ = radio_group.default_item;
+
+  SettingInfo info;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+                         std::string(), &info);
+
+  // Prevent creation of content settings for illegal urls like about:blank
+  bool is_valid = map->CanSetNarrowestContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
+
+  set_radio_group_enabled(is_valid && info.source == SETTING_SOURCE_USER);
+}
+
+void ContentSettingDownloadsBubbleModel::OnRadioClicked(int radio_index) {
+  selected_item_ = radio_index;
+}
+
+void ContentSettingDownloadsBubbleModel::SetTitle() {
+  if (!web_contents())
+    return;
+
+  DownloadRequestLimiter* download_request_limiter =
+      g_browser_process->download_request_limiter();
+  DCHECK(download_request_limiter);
+
+  switch (download_request_limiter->GetDownloadStatus(web_contents())) {
+    case DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS:
+      set_title(l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_TITLE));
+      return;
+    case DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED:
+      set_title(l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_TITLE));
+      return;
+    default:
+      // No title otherwise.
+      return;
+  }
+}
+
+void ContentSettingDownloadsBubbleModel::SetManageText() {
+  set_manage_text(l10n_util::GetStringUTF8(IDS_BLOCKED_DOWNLOADS_LINK));
+}
+
+void ContentSettingDownloadsBubbleModel::OnManageLinkClicked() {
+  if (delegate())
+    delegate()->ShowContentSettingsPage(
+        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
+}
+
 // ContentSettingBubbleModel ---------------------------------------------------
 
 // static
@@ -1400,10 +1508,13 @@ ContentSettingBubbleModel*
   }
   if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
       content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-      content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
-      content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
+      content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
     return new ContentSettingSingleRadioGroup(delegate, web_contents, profile,
                                               content_type);
+  }
+  if (content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
+    return new ContentSettingDownloadsBubbleModel(delegate, web_contents,
+                                                  profile);
   }
   NOTREACHED() << "No bubble for the content type " << content_type << ".";
   return nullptr;
@@ -1479,5 +1590,10 @@ ContentSettingMediaStreamBubbleModel*
 
 ContentSettingSubresourceFilterBubbleModel*
 ContentSettingBubbleModel::AsSubresourceFilterBubbleModel() {
+  return nullptr;
+}
+
+ContentSettingDownloadsBubbleModel*
+ContentSettingBubbleModel::AsDownloadsBubbleModel() {
   return nullptr;
 }

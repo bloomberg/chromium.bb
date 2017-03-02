@@ -8,18 +8,17 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
@@ -37,6 +36,45 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
 
+namespace {
+
+ContentSetting GetSettingFromStatus(
+    DownloadRequestLimiter::DownloadStatus status) {
+  switch (status) {
+    case DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD:
+    case DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD:
+      return CONTENT_SETTING_ASK;
+    case DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS:
+      return CONTENT_SETTING_ALLOW;
+    case DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED:
+      return CONTENT_SETTING_BLOCK;
+  }
+  NOTREACHED();
+  return CONTENT_SETTING_DEFAULT;
+}
+
+DownloadRequestLimiter::DownloadStatus GetStatusFromSetting(
+    ContentSetting setting) {
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+      return DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS;
+    case CONTENT_SETTING_BLOCK:
+      return DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED;
+    case CONTENT_SETTING_DEFAULT:
+    case CONTENT_SETTING_ASK:
+      return DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD;
+    case CONTENT_SETTING_SESSION_ONLY:
+    case CONTENT_SETTING_NUM_SETTINGS:
+    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+      NOTREACHED();
+      return DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD;
+  }
+  NOTREACHED();
+  return DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD;
+}
+
+}  // namespace
+
 // TabDownloadState ------------------------------------------------------------
 
 DownloadRequestLimiter::TabDownloadState::TabDownloadState(
@@ -48,9 +86,9 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       host_(host),
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
+      observer_(this),
       factory_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-                 content::Source<content::WebContents>(contents));
+  observer_.Add(GetContentSettings(contents));
   NavigationEntry* last_entry =
       originating_web_contents
           ? originating_web_contents->GetController().GetLastCommittedEntry()
@@ -65,6 +103,11 @@ DownloadRequestLimiter::TabDownloadState::~TabDownloadState() {
 
   // And we should have invalidated the back pointer.
   DCHECK(!factory_.HasWeakPtrs());
+}
+
+void DownloadRequestLimiter::TabDownloadState::SetDownloadStatusAndNotify(
+    DownloadStatus status) {
+  SetDownloadStatusAndNotifyImpl(status, GetSettingFromStatus(status));
 }
 
 void DownloadRequestLimiter::TabDownloadState::DidStartNavigation(
@@ -194,16 +237,22 @@ void DownloadRequestLimiter::TabDownloadState::SetContentSetting(
 
 void DownloadRequestLimiter::TabDownloadState::Cancel() {
   SetContentSetting(CONTENT_SETTING_BLOCK);
-  NotifyCallbacks(false);
+  bool throttled = NotifyCallbacks(false);
+  SetDownloadStatusAndNotify(throttled ? PROMPT_BEFORE_DOWNLOAD
+                                       : DOWNLOADS_NOT_ALLOWED);
 }
 
 void DownloadRequestLimiter::TabDownloadState::CancelOnce() {
-  NotifyCallbacks(false);
+  bool throttled = NotifyCallbacks(false);
+  SetDownloadStatusAndNotify(throttled ? PROMPT_BEFORE_DOWNLOAD
+                                       : DOWNLOADS_NOT_ALLOWED);
 }
 
 void DownloadRequestLimiter::TabDownloadState::Accept() {
   SetContentSetting(CONTENT_SETTING_ALLOW);
-  NotifyCallbacks(true);
+  bool throttled = NotifyCallbacks(true);
+  SetDownloadStatusAndNotify(throttled ? PROMPT_BEFORE_DOWNLOAD
+                                       : ALLOW_ALL_DOWNLOADS);
 }
 
 DownloadRequestLimiter::TabDownloadState::TabDownloadState()
@@ -211,17 +260,34 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState()
       host_(NULL),
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
+      observer_(this),
       factory_(this) {}
 
 bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
   return factory_.HasWeakPtrs();
 }
 
-void DownloadRequestLimiter::TabDownloadState::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED, type);
+void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  if (content_type != CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS)
+    return;
+
+  // Analogous to TabSpecificContentSettings::OnContentSettingChanged:
+  const ContentSettingsDetails details(primary_pattern, secondary_pattern,
+                                       content_type, resource_identifier);
+  const NavigationController& controller = web_contents()->GetController();
+
+  // The visible NavigationEntry is the URL in the URL field of a tab.
+  // Currently this should be matched by the |primary_pattern|.
+  NavigationEntry* entry = controller.GetVisibleEntry();
+  GURL entry_url;
+  if (entry)
+    entry_url = entry->GetURL();
+  if (!details.update_all() && !details.primary_pattern().Matches(entry_url))
+    return;
 
   // Content settings have been updated for our web contents, e.g. via the OIB
   // or the settings page. Check to see if the automatic downloads setting is
@@ -231,45 +297,24 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
   //
   // NotifyCallbacks is not called as this notification should be triggered when
   // a download is not pending.
-  content::WebContents* contents =
-      content::Source<content::WebContents>(source).ptr();
-  DCHECK_EQ(contents, web_contents());
-
+  //
   // Fetch the content settings map for this web contents, and extract the
   // automatic downloads permission value.
-  HostContentSettingsMap* content_settings = GetContentSettings(contents);
+  HostContentSettingsMap* content_settings = GetContentSettings(web_contents());
   if (!content_settings)
     return;
 
   ContentSetting setting = content_settings->GetContentSetting(
-      contents->GetURL(), contents->GetURL(),
+      web_contents()->GetURL(), web_contents()->GetURL(),
       CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string());
 
   // Update the internal state to match if necessary.
-  switch (setting) {
-    case CONTENT_SETTING_ALLOW:
-      set_download_status(ALLOW_ALL_DOWNLOADS);
-      break;
-    case CONTENT_SETTING_BLOCK:
-      set_download_status(DOWNLOADS_NOT_ALLOWED);
-      break;
-    case CONTENT_SETTING_ASK:
-    case CONTENT_SETTING_DEFAULT:
-    case CONTENT_SETTING_SESSION_ONLY:
-      set_download_status(PROMPT_BEFORE_DOWNLOAD);
-      break;
-    case CONTENT_SETTING_NUM_SETTINGS:
-    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
-      NOTREACHED();
-      return;
-  }
+  SetDownloadStatusAndNotifyImpl(GetStatusFromSetting(setting), setting);
 }
 
-void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
-  set_download_status(allow ? DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS
-                            : DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+bool DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
   std::vector<DownloadRequestLimiter::Callback> callbacks;
-  bool change_status = false;
+  bool throttled = false;
 
   // Selectively send first few notifications only if number of downloads exceed
   // kMaxDownloadsAtOnce. In that case, we also retain the infobar instance and
@@ -285,7 +330,7 @@ void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
     end = callbacks_.begin() + kMaxDownloadsAtOnce;
     callbacks.assign(start, end);
     callbacks_.erase(start, end);
-    change_status = true;
+    throttled = true;
   }
 
   for (const auto& callback : callbacks) {
@@ -294,18 +339,30 @@ void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
                             base::Bind(callback, allow));
   }
 
-  if (change_status)
-    set_download_status(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD);
+  return throttled;
+}
+
+void DownloadRequestLimiter::TabDownloadState::SetDownloadStatusAndNotifyImpl(
+    DownloadStatus status,
+    ContentSetting setting) {
+  DCHECK((GetSettingFromStatus(status) == setting) ||
+         (GetStatusFromSetting(setting) == status))
+      << "status " << status << " and setting " << setting
+      << " do not correspond to each other";
+
+  ContentSetting last_setting = GetSettingFromStatus(status_);
+  status_ = status;
+  if (!web_contents())
+    return;
+  if (last_setting == setting)
+    return;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<content::WebContents>(web_contents()),
+      content::NotificationService::NoDetails());
 }
 
 // DownloadRequestLimiter ------------------------------------------------------
-
-HostContentSettingsMap* DownloadRequestLimiter::content_settings_ = NULL;
-
-void DownloadRequestLimiter::SetContentSettingsForTesting(
-    HostContentSettingsMap* content_settings) {
-  content_settings_ = content_settings;
-}
 
 DownloadRequestLimiter::DownloadRequestLimiter() : factory_(this) {}
 
@@ -387,10 +444,8 @@ void DownloadRequestLimiter::OnCanDownloadDecided(
 
 HostContentSettingsMap* DownloadRequestLimiter::GetContentSettings(
     content::WebContents* contents) {
-  return content_settings_
-             ? content_settings_
-             : HostContentSettingsMapFactory::GetForProfile(
-                   Profile::FromBrowserContext(contents->GetBrowserContext()));
+  return HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(contents->GetBrowserContext()));
 }
 
 void DownloadRequestLimiter::CanDownloadImpl(
@@ -406,13 +461,13 @@ void DownloadRequestLimiter::CanDownloadImpl(
       if (state->download_count() &&
           !(state->download_count() %
             DownloadRequestLimiter::kMaxDownloadsAtOnce))
-        state->set_download_status(PROMPT_BEFORE_DOWNLOAD);
+        state->SetDownloadStatusAndNotify(PROMPT_BEFORE_DOWNLOAD);
       callback.Run(true);
       state->increment_download_count();
       break;
 
     case ALLOW_ONE_DOWNLOAD:
-      state->set_download_status(PROMPT_BEFORE_DOWNLOAD);
+      state->SetDownloadStatusAndNotify(PROMPT_BEFORE_DOWNLOAD);
       callback.Run(true);
       state->increment_download_count();
       break;
@@ -431,28 +486,22 @@ void DownloadRequestLimiter::CanDownloadImpl(
             CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string());
       switch (setting) {
         case CONTENT_SETTING_ALLOW: {
-          TabSpecificContentSettings* settings =
-              TabSpecificContentSettings::FromWebContents(originating_contents);
-          if (settings)
-            settings->SetDownloadsBlocked(false);
+          state->SetDownloadStatusAndNotify(ALLOW_ALL_DOWNLOADS);
           callback.Run(true);
           state->increment_download_count();
           return;
         }
         case CONTENT_SETTING_BLOCK: {
-          TabSpecificContentSettings* settings =
-              TabSpecificContentSettings::FromWebContents(originating_contents);
-          if (settings)
-            settings->SetDownloadsBlocked(true);
+          state->SetDownloadStatusAndNotify(DOWNLOADS_NOT_ALLOWED);
           callback.Run(false);
           return;
         }
         case CONTENT_SETTING_DEFAULT:
         case CONTENT_SETTING_ASK:
-        case CONTENT_SETTING_SESSION_ONLY:
           state->PromptUserForDownload(callback);
           state->increment_download_count();
           break;
+        case CONTENT_SETTING_SESSION_ONLY:
         case CONTENT_SETTING_NUM_SETTINGS:
         default:
           NOTREACHED();

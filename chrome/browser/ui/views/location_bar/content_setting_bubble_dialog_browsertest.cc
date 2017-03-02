@@ -4,7 +4,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -51,6 +53,13 @@ void ContentSettingBubbleDialogTest::ShowDialogBubble(
       break;
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       content_settings->OnGeolocationPermissionSet(GURL::EmptyGURL(), false);
+      break;
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+      // Automatic downloads are handled by DownloadRequestLimiter.
+      g_browser_process->download_request_limiter()
+          ->GetDownloadState(web_contents, web_contents, true)
+          ->SetDownloadStatusAndNotify(
+              DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
       break;
     default:
       // For all other content_types passed in, mark them as blocked.

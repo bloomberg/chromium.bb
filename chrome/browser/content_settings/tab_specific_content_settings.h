@@ -189,9 +189,6 @@ class TabSpecificContentSettings
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
 
-  // Changes the |content_blocked_| entry for downloads.
-  void SetDownloadsBlocked(bool blocked);
-
   // Changes |subresource_filter_enabled_| entry for the Safe Browsing
   // Subresource Filter.
   void SetSubresourceBlocked(bool enabled);

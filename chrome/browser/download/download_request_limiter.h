@@ -16,16 +16,15 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class HostContentSettingsMap;
 
 namespace content {
-class NavigationController;
 class WebContents;
 }
 
@@ -74,7 +73,7 @@ class DownloadRequestLimiter
   // TabDownloadState deletes itself (by invoking
   // DownloadRequestLimiter::Remove) as necessary.
   // TODO(gbillock): just make this class implement PermissionRequest.
-  class TabDownloadState : public content::NotificationObserver,
+  class TabDownloadState : public content_settings::Observer,
                            public content::WebContentsObserver {
    public:
     // Creates a new TabDownloadState. |controller| is the controller the
@@ -88,13 +87,13 @@ class DownloadRequestLimiter
                      content::WebContents* originating_web_contents);
     ~TabDownloadState() override;
 
+    // Sets the current limiter state and the underlying automatic downloads
+    // content setting. Sends a notification that the content setting has been
+    // changed (if it has changed).
+    void SetDownloadStatusAndNotify(DownloadStatus status);
+
     // Status of the download.
-    void set_download_status(DownloadRequestLimiter::DownloadStatus status) {
-      status_ = status;
-    }
-    DownloadRequestLimiter::DownloadStatus download_status() const {
-      return status_;
-    }
+    DownloadStatus download_status() const { return status_; }
 
     // Number of "ALLOWED" downloads.
     void increment_download_count() {
@@ -136,17 +135,24 @@ class DownloadRequestLimiter
     // given to the info bar delegate or permission bubble request.
     bool is_showing_prompt() const;
 
-    // content::NotificationObserver method.
-    void Observe(int type,
-                 const content::NotificationSource& source,
-                 const content::NotificationDetails& details) override;
+    // content_settings::Observer overrides.
+    void OnContentSettingChanged(
+        const ContentSettingsPattern& primary_pattern,
+        const ContentSettingsPattern& secondary_pattern,
+        ContentSettingsType content_type,
+        std::string resource_identifier) override;
 
     // Remember to either block or allow automatic downloads from this origin.
     void SetContentSetting(ContentSetting setting);
 
     // Notifies the callbacks as to whether the download is allowed or not.
-    // Updates status_ appropriately.
-    void NotifyCallbacks(bool allow);
+    // Returns false if it didn't notify all callbacks.
+    bool NotifyCallbacks(bool allow);
+
+    // Set the download limiter state and notify if it has changed. Callers must
+    // guarantee that |status| and |setting| correspond to each other.
+    void SetDownloadStatusAndNotifyImpl(DownloadStatus status,
+                                        ContentSetting setting);
 
     content::WebContents* web_contents_;
 
@@ -155,7 +161,7 @@ class DownloadRequestLimiter
     // Host of the first page the download started on. This may be empty.
     std::string initial_page_host_;
 
-    DownloadRequestLimiter::DownloadStatus status_;
+    DownloadStatus status_;
 
     size_t download_count_;
 
@@ -165,8 +171,8 @@ class DownloadRequestLimiter
     // callbacks.
     std::vector<DownloadRequestLimiter::Callback> callbacks_;
 
-    // Used to remove observers installed on NavigationController.
-    content::NotificationRegistrar registrar_;
+    ScopedObserver<HostContentSettingsMap, content_settings::Observer>
+        observer_;
 
     // Weak pointer factory for generating a weak pointer to pass to the
     // infobar.  User responses to the throttling prompt will be returned
@@ -176,8 +182,6 @@ class DownloadRequestLimiter
 
     DISALLOW_COPY_AND_ASSIGN(TabDownloadState);
   };
-
-  static void SetContentSettingsForTesting(HostContentSettingsMap* settings);
 
   DownloadRequestLimiter();
 
@@ -194,7 +198,11 @@ class DownloadRequestLimiter
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, DownloadResourceThrottleCancels);
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingBubbleControllerTest, Init);
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingImageModelBrowserTest,
+                           CreateBubbleModel);
   friend class base::RefCountedThreadSafe<DownloadRequestLimiter>;
+  friend class ContentSettingBubbleDialogTest;
   friend class DownloadRequestLimiterTest;
   friend class TabDownloadState;
 
@@ -231,10 +239,10 @@ class DownloadRequestLimiter
   // ALLOW_ONE_DOWNLOAD.
   void Remove(TabDownloadState* state, content::WebContents* contents);
 
-  static HostContentSettingsMap* content_settings_;
   static HostContentSettingsMap* GetContentSettings(
       content::WebContents* contents);
 
+  // TODO(bauerb): Change this to use WebContentsUserData.
   // Maps from tab to download state. The download state for a tab only exists
   // if the state is other than ALLOW_ONE_DOWNLOAD. Similarly once the state
   // transitions from anything but ALLOW_ONE_DOWNLOAD back to ALLOW_ONE_DOWNLOAD

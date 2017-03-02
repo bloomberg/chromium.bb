@@ -8,7 +8,9 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
@@ -20,8 +22,6 @@
 #include "content/public/common/media_stream_request.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
 
 class ContentSettingBubbleControllerTest : public InProcessBrowserTest {
  protected:
@@ -72,6 +72,13 @@ ContentSettingBubbleControllerTest::CreateBubbleController(
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, Init) {
   TabSpecificContentSettings::FromWebContents(web_contents())->
       BlockAllContentForTesting();
+
+  // Automatic downloads are handled by DownloadRequestLimiter.
+  g_browser_process->download_request_limiter()
+      ->GetDownloadState(web_contents(), web_contents(), true)
+      ->SetDownloadStatusAndNotify(
+          DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (const auto& model : models) {
@@ -110,5 +117,3 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, MediaStreamBubble) {
 
  [parent_ close];
 }
-
-}  // namespace

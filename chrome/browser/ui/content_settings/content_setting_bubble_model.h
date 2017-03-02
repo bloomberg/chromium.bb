@@ -50,11 +50,13 @@ class RapporServiceImpl;
 //       ContentSettingCookiesBubbleModel            - cookies
 //       ContentSettingPopupBubbleModel              - popups
 //   ContentSettingSubresourceFilterBubbleModel  - filtered subresources
+//   ContentSettingDownloadsBubbleModel          - automatic downloads
 
 // Forward declaration necessary for downcasts.
 class ContentSettingMediaStreamBubbleModel;
 class ContentSettingSimpleBubbleModel;
 class ContentSettingSubresourceFilterBubbleModel;
+class ContentSettingDownloadsBubbleModel;
 
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
@@ -174,6 +176,9 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   // if possible.
   virtual ContentSettingSubresourceFilterBubbleModel*
   AsSubresourceFilterBubbleModel();
+
+  // Cast this bubble into ContentSettingDownloadsBubbleModel if possible.
+  virtual ContentSettingDownloadsBubbleModel* AsDownloadsBubbleModel();
 
   // Sets the Rappor service used for testing.
   void SetRapporServiceImplForTesting(
@@ -381,6 +386,31 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   TabSpecificContentSettings::MicrophoneCameraState state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaStreamBubbleModel);
+};
+
+// The model for automatic downloads setting.
+class ContentSettingDownloadsBubbleModel : public ContentSettingBubbleModel {
+ public:
+  ContentSettingDownloadsBubbleModel(Delegate* delegate,
+                                     content::WebContents* web_contents,
+                                     Profile* profile);
+  ~ContentSettingDownloadsBubbleModel() override;
+
+  // ContentSettingBubbleModel overrides:
+  ContentSettingDownloadsBubbleModel* AsDownloadsBubbleModel() override;
+
+ private:
+  void SetRadioGroup();
+
+  // ContentSettingBubbleModel overrides:
+  void OnRadioClicked(int radio_index) override;
+  void SetTitle() override;
+  void SetManageText() override;
+  void OnManageLinkClicked() override;
+
+  int selected_item_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingDownloadsBubbleModel);
 };
 
 #endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_H_
