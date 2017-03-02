@@ -28,4 +28,8 @@ const UkmSource* TestUkmService::GetSource(size_t source_num) const {
   return sources_for_testing()[source_num].get();
 }
 
+const UkmEntry* TestUkmService::GetEntry(size_t entry_num) const {
+  return entries_for_testing()[entry_num].get();
+}
+
 }  // namespace ukm

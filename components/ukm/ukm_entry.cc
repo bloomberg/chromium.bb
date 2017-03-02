@@ -15,7 +15,7 @@ UkmEntry::UkmEntry(int32_t source_id, const char* event_name)
 
 UkmEntry::~UkmEntry() {}
 
-void UkmEntry::PopulateProto(Entry* proto_entry) {
+void UkmEntry::PopulateProto(Entry* proto_entry) const {
   DCHECK(!proto_entry->has_source_id());
   DCHECK(!proto_entry->has_event_hash());
   DCHECK(proto_entry->metrics_size() == 0);

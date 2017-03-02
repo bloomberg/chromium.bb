@@ -423,7 +423,7 @@ void UkmService::UpdateSourceURL(int32_t source_id, const GURL& url) {
     if (source_id != source->id())
       continue;
 
-    source->set_committed_url(url);
+    source->set_url(url);
     return;
   }
 
@@ -433,7 +433,7 @@ void UkmService::UpdateSourceURL(int32_t source_id, const GURL& url) {
   }
   std::unique_ptr<UkmSource> source = base::MakeUnique<UkmSource>();
   source->set_id(source_id);
-  source->set_committed_url(url);
+  source->set_url(url);
   sources_.push_back(std::move(source));
 }
 

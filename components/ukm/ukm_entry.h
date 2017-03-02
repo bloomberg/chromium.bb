@@ -26,7 +26,9 @@ class UkmEntryBuilder;
 class UkmEntry {
  public:
   // Serializes the members of the class into the supplied proto.
-  void PopulateProto(Entry* proto_entry);
+  void PopulateProto(Entry* proto_entry) const;
+
+  int32_t source_id() const { return source_id_; }
 
   ~UkmEntry();
 

@@ -26,6 +26,7 @@ message Source {
   // events related to this Source will generally be relative to this timestamp.
   optional int64 navigation_time_msec = 3;
 
-  // Time between navigation and the first contentful paint, in milliseconds.
-  optional int64 first_contentful_paint_msec = 4;
+  // Time between navigation and the first contentful paint, in
+  // milliseconds. Deprecated. Use ukm::Entry instead.
+  optional int64 first_contentful_paint_msec = 4 [deprecated = true];
 }

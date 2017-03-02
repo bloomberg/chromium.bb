@@ -25,25 +25,15 @@ class UkmSource {
   int32_t id() const { return id_; }
   void set_id(int32_t id) { id_ = id; }
 
-  const GURL& committed_url() const { return committed_url_; }
-  void set_committed_url(const GURL& committed_url) {
-    committed_url_ = committed_url;
-  }
-
-  base::TimeDelta first_contentful_paint() const {
-    return first_contentful_paint_;
-  }
-  void set_first_contentful_paint(base::TimeDelta first_contentful_paint) {
-    first_contentful_paint_ = first_contentful_paint;
-  }
+  const GURL& url() const { return url_; }
+  void set_url(const GURL& url) { url_ = url; }
 
   // Serializes the members of the class into the supplied proto.
-  void PopulateProto(Source* proto_source);
+  void PopulateProto(Source* proto_source) const;
 
  private:
   int32_t id_;
-  GURL committed_url_;
-  base::TimeDelta first_contentful_paint_;
+  GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmSource);
 };

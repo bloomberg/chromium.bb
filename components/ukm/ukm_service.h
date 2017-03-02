@@ -99,6 +99,10 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
     return sources_;
   }
 
+  const std::vector<std::unique_ptr<UkmEntry>>& entries_for_testing() const {
+    return entries_;
+  }
+
  private:
   friend UkmPageLoadMetricsObserver;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics);

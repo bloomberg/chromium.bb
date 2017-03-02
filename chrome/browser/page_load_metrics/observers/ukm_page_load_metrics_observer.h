@@ -8,6 +8,14 @@
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 
+namespace internal {
+
+// Name constants are exposed here so they can be referenced from tests.
+extern const char kUkmPageLoadEventName[];
+extern const char kUkmFirstContentfulPaintName[];
+
+}  // namespace internal
+
 // If URL-Keyed-Metrics (UKM) is enabled in the system, this is used to
 // populate it with top-level page-load metrics.
 class UkmPageLoadMetricsObserver
@@ -18,6 +26,7 @@ class UkmPageLoadMetricsObserver
   CreateIfNeeded();
 
   UkmPageLoadMetricsObserver();
+  ~UkmPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
@@ -32,12 +41,25 @@ class UkmPageLoadMetricsObserver
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
 
+  void OnFailedProvisionalLoad(
+      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+
   void OnComplete(const page_load_metrics::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
-  void SendMetricsToUkm(const page_load_metrics::PageLoadTiming& timing,
-                        const page_load_metrics::PageLoadExtraInfo& info);
+  // Records page load timing related metrics available in PageLoadTiming, such
+  // as first contentful paint.
+  void RecordTimingMetrics(const page_load_metrics::PageLoadTiming& timing);
+
+  // Records metrics based on the PageLoadExtraInfo struct, as well as updating
+  // the URL.
+  void RecordPageLoadExtraInfoMetrics(
+      const page_load_metrics::PageLoadExtraInfo& info);
+
+  // Unique UKM identifier for the page load we are recording metrics for.
+  const int32_t source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };
