@@ -232,7 +232,7 @@ NGExclusion ToLeaderExclusion(const NGLogicalOffset& origin_point,
 }  // namespace
 
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
-    NGConstraintSpace* space,
+    const NGConstraintSpace* space,
     const WTF::Optional<NGLogicalOffset>& opt_origin_point,
     const WTF::Optional<NGLogicalOffset>& opt_leader_point)
     : constraint_space_(space) {

@@ -33,7 +33,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
   //                         which starts from 'origin'. This rectangle may
   //                         represent a text fragment for example.
   NGLayoutOpportunityIterator(
-      NGConstraintSpace* space,
+      const NGConstraintSpace* space,
       const WTF::Optional<NGLogicalOffset>& opt_origin_point = WTF::nullopt,
       const WTF::Optional<NGLogicalOffset>& opt_leader_point = WTF::nullopt);
 
@@ -52,7 +52,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
     return opportunity_tree_root_.get();
   }
 
-  NGConstraintSpace* constraint_space_;
+  const NGConstraintSpace* constraint_space_;
 
   NGLayoutOpportunities opportunities_;
   NGLayoutOpportunities::const_iterator opportunity_iter_;

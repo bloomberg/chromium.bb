@@ -76,6 +76,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   const ComputedStyle& Style() const { return node_->Style(); }
 
+  // Mutable Getters.
+  NGConstraintSpace* MutableConstraintSpace() { return constraint_space_; }
+
   Persistent<NGBlockNode> node_;
   NGConstraintSpace* constraint_space_;
 

@@ -134,7 +134,7 @@ NGLogicalOffset AdjustToTopEdgeAlignmentRule(const NGConstraintSpace& space,
 // @param margins Margins of the fragment.
 // @return Layout opportunity for the fragment.
 const NGLayoutOpportunity FindLayoutOpportunityForFragment(
-    NGConstraintSpace* space,
+    const NGConstraintSpace* space,
     const NGFragment& fragment,
     const NGLogicalOffset& origin_point,
     const NGBoxStrut& margins) {
@@ -186,8 +186,9 @@ NGLogicalOffset CalculateLogicalOffsetForOpportunity(
 // floating object that is requested to be positioned from {@code origin_point}.
 NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
                               const NGLogicalOffset& from_offset,
-                              NGFloatingObject* floating_object) {
-  NGConstraintSpace* float_space = floating_object->space.get();
+                              NGFloatingObject* floating_object,
+                              NGConstraintSpace* new_parent_space) {
+  const auto* float_space = floating_object->space.get();
   DCHECK(floating_object->fragment) << "Fragment cannot be null here";
 
   // TODO(ikilpatrick): The writing mode switching here looks wrong.
@@ -212,7 +213,7 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
   const NGExclusion exclusion = CreateExclusion(
       float_fragment, opportunity, float_offset, floating_object->margins,
       floating_object->exclusion_type);
-  float_space->AddExclusion(exclusion);
+  new_parent_space->AddExclusion(exclusion);
 
   return CalculateLogicalOffsetForOpportunity(opportunity, float_offset,
                                               from_offset, floating_object);
@@ -234,13 +235,13 @@ void UpdateFloatingObjectLeftOffset(
 // Positions pending floats stored on the fragment builder starting from
 // {@code origin_point_block_offset}.
 void PositionPendingFloats(const LayoutUnit origin_point_block_offset,
-                           const NGConstraintSpace& new_parent_space,
+                           NGConstraintSpace* new_parent_space,
                            NGFragmentBuilder* builder) {
   DCHECK(builder->BfcOffset()) << "Parent BFC offset should be known here";
   LayoutUnit bfc_block_offset = builder->BfcOffset().value().block_offset;
 
   for (auto& floating_object : builder->UnpositionedFloats()) {
-    NGConstraintSpace* float_space = floating_object->space.get();
+    const auto* float_space = floating_object->space.get();
     const NGConstraintSpace* original_parent_space =
         floating_object->original_parent_space.get();
 
@@ -249,10 +250,10 @@ void PositionPendingFloats(const LayoutUnit origin_point_block_offset,
     NGLogicalOffset from_offset = {
         original_parent_space->BfcOffset().inline_offset, bfc_block_offset};
 
-    NGLogicalOffset float_fragment_offset =
-        PositionFloat(origin_point, from_offset, floating_object);
+    NGLogicalOffset float_fragment_offset = PositionFloat(
+        origin_point, from_offset, floating_object, new_parent_space);
     builder->AddFloatingObject(floating_object, float_fragment_offset);
-    UpdateFloatingObjectLeftOffset(new_parent_space, floating_object,
+    UpdateFloatingObjectLeftOffset(*new_parent_space, floating_object,
                                    float_fragment_offset);
   }
   builder->MutableUnpositionedFloats().clear();
@@ -499,8 +500,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (block_size) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     UpdateFragmentBfcOffset(curr_bfc_offset_);
-    PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
-                          &builder_);
+    PositionPendingFloats(curr_bfc_offset_.block_offset,
+                          MutableConstraintSpace(), &builder_);
   }
 
   // Margins collapsing:
@@ -558,9 +559,8 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
   if (child->Type() == NGLayoutInputNode::kLegacyBlock &&
       toNGBlockNode(child)->Style().isFloating()) {
     NGFloatingObject* floating_object = new NGFloatingObject(
-        layout_result->PhysicalFragment().get(), child_space, constraint_space_,
-        toNGBlockNode(child), toNGBlockNode(child)->Style(),
-        curr_child_margins_);
+        child_space, constraint_space_, toNGBlockNode(child)->Style(),
+        curr_child_margins_, layout_result->PhysicalFragment().get());
     builder_.AddUnpositionedFloat(floating_object);
     // No need to postpone the positioning if we know the correct offset.
     if (builder_.BfcOffset()) {
@@ -569,7 +569,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
       // Example: <div style="margin-bottom: 20px"><float></div>
       //          <div style="margin-bottom: 30px"></div>
       origin_point.block_offset += curr_margin_strut_.Sum();
-      PositionPendingFloats(origin_point.block_offset, ConstraintSpace(),
+      PositionPendingFloats(origin_point.block_offset, MutableConstraintSpace(),
                             &builder_);
     }
     return;
@@ -600,8 +600,8 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
   }
   if (bfc_offset) {
     UpdateFragmentBfcOffset(curr_bfc_offset_);
-    PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
-                          &builder_);
+    PositionPendingFloats(curr_bfc_offset_.block_offset,
+                          MutableConstraintSpace(), &builder_);
   }
   NGLogicalOffset logical_offset = CalculateLogicalOffset(bfc_offset);
 
@@ -696,8 +696,8 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // Margins collapsing: Inline block.
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     UpdateFragmentBfcOffset(curr_bfc_offset_);
-    PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
-                          &builder_);
+    PositionPendingFloats(curr_bfc_offset_.block_offset,
+                          MutableConstraintSpace(), &builder_);
     curr_margin_strut_ = {};
 
     return space_builder_.ToConstraintSpace(
@@ -730,8 +730,8 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
       curr_margin_strut_ = NGMarginStrut();
       curr_child_margins_.block_start = LayoutUnit();
     }
-    PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
-                          &builder_);
+    PositionPendingFloats(curr_bfc_offset_.block_offset,
+                          MutableConstraintSpace(), &builder_);
     WTF::Optional<LayoutUnit> clearance_offset =
         GetClearanceOffset(constraint_space_->Exclusions(), child_style);
     space_builder_.SetClearanceOffset(clearance_offset);

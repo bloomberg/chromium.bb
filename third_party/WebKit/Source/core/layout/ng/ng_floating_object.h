@@ -19,34 +19,33 @@ class NGPhysicalFragment;
 // Struct that keeps all information needed to position floats in LayoutNG.
 struct CORE_EXPORT NGFloatingObject
     : public GarbageCollectedFinalized<NGFloatingObject> {
-  NGFloatingObject(NGPhysicalFragment* fragment,
-                   NGConstraintSpace* space,
+  NGFloatingObject(const NGConstraintSpace* space,
                    const NGConstraintSpace* parent_space,
-                   NGBlockNode* node,
                    const ComputedStyle& style,
-                   const NGBoxStrut& margins)
-      : fragment(fragment),
-        space(space),
+                   const NGBoxStrut& margins,
+                   NGPhysicalFragment* fragment)
+      : space(space),
         original_parent_space(parent_space),
-        node(node),
-        margins(margins) {
+        margins(margins),
+        fragment(fragment) {
     exclusion_type = NGExclusion::kFloatLeft;
     if (style.floating() == EFloat::kRight)
       exclusion_type = NGExclusion::kFloatRight;
     clear_type = style.clear();
   }
 
-  RefPtr<NGPhysicalFragment> fragment;
-  // TODO(glebl): Constraint space should be const here.
-  RefPtr<NGConstraintSpace> space;
+  // Original constraint space of the float.
+  RefPtr<const NGConstraintSpace> space;
 
   // Parent space is used so we can calculate the inline offset relative to
   // the original parent of this float.
   RefPtr<const NGConstraintSpace> original_parent_space;
-  Member<NGBlockNode> node;
+
   NGExclusion::Type exclusion_type;
   EClear clear_type;
   NGBoxStrut margins;
+
+  RefPtr<NGPhysicalFragment> fragment;
 
   // In the case where a legacy FloatingObject is attached to not its own
   // parent, e.g. a float surrounded by a bunch of nested empty divs,
@@ -58,7 +57,6 @@ struct CORE_EXPORT NGFloatingObject
   LayoutUnit left_offset;
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(node);
   }
 };
 
