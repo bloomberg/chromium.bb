@@ -61,8 +61,6 @@ std::string FetchResultToString(FetchResult result) {
   switch (result) {
     case FetchResult::SUCCESS:
       return "OK";
-    case FetchResult::DEPRECATED_EMPTY_HOSTS:
-      return "Cannot fetch for empty hosts list.";
     case FetchResult::URL_REQUEST_STATUS_ERROR:
       return "URLRequestStatus error";
     case FetchResult::HTTP_ERROR:
@@ -73,10 +71,6 @@ std::string FetchResultToString(FetchResult result) {
       return "Invalid / empty list.";
     case FetchResult::OAUTH_TOKEN_ERROR:
       return "Error in obtaining an OAuth2 access token.";
-    case FetchResult::INTERACTIVE_QUOTA_ERROR:
-      return "Out of interactive quota.";
-    case FetchResult::NON_INTERACTIVE_QUOTA_ERROR:
-      return "Out of non-interactive quota.";
     case FetchResult::RESULT_MAX:
       break;
   }
@@ -90,15 +84,12 @@ Status FetchResultToStatus(FetchResult result) {
       return Status::Success();
     // Permanent errors occur if it is more likely that the error originated
     // from the client.
-    case FetchResult::DEPRECATED_EMPTY_HOSTS:
     case FetchResult::OAUTH_TOKEN_ERROR:
       return Status(StatusCode::PERMANENT_ERROR, FetchResultToString(result));
     // Temporary errors occur if it's more likely that the client behaved
     // correctly but the server failed to respond as expected.
     // TODO(fhorschig): Revisit HTTP_ERROR once the rescheduling was reworked.
     case FetchResult::HTTP_ERROR:
-    case FetchResult::INTERACTIVE_QUOTA_ERROR:
-    case FetchResult::NON_INTERACTIVE_QUOTA_ERROR:
     case FetchResult::URL_REQUEST_STATUS_ERROR:
     case FetchResult::INVALID_SNIPPET_CONTENT_ERROR:
     case FetchResult::JSON_PARSE_ERROR:
@@ -260,19 +251,7 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
                      : FetchAPI::CHROME_READER_API),
       api_key_(api_key),
       clock_(new base::DefaultClock()),
-      user_classifier_(user_classifier),
-      request_throttler_rare_ntp_user_(
-          pref_service,
-          RequestThrottler::RequestType::
-              CONTENT_SUGGESTION_FETCHER_RARE_NTP_USER),
-      request_throttler_active_ntp_user_(
-          pref_service,
-          RequestThrottler::RequestType::
-              CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER),
-      request_throttler_active_suggestions_consumer_(
-          pref_service,
-          RequestThrottler::RequestType::
-              CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER) {}
+      user_classifier_(user_classifier) {}
 
 RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() {
   if (waiting_for_refresh_token_) {
@@ -283,15 +262,6 @@ RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() {
 void RemoteSuggestionsFetcher::FetchSnippets(
     const RequestParams& params,
     SnippetsAvailableCallback callback) {
-  if (!DemandQuotaForRequest(params.interactive_request)) {
-    FetchFinished(OptionalFetchedCategories(), std::move(callback),
-                  params.interactive_request
-                      ? FetchResult::INTERACTIVE_QUOTA_ERROR
-                      : FetchResult::NON_INTERACTIVE_QUOTA_ERROR,
-                  /*error_details=*/std::string());
-    return;
-  }
-
   if (!params.interactive_request) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "NewTabPage.Snippets.FetchTimeLocal",
@@ -566,22 +536,6 @@ bool RemoteSuggestionsFetcher::JsonToSnippets(
       }
       return true;
     }
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool RemoteSuggestionsFetcher::DemandQuotaForRequest(bool interactive_request) {
-  switch (user_classifier_->GetUserClass()) {
-    case UserClassifier::UserClass::RARE_NTP_USER:
-      return request_throttler_rare_ntp_user_.DemandQuotaForRequest(
-          interactive_request);
-    case UserClassifier::UserClass::ACTIVE_NTP_USER:
-      return request_throttler_active_ntp_user_.DemandQuotaForRequest(
-          interactive_request);
-    case UserClassifier::UserClass::ACTIVE_SUGGESTIONS_CONSUMER:
-      return request_throttler_active_suggestions_consumer_
-          .DemandQuotaForRequest(interactive_request);
   }
   NOTREACHED();
   return false;

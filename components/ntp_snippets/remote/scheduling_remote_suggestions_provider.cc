@@ -186,6 +186,18 @@ SchedulingRemoteSuggestionsProvider::SchedulingRemoteSuggestionsProvider(
       persistent_scheduler_(persistent_scheduler),
       background_fetch_in_progress_(false),
       user_classifier_(user_classifier),
+      request_throttler_rare_ntp_user_(
+          pref_service,
+          RequestThrottler::RequestType::
+              CONTENT_SUGGESTION_FETCHER_RARE_NTP_USER),
+      request_throttler_active_ntp_user_(
+          pref_service,
+          RequestThrottler::RequestType::
+              CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER),
+      request_throttler_active_suggestions_consumer_(
+          pref_service,
+          RequestThrottler::RequestType::
+              CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER),
       pref_service_(pref_service),
       clock_(std::move(clock)),
       enabled_triggers_(GetEnabledTriggerTypes()) {
@@ -283,6 +295,14 @@ void SchedulingRemoteSuggestionsProvider::RefetchInTheBackground(
     return;
   }
 
+  if (!AcquireQuota(/*interactive_request=*/false)) {
+    if (callback) {
+      callback->Run(Status(StatusCode::TEMPORARY_ERROR,
+                           "Non-interactive quota exceeded"));
+    }
+    return;
+  }
+
   background_fetch_in_progress_ = true;
   RemoteSuggestionsProvider::FetchStatusCallback wrapper_callback = base::Bind(
       &SchedulingRemoteSuggestionsProvider::RefetchInTheBackgroundFinished,
@@ -322,6 +342,15 @@ void SchedulingRemoteSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
     const FetchDoneCallback& callback) {
+  if (!AcquireQuota(/*interactive_request=*/true)) {
+    if (callback) {
+      callback.Run(
+          Status(StatusCode::TEMPORARY_ERROR, "Interactive quota exceeded"),
+          std::vector<ContentSuggestion>());
+    }
+    return;
+  }
+
   provider_->Fetch(
       category, known_suggestion_ids,
       base::Bind(&SchedulingRemoteSuggestionsProvider::FetchFinished,
@@ -329,6 +358,10 @@ void SchedulingRemoteSuggestionsProvider::Fetch(
 }
 
 void SchedulingRemoteSuggestionsProvider::ReloadSuggestions() {
+  if (!AcquireQuota(/*interactive_request=*/true)) {
+    return;
+  }
+
   provider_->ReloadSuggestions();
 }
 
@@ -486,6 +519,23 @@ bool SchedulingRemoteSuggestionsProvider::BackgroundFetchesDisabled(
   if (enabled_triggers_.count(trigger) == 0) {
     return true;  // Background fetches for |trigger| are not enabled.
   }
+  return false;
+}
+
+bool SchedulingRemoteSuggestionsProvider::AcquireQuota(
+    bool interactive_request) {
+  switch (user_classifier_->GetUserClass()) {
+    case UserClassifier::UserClass::RARE_NTP_USER:
+      return request_throttler_rare_ntp_user_.DemandQuotaForRequest(
+          interactive_request);
+    case UserClassifier::UserClass::ACTIVE_NTP_USER:
+      return request_throttler_active_ntp_user_.DemandQuotaForRequest(
+          interactive_request);
+    case UserClassifier::UserClass::ACTIVE_SUGGESTIONS_CONSUMER:
+      return request_throttler_active_suggestions_consumer_
+          .DemandQuotaForRequest(interactive_request);
+  }
+  NOTREACHED();
   return false;
 }
 

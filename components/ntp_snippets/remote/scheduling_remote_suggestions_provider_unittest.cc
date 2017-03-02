@@ -34,6 +34,7 @@
 
 using testing::ElementsAre;
 using testing::Eq;
+using testing::Field;
 using testing::InSequence;
 using testing::Invoke;
 using testing::IsEmpty;
@@ -98,6 +99,7 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
                void(const Category&,
                     const std::set<std::string>&,
                     const FetchDoneCallback&));
+  MOCK_METHOD0(ReloadSuggestions, void());
   MOCK_METHOD1(ClearCachedSuggestions, void(Category));
   MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category));
   MOCK_METHOD1(DismissSuggestion, void(const ContentSuggestion::ID&));
@@ -126,6 +128,7 @@ class SchedulingRemoteSuggestionsProviderTest
         user_classifier_(/*pref_service=*/nullptr) {
     SchedulingRemoteSuggestionsProvider::RegisterProfilePrefs(
         utils_.pref_service()->registry());
+    RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
     ResetProvider();
   }
 
@@ -155,6 +158,17 @@ class SchedulingRemoteSuggestionsProviderTest
     params_manager_.SetVariationParamsWithFeatureAssociations(
         ntp_snippets::kStudyName, params,
         {ntp_snippets::kArticleSuggestionsFeature.name});
+  }
+
+  // GMock cannot deal with move-only types. We need to pass the vector to the
+  // mock function as const ref using this wrapper callback.
+  void FetchDoneWrapper(
+      MockFunction<void(Status status_code,
+                        const std::vector<ContentSuggestion>& suggestions)>*
+          fetch_done,
+      Status status_code,
+      std::vector<ContentSuggestion> suggestions) {
+    fetch_done->Call(status_code, suggestions);
   }
 
  protected:
@@ -669,6 +683,88 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
   // Another trigger right after results in a fetch again.
   EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
   scheduling_provider_->OnBrowserForegrounded();
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       ShouldThrottleInteractiveRequests) {
+  // Change the quota for interactive requests ("active NTP user" is the default
+  // class in tests).
+  SetVariationParameter("interactive_quota_SuggestionFetcherActiveNTPUser",
+                        "10");
+  ResetProvider();
+
+  Category category = Category::FromKnownCategory(KnownCategories::ARTICLES);
+  std::set<std::string> known_suggestions;
+
+  // Both Fetch(..) and ReloadSuggestions() consume the same quota. As long as
+  // the quota suffices, the call gets through.
+  EXPECT_CALL(*underlying_provider_, ReloadSuggestions()).Times(5);
+  for (int x = 0; x < 5; ++x) {
+    scheduling_provider_->ReloadSuggestions();
+  }
+
+  // Expect underlying provider being called and store the callback to inform
+  // scheduling provider.
+  FetchDoneCallback signal_fetch_done_from_underlying_provider;
+  EXPECT_CALL(*underlying_provider_, Fetch(_, _, _))
+      .Times(5)
+      .WillRepeatedly(SaveArg<2>(&signal_fetch_done_from_underlying_provider));
+  // Expect scheduling provider to pass the information through.
+  MockFunction<void(Status status_code,
+                    const std::vector<ContentSuggestion>& suggestions)>
+      fetch_done_from_scheduling_provider;
+  EXPECT_CALL(fetch_done_from_scheduling_provider,
+              Call(Field(&Status::code, StatusCode::SUCCESS), _))
+      .Times(5);
+  // Scheduling is not activated, each successful fetch results in Unschedule().
+  EXPECT_CALL(persistent_scheduler_, Unschedule()).Times(5);
+  for (int x = 0; x < 5; ++x) {
+    scheduling_provider_->Fetch(
+        category, known_suggestions,
+        base::Bind(&SchedulingRemoteSuggestionsProviderTest::FetchDoneWrapper,
+                   base::Unretained(this),
+                   &fetch_done_from_scheduling_provider));
+    // Inform scheduling provider the fetc is successful (with no suggestions).
+    signal_fetch_done_from_underlying_provider.Run(
+        Status::Success(), std::vector<ContentSuggestion>{});
+  }
+
+  // When the quota expires, it is blocked by the scheduling provider, directly
+  // calling the callback.
+  EXPECT_CALL(fetch_done_from_scheduling_provider,
+              Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR), _));
+  scheduling_provider_->ReloadSuggestions();
+  scheduling_provider_->Fetch(
+      category, known_suggestions,
+      base::Bind(&SchedulingRemoteSuggestionsProviderTest::FetchDoneWrapper,
+                 base::Unretained(this), &fetch_done_from_scheduling_provider));
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       ShouldThrottleNonInteractiveRequests) {
+  // Change the quota for interactive requests ("active NTP user" is the default
+  // class in tests).
+  SetVariationParameter("quota_SuggestionFetcherActiveNTPUser", "5");
+  ResetProvider();
+
+  // One scheduling on start, 5 times after successful fetches.
+  EXPECT_CALL(persistent_scheduler_, Schedule(_, _)).Times(6);
+
+  // First enable the scheduler -- this will trigger the persistent scheduling.
+  ActivateUnderlyingProvider();
+
+  // As long as the quota suffices, the call gets through.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_))
+      .Times(5)
+      .WillRepeatedly(SaveArg<0>(&signal_fetch_done));
+  for (int x = 0; x < 5; ++x) {
+    scheduling_provider_->OnPersistentSchedulerWakeUp();
+    signal_fetch_done.Run(Status::Success());
+  }
+
+  // For the 6th time, it is blocked by the scheduling provider.
+  scheduling_provider_->OnPersistentSchedulerWakeUp();
 }
 
 }  // namespace ntp_snippets

@@ -20,7 +20,6 @@
 #include "components/ntp_snippets/remote/json_request.h"
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/request_params.h"
-#include "components/ntp_snippets/remote/request_throttler.h"
 #include "components/ntp_snippets/status.h"
 #include "components/translate/core/browser/language_model.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -161,8 +160,6 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
                       FetchedCategoriesVector* categories,
                       const base::Time& fetch_time);
 
-  bool DemandQuotaForRequest(bool interactive_request);
-
   // Authentication for signed-in users.
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
@@ -198,11 +195,6 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
 
   // Classifier that tells us how active the user is. Not owned.
   const UserClassifier* user_classifier_;
-
-  // Request throttlers for limiting requests for different classes of users.
-  RequestThrottler request_throttler_rare_ntp_user_;
-  RequestThrottler request_throttler_active_ntp_user_;
-  RequestThrottler request_throttler_active_suggestions_consumer_;
 
   // Info on the last finished fetch.
   std::string last_status_;

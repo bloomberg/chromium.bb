@@ -17,6 +17,7 @@
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
+#include "components/ntp_snippets/remote/request_throttler.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -144,6 +145,9 @@ class SchedulingRemoteSuggestionsProvider final
   // Returns whether background fetching (for the given |trigger|) is disabled.
   bool BackgroundFetchesDisabled(TriggerType trigger) const;
 
+  // Returns true if quota is available for another request.
+  bool AcquireQuota(bool interactive_request);
+
   // Callback after Fetch is completed.
   void FetchFinished(const FetchDoneCallback& callback,
                      Status fetch_status,
@@ -188,6 +192,11 @@ class SchedulingRemoteSuggestionsProvider final
 
   // Used to adapt the schedule based on usage activity of the user. Not owned.
   const UserClassifier* user_classifier_;
+
+  // Request throttlers for limiting requests for different classes of users.
+  RequestThrottler request_throttler_rare_ntp_user_;
+  RequestThrottler request_throttler_active_ntp_user_;
+  RequestThrottler request_throttler_active_suggestions_consumer_;
 
   PrefService* pref_service_;
   std::unique_ptr<base::Clock> clock_;

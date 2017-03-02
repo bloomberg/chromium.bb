@@ -283,7 +283,6 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
         mock_task_runner_(new base::TestMockTimeTaskRunner()),
         mock_task_runner_handle_(mock_task_runner_),
         test_url_(gurl) {
-    RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
     UserClassifier::RegisterProfilePrefs(utils_.pref_service()->registry());
     user_classifier_ = base::MakeUnique<UserClassifier>(utils_.pref_service());
     // Increase initial time such that ticks are non-zero.

@@ -32,6 +32,8 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   // triggered by the user and have lower priority on the server. After the
   // fetch finished, the provided |callback| will be triggered with the status
   // of the fetch (unless nullptr).
+  // TODO(jkrcal): Change to FetchStatusCallback callback as callbacks already
+  // have is_empty() functionality. crbug.com/676317
   virtual void RefetchInTheBackground(
       std::unique_ptr<FetchStatusCallback> callback) = 0;
 
