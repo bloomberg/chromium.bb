@@ -56,6 +56,11 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_POSIX)
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/app/shutdown_signal_handlers_posix.h"
+#endif
+
 using service_manager::mojom::ServiceFactory;
 
 namespace {
@@ -202,6 +207,14 @@ int MashRunner::RunServiceManagerInMain() {
   int exit_value = 0;
   background_service_manager.SetInstanceQuitCallback(
       base::Bind(&OnInstanceQuitInMain, &run_loop, &exit_value));
+
+#if defined(OS_POSIX)
+  // Quit the main process in response to shutdown signals (like SIGTERM).
+  // These signals are used by Linux distributions to request clean shutdown.
+  // On Chrome OS the SIGTERM signal is sent by session_manager.
+  InstallShutdownSignalHandlers(run_loop.QuitClosure(),
+                                base::ThreadTaskRunnerHandle::Get());
+#endif
 
   // Ping services that we know we want to launch on startup (UI service,
   // window manager, quick launch app).

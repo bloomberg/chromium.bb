@@ -2344,6 +2344,9 @@ split_static_library("browser") {
   if (use_aura && !use_ozone && is_desktop_linux) {
     deps += [ "//chrome/browser/ui/libgtkui" ]
   }
+  if (is_posix) {
+    deps += [ "//chrome/app:shutdown_signal_handlers" ]
+  }
   if (is_posix && !is_mac) {
     sources += [
       "//chrome/app/chrome_crash_reporter_client.cc",

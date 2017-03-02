@@ -41,6 +41,10 @@ source_set("mash") {
     deps += [ "//ash/resources" ]
   }
 
+  if (is_posix) {
+    deps += [ "//chrome/app:shutdown_signal_handlers" ]
+  }
+
   if (is_linux && !is_android) {
     deps += [ "//components/font_service:lib" ]
   }
