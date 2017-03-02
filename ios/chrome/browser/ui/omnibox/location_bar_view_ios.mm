@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/security_state/core/security_state_ui.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -169,12 +170,12 @@ void LocationBarViewIOS::OnChanged() {
   if (!IsIPadIdiom() && !edit_view_->model()->has_focus()) {
     ToolbarModel* toolbarModel = [delegate_ toolbarModel];
     if (toolbarModel) {
-      bool page_is_secure =
-          toolbarModel->GetSecurityLevel(false) != security_state::NONE;
+      bool show_icon_for_state = security_state::ShouldAlwaysShowIcon(
+          toolbarModel->GetSecurityLevel(false));
       bool page_has_downgraded_HTTPS =
           experimental_flags::IsPageIconForDowngradedHTTPSEnabled() &&
           DoesCurrentPageHaveCertInfo(GetWebState());
-      if (page_is_secure || page_has_downgraded_HTTPS || page_is_offline) {
+      if (show_icon_for_state || page_has_downgraded_HTTPS || page_is_offline) {
         [field_ showPlaceholderImage];
         is_showing_placeholder_while_collapsed_ = true;
       } else {

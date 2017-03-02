@@ -656,6 +656,7 @@ NSAttributedString* OmniboxViewIOS::ApplyTextAttributes(
       UIColor* color = nil;
       switch (controller_->GetToolbarModel()->GetSecurityLevel(false)) {
         case security_state::NONE:
+        case security_state::HTTP_SHOW_WARNING:
           break;
         case security_state::SECURITY_WARNING:
           // Don't color strikethrough schemes. See https://crbug.com/635004#c6
@@ -678,7 +679,6 @@ NSAttributedString* OmniboxViewIOS::ApplyTextAttributes(
                      value:[NSNumber numberWithInteger:NSUnderlineStyleSingle]
                      range:ComponentToNSRange(scheme)];
           break;
-        case security_state::HTTP_SHOW_WARNING:
         case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
           NOTREACHED();
       }

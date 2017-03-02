@@ -68,6 +68,7 @@ source_set("omnibox_internal") {
     "//components/open_from_clipboard",
     "//components/resources",
     "//components/search_engines",
+    "//components/security_state/core",
     "//components/ssl_errors",
     "//components/strings",
     "//components/toolbar",
