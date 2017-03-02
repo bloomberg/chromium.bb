@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -27,7 +26,6 @@
 #import "ios/chrome/browser/translate/never_translate_infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #import "ios/chrome/browser/translate/translate_message_infobar_controller.h"
-#include "ios/chrome/browser/translate/translate_ranker_factory.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/browser_state.h"
@@ -38,12 +36,8 @@ DEFINE_WEB_STATE_USER_DATA_KEY(ChromeIOSTranslateClient);
 
 ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
     : web::WebStateObserver(web_state),
-      translate_manager_(base::MakeUnique<translate::TranslateManager>(
-          this,
-          translate::TranslateRankerFactory::GetInstance()->GetForBrowserState(
-              ios::ChromeBrowserState::FromBrowserState(
-                  web_state->GetBrowserState())),
-          prefs::kAcceptLanguages)),
+      translate_manager_(
+          new translate::TranslateManager(this, prefs::kAcceptLanguages)),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get()) {}

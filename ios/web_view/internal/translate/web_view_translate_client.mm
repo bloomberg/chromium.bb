@@ -22,7 +22,6 @@
 #include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/translate/cwv_translate_manager_impl.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
-#include "ios/web_view/internal/translate/web_view_translate_ranker_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_translate_delegate.h"
 #include "url/gurl.h"
@@ -35,9 +34,6 @@ WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
     : web::WebStateObserver(web_state),
       translate_manager_(base::MakeUnique<translate::TranslateManager>(
           this,
-          WebViewTranslateRankerFactory::GetInstance()->GetForBrowserState(
-              WebViewBrowserState::FromBrowserState(
-                  web_state->GetBrowserState())),
           prefs::kAcceptLanguages)),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
