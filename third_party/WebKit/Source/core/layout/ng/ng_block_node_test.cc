@@ -4,29 +4,27 @@
 
 #include "core/layout/ng/ng_block_node.h"
 
-#include "core/layout/ng/ng_box_fragment.h"
-#include "core/style/ComputedStyle.h"
+#include "core/layout/LayoutTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {
-class NGBlockNodeForTest : public ::testing::Test {
- protected:
-  void SetUp() override { style_ = ComputedStyle::create(); }
-
-  RefPtr<ComputedStyle> style_;
+class NGBlockNodeForTest : public RenderingTest {
+ public:
+  NGBlockNodeForTest() { RuntimeEnabledFeatures::setLayoutNGEnabled(true); }
+  ~NGBlockNodeForTest() { RuntimeEnabledFeatures::setLayoutNGEnabled(false); };
 };
 
 TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
+  setBodyInnerHTML(R"HTML(
+    <div id="box" >
+      <div id="first_child" style="width:30px">
+      </div>
+    </div>
+  )HTML");
   const int kWidth = 30;
 
-  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
-  first_style->setWidth(Length(kWidth, Fixed));
-  NGBlockNode* first_child = new NGBlockNode(first_style.get());
-
-  NGBlockNode* box = new NGBlockNode(style_.get());
-  box->SetFirstChild(first_child);
-
+  NGBlockNode* box = new NGBlockNode(getLayoutObjectByElementId("box"));
   MinAndMaxContentSizes sizes = box->ComputeMinAndMaxContentSizes();
   EXPECT_EQ(LayoutUnit(kWidth), sizes.min_content);
   EXPECT_EQ(LayoutUnit(kWidth), sizes.max_content);

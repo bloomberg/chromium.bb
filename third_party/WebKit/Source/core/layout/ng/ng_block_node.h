@@ -29,9 +29,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
  public:
   explicit NGBlockNode(LayoutObject*);
 
-  // TODO(layout-ng): make it private and declare a friend class to use in tests
-  explicit NGBlockNode(ComputedStyle*);
-
   ~NGBlockNode() override;
 
   RefPtr<NGLayoutResult> Layout(NGConstraintSpace* constraint_space,
@@ -50,9 +47,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   const ComputedStyle& Style() const;
 
   NGLayoutInputNode* FirstChild();
-
-  void SetNextSibling(NGLayoutInputNode*);
-  void SetFirstChild(NGLayoutInputNode*);
 
   DECLARE_VIRTUAL_TRACE();
 

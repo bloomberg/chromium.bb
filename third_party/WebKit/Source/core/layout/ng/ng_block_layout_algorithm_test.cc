@@ -41,6 +41,7 @@ NGConstraintSpace* ConstructConstraintSpace(
   return NGConstraintSpaceBuilder(writing_mode)
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
+      .SetInitialContainingBlockSize(size.ConvertToPhysical(writing_mode))
       .SetTextDirection(direction)
       .SetIsShrinkToFit(shrink_to_fit)
       .SetFragmentainerSpaceAvailable(fragmentainer_space_available)
@@ -71,10 +72,7 @@ class NGBlockLayoutAlgorithmTest
 
   RefPtr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       NGConstraintSpace* space,
-      NGBlockNode* first_child) {
-    NGBlockNode* node = new NGBlockNode(style_.get());
-    node->SetFirstChild(first_child);
-
+      NGBlockNode* node) {
     RefPtr<NGLayoutResult> result =
         NGBlockLayoutAlgorithm(node, space).Layout();
 
@@ -95,14 +93,12 @@ class NGBlockLayoutAlgorithmTest
         toNGPhysicalBoxFragment(result->PhysicalFragment().get()), space);
   }
 
-  MinAndMaxContentSizes RunComputeMinAndMax(NGBlockNode* first_child) {
+  MinAndMaxContentSizes RunComputeMinAndMax(NGBlockNode* node) {
     // The constraint space is not used for min/max computation, but we need
     // it to create the algorithm.
     NGConstraintSpace* space =
         ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr,
                                  NGLogicalSize(LayoutUnit(), LayoutUnit()));
-    NGBlockNode* node = new NGBlockNode(style_.get());
-    node->SetFirstChild(first_child);
 
     NGBlockLayoutAlgorithm algorithm(node, space);
     EXPECT_TRUE(algorithm.ComputeMinAndMaxContentSizes().has_value());
@@ -113,13 +109,17 @@ class NGBlockLayoutAlgorithmTest
 };
 
 TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
-  style_->setWidth(Length(30, Fixed));
-  style_->setHeight(Length(40, Fixed));
+  setBodyInnerHTML(R"HTML(
+    <div id="box" style="width:30px; height:40px"></div>
+  )HTML");
 
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  RefPtr<NGPhysicalFragment> frag = RunBlockLayoutAlgorithm(space, nullptr);
+
+  auto* box = new NGBlockNode(getLayoutObjectByElementId("box"));
+
+  RefPtr<NGPhysicalFragment> frag = RunBlockLayoutAlgorithm(space, box);
 
   EXPECT_EQ(LayoutUnit(30), frag->Width());
   EXPECT_EQ(LayoutUnit(40), frag->Height());
@@ -127,76 +127,69 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
 
 // Verifies that two children are laid out with the correct size and position.
 TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
+  setBodyInnerHTML(R"HTML(
+    <div id="container" style="width: 30px">
+      <div style="height: 20px">
+      </div>
+      <div style="height: 30px; margin-top: 5px; margin-bottom: 20px">
+      </div>
+    </div>
+  )HTML");
   const int kWidth = 30;
   const int kHeight1 = 20;
   const int kHeight2 = 30;
   const int kMarginTop = 5;
-  const int kMarginBottom = 20;
-  style_->setWidth(Length(kWidth, Fixed));
 
-  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
-  first_style->setHeight(Length(kHeight1, Fixed));
-  NGBlockNode* first_child = new NGBlockNode(first_style.get());
-
-  RefPtr<ComputedStyle> second_style = ComputedStyle::create();
-  second_style->setHeight(Length(kHeight2, Fixed));
-  second_style->setMarginTop(Length(kMarginTop, Fixed));
-  second_style->setMarginBottom(Length(kMarginBottom, Fixed));
-  NGBlockNode* second_child = new NGBlockNode(second_style.get());
-
-  first_child->SetNextSibling(second_child);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+
   RefPtr<NGPhysicalBoxFragment> frag =
-      RunBlockLayoutAlgorithm(space, first_child);
+      RunBlockLayoutAlgorithm(space, container);
 
   EXPECT_EQ(LayoutUnit(kWidth), frag->Width());
   EXPECT_EQ(LayoutUnit(kHeight1 + kHeight2 + kMarginTop), frag->Height());
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox, frag->Type());
   ASSERT_EQ(frag->Children().size(), 2UL);
 
-  const NGPhysicalFragment* child = frag->Children()[0].get();
-  EXPECT_EQ(kHeight1, child->Height());
-  EXPECT_EQ(0, child->TopOffset());
+  const NGPhysicalFragment* first_child_fragment = frag->Children()[0].get();
+  EXPECT_EQ(kHeight1, first_child_fragment->Height());
+  EXPECT_EQ(0, first_child_fragment->TopOffset());
 
-  child = frag->Children()[1].get();
-  EXPECT_EQ(kHeight2, child->Height());
-  EXPECT_EQ(kHeight1 + kMarginTop, child->TopOffset());
+  const NGPhysicalFragment* second_child_fragment = frag->Children()[1].get();
+  EXPECT_EQ(kHeight2, second_child_fragment->Height());
+  EXPECT_EQ(kHeight1 + kMarginTop, second_child_fragment->TopOffset());
 }
 
 // Verifies that a child is laid out correctly if it's writing mode is different
 // from the parent's one.
-//
-// Test case's HTML representation:
-// <div style="writing-mode: vertical-lr;">
-//   <div style="width:50px;
-//       height: 50px; margin-left: 100px;
-//       writing-mode: horizontal-tb;"></div>
-// </div>
 TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
-  const int kWidth = 50;
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #div2 {
+        width: 50px;
+        height: 50px;
+        margin-left: 100px;
+        writing-mode: horizontal-tb;
+      }
+    </style>
+    <div id="container">
+      <div id="div1" style="writing-mode: vertical-lr;">
+        <div id="div2">
+        </div>
+      </div>
+    </div>
+  )HTML");
   const int kHeight = 50;
   const int kMarginLeft = 100;
 
-  RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
-  div1_style->setWritingMode(WritingMode::kVerticalLr);
-  NGBlockNode* div1 = new NGBlockNode(div1_style.get());
-
-  RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
-  div2_style->setHeight(Length(kHeight, Fixed));
-  div2_style->setWidth(Length(kWidth, Fixed));
-  div1_style->setWritingMode(WritingMode::kHorizontalTb);
-  div2_style->setMarginLeft(Length(kMarginLeft, Fixed));
-  NGBlockNode* div2 = new NGBlockNode(div2_style.get());
-
-  div1->SetFirstChild(div2);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr,
                                NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
-  RefPtr<NGPhysicalBoxFragment> frag = RunBlockLayoutAlgorithm(space, div1);
+  RefPtr<NGPhysicalBoxFragment> frag =
+      RunBlockLayoutAlgorithm(space, container);
 
   const NGPhysicalFragment* child = frag->Children()[0].get();
   // DIV2
@@ -665,55 +658,37 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsWithText) {
 // Verifies that the margin strut of a child with a different writing mode does
 // not get used in the collapsing margins calculation.
 //
-// Test case's HTML representation:
-//   <style>
-//     #div1 { margin-bottom: 10px; height: 60px; writing-mode: vertical-rl; }
-//     #div2 { margin-left: -20px; width: 10px; }
-//     #div3 { margin-top: 40px; height: 60px; }
-//   </style>
-//   <div id="div1">
-//      <div id="div2">vertical</div>
-//   </div>
-//   <div id="div3"></div>
 // TODO(glebl): Disabled for now. Follow-up with kojii@ on
 // https://software.hixie.ch/utilities/js/live-dom-viewer/?saved=4844
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_CollapsingMarginsCase6) {
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #div1 {
+        margin-bottom: 10px;
+        width: 10px;
+        height: 60px;
+        writing-mode: vertical-rl;
+      }
+      #div2 { margin-left: -20px; width: 10px; }
+      #div3 { margin-top: 40px; height: 60px; }
+    </style>
+    <div id="container" style="width:500px;height:500px">
+      <div id="div1">
+         <div id="div2">vertical</div>
+      </div>
+      <div id="div3"></div>
+    </div>
+  )HTML");
   const int kHeight = 60;
-  const int kWidth = 10;
   const int kMarginBottom = 10;
-  const int kMarginLeft = -20;
   const int kMarginTop = 40;
 
-  style_->setWidth(Length(500, Fixed));
-  style_->setHeight(Length(500, Fixed));
-
-  // DIV1
-  RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
-  div1_style->setWidth(Length(kWidth, Fixed));
-  div1_style->setHeight(Length(kHeight, Fixed));
-  div1_style->setWritingMode(WritingMode::kVerticalRl);
-  div1_style->setMarginBottom(Length(kMarginBottom, Fixed));
-  NGBlockNode* div1 = new NGBlockNode(div1_style.get());
-
-  // DIV2
-  RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
-  div2_style->setWidth(Length(kWidth, Fixed));
-  div2_style->setMarginLeft(Length(kMarginLeft, Fixed));
-  NGBlockNode* div2 = new NGBlockNode(div2_style.get());
-
-  // DIV3
-  RefPtr<ComputedStyle> div3_style = ComputedStyle::create();
-  div3_style->setHeight(Length(kHeight, Fixed));
-  div3_style->setMarginTop(Length(kMarginTop, Fixed));
-  NGBlockNode* div3 = new NGBlockNode(div3_style.get());
-
-  div1->SetFirstChild(div2);
-  div1->SetNextSibling(div3);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr,
                                NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
-  RefPtr<NGPhysicalBoxFragment> frag = RunBlockLayoutAlgorithm(space, div1);
+  RefPtr<NGPhysicalBoxFragment> frag =
+      RunBlockLayoutAlgorithm(space, container);
 
   ASSERT_EQ(frag->Children().size(), 2UL);
 
@@ -727,17 +702,23 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_CollapsingMarginsCase6) {
 
 // Verifies that a box's size includes its borders and padding, and that
 // children are positioned inside the content box.
-//
-// Test case's HTML representation:
-// <style>
-//   #div1 { width:100px; height:100px; }
-//   #div1 { border-style:solid; border-width:1px 2px 3px 4px; }
-//   #div1 { padding:5px 6px 7px 8px; }
-// </style>
-// <div id="div1">
-//    <div id="div2"></div>
-// </div>
 TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #div1 {
+        width: 100px;
+        height: 100px;
+        border-style: solid;
+        border-width: 1px 2px 3px 4px;
+        padding: 5px 6px 7px 8px;
+      }
+    </style>
+    <div id="container">
+      <div id="div1">
+         <div id="div2"></div>
+      </div>
+    </div>
+  )HTML");
   const int kWidth = 100;
   const int kHeight = 100;
   const int kBorderTop = 1;
@@ -748,35 +729,15 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
   const int kPaddingRight = 6;
   const int kPaddingBottom = 7;
   const int kPaddingLeft = 8;
-  RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
 
-  div1_style->setWidth(Length(kWidth, Fixed));
-  div1_style->setHeight(Length(kHeight, Fixed));
-
-  div1_style->setBorderTopWidth(kBorderTop);
-  div1_style->setBorderTopStyle(BorderStyleSolid);
-  div1_style->setBorderRightWidth(kBorderRight);
-  div1_style->setBorderRightStyle(BorderStyleSolid);
-  div1_style->setBorderBottomWidth(kBorderBottom);
-  div1_style->setBorderBottomStyle(BorderStyleSolid);
-  div1_style->setBorderLeftWidth(kBorderLeft);
-  div1_style->setBorderLeftStyle(BorderStyleSolid);
-
-  div1_style->setPaddingTop(Length(kPaddingTop, Fixed));
-  div1_style->setPaddingRight(Length(kPaddingRight, Fixed));
-  div1_style->setPaddingBottom(Length(kPaddingBottom, Fixed));
-  div1_style->setPaddingLeft(Length(kPaddingLeft, Fixed));
-  NGBlockNode* div1 = new NGBlockNode(div1_style.get());
-
-  RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
-  NGBlockNode* div2 = new NGBlockNode(div2_style.get());
-
-  div1->SetFirstChild(div2);
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
 
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
-  RefPtr<NGPhysicalBoxFragment> frag = RunBlockLayoutAlgorithm(space, div1);
+
+  RefPtr<NGPhysicalBoxFragment> frag =
+      RunBlockLayoutAlgorithm(space, container);
 
   ASSERT_EQ(frag->Children().size(), 1UL);
 
@@ -798,20 +759,21 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
 }
 
 TEST_F(NGBlockLayoutAlgorithmTest, PercentageResolutionSize) {
+  setBodyInnerHTML(R"HTML(
+    <div id="container" style="width: 30px; padding-left: 10px">
+      <div id="div1" style="width: 40%"></div>
+    </div>
+  )HTML");
   const int kPaddingLeft = 10;
   const int kWidth = 30;
-  style_->setWidth(Length(kWidth, Fixed));
-  style_->setPaddingLeft(Length(kPaddingLeft, Fixed));
 
-  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
-  first_style->setWidth(Length(40, Percent));
-  NGBlockNode* first_child = new NGBlockNode(first_style.get());
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
 
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   RefPtr<NGPhysicalBoxFragment> frag =
-      RunBlockLayoutAlgorithm(space, first_child);
+      RunBlockLayoutAlgorithm(space, container);
 
   EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Width());
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox, frag->Type());
@@ -824,23 +786,26 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageResolutionSize) {
 // A very simple auto margin case. We rely on the tests in ng_length_utils_test
 // for the more complex cases; just make sure we handle auto at all here.
 TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #first { width: 10px; margin-left: auto; margin-right: auto; }
+    </style>
+    <div id="container" style="width: 30px; padding-left: 10px">
+      <div id="first">
+      </div>
+    </div>
+  )HTML");
   const int kPaddingLeft = 10;
   const int kWidth = 30;
-  style_->setWidth(Length(kWidth, Fixed));
-  style_->setPaddingLeft(Length(kPaddingLeft, Fixed));
-
-  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
   const int kChildWidth = 10;
-  first_style->setWidth(Length(kChildWidth, Fixed));
-  first_style->setMarginLeft(Length(Auto));
-  first_style->setMarginRight(Length(Auto));
-  NGBlockNode* first_child = new NGBlockNode(first_style.get());
+
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
 
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   RefPtr<NGPhysicalBoxFragment> frag =
-      RunBlockLayoutAlgorithm(space, first_child);
+      RunBlockLayoutAlgorithm(space, container);
 
   EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Width());
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox, frag->Type());
@@ -1284,49 +1249,40 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
 
 // Verifies that we compute the right min and max-content size.
 TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContent) {
-  const int kWidth = 50;
-  const int kWidthChild1 = 20;
-  const int kWidthChild2 = 30;
+  setBodyInnerHTML(R"HTML(
+    <div id="container" style="width: 50px">
+      <div id="first-child" style="width: 20px"></div>
+      <div id="second-child" style="width: 30px"></div>
+    </div>
+  )HTML");
 
-  // This should have no impact on the min/max content size.
-  style_->setWidth(Length(kWidth, Fixed));
+  const int kSecondChildWidth = 30;
 
-  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
-  first_style->setWidth(Length(kWidthChild1, Fixed));
-  NGBlockNode* first_child = new NGBlockNode(first_style.get());
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
 
-  RefPtr<ComputedStyle> second_style = ComputedStyle::create();
-  second_style->setWidth(Length(kWidthChild2, Fixed));
-  NGBlockNode* second_child = new NGBlockNode(second_style.get());
-
-  first_child->SetNextSibling(second_child);
-
-  MinAndMaxContentSizes sizes = RunComputeMinAndMax(first_child);
-  EXPECT_EQ(kWidthChild2, sizes.min_content);
-  EXPECT_EQ(kWidthChild2, sizes.max_content);
+  MinAndMaxContentSizes sizes = RunComputeMinAndMax(container);
+  EXPECT_EQ(kSecondChildWidth, sizes.min_content);
+  EXPECT_EQ(kSecondChildWidth, sizes.max_content);
 }
 
 // Tests that we correctly handle shrink-to-fit
 TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFit) {
-  const int kWidthChild1 = 20;
+  setBodyInnerHTML(R"HTML(
+    <div id="container">
+      <div id="first-child" style="width: 20px"></div>
+      <div id="second-child" style="width: 30px"></div>
+    </div>
+  )HTML");
   const int kWidthChild2 = 30;
 
-  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
-  first_style->setWidth(Length(kWidthChild1, Fixed));
-  NGBlockNode* first_child = new NGBlockNode(first_style.get());
-
-  RefPtr<ComputedStyle> second_style = ComputedStyle::create();
-  second_style->setWidth(Length(kWidthChild2, Fixed));
-  NGBlockNode* second_child = new NGBlockNode(second_style.get());
-
-  first_child->SetNextSibling(second_child);
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
 
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite), true);
-  RefPtr<NGPhysicalFragment> frag = RunBlockLayoutAlgorithm(space, first_child);
+  RefPtr<NGPhysicalFragment> frag = RunBlockLayoutAlgorithm(space, container);
 
-  EXPECT_EQ(LayoutUnit(30), frag->Width());
+  EXPECT_EQ(LayoutUnit(kWidthChild2), frag->Width());
 }
 
 class FragmentChildIterator {
@@ -1360,27 +1316,31 @@ class FragmentChildIterator {
   unsigned index_;
 };
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
-//                          width:210px; height:100px;">
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyMulticol) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(2);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(210, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 2;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 210px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+      </div>
+    </div>
+  )HTML");
 
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
@@ -1392,34 +1352,30 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyMulticol) {
   EXPECT_FALSE(FragmentChildIterator(fragment).NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
-//                          width:210px; height:100px;">
-//    <div id="child"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyBlock) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(2);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(210, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        height: 100px;
+        width: 210px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child">
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child
-  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
-  NGBlockNode* child = new NGBlockNode(child_style.get());
-
-  parent->SetFirstChild(child);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   EXPECT_EQ(LayoutUnit(210), fragment->Width());
@@ -1439,36 +1395,33 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyBlock) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
-//                          width:310px; height:100px;">
-//    <div id="child" style="width:60%; height:100px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInOneColumn) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(2);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(310, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 2;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 310px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child" style="width: 60%; height: 100%">
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child
-  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
-  child_style->setWidth(Length(60, Percent));
-  child_style->setHeight(Length(100, Fixed));
-  NGBlockNode* child = new NGBlockNode(child_style.get());
-
-  parent->SetFirstChild(child);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1489,36 +1442,32 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
-//                          width:210px; height:100px;">
-//    <div id="child" style="width:75%; height:150px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInTwoColumns) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(2);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(210, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 2;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 20px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child" style="width: 75%; height: 150px"></div>
+      </div>
+    </div>
+  )HTML");
 
-  // child
-  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
-  child_style->setWidth(Length(75, Percent));
-  child_style->setHeight(Length(150, Fixed));
-  NGBlockNode* child = new NGBlockNode(child_style.get());
-
-  parent->SetFirstChild(child);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1548,36 +1497,33 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInTwoColumns) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
-//                          width:320px; height:100px;">
-//    <div id="child" style="width:75%; height:250px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInThreeColumns) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(3);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(320, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child" style="width: 75%; height: 250px;">
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child
-  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
-  child_style->setWidth(Length(75, Percent));
-  child_style->setHeight(Length(250, Fixed));
-  NGBlockNode* child = new NGBlockNode(child_style.get());
-
-  parent->SetFirstChild(child);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1616,37 +1562,34 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInThreeColumns) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
-//                          width:210px; height:100px;">
-//    <div id="child" style="width:1px; height:250px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest,
        DISABLED_ActualColumnCountGreaterThanSpecified) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(2);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(210, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 2;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 210px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child" style="width: 1px; height: 250px;">
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child
-  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
-  child_style->setWidth(Length(1, Fixed));
-  child_style->setHeight(Length(250, Fixed));
-  NGBlockNode* child = new NGBlockNode(child_style.get());
-
-  parent->SetFirstChild(child);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1685,44 +1628,35 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
-//                          width:320px; height:100px;">
-//    <div id="child1" style="width:75%; height:60px;"></div>
-//    <div id="child2" style="width:85%; height:60px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoBlocksInTwoColumns) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(3);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(320, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child1" style="width: 75%; height: 60px;">
+        </div>
+        <div id="child2" style="width: 85%; height: 60px;">
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child1
-  RefPtr<ComputedStyle> child1_style = ComputedStyle::create();
-  child1_style->setWidth(Length(75, Percent));
-  child1_style->setHeight(Length(60, Fixed));
-  NGBlockNode* child1 = new NGBlockNode(child1_style.get());
-
-  // child2
-  RefPtr<ComputedStyle> child2_style = ComputedStyle::create();
-  child2_style->setWidth(Length(85, Percent));
-  child2_style->setHeight(Length(60, Fixed));
-  NGBlockNode* child2 = new NGBlockNode(child2_style.get());
-
-  parent->SetFirstChild(child1);
-  child1->SetNextSibling(child2);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1760,61 +1694,39 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoBlocksInTwoColumns) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
-//                          width:320px; height:100px;">
-//    <div id="child1" style="width:75%; height:60px;">
-//      <div id="grandchild1" style="width:50px; height:120px;"></div>
-//      <div id="grandchild2" style="width:40px; height:20px;"></div>
-//    </div>
-//    <div id="child2" style="width:85%; height:10px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_OverflowedBlock) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(3);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(320, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 2;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child1" style="width: 75%; height: 60px;">
+          <div id="grandchild1" style="width: 50px; height: 120px;">
+          </div>
+          <div id="grandchild2" style="width: 40px; height: 20px;">
+          </div>
+        </div>
+        <div id="child2" style="width: 85%; height: 10px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child1
-  RefPtr<ComputedStyle> child1_style = ComputedStyle::create();
-  child1_style->setWidth(Length(75, Percent));
-  child1_style->setHeight(Length(60, Fixed));
-  NGBlockNode* child1 = new NGBlockNode(child1_style.get());
-
-  // grandchild1
-  RefPtr<ComputedStyle> grandchild1_style = ComputedStyle::create();
-  grandchild1_style->setWidth(Length(50, Fixed));
-  grandchild1_style->setHeight(Length(120, Fixed));
-  NGBlockNode* grandchild1 = new NGBlockNode(grandchild1_style.get());
-
-  // grandchild2
-  RefPtr<ComputedStyle> grandchild2_style = ComputedStyle::create();
-  grandchild2_style->setWidth(Length(40, Fixed));
-  grandchild2_style->setHeight(Length(20, Fixed));
-  NGBlockNode* grandchild2 = new NGBlockNode(grandchild2_style.get());
-
-  // child2
-  RefPtr<ComputedStyle> child2_style = ComputedStyle::create();
-  child2_style->setWidth(Length(85, Percent));
-  child2_style->setHeight(Length(10, Fixed));
-  NGBlockNode* child2 = new NGBlockNode(child2_style.get());
-
-  parent->SetFirstChild(child1);
-  child1->SetNextSibling(child2);
-  child1->SetFirstChild(grandchild1);
-  grandchild1->SetNextSibling(grandchild2);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1875,37 +1787,33 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_OverflowedBlock) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
-//                          width:320px; height:100px;">
-//    <div id="child" style="float:left; width:75%; height:100px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_FloatInOneColumn) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(3);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(320, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child" style="float: left; width: 75%; height: 100px;">
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child
-  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
-  child_style->setFloating(EFloat::kLeft);
-  child_style->setWidth(Length(75, Percent));
-  child_style->setHeight(Length(100, Fixed));
-  NGBlockNode* child = new NGBlockNode(child_style.get());
-
-  parent->SetFirstChild(child);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1926,46 +1834,35 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_FloatInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
-//                          width:320px; height:100px;">
-//    <div id="child1" style="float:left; width:15%; height:100px;"></div>
-//    <div id="child2" style="float:right; width:16%; height:100px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoFloatsInOneColumn) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(3);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(320, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child1" style="float: left; width: 15%; height: 100px;">
+        </div>
+        <div id="child2" style="float: right; width: 16%; height: 100px;">
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child1
-  RefPtr<ComputedStyle> child1_style = ComputedStyle::create();
-  child1_style->setFloating(EFloat::kLeft);
-  child1_style->setWidth(Length(15, Percent));
-  child1_style->setHeight(Length(100, Fixed));
-  NGBlockNode* child1 = new NGBlockNode(child1_style.get());
-
-  // child2
-  RefPtr<ComputedStyle> child2_style = ComputedStyle::create();
-  child2_style->setFloating(EFloat::kRight);
-  child2_style->setWidth(Length(16, Percent));
-  child2_style->setHeight(Length(100, Fixed));
-  NGBlockNode* child2 = new NGBlockNode(child2_style.get());
-
-  parent->SetFirstChild(child1);
-  child1->SetNextSibling(child2);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
@@ -1994,46 +1891,35 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoFloatsInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// Test case's HTML representation:
-//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
-//                          width:320px; height:100px;">
-//    <div id="child1" style="float:left; width:15%; height:150px;"></div>
-//    <div id="child2" style="float:right; width:16%; height:150px;"></div>
-//  </div>
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoFloatsInTwoColumns) {
-  // parent
-  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
-  parent_style->setColumnCount(3);
-  parent_style->setColumnFill(ColumnFillAuto);
-  parent_style->setColumnGap(10);
-  parent_style->setHeight(Length(100, Fixed));
-  parent_style->setWidth(Length(320, Fixed));
-  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+  setBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        column-count: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div id="child1" style="float: left; width: 15%; height: 150px;">
+        </div>
+        <div id="child2" style="float: right; width: 16%; height: 150px;">
+        </div>
+      </div>
+    </div>
+  )HTML");
 
-  // child1
-  RefPtr<ComputedStyle> child1_style = ComputedStyle::create();
-  child1_style->setFloating(EFloat::kLeft);
-  child1_style->setWidth(Length(15, Percent));
-  child1_style->setHeight(Length(150, Fixed));
-  NGBlockNode* child1 = new NGBlockNode(child1_style.get());
-
-  // child2
-  RefPtr<ComputedStyle> child2_style = ComputedStyle::create();
-  child2_style->setFloating(EFloat::kRight);
-  child2_style->setWidth(Length(16, Percent));
-  child2_style->setHeight(Length(150, Fixed));
-  NGBlockNode* child2 = new NGBlockNode(child2_style.get());
-
-  parent->SetFirstChild(child1);
-  child1->SetNextSibling(child2);
-
+  auto* container = new NGBlockNode(getLayoutObjectByElementId("container"));
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
-      RunBlockLayoutAlgorithm(space, parent);
+      RunBlockLayoutAlgorithm(space, container);
 
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();

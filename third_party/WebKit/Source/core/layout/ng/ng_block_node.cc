@@ -75,13 +75,6 @@ NGBlockNode::NGBlockNode(LayoutObject* layout_object)
   DCHECK(layout_box_);
 }
 
-NGBlockNode::NGBlockNode(ComputedStyle* style)
-    : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyBlock),
-      layout_box_(nullptr),
-      style_(style) {
-  DCHECK(style_);
-}
-
 // Need an explicit destructor in the .cc file, or the MSWIN compiler will
 // produce an error when attempting to generate a default one, if the .h file is
 // included from a compilation unit that lacks the ComputedStyle definition.
@@ -174,9 +167,9 @@ NGLayoutInputNode* NGBlockNode::NextSibling() {
         layout_box_ ? layout_box_->nextSibling() : nullptr;
     if (next_sibling) {
       if (next_sibling->isInline())
-        SetNextSibling(new NGInlineNode(next_sibling, &Style()));
+        next_sibling_ = new NGInlineNode(next_sibling, &Style());
       else
-        SetNextSibling(new NGBlockNode(next_sibling));
+        next_sibling_ = new NGBlockNode(next_sibling);
     }
   }
   return next_sibling_;
@@ -191,21 +184,13 @@ NGLayoutInputNode* NGBlockNode::FirstChild() {
     LayoutObject* child = layout_box_ ? layout_box_->slowFirstChild() : nullptr;
     if (child) {
       if (child->isInline()) {
-        SetFirstChild(new NGInlineNode(child, &Style()));
+        first_child_ = new NGInlineNode(child, &Style());
       } else {
-        SetFirstChild(new NGBlockNode(child));
+        first_child_ = new NGBlockNode(child);
       }
     }
   }
   return first_child_;
-}
-
-void NGBlockNode::SetNextSibling(NGLayoutInputNode* sibling) {
-  next_sibling_ = sibling;
-}
-
-void NGBlockNode::SetFirstChild(NGLayoutInputNode* child) {
-  first_child_ = child;
 }
 
 DEFINE_TRACE(NGBlockNode) {
