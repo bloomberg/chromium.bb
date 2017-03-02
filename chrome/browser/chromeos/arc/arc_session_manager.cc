@@ -471,16 +471,6 @@ void ArcSessionManager::Shutdown() {
   SetState(State::NOT_INITIALIZED);
 }
 
-void ArcSessionManager::StopArc() {
-  if (state_ != State::STOPPED) {
-    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
-    profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
-  }
-  ShutdownSession();
-  if (support_host_)
-    support_host_->Close();
-}
-
 void ArcSessionManager::StartPreferenceHandler() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
@@ -602,20 +592,6 @@ void ArcSessionManager::StopAndEnableArc() {
   DCHECK(!arc_session_runner_->IsStopped());
   reenable_arc_ = true;
   StopArc();
-}
-
-void ArcSessionManager::StartArc() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // ARC must be started only if no pending data removal request exists.
-  DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-
-  arc_start_time_ = base::Time::Now();
-
-  provisioning_reported_ = false;
-
-  arc_session_runner_->RequestStart();
-  SetState(State::ACTIVE);
 }
 
 void ArcSessionManager::OnArcSignInTimeout() {
@@ -903,6 +879,30 @@ void ArcSessionManager::OnBackgroundAndroidManagementChecked(
       // retry_on_error should be set.
       NOTREACHED();
   }
+}
+
+void ArcSessionManager::StartArc() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // ARC must be started only if no pending data removal request exists.
+  DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  arc_start_time_ = base::Time::Now();
+
+  provisioning_reported_ = false;
+
+  arc_session_runner_->RequestStart();
+  SetState(State::ACTIVE);
+}
+
+void ArcSessionManager::StopArc() {
+  if (state_ != State::STOPPED) {
+    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+    profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
+  }
+  ShutdownSession();
+  if (support_host_)
+    support_host_->Close();
 }
 
 void ArcSessionManager::OnWindowClosed() {

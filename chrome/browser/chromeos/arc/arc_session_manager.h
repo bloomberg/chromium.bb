@@ -188,9 +188,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void OnRetryClicked() override;
   void OnSendFeedbackClicked() override;
 
-  // Stops ARC without changing ArcEnabled preference.
-  void StopArc();
-
   // StopArc(), then restart. Between them data clear may happens.
   // This is a special method to support enterprise device lost case.
   // This can be called only when ARC is running.
@@ -207,8 +204,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // and ArcAuthInfoFetcher.
   ArcAuthContext* auth_context() { return context_.get(); }
 
-  void StartArc();
-
+  // On provisioning completion (regardless of whether successfully done or
+  // not), this is called with its status. On success, called with
+  // ProvisioningResult::SUCCESS, otherwise |result| is the error reason.
   void OnProvisioningFinished(ProvisioningResult result);
 
   // Returns the time when the sign in process started, or a null time if
@@ -227,6 +225,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Returns whether the Play Store app is requested to be launched by this
   // class. Should be used only for tests.
   bool IsPlaystoreLaunchRequestedForTesting() const;
+
+  // Invoking StartArc() only for testing, e.g., to emulate accepting Terms of
+  // Service then passing Android management check successfully.
+  void StartArcForTesting() { StartArc(); }
 
  private:
   // RequestEnable() has a check in order not to trigger starting procedure
@@ -260,6 +262,17 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // triggered when the second or later ARC boot timing.
   void OnBackgroundAndroidManagementChecked(
       policy::AndroidManagementClient::Result result);
+
+  // Requests to starts ARC instance. Also, update the internal state to
+  // ACTIVE.
+  void StartArc();
+
+  // Requests to stop ARC instnace. This resets two persistent flags:
+  // kArcSignedIn and kArcTermsAccepted, so that, in next enabling,
+  // it is started from Terms of Service negotiation.
+  // TODO(hidehiko): Introduce STOPPING state, and this function should
+  // transition to it.
+  void StopArc();
 
   // ArcSessionRunner::Observer:
   void OnSessionStopped(ArcStopReason reason, bool restarting) override;

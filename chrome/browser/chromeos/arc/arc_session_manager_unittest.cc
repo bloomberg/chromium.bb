@@ -285,7 +285,7 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
 
   // TODO(hidehiko): Verify state transition from SHOWING_TERMS_OF_SERVICE ->
   // CHECKING_ANDROID_MANAGEMENT, when we extract ArcSessionManager.
-  arc_session_manager()->StartArc();
+  arc_session_manager()->StartArcForTesting();
 
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
@@ -330,7 +330,7 @@ TEST_F(ArcSessionManagerTest, CloseUIKeepsArcEnabled) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
-  arc_session_manager()->StartArc();
+  arc_session_manager()->StartArcForTesting();
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // When ARC is properly started, closing UI should be no-op.
@@ -358,7 +358,7 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
 
   // Emulate to accept the terms of service.
   prefs->SetBoolean(prefs::kArcTermsAccepted, true);
-  arc_session_manager()->StartArc();
+  arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
 
@@ -427,7 +427,7 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
-  arc_session_manager()->StartArc();
+  arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Request to remove data and stop session manager.
@@ -474,7 +474,7 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir_Managed) {
 TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->RequestEnable();
-  arc_session_manager()->StartArc();
+  arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Report some failure that does not stop the bridge.
@@ -541,7 +541,7 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
 
   // Complete provisioning if it's not done yet.
   if (!expected_terms_skipping) {
-    arc_session_manager()->StartArc();
+    arc_session_manager()->StartArcForTesting();
     arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
   }
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
