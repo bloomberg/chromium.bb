@@ -363,6 +363,10 @@
       'windows-sdk-multirel': 'release_bot_x86',
     },
 
+    'client.v8.chromium': {
+      'Linux - Future': 'v8_future_release_bot',
+    },
+
     'client.v8.fyi': {
       'Android Builder': 'official_goma_minimal_symbols_android',
       'Chromium ASAN - debug': 'asan_lsan_edge_debug_bot',
@@ -1512,6 +1516,10 @@
       'ubsan_vptr', 'ubsan_no_recover_hack', 'release_trybot',
     ],
 
+    'v8_future_release_bot': [
+      'v8_future', 'release_bot',
+    ],
+
     'win_clang_debug_bot': [
       'clang', 'debug_bot', 'minimal_symbols',
     ],
@@ -1907,6 +1915,10 @@
 
     'use_lld': {
       'gn_args': 'use_lld=true',
+    },
+
+    'v8_future': {
+      'gn_args': 'v8_enable_future=true',
     },
 
     'v8_heap': {
