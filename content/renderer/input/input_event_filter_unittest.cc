@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -36,13 +37,17 @@ namespace {
 
 const int kTestRoutingID = 13;
 
+// Simulate a 16ms frame signal.
+const base::TimeDelta kFrameInterval = base::TimeDelta::FromMilliseconds(16);
+
 class InputEventRecorder : public content::InputHandlerManager {
  public:
   InputEventRecorder(InputEventFilter* filter)
       : InputHandlerManager(nullptr, filter, nullptr, nullptr),
         handle_events_(false),
         send_to_widget_(false),
-        passive_(false) {}
+        passive_(false),
+        needs_main_frame_(false) {}
 
   ~InputEventRecorder() override {}
 
@@ -51,6 +56,9 @@ class InputEventRecorder : public content::InputHandlerManager {
   void set_passive(bool value) { passive_ = value; }
 
   size_t record_count() const { return records_.size(); }
+
+  bool needs_main_frame() const { return needs_main_frame_; }
+  void reset_needs_main_frame() { needs_main_frame_ = false; }
 
   const WebInputEvent* record_at(size_t i) const {
     const Record& record = records_[i];
@@ -84,6 +92,11 @@ class InputEventRecorder : public content::InputHandlerManager {
     }
   }
 
+  void NeedsMainFrame(int routing_id) override {
+    DCHECK_EQ(kTestRoutingID, routing_id);
+    needs_main_frame_ = true;
+  }
+
  private:
   struct Record {
     Record(const WebInputEvent* event) {
@@ -96,6 +109,7 @@ class InputEventRecorder : public content::InputHandlerManager {
   bool handle_events_;
   bool send_to_widget_;
   bool passive_;
+  bool needs_main_frame_;
   std::vector<Record> records_;
 };
 
@@ -120,47 +134,60 @@ class IPCMessageRecorder : public IPC::Listener {
   std::vector<IPC::Message> messages_;
 };
 
-void AddMessagesToFilter(IPC::MessageFilter* message_filter,
-                         const std::vector<IPC::Message>& events) {
-  for (size_t i = 0; i < events.size(); ++i)
-    message_filter->OnMessageReceived(events[i]);
-
-  base::RunLoop().RunUntilIdle();
-}
-
-template <typename T>
-void AddEventsToFilter(IPC::MessageFilter* message_filter,
-                       const T events[],
-                       size_t count) {
-  std::vector<IPC::Message> messages;
-  for (size_t i = 0; i < count; ++i) {
-    messages.push_back(InputMsg_HandleInputEvent(
-        kTestRoutingID, &events[i], std::vector<const WebInputEvent*>(),
-        ui::LatencyInfo(),
-        ui::WebInputEventTraits::ShouldBlockEventStream(events[i])
-            ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
-            : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
-  }
-
-  AddMessagesToFilter(message_filter, messages);
-}
-
 }  // namespace
 
 class InputEventFilterTest : public testing::Test {
  public:
+  InputEventFilterTest()
+      : main_task_runner_(new base::TestSimpleTaskRunner()) {}
+
   void SetUp() override {
     filter_ = new InputEventFilter(
         base::Bind(base::IgnoreResult(&IPCMessageRecorder::OnMessageReceived),
                    base::Unretained(&message_recorder_)),
-        base::ThreadTaskRunnerHandle::Get(), message_loop_.task_runner());
+        main_task_runner_, main_task_runner_);
     event_recorder_ = base::MakeUnique<InputEventRecorder>(filter_.get());
     filter_->SetInputHandlerManager(event_recorder_.get());
     filter_->OnFilterAdded(&ipc_sink_);
   }
 
+  void AddMessagesToFilter(const std::vector<IPC::Message>& events) {
+    for (size_t i = 0; i < events.size(); ++i)
+      filter_->OnMessageReceived(events[i]);
+
+    // base::RunLoop is the "IO Thread".
+    base::RunLoop().RunUntilIdle();
+
+    while (event_recorder_->needs_main_frame() ||
+           main_task_runner_->HasPendingTask()) {
+      main_task_runner_->RunUntilIdle();
+      frame_time_ += kFrameInterval;
+      event_recorder_->reset_needs_main_frame();
+      filter_->ProcessRafAlignedInput(kTestRoutingID, frame_time_);
+
+      // Run queued io thread tasks.
+      base::RunLoop().RunUntilIdle();
+    }
+  }
+
+  template <typename T>
+  void AddEventsToFilter(const T events[], size_t count) {
+    std::vector<IPC::Message> messages;
+    for (size_t i = 0; i < count; ++i) {
+      messages.push_back(InputMsg_HandleInputEvent(
+          kTestRoutingID, &events[i], std::vector<const WebInputEvent*>(),
+          ui::LatencyInfo(),
+          ui::WebInputEventTraits::ShouldBlockEventStream(events[i])
+              ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
+              : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
+    }
+
+    AddMessagesToFilter(messages);
+  }
+
  protected:
   base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
 
   // Used to record IPCs sent by the filter to the RenderWidgetHost.
   IPC::TestSink ipc_sink_;
@@ -172,6 +199,8 @@ class InputEventFilterTest : public testing::Test {
 
   // Used to record WebInputEvents delivered to the handler.
   std::unique_ptr<InputEventRecorder> event_recorder_;
+
+  base::TimeTicks frame_time_;
 };
 
 TEST_F(InputEventFilterTest, Basic) {
@@ -181,14 +210,14 @@ TEST_F(InputEventFilterTest, Basic) {
     SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseMove, 30, 30, 0)
   };
 
-  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
+  AddEventsToFilter(kEvents, arraysize(kEvents));
   EXPECT_EQ(0U, ipc_sink_.message_count());
   EXPECT_EQ(0U, event_recorder_->record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
   filter_->RegisterRoutingID(kTestRoutingID);
 
-  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
+  AddEventsToFilter(kEvents, arraysize(kEvents));
   ASSERT_EQ(arraysize(kEvents), ipc_sink_.message_count());
   ASSERT_EQ(arraysize(kEvents), event_recorder_->record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
@@ -215,7 +244,7 @@ TEST_F(InputEventFilterTest, Basic) {
 
   event_recorder_->set_send_to_widget(true);
 
-  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
+  AddEventsToFilter(kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
   EXPECT_EQ(2 * arraysize(kEvents), event_recorder_->record_count());
   EXPECT_EQ(1u, message_recorder_.message_count());
@@ -240,7 +269,7 @@ TEST_F(InputEventFilterTest, Basic) {
 
   event_recorder_->set_handle_events(true);
 
-  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
+  AddEventsToFilter(kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
   EXPECT_EQ(arraysize(kEvents), event_recorder_->record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
@@ -308,7 +337,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
       ui::WebInputEventTraits::ShouldBlockEventStream(mouse_up)
           ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
           : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
-  AddMessagesToFilter(filter_.get(), messages);
+  AddMessagesToFilter(messages);
 
   // We should have sent all messages back to the main thread and preserved
   // their relative order.
@@ -330,7 +359,7 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
   event_recorder_->set_send_to_widget(true);
   event_recorder_->set_passive(true);
 
-  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
+  AddEventsToFilter(kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), event_recorder_->record_count());
   ASSERT_EQ(4u, ipc_sink_.message_count());
 
@@ -391,7 +420,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
   event_recorder_->set_send_to_widget(true);
   event_recorder_->set_passive(true);
 
-  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
+  AddEventsToFilter(kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), event_recorder_->record_count());
   ASSERT_EQ(4u, ipc_sink_.message_count());
 
@@ -447,11 +476,11 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   filter_->RegisterRoutingID(kTestRoutingID);
   event_recorder_->set_send_to_widget(true);
   event_recorder_->set_passive(true);
-  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
+  AddEventsToFilter(kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), event_recorder_->record_count());
 
   event_recorder_->set_passive(false);
-  AddEventsToFilter(filter_.get(), kBlockingEvents, arraysize(kBlockingEvents));
+  AddEventsToFilter(kBlockingEvents, arraysize(kBlockingEvents));
   EXPECT_EQ(arraysize(kEvents) + arraysize(kBlockingEvents),
             event_recorder_->record_count());
   ASSERT_EQ(3u, event_recorder_->record_count());
