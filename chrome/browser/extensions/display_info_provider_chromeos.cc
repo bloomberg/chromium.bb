@@ -496,7 +496,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(
   if (info.rotation) {
     display_configuration_controller->SetDisplayRotation(
         display_id, DegreesToRotation(*info.rotation),
-        display::Display::ROTATION_SOURCE_ACTIVE, true /* user_action */);
+        display::Display::ROTATION_SOURCE_ACTIVE);
   }
 
   // Process new display origin parameters.

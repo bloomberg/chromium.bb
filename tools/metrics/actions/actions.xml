@@ -757,9 +757,36 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Rotate_Active_Window">
+  <owner>wutao@chromium.org</owner>
+  <description>
+    Metric recorded when the user rotates the active window using the keyboard
+    shortcut. This metric was created in M58. All user actions of rotating the
+    active window using the keyboard shortcut prior to M58, were included in
+    Accel_Rotate_Window.
+  </description>
+</action>
+
+<action name="Accel_Rotate_Screen">
+  <owner>wutao@chromium.org</owner>
+  <description>
+    Metric recorded when the user rotates the screen using the keyboard
+    shortcut. This metric was created in M58. All user actions of rotating the
+    screen using the keyboard shortcut prior to M58, were included in
+    Accel_Rotate_Window.
+  </description>
+</action>
+
 <action name="Accel_Rotate_Window">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>wutao@chromium.org</owner>
+  <description>
+    Metric recorded when the user rotates screen or active window using the
+    keyboard shortcut.
+  </description>
+  <obsolete>
+    Deprecated 03/2017. Replaced by Accel_Rotate_Screen and
+    Accel_Rotate_Active_Window.
+  </obsolete>
 </action>
 
 <action name="Accel_Scale_Ui_Down">

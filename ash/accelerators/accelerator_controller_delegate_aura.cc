@@ -28,7 +28,6 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/rotator/window_rotation.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
@@ -160,20 +159,20 @@ void HandleRotateScreen() {
   if (Shell::GetInstance()->display_manager()->IsInUnifiedMode())
     return;
 
-  base::RecordAction(UserMetricsAction("Accel_Rotate_Window"));
+  base::RecordAction(UserMetricsAction("Accel_Rotate_Screen"));
   gfx::Point point = display::Screen::GetScreen()->GetCursorScreenPoint();
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   const display::ManagedDisplayInfo& display_info =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
-  ScreenRotationAnimator(display.id())
-      .Rotate(GetNextRotation(display_info.GetActiveRotation()),
-              display::Display::ROTATION_SOURCE_USER);
+  Shell::GetInstance()->display_configuration_controller()->SetDisplayRotation(
+      display.id(), GetNextRotation(display_info.GetActiveRotation()),
+      display::Display::ROTATION_SOURCE_USER);
 }
 
 // Rotate the active window.
 void HandleRotateActiveWindow() {
-  base::RecordAction(UserMetricsAction("Accel_Rotate_Window"));
+  base::RecordAction(UserMetricsAction("Accel_Rotate_Active_Window"));
   aura::Window* active_window = wm::GetActiveWindow();
   if (active_window) {
     // The rotation animation bases its target transform on the current

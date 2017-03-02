@@ -152,8 +152,7 @@ void ScreenOrientationController::SetDisplayRotation(
       &ignore_display_configuration_updates_, true);
 
   Shell::GetInstance()->display_configuration_controller()->SetDisplayRotation(
-      display::Display::InternalDisplayId(), rotation, source,
-      true /* user_action */);
+      display::Display::InternalDisplayId(), rotation, source);
 }
 
 void ScreenOrientationController::OnWindowActivated(WmWindow* gained_active,

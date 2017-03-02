@@ -536,8 +536,7 @@ void DisplayOptionsHandler::HandleSetRotation(const base::ListValue* args) {
   content::RecordAction(
       base::UserMetricsAction("Options_DisplaySetOrientation"));
   GetDisplayConfigurationController()->SetDisplayRotation(
-      display_id, new_rotation, display::Display::ROTATION_SOURCE_USER,
-      true /* user_action */);
+      display_id, new_rotation, display::Display::ROTATION_SOURCE_USER);
 }
 
 void DisplayOptionsHandler::HandleSetColorProfile(const base::ListValue* args) {

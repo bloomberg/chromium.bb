@@ -103,10 +103,9 @@ void DisplayConfigurationController::SetMirrorMode(bool mirror,
 void DisplayConfigurationController::SetDisplayRotation(
     int64_t display_id,
     display::Display::Rotation rotation,
-    display::Display::RotationSource source,
-    bool user_action) {
+    display::Display::RotationSource source) {
   ash::ScreenRotationAnimator screen_rotation_animator(display_id);
-  if (user_action && screen_rotation_animator.CanAnimate())
+  if (screen_rotation_animator.CanAnimate())
     screen_rotation_animator.Rotate(rotation, source);
   else
     display_manager_->SetDisplayRotation(display_id, rotation, source);

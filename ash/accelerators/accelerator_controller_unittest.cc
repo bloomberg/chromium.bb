@@ -527,6 +527,25 @@ TEST_F(AcceleratorControllerTest, WindowSnapWithoutDocking) {
   EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 }
 
+TEST_F(AcceleratorControllerTest, RotateScreen) {
+  // TODO: needs GetDisplayInfo http://crbug.com/622480.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display::Rotation initial_rotation =
+      GetActiveDisplayRotation(display.id());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.PressKey(ui::VKEY_BROWSER_REFRESH,
+                     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  generator.ReleaseKey(ui::VKEY_BROWSER_REFRESH,
+                       ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  display::Display::Rotation new_rotation =
+      GetActiveDisplayRotation(display.id());
+  // |new_rotation| is determined by the AcceleratorControllerDelegate.
+  EXPECT_NE(initial_rotation, new_rotation);
+}
+
 // Test class used for testing docked windows.
 class EnabledDockedWindowsAcceleratorControllerTest
     : public AcceleratorControllerTest {
