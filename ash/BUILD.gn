@@ -1029,7 +1029,6 @@ static_library("ash_shell_lib") {
 
   deps = [
     ":ash",
-    "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/test:test_support_without_content",
     "//base",
@@ -1110,7 +1109,6 @@ test("ash_content_unittests") {
   deps = [
     ":ash",
     ":ash_with_content",
-    "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/test:ash_with_aura_test_support",
     "//ash/test:test_support_with_content",
@@ -1237,7 +1235,6 @@ source_set("common_unittests") {
   ]
   deps = [
     "//ash",
-    "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/resources/vector_icons",
     "//ash/test:test_support_without_content",
@@ -1390,7 +1387,6 @@ test("ash_unittests") {
     ":common_unittests",
     "//ash/autoclick/common:autoclick",
     "//ash/common/strings",
-    "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/resources",
     "//ash/resources/vector_icons",

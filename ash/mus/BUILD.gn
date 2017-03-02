@@ -207,7 +207,6 @@ source_set("unittests") {
     ":lib",
     ":resources",
     "//ash",
-    "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/test:test_support_without_content",
     "//base",

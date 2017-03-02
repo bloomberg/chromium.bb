@@ -14,7 +14,6 @@ source_set("ash_with_aura_test_support") {
   deps = [
     ":test_support_common",
     "//ash",
-    "//ash/common/test:test_support",
     "//base",
     "//skia",
     "//ui/aura:test_support",
@@ -68,6 +67,24 @@ static_library("test_support_common") {
   testonly = true
   visibility = [ ":*" ]
   sources = [
+    "../common/test/ash_test.cc",
+    "../common/test/ash_test.h",
+    "../common/test/ash_test_impl.h",
+    "../common/test/test_palette_delegate.cc",
+    "../common/test/test_palette_delegate.h",
+    "../common/test/test_session_state_delegate.cc",
+    "../common/test/test_session_state_delegate.h",
+    "../common/test/test_shelf_delegate.cc",
+    "../common/test/test_shelf_delegate.h",
+    "../common/test/test_shelf_item_delegate.cc",
+    "../common/test/test_shelf_item_delegate.h",
+    "../common/test/test_system_tray_delegate.cc",
+    "../common/test/test_system_tray_delegate.h",
+    "../common/test/wm_shell_test_api.cc",
+    "../common/test/wm_shell_test_api.h",
+    "../common/test/workspace_event_handler_test_helper.cc",
+    "../common/test/workspace_event_handler_test_helper.h",
+
     # TODO(jamescook): Move these files into ash/test.
     "../laser/laser_pointer_controller_test_api.cc",
     "../laser/laser_pointer_controller_test_api.h",
@@ -135,10 +152,11 @@ static_library("test_support_common") {
 
   public_deps = [
     "//ash",
+    "//testing/gtest",
     "//ui/display:display_manager_test_api",
   ]
   deps = [
-    "//ash/common/test:test_support",
+    "//ash",
     "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/resources",
