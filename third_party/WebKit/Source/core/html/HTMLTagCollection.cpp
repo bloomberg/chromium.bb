@@ -22,14 +22,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "HTMLTagCollection.h"
+#include "core/html/HTMLTagCollection.h"
 
 namespace blink {
 
 HTMLTagCollection::HTMLTagCollection(ContainerNode& rootNode,
                                      const AtomicString& localName)
     : TagCollection(rootNode, HTMLTagCollectionType, starAtom, localName),
-      m_loweredLocalName(localName.lower()) {
+      m_loweredLocalName(localName.lowerASCII()) {
   DCHECK(rootNode.document().isHTMLDocument());
 }
 

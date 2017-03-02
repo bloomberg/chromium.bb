@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 285 tests; 278 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 285 tests; 279 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS createElement abc 
 PASS setAttribute abc 
 PASS getAttribute abc 
@@ -24,7 +24,7 @@ PASS createElement Ä
 FAIL setAttribute Ä assert_equals: expected "Ä" but got "ä"
 PASS getAttribute Ä 
 FAIL getElementsByTagName a:Ä assert_array_equals: lengths differ, expected 0 got 3
-FAIL getElementsByTagName Ä assert_array_equals: property 0, expected Element node <Ä></Ä> but got Element node <ä></ä>
+PASS getElementsByTagName Ä 
 PASS createElementNS http://www.w3.org/1999/xhtml,abc,abc 
 PASS setAttributeNS http://www.w3.org/1999/xhtml,abc,abc 
 PASS getAttributeNS http://www.w3.org/1999/xhtml,abc,abc 
