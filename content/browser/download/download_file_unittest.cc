@@ -66,7 +66,8 @@ class MockByteStreamReader : public ByteStreamReader {
 
 class MockDownloadDestinationObserver : public DownloadDestinationObserver {
  public:
-  MOCK_METHOD2(DestinationUpdate, void(int64_t, int64_t));
+  MOCK_METHOD3(DestinationUpdate, void(
+      int64_t, int64_t, const std::vector<DownloadItem::ReceivedSlice>&));
   void DestinationError(
       DownloadInterruptReason reason,
       int64_t bytes_so_far,
@@ -147,7 +148,9 @@ class DownloadFileTest : public testing::Test {
 
   ~DownloadFileTest() override {}
 
-  void SetUpdateDownloadInfo(int64_t bytes, int64_t bytes_per_sec) {
+  void SetUpdateDownloadInfo(
+      int64_t bytes, int64_t bytes_per_sec,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
     bytes_ = bytes;
     bytes_per_sec_ = bytes_per_sec;
   }
@@ -157,7 +160,7 @@ class DownloadFileTest : public testing::Test {
   }
 
   void SetUp() override {
-    EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _))
+    EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this, &DownloadFileTest::SetUpdateDownloadInfo));
   }
@@ -286,7 +289,7 @@ class DownloadFileTest : public testing::Test {
                   MockDestinationCompleted(_, expected_hash));
       base::RunLoop().RunUntilIdle();
       ::testing::Mock::VerifyAndClearExpectations(observer_.get());
-      EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _))
+      EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _, _))
           .Times(AnyNumber())
           .WillRepeatedly(
               Invoke(this, &DownloadFileTest::SetUpdateDownloadInfo));

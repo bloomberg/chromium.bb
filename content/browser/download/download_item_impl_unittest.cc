@@ -418,7 +418,8 @@ TEST_F(DownloadItemTest, NotificationAfterUpdate) {
   ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   TestDownloadItemObserver observer(item);
 
-  item->DestinationUpdate(kDownloadChunkSize, kDownloadSpeed);
+  item->DestinationUpdate(kDownloadChunkSize, kDownloadSpeed,
+                          std::vector<DownloadItem::ReceivedSlice>());
   ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
   EXPECT_EQ(kDownloadSpeed, item->CurrentSpeed());
   CleanupItem(item, file, DownloadItem::IN_PROGRESS);
@@ -1229,16 +1230,21 @@ TEST_F(DownloadItemTest, DestinationUpdate) {
   item->SetTotalBytes(100l);
   EXPECT_EQ(100l, item->GetTotalBytes());
 
-  as_observer->DestinationUpdate(10, 20);
+  std::vector<DownloadItem::ReceivedSlice> received_slices;
+  received_slices.emplace_back(0, 10);
+  as_observer->DestinationUpdate(10, 20, received_slices);
   EXPECT_EQ(20l, item->CurrentSpeed());
   EXPECT_EQ(10l, item->GetReceivedBytes());
   EXPECT_EQ(100l, item->GetTotalBytes());
+  EXPECT_EQ(received_slices, item->GetReceivedSlices());
   EXPECT_TRUE(observer.CheckAndResetDownloadUpdated());
 
-  as_observer->DestinationUpdate(200, 20);
+  received_slices.emplace_back(200, 100);
+  as_observer->DestinationUpdate(200, 20, received_slices);
   EXPECT_EQ(20l, item->CurrentSpeed());
   EXPECT_EQ(200l, item->GetReceivedBytes());
   EXPECT_EQ(0l, item->GetTotalBytes());
+  EXPECT_EQ(received_slices, item->GetReceivedSlices());
   EXPECT_TRUE(observer.CheckAndResetDownloadUpdated());
 
   CleanupItem(item, file, DownloadItem::IN_PROGRESS);
@@ -1310,7 +1316,8 @@ TEST_F(DownloadItemTest, DestinationCompleted) {
   EXPECT_FALSE(item->AllDataSaved());
   EXPECT_FALSE(observer.CheckAndResetDownloadUpdated());
 
-  as_observer->DestinationUpdate(10, 20);
+  as_observer->DestinationUpdate(
+      10, 20, std::vector<DownloadItem::ReceivedSlice>());
   EXPECT_TRUE(observer.CheckAndResetDownloadUpdated());
   EXPECT_FALSE(observer.CheckAndResetDownloadUpdated());  // Confirm reset.
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
@@ -1765,8 +1772,10 @@ void DestinationUpdateInvoker(
   DVLOG(20) << "DestinationUpdate(bytes_so_far:" << bytes_so_far
             << ", bytes_per_sec:" << bytes_per_sec
             << ") observer:" << !!observer;
-  if (observer)
-    observer->DestinationUpdate(bytes_so_far, bytes_per_sec);
+  if (observer) {
+    observer->DestinationUpdate(bytes_so_far, bytes_per_sec,
+                                std::vector<DownloadItem::ReceivedSlice>());
+  }
 }
 
 void DestinationErrorInvoker(

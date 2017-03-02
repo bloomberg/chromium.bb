@@ -710,7 +710,9 @@ void SavePackage::Finish() {
     // with SavePackage flow.
     if (download_->GetState() == DownloadItem::IN_PROGRESS) {
       if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
-        download_->DestinationUpdate(all_save_items_count_, CurrentSpeed());
+        download_->DestinationUpdate(
+            all_save_items_count_, CurrentSpeed(),
+            std::vector<DownloadItem::ReceivedSlice>());
         download_->OnAllDataSaved(all_save_items_count_,
                                   std::unique_ptr<crypto::SecureHash>());
       }
@@ -743,7 +745,9 @@ void SavePackage::SaveFinished(SaveItemId save_item_id,
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
   if (download_ && (download_->GetState() == DownloadItem::IN_PROGRESS)) {
-    download_->DestinationUpdate(completed_count(), CurrentSpeed());
+    download_->DestinationUpdate(
+        completed_count(), CurrentSpeed(),
+        std::vector<DownloadItem::ReceivedSlice>());
   }
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&

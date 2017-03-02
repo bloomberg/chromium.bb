@@ -223,7 +223,10 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void MarkAsComplete();
 
   // DownloadDestinationObserver
-  void DestinationUpdate(int64_t bytes_so_far, int64_t bytes_per_sec) override;
+  void DestinationUpdate(
+      int64_t bytes_so_far,
+      int64_t bytes_per_sec,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
   void DestinationError(
       DownloadInterruptReason reason,
       int64_t bytes_so_far,

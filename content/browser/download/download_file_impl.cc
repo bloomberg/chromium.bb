@@ -351,7 +351,8 @@ void DownloadFileImpl::SendUpdate() {
       base::Bind(&DownloadDestinationObserver::DestinationUpdate,
                  observer_,
                  file_.bytes_so_far(),
-                 rate_estimator_.GetCountPerSecond()));
+                 rate_estimator_.GetCountPerSecond(),
+                 std::vector<DownloadItem::ReceivedSlice>()));
 }
 
 DownloadFileImpl::RenameParameters::RenameParameters(

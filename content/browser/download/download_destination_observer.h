@@ -11,6 +11,7 @@
 #include <string>
 
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/browser/download_item.h"
 #include "crypto/secure_hash.h"
 
 namespace content {
@@ -27,8 +28,10 @@ namespace content {
 // Note that this interface does not deal with cross-thread lifetime issues.
 class DownloadDestinationObserver {
  public:
-  virtual void DestinationUpdate(int64_t bytes_so_far,
-                                 int64_t bytes_per_sec) = 0;
+  virtual void DestinationUpdate(
+      int64_t bytes_so_far,
+      int64_t bytes_per_sec,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
 
   virtual void DestinationError(
       DownloadInterruptReason reason,

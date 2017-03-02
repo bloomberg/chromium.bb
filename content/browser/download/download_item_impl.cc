@@ -1046,6 +1046,7 @@ void DownloadItemImpl::OnAllDataSaved(
   all_data_saved_ = true;
   SetTotalBytes(total_bytes);
   UpdateProgress(total_bytes, 0);
+  received_slices_.clear();
   SetHashState(std::move(hash_state));
   hash_state_.reset();  // No need to retain hash_state_ since we are done with
                         // the download and don't expect to receive any more
@@ -1064,8 +1065,10 @@ void DownloadItemImpl::MarkAsComplete() {
   UpdateObservers();
 }
 
-void DownloadItemImpl::DestinationUpdate(int64_t bytes_so_far,
-                                         int64_t bytes_per_sec) {
+void DownloadItemImpl::DestinationUpdate(
+    int64_t bytes_so_far,
+    int64_t bytes_per_sec,
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the download is in any other state we don't expect any
   // DownloadDestinationObserver callbacks. An interruption or a cancellation
@@ -1082,6 +1085,7 @@ void DownloadItemImpl::DestinationUpdate(int64_t bytes_so_far,
             << " download=" << DebugString(true);
 
   UpdateProgress(bytes_so_far, bytes_per_sec);
+  received_slices_ = received_slices;
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(
         net::NetLogEventType::DOWNLOAD_ITEM_UPDATED,
@@ -1226,6 +1230,7 @@ void DownloadItemImpl::Start(
       hash_state_ = std::move(hash_state);
       hash_.clear();
       destination_error_ = new_create_info.result;
+      received_slices_.clear();
       TransitionTo(INTERRUPTED_TARGET_PENDING_INTERNAL);
       DetermineDownloadTarget();
       return;
@@ -1276,6 +1281,7 @@ void DownloadItemImpl::OnDownloadFileInitialized(
     hash_state_.reset();
     hash_.clear();
     destination_error_ = result;
+    received_slices_.clear();
     TransitionTo(INTERRUPTED_TARGET_PENDING_INTERNAL);
   }
 
@@ -1644,6 +1650,7 @@ void DownloadItemImpl::InterruptWithPartialState(
     hash_state_.reset();
     hash_.clear();
     received_bytes_ = 0;
+    received_slices_.clear();
   } else {
     UpdateProgress(bytes_so_far, 0);
     SetHashState(std::move(hash_state));
@@ -1675,8 +1682,9 @@ void DownloadItemImpl::InterruptWithPartialState(
   AutoResumeIfValid();
 }
 
-void DownloadItemImpl::UpdateProgress(int64_t bytes_so_far,
-                                      int64_t bytes_per_sec) {
+void DownloadItemImpl::UpdateProgress(
+    int64_t bytes_so_far,
+    int64_t bytes_per_sec) {
   received_bytes_ = bytes_so_far;
   bytes_per_sec_ = bytes_per_sec;
 
@@ -1930,6 +1938,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
     etag_.clear();
     hash_.clear();
     hash_state_.reset();
+    received_slices_.clear();
   }
 
   StoragePartition* storage_partition =
