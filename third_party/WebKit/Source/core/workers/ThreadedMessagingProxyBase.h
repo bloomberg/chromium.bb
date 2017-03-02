@@ -85,7 +85,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   void postTaskToWorkerGlobalScope(
       const WebTraceLocation&,
       std::unique_ptr<WTF::CrossThreadClosure>) override;
-  ExecutionContext* getLoaderExecutionContext() override;
+  ThreadableLoadingContext* getThreadableLoadingContext() override;
 
  private:
   friend class InProcessWorkerMessagingProxyForTest;
@@ -94,6 +94,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   void parentObjectDestroyedInternal();
 
   Persistent<ExecutionContext> m_executionContext;
+  Persistent<ThreadableLoadingContext> m_loadingContext;
   Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
   // Accessed cross-thread when worker thread posts tasks to the parent.
   CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;

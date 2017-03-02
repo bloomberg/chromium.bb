@@ -52,6 +52,7 @@ class KURL;
 class ResourceRequest;
 class SecurityOrigin;
 class ThreadableLoaderClient;
+class ThreadableLoadingContext;
 
 class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                                                    private RawResourceClient {
@@ -63,7 +64,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                                         ThreadableLoaderClient&,
                                         const ThreadableLoaderOptions&,
                                         const ResourceLoaderOptions&);
-  static DocumentThreadableLoader* create(Document&,
+  static DocumentThreadableLoader* create(ThreadableLoadingContext&,
                                           ThreadableLoaderClient*,
                                           const ThreadableLoaderOptions&,
                                           const ResourceLoaderOptions&);
@@ -81,7 +82,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
  private:
   enum BlockingBehavior { LoadSynchronously, LoadAsynchronously };
 
-  DocumentThreadableLoader(Document&,
+  DocumentThreadableLoader(ThreadableLoadingContext&,
                            ThreadableLoaderClient*,
                            BlockingBehavior,
                            const ThreadableLoaderOptions&,
@@ -182,10 +183,12 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // End of ResourceOwner re-implementation, see above.
 
   const SecurityOrigin* getSecurityOrigin() const;
-  Document& document() const;
+
+  // TODO(kinuko): Remove dependency to document.
+  Document* document() const;
 
   ThreadableLoaderClient* m_client;
-  Member<Document> m_document;
+  Member<ThreadableLoadingContext> m_loadingContext;
 
   const ThreadableLoaderOptions m_options;
   // Some items may be overridden by m_forceDoNotAllowStoredCredentials and

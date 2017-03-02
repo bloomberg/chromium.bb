@@ -6,9 +6,9 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/frame/Deprecation.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "wtf/CurrentTime.h"
@@ -77,9 +77,14 @@ void ThreadedMessagingProxyBase::postTaskToLoader(
       ->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
-ExecutionContext* ThreadedMessagingProxyBase::getLoaderExecutionContext() {
+ThreadableLoadingContext*
+ThreadedMessagingProxyBase::getThreadableLoadingContext() {
   DCHECK(isParentContextThread());
-  return getExecutionContext();
+  if (!m_loadingContext) {
+    m_loadingContext =
+        ThreadableLoadingContext::create(*toDocument(m_executionContext));
+  }
+  return m_loadingContext;
 }
 
 void ThreadedMessagingProxyBase::countFeature(UseCounter::Feature feature) {

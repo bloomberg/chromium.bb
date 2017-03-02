@@ -43,7 +43,6 @@ namespace blink {
 
 class BlobDataHandle;
 class DOMArrayBuffer;
-class ExecutionContext;
 class KURL;
 class WebSocketChannelClient;
 

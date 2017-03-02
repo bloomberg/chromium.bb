@@ -4,7 +4,7 @@
 
 #include "core/workers/WorkerLoaderProxy.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/loader/ThreadableLoadingContext.h"
 
 namespace blink {
 
@@ -44,13 +44,14 @@ void WorkerLoaderProxy::postTaskToWorkerGlobalScope(
   m_loaderProxyProvider->postTaskToWorkerGlobalScope(location, std::move(task));
 }
 
-ExecutionContext* WorkerLoaderProxy::getLoaderExecutionContext() {
+ThreadableLoadingContext* WorkerLoaderProxy::getThreadableLoadingContext() {
   DCHECK(isMainThread());
   // Note: No locking needed for the access from the main thread.
   if (!m_loaderProxyProvider)
     return nullptr;
-  DCHECK(m_loaderProxyProvider->getLoaderExecutionContext()->isContextThread());
-  return m_loaderProxyProvider->getLoaderExecutionContext();
+  DCHECK(
+      m_loaderProxyProvider->getThreadableLoadingContext()->isContextThread());
+  return m_loaderProxyProvider->getThreadableLoadingContext();
 }
 
 }  // namespace blink

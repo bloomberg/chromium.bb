@@ -30,8 +30,9 @@
 
 #include "core/loader/WorkerThreadableLoader.h"
 
-#include "core/dom/Document.h"
+#include <memory>
 #include "core/loader/DocumentThreadableLoader.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "core/timing/WorkerGlobalScopePerformance.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -45,7 +46,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/Functional.h"
 #include "wtf/debug/Alias.h"
-#include <memory>
 
 namespace blink {
 
@@ -436,8 +436,9 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::createAndStart(
   DCHECK(isMainThread());
   TaskForwarder* forwarder;
   RefPtr<WorkerLoaderProxy> loaderProxy = passLoaderProxy;
-  ExecutionContext* loaderContext = loaderProxy->getLoaderExecutionContext();
-  if (!loaderContext)
+  ThreadableLoadingContext* loadingContext =
+      loaderProxy->getThreadableLoadingContext();
+  if (!loadingContext)
     return;
   if (eventWithTasks)
     forwarder = new SyncTaskForwarder(std::move(eventWithTasks));
@@ -458,8 +459,8 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::createAndStart(
       crossThreadBind(&WorkerThreadableLoader::didStart,
                       wrapCrossThreadPersistent(workerLoader),
                       wrapCrossThreadPersistent(mainThreadLoaderHolder)));
-  mainThreadLoaderHolder->start(*toDocument(loaderContext), std::move(request),
-                                options, resourceLoaderOptions);
+  mainThreadLoaderHolder->start(*loadingContext, std::move(request), options,
+                                resourceLoaderOptions);
 }
 
 WorkerThreadableLoader::MainThreadLoaderHolder::~MainThreadLoaderHolder() {
@@ -660,15 +661,15 @@ WorkerThreadableLoader::MainThreadLoaderHolder::MainThreadLoaderHolder(
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::start(
-    Document& document,
+    ThreadableLoadingContext& loadingContext,
     std::unique_ptr<CrossThreadResourceRequestData> request,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& originalResourceLoaderOptions) {
   DCHECK(isMainThread());
   ResourceLoaderOptions resourceLoaderOptions = originalResourceLoaderOptions;
   resourceLoaderOptions.requestInitiatorContext = WorkerContext;
-  m_mainThreadLoader = DocumentThreadableLoader::create(document, this, options,
-                                                        resourceLoaderOptions);
+  m_mainThreadLoader = DocumentThreadableLoader::create(
+      loadingContext, this, options, resourceLoaderOptions);
   m_mainThreadLoader->start(ResourceRequest(request.get()));
 }
 

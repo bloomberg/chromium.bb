@@ -36,6 +36,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "modules/ModulesExport.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketHandle.h"
@@ -52,7 +53,7 @@
 
 namespace blink {
 
-class Document;
+class ThreadableLoadingContext;
 class WebSocketHandshakeRequest;
 
 // This class is a WebSocketChannel subclass that works with a Document in a
@@ -71,8 +72,17 @@ class MODULES_EXPORT DocumentWebSocketChannel final
       WebSocketChannelClient* client,
       std::unique_ptr<SourceLocation> location,
       WebSocketHandle* handle = 0) {
-    return new DocumentWebSocketChannel(document, client, std::move(location),
-                                        handle);
+    DCHECK(document);
+    return create(ThreadableLoadingContext::create(*document), client,
+                  std::move(location), handle);
+  }
+  static DocumentWebSocketChannel* create(
+      ThreadableLoadingContext* loadingContext,
+      WebSocketChannelClient* client,
+      std::unique_ptr<SourceLocation> location,
+      WebSocketHandle* handle = 0) {
+    return new DocumentWebSocketChannel(loadingContext, client,
+                                        std::move(location), handle);
   }
   ~DocumentWebSocketChannel() override;
 
@@ -113,7 +123,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
     Vector<char> data;
   };
 
-  DocumentWebSocketChannel(Document*,
+  DocumentWebSocketChannel(ThreadableLoadingContext*,
                            WebSocketChannelClient*,
                            std::unique_ptr<SourceLocation>,
                            WebSocketHandle*);
@@ -128,6 +138,10 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   }
   void abortAsyncOperations();
   void handleDidClose(bool wasClean, unsigned short code, const String& reason);
+  ThreadableLoadingContext* loadingContext();
+
+  // This may return nullptr.
+  // TODO(kinuko): Remove dependency to document.
   Document* document();
 
   // WebSocketHandleClient functions.
@@ -168,7 +182,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   Member<BlobLoader> m_blobLoader;
   HeapDeque<Member<Message>> m_messages;
   Vector<char> m_receivingMessageData;
-  Member<Document> m_document;
+  Member<ThreadableLoadingContext> m_loadingContext;
 
   bool m_receivingMessageTypeIsText;
   uint64_t m_sendingQuota;

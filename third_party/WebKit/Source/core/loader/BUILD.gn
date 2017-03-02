@@ -49,6 +49,8 @@ blink_core_sources("loader") {
     "TextTrackLoader.h",
     "ThreadableLoader.cpp",
     "ThreadableLoaderClient.h",
+    "ThreadableLoadingContext.cpp",
+    "ThreadableLoadingContext.h",
     "WorkerThreadableLoader.cpp",
     "WorkerThreadableLoader.h",
     "WorkletScriptLoader.cpp",

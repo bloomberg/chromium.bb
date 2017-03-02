@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/DocumentThreadableLoader.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
 
@@ -50,8 +51,9 @@ ThreadableLoader* ThreadableLoader::create(
                                           options, resourceLoaderOptions);
   }
 
-  return DocumentThreadableLoader::create(toDocument(context), client, options,
-                                          resourceLoaderOptions);
+  return DocumentThreadableLoader::create(
+      *ThreadableLoadingContext::create(*toDocument(&context)), client, options,
+      resourceLoaderOptions);
 }
 
 void ThreadableLoader::loadResourceSynchronously(

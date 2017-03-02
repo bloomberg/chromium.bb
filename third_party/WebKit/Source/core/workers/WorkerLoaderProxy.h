@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class ExecutionContext;
+class ThreadableLoadingContext;
 
 // The WorkerLoaderProxy is a proxy to the loader context. Normally, the
 // document on the main thread provides loading services for the subordinate
@@ -77,8 +77,8 @@ class CORE_EXPORT WorkerLoaderProxyProvider {
       std::unique_ptr<WTF::CrossThreadClosure>) = 0;
 
   // It is guaranteed that this gets accessed only on the thread where
-  // the ExecutionContext is bound.
-  virtual ExecutionContext* getLoaderExecutionContext() = 0;
+  // the loading context is bound.
+  virtual ThreadableLoadingContext* getThreadableLoadingContext() = 0;
 };
 
 class CORE_EXPORT WorkerLoaderProxy final
@@ -101,8 +101,8 @@ class CORE_EXPORT WorkerLoaderProxy final
 
   // This may return nullptr.
   // This must be called from the main thread (== the thread of the
-  // loader execution context).
-  ExecutionContext* getLoaderExecutionContext();
+  // loading context).
+  ThreadableLoadingContext* getThreadableLoadingContext();
 
   // Notification from the provider that it can no longer be accessed. An
   // implementation of WorkerLoaderProxyProvider is required to call

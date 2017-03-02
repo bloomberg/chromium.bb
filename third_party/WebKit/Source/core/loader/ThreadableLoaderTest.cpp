@@ -4,8 +4,10 @@
 
 #include "core/loader/ThreadableLoader.h"
 
+#include <memory>
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -32,7 +34,6 @@
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -130,8 +131,9 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     ThreadableLoaderOptions options;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
     ResourceLoaderOptions resourceLoaderOptions;
-    m_loader = DocumentThreadableLoader::create(document(), client, options,
-                                                resourceLoaderOptions);
+    m_loader = DocumentThreadableLoader::create(
+        *ThreadableLoadingContext::create(document()), client, options,
+        resourceLoaderOptions);
   }
 
   void startLoader(const ResourceRequest& request) override {
@@ -241,6 +243,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
         ParentFrameTaskRunners::create(&m_dummyPageHolder->frame());
     m_workerThread = WTF::wrapUnique(
         new WorkerThreadForTest(this, *m_mockWorkerReportingProxy));
+    m_loadingContext = ThreadableLoadingContext::create(document());
 
     expectWorkerLifetimeReportingCalls();
     m_workerThread->startWithSourceCode(m_securityOrigin.get(),
@@ -341,7 +344,9 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     m_workerThread->postTask(location, std::move(task));
   }
 
-  ExecutionContext* getLoaderExecutionContext() override { return &document(); }
+  ThreadableLoadingContext* getThreadableLoadingContext() override {
+    return m_loadingContext.get();
+  }
 
   RefPtr<SecurityOrigin> m_securityOrigin;
   std::unique_ptr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;
@@ -353,6 +358,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   Checkpoint m_checkpoint;
   // |m_loader| must be touched only from the worker thread only.
   CrossThreadPersistent<ThreadableLoader> m_loader;
+
+  Persistent<ThreadableLoadingContext> m_loadingContext;
 };
 
 class ThreadableLoaderTest

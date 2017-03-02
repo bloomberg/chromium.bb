@@ -30,12 +30,14 @@
 
 #include "web/WebSharedWorkerImpl.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/SharedWorkerThread.h"
@@ -70,7 +72,6 @@
 #include "web/WorkerContentSettingsClient.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -276,9 +277,12 @@ void WebSharedWorkerImpl::postTaskToWorkerGlobalScope(
   m_workerThread->postTask(location, std::move(task));
 }
 
-ExecutionContext* WebSharedWorkerImpl::getLoaderExecutionContext() {
-  DCHECK(isMainThread());
-  return m_loadingDocument.get();
+ThreadableLoadingContext* WebSharedWorkerImpl::getThreadableLoadingContext() {
+  if (!m_loadingContext) {
+    m_loadingContext =
+        ThreadableLoadingContext::create(*toDocument(m_loadingDocument.get()));
+  }
+  return m_loadingContext;
 }
 
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel) {

@@ -52,7 +52,7 @@ class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
     NOTIMPLEMENTED();
   }
 
-  ExecutionContext* getLoaderExecutionContext() override {
+  ThreadableLoadingContext* getThreadableLoadingContext() override {
     NOTIMPLEMENTED();
     return nullptr;
   }

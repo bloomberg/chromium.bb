@@ -32,9 +32,9 @@
 
 #include <memory>
 #include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -175,13 +175,12 @@ Peer::~Peer() {
 }
 
 bool Peer::initialize(std::unique_ptr<SourceLocation> location,
-                      ExecutionContext* context) {
+                      ThreadableLoadingContext* loadingContext) {
   DCHECK(isMainThread());
   if (wasContextDestroyedBeforeObserverCreation())
     return false;
-  Document* document = toDocument(context);
-  m_mainWebSocketChannel =
-      DocumentWebSocketChannel::create(document, this, std::move(location));
+  m_mainWebSocketChannel = DocumentWebSocketChannel::create(
+      loadingContext, this, std::move(location));
   return true;
 }
 
@@ -371,11 +370,12 @@ void Bridge::connectOnMainThread(
     WebSocketChannelSyncHelper* syncHelper) {
   DCHECK(isMainThread());
   DCHECK(!m_peer);
-  ExecutionContext* loaderContext = loaderProxy->getLoaderExecutionContext();
-  if (!loaderContext)
+  ThreadableLoadingContext* loadingContext =
+      loaderProxy->getThreadableLoadingContext();
+  if (!loadingContext)
     return;
   Peer* peer = new Peer(this, m_loaderProxy, workerThreadLifecycleContext);
-  if (peer->initialize(std::move(location), loaderContext)) {
+  if (peer->initialize(std::move(location), loadingContext)) {
     m_peer = peer;
     syncHelper->setConnectRequestResult(m_peer->connect(url, protocol));
   }

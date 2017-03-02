@@ -49,7 +49,7 @@ namespace blink {
 
 class BlobDataHandle;
 class KURL;
-class ExecutionContext;
+class ThreadableLoadingContext;
 class WebSocketChannelSyncHelper;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
@@ -100,7 +100,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     ~Peer() override;
 
     // SourceLocation parameter may be shown when the connection fails.
-    bool initialize(std::unique_ptr<SourceLocation>, ExecutionContext*);
+    bool initialize(std::unique_ptr<SourceLocation>, ThreadableLoadingContext*);
 
     bool connect(const KURL&, const String& protocol);
     void sendTextAsCharVector(std::unique_ptr<Vector<char>>);

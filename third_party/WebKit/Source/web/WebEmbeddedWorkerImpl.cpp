@@ -30,6 +30,7 @@
 
 #include "web/WebEmbeddedWorkerImpl.h"
 
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -38,6 +39,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -73,7 +75,6 @@
 #include "web/WorkerContentSettingsClient.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -275,8 +276,12 @@ void WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(
   m_workerThread->postTask(location, std::move(task));
 }
 
-ExecutionContext* WebEmbeddedWorkerImpl::getLoaderExecutionContext() {
-  return m_mainFrame->frame()->document();
+ThreadableLoadingContext* WebEmbeddedWorkerImpl::getThreadableLoadingContext() {
+  if (!m_loadingContext) {
+    m_loadingContext =
+        ThreadableLoadingContext::create(*m_mainFrame->frame()->document());
+  }
+  return m_loadingContext;
 }
 
 void WebEmbeddedWorkerImpl::prepareShadowPageForLoader() {
