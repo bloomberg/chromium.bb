@@ -384,10 +384,6 @@ enum class RendererTerminationTabState {
 // Called when the UIApplication's state becomes active.
 - (void)applicationDidBecomeActive;
 
-// Blocks popup for page with |popupURL|, requested by the page with
-// |openerURL|.
-- (void)blockPopupForURL:(const GURL&)popupURL openerURL:(const GURL&)openerURL;
-
 @end
 
 namespace {
@@ -1511,28 +1507,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 }
 
-- (void)blockPopupForURL:(const GURL&)popupURL
-               openerURL:(const GURL&)openerURL {
-  web::NavigationItem* item = [self navigationManager]->GetLastCommittedItem();
-  web::Referrer referrer(openerURL, item->GetReferrer().policy);
-  GURL localPopupURL(popupURL);
-  base::WeakNSObject<Tab> weakSelf(self);
-  // TODO(crbug.com/692117): Remove |window_name| from constructor.
-  web::BlockedPopupInfo poupInfo(popupURL, referrer, nil /* window_name */, ^{
-    web::WebState* webState = [weakSelf webState];
-    if (webState) {
-      web::WebState::OpenURLParams params(
-          localPopupURL, referrer, WindowOpenDisposition::NEW_POPUP,
-          ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
-      params.url = localPopupURL;
-      params.referrer = referrer;
-      params.transition = ui::PAGE_TRANSITION_LINK;
-      webState->OpenURL(params);
-    }
-  });
-  BlockedPopupTabHelper::FromWebState(self.webState)->HandlePopup(poupInfo);
-}
-
 #pragma mark -
 #pragma mark FindInPageControllerDelegate
 
@@ -2031,14 +2005,21 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
          createWebControllerForURL:(const GURL&)URL
                          openerURL:(const GURL&)openerURL
                    initiatedByUser:(BOOL)initiatedByUser {
+  // Check if requested web controller is a popup and block it if necessary.
   if (!initiatedByUser) {
-    auto* helper = BlockedPopupTabHelper::FromWebState(webController.webState);
+    web::WebState* webState = webController.webState;
+    auto* helper = BlockedPopupTabHelper::FromWebState(webState);
     if (helper->ShouldBlockPopup(openerURL)) {
-      [self blockPopupForURL:URL openerURL:openerURL];
+      web::NavigationItem* item =
+          webState->GetNavigationManager()->GetLastCommittedItem();
+      web::Referrer referrer(openerURL, item->GetReferrer().policy);
+      web::BlockedPopupInfo poupInfo(URL, referrer);
+      helper->HandlePopup(poupInfo);
       return nil;
     }
   }
 
+  // Requested web controller should not be blocked from opening.
   [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
   Tab* tab = [parentTabModel_
       insertBlankTabWithTransition:ui::PAGE_TRANSITION_LINK

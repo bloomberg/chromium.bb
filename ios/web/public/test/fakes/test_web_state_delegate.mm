@@ -8,6 +8,17 @@
 
 namespace web {
 
+TestOpenURLRequest::TestOpenURLRequest()
+    : params(GURL(),
+             Referrer(),
+             WindowOpenDisposition::UNKNOWN,
+             ui::PAGE_TRANSITION_LINK,
+             false) {}
+
+TestOpenURLRequest::~TestOpenURLRequest() = default;
+
+TestOpenURLRequest::TestOpenURLRequest(const TestOpenURLRequest&) = default;
+
 TestRepostFormRequest::TestRepostFormRequest() {}
 
 TestRepostFormRequest::~TestRepostFormRequest() = default;
@@ -25,6 +36,15 @@ TestAuthenticationRequest::TestAuthenticationRequest(
 TestWebStateDelegate::TestWebStateDelegate() {}
 
 TestWebStateDelegate::~TestWebStateDelegate() = default;
+
+WebState* TestWebStateDelegate::OpenURLFromWebState(
+    WebState* web_state,
+    const WebState::OpenURLParams& params) {
+  last_open_url_request_ = base::MakeUnique<TestOpenURLRequest>();
+  last_open_url_request_->web_state = web_state;
+  last_open_url_request_->params = params;
+  return nullptr;
+}
 
 JavaScriptDialogPresenter* TestWebStateDelegate::GetJavaScriptDialogPresenter(
     WebState*) {

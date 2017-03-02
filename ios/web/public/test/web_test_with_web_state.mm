@@ -39,7 +39,7 @@ void WebTestWithWebState::SetUp() {
 }
 
 void WebTestWithWebState::TearDown() {
-  web_state_.reset();
+  DestroyWebState();
   WebTest::TearDown();
 }
 
@@ -130,6 +130,10 @@ id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
     return executionCompleted;
   });
   return [[executionResult retain] autorelease];
+}
+
+void WebTestWithWebState::DestroyWebState() {
+  web_state_.reset();
 }
 
 std::string WebTestWithWebState::BaseUrl() const {

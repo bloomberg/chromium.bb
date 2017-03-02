@@ -32,8 +32,9 @@ namespace {
 class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   BlockPopupInfoBarDelegate(ios::ChromeBrowserState* browser_state,
+                            web::WebState* web_state,
                             const std::vector<web::BlockedPopupInfo>& popups)
-      : browser_state_(browser_state), popups_(popups) {}
+      : browser_state_(browser_state), web_state_(web_state), popups_(popups) {}
 
   ~BlockPopupInfoBarDelegate() override {}
 
@@ -67,10 +68,13 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
     std::vector<web::BlockedPopupInfo>::iterator it;
     scoped_refptr<HostContentSettingsMap> host_content_map_settings(
         ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state_));
-    for (auto& it : popups_) {
-      it.ShowPopup();
+    for (auto& popup : popups_) {
+      web::WebState::OpenURLParams params(
+          popup.url(), popup.referrer(), WindowOpenDisposition::NEW_POPUP,
+          ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
+      web_state_->OpenURL(params);
       host_content_map_settings->SetContentSettingCustomScope(
-          ContentSettingsPattern::FromURL(it.referrer().url),
+          ContentSettingsPattern::FromURL(popup.referrer().url),
           ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_POPUPS,
           std::string(), CONTENT_SETTING_ALLOW);
     }
@@ -80,8 +84,8 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override { return BUTTON_OK; }
 
  private:
-  // The browser state to access user preferences.
   ios::ChromeBrowserState* browser_state_;
+  web::WebState* web_state_;
   // The popups to open.
   std::vector<web::BlockedPopupInfo> popups_;
   // The icon to display.
@@ -104,6 +108,7 @@ bool BlockedPopupTabHelper::ShouldBlockPopup(const GURL& source_url) {
 
 void BlockedPopupTabHelper::HandlePopup(
     const web::BlockedPopupInfo& blocked_popup_info) {
+  DCHECK(ShouldBlockPopup(blocked_popup_info.referrer().url));
   popups_.push_back(blocked_popup_info);
   ShowInfoBar();
 }
@@ -131,7 +136,8 @@ void BlockedPopupTabHelper::ShowInfoBar() {
   RegisterAsInfoBarManagerObserverIfNeeded(infobar_manager);
 
   std::unique_ptr<BlockPopupInfoBarDelegate> delegate(
-      base::MakeUnique<BlockPopupInfoBarDelegate>(GetBrowserState(), popups_));
+      base::MakeUnique<BlockPopupInfoBarDelegate>(GetBrowserState(), web_state_,
+                                                  popups_));
   std::unique_ptr<infobars::InfoBar> infobar =
       infobar_manager->CreateConfirmInfoBar(std::move(delegate));
   if (infobar_) {

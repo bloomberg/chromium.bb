@@ -15,6 +15,15 @@
 
 namespace web {
 
+// Encapsulates parameters passed to OpenURLFromWebState.
+struct TestOpenURLRequest {
+  TestOpenURLRequest();
+  TestOpenURLRequest(const TestOpenURLRequest&);
+  ~TestOpenURLRequest();
+  WebState* web_state = nullptr;
+  WebState::OpenURLParams params;
+};
+
 // Encapsulates parameters passed to ShowRepostFormWarningDialog.
 struct TestRepostFormRequest {
   TestRepostFormRequest();
@@ -42,6 +51,8 @@ class TestWebStateDelegate : public WebStateDelegate {
   ~TestWebStateDelegate() override;
 
   // WebStateDelegate overrides:
+  WebState* OpenURLFromWebState(WebState*,
+                                const WebState::OpenURLParams&) override;
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(WebState*) override;
   bool HandleContextMenu(WebState* source,
                          const ContextMenuParams& params) override;
@@ -57,6 +68,11 @@ class TestWebStateDelegate : public WebStateDelegate {
   // True if the WebStateDelegate HandleContextMenu method has been called.
   bool handle_context_menu_called() const {
     return handle_context_menu_called_;
+  }
+
+  // Returns the last Open URL request passed to |OpenURLFromWebState|.
+  TestOpenURLRequest* last_open_url_request() const {
+    return last_open_url_request_.get();
   }
 
   // Returns the last Repost Form request passed to
@@ -83,6 +99,7 @@ class TestWebStateDelegate : public WebStateDelegate {
 
  private:
   bool handle_context_menu_called_ = false;
+  std::unique_ptr<TestOpenURLRequest> last_open_url_request_;
   std::unique_ptr<TestRepostFormRequest> last_repost_form_request_;
   bool get_java_script_dialog_presenter_called_ = false;
   TestJavaScriptDialogPresenter java_script_dialog_presenter_;

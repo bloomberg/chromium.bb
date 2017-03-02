@@ -10,34 +10,17 @@
 
 namespace web {
 
-BlockedPopupInfo::BlockedPopupInfo(const GURL& url,
-                                   const Referrer& referrer,
-                                   NSString* window_name,
-                                   ProceduralBlock show_popup_handler)
-    : url_(url),
-      referrer_(referrer),
-      window_name_([window_name copy]),
-      show_popup_handler_([show_popup_handler copy]) {
-}
+BlockedPopupInfo::BlockedPopupInfo(const GURL& url, const Referrer& referrer)
+    : url_(url), referrer_(referrer) {}
 
 BlockedPopupInfo::BlockedPopupInfo(const BlockedPopupInfo& blocked_popup_info)
-    : url_(blocked_popup_info.url_),
-      referrer_(blocked_popup_info.referrer_),
-      window_name_([blocked_popup_info.window_name_ copy]),
-      show_popup_handler_([blocked_popup_info.show_popup_handler_ copy]) {
-}
+    : url_(blocked_popup_info.url_), referrer_(blocked_popup_info.referrer_) {}
 
 BlockedPopupInfo::~BlockedPopupInfo() {}
-
-void BlockedPopupInfo::ShowPopup() const {
-  show_popup_handler_();
-}
 
 void BlockedPopupInfo::operator=(const BlockedPopupInfo& blocked_popup_info) {
   url_ = blocked_popup_info.url_;
   referrer_ = blocked_popup_info.referrer_;
-  window_name_.reset([blocked_popup_info.window_name_ copy]);
-  show_popup_handler_ = [blocked_popup_info.show_popup_handler_ copy];
 }
 
 }  // namespace web

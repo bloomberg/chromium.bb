@@ -15,20 +15,21 @@
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #include "ios/web/web_state/blocked_popup_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using web::WebState;
+
 // Test fixture for BlockedPopupTabHelper class.
 class BlockedPopupTabHelperTest : public ChromeWebTest {
  protected:
-  BlockedPopupTabHelperTest() {
-    web_state_.SetBrowserState(GetBrowserState());
-    web_state_.SetNavigationManager(
-        base::MakeUnique<web::TestNavigationManager>());
-
-    BlockedPopupTabHelper::CreateForWebState(&web_state_);
-    InfoBarManagerImpl::CreateForWebState(&web_state_);
+  void SetUp() override {
+    ChromeWebTest::SetUp();
+    web_state()->SetDelegate(&web_state_delegate_);
+    BlockedPopupTabHelper::CreateForWebState(web_state());
+    InfoBarManagerImpl::CreateForWebState(web_state());
   }
 
   // Returns true if InfoBarManager is being observed.
@@ -38,14 +39,15 @@ class BlockedPopupTabHelperTest : public ChromeWebTest {
 
   // Returns BlockedPopupTabHelper that is being tested.
   BlockedPopupTabHelper* GetBlockedPopupTabHelper() {
-    return BlockedPopupTabHelper::FromWebState(&web_state_);
-  }
-  // Returns InfoBarManager attached to |web_state_|.
-  infobars::InfoBarManager* GetInfobarManager() {
-    return InfoBarManagerImpl::FromWebState(&web_state_);
+    return BlockedPopupTabHelper::FromWebState(web_state());
   }
 
-  web::TestWebState web_state_;
+  // Returns InfoBarManager attached to |web_state()|.
+  infobars::InfoBarManager* GetInfobarManager() {
+    return InfoBarManagerImpl::FromWebState(web_state());
+  }
+
+  web::TestWebStateDelegate web_state_delegate_;
 };
 
 // Tests ShouldBlockPopup method. This test changes content settings without
@@ -76,8 +78,8 @@ TEST_F(BlockedPopupTabHelperTest, ShouldBlockPopup) {
   EXPECT_FALSE(GetBlockedPopupTabHelper()->ShouldBlockPopup(source_url2));
 }
 
-// Tests that allowing blocked popup calls |show_popup_handler| and allows
-// future popups for the source url.
+// Tests that allowing blocked popup opens a child window and allows future
+// popups for the source url.
 TEST_F(BlockedPopupTabHelperTest, AllowBlockedPopup) {
   const GURL source_url("https://source-url");
   ASSERT_TRUE(GetBlockedPopupTabHelper()->ShouldBlockPopup(source_url));
@@ -85,10 +87,7 @@ TEST_F(BlockedPopupTabHelperTest, AllowBlockedPopup) {
   // Block popup.
   const GURL target_url("https://target-url");
   web::Referrer referrer(source_url, web::ReferrerPolicyDefault);
-  __block bool show_popup_handler_was_called = false;
-  web::BlockedPopupInfo popup_info(target_url, referrer, nil, ^{
-    show_popup_handler_was_called = true;
-  });
+  web::BlockedPopupInfo popup_info(target_url, referrer);
   GetBlockedPopupTabHelper()->HandlePopup(popup_info);
 
   // Allow blocked popup.
@@ -96,18 +95,46 @@ TEST_F(BlockedPopupTabHelperTest, AllowBlockedPopup) {
   infobars::InfoBar* infobar = GetInfobarManager()->infobar_at(0);
   auto* delegate = infobar->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate);
+  ASSERT_FALSE(web_state_delegate_.last_open_url_request());
   delegate->Accept();
 
-  // Verify that handler was called and popups are allowed for |test_url|.
-  EXPECT_TRUE(show_popup_handler_was_called);
+  // Verify that popups are allowed for |test_url|.
   EXPECT_FALSE(GetBlockedPopupTabHelper()->ShouldBlockPopup(source_url));
+
+  // Verify that child window was open.
+  auto open_url_request = web_state_delegate_.last_open_url_request();
+  ASSERT_TRUE(open_url_request);
+  EXPECT_EQ(web_state(), open_url_request->web_state);
+  WebState::OpenURLParams params = open_url_request->params;
+  EXPECT_EQ(target_url, params.url);
+  EXPECT_EQ(source_url, params.referrer.url);
+  EXPECT_EQ(web::ReferrerPolicyDefault, params.referrer.policy);
+  EXPECT_EQ(WindowOpenDisposition::NEW_POPUP, params.disposition);
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(params.transition, ui::PAGE_TRANSITION_LINK));
+  EXPECT_TRUE(params.is_renderer_initiated);
+}
+
+// Tests that destroying WebState while Infobar is presented does not crash.
+TEST_F(BlockedPopupTabHelperTest, DestroyWebState) {
+  const GURL source_url("https://source-url");
+  ASSERT_TRUE(GetBlockedPopupTabHelper()->ShouldBlockPopup(source_url));
+
+  // Block popup.
+  const GURL target_url("https://target-url");
+  web::Referrer referrer(source_url, web::ReferrerPolicyDefault);
+  web::BlockedPopupInfo popup_info(target_url, referrer);
+  GetBlockedPopupTabHelper()->HandlePopup(popup_info);
+
+  // Verify that destroying WebState does not crash.
+  DestroyWebState();
 }
 
 // Tests that an infobar is added to the infobar manager when
 // BlockedPopupTabHelper::HandlePopup() is called.
 TEST_F(BlockedPopupTabHelperTest, ShowAndDismissInfoBar) {
   const GURL test_url("https://popups.example.com");
-  web::BlockedPopupInfo popup_info(test_url, web::Referrer(), nil, nil);
+  web::BlockedPopupInfo popup_info(test_url, web::Referrer());
 
   // Check that there are no infobars showing and no registered observers.
   EXPECT_EQ(0U, GetInfobarManager()->infobar_count());
