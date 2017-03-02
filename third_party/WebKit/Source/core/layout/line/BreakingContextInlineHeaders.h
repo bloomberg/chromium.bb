@@ -382,7 +382,7 @@ inline void BreakingContext::increment() {
   // When the line box tree is created, this position in the line will be
   // snapped to LayoutUnit's, and those measurements will be used by the paint
   // code. Do the equivalent snapping here, to get consistent line measurements.
-  m_width.snapUncommittedWidth();
+  m_width.snapAtNodeBoundary();
 
   m_atStart = false;
 }

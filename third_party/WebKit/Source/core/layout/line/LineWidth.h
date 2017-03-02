@@ -87,9 +87,15 @@ class LineWidth {
   void setTrailingWhitespaceWidth(float width) {
     m_trailingWhitespaceWidth = width;
   }
-  void snapUncommittedWidth() {
-    m_uncommittedWidth =
-        LayoutUnit::fromFloatCeil(m_uncommittedWidth).toFloat();
+  void snapAtNodeBoundary() {
+    if (!m_uncommittedWidth) {
+      m_committedWidth = LayoutUnit::fromFloatCeil(m_committedWidth).toFloat();
+    } else {
+      m_uncommittedWidth =
+          LayoutUnit::fromFloatCeil(m_committedWidth + m_uncommittedWidth)
+              .toFloat() -
+          m_committedWidth;
+    }
   }
 
   IndentTextOrNot indentText() const { return m_indentText; }
