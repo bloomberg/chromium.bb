@@ -1338,8 +1338,8 @@ bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
   if (!selection)
     return false;
 
-  range->set_start(selection->offset);
-  range->set_end(selection->offset + selection->text.length());
+  range->set_start(selection->offset());
+  range->set_end(selection->offset() + selection->text().length());
   return true;
 }
 
@@ -1359,8 +1359,8 @@ bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) const {
   if (!selection)
     return false;
 
-  range->set_start(selection->range.start());
-  range->set_end(selection->range.end());
+  range->set_start(selection->range().start());
+  range->set_end(selection->range().end());
   return true;
 }
 
@@ -1387,8 +1387,8 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
   if (!selection)
     return false;
 
-  gfx::Range selection_text_range(selection->offset,
-                                  selection->offset + selection->text.length());
+  gfx::Range selection_text_range(
+      selection->offset(), selection->offset() + selection->text().length());
 
   if (!selection_text_range.Contains(range)) {
     text->clear();
@@ -1396,10 +1396,10 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
   }
   if (selection_text_range.EqualsIgnoringDirection(range)) {
     // Avoid calling substr whose performance is low.
-    *text = selection->text;
+    *text = selection->text();
   } else {
-    *text = selection->text.substr(range.GetMin() - selection->offset,
-                                   range.length());
+    *text = selection->text().substr(range.GetMin() - selection->offset(),
+                                     range.length());
   }
   return true;
 }
@@ -2357,14 +2357,12 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   if (!focused_view)
     return;
 
-  base::string16 selected_text;
-  if (GetTextInputManager()
-          ->GetTextSelection(focused_view)
-          ->GetSelectedText(&selected_text) &&
-      selected_text.length()) {
+  const TextInputManager::TextSelection* selection =
+      GetTextInputManager()->GetTextSelection(focused_view);
+  if (selection->selected_text().length()) {
     // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
     ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
-    clipboard_writer.WriteText(selected_text);
+    clipboard_writer.WriteText(selection->selected_text());
   }
 #endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
 }

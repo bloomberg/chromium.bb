@@ -92,25 +92,43 @@ class CONTENT_EXPORT TextInputManager {
     gfx::Range range;
   };
 
-  // This struct is used to store text selection related information for views.
-  struct TextSelection {
+  // This class is used to store text selection information for views. The text
+  // selection information includes a range around the selected (highlighted)
+  // text which is defined by an offset from the beginning of the page/frame,
+  // a range for the selection, and the text including the selection which
+  // might include several characters before and after it.
+  class TextSelection {
+   public:
     TextSelection();
     TextSelection(const TextSelection& other);
     ~TextSelection();
 
-    // If text selection is valid, |text| will be populated with the selected
-    // text and the method will return true. Otherwise, it will return false.
-    bool GetSelectedText(base::string16* text) const;
+    void SetSelection(const base::string16& text,
+                      size_t offset,
+                      const gfx::Range& range);
 
+    const base::string16& selected_text() const { return selected_text_; }
+    size_t offset() const { return offset_; }
+    const gfx::Range& range() const { return range_; }
+    const base::string16& text() const { return text_; }
+
+   private:
     // The offset of the text stored in |text| relative to the start of the web
     // page.
-    size_t offset;
+    size_t offset_;
 
-    // The current selection range relative to the start of the web page.
-    gfx::Range range;
+    // The range of the selection in the page (highlighted text).
+    gfx::Range range_;
 
-    // The text inside and around the current selection range.
-    base::string16 text;
+    // The highlighted text which is the portion of |text_| marked by |offset_|
+    // and |range_|. It will be an empty string if either |text_| or |range_|
+    // are empty of this selection information is invalid (i.e., |range_| does
+    // not cover any of |text_|.
+    base::string16 selected_text_;
+
+    // Part of the text on the page which includes the highlighted text plus
+    // possibly several characters before and after it.
+    base::string16 text_;
   };
 
   TextInputManager();

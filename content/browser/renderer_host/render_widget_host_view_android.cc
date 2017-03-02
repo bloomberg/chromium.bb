@@ -767,14 +767,9 @@ void RenderWidgetHostViewAndroid::OnTextSelectionChanged(
 
   const TextInputManager::TextSelection& selection =
       *text_input_manager_->GetTextSelection(focused_widget->GetView());
-  if (selection.range.is_empty()) {
-    content_view_core_->OnSelectionChanged("");
-    return;
-  }
 
-  base::string16 selected_text;
-  if (selection.GetSelectedText(&selected_text))
-    content_view_core_->OnSelectionChanged(base::UTF16ToUTF8(selected_text));
+  content_view_core_->OnSelectionChanged(
+      base::UTF16ToUTF8(selection.selected_text()));
 }
 
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {

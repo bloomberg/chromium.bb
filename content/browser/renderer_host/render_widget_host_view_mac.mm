@@ -453,8 +453,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_guest_view_hack_(is_guest_view_hack),
       fullscreen_parent_host_view_(nullptr),
       needs_flush_input_(false),
-      selection_text_offset_(0),
-      selection_range_(gfx::Range::InvalidRange()),
       weak_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
@@ -566,6 +564,17 @@ ui::TextInputType RenderWidgetHostViewMac::GetTextInputType() {
 RenderWidgetHostImpl* RenderWidgetHostViewMac::GetActiveWidget() {
   return GetTextInputManager() ? GetTextInputManager()->GetActiveWidget()
                                : nullptr;
+}
+
+const TextInputManager::CompositionRangeInfo*
+RenderWidgetHostViewMac::GetCompositionRangeInfo() {
+  return text_input_manager_->GetCompositionRangeInfo();
+}
+
+const TextInputManager::TextSelection*
+RenderWidgetHostViewMac::GetTextSelection() {
+  return text_input_manager_->GetTextSelection(
+      GetFocusedViewForTextSelection());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -950,14 +959,12 @@ void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
   const TextInputManager::CompositionRangeInfo* info =
-      GetTextInputManager()->GetCompositionRangeInfo();
+      GetCompositionRangeInfo();
   if (!info)
     return;
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
   [cocoa_view_ setMarkedRange:info->range.ToNSRange()];
-  composition_range_ = info->range;
-  composition_bounds_ = info->character_bounds;
 }
 
 void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
@@ -1011,31 +1018,17 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
     RenderWidgetHostViewBase* updated_view) {
   DCHECK_EQ(GetTextInputManager(), text_input_manager);
 
-  RenderWidgetHostViewBase* focused_view = GetFocusedViewForTextSelection();
-  if (!focused_view)
+  const TextInputManager::TextSelection* selection = GetTextSelection();
+  if (!selection)
     return;
 
-  const TextInputManager::TextSelection* selection =
-      GetTextInputManager()->GetTextSelection(focused_view);
-
-  base::string16 text;
-  if (!selection->GetSelectedText(&text))
-    return;
-  selected_text_ = base::UTF16ToUTF8(text);
-
-  [cocoa_view_ setSelectedRange:selection->range.ToNSRange()];
+  [cocoa_view_ setSelectedRange:selection->range().ToNSRange()];
   // Updates markedRange when there is no marked text so that retrieving
   // markedRange immediately after calling setMarkdText: returns the current
   // caret position.
   if (![cocoa_view_ hasMarkedText]) {
-    [cocoa_view_ setMarkedRange:selection->range.ToNSRange()];
+    [cocoa_view_ setMarkedRange:selection->range().ToNSRange()];
   }
-
-  // TODO(ekaramad): The following values are tracked by TextInputManager and
-  // should be cleaned up from this class (https://crbug.com/602427).
-  selection_text_ = selection->text;
-  selection_range_ = selection->range;
-  selection_text_offset_ = selection->offset;
 }
 
 void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
@@ -1118,12 +1111,17 @@ void RenderWidgetHostViewMac::SpeakSelection() {
   if (![NSApp respondsToSelector:@selector(speakString:)])
     return;
 
-  if (selected_text_.empty() && render_widget_host_) {
+  const TextInputManager::TextSelection* selection = GetTextSelection();
+  if (!selection)
+    return;
+
+  if (selection->selected_text().empty() && render_widget_host_) {
+    // TODO: This will not work with OOPIFs (https://crbug.com/659753).
     // If there's no selection, speak all text. Send an asynchronous IPC
     // request for fetching all the text for a webcontent.
     // ViewMsg_GetRenderedTextCompleted is sent back to IPC Message receiver.
-    render_widget_host_->Send(new ViewMsg_GetRenderedText(
-        render_widget_host_->GetRoutingID()));
+    render_widget_host_->Send(
+        new ViewMsg_GetRenderedText(render_widget_host_->GetRoutingID()));
     return;
   }
 
@@ -1277,55 +1275,64 @@ bool RenderWidgetHostViewMac::GetLineBreakIndex(
 gfx::Rect RenderWidgetHostViewMac::GetFirstRectForCompositionRange(
     const gfx::Range& range,
     gfx::Range* actual_range) {
+  const TextInputManager::CompositionRangeInfo* composition_info =
+      GetCompositionRangeInfo();
+  if (!composition_info)
+    return gfx::Rect();
+
   DCHECK(actual_range);
-  DCHECK(!composition_bounds_.empty());
-  DCHECK(range.start() <= composition_bounds_.size());
-  DCHECK(range.end() <= composition_bounds_.size());
+  DCHECK(!composition_info->character_bounds.empty());
+  DCHECK(range.start() <= composition_info->character_bounds.size());
+  DCHECK(range.end() <= composition_info->character_bounds.size());
 
   if (range.is_empty()) {
     *actual_range = range;
-    if (range.start() == composition_bounds_.size()) {
-      return gfx::Rect(composition_bounds_[range.start() - 1].right(),
-                       composition_bounds_[range.start() - 1].y(),
-                       0,
-                       composition_bounds_[range.start() - 1].height());
+    if (range.start() == composition_info->character_bounds.size()) {
+      return gfx::Rect(
+          composition_info->character_bounds[range.start() - 1].right(),
+          composition_info->character_bounds[range.start() - 1].y(), 0,
+          composition_info->character_bounds[range.start() - 1].height());
     } else {
-      return gfx::Rect(composition_bounds_[range.start()].x(),
-                       composition_bounds_[range.start()].y(),
-                       0,
-                       composition_bounds_[range.start()].height());
+      return gfx::Rect(
+          composition_info->character_bounds[range.start()].x(),
+          composition_info->character_bounds[range.start()].y(), 0,
+          composition_info->character_bounds[range.start()].height());
     }
   }
 
   size_t end_idx;
-  if (!GetLineBreakIndex(composition_bounds_, range, &end_idx)) {
+  if (!GetLineBreakIndex(composition_info->character_bounds, range, &end_idx)) {
     end_idx = range.end();
   }
   *actual_range = gfx::Range(range.start(), end_idx);
-  gfx::Rect rect = composition_bounds_[range.start()];
+  gfx::Rect rect = composition_info->character_bounds[range.start()];
   for (size_t i = range.start() + 1; i < end_idx; ++i) {
-    rect.Union(composition_bounds_[i]);
+    rect.Union(composition_info->character_bounds[i]);
   }
   return rect;
 }
 
 gfx::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
     const gfx::Range& request_range) {
-  if (composition_range_.is_empty())
+  const TextInputManager::CompositionRangeInfo* composition_info =
+      GetCompositionRangeInfo();
+  if (!composition_info)
     return gfx::Range::InvalidRange();
 
-  if (request_range.is_reversed())
+  if (composition_info->range.is_empty())
     return gfx::Range::InvalidRange();
 
-  if (request_range.start() < composition_range_.start() ||
-      request_range.start() > composition_range_.end() ||
-      request_range.end() > composition_range_.end()) {
+  if (composition_info->range.is_reversed())
+    return gfx::Range::InvalidRange();
+
+  if (request_range.start() < composition_info->range.start() ||
+      request_range.start() > composition_info->range.end() ||
+      request_range.end() > composition_info->range.end()) {
     return gfx::Range::InvalidRange();
   }
 
-  return gfx::Range(
-      request_range.start() - composition_range_.start(),
-      request_range.end() - composition_range_.start());
+  return gfx::Range(request_range.start() - composition_info->range.start(),
+                    request_range.end() - composition_info->range.start());
 }
 
 WebContents* RenderWidgetHostViewMac::GetWebContents() {
@@ -1345,9 +1352,13 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::GetFirstRectForCharacterRange");
 
+  const TextInputManager::TextSelection* selection = GetTextSelection();
+  if (!selection)
+    return false;
+
   const gfx::Range requested_range(range);
   // If requested range is same as caret location, we can just return it.
-  if (selection_range_.is_empty() && requested_range == selection_range_) {
+  if (selection->range().is_empty() && requested_range == selection->range()) {
     DCHECK(GetFocusedWidget());
     if (actual_range)
       *actual_range = range;
@@ -1358,12 +1369,14 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
     return true;
   }
 
-  if (composition_range_.is_empty()) {
-    if (!selection_range_.Contains(requested_range))
+  const TextInputManager::CompositionRangeInfo* composition_info =
+      GetCompositionRangeInfo();
+  if (!composition_info || composition_info->range.is_empty()) {
+    if (!selection->range().Contains(requested_range))
       return false;
     DCHECK(GetFocusedWidget());
     if (actual_range)
-      *actual_range = selection_range_.ToNSRange();
+      *actual_range = selection->range().ToNSRange();
     *rect =
         NSRectFromCGRect(GetTextInputManager()
                              ->GetSelectionRegion(GetFocusedWidget()->GetView())
@@ -1378,18 +1391,20 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
 
   // If firstRectForCharacterRange in WebFrame is failed in renderer,
   // ImeCompositionRangeChanged will be sent with empty vector.
-  if (composition_bounds_.empty())
+  if (!composition_info || composition_info->character_bounds.empty())
     return false;
-  DCHECK_EQ(composition_bounds_.size(), composition_range_.length());
+  DCHECK_EQ(composition_info->character_bounds.size(),
+            composition_info->range.length());
 
   gfx::Range ui_actual_range;
   *rect = NSRectFromCGRect(GetFirstRectForCompositionRange(
                                request_range_in_composition,
                                &ui_actual_range).ToCGRect());
   if (actual_range) {
-    *actual_range = gfx::Range(
-        composition_range_.start() + ui_actual_range.start(),
-        composition_range_.start() + ui_actual_range.end()).ToNSRange();
+    *actual_range =
+        gfx::Range(composition_info->range.start() + ui_actual_range.start(),
+                   composition_info->range.start() + ui_actual_range.end())
+            .ToNSRange();
   }
   return true;
 }
@@ -2369,8 +2384,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // Until it does, use NSPerformService(), which opens Dictionary.app.
     // TODO(shuchen): Support GetStringAtPoint() & GetStringFromRange() for PDF.
     // See crbug.com/152438.
-    NSString* text =
-        base::SysUTF8ToNSString(renderWidgetHostView_->selected_text());
+    NSString* text = nil;
+    if (auto* selection = renderWidgetHostView_->GetTextSelection())
+      text = base::SysUTF16ToNSString(selection->selected_text());
+
     if ([text length] == 0)
       return;
     scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
@@ -3073,13 +3090,19 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   gfx::Range expected_range;
   const base::string16* expected_text;
+  const content::TextInputManager::CompositionRangeInfo* compositionInfo =
+      renderWidgetHostView_->GetCompositionRangeInfo();
+  const content::TextInputManager::TextSelection* selection =
+      renderWidgetHostView_->GetTextSelection();
+  if (!selection)
+    return nil;
 
-  if (!renderWidgetHostView_->composition_range().is_empty()) {
+  if (!compositionInfo->range.is_empty()) {
     expected_text = &markedText_;
-    expected_range = renderWidgetHostView_->composition_range();
+    expected_range = compositionInfo->range;
   } else {
-    expected_text = &renderWidgetHostView_->selection_text();
-    size_t offset = renderWidgetHostView_->selection_text_offset();
+    expected_text = &selection->text();
+    size_t offset = selection->offset();
     expected_range = gfx::Range(offset, offset + expected_text->size());
   }
 
@@ -3394,7 +3417,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   id requestor = nil;
   BOOL sendTypeIsString = [sendType isEqual:NSStringPboardType];
   BOOL returnTypeIsString = [returnType isEqual:NSStringPboardType];
-  BOOL hasText = !renderWidgetHostView_->selected_text().empty();
+  const content::TextInputManager::TextSelection* selection =
+      renderWidgetHostView_->GetTextSelection();
+  BOOL hasText = !selection || selection->selected_text().empty();
   BOOL takesText =
       renderWidgetHostView_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
 
@@ -3432,11 +3457,16 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard
                              types:(NSArray*)types {
-  const std::string& str = renderWidgetHostView_->selected_text();
-  if (![types containsObject:NSStringPboardType] || str.empty()) return NO;
+  const content::TextInputManager::TextSelection* selection =
+      renderWidgetHostView_->GetTextSelection();
+  if (!selection || selection->selected_text().empty() ||
+      ![types containsObject:NSStringPboardType]) {
+    return NO;
+  }
 
-  base::scoped_nsobject<NSString> text(
-      [[NSString alloc] initWithUTF8String:str.c_str()]);
+  base::scoped_nsobject<NSString> text([[NSString alloc]
+      initWithUTF8String:base::UTF16ToUTF8(selection->selected_text())
+                             .c_str()]);
   NSArray* toDeclare = [NSArray arrayWithObject:NSStringPboardType];
   [pboard declareTypes:toDeclare owner:nil];
   return [pboard setString:text forType:NSStringPboardType];

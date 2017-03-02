@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/text_input_manager.h"
 
-#include "base/strings/string16.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/view_messages.h"
@@ -239,12 +238,7 @@ void TextInputManager::SelectionChanged(RenderWidgetHostViewBase* view,
                                         size_t offset,
                                         const gfx::Range& range) {
   DCHECK(IsRegistered(view));
-
-  text_selection_map_[view].text = text;
-  text_selection_map_[view].offset = offset;
-  text_selection_map_[view].range.set_start(range.start());
-  text_selection_map_[view].range.set_end(range.end());
-
+  text_selection_map_[view].SetSelection(text, offset, range);
   for (auto& observer : observer_list_)
     observer.OnTextSelectionChanged(this, view);
 }
@@ -319,36 +313,39 @@ TextInputManager::CompositionRangeInfo::CompositionRangeInfo(
 TextInputManager::CompositionRangeInfo::~CompositionRangeInfo() {}
 
 TextInputManager::TextSelection::TextSelection()
-    : offset(0), range(gfx::Range::InvalidRange()), text(base::string16()) {}
+    : offset_(0), range_(gfx::Range::InvalidRange()) {}
 
 TextInputManager::TextSelection::TextSelection(const TextSelection& other) =
     default;
 
 TextInputManager::TextSelection::~TextSelection() {}
 
-bool TextInputManager::TextSelection::GetSelectedText(
-    base::string16* selected_text) const {
-  if (text.empty() || range.is_empty()) {
-    selected_text->clear();
-    return true;
-  }
+void TextInputManager::TextSelection::SetSelection(const base::string16& text,
+                                                   size_t offset,
+                                                   const gfx::Range& range) {
+  text_ = text;
+  range_.set_start(range.start());
+  range_.set_end(range.end());
+  offset_ = offset;
 
-  size_t pos = range.GetMin() - offset;
-  size_t n = range.length();
-  if (pos + n > text.length()) {
-    LOG(WARNING) << "The text can not fully cover range (selection's end point "
-                    "exceeds text length).";
-  }
+  // Update the selected text.
+  selected_text_.clear();
+  if (!text.empty() && !range.is_empty()) {
+    size_t pos = range.GetMin() - offset;
+    size_t n = range.length();
+    if (pos + n > text.length()) {
+      LOG(WARNING)
+          << "The text cannot fully cover range (selection's end point "
+             "exceeds text length).";
+    }
 
-  if (pos >= text.length()) {
-    LOG(WARNING) << "The text ca not cover range (selection range's starting "
-                    "point exceeds text length).";
-    return false;
+    if (pos >= text.length()) {
+      LOG(WARNING) << "The text cannot cover range (selection range's starting "
+                      "point exceeds text length).";
+    } else {
+      selected_text_.append(text.substr(pos, n));
+    }
   }
-
-  selected_text->clear();
-  selected_text->append(text.substr(pos, n));
-  return true;
 }
 
 }  // namespace content

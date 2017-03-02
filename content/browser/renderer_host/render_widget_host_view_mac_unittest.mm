@@ -308,7 +308,9 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   }
 
  protected:
-  std::string selected_text() const { return rwhv_mac_->selected_text_; }
+  std::string selected_text() const {
+    return base::UTF16ToUTF8(rwhv_mac_->GetTextSelection()->selected_text());
+  }
 
   RenderWidgetHostViewMac* rwhv_mac_;
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;

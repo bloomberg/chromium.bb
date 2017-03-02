@@ -190,15 +190,7 @@ void RenderWidgetHostViewBase::SetShowingContextMenu(bool showing) {
 base::string16 RenderWidgetHostViewBase::GetSelectedText() {
   if (!GetTextInputManager())
     return base::string16();
-
-  const TextInputManager::TextSelection* selection =
-      GetTextInputManager()->GetTextSelection(this);
-
-  if (!selection || !selection->range.IsValid())
-    return base::string16();
-
-  return selection->text.substr(selection->range.GetMin() - selection->offset,
-                                selection->range.length());
+  return GetTextInputManager()->GetTextSelection(this)->selected_text();
 }
 
 bool RenderWidgetHostViewBase::IsMouseLocked() {

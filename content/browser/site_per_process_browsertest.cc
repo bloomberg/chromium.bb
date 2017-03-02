@@ -9439,14 +9439,12 @@ class TextSelectionObserver : public TextInputManager::Observer {
  private:
   void OnTextSelectionChanged(TextInputManager* text_input_manager,
                               RenderWidgetHostViewBase* updated_view) override {
-    base::string16 text;
-    if (text_input_manager->GetTextSelection(updated_view)
-            ->GetSelectedText(&text)) {
-      last_selected_text_ = base::UTF16ToUTF8(text);
-      if (last_selected_text_ == expected_text_ && loop_runner_)
-        loop_runner_->Quit();
-    }
+    last_selected_text_ = base::UTF16ToUTF8(
+        text_input_manager->GetTextSelection(updated_view)->selected_text());
+    if (last_selected_text_ == expected_text_ && loop_runner_)
+      loop_runner_->Quit();
   }
+
   TextInputManager* const text_input_manager_;
   std::string last_selected_text_;
   std::string expected_text_;

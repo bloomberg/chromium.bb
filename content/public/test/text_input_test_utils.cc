@@ -352,7 +352,7 @@ bool TextInputManagerTester::GetCurrentTextSelectionLength(size_t* length) {
   if (!observer_->text_input_manager()->GetActiveWidget())
     return false;
 
-  *length = observer_->text_input_manager()->GetTextSelection()->text.size();
+  *length = observer_->text_input_manager()->GetTextSelection()->text().size();
   return true;
 }
 
