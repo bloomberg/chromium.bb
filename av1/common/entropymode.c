@@ -626,8 +626,7 @@ static const aom_prob default_obmc_prob[BLOCK_SIZES] = {
 #endif
 
 #if CONFIG_DELTA_Q
-static const aom_prob default_delta_q_probs[DELTA_Q_CONTEXTS] = { 220, 220,
-                                                                  220 };
+static const aom_prob default_delta_q_probs[DELTA_Q_PROBS] = { 220, 220, 220 };
 #endif
 #if CONFIG_EC_MULTISYMBOL
 int av1_intra_mode_ind[INTRA_MODES];
@@ -2015,7 +2014,7 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   }
 
 #if CONFIG_DELTA_Q
-  for (i = 0; i < DELTA_Q_CONTEXTS; ++i)
+  for (i = 0; i < DELTA_Q_PROBS; ++i)
     fc->delta_q_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
 #endif
@@ -2133,7 +2132,7 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
   }
 #endif
 #if CONFIG_DELTA_Q
-  for (i = 0; i < DELTA_Q_CONTEXTS; ++i)
+  for (i = 0; i < DELTA_Q_PROBS; ++i)
     fc->delta_q_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
 #endif

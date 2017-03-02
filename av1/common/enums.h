@@ -435,7 +435,7 @@ typedef enum {
 #define INTER_MODE_CONTEXTS 7
 #if CONFIG_DELTA_Q
 #define DELTA_Q_SMALL 3
-#define DELTA_Q_CONTEXTS (DELTA_Q_SMALL)
+#define DELTA_Q_PROBS (DELTA_Q_SMALL)
 #define DEFAULT_DELTA_Q_RES 4
 #endif
 

@@ -260,7 +260,7 @@ typedef struct frame_contexts {
 #endif
 #endif
 #if CONFIG_DELTA_Q
-  aom_prob delta_q_prob[DELTA_Q_CONTEXTS];
+  aom_prob delta_q_prob[DELTA_Q_PROBS];
 #endif
 } FRAME_CONTEXT;
 
@@ -361,7 +361,7 @@ typedef struct FRAME_COUNTS {
   nmv_context_counts mv;
 #endif
 #if CONFIG_DELTA_Q
-  unsigned int delta_q[DELTA_Q_CONTEXTS][2];
+  unsigned int delta_q[DELTA_Q_PROBS][2];
 #endif
 #if CONFIG_EXT_TX
 #if CONFIG_RECT_TX

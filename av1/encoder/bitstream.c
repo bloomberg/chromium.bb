@@ -588,7 +588,7 @@ static void update_delta_q_probs(AV1_COMMON *cm, aom_writer *w,
 #else
   const int probwt = 1;
 #endif
-  for (k = 0; k < DELTA_Q_CONTEXTS; ++k) {
+  for (k = 0; k < DELTA_Q_PROBS; ++k) {
     av1_cond_prob_diff_update(w, &cm->fc->delta_q_prob[k], counts->delta_q[k],
                               probwt);
   }
