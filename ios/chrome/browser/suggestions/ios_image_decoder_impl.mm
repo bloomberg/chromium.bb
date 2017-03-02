@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "ios/web/public/web_thread.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,8 +27,11 @@ class IOSImageDecoderImpl : public image_fetcher::ImageDecoder {
   explicit IOSImageDecoderImpl(scoped_refptr<base::TaskRunner> task_runner);
   ~IOSImageDecoderImpl() override;
 
+  // Note, that |desired_image_frame_size| is not supported
+  // (http://crbug/697596).
   void DecodeImage(
       const std::string& image_data,
+      const gfx::Size& desired_image_frame_size,
       const image_fetcher::ImageDecodedCallback& callback) override;
 
  private:
@@ -55,6 +59,7 @@ IOSImageDecoderImpl::~IOSImageDecoderImpl() {}
 
 void IOSImageDecoderImpl::DecodeImage(
     const std::string& image_data,
+    const gfx::Size& desired_image_frame_size,
     const image_fetcher::ImageDecodedCallback& callback) {
   // Convert the |image_data| std::string to an NSData buffer.
   // The data is copied as it may have to outlive the caller in

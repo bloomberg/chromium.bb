@@ -31,6 +31,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
@@ -216,8 +217,11 @@ void CachedImageFetcher::OnImageFetchedFromDatabase(
   // |image_decoder_| is null in tests.
   if (image_decoder_ && !data.empty()) {
     image_decoder_->DecodeImage(
-        data, base::Bind(&CachedImageFetcher::OnImageDecodedFromDatabase,
-                         base::Unretained(this), callback, suggestion_id, url));
+        data,
+        // We're not dealing with multi-frame images.
+        /*desired_image_frame_size=*/gfx::Size(),
+        base::Bind(&CachedImageFetcher::OnImageDecodedFromDatabase,
+                   base::Unretained(this), callback, suggestion_id, url));
     return;
   }
   // Fetching from the DB failed; start a network fetch.

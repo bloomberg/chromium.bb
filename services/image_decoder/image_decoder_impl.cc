@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/geometry/size.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/gfx/chromeos/codec/jpeg_codec_robust_slow.h"
@@ -38,6 +37,7 @@ void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
                                    mojom::ImageCodec codec,
                                    bool shrink_to_fit,
                                    int64_t max_size_in_bytes,
+                                   const gfx::Size& desired_image_frame_size,
                                    const DecodeImageCallback& callback) {
   if (encoded_data.size() == 0) {
     callback.Run(SkBitmap());
@@ -67,7 +67,7 @@ void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
 #endif  // defined(OS_CHROMEOS)
   if (codec == mojom::ImageCodec::DEFAULT) {
     decoded_image = content::DecodeImage(
-        encoded_data.data(), gfx::Size(), encoded_data.size());
+        encoded_data.data(), desired_image_frame_size, encoded_data.size());
   }
 
   if (!decoded_image.isNull()) {

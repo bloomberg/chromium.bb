@@ -19,6 +19,7 @@ static_library("image_fetcher") {
     "//base",
     "//components/data_use_measurement/core",
     "//net",
+    "//ui/gfx/geometry",
     "//url",
   ]
 }

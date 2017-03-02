@@ -15,6 +15,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 class SkBitmap;
 
 // This is a helper class for decoding images safely in a sandboxed service. To
@@ -83,10 +87,16 @@ class ImageDecoder {
 
   // Starts asynchronous image decoding. Once finished, the callback will be
   // posted back to image_request's |task_runner_|.
+  // For images with multiple frames (e.g. ico files), a frame with a size as
+  // close as possible to |desired_image_frame_size| is chosen (tries to take
+  // one in larger size if there's no precise match). Passing gfx::Size() as
+  // |desired_image_frame_size| is also supported and will result in chosing the
+  // smallest available size.
   static void StartWithOptions(ImageRequest* image_request,
                                std::vector<uint8_t> image_data,
                                ImageCodec image_codec,
-                               bool shrink_to_fit);
+                               bool shrink_to_fit,
+                               const gfx::Size& desired_image_frame_size);
   // Deprecated. Use std::vector<uint8_t> version to avoid an extra copy.
   static void StartWithOptions(ImageRequest* image_request,
                                const std::string& image_data,
@@ -106,7 +116,8 @@ class ImageDecoder {
   void StartWithOptionsImpl(ImageRequest* image_request,
                             std::vector<uint8_t> image_data,
                             ImageCodec image_codec,
-                            bool shrink_to_fit);
+                            bool shrink_to_fit,
+                            const gfx::Size& desired_image_frame_size);
 
   void CancelImpl(ImageRequest* image_request);
 

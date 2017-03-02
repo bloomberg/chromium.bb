@@ -39,6 +39,7 @@ class MockImageFetcher : public image_fetcher::ImageFetcher {
                     const GURL& image_url,
                     base::Callback<void(const std::string& id,
                                         const gfx::Image& image)> callback));
+  MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
 };
 
 class IconCacherTest : public ::testing::Test {
@@ -118,6 +119,7 @@ TEST_F(IconCacherTest, LargeCached) {
     EXPECT_CALL(*image_fetcher_,
                 SetDataUseServiceName(
                     data_use_measurement::DataUseUserData::NTP_TILES));
+    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
     EXPECT_CALL(done, Call(false)).WillOnce(Quit(&loop));
   }
   PreloadIcon(site_.url, site_.large_icon_url, favicon_base::TOUCH_ICON, 128,
@@ -138,6 +140,7 @@ TEST_F(IconCacherTest, LargeNotCachedAndFetchSucceeded) {
     EXPECT_CALL(*image_fetcher_,
                 SetDataUseServiceName(
                     data_use_measurement::DataUseUserData::NTP_TILES));
+    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
     EXPECT_CALL(*image_fetcher_,
                 StartOrQueueNetworkRequest(_, site_.large_icon_url, _))
         .WillOnce(PassFetch(128, 128));
@@ -161,6 +164,7 @@ TEST_F(IconCacherTest, SmallNotCachedAndFetchSucceeded) {
     EXPECT_CALL(*image_fetcher_,
                 SetDataUseServiceName(
                     data_use_measurement::DataUseUserData::NTP_TILES));
+    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
     EXPECT_CALL(*image_fetcher_,
                 StartOrQueueNetworkRequest(_, site_.favicon_url, _))
         .WillOnce(PassFetch(128, 128));
@@ -182,6 +186,7 @@ TEST_F(IconCacherTest, LargeNotCachedAndFetchFailed) {
     EXPECT_CALL(*image_fetcher_,
                 SetDataUseServiceName(
                     data_use_measurement::DataUseUserData::NTP_TILES));
+    EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(gfx::Size(128, 128)));
     EXPECT_CALL(*image_fetcher_,
                 StartOrQueueNetworkRequest(_, site_.large_icon_url, _))
         .WillOnce(FailFetch());

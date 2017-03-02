@@ -39,6 +39,10 @@ void ImageFetcherImpl::SetDataUseServiceName(
   image_data_fetcher_->SetDataUseServiceName(data_use_service_name);
 }
 
+void ImageFetcherImpl::SetDesiredImageFrameSize(const gfx::Size& size) {
+  desired_image_frame_size_ = size;
+}
+
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
     const std::string& id,
     const GURL& image_url,
@@ -72,10 +76,9 @@ void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
     delegate_->OnImageDataFetched(it->second.id, image_data);
   }
 
-  image_decoder_->DecodeImage(
-      image_data,
-      base::Bind(&ImageFetcherImpl::OnImageDecoded,
-                 base::Unretained(this), image_url));
+  image_decoder_->DecodeImage(image_data, desired_image_frame_size_,
+                              base::Bind(&ImageFetcherImpl::OnImageDecoded,
+                                         base::Unretained(this), image_url));
 }
 
 void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,

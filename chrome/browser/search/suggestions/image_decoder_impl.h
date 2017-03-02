@@ -23,6 +23,7 @@ class ImageDecoderImpl : public image_fetcher::ImageDecoder {
 
   void DecodeImage(
       const std::string& image_data,
+      const gfx::Size& desired_image_frame_size,
       const image_fetcher::ImageDecodedCallback& callback) override;
 
  private:

@@ -19,6 +19,7 @@
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -53,6 +54,7 @@ class MockImageFetcher : public ImageFetcher {
                                         const gfx::Image&)>));
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
   MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
+  MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
 };
 
 class ImageManagerTest : public testing::Test {

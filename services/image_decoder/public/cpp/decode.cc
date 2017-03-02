@@ -35,6 +35,7 @@ void Decode(service_manager::Connector* connector,
             mojom::ImageCodec codec,
             bool shrink_to_fit,
             uint64_t max_size_in_bytes,
+            const gfx::Size& desired_image_frame_size,
             const mojom::ImageDecoder::DecodeImageCallback& callback) {
   mojom::ImageDecoderPtr decoder;
   connector->BindInterface(mojom::kServiceName, &decoder);
@@ -43,6 +44,7 @@ void Decode(service_manager::Connector* connector,
   mojom::ImageDecoder* raw_decoder = decoder.get();
   raw_decoder->DecodeImage(
       encoded_bytes, codec, shrink_to_fit, max_size_in_bytes,
+      desired_image_frame_size,
       base::Bind(&OnDecodeImage, base::Passed(&decoder), callback));
 }
 

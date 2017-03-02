@@ -11,6 +11,7 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -37,6 +38,8 @@ IconCacherImpl::IconCacherImpl(
       image_fetcher_(std::move(image_fetcher)) {
   image_fetcher_->SetDataUseServiceName(
       data_use_measurement::DataUseUserData::NTP_TILES);
+  // For images with multiple frames, prefer one of size 128x128px.
+  image_fetcher_->SetDesiredImageFrameSize(gfx::Size(128, 128));
 }
 
 IconCacherImpl::~IconCacherImpl() = default;

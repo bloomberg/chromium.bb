@@ -50,6 +50,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -340,6 +341,7 @@ class MockImageFetcher : public ImageFetcher {
  public:
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
   MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
+  MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
   MOCK_METHOD3(
       StartOrQueueNetworkRequest,
       void(const std::string&,
@@ -353,6 +355,7 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
   ~FakeImageDecoder() override = default;
   void DecodeImage(
       const std::string& image_data,
+      const gfx::Size& desired_image_frame_size,
       const image_fetcher::ImageDecodedCallback& callback) override {
     callback.Run(decoded_image_);
   }

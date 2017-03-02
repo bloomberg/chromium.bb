@@ -16,6 +16,7 @@
 #include "components/image_fetcher/image_data_fetcher.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -43,6 +44,8 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
 
   // Sets a service name against which to track data usage.
   void SetDataUseServiceName(DataUseServiceName data_use_service_name) override;
+
+  void SetDesiredImageFrameSize(const gfx::Size& size) override;
 
   void StartOrQueueNetworkRequest(
       const std::string& id,
@@ -83,8 +86,9 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
   // creating callbacks that are passed to the ImageDecoder.
   void OnImageDecoded(const GURL& image_url, const gfx::Image& image);
 
-
   ImageFetcherDelegate* delegate_;
+
+  gfx::Size desired_image_frame_size_;
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
 

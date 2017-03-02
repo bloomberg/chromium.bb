@@ -5,6 +5,7 @@
 module image_decoder.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum ImageCodec {
   DEFAULT,
@@ -23,6 +24,6 @@ interface ImageDecoder {
   // |max_size_in_bytes| and |shrink_to_fit| is false, this is treated as a
   // decoding failure and the |decoded_image| response is null.
   DecodeImage(array<uint8> encoded_data, ImageCodec codec, bool shrink_to_fit,
-              int64 max_size_in_bytes)
+              int64 max_size_in_bytes, gfx.mojom.Size desired_image_frame_size)
       => (skia.mojom.Bitmap? decoded_image);
 };

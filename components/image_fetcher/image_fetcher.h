@@ -15,6 +15,7 @@
 
 namespace gfx {
 class Image;
+class Size;
 }
 
 namespace image_fetcher {
@@ -33,6 +34,14 @@ class ImageFetcher {
   // Sets a service name against which to track data usage.
   virtual void SetDataUseServiceName(
       DataUseServiceName data_use_service_name) = 0;
+
+  // Sets the desired size for images with multiple frames (like .ico files).
+  // By default, the image fetcher choses smaller images. Override to choose a
+  // frame with a size as close as possible to |size| (trying to take one in
+  // larger size if there's no precise match). Passing gfx::Size() as
+  // |size| is also supported and will result in chosing the smallest available
+  // size.
+  virtual void SetDesiredImageFrameSize(const gfx::Size& size) = 0;
 
   // An empty gfx::Image will be returned to the callback in case the image
   // could not be fetched.

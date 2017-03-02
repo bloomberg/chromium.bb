@@ -75,6 +75,7 @@ class MockImageFetcher : public image_fetcher::ImageFetcher {
            base::Callback<void(const std::string&, const gfx::Image&)>));
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
   MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
+  MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockImageFetcher);

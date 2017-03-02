@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 
 namespace suggestions {
@@ -65,11 +66,16 @@ ImageDecoderImpl::~ImageDecoderImpl() {}
 
 void ImageDecoderImpl::DecodeImage(
     const std::string& image_data,
+    const gfx::Size& desired_image_frame_size,
     const image_fetcher::ImageDecodedCallback& callback) {
   std::unique_ptr<DecodeImageRequest> decode_image_request(
       new DecodeImageRequest(this, callback));
 
-  ::ImageDecoder::Start(decode_image_request.get(), image_data);
+  ::ImageDecoder::StartWithOptions(
+      decode_image_request.get(),
+      std::vector<uint8_t>(image_data.begin(), image_data.end()),
+      ::ImageDecoder::DEFAULT_CODEC,
+      /*shrink_to_fit=*/false, desired_image_frame_size);
 
   decode_image_requests_.push_back(std::move(decode_image_request));
 }

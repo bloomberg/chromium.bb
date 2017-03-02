@@ -17,6 +17,7 @@
 #include "components/wallpaper/wallpaper_layout.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
@@ -109,7 +110,8 @@ void ArcWallpaperService::OnInstanceClosed() {
 void ArcWallpaperService::SetWallpaper(const std::vector<uint8_t>& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ImageDecoder::Cancel(this);
-  ImageDecoder::StartWithOptions(this, data, ImageDecoder::DEFAULT_CODEC, true);
+  ImageDecoder::StartWithOptions(this, data, ImageDecoder::DEFAULT_CODEC, true,
+                                 gfx::Size());
 }
 
 void ArcWallpaperService::GetWallpaper(const GetWallpaperCallback& callback) {

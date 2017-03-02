@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecodeWithOptionsString) {
   ImageDecoder::StartWithOptions(&test_request,
                                  std::string(data.begin(), data.end()),
                                  ImageDecoder::ROBUST_PNG_CODEC,
-                                 false /* shrink_to_fit */);
+                                 /*shrink_to_fit=*/false);
   runner->Run();
   EXPECT_TRUE(test_request.decode_succeeded());
 }
@@ -187,9 +187,9 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustJpegCodecWithJpegData) {
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   TestImageRequest test_request(runner->QuitClosure());
-  ImageDecoder::StartWithOptions(&test_request, GetValidJpgData(),
-                                 ImageDecoder::ROBUST_JPEG_CODEC,
-                                 false /* shrink_to_fit */);
+  ImageDecoder::StartWithOptions(
+      &test_request, GetValidJpgData(), ImageDecoder::ROBUST_JPEG_CODEC,
+      /*shrink_to_fit=*/false, /*desired_image_frame_size=*/gfx::Size());
   runner->Run();
   EXPECT_TRUE(test_request.decode_succeeded());
 }
@@ -198,9 +198,9 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustJpegCodecWithPngData) {
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   TestImageRequest test_request(runner->QuitClosure());
-  ImageDecoder::StartWithOptions(&test_request, GetValidPngData(),
-                                 ImageDecoder::ROBUST_JPEG_CODEC,
-                                 false /* shrink_to_fit */);
+  ImageDecoder::StartWithOptions(
+      &test_request, GetValidPngData(), ImageDecoder::ROBUST_JPEG_CODEC,
+      /*shrink_to_fit=*/false, /*desired_image_frame_size=*/gfx::Size());
   runner->Run();
   // Should fail with PNG data because only JPEG data is allowed.
   EXPECT_FALSE(test_request.decode_succeeded());
@@ -210,9 +210,9 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustPngCodecWithPngData) {
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   TestImageRequest test_request(runner->QuitClosure());
-  ImageDecoder::StartWithOptions(&test_request, GetValidPngData(),
-                                 ImageDecoder::ROBUST_PNG_CODEC,
-                                 false /* shrink_to_fit */);
+  ImageDecoder::StartWithOptions(
+      &test_request, GetValidPngData(), ImageDecoder::ROBUST_PNG_CODEC,
+      /*shrink_to_fit=*/false, /*desired_image_frame_size=*/gfx::Size());
   runner->Run();
   EXPECT_TRUE(test_request.decode_succeeded());
 }
@@ -221,9 +221,9 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustPngCodecWithJpegData) {
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   TestImageRequest test_request(runner->QuitClosure());
-  ImageDecoder::StartWithOptions(&test_request, GetValidJpgData(),
-                                 ImageDecoder::ROBUST_PNG_CODEC,
-                                 false /* shrink_to_fit */);
+  ImageDecoder::StartWithOptions(
+      &test_request, GetValidJpgData(), ImageDecoder::ROBUST_PNG_CODEC,
+      /*shrink_to_fit=*/false, /*desired_image_frame_size=*/gfx::Size());
   runner->Run();
   // Should fail with JPEG data because only PNG data is allowed.
   EXPECT_FALSE(test_request.decode_succeeded());
