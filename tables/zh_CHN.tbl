@@ -1,9 +1,5 @@
 #+locale:zh-CHN
-
-# TODO: Please correct the metadata above. It is not meant to be
-# accurate nor complete. It hasn't been verified by the table
-# author yet. It is merely an attempt by the liblouis maintainers
-# to get some sensible initial values in place.
+#+type:literary
 
 # We corresponded to Braille and the simplify Chinese characters
 # referring to the rules of a book named the website linking
