@@ -48,6 +48,7 @@ class URLRequestContextGetter;
 namespace safe_browsing {
 class ClientSideDetectionService;
 class DownloadProtectionService;
+class PasswordProtectionService;
 struct ResourceRequestInfo;
 struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
@@ -156,6 +157,8 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // This may be NULL if v4 is not enabled by experiment.
   const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
       const;
+
+  PasswordProtectionService* password_protection_service();
 
   // Returns a preference validation delegate that adds incidents to the
   // incident reporting service for validation failures. Returns NULL if the
@@ -333,6 +336,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // The navigation observer manager handles download attribution.
   scoped_refptr<SafeBrowsingNavigationObserverManager>
   navigation_observer_manager_;
+
+  // The password protection service detects and handles password related
+  // incidents.
+  std::unique_ptr<PasswordProtectionService> password_protection_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

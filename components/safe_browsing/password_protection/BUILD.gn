@@ -1,0 +1,35 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("password_protection") {
+  sources = [
+    "password_protection_service.cc",
+    "password_protection_service.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//components/history/core/browser:browser",
+    "//components/safe_browsing_db:database_manager",
+    "//content/public/browser:browser",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}
+
+source_set("password_protection_unittest") {
+  testonly = true
+  sources = [
+    "password_protection_service_unittest.cc",
+  ]
+  deps = [
+    ":password_protection",
+    "//base",
+    "//base/test:test_support",
+    "//components/safe_browsing_db:test_database_manager",
+    "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}

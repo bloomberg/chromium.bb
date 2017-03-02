@@ -38,6 +38,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
+#include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
@@ -328,6 +329,11 @@ void SafeBrowsingService::Initialize() {
     navigation_observer_manager_ = new SafeBrowsingNavigationObserverManager();
   }
 
+  // TODO(jialiul): When PasswordProtectionService does more than reporting UMA,
+  // we need to add finch trial to gate its functionality.
+  password_protection_service_ =
+      base::MakeUnique<PasswordProtectionService>(database_manager());
+
   services_delegate_->Initialize(v4_enabled_);
   services_delegate_->InitializeCsdService(url_request_context_getter_.get());
 
@@ -445,6 +451,10 @@ SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
 const scoped_refptr<SafeBrowsingDatabaseManager>&
 SafeBrowsingService::v4_local_database_manager() const {
   return services_delegate_->v4_local_database_manager();
+}
+
+PasswordProtectionService* SafeBrowsingService::password_protection_service() {
+  return password_protection_service_.get();
 }
 
 std::unique_ptr<TrackedPreferenceValidationDelegate>

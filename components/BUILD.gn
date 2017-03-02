@@ -205,6 +205,7 @@ test("components_unittests") {
       "//components/policy/core/browser:unit_tests",
       "//components/policy/core/common:unit_tests",
       "//components/precache/content:unit_tests",
+      "//components/safe_browsing/password_protection:password_protection_unittest",
       "//components/safe_browsing_db:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/security_state/content:unit_tests",

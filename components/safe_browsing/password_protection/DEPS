@@ -1,0 +1,7 @@
+include_rules = [
+  "-content",
+  "+components/safe_browsing_db",
+  "+content/public/browser",
+  "+content/public/test",
+]
+
