@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder.h"
@@ -133,7 +134,13 @@ void MojoVideoDecoderService::OnDecoderOutput(
     const scoped_refptr<VideoFrame>& frame) {
   DVLOG(2) << __func__;
   DCHECK(client_);
-  client_->OnVideoFrameDecoded(mojom::VideoFrame::From(frame));
+  client_->OnVideoFrameDecoded(mojom::VideoFrame::From(frame), base::nullopt);
+}
+
+void MojoVideoDecoderService::OnReleaseMailbox(
+    const base::UnguessableToken& release_token,
+    const gpu::SyncToken& release_sync_token) {
+  DVLOG(2) << __func__;
 }
 
 }  // namespace media

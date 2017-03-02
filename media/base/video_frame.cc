@@ -768,6 +768,13 @@ CVPixelBufferRef VideoFrame::cv_pixel_buffer() const {
 }
 #endif
 
+void VideoFrame::SetReleaseMailboxCB(
+    const ReleaseMailboxCB& release_mailbox_cb) {
+  DCHECK(!release_mailbox_cb.is_null());
+  DCHECK(mailbox_holders_release_cb_.is_null());
+  mailbox_holders_release_cb_ = release_mailbox_cb;
+}
+
 void VideoFrame::AddDestructionObserver(const base::Closure& callback) {
   DCHECK(!callback.is_null());
   done_callbacks_.push_back(callback);

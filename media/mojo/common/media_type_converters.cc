@@ -346,14 +346,20 @@ TypeConverter<media::mojom::VideoFramePtr, scoped_refptr<media::VideoFrame>>::
   frame->visible_rect = input->visible_rect();
   frame->natural_size = input->natural_size();
   frame->timestamp = input->timestamp();
-  frame->frame_data = std::move(duplicated_handle);
-  frame->frame_data_size = input_frame->MappedSize();
-  frame->y_stride = input_frame->stride(media::VideoFrame::kYPlane);
-  frame->u_stride = input_frame->stride(media::VideoFrame::kUPlane);
-  frame->v_stride = input_frame->stride(media::VideoFrame::kVPlane);
-  frame->y_offset = input_frame->PlaneOffset(media::VideoFrame::kYPlane);
-  frame->u_offset = input_frame->PlaneOffset(media::VideoFrame::kUPlane);
-  frame->v_offset = input_frame->PlaneOffset(media::VideoFrame::kVPlane);
+
+  media::mojom::SharedBufferVideoFrameDataPtr data =
+      media::mojom::SharedBufferVideoFrameData::New();
+  data->frame_data = std::move(duplicated_handle);
+  data->frame_data_size = input_frame->MappedSize();
+  data->y_stride = input_frame->stride(media::VideoFrame::kYPlane);
+  data->u_stride = input_frame->stride(media::VideoFrame::kUPlane);
+  data->v_stride = input_frame->stride(media::VideoFrame::kVPlane);
+  data->y_offset = input_frame->PlaneOffset(media::VideoFrame::kYPlane);
+  data->u_offset = input_frame->PlaneOffset(media::VideoFrame::kUPlane);
+  data->v_offset = input_frame->PlaneOffset(media::VideoFrame::kVPlane);
+
+  frame->data = media::mojom::VideoFrameData::New();
+  frame->data->set_shared_buffer_data(std::move(data));
   return frame;
 }
 
@@ -364,14 +370,20 @@ TypeConverter<scoped_refptr<media::VideoFrame>, media::mojom::VideoFramePtr>::
   if (input->end_of_stream)
     return media::VideoFrame::CreateEOSFrame();
 
+  // Handle non EOS frame. It must be a MojoSharedBufferVideoFrame.
+  // TODO(jrummell): Support other types of VideoFrame.
+  DCHECK(input->data->is_shared_buffer_data());
+  const media::mojom::SharedBufferVideoFrameDataPtr& data =
+      input->data->get_shared_buffer_data();
+
   return media::MojoSharedBufferVideoFrame::Create(
       input->format, input->coded_size, input->visible_rect,
-      input->natural_size, std::move(input->frame_data),
-      base::saturated_cast<size_t>(input->frame_data_size),
-      base::saturated_cast<size_t>(input->y_offset),
-      base::saturated_cast<size_t>(input->u_offset),
-      base::saturated_cast<size_t>(input->v_offset), input->y_stride,
-      input->u_stride, input->v_stride, input->timestamp);
+      input->natural_size, std::move(data->frame_data),
+      base::saturated_cast<size_t>(data->frame_data_size),
+      base::saturated_cast<size_t>(data->y_offset),
+      base::saturated_cast<size_t>(data->u_offset),
+      base::saturated_cast<size_t>(data->v_offset), data->y_stride,
+      data->u_stride, data->v_stride, input->timestamp);
 }
 
 }  // namespace mojo

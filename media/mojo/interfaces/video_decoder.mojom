@@ -4,6 +4,7 @@
 
 module media.mojom;
 
+import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/common/unguessable_token.mojom";
 
@@ -65,9 +66,18 @@ interface VideoDecoder {
   // aborted before executing the callback. This must not be called while there
   // is a pending Initialize() request.
   Reset() => ();
+
+  // Inform the decoder that the client is finished with a frame.
+  // |release_sync_token| is a (possibly empty) sync point after which the
+  // frame's backing textures will be safe to overwrite.
+  OnReleaseMailbox(mojo.common.mojom.UnguessableToken release_token,
+                   gpu.mojom.SyncToken release_sync_token);
 };
 
 interface VideoDecoderClient {
-  // Output a decoded frame. Frames must be output in presentation order.
-  OnVideoFrameDecoded(VideoFrame frame);
+  // Output a decoded frame. Frames must be output in presentation order. If
+  // |release_token| is provided, the client should call OnReleaseMailbox() when
+  // it is finished with the frame.
+  OnVideoFrameDecoded(VideoFrame frame,
+                      mojo.common.mojom.UnguessableToken? release_token);
 };

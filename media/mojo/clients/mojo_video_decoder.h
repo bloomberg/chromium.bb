@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/video_decoder.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -47,7 +48,9 @@ class MojoVideoDecoder final : public VideoDecoder,
   int GetMaxDecodeRequests() const final;
 
   // mojom::VideoDecoderClient implementation.
-  void OnVideoFrameDecoded(mojom::VideoFramePtr frame) final;
+  void OnVideoFrameDecoded(
+      mojom::VideoFramePtr frame,
+      const base::Optional<base::UnguessableToken>& release_token) final;
 
  private:
   void OnInitializeDone(bool status,
@@ -57,6 +60,9 @@ class MojoVideoDecoder final : public VideoDecoder,
   void OnResetDone();
 
   void BindRemoteDecoder();
+
+  void OnReleaseMailbox(const base::UnguessableToken& release_token,
+                        const gpu::SyncToken& release_sync_token);
 
   // Cleans up callbacks and blocks future calls.
   void Stop();
@@ -85,6 +91,9 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool initialized_ = false;
   bool needs_bitstream_conversion_ = false;
   int32_t max_decode_requests_ = 1;
+
+  base::WeakPtr<MojoVideoDecoder> weak_this_;
+  base::WeakPtrFactory<MojoVideoDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoVideoDecoder);
 };

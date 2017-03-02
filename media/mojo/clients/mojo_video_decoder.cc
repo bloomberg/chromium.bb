@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_frame.h"
@@ -28,7 +29,8 @@ MojoVideoDecoder::MojoVideoDecoder(
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
       gpu_factories_(gpu_factories),
-      client_binding_(this) {
+      client_binding_(this),
+      weak_factory_(this) {
   DVLOG(1) << __func__;
 }
 
@@ -50,6 +52,9 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!cdm_context);
+
+  if (!weak_this_)
+    weak_this_ = weak_factory_.GetWeakPtr();
 
   if (!remote_decoder_bound_)
     BindRemoteDecoder();
@@ -104,10 +109,26 @@ void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                      base::Unretained(this), decode_id));
 }
 
-void MojoVideoDecoder::OnVideoFrameDecoded(mojom::VideoFramePtr frame) {
+void MojoVideoDecoder::OnVideoFrameDecoded(
+    mojom::VideoFramePtr frame,
+    const base::Optional<base::UnguessableToken>& release_token) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  output_cb_.Run(frame.To<scoped_refptr<VideoFrame>>());
+
+  scoped_refptr<VideoFrame> video_frame = frame.To<scoped_refptr<VideoFrame>>();
+  if (release_token) {
+    video_frame->SetReleaseMailboxCB(
+        BindToCurrentLoop(base::Bind(&MojoVideoDecoder::OnReleaseMailbox,
+                                     weak_this_, release_token.value())));
+  }
+  output_cb_.Run(std::move(video_frame));
+}
+
+void MojoVideoDecoder::OnReleaseMailbox(
+    const base::UnguessableToken& release_token,
+    const gpu::SyncToken& release_sync_token) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  remote_decoder_->OnReleaseMailbox(release_token, release_sync_token);
 }
 
 void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
