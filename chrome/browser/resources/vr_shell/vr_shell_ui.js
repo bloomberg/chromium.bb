@@ -609,35 +609,52 @@ var vrShellUi = (function() {
       groundGrid.setDrawPhase(0);
       this.groundGridId = ui.addElement(groundGrid);
 
+      this.setHiddenBackground();
+    }
+
+    setElementVisible(elementId, visible) {
+      let update = new api.UiElementUpdate();
+      update.setVisible(visible);
+      ui.updateElement(elementId, update);
+    }
+
+    setLightBackground() {
+      this.setElementVisible(this.groundPlaneId, true);
+      this.setElementVisible(this.ceilingPlaneId, true);
+      this.setElementVisible(this.groundGridId, true);
       ui.setBackgroundColor(this.HORIZON_COLOR);
     }
 
-    setEnabled(enabled) {
-      let groundPlaneUpdate = new api.UiElementUpdate();
-      groundPlaneUpdate.setVisible(enabled);
-      ui.updateElement(this.groundPlaneId, groundPlaneUpdate);
-      let ceilingPlaneUpdate = new api.UiElementUpdate();
-      ceilingPlaneUpdate.setVisible(enabled);
-      ui.updateElement(this.ceilingPlaneId, ceilingPlaneUpdate);
-      let groundGridUpdate = new api.UiElementUpdate();
-      groundGridUpdate.setVisible(enabled);
-      ui.updateElement(this.groundGridId, groundGridUpdate);
+    setDarkBackground() {
+      this.setElementVisible(this.groundPlaneId, false);
+      this.setElementVisible(this.ceilingPlaneId, false);
+      this.setElementVisible(this.groundGridId, true);
+      ui.setBackgroundColor(this.FULLSCREEN_BACKGROUND_COLOR);
     }
 
-    setFullscreen(fullscreen) {
-      let groundPlaneUpdate = new api.UiElementUpdate();
-      groundPlaneUpdate.setVisible(!fullscreen);
-      ui.updateElement(this.groundPlaneId, groundPlaneUpdate);
-      let ceilingPlaneUpdate = new api.UiElementUpdate();
-      ceilingPlaneUpdate.setVisible(!fullscreen);
-      ui.updateElement(this.ceilingPlaneId, ceilingPlaneUpdate);
+    setHiddenBackground() {
+      this.setElementVisible(this.groundPlaneId, false);
+      this.setElementVisible(this.ceilingPlaneId, false);
+      this.setElementVisible(this.groundGridId, false);
+      ui.setBackgroundColor(this.FULLSCREEN_BACKGROUND_COLOR);
+    }
 
-      // Set darker background color for fullscreen since the user might
-      // potentially watch a video.
-      if (fullscreen) {
-        ui.setBackgroundColor(this.FULLSCREEN_BACKGROUND_COLOR);
-      } else {
-        ui.setBackgroundColor(this.HORIZON_COLOR);
+    setState(mode, menuMode, fullscreen) {
+      switch (mode) {
+        case api.Mode.STANDARD:
+          if (fullscreen) {
+            this.setDarkBackground();
+          } else {
+            this.setLightBackground();
+          }
+          break;
+        case api.Mode.WEB_VR:
+          if (menuMode) {
+            this.setLightBackground();
+          } else {
+            this.setHiddenBackground();
+          }
+          break;
       }
     }
   };
@@ -919,12 +936,12 @@ var vrShellUi = (function() {
 
       let mode = this.mode;
       let menuMode = this.menuMode;
+      let fullscreen = this.fullscreen;
 
       api.doAction(api.Action.SET_CONTENT_PAUSED, {'paused': menuMode});
 
-      this.background.setEnabled(mode == api.Mode.STANDARD);
       this.contentQuad.setEnabled(mode == api.Mode.STANDARD);
-      this.contentQuad.setFullscreen(this.fullscreen);
+      this.contentQuad.setFullscreen(fullscreen);
       this.contentQuad.setMenuMode(menuMode);
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
       this.controls.setEnabled(menuMode);
@@ -934,8 +951,7 @@ var vrShellUi = (function() {
           URL_INDICATOR_VISIBILITY_TIMEOUT_MS);
       this.secureOriginWarnings.setEnabled(
           mode == api.Mode.WEB_VR && !menuMode);
-      this.background.setEnabled(mode == api.Mode.STANDARD || menuMode);
-      this.background.setFullscreen(this.fullscreen);
+      this.background.setState(mode, menuMode, fullscreen);
       this.tabContainer.setEnabled(mode == api.Mode.STANDARD && menuMode);
 
       this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
