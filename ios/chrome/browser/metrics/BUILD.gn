@@ -109,7 +109,24 @@ source_set("metrics_internal") {
     "//ui/base",
     "//url",
   ]
+  public_deps = [
+    ":metrics_internal_arc",
+  ]
+  allow_circular_includes_from = [ ":metrics_internal_arc" ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("metrics_internal_arc") {
+  sources = [
+    "tab_usage_recorder_web_state_list_observer.h",
+    "tab_usage_recorder_web_state_list_observer.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/tabs",
+    "//ios/shared/chrome/browser/tabs",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests_internal") {

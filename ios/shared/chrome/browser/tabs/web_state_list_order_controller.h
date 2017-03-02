@@ -26,7 +26,15 @@ class WebStateListOrderController {
   int DetermineInsertionIndex(ui::PageTransition transition,
                               web::WebState* opener) const;
 
+  // Determines where to shift the active index after a WebState is closed.
+  int DetermineNewActiveIndex(int removing_index) const;
+
  private:
+  // Returns a valid index to be selected after the WebState at |removing_index|
+  // is detached, adjusting |index| to reflect that |removing_index| is going
+  // away.
+  int GetValidIndex(int index, int removing_index) const;
+
   WebStateList* web_state_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListOrderController);

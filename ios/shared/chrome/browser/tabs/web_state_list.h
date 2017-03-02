@@ -39,8 +39,15 @@ class WebStateList {
   // Returns the number of WebStates in the model.
   int count() const { return static_cast<int>(web_state_wrappers_.size()); }
 
+  // Returns the index of the currently active WebState, or kInvalidIndex if
+  // there are no active WebState.
+  int active_index() const { return active_index_; }
+
   // Returns true if the specified index is contained by the model.
   bool ContainsIndex(int index) const;
+
+  // Returns the currently active WebState or null if there is none.
+  web::WebState* GetActiveWebState() const;
 
   // Returns the WebState at the specified index. It is invalid to call this
   // with an index such that |ContainsIndex(index)| returns false.
@@ -101,6 +108,9 @@ class WebStateList {
   // to the caller (abandon ownership of the returned WebState).
   web::WebState* DetachWebStateAt(int index) WARN_UNUSED_RESULT;
 
+  // Makes the WebState at the specified index the active WebState.
+  void ActivateWebStateAt(int index);
+
   // Adds an observer to the model.
   void AddObserver(WebStateListObserver* observer);
 
@@ -114,6 +124,10 @@ class WebStateList {
   // Sets the opener of any WebState that reference the WebState at the
   // specified index to null.
   void ClearOpenersReferencing(int index);
+
+  // Notify the observers if the active WebState change.
+  void NotifyIfActiveWebStateChanged(web::WebState* old_web_state,
+                                     bool user_action);
 
   // Returns the index of the |n|-th WebState (with n > 0) in the sequence of
   // WebStates opened from the specified WebState after |start_index|, or
@@ -135,6 +149,9 @@ class WebStateList {
 
   // List of observers notified of changes to the model.
   base::ObserverList<WebStateListObserver, true> observers_;
+
+  // Index of the currently active WebState, kInvalidIndex if no such WebState.
+  int active_index_ = kInvalidIndex;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateList);
 };

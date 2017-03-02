@@ -4,6 +4,7 @@
 
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/logging.h"
@@ -106,6 +107,12 @@ bool WebStateList::ContainsIndex(int index) const {
   return 0 <= index && index < count();
 }
 
+web::WebState* WebStateList::GetActiveWebState() const {
+  if (active_index_ != kInvalidIndex)
+    return GetWebStateAt(active_index_);
+  return nullptr;
+}
+
 web::WebState* WebStateList::GetWebStateAt(int index) const {
   DCHECK(ContainsIndex(index));
   return web_state_wrappers_[index]->web_state();
@@ -149,6 +156,9 @@ void WebStateList::InsertWebState(int index,
   web_state_wrappers_.insert(web_state_wrappers_.begin() + index,
                              base::MakeUnique<WebStateWrapper>(web_state));
 
+  if (active_index_ >= index)
+    ++active_index_;
+
   if (opener)
     SetOpenerOfWebStateAt(index, opener);
 
@@ -179,6 +189,16 @@ void WebStateList::MoveWebStateAt(int from_index, int to_index) {
   web_state_wrappers_.insert(web_state_wrappers_.begin() + to_index,
                              std::move(web_state_wrapper));
 
+  if (active_index_ == from_index) {
+    active_index_ = to_index;
+  } else {
+    int min = std::min(from_index, to_index);
+    int max = std::max(from_index, to_index);
+    int delta = from_index < to_index ? -1 : +1;
+    if (min <= active_index_ && active_index_ <= max)
+      active_index_ += delta;
+  }
+
   for (auto& observer : observers_)
     observer.WebStateMoved(this, web_state, from_index, to_index);
 }
@@ -205,13 +225,34 @@ web::WebState* WebStateList::DetachWebStateAt(int index) {
   DCHECK(ContainsIndex(index));
   ClearOpenersReferencing(index);
 
+  int new_active_index = order_controller_->DetermineNewActiveIndex(index);
+
   web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
   web_state_wrappers_.erase(web_state_wrappers_.begin() + index);
+
+  // Update the active index to prevent observer from seeing an invalid WebState
+  // as the active one but only send the WebStateActivatedAt notification after
+  // the WebStateDetachedAt one.
+  bool active_web_state_was_closed = (index == active_index_);
+  if (active_index_ > index)
+    --active_index_;
+  else if (active_index_ == index)
+    active_index_ = new_active_index;
 
   for (auto& observer : observers_)
     observer.WebStateDetachedAt(this, old_web_state, index);
 
+  if (active_web_state_was_closed)
+    NotifyIfActiveWebStateChanged(old_web_state, false);
+
   return old_web_state;
+}
+
+void WebStateList::ActivateWebStateAt(int index) {
+  DCHECK(ContainsIndex(index));
+  web::WebState* old_web_state = GetActiveWebState();
+  active_index_ = index;
+  NotifyIfActiveWebStateChanged(old_web_state, true);
 }
 
 void WebStateList::AddObserver(WebStateListObserver* observer) {
@@ -227,6 +268,18 @@ void WebStateList::ClearOpenersReferencing(int index) {
   for (auto& web_state_wrapper : web_state_wrappers_) {
     if (web_state_wrapper->opener() == old_web_state)
       web_state_wrapper->SetOpener(nullptr);
+  }
+}
+
+void WebStateList::NotifyIfActiveWebStateChanged(web::WebState* old_web_state,
+                                                 bool user_action) {
+  web::WebState* new_web_state = GetActiveWebState();
+  if (old_web_state == new_web_state)
+    return;
+
+  for (auto& observer : observers_) {
+    observer.WebStateActivatedAt(this, old_web_state, new_web_state,
+                                 active_index_, user_action);
   }
 }
 

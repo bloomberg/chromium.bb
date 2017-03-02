@@ -162,6 +162,9 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, assign) BOOL isLinkLoadingPrerenderTab;
 @property(nonatomic, assign) BOOL isVoiceSearchResultsTab;
 
+// |YES| if the tab has finished loading.
+@property(nonatomic, readonly) BOOL loadFinished;
+
 // Creates a new tab with the given state. |opener| is nil unless another tab
 // is conceptually the parent of this tab. |openedByDOM| is YES if the page was
 // opened by DOM. |model| and |browserState| must not be nil.

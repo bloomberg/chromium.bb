@@ -3608,9 +3608,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       // and show the prerendering animation.
       newTab.isPrerenderTab = NO;
 
-      BOOL loadingFinished =
-          [newTab.webController loadPhase] == web::PAGE_LOADED;
-      [self tabLoadComplete:newTab withSuccess:loadingFinished];
+      [self tabLoadComplete:newTab withSuccess:newTab.loadFinished];
 
       return;
     }
@@ -4583,8 +4581,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     newTab.isPrerenderTab = NO;
     [_model setCurrentTab:newTab];
 
-    BOOL loadingFinished = [newTab.webController loadPhase] == web::PAGE_LOADED;
-    if (loadingFinished)
+    if (newTab.loadFinished)
       [self tabLoadComplete:newTab withSuccess:YES];
 
     if (focusInput) {

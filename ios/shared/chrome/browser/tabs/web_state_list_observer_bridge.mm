@@ -70,3 +70,21 @@ void WebStateListObserverBridge::WebStateDetachedAt(
         didDetachWebState:web_state
                   atIndex:index];
 }
+
+void WebStateListObserverBridge::WebStateActivatedAt(
+    WebStateList* web_state_list,
+    web::WebState* old_web_state,
+    web::WebState* new_web_state,
+    int active_index,
+    bool user_action) {
+  const SEL selector = @selector
+      (webStateList:didChangeActiveWebState:oldWebState:atIndex:userAction:);
+  if (![observer_ respondsToSelector:selector])
+    return;
+
+  [observer_ webStateList:web_state_list
+      didChangeActiveWebState:new_web_state
+                  oldWebState:old_web_state
+                      atIndex:active_index
+                   userAction:(user_action ? YES : NO)];
+}

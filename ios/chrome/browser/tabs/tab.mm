@@ -742,6 +742,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return dialogDelegate_;
 }
 
+- (BOOL)loadFinished {
+  return [self.webController loadPhase] == web::PAGE_LOADED;
+}
+
 - (void)setDialogDelegate:(id<TabDialogDelegate>)dialogDelegate {
   dialogDelegate_.reset(dialogDelegate);
 }

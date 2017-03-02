@@ -22,7 +22,24 @@ source_set("snapshots") {
     "//ios/chrome/browser/ui",
     "//ios/web",
   ]
+  public_deps = [
+    ":snapshots_arc",
+  ]
+  allow_circular_includes_from = [ ":snapshots_arc" ]
   libs = [ "QuartzCore.framework" ]
+}
+
+source_set("snapshots_arc") {
+  sources = [
+    "snapshot_cache_web_state_list_observer.h",
+    "snapshot_cache_web_state_list_observer.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/tabs",
+    "//ios/shared/chrome/browser/tabs",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {

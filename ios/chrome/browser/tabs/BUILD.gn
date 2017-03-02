@@ -12,7 +12,6 @@ source_set("tabs") {
     "tab_model.h",
     "tab_model_list.h",
     "tab_model_observer.h",
-    "tab_model_order_controller.h",
     "tab_model_synced_window_delegate.h",
     "tab_model_synced_window_delegate_getter.h",
     "tab_private.h",
@@ -123,7 +122,8 @@ source_set("tabs_internal_arc") {
     "tab_model_observers.mm",
     "tab_model_observers_bridge.h",
     "tab_model_observers_bridge.mm",
-    "tab_model_order_controller.mm",
+    "tab_model_selected_tab_observer.h",
+    "tab_model_selected_tab_observer.mm",
     "tab_parenting_observer.h",
     "tab_parenting_observer.mm",
   ]

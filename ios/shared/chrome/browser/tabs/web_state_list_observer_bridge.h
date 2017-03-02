@@ -41,6 +41,16 @@
     didDetachWebState:(web::WebState*)webState
               atIndex:(int)index;
 
+// Invoked after |newWebState| was activated at the specified index. Both
+// WebState are either valid or null (if there was no selection or there is
+// no selection). If the change is due to an user action, |userAction| will
+// be true.
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                 userAction:(BOOL)userAction;
+
 @end
 
 // Observer that bridges WebStateList events to an Objective-C observer that
@@ -66,6 +76,11 @@ class WebStateListObserverBridge : public WebStateListObserver {
   void WebStateDetachedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index) override;
+  void WebStateActivatedAt(WebStateList* web_state_list,
+                           web::WebState* old_web_state,
+                           web::WebState* new_web_state,
+                           int active_index,
+                           bool user_action) override;
 
   id<WebStateListObserving> observer_;
 

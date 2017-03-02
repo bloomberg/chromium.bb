@@ -75,4 +75,21 @@
   [_tabModelObservers tabModelDidChangeTabCount:_tabModel];
 }
 
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                 userAction:(BOOL)userAction {
+  DCHECK_GE(atIndex, 0);
+  if (!newWebState)
+    return;
+
+  Tab* oldTab =
+      oldWebState ? LegacyTabHelper::GetTabForWebState(oldWebState) : nil;
+  [_tabModelObservers tabModel:_tabModel
+            didChangeActiveTab:LegacyTabHelper::GetTabForWebState(newWebState)
+                   previousTab:oldTab
+                       atIndex:static_cast<NSUInteger>(atIndex)];
+}
+
 @end

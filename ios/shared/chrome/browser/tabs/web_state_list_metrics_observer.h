@@ -13,6 +13,9 @@ class WebStateListMetricsObserver : public WebStateListObserver {
   WebStateListMetricsObserver();
   ~WebStateListMetricsObserver() override;
 
+  void ResetSessionMetrics();
+  void RecordSessionMetrics();
+
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
@@ -24,8 +27,18 @@ class WebStateListMetricsObserver : public WebStateListObserver {
   void WebStateDetachedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index) override;
+  void WebStateActivatedAt(WebStateList* web_state_list,
+                           web::WebState* old_web_state,
+                           web::WebState* new_web_state,
+                           int active_index,
+                           bool user_action) override;
 
  private:
+  // Counters for metrics.
+  int inserted_web_state_counter_;
+  int detached_web_state_counter_;
+  int activated_web_state_counter_;
+
   DISALLOW_COPY_AND_ASSIGN(WebStateListMetricsObserver);
 };
 
