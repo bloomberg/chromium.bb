@@ -84,13 +84,15 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id = profile_id().GetUserEmail();
 
-  SetNotification(base::MakeUnique<message_center::Notification>(
+  auto notification = base::MakeUnique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_CUSTOM, notification_id(),
       base::UTF8ToUTF16(data->title), base::UTF8ToUTF16(data->message),
       gfx::Image(),
       base::UTF8ToUTF16("arc"),  // display source
       GURL(),                    // empty origin url, for system component
-      notifier_id, rich_data, new ArcNotificationDelegate(this)));
+      notifier_id, rich_data, new ArcNotificationDelegate(this));
+  notification->set_timestamp(base::Time::FromJavaTime(data->time));
+  SetNotification(std::move(notification));
 
   pinned_ = rich_data.pinned;
 
