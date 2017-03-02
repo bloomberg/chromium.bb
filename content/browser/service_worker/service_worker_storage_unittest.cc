@@ -1897,9 +1897,6 @@ class ServiceWorkerStorageOriginTrialsDiskTest
       return base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
                                arraysize(kTestPublicKey));
     }
-    bool IsFeatureDisabled(base::StringPiece feature) const override {
-      return false;
-    }
   };
   class TestContentClient : public ContentClient {
    public:

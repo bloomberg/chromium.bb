@@ -18,7 +18,6 @@ class ShellOriginTrialPolicy : public OriginTrialPolicy {
 
   // OriginTrialPolicy interface
   base::StringPiece GetPublicKey() const override;
-  bool IsFeatureDisabled(base::StringPiece feature) const override;
 
  private:
   base::StringPiece public_key_;

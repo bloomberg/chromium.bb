@@ -216,9 +216,6 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
         return base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
                                  arraysize(kTestPublicKey));
       }
-      bool IsFeatureDisabled(base::StringPiece feature) const override {
-        return false;
-      }
     };
 
     TestOriginTrialPolicy origin_trial_policy_;

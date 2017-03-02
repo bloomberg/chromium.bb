@@ -15,8 +15,9 @@ class CONTENT_EXPORT OriginTrialPolicy {
   virtual ~OriginTrialPolicy() = default;
 
   virtual void Initialize() {}
-  virtual base::StringPiece GetPublicKey() const = 0;
-  virtual bool IsFeatureDisabled(base::StringPiece feature) const = 0;
+  virtual base::StringPiece GetPublicKey() const;
+  virtual bool IsFeatureDisabled(base::StringPiece feature) const;
+  virtual bool IsTokenDisabled(base::StringPiece token_signature) const;
 };
 
 }  // namespace content

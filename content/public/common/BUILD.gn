@@ -169,6 +169,8 @@ source_set("common_sources") {
     "mojo_channel_switches.h",
     "notification_resources.cc",
     "notification_resources.h",
+    "origin_trial_policy.cc",
+    "origin_trial_policy.h",
     "origin_util.h",
     "page_state.cc",
     "page_state.h",
