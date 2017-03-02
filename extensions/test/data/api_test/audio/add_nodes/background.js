@@ -9,7 +9,7 @@ chrome.test.runTests([
         return {
           id: device.id,
           stableDeviceId: device.stableDeviceId,
-          isInput: device.isInput,
+          streamType: device.streamType,
           deviceType: device.deviceType,
           deviceName: device.deviceName,
           displayName: device.displayName
@@ -21,21 +21,21 @@ chrome.test.runTests([
      chrome.test.assertEq([{
         id: '30001',
         stableDeviceId: '116606' /* 80001 ^ 0xFFFF */,
-        isInput: false,
+        streamType: 'OUTPUT',
         deviceType: 'USB',
         deviceName: 'Jabra Speaker',
         displayName: 'Jabra Speaker 1'
       }, {
         id: '30002',
         stableDeviceId: '116605' /* 80002 ^ 0xFFFF */,
-        isInput: false,
+        streamType: 'OUTPUT',
         deviceType: 'USB',
         deviceName: 'Jabra Speaker',
         displayName: 'Jabra Speaker 2'
       }, {
         id: '30003',
         stableDeviceId: '116604' /* 80003 ^ 0xFFFF */,
-        isInput: false,
+        streamType: 'OUTPUT',
         deviceType: 'HDMI',
         deviceName: 'HDMI output',
         displayName: 'HDA Intel MID'

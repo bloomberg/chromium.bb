@@ -10,10 +10,42 @@
 #include "base/values.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/audio.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/features/behavior_feature.h"
+#include "extensions/common/features/feature_provider.h"
 
 namespace extensions {
 
 namespace audio = api::audio;
+
+namespace {
+
+// Checks if an extension is whitelisted to use deprecated version of audio API.
+// TODO(tbarzic): Retire this whitelist and remove the deprecated API methods,
+//     properties and events. This is currently targeted for M-60
+//     (http://crbug.com/697279).
+bool CanUseDeprecatedAudioApi(const Extension* extension) {
+  if (!extension)
+    return false;
+
+  const Feature* allow_deprecated_audio_api_feature =
+      FeatureProvider::GetBehaviorFeatures()->GetFeature(
+          behavior_feature::kAllowDeprecatedAudioApi);
+  if (!allow_deprecated_audio_api_feature)
+    return false;
+
+  return allow_deprecated_audio_api_feature->IsAvailableToExtension(extension)
+      .is_available();
+}
+
+bool CanReceiveDeprecatedAudioEvent(content::BrowserContext* context,
+                                    const Extension* extension,
+                                    Event* event,
+                                    const base::DictionaryValue* filter) {
+  return CanUseDeprecatedAudioApi(extension);
+}
+
+}  // namespace
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<AudioAPI> > g_factory =
     LAZY_INSTANCE_INITIALIZER;
@@ -39,12 +71,15 @@ AudioService* AudioAPI::GetService() const {
 }
 
 void AudioAPI::OnDeviceChanged() {
-  if (EventRouter::Get(browser_context_)) {
-    std::unique_ptr<Event> event(new Event(
-        events::AUDIO_ON_DEVICE_CHANGED, audio::OnDeviceChanged::kEventName,
-        std::unique_ptr<base::ListValue>(new base::ListValue())));
-    EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
-  }
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  if (!event_router)
+    return;
+
+  std::unique_ptr<Event> event(new Event(
+      events::AUDIO_ON_DEVICE_CHANGED, audio::OnDeviceChanged::kEventName,
+      std::unique_ptr<base::ListValue>(new base::ListValue())));
+  event->will_dispatch_callback = base::Bind(&CanReceiveDeprecatedAudioEvent);
+  event_router->BroadcastEvent(std::move(event));
 }
 
 void AudioAPI::OnLevelChanged(const std::string& id, int level) {
@@ -98,6 +133,11 @@ void AudioAPI::OnDevicesChanged(const DeviceInfoList& devices) {
 ///////////////////////////////////////////////////////////////////////////////
 
 ExtensionFunction::ResponseAction AudioGetInfoFunction::Run() {
+  if (!CanUseDeprecatedAudioApi(extension())) {
+    return RespondNow(
+        Error("audio.getInfo is deprecated, use audio.getDevices instead."));
+  }
+
   AudioService* service =
       AudioAPI::GetFactoryInstance()->Get(browser_context())->GetService();
   DCHECK(service);
@@ -150,9 +190,10 @@ ExtensionFunction::ResponseAction AudioSetActiveDevicesFunction::Run() {
       return RespondNow(Error("Failed to set active devices."));
     }
   } else if (params->ids.as_strings) {
-    // TODO(tbarzic): This way of setting active devices is deprecated - have
-    // this return error for apps that were not whitelisted for deprecated
-    // version of audio API.
+    if (!CanUseDeprecatedAudioApi(extension())) {
+      return RespondNow(
+          Error("String list |ids| is deprecated, use DeviceIdLists type."));
+    }
     service->SetActiveDevices(*params->ids.as_strings);
   }
   return RespondNow(NoArguments());
@@ -168,6 +209,19 @@ ExtensionFunction::ResponseAction AudioSetPropertiesFunction::Run() {
   AudioService* service =
       AudioAPI::GetFactoryInstance()->Get(browser_context())->GetService();
   DCHECK(service);
+
+  if (!CanUseDeprecatedAudioApi(extension())) {
+    if (params->properties.volume)
+      return RespondNow(Error("|volume| property is deprecated, use |level|."));
+
+    if (params->properties.gain)
+      return RespondNow(Error("|gain| property is deprecated, use |level|."));
+
+    if (params->properties.is_muted) {
+      return RespondNow(
+          Error("|isMuted| property is deprecated, use |audio.setMute|."));
+    }
+  }
 
   bool level_set = !!params->properties.level;
   int level_value = level_set ? *params->properties.level : -1;

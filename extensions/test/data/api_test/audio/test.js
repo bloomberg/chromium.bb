@@ -66,45 +66,30 @@ function getDeviceIds(devices) {
   return devices.map(function(device) {return device.id;}).sort();
 }
 
+function EventListener(targetEvent) {
+  this.targetEvent = targetEvent;
+  this.listener = this.handleEvent.bind(this);
+  this.targetEvent.addListener(this.listener);
+  this.eventCount = 0;
+}
+
+EventListener.prototype.handleEvent = function() {
+  ++this.eventCount;
+}
+
+EventListener.prototype.reset = function() {
+  this.targetEvent.removeListener(this.listener);
+}
+
+var deviceChangedListener = null;
+
 chrome.test.runTests([
-  function getInfoTest() {
-    // Test output devices. Maps device ID -> tested device properties.
-    var kTestOutputDevices = {
-      '30001': {
-        id: '30001',
-        name: 'Jabra Speaker: Jabra Speaker 1'
-      },
-      '30002': {
-        id: '30002',
-        name: 'Jabra Speaker: Jabra Speaker 2'
-      },
-      '30003': {
-        id: '30003',
-        name: 'HDMI output: HDA Intel MID'
-      }
-    };
-
-    // Test input devices. Maps device ID -> tested device properties.
-    var kTestInputDevices = {
-      '40001': {
-        id: '40001',
-        name: 'Jabra Mic: Jabra Mic 1'
-      },
-      '40002': {
-        id: '40002',
-        name: 'Jabra Mic: Jabra Mic 2'
-      },
-      '40003': {
-        id: '40003',
-        name: 'Webcam Mic: Logitech Webcam'
-      }
-    };
-
-    chrome.audio.getInfo(chrome.test.callbackPass(
-        function(outputInfo, inputInfo) {
-          assertDevicesMatch(kTestOutputDevices, outputInfo);
-          assertDevicesMatch(kTestInputDevices, inputInfo);
-        }));
+  // Sets up a listener for audio.onDeviceChanged event -
+  // |verifyNoDeviceChangedEvents| test will later verify that no
+  // onDeviceChanged events have been observed.
+  function startDeviceChangedListener() {
+    deviceChangedListener = new EventListener(chrome.audio.onDeviceChanged);
+    chrome.test.succeed();
   },
 
   function getDevicesTest() {
@@ -319,78 +304,6 @@ chrome.test.runTests([
     }));
   },
 
-  function deprecatedSetActiveDevicesTest() {
-    //Test output devices. Maps device ID -> tested device properties.
-    var kTestDevices = {
-      '30001': {
-        id: '30001',
-        isActive: false
-      },
-      '30002': {
-        id: '30002',
-        isActive: false
-      },
-      '30003': {
-        id: '30003',
-        isActive: true
-      },
-      '40001': {
-        id: '40001',
-        isActive: false
-      },
-      '40002': {
-        id: '40002',
-        isActive: true
-      },
-      '40003': {
-        id: '40003',
-        isActive: false
-      }
-    };
-
-    chrome.audio.setActiveDevices([
-      '30003',
-      '40002'
-    ], chrome.test.callbackPass(function() {
-      chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
-        assertDevicesMatch(kTestDevices, devices);
-      }));
-    }));
-  },
-
-  function deprecatedSetPropertiesTest() {
-    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
-      var expectedDevices = deviceListToExpectedDevicesMap(initial);
-
-      // Update expected input devices with values that should be changed in
-      // test.
-      var updatedInput = expectedDevices['40002'];
-      chrome.test.assertFalse(updatedInput.isMuted);
-      chrome.test.assertFalse(updatedInput.gain === 55);
-      updatedInput.isMuted = true;
-      updatedInput.level = 55;
-
-      // Update expected output devices with values that should be changed in
-      // test.
-      var updatedOutput = expectedDevices['30001'];
-      chrome.test.assertFalse(updatedOutput.volume === 35);
-      updatedOutput.level = 35;
-
-      chrome.audio.setProperties('30001', {
-        volume: 35
-      }, chrome.test.callbackPass(function() {
-        chrome.audio.setProperties('40002', {
-          isMuted: true,
-          gain: 55
-        }, chrome.test.callbackPass(function() {
-          chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
-            assertDevicesMatch(expectedDevices, devices);
-          }));
-        }));
-      }));
-    }));
-  },
-
   function setPropertiesTest() {
     chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
       var expectedDevices = deviceListToExpectedDevicesMap(initial);
@@ -448,30 +361,6 @@ chrome.test.runTests([
             });
           }));
     });
-  },
-
-  function setPropertiesInvalidValuesTest() {
-    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
-      var expectedDevices = deviceListToExpectedDevicesMap(initial);
-      var expectedError = 'Could not set volume/gain properties';
-
-      chrome.audio.setProperties('30001', {
-        isMuted: true,
-        // Output device - should have volume set.
-        gain: 55
-      }, chrome.test.callbackFail(expectedError, function() {
-        chrome.audio.setProperties('40002', {
-          isMuted: true,
-          // Input device - should have gain set.
-          volume:55
-        }, chrome.test.callbackFail(expectedError, function() {
-          // Assert that device properties haven't changed.
-          chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
-            assertDevicesMatch(expectedDevices, devices);
-          }));
-        }));
-      }));
-    }));
   },
 
   function setActiveDevicesTest() {
@@ -566,5 +455,83 @@ chrome.test.runTests([
         }));
       }));
     }));
+  },
+
+  function verifyNoDeviceChangedEvents() {
+    chrome.test.assertTrue(!!deviceChangedListener);
+    chrome.test.assertEq(0, deviceChangedListener.eventCount);
+    deviceChangedListener.reset();
+    deviceChangedListener = null;
+    chrome.test.succeed();
+  },
+
+  // Tests verifying the app doesn't have access to deprecated part of the API:
+  function deprecated_GetInfoTest() {
+    chrome.audio.getInfo(chrome.test.callbackFail(
+        'audio.getInfo is deprecated, use audio.getDevices instead.'));
+  },
+
+  function deprecated_setProperties_isMuted() {
+    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
+      var expectedDevices = deviceListToExpectedDevicesMap(initial);
+      var expectedError =
+          '|isMuted| property is deprecated, use |audio.setMute|.';
+
+      chrome.audio.setProperties('30001', {
+        isMuted: true,
+        // Output device - should have volume set.
+        level: 55
+      }, chrome.test.callbackFail(expectedError, function() {
+        // Assert that device properties haven't changed.
+        chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
+          assertDevicesMatch(expectedDevices, devices);
+        }));
+      }));
+    }));
+  },
+
+  function deprecated_setProperties_volume() {
+    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
+      var expectedDevices = deviceListToExpectedDevicesMap(initial);
+      var expectedError = '|volume| property is deprecated, use |level|.';
+
+      chrome.audio.setProperties('30001', {
+        volume: 2,
+        // Output device - should have volume set.
+        level: 55
+      }, chrome.test.callbackFail(expectedError, function() {
+        // Assert that device properties haven't changed.
+        chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
+          assertDevicesMatch(expectedDevices, devices);
+        }));
+      }));
+    }));
+  },
+
+  function deprecated_setProperties_gain() {
+    chrome.audio.getDevices(chrome.test.callbackPass(function(initial) {
+      var expectedDevices = deviceListToExpectedDevicesMap(initial);
+      var expectedError = '|gain| property is deprecated, use |level|.';
+
+      chrome.audio.setProperties('40001', {
+        gain: 2,
+        // Output device - should have volume set.
+        level: 55
+      }, chrome.test.callbackFail(expectedError, function() {
+        // Assert that device properties haven't changed.
+        chrome.audio.getDevices(chrome.test.callbackPass(function(devices) {
+          assertDevicesMatch(expectedDevices, devices);
+        }));
+      }));
+    }));
+  },
+
+  function deprecated_SetActiveDevicesTest() {
+    var kExpectedError =
+        'String list |ids| is deprecated, use DeviceIdLists type.';
+    chrome.audio.setActiveDevices([
+      '30003',
+      '40002'
+    ], chrome.test.callbackFail(kExpectedError));
   },
 ]);

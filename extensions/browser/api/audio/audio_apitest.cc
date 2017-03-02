@@ -5,9 +5,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
+#include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "extensions/common/features/feature_session_type.h"
+#include "extensions/common/switches.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -87,6 +93,13 @@ class AudioApiTest : public ShellApiTest {
   AudioApiTest() : cras_audio_handler_(NULL), fake_cras_audio_client_(NULL) {}
   ~AudioApiTest() override {}
 
+  void SetUp() override {
+    session_feature_type_ = extensions::ScopedCurrentFeatureSessionType(
+        extensions::FeatureSessionType::KIOSK);
+
+    ShellApiTest::SetUp();
+  }
+
   void SetUpCrasAudioHandlerWithTestingNodes(const AudioNodeList& audio_nodes) {
     chromeos::DBusThreadManager* dbus_manager =
         chromeos::DBusThreadManager::Get();
@@ -109,6 +122,8 @@ class AudioApiTest : public ShellApiTest {
 
  protected:
   base::MessageLoopForUI message_loop_;
+  std::unique_ptr<base::AutoReset<extensions::FeatureSessionType>>
+      session_feature_type_;
   chromeos::CrasAudioHandler* cras_audio_handler_;  // Not owned.
   chromeos::FakeCrasAudioClient* fake_cras_audio_client_;  // Not owned.
 };
@@ -267,6 +282,30 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
   // Verify the background app got the onNodesChanged event
   // with the last node removed.
   EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+}
+
+class WhitelistedAudioApiTest : public AudioApiTest {
+ public:
+  WhitelistedAudioApiTest() {}
+  ~WhitelistedAudioApiTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        "jlgnoeceollaejlkenecblnjmdcfhfgc");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WhitelistedAudioApiTest, DeprecatedApi) {
+  // Set up the audio nodes for testing.
+  AudioNodeList audio_nodes = {
+      CreateAudioNode(kJabraSpeaker1, 2), CreateAudioNode(kJabraSpeaker2, 2),
+      CreateAudioNode(kHDMIOutput, 2),    CreateAudioNode(kJabraMic1, 2),
+      CreateAudioNode(kJabraMic2, 2),     CreateAudioNode(kUSBCameraMic, 2)};
+
+  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+
+  EXPECT_TRUE(RunAppTest("api_test/audio/deprecated_api")) << message_;
 }
 
 #endif  // OS_CHROMEOS

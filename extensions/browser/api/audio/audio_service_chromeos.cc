@@ -351,14 +351,10 @@ AudioDeviceInfo AudioServiceImpl::ToAudioDeviceInfo(
   info.stream_type = device.is_input
                          ? extensions::api::audio::STREAM_TYPE_INPUT
                          : extensions::api::audio::STREAM_TYPE_OUTPUT;
-  info.is_input = device.is_input;
   info.device_type = GetAsAudioApiDeviceType(device.type);
   info.display_name = device.display_name;
   info.device_name = device.device_name;
   info.is_active = device.active;
-  info.is_muted = device.is_input
-                      ? cras_audio_handler_->IsInputMutedForDevice(device.id)
-                      : cras_audio_handler_->IsOutputMutedForDevice(device.id);
   info.level =
       device.is_input
           ? cras_audio_handler_->GetOutputVolumePercentForDevice(device.id)

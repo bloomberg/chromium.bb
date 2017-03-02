@@ -19,6 +19,8 @@ const char kAllowUsbDevicesPermissionInterfaceClass[] =
 
 const char kSigninScreen[] = "signin_screen";
 
+const char kAllowDeprecatedAudioApi[] = "allow_deprecated_audio_api";
+
 }  // namespace behavior_feature
 
 }  // namespace extensions
