@@ -60,7 +60,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPLaunchAfterInactivity,
     &kNTPOfflinePagesFeature,
     &NTPShowGoogleGInOmniboxFeature,
-    &kNTPSuggestionsStandaloneUIFeature,
     &kPhysicalWebFeature,
     &kPhysicalWebSharing,
     &kSpecialLocaleFeature,
@@ -151,9 +150,6 @@ const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
 
 const base::Feature NTPShowGoogleGInOmniboxFeature{
     "NTPShowGoogleGInOmnibox", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNTPSuggestionsStandaloneUIFeature{
-    "NTPSuggestionsStandaloneUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPhysicalWebFeature{"PhysicalWeb",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

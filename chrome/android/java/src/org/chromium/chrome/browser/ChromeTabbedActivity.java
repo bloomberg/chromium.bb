@@ -96,7 +96,6 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoS
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
-import org.chromium.chrome.browser.suggestions.ContentSuggestionsActivity;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -1386,8 +1385,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             RecordUserAction.record("MobileTabClosedUndoShortCut");
         } else if (id == R.id.enter_vr_id) {
             mVrShellDelegate.enterVRIfNecessary();
-        } else if (id == R.id.content_suggestions_standalone_ui) {
-            ContentSuggestionsActivity.launch(this);
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
