@@ -162,3 +162,28 @@ executable("wayland_simple_client") {
     deps += [ "//third_party/minigbm" ]
   }
 }
+
+if (ozone_platform_gbm) {
+  executable("wayland_yuv_client") {
+    sources = [
+      "clients/yuv.cc",
+    ]
+
+    deps = [
+      ":client_lib",
+      "//base",
+      "//skia",
+      "//third_party/wayland:wayland_client",
+      "//third_party/wayland-protocols:linux_dmabuf_protocol",
+      "//third_party/wayland-protocols:presentation_time_protocol",
+      "//ui/gfx/geometry",
+    ]
+
+    configs += [
+      ":libdrm",
+      "//ui/gl:gl_config",
+    ]
+    defines = [ "OZONE_PLATFORM_GBM" ]
+    deps += [ "//third_party/minigbm" ]
+  }
+}

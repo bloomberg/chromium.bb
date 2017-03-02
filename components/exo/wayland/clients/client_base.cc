@@ -64,7 +64,6 @@ const int32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
 const SkColorType kColorType = kBGRA_8888_SkColorType;
 #if defined(OZONE_PLATFORM_GBM)
 const GrPixelConfig kGrPixelConfig = kBGRA_8888_GrPixelConfig;
-const int32_t kDrmFormat = DRM_FORMAT_ABGR8888;
 #endif
 const size_t kBytesPerPixel = 4;
 
@@ -297,7 +296,7 @@ bool ClientBase::Init(const InitParams& params) {
   }
 #endif
   for (size_t i = 0; i < params.num_buffers; ++i) {
-    auto buffer = CreateBuffer();
+    auto buffer = CreateBuffer(params.drm_format);
     if (!buffer) {
       LOG(ERROR) << "Failed to create buffer";
       return false;
@@ -365,11 +364,12 @@ ClientBase::~ClientBase() {}
 ////////////////////////////////////////////////////////////////////////////////
 // ClientBase, private:
 
-std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer() {
+std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
+    int32_t drm_format) {
 #if defined(OZONE_PLATFORM_GBM)
   std::unique_ptr<Buffer> buffer(new Buffer());
   if (device_) {
-    buffer->bo.reset(gbm_bo_create(device_.get(), width_, height_, kDrmFormat,
+    buffer->bo.reset(gbm_bo_create(device_.get(), width_, height_, drm_format,
                                    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING));
     if (!buffer->bo) {
       LOG(ERROR) << "Can't create gbm buffer";
@@ -381,11 +381,18 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer() {
         zwp_linux_dmabuf_v1_create_params(globals_.linux_dmabuf.get()));
     zwp_linux_buffer_params_v1_add_listener(buffer->params.get(),
                                             &g_params_listener, buffer.get());
-    uint32_t stride = gbm_bo_get_stride(buffer->bo.get());
-    zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), 0, 0, stride,
-                                   0, 0);
+    for (size_t i = 0; i < gbm_bo_get_num_planes(buffer->bo.get()); ++i) {
+      base::ScopedFD fd(gbm_bo_get_plane_fd(buffer->bo.get(), i));
+      uint32_t stride = gbm_bo_get_plane_stride(buffer->bo.get(), i);
+      uint32_t offset = gbm_bo_get_plane_offset(buffer->bo.get(), i);
+      zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), i, offset,
+                                     stride, 0, 0);
+    }
     zwp_linux_buffer_params_v1_create(buffer->params.get(), width_, height_,
-                                      kDrmFormat, 0);
+                                      drm_format, 0);
+
+    if (gbm_bo_get_num_planes(buffer->bo.get()) != 1)
+      return buffer;
 
     EGLint khr_image_attrs[] = {EGL_DMA_BUF_PLANE0_FD_EXT,
                                 fd.get(),
@@ -394,9 +401,9 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer() {
                                 EGL_HEIGHT,
                                 height_,
                                 EGL_LINUX_DRM_FOURCC_EXT,
-                                kDrmFormat,
+                                drm_format,
                                 EGL_DMA_BUF_PLANE0_PITCH_EXT,
-                                stride,
+                                gbm_bo_get_plane_stride(buffer->bo.get(), 0),
                                 EGL_DMA_BUF_PLANE0_OFFSET_EXT,
                                 0,
                                 EGL_NONE};
