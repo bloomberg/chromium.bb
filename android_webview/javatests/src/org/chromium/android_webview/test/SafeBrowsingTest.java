@@ -27,8 +27,6 @@ import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Test suite for SafeBrowsing.
  *
@@ -270,7 +268,7 @@ public class SafeBrowsingTest extends AwTestBase {
         OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
         int errorCount = errorHelper.getCallCount();
         dontProceedThroughInterstitial();
-        errorHelper.waitForCallback(errorCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        errorHelper.waitForCallback(errorCount);
         assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
         assertEquals(responseUrl, errorHelper.getRequest().url);
     }
@@ -288,7 +286,7 @@ public class SafeBrowsingTest extends AwTestBase {
         OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
         int errorCount = errorHelper.getCallCount();
         dontProceedThroughInterstitial();
-        errorHelper.waitForCallback(errorCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        errorHelper.waitForCallback(errorCount);
         assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
         final String subresourceUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         assertEquals(subresourceUrl, errorHelper.getRequest().url);
