@@ -24,6 +24,7 @@
 #
 # ugur.gurbuz@brailleteknik.com
 # Son Değiştirilme Tarihi 23.10.2015
+
 include litdigits6Dots.uti
 
 include braille-patterns.cti
