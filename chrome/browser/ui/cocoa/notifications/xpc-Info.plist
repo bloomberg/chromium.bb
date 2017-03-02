@@ -9,7 +9,7 @@
         <key>CFBundleExecutable</key>
         <string>${EXECUTABLE_NAME}</string>
         <key>CFBundleIdentifier</key>
-        <string>${CHROME_BUNDLE_ID}.${EXECUTABLE_NAME}</string>
+        <string>${CHROME_BUNDLE_ID}.framework.${EXECUTABLE_NAME}</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleName</key>

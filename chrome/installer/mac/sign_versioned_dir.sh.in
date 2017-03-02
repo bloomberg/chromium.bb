@@ -76,7 +76,7 @@ rm -f "${app_mode_loader_tmp}"
 
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
          "${notification_service}" \
-         -r="designated => identifier \"com.google.Chrome.AlertNotificationService\" \
+         -r="designated => identifier \"com.google.Chrome.framework.AlertNotificationService\" \
 ${requirement_suffix}"
 
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \

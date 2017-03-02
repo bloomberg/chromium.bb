@@ -436,7 +436,8 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
         initWithServiceName:
             [NSString
                 stringWithFormat:notification_constants::kAlertXPCServiceName,
-                                 [base::mac::OuterBundle() bundleIdentifier]]]);
+                                 [base::mac::FrameworkBundle()
+                                     bundleIdentifier]]]);
     xpcConnection_.get().remoteObjectInterface =
         [NSXPCInterface interfaceWithProtocol:@protocol(NotificationDelivery)];
 
