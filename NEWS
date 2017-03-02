@@ -59,6 +59,7 @@ test data. Refer to the documentation for the details
 - UEB improvements, thanks to Mike Gray
   - Fixed apostrophe and back translation
   - Added rules for unicode apostrophe handling
+  - Improvements to UEB and Nemeth math
 - Complete overhaul of Lithuanian 8-dots table, thanks to Rimas
   Kudelis
 - New Urdu 6 Dot Grade 1 and 2 Braille tables thanks to Jake Kyle
