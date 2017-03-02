@@ -173,12 +173,16 @@ set(AOM_AV1_COMMON_SSSE3_INTRIN
     "${AOM_ROOT}/av1/common/x86/av1_convolve_ssse3.c")
 
 set(AOM_AV1_COMMON_SSE4_1_INTRIN
-    # Requires CONFIG_FILTER_INTRA
-    #"${AOM_ROOT}/av1/common/x86/filterintra_sse4.c"
     # Requires CONFIG_CDEF
     #"${AOM_ROOT}/av1/common/x86/od_dering_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm1d_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm2d_sse4.c")
+
+if (CONFIG_FILTER_INTRA)
+  set(AOM_AV1_COMMON_SSE4_1_INTRIN
+      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+      "${AOM_ROOT}/av1/common/x86/filterintra_sse4.c")
+endif ()
 
 set(AOM_AV1_COMMON_AVX2_INTRIN
     "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
