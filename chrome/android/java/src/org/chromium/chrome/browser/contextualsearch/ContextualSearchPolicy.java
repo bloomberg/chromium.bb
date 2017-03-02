@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -36,6 +38,9 @@ class ContextualSearchPolicy {
     private static final int TAP_TRIGGERED_PROMO_LIMIT = 50;
     private static final int TAP_RESOLVE_PREFETCH_LIMIT_FOR_DECIDED = 50;
     private static final int TAP_RESOLVE_PREFETCH_LIMIT_FOR_UNDECIDED = 20;
+
+    private static final HashSet<String> PREDOMINENTLY_ENGLISH_SPEAKING_COUNTRIES =
+            CollectionUtil.newHashSet("GB", "US");
 
     private final ChromePreferenceManager mPreferenceManager;
     private final ContextualSearchSelectionController mSelectionController;
@@ -459,15 +464,27 @@ class ContextualSearchPolicy {
      *         none is available.
      */
     String bestTargetLanguage(List<String> targetLanguages) {
+        return bestTargetLanguage(targetLanguages, Locale.getDefault().getCountry());
+    }
+
+    /**
+     * Determines the best language to convert into, given the ordered list of languages the user
+     * knows, and the UX language.
+     * @param targetLanguages The list of languages to consider converting to.
+     * @param countryOfUx The country of the UX.
+     * @return the best language or an empty string.
+     */
+    @VisibleForTesting
+    String bestTargetLanguage(List<String> targetLanguages, String countryOfUx) {
         // For now, we just return the first language, unless it's English
         // (due to over-usage).
         // TODO(donnd): Improve this logic. Determining the right language seems non-trivial.
         // E.g. If this language doesn't match the user's server preferences, they might see a page
         // in one language and the one box translation in another, which might be confusing.
-        // Also this logic should only apply on Android, where English setup is over used.
+        // Also this logic should only apply on Android, where English setup is overused.
         if (targetLanguages.size() > 1
                 && TextUtils.equals(targetLanguages.get(0), Locale.ENGLISH.getLanguage())
-                && !ContextualSearchFieldTrial.isEnglishTargetTranslationEnabled()) {
+                && !PREDOMINENTLY_ENGLISH_SPEAKING_COUNTRIES.contains(countryOfUx)) {
             return targetLanguages.get(1);
         } else if (targetLanguages.size() > 0) {
             return targetLanguages.get(0);
