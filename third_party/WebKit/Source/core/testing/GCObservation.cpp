@@ -38,7 +38,7 @@ static void setWeakCallbackForGCObservation(
 }
 
 void GCObservation::setWasCollected() {
-  ASSERT(!wasCollected());
+  DCHECK(!wasCollected());
   m_observed.clear();
   m_collected = true;
 }

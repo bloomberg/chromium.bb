@@ -111,14 +111,14 @@ void resetInternalsObject(v8::Local<v8::Context> context) {
   blink::ScriptState* scriptState = blink::ScriptState::from(context);
   blink::ScriptState::Scope scope(scriptState);
   blink::Document* document = toDocument(scriptState->getExecutionContext());
-  ASSERT(document);
+  DCHECK(document);
   blink::LocalFrame* frame = document->frame();
   // Should the document have been detached, the page is assumed being destroyed
   // (=> no reset required.)
   if (!frame)
     return;
   blink::Page* page = frame->page();
-  ASSERT(page);
+  DCHECK(page);
   blink::Internals::resetToConsistentState(page);
   blink::InternalSettings::from(*page)->resetToConsistentState();
 }

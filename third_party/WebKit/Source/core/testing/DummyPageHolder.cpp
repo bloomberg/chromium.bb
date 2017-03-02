@@ -99,7 +99,7 @@ Page& DummyPageHolder::page() const {
 }
 
 LocalFrame& DummyPageHolder::frame() const {
-  ASSERT(m_frame);
+  DCHECK(m_frame);
   return *m_frame;
 }
 

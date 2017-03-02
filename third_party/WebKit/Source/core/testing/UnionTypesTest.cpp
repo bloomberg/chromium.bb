@@ -25,7 +25,7 @@ void UnionTypesTest::doubleOrStringOrStringArrayAttribute(
       doubleOrStringOrStringArray.setStringArray(m_attributeStringArray);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -41,7 +41,7 @@ void UnionTypesTest::setDoubleOrStringOrStringArrayAttribute(
     m_attributeStringArray = doubleOrStringOrStringArray.getAsStringArray();
     m_attributeType = SpecificTypeStringArray;
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 }
 
@@ -53,7 +53,7 @@ String UnionTypesTest::doubleOrStringArg(DoubleOrString& doubleOrString) {
            String::numberToStringECMAScript(doubleOrString.getAsDouble());
   if (doubleOrString.isString())
     return "string is passed: " + doubleOrString.getAsString();
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 
@@ -65,7 +65,7 @@ String UnionTypesTest::doubleOrInternalEnumArg(
   if (doubleOrInternalEnum.isInternalEnum())
     return "InternalEnum is passed: " +
            doubleOrInternalEnum.getAsInternalEnum();
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 
@@ -76,7 +76,7 @@ String UnionTypesTest::doubleOrStringArrayArg(
 
   StringBuilder builder;
   for (DoubleOrString& doubleOrString : array) {
-    ASSERT(!doubleOrString.isNull());
+    DCHECK(!doubleOrString.isNull());
     if (doubleOrString.isDouble()) {
       builder.append("double: ");
       builder.append(
@@ -85,7 +85,7 @@ String UnionTypesTest::doubleOrStringArrayArg(
       builder.append("string: ");
       builder.append(doubleOrString.getAsString());
     } else {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     }
     builder.append(", ");
   }
@@ -99,7 +99,7 @@ String UnionTypesTest::doubleOrStringSequenceArg(
 
 String UnionTypesTest::nodeListOrElementArg(
     NodeListOrElement& nodeListOrElement) {
-  ASSERT(!nodeListOrElement.isNull());
+  DCHECK(!nodeListOrElement.isNull());
   return nodeListOrElementOrNullArg(nodeListOrElement);
 }
 
@@ -111,7 +111,7 @@ String UnionTypesTest::nodeListOrElementOrNullArg(
     return "nodelist is passed";
   if (nodeListOrElementOrNull.isElement())
     return "element is passed";
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 
@@ -127,14 +127,14 @@ String UnionTypesTest::doubleOrStringOrStringArrayArg(
   if (doubleOrStringOrStringArray.isString())
     return "string: " + doubleOrStringOrStringArray.getAsString();
 
-  ASSERT(doubleOrStringOrStringArray.isStringArray());
+  DCHECK(doubleOrStringOrStringArray.isStringArray());
   const Vector<String>& array = doubleOrStringOrStringArray.getAsStringArray();
   if (!array.size())
     return "array: []";
   StringBuilder builder;
   builder.append("array: [");
   for (const String& item : array) {
-    ASSERT(!item.isNull());
+    DCHECK(!item.isNull());
     builder.append(item);
     builder.append(", ");
   }
@@ -153,7 +153,7 @@ String UnionTypesTest::doubleOrStringOrStringSequenceArg(
   if (doubleOrStringOrStringSequence.isString())
     return "string: " + doubleOrStringOrStringSequence.getAsString();
 
-  ASSERT(doubleOrStringOrStringSequence.isStringSequence());
+  DCHECK(doubleOrStringOrStringSequence.isStringSequence());
   const Vector<String>& sequence =
       doubleOrStringOrStringSequence.getAsStringSequence();
   if (!sequence.size())
@@ -161,7 +161,7 @@ String UnionTypesTest::doubleOrStringOrStringSequenceArg(
   StringBuilder builder;
   builder.append("sequence: [");
   for (const String& item : sequence) {
-    ASSERT(!item.isNull());
+    DCHECK(!item.isNull());
     builder.append(item);
     builder.append(", ");
   }

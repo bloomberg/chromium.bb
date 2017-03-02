@@ -137,7 +137,7 @@ ScriptValue DictionaryTest::getDictionaryMemberProperties(
 }
 
 void DictionaryTest::setDerived(const InternalDictionaryDerived& derived) {
-  ASSERT(derived.hasRequiredBooleanMember());
+  DCHECK(derived.hasRequiredBooleanMember());
   set(derived);
   if (derived.hasDerivedStringMember())
     m_derivedStringMember = derived.derivedStringMember();

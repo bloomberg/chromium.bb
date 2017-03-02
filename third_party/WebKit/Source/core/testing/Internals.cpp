@@ -812,7 +812,7 @@ String Internals::shadowRootType(const Node* root,
     case ShadowRootType::Closed:
       return String("ClosedShadowRoot");
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return String("Unknown");
   }
 }
@@ -2563,7 +2563,7 @@ static const char* cursorTypeToString(Cursor::Type cursorType) {
       return "Custom";
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "UNKNOWN";
 }
 
