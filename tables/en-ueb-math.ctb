@@ -48,9 +48,9 @@ math \xf32b 346
 math \xf32c 146-35-126
 #always \xf403\xf32a 345
 # Fractions
-math \xf328 12356
-math \xf329 23456
-math \xf32d 46-34
+math \xf500 12356
+math \xf501 23456
+math \xf503 46-34
 # Grouping symbols
 math \xf326 126
 #math \xf327 345
