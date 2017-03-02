@@ -2,6 +2,8 @@
 <html>
 <head>
     <script>
+        if (window.testRunner)
+            testRunner.setDumpConsoleMessages(false);
         window.onload = function() {
             var worker = new Worker('worker-for-indexeddb.js');
             worker.postMessage(true);

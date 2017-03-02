@@ -4,6 +4,8 @@
 </head>
 <body>
     <script>
+        if (window.testRunner)
+            testRunner.setDumpConsoleMessages(false);
         function test(method, args) {
             try {
                 var request = window.indexedDB[method].call(window.indexedDB, args);
