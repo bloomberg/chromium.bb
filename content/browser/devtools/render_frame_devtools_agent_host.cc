@@ -649,18 +649,17 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
 
   if (!IsBrowserSideNavigationEnabled()) {
-    if (navigation_handle->IsErrorPage()) {
-      if (pending_ &&
-          pending_->host() == navigation_handle->GetRenderFrameHost()) {
-        DiscardPending();
-      }
-    } else if (navigation_handle->HasCommitted()) {
+    if (navigation_handle->HasCommitted() &&
+        !navigation_handle->IsErrorPage()) {
       if (pending_ &&
           pending_->host() == navigation_handle->GetRenderFrameHost()) {
         CommitPending();
       }
       if (session())
         protocol::TargetHandler::FromSession(session())->UpdateServiceWorkers();
+    } else if (pending_ &&
+               pending_->host() == navigation_handle->GetRenderFrameHost()) {
+      DiscardPending();
     }
     DCHECK(CheckConsistency());
     return;

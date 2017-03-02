@@ -7,10 +7,13 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/site_per_process_browsertest.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -206,6 +209,54 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   scoped_refptr<DevToolsAgentHost> page_agent =
       DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
   EXPECT_EQ(page_agent.get(), main_frame_agent.get());
+}
+
+class SitePerProcessDownloadDevToolsBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessDownloadDevToolsBrowserTest() {}
+
+  void SetUpOnMainThread() override {
+    SitePerProcessBrowserTest::SetUpOnMainThread();
+    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
+    DownloadManager* download_manager = BrowserContext::GetDownloadManager(
+        shell()->web_contents()->GetBrowserContext());
+    ShellDownloadManagerDelegate* download_delegate =
+        static_cast<ShellDownloadManagerDelegate*>(
+            download_manager->GetDelegate());
+    download_delegate->SetDownloadBehaviorForTesting(
+        downloads_directory_.GetPath());
+  }
+
+  base::ScopedTempDir downloads_directory_;
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDownloadDevToolsBrowserTest,
+                       NotCommittedNavigationDoesNotBlockAgent) {
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  scoped_refptr<DevToolsAgentHost> agent =
+      DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
+  TestClient client;
+  ASSERT_TRUE(agent->AttachClient(&client));
+  char message[] = "{\"id\": 0, \"method\": \"incorrect.method\"}";
+  // Check that client is responsive.
+  agent->DispatchProtocolMessage(&client, message);
+  client.WaitForReply();
+
+  // Do cross process navigation that ends up being download, which will be
+  // not committed navigation in that web contents/render frame.
+  GURL::Replacements replace_host;
+  GURL cross_site_url(embedded_test_server()->GetURL("/download/empty.bin"));
+  replace_host.SetHostStr("foo.com");
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  ASSERT_TRUE(NavigateToURLAndExpectNoCommit(shell(), cross_site_url));
+
+  // Check that client is still responding after not committed navigation
+  // is finished.
+  agent->DispatchProtocolMessage(&client, message);
+  client.WaitForReply();
+  ASSERT_TRUE(agent->DetachClient(&client));
 }
 
 }  // namespace content
