@@ -200,17 +200,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryDisabled) {
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
 }
 
-TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcEnabled) {
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::FromUserEmail(profile()->GetProfileUserName()),
-                    user_manager::USER_TYPE_ARC_KIOSK_APP);
-  EXPECT_FALSE(chromeos::ProfileHelper::Get()
-                   ->GetUserByProfile(profile())
-                   ->HasGaiaAccount());
-  EXPECT_TRUE(IsArcAllowedForProfile(profile()));
-}
-
-TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcDisabled) {
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcNotAvailable) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
@@ -221,9 +211,21 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcDisabled) {
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
 }
 
-TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskOnlyEnabled) {
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcInstalled) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arc-availability=installed-only-kiosk-supported"});
+      {"", "--arc-availability=installed"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail(profile()->GetProfileUserName()),
+                    user_manager::USER_TYPE_ARC_KIOSK_APP);
+  EXPECT_FALSE(chromeos::ProfileHelper::Get()
+                   ->GetUserByProfile(profile())
+                   ->HasGaiaAccount());
+  EXPECT_TRUE(IsArcAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcSupported) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
                     user_manager::USER_TYPE_ARC_KIOSK_APP);

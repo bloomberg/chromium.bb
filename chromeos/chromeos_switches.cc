@@ -68,8 +68,6 @@ const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 // - none: ARC is not installed on this device. (default)
 // - installed: ARC is installed on this device, but not officially supported.
 //   Users can enable ARC only when Finch experiment is turned on.
-// - installed-only-kiosk-supported: ARC is installed, but officially supported
-//   only in kiosk mode.
 // - officially-supported: ARC is installed and supported on this device. So
 //   users can enable ARC via settings etc.
 // - officially-supported-with-active-directory: ARC is supported and also

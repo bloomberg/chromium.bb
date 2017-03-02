@@ -24,8 +24,6 @@ const base::Feature kEnableArcFeature{"EnableARC",
 // Possible values for --arc-availability flag.
 constexpr char kAvailabilityNone[] = "none";
 constexpr char kAvailabilityInstalled[] = "installed";
-constexpr char kAvailabilityInstalledOnlyKioskSupported[] =
-    "installed-only-kiosk-supported";
 constexpr char kAvailabilityOfficiallySupported[] = "officially-supported";
 constexpr char kAvailabilityOfficiallySupportedWithActiveDirectory[] =
     "officially-supported-with-active-directory";
@@ -40,14 +38,12 @@ bool IsArcAvailable() {
         chromeos::switches::kArcAvailability);
     DCHECK(value == kAvailabilityNone ||
            value == kAvailabilityInstalled ||
-           value == kAvailabilityInstalledOnlyKioskSupported ||
            value == kAvailabilityOfficiallySupported ||
            value == kAvailabilityOfficiallySupportedWithActiveDirectory)
         << "Unknown flag value: " << value;
     return value == kAvailabilityOfficiallySupported ||
            value == kAvailabilityOfficiallySupportedWithActiveDirectory ||
-           ((value == kAvailabilityInstalled ||
-             value == kAvailabilityInstalledOnlyKioskSupported) &&
+           (value == kAvailabilityInstalled &&
             base::FeatureList::IsEnabled(kEnableArcFeature));
   }
 
@@ -65,9 +61,14 @@ bool IsArcKioskAvailable() {
   if (command_line->HasSwitch(chromeos::switches::kArcAvailability)) {
     std::string value =
         command_line->GetSwitchValueASCII(chromeos::switches::kArcAvailability);
-    if (value == kAvailabilityInstalledOnlyKioskSupported)
+    if (value == kAvailabilityInstalled)
       return true;
+    return IsArcAvailable();
   }
+
+  // TODO(hidehiko): Remove this when session_manager supports the new flag.
+  if (command_line->HasSwitch(chromeos::switches::kArcAvailable))
+    return true;
 
   // If not special kiosk device case, use general ARC check.
   return IsArcAvailable();
