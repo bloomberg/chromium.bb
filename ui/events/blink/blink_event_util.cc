@@ -261,6 +261,7 @@ bool CanCoalesce(const WebMouseWheelEvent& event_to_coalesce,
          event.scrollByPage == event_to_coalesce.scrollByPage &&
          event.phase == event_to_coalesce.phase &&
          event.momentumPhase == event_to_coalesce.momentumPhase &&
+         event.resendingPluginId == event_to_coalesce.resendingPluginId &&
          event.hasPreciseScrollingDeltas ==
              event_to_coalesce.hasPreciseScrollingDeltas;
 }
@@ -347,6 +348,7 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
 bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
                  const WebGestureEvent& event) {
   if (event.type() != event_to_coalesce.type() ||
+      event.resendingPluginId != event_to_coalesce.resendingPluginId ||
       event.sourceDevice != event_to_coalesce.sourceDevice ||
       event.modifiers() != event_to_coalesce.modifiers())
     return false;

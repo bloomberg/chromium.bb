@@ -155,4 +155,50 @@ TEST(BlinkEventUtilTest, TouchEventCoalescing) {
   EXPECT_EQ(6, coalesced_event.touches[0].movementY);
 }
 
+TEST(BlinkEventUtilTest, WebMouseWheelEventCoalescing) {
+  blink::WebMouseWheelEvent coalesced_event(
+      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::TimeStampForTesting);
+  coalesced_event.deltaX = 1;
+  coalesced_event.deltaY = 1;
+
+  blink::WebMouseWheelEvent event_to_be_coalesced(
+      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::TimeStampForTesting);
+  event_to_be_coalesced.deltaX = 3;
+  event_to_be_coalesced.deltaY = 4;
+
+  EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+  Coalesce(event_to_be_coalesced, &coalesced_event);
+  EXPECT_EQ(4, coalesced_event.deltaX);
+  EXPECT_EQ(5, coalesced_event.deltaY);
+
+  event_to_be_coalesced.resendingPluginId = 3;
+  EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+}
+
+TEST(BlinkEventUtilTest, WebGestureEventCoalescing) {
+  blink::WebGestureEvent coalesced_event(
+      blink::WebInputEvent::GestureScrollUpdate,
+      blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::TimeStampForTesting);
+  coalesced_event.data.scrollUpdate.deltaX = 1;
+  coalesced_event.data.scrollUpdate.deltaY = 1;
+
+  blink::WebGestureEvent event_to_be_coalesced(
+      blink::WebInputEvent::GestureScrollUpdate,
+      blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::TimeStampForTesting);
+  event_to_be_coalesced.data.scrollUpdate.deltaX = 3;
+  event_to_be_coalesced.data.scrollUpdate.deltaY = 4;
+
+  EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+  Coalesce(event_to_be_coalesced, &coalesced_event);
+  EXPECT_EQ(4, coalesced_event.data.scrollUpdate.deltaX);
+  EXPECT_EQ(5, coalesced_event.data.scrollUpdate.deltaY);
+
+  event_to_be_coalesced.resendingPluginId = 3;
+  EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+}
+
 }  // namespace ui
