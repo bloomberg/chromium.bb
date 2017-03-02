@@ -27,6 +27,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -38,6 +39,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "components/sessions/core/tab_restore_service.h"
+#include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -45,6 +48,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -111,6 +115,39 @@ class RepeatedNotificationObserver : public content::NotificationObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RepeatedNotificationObserver);
+};
+
+class TabRestoreServiceChangesObserver
+    : public sessions::TabRestoreServiceObserver {
+ public:
+  explicit TabRestoreServiceChangesObserver(Profile* profile)
+      : service_(TabRestoreServiceFactory::GetForProfile(profile)) {
+    if (service_)
+      service_->AddObserver(this);
+  }
+
+  ~TabRestoreServiceChangesObserver() override {
+    if (service_)
+      service_->RemoveObserver(this);
+  }
+
+  size_t changes_count() const { return changes_count_; }
+
+ private:
+  // sessions::TabRestoreServiceObserver:
+  void TabRestoreServiceChanged(sessions::TabRestoreService*) override {
+    changes_count_++;
+  }
+
+  // sessions::TabRestoreServiceObserver:
+  void TabRestoreServiceDestroyed(sessions::TabRestoreService*) override {
+    service_ = nullptr;
+  }
+
+  sessions::TabRestoreService* service_ = nullptr;
+  size_t changes_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TabRestoreServiceChangesObserver);
 };
 
 class TestBrowserCloseManager : public BrowserCloseManager {
@@ -705,6 +742,103 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   close_observer.Wait();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
+}
+
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+                       AddBeforeUnloadDuringClosing) {
+  // TODO(crbug.com/250305): Currently FastUnloadController is broken.
+  // And it is difficult to fix this issue without fixing that one.
+  if (GetParam())
+    return;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+
+  // Open second window.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL("/beforeunload.html"),
+      WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+  EXPECT_EQ(2u, BrowserList::GetInstance()->size());
+  auto* browser2 = BrowserList::GetInstance()->get(0) != browser()
+                       ? BrowserList::GetInstance()->get(0)
+                       : BrowserList::GetInstance()->get(1);
+  content::WaitForLoadStop(browser2->tab_strip_model()->GetWebContentsAt(0));
+
+  // Let's work with second window only.
+  // This page has beforeunload handler already.
+  EXPECT_TRUE(browser2->tab_strip_model()
+                  ->GetWebContentsAt(0)
+                  ->NeedToFireBeforeUnload());
+  // This page doesn't have beforeunload handler. Yet.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser2, embedded_test_server()->GetURL("/title2.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WaitForLoadStop(browser2->tab_strip_model()->GetWebContentsAt(1));
+  EXPECT_FALSE(browser2->tab_strip_model()
+                   ->GetWebContentsAt(1)
+                   ->NeedToFireBeforeUnload());
+  EXPECT_EQ(2, browser2->tab_strip_model()->count());
+
+  DisableHangMonitor(browser2);
+
+  // The test.
+
+  TabRestoreServiceChangesObserver restore_observer(browser2->profile());
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  chrome::CloseWindow(browser2);
+  // Just to be sure CloseWindow doesn't have asynchronous tasks
+  // that could have an impact.
+  content::RunAllPendingInMessageLoop();
+
+  // Closing browser shouldn't happen because of beforeunload handler.
+  EXPECT_EQ(2u, BrowserList::GetInstance()->size());
+  // Add beforeunload handler for the 2nd (title2.html) tab which haven't had it
+  // yet.
+  ASSERT_TRUE(content::ExecuteScript(
+      browser2->tab_strip_model()->GetWebContentsAt(1)->GetRenderViewHost(),
+      "window.addEventListener('beforeunload', "
+      "function(event) { event.returnValue = 'Foo'; });"));
+  EXPECT_TRUE(browser2->tab_strip_model()
+                  ->GetWebContentsAt(1)
+                  ->NeedToFireBeforeUnload());
+  // Accept closing the first tab.
+  ASSERT_NO_FATAL_FAILURE(AcceptClose());
+  // Just to be sure accepting a dialog doesn't have asynchronous tasks
+  // that could have an impact.
+  content::RunAllPendingInMessageLoop();
+  // It shouldn't close the whole window/browser.
+  EXPECT_EQ(2u, BrowserList::GetInstance()->size());
+  EXPECT_EQ(2, browser2->tab_strip_model()->count());
+  // Accept closing the second tab.
+  ASSERT_NO_FATAL_FAILURE(AcceptClose());
+  observer.Wait();
+  // Now the second window/browser should be closed.
+  EXPECT_EQ(1u, BrowserList::GetInstance()->size());
+  EXPECT_EQ(browser(), BrowserList::GetInstance()->get(0));
+  EXPECT_EQ(1u, restore_observer.changes_count());
+
+  // Restore the closed browser.
+  content::WindowedNotificationObserver open_window_observer(
+      chrome::NOTIFICATION_BROWSER_OPENED,
+      content::NotificationService::AllSources());
+  chrome::OpenWindowWithRestoredTabs(browser()->profile());
+  open_window_observer.Wait();
+  EXPECT_EQ(2u, BrowserList::GetInstance()->size());
+  browser2 = BrowserList::GetInstance()->get(0) != browser()
+                 ? BrowserList::GetInstance()->get(0)
+                 : BrowserList::GetInstance()->get(1);
+
+  // Check the restored browser contents.
+  EXPECT_EQ(2, browser2->tab_strip_model()->count());
+  EXPECT_EQ(embedded_test_server()->GetURL("/beforeunload.html"),
+            browser2->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(embedded_test_server()->GetURL("/title2.html"),
+            browser2->tab_strip_model()->GetWebContentsAt(1)->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
