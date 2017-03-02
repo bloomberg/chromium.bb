@@ -296,6 +296,24 @@ bool SVGElement::hasTransform(ApplyMotionTransform applyMotionTransform) const {
          (applyMotionTransform == IncludeMotionTransform && hasSVGRareData());
 }
 
+static inline bool transformUsesBoxSize(
+    const ComputedStyle& style,
+    ComputedStyle::ApplyTransformOrigin applyTransformOrigin) {
+  if (applyTransformOrigin == ComputedStyle::IncludeTransformOrigin &&
+      (style.transformOriginX().type() == Percent ||
+       style.transformOriginY().type() == Percent) &&
+      style.requireTransformOrigin(ComputedStyle::IncludeTransformOrigin,
+                                   ComputedStyle::ExcludeMotionPath))
+    return true;
+  if (style.transform().dependsOnBoxSize())
+    return true;
+  if (style.translate() && style.translate()->dependsOnBoxSize())
+    return true;
+  if (style.hasOffset())
+    return true;
+  return false;
+}
+
 AffineTransform SVGElement::calculateTransform(
     ApplyMotionTransform applyMotionTransform) const {
   const ComputedStyle* style =
@@ -317,6 +335,9 @@ AffineTransform SVGElement::calculateTransform(
       boundingBox = FloatRect();
       applyTransformOrigin = ComputedStyle::ExcludeTransformOrigin;
     }
+
+    if (transformUsesBoxSize(*style, applyTransformOrigin))
+      UseCounter::count(document(), UseCounter::TransformUsesBoxSizeOnSVG);
 
     // CSS transforms operate with pre-scaled lengths. To make this work with
     // SVG (which applies the zoom factor globally, at the root level) we

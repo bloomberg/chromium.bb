@@ -1470,6 +1470,7 @@ class CORE_EXPORT UseCounter {
     HTMLObjectElementSetter = 1839,
     HTMLEmbedElementGetter = 1840,
     HTMLEmbedElementSetter = 1841,
+    TransformUsesBoxSizeOnSVG = 1842,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

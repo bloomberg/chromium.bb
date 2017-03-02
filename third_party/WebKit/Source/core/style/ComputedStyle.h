@@ -3540,6 +3540,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool isStyleAvailable() const;
   bool isSharable() const;
 
+  bool requireTransformOrigin(ApplyTransformOrigin applyOrigin,
+                              ApplyMotionPath) const;
+
  private:
   void setVisitedLinkColor(const Color&);
   void setVisitedLinkBackgroundColor(const StyleColor& v) {
@@ -3721,8 +3724,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void updatePropertySpecificDifferences(const ComputedStyle& other,
                                          StyleDifference&) const;
 
-  bool requireTransformOrigin(ApplyTransformOrigin applyOrigin,
-                              ApplyMotionPath) const;
   static bool shadowListHasCurrentColor(const ShadowList*);
 
   StyleInheritedVariables& mutableInheritedVariables();

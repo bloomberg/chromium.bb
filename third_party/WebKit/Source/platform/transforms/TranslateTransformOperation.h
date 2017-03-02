@@ -47,7 +47,10 @@ class PLATFORM_EXPORT TranslateTransformOperation final
     return adoptRef(new TranslateTransformOperation(tx, ty, tz, type));
   }
 
-  virtual bool canBlendWith(const TransformOperation& other) const;
+  bool canBlendWith(const TransformOperation& other) const override;
+  bool dependsOnBoxSize() const override {
+    return m_x.isPercentOrCalc() || m_y.isPercentOrCalc();
+  }
 
   double x(const FloatSize& borderBoxSize) const {
     return floatValueForLength(m_x, borderBoxSize.width());
@@ -89,10 +92,6 @@ class PLATFORM_EXPORT TranslateTransformOperation final
                                        bool blendToIdentity = false) override;
   PassRefPtr<TransformOperation> zoom(double factor) final {
     return zoomTranslate(factor);
-  }
-
-  bool dependsOnBoxSize() const override {
-    return m_x.isPercentOrCalc() || m_y.isPercentOrCalc();
   }
 
   TranslateTransformOperation(const Length& tx,
