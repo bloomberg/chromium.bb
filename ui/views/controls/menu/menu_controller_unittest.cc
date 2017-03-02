@@ -1502,16 +1502,18 @@ TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
 // MenuController becomes active, that the exiting of drag does not cause a
 // crash.
 TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
-  // TODO: this test wedges with aura-mus-client. http://crbug.com/664280.
-  if (IsMus())
-    return;
-
+  // Build the menu so that the appropriate root window is available to set the
+  // drag drop client on.
+  AddButtonMenuItems();
   TestDragDropClient drag_drop_client(
       base::Bind(&MenuControllerTest::TestMenuControllerReplacementDuringDrag,
                  base::Unretained(this)));
-  aura::client::SetDragDropClient(owner()->GetNativeWindow()->GetRootWindow(),
+  aura::client::SetDragDropClient(menu_item()
+                                      ->GetSubmenu()
+                                      ->GetWidget()
+                                      ->GetNativeWindow()
+                                      ->GetRootWindow(),
                                   &drag_drop_client);
-  AddButtonMenuItems();
   StartDrag();
 }
 
@@ -1519,18 +1521,20 @@ TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
 // destroy the MenuController. On Windows and Linux this destruction also
 // destroys the Widget used for drag-and-drop, thereby ending the drag.
 TEST_F(MenuControllerTest, CancelAllDuringDrag) {
-  // TODO: this test wedges with aura-mus-client. http://crbug.com/664280.
-  if (IsMus())
-    return;
-
   MenuController* controller = menu_controller();
   controller->SetAsyncRun(true);
 
+  // Build the menu so that the appropriate root window is available to set the
+  // drag drop client on.
+  AddButtonMenuItems();
   TestDragDropClient drag_drop_client(base::Bind(
       &MenuControllerTest::TestCancelAllDuringDrag, base::Unretained(this)));
-  aura::client::SetDragDropClient(owner()->GetNativeWindow()->GetRootWindow(),
+  aura::client::SetDragDropClient(menu_item()
+                                      ->GetSubmenu()
+                                      ->GetWidget()
+                                      ->GetNativeWindow()
+                                      ->GetRootWindow(),
                                   &drag_drop_client);
-  AddButtonMenuItems();
   StartDrag();
 }
 
