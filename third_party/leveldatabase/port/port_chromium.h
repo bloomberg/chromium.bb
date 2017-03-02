@@ -115,7 +115,10 @@ inline bool GetHeapProfile(void (*func)(void*, const char*, int), void* arg) {
   return false;
 }
 
-}
-}
+// Implemented in leveldb's src/port/port_posix_sse.cc.
+uint32_t AcceleratedCRC32C(uint32_t crc, const char* buf, size_t size);
+
+}  // namespace port
+}  // namespace leveldb
 
 #endif  // STORAGE_LEVELDB_PORT_PORT_CHROMIUM_H_

@@ -160,7 +160,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + 'dc6e7c25bf47cbfb466e0701fd2728b4a12e79d5',
 
   'src/third_party/leveldatabase/src':
-    Var('chromium_git') + '/external/leveldb.git' + '@' + 'a7bff697baa062c8f6b8fb760eacf658712b611a',
+    Var('chromium_git') + '/external/leveldb.git' + '@' + 'a53934a3ae1244679f812d998a4f16f2c7f309a6',
 
   'src/third_party/snappy/src':
     Var('chromium_git') + '/external/snappy.git' + '@' + 'f6a298d7c7ddcfdae824649a61408bcf6b334d92',
