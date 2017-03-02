@@ -260,6 +260,27 @@ inline v8::Local<v8::Value> ToV8(const Vector<std::pair<String, T>>& value,
   return object;
 }
 
+template <typename T>
+inline v8::Local<v8::Value> ToV8(const HeapVector<std::pair<String, T>>& value,
+                                 v8::Local<v8::Object> creationContext,
+                                 v8::Isolate* isolate) {
+  v8::Local<v8::Object> object;
+  {
+    v8::Context::Scope contextScope(creationContext->CreationContext());
+    object = v8::Object::New(isolate);
+  }
+  for (unsigned i = 0; i < value.size(); ++i) {
+    v8::Local<v8::Value> v8Value = ToV8(value[i].second, object, isolate);
+    if (v8Value.IsEmpty())
+      v8Value = v8::Undefined(isolate);
+    if (!v8CallBoolean(object->CreateDataProperty(
+            isolate->GetCurrentContext(), v8String(isolate, value[i].first),
+            v8Value)))
+      return v8::Local<v8::Value>();
+  }
+  return object;
+}
+
 template <typename Sequence>
 inline v8::Local<v8::Value> toV8SequenceInternal(
     const Sequence& sequence,

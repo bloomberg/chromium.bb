@@ -204,15 +204,15 @@ TEST(ToV8Test, basicTypeVectors) {
   TEST_TOV8("true,true,false", boolVector);
 }
 
-TEST(ToV8Test, dictionaryVector) {
+TEST(ToV8Test, pairVector) {
   V8TestingScope scope;
-  Vector<std::pair<String, int>> dictionary;
-  dictionary.push_back(std::make_pair("one", 1));
-  dictionary.push_back(std::make_pair("two", 2));
-  TEST_TOV8("[object Object]", dictionary);
+  Vector<std::pair<String, int>> pairVector;
+  pairVector.push_back(std::make_pair("one", 1));
+  pairVector.push_back(std::make_pair("two", 2));
+  TEST_TOV8("[object Object]", pairVector);
   v8::Local<v8::Context> context = scope.getScriptState()->context();
   v8::Local<v8::Object> result =
-      ToV8(dictionary, context->Global(), scope.isolate())
+      ToV8(pairVector, context->Global(), scope.isolate())
           ->ToObject(context)
           .ToLocalChecked();
   v8::Local<v8::Value> one =
@@ -221,6 +221,30 @@ TEST(ToV8Test, dictionaryVector) {
   v8::Local<v8::Value> two =
       result->Get(context, v8String(scope.isolate(), "two")).ToLocalChecked();
   EXPECT_EQ(2, two->NumberValue(context).FromJust());
+}
+
+TEST(ToV8Test, pairHeapVector) {
+  V8TestingScope scope;
+  HeapVector<std::pair<String, Member<GarbageCollectedScriptWrappable>>>
+      pairHeapVector;
+  pairHeapVector.push_back(
+      std::make_pair("one", new GarbageCollectedScriptWrappable("foo")));
+  pairHeapVector.push_back(
+      std::make_pair("two", new GarbageCollectedScriptWrappable("bar")));
+  TEST_TOV8("[object Object]", pairHeapVector);
+  v8::Local<v8::Context> context = scope.getScriptState()->context();
+  v8::Local<v8::Object> result =
+      ToV8(pairHeapVector, context->Global(), scope.isolate())
+          ->ToObject(context)
+          .ToLocalChecked();
+  v8::Local<v8::Value> one =
+      result->Get(context, v8String(scope.isolate(), "one")).ToLocalChecked();
+  EXPECT_TRUE(one->IsObject());
+  EXPECT_EQ(String("foo"), toCoreString(one->ToString()));
+  v8::Local<v8::Value> two =
+      result->Get(context, v8String(scope.isolate(), "two")).ToLocalChecked();
+  EXPECT_TRUE(two->IsObject());
+  EXPECT_EQ(String("bar"), toCoreString(two->ToString()));
 }
 
 TEST(ToV8Test, stringVectorVector) {
