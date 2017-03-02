@@ -109,16 +109,8 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item,
     // completedness logic is implemented.
     layout->AddView(card_info_container.release());
 
-    checkmark_ = base::MakeUnique<views::ImageView>();
-    checkmark_->set_id(
-        static_cast<int>(DialogViewID::PAYMENT_METHOD_ITEM_CHECKMARK_VIEW));
-    checkmark_->set_owned_by_client();
-    checkmark_->set_can_process_events_within_subtree(false);
-    checkmark_->SetImage(
-        gfx::CreateVectorIcon(views::kMenuCheckIcon, 0xFF609265));
+    checkmark_ = CreateCheckmark(selected());
     layout->AddView(checkmark_.get());
-    if (!selected())
-      checkmark_->SetVisible(false);
 
     std::unique_ptr<views::ImageView> card_icon_view =
         CreateCardIconView(card_->type());

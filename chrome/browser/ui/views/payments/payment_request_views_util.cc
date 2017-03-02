@@ -231,8 +231,6 @@ std::unique_ptr<views::View> GetContactInfoLabel(
   return container;
 }
 
-// Creates a views::Border object that can paint the gray horizontal ruler used
-// as a separator between items in the Payment Request dialog.
 std::unique_ptr<views::Border> CreatePaymentRequestRowBorder() {
   return views::CreateBorderPainter(
       base::MakeUnique<PaymentRequestRowBorderPainter>(),

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 
 namespace views {
+class ImageView;
 class View;
 }
 
@@ -59,6 +60,10 @@ class PaymentRequestItemList {
     // called. This could be called before CreateItemView so subclasses should
     // be aware that their views might not exist yet.
     virtual void SelectedStateChanged() = 0;
+
+    // Creates an image of a large checkmark, used to indicate that an option is
+    // selected.
+    std::unique_ptr<views::ImageView> CreateCheckmark(bool selected);
 
    private:
     std::unique_ptr<views::View> item_view_;

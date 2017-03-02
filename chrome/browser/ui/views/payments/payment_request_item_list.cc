@@ -4,11 +4,21 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_item_list.h"
 
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
 
 namespace payments {
+
+namespace {
+
+const SkColor kCheckmarkColor = 0xFF609265;
+
+}  // namespace
 
 PaymentRequestItemList::Item::Item(PaymentRequest* request,
                                    PaymentRequestItemList* list,
@@ -29,6 +39,18 @@ views::View* PaymentRequestItemList::Item::GetItemView() {
 void PaymentRequestItemList::Item::SetSelected(bool selected) {
   selected_ = selected;
   SelectedStateChanged();
+}
+
+std::unique_ptr<views::ImageView> PaymentRequestItemList::Item::CreateCheckmark(
+    bool selected) {
+  std::unique_ptr<views::ImageView> checkmark =
+      base::MakeUnique<views::ImageView>();
+  checkmark->set_id(static_cast<int>(DialogViewID::CHECKMARK_VIEW));
+  checkmark->set_can_process_events_within_subtree(false);
+  checkmark->SetImage(
+      gfx::CreateVectorIcon(views::kMenuCheckIcon, kCheckmarkColor));
+  checkmark->SetVisible(selected);
+  return checkmark;
 }
 
 PaymentRequestItemList::PaymentRequestItemList() : selected_item_(nullptr) {}

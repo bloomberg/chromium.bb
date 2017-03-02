@@ -32,7 +32,10 @@ enum class DialogViewID : int {
 
   // The following are views contained within the Payment Method Sheet.
   PAYMENT_METHOD_SHEET_LIST_VIEW,
-  PAYMENT_METHOD_ITEM_CHECKMARK_VIEW,
+
+  // Used in selectable rows. Each row in a view reuses this ID, but the ID is
+  // unique at the scope of the parent row.
+  CHECKMARK_VIEW,
 
   // The following are views contained within the Contact Info Sheet.
   CONTACT_INFO_ITEM_CHECKMARK_VIEW,

@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
 
   EXPECT_EQ(card, *request->selected_credit_card());
   views::View* checkmark_view = list_view->child_at(0)->GetViewByID(
-      static_cast<int>(DialogViewID::PAYMENT_METHOD_ITEM_CHECKMARK_VIEW));
+      static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_TRUE(checkmark_view->visible());
 }
 
@@ -78,11 +78,11 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
 
   EXPECT_EQ(card1, *request->selected_credit_card());
   views::View* checkmark_view = list_view->child_at(0)->GetViewByID(
-      static_cast<int>(DialogViewID::PAYMENT_METHOD_ITEM_CHECKMARK_VIEW));
+      static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_TRUE(checkmark_view->visible());
 
   views::View* checkmark_view2 = list_view->child_at(1)->GetViewByID(
-      static_cast<int>(DialogViewID::PAYMENT_METHOD_ITEM_CHECKMARK_VIEW));
+      static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_FALSE(checkmark_view2->visible());
 
   // Simulate selecting the second card.

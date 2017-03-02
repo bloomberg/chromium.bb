@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_SHIPPING_LIST_VIEW_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/payments/payment_request_item_list.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 
 namespace payments {
@@ -26,8 +27,7 @@ class ShippingListViewController : public PaymentRequestSheetController {
   std::unique_ptr<views::View> CreateView() override;
 
  private:
-  std::unique_ptr<views::Button> CreateAddressRow(
-      std::unique_ptr<views::View> content);
+  PaymentRequestItemList list_;
 
   DISALLOW_COPY_AND_ASSIGN(ShippingListViewController);
 };
