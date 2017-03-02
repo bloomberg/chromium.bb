@@ -4104,13 +4104,8 @@ class SSLUICaptivePortalListResourceBundleTest
  public:
   SSLUICaptivePortalListResourceBundleTest()
       : CertVerifierBrowserTest(),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        https_server_mismatched_(net::EmbeddedTestServer::TYPE_HTTPS) {
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-
-    https_server_mismatched_.SetSSLConfig(
-        net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-    https_server_mismatched_.AddDefaultHandlers(base::FilePath(kDocRoot));
   }
 
   void SetUp() override {
@@ -4125,6 +4120,39 @@ class SSLUICaptivePortalListResourceBundleTest
   }
 
  protected:
+  // Checks that a captive portal interstitial isn't displayed, even though the
+  // server's certificate is marked as a captive portal certificate.
+  void TestNoCaptivePortalInterstitial(net::CertStatus cert_status,
+                                       int net_error) {
+    ASSERT_TRUE(https_server()->Start());
+    base::HistogramTester histograms;
+
+    // Mark the server's cert as a captive portal cert.
+    SetUpCertVerifier(cert_status, net_error, kCaptivePortalSPKI);
+
+    // Navigate to an unsafe page on the server. CaptivePortalCertificateList
+    // feature is enabled but either the error is not name-mismatch, or it's not
+    // the only error, so a generic SSL interstitial should be displayed.
+    WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+    SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    content::WaitForInterstitialAttach(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+    EXPECT_TRUE(interstitial_timer_observer.timer_started());
+
+    // Check that the histogram for the captive portal cert was recorded.
+    histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                2);
+    histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                 SSLErrorHandler::HANDLE_ALL, 1);
+    histograms.ExpectBucketCount(
+        SSLErrorHandler::GetHistogramNameForTesting(),
+        SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
+  }
+
   void SetUpCertVerifier(net::CertStatus cert_status,
                          int net_result,
                          const std::string& spki_hash) {
@@ -4145,13 +4173,9 @@ class SSLUICaptivePortalListResourceBundleTest
   }
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
-  net::EmbeddedTestServer* https_server_mismatched() {
-    return &https_server_mismatched_;
-  }
 
  private:
   net::EmbeddedTestServer https_server_;
-  net::EmbeddedTestServer https_server_mismatched_;
 };
 
 }  // namespace
@@ -4322,34 +4346,30 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
   scoped_feature_list.InitFromCommandLine(
       "CaptivePortalCertificateList" /* enabled */,
       std::string() /* disabled */);
-  ASSERT_TRUE(https_server()->Start());
-  base::HistogramTester histograms;
 
-  // Mark the server's cert as a captive portal cert, but with an
-  // authority-invalid error.
-  SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID,
-                    net::ERR_CERT_AUTHORITY_INVALID, kCaptivePortalSPKI);
+  TestNoCaptivePortalInterstitial(net::CERT_STATUS_AUTHORITY_INVALID,
+                                  net::ERR_CERT_AUTHORITY_INVALID);
+}
 
-  // Navigate to an unsafe page on the server. CaptivePortalCertificateList
-  // feature is enabled but the error is not a name mismatch, so a generic SSL
-  // interstitial should be displayed.
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
-  content::WaitForInterstitialAttach(tab);
+// Same as SSLUICaptivePortalListResourceBundleTest.Enabled_AuthorityInvalid,
+// but this time there are two errors (name mismatch + weak key). Captive portal
+// interstitial should not be shown when name mismatch isn't the only error.
+IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
+                       Enabled_NameMismatchAndWeakKey) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "CaptivePortalCertificateList" /* enabled */,
+      std::string() /* disabled */);
 
-  InterstitialPage* interstitial_page = tab->GetInterstitialPage();
-  ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
-            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
-  EXPECT_TRUE(interstitial_timer_observer.timer_started());
-
-  // Check that the histogram for the captive portal cert was recorded.
-  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
-  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
-                               SSLErrorHandler::HANDLE_ALL, 1);
-  histograms.ExpectBucketCount(
-      SSLErrorHandler::GetHistogramNameForTesting(),
-      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
+  const net::CertStatus cert_status =
+      net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_WEAK_KEY;
+  // Sanity check that COMMON_NAME_INVALID is seen as the net error, since the
+  // test is designed to verify that SSLErrorHandler notices other errors in the
+  // CertStatus even when COMMON_NAME_INVALID is the net error.
+  ASSERT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
+            net::MapCertStatusToNetError(cert_status));
+  TestNoCaptivePortalInterstitial(cert_status,
+                                  net::ERR_CERT_COMMON_NAME_INVALID);
 }
 
 #else

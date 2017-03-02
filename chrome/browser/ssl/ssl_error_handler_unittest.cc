@@ -191,11 +191,11 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
 
 }  // namespace
 
-template <net::CertStatus cert_status>
-class SSLErrorHandlerCertStatusTestBase
-    : public ChromeRenderViewHostTestHarness {
+// A class to test name mismatch errors. Creates an error handler with a name
+// mismatch error.
+class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
  public:
-  SSLErrorHandlerCertStatusTestBase() : field_trial_list_(nullptr) {}
+  SSLErrorHandlerNameMismatchTest() : field_trial_list_(nullptr) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -203,7 +203,7 @@ class SSLErrorHandlerCertStatusTestBase
     SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
     ssl_info_.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-    ssl_info_.cert_status = cert_status;
+    ssl_info_.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
     ssl_info_.public_key_hashes.push_back(
         net::HashValue(kCertPublicKeyHashValue));
 
@@ -215,13 +215,6 @@ class SSLErrorHandlerCertStatusTestBase
         ssl_info_,
         GURL(),  // request_url
         base::Callback<void(content::CertificateRequestResultType)>()));
-
-    // Enable finch experiment for captive portal interstitials.
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-                    "CaptivePortalInterstitial", "Enabled"));
-    // Enable finch experiment for SSL common name mismatch handling.
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-                    "SSLCommonNameMismatchHandling", "Enabled"));
   }
 
   void TearDown() override {
@@ -242,13 +235,128 @@ class SSLErrorHandlerCertStatusTestBase
   TestSSLErrorHandlerDelegate* delegate_;
   base::FieldTrialList field_trial_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerCertStatusTestBase);
+  DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerNameMismatchTest);
 };
 
-using SSLErrorHandlerNameMismatchTest =
-    SSLErrorHandlerCertStatusTestBase<net::CERT_STATUS_COMMON_NAME_INVALID>;
-using SSLErrorHandlerAuthorityInvalidTest =
-    SSLErrorHandlerCertStatusTestBase<net::CERT_STATUS_AUTHORITY_INVALID>;
+// A class to test the captive portal certificate list feature. Creates an error
+// handler with a name mismatch error by default. The error handler can be
+// recreated by calling ResetErrorHandler() with an appropriate cert status.
+class SSLErrorHandlerCaptivePortalCertListTest
+    : public ChromeRenderViewHostTestHarness {
+ public:
+  SSLErrorHandlerCaptivePortalCertListTest() : field_trial_list_(nullptr) {}
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    SSLErrorHandler::ResetConfigForTesting();
+    SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
+    ResetErrorHandler(net::CERT_STATUS_COMMON_NAME_INVALID);
+  }
+
+  void TearDown() override {
+    EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+    error_handler_.reset(nullptr);
+    SSLErrorHandler::ResetConfigForTesting();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  TestSSLErrorHandler* error_handler() { return error_handler_.get(); }
+  TestSSLErrorHandlerDelegate* delegate() { return delegate_; }
+
+  const net::SSLInfo& ssl_info() { return ssl_info_; }
+
+ protected:
+  void SetFeatureEnabled(bool enabled) {
+    if (enabled) {
+      scoped_feature_list_.InitFromCommandLine(
+          "CaptivePortalCertificateList" /* enabled */,
+          std::string() /* disabled */);
+    } else {
+      scoped_feature_list_.InitFromCommandLine(
+          std::string(), "CaptivePortalCertificateList" /* disabled */);
+    }
+  }
+
+  // Deletes the current error handler and creates a new one with the given
+  // |cert_status|.
+  void ResetErrorHandler(net::CertStatus cert_status) {
+    ssl_info_.Reset();
+    ssl_info_.cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+    ssl_info_.cert_status = cert_status;
+    ssl_info_.public_key_hashes.push_back(
+        net::HashValue(kCertPublicKeyHashValue));
+
+    delegate_ =
+        new TestSSLErrorHandlerDelegate(profile(), web_contents(), ssl_info_);
+    error_handler_.reset(new TestSSLErrorHandler(
+        std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
+        profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
+        ssl_info_,
+        GURL(),  // request_url
+        base::Callback<void(content::CertificateRequestResultType)>()));
+
+    // Enable finch experiment for captive portal interstitials.
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "CaptivePortalInterstitial", "Enabled"));
+    // Enable finch experiment for SSL common name mismatch handling.
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "SSLCommonNameMismatchHandling", "Enabled"));
+  }
+
+  void TestNoCaptivePortalInterstitial() {
+    base::HistogramTester histograms;
+
+    EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+    EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
+
+    auto config_proto =
+        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+    config_proto->add_captive_portal_cert()->set_sha256_hash(
+        "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    config_proto->add_captive_portal_cert()->set_sha256_hash(
+        ssl_info().public_key_hashes[0].ToString());
+    config_proto->add_captive_portal_cert()->set_sha256_hash(
+        "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+
+    error_handler()->StartHandlingError();
+
+    // Timer should start for captive portal detection.
+    EXPECT_TRUE(error_handler()->IsTimerRunningForTesting());
+    EXPECT_TRUE(delegate()->captive_portal_checked());
+    EXPECT_FALSE(delegate()->ssl_interstitial_shown());
+    EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+    EXPECT_FALSE(delegate()->suggested_url_checked());
+
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+    EXPECT_TRUE(delegate()->captive_portal_checked());
+    EXPECT_TRUE(delegate()->ssl_interstitial_shown());
+    EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+    EXPECT_FALSE(delegate()->suggested_url_checked());
+
+    // Check that the histogram for the captive portal cert was recorded.
+    histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                2);
+    histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                                 SSLErrorHandler::HANDLE_ALL, 1);
+    histograms.ExpectBucketCount(
+        SSLErrorHandler::GetHistogramNameForTesting(),
+        SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
+  }
+
+ private:
+  net::SSLInfo ssl_info_;
+  std::unique_ptr<TestSSLErrorHandler> error_handler_;
+  TestSSLErrorHandlerDelegate* delegate_;
+  base::FieldTrialList field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerCaptivePortalCertListTest);
+};
+
 
 class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -703,11 +811,8 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
 
 // Tests that a certificate marked as a known captive portal certificate causes
 // the captive portal interstitial to be shown.
-TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Enabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */,
-      std::string() /* disabled */);
+TEST_F(SSLErrorHandlerCaptivePortalCertListTest, Enabled) {
+  SetFeatureEnabled(true);
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
@@ -756,66 +861,66 @@ TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Enabled) {
 // Tests that a certificate marked as a known captive portal certificate does
 // not cause the captive portal interstitial to be shown, if the feature is
 // disabled.
-TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Disabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      std::string() /* enabled */,
-      "CaptivePortalCertificateList" /* disabled */);
+TEST_F(SSLErrorHandlerCaptivePortalCertListTest, Disabled) {
+  SetFeatureEnabled(false);
 
-  base::HistogramTester histograms;
-
-  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
-  EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
-
-  auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
-  config_proto->add_captive_portal_cert()->set_sha256_hash(
-      "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  config_proto->add_captive_portal_cert()->set_sha256_hash(
-      ssl_info().public_key_hashes[0].ToString());
-  config_proto->add_captive_portal_cert()->set_sha256_hash(
-      "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
-
-  error_handler()->StartHandlingError();
-
-  // Timer should start since captive portal certificate list feature is
-  // disabled.
-  EXPECT_TRUE(error_handler()->IsTimerRunningForTesting());
-  EXPECT_TRUE(delegate()->captive_portal_checked());
-  EXPECT_FALSE(delegate()->ssl_interstitial_shown());
-  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
-  EXPECT_FALSE(delegate()->suggested_url_checked());
-
-  // A buggy SSL error handler might have incorrectly started the timer. Run to
-  // completion to ensure the timer is expired.
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
-  EXPECT_TRUE(delegate()->captive_portal_checked());
-  EXPECT_TRUE(delegate()->ssl_interstitial_shown());
-  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
-  EXPECT_FALSE(delegate()->suggested_url_checked());
-
-  // Check that the histogram for the captive portal cert was recorded.
-  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
-  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
-                               SSLErrorHandler::HANDLE_ALL, 1);
-  histograms.ExpectBucketCount(
-      SSLErrorHandler::GetHistogramNameForTesting(),
-      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
+  // Default error for SSLErrorHandlerNameMismatchTest tests is name mismatch.
+  TestNoCaptivePortalInterstitial();
 }
 
 // Tests that an error other than name mismatch does not cause a captive portal
 // interstitial to be shown, even if the certificate is marked as a known
 // captive portal certificate.
-TEST_F(SSLErrorHandlerAuthorityInvalidTest,
-       CaptivePortalCertificateList_ShouldShowGenericInterstitial) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */,
-      std::string() /* disabled */);
+TEST_F(SSLErrorHandlerCaptivePortalCertListTest, AuthorityInvalid) {
+  SetFeatureEnabled(true);
 
+  ResetErrorHandler(net::CERT_STATUS_AUTHORITY_INVALID);
+  TestNoCaptivePortalInterstitial();
+}
+
+// Tests that an authority invalid error in addition to name mismatch error does
+// not cause a captive portal interstitial to be shown, even if the certificate
+// is marked as a known captive portal certificate. The resulting error is
+// authority-invalid.
+TEST_F(SSLErrorHandlerCaptivePortalCertListTest,
+       NameMismatchAndAuthorityInvalid) {
+  SetFeatureEnabled(true);
+
+  const net::CertStatus cert_status =
+      net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_AUTHORITY_INVALID;
+  // Sanity check that AUTHORITY_INVALID is seen as the net error.
+  ASSERT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
+            net::MapCertStatusToNetError(cert_status));
+  ResetErrorHandler(cert_status);
+  TestNoCaptivePortalInterstitial();
+}
+
+// Tests that another error in addition to name mismatch error does not cause a
+// captive portal interstitial to be shown, even if the certificate is marked as
+// a known captive portal certificate. Similar to
+// NameMismatchAndAuthorityInvalid, except the resulting error is name mismatch.
+TEST_F(SSLErrorHandlerCaptivePortalCertListTest, NameMismatchAndWeakKey) {
+  SetFeatureEnabled(true);
+
+  const net::CertStatus cert_status =
+      net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_WEAK_KEY;
+  // Sanity check that COMMON_NAME_INVALID is seen as the net error, since the
+  // test is designed to verify that SSLErrorHandler notices other errors in the
+  // CertStatus even when COMMON_NAME_INVALID is the net error.
+  ASSERT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
+            net::MapCertStatusToNetError(cert_status));
+  ResetErrorHandler(cert_status);
+  TestNoCaptivePortalInterstitial();
+}
+
+#else
+
+TEST_F(SSLErrorHandlerCaptivePortalCertListTest, DisabledByBuild) {
+  SetFeatureEnabled(true);
+
+  // Default error for SSLErrorHandlerNameMismatchTest tests is name mismatch,
+  // but the feature is disabled by build so a generic SSL interstitial will be
+  // displayed.
   base::HistogramTester histograms;
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
@@ -833,22 +938,20 @@ TEST_F(SSLErrorHandlerAuthorityInvalidTest,
 
   error_handler()->StartHandlingError();
 
-  // Timer should start for captive portal detection.
-  EXPECT_TRUE(error_handler()->IsTimerRunningForTesting());
-  EXPECT_TRUE(delegate()->captive_portal_checked());
-  EXPECT_FALSE(delegate()->ssl_interstitial_shown());
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_FALSE(delegate()->captive_portal_checked());
+  EXPECT_TRUE(delegate()->ssl_interstitial_shown());
   EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
   EXPECT_FALSE(delegate()->suggested_url_checked());
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
-  EXPECT_TRUE(delegate()->captive_portal_checked());
+  EXPECT_FALSE(delegate()->captive_portal_checked());
   EXPECT_TRUE(delegate()->ssl_interstitial_shown());
   EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
   EXPECT_FALSE(delegate()->suggested_url_checked());
 
-  // Check that the histogram for the captive portal cert was recorded.
   histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::HANDLE_ALL, 1);

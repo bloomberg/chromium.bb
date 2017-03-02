@@ -547,9 +547,20 @@ void SSLErrorHandler::StartHandlingError() {
     return;
   }
 
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  if (base::FeatureList::IsEnabled(kCaptivePortalCertificateList) &&
+  const net::CertStatus non_name_mismatch_errors =
+      ssl_info_.cert_status ^ net::CERT_STATUS_COMMON_NAME_INVALID;
+  const bool only_error_is_name_mismatch =
       cert_error_ == net::ERR_CERT_COMMON_NAME_INVALID &&
+      (!net::IsCertStatusError(non_name_mismatch_errors) ||
+       net::IsCertStatusMinorError(ssl_info_.cert_status));
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  // Check known captive portal certificate list if the only error is
+  // name-mismatch. If there are multiple errors, it indicates that the captive
+  // portal landing page itself will have SSL errors, and so it's not a very
+  // helpful place to direct the user to go.
+  if (base::FeatureList::IsEnabled(kCaptivePortalCertificateList) &&
+      only_error_is_name_mismatch &&
       g_config.Pointer()->IsKnownCaptivePortalCert(ssl_info_)) {
     RecordUMA(CAPTIVE_PORTAL_CERT_FOUND);
     ShowCaptivePortalInterstitial(
@@ -567,14 +578,11 @@ void SSLErrorHandler::StartHandlingError() {
       delegate_->IsErrorOverridable() &&
       delegate_->GetSuggestedUrl(dns_names, &suggested_url)) {
     RecordUMA(WWW_MISMATCH_FOUND);
-    net::CertStatus extra_cert_errors =
-        ssl_info_.cert_status ^ net::CERT_STATUS_COMMON_NAME_INVALID;
 
-    // Show the SSL intersitial if |CERT_STATUS_COMMON_NAME_INVALID| is not
+    // Show the SSL interstitial if |CERT_STATUS_COMMON_NAME_INVALID| is not
     // the only error. Need not check for captive portal in this case.
     // (See the comment below).
-    if (net::IsCertStatusError(extra_cert_errors) &&
-        !net::IsCertStatusMinorError(ssl_info_.cert_status)) {
+    if (!only_error_is_name_mismatch) {
       ShowSSLInterstitial();
       return;
     }
