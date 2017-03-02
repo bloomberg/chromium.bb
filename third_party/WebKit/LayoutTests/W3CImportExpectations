@@ -667,13 +667,6 @@ external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_p
 external/wpt/html/semantics/forms/form-submission-0/url-encoded.html [ Skip ]
 external/wpt/svg/linking/scripted [ Skip ]
 
-# Importer fails to import some files with some non-utf8 encodings.
-crbug.com/656171 external/wpt/workers/semantics/encodings [ Skip ]
-crbug.com/656171 external/wpt/html/semantics/scripting-1/the-script-element/external-script-windows1250.js [ Skip ]
-crbug.com/656171 external/wpt/html/semantics/scripting-1/the-script-element/script-charset-01.html [ Skip ]
-crbug.com/656171 external/wpt/html/semantics/scripting-1/the-script-element/script-charset-02.html [ Skip ]
-crbug.com/656171 external/wpt/html/semantics/scripting-1/the-script-element/script-charset-03.html [ Skip ]
-
 # They have a wrong encoding, and test_parser.py throws UnicodeEncodeError.
 external/wpt/domxpath/001.html [ Skip ]
 external/wpt/domxpath/002.html [ Skip ]
