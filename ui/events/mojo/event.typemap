@@ -8,6 +8,7 @@ traits_headers = [ "//ui/events/mojo/event_struct_traits.h" ]
 deps = [
   "//ui//events",
   "//ui/events:dom_keycode_converter",
+  "//ui/events/mojo:struct_traits",
 ]
 sources = [
   "//ui/events/mojo/event_struct_traits.cc",

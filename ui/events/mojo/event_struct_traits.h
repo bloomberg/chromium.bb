@@ -9,6 +9,7 @@
 
 namespace ui {
 class Event;
+class LatencyInfo;
 }
 
 namespace mojo {
@@ -20,6 +21,7 @@ struct StructTraits<ui::mojom::EventDataView, EventUniquePtr> {
   static ui::mojom::EventType action(const EventUniquePtr& event);
   static int32_t flags(const EventUniquePtr& event);
   static int64_t time_stamp(const EventUniquePtr& event);
+  static const ui::LatencyInfo& latency(const EventUniquePtr& event);
   static ui::mojom::KeyDataPtr key_data(const EventUniquePtr& event);
   static ui::mojom::PointerDataPtr pointer_data(const EventUniquePtr& event);
   static bool Read(ui::mojom::EventDataView r, EventUniquePtr* out);

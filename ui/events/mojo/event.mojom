@@ -6,6 +6,7 @@ module ui.mojom;
 
 import "ui/events/mojo/event_constants.mojom";
 import "ui/events/mojo/keyboard_codes.mojom";
+import "ui/events/mojo/latency_info.mojom";
 
 struct KeyData {
   // The chromium event key code; these values are from the ui/ KeyCode enum,
@@ -115,6 +116,7 @@ struct Event {
   // This value accurately orders events w.r.t. to each other but
   // does not position them at an absolute time.
   int64 time_stamp;
+  LatencyInfo latency;
   KeyData? key_data;
   PointerData? pointer_data;
 };
