@@ -158,7 +158,7 @@ template("webapk_tmpl") {
 webapk_tmpl("webapk") {
   android_manifest = shell_apk_manifest
   android_manifest_dep = ":shell_apk_manifest"
-  apk_name = "webapk"
+  apk_name = "WebApk"
 }
 
 # WebAPK for instrumentation tests.
