@@ -43,12 +43,3 @@ MediaError.MEDIA_ERR_DECODE = 3;
  * @see http://dev.w3.org/html5/spec-author-view/video.html#mediaerror
  */
 MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
-
-/**
- * Animate method.
- * @param {!Array<!Object>} frames
- * @param {number} duration
- * @see http://www.w3.org/TR/web-animations/#widl-Animatable-animate-
- *     AnimationPlayer-object-effect--double-or-AnimationTimingInput--timing
- */
-HTMLElement.prototype.animate = function(frames, duration) {};

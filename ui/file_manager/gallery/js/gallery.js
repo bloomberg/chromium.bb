@@ -108,7 +108,7 @@ function Gallery(volumeManager) {
 
   var buttonSpacer = queryRequiredElement('.button-spacer', this.topToolbar_);
 
-  this.prompt_ = new ImageEditor.Prompt(this.container_, strf);
+  this.prompt_ = new ImageEditorPrompt(this.container_, strf);
 
   this.errorBanner_ = new ErrorBanner(this.container_);
 

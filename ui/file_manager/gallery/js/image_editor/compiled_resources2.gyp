@@ -4,18 +4,18 @@
 # TODO(oka): Compile all the targets.
 {
   'targets': [
-#    {
-#      'target_name': 'commands',
-#      'dependencies': [
-#        'filter',
-#        'image_view',
-#        'viewport',
-#        'image_util',
-#        '../../../file_manager/foreground/elements/compiled_resources2.gyp:files_toast',
-#        'image_editor',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'commands',
+      'dependencies': [
+        'filter',
+        'image_editor_prompt',
+        'image_util',
+        'image_view',
+        'viewport',
+        '../../../file_manager/foreground/elements/compiled_resources2.gyp:files_toast',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'exif_encoder',
       'dependencies': [
@@ -62,6 +62,13 @@
 #      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
+    {
+      'target_name': 'image_editor_prompt',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'image_encoder',
       'dependencies': [

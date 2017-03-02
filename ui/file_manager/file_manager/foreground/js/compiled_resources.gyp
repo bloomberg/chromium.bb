@@ -170,6 +170,7 @@
           '<(EXTERNS_DIR)/command_line_private.js',
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
+          '<(EXTERNS_DIR)/web_animations.js',
           '../../../../../third_party/analytics/externs.js',
           '../../../externs/background_window.js',
           '../../../externs/background_window_common.js',

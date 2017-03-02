@@ -48,7 +48,7 @@ function CommandQueue(document, image, saveFunction) {
  * Once the UI is attached the results of image manipulations are displayed.
  *
  * @param {!ImageView} imageView The ImageView object to display the results.
- * @param {!ImageEditor.Prompt} prompt Prompt to use with this CommandQueue.
+ * @param {!ImageEditorPrompt} prompt Prompt to use with this CommandQueue.
  * @param {!FilesToast} toast Toast.
  * @param {function()} updateUndoRedo Function to update undo and redo buttons
  *     state.

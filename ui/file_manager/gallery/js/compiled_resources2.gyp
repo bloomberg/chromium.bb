@@ -14,6 +14,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(EXTERNS_GYP):chrome_extensions',
         'gallery_constants',
+        'image_editor/compiled_resources2.gyp:image_editor_prompt',
       ],
       'includes': ['../../compile_js2.gypi'],
     },

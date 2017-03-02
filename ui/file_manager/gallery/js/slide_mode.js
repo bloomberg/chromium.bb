@@ -10,7 +10,7 @@
  * @param {!HTMLElement} content Content container element.
  * @param {!HTMLElement} topToolbar Top toolbar element.
  * @param {!HTMLElement} bottomToolbar Toolbar element.
- * @param {!ImageEditor.Prompt} prompt Prompt.
+ * @param {!ImageEditorPrompt} prompt Prompt.
  * @param {!ErrorBanner} errorBanner Error banner.
  * @param {!cr.ui.ArrayDataModel} dataModel Data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
@@ -65,7 +65,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.bottomToolbar_ = bottomToolbar;
 
   /**
-   * @type {!ImageEditor.Prompt}
+   * @type {!ImageEditorPrompt}
    * @private
    * @const
    */
