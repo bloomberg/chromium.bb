@@ -226,7 +226,7 @@ void ScrollbarAnimationController::DidMouseDown() {
 }
 
 void ScrollbarAnimationController::DidMouseUp() {
-  if (!need_thinning_animation_)
+  if (!need_thinning_animation_ || !Captured())
     return;
 
   vertical_controller_->DidMouseUp();
