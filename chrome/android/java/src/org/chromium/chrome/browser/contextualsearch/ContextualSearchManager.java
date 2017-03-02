@@ -1315,7 +1315,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             ContextualSearchUma.logSelectionIsValid(selectionValid);
             if (selectionValid) {
                 mSearchPanel.updateBasePageSelectionYPx(y);
-                mSearchPanel.getPanelMetrics().onSelectionEstablished(selection);
+                if (!mSearchPanel.isShowing()) {
+                    mSearchPanel.getPanelMetrics().onSelectionEstablished(selection);
+                }
                 showContextualSearch(stateChangeReason);
             } else {
                 hideContextualSearch(stateChangeReason);

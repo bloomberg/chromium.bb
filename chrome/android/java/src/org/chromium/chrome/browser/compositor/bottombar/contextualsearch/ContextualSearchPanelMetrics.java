@@ -168,8 +168,7 @@ public class ContextualSearchPanelMetrics {
 
             if (mWasActivatedByTap) {
                 boolean wasAnySuppressionHeuristicSatisfied =
-                        mWasAnyHeuristicSatisfiedOnPanelShow || mWasSelectionPartOfUrl
-                        || mWasSelectionAllCaps;
+                        mWasAnyHeuristicSatisfiedOnPanelShow || mWasSelectionPartOfUrl;
                 ContextualSearchUma.logAnyTapSuppressionHeuristicSatisfied(
                         mWasSearchContentViewSeen, wasAnySuppressionHeuristicSatisfied);
                 // Log all the experiments to the Ranker logger.
@@ -180,6 +179,9 @@ public class ContextualSearchPanelMetrics {
                     mTapSuppressionRankerLogger.writeLogAndReset();
                     mRankerLogExperiments = null;
                 }
+
+                ContextualSearchUma.logSelectionLengthResultsSeen(
+                        mWasSearchContentViewSeen, mSelectionLength);
             }
         }
 

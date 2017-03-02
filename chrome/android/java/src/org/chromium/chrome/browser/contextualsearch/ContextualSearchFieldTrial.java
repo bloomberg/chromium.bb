@@ -49,6 +49,8 @@ public class ContextualSearchFieldTrial {
     private static final String ENABLE_BAR_OVERLAP_COLLECTION = "enable_bar_overlap_collection";
     private static final String BAR_OVERLAP_SUPPRESSION_ENABLED = "enable_bar_overlap_suppression";
 
+    private static final String MINIMUM_SELECTION_LENGTH = "minimum_selection_length";
+
     // Safety switch for disabling online-detection.  Also used to disable detection when running
     // tests.
     @VisibleForTesting
@@ -71,6 +73,7 @@ public class ContextualSearchFieldTrial {
     private static Integer sScreenTopSuppressionDps;
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
+    private static Integer sMinimumSelectionLength;
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabDisabled;
     private static Boolean sContextualSearchSingleActionsEnabled;
@@ -241,6 +244,16 @@ public class ContextualSearchFieldTrial {
             sIsBarOverlapSuppressionEnabled = getBooleanParam(BAR_OVERLAP_SUPPRESSION_ENABLED);
         }
         return sIsBarOverlapSuppressionEnabled.booleanValue();
+    }
+
+    /**
+     * @return The minimum valid selection length.
+     */
+    static int getMinimumSelectionLength() {
+        if (sMinimumSelectionLength == null) {
+            sMinimumSelectionLength = getIntParamValueOrDefault(MINIMUM_SELECTION_LENGTH, 0);
+        }
+        return sMinimumSelectionLength.intValue();
     }
 
     /**
