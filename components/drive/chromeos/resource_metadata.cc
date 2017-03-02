@@ -19,6 +19,7 @@
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/resource_metadata_storage.h"
+#include "google_apis/drive/drive_switches.h"
 
 namespace drive {
 namespace internal {
@@ -203,6 +204,25 @@ FileError ResourceMetadata::SetUpDefaultEntries() {
   } else if (error != FILE_ERROR_OK) {
     return error;
   }
+
+  if (google_apis::GetTeamDrivesIntegrationSwitch() ==
+      google_apis::TEAM_DRIVES_INTEGRATION_ENABLED) {
+    // Initialize "/drive/team_drives".
+    error = storage_->GetEntry(util::kDriveTeamDrivesDirLocalId, &entry);
+    if (error == FILE_ERROR_NOT_FOUND) {
+      ResourceEntry team_drives_dir;
+      team_drives_dir.mutable_file_info()->set_is_directory(true);
+      team_drives_dir.set_local_id(util::kDriveTeamDrivesDirLocalId);
+      team_drives_dir.set_parent_local_id(util::kDriveGrandRootLocalId);
+      team_drives_dir.set_title(util::kDriveTeamDrivesDirName);
+      error = PutEntryUnderDirectory(team_drives_dir);
+      if (error != FILE_ERROR_OK)
+        return error;
+    } else if (error != FILE_ERROR_OK) {
+      return error;
+    }
+  }
+
   return FILE_ERROR_OK;
 }
 
