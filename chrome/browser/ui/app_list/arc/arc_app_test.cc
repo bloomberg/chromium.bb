@@ -8,6 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
+#include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -86,8 +88,12 @@ void ArcAppTest::SetUp(Profile* profile) {
           base::Bind(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
   arc::ArcSessionManager::DisableUIForTesting();
+  arc::ArcAuthNotification::DisableForTesting();
   arc_session_manager_->SetProfile(profile_);
-  arc_session_manager_->StartPreferenceHandler();
+  arc_play_store_enabled_preference_handler_ =
+      base::MakeUnique<arc::ArcPlayStoreEnabledPreferenceHandler>(
+          profile_, arc_session_manager_.get());
+  arc_play_store_enabled_preference_handler_->Start();
 
   arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
   DCHECK(arc_app_list_pref_);
@@ -166,6 +172,7 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
 
 void ArcAppTest::TearDown() {
   app_instance_.reset();
+  arc_play_store_enabled_preference_handler_.reset();
   arc_session_manager_.reset();
   arc_service_manager_.reset();
   if (dbus_thread_manager_initialized_) {

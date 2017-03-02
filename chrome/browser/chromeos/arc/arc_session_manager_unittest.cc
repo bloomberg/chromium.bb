@@ -224,50 +224,6 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTest);
 };
 
-TEST_F(ArcSessionManagerTest, PrefChangeTriggersService) {
-  ASSERT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
-  arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->StartPreferenceHandler();
-
-  EXPECT_FALSE(
-      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-
-  SetArcPlayStoreEnabledForProfile(profile(), true);
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
-            arc_session_manager()->state());
-
-  SetArcPlayStoreEnabledForProfile(profile(), false);
-
-  ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
-
-  // Correctly stop service.
-  arc_session_manager()->Shutdown();
-}
-
-TEST_F(ArcSessionManagerTest, PrefChangeTriggersService_Restart) {
-  // Sets the Google Play Store preference at beginning.
-  SetArcPlayStoreEnabledForProfile(profile(), true);
-
-  arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->StartPreferenceHandler();
-
-  // Setting profile initiates a code fetching process.
-  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
-            arc_session_manager()->state());
-
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
-
-  // UI is disabled in unit tests and this code is unchanged.
-  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
-            arc_session_manager()->state());
-
-  // Correctly stop service.
-  arc_session_manager()->Shutdown();
-}
-
 TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
@@ -456,19 +412,6 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir_Restart) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
 
   arc_session_manager()->Shutdown();
-}
-
-TEST_F(ArcSessionManagerTest, RemoveDataDir_Managed) {
-  // Set ARC to be managed and disabled.
-  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
-                                                     new base::Value(false));
-
-  // Starting session manager with prefs::kArcEnabled off in a managed profile
-  // does automatically remove Android's data folder.
-  arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->StartPreferenceHandler();
-  EXPECT_TRUE(
-      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
 }
 
 TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
@@ -678,7 +621,8 @@ class ArcSessionOobeOptInNegotiatorTest
     }
 
     arc_session_manager()->SetProfile(profile());
-    arc_session_manager()->StartPreferenceHandler();
+    if (IsArcPlayStoreEnabledForProfile(profile()))
+      arc_session_manager()->RequestEnable();
   }
 
   void TearDown() override {
@@ -726,8 +670,9 @@ class ArcSessionOobeOptInNegotiatorTest
 
   void Show() override {
     // To match ArcTermsOfServiceScreenHandler logic where Google Play Store
-    // enabled preferencee is set to true on showing UI.
-    SetArcPlayStoreEnabledForProfile(profile(), true);
+    // enabled preferencee is set to true on showing UI, which eventually
+    // triggers to call RequestEnable().
+    arc_session_manager()->RequestEnable();
   }
 
   void Hide() override {}
@@ -748,7 +693,6 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
             arc_session_manager()->state());
   ReportResult(true);
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
@@ -757,8 +701,6 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
             arc_session_manager()->state());
   ReportResult(false);
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-  if (!IsManagedUser())
-    EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
@@ -768,8 +710,6 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
   CloseLoginDisplayHost();
   ReportViewDestroyed();
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-  if (!IsManagedUser())
-    EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 }
 
 }  // namespace arc

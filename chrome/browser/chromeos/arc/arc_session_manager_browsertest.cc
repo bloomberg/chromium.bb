@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
@@ -124,6 +125,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
         new chromeos::FakeChromeUserManager));
     // Init ArcSessionManager for testing.
     ArcSessionManager::DisableUIForTesting();
+    ArcAuthNotification::DisableForTesting();
     ArcSessionManager::EnableCheckAndroidManagementForTesting();
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
@@ -151,6 +153,12 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     GetFakeUserManager()->LoginUser(account_id);
 
     // Set up ARC for test profile.
+    // Currently, ArcSessionManager is singleton and set up with the original
+    // Profile instance. This re-initializes the ArcServiceLauncher by
+    // overwriting Profile with profile().
+    // TODO(hidehiko): This way several ArcService instances created with
+    // the original Profile instance on Browser creatuion are kept in the
+    // ArcServiceManager. For proper overwriting, those should be removed.
     ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
   }
 
@@ -162,8 +170,13 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId(kFakeUserName, kFakeGaiaId));
     GetFakeUserManager()->RemoveUserFromList(account_id);
-    ArcSessionManager::Get()->Shutdown();
-    ArcServiceManager::Get()->Shutdown();
+    // Since ArcServiceLauncher is (re-)set up with profile() in
+    // SetUpOnMainThread() it is necessary to Shutdown() before the profile()
+    // is destroyed. ArcServiceLauncher::Shutdown() will be called again on
+    // fixture destruction (because it is initialized with the original Profile
+    // instance in fixture, once), but it should be no op.
+    // TODO(hidehiko): Think about a way to test the code cleanly.
+    ArcServiceLauncher::Get()->Shutdown();
     profile_.reset();
     user_manager_enabler_.reset();
     test_server_.reset();

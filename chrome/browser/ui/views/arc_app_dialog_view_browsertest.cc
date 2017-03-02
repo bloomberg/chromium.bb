@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,6 +40,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     ArcSessionManager::DisableUIForTesting();
+    ArcAuthNotification::DisableForTesting();
   }
 
   void SetUpOnMainThread() override {

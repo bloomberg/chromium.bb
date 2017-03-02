@@ -17,8 +17,6 @@
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_stop_reason.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/sync_preferences/pref_service_syncable_observer.h"
 
 class ArcAppLauncher;
 class Profile;
@@ -30,7 +28,6 @@ class PrefRegistrySyncable;
 namespace arc {
 
 class ArcAndroidManagementChecker;
-class ArcAuthInfoFetcher;
 class ArcAuthContext;
 class ArcTermsOfServiceNegotiator;
 enum class ProvisioningResult : int;
@@ -38,8 +35,7 @@ enum class ProvisioningResult : int;
 // This class proxies the request from the client to fetch an auth code from
 // LSO. It lives on the UI thread.
 class ArcSessionManager : public ArcSessionRunner::Observer,
-                          public ArcSupportHost::Observer,
-                          public sync_preferences::PrefServiceSyncableObserver {
+                          public ArcSupportHost::Observer {
  public:
   // Represents each State of ARC session.
   // NOT_INITIALIZED: represents the state that the Profile is not yet ready
@@ -138,18 +134,16 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   State state() const { return state_; }
 
-  // Starts observing Google Play Store enabled preference change.
-  // Also, based on its initial value, this may start ArcSession, or may start
-  // removing the data, as initial state.
-  // In addition, this triggers to show ArcAuthNotification, if necessary.
-  // Note that this must be called after SetProfile().
-  // TODO(hidehiko): Extract preference related code into a class to split the
-  // dependencty.
-  void StartPreferenceHandler();
-
   // Adds or removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Notifies observers that Google Play Store enabled preference is changed.
+  // Note: ArcPlayStoreEnabledPreferenceHandler has the main responsibility to
+  // notify the event. However, due to life time, it is difficult for non-ARC
+  // services to subscribe the handler instance directly. Instead, they can
+  // subscribe to ArcSessionManager, and ArcSessionManager proxies the event.
+  void NotifyArcPlayStoreEnabledChanged(bool enabled);
 
   // Returns true if ARC instance is running/stopped, respectively.
   // See ArcSessionRunner::IsRunning()/IsStopped() for details.
@@ -176,9 +170,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Called from the Chrome OS metrics provider to record Arc.State
   // periodically.
   void RecordArcState();
-
-  // sync_preferences::PrefServiceSyncableObserver
-  void OnIsSyncingChanged() override;
 
   // ArcSupportHost::Observer:
   void OnWindowClosed() override;
@@ -245,7 +236,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   void SetState(State state);
   void ShutdownSession();
-  void OnOptInPreferenceChanged();
   void OnAndroidManagementPassed();
   void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
@@ -281,9 +271,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
-
-  // Registrar used to monitor ARC enabled state.
-  PrefChangeRegistrar pref_change_registrar_;
 
   // Whether ArcSessionManager is requested to enable (starting to run ARC
   // instance) or not.

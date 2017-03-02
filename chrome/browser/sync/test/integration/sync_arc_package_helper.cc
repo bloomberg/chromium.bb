@@ -10,6 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
+#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -150,11 +152,9 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile, size_t id) {
   chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                                     profile);
 
-  ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
-  DCHECK(arc_session_manager);
   ArcSessionManager::DisableUIForTesting();
-  arc_session_manager->SetProfile(profile);
-  arc_session_manager->StartPreferenceHandler();
+  ArcAuthNotification::DisableForTesting();
+  arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
   arc::SetArcPlayStoreEnabledForProfile(profile, true);
 
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);

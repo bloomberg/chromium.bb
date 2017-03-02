@@ -9,6 +9,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
+#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -165,6 +167,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
     arc::ArcSessionManager::DisableUIForTesting();
+    arc::ArcAuthNotification::DisableForTesting();
   }
 
   void SetUpOnMainThread() override {
@@ -244,10 +247,8 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   }
 
   void StartInstance() {
-    if (arc_session_manager()->profile() != profile()) {
-      arc_session_manager()->SetProfile(profile());
-      arc_session_manager()->StartPreferenceHandler();
-    }
+    if (arc_session_manager()->profile() != profile())
+      arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
     app_instance_observer()->OnInstanceReady();
   }
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
@@ -183,13 +184,17 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   }
 
   arc_session_manager_->SetProfile(profile);
-  arc_session_manager_->StartPreferenceHandler();
+  arc_play_store_enabled_preference_handler_ =
+      base::MakeUnique<ArcPlayStoreEnabledPreferenceHandler>(
+          profile, arc_session_manager_.get());
+  arc_play_store_enabled_preference_handler_->Start();
 }
 
 void ArcServiceLauncher::Shutdown() {
-  DCHECK(arc_service_manager_);
   // Destroy in the reverse order of the initialization.
-  arc_service_manager_->Shutdown();
+  arc_play_store_enabled_preference_handler_.reset();
+  if (arc_service_manager_)
+    arc_service_manager_->Shutdown();
   arc_session_manager_.reset();
   arc_service_manager_.reset();
 }

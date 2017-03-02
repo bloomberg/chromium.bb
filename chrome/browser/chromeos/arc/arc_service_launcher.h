@@ -13,6 +13,7 @@ class Profile;
 
 namespace arc {
 
+class ArcPlayStoreEnabledPreferenceHandler;
 class ArcServiceManager;
 class ArcSessionManager;
 
@@ -38,6 +39,8 @@ class ArcServiceLauncher {
  private:
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
+  std::unique_ptr<ArcPlayStoreEnabledPreferenceHandler>
+      arc_play_store_enabled_preference_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceLauncher);
 };

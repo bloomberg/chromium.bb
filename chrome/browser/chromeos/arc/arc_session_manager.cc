@@ -29,26 +29,21 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
-#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_prefs.h"
 
 namespace arc {
 
@@ -132,9 +127,6 @@ bool ArcSessionManager::IsOobeOptInActive() {
 // static
 void ArcSessionManager::DisableUIForTesting() {
   g_disable_ui_for_testing = true;
-  // TODO(hidehiko): When the dependency to ArcAuthNotification from this
-  // class is removed, we should remove this as well.
-  ArcAuthNotification::DisableForTesting();
 }
 
 // static
@@ -435,24 +427,7 @@ void ArcSessionManager::SetProfile(Profile* profile) {
   }
 }
 
-void ArcSessionManager::OnIsSyncingChanged() {
-  sync_preferences::PrefServiceSyncable* const pref_service_syncable =
-      PrefServiceSyncableFromProfile(profile_);
-  if (!pref_service_syncable->IsSyncing())
-    return;
-
-  pref_service_syncable->RemoveObserver(this);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableArcOOBEOptIn) &&
-      profile_->IsNewProfile() &&
-      !profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled)) {
-    ArcAuthNotification::Show(profile_);
-  }
-}
-
 void ArcSessionManager::Shutdown() {
-  ArcAuthNotification::Hide();
-
   enable_requested_ = false;
   ShutdownSession();
   if (support_host_) {
@@ -460,97 +435,11 @@ void ArcSessionManager::Shutdown() {
     support_host_->RemoveObserver(this);
     support_host_.reset();
   }
-  if (profile_) {
-    sync_preferences::PrefServiceSyncable* pref_service_syncable =
-        PrefServiceSyncableFromProfile(profile_);
-    pref_service_syncable->RemoveObserver(this);
-  }
-  pref_change_registrar_.RemoveAll();
   context_.reset();
   profile_ = nullptr;
   SetState(State::NOT_INITIALIZED);
 }
 
-void ArcSessionManager::StartPreferenceHandler() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile_);
-
-  // Start observing Google Play Store enabled preference.
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kArcEnabled,
-      base::Bind(&ArcSessionManager::OnOptInPreferenceChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  // Set initial managed state to ArcSupportHost to update the message.
-  if (support_host_) {
-    support_host_->SetArcManaged(
-        IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
-  }
-
-  // Update the state based on the initial Google Play Store enabled value.
-  if (IsArcPlayStoreEnabledForProfile(profile_)) {
-    VLOG(1) << "ARC is already enabled.";
-    DCHECK(!enable_requested_);
-    RequestEnable();
-  } else {
-    if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_)) {
-      // All users that can disable ARC by themselves will have the
-      // |kARcDataRemoveRequested| pref set, so we don't need to eagerly remove
-      // the data for that case.
-      // For managed users, the preference can change when the Profile object is
-      // not alive, so we still need to check it here in case it was disabled to
-      // ensure that the data is deleted in case it was disabled between
-      // launches.
-      VLOG(1) << "ARC is initially disabled for managed profile. "
-              << "Removing data.";
-      RemoveArcData();
-    }
-    PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
-    OnIsSyncingChanged();
-  }
-}
-
-void ArcSessionManager::OnOptInPreferenceChanged() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile_);
-
-  const bool is_play_store_enabled = IsArcPlayStoreEnabledForProfile(profile_);
-  const bool is_play_store_managed =
-      IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_);
-  if (!is_play_store_managed) {
-    // Update UMA only for non-Managed cases.
-    UpdateOptInActionUMA(is_play_store_enabled ? OptInActionType::OPTED_IN
-                                               : OptInActionType::OPTED_OUT);
-
-    if (!is_play_store_enabled) {
-      // Remove the pinned Play Store icon launcher in Shelf.
-      // This is only for non-Managed cases. In managed cases, it is expected
-      // to be "disabled" rather than "removed", so keep it here.
-      auto* shelf_delegate = ash::WmShell::HasInstance()
-                                 ? ash::WmShell::Get()->shelf_delegate()
-                                 : nullptr;
-      if (shelf_delegate)
-        shelf_delegate->UnpinAppWithID(ArcSupportHost::kHostAppId);
-    }
-  }
-
-  if (support_host_)
-    support_host_->SetArcManaged(is_play_store_managed);
-
-  // Hide auth notification if it was opened before and arc.enabled pref was
-  // explicitly set to true or false.
-  if (profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled))
-    ArcAuthNotification::Hide();
-
-  if (is_play_store_enabled)
-    RequestEnable();
-  else
-    RequestDisable();
-
-  for (auto& observer : observer_list_)
-    observer.OnArcPlayStoreEnabledChanged(is_play_store_enabled);
-}
 
 void ArcSessionManager::ShutdownSession() {
   arc_sign_in_timer_.Stop();
@@ -573,6 +462,12 @@ void ArcSessionManager::AddObserver(Observer* observer) {
 void ArcSessionManager::RemoveObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observer_list_.RemoveObserver(observer);
+}
+
+void ArcSessionManager::NotifyArcPlayStoreEnabledChanged(bool enabled) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  for (auto& observer : observer_list_)
+    observer.OnArcPlayStoreEnabledChanged(enabled);
 }
 
 bool ArcSessionManager::IsSessionRunning() const {

@@ -17,6 +17,7 @@ namespace mojom {
 class AppInfo;
 class ArcPackageInfo;
 }
+class ArcPlayStoreEnabledPreferenceHandler;
 class ArcServiceManager;
 class ArcSessionManager;
 class FakeAppInstance;
@@ -96,6 +97,8 @@ class ArcAppTest {
 
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
+  std::unique_ptr<arc::ArcPlayStoreEnabledPreferenceHandler>
+      arc_play_store_enabled_preference_handler_;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
 
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
