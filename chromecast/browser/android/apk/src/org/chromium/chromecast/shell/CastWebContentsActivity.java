@@ -240,6 +240,12 @@ public class CastWebContentsActivity extends Activity {
                 Intent intent = new Intent(ACTION_KEY_EVENT, getInstanceUri());
                 intent.putExtra(ACTION_EXTRA_KEY_CODE, keyCode);
                 LocalBroadcastManager.getInstance(this).sendBroadcastSync(intent);
+
+                // Stop key should end the entire session.
+                if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP) {
+                    finish();
+                }
+
                 return true;
             }
         }
