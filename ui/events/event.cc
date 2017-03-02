@@ -762,6 +762,15 @@ void MouseEvent::SetClickCount(int click_count) {
   set_flags(f);
 }
 
+void MouseEvent::set_pointer_details(const PointerDetails& details) {
+  DCHECK_NE(EventPointerType::POINTER_TYPE_TOUCH,
+            pointer_details_.pointer_type);
+  DCHECK_NE(EventPointerType::POINTER_TYPE_TOUCH, details.pointer_type);
+  DCHECK(pointer_details_.id == PointerEvent::kMousePointerId ||
+         details.id != PointerEvent::kMousePointerId);
+  pointer_details_ = details;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent
 
@@ -970,6 +979,11 @@ void TouchEvent::FixRotationAngle() {
     rotation_angle_ += 180;
   while (rotation_angle_ >= 180)
     rotation_angle_ -= 180;
+}
+
+void TouchEvent::set_pointer_details(const PointerDetails& pointer_details) {
+  DCHECK_EQ(pointer_details_.id, pointer_details.id);
+  pointer_details_ = pointer_details;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

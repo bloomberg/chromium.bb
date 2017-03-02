@@ -578,9 +578,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
 
   // Event details common to MouseEvent and TouchEvent.
   const PointerDetails& pointer_details() const { return pointer_details_; }
-  void set_pointer_details(const PointerDetails& details) {
-    pointer_details_ = details;
-  }
+  void set_pointer_details(const PointerDetails& details);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EventTest, DoubleClickRequiresRelease);
@@ -710,9 +708,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   // Event details common to MouseEvent and TouchEvent.
   const PointerDetails& pointer_details() const { return pointer_details_; }
-  void set_pointer_details(const PointerDetails& pointer_details) {
-    pointer_details_ = pointer_details;
-  }
+  void set_pointer_details(const PointerDetails& pointer_details);
 
  private:
   // Adjusts rotation_angle_ to within the acceptable range.

@@ -686,7 +686,8 @@ TEST(EventTest, PointerDetailsStylus) {
                                      /* tilt_x */ 45.0f,
                                      /* tilt_y */ -45.0f,
                                      /* tangential_pressure */ 0.7f,
-                                     /* twist */ 196);
+                                     /* twist */ 196,
+                                     /* pointer_id*/ 0);
 
   stylus_event.set_pointer_details(pointer_details);
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
@@ -723,7 +724,8 @@ TEST(EventTest, PointerDetailsCustomTouch) {
                                      /* tilt_x */ 45.0f,
                                      /* tilt_y */ -45.0f,
                                      /* tangential_pressure */ 0.7f,
-                                     /* twist */ 196);
+                                     /* twist */ 196,
+                                     /* pointer_id*/ 0);
   touch_event.set_pointer_details(pointer_details);
 
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
