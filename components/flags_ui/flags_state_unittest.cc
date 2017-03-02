@@ -44,6 +44,8 @@ const char kFlags5[] = "flag5";
 const char kFlags6[] = "flag6";
 const char kFlags7[] = "flag7";
 const char kFlags8[] = "flag8";
+const char kFlags9[] = "flag9";
+const char kFlags10[] = "flag10";
 
 const char kSwitch1[] = "switch";
 const char kSwitch2[] = "switch2";
@@ -62,7 +64,8 @@ const char kEnableFeatures[] = "dummy-enable-features";
 const char kDisableFeatures[] = "dummy-disable-features";
 
 const char kTestTrial[] = "TestTrial";
-const char kTestParam[] = "param";
+const char kTestParam1[] = "param1";
+const char kTestParam2[] = "param2";
 const char kTestParamValue[] = "value";
 
 const base::Feature kTestFeature1{"FeatureName1",
@@ -70,11 +73,15 @@ const base::Feature kTestFeature1{"FeatureName1",
 const base::Feature kTestFeature2{"FeatureName2",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
-const FeatureEntry::FeatureParam kTestVariationOther[] = {
-    {kTestParam, kTestParamValue}};
+const FeatureEntry::FeatureParam kTestVariationOther1[] = {
+    {kTestParam1, kTestParamValue}};
+const FeatureEntry::FeatureParam kTestVariationOther2[] = {
+    {kTestParam2, kTestParamValue}};
 
-const FeatureEntry::FeatureVariation kTestVariations[] = {
-    {"dummy description", kTestVariationOther, 1, nullptr}};
+const FeatureEntry::FeatureVariation kTestVariations1[] = {
+    {"dummy description 1", kTestVariationOther1, 1, nullptr}};
+const FeatureEntry::FeatureVariation kTestVariations2[] = {
+    {"dummy description 2", kTestVariationOther2, 1, nullptr}};
 
 // Those have to be valid ids for the translation system but the value are
 // never used, so pick one at random from the current component.
@@ -126,7 +133,15 @@ static FeatureEntry kEntries[] = {
     {kFlags8, kDummyNameId, kDummyDescriptionId,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr, nullptr,
-     nullptr, &kTestFeature2, 4, nullptr, kTestVariations, kTestTrial},
+     nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
+    {kFlags9, kDummyNameId, kDummyDescriptionId,
+     0,  // Ends up being mapped to the current platform.
+     FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr, nullptr,
+     nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
+    {kFlags10, kDummyNameId, kDummyDescriptionId,
+     0,  // Ends up being mapped to the current platform.
+     FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr, nullptr,
+     nullptr, &kTestFeature2, 4, nullptr, kTestVariations2, kTestTrial},
 };
 
 class FlagsStateTest : public ::testing::Test {
@@ -276,7 +291,7 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
   flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_,
                                                       feature_list.get());
   // No value should be associated.
-  EXPECT_EQ("", variations::GetVariationParamValue(kTestTrial, kTestParam));
+  EXPECT_EQ("", variations::GetVariationParamValue(kTestTrial, kTestParam1));
   // The trial should not be created.
   base::FieldTrial* trial = base::FieldTrialList::Find(kTestTrial);
   EXPECT_EQ(nullptr, trial);
@@ -288,8 +303,7 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
   flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_,
                                                       feature_list.get());
   // No value should be associated as this is the default option.
-  EXPECT_EQ("",
-            variations::GetVariationParamValue(kTestTrial, kTestParam));
+  EXPECT_EQ("", variations::GetVariationParamValue(kTestTrial, kTestParam1));
 
   // The trial should be created.
   trial = base::FieldTrialList::Find(kTestTrial);
@@ -303,8 +317,7 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
   flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_,
                                                       feature_list.get());
   // Associating for the second time should not change the value.
-  EXPECT_EQ("",
-            variations::GetVariationParamValue(kTestTrial, kTestParam));
+  EXPECT_EQ("", variations::GetVariationParamValue(kTestTrial, kTestParam1));
 }
 
 TEST_F(FlagsStateTest, RegisterAllFeatureVariationParametersNonDefault) {
@@ -324,11 +337,42 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParametersNonDefault) {
 
   // The param should have the value predefined in this variation.
   EXPECT_EQ(kTestParamValue,
-            variations::GetVariationParamValue(kTestTrial, kTestParam));
+            variations::GetVariationParamValue(kTestTrial, kTestParam1));
 
   // The value should be associated also via the name of the feature.
   EXPECT_EQ(kTestParamValue, variations::GetVariationParamValueByFeature(
-                                  kTestFeature2, kTestParam));
+                                 kTestFeature1, kTestParam1));
+}
+
+TEST_F(FlagsStateTest, RegisterAllFeatureVariationParametersWithDefaultTrials) {
+  const FeatureEntry& entry1 = kEntries[8];
+  const FeatureEntry& entry2 = kEntries[9];
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+
+  // Select the only one variation for each FeatureEntry.
+  flags_state_->SetFeatureEntryEnabled(&flags_storage_, entry1.NameForOption(2),
+                                       true);
+  flags_state_->SetFeatureEntryEnabled(&flags_storage_, entry2.NameForOption(2),
+                                       true);
+  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_,
+                                                      feature_list.get());
+
+  // Set the feature_list as the main instance so that
+  // variations::GetVariationParamValueByFeature below works.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  // The params should have the values predefined in these variations
+  // (accessible via the names of the features).
+  EXPECT_EQ(kTestParamValue, variations::GetVariationParamValueByFeature(
+                                 kTestFeature1, kTestParam1));
+  EXPECT_EQ(kTestParamValue, variations::GetVariationParamValueByFeature(
+                                 kTestFeature2, kTestParam2));
+  // The params are registered in the same trial.
+  EXPECT_EQ(kTestParamValue,
+            variations::GetVariationParamValue(kTestTrial, kTestParam1));
+  EXPECT_EQ(kTestParamValue,
+            variations::GetVariationParamValue(kTestTrial, kTestParam2));
 }
 
 base::CommandLine::StringType CreateSwitch(const std::string& value) {
@@ -781,7 +825,7 @@ TEST_F(FlagsStateTest, GetFlagFeatureEntries) {
                                       &supported_entries, &unsupported_entries,
                                       base::Bind(&SkipFeatureEntry));
   // All |kEntries| except for |kFlags3| should be supported.
-  EXPECT_EQ(7u, supported_entries.GetSize());
+  EXPECT_EQ(9u, supported_entries.GetSize());
   EXPECT_EQ(1u, unsupported_entries.GetSize());
   EXPECT_EQ(arraysize(kEntries),
             supported_entries.GetSize() + unsupported_entries.GetSize());

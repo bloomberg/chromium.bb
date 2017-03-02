@@ -192,25 +192,17 @@ base::Value* CreateOptionsData(const FeatureEntry& entry,
   return result;
 }
 
-// Registers variation parameters specified by |feature_variation| for the field
-// trial named |feature_trial_name|, unless a group for this trial has already
-// been created (e.g. via command-line switches that take precedence over
-// about:flags). In the trial, the function creates a new constant group called
-// |kTrialGroupAboutFlags|.
+// Registers variation parameters specified by |feature_variation_params| for
+// the field trial named |feature_trial_name|, unless a group for this trial has
+// already been created (e.g. via command-line switches that take precedence
+// over about:flags). In the trial, the function creates a new constant group
+// called |kTrialGroupAboutFlags|.
 base::FieldTrial* RegisterFeatureVariationParameters(
     const std::string& feature_trial_name,
-    const FeatureEntry::FeatureVariation* feature_variation) {
-  std::map<std::string, std::string> params;
-  if (feature_variation) {
-    // Copy the parameters for non-null variations.
-    for (int i = 0; i < feature_variation->num_params; ++i) {
-      params[feature_variation->params[i].param_name] =
-          feature_variation->params[i].param_value;
-    }
-  }
-
+    const std::map<std::string, std::string>& feature_variation_params) {
   bool success = variations::AssociateVariationParams(
-      feature_trial_name, internal::kTrialGroupAboutFlags, params);
+      feature_trial_name, internal::kTrialGroupAboutFlags,
+      feature_variation_params);
   if (!success)
     return nullptr;
   // Successful association also means that no group is created and selected
@@ -441,32 +433,62 @@ std::vector<std::string> FlagsState::RegisterAllFeatureVariationParameters(
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage, &enabled_entries);
   std::vector<std::string> variation_ids;
+  std::map<std::string, std::set<std::string>> enabled_features_by_trial_name;
+  std::map<std::string, std::map<std::string, std::string>>
+      params_by_trial_name;
 
+  // First collect all the data for each trial.
   for (size_t i = 0; i < num_feature_entries_; ++i) {
     const FeatureEntry& e = feature_entries_[i];
     if (e.type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE) {
       for (int j = 0; j < e.num_options; ++j) {
-        const FeatureEntry::FeatureVariation* variation =
-            e.VariationForOption(j);
         if (e.StateForOption(j) == FeatureEntry::FeatureState::ENABLED &&
             enabled_entries.count(e.NameForOption(j))) {
-          // If the option is selected by the user & has variation, register it.
-          base::FieldTrial* field_trial = RegisterFeatureVariationParameters(
-              e.feature_trial_name, variation);
+          std::string trial_name = e.feature_trial_name;
+          // The user has chosen to enable the feature by this option.
+          enabled_features_by_trial_name[trial_name].insert(e.feature->name);
 
-          if (!field_trial)
+          const FeatureEntry::FeatureVariation* variation =
+              e.VariationForOption(j);
+          if (!variation)
             continue;
-          feature_list->RegisterFieldTrialOverride(
-              e.feature->name,
-              base::FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE,
-              field_trial);
 
-          if (variation && variation->variation_id)
+          // The selected variation is non-default, collect its params & id.
+
+          for (int i = 0; i < variation->num_params; ++i) {
+            auto insert_result = params_by_trial_name[trial_name].insert(
+                std::make_pair(variation->params[i].param_name,
+                               variation->params[i].param_value));
+            DCHECK(insert_result.second)
+                << "Multiple values for the same parameter '"
+                << variation->params[i].param_name
+                << "' are specified in chrome://flags!";
+          }
+          if (variation->variation_id)
             variation_ids.push_back(variation->variation_id);
         }
       }
     }
   }
+
+  // Now create the trials and associate the features to them.
+  for (const auto& kv : enabled_features_by_trial_name) {
+    const std::string& trial_name = kv.first;
+    const std::set<std::string>& trial_features = kv.second;
+
+    base::FieldTrial* field_trial = RegisterFeatureVariationParameters(
+        trial_name, params_by_trial_name[trial_name]);
+    if (!field_trial)
+      continue;
+
+    for (const std::string& feature_name : trial_features) {
+      feature_list->RegisterFieldTrialOverride(
+          feature_name,
+          base::FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE,
+          field_trial);
+    }
+  }
+
   return variation_ids;
 }
 

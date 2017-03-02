@@ -147,7 +147,9 @@ struct FeatureEntry {
   const char* disable_command_line_switch;
   const char* disable_command_line_value;
 
-  // For FEATURE_VALUE, the base::Feature this entry corresponds to.
+  // For FEATURE_VALUE or FEATURE_WITH_VARIATIONS_VALUE, the base::Feature this
+  // entry corresponds to. The same feature must not be used in multiple
+  // FeatureEntries.
   const base::Feature* feature;
 
   // Number of options to choose from. This is used if type is MULTI_VALUE,

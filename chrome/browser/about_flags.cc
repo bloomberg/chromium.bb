@@ -1872,16 +1872,13 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(extensions::switches::kDisableTabForDesktopShare)},
 #endif  // ENABLE_EXTENSIONS
 #if defined(OS_ANDROID)
-    // TODO(vitaliii): Use ntp_snippets::kStudyName as the feature trial.
-    // Currently, only a single FEATURE_WITH_VARIATIONS_VALUE_TYPE can use a
-    // given study name. See crbug.com/690450.
     {"content-suggestions-category-order",
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_ORDER_NAME,
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_ORDER_DESCRIPTION, kOsAndroid,
      FEATURE_WITH_VARIATIONS_VALUE_TYPE(
          ntp_snippets::kCategoryOrder,
          kContentSuggestionsCategoryOrderFeatureVariations,
-         "content-suggestions-category-order-feature-trial")},
+         ntp_snippets::kStudyName)},
     {"content-suggestions-category-ranker",
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_NAME,
      IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_DESCRIPTION, kOsAndroid,
