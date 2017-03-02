@@ -838,6 +838,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"internetAddWiFi", IDS_SETTINGS_INTERNET_ADD_WIFI},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
       {"internetKnownNetworksPageTitle", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS},
+      {"internetNoNetworks", IDS_SETTINGS_INTERNET_NO_NETWORKS},
       {"internetPageTitle", IDS_SETTINGS_INTERNET},
       {"internetToggleMobileA11yLabel",
        IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL},
@@ -848,8 +849,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"knownNetworksAll", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL},
       {"knownNetworksButton", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON},
       {"knownNetworksMessage", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE},
-      {"knownNetworksNoPreferred",
-       IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_NO_PREFERRED},
       {"knownNetworksPreferred",
        IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_PREFFERED},
       {"knownNetworksMenuAddPreferred",
@@ -936,6 +935,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkSimReEnterNewPin",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN},
       {"networkSimUnlock", IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_UNLOCK},
+      {"networkVpnBuiltin", IDS_NETWORK_TYPE_VPN_BUILTIN},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

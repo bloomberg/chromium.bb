@@ -102,6 +102,7 @@ cr.define('settings', function() {
 
 // <if expr="chromeos">
   r.INTERNET = r.BASIC.createSection('/internet', 'internet');
+  r.INTERNET_NETWORKS = r.INTERNET.createChild('/networks');
   r.NETWORK_DETAIL = r.INTERNET.createChild('/networkDetail');
   r.KNOWN_NETWORKS = r.INTERNET.createChild('/knownNetworks');
   r.BLUETOOTH = r.BASIC.createSection('/bluetooth', 'bluetooth');

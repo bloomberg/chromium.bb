@@ -2336,9 +2336,6 @@ Press any key to continue exploring.
   </message>
 
   <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
-  <message name="IDS_NETWORK_LIST_DISABLED" desc="Text in the network list element when the network type is disabled.">
-    Disabled
-  </message>
   <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Text in the network list element when there is no network for the type.">
     No network
   </message>
@@ -3970,6 +3967,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_NETWORK_TYPE_VPN" desc="The vpn network type.">
     VPN
+  </message>
+  <message name="IDS_NETWORK_TYPE_VPN_BUILTIN" desc="The built-in VPN types (Open VPN and L2TP/IPSec).">
+    OpenVPN / L2TP
   </message>
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
     Connecting...

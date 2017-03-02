@@ -72,7 +72,14 @@ cr.define('settings', function() {
 
     /** @override */
     getNetworks: function(filter, callback) {
-      callback(this.networkStates_);
+      var type = filter.networkType;
+      if (type == chrome.networkingPrivate.NetworkType.ALL) {
+        callback(this.networkStates_.slice());
+      } else {
+        callback(this.networkStates_.filter(function(state) {
+          return state.Type == type;
+        }));
+      }
     },
 
     /** @override */

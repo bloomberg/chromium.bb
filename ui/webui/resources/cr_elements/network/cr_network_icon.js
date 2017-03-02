@@ -137,10 +137,13 @@ Polymer({
     var networkState = this.networkState;
     if (!this.networkState)
       return false;
-    if (networkState.Type == CrOnc.Type.WI_FI && networkState.WiFi) {
-      var security = networkState.WiFi.Security;
-      return !!security && security != 'None';
+    if (networkState.Type != CrOnc.Type.WI_FI || !networkState.WiFi)
+      return false;
+    if (!this.isListItem &&
+        networkState.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED) {
+      return false;
     }
-    return false;
+    var security = networkState.WiFi.Security;
+    return !!security && security != 'None';
   },
 });

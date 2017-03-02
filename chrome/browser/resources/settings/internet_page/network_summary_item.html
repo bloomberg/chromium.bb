@@ -1,37 +1,24 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
-<link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="network_siminfo.html">
 
 <dom-module id="network-summary-item">
   <template>
-    <style include="settings-shared action-link">
-      paper-spinner {
-        @apply(--cr-icon-height-width);
-        margin: 0 var(--settings-box-row-padding);
-      }
-
+    <style include="settings-shared">
       network-siminfo {
         padding: 0 var(--settings-box-row-padding);
       }
 
       .padded {
         @apply(--settings-list-frame-padding);
-      }
-
-      #buttons {
-        align-items: center;
       }
 
       #details {
@@ -44,24 +31,17 @@
         flex: none;
       }
 
-      #deviceEnabledButton {
-        -webkit-margin-start: 10px;
-      }
-
       #networkList {
         margin: 5px 0 10px;
         max-height: 200px;
         min-height: 50px;
       }
     </style>
-    <div class="settings-box two-line" actionable on-tap="onDetailsTap_">
+    <div actionable class="settings-box two-line" on-tap="onShowDetailsTap_">
       <div id="details"
           no-flex$="[[showSimInfo_(deviceState)]]">
         <cr-network-list-item item="[[activeNetworkState]]" class="flex">
         </cr-network-list-item>
-        <paper-spinner active="[[scanningIsActive_(deviceState, expanded_)]]"
-            hidden$="[[!scanningIsVisible_(deviceState)]]">
-        </paper-spinner>
       </div>
 
       <template is="dom-if" if="[[showSimInfo_(deviceState)]]">
@@ -71,54 +51,24 @@
         </network-siminfo>
       </template>
 
-      <div id="buttons" class="layout horizontal">
-        <template is="dom-if"
-            if="[[expandIsVisible_(deviceState, networkStateList)]]">
-          <cr-expand-button id="expandListButton" expanded="{{expanded_}}">
-          </cr-expand-button>
-        </template>
-        <template is="dom-if"
-            if="[[showDetailsIsVisible_(deviceState, networkStateList)]]">
-          <!-- TODO(dbeam): this needs an aria-label. Maybe
-               [[activeNetworkState.name]]? -->
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              on-tap="onShowDetailsTap_">
-          </button>
-        </template>
-      </div>
+      <template is="dom-if" if="[[showDetailsIsVisible_(deviceState)]]">
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="[[getDetailsA11yString_(activeNetworkState,
+                deviceSate)]]">
+        </button>
+      </template>
 
       <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
         <div class="secondary-action">
           <paper-toggle-button  id="deviceEnabledButton"
-              aria-label$="[[getToggleA11yString_(deviceState)]]"
+              aria-label="[[getToggleA11yString_(deviceState)]]"
               checked="[[deviceIsEnabled_(deviceState)]]"
               enabled="[[enableToggleIsEnabled_(deviceState)]]"
               on-tap="onDeviceEnabledTap_">
           </paper-toggle-button>
         </div>
       </template>
-
     </div>
-    <template is="dom-if"
-        if="[[networksDomIfIsTrue_(expanded_, wasExpanded_)]]">
-      <iron-collapse
-          opened="[[networksIronCollapseIsOpened_(expanded_, wasExpanded_)]]">
-        <div class="layout vertical padded">
-          <cr-network-list id="networkList" networks="[[networkStateList]]"
-              show-buttons>
-          </cr-network-list>
-          <template is="dom-if"
-              if="[[knownNetworksIsVisible_(activeNetworkState)]]">
-            <div class="list-item">
-              <a is="action-link" class="list-button"
-                  on-tap="onKnownNetworksTap_">
-                $i18n{knownNetworksButton}
-              </a>
-            </div>
-          </template>
-        </div>
-      </iron-collapse>
-    </template>
   </template>
   <script src="network_summary_item.js"></script>
 </dom-module>

@@ -1,0 +1,120 @@
+<link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-internet-subpage">
+  <template>
+    <style include="settings-shared">
+      #networkListDiv {
+        -webkit-padding-start: var(--settings-box-row-padding);
+        margin-top: var(--settings-page-vertical-margin);
+        min-height: var(--settings-box-min-height);
+     }
+
+      #addButton {
+        -webkit-margin-end: var(--cr-icon-padding);
+      }
+
+      #onoff[on] {
+        color: var(--settings-toggle-color);
+      }
+
+      .vpn-header {
+        -webkit-margin-end: 12px;
+        -webkit-margin-start: 4px;
+        margin-bottom: 8px;
+        margin-top: 8px;
+      }
+
+      .no-networks {
+        margin: 4px;
+      }
+    </style>
+
+    <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
+      <div class="settings-box first">
+        <div id="onoff" class="start" on$="[[deviceIsEnabled_(deviceState)]]">
+          [[getOffOnString_(deviceState,
+            '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
+        </div>
+        <!-- The add button in this row is only shown for WiFi networks. -->
+        <paper-icon-button id="addButton" icon="settings:add-wifi"
+            hidden$="[[!showAddButton_(deviceState, globalPolicy)]]"
+            aria-label="$i18n{internetAddWiFi}"
+            on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
+        </paper-icon-button>
+        <paper-toggle-button  id="deviceEnabledButton"
+            aria-label="[[getToggleA11yString_(deviceState)]]"
+            checked="[[deviceIsEnabled_(deviceState)]]"
+            enabled="[[enableToggleIsEnabled_(deviceState)]]"
+            on-tap="onDeviceEnabledTap_">
+        </paper-toggle-button>
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[knownNetworksIsVisible_(deviceState)]]">
+      <div actionable class="settings-box continuation"
+          on-tap="onKnownNetworksTap_">
+        <div class="start">$i18n{knownNetworksButton}</div>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="$i18n{knownNetworksButton}">
+        </button>
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[deviceIsEnabled_(deviceState)]]">
+      <div id="networkListDiv" class="layout vertical flex">
+        <!-- VPN only header for built-in VPNs. -->
+        <div class="vpn-header layout horizontal center"
+            hidden$="[[!isEqual_('VPN', deviceState.Type)]]">
+          <div class="flex">$i18n{networkVpnBuiltin}</div>
+          <paper-icon-button icon="settings:add-circle"
+              aria-label="$i18n{internetAddVPN}"
+              on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
+          </paper-icon-button>
+        </div>
+
+        <!-- List of networks or 'None'. -->
+        <cr-network-list id="networkList" class="flex" show-buttons
+            hidden$="[[!networkStateList_.length]]"
+            networks="[[networkStateList_]]"
+            on-selected="onNetworkSelected_">
+        </cr-network-list>
+        <div hidden$="[[networkStateList_.length]]" class="no-networks">
+          $i18n{internetNoNetworks}
+        </div>
+
+        <!-- Third party VPNs. -->
+        <template is="dom-if" if="isEqual_('VPN', deviceState.Type)]]">
+          <template is="dom-repeat" items="[[thirdPartyVpnProviders]]">
+            <div id="[[item.ProviderName]]"
+                class="vpn-header layout horizontal center">
+              <div class="flex">[[item.ProviderName]]</div>
+              <paper-icon-button icon="settings:add-circle"
+                  aria-label="[[getAddThirdPartyVpnA11yString_(item)]]"
+                  on-tap="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
+              </paper-icon-button>
+            </div>
+            <cr-network-list class="flex" show-buttons
+                hidden$="[[!haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
+                networks="[[getThirdPartyVpnNetworks_(thirdPartyVpns_, item)]]"
+                on-selected="onNetworkSelected_">
+            </cr-network-list>
+            <div hidden$="[[haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
+                class="no-networks">
+              $i18n{internetNoNetworks}
+            </div>
+          </template>
+        </template>
+      </div>
+
+    </template>
+
+  </template>
+  <script src="internet_subpage.js"></script>
+</dom-module>

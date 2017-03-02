@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-internet-page',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /**
@@ -48,6 +48,18 @@ Polymer({
     },
 
     /**
+     * Set by internet-subpage. Controls spinner visibility in subpage header.
+     * @private
+     */
+    showSpinner_: Boolean,
+
+    /**
+     * The network type for the networks subpage. Used in the subpage header.
+     * @private
+     */
+    subpageType_: String,
+
+    /**
      * The network type for the known networks subpage.
      * @private
      */
@@ -83,6 +95,7 @@ Polymer({
     'device-enabled-toggled': 'onDeviceEnabledToggled_',
     'show-detail': 'onShowDetail_',
     'show-known-networks': 'onShowKnownNetworks_',
+    'show-networks': 'onShowNetworks_',
   },
 
   // chrome.networkingPrivate listeners
@@ -131,6 +144,22 @@ Polymer({
   },
 
   /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @protected
+   */
+  currentRouteChanged: function(route) {
+    if (route == settings.Route.INTERNET_NETWORKS) {
+      // Handle direct navigation to the networks page,
+      // e.g. chrome://settings/internet/networks?type=WiFi
+      var queryParams = settings.getQueryParameters();
+      var type = queryParams.get('type');
+      if (type)
+        this.subpageType_ = type;
+    }
+  },
+
+  /**
    * Event triggered by a device state enabled toggle.
    * @param {!{detail: {enabled: boolean,
    *                    type: chrome.networkingPrivate.NetworkType}}} event
@@ -154,6 +183,25 @@ Polymer({
     if (event.detail.Name)
       params.append('name', event.detail.Name);
     settings.navigateTo(settings.Route.NETWORK_DETAIL, params);
+  },
+
+  /**
+   * @param {!{detail: {type: string}}} event
+   * @private
+   */
+  onShowNetworks_: function(event) {
+    var params = new URLSearchParams;
+    params.append('type', event.detail.Type);
+    this.subpageType_ = event.detail.Type;
+    settings.navigateTo(settings.Route.INTERNET_NETWORKS, params);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getNetworksPageTitle_: function() {
+    return this.i18n('OncType' + this.subpageType_);
   },
 
   /**

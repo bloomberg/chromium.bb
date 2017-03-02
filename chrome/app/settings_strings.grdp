@@ -1257,9 +1257,6 @@
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_PREFFERED" desc="Title for list of preferred networks.">
       Preferred networks
     </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_NO_PREFERRED" desc="Entry when there are no preferred networks in the known networks page.">
-      None
-    </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE" desc="Message describing the behavior of the known networks page.">
       Preferred networks will be preferred over other known networks if more than one is available.
     </message>
@@ -1274,6 +1271,9 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_FORGET" desc="Settings > Internet > Known networks > Dropdown menu item to forget a known network.">
       Forget
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NO_NETWORKS" desc="Entry when there are no preferred networks or no networks of a particular type.">
+      None
     </message>
     <message name="IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL" desc="Accessibility only label for mobile data enable/disable toggle .">
       Mobile data enable

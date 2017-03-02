@@ -1076,6 +1076,12 @@
         <structure name="IDR_SETTINGS_INTERNET_SHARED_CSS_HTML"
                    file="internet_page/internet_shared_css.html"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_INTERNET_SUBPAGE_HTML"
+                   file="internet_page/internet_subpage.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INTERNET_SUBPAGE_JS"
+                   file="internet_page/internet_subpage.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_APNLIST_HTML"
                    file="internet_page/network_apnlist.html"
                    type="chrome_html" />
