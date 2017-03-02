@@ -155,7 +155,8 @@ class CONTENT_EXPORT WebContentsViewAura
   bool OnOverscrollUpdate(float delta_x, float delta_y) override;
   void OnOverscrollComplete(OverscrollMode overscroll_mode) override;
   void OnOverscrollModeChange(OverscrollMode old_mode,
-                              OverscrollMode new_mode) override;
+                              OverscrollMode new_mode,
+                              OverscrollSource source) override;
 
   // Overridden from aura::WindowDelegate:
   gfx::Size GetMinimumSize() const override;

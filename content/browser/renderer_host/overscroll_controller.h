@@ -25,6 +25,13 @@ enum OverscrollMode {
   OVERSCROLL_EAST
 };
 
+// Indicates the source device that was used to trigger the overscroll gesture.
+enum class OverscrollSource {
+  NONE,
+  TOUCHPAD,
+  TOUCHSCREEN,
+};
+
 // When a page is scrolled beyond the scrollable region, it will trigger an
 // overscroll gesture. This controller receives the events that are dispatched
 // to the renderer, and the ACKs of events, and updates the overscroll gesture
@@ -94,9 +101,11 @@ class OverscrollController {
   // Completes the desired action from the current gesture.
   void CompleteAction();
 
-  // Sets the overscroll mode (and triggers callback in the delegate when
-  // appropriate).
-  void SetOverscrollMode(OverscrollMode new_mode);
+  // Sets the overscroll mode and triggers callback in the delegate when
+  // appropriate. When a new overscroll is started (i.e. when |new_mode| is not
+  // equal to OVERSCROLL_NONE), |source| will be set to the device that
+  // triggered the overscroll gesture.
+  void SetOverscrollMode(OverscrollMode new_mode, OverscrollSource source);
 
   // Whether this event should be processed or not handled by the controller.
   bool ShouldProcessEvent(const blink::WebInputEvent& event);

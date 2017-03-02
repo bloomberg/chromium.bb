@@ -1055,13 +1055,14 @@ void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
 }
 
 void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
-                                                 OverscrollMode new_mode) {
+                                                 OverscrollMode new_mode,
+                                                 OverscrollSource source) {
   if (old_mode == OVERSCROLL_NORTH || old_mode == OVERSCROLL_SOUTH)
     OverscrollUpdateForWebContentsDelegate(0);
 
   current_overscroll_gesture_ = new_mode;
-  navigation_overlay_->relay_delegate()->OnOverscrollModeChange(old_mode,
-                                                                new_mode);
+  navigation_overlay_->relay_delegate()->OnOverscrollModeChange(
+      old_mode, new_mode, source);
   completed_overscroll_gesture_ = OVERSCROLL_NONE;
 }
 

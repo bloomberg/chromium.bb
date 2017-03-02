@@ -124,7 +124,7 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
   }
 
   if (overscroll_mode_ != OVERSCROLL_NONE && DispatchEventResetsState(event)) {
-    SetOverscrollMode(OVERSCROLL_NONE);
+    SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);
 
     // Let the event be dispatched to the renderer.
     return false;
@@ -177,7 +177,7 @@ void OverscrollController::Reset() {
 }
 
 void OverscrollController::Cancel() {
-  SetOverscrollMode(OVERSCROLL_NONE);
+  SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);
   overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
   scroll_state_ = STATE_UNKNOWN;
 }
@@ -320,7 +320,7 @@ bool OverscrollController::ProcessEventForOverscroll(
       }
 
       // Reset overscroll state if fling didn't complete the overscroll gesture.
-      SetOverscrollMode(OVERSCROLL_NONE);
+      SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);
       break;
     }
 
@@ -346,7 +346,7 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
       OVERSCROLL_CONFIG_VERT_THRESHOLD_START);
   if (fabs(overscroll_delta_x_) <= horiz_threshold &&
       fabs(overscroll_delta_y_) <= vert_threshold) {
-    SetOverscrollMode(OVERSCROLL_NONE);
+    SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);
     return true;
   }
 
@@ -368,10 +368,12 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
       !IsScrollEndEffectEnabled())
     new_mode = OVERSCROLL_NONE;
 
-  if (overscroll_mode_ == OVERSCROLL_NONE)
-    SetOverscrollMode(new_mode);
-  else if (new_mode != overscroll_mode_)
-    SetOverscrollMode(OVERSCROLL_NONE);
+  if (overscroll_mode_ == OVERSCROLL_NONE) {
+    SetOverscrollMode(new_mode, is_touchpad ? OverscrollSource::TOUCHPAD
+                                            : OverscrollSource::TOUCHSCREEN);
+  } else if (new_mode != overscroll_mode_) {
+    SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);
+  }
 
   if (overscroll_mode_ == OVERSCROLL_NONE)
     return false;
@@ -412,9 +414,14 @@ void OverscrollController::CompleteAction() {
   overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
 }
 
-void OverscrollController::SetOverscrollMode(OverscrollMode mode) {
+void OverscrollController::SetOverscrollMode(OverscrollMode mode,
+                                             OverscrollSource source) {
   if (overscroll_mode_ == mode)
     return;
+
+  // If the mode changes to NONE, source is also NONE.
+  DCHECK(mode != OVERSCROLL_NONE || source == OverscrollSource::NONE);
+
   OverscrollMode old_mode = overscroll_mode_;
   overscroll_mode_ = mode;
   if (overscroll_mode_ == OVERSCROLL_NONE)
@@ -422,7 +429,7 @@ void OverscrollController::SetOverscrollMode(OverscrollMode mode) {
   else
     scroll_state_ = STATE_OVERSCROLLING;
   if (delegate_)
-    delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_);
+    delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_, source);
 }
 
 }  // namespace content

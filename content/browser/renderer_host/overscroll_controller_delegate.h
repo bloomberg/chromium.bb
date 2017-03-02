@@ -32,8 +32,12 @@ class CONTENT_EXPORT OverscrollControllerDelegate {
   virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) = 0;
 
   // This is called when the direction of the overscroll changes.
+  // When a new overscroll is started (i.e. when |new_mode| is not
+  // equal to OVERSCROLL_NONE), |source| will be set to the device that
+  // triggered the overscroll gesture.
   virtual void OnOverscrollModeChange(OverscrollMode old_mode,
-                                      OverscrollMode new_mode) = 0;
+                                      OverscrollMode new_mode,
+                                      OverscrollSource source) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverscrollControllerDelegate);

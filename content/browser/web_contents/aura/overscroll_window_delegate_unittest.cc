@@ -90,7 +90,8 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
   }
 
   void OnOverscrollModeChange(OverscrollMode old_mode,
-                              OverscrollMode new_mode) override {
+                              OverscrollMode new_mode,
+                              OverscrollSource source) override {
     mode_changed_ = true;
     current_mode_ = new_mode;
     if (current_mode_ != OVERSCROLL_NONE)

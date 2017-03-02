@@ -12972,6 +12972,40 @@ should be able to be added at any place in this file.
   <obsolete>Obsolete as of 08/2016</obsolete>
 </action>
 
+<action name="Overscroll_Cancelled.Back">
+  <owner>mfomitchev@chromium.org</owner>
+  <description>
+    When horizontal overscroll corresponding to the BACK navigation is cancelled
+    - either because the user performed an interfering action such as pressing a
+    key, or because the user ended the drag before the navigation threshold was
+    passed.
+  </description>
+</action>
+
+<action name="Overscroll_Cancelled.Forward">
+  <owner>mfomitchev@chromium.org</owner>
+  <description>
+    When horizontal overscroll corresponding to the FORWARD navigation is
+    cancelled - either because the user performed an interfering action such as
+    pressing a key, or because the user ended the drag before the navigation
+    threshold was passed.
+  </description>
+</action>
+
+<action name="Overscroll_Navigated.Back">
+  <owner>mfomitchev@chromium.org</owner>
+  <description>
+    When horizontal overscroll initiates a BACK navigation in the browser.
+  </description>
+</action>
+
+<action name="Overscroll_Navigated.Forward">
+  <owner>mfomitchev@chromium.org</owner>
+  <description>
+    When horizontal overscroll initiates a FORWARD navigation in the browser.
+  </description>
+</action>
+
 <action name="PDF.FitToHeightButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

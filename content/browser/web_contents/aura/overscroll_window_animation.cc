@@ -81,12 +81,14 @@ void OverscrollWindowAnimation::OnImplicitAnimationsCompleted() {
   } else {
     delegate_->OnOverscrollCompleted(std::move(slide_window_));
   }
+  overscroll_source_ = OverscrollSource::NONE;
   direction_ = SLIDE_NONE;
 }
 
 void OverscrollWindowAnimation::OnOverscrollModeChange(
     OverscrollMode old_mode,
-    OverscrollMode new_mode) {
+    OverscrollMode new_mode,
+    OverscrollSource source) {
   DCHECK_NE(old_mode, new_mode);
   Direction new_direction = GetDirectionForMode(new_mode);
   if (new_direction == SLIDE_NONE) {
@@ -111,12 +113,16 @@ void OverscrollWindowAnimation::OnOverscrollModeChange(
                                    : -slide_window_bounds.width() / 2,
                                0);
   }
+
+  DCHECK_EQ(overscroll_source_, OverscrollSource::NONE);
+  overscroll_source_ = source;
   slide_window_ = new_direction == SLIDE_FRONT
                       ? delegate_->CreateFrontWindow(slide_window_bounds)
                       : delegate_->CreateBackWindow(slide_window_bounds);
   if (!slide_window_) {
     // Cannot navigate, do not start an overscroll gesture.
     direction_ = SLIDE_NONE;
+    overscroll_source_ = OverscrollSource::NONE;
     return;
   }
   overscroll_cancelled_ = false;

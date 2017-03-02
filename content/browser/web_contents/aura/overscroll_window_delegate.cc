@@ -34,19 +34,20 @@ OverscrollWindowDelegate::OverscrollWindowDelegate(
 OverscrollWindowDelegate::~OverscrollWindowDelegate() {
 }
 
-void OverscrollWindowDelegate::StartOverscroll() {
+void OverscrollWindowDelegate::StartOverscroll(OverscrollSource source) {
   OverscrollMode old_mode = overscroll_mode_;
   if (delta_x_ > 0)
     overscroll_mode_ = OVERSCROLL_EAST;
   else
     overscroll_mode_ = OVERSCROLL_WEST;
-  delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_);
+  delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_, source);
 }
 
 void OverscrollWindowDelegate::ResetOverscroll() {
   if (overscroll_mode_ == OVERSCROLL_NONE)
     return;
-  delegate_->OnOverscrollModeChange(overscroll_mode_, OVERSCROLL_NONE);
+  delegate_->OnOverscrollModeChange(overscroll_mode_, OVERSCROLL_NONE,
+                                    OverscrollSource::NONE);
   overscroll_mode_ = OVERSCROLL_NONE;
   delta_x_ = 0;
 }
@@ -65,12 +66,13 @@ void OverscrollWindowDelegate::CompleteOrResetOverscroll() {
   delta_x_ = 0;
 }
 
-void OverscrollWindowDelegate::UpdateOverscroll(float delta_x) {
+void OverscrollWindowDelegate::UpdateOverscroll(float delta_x,
+                                                OverscrollSource source) {
   float old_delta_x = delta_x_;
   delta_x_ += delta_x;
   if (overscroll_mode_ == OVERSCROLL_NONE) {
     if (fabs(delta_x_) > active_start_threshold_)
-      StartOverscroll();
+      StartOverscroll(source);
     return;
   }
   if ((old_delta_x < 0 && delta_x_ > 0) || (old_delta_x > 0 && delta_x_ < 0)) {
@@ -94,7 +96,7 @@ void OverscrollWindowDelegate::OnMouseEvent(ui::MouseEvent* event) {
 void OverscrollWindowDelegate::OnScrollEvent(ui::ScrollEvent* event) {
   active_start_threshold_ = start_threshold_touchpad_;
   if (event->type() == ui::ET_SCROLL)
-    UpdateOverscroll(event->x_offset_ordinal());
+    UpdateOverscroll(event->x_offset_ordinal(), OverscrollSource::TOUCHPAD);
   else if (event->type() == ui::ET_SCROLL_FLING_START)
     CompleteOrResetOverscroll();
   else
@@ -106,7 +108,8 @@ void OverscrollWindowDelegate::OnGestureEvent(ui::GestureEvent* event) {
   active_start_threshold_ = start_threshold_touchscreen_;
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      UpdateOverscroll(event->details().scroll_x());
+      UpdateOverscroll(event->details().scroll_x(),
+                       OverscrollSource::TOUCHSCREEN);
       break;
 
     case ui::ET_GESTURE_SCROLL_END:

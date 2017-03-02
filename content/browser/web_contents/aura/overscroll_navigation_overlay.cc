@@ -13,10 +13,12 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/aura/overscroll_window_delegate.h"
+#include "content/browser/web_contents/aura/uma_navigation_type.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/user_metrics.h"
 #include "ui/aura/window.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/layer.h"
@@ -44,6 +46,34 @@ bool DoesEntryMatchURL(NavigationEntry* entry, const GURL& url) {
       return true;
   }
   return false;
+}
+
+UmaNavigationType GetUmaNavigationType(
+    OverscrollNavigationOverlay::NavigationDirection direction,
+    OverscrollSource source) {
+  if (direction == OverscrollNavigationOverlay::NONE ||
+      source == OverscrollSource::NONE)
+    return NAVIGATION_TYPE_NONE;
+  if (direction == OverscrollNavigationOverlay::BACK)
+    return source == OverscrollSource::TOUCHPAD
+               ? UmaNavigationType::BACK_TOUCHPAD
+               : UmaNavigationType::BACK_TOUCHSCREEN;
+  DCHECK_EQ(direction, OverscrollNavigationOverlay::FORWARD);
+  return source == OverscrollSource::TOUCHPAD
+             ? UmaNavigationType::FORWARD_TOUCHPAD
+             : UmaNavigationType::FORWARD_TOUCHSCREEN;
+}
+
+// Records UMA historgram and also user action for the cancelled overscroll.
+void RecordCancelled(OverscrollNavigationOverlay::NavigationDirection direction,
+                     OverscrollSource source) {
+  UMA_HISTOGRAM_ENUMERATION("Overscroll.Cancelled3",
+                            GetUmaNavigationType(direction, source),
+                            NAVIGATION_TYPE_COUNT);
+  if (direction == OverscrollNavigationOverlay::BACK)
+    RecordAction(base::UserMetricsAction("Overscroll_Cancelled.Back"));
+  else
+    RecordAction(base::UserMetricsAction("Overscroll_Cancelled.Forward"));
 }
 
 }  // namespace
@@ -144,7 +174,9 @@ void OverscrollNavigationOverlay::StopObservingIfDone() {
 std::unique_ptr<aura::Window> OverscrollNavigationOverlay::CreateOverlayWindow(
     const gfx::Rect& bounds) {
   UMA_HISTOGRAM_ENUMERATION(
-      "Overscroll.Started2", direction_, NAVIGATION_COUNT);
+      "Overscroll.Started3",
+      GetUmaNavigationType(direction_, owa_->overscroll_source()),
+      NAVIGATION_TYPE_COUNT);
   OverscrollWindowDelegate* overscroll_delegate = new OverscrollWindowDelegate(
       owa_.get(), GetImageForDirection(direction_));
   std::unique_ptr<aura::Window> window(new aura::Window(overscroll_delegate));
@@ -218,8 +250,7 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
   DCHECK(direction_ != NONE);
   aura::Window* main_window = GetMainWindow();
   if (!main_window) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Overscroll.Cancelled", direction_, NAVIGATION_COUNT);
+    RecordCancelled(direction_, owa_->overscroll_source());
     return;
   }
 
@@ -244,14 +275,19 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
   } else {
     // We need to dismiss the overlay without navigating as soon as the
     // overscroll finishes.
-    UMA_HISTOGRAM_ENUMERATION(
-        "Overscroll.Cancelled", direction_, NAVIGATION_COUNT);
+    RecordCancelled(direction_, owa_->overscroll_source());
     loading_complete_ = true;
   }
 
   if (navigated) {
     UMA_HISTOGRAM_ENUMERATION(
-        "Overscroll.Navigated2", direction_, NAVIGATION_COUNT);
+        "Overscroll.Navigated3",
+        GetUmaNavigationType(direction_, owa_->overscroll_source()),
+        NAVIGATION_TYPE_COUNT);
+    if (direction_ == BACK)
+      RecordAction(base::UserMetricsAction("Overscroll_Navigated.Back"));
+    else
+      RecordAction(base::UserMetricsAction("Overscroll_Navigated.Forward"));
     StartObserving();
   }
 
@@ -260,8 +296,7 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
 }
 
 void OverscrollNavigationOverlay::OnOverscrollCancelled() {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Overscroll.Cancelled", direction_, NAVIGATION_COUNT);
+  RecordCancelled(direction_, owa_->overscroll_source());
   aura::Window* main_window = GetMainWindow();
   if (!main_window)
     return;

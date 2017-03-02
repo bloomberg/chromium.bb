@@ -158,7 +158,8 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
   }
 
   void OnOverscrollModeChange(OverscrollMode old_mode,
-                              OverscrollMode new_mode) override {
+                              OverscrollMode new_mode,
+                              OverscrollSource source) override {
     EXPECT_EQ(current_mode_, old_mode);
     current_mode_ = new_mode;
     delta_x_ = delta_y_ = 0.f;

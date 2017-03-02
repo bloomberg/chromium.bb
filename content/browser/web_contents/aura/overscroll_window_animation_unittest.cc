@@ -127,8 +127,10 @@ TEST_F(OverscrollWindowAnimationTest, BasicOverscroll) {
   EXPECT_FALSE(overscroll_aborted());
 
   // Start an OVERSCROLL_EAST gesture.
-  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHPAD);
   EXPECT_TRUE(owa()->is_active());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());
   EXPECT_FALSE(overscroll_completing());
   EXPECT_FALSE(overscroll_completed());
@@ -146,9 +148,13 @@ TEST_F(OverscrollWindowAnimationTest, BasicOverscroll) {
 // Tests aborting an overscroll gesture.
 TEST_F(OverscrollWindowAnimationTest, BasicAbort) {
   // Start an OVERSCROLL_EAST gesture.
-  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHSCREEN);
+  EXPECT_EQ(OverscrollSource::TOUCHSCREEN, owa()->overscroll_source());
   // Abort the overscroll.
-  owa()->OnOverscrollModeChange(OVERSCROLL_EAST, OVERSCROLL_NONE);
+  owa()->OnOverscrollModeChange(OVERSCROLL_EAST, OVERSCROLL_NONE,
+                                OverscrollSource::TOUCHSCREEN);
+  EXPECT_EQ(OverscrollSource::NONE, owa()->overscroll_source());
   EXPECT_FALSE(owa()->is_active());
   EXPECT_TRUE(overscroll_started());
   EXPECT_FALSE(overscroll_completing());
@@ -160,8 +166,10 @@ TEST_F(OverscrollWindowAnimationTest, BasicAbort) {
 TEST_F(OverscrollWindowAnimationTest, BasicCannotNavigate) {
   set_create_window(false);
   // Start an OVERSCROLL_EAST gesture.
-  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHPAD);
   EXPECT_FALSE(owa()->is_active());
+  EXPECT_EQ(OverscrollSource::NONE, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());
   EXPECT_FALSE(overscroll_completing());
   EXPECT_FALSE(overscroll_completed());
@@ -181,20 +189,24 @@ TEST_F(OverscrollWindowAnimationTest, NewOverscrollCompletesPreviousGesture) {
   animator->set_disable_timer_for_test(true);
   ui::LayerAnimatorTestController test_controller(animator);
   // Start an OVERSCROLL_EAST gesture.
-  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHPAD);
 
   // Finishes the OVERSCROLL_EAST gesture. At this point the window should be
   // being animated to its final position.
   owa()->OnOverscrollComplete(OVERSCROLL_EAST);
   EXPECT_TRUE(owa()->is_active());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());
   EXPECT_TRUE(overscroll_completing());
   EXPECT_FALSE(overscroll_completed());
   EXPECT_FALSE(overscroll_aborted());
 
   // Start another OVERSCROLL_EAST gesture.
-  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHSCREEN);
   EXPECT_TRUE(owa()->is_active());
+  EXPECT_EQ(OverscrollSource::TOUCHSCREEN, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());
   EXPECT_TRUE(overscroll_completing());
   EXPECT_TRUE(overscroll_completed());
@@ -211,6 +223,7 @@ TEST_F(OverscrollWindowAnimationTest, NewOverscrollCompletesPreviousGesture) {
   // Halfway through the animation, OverscrollCompleting should have been fired.
   animator->Step(start_time + duration / 2);
   EXPECT_TRUE(owa()->is_active());
+  EXPECT_EQ(OverscrollSource::TOUCHSCREEN, owa()->overscroll_source());
   EXPECT_FALSE(overscroll_started());
   EXPECT_TRUE(overscroll_completing());
   EXPECT_FALSE(overscroll_completed());
@@ -219,6 +232,7 @@ TEST_F(OverscrollWindowAnimationTest, NewOverscrollCompletesPreviousGesture) {
   // The animation has finished, OverscrollCompleted should have been fired.
   animator->Step(start_time + duration);
   EXPECT_FALSE(owa()->is_active());
+  EXPECT_EQ(OverscrollSource::NONE, owa()->overscroll_source());
   EXPECT_FALSE(overscroll_started());
   EXPECT_TRUE(overscroll_completing());
   EXPECT_TRUE(overscroll_completed());
