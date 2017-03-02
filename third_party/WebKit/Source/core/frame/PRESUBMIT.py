@@ -72,7 +72,7 @@ def _RunUmaHistogramChecks(input_api, output_api):
     else:
         return []
 
-    START_MARKER = '^enum Feature {'
+    START_MARKER = '^enum Feature : uint32_t {'
     END_MARKER = '^NumberOfFeatures'
     if update_histogram_enum.HistogramNeedsUpdate(
             histogram_enum_name='FeatureObserver',
