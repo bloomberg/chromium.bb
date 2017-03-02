@@ -22,5 +22,6 @@ _create_venv() {
 
 exec_python_module() {
     _create_venv
-    exec env PYTHONPATH="../venv" "$venv_dir/bin/python" -m "$@"
+    export PYTHONPATH='../venv'
+    exec "$venv_dir/bin/python" -m "$@"
 }
