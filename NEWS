@@ -2,8 +2,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.1.0 (2017-03-06)
 ** New features
-- Meta data
-
+*** Meta data
+Most of the translation tables now contain metadata. This makes them
+discoverable. Programs can use the lou_findTable function to find a
+table based on a query.
 *** noUndefinedDots mode
 Add a noUndefinedDots mode to disable the output of dot numbers when
 back-translating undefined patterns. Thanks to James Teh.
