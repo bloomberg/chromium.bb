@@ -719,6 +719,12 @@ void AwContents::ClearCache(JNIEnv* env,
     RemoveHttpDiskCache(web_contents_->GetRenderProcessHost());
 }
 
+void AwContents::KillRenderProcess(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  render_view_host_ext_->KillRenderProcess();
+}
+
 FindHelper* AwContents::GetFindHelper() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!find_helper_.get()) {

@@ -43,6 +43,9 @@ IPC_STRUCT_TRAITS_END()
 // Tells the renderer to drop all WebCore memory cache.
 IPC_MESSAGE_CONTROL0(AwViewMsg_ClearCache)
 
+// Tells render process to kill itself (only for testing).
+IPC_MESSAGE_CONTROL0(AwViewMsg_KillProcess)
+
 // Request for the renderer to determine if the document contains any image
 // elements.  The id should be passed in the response message so the response
 // can be associated with the request.

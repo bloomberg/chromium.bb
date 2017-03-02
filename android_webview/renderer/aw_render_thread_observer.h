@@ -23,6 +23,7 @@ class AwRenderThreadObserver : public content::RenderThreadObserver {
 
  private:
   void OnClearCache();
+  void OnKillProcess();
   void OnSetJsOnlineProperty(bool network_up);
 };
 

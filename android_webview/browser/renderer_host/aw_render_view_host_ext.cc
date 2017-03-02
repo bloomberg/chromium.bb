@@ -61,6 +61,11 @@ void AwRenderViewHostExt::ClearCache() {
   Send(new AwViewMsg_ClearCache);
 }
 
+void AwRenderViewHostExt::KillRenderProcess() {
+  DCHECK(CalledOnValidThread());
+  Send(new AwViewMsg_KillProcess);
+}
+
 bool AwRenderViewHostExt::HasNewHitTestData() const {
   return has_new_hit_test_data_;
 }

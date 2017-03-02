@@ -48,6 +48,9 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Clear all WebCore memory cache (not only for this view).
   void ClearCache();
 
+  // Tells render process to kill itself (only for testing).
+  void KillRenderProcess();
+
   // Do a hit test at the view port coordinates and asynchronously update
   // |last_hit_test_data_|. Width and height in |touch_area| are in density
   // independent pixels used by blink::WebView.
