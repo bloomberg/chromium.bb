@@ -120,7 +120,7 @@ class DragImageBuilder {
     // TODO(oshima): Remove this when all platforms are migrated to
     // use-zoom-for-dsf.
     float deviceScaleFactor =
-        m_localFrame->host()->deviceScaleFactorDeprecated();
+        m_localFrame->page()->deviceScaleFactorDeprecated();
     float pageScaleFactor = m_localFrame->host()->visualViewport().scale();
     m_bounds.setWidth(m_bounds.width() * deviceScaleFactor * pageScaleFactor);
     m_bounds.setHeight(m_bounds.height() * deviceScaleFactor * pageScaleFactor);
@@ -714,7 +714,7 @@ double LocalFrame::devicePixelRatio() const {
   if (!m_host)
     return 0;
 
-  double ratio = m_host->deviceScaleFactorDeprecated();
+  double ratio = m_host->page().deviceScaleFactorDeprecated();
   ratio *= pageZoomFactor();
   return ratio;
 }

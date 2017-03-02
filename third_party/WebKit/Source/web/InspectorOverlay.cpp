@@ -593,7 +593,7 @@ void InspectorOverlay::reset(const IntSize& viewportSize,
       protocol::DictionaryValue::create();
   resetData->setDouble(
       "deviceScaleFactor",
-      m_frameImpl->frame()->host()->deviceScaleFactorDeprecated());
+      m_frameImpl->frame()->page()->deviceScaleFactorDeprecated());
   resetData->setDouble("pageScaleFactor",
                        m_frameImpl->frame()->host()->visualViewport().scale());
 

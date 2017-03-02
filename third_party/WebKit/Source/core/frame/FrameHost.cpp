@@ -74,10 +74,6 @@ const Page& FrameHost::page() const {
   return *m_page;
 }
 
-float FrameHost::deviceScaleFactorDeprecated() const {
-  return m_page->deviceScaleFactorDeprecated();
-}
-
 BrowserControls& FrameHost::browserControls() {
   return *m_browserControls;
 }

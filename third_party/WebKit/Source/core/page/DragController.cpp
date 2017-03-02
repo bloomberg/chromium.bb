@@ -46,7 +46,6 @@
 #include "core/editing/commands/DragAndDropCommand.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/TextEvent.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -1130,9 +1129,8 @@ bool DragController::startDrag(LocalFrame* src,
       const IntRect& imageRect = hitTestResult.imageRect();
       IntSize imageSizeInPixels = imageRect.size();
       // TODO(oshima): Remove this scaling and simply pass imageRect to
-      // dragImageForImage
-      // once all platforms are migrated to use zoom for dsf.
-      imageSizeInPixels.scale(src->host()->deviceScaleFactorDeprecated());
+      // dragImageForImage once all platforms are migrated to use zoom for dsf.
+      imageSizeInPixels.scale(src->page()->deviceScaleFactorDeprecated());
 
       float screenDeviceScaleFactor =
           src->page()->chromeClient().screenInfo().deviceScaleFactor;

@@ -71,9 +71,6 @@ class CORE_EXPORT FrameHost final
   Page& page();
   const Page& page() const;
 
-  // See Page::deviceScaleFactorDeprecated.
-  float deviceScaleFactorDeprecated() const;
-
   BrowserControls& browserControls();
   const BrowserControls& browserControls() const;
 
