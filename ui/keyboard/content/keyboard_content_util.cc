@@ -6,8 +6,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "grit/keyboard_resources.h"
-#include "grit/keyboard_resources_map.h"
+#include "ui/keyboard/grit/keyboard_resources.h"
+#include "ui/keyboard/grit/keyboard_resources_map.h"
 #include "url/gurl.h"
 
 namespace keyboard {

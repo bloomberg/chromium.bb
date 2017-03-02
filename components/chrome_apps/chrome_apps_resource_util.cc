@@ -5,7 +5,7 @@
 #include "components/chrome_apps/chrome_apps_resource_util.h"
 
 #include "base/logging.h"
-#include "grit/chrome_apps_resources_map.h"
+#include "components/chrome_apps/grit/chrome_apps_resources_map.h"
 
 namespace chrome_apps {
 

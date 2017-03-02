@@ -1,4 +1,0 @@
-include_rules = [
-  "+grit/chrome_apps_resources.h",
-  "+grit/chrome_apps_resources_map.h"
-]

@@ -7,12 +7,12 @@
 #include <stddef.h>
 
 #include "content/browser/bad_message.h"
+#include "content/browser/devtools/grit/devtools_resources_map.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "grit/devtools_resources_map.h"
 
 namespace content {
 

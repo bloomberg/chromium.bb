@@ -1,5 +1,5 @@
 include_rules = [
   "+content/public/browser",
   "+components/grit/components_resources.h",
-  "+grit/webui_resources.h",
+  "+ui/resources/grit/webui_resources.h",
 ]
