@@ -40,6 +40,10 @@ class BrowserThreadTest : public testing::Test {
   void TearDown() override {
     StopUIThread();
     file_thread_->Stop();
+    ui_thread_ = nullptr;
+    file_thread_ = nullptr;
+    BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::UI);
+    BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::FILE);
   }
 
   static void BasicFunction(base::MessageLoop* message_loop) {
