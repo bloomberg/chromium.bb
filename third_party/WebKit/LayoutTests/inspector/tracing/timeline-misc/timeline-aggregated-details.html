@@ -609,26 +609,32 @@ function test()
     var groupByEnum = Timeline.AggregatedTimelineTreeView.GroupBy;
     for (var grouping in groupByEnum) {
         var groupingValue = groupByEnum[grouping];
-        testEventTree(Timeline.TimelinePanel.ViewMode.CallTree, groupingValue);
-        testEventTree(Timeline.TimelinePanel.ViewMode.BottomUp, groupingValue);
+        testEventTree("CallTree", groupingValue);
+        testEventTree("BottomUp", groupingValue);
     }
 
-    testEventTree(Timeline.TimelinePanel.ViewMode.EventLog);
+    testEventTree("EventLog");
     InspectorTest.completeTest();
 
     function testEventTree(type, grouping)
     {
         InspectorTest.addResult("");
-        timeline._tabbedPane.selectTab(type, true);
-        var callTree = timeline._currentView._treeView;
+        var tree;
+        if (timeline._tabbedPane) {
+            timeline._tabbedPane.selectTab(type, true);
+            tree = timeline._currentView._treeView;
+        } else {
+            timeline._currentView._detailsView._tabbedPane.selectTab(type, true);
+            tree = timeline._currentView._detailsView._tabbedPane.visibleView;
+        }
         if (grouping) {
             InspectorTest.addResult(type + "  Group by: " + grouping);
-            callTree._groupByCombobox.select(callTree._groupByCombobox.options().find(x => x.value === grouping));
-            callTree._onGroupByChanged();
+            tree._groupByCombobox.select(tree._groupByCombobox.options().find(x => x.value === grouping));
+            tree._onGroupByChanged();
         } else {
             InspectorTest.addResult(type);
         }
-        var rootNode = callTree._dataGrid.rootNode();
+        var rootNode = tree._dataGrid.rootNode();
         for (var node of rootNode.children)
             printEventTree(1, node._profileNode, node._treeView);
     }

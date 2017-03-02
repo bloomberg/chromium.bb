@@ -50,11 +50,11 @@ async function test()
         {"name": "Program", "ts": 2590000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default-devtools.timeline", "args": {}}
     ];
 
+    Runtime.experiments.enableForTest("timelineMultipleMainViews");
     var model = InspectorTest.createPerformanceModelWithEvents(testData);
-    var panel = UI.panels.timeline;
+    var panel = new Timeline.TimelinePanel();
     panel._setModel(model);
-    var viewModes = Timeline.TimelinePanel.ViewMode;
-    for (var mode of [viewModes.BottomUp, viewModes.CallTree, viewModes.EventLog]) {
+    for (var mode of ["BottomUp", "CallTree", "EventLog"]) {
         InspectorTest.addResult("");
         InspectorTest.addResult(`Testing mode: ${mode}`);
         panel._tabbedPane.selectTab(mode);
