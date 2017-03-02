@@ -71,6 +71,11 @@ var searchTreeItem = new TreeItem({
 });
 
 /**
+ * @type {boolean}
+ */
+var firstLoad = true;
+
+/**
  * Command shortcut mapping.
  * @const
  */
@@ -191,6 +196,8 @@ function updateParentId(id) {
 // Process the location hash. This is called by onhashchange and when the page
 // is first loaded.
 function processHash() {
+  var wasFirstLoad = firstLoad;
+  firstLoad = false;
   var id = window.location.hash.slice(1);
   if (!id) {
     // If we do not have a hash, select first item in the tree.
@@ -240,6 +247,14 @@ function processHash() {
     chrome.bookmarks.get(id, function(items) {
       if (items && items.length == 1)
         updateParentId(id);
+
+      if (wasFirstLoad) {
+        setTimeout(function() {
+          chrome.metricsPrivate.recordTime(
+              'BookmarkManager.ResultsRenderedTime',
+              Math.floor(window.performance.now()));
+        });
+      }
     });
   }
 }
