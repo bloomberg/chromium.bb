@@ -169,8 +169,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         this, std::move(tab_list), kTabStyle, kTabStyle, tab_title_text));
 
     tab_scroll_view->SetContents(list_views_.back());
-    tab_scroll_view->ClipHeightTo(kTabStyle.item_size.height() * 1,
-                                  kTabStyle.item_size.height() * 10);
+    tab_scroll_view->ClipHeightTo(kTabStyle.item_size.height(),
+                                  kTabStyle.item_size.height() * 2);
     tab_scroll_view->set_hide_horizontal_scrollbar(true);
     tab_scroll_view->set_background(
         views::Background::CreateSolidBackground(bg_color));
