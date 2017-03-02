@@ -125,6 +125,14 @@ TestingCompositorSupport::createScrollbarLayer(
 }
 
 std::unique_ptr<WebScrollbarLayer>
+TestingCompositorSupport::createOverlayScrollbarLayer(
+    std::unique_ptr<WebScrollbar>,
+    WebScrollbarThemePainter,
+    std::unique_ptr<WebScrollbarThemeGeometry>) {
+  return nullptr;
+}
+
+std::unique_ptr<WebScrollbarLayer>
 TestingCompositorSupport::createSolidColorScrollbarLayer(
     WebScrollbar::Orientation,
     int thumbThickness,

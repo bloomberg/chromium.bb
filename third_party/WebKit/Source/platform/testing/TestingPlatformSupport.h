@@ -77,6 +77,10 @@ class TestingCompositorSupport : public WebCompositorSupport {
       std::unique_ptr<WebScrollbar>,
       WebScrollbarThemePainter,
       std::unique_ptr<WebScrollbarThemeGeometry>) override;
+  std::unique_ptr<WebScrollbarLayer> createOverlayScrollbarLayer(
+      std::unique_ptr<WebScrollbar>,
+      WebScrollbarThemePainter,
+      std::unique_ptr<WebScrollbarThemeGeometry>) override;
   std::unique_ptr<WebScrollbarLayer> createSolidColorScrollbarLayer(
       WebScrollbar::Orientation,
       int thumbThickness,

@@ -33,12 +33,11 @@
 
 #include "WebCanvas.h"
 #include "WebColor.h"
+#include "WebRect.h"
 #include "WebScrollbarOverlayColorTheme.h"
 #include "WebSize.h"
 
 namespace blink {
-
-struct WebRect;
 
 class WebThemeEngine {
  public:
@@ -158,6 +157,10 @@ class WebThemeEngine {
   // like vertical scrollbar thumbs, the width will be the required width of
   // the track while the height will be the minimum height.
   virtual WebSize getSize(Part) { return WebSize(); }
+
+  virtual bool supportsNinePatch(Part) const { return false; }
+  virtual WebSize ninePatchCanvasSize(Part) const { return WebSize(); }
+  virtual WebRect ninePatchAperture(Part) const { return WebRect(); }
 
   struct ScrollbarStyle {
     int thumbThickness;

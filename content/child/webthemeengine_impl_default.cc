@@ -253,6 +253,21 @@ void WebThemeEngineImpl::getOverlayScrollbarStyle(ScrollbarStyle* style) {
   // NativeTheme so these fields are unused.
 }
 
+bool WebThemeEngineImpl::supportsNinePatch(Part part) const {
+  return ui::NativeTheme::GetInstanceForWeb()->SupportsNinePatch(
+      NativeThemePart(part));
+}
+
+blink::WebSize WebThemeEngineImpl::ninePatchCanvasSize(Part part) const {
+  return ui::NativeTheme::GetInstanceForWeb()->GetNinePatchCanvasSize(
+      NativeThemePart(part));
+}
+
+blink::WebRect WebThemeEngineImpl::ninePatchAperture(Part part) const {
+  return ui::NativeTheme::GetInstanceForWeb()->GetNinePatchAperture(
+      NativeThemePart(part));
+}
+
 #if defined(OS_WIN)
 // static
 void WebThemeEngineImpl::cacheScrollBarMetrics(

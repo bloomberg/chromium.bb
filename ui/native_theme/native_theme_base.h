@@ -33,6 +33,10 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
              const gfx::Rect& rect,
              const ExtraParams& extra) const override;
 
+  bool SupportsNinePatch(Part part) const override;
+  gfx::Size GetNinePatchCanvasSize(Part part) const override;
+  gfx::Rect GetNinePatchAperture(Part part) const override;
+
  protected:
   NativeThemeBase();
   ~NativeThemeBase() override;

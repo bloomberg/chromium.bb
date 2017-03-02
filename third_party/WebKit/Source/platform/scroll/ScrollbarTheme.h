@@ -185,6 +185,24 @@ class PLATFORM_EXPORT ScrollbarTheme {
 
   virtual bool isMockTheme() const { return false; }
 
+  virtual bool usesNinePatchThumbResource() const { return false; }
+
+  // For a nine-patch scrollbar, this defines the painting canvas size which the
+  // painting code will use to paint the scrollbar into. The actual scrollbar
+  // dimensions will be ignored for purposes of painting since the resource can
+  // be then resized without a repaint.
+  virtual IntSize ninePatchThumbCanvasSize(const ScrollbarThemeClient&) const {
+    NOTREACHED();
+    return IntSize();
+  }
+
+  // For a nine-patch resource, the aperture defines the center patch that will
+  // be stretched out.
+  virtual IntRect ninePatchThumbAperture(const ScrollbarThemeClient&) const {
+    NOTREACHED();
+    return IntRect();
+  }
+
   static ScrollbarTheme& theme();
 
   static void setMockScrollbarsEnabled(bool flag);

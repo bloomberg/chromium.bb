@@ -28,6 +28,11 @@ class WebScrollbarLayerImpl : public blink::WebScrollbarLayer {
       blink::WebScrollbarThemePainter painter,
       std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry);
   CC_BLINK_EXPORT WebScrollbarLayerImpl(
+      std::unique_ptr<blink::WebScrollbar> scrollbar,
+      blink::WebScrollbarThemePainter painter,
+      std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry,
+      bool temp);
+  CC_BLINK_EXPORT WebScrollbarLayerImpl(
       blink::WebScrollbar::Orientation orientation,
       int thumb_thickness,
       int track_start,

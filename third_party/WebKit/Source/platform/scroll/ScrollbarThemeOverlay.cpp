@@ -236,4 +236,38 @@ ScrollbarThemeOverlay& ScrollbarThemeOverlay::mobileTheme() {
   return *theme;
 }
 
+bool ScrollbarThemeOverlay::usesNinePatchThumbResource() const {
+  WebThemeEngine* engine = Platform::current()->themeEngine();
+  if (!engine)
+    return false;
+
+  // Thumb orientation doesn't matter here.
+  return engine->supportsNinePatch(WebThemeEngine::PartScrollbarVerticalThumb);
+}
+
+IntSize ScrollbarThemeOverlay::ninePatchThumbCanvasSize(
+    const ScrollbarThemeClient& scrollbar) const {
+  DCHECK(usesNinePatchThumbResource());
+
+  WebThemeEngine::Part part =
+      scrollbar.orientation() == VerticalScrollbar
+          ? WebThemeEngine::PartScrollbarVerticalThumb
+          : WebThemeEngine::PartScrollbarHorizontalThumb;
+
+  DCHECK(Platform::current()->themeEngine());
+  return Platform::current()->themeEngine()->ninePatchCanvasSize(part);
+}
+
+IntRect ScrollbarThemeOverlay::ninePatchThumbAperture(
+    const ScrollbarThemeClient& scrollbar) const {
+  DCHECK(usesNinePatchThumbResource());
+
+  WebThemeEngine::Part part = WebThemeEngine::PartScrollbarHorizontalThumb;
+  if (scrollbar.orientation() == VerticalScrollbar)
+    part = WebThemeEngine::PartScrollbarVerticalThumb;
+
+  DCHECK(Platform::current()->themeEngine());
+  return Platform::current()->themeEngine()->ninePatchAperture(part);
+}
+
 }  // namespace blink

@@ -1,0 +1,173 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "cc/layers/painted_overlay_scrollbar_layer.h"
+
+#include <algorithm>
+
+#include "base/auto_reset.h"
+#include "cc/base/math_util.h"
+#include "cc/layers/painted_overlay_scrollbar_layer_impl.h"
+#include "cc/resources/ui_resource_bitmap.h"
+#include "cc/resources/ui_resource_manager.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_impl.h"
+#include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSize.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/skia_util.h"
+
+namespace cc {
+
+std::unique_ptr<LayerImpl> PaintedOverlayScrollbarLayer::CreateLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return PaintedOverlayScrollbarLayerImpl::Create(
+      tree_impl, id(), scrollbar_->Orientation(),
+      scrollbar_->IsLeftSideVerticalScrollbar());
+}
+
+scoped_refptr<PaintedOverlayScrollbarLayer>
+PaintedOverlayScrollbarLayer::Create(std::unique_ptr<Scrollbar> scrollbar,
+                                     int scroll_layer_id) {
+  return make_scoped_refptr(
+      new PaintedOverlayScrollbarLayer(std::move(scrollbar), scroll_layer_id));
+}
+
+PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
+    std::unique_ptr<Scrollbar> scrollbar,
+    int scroll_layer_id)
+    : scrollbar_(std::move(scrollbar)),
+      scroll_layer_id_(scroll_layer_id),
+      thumb_thickness_(scrollbar_->ThumbThickness()),
+      thumb_length_(scrollbar_->ThumbLength()) {
+  DCHECK(scrollbar_->UsesNinePatchThumbResource());
+}
+
+PaintedOverlayScrollbarLayer::~PaintedOverlayScrollbarLayer() {}
+
+int PaintedOverlayScrollbarLayer::ScrollLayerId() const {
+  return scroll_layer_id_;
+}
+
+void PaintedOverlayScrollbarLayer::SetScrollLayer(int layer_id) {
+  if (layer_id == scroll_layer_id_)
+    return;
+
+  scroll_layer_id_ = layer_id;
+  SetNeedsFullTreeSync();
+}
+
+bool PaintedOverlayScrollbarLayer::OpacityCanAnimateOnImplThread() const {
+  return scrollbar_->IsOverlay();
+}
+
+bool PaintedOverlayScrollbarLayer::AlwaysUseActiveTreeOpacity() const {
+  return true;
+}
+
+ScrollbarOrientation PaintedOverlayScrollbarLayer::orientation() const {
+  return scrollbar_->Orientation();
+}
+
+void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
+  Layer::PushPropertiesTo(layer);
+
+  PaintedOverlayScrollbarLayerImpl* scrollbar_layer =
+      static_cast<PaintedOverlayScrollbarLayerImpl*>(layer);
+
+  scrollbar_layer->SetScrollLayerId(scroll_layer_id_);
+
+  scrollbar_layer->SetThumbThickness(thumb_thickness_);
+  scrollbar_layer->SetThumbLength(thumb_length_);
+  if (orientation() == HORIZONTAL) {
+    scrollbar_layer->SetTrackStart(track_rect_.x() - location_.x());
+    scrollbar_layer->SetTrackLength(track_rect_.width());
+  } else {
+    scrollbar_layer->SetTrackStart(track_rect_.y() - location_.y());
+    scrollbar_layer->SetTrackLength(track_rect_.height());
+  }
+
+  if (thumb_resource_.get()) {
+    scrollbar_layer->SetImageBounds(
+        layer_tree_host()->GetUIResourceManager()->GetUIResourceSize(
+            thumb_resource_->id()));
+    scrollbar_layer->SetAperture(aperture_);
+    scrollbar_layer->set_thumb_ui_resource_id(thumb_resource_->id());
+  } else {
+    scrollbar_layer->SetImageBounds(gfx::Size());
+    scrollbar_layer->SetAperture(gfx::Rect());
+    scrollbar_layer->set_thumb_ui_resource_id(0);
+  }
+}
+
+ScrollbarLayerInterface* PaintedOverlayScrollbarLayer::ToScrollbarLayer() {
+  return this;
+}
+
+void PaintedOverlayScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
+  // When the LTH is set to null or has changed, then this layer should remove
+  // all of its associated resources.
+  if (host != layer_tree_host())
+    thumb_resource_ = nullptr;
+
+  Layer::SetLayerTreeHost(host);
+}
+
+gfx::Rect PaintedOverlayScrollbarLayer::OriginThumbRectForPainting() const {
+  return gfx::Rect(gfx::Point(), scrollbar_->NinePatchThumbCanvasSize());
+}
+
+bool PaintedOverlayScrollbarLayer::Update() {
+  bool updated = false;
+  updated |= Layer::Update();
+
+  DCHECK(scrollbar_->HasThumb());
+  DCHECK(scrollbar_->IsOverlay());
+  DCHECK(scrollbar_->UsesNinePatchThumbResource());
+  updated |= UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
+  updated |= UpdateProperty(scrollbar_->Location(), &location_);
+  updated |= UpdateProperty(scrollbar_->ThumbThickness(), &thumb_thickness_);
+  updated |= UpdateProperty(scrollbar_->ThumbLength(), &thumb_length_);
+  updated |= PaintThumbIfNeeded();
+
+  return updated;
+}
+
+bool PaintedOverlayScrollbarLayer::PaintThumbIfNeeded() {
+  if (!scrollbar_->NeedsPaintPart(THUMB))
+    return false;
+
+  gfx::Rect paint_rect = OriginThumbRectForPainting();
+  aperture_ = scrollbar_->NinePatchThumbAperture();
+
+  DCHECK(!paint_rect.size().IsEmpty());
+  DCHECK(paint_rect.origin().IsOrigin());
+
+  SkBitmap skbitmap;
+  skbitmap.allocN32Pixels(paint_rect.width(), paint_rect.height());
+  SkCanvas skcanvas(skbitmap);
+
+  SkRect content_skrect = RectToSkRect(paint_rect);
+  SkPaint paint;
+  paint.setAntiAlias(false);
+  paint.setBlendMode(SkBlendMode::kClear);
+  skcanvas.drawRect(content_skrect, paint);
+  skcanvas.clipRect(content_skrect);
+
+  scrollbar_->PaintPart(&skcanvas, THUMB, paint_rect);
+  // Make sure that the pixels are no longer mutable to unavoid unnecessary
+  // allocation and copying.
+  skbitmap.setImmutable();
+
+  thumb_resource_ = ScopedUIResource::Create(
+      layer_tree_host()->GetUIResourceManager(), UIResourceBitmap(skbitmap));
+
+  SetNeedsPushProperties();
+
+  return true;
+}
+
+}  // namespace cc

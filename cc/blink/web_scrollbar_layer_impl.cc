@@ -10,10 +10,12 @@
 #include "cc/blink/scrollbar_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 
+using cc::PaintedOverlayScrollbarLayer;
 using cc::PaintedScrollbarLayer;
 using cc::SolidColorScrollbarLayer;
 
@@ -34,6 +36,17 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     blink::WebScrollbarThemePainter painter,
     std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry)
     : layer_(new WebLayerImpl(PaintedScrollbarLayer::Create(
+          base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
+                                          painter,
+                                          std::move(geometry)),
+          0))) {}
+
+WebScrollbarLayerImpl::WebScrollbarLayerImpl(
+    std::unique_ptr<blink::WebScrollbar> scrollbar,
+    blink::WebScrollbarThemePainter painter,
+    std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry,
+    bool)
+    : layer_(new WebLayerImpl(PaintedOverlayScrollbarLayer::Create(
           base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
                                           painter,
                                           std::move(geometry)),

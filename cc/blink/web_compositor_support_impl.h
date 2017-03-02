@@ -31,6 +31,10 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
       std::unique_ptr<blink::WebScrollbar> scrollbar,
       blink::WebScrollbarThemePainter painter,
       std::unique_ptr<blink::WebScrollbarThemeGeometry>) override;
+  std::unique_ptr<blink::WebScrollbarLayer> createOverlayScrollbarLayer(
+      std::unique_ptr<blink::WebScrollbar> scrollbar,
+      blink::WebScrollbarThemePainter painter,
+      std::unique_ptr<blink::WebScrollbarThemeGeometry>) override;
   std::unique_ptr<blink::WebScrollbarLayer> createSolidColorScrollbarLayer(
       blink::WebScrollbar::Orientation orientation,
       int thumb_thickness,

@@ -27,6 +27,7 @@
 #define WebScrollbarThemeGeometry_h
 
 #include "WebRect.h"
+#include "WebSize.h"
 
 namespace blink {
 
@@ -44,6 +45,8 @@ class BLINK_PLATFORM_EXPORT WebScrollbarThemeGeometry {
   virtual WebRect backButtonEndRect(WebScrollbar*) = 0;
   virtual WebRect forwardButtonStartRect(WebScrollbar*) = 0;
   virtual WebRect forwardButtonEndRect(WebScrollbar*) = 0;
+  virtual WebSize ninePatchThumbCanvasSize(WebScrollbar*) = 0;
+  virtual WebRect ninePatchThumbAperture(WebScrollbar*) = 0;
 };
 
 }  // namespace blink

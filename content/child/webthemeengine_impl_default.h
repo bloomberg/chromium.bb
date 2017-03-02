@@ -23,6 +23,9 @@ class WebThemeEngineImpl : public blink::WebThemeEngine {
              const blink::WebThemeEngine::ExtraParams* extra_params) override;
   void getOverlayScrollbarStyle(
       blink::WebThemeEngine::ScrollbarStyle*) override;
+  bool supportsNinePatch(Part part) const override;
+  blink::WebSize ninePatchCanvasSize(Part part) const override;
+  blink::WebRect ninePatchAperture(Part part) const override;
 #if defined(OS_WIN)
   // Caches the scrollbar metrics. These are retrieved in the browser and passed
   // to the renderer in RendererPreferences because the required Windows system

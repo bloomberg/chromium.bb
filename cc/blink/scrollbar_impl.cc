@@ -73,6 +73,18 @@ bool ScrollbarImpl::NeedsPaintPart(cc::ScrollbarPart part) const {
   return painter_.trackNeedsRepaint();
 }
 
+bool ScrollbarImpl::UsesNinePatchThumbResource() const {
+  return painter_.usesNinePatchThumbResource();
+}
+
+gfx::Size ScrollbarImpl::NinePatchThumbCanvasSize() const {
+  return geometry_->ninePatchThumbCanvasSize(scrollbar_.get());
+}
+
+gfx::Rect ScrollbarImpl::NinePatchThumbAperture() const {
+  return geometry_->ninePatchThumbAperture(scrollbar_.get());
+}
+
 void ScrollbarImpl::PaintPart(cc::PaintCanvas* canvas,
                               cc::ScrollbarPart part,
                               const gfx::Rect& content_rect) {

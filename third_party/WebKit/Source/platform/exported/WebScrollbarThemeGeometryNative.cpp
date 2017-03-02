@@ -82,4 +82,18 @@ WebRect WebScrollbarThemeGeometryNative::forwardButtonEndRect(
                                    ForwardButtonEndPart, false);
 }
 
+WebSize WebScrollbarThemeGeometryNative::ninePatchThumbCanvasSize(
+    WebScrollbar* scrollbar) {
+  DCHECK(m_theme.usesNinePatchThumbResource());
+  return m_theme.ninePatchThumbCanvasSize(
+      WebScrollbarThemeClientImpl(*scrollbar));
+}
+
+WebRect WebScrollbarThemeGeometryNative::ninePatchThumbAperture(
+    WebScrollbar* scrollbar) {
+  DCHECK(m_theme.usesNinePatchThumbResource());
+  return m_theme.ninePatchThumbAperture(
+      WebScrollbarThemeClientImpl(*scrollbar));
+}
+
 }  // namespace blink

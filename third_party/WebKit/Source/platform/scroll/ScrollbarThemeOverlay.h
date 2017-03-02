@@ -81,6 +81,10 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
   ScrollbarPart hitTest(const ScrollbarThemeClient&, const IntPoint&) override;
 
+  bool usesNinePatchThumbResource() const override;
+  IntSize ninePatchThumbCanvasSize(const ScrollbarThemeClient&) const override;
+  IntRect ninePatchThumbAperture(const ScrollbarThemeClient&) const override;
+
   static ScrollbarThemeOverlay& mobileTheme();
 
  private:

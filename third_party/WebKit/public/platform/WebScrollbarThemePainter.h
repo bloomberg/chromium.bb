@@ -28,13 +28,14 @@
 
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
 
 namespace blink {
 
 class ScrollbarTheme;
 class Scrollbar;
 class WebScrollbar;
-struct WebRect;
 
 class WebScrollbarThemePainter {
  public:
@@ -70,6 +71,8 @@ class WebScrollbarThemePainter {
 
   BLINK_PLATFORM_EXPORT bool trackNeedsRepaint() const;
   BLINK_PLATFORM_EXPORT bool thumbNeedsRepaint() const;
+
+  BLINK_PLATFORM_EXPORT bool usesNinePatchThumbResource() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebScrollbarThemePainter(ScrollbarTheme&,

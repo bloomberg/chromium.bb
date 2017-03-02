@@ -345,9 +345,16 @@ static std::unique_ptr<WebScrollbarLayer> createScrollbarLayer(
   std::unique_ptr<WebScrollbarThemeGeometry> geometry(
       WebScrollbarThemeGeometryNative::create(theme));
 
-  std::unique_ptr<WebScrollbarLayer> scrollbarLayer =
-      Platform::current()->compositorSupport()->createScrollbarLayer(
-          WebScrollbarImpl::create(&scrollbar), painter, std::move(geometry));
+  std::unique_ptr<WebScrollbarLayer> scrollbarLayer;
+  if (theme.usesOverlayScrollbars() && theme.usesNinePatchThumbResource()) {
+    scrollbarLayer =
+        Platform::current()->compositorSupport()->createOverlayScrollbarLayer(
+            WebScrollbarImpl::create(&scrollbar), painter, std::move(geometry));
+  } else {
+    scrollbarLayer =
+        Platform::current()->compositorSupport()->createScrollbarLayer(
+            WebScrollbarImpl::create(&scrollbar), painter, std::move(geometry));
+  }
   GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
   return scrollbarLayer;
 }

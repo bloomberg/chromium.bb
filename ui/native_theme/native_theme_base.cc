@@ -251,6 +251,20 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
   canvas->restore();
 }
 
+bool NativeThemeBase::SupportsNinePatch(Part part) const {
+  return false;
+}
+
+gfx::Size NativeThemeBase::GetNinePatchCanvasSize(Part part) const {
+  NOTREACHED() << "NativeThemeBase doesn't support nine-patch resources.";
+  return gfx::Size();
+}
+
+gfx::Rect NativeThemeBase::GetNinePatchAperture(Part part) const {
+  NOTREACHED() << "NativeThemeBase doesn't support nine-patch resources.";
+  return gfx::Rect();
+}
+
 NativeThemeBase::NativeThemeBase()
     : scrollbar_width_(kDefaultScrollbarWidth),
       scrollbar_button_length_(kDefaultScrollbarButtonLength) {

@@ -91,4 +91,16 @@ void FakeScrollbar::PaintPart(PaintCanvas* canvas,
   canvas->drawRect(rect, flags);
 }
 
+bool FakeScrollbar::UsesNinePatchThumbResource() const {
+  return false;
+}
+
+gfx::Size FakeScrollbar::NinePatchThumbCanvasSize() const {
+  return gfx::Size();
+}
+
+gfx::Rect FakeScrollbar::NinePatchThumbAperture() const {
+  return gfx::Rect();
+}
+
 }  // namespace cc

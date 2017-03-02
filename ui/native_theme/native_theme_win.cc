@@ -660,6 +660,22 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   return GetAuraColor(color_id, this);
 }
 
+bool NativeThemeWin::SupportsNinePatch(Part part) const {
+  // The only nine-patch resources currently supported (overlay scrollbar) are
+  // painted by NativeThemeAura on Windows.
+  return false;
+}
+
+gfx::Size NativeThemeWin::GetNinePatchCanvasSize(Part part) const {
+  NOTREACHED() << "NativeThemeWin doesn't support nine-patch resources.";
+  return gfx::Size();
+}
+
+gfx::Rect NativeThemeWin::GetNinePatchAperture(Part part) const {
+  NOTREACHED() << "NativeThemeWin doesn't support nine-patch resources.";
+  return gfx::Rect();
+}
+
 void NativeThemeWin::PaintIndirect(cc::PaintCanvas* destination_canvas,
                                    Part part,
                                    State state,

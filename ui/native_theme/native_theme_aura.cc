@@ -35,6 +35,12 @@ namespace {
 constexpr int kOverlayScrollbarStrokeWidth = 1;
 constexpr int kOverlayScrollbarMinimumLength = 12;
 
+// 2 pixel border with 1 pixel center patch. The border is 2 pixels despite the
+// stroke width being 1 so that the inner pixel can match the center tile
+// color. This prevents color interpolation between the patches.
+constexpr int kOverlayScrollbarBorderPatchWidth = 2;
+constexpr int kOverlayScrollbarCenterPatchSize = 1;
+
 const SkColor kTrackColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 
 }  // namespace
@@ -315,6 +321,29 @@ gfx::Size NativeThemeAura::GetPartSize(Part part,
   }
 
   return NativeThemeBase::GetPartSize(part, state, extra);
+}
+
+bool NativeThemeAura::SupportsNinePatch(Part part) const {
+  if (!IsOverlayScrollbarEnabled())
+    return false;
+
+  return part == kScrollbarHorizontalThumb || part == kScrollbarVerticalThumb;
+}
+
+gfx::Size NativeThemeAura::GetNinePatchCanvasSize(Part part) const {
+  DCHECK(SupportsNinePatch(part));
+
+  return gfx::Size(
+      kOverlayScrollbarBorderPatchWidth * 2 + kOverlayScrollbarCenterPatchSize,
+      kOverlayScrollbarBorderPatchWidth * 2 + kOverlayScrollbarCenterPatchSize);
+}
+
+gfx::Rect NativeThemeAura::GetNinePatchAperture(Part part) const {
+  DCHECK(SupportsNinePatch(part));
+
+  return gfx::Rect(
+      kOverlayScrollbarBorderPatchWidth, kOverlayScrollbarBorderPatchWidth,
+      kOverlayScrollbarCenterPatchSize, kOverlayScrollbarCenterPatchSize);
 }
 
 }  // namespace ui

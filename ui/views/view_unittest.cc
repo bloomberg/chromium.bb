@@ -4565,6 +4565,14 @@ class TestNativeTheme : public ui::NativeTheme {
              const gfx::Rect& rect,
              const ExtraParams& extra) const override {}
 
+  bool SupportsNinePatch(Part part) const override { return false; }
+  gfx::Size GetNinePatchCanvasSize(Part part) const override {
+    return gfx::Size();
+  }
+  gfx::Rect GetNinePatchAperture(Part part) const override {
+    return gfx::Rect();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestNativeTheme);
 };

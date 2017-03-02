@@ -37,6 +37,9 @@ class FakeScrollbar : public Scrollbar {
   void PaintPart(PaintCanvas* canvas,
                  ScrollbarPart part,
                  const gfx::Rect& content_rect) override;
+  bool UsesNinePatchThumbResource() const override;
+  gfx::Size NinePatchThumbCanvasSize() const override;
+  gfx::Rect NinePatchThumbAperture() const override;
 
   void set_location(const gfx::Point& location) { location_ = location; }
   void set_track_rect(const gfx::Rect& track_rect) { track_rect_ = track_rect; }

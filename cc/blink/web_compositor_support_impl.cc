@@ -71,6 +71,15 @@ WebCompositorSupportImpl::createScrollbarLayer(
 }
 
 std::unique_ptr<WebScrollbarLayer>
+WebCompositorSupportImpl::createOverlayScrollbarLayer(
+    std::unique_ptr<WebScrollbar> scrollbar,
+    WebScrollbarThemePainter painter,
+    std::unique_ptr<WebScrollbarThemeGeometry> geometry) {
+  return base::MakeUnique<WebScrollbarLayerImpl>(std::move(scrollbar), painter,
+                                                 std::move(geometry), true);
+}
+
+std::unique_ptr<WebScrollbarLayer>
 WebCompositorSupportImpl::createSolidColorScrollbarLayer(
     WebScrollbar::Orientation orientation,
     int thumb_thickness,

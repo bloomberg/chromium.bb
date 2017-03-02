@@ -109,6 +109,10 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
              const ExtraParams& extra) const override;
   SkColor GetSystemColor(ColorId color_id) const override;
 
+  bool SupportsNinePatch(Part part) const override;
+  gfx::Size GetNinePatchCanvasSize(Part part) const override;
+  gfx::Rect GetNinePatchAperture(Part part) const override;
+
  protected:
   friend class NativeTheme;
   // Gets our singleton instance.

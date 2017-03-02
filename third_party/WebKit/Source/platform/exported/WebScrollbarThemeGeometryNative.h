@@ -55,6 +55,8 @@ class PLATFORM_EXPORT WebScrollbarThemeGeometryNative
   WebRect backButtonEndRect(WebScrollbar*) override;
   WebRect forwardButtonStartRect(WebScrollbar*) override;
   WebRect forwardButtonEndRect(WebScrollbar*) override;
+  WebSize ninePatchThumbCanvasSize(WebScrollbar*) override;
+  WebRect ninePatchThumbAperture(WebScrollbar*) override;
 
  private:
   explicit WebScrollbarThemeGeometryNative(ScrollbarTheme&);

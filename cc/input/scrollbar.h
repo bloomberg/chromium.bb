@@ -35,6 +35,9 @@ class Scrollbar {
   virtual void PaintPart(PaintCanvas* canvas,
                          ScrollbarPart part,
                          const gfx::Rect& content_rect) = 0;
+  virtual bool UsesNinePatchThumbResource() const = 0;
+  virtual gfx::Size NinePatchThumbCanvasSize() const = 0;
+  virtual gfx::Rect NinePatchThumbAperture() const = 0;
 };
 
 }  // namespace cc

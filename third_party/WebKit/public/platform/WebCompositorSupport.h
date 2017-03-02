@@ -70,6 +70,11 @@ class WebCompositorSupport {
       WebScrollbarThemePainter,
       std::unique_ptr<WebScrollbarThemeGeometry>) = 0;
 
+  virtual std::unique_ptr<WebScrollbarLayer> createOverlayScrollbarLayer(
+      std::unique_ptr<WebScrollbar>,
+      WebScrollbarThemePainter,
+      std::unique_ptr<WebScrollbarThemeGeometry>) = 0;
+
   virtual std::unique_ptr<WebScrollbarLayer> createSolidColorScrollbarLayer(
       WebScrollbar::Orientation,
       int thumbThickness,

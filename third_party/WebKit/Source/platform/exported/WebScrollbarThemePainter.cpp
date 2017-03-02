@@ -167,4 +167,8 @@ bool WebScrollbarThemePainter::thumbNeedsRepaint() const {
   return m_scrollbar->thumbNeedsRepaint();
 }
 
+bool WebScrollbarThemePainter::usesNinePatchThumbResource() const {
+  return m_theme->usesNinePatchThumbResource();
+}
+
 }  // namespace blink

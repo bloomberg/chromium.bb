@@ -41,6 +41,10 @@ class ScrollbarImpl : public cc::Scrollbar {
                  cc::ScrollbarPart part,
                  const gfx::Rect& content_rect) override;
 
+  bool UsesNinePatchThumbResource() const override;
+  gfx::Size NinePatchThumbCanvasSize() const override;
+  gfx::Rect NinePatchThumbAperture() const override;
+
  private:
   std::unique_ptr<blink::WebScrollbar> scrollbar_;
   blink::WebScrollbarThemePainter painter_;
