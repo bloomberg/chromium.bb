@@ -57,13 +57,18 @@ PrintersManager* PrintersManagerFactory::BuildServiceInstanceFor(
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
-  // TODO(skau): --disable-sync and --enable-native-cups are mutually exclusive
-  // until crbug.com/688533 is resolved.
-  DCHECK(sync_service);
+  // TODO(skym): After crbug.com/688533 is fixed, this should not use
+  // CreateInMemoryStoreForTest, but rather a ModelTypeStore creation mechanism
+  // that's agnostic to the existence of sync infrastructure.
+  const syncer::ModelTypeStoreFactory& store_factory =
+      sync_service ? sync_service->GetModelTypeStoreFactory(syncer::PRINTERS)
+                   : base::BindRepeating(
+                         syncer::ModelTypeStore::CreateInMemoryStoreForTest,
+                         syncer::PRINTERS);
 
   std::unique_ptr<PrintersSyncBridge> sync_bridge =
       base::MakeUnique<PrintersSyncBridge>(
-          sync_service->GetModelTypeStoreFactory(syncer::PRINTERS),
+          store_factory,
           base::BindRepeating(
               base::IgnoreResult(&base::debug::DumpWithoutCrashing)));
 
