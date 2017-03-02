@@ -192,6 +192,7 @@ source_set("unittests") {
   sources = [
     "app_launch_unittest.cc",
     "bridge/wm_shell_mus_test_api.h",
+    "screen_mus_unittest.cc",
     "test/ash_test_impl_mus.cc",
     "test/ash_test_impl_mus.h",
     "test/wm_test_base.cc",

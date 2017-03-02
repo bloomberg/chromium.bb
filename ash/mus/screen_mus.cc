@@ -4,7 +4,10 @@
 
 #include "ash/mus/screen_mus.h"
 
+#include "ash/common/wm/root_window_finder.h"
+#include "ash/common/wm_window.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
@@ -47,6 +50,23 @@ display::Display ScreenMus::GetDisplayNearestWindow(
 
 gfx::Point ScreenMus::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
+}
+
+bool ScreenMus::IsWindowUnderCursor(gfx::NativeWindow window) {
+  return GetWindowAtScreenPoint(GetCursorScreenPoint()) == window;
+}
+
+gfx::NativeWindow ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
+  aura::Window* root_window =
+      WmWindow::GetAuraWindow(wm::GetRootWindowAt(point));
+  aura::client::ScreenPositionClient* position_client =
+      aura::client::GetScreenPositionClient(root_window);
+
+  gfx::Point local_point = point;
+  if (position_client)
+    position_client->ConvertPointFromScreen(root_window, &local_point);
+
+  return root_window->GetTopWindowContainingPoint(local_point);
 }
 
 }  // namespace ash
