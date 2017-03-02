@@ -677,8 +677,15 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
   // last one since we iterate over them in order.
 
   Timing timing = transitionData.convertToTiming(transitionIndex);
-  if (timing.startDelay + timing.iterationDuration <= 0)
+  if (timing.startDelay + timing.iterationDuration <= 0) {
+    // We may have started a transition in a prior CSSTransitionData update,
+    // this CSSTransitionData update needs to override them.
+    // TODO(alancutter): Just iterate over the CSSTransitionDatas in reverse and
+    // skip any properties that have already been visited so we don't need to
+    // "undo" work like this.
+    update.unstartTransition(id);
     return;
+  }
 
   AnimatableValue* reversingAdjustedStartValue = from.get();
   double reversingShorteningFactor = 1;

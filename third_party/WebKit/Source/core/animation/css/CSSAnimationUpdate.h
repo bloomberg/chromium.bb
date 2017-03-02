@@ -177,6 +177,7 @@ class CSSAnimationUpdate final {
     newTransition.effect = &effect;
     m_newTransitions.set(id, newTransition);
   }
+  void unstartTransition(CSSPropertyID id) { m_newTransitions.remove(id); }
   bool isCancelledTransition(CSSPropertyID id) const {
     return m_cancelledTransitions.contains(id);
   }
