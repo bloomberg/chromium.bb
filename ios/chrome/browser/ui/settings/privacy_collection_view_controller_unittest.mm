@@ -100,10 +100,8 @@ TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
       handoffSubtitle, sectionIndex, 0);
 
   ++sectionIndex;
-  NSInteger expectedRows = 1;
-#if defined(GOOGLE_CHROME_BUILD)
-  expectedRows++;
-#endif
+  NSInteger expectedRows = 2;
+
   if ([TouchToSearchPermissionsMediator isTouchToSearchAvailableOnDevice])
     expectedRows++;
   if (web::IsDoNotTrackSupported())
@@ -130,11 +128,11 @@ TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
         l10n_util::GetNSString(IDS_IOS_CONTEXTUAL_SEARCH_TITLE),
         contextualSearchSubtitle, sectionIndex, row++);
   }
-#if defined(GOOGLE_CHROME_BUILD)
+
   CheckDetailItemTextWithIds(IDS_IOS_OPTIONS_SEND_USAGE_DATA,
                              IDS_IOS_OPTIONS_DATA_USAGE_NEVER, sectionIndex,
                              row++);
-#endif
+
   if (web::IsDoNotTrackSupported()) {
     NSString* doNotTrackSubtitle =
         chrome_browser_state_->GetPrefs()->GetBoolean(prefs::kEnableDoNotTrack)

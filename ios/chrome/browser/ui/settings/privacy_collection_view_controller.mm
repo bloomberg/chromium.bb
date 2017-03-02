@@ -187,10 +187,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         toSectionWithIdentifier:SectionIdentifierWebServices];
   }
 
-#if defined(GOOGLE_CHROME_BUILD)
   [model addItem:[self sendUsageDetailItem]
       toSectionWithIdentifier:SectionIdentifierWebServices];
-#endif
 
   if (web::IsDoNotTrackSupported()) {
     [model addItem:[self doNotTrackDetailItem]
