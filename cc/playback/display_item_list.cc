@@ -118,12 +118,10 @@ void DisplayItemList::Finalize() {
       << inputs_.visual_rects.size();
   rtree_.Build(inputs_.visual_rects);
 
-  // TODO(wkorman): Restore the below, potentially with a switch to allow
-  // clearing visual rects except for Blimp engine. http://crbug.com/633750
-  // if (!retain_visual_rects_)
-  //   // This clears both the vector and the vector's capacity, since
-  //   // visual_rects won't be used anymore.
-  //   std::vector<gfx::Rect>().swap(inputs_.visual_rects);
+  if (!retain_visual_rects_)
+    // This clears both the vector and the vector's capacity, since
+    // visual_rects won't be used anymore.
+    std::vector<gfx::Rect>().swap(inputs_.visual_rects);
 }
 
 bool DisplayItemList::IsSuitableForGpuRasterization() const {
@@ -142,8 +140,6 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
   size_t memory_usage = sizeof(*this);
 
   size_t external_memory_usage = 0;
-  // Warning: this double-counts SkPicture data if use_cached_picture is
-  // also true.
   for (const auto& item : inputs_.items) {
     size_t bytes = 0;
     switch (item.type()) {
@@ -246,7 +242,7 @@ void DisplayItemList::EmitTraceSnapshot() const {
 }
 
 void DisplayItemList::GenerateDiscardableImagesMetadata() {
-  // This should be only called once, and only after CreateAndCacheSkPicture.
+  // This should be only called once.
   DCHECK(image_map_.empty());
 
   gfx::Rect bounds = rtree_.GetBounds();
