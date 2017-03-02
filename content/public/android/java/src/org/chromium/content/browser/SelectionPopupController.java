@@ -798,7 +798,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             case SelectionEventType.INSERTION_HANDLE_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
                 if (!isScrollInProgress && isPastePopupShowing()) {
-                    showPastePopup(xAnchor, yAnchor);
+                    mWebContents.showContextMenuAtPoint(xAnchor, yAnchor);
                 } else {
                     hidePastePopup();
                 }
@@ -808,7 +808,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 if (mWasPastePopupShowingOnInsertionDragStart) {
                     hidePastePopup();
                 } else {
-                    showPastePopup(xAnchor, yAnchor);
+                    mWebContents.showContextMenuAtPoint(xAnchor, yAnchor);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
@@ -826,7 +826,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
                 if (mWasPastePopupShowingOnInsertionDragStart) {
-                    showPastePopup(xAnchor, yAnchor);
+                    mWebContents.showContextMenuAtPoint(xAnchor, yAnchor);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
