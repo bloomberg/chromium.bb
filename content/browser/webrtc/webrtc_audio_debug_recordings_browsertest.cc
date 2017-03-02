@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   int64_t file_size = 0;
   EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
   EXPECT_GT(file_size, 0);
-  EXPECT_TRUE(base::DeleteFile(file_path, false));
+  base::DeleteFile(file_path, false);
 
   // Verify that the expected input audio file exists and contains some data.
   file_path = GetExpectedInputAudioFileName(base_file_path, render_process_id);
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   file_size = 0;
   EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
   EXPECT_GT(file_size, kWaveHeaderSizeBytes);
-  EXPECT_TRUE(base::DeleteFile(file_path, false));
+  base::DeleteFile(file_path, false);
 
   // Verify that the expected output audio files exists and contains some data.
   // Two files are expected, one for each peer in the call.
@@ -172,12 +172,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, kWaveHeaderSizeBytes);
-    EXPECT_TRUE(base::DeleteFile(file_path, false));
+    base::DeleteFile(file_path, false);
   }
 
   // Verify that no other files exist and remove temp dir.
   EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
-  EXPECT_TRUE(base::DeleteFile(temp_dir_path, false));
+  base::DeleteFile(temp_dir_path, false);
 
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
