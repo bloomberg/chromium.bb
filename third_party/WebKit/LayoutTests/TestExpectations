@@ -1316,11 +1316,6 @@ crbug.com/658305 css3/filters/effect-reference-zoom.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-zoom-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/filter-effect-removed.html [ Failure Pass ]
 
-crbug.com/693941 editing/inserting/insert-text-at-tabspan-003.html [ NeedsRebaseline ]
-crbug.com/693941 editing/pasteboard/pasting-tabs.html [ NeedsRebaseline ]
-crbug.com/693941 editing/pasteboard/paste-text-at-tabspan-003.html [ NeedsRebaseline ]
-crbug.com/693941 editing/inserting/insert-text-at-tabspan-001.html [ NeedsRebaseline ]
-
 crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
