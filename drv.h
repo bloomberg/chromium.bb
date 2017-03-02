@@ -47,8 +47,13 @@ extern "C" {
 #define DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED	fourcc_code('9', '9', '9', '8')
 #define DRM_FORMAT_FLEX_YCbCr_420_888		fourcc_code('9', '9', '9', '9')
 
+#define BO_COMMON_USE_MASK BO_USE_LINEAR | BO_USE_RENDERING | \
+			   BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN | \
+			   BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY | \
+			   BO_USE_TEXTURE
 struct driver;
 struct bo;
+struct combination;
 
 union bo_handle {
 	void *ptr;
@@ -81,9 +86,8 @@ drv_get_fd(struct driver *drv);
 const char *
 drv_get_name(struct driver *drv);
 
-int
-drv_is_combination_supported(struct driver *drv, uint32_t format,
-			     uint64_t usage, uint64_t modifier);
+struct combination *
+drv_get_combination(struct driver *drv, uint32_t format, uint64_t usage);
 
 struct bo *
 drv_bo_new(struct driver *drv, uint32_t width, uint32_t height,

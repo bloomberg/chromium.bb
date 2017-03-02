@@ -17,45 +17,14 @@
 #include "helpers.h"
 #include "util.h"
 
-static struct supported_combination combos[19] = {
-	{DRM_FORMAT_ARGB1555, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_ABGR8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_ABGR8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_GR88, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_R8, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_RGB565, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_UYVY, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_UYVY, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_XBGR8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_XBGR8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_XRGB1555, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_YUYV, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_YUYV, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_YVU420, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_YVU420, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
+static const uint32_t tileable_formats[] = {
+	DRM_FORMAT_ARGB1555, DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
+	DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB1555,
+	DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY, DRM_FORMAT_YUYV
+};
+
+static const uint32_t linear_only_formats[] = {
+	DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_YVU420
 };
 
 struct i915_device
@@ -80,6 +49,100 @@ static int get_gen(int device_id)
 			return 3;
 
 	return 4;
+}
+
+static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
+{
+	uint32_t i;
+	struct combination *combo;
+
+	/*
+	 * Older hardware can't scanout Y-tiled formats. Newer devices can, and
+	 * report this functionality via format modifiers.
+	 */
+	for (i = 0; i < drv->backend->combos.size; i++) {
+		combo = &drv->backend->combos.data[i];
+		if (combo->format == item->format) {
+			if ((combo->metadata.tiling == I915_TILING_Y &&
+			    item->modifier == I915_FORMAT_MOD_Y_TILED) ||
+			    (combo->metadata.tiling == I915_TILING_X &&
+			    item->modifier == I915_FORMAT_MOD_X_TILED)) {
+				combo->metadata.modifier = item->modifier;
+				combo->usage |= item->usage;
+			} else if (combo->metadata.tiling != I915_TILING_Y) {
+				combo->usage |= item->usage;
+			}
+		}
+	}
+
+	return 0;
+}
+
+static int i915_add_combinations(struct driver *drv)
+{
+	int ret;
+	uint32_t i, num_items;
+	struct kms_item *items;
+	struct format_metadata metadata;
+	uint64_t flags = BO_COMMON_USE_MASK;
+
+	metadata.tiling = I915_TILING_NONE;
+	metadata.priority = 1;
+	metadata.modifier = DRM_FORMAT_MOD_NONE;
+
+	ret = drv_add_combinations(drv, linear_only_formats,
+				   ARRAY_SIZE(linear_only_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	ret = drv_add_combinations(drv, tileable_formats,
+				   ARRAY_SIZE(tileable_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+
+	flags &= ~BO_USE_SW_WRITE_OFTEN;
+	flags &= ~BO_USE_SW_READ_OFTEN;
+	flags &= ~BO_USE_LINEAR;
+
+	metadata.tiling = I915_TILING_X;
+	metadata.priority = 2;
+
+	ret = drv_add_combinations(drv, tileable_formats,
+				   ARRAY_SIZE(tileable_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	metadata.tiling = I915_TILING_Y;
+	metadata.priority = 3;
+
+	ret = drv_add_combinations(drv, tileable_formats,
+				   ARRAY_SIZE(tileable_formats), &metadata,
+			           flags);
+	if (ret)
+		return ret;
+
+	items = drv_query_kms(drv, &num_items);
+	if (!items || !num_items)
+		return 0;
+
+	for (i = 0; i < num_items; i++) {
+		ret = i915_add_kms_item(drv, &items[i]);
+		if (ret) {
+			free(items);
+			return ret;
+		}
+	}
+
+	free(items);
+	return 0;
 }
 
 static void i915_align_dimensions(struct driver *drv, uint32_t tiling_mode,
@@ -165,8 +228,7 @@ static int i915_init(struct driver *drv)
 
 	drv->priv = i915_dev;
 
-	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
-	return drv_add_kms_flags(drv);
+	return i915_add_combinations(drv);
 }
 
 static void i915_close(struct driver *drv)

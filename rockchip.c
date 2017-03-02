@@ -7,6 +7,7 @@
 #ifdef DRV_ROCKCHIP
 
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -17,33 +18,9 @@
 #include "helpers.h"
 #include "util.h"
 
-static struct supported_combination combos[12] = {
-	{DRM_FORMAT_ABGR8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN |
-		BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_NV12, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_NV12, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_RGB565, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_XBGR8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN |
-		BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_XBGR8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_YVU420, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_YVU420, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
+static const uint32_t supported_formats[] = {
+	DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB565,
+	DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888, DRM_FORMAT_YVU420
 };
 
 static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
@@ -93,10 +70,74 @@ static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
 	return 0;
 }
 
+static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item)
+{
+	int ret;
+	uint32_t i;
+	uint64_t flags;
+	struct combination *combo;
+	struct format_metadata metadata;
+
+	for (i = 0; i < drv->backend->combos.size; i++) {
+		combo = &drv->backend->combos.data[i];
+		if (combo->format == item->format) {
+			if (item->modifier ==
+			    DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
+				flags = BO_USE_RENDERING | BO_USE_SCANOUT |
+					BO_USE_TEXTURE;
+				metadata.modifier = item->modifier;
+				metadata.tiling = 0;
+				metadata.priority = 2;
+
+				ret = drv_add_combination(drv, item[i].format,
+							  &metadata, flags);
+				if (ret)
+					return ret;
+			} else {
+				combo->usage |= item->usage;
+			}
+		}
+	}
+
+	return 0;
+}
+
 static int rockchip_init(struct driver *drv)
 {
-	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
-	return drv_add_kms_flags(drv);
+	int ret;
+	uint32_t i, num_items;
+	struct kms_item *items;
+	struct format_metadata metadata;
+
+	metadata.tiling = 0;
+	metadata.priority = 1;
+	metadata.modifier = DRM_FORMAT_MOD_NONE;
+
+	ret = drv_add_combinations(drv, supported_formats,
+				   ARRAY_SIZE(supported_formats), &metadata,
+				   BO_COMMON_USE_MASK);
+	if (ret)
+		return ret;
+
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+
+	items = drv_query_kms(drv, &num_items);
+	if (!items || !num_items)
+		return 0;
+
+	for (i = 0; i < num_items; i++) {
+		ret = rockchip_add_kms_item(drv, &items[i]);
+		if (ret) {
+			free(items);
+			return ret;
+		}
+	}
+
+	free(items);
+	return 0;
 }
 
 static bool has_modifier(const uint64_t *list, uint32_t count, uint64_t modifier)

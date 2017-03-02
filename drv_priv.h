@@ -13,7 +13,6 @@
 #include <sys/types.h>
 
 #include "drv.h"
-#include "list.h"
 
 struct bo
 {
@@ -49,15 +48,28 @@ struct map_info {
 	void *priv;
 };
 
-struct supported_combination {
+struct kms_item {
 	uint32_t format;
 	uint64_t modifier;
 	uint64_t usage;
 };
 
-struct combination_list_element {
-	struct supported_combination combination;
-	struct list_head link;
+struct format_metadata {
+	uint32_t priority;
+	uint32_t tiling;
+	uint64_t modifier;
+};
+
+struct combination {
+	uint32_t format;
+	struct format_metadata metadata;
+	uint64_t usage;
+};
+
+struct combinations {
+	struct combination *data;
+	uint32_t size;
+	uint32_t allocations;
 };
 
 struct backend
@@ -77,7 +89,7 @@ struct backend
 	void* (*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
 	int (*bo_unmap)(struct bo *bo, struct map_info *data);
 	uint32_t (*resolve_format)(uint32_t format);
-	struct list_head combinations;
+	struct combinations combos;
 };
 
 #endif

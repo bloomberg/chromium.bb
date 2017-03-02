@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -318,81 +319,77 @@ uint32_t drv_log_base2(uint32_t value)
 	return ret;
 }
 
-/* Inserts a combination into list -- caller should have lock on driver. */
-void drv_insert_supported_combination(struct driver *drv, uint32_t format,
-			              uint64_t usage, uint64_t modifier)
+int drv_add_combination(struct driver *drv, uint32_t format,
+			struct format_metadata *metadata, uint64_t usage)
 {
-	struct combination_list_element *elem;
+	struct combinations *combos = &drv->backend->combos;
+	if (combos->size >= combos->allocations) {
+		struct combination *new_data;
+		combos->allocations *= 2;
+		new_data = realloc(combos->data, combos->allocations
+				   * sizeof(*combos->data));
+		if (!new_data)
+			return -ENOMEM;
 
-	elem = calloc(1, sizeof(*elem));
-	elem->combination.format = format;
-	elem->combination.modifier = modifier;
-	elem->combination.usage = usage;
-	LIST_ADD(&elem->link, &drv->backend->combinations);
-}
-
-void drv_insert_combinations(struct driver *drv, struct supported_combination *combos,
-			     uint32_t size)
-{
-	unsigned int i;
-
-	pthread_mutex_lock(&drv->driver_lock);
-
-	for (i = 0; i < size; i++)
-		drv_insert_supported_combination(drv, combos[i].format,
-						 combos[i].usage,
-						 combos[i].modifier);
-
-	pthread_mutex_unlock(&drv->driver_lock);
-}
-
-void drv_modify_supported_combination(struct driver *drv, uint32_t format,
-				      uint64_t usage, uint64_t modifier)
-{
-	/*
-	 * Attempts to add the specified usage to an existing {format, modifier}
-	 * pair. If the pair is not present, a new combination is created.
-	 */
-	int found = 0;
-
-	pthread_mutex_lock(&drv->driver_lock);
-
-	list_for_each_entry(struct combination_list_element,
-			    elem, &drv->backend->combinations, link) {
-		if (elem->combination.format == format &&
-		    elem->combination.modifier == modifier) {
-			elem->combination.usage |= usage;
-			found = 1;
-		}
+		combos->data = new_data;
 	}
 
-
-	if (!found)
-		drv_insert_supported_combination(drv, format, usage, modifier);
-
-	pthread_mutex_unlock(&drv->driver_lock);
+	combos->data[combos->size].format = format;
+	combos->data[combos->size].metadata.priority = metadata->priority;
+	combos->data[combos->size].metadata.tiling = metadata->tiling;
+	combos->data[combos->size].metadata.modifier = metadata->modifier;
+	combos->data[combos->size].usage = usage;
+	combos->size++;
+	return 0;
 }
 
-int drv_add_kms_flags(struct driver *drv)
+int drv_add_combinations(struct driver *drv, const uint32_t *formats,
+			 uint32_t num_formats, struct format_metadata *metadata,
+			 uint64_t usage)
 {
 	int ret;
-	uint32_t i, j;
+	uint32_t i;
+	for (i = 0; i < num_formats; i++) {
+		ret = drv_add_combination(drv, formats[i], metadata, usage);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
+void drv_modify_combination(struct driver *drv, uint32_t format,
+			    struct format_metadata *metadata, uint64_t usage)
+{
+	uint32_t i;
+	struct combination *combo;
+	/* Attempts to add the specified usage to an existing combination. */
+	for (i = 0; i < drv->backend->combos.size; i++) {
+		combo = &drv->backend->combos.data[i];
+		if (combo->format == format &&
+		    combo->metadata.tiling == metadata->tiling &&
+		    combo->metadata.modifier == metadata->modifier)
+			combo->usage |= usage;
+	}
+}
+
+struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
+{
 	uint64_t flag, usage;
+	struct kms_item *items;
+	uint32_t i, j, k, allocations, item_size;
+
 	drmModePlanePtr plane;
 	drmModePropertyPtr prop;
 	drmModePlaneResPtr resources;
 	drmModeObjectPropertiesPtr props;
 
-	/*
-	 * All current drivers can scanout XRGB8888/ARGB8888 as a primary plane.
-	 * Some older kernel versions can only return overlay planes, so add the
-	 * combination here. Note that the kernel disregards the alpha component
-	 * of ARGB unless it's an overlay plane.
-	 */
-	drv_modify_supported_combination(drv, DRM_FORMAT_XRGB8888,
-					 BO_USE_SCANOUT, 0);
-	drv_modify_supported_combination(drv, DRM_FORMAT_ARGB8888,
-					 BO_USE_SCANOUT, 0);
+	/* Start with a power of 2 number of allocations. */
+	allocations = 2;
+	item_size = 0;
+	items = calloc(allocations, sizeof(*items));
+	if (!items)
+		goto out;
 
 	/*
 	 * The ability to return universal planes is only complete on
@@ -406,27 +403,25 @@ int drv_add_kms_flags(struct driver *drv)
 
 	resources = drmModeGetPlaneResources(drv->fd);
 	if (!resources)
-		goto err;
+		goto out;
 
 	for (i = 0; i < resources->count_planes; i++) {
-
 		plane = drmModeGetPlane(drv->fd, resources->planes[i]);
-
 		if (!plane)
-			goto err;
+			goto out;
 
 		props = drmModeObjectGetProperties(drv->fd, plane->plane_id,
 						   DRM_MODE_OBJECT_PLANE);
 		if (!props)
-			goto err;
+			goto out;
 
 		for (j = 0; j < props->count_props; j++) {
-
 			prop = drmModeGetProperty(drv->fd, props->props[j]);
 			if (prop) {
 				if (strcmp(prop->name, "type") == 0) {
 					flag = props->prop_values[j];
 				}
+
 				drmModeFreeProperty(prop);
 			}
 		}
@@ -443,9 +438,37 @@ int drv_add_kms_flags(struct driver *drv)
 			assert(0);
 		}
 
-		for (j = 0; j < plane->count_formats; j++)
-			drv_modify_supported_combination(drv, plane->formats[j],
-							 usage, 0);
+		for (j = 0; j < plane->count_formats; j++) {
+			bool found = false;
+			for (k = 0; k < item_size; k++) {
+				if (items[k].format == plane->formats[j] &&
+				    items[k].modifier == DRM_FORMAT_MOD_NONE) {
+					items[k].usage |= usage;
+					found = true;
+					break;
+				}
+			}
+
+			if (!found && item_size >= allocations) {
+				struct kms_item *new_data = NULL;
+				allocations *= 2;
+				new_data = realloc(items, allocations *
+					            sizeof(*items));
+				if (!new_data) {
+					item_size = 0;
+					goto out;
+				}
+
+				items = new_data;
+			}
+
+			if (!found) {
+				items[item_size].format = plane->formats[j];
+				items[item_size].modifier = DRM_FORMAT_MOD_NONE;
+				items[item_size].usage = usage;
+				item_size++;
+			}
+		}
 
 		drmModeFreeObjectProperties(props);
 		drmModeFreePlane(plane);
@@ -453,9 +476,59 @@ int drv_add_kms_flags(struct driver *drv)
 	}
 
 	drmModeFreePlaneResources(resources);
-	return 0;
+out:
+	if (items && item_size == 0) {
+		free(items);
+		items = NULL;
+	}
 
-err:
-	ret = -1;
-	return ret;
+	*num_items = item_size;
+	return items;
+}
+
+int drv_add_linear_combinations(struct driver *drv, const uint32_t *formats,
+				uint32_t num_formats)
+{
+	int ret;
+	uint32_t i, j, num_items;
+	struct kms_item *items;
+	struct combination *combo;
+	struct format_metadata metadata;
+
+	metadata.tiling = 0;
+	metadata.priority = 1;
+	metadata.modifier = DRM_FORMAT_MOD_NONE;
+
+	ret = drv_add_combinations(drv, formats, num_formats, &metadata,
+			           BO_COMMON_USE_MASK);
+	if (ret)
+		return ret;
+	/*
+	 * All current drivers can scanout linear XRGB8888/ARGB8888 as a primary
+	 * plane and as a cursor. Some drivers don't support
+	 * drmModeGetPlaneResources, so add the combination here. Note that the
+	 * kernel disregards the alpha component of ARGB unless it's an overlay
+	 * plane.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+
+	items = drv_query_kms(drv, &num_items);
+	if (!items || !num_items)
+		return 0;
+
+	for (i = 0; i < num_items; i++) {
+		for (j = 0; j < drv->backend->combos.size; j++) {
+			combo = &drv->backend->combos.data[j];
+			if (items[i].format == combo->format)
+				combo->usage |= BO_USE_SCANOUT;
+
+
+		}
+	}
+
+	free(items);
+	return 0;
 }

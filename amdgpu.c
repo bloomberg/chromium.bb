@@ -39,17 +39,8 @@ enum {
 	FAMILY_LAST,
 };
 
-static struct supported_combination combos[5] = {
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_XBGR8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
+const static uint32_t supported_formats[] = {
+	DRM_FORMAT_ARGB8888, DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888
 };
 
 static int amdgpu_set_metadata(int fd, uint32_t handle,
@@ -162,9 +153,10 @@ static int amdgpu_addrlib_compute(void *addrlib, uint32_t width,
 
 	/* Set the requested tiling mode. */
 	addr_surf_info_in.tileMode = ADDR_TM_2D_TILED_THIN1;
-	if (usage & (BO_USE_CURSOR | BO_USE_LINEAR))
+	if (usage & (BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN |
+		     BO_USE_SW_WRITE_OFTEN))
 		addr_surf_info_in.tileMode = ADDR_TM_LINEAR_ALIGNED;
-	if (width <= 16 || height <= 16)
+	else if (width <= 16 || height <= 16)
 		addr_surf_info_in.tileMode = ADDR_TM_1D_TILED_THIN1;
 
 	/* Bits per pixel should be calculated from format*/
@@ -289,7 +281,10 @@ static void *amdgpu_addrlib_init(int fd)
 
 static int amdgpu_init(struct driver *drv)
 {
+	int ret;
 	void *addrlib;
+	struct format_metadata metadata;
+	uint32_t flags = BO_COMMON_USE_MASK;
 
 	addrlib = amdgpu_addrlib_init(drv_get_fd(drv));
 	if (!addrlib)
@@ -297,8 +292,63 @@ static int amdgpu_init(struct driver *drv)
 
 	drv->priv = addrlib;
 
-	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
-	return drv_add_kms_flags(drv);
+	metadata.tiling = ADDR_DISPLAYABLE << 16 | ADDR_TM_LINEAR_ALIGNED;
+	metadata.priority = 1;
+	metadata.modifier = DRM_FORMAT_MOD_NONE;
+
+	ret = drv_add_combinations(drv, supported_formats,
+				   ARRAY_SIZE(supported_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_XBGR8888, &metadata,
+			       BO_USE_SCANOUT);
+
+	metadata.tiling = ADDR_NON_DISPLAYABLE << 16 | ADDR_TM_LINEAR_ALIGNED;
+	metadata.priority = 2;
+	metadata.modifier = DRM_FORMAT_MOD_NONE;
+
+	ret = drv_add_combinations(drv, supported_formats,
+				   ARRAY_SIZE(supported_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	flags &= ~BO_USE_SW_WRITE_OFTEN;
+	flags &= ~BO_USE_SW_READ_OFTEN;
+	flags &= ~BO_USE_LINEAR;
+
+	metadata.tiling = ADDR_DISPLAYABLE << 16 | ADDR_TM_2D_TILED_THIN1;
+	metadata.priority = 3;
+
+	ret = drv_add_combinations(drv, supported_formats,
+				   ARRAY_SIZE(supported_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
+			       BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
+			       BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_XBGR8888, &metadata,
+			       BO_USE_SCANOUT);
+
+	metadata.tiling = ADDR_NON_DISPLAYABLE << 16 | ADDR_TM_2D_TILED_THIN1;
+	metadata.priority = 4;
+
+	ret = drv_add_combinations(drv, supported_formats,
+				   ARRAY_SIZE(supported_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	return ret;
 }
 
 static void amdgpu_close(struct driver *drv)

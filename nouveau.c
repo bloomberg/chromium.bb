@@ -8,15 +8,14 @@
 #include "helpers.h"
 #include "util.h"
 
-static struct supported_combination combos[2] = {
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, BO_USE_CURSOR | BO_USE_RENDERING},
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, BO_USE_CURSOR | BO_USE_RENDERING},
+static const uint32_t supported_formats[] = {
+	DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888
 };
 
 static int nouveau_init(struct driver *drv)
 {
-	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
-	return drv_add_kms_flags(drv);
+	return drv_add_linear_combinations(drv, supported_formats,
+					   ARRAY_SIZE(supported_formats));
 }
 
 struct backend backend_nouveau =

@@ -10,34 +10,23 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
 						      int width, int height,
 						      int format, int usage)
 {
-	int32_t supported;
 	uint64_t drv_usage;
 	uint32_t drv_format;
+	struct combination *combo;
 	struct cros_gralloc_bo *bo;
 
 	drv_format = cros_gralloc_convert_format(format);
 	drv_format = drv_resolve_format(drv, drv_format);
 	drv_usage = cros_gralloc_convert_flags(usage);
 
-	supported = drv_is_combination_supported(drv, drv_format, drv_usage,
-						 DRM_FORMAT_MOD_NONE);
+	combo = drv_get_combination(drv, drv_format, drv_usage);
 
-	if (!supported && (usage & GRALLOC_USAGE_HW_COMPOSER)) {
+	if (!combo && (usage & GRALLOC_USAGE_HW_COMPOSER)) {
 		drv_usage &= ~BO_USE_SCANOUT;
-		supported = drv_is_combination_supported(drv, drv_format,
-							 drv_usage,
-							 DRM_FORMAT_MOD_NONE);
+		combo = drv_get_combination(drv, drv_format, drv_usage);
 	}
 
-	if (!supported && (drv_usage & BO_USE_RENDERING) &&
-	    (drv_usage && (BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN))) {
-		drv_usage &= ~BO_USE_RENDERING;
-		supported = drv_is_combination_supported(drv, drv_format,
-							 drv_usage,
-							 DRM_FORMAT_MOD_NONE);
-	}
-
-	if (!supported) {
+	if (!combo) {
 		cros_gralloc_error("Unsupported combination -- HAL format: %u, "
 				   "HAL flags: %u, drv_format: %u, "
 				   "drv_flags: %llu", format, usage,

@@ -131,12 +131,20 @@ struct driver *drv_create(int fd)
 	if (!drv->map_table)
 		goto free_buffer_table;
 
-	LIST_INITHEAD(&drv->backend->combinations);
+	/* Start with a power of 2 number of allocations. */
+	drv->backend->combos.allocations = 2;
+	drv->backend->combos.size = 0;
+	drv->backend->combos.data = calloc(drv->backend->combos.allocations,
+					   sizeof(struct combination));
+	if (!drv->backend->combos.data)
+		goto free_map_table;
 
 	if (drv->backend->init) {
 		ret = drv->backend->init(drv);
-		if (ret)
+		if (ret) {
+			free(drv->backend->combos.data);
 			goto free_map_table;
+		}
 	}
 
 	return drv;
@@ -162,11 +170,7 @@ void drv_destroy(struct driver *drv)
 	drmHashDestroy(drv->buffer_table);
 	drmHashDestroy(drv->map_table);
 
-	list_for_each_entry_safe(struct combination_list_element, elem,
-				 &drv->backend->combinations, link) {
-		LIST_DEL(&elem->link);
-		free(elem);
-	}
+	free(drv->backend->combos.data);
 
 	pthread_mutex_unlock(&drv->driver_lock);
 	pthread_mutex_destroy(&drv->driver_lock);
@@ -185,22 +189,25 @@ drv_get_name(struct driver *drv)
 	return drv->backend->name;
 }
 
-int drv_is_combination_supported(struct driver *drv, uint32_t format,
-			         uint64_t usage, uint64_t modifier)
+struct combination *drv_get_combination(struct driver *drv, uint32_t format,
+					uint64_t usage)
 {
+	struct combination *curr, *best;
 
 	if (format == DRM_FORMAT_NONE || usage == BO_USE_NONE)
 		return 0;
 
-	list_for_each_entry(struct combination_list_element, elem,
-			    &drv->backend->combinations, link) {
-		if (format == elem->combination.format &&
-		    usage == (elem->combination.usage & usage) &&
-		    modifier == elem->combination.modifier)
-			return 1;
+	best = NULL;
+	uint32_t i;
+	for (i = 0; i < drv->backend->combos.size; i++) {
+		curr = &drv->backend->combos.data[i];
+		if ((format == curr->format) && usage == (curr->usage & usage))
+			if (!best ||
+			    best->metadata.priority < curr->metadata.priority)
+				best = curr;
 	}
 
-	return 0;
+	return best;
 }
 
 struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height,

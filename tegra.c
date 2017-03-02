@@ -43,15 +43,8 @@ struct tegra_private_map_data {
 	void *untiled;
 };
 
-static struct supported_combination combos[4] = {
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
+static const uint32_t supported_formats[] = {
+	DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888
 };
 
 static int compute_block_height_log2(int height)
@@ -180,8 +173,43 @@ static void transfer_tiled_memory(struct bo *bo, uint8_t *tiled,
 
 static int tegra_init(struct driver *drv)
 {
-	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
-	return drv_add_kms_flags(drv);
+	int ret;
+	struct format_metadata metadata;
+	uint64_t flags = BO_COMMON_USE_MASK;
+
+	metadata.tiling = NV_MEM_KIND_PITCH;
+	metadata.priority = 1;
+	metadata.modifier = DRM_FORMAT_MOD_NONE;
+
+	ret = drv_add_combinations(drv, supported_formats,
+				   ARRAY_SIZE(supported_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
+			       BO_USE_CURSOR | BO_USE_SCANOUT);
+
+	flags &= ~BO_USE_SW_WRITE_OFTEN;
+	flags &= ~BO_USE_SW_READ_OFTEN;
+	flags &= ~BO_USE_LINEAR;
+
+	metadata.tiling = NV_MEM_KIND_C32_2CRA;
+	metadata.priority = 2;
+
+	ret = drv_add_combinations(drv, supported_formats,
+				   ARRAY_SIZE(supported_formats), &metadata,
+				   flags);
+	if (ret)
+		return ret;
+
+	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata,
+			       BO_USE_SCANOUT);
+	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata,
+			       BO_USE_SCANOUT);
+	return 0;
 }
 
 static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
@@ -192,11 +220,12 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	struct drm_tegra_gem_create gem_create;
 	int ret;
 
-	if (flags & BO_USE_RENDERING)
+	if (flags & (BO_USE_CURSOR | BO_USE_LINEAR |
+		     BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN))
+		compute_layout_linear(width, height, format, &stride, &size);
+	else
 		compute_layout_blocklinear(width, height, format, &kind,
 					   &block_height_log2, &stride, &size);
-	else
-		compute_layout_linear(width, height, format, &stride, &size);
 
 	memset(&gem_create, 0, sizeof(gem_create));
 	gem_create.size = size;

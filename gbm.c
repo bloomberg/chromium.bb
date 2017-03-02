@@ -42,8 +42,7 @@ gbm_device_is_format_supported(struct gbm_device *gbm,
 
 	drv_usage = gbm_convert_flags(usage);
 
-	return drv_is_combination_supported(gbm->drv, format, drv_usage,
-					    DRM_FORMAT_MOD_NONE);
+	return (drv_get_combination(gbm->drv, format, drv_usage) != NULL);
 }
 
 PUBLIC struct gbm_device *gbm_create_device(int fd)
