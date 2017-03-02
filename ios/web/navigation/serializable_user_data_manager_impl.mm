@@ -5,6 +5,7 @@
 #import "ios/web/navigation/serializable_user_data_manager_impl.h"
 
 #import "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,7 +14,7 @@
 
 namespace web {
 namespace {
-// The key under which SerializableUserDataMangerWrapper are stored in the
+// The key under which SerializableUserDataManagerWrapper are stored in the
 // WebState's user data.
 const void* const kSerializableUserDataManagerKey =
     &kSerializableUserDataManagerKey;
@@ -22,9 +23,9 @@ NSString* const kSerializedUserDataKey = @"serializedUserData";
 
 // Wrapper class used to associate SerializableUserDataManagerImpls with its
 // associated WebState.
-class SerializableUserDataManagerWrapper : base::SupportsUserData::Data {
+class SerializableUserDataManagerWrapper : public base::SupportsUserData::Data {
  public:
-  // Returns the SerializableUserDataMangerWrapper associated with |web_state|,
+  // Returns the SerializableUserDataManagerWrapper associated with |web_state|,
   // creating one if necessary.
   static SerializableUserDataManagerWrapper* FromWebState(
       web::WebState* web_state) {
@@ -32,30 +33,28 @@ class SerializableUserDataManagerWrapper : base::SupportsUserData::Data {
     SerializableUserDataManagerWrapper* wrapper =
         static_cast<SerializableUserDataManagerWrapper*>(
             web_state->GetUserData(kSerializableUserDataManagerKey));
-    if (!wrapper)
-      wrapper = new SerializableUserDataManagerWrapper(web_state);
-    return wrapper;
+    if (wrapper)
+      return wrapper;
+
+    web_state->SetUserData(
+        kSerializableUserDataManagerKey,
+        base::MakeUnique<SerializableUserDataManagerWrapper>());
+    return static_cast<SerializableUserDataManagerWrapper*>(
+        web_state->GetUserData(kSerializableUserDataManagerKey));
   }
 
   // Returns the manager owned by this wrapper.
   SerializableUserDataManagerImpl* manager() { return &manager_; }
 
  private:
-  // The SerializableUserDataMangerWrapper owned by this object.
+  // The SerializableUserDataManagerWrapper owned by this object.
   SerializableUserDataManagerImpl manager_;
-
-  // Private constructor.  The created object will be added to |web_state|'s
-  // user data.
-  SerializableUserDataManagerWrapper(web::WebState* web_state) {
-    DCHECK(web_state);
-    web_state->SetUserData(kSerializableUserDataManagerKey, this);
-  }
 };
 }  // namespace
 
 // static
 std::unique_ptr<SerializableUserData> SerializableUserData::Create() {
-  return std::unique_ptr<SerializableUserData>(new SerializableUserDataImpl());
+  return base::MakeUnique<SerializableUserDataImpl>();
 }
 
 SerializableUserDataImpl::SerializableUserDataImpl()
@@ -118,16 +117,16 @@ id<NSCoding> SerializableUserDataManagerImpl::GetValueForSerializationKey(
 
 std::unique_ptr<SerializableUserData>
 SerializableUserDataManagerImpl::CreateSerializableUserData() const {
-  return std::unique_ptr<SerializableUserData>(
-      new SerializableUserDataImpl(data_));
+  return base::MakeUnique<SerializableUserDataImpl>(data_);
 }
 
 void SerializableUserDataManagerImpl::AddSerializableUserData(
     SerializableUserData* data) {
-  DCHECK(data);
-  SerializableUserDataImpl* data_impl =
-      static_cast<SerializableUserDataImpl*>(data);
-  data_.reset([data_impl->data() mutableCopy]);
+  if (data) {
+    SerializableUserDataImpl* data_impl =
+        static_cast<SerializableUserDataImpl*>(data);
+    data_.reset([data_impl->data() mutableCopy]);
+  }
 }
 
 }  // namespace web

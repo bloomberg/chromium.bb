@@ -24,6 +24,7 @@
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/serializable_user_data_manager.h"
@@ -151,7 +152,7 @@ class TabModelTest : public PlatformTest {
     SessionWindowIOS* window = [[SessionWindowIOS alloc] init];
     for (int i = 0; i < entries; i++) {
       CRWSessionStorage* session_storage =
-          CreateWebState()->BuildSessionStorage();
+          [[[CRWSessionStorage alloc] init] autorelease];
       [window addSerializedSessionStorage:session_storage];
     }
     if (entries)
