@@ -263,6 +263,34 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     }
 
     /**
+     * Expect that the "Shown" event is recorded only once.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testShownLoggedOnlyOnce()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Initiate a payment request.
+        triggerUIAndWait("ccBuy", mReadyToPay);
+
+        // Make sure sure that the "Shown" event was logged.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CheckoutFunnel.Shown", 1));
+
+        // Add a shipping address, which triggers a second "Show".
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
+                "CA", "90291", "555-555-5555"}, mEditorTextUpdate);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+
+        // Make sure "Shown" is still logged only once.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CheckoutFunnel.Shown", 1));
+    }
+
+    /**
      * Asserts that only the specified reason for abort is logged.
      *
      * @param abortReason The only bucket in the abort histogram that should have a record.

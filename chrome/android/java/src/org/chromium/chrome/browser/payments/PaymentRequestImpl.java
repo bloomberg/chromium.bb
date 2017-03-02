@@ -314,6 +314,12 @@ public class PaymentRequestImpl
     /** Aborts should only be recorded if the Payment Request was shown to the user. */
     private boolean mShouldRecordAbortReason;
 
+    /**
+     * There are a few situations were the Payment Request can appear, from a code perspective, to
+     * be shown more than once. This boolean is used to make sure it is only logged once.
+     */
+    private boolean mDidRecordShowEvent;
+
     /** True if any of the requested payment methods are supported. */
     private boolean mArePaymentMethodsSupported;
 
@@ -564,8 +570,9 @@ public class PaymentRequestImpl
                 && mIsCurrentPaymentRequestShowing) {
             assert !mPaymentMethodsSection.isEmpty();
 
-            recordSuccessFunnelHistograms("Shown");
+            mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
+            recordSuccessFunnelHistograms("Shown");
             mJourneyLogger.setShowCalled();
 
             onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
@@ -843,9 +850,12 @@ public class PaymentRequestImpl
                         mUiShippingOptions, mContactSection, mPaymentMethodsSection));
         mPaymentInformationCallback = null;
 
-        recordSuccessFunnelHistograms("Shown");
-        mShouldRecordAbortReason = true;
-        mJourneyLogger.setShowCalled();
+        if (!mDidRecordShowEvent) {
+            mDidRecordShowEvent = true;
+            mShouldRecordAbortReason = true;
+            recordSuccessFunnelHistograms("Shown");
+            mJourneyLogger.setShowCalled();
+        }
     }
 
     @Override
