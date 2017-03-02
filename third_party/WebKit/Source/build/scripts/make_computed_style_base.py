@@ -23,6 +23,8 @@ NONPROPERTY_FIELDS = set([
     'affectedByHover',
     'affectedByActive',
     'affectedByDrag',
+    # A non-inherited property references a variable or @apply is used
+    'hasVariableReferenceFromNonInheritedProperty',
 ])
 
 

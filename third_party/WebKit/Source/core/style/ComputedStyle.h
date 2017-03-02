@@ -267,8 +267,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_pseudoBits : 8;
     unsigned m_explicitInheritance : 1;  // Explicitly inherits a non-inherited
                                          // property
-    unsigned m_variableReference : 1;  // A non-inherited property references a
-                                       // variable or @apply is used.
 
     unsigned m_emptyState : 1;
 
@@ -300,7 +298,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_styleType = PseudoIdNone;
     m_nonInheritedData.m_pseudoBits = 0;
     m_nonInheritedData.m_explicitInheritance = false;
-    m_nonInheritedData.m_variableReference = false;
     m_nonInheritedData.m_emptyState = false;
     m_nonInheritedData.m_hasViewportUnits = false;
     m_nonInheritedData.m_isLink = false;
@@ -2409,13 +2406,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   const CSSValue* getRegisteredVariable(const AtomicString&,
                                         bool isInheritedProperty) const;
-
-  void setHasVariableReferenceFromNonInheritedProperty() {
-    m_nonInheritedData.m_variableReference = true;
-  }
-  bool hasVariableReferenceFromNonInheritedProperty() const {
-    return m_nonInheritedData.m_variableReference;
-  }
 
   // Animations.
   CSSAnimationData& accessAnimations();

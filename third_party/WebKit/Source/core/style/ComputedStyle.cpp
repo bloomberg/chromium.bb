@@ -392,7 +392,7 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
 
   // styles with non inherited properties that reference variables are not
   // cacheable.
-  DCHECK(!other.m_nonInheritedData.m_variableReference);
+  DCHECK(!other.hasVariableReferenceFromNonInheritedProperty());
 
   // The following flags are set during matching before we decide that we get a
   // match in the MatchedPropertiesCache which in turn calls this method. The
