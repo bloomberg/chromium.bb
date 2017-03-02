@@ -151,6 +151,15 @@ config("config") {
         "use-chromium-style-naming",
       ]
     }
+
+    # TODO(https://crbug.com/689864): remove once the GC plugin has been rolled
+    # with this warning default enabled.
+    cflags += [
+      "-Xclang",
+      "-plugin-arg-blink-gc-plugin",
+      "-Xclang",
+      "warn-stack-allocated-trace-method",
+    ]
   }
 }
 
