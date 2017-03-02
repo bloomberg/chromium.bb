@@ -118,6 +118,10 @@ else ()
   endif ()
 endif ()
 
+if (AOM_TARGET_SYSTEM MATCHES "Darwin\|Linux\|Windows")
+  set(CONFIG_OS_SUPPORT 1)
+endif ()
+
 # Test compiler support.
 aom_get_inline("INLINE")
 
