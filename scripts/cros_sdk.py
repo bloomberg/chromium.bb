@@ -217,7 +217,7 @@ def DeleteChroot(chroot_path):
 
 
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
-                workspace, additional_args):
+                workspace, goma_dir, goma_client_json, additional_args):
   """Enters an existing SDK chroot"""
   st = os.statvfs(os.path.join(chroot_path, 'usr', 'bin', 'sudo'))
   # The os.ST_NOSUID constant wasn't added until python-3.2.
@@ -231,6 +231,10 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
     cmd.extend(['--chrome_root_mount', chrome_root_mount])
   if workspace:
     cmd.extend(['--workspace_root', workspace])
+  if goma_dir:
+    cmd.extend(['--goma_dir', goma_dir])
+  if goma_client_json:
+    cmd.extend(['--goma_client_json', goma_client_json])
 
   if len(additional_args) > 0:
     cmd.append('--')
@@ -495,6 +499,11 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
                             % (sdk_latest_version, bootstrap_latest_version)))
   parser.add_argument('--workspace',
                       help='Workspace directory to mount into the chroot.')
+  parser.add_argument('--goma_dir', type='path',
+                      help='Goma installed directory to mount into the chroot.')
+  parser.add_argument('--goma_client_json', type='path',
+                      help='Service account json file to use goma on bot. '
+                           'Mounted into the chroot.')
   parser.add_argument('commands', nargs=argparse.REMAINDER)
 
   # SDK overlay tarball options (mutually exclusive).
@@ -714,4 +723,5 @@ def main(argv):
         lock.read_lock()
         EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
                     options.chrome_root_mount, options.workspace,
+                    options.goma_dir, options.goma_client_json,
                     chroot_command)
