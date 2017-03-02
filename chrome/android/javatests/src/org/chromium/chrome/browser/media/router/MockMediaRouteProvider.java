@@ -180,8 +180,4 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
             mManager.onMessage(routeId, "Pong: " + message);
         }
     }
-
-    @Override
-    public void sendBinaryMessage(String routeId, byte[] data, int nativeCallbackId) {
-    }
 }

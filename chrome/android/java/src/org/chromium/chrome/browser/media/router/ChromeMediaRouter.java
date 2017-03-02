@@ -327,23 +327,6 @@ public class ChromeMediaRouter implements MediaRouteManager {
         provider.sendStringMessage(routeId, message, callbackId);
     }
 
-    /**
-     * Sends a binary message to the specified route.
-     * @param routeId The id of the route to send the message to.
-     * @param data The binary message to send.
-     * @param callbackId The id of the result callback tracked by the native side.
-     */
-    @CalledByNative
-    public void sendBinaryMessage(String routeId, byte[] data, int callbackId) {
-        MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
-        if (provider == null) {
-            nativeOnMessageSentResult(mNativeMediaRouterAndroid, false, callbackId);
-            return;
-        }
-
-        provider.sendBinaryMessage(routeId, data, callbackId);
-    }
-
     @VisibleForTesting
     protected ChromeMediaRouter(long nativeMediaRouter) {
         mNativeMediaRouterAndroid = nativeMediaRouter;

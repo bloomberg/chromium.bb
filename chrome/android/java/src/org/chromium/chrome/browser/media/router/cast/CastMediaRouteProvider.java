@@ -10,6 +10,9 @@ import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
@@ -17,8 +20,6 @@ import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
 import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -374,15 +375,6 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         }
 
         mManager.onMessageSentResult(success, nativeCallbackId);
-    }
-
-    @Override
-    public void sendBinaryMessage(String routeId, byte[] data, int nativeCallbackId) {
-        // TODO(crbug.com/524128): Cast API does not support sending binary message
-        // to receiver application. Binary data may be converted to String and send as
-        // an app_message within it's own message namespace, using the string version.
-        // Sending failure in the result callback for now.
-        mManager.onMessageSentResult(false, nativeCallbackId);
     }
 
     private boolean handleClientConnectMessage(JSONObject jsonMessage) throws JSONException {
