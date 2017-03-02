@@ -101,12 +101,6 @@ Status FetchResultToStatus(FetchResult result) {
   return Status(StatusCode::PERMANENT_ERROR, std::string());
 }
 
-std::string GetFetchEndpoint() {
-  std::string endpoint = variations::GetVariationParamValueByFeature(
-      ntp_snippets::kArticleSuggestionsFeature, kContentSuggestionsBackend);
-  return endpoint.empty() ? kContentSuggestionsServer : endpoint;
-}
-
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
   if (endpoint == kChromeReaderServer) {
     return false;
@@ -191,6 +185,27 @@ void FilterCategories(
 
 }  // namespace
 
+GURL GetFetchEndpoint(version_info::Channel channel) {
+  std::string endpoint = variations::GetVariationParamValueByFeature(
+      ntp_snippets::kArticleSuggestionsFeature, kContentSuggestionsBackend);
+  if (!endpoint.empty()) {
+    return GURL{endpoint};
+  }
+
+  switch (channel) {
+    case version_info::Channel::STABLE:
+    case version_info::Channel::BETA:
+      return GURL{kContentSuggestionsServer};
+
+    case version_info::Channel::DEV:
+    case version_info::Channel::CANARY:
+    case version_info::Channel::UNKNOWN:
+      return GURL{kContentSuggestionsStagingServer};
+  }
+  NOTREACHED();
+  return GURL{kContentSuggestionsStagingServer};
+}
+
 CategoryInfo BuildArticleCategoryInfo(
     const base::Optional<base::string16>& title) {
   return CategoryInfo(
@@ -237,6 +252,7 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
     PrefService* pref_service,
     LanguageModel* language_model,
     const ParseJSONCallback& parse_json_callback,
+    const GURL& api_endpoint,
     const std::string& api_key,
     const UserClassifier* user_classifier)
     : OAuth2TokenService::Consumer("ntp_snippets"),
@@ -245,7 +261,7 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
       url_request_context_getter_(std::move(url_request_context_getter)),
       language_model_(language_model),
       parse_json_callback_(parse_json_callback),
-      fetch_url_(GetFetchEndpoint()),
+      fetch_url_(api_endpoint),
       fetch_api_(UsesChromeContentSuggestionsAPI(fetch_url_)
                      ? FetchAPI::CHROME_CONTENT_SUGGESTIONS_API
                      : FetchAPI::CHROME_READER_API),

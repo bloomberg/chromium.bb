@@ -53,6 +53,7 @@ using image_fetcher::ImageFetcherImpl;
 using ios::BookmarkModelFactory;
 using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::ContentSuggestionsService;
+using ntp_snippets::GetFetchEndpoint;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcher;
@@ -157,9 +158,10 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
     auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
         signin_manager, token_service, request_context, prefs, nullptr,
-        base::Bind(&ParseJson), GetChannel() == version_info::Channel::STABLE
-                                    ? google_apis::GetAPIKey()
-                                    : google_apis::GetNonStableAPIKey(),
+        base::Bind(&ParseJson), GetFetchEndpoint(GetChannel()),
+        GetChannel() == version_info::Channel::STABLE
+            ? google_apis::GetAPIKey()
+            : google_apis::GetNonStableAPIKey(),
         service->user_classifier());
 
     auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(

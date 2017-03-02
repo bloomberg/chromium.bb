@@ -301,7 +301,9 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
     fetcher_ = base::MakeUnique<RemoteSuggestionsFetcher>(
         utils_.fake_signin_manager(), fake_token_service_.get(),
         std::move(request_context_getter), utils_.pref_service(), nullptr,
-        base::Bind(&ParseJsonDelayed), kAPIKey, user_classifier_.get());
+        base::Bind(&ParseJsonDelayed),
+        GetFetchEndpoint(version_info::Channel::STABLE), kAPIKey,
+        user_classifier_.get());
 
     fetcher_->SetClockForTesting(mock_task_runner_->GetMockClock());
   }

@@ -22,6 +22,7 @@
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
 #include "components/translate/core/browser/language_model.h"
+#include "components/version_info/version_info.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class PrefService;
@@ -34,6 +35,10 @@ class Value;
 namespace ntp_snippets {
 
 class UserClassifier;
+
+// Returns the appropriate API endpoint for the fetcher, in consideration of
+// the channel and variation parameters.
+GURL GetFetchEndpoint(version_info::Channel channel);
 
 // TODO(tschumann): BuildArticleCategoryInfo() and BuildRemoteCategoryInfo()
 // don't really belong into this library. However, as the fetcher is
@@ -82,6 +87,7 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
       PrefService* pref_service,
       translate::LanguageModel* language_model,
       const ParseJSONCallback& parse_json_callback,
+      const GURL& api_endpoint,
       const std::string& api_key,
       const UserClassifier* user_classifier);
   ~RemoteSuggestionsFetcher() override;

@@ -11,6 +11,8 @@ include_rules = [
   "+components/sync/driver",
   "+components/translate/core/browser",
   "+components/variations",
+  "+components/version_info",
+  "+grit/components_strings.h",
   "+net/base",
   "+net/http",
   "+net/traffic_annotation",

@@ -90,6 +90,7 @@ using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::CategoryRanker;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
+using ntp_snippets::GetFetchEndpoint;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcher;
@@ -198,6 +199,7 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
       signin_manager, token_service, request_context, pref_service,
       language_model, base::Bind(&safe_json::SafeJsonParser::Parse),
+      GetFetchEndpoint(chrome::GetChannel()),
       is_stable_channel ? google_apis::GetAPIKey()
                         : google_apis::GetNonStableAPIKey(),
       service->user_classifier());

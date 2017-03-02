@@ -428,7 +428,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
         utils_.fake_signin_manager(), /*token_service=*/nullptr,
         std::move(request_context_getter), utils_.pref_service(), nullptr,
-        base::Bind(&ParseJson), kAPIKey, &user_classifier_);
+        base::Bind(&ParseJson), GetFetchEndpoint(version_info::Channel::STABLE),
+        kAPIKey, &user_classifier_);
     suggestions_fetcher_ = suggestions_fetcher.get();
 
     auto image_fetcher = base::MakeUnique<NiceMock<MockImageFetcher>>();

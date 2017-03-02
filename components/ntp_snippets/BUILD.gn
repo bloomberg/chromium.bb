@@ -89,6 +89,7 @@ static_library("ntp_snippets") {
     "//components/resources",
     "//components/signin/core/browser",
     "//components/sync",
+    "//components/version_info",
     "//google_apis",
     "//net",
     "//ui/base",
