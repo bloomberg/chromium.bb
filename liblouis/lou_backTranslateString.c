@@ -579,9 +579,9 @@ back_selectRule ()
 	    {
 	      /* check this rule */
 	      back_setAfter (currentDotslen);
-	      if ((!currentRule->after || (beforeAttributes
+	      if ((!(currentRule->after & ~CTC_EmpMatch) || (beforeAttributes
 					   & currentRule->after)) &&
-		  (!currentRule->before || (afterAttributes
+		  (!(currentRule->before & ~CTC_EmpMatch) || (afterAttributes
 					    & currentRule->before)))
 		{
 		  switch (currentOpcode)

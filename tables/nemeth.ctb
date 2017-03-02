@@ -85,8 +85,9 @@ math \xf401 0
 math \xf402 0
 math \xf403 0
 # Begin and end equation
-replace \xf32e
-replace \xf32f
+# replace \xf32e
+# replace \xf32f
+grouping math \xf32e\xf32f 12e,15e
 # Sub and superscript
 math \xf320 56
 replace \xf401\xf320
@@ -110,9 +111,20 @@ always \xf402} 12456
 replace \xf326
 replace \xf327
 # Fractions
-math \xf328 1456
-math \xf329 3456
-math \xf32d 34
+math \xf500 1456
+math \xf501 34
+math \xf502 456-34
+math \xf503 3456
+# Mixed Fractions
+math \xf504 456-1456
+math \xf505 34
+math \xf506 456-34
+math \xf507 456-3456
+# Complex Fractions
+math \xf508 6-1456
+math \xf509 6-34
+math \xf50a 6-456-34
+math \xf50b 6-3456
 # Roots
 math \xf32a 345
 always \xf403\xf32a 345
@@ -232,9 +244,13 @@ noback pass2 $d[]@1456 @456
 noback pass2 @456-1456!$s3-8[]@3456 @456
 # Put number sign on numbers after spaces
 noback pass2 @a[]$d @3456
+noback pass2 [@a-0]$d @a-3456
+noback pass2 @a-36[]$d @3456
+noback pass2 [@a-0-36]$d @a-36-3456
 noback pass2 @0[]$d @3456
-noback pass2 @1b-12[]$d @3456
+noback pass2 @0-36[]$d @3456
 noback pass2 @a-0 @a
+noback pass2 @0-a @a
 # fix anomaly with superscripts
 noback pass2 @45-0-5 @45
 noback pass2 @45-5 @45
@@ -261,4 +277,8 @@ noback pass2 @1256-4-6-12356 @4-6-12356
 noback pass2 [@5-6]!$l @6
 noback pass2 @1b-12[]$d @3456 number sign before digit at beginning
 noback pass2 @1b-12-36[]$d @3456 number sign before minus before digit at beginning
-
+noback pass2 [@12e]$d @3456
+noback pass2 [@12e-36]$d @36-3456
+noback pass2 [@12e-46]$d @3456-46
+noback pass2 @12e ?
+noback pass2 @15e ?

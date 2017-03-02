@@ -3435,7 +3435,7 @@ insertEmphasesAt(const int at)
 		else
 			type_counts[i]
 				= endCount(transNoteBuffer, at,
-					EMPHASIS_END << (i * 4), EMPHASIS_BEGIN << (i * 4), EMPHASIS_WORD << (i * 4));
+					TRANSNOTE_END << ((i - 5) * 4), TRANSNOTE_BEGIN << ((i - 5) * 4), TRANSNOTE_WORD << ((i - 5) * 4));
 
 	for(i = 0; i < 10; i++)
 	{
@@ -3454,19 +3454,15 @@ insertEmphasesAt(const int at)
 		else
 			insertEmphasisEnd(
 				transNoteBuffer, at, emph1Rule + min,
-					TRANSNOTE_END << (min * 4), TRANSNOTE_WORD << (min * 4));
+					TRANSNOTE_END << ((min - 5) * 4), TRANSNOTE_WORD << ((min - 5) * 4));
 	}
 
 	/*   begin and word bits   */
 	for (i = 0; i < 10; i++)
 		if (i < 5)
-			type_counts[i]
-				= beginCount(emphasisBuffer, at,
-					EMPHASIS_END << (i * 4), EMPHASIS_BEGIN << (i * 4), EMPHASIS_WORD << (i * 4));
+			type_counts[i] = beginCount(emphasisBuffer, at, EMPHASIS_END << (i * 4), EMPHASIS_BEGIN << (i * 4), EMPHASIS_WORD << (i * 4));
 		else
-			type_counts[i]
-				= beginCount(transNoteBuffer, at,
-					TRANSNOTE_END << (i * 4), TRANSNOTE_BEGIN << (i * 4), TRANSNOTE_WORD << (i * 4));
+			type_counts[i] = beginCount(transNoteBuffer, at, TRANSNOTE_END << ((i - 5) * 4), TRANSNOTE_BEGIN << ((i - 5) * 4), TRANSNOTE_WORD << ((i - 5) * 4));
 	
 	for(i = 9; i >= 0; i--)
 	{
@@ -3480,7 +3476,7 @@ insertEmphasesAt(const int at)
 		if (max >= 5)
 			insertEmphasisBegin(
 				transNoteBuffer, at, emph1Rule + max,
-					TRANSNOTE_BEGIN << (max * 4), TRANSNOTE_END << (max * 4), TRANSNOTE_WORD << (max * 4));
+					TRANSNOTE_BEGIN << ((max - 5) * 4), TRANSNOTE_END << ((max - 5) * 4), TRANSNOTE_WORD << ((max - 5) * 4));
 		else
 			insertEmphasisBegin(
 				emphasisBuffer, at, emph1Rule + max,
