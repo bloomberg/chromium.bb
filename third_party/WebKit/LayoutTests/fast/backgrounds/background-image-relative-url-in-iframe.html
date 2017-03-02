@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<iframe id="iframe"></iframe>
+<script>
+  var iframe = document.getElementById('iframe');
+  iframe.contentDocument.body.innerHTML = `
+    <style>
+      .bg-img {
+        background: url('./resources/green-24x24.png') no-repeat;
+        width: 24px;
+        height:24px;
+      }
+    </style>
+    <div class='bg-img'></div>`;
+</script>

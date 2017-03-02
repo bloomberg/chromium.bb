@@ -53,6 +53,8 @@ CSSImageValue::~CSSImageValue() {}
 StyleImage* CSSImageValue::cacheImage(const Document& document,
                                       CrossOriginAttributeValue crossOrigin) {
   if (!m_cachedImage) {
+    if (m_absoluteURL.isEmpty())
+      reResolveURL(document);
     FetchRequest request(ResourceRequest(m_absoluteURL),
                          m_initiatorName.isEmpty()
                              ? FetchInitiatorTypeNames::css
