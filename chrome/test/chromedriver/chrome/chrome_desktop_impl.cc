@@ -207,10 +207,14 @@ bool ChromeDesktopImpl::IsNetworkConnectionEnabled() const {
 Status ChromeDesktopImpl::QuitImpl() {
   // If the Chrome session uses a custom user data directory, try sending a
   // SIGTERM signal before SIGKILL, so that Chrome has a chance to write
-  // everything back out to the user data directory and exit cleanly.If
-  // we're using a temporary user data directory, we're going to delete
-  // the temporary directory anyway, so just send SIGKILL immediately.
-  if (!KillProcess(process_, !user_data_dir_.IsValid()))
+  // everything back out to the user data directory and exit cleanly. If we're
+  // using a temporary user data directory, we're going to delete the temporary
+  // directory anyway, so just send SIGKILL immediately.
+  bool kill_gracefully = !user_data_dir_.IsValid();
+  // If the Chrome session is being run with --log-net-log, send SIGTERM first
+  // to allow Chrome to write out all the net logs to the log path.
+  kill_gracefully |= command_.HasSwitch("log-net-log");
+  if (!KillProcess(process_, kill_gracefully))
     return Status(kUnknownError, "cannot kill Chrome");
   return Status(kOk);
 }
