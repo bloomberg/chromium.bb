@@ -35,6 +35,7 @@ class CORE_EXPORT DeviceSingleWindowEventController
   explicit DeviceSingleWindowEventController(Document&);
 
   Document& document() const { return *m_document; }
+  bool isSameSecurityOriginAsMainFrame() const;
 
   void dispatchDeviceEvent(Event*);
 

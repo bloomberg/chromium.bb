@@ -70,9 +70,16 @@ void DeviceOrientationController::didAddEventListener(
     }
   }
 
-  if (!m_hasEventListener)
+  if (!m_hasEventListener) {
     Platform::current()->recordRapporURL("DeviceSensors.DeviceOrientation",
                                          WebURL(document().url()));
+
+    if (!isSameSecurityOriginAsMainFrame()) {
+      Platform::current()->recordRapporURL(
+          "DeviceSensors.DeviceOrientationCrossOrigin",
+          WebURL(document().url()));
+    }
+  }
 
   DeviceSingleWindowEventController::didAddEventListener(window, eventType);
 }

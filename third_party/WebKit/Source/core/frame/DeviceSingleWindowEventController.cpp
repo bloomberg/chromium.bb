@@ -68,6 +68,24 @@ void DeviceSingleWindowEventController::didRemoveAllEventListeners(
   m_hasEventListener = false;
 }
 
+bool DeviceSingleWindowEventController::isSameSecurityOriginAsMainFrame()
+    const {
+  if (!document().frame() || !document().page())
+    return false;
+
+  if (document().frame()->isMainFrame())
+    return true;
+
+  SecurityOrigin* mainSecurityOrigin =
+      document().page()->mainFrame()->securityContext()->getSecurityOrigin();
+
+  if (mainSecurityOrigin &&
+      document().getSecurityOrigin()->canAccess(mainSecurityOrigin))
+    return true;
+
+  return false;
+}
+
 DEFINE_TRACE(DeviceSingleWindowEventController) {
   visitor->trace(m_document);
   PlatformEventController::trace(visitor);

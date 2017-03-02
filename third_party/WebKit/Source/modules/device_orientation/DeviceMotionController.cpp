@@ -60,9 +60,15 @@ void DeviceMotionController::didAddEventListener(
     }
   }
 
-  if (!m_hasEventListener)
+  if (!m_hasEventListener) {
     Platform::current()->recordRapporURL("DeviceSensors.DeviceMotion",
                                          WebURL(document().url()));
+
+    if (!isSameSecurityOriginAsMainFrame()) {
+      Platform::current()->recordRapporURL(
+          "DeviceSensors.DeviceMotionCrossOrigin", WebURL(document().url()));
+    }
+  }
 
   DeviceSingleWindowEventController::didAddEventListener(window, eventType);
 }
