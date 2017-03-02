@@ -70,7 +70,7 @@ void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector,
   segmentedFontFaceResult.storedValue->value->addFontFace(fontFace,
                                                           cssConnected);
   if (cssConnected)
-    m_cssConnectedFontFaces.add(fontFace);
+    m_cssConnectedFontFaces.insert(fontFace);
 
   m_fonts.erase(fontFace->family());
   incrementVersion();

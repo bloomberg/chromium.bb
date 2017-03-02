@@ -82,7 +82,7 @@ MediaQueryList* MediaQueryMatcher::matchMedia(const String& query) {
 void MediaQueryMatcher::addMediaQueryList(MediaQueryList* query) {
   if (!m_document)
     return;
-  m_mediaLists.add(query);
+  m_mediaLists.insert(query);
 }
 
 void MediaQueryMatcher::removeMediaQueryList(MediaQueryList* query) {
@@ -94,7 +94,7 @@ void MediaQueryMatcher::removeMediaQueryList(MediaQueryList* query) {
 void MediaQueryMatcher::addViewportListener(MediaQueryListListener* listener) {
   if (!m_document)
     return;
-  m_viewportListeners.add(listener);
+  m_viewportListeners.insert(listener);
 }
 
 void MediaQueryMatcher::removeViewportListener(

@@ -89,7 +89,7 @@ bool DOMWindowEventQueue::enqueueEvent(Event* event) {
   InspectorInstrumentation::asyncTaskScheduled(
       event->target()->getExecutionContext(), event->type(), event);
 
-  bool wasAdded = m_queuedEvents.add(event).isNewEntry;
+  bool wasAdded = m_queuedEvents.insert(event).isNewEntry;
   DCHECK(wasAdded);  // It should not have already been in the list.
 
   if (!m_pendingEventTimer->isActive())
@@ -128,7 +128,7 @@ void DOMWindowEventQueue::pendingEventTimerFired() {
 
   // Insert a marker for where we should stop.
   DCHECK(!m_queuedEvents.contains(nullptr));
-  bool wasAdded = m_queuedEvents.add(nullptr).isNewEntry;
+  bool wasAdded = m_queuedEvents.insert(nullptr).isNewEntry;
   DCHECK(wasAdded);  // It should not have already been in the list.
 
   while (!m_queuedEvents.isEmpty()) {

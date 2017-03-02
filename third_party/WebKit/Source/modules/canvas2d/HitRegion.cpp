@@ -31,7 +31,7 @@ DEFINE_TRACE(HitRegion) {
 }
 
 void HitRegionManager::addHitRegion(HitRegion* hitRegion) {
-  m_hitRegionList.add(hitRegion);
+  m_hitRegionList.insert(hitRegion);
 
   if (!hitRegion->id().isEmpty())
     m_hitRegionIdMap.set(hitRegion->id(), hitRegion);
@@ -75,7 +75,7 @@ void HitRegionManager::removeHitRegionsInRect(const FloatRect& rect,
     HitRegion* hitRegion = *it;
     hitRegion->removePixels(clearArea);
     if (hitRegion->path().isEmpty())
-      toBeRemoved.add(hitRegion);
+      toBeRemoved.insert(hitRegion);
   }
 
   itEnd = toBeRemoved.rend();

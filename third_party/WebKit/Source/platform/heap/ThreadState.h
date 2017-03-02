@@ -512,7 +512,7 @@ class PLATFORM_EXPORT ThreadState {
       DCHECK(!state->sweepForbidden());
       DCHECK(!state->m_orderedPreFinalizers.contains(
           PreFinalizer(self, T::invokePreFinalizer)));
-      state->m_orderedPreFinalizers.add(
+      state->m_orderedPreFinalizers.insert(
           PreFinalizer(self, T::invokePreFinalizer));
     }
   };

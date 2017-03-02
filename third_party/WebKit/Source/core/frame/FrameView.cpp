@@ -3109,7 +3109,7 @@ void FrameView::updateLifecyclePhasesInternal(
 
 void FrameView::enqueueScrollAnchoringAdjustment(
     ScrollableArea* scrollableArea) {
-  m_anchoringAdjustmentQueue.add(scrollableArea);
+  m_anchoringAdjustmentQueue.insert(scrollableArea);
 }
 
 void FrameView::performScrollAnchoringAdjustments() {

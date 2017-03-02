@@ -371,7 +371,7 @@ void IDBTransaction::abort(ExceptionState& exceptionState) {
 void IDBTransaction::registerRequest(IDBRequest* request) {
   DCHECK(request);
   DCHECK_EQ(m_state, Active);
-  m_requestList.add(request);
+  m_requestList.insert(request);
 }
 
 void IDBTransaction::unregisterRequest(IDBRequest* request) {

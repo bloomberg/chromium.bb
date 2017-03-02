@@ -397,7 +397,7 @@ ListBasedHitTestBehavior HitTestResult::addNodeToListBasedTestResult(
   if (!node)
     return ContinueHitTesting;
 
-  mutableListBasedTestResult().add(node);
+  mutableListBasedTestResult().insert(node);
 
   if (hitTestRequest().penetratingList())
     return ContinueHitTesting;
@@ -417,7 +417,7 @@ ListBasedHitTestBehavior HitTestResult::addNodeToListBasedTestResult(
   if (!node)
     return ContinueHitTesting;
 
-  mutableListBasedTestResult().add(node);
+  mutableListBasedTestResult().insert(node);
 
   if (hitTestRequest().penetratingList())
     return ContinueHitTesting;
@@ -448,7 +448,7 @@ void HitTestResult::append(const HitTestResult& other) {
     for (NodeSet::const_iterator it = other.m_listBasedTestResult->begin(),
                                  last = other.m_listBasedTestResult->end();
          it != last; ++it)
-      set.add(it->get());
+      set.insert(it->get());
   }
 }
 

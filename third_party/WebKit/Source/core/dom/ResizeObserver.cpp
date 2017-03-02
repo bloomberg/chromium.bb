@@ -33,7 +33,7 @@ void ResizeObserver::observe(Element* target) {
     return;  // Already registered.
 
   auto observation = new ResizeObservation(target, this);
-  m_observations.add(observation);
+  m_observations.insert(observation);
   observerMap.set(this, observation);
 
   if (FrameView* frameView = target->document().view())

@@ -405,7 +405,7 @@ DEFINE_TRACE(DocumentState) {
 
 void DocumentState::addControl(HTMLFormControlElementWithState* control) {
   DCHECK(!m_formControls.contains(control));
-  m_formControls.add(control);
+  m_formControls.insert(control);
 }
 
 void DocumentState::removeControl(HTMLFormControlElementWithState* control) {

@@ -58,7 +58,7 @@ void V0CustomElementUpgradeCandidateMap::add(
                    .storedValue->value.get();
   else
     elements = it->value.get();
-  elements->add(element);
+  elements->insert(element);
 }
 
 void V0CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element) {

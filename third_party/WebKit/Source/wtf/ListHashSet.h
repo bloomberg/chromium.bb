@@ -185,14 +185,12 @@ class ListHashSet
   template <typename HashTranslator, typename T>
   bool contains(const T&) const;
 
-  // The return value of add is a pair of a pointer to the stored value, and a
-  // bool that is true if an new entry was added.
-  template <typename IncomingValueType>
-  AddResult add(IncomingValueType&&);
+  // The return value of insert is a pair of a pointer to the stored value, and
+  // a bool that is true if an new entry was added.
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
 
-  // Same as add() except that the return value is an iterator. Useful in
+  // Same as insert() except that the return value is an iterator. Useful in
   // cases where it's needed to have the same return value as find() and where
   // it's not possible to use a pointer to the storedValue.
   template <typename IncomingValueType>
@@ -770,7 +768,7 @@ inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(
     : m_head(nullptr), m_tail(nullptr) {
   const_iterator end = other.end();
   for (const_iterator it = other.begin(); it != end; ++it)
-    add(*it);
+    insert(*it);
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
@@ -918,7 +916,7 @@ inline bool ListHashSet<T, inlineCapacity, U, V>::contains(
 template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename IncomingValueType>
 typename ListHashSet<T, inlineCapacity, U, V>::AddResult
-ListHashSet<T, inlineCapacity, U, V>::add(IncomingValueType&& value) {
+ListHashSet<T, inlineCapacity, U, V>::insert(IncomingValueType&& value) {
   createAllocatorIfNeeded();
   // The second argument is a const ref. This is useful for the HashTable
   // because it lets it take lvalues by reference, but for our purposes it's
@@ -933,17 +931,10 @@ ListHashSet<T, inlineCapacity, U, V>::add(IncomingValueType&& value) {
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename IncomingValueType>
-typename ListHashSet<T, inlineCapacity, U, V>::AddResult
-ListHashSet<T, inlineCapacity, U, V>::insert(IncomingValueType&& value) {
-  return add(value);
-}
-
-template <typename T, size_t inlineCapacity, typename U, typename V>
-template <typename IncomingValueType>
 typename ListHashSet<T, inlineCapacity, U, V>::iterator
 ListHashSet<T, inlineCapacity, U, V>::addReturnIterator(
     IncomingValueType&& value) {
-  return makeIterator(add(std::forward<IncomingValueType>(value)).m_node);
+  return makeIterator(insert(std::forward<IncomingValueType>(value)).m_node);
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>

@@ -67,7 +67,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   size_t oof_index = 0;
   for (auto& oof_node : child->OutOfFlowDescendants()) {
     NGStaticPosition oof_position = oof_positions[oof_index++];
-    out_of_flow_descendant_candidates_.add(oof_node);
+    out_of_flow_descendant_candidates_.insert(oof_node);
     out_of_flow_candidate_placements_.push_back(
         OutOfFlowPlacement{child_offset, oof_position});
   }
@@ -108,7 +108,7 @@ NGFragmentBuilder& NGFragmentBuilder::SetBfcOffset(
 NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode* child,
     NGLogicalOffset child_offset) {
-  out_of_flow_descendant_candidates_.add(child);
+  out_of_flow_descendant_candidates_.insert(child);
   NGStaticPosition child_position =
       NGStaticPosition::Create(writing_mode_, direction_, NGPhysicalOffset());
   out_of_flow_candidate_placements_.push_back(
@@ -146,7 +146,7 @@ void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     builder_relative_position.type = oof_placement.descendant_position.type;
     builder_relative_position.offset =
         child_offset + oof_placement.descendant_position.offset;
-    descendants->add(oof_node);
+    descendants->insert(oof_node);
     descendant_positions->push_back(builder_relative_position);
   }
   out_of_flow_descendant_candidates_.clear();
@@ -156,7 +156,7 @@ void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
 NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
     NGBlockNode* descendant,
     const NGStaticPosition& position) {
-  out_of_flow_descendants_.add(descendant);
+  out_of_flow_descendants_.insert(descendant);
   out_of_flow_positions_.push_back(position);
   return *this;
 }

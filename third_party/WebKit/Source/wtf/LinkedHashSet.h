@@ -257,14 +257,12 @@ class LinkedHashSet {
   template <typename HashTranslator, typename T>
   bool contains(const T&) const;
 
-  // The return value of add is a pair of a pointer to the stored value,
+  // The return value of insert is a pair of a pointer to the stored value,
   // and a bool that is true if an new entry was added.
-  template <typename IncomingValueType>
-  AddResult add(IncomingValueType&&);
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
 
-  // Same as add() except that the return value is an
+  // Same as insert() except that the return value is an
   // iterator. Useful in cases where it's needed to have the
   // same return value as find() and where it's not possible to
   // use a pointer to the storedValue.
@@ -665,7 +663,7 @@ inline LinkedHashSet<T, U, V, W>::LinkedHashSet(const LinkedHashSet& other)
     : m_anchor() {
   const_iterator end = other.end();
   for (const_iterator it = other.begin(); it != end; ++it)
-    add(*it);
+    insert(*it);
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -814,21 +812,10 @@ template <typename Value,
           typename Allocator>
 template <typename IncomingValueType>
 typename LinkedHashSet<Value, HashFunctions, Traits, Allocator>::AddResult
-LinkedHashSet<Value, HashFunctions, Traits, Allocator>::add(
+LinkedHashSet<Value, HashFunctions, Traits, Allocator>::insert(
     IncomingValueType&& value) {
   return m_impl.template add<NodeHashFunctions>(
       std::forward<IncomingValueType>(value), &m_anchor);
-}
-
-template <typename Value,
-          typename HashFunctions,
-          typename Traits,
-          typename Allocator>
-template <typename IncomingValueType>
-typename LinkedHashSet<Value, HashFunctions, Traits, Allocator>::AddResult
-LinkedHashSet<Value, HashFunctions, Traits, Allocator>::insert(
-    IncomingValueType&& value) {
-  return add(value);
 }
 
 template <typename T, typename U, typename V, typename W>

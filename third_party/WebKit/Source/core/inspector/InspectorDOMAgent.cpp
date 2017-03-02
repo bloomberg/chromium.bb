@@ -993,7 +993,7 @@ Response InspectorDOMAgent::performSearch(
         case Node::kCdataSectionNode: {
           String text = node->nodeValue();
           if (text.findIgnoringCase(whitespaceTrimmedQuery) != kNotFound)
-            resultCollector.add(node);
+            resultCollector.insert(node);
           break;
         }
         case Node::kElementNode: {
@@ -1008,7 +1008,7 @@ Response InspectorDOMAgent::performSearch(
               (!startTagFound && endTagFound &&
                node->nodeName().endsWith(tagNameQuery,
                                          TextCaseUnicodeInsensitive))) {
-            resultCollector.add(node);
+            resultCollector.insert(node);
             break;
           }
           // Go through all attributes and serialize them.
@@ -1019,7 +1019,7 @@ Response InspectorDOMAgent::performSearch(
             if (attribute.localName().find(whitespaceTrimmedQuery, 0,
                                            TextCaseUnicodeInsensitive) !=
                 kNotFound) {
-              resultCollector.add(node);
+              resultCollector.insert(node);
               break;
             }
             size_t foundPosition = attribute.value().find(
@@ -1028,7 +1028,7 @@ Response InspectorDOMAgent::performSearch(
               if (!exactAttributeMatch ||
                   (!foundPosition &&
                    attribute.value().length() == attributeQuery.length())) {
-                resultCollector.add(node);
+                resultCollector.insert(node);
                 break;
               }
             }
@@ -1059,7 +1059,7 @@ Response InspectorDOMAgent::performSearch(
 
         if (node->getNodeType() == Node::kAttributeNode)
           node = toAttr(node)->ownerElement();
-        resultCollector.add(node);
+        resultCollector.insert(node);
       }
     }
 
@@ -1073,7 +1073,7 @@ Response InspectorDOMAgent::performSearch(
 
       unsigned size = elementList->length();
       for (unsigned i = 0; i < size; ++i)
-        resultCollector.add(elementList->item(i));
+        resultCollector.insert(elementList->item(i));
     }
   }
 

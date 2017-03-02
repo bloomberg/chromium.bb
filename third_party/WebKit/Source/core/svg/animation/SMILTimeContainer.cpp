@@ -84,7 +84,7 @@ void SMILTimeContainer::schedule(SVGSMILElement* animation,
   if (!scheduled)
     scheduled = new AnimationsLinkedHashSet;
   ASSERT(!scheduled->contains(animation));
-  scheduled->add(animation);
+  scheduled->insert(animation);
 
   SMILTime nextFireTime = animation->nextProgressTime();
   if (nextFireTime.isFinite())

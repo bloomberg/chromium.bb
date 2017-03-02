@@ -69,7 +69,7 @@ void MediaQueryList::addListener(MediaQueryListListener* listener) {
   if (!listener)
     return;
 
-  m_listeners.add(listener);
+  m_listeners.insert(listener);
 }
 
 void MediaQueryList::removeListener(MediaQueryListListener* listener) {

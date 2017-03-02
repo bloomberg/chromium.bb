@@ -1075,7 +1075,7 @@ void ResourceFetcher::preloadStarted(Resource* resource) {
 
   if (!m_preloads)
     m_preloads = new HeapListHashSet<Member<Resource>>;
-  m_preloads->add(resource);
+  m_preloads->insert(resource);
 
   if (m_preloadedURLsForTest)
     m_preloadedURLsForTest->insert(resource->url().getString());

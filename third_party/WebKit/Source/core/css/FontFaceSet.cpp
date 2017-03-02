@@ -257,7 +257,7 @@ FontFaceSet* FontFaceSet::addForBinding(ScriptState*,
   if (isCSSConnectedFontFace(fontFace))
     return this;
   CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
-  m_nonCSSConnectedFaces.add(fontFace);
+  m_nonCSSConnectedFaces.insert(fontFace);
   fontSelector->fontFaceCache()->addFontFace(fontSelector, fontFace, false);
   if (fontFace->loadStatus() == FontFace::Loading)
     addToLoadingFonts(fontFace);

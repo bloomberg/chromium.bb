@@ -880,7 +880,7 @@ void LayoutMultiColumnFlowThread::addColumnSetToThread(
     ASSERT(it != m_multiColumnSetList.end());
     m_multiColumnSetList.insertBefore(it, columnSet);
   } else {
-    m_multiColumnSetList.add(columnSet);
+    m_multiColumnSetList.insert(columnSet);
   }
 }
 

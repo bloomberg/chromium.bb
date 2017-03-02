@@ -354,7 +354,7 @@ TEST(HeapCompactTest, CompactLinkedHashSet) {
   Persistent<OrderedHashSet> set = new OrderedHashSet;
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::create(i);
-    set->add(value);
+    set->insert(value);
   }
   EXPECT_EQ(13u, set->size());
 
@@ -379,7 +379,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetVector) {
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::create(i);
     IntVector* vector = new IntVector(19, value);
-    set->add(vector);
+    set->insert(vector);
   }
   EXPECT_EQ(13u, set->size());
 
@@ -407,7 +407,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetMap) {
     IntWrapper* value = IntWrapper::create(i);
     Inner* inner = new Inner;
     inner->insert(value);
-    set->add(inner);
+    set->insert(inner);
   }
   EXPECT_EQ(13u, set->size());
 
@@ -436,8 +436,8 @@ TEST(HeapCompactTest, CompactLinkedHashSetNested) {
   for (int i = 0; i < 13; ++i) {
     IntWrapper* value = IntWrapper::create(i);
     Inner* inner = new Inner;
-    inner->add(value);
-    set->add(inner);
+    inner->insert(value);
+    set->insert(inner);
   }
   EXPECT_EQ(13u, set->size());
 

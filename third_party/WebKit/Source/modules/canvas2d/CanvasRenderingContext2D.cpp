@@ -462,7 +462,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
     if (i != m_fontsResolvedUsingCurrentStyle.end()) {
       DCHECK(m_fontLRUList.contains(newFont));
       m_fontLRUList.remove(newFont);
-      m_fontLRUList.add(newFont);
+      m_fontLRUList.insert(newFont);
       modifiableState().setFont(
           i->value, canvas()->document().styleEngine().fontSelector());
     } else {
@@ -483,7 +483,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
                                                              *parsedStyle);
       m_fontsResolvedUsingCurrentStyle.insert(newFont, fontStyle->font());
       DCHECK(!m_fontLRUList.contains(newFont));
-      m_fontLRUList.add(newFont);
+      m_fontLRUList.insert(newFont);
       pruneLocalFontCache(canvasFontCache->hardMaxFonts());  // hard limit
       m_shouldPruneLocalFontCache = true;                    // apply soft limit
       modifiableState().setFont(

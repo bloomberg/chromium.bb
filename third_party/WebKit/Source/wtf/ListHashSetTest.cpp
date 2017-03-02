@@ -48,11 +48,11 @@ TYPED_TEST_CASE(ListOrLinkedHashSetTest, SetTypes);
 TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
   using Set = TypeParam;
   Set list;
-  list.add(-1);
-  list.add(0);
-  list.add(1);
-  list.add(2);
-  list.add(3);
+  list.insert(-1);
+  list.insert(0);
+  list.insert(1);
+  list.insert(2);
+  list.insert(3);
 
   EXPECT_EQ(-1, list.first());
   EXPECT_EQ(3, list.last());
@@ -78,7 +78,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastNewItems) {
   Set list;
   typename Set::AddResult result = list.appendOrMoveToLast(1);
   EXPECT_TRUE(result.isNewEntry);
-  result = list.add(2);
+  result = list.insert(2);
   EXPECT_TRUE(result.isNewEntry);
   result = list.appendOrMoveToLast(3);
   EXPECT_TRUE(result.isNewEntry);
@@ -100,14 +100,14 @@ TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastWithDuplicates) {
   Set list;
 
   // Add a single element twice.
-  typename Set::AddResult result = list.add(1);
+  typename Set::AddResult result = list.insert(1);
   EXPECT_TRUE(result.isNewEntry);
   result = list.appendOrMoveToLast(1);
   EXPECT_FALSE(result.isNewEntry);
   EXPECT_EQ(1UL, list.size());
 
-  list.add(2);
-  list.add(3);
+  list.insert(2);
+  list.insert(3);
   EXPECT_EQ(3UL, list.size());
 
   // Appending 2 move it to the end.
@@ -139,7 +139,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToFirstNewItems) {
   Set list;
   typename Set::AddResult result = list.prependOrMoveToFirst(1);
   EXPECT_TRUE(result.isNewEntry);
-  result = list.add(2);
+  result = list.insert(2);
   EXPECT_TRUE(result.isNewEntry);
   result = list.prependOrMoveToFirst(3);
   EXPECT_TRUE(result.isNewEntry);
@@ -161,14 +161,14 @@ TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToLastWithDuplicates) {
   Set list;
 
   // Add a single element twice.
-  typename Set::AddResult result = list.add(1);
+  typename Set::AddResult result = list.insert(1);
   EXPECT_TRUE(result.isNewEntry);
   result = list.prependOrMoveToFirst(1);
   EXPECT_FALSE(result.isNewEntry);
   EXPECT_EQ(1UL, list.size());
 
-  list.add(2);
-  list.add(3);
+  list.insert(2);
+  list.insert(3);
   EXPECT_EQ(3UL, list.size());
 
   // Prepending 2 move it to the beginning.
@@ -198,11 +198,11 @@ TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToLastWithDuplicates) {
 TYPED_TEST(ListOrLinkedHashSetTest, Find) {
   using Set = TypeParam;
   Set set;
-  set.add(-1);
-  set.add(0);
-  set.add(1);
-  set.add(2);
-  set.add(3);
+  set.insert(-1);
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(3);
 
   {
     const Set& ref = set;
@@ -230,10 +230,10 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   using Set = TypeParam;
   bool canModifyWhileIterating = !std::is_same<Set, LinkedHashSet<int>>::value;
   Set set;
-  set.add(-1);
-  set.add(0);
-  set.add(2);
-  set.add(3);
+  set.insert(-1);
+  set.insert(0);
+  set.insert(2);
+  set.insert(3);
 
   typename Set::iterator it = set.find(2);
   EXPECT_EQ(2, *it);
@@ -259,8 +259,8 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
     EXPECT_EQ(1, *it);
     set.insertBefore(it, -1);
     set.insertBefore(it, 0);
-    set.add(2);
-    set.add(3);
+    set.insert(2);
+    set.insert(3);
   }
   set.insertBefore(2, 42);
   set.insertBefore(-1, 103);
@@ -276,10 +276,10 @@ TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator) {
   using Set = TypeParam;
   bool canModifyWhileIterating = !std::is_same<Set, LinkedHashSet<int>>::value;
   Set set;
-  set.add(-1);
-  set.add(0);
-  set.add(1);
-  set.add(2);
+  set.insert(-1);
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
 
   typename Set::iterator it = set.addReturnIterator(3);
   EXPECT_EQ(3, *it);
@@ -326,8 +326,8 @@ TYPED_TEST(ListOrLinkedHashSetTest, Swap) {
   Set set1;
   Set set2;
   for (int i = 0; i < num; ++i) {
-    set1.add(i + 1);
-    set2.add(num - i);
+    set1.insert(i + 1);
+    set2.insert(num - i);
   }
 
   typename Set::iterator it1 = set1.begin();
@@ -405,7 +405,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);
 
   Set set;
-  set.add(ptr);
+  set.insert(ptr);
   // Referenced only once (to store a copy in the container).
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
   EXPECT_EQ(ptr, set.first());
@@ -436,7 +436,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
   RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
   RefPtr<DummyRefCounted> ptr2 = adoptRef(new DummyRefCounted(isDeleted2));
 
-  typename Set::AddResult addResult = set.add(ptr);
+  typename Set::AddResult addResult = set.insert(ptr);
   EXPECT_TRUE(addResult.isNewEntry);
   set.find(ptr);
   const Set& constSet(set);
@@ -448,7 +448,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
   set.insertBefore(ptr, ptr);
   set.insertBefore(it, ptr);
   EXPECT_EQ(1u, set.size());
-  set.add(ptr2);
+  set.insert(ptr2);
   ptr2.clear();
   set.remove(ptr);
 
@@ -509,7 +509,7 @@ TYPED_TEST_CASE(ListOrLinkedHashSetTranslatorTest, TranslatorSetTypes);
 TYPED_TEST(ListOrLinkedHashSetTranslatorTest, ComplexityTranslator) {
   using Set = TypeParam;
   Set set;
-  set.add(Complicated(42));
+  set.insert(Complicated(42));
   int baseLine = Complicated::s_objectsConstructed;
 
   typename Set::iterator it =
@@ -551,7 +551,7 @@ TEST(ListHashSetTest, WithOwnPtr) {
   {
     // AddResult in a separate scope to avoid assertion hit,
     // since we modify the container further.
-    OwnPtrSet::AddResult res1 = set.add(WTF::wrapUnique(ptr1));
+    OwnPtrSet::AddResult res1 = set.insert(WTF::wrapUnique(ptr1));
     EXPECT_EQ(res1.storedValue->get(), ptr1);
   }
 
@@ -563,7 +563,7 @@ TEST(ListHashSetTest, WithOwnPtr) {
 
   Dummy* ptr2 = new Dummy(deleted2);
   {
-    OwnPtrSet::AddResult res2 = set.add(WTF::wrapUnique(ptr2));
+    OwnPtrSet::AddResult res2 = set.insert(WTF::wrapUnique(ptr2));
     EXPECT_EQ(res2.storedValue->get(), ptr2);
   }
 
@@ -584,8 +584,8 @@ TEST(ListHashSetTest, WithOwnPtr) {
   deleted2 = false;
   {
     OwnPtrSet set;
-    set.add(WTF::makeUnique<Dummy>(deleted1));
-    set.add(WTF::makeUnique<Dummy>(deleted2));
+    set.insert(WTF::makeUnique<Dummy>(deleted1));
+    set.insert(WTF::makeUnique<Dummy>(deleted2));
   }
   EXPECT_TRUE(deleted1);
   EXPECT_TRUE(deleted2);
@@ -598,8 +598,8 @@ TEST(ListHashSetTest, WithOwnPtr) {
   ptr2 = new Dummy(deleted2);
   {
     OwnPtrSet set;
-    set.add(WTF::wrapUnique(ptr1));
-    set.add(WTF::wrapUnique(ptr2));
+    set.insert(WTF::wrapUnique(ptr1));
+    set.insert(WTF::wrapUnique(ptr2));
     ownPtr1 = set.takeFirst();
     EXPECT_EQ(1UL, set.size());
     ownPtr2 = set.take(ptr2);
@@ -674,7 +674,7 @@ TYPED_TEST(ListOrLinkedHashSetCountCopyTest,
   using Set = TypeParam;
   Set set;
   int counter = 0;
-  set.add(CountCopy(&counter));
+  set.insert(CountCopy(&counter));
 
   counter = 0;
   Set other(std::move(set));
@@ -685,7 +685,7 @@ TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveAssignmentShouldNotMakeACopy) {
   using Set = TypeParam;
   Set set;
   int counter = 0;
-  set.add(CountCopy(&counter));
+  set.insert(CountCopy(&counter));
 
   Set other(set);
   counter = 0;
@@ -756,13 +756,13 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
   using AddResult = typename Set::AddResult;
   Set set;
   {
-    AddResult addResult = set.add(MoveOnly(1, 1));
+    AddResult addResult = set.insert(MoveOnly(1, 1));
     EXPECT_TRUE(addResult.isNewEntry);
     EXPECT_EQ(1, addResult.storedValue->value());
     EXPECT_EQ(1, addResult.storedValue->id());
   }
   {
-    AddResult addResult = set.add(MoveOnly(1, 111));
+    AddResult addResult = set.insert(MoveOnly(1, 111));
     EXPECT_FALSE(addResult.isNewEntry);
     EXPECT_EQ(1, addResult.storedValue->value());
     EXPECT_EQ(1, addResult.storedValue->id());

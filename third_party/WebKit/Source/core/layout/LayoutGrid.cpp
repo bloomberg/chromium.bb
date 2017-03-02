@@ -572,7 +572,7 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
     emptyTrackIndexes = WTF::wrapUnique(new OrderedTrackIndexSet);
     for (size_t trackIndex = firstAutoRepeatTrack;
          trackIndex < lastAutoRepeatTrack; ++trackIndex)
-      emptyTrackIndexes->add(trackIndex);
+      emptyTrackIndexes->insert(trackIndex);
   } else {
     for (size_t trackIndex = firstAutoRepeatTrack;
          trackIndex < lastAutoRepeatTrack; ++trackIndex) {
@@ -580,7 +580,7 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
       if (!iterator.nextGridItem()) {
         if (!emptyTrackIndexes)
           emptyTrackIndexes = WTF::wrapUnique(new OrderedTrackIndexSet);
-        emptyTrackIndexes->add(trackIndex);
+        emptyTrackIndexes->insert(trackIndex);
       }
     }
   }

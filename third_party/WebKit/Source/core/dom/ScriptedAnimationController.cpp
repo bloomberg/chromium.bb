@@ -182,7 +182,7 @@ void ScriptedAnimationController::enqueueEvent(Event* event) {
 }
 
 void ScriptedAnimationController::enqueuePerFrameEvent(Event* event) {
-  if (!m_perFrameEvents.add(eventTargetKey(event)).isNewEntry)
+  if (!m_perFrameEvents.insert(eventTargetKey(event)).isNewEntry)
     return;
   enqueueEvent(event);
 }
@@ -190,7 +190,7 @@ void ScriptedAnimationController::enqueuePerFrameEvent(Event* event) {
 void ScriptedAnimationController::enqueueMediaQueryChangeListeners(
     HeapVector<Member<MediaQueryListListener>>& listeners) {
   for (const auto& listener : listeners) {
-    m_mediaQueryListListeners.add(listener);
+    m_mediaQueryListListeners.insert(listener);
   }
   scheduleAnimationIfNeeded();
 }

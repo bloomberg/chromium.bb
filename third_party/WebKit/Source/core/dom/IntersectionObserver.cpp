@@ -256,7 +256,7 @@ void IntersectionObserver::observe(Element* target,
   IntersectionObservation* observation =
       new IntersectionObservation(*this, *target, shouldReportRootBounds);
   target->ensureIntersectionObserverData().addObservation(*observation);
-  m_observations.add(observation);
+  m_observations.insert(observation);
   if (FrameView* frameView = targetFrame->view())
     frameView->scheduleAnimation();
 }

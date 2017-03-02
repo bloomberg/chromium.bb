@@ -4355,7 +4355,7 @@ void LayoutBlockFlow::simplifiedNormalFlowInlineLayout() {
       o->layoutIfNeeded();
       if (toLayoutBox(o)->inlineBoxWrapper()) {
         RootInlineBox& box = toLayoutBox(o)->inlineBoxWrapper()->root();
-        lineBoxes.add(&box);
+        lineBoxes.insert(&box);
       }
     } else if (o->isText() ||
                (o->isLayoutInline() && !walker.atEndOfInline())) {
@@ -4384,7 +4384,7 @@ bool LayoutBlockFlow::recalcInlineChildrenOverflowAfterStyleChange() {
       childrenOverflowChanged = true;
       if (InlineBox* inlineBoxWrapper =
               toLayoutBlock(layoutObject)->inlineBoxWrapper())
-        lineBoxes.add(&inlineBoxWrapper->root());
+        lineBoxes.insert(&inlineBoxWrapper->root());
     }
   }
 

@@ -2994,13 +2994,13 @@ void orderedSetHelper(bool strong) {
   keepNumbersAlive.push_back(IntWrapper::create(103));
   keepNumbersAlive.push_back(IntWrapper::create(10));
 
-  set1->add(IntWrapper::create(0));
-  set1->add(keepNumbersAlive[0]);
-  set1->add(keepNumbersAlive[1]);
-  set1->add(keepNumbersAlive[2]);
+  set1->insert(IntWrapper::create(0));
+  set1->insert(keepNumbersAlive[0]);
+  set1->insert(keepNumbersAlive[1]);
+  set1->insert(keepNumbersAlive[2]);
 
   set2->clear();
-  set2->add(IntWrapper::create(42));
+  set2->insert(IntWrapper::create(42));
   set2->clear();
 
   EXPECT_EQ(4u, set1->size());
@@ -3393,7 +3393,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
         strongWeak->insert(wrapped2, wrapped);
         weakWeak->insert(wrapped, wrapped2);
         weakSet->insert(wrapped);
-        weakOrderedSet->add(wrapped);
+        weakOrderedSet->insert(wrapped);
       }
 
       EXPECT_EQ(64u, weakStrong->size());
@@ -3510,7 +3510,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
             strongWeak->insert(wrapped, wrapped);
             weakWeak->insert(wrapped, wrapped);
             weakSet->insert(wrapped);
-            weakOrderedSet->add(wrapped);
+            weakOrderedSet->insert(wrapped);
           }
         }
         if (collectionNumber == weakStrongIndex)
@@ -3864,8 +3864,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     pVec.push_back(three);
 
     pSet.insert(four);
-    pListSet.add(eight);
-    pLinkedSet.add(nine);
+    pListSet.insert(eight);
+    pLinkedSet.insert(nine);
     pMap.insert(five, six);
     wpMap.insert(ten, eleven);
 

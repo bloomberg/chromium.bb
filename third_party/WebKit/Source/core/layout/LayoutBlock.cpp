@@ -1004,7 +1004,7 @@ void LayoutBlock::insertPositionedObject(LayoutBox* o) {
     descendantSet = new TrackedLayoutBoxListHashSet;
     gPositionedDescendantsMap->set(this, WTF::wrapUnique(descendantSet));
   }
-  descendantSet->add(o);
+  descendantSet->insert(o);
 
   m_hasPositionedObjects = true;
 }
@@ -1113,7 +1113,7 @@ void LayoutBlock::addPercentHeightDescendant(LayoutBox* descendant) {
     descendantSet = new TrackedLayoutBoxListHashSet;
     gPercentHeightDescendantsMap->set(this, WTF::wrapUnique(descendantSet));
   }
-  descendantSet->add(descendant);
+  descendantSet->insert(descendant);
 
   m_hasPercentHeightDescendants = true;
 }

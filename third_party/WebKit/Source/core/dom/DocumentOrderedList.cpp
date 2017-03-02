@@ -35,7 +35,7 @@ namespace blink {
 
 void DocumentOrderedList::add(Node* node) {
   if (m_nodes.isEmpty()) {
-    m_nodes.add(node);
+    m_nodes.insert(node);
     return;
   }
 
