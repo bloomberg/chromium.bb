@@ -181,28 +181,28 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   void setScrollCornerNeedsPaintInvalidation();
   virtual void getTickmarks(Vector<IntRect>&) const {}
 
-  // Convert points and rects between the scrollbar and its containing Widget.
-  // The client needs to implement these in order to be aware of layout effects
-  // like CSS transforms.
+  // Convert points and rects between the scrollbar and its containing
+  // FrameViewBase. The client needs to implement these in order to be aware of
+  // layout effects like CSS transforms.
   virtual IntRect convertFromScrollbarToContainingWidget(
       const Scrollbar& scrollbar,
       const IntRect& scrollbarRect) const {
-    return scrollbar.Widget::convertToContainingWidget(scrollbarRect);
+    return scrollbar.FrameViewBase::convertToContainingWidget(scrollbarRect);
   }
   virtual IntRect convertFromContainingWidgetToScrollbar(
       const Scrollbar& scrollbar,
       const IntRect& parentRect) const {
-    return scrollbar.Widget::convertFromContainingWidget(parentRect);
+    return scrollbar.FrameViewBase::convertFromContainingWidget(parentRect);
   }
   virtual IntPoint convertFromScrollbarToContainingWidget(
       const Scrollbar& scrollbar,
       const IntPoint& scrollbarPoint) const {
-    return scrollbar.Widget::convertToContainingWidget(scrollbarPoint);
+    return scrollbar.FrameViewBase::convertToContainingWidget(scrollbarPoint);
   }
   virtual IntPoint convertFromContainingWidgetToScrollbar(
       const Scrollbar& scrollbar,
       const IntPoint& parentPoint) const {
-    return scrollbar.Widget::convertFromContainingWidget(parentPoint);
+    return scrollbar.FrameViewBase::convertFromContainingWidget(parentPoint);
   }
 
   virtual Scrollbar* horizontalScrollbar() const { return nullptr; }
@@ -336,7 +336,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
       OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const;
 
   // Returns the widget associated with this ScrollableArea.
-  virtual Widget* getWidget() { return nullptr; }
+  virtual FrameViewBase* getWidget() { return nullptr; }
 
   virtual LayoutBox* layoutBox() const { return nullptr; }
 

@@ -74,7 +74,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea,
   m_themeScrollbarThickness = thickness;
   if (m_hostWindow)
     thickness = m_hostWindow->windowToViewportScalar(thickness);
-  Widget::setFrameRect(IntRect(0, 0, thickness, thickness));
+  FrameViewBase::setFrameRect(IntRect(0, 0, thickness, thickness));
 
   m_currentPos = scrollableAreaCurrentPos();
 }
@@ -86,14 +86,14 @@ Scrollbar::~Scrollbar() {
 DEFINE_TRACE(Scrollbar) {
   visitor->trace(m_scrollableArea);
   visitor->trace(m_hostWindow);
-  Widget::trace(visitor);
+  FrameViewBase::trace(visitor);
 }
 
 void Scrollbar::setFrameRect(const IntRect& frameRect) {
   if (frameRect == this->frameRect())
     return;
 
-  Widget::setFrameRect(frameRect);
+  FrameViewBase::setFrameRect(frameRect);
   setNeedsPaintInvalidation(AllParts);
 }
 
@@ -157,7 +157,7 @@ void Scrollbar::paint(GraphicsContext& context,
     return;
 
   if (!theme().paint(*this, context, cullRect))
-    Widget::paint(context, cullRect);
+    FrameViewBase::paint(context, cullRect);
 }
 
 void Scrollbar::autoscrollTimerFired(TimerBase*) {
@@ -573,7 +573,7 @@ IntRect Scrollbar::convertToContainingWidget(const IntRect& localRect) const {
     return m_scrollableArea->convertFromScrollbarToContainingWidget(*this,
                                                                     localRect);
 
-  return Widget::convertToContainingWidget(localRect);
+  return FrameViewBase::convertToContainingWidget(localRect);
 }
 
 IntRect Scrollbar::convertFromContainingWidget(
@@ -582,7 +582,7 @@ IntRect Scrollbar::convertFromContainingWidget(
     return m_scrollableArea->convertFromContainingWidgetToScrollbar(*this,
                                                                     parentRect);
 
-  return Widget::convertFromContainingWidget(parentRect);
+  return FrameViewBase::convertFromContainingWidget(parentRect);
 }
 
 IntPoint Scrollbar::convertToContainingWidget(
@@ -591,7 +591,7 @@ IntPoint Scrollbar::convertToContainingWidget(
     return m_scrollableArea->convertFromScrollbarToContainingWidget(*this,
                                                                     localPoint);
 
-  return Widget::convertToContainingWidget(localPoint);
+  return FrameViewBase::convertToContainingWidget(localPoint);
 }
 
 IntPoint Scrollbar::convertFromContainingWidget(
@@ -600,7 +600,7 @@ IntPoint Scrollbar::convertFromContainingWidget(
     return m_scrollableArea->convertFromContainingWidgetToScrollbar(
         *this, parentPoint);
 
-  return Widget::convertFromContainingWidget(parentPoint);
+  return FrameViewBase::convertFromContainingWidget(parentPoint);
 }
 
 float Scrollbar::scrollableAreaCurrentPos() const {

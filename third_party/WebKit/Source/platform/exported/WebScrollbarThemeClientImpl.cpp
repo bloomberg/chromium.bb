@@ -63,13 +63,13 @@ IntPoint WebScrollbarThemeClientImpl::location() const {
   return m_scrollbar.location();
 }
 
-Widget* WebScrollbarThemeClientImpl::parent() const {
+FrameViewBase* WebScrollbarThemeClientImpl::parent() const {
   // Unused by Chromium scrollbar themes.
   ASSERT_NOT_REACHED();
   return 0;
 }
 
-Widget* WebScrollbarThemeClientImpl::root() const {
+FrameViewBase* WebScrollbarThemeClientImpl::root() const {
   // Unused by Chromium scrollbar themes.
   ASSERT_NOT_REACHED();
   return 0;

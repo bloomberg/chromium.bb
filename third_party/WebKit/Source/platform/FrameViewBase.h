@@ -44,10 +44,11 @@ class GraphicsContext;
 // The FrameViewBase class serves as a base class for FrameView, Scrollbar, and
 // PluginView.
 //
-// FrameViewBases are connected in a hierarchy, with the restriction that plugins and
-// scrollbars are always leaves of the tree. Only FrameView can have children
-// (and therefore the FrameViewBase class has no concept of children).
-class PLATFORM_EXPORT FrameViewBase : public GarbageCollectedFinalized<FrameViewBase> {
+// FrameViewBases are connected in a hierarchy, with the restriction that
+// plugins and scrollbars are always leaves of the tree. Only FrameView can have
+// children (and therefore the FrameViewBase class has no concept of children).
+class PLATFORM_EXPORT FrameViewBase
+    : public GarbageCollectedFinalized<FrameViewBase> {
  public:
   FrameViewBase();
   virtual ~FrameViewBase();
@@ -94,7 +95,7 @@ class PLATFORM_EXPORT FrameViewBase : public GarbageCollectedFinalized<FrameView
   virtual bool isPluginContainer() const { return false; }
   virtual bool isScrollbar() const { return false; }
 
-  virtual void setParent(FrameViewBase *);
+  virtual void setParent(FrameViewBase*);
   FrameViewBase* parent() const { return m_parent; }
   FrameViewBase* root() const;
 
@@ -117,8 +118,10 @@ class PLATFORM_EXPORT FrameViewBase : public GarbageCollectedFinalized<FrameView
   virtual IntPoint convertFromContainingWidget(const IntPoint&) const;
 
   // Virtual methods to convert points to/from child frameviewbases.
-  virtual IntPoint convertChildToSelf(const FrameViewBase *, const IntPoint&) const;
-  virtual IntPoint convertSelfToChild(const FrameViewBase *, const IntPoint&) const;
+  virtual IntPoint convertChildToSelf(const FrameViewBase*,
+                                      const IntPoint&) const;
+  virtual IntPoint convertSelfToChild(const FrameViewBase*,
+                                      const IntPoint&) const;
 
   // Notifies this frameviewbase that it will no longer be receiving events.
   virtual void eventListenersRemoved() {}

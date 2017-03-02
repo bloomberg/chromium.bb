@@ -57,9 +57,11 @@ FrameViewBase* FrameViewBase::root() const {
   return 0;
 }
 
-IntRect FrameViewBase::convertFromRootFrame(const IntRect& rectInRootFrame) const {
+IntRect FrameViewBase::convertFromRootFrame(
+    const IntRect& rectInRootFrame) const {
   if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntRect parentRect = parentFrameViewBase->convertFromRootFrame(rectInRootFrame);
+    IntRect parentRect =
+        parentFrameViewBase->convertFromRootFrame(rectInRootFrame);
     return convertFromContainingWidget(parentRect);
   }
   return rectInRootFrame;
@@ -73,9 +75,11 @@ IntRect FrameViewBase::convertToRootFrame(const IntRect& localRect) const {
   return localRect;
 }
 
-IntPoint FrameViewBase::convertFromRootFrame(const IntPoint& pointInRootFrame) const {
+IntPoint FrameViewBase::convertFromRootFrame(
+    const IntPoint& pointInRootFrame) const {
   if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntPoint parentPoint = parentFrameViewBase->convertFromRootFrame(pointInRootFrame);
+    IntPoint parentPoint =
+        parentFrameViewBase->convertFromRootFrame(pointInRootFrame);
     return convertFromContainingWidget(parentPoint);
   }
   return pointInRootFrame;
@@ -83,8 +87,8 @@ IntPoint FrameViewBase::convertFromRootFrame(const IntPoint& pointInRootFrame) c
 
 FloatPoint FrameViewBase::convertFromRootFrame(
     const FloatPoint& pointInRootFrame) const {
-  // FrameViewBase / windows are required to be IntPoint aligned, but we may need to
-  // convert FloatPoint values within them (eg. for event co-ordinates).
+  // FrameViewBase / windows are required to be IntPoint aligned, but we may
+  // need to convert FloatPoint values within them (eg. for event co-ordinates).
   IntPoint flooredPoint = flooredIntPoint(pointInRootFrame);
   FloatPoint parentPoint = this->convertFromRootFrame(flooredPoint);
   FloatSize windowFraction = pointInRootFrame - flooredPoint;
@@ -110,7 +114,8 @@ IntPoint FrameViewBase::convertToRootFrame(const IntPoint& localPoint) const {
   return localPoint;
 }
 
-IntRect FrameViewBase::convertToContainingWidget(const IntRect& localRect) const {
+IntRect FrameViewBase::convertToContainingWidget(
+    const IntRect& localRect) const {
   if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntRect parentRect(localRect);
     parentRect.setLocation(
@@ -120,7 +125,8 @@ IntRect FrameViewBase::convertToContainingWidget(const IntRect& localRect) const
   return localRect;
 }
 
-IntRect FrameViewBase::convertFromContainingWidget(const IntRect& parentRect) const {
+IntRect FrameViewBase::convertFromContainingWidget(
+    const IntRect& parentRect) const {
   if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntRect localRect = parentRect;
     localRect.setLocation(
@@ -131,7 +137,8 @@ IntRect FrameViewBase::convertFromContainingWidget(const IntRect& parentRect) co
   return parentRect;
 }
 
-IntPoint FrameViewBase::convertToContainingWidget(const IntPoint& localPoint) const {
+IntPoint FrameViewBase::convertToContainingWidget(
+    const IntPoint& localPoint) const {
   if (const FrameViewBase* parentFrameViewBase = parent())
     return parentFrameViewBase->convertChildToSelf(this, localPoint);
 
@@ -147,12 +154,12 @@ IntPoint FrameViewBase::convertFromContainingWidget(
 }
 
 IntPoint FrameViewBase::convertChildToSelf(const FrameViewBase*,
-                                    const IntPoint& point) const {
+                                           const IntPoint& point) const {
   return point;
 }
 
 IntPoint FrameViewBase::convertSelfToChild(const FrameViewBase*,
-                                    const IntPoint& point) const {
+                                           const IntPoint& point) const {
   return point;
 }
 

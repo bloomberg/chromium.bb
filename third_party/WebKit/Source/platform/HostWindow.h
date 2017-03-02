@@ -48,7 +48,8 @@ class PLATFORM_EXPORT HostWindow
   virtual void invalidateRect(const IntRect& updateRect) = 0;
 
   // Converts the rect from the viewport coordinates to screen coordinates.
-  virtual IntRect viewportToScreen(const IntRect&, const FrameViewBase*) const = 0;
+  virtual IntRect viewportToScreen(const IntRect&,
+                                   const FrameViewBase*) const = 0;
 
   // Converts the scalar value from the window coordinates to the viewport
   // scale.
