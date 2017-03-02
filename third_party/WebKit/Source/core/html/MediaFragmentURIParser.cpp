@@ -31,8 +31,6 @@
 
 namespace blink {
 
-const int secondsPerHour = 3600;
-const int secondsPerMinute = 60;
 const unsigned nptIdentiferLength = 4;  // "npt:"
 
 static String collectDigits(const LChar* input,
@@ -310,6 +308,8 @@ bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString,
   if (offset < length && timeString[offset] == '.')
     fraction = collectFraction(timeString, length, offset).toDouble();
 
+  const int secondsPerHour = 3600;
+  const int secondsPerMinute = 60;
   time = (value1 * secondsPerHour) + (value2 * secondsPerMinute) + value3 +
          fraction;
   return true;

@@ -45,9 +45,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-const double secondsPerHour = 3600;
-const double secondsPerMinute = 60;
-const double secondsPerMillisecond = 0.001;
 const unsigned fileIdentifierLength = 6;
 
 bool VTTParser::parseFloatPercentageValue(VTTScanner& valueScanner,
@@ -442,6 +439,9 @@ bool VTTParser::collectTimeStamp(VTTScanner& input, double& timeStamp) {
     return false;
 
   // Steps 18 - 19 - Calculate result.
+  const double secondsPerHour = 3600;
+  const double secondsPerMinute = 60;
+  const double secondsPerMillisecond = 0.001;
   timeStamp = (value1 * secondsPerHour) + (value2 * secondsPerMinute) + value3 +
               (value4 * secondsPerMillisecond);
   return true;
