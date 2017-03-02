@@ -527,8 +527,33 @@
     "label": "//chrome/test:interactive_ui_tests",
     "type": "windowed_test_launcher",
   },
+  "ios_chrome_integration_egtests": {
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests",
+    "type": "raw",
+    "args": [],
+  },
+  "ios_chrome_settings_egtests": {
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests",
+    "type": "raw",
+    "args": [],
+  },
+  "ios_chrome_smoke_egtests": {
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_smoke_egtests",
+    "type": "raw",
+    "args": [],
+  },
+  "ios_chrome_ui_egtests": {
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_ui_egtests",
+    "type": "raw",
+    "args": [],
+  },
   "ios_chrome_unittests": {
     "label": "//ios/chrome/test:ios_chrome_unittests",
+    "type": "raw",
+    "args": [],
+  },
+  "ios_chrome_web_egtests": {
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests",
     "type": "raw",
     "args": [],
   },
@@ -537,8 +562,18 @@
     "type": "raw",
     "args": [],
   },
+  "ios_showcase_egtests": {
+    "label": "//ios/showcase:ios_showcase_egtests",
+    "type": "raw",
+    "args": [],
+  },
   "ios_web_inttests": {
     "label": "//ios/web:ios_web_inttests",
+    "type": "raw",
+    "args": [],
+  },
+  "ios_web_shell_egtests": {
+    "label": "//ios/web/shell/test:ios_web_shell_egtests",
     "type": "raw",
     "args": [],
   },
