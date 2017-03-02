@@ -38,8 +38,6 @@ class WebState;
 // kTabModelTabKey. This may fire multiple times during a load, for example, on
 // redirects.
 extern NSString* const kTabModelTabWillStartLoadingNotification;
-// Notification sent when user navigates away from the current page.
-extern NSString* const kTabModelUserNavigatedNotification;
 // A tab started to load a URL. The tab in question is in the userInfo under
 // kTabModelTabKey.
 extern NSString* const kTabModelTabDidStartLoadingNotification;

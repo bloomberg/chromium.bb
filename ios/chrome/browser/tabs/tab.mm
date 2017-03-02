@@ -228,9 +228,6 @@ enum class RendererTerminationTabState {
   // Whether or not this tab is currently being displayed.
   BOOL visible_;
 
-  // Used between -webWillStartLoadingURL: and -webDidStartLoadingURL:.
-  BOOL isUserNavigationEvent_;
-
   // Holds entries that need to be added to the history DB.  Prerender tabs do
   // not write navigation data to the history DB.  Instead, they cache history
   // data in this vector and add it to the DB when the prerender status is
@@ -1648,7 +1645,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Move the toolbar to visible during page load.
   [fullScreenController_ disableFullScreen];
 
-  isUserNavigationEvent_ =
+  BOOL isUserNavigationEvent =
       (transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK) == 0;
   // Check for link-follow clobbers. These are changes where there is no
   // pending entry (since that means the change wasn't caused by this class),
@@ -1656,7 +1653,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // TODO(crbug.com/546401): Consider moving this into NavigationManager, or
   // into a NavigationManager observer callback, so it doesn't need to be
   // checked in several places.
-  if (isUserNavigationEvent_ && !isPrerenderTab_ &&
+  if (isUserNavigationEvent && !isPrerenderTab_ &&
       ![self navigationManager]->GetPendingItem() && url != self.url) {
     base::RecordAction(UserMetricsAction("MobileTabClobbered"));
     if ([parentTabModel_ tabUsageRecorder])
@@ -1694,11 +1691,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   GURL lastCommittedURL = webState->GetLastCommittedURL();
   [autoReloadBridge_ loadStartedForURL:lastCommittedURL];
 
-  if (isUserNavigationEvent_) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabModelUserNavigatedNotification
-                      object:self];
-  }
   if (parentTabModel_) {
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kTabModelTabWillStartLoadingNotification

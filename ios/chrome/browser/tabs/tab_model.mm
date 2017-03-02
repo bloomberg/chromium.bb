@@ -57,7 +57,6 @@
 
 NSString* const kTabModelTabWillStartLoadingNotification =
     @"kTabModelTabWillStartLoadingNotification";
-NSString* const kTabModelUserNavigatedNotification = @"kTabModelUserNavigation";
 NSString* const kTabModelTabDidStartLoadingNotification =
     @"kTabModelTabDidStartLoadingNotification";
 NSString* const kTabModelTabDidFinishLoadingNotification =
