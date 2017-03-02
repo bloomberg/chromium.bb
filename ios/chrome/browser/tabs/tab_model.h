@@ -284,21 +284,4 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 
 @end
 
-@interface TabModel (PrivateForTestingOnly)
-
-// Opens a tab at the specified URL. The newly created tab will not be the child
-// of any other tab. This does not go through the order controller. Used a page
-// transition of TYPED.
-- (Tab*)addTabWithURL:(const GURL&)URL referrer:(const web::Referrer&)referrer;
-
-// Inserts a new tab at the given |index| with the given |URL| and |referrer|.
-// This does not go through the order controller. Uses a page transition of
-// TYPED.
-- (Tab*)insertTabWithURL:(const GURL&)URL
-                referrer:(const web::Referrer&)referrer
-                  opener:(Tab*)parentTab
-                 atIndex:(NSUInteger)index;
-
-@end
-
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_MODEL_H_

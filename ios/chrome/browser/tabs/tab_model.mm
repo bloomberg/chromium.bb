@@ -973,32 +973,3 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
 }
 
 @end
-
-@implementation TabModel (PrivateForTestingOnly)
-
-- (Tab*)addTabWithURL:(const GURL&)URL referrer:(const web::Referrer&)referrer {
-  return [self insertTabWithURL:URL
-                       referrer:referrer
-                         opener:nil
-                        atIndex:self.count];
-}
-
-- (Tab*)insertTabWithURL:(const GURL&)URL
-                referrer:(const web::Referrer&)referrer
-                  opener:(Tab*)parentTab
-                 atIndex:(NSUInteger)index {
-  DCHECK(_browserState);
-  base::scoped_nsobject<Tab> tab([[Tab alloc] initWithBrowserState:_browserState
-                                                            opener:parentTab
-                                                       openedByDOM:NO
-                                                             model:self]);
-  web::NavigationManager::WebLoadParams params(URL);
-  params.referrer = referrer;
-  params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  [[tab webController] loadWithParams:params];
-  [tab webController].webUsageEnabled = webUsageEnabled_;
-  [self insertTab:tab atIndex:index opener:parentTab];
-  return tab;
-}
-
-@end
