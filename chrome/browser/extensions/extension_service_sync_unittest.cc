@@ -1401,13 +1401,21 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataDeferredEnable) {
   PackCRXAndUpdateExtension(id, path, pem_path, ENABLED);
 }
 
-TEST_F(ExtensionServiceSyncTest, ProcessSyncDataPermissionApproval) {
-  // This is the update URL specified in the test extension. Setting it here is
-  // necessary to make it considered syncable.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryUpdateURL,
-      "http://localhost/autoupdate/updates.xml");
+class ExtensionServiceSyncCustomGalleryTest : public ExtensionServiceSyncTest {
+ public:
+  void SetUp() override {
+    ExtensionServiceSyncTest::SetUp();
 
+    // This is the update URL specified in the permissions test extension.
+    // Setting it here is necessary to make the extension considered syncable.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAppsGalleryUpdateURL,
+        "http://localhost/autoupdate/updates.xml");
+  }
+};
+
+TEST_F(ExtensionServiceSyncCustomGalleryTest,
+       ProcessSyncDataPermissionApproval) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
@@ -1559,26 +1567,17 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
-class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
-                                       public SupervisedUserService::Delegate {
+class ExtensionServiceTestSupervised
+    : public ExtensionServiceSyncCustomGalleryTest,
+      public SupervisedUserService::Delegate {
  public:
   ExtensionServiceTestSupervised()
       : field_trial_list_(base::MakeUnique<base::MockEntropyProvider>()) {}
 
-  void SetUp() override {
-    ExtensionServiceSyncTest::SetUp();
-
-    // This is the update URL specified in the permissions test extension.
-    // Setting it here is necessary to make the extension considered syncable.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppsGalleryUpdateURL,
-        "http://localhost/autoupdate/updates.xml");
-  }
-
   void TearDown() override {
     supervised_user_service()->SetDelegate(nullptr);
 
-    ExtensionServiceSyncTest::TearDown();
+    ExtensionServiceSyncCustomGalleryTest::TearDown();
   }
 
  protected:
