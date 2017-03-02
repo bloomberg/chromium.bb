@@ -38,6 +38,8 @@ LSB_KEY_TRACK = 'CHROMEOS_RELEASE_TRACK'
 LSB_KEY_BUILD_TYPE = 'CHROMEOS_RELEASE_BUILD_TYPE'
 LSB_KEY_DESCRIPTION = 'CHROMEOS_RELEASE_DESCRIPTION'
 LSB_KEY_BOARD = 'CHROMEOS_RELEASE_BOARD'
+LSB_KEY_MODELS = 'CHROMEOS_RELEASE_MODELS'
+LSB_KEY_UNIBUILD = 'CHROMEOS_RELEASE_UNIBUILD'
 LSB_KEY_BRANCH_NUMBER = 'CHROMEOS_RELEASE_BRANCH_NUMBER'
 LSB_KEY_BUILD_NUMBER = 'CHROMEOS_RELEASE_BUILD_NUMBER'
 LSB_KEY_CHROME_MILESTONE = 'CHROMEOS_RELEASE_CHROME_MILESTONE'
@@ -59,6 +61,8 @@ def _ParseArguments(argv):
   parser.add_argument('--app_id', default=None,
                       help='The APP_ID to install.')
   parser.add_argument('--board', help='The board name.', required=True)
+  parser.add_argument('--models',
+                      help='Models supported by this board, space-separated')
   parser.add_argument('--sysroot', required=True, type='path',
                       help='The sysroot to install the lsb-release file into.')
   parser.add_argument('--version_string', required=True,
@@ -146,6 +150,9 @@ def main(argv):
         LSB_KEY_BUILDER_PATH: opts.builder_path,
     })
 
+  board_and_models = opts.board
+  if opts.models:
+    board_and_models += '-unibuild (%s)' % opts.models
   if opts.official:
     # Official builds (i.e. buildbot).
     track = 'dev-channel'
@@ -158,7 +165,7 @@ def main(argv):
                               (opts.version_string,
                                build_type,
                                track,
-                               opts.board)),
+                               board_and_models)),
         LSB_KEY_AUSERVER: 'https://tools.google.com/service/update2',
         LSB_KEY_DEVSERVER: '',
     })
@@ -170,7 +177,7 @@ def main(argv):
         LSB_KEY_BUILD_TYPE: build_type,
         LSB_KEY_DESCRIPTION: '%s (%s) %s' % (opts.version_string,
                                              build_type,
-                                             opts.board),
+                                             board_and_models),
     })
   else:
     # Developer manual builds.
@@ -181,7 +188,7 @@ def main(argv):
         LSB_KEY_DESCRIPTION: '%s (%s) %s %s' % (opts.version_string,
                                                 build_type,
                                                 opts.track,
-                                                opts.board),
+                                                board_and_models),
     })
 
   fields.update({
@@ -193,5 +200,8 @@ def main(argv):
       LSB_KEY_VERSION: opts.version_string,
       LSB_KEY_GOOGLE_RELEASE: opts.version_string,
   })
+  if opts.models:
+    fields[LSB_KEY_UNIBUILD] = '1'
+    fields[LSB_KEY_MODELS] = opts.models
 
   image_lib.WriteLsbRelease(opts.sysroot, fields)
