@@ -143,7 +143,7 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   }
   void setRestyleFlag(DynamicRestyleFlags mask) {
     m_restyleFlags |= mask;
-    RELEASE_ASSERT(m_restyleFlags);
+    CHECK(m_restyleFlags);
   }
   bool hasRestyleFlags() const { return m_restyleFlags; }
   void clearRestyleFlags() { m_restyleFlags = 0; }

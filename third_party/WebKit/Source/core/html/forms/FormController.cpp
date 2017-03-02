@@ -409,7 +409,7 @@ void DocumentState::addControl(HTMLFormControlElementWithState* control) {
 }
 
 void DocumentState::removeControl(HTMLFormControlElementWithState* control) {
-  RELEASE_ASSERT(m_formControls.contains(control));
+  CHECK(m_formControls.contains(control));
   m_formControls.remove(control);
 }
 

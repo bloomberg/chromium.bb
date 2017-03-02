@@ -263,7 +263,7 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(
   if (startPosition.isNull() || endPosition.isNull())
     return emptyString;
 
-  RELEASE_ASSERT(startPosition.compareTo(endPosition) <= 0);
+  CHECK_LE(startPosition.compareTo(endPosition), 0);
 
   bool collapsed = startPosition == endPosition;
   if (collapsed)

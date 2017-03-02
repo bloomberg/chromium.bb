@@ -67,7 +67,8 @@ void IntersectionObservation::computeIntersectionObservations(
     newThresholdIndex = 0;
   }
 
-  RELEASE_ASSERT(newThresholdIndex < kMaxThresholdIndex);
+  // TODO(tkent): We can't use CHECK_LT due to a compile error.
+  CHECK(newThresholdIndex < kMaxThresholdIndex);
 
   if (m_lastThresholdIndex != newThresholdIndex) {
     IntRect snappedRootBounds = geometry.rootIntRect();

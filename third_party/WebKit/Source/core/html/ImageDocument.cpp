@@ -148,7 +148,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length) {
     return;
 
   if (document()->cachedImageResourceDeprecated()) {
-    RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
+    CHECK_LE(length, std::numeric_limits<unsigned>::max());
     // If decoding has already failed, there's no point in sending additional
     // data to the ImageResource.
     if (document()->cachedImageResourceDeprecated()->getStatus() !=

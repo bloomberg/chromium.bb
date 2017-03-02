@@ -77,7 +77,7 @@ DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(NodeRareData) {
 }
 
 void NodeRareData::finalizeGarbageCollectedObject() {
-  RELEASE_ASSERT(!layoutObject());
+  CHECK(!layoutObject());
   if (m_isElementRareData)
     static_cast<ElementRareData*>(this)->~ElementRareData();
   else

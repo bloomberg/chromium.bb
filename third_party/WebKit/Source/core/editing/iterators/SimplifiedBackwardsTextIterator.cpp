@@ -257,8 +257,7 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleTextNode() {
   m_textOffset = m_positionStartOffset - offsetInNode;
   m_textContainer = text;
   m_singleCharacterBuffer = 0;
-  RELEASE_ASSERT(static_cast<unsigned>(m_textOffset + m_textLength) <=
-                 text.length());
+  CHECK_LE(static_cast<unsigned>(m_textOffset + m_textLength), text.length());
 
   return !m_shouldHandleFirstLetter;
 }

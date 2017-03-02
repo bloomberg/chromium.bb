@@ -20,7 +20,7 @@ class DataView final : public ArrayBufferView {
                                      unsigned byteLength) {
     CheckedNumeric<uint32_t> checkedMax = byteOffset;
     checkedMax += byteLength;
-    RELEASE_ASSERT(checkedMax.ValueOrDie() <= buffer->byteLength());
+    CHECK_LE(checkedMax.ValueOrDie(), buffer->byteLength());
     return adoptRef(new DataView(buffer, byteOffset, byteLength));
   }
 

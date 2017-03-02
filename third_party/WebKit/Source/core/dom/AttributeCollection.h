@@ -52,7 +52,7 @@ class AttributeCollectionGeneric {
 
   ValueType& operator[](unsigned index) const { return at(index); }
   ValueType& at(unsigned index) const {
-    RELEASE_ASSERT(index < size());
+    CHECK_LT(index, size());
     return begin()[index];
   }
 

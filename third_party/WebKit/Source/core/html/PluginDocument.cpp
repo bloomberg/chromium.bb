@@ -75,7 +75,7 @@ void PluginDocumentParser::createDocumentStructure() {
   // and assert were added for the security bug in
   // http://trac.webkit.org/changeset/87566
   DCHECK(document());
-  RELEASE_ASSERT(document()->loader());
+  CHECK(document()->loader());
 
   LocalFrame* frame = document()->frame();
   if (!frame)

@@ -296,7 +296,7 @@ Node::Node(TreeScope* treeScope, ConstructionType type)
 Node::~Node() {
   // With Oilpan, the rare data finalizer also asserts for
   // this condition (we cannot directly access it here.)
-  RELEASE_ASSERT(hasRareData() || !layoutObject());
+  CHECK(hasRareData() || !layoutObject());
   InstanceCounters::decrementNodeCounter();
 }
 

@@ -107,7 +107,7 @@ void TreeScope::setParentTreeScope(TreeScope& newParentScope) {
 }
 
 ScopedStyleResolver& TreeScope::ensureScopedStyleResolver() {
-  RELEASE_ASSERT(this);
+  CHECK(this);
   if (!m_scopedStyleResolver)
     m_scopedStyleResolver = ScopedStyleResolver::create(*this);
   return *m_scopedStyleResolver;

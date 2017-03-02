@@ -1182,7 +1182,7 @@ Node* Document::adoptNode(Node* source, ExceptionState& exceptionState) {
         source->parentNode()->removeChild(source, exceptionState);
         if (exceptionState.hadException())
           return nullptr;
-        RELEASE_ASSERT(!source->parentNode());
+        CHECK(!source->parentNode());
       }
   }
 
@@ -1991,7 +1991,7 @@ void Document::updateStyleAndLayoutTree() {
   // recalcStyle can tear down the layout tree or (unfortunately) run
   // script. Kill the whole layoutObject if someone managed to get into here in
   // states not allowing tree mutations.
-  RELEASE_ASSERT(lifecycle().stateAllowsTreeMutations());
+  CHECK(lifecycle().stateAllowsTreeMutations());
 
   TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData",
                      InspectorRecalculateStylesEvent::data(frame()));
@@ -2446,7 +2446,7 @@ void Document::initialize() {
 
 void Document::shutdown() {
   TRACE_EVENT0("blink", "Document::shutdown");
-  RELEASE_ASSERT(!m_frame || m_frame->tree().childCount() == 0);
+  CHECK(!m_frame || m_frame->tree().childCount() == 0);
   if (!isActive())
     return;
 
