@@ -672,7 +672,6 @@ _waterfall_config_map = {
         'chell-paladin',
         'gale-paladin',
         'kip-paladin',
-        'lakitu_next-paladin',
         'loonix-paladin',
         'poppy-paladin',
         'whirlwind-paladin',
