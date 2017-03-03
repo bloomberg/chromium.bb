@@ -204,7 +204,12 @@ class TestImporter(object):
             return
         _log.info('Generating MANIFEST.json')
         WPTManifest.generate_manifest(self.host, dest_path)
-        self.run(['git', 'add', self.fs.join(dest_path, 'MANIFEST.json')])
+        manifest_path = self.fs.join(dest_path, 'MANIFEST.json')
+        assert self.fs.exists(manifest_path)
+        manifest_base_path = self.fs.normpath(
+            self.fs.join(dest_path, '..', 'WPT_BASE_MANIFEST.json'))
+        self.copyfile(manifest_path, manifest_base_path)
+        self.run(['git', 'add', manifest_base_path])
 
     def update(self, dest_dir_name, temp_repo_path, revision):
         """Updates an imported repository.

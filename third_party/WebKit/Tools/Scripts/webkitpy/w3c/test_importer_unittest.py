@@ -145,22 +145,23 @@ class TestImporterTest(LoggingTestCase):
         # asserts that TestImporter._generate_manifest would invoke the script.
         host = MockHost()
         importer = TestImporter(host)
-        importer._generate_manifest(
-            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt')
+        blink_path = '/mock-checkout/third_party/WebKit'
+        host.filesystem.write_text_file(blink_path + '/LayoutTests/external/wpt/MANIFEST.json', '{}')
+        importer._generate_manifest(blink_path + '/LayoutTests/external/wpt')
         self.assertEqual(
             host.executive.calls,
             [
                 [
                     'python',
-                    '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
+                    blink_path + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
                     '--work',
                     '--tests-root',
-                    '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'
+                    blink_path + '/LayoutTests/external/wpt',
                 ],
                 [
                     'git',
                     'add',
-                    '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/MANIFEST.json'
+                    blink_path + '/LayoutTests/external/WPT_BASE_MANIFEST.json',
                 ]
             ])
 
