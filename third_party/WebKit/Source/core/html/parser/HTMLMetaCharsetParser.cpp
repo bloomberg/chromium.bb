@@ -32,8 +32,6 @@
 #include "wtf/text/TextEncodingRegistry.h"
 #include "wtf/text/WTFString.h"
 
-using namespace WTF;
-
 namespace blink {
 
 using namespace HTMLNames;

@@ -32,8 +32,6 @@
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextRun.h"
 
-using namespace WTF::Unicode;
-
 namespace blink {
 
 int DateTimeNumericFieldElement::Range::clampValue(int value) const {
@@ -67,8 +65,11 @@ DateTimeNumericFieldElement::DateTimeNumericFieldElement(
   // We show a direction-neutral string such as "--" as a placeholder. It
   // should follow the direction of numeric values.
   if (localeForOwner().isRTL()) {
-    CharDirection dir = direction(formatValue(this->maximum())[0]);
-    if (dir == LeftToRight || dir == EuropeanNumber || dir == ArabicNumber) {
+    WTF::Unicode::CharDirection dir =
+        WTF::Unicode::direction(formatValue(this->maximum())[0]);
+    if (dir == WTF::Unicode::LeftToRight ||
+        dir == WTF::Unicode::EuropeanNumber ||
+        dir == WTF::Unicode::ArabicNumber) {
       setInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueBidiOverride);
       setInlineStyleProperty(CSSPropertyDirection, CSSValueLtr);
     }

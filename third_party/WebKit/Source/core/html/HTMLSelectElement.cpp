@@ -73,8 +73,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/text/PlatformLocale.h"
 
-using namespace WTF::Unicode;
-
 namespace blink {
 
 using namespace HTMLNames;
@@ -1677,7 +1675,7 @@ void HTMLSelectElement::defaultEventHandler(Event* event) {
     KeyboardEvent* keyboardEvent = toKeyboardEvent(event);
     if (!keyboardEvent->ctrlKey() && !keyboardEvent->altKey() &&
         !keyboardEvent->metaKey() &&
-        isPrintableChar(keyboardEvent->charCode())) {
+        WTF::Unicode::isPrintableChar(keyboardEvent->charCode())) {
       typeAheadFind(keyboardEvent);
       event->setDefaultHandled();
       return;

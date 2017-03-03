@@ -32,8 +32,6 @@
 #include "core/events/KeyboardEvent.h"
 #include "wtf/text/CharacterNames.h"
 
-using namespace WTF::Unicode;
-
 namespace blink {
 
 TypeAhead::TypeAhead(TypeAheadDataSource* dataSource)

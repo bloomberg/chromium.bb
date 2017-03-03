@@ -31,8 +31,6 @@
 #include "core/html/parser/HTMLEntityTable.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace WTF;
-
 namespace blink {
 
 static const UChar windowsLatin1ExtensionArray[32] = {
