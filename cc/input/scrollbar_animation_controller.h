@@ -74,9 +74,9 @@ class CC_EXPORT ScrollbarAnimationController {
   void DidMouseLeave();
   void DidMouseMoveNear(ScrollbarOrientation, float);
 
-  bool mouse_is_over_scrollbar(ScrollbarOrientation orientation) const;
-  bool mouse_is_near_scrollbar(ScrollbarOrientation orientation) const;
-  bool mouse_is_near_any_scrollbar() const;
+  bool MouseIsOverScrollbar(ScrollbarOrientation orientation) const;
+  bool MouseIsNearScrollbar(ScrollbarOrientation orientation) const;
+  bool MouseIsNearAnyScrollbar() const;
 
   static constexpr float kMouseMoveDistanceToTriggerShow = 30.0f;
 

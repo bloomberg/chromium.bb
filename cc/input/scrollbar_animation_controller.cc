@@ -188,7 +188,7 @@ void ScrollbarAnimationController::DidScrollUpdate(bool on_resize) {
   if (!currently_scrolling_) {
     // We don't fade out scrollbar if they need thinning animation and mouse is
     // near.
-    if (!need_thinning_animation_ || !mouse_is_near_any_scrollbar())
+    if (!need_thinning_animation_ || !MouseIsNearAnyScrollbar())
       PostDelayedFadeOut(on_resize);
   } else {
     scroll_gesture_has_scrolled_ = true;
@@ -210,7 +210,7 @@ void ScrollbarAnimationController::DidScrollEnd() {
 
   // We don't fade out scrollbar if they need thinning animation and mouse is
   // near.
-  if (need_thinning_animation_ && mouse_is_near_any_scrollbar())
+  if (need_thinning_animation_ && MouseIsNearAnyScrollbar())
     return;
 
   if (has_scrolled)
@@ -232,7 +232,7 @@ void ScrollbarAnimationController::DidMouseUp() {
   vertical_controller_->DidMouseUp();
   horizontal_controller_->DidMouseUp();
 
-  if (!mouse_is_near_any_scrollbar())
+  if (!MouseIsNearAnyScrollbar())
     PostDelayedFadeOut(false);
 }
 
@@ -274,7 +274,7 @@ void ScrollbarAnimationController::DidMouseMoveNear(
       }
     }
   } else {
-    if (mouse_is_near_any_scrollbar()) {
+    if (MouseIsNearAnyScrollbar()) {
       Show();
       StopAnimation();
     } else if (!is_animating_) {
@@ -304,19 +304,19 @@ bool ScrollbarAnimationController::CalcNeedTriggerScrollbarShow(
   return false;
 }
 
-bool ScrollbarAnimationController::mouse_is_over_scrollbar(
+bool ScrollbarAnimationController::MouseIsOverScrollbar(
     ScrollbarOrientation orientation) const {
   DCHECK(need_thinning_animation_);
   return GetScrollbarAnimationController(orientation).mouse_is_over_scrollbar();
 }
 
-bool ScrollbarAnimationController::mouse_is_near_scrollbar(
+bool ScrollbarAnimationController::MouseIsNearScrollbar(
     ScrollbarOrientation orientation) const {
   DCHECK(need_thinning_animation_);
   return GetScrollbarAnimationController(orientation).mouse_is_near_scrollbar();
 }
 
-bool ScrollbarAnimationController::mouse_is_near_any_scrollbar() const {
+bool ScrollbarAnimationController::MouseIsNearAnyScrollbar() const {
   DCHECK(need_thinning_animation_);
   return vertical_controller_->mouse_is_near_scrollbar() ||
          horizontal_controller_->mouse_is_near_scrollbar();
