@@ -43,7 +43,6 @@ bool CreateSentinel();
 void DoPostImportPlatformSpecificTasks(Profile* profile);
 
 // Returns true if the sentinel file exists (or the path cannot be obtained).
-// Migrates Windows legacy sentinel files to the corrent location, if needed.
 bool IsFirstRunSentinelPresent();
 
 // This function has a common implementationin for all non-linux platforms, and
