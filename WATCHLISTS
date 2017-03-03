@@ -620,6 +620,13 @@
       'filepath': 'media/|third_party/(ffmpeg|openmax)/|webmediaplayer|'\
         'audio_message_filter|video_layer|media_internals',
     },
+    'media_capture_from_element': {
+      'filepath': 'content/renderer/media_capture_from_element/' \'
+                  '|third_party/WebKit/Source/modules/mediacapture/' \
+                  '|third_party/WebKit/Source/platform/exported/WebCanvasCapture' \
+                  '|third_party/WebKit/LayoutTests/fast/mediacapturefromelement/' \
+                  '|third_party/WebKit/public/platform/WebCanvasCapture'
+    },
     'media_galleries': {
       'filepath': 'chrome/browser/extensions/api/media_galleries/'\
                   '|chrome/browser/media_galleries/'\
@@ -631,6 +638,13 @@
     },
     'media_mojo': {
       'filepath': 'media/mojo/*'
+    },
+    'media_recorder': {
+      'filepath': 'content/renderer/media_recorder/' \'
+                  '|third_party/WebKit/Source/modules/mediarecorder/' \
+                  '|third_party/WebKit/Source/platform/exported/WebMediaRecorder' \
+                  '|third_party/WebKit/LayoutTests/fast/mediarecorder/' \
+                  '|third_party/WebKit/public/platform/WebMediaRecorder'
     },
     'media_remoting': {
       'filepath': 'chrome/browser/media/cast_remoting'\
@@ -1395,18 +1409,6 @@
                   '|third_party/WebKit/Source/web/.*Quota' \
                   '|third_party/WebKit/public/.*Quota'
     },
-    'blink_mediacapturefromelement': {
-      'filepath': 'third_party/WebKit/Source/modules/mediacapture/' \
-                  '|third_party/WebKit/Source/platform/exported/WebCanvasCapture' \
-                  '|third_party/WebKit/LayoutTests/fast/mediacapturefromelement/' \
-                  '|third_party/WebKit/public/platform/WebCanvasCapture'
-    },
-    'blink_mediarecorder': {
-      'filepath': 'third_party/WebKit/Source/modules/mediarecorder/' \
-                  '|third_party/WebKit/Source/platform/exported/WebMediaRecorder' \
-                  '|third_party/WebKit/LayoutTests/fast/mediarecorder/' \
-                  '|third_party/WebKit/public/platform/WebMediaRecorder'
-    },
     'blink_mediastream': {
       'filepath': 'third_party/WebKit/Source/modules/mediastream/' \
                   '|third_party/WebKit/Source/platform/mediastream/' \
@@ -1697,10 +1699,6 @@
                     'srirama.m@samsung.com'],
     'blink_media_queries': ['kenneth.christiansen@gmail.com',
                             'yoav@yoav.ws'],
-    'blink_mediacapturefromelement': ['emircan+watch+capturefromdom@chromium.org',
-                                      'mcasas+watch+capturefromdom@chromium.org'],
-    'blink_mediarecorder': ['emircan+watch+mediarecorder@chromium.org',
-                            'mcasas+watch+mediarecorder@chromium.org'],
     'blink_mediastream': ['mcasas+watch+mediastream@chromium.org',
                           'tommyw+watchlist@chromium.org'],
     'blink_modules': ['haraken@chromium.org'],
@@ -1982,9 +1980,13 @@
                     'michaelpg+watch-md-settings@chromium.org',
                     'stevenjb+watch-md-settings@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
+    'media_capture_from_element': ['emircan+watch+capturefromdom@chromium.org',
+                                   'mcasas+watch+capturefromdom@chromium.org'],
     'media_galleries': ['thestig@chromium.org',
                         'tommycli@chromium.org'],
     'media_mojo': ['alokp+watch@chromium.org'],
+    'media_recorder': ['emircan+watch+mediarecorder@chromium.org',
+                       'mcasas+watch+mediarecorder@chromium.org'],
     'media_remoting': ['apacible+watch@chromium.org',
                        'erickung+watch@chromium.org',
                        'miu+watch@chromium.org',
