@@ -189,6 +189,11 @@ AtomicString LayoutLocale::localeWithBreakKeyword(
   if (m_string.isEmpty())
     return m_string;
 
+  // uloc_setKeywordValue_58 has a problem to handle "@" in the original
+  // string. crbug.com/697859
+  if (m_string.contains('@'))
+    return m_string;
+
   CString utf8Locale = m_string.utf8();
   Vector<char> buffer(utf8Locale.length() + 11, 0);
   memcpy(buffer.data(), utf8Locale.data(), utf8Locale.length());

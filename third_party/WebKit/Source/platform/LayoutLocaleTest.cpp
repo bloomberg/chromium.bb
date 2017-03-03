@@ -135,4 +135,15 @@ TEST(LayoutLocaleTest, BreakKeyword) {
   }
 }
 
+TEST(LayoutLocaleTest, ExistingKeywordName) {
+  const char* tests[] = {
+      "en@x=", "en@lb=xyz", "en@ =",
+  };
+  for (const auto& test : tests) {
+    RefPtr<LayoutLocale> locale = LayoutLocale::createForTesting(test);
+    EXPECT_EQ(test,
+              locale->localeWithBreakKeyword(LineBreakIteratorMode::Normal));
+  }
+}
+
 }  // namespace blink
