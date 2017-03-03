@@ -20,6 +20,8 @@ recordActionTaken:
     ResizedViewInResponsiveMode : 17
     RevisionApplied : 12
     ScriptsBreakpointSet : 3
+    SelectCommandFromCommandMenu : 25
+    SelectFileFromFilePicker : 24
     StyleRuleEdited : 14
     TimelinePageReloadStarted : 18
     TimelineStarted : 4
