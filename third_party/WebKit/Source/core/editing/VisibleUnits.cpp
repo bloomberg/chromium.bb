@@ -907,14 +907,14 @@ static VisiblePositionTemplate<Strategy> previousBoundary(
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> nextBoundary(
+static PositionTemplate<Strategy> nextBoundary(
     const VisiblePositionTemplate<Strategy>& c,
     BoundarySearchFunction searchFunction) {
   DCHECK(c.isValid()) << c;
   PositionTemplate<Strategy> pos = c.deepEquivalent();
   Node* boundary = parentEditingBoundary(pos);
   if (!boundary)
-    return VisiblePositionTemplate<Strategy>();
+    return PositionTemplate<Strategy>();
 
   Document& d = boundary->document();
   const PositionTemplate<Strategy> start(pos.parentAnchoredEquivalent());
@@ -1018,8 +1018,7 @@ static VisiblePositionTemplate<Strategy> nextBoundary(
     }
   }
 
-  // generate VisiblePosition, use TextAffinity::Upstream affinity if possible
-  return createVisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
+  return pos;
 }
 
 // ---------
@@ -1107,7 +1106,8 @@ static VisiblePositionTemplate<Strategy> endOfWordAlgorithm(
     return c;
   }
 
-  return nextBoundary(p, endWordBoundary);
+  return createVisiblePosition(nextBoundary(p, endWordBoundary),
+                               VP_UPSTREAM_IF_POSSIBLE);
 }
 
 VisiblePosition endOfWord(const VisiblePosition& c, EWordSide side) {
@@ -1158,7 +1158,8 @@ static unsigned nextWordPositionBoundary(
 
 VisiblePosition nextWordPosition(const VisiblePosition& c) {
   DCHECK(c.isValid()) << c;
-  VisiblePosition next = nextBoundary(c, nextWordPositionBoundary);
+  VisiblePosition next = createVisiblePosition(
+      nextBoundary(c, nextWordPositionBoundary), VP_UPSTREAM_IF_POSSIBLE);
   return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
 
@@ -1700,7 +1701,8 @@ template <typename Strategy>
 static VisiblePositionTemplate<Strategy> endOfSentenceAlgorithm(
     const VisiblePositionTemplate<Strategy>& c) {
   DCHECK(c.isValid()) << c;
-  return nextBoundary(c, endSentenceBoundary);
+  return createVisiblePosition(nextBoundary(c, endSentenceBoundary),
+                               VP_UPSTREAM_IF_POSSIBLE);
 }
 
 VisiblePosition endOfSentence(const VisiblePosition& c) {
@@ -1743,7 +1745,8 @@ static unsigned nextSentencePositionBoundary(const UChar* characters,
 
 VisiblePosition nextSentencePosition(const VisiblePosition& c) {
   DCHECK(c.isValid()) << c;
-  VisiblePosition next = nextBoundary(c, nextSentencePositionBoundary);
+  VisiblePosition next = createVisiblePosition(
+      nextBoundary(c, nextSentencePositionBoundary), VP_UPSTREAM_IF_POSSIBLE);
   return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
 
