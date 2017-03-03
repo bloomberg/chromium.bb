@@ -547,7 +547,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
   if (m_svgStyle.get() != other.m_svgStyle.get())
     diff = m_svgStyle->diff(other.m_svgStyle.get());
 
-  if ((!diff.needsFullLayout() || !diff.needsPaintInvalidation()) &&
+  if ((!diff.needsFullLayout() || !diff.needsFullPaintInvalidation()) &&
       diffNeedsFullLayoutAndPaintInvalidation(other)) {
     diff.setNeedsFullLayout();
     diff.setNeedsPaintInvalidationObject();
@@ -1077,7 +1077,7 @@ void ComputedStyle::updatePropertySpecificDifferences(
   if (!m_surround->border.visualOverflowEqual(other.m_surround->border))
     diff.setNeedsRecomputeOverflow();
 
-  if (!diff.needsPaintInvalidation()) {
+  if (!diff.needsFullPaintInvalidation()) {
     if (m_styleInheritedData->color != other.m_styleInheritedData->color ||
         m_styleInheritedData->visitedLinkColor !=
             other.m_styleInheritedData->visitedLinkColor ||

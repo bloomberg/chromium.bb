@@ -1529,7 +1529,8 @@ StyleDifference LayoutObject::adjustStyleDifference(
 
   // Optimization: for decoration/color property changes, invalidation is only
   // needed if we have style or text affected by these properties.
-  if (diff.textDecorationOrColorChanged() && !diff.needsPaintInvalidation()) {
+  if (diff.textDecorationOrColorChanged() &&
+      !diff.needsFullPaintInvalidation()) {
     if (style()->hasBorder() || style()->hasOutline() ||
         style()->hasBackgroundRelatedColorReferencingCurrentColor() ||
         // Skip any text nodes that do not contain text boxes. Whitespace cannot
@@ -1585,7 +1586,8 @@ void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle,
                                            const ComputedStyle& newStyle) {
   StyleDifference diff = oldStyle.visualInvalidationDiff(newStyle);
 
-  if (diff.needsPaintInvalidation() || diff.textDecorationOrColorChanged()) {
+  if (diff.needsFullPaintInvalidation() ||
+      diff.textDecorationOrColorChanged()) {
     // We need to invalidate all inline boxes in the first line, because they
     // need to be repainted with the new style, e.g. background, font style,
     // etc.
@@ -1924,7 +1926,7 @@ void LayoutObject::styleDidChange(StyleDifference diff,
     }
   }
 
-  if (diff.needsPaintInvalidation() && oldStyle) {
+  if (diff.needsFullPaintInvalidation() && oldStyle) {
     if (resolveColor(*oldStyle, CSSPropertyBackgroundColor) !=
             resolveColor(CSSPropertyBackgroundColor) ||
         oldStyle->backgroundLayers() != styleRef().backgroundLayers())

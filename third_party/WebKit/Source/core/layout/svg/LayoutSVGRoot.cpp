@@ -248,7 +248,7 @@ void LayoutSVGRoot::styleDidChange(StyleDifference diff,
                                    const ComputedStyle* oldStyle) {
   if (diff.needsFullLayout())
     setNeedsBoundariesUpdate();
-  if (diff.needsPaintInvalidation()) {
+  if (diff.needsFullPaintInvalidation()) {
     // Box decorations may have appeared/disappeared - recompute status.
     m_hasBoxDecorationBackground = styleRef().hasBoxDecorationBackground();
   }

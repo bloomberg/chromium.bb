@@ -211,7 +211,7 @@ void LayoutScrollbarPart::styleDidChange(StyleDifference diff,
   setInline(false);
   clearPositionedState();
   setFloating(false);
-  if (oldStyle && (diff.needsPaintInvalidation() || diff.needsLayout()))
+  if (oldStyle && (diff.needsFullPaintInvalidation() || diff.needsLayout()))
     setNeedsPaintInvalidation();
 }
 

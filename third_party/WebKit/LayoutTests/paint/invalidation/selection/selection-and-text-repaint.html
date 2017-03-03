@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<style>
+    ::selection { color: red }
+    .green { color: green }
+</style>
+<p id="t1">This text should be green.</p>
+<script>
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+
+    requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+            t1.className = "green";
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }));
+</script>

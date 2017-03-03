@@ -190,7 +190,7 @@ void LayoutBox::styleWillChange(StyleDifference diff,
     // The background of the root element or the body element could propagate up
     // to the canvas. Just dirty the entire canvas when our style changes
     // substantially.
-    if ((diff.needsPaintInvalidation() || diff.needsLayout()) && node() &&
+    if ((diff.needsFullPaintInvalidation() || diff.needsLayout()) && node() &&
         (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
       view()->setShouldDoFullPaintInvalidation();
 
@@ -283,7 +283,7 @@ void LayoutBox::styleDidChange(StyleDifference diff,
   }
 
   // Our opaqueness might have changed without triggering layout.
-  if (diff.needsPaintInvalidation()) {
+  if (diff.needsFullPaintInvalidation()) {
     LayoutObject* parentToInvalidate = parent();
     for (unsigned i = 0;
          i < backgroundObscurationTestMaxDepth && parentToInvalidate; ++i) {
