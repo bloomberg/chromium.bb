@@ -59,20 +59,13 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
         raf_aligned_input_setting_(GetParam()),
         needs_main_frame_(false) {
     std::vector<std::string> features;
-    std::vector<std::string> disabled_features;
-    if (raf_aligned_input_setting_ & kRafAlignedEnabledTouch) {
+    if (raf_aligned_input_setting_ & kRafAlignedEnabledTouch)
       features.push_back(features::kRafAlignedTouchInputEvents.name);
-    } else {
-      disabled_features.push_back(features::kRafAlignedTouchInputEvents.name);
-    }
-    if (raf_aligned_input_setting_ & kRafAlignedEnabledMouse) {
+    if (raf_aligned_input_setting_ & kRafAlignedEnabledMouse)
       features.push_back(features::kRafAlignedMouseInputEvents.name);
-    } else {
-      disabled_features.push_back(features::kRafAlignedMouseInputEvents.name);
-    }
 
     feature_list_.InitFromCommandLine(base::JoinString(features, ","),
-                                      base::JoinString(disabled_features, ","));
+                                      std::string());
   }
 
   void SetUp() override {

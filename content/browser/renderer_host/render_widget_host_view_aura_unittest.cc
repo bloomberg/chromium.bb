@@ -19,7 +19,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -55,7 +54,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_view_delegate.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -698,16 +696,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     return view_->pointer_state_for_test();
   }
 
-  void EnableRafAlignedTouchInput() {
-    feature_list_.InitFromCommandLine(
-        features::kRafAlignedTouchInputEvents.name, "");
-  }
-
-  void DisableRafAlignedTouchInput() {
-    feature_list_.InitFromCommandLine(
-        "", features::kRafAlignedTouchInputEvents.name);
-  }
-
  protected:
   BrowserContext* browser_context() { return browser_context_.get(); }
 
@@ -768,28 +756,9 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   FakeRenderWidgetHostViewAura* view_;
 
   IPC::TestSink* sink_;
-  base::test::ScopedFeatureList feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
-};
-
-class RenderWidgetHostViewAuraRafAlignedTouchEnabledTest
-    : public RenderWidgetHostViewAuraTest {
- public:
-  void SetUp() override {
-    EnableRafAlignedTouchInput();
-    RenderWidgetHostViewAuraTest::SetUp();
-  }
-};
-
-class RenderWidgetHostViewAuraRafAlignedTouchDisabledTest
-    : public RenderWidgetHostViewAuraTest {
- public:
-  void SetUp() override {
-    DisableRafAlignedTouchInput();
-    RenderWidgetHostViewAuraTest::SetUp();
-  }
 };
 
 void InstallDelegatedFrameHostClient(
@@ -850,7 +819,6 @@ class RenderWidgetHostViewAuraOverscrollTest
   void SetUpOverscrollEnvironment() { SetUpOverscrollEnvironmentImpl(0); }
 
   void SetUpOverscrollEnvironmentImpl(int debounce_interval_in_ms) {
-    EnableRafAlignedTouchInput();
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         debounce_interval_in_ms);
 
@@ -1388,7 +1356,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
 }
 
 // Checks that touch-event state is maintained correctly.
-TEST_F(RenderWidgetHostViewAuraRafAlignedTouchDisabledTest, TouchEventState) {
+TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->InitAsChild(nullptr);
   view_->Show();
   GetSentMessageCountAndResetSink();
@@ -1467,91 +1435,6 @@ TEST_F(RenderWidgetHostViewAuraRafAlignedTouchDisabledTest, TouchEventState) {
   view_->OnTouchEvent(&release2);
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(0U, pointer_state().GetPointerCount());
-}
-
-// Checks that touch-event state is maintained correctly.
-TEST_F(RenderWidgetHostViewAuraRafAlignedTouchEnabledTest, TouchEventState) {
-  view_->InitAsChild(nullptr);
-  view_->Show();
-  GetSentMessageCountAndResetSink();
-
-  // Start with no touch-event handler in the renderer.
-  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
-                       ui::EventTimeForNow());
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
-                      ui::EventTimeForNow());
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
-                         ui::EventTimeForNow());
-
-  // The touch events should get forwarded from the view, but they should not
-  // reach the renderer.
-  view_->OnTouchEvent(&press);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
-
-  view_->OnTouchEvent(&move);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-
-  view_->OnTouchEvent(&release);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(0U, pointer_state().GetPointerCount());
-
-  // Now install some touch-event handlers and do the same steps. The touch
-  // events should now be consumed. However, the touch-event state should be
-  // updated as before.
-  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
-
-  view_->OnTouchEvent(&press);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-
-  view_->OnTouchEvent(&move);
-  EXPECT_TRUE(move.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-  view_->OnTouchEvent(&release);
-  EXPECT_TRUE(release.synchronous_handling_disabled());
-  EXPECT_EQ(0U, pointer_state().GetPointerCount());
-
-  // Now start a touch event, and remove the event-handlers before the release.
-  view_->OnTouchEvent(&press);
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
-
-  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-
-  // All outstanding events should have already been sent but no new events
-  // should get sent.
-  InputEventAck ack(
-      InputEventAckSource::COMPOSITOR_THREAD, blink::WebInputEvent::TouchStart,
-      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, press.unique_event_id());
-  widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-
-  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
-                       base::TimeTicks::Now());
-  view_->OnTouchEvent(&move2);
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-
-  ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
-                          base::TimeTicks::Now());
-  view_->OnTouchEvent(&release2);
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(0U, pointer_state().GetPointerCount());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 }
 
 // Checks that touch-event state is maintained correctly for multiple touch
@@ -3424,7 +3307,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
   EXPECT_EQ(-5.f, overscroll_delta_y());
   EXPECT_EQ(5.f, overscroll_delegate()->delta_x());
   EXPECT_EQ(-5.f, overscroll_delegate()->delta_y());
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Send another gesture update event. This event should be consumed by the
   // controller, and not be forwarded to the renderer. The gesture-event filter
@@ -3490,7 +3373,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send update events.
   SimulateGestureScrollUpdateEvent(25, 0, 0);
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Quickly end and restart the scroll gesture. These two events should get
   // discarded.
@@ -3502,9 +3385,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
                        blink::WebGestureDeviceTouchscreen);
   EXPECT_EQ(0U, sink_->message_count());
 
-  // Send another update event. This should be sent right away.
+  // Send another update event. This should get into the queue.
   SimulateGestureScrollUpdateEvent(30, 0, 0);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, sink_->message_count());
 
   // Receive an ACK for the first scroll-update event as not being processed.
   // This will contribute to the overscroll gesture, but not enough for the
@@ -3547,7 +3430,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send update events.
   SimulateGestureScrollUpdateEvent(55, 0, 0);
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Send an end event. This should get in the debounce queue.
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
@@ -3608,7 +3491,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   SimulateGestureScrollUpdateEvent(20, 0, 0);
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
@@ -3705,7 +3588,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send update events.
   SimulateGestureScrollUpdateEvent(55, -5, 0);
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
@@ -3740,7 +3623,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send update events.
   SimulateGestureScrollUpdateEvent(235, -5, 0);
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
@@ -3777,7 +3660,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDirectionChange) {
 
   // Send update events and receive ack as not consumed.
   SimulateGestureScrollUpdateEvent(125, -5, 0);
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -4017,7 +3900,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
-  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
 
   view_->OnWindowFocused(nullptr, view_->GetNativeView());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
@@ -4046,7 +3929,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
                        blink::WebGestureDeviceTouchscreen);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
-  EXPECT_EQ(4U, sink_->message_count());
+  EXPECT_EQ(3U, sink_->message_count());
 }
 
 // Tests that when view initiated shutdown happens (i.e. RWHView is deleted

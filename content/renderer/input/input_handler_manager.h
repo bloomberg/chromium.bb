@@ -104,7 +104,7 @@ class CONTENT_EXPORT InputHandlerManager {
   void DidAnimateForInput();
 
   // Called from the compositor's thread.
-  virtual void NeedsMainFrame(int routing_id);
+  void NeedsMainFrame(int routing_id);
 
   // Called from the compositor's thread.
   void DispatchNonBlockingEventToMainThread(

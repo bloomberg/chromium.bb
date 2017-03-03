@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -27,7 +26,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
 #include "content/common/view_messages.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -466,8 +464,6 @@ class RenderWidgetHostTest : public testing::Test {
   void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kValidateInputEventStream);
-    feature_list_.InitFromCommandLine(
-        features::kRafAlignedTouchInputEvents.name, "");
 
     browser_context_.reset(new TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
@@ -664,7 +660,6 @@ class RenderWidgetHostTest : public testing::Test {
   SyntheticWebTouchEvent touch_event_;
 
   TestBrowserThreadBundle thread_bundle_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
@@ -1298,8 +1293,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   SimulateMouseEvent(WebInputEvent::MouseMove, 10, 30, 0, true);
   EXPECT_EQ(WebInputEvent::TouchMove, host_->acked_touch_event_type());
   EXPECT_EQ(
-      "GestureTapCancel GestureScrollBegin TouchScrollStarted "
-      "GestureScrollUpdate",
+      "GestureTapCancel GestureScrollBegin GestureScrollUpdate",
       GetInputMessageTypes(process_));
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1357,8 +1351,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   SimulateMouseEvent(WebInputEvent::MouseMove, 10, 100, 0, true);
   EXPECT_EQ(WebInputEvent::TouchMove, host_->acked_touch_event_type());
   EXPECT_EQ(
-      "GestureTapCancel GestureScrollBegin TouchScrollStarted "
-      "GestureScrollUpdate",
+      "GestureTapCancel GestureScrollBegin GestureScrollUpdate",
       GetInputMessageTypes(process_));
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1412,8 +1405,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   SimulateMouseEvent(WebInputEvent::MouseMove, 10, 30, 0, true);
   EXPECT_EQ(WebInputEvent::TouchMove, host_->acked_touch_event_type());
   EXPECT_EQ(
-      "GestureTapCancel GestureScrollBegin TouchScrollStarted "
-      "GestureScrollUpdate",
+      "GestureTapCancel GestureScrollBegin GestureScrollUpdate",
       GetInputMessageTypes(process_));
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1609,34 +1601,6 @@ void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
   process->sink().ClearMessages();
 }
 
-void CheckLatencyInfoComponentInGestureScrollUpdate(
-    RenderWidgetHostProcess* process,
-    int64_t component_id) {
-  EXPECT_EQ(process->sink().message_count(), 2U);
-  const IPC::Message* message = process->sink().GetMessageAt(0);
-  EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
-  InputMsg_HandleInputEvent::Param params;
-  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-
-  const WebInputEvent* event = std::get<0>(params);
-  ui::LatencyInfo latency_info = std::get<2>(params);
-
-  EXPECT_TRUE(event->type() == WebInputEvent::TouchScrollStarted);
-
-  message = process->sink().GetMessageAt(1);
-  EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
-  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-
-  event = std::get<0>(params);
-  latency_info = std::get<2>(params);
-
-  EXPECT_TRUE(event->type() == WebInputEvent::GestureScrollUpdate);
-  EXPECT_TRUE(latency_info.FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, NULL));
-
-  process->sink().ClearMessages();
-}
-
 // Tests that after input event passes through RWHI through ForwardXXXEvent()
 // or ForwardXXXEventWithLatencyInfo(), LatencyInfo component
 // ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT will always present in the
@@ -1680,8 +1644,8 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
   SimulateGestureEventWithLatencyInfo(WebInputEvent::GestureScrollUpdate,
                                       blink::WebGestureDeviceTouchscreen,
                                       ui::LatencyInfo());
-  CheckLatencyInfoComponentInGestureScrollUpdate(process_,
-                                                 GetLatencyComponentId());
+  CheckLatencyInfoComponentInMessage(
+      process_, GetLatencyComponentId(), WebInputEvent::GestureScrollUpdate);
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
 
