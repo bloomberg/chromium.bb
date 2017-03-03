@@ -23,7 +23,6 @@ class MockQuicSessionVisitor : public QuicTimeWaitListManager::Visitor {
                     const std::string& error_details));
   MOCK_METHOD1(OnWriteBlocked,
                void(QuicBlockedWriterInterface* blocked_writer));
-  MOCK_METHOD1(OnRstStreamReceived, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnConnectionAddedToTimeWaitList,
                void(QuicConnectionId connection_id));
 
