@@ -136,7 +136,6 @@ source_set("gbm") {
     "//ui/gl",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
-    "//ui/ozone/gl",
     "//ui/ozone/public/interfaces",
     "//ui/platform_window",
   ]

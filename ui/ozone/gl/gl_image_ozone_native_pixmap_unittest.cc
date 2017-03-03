@@ -8,8 +8,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/test/gl_image_test_template.h"
-#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -27,9 +27,9 @@ const uint8_t kGreen[] = {0x0, 0xFF, 0x0, 0xFF};
 const uint8_t kYvuColor[] = {0x10, 0x20, 0, 0xFF};
 
 template <gfx::BufferUsage usage, gfx::BufferFormat format>
-class GLImageOzoneNativePixmapTestDelegate {
+class GLImageNativePixmapTestDelegate {
  public:
-  GLImageOzoneNativePixmapTestDelegate() {
+  GLImageNativePixmapTestDelegate() {
     client_pixmap_factory_ = ui::ClientNativePixmapFactory::Create();
   }
   scoped_refptr<GLImage> CreateSolidColorImage(const gfx::Size& size,
@@ -56,10 +56,8 @@ class GLImageOzoneNativePixmapTestDelegate {
       client_pixmap->Unmap();
     }
 
-    scoped_refptr<ui::GLImageOzoneNativePixmap> image(
-        new ui::GLImageOzoneNativePixmap(
-            size,
-            ui::GLImageOzoneNativePixmap::GetInternalFormatForTesting(format)));
+    scoped_refptr<ui::GLImageNativePixmap> image(new ui::GLImageNativePixmap(
+        size, ui::GLImageNativePixmap::GetInternalFormatForTesting(format)));
     EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));
     return image;
   }
@@ -80,40 +78,35 @@ class GLImageOzoneNativePixmapTestDelegate {
 };
 
 using GLImageScanoutType = testing::Types<
-    GLImageOzoneNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT,
-                                         gfx::BufferFormat::BGRA_8888>>;
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT,
+                                    gfx::BufferFormat::BGRA_8888>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageOzoneNativePixmapScanout,
+INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmapScanout,
                               GLImageTest,
                               GLImageScanoutType);
 
-using GLImageReadWriteType =
-    testing::Types<GLImageOzoneNativePixmapTestDelegate<
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-        gfx::BufferFormat::R_8>>;
+using GLImageReadWriteType = testing::Types<
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                                    gfx::BufferFormat::R_8>>;
 
-using GLImageBindTestTypes =
-    testing::Types<GLImageOzoneNativePixmapTestDelegate<
-                       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-                       gfx::BufferFormat::BGRA_8888>,
-                   GLImageOzoneNativePixmapTestDelegate<
-                       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-                       gfx::BufferFormat::R_8>,
-                   GLImageOzoneNativePixmapTestDelegate<
-                       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-                       gfx::BufferFormat::YVU_420>,
-                   GLImageOzoneNativePixmapTestDelegate<
-                       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-                       gfx::BufferFormat::YUV_420_BIPLANAR>>;
+using GLImageBindTestTypes = testing::Types<
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                                    gfx::BufferFormat::BGRA_8888>,
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                                    gfx::BufferFormat::R_8>,
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                                    gfx::BufferFormat::YVU_420>,
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                                    gfx::BufferFormat::YUV_420_BIPLANAR>>;
 
 // These tests are disabled since the trybots are running with Ozone X11
 // implementation that doesn't support creating ClientNativePixmap.
 // TODO(dcastagna): Implement ClientNativePixmapFactory on Ozone X11.
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageOzoneNativePixmapReadWrite,
+INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageNativePixmapReadWrite,
                               GLImageTest,
                               GLImageReadWriteType);
 
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageOzoneNativePixmap,
+INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageNativePixmap,
                               GLImageBindTest,
                               GLImageBindTestTypes);
 

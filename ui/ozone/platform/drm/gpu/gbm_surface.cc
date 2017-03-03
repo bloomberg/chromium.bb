@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_surface_egl.h"
-#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 
@@ -127,8 +127,8 @@ bool GbmSurface::CreatePixmaps() {
         gfx::BufferUsage::SCANOUT);
     if (!pixmap)
       return false;
-    scoped_refptr<GLImageOzoneNativePixmap> image =
-        new GLImageOzoneNativePixmap(GetSize(), GL_BGRA_EXT);
+    scoped_refptr<GLImageNativePixmap> image =
+        new GLImageNativePixmap(GetSize(), GL_BGRA_EXT);
     if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRA_8888))
       return false;
     images_[i] = image;

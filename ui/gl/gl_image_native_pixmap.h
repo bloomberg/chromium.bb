@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
-#define UI_OZONE_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
+#ifndef UI_GL_GL_IMAGE_NATIVE_PIXMAP_H_
+#define UI_GL_GL_IMAGE_NATIVE_PIXMAP_H_
 
 #include <stdint.h>
 
 #include <string>
 
-#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image_egl.h"
-#include "ui/ozone/gl/ozone_gl_export.h"
 
 namespace ui {
 
-class OZONE_GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
+class GL_EXPORT GLImageNativePixmap : public gl::GLImageEGL {
  public:
-  GLImageOzoneNativePixmap(const gfx::Size& size, unsigned internalformat);
+  GLImageNativePixmap(const gfx::Size& size, unsigned internalformat);
 
   bool Initialize(NativePixmap* pixmap, gfx::BufferFormat format);
 
@@ -38,7 +37,7 @@ class OZONE_GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
   static unsigned GetInternalFormatForTesting(gfx::BufferFormat format);
 
  protected:
-  ~GLImageOzoneNativePixmap() override;
+  ~GLImageNativePixmap() override;
 
  private:
   unsigned internalformat_;
@@ -48,4 +47,4 @@ class OZONE_GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
+#endif  // UI_GL_GL_IMAGE_NATIVE_PIXMAP_H_

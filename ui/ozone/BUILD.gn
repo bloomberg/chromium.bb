@@ -102,7 +102,6 @@ component("ozone_base") {
     # things that would otherwise create a cycle.
     "//ui/base",
     "//ui/events/ozone/*",
-    "//ui/ozone/gl",
     "//ui/ozone/platform/*",
     "//ui/ozone/common/*",
   ]
@@ -140,7 +139,6 @@ source_set("platform") {
     "//ui/events/devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/ozone/gl",
     "//ui/platform_window",
   ]
 

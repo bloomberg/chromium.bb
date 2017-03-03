@@ -12,8 +12,8 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/scoped_binders.h"
-#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -77,9 +77,8 @@ bool VaapiDrmPicture::Initialize() {
 
     gfx::BufferFormat format = pixmap_->GetBufferFormat();
 
-    scoped_refptr<ui::GLImageOzoneNativePixmap> image(
-        new ui::GLImageOzoneNativePixmap(size_,
-                                         BufferFormatToInternalFormat(format)));
+    scoped_refptr<ui::GLImageNativePixmap> image(new ui::GLImageNativePixmap(
+        size_, BufferFormatToInternalFormat(format)));
     if (!image->Initialize(pixmap_.get(), format)) {
       LOG(ERROR) << "Failed to create GLImage";
       return false;

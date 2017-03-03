@@ -5,7 +5,7 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 
 #include "ui/gfx/native_pixmap.h"
-#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
+#include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -106,8 +106,8 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     }
   }
 
-  scoped_refptr<ui::GLImageOzoneNativePixmap> image(
-      new ui::GLImageOzoneNativePixmap(size, internalformat));
+  scoped_refptr<ui::GLImageNativePixmap> image(
+      new ui::GLImageNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << " format "
                << static_cast<int>(format);
@@ -131,8 +131,8 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateAnonymousImage(
                << static_cast<int>(format);
     return nullptr;
   }
-  scoped_refptr<ui::GLImageOzoneNativePixmap> image(
-      new ui::GLImageOzoneNativePixmap(size, internalformat));
+  scoped_refptr<ui::GLImageNativePixmap> image(
+      new ui::GLImageNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << " format "
                << static_cast<int>(format);

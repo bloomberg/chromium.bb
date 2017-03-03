@@ -4,22 +4,6 @@
 
 import("//testing/test.gni")
 
-component("gl") {
-  sources = [
-    "gl_image_ozone_native_pixmap.cc",
-    "gl_image_ozone_native_pixmap.h",
-    "ozone_gl_export.h",
-  ]
-
-  defines = [ "OZONE_GL_IMPLEMENTATION" ]
-
-  deps = [
-    "//ui/gfx",
-    "//ui/gl",
-    "//ui/ozone:ozone_base",
-  ]
-}
-
 test("ozone_gl_unittests") {
   sources = [
     "gl_image_ozone_native_pixmap_unittest.cc",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
+#include "ui/gl/gl_image_native_pixmap.h"
 
 #include <vector>
 
@@ -112,17 +112,17 @@ EGLint FourCC(gfx::BufferFormat format) {
 
 }  // namespace
 
-GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const gfx::Size& size,
-                                                   unsigned internalformat)
+GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
+                                         unsigned internalformat)
     : GLImageEGL(size),
       internalformat_(internalformat),
       has_image_flush_external_(
           gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external")) {}
 
-GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {}
+GLImageNativePixmap::~GLImageNativePixmap() {}
 
-bool GLImageOzoneNativePixmap::Initialize(NativePixmap* pixmap,
-                                          gfx::BufferFormat format) {
+bool GLImageNativePixmap::Initialize(NativePixmap* pixmap,
+                                     gfx::BufferFormat format) {
   DCHECK(!pixmap_);
   if (pixmap->GetEGLClientBuffer()) {
     EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
@@ -194,11 +194,11 @@ bool GLImageOzoneNativePixmap::Initialize(NativePixmap* pixmap,
   return true;
 }
 
-unsigned GLImageOzoneNativePixmap::GetInternalFormat() {
+unsigned GLImageNativePixmap::GetInternalFormat() {
   return internalformat_;
 }
 
-bool GLImageOzoneNativePixmap::CopyTexImage(unsigned target) {
+bool GLImageNativePixmap::CopyTexImage(unsigned target) {
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
     // Pass-through image type fails to bind and copy; make sure we
     // don't draw with uninitialized texture.
@@ -210,18 +210,17 @@ bool GLImageOzoneNativePixmap::CopyTexImage(unsigned target) {
   return GLImageEGL::CopyTexImage(target);
 }
 
-bool GLImageOzoneNativePixmap::ScheduleOverlayPlane(
-    gfx::AcceleratedWidget widget,
-    int z_order,
-    gfx::OverlayTransform transform,
-    const gfx::Rect& bounds_rect,
-    const gfx::RectF& crop_rect) {
+bool GLImageNativePixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                               int z_order,
+                                               gfx::OverlayTransform transform,
+                                               const gfx::Rect& bounds_rect,
+                                               const gfx::RectF& crop_rect) {
   DCHECK(pixmap_);
   return pixmap_->ScheduleOverlayPlane(widget, z_order, transform, bounds_rect,
                                        crop_rect);
 }
 
-void GLImageOzoneNativePixmap::Flush() {
+void GLImageNativePixmap::Flush() {
   if (!has_image_flush_external_)
     return;
 
@@ -235,7 +234,7 @@ void GLImageOzoneNativePixmap::Flush() {
   }
 }
 
-void GLImageOzoneNativePixmap::OnMemoryDump(
+void GLImageNativePixmap::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
     uint64_t process_tracing_id,
     const std::string& dump_name) {
@@ -243,7 +242,7 @@ void GLImageOzoneNativePixmap::OnMemoryDump(
 }
 
 // static
-unsigned GLImageOzoneNativePixmap::GetInternalFormatForTesting(
+unsigned GLImageNativePixmap::GetInternalFormatForTesting(
     gfx::BufferFormat format) {
   DCHECK(ValidFormat(format));
   switch (format) {

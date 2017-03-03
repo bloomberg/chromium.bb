@@ -169,6 +169,13 @@ component("gl") {
       "gl_surface_egl.cc",
       "gl_surface_egl.h",
     ]
+
+    if (is_linux) {
+      sources += [
+        "gl_image_native_pixmap.cc",
+        "gl_image_native_pixmap.h",
+      ]
+    }
   }
   if (is_android || is_linux) {
     sources += [
