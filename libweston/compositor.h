@@ -174,7 +174,15 @@ struct weston_output {
 	/** True if damage has occurred since the last repaint for this output;
 	 *  if set, a repaint will eventually occur. */
 	bool repaint_needed;
-	int repaint_scheduled;
+
+	/** State of the repaint loop */
+	enum {
+		REPAINT_NOT_SCHEDULED = 0, /**< idle; no repaint will occur */
+		REPAINT_BEGIN_FROM_IDLE, /**< start_repaint_loop scheduled */
+		REPAINT_SCHEDULED, /**< repaint is scheduled to occur */
+		REPAINT_AWAITING_COMPLETION, /**< last repaint not yet finished */
+	} repaint_status;
+
 	struct wl_event_source *repaint_timer;
 	struct weston_output_zoom zoom;
 	int dirty;

@@ -2311,6 +2311,8 @@ weston_output_repaint(struct weston_output *output)
 	pixman_region32_fini(&output_damage);
 
 	output->repaint_needed = false;
+	if (r == 0)
+		output->repaint_status = REPAINT_AWAITING_COMPLETION;
 
 	weston_compositor_repick(ec);
 
@@ -2332,7 +2334,7 @@ weston_output_repaint(struct weston_output *output)
 static void
 weston_output_schedule_repaint_reset(struct weston_output *output)
 {
-	output->repaint_scheduled = 0;
+	output->repaint_status = REPAINT_NOT_SCHEDULED;
 	TL_POINT("core_repaint_exit_loop", TLP_OUTPUT(output), TLP_END);
 }
 
@@ -2342,6 +2344,8 @@ output_repaint_timer_handler(void *data)
 	struct weston_output *output = data;
 	struct weston_compositor *compositor = output->compositor;
 	int ret;
+
+	assert(output->repaint_status == REPAINT_SCHEDULED);
 
 	/* If we're sleeping, drop the repaint machinery entirely; we will
 	 * explicitly repaint all outputs when we come back. */
@@ -2383,6 +2387,7 @@ weston_output_finish_frame(struct weston_output *output,
 	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
 		 TLP_VBLANK(stamp), TLP_END);
 
+	assert(output->repaint_status == REPAINT_AWAITING_COMPLETION);
 	assert(stamp || (presented_flags & WP_PRESENTATION_FEEDBACK_INVALID));
 
 	/* If we haven't been supplied any timestamp at all, we don't have a
@@ -2424,6 +2429,8 @@ weston_output_finish_frame(struct weston_output *output,
 		msec_rel += refresh_nsec / 1000000;
 
 out:
+	output->repaint_status = REPAINT_SCHEDULED;
+
 	if (msec_rel < 1)
 		output_repaint_timer_handler(output);
 	else
@@ -2435,6 +2442,8 @@ idle_repaint(void *data)
 {
 	struct weston_output *output = data;
 
+	assert(output->repaint_status == REPAINT_BEGIN_FROM_IDLE);
+	output->repaint_status = REPAINT_AWAITING_COMPLETION;
 	output->start_repaint_loop(output);
 }
 
@@ -2550,11 +2559,16 @@ weston_output_schedule_repaint(struct weston_output *output)
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
 	output->repaint_needed = true;
-	if (output->repaint_scheduled)
+
+	/* If we already have a repaint scheduled for our idle handler,
+	 * no need to set it again. If the repaint has been called but
+	 * not finished, then weston_output_finish_frame() will notice
+	 * that a repaint is needed and schedule one. */
+	if (output->repaint_status != REPAINT_NOT_SCHEDULED)
 		return;
 
+	output->repaint_status = REPAINT_BEGIN_FROM_IDLE;
 	wl_event_loop_add_idle(loop, idle_repaint, output);
-	output->repaint_scheduled = 1;
 	TL_POINT("core_repaint_enter_loop", TLP_OUTPUT(output), TLP_END);
 }
 
