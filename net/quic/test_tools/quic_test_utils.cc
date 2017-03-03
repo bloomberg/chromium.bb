@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/quic_test_utils.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "net/quic/core/crypto/crypto_framer.h"
@@ -25,8 +26,6 @@
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 using base::StringPiece;
-using std::max;
-using std::min;
 using std::string;
 using testing::_;
 using testing::Invoke;
@@ -510,8 +509,8 @@ string HexDumpWithMarks(const char* data,
   const int kSizeLimit = 1024;
   if (length > kSizeLimit || mark_length > kSizeLimit) {
     QUIC_LOG(ERROR) << "Only dumping first " << kSizeLimit << " bytes.";
-    length = min(length, kSizeLimit);
-    mark_length = min(mark_length, kSizeLimit);
+    length = std::min(length, kSizeLimit);
+    mark_length = std::min(mark_length, kSizeLimit);
   }
 
   string hex;
@@ -695,8 +694,8 @@ void CompareCharArraysWithHexError(const string& description,
                                    const char* expected,
                                    const int expected_len) {
   EXPECT_EQ(actual_len, expected_len);
-  const int min_len = min(actual_len, expected_len);
-  const int max_len = max(actual_len, expected_len);
+  const int min_len = std::min(actual_len, expected_len);
+  const int max_len = std::max(actual_len, expected_len);
   std::unique_ptr<bool[]> marks(new bool[max_len]);
   bool identical = (actual_len == expected_len);
   for (int i = 0; i < min_len; ++i) {
