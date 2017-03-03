@@ -23,5 +23,6 @@ def PostUploadHook(cl, change, output_api):
       'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
       'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
       'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
+      'master.tryserver.chromium.android:android_optional_gpu_tests_rel',
     ],
     'Automatically added optional GPU tests to run on CQ.')
