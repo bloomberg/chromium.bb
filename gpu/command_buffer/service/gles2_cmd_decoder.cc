@@ -14012,7 +14012,11 @@ bool GLES2DecoderImpl::ValidateCopyTexFormatHelper(
         std::string("can not be used with depth or stencil textures");
     return false;
   }
-  if (feature_info_->IsWebGL2OrES3Context()) {
+  if (feature_info_->IsWebGL2OrES3Context() ||
+      (feature_info_->feature_flags().chromium_color_buffer_float_rgb &&
+       internal_format == GL_RGB32F) ||
+      (feature_info_->feature_flags().chromium_color_buffer_float_rgba &&
+       internal_format == GL_RGBA32F)) {
     if (GLES2Util::IsSizedColorFormat(internal_format)) {
       int sr, sg, sb, sa;
       GLES2Util::GetColorFormatComponentSizes(
@@ -16355,11 +16359,19 @@ CopyTextureMethod GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
     case GL_RG16F:
     case GL_RG32F:
     case GL_RGB16F:
-    case GL_RGB32F:
     case GL_RGBA16F:
-    case GL_RGBA32F:
     case GL_R11F_G11F_B10F:
       valid_dest_format = feature_info_->ext_color_buffer_float_available();
+      break;
+    case GL_RGB32F:
+      valid_dest_format =
+          feature_info_->ext_color_buffer_float_available() ||
+          feature_info_->feature_flags().chromium_color_buffer_float_rgb;
+      break;
+    case GL_RGBA32F:
+      valid_dest_format =
+          feature_info_->ext_color_buffer_float_available() ||
+          feature_info_->feature_flags().chromium_color_buffer_float_rgba;
       break;
     default:
       valid_dest_format = false;

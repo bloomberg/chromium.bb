@@ -773,6 +773,56 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormat) {
   }
 }
 
+TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatRGBFloat) {
+  if (!GLTestHelper::HasExtension("GL_CHROMIUM_color_buffer_float_rgb")) {
+    LOG(INFO)
+        << "GL_CHROMIUM_color_buffer_float_rgb not supported. Skipping test...";
+    return;
+  }
+  // TODO(qiankun.miao@intel.com): since RunCopyTexture requires dest texture to
+  // be texture complete, skip this test if float texture is not color
+  // filterable. We should remove this limitation when we find a way doesn't
+  // require dest texture to be texture complete in RunCopyTexture.
+  if (!gl_.decoder()
+           ->GetFeatureInfo()
+           ->feature_flags()
+           .enable_texture_float_linear) {
+    LOG(INFO) << "RGB32F texture is not filterable. Skipping test...";
+    return;
+  }
+  CopyType copy_type = GetParam();
+  FormatType src_format_type = {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE};
+  FormatType dest_format_type = {GL_RGB32F, GL_RGB, GL_FLOAT};
+
+  RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, 0, dest_format_type,
+                 0, false);
+}
+
+TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatRGBAFloat) {
+  if (!GLTestHelper::HasExtension("GL_CHROMIUM_color_buffer_float_rgba")) {
+    LOG(INFO) << "GL_CHROMIUM_color_buffer_float_rgba not supported. Skipping "
+                 "test...";
+    return;
+  }
+  // TODO(qiankun.miao@intel.com): since RunCopyTexture requires dest texture to
+  // be texture complete, skip this test if float texture is not color
+  // filterable. We should remove this limitation when we find a way doesn't
+  // require dest texture to be texture complete in RunCopyTexture.
+  if (!gl_.decoder()
+           ->GetFeatureInfo()
+           ->feature_flags()
+           .enable_texture_float_linear) {
+    LOG(INFO) << "RGBA32F texture is not filterable. Skipping test...";
+    return;
+  }
+  CopyType copy_type = GetParam();
+  FormatType src_format_type = {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE};
+  FormatType dest_format_type = {GL_RGBA32F, GL_RGBA, GL_FLOAT};
+
+  RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, 0, dest_format_type,
+                 0, false);
+}
+
 TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
   CopyType copy_type = GetParam();
   CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
