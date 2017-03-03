@@ -42,5 +42,15 @@ public class AwDebug {
         return nativeDumpWithoutCrashing(dumpPath);
     }
 
+    public static void initCrashKeysForTesting() {
+        nativeInitCrashKeysForWebViewTesting();
+    }
+
+    public static void setCrashKeyValue(String key, String value) {
+        nativeSetCrashKeyValue(key, value);
+    }
+
     private static native boolean nativeDumpWithoutCrashing(String dumpPath);
+    private static native void nativeInitCrashKeysForWebViewTesting();
+    private static native void nativeSetCrashKeyValue(String key, String value);
 }

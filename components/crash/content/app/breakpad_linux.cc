@@ -101,6 +101,9 @@ ExceptionHandler* g_breakpad = nullptr;
 const char* g_asan_report_str = nullptr;
 #endif
 
+bool g_use_crash_key_white_list = false;
+const char* const* g_crash_key_white_list = nullptr;
+
 #if defined(OS_ANDROID)
 #define G_DUMPS_SUPPRESSED_MAGIC 0x5AFECEDE
 uint32_t g_dumps_suppressed = 0;
@@ -1098,9 +1101,21 @@ void EnableNonBrowserCrashDumping() {
 }
 #endif  // defined(OS_ANDROID)
 
+bool IsInWhiteList(const base::StringPiece& key) {
+  DCHECK(g_crash_key_white_list);
+  for (size_t i = 0; g_crash_key_white_list[i]; ++i) {
+    if (0 == my_strcmp(g_crash_key_white_list[i], key.data())) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void SetCrashKeyValue(const base::StringPiece& key,
                       const base::StringPiece& value) {
-  g_crash_keys->SetKeyValue(key.data(), value.data());
+  if (!g_use_crash_key_white_list || IsInWhiteList(key)) {
+    g_crash_keys->SetKeyValue(key.data(), value.data());
+  }
 }
 
 void ClearCrashKey(const base::StringPiece& key) {
@@ -1112,6 +1127,9 @@ void ClearCrashKey(const base::StringPiece& key) {
 void InitCrashKeys() {
   g_crash_keys = new CrashKeyStorage;
   GetCrashReporterClient()->RegisterCrashKeys();
+  g_use_crash_key_white_list =
+      GetCrashReporterClient()->UseCrashKeysWhiteList();
+  g_crash_key_white_list = GetCrashReporterClient()->GetCrashKeyWhiteList();
   base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValue, &ClearCrashKey);
 }
 
@@ -1903,6 +1921,10 @@ void HandleCrashDump(const BreakpadInfo& info) {
 void InitCrashReporter(const std::string& process_type) {
   SanitizationInfo sanitization_info;
   InitCrashReporter(process_type, sanitization_info);
+}
+
+void InitCrashKeysForTesting() {
+  InitCrashKeys();
 }
 
 void InitCrashReporter(const std::string& process_type,

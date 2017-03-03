@@ -100,9 +100,8 @@ size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
   //
-  // If you're adding keys here, please also add them to the following list:
+  // If you're adding keys here, please also add them to the following lists:
   // chrome/app/chrome_crash_reporter_client_win.cc::RegisterCrashKeysHelper(),
-  // and consider adding the new keys to the following list as well:
   // android_webview/common/crash_reporter/crash_keys.cc::
   //     RegisterWebViewCrashKeys().
   base::debug::CrashKey fixed_keys[] = {

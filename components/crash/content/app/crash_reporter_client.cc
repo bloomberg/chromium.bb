@@ -122,6 +122,14 @@ size_t CrashReporterClient::RegisterCrashKeys() {
   return 0;
 }
 
+bool CrashReporterClient::UseCrashKeysWhiteList() {
+  return false;
+}
+
+const char* const* CrashReporterClient::GetCrashKeyWhiteList() {
+  return nullptr;
+}
+
 bool CrashReporterClient::IsRunningUnattended() {
   return true;
 }

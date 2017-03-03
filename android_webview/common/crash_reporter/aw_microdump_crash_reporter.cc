@@ -10,6 +10,7 @@
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "base/android/build_info.h"
 #include "base/base_paths_android.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -36,6 +37,8 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
 
   // crash_reporter::CrashReporterClient implementation.
   size_t RegisterCrashKeys() override;
+  bool UseCrashKeysWhiteList() override { return true; }
+  const char* const* GetCrashKeyWhiteList() override;
 
   bool IsRunningUnattended() override { return false; }
   bool GetCollectStatsConsent() override {
@@ -84,6 +87,10 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
 
 size_t AwCrashReporterClient::RegisterCrashKeys() {
   return crash_keys::RegisterWebViewCrashKeys();
+}
+
+const char* const* AwCrashReporterClient::GetCrashKeyWhiteList() {
+  return crash_keys::kWebViewCrashKeyWhiteList;
 }
 
 base::LazyInstance<AwCrashReporterClient>::Leaky g_crash_reporter_client =

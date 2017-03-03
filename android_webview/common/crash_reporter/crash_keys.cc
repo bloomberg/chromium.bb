@@ -5,6 +5,7 @@
 #include "android_webview/common/crash_reporter/crash_keys.h"
 
 #include "base/debug/crash_logging.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_keys.h"
 
 using namespace crash_keys;
@@ -12,33 +13,157 @@ using namespace crash_keys;
 namespace android_webview {
 namespace crash_keys {
 
+const char kActiveURL[] = "url-chunk";
+
+const char kFontKeyName[] = "font_key_name";
+
+const char kShutdownType[] = "shutdown-type";
+const char kBrowserUnpinTrace[] = "browser-unpin-trace";
+
 const char kGPUDriverVersion[] = "gpu-driver";
 const char kGPUPixelShaderVersion[] = "gpu-psver";
 const char kGPUVertexShaderVersion[] = "gpu-vsver";
 const char kGPUVendor[] = "gpu-gl-vendor";
 const char kGPURenderer[] = "gpu-gl-renderer";
 
+const char kInputEventFilterSendFailure[] = "input-event-filter-send-failure";
+
+const char kViewCount[] = "view-count";
+
+const char kZeroEncodeDetails[] = "zero-encode-details";
+
 size_t RegisterWebViewCrashKeys() {
   base::debug::CrashKey fixed_keys[] = {
-    { kGPUDriverVersion, kSmallSize },
-    { kGPUPixelShaderVersion, kSmallSize },
-    { kGPUVertexShaderVersion, kSmallSize },
-    { kGPUVendor, kSmallSize },
-    { kGPURenderer, kSmallSize },
+      {"AW_WHITELISTED_DEBUG_KEY", kSmallSize},
+      {"AW_NONWHITELISTED_DEBUG_KEY", kSmallSize},
+      {kClientId, kSmallSize},
+      {kChannel, kSmallSize},
+      {kActiveURL, kLargeSize},
+      {kNumVariations, kSmallSize},
+      {kVariations, kHugeSize},
+      {kShutdownType, kSmallSize},
+      {kBrowserUnpinTrace, kMediumSize},
+      {kGPUDriverVersion, kSmallSize},
+      {kGPUPixelShaderVersion, kSmallSize},
+      {kGPUVertexShaderVersion, kSmallSize},
+      {kGPUVendor, kSmallSize},
+      {kGPURenderer, kSmallSize},
 
-    // content/:
-    { "bad_message_reason", kSmallSize },
-    { "discardable-memory-allocated", kSmallSize },
-    { "discardable-memory-free", kSmallSize },
-    { "mojo-message-error", kMediumSize },
-    { "total-discardable-memory-allocated", kSmallSize },
+      // content/:
+      {"bad_message_reason", kSmallSize},
+      {"discardable-memory-allocated", kSmallSize},
+      {"discardable-memory-free", kSmallSize},
+      {kFontKeyName, kSmallSize},
+      {"mojo-message-error", kMediumSize},
+      {"ppapi_path", kMediumSize},
+      {"subresource_url", kLargeSize},
+      {"total-discardable-memory-allocated", kSmallSize},
+      {kInputEventFilterSendFailure, kSmallSize},
+      {kBug464926CrashKey, kSmallSize},
+      {kViewCount, kSmallSize},
+
+      // media/:
+      {kZeroEncodeDetails, kSmallSize},
+
+      // gin/:
+      {"v8-ignition", kSmallSize},
+
+      // sandbox/:
+      {"seccomp-sigsys", kMediumSize},
+
+      // Temporary for http://crbug.com/575245.
+      {"swapout_frame_id", kSmallSize},
+      {"swapout_proxy_id", kSmallSize},
+      {"swapout_view_id", kSmallSize},
+      {"commit_frame_id", kSmallSize},
+      {"commit_proxy_id", kSmallSize},
+      {"commit_view_id", kSmallSize},
+      {"commit_main_render_frame_id", kSmallSize},
+      {"newproxy_proxy_id", kSmallSize},
+      {"newproxy_view_id", kSmallSize},
+      {"newproxy_opener_id", kSmallSize},
+      {"newproxy_parent_id", kSmallSize},
+      {"rvinit_view_id", kSmallSize},
+      {"rvinit_proxy_id", kSmallSize},
+      {"rvinit_main_frame_id", kSmallSize},
+      {"initrf_frame_id", kSmallSize},
+      {"initrf_proxy_id", kSmallSize},
+      {"initrf_view_id", kSmallSize},
+      {"initrf_main_frame_id", kSmallSize},
+      {"initrf_view_is_live", kSmallSize},
+
+      // Temporary for https://crbug.com/591478.
+      {"initrf_parent_proxy_exists", kSmallSize},
+      {"initrf_render_view_is_live", kSmallSize},
+      {"initrf_parent_is_in_same_site_instance", kSmallSize},
+      {"initrf_parent_process_is_live", kSmallSize},
+      {"initrf_root_is_in_same_site_instance", kSmallSize},
+      {"initrf_root_is_in_same_site_instance_as_parent", kSmallSize},
+      {"initrf_root_process_is_live", kSmallSize},
+      {"initrf_root_proxy_is_live", kSmallSize},
+
+      // Temporary for https://crbug.com/626802.
+      {"newframe_routing_id", kSmallSize},
+      {"newframe_proxy_id", kSmallSize},
+      {"newframe_opener_id", kSmallSize},
+      {"newframe_parent_id", kSmallSize},
+      {"newframe_widget_id", kSmallSize},
+      {"newframe_widget_hidden", kSmallSize},
+      {"newframe_replicated_origin", kSmallSize},
+      {"newframe_oopifs_possible", kSmallSize},
+
+      // Temporary for https://crbug.com/630103.
+      {"origin_mismatch_url", kLargeSize},
+      {"origin_mismatch_origin", kMediumSize},
+      {"origin_mismatch_transition", kSmallSize},
+      {"origin_mismatch_redirects", kSmallSize},
+      {"origin_mismatch_same_page", kSmallSize},
+
+      // Temporary for https://crbug.com/612711.
+      {"aci_wrong_sp_extension_id", kSmallSize},
+
+      // Temporary for https://crbug.com/668633.
+      {"swdh_set_hosted_version_worker_pid", kSmallSize},
+      {"swdh_set_hosted_version_host_pid", kSmallSize},
+      {"swdh_set_hosted_version_is_new_process", kSmallSize},
+      {"swdh_set_hosted_version_restart_count", kSmallSize},
   };
 
+  // This dynamic set of keys is used for sets of key value pairs when gathering
+  // a collection of data, like command line switches or extension IDs.
   std::vector<base::debug::CrashKey> keys(fixed_keys,
                                           fixed_keys + arraysize(fixed_keys));
 
+  GetCrashKeysForCommandLineSwitches(&keys);
+
   return base::debug::InitCrashKeys(&keys.at(0), keys.size(), kChunkMaxLength);
 }
+
+// clang-format off
+const char* const kWebViewCrashKeyWhiteList[] = {
+    "AW_WHITELISTED_DEBUG_KEY",
+    kGPUDriverVersion,
+    kGPUPixelShaderVersion,
+    kGPUVertexShaderVersion,
+    kGPUVendor,
+    kGPURenderer,
+
+    // content/:
+    "bad_message_reason",
+    "discardable-memory-allocated",
+    "discardable-memory-free",
+    "mojo-message-error-1",
+    "mojo-message-error-2",
+    "mojo-message-error-3",
+    "mojo-message-error-4",
+    "total-discardable-memory-allocated",
+    nullptr};
+// clang-format on
+
+void InitCrashKeysForWebViewTesting() {
+  breakpad::InitCrashKeysForTesting();
 }
 
 }  // namespace crash_keys
+
+}  // namespace android_webview

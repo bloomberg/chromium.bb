@@ -5,8 +5,10 @@
 #include "android_webview/native/aw_debug.h"
 
 #include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/common/crash_reporter/crash_keys.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -34,6 +36,19 @@ static jboolean DumpWithoutCrashing(JNIEnv* env,
     return false;
   // breakpad_linux::HandleCrashDump will close this fd once it is done.
   return crash_reporter::DumpWithoutCrashingToFd(target.TakePlatformFile());
+}
+
+static void InitCrashKeysForWebViewTesting(JNIEnv* env,
+                                           const JavaParamRef<jclass>& clazz) {
+  crash_keys::InitCrashKeysForWebViewTesting();
+}
+
+static void SetCrashKeyValue(JNIEnv* env,
+                             const JavaParamRef<jclass>& clazz,
+                             const JavaParamRef<jstring>& key,
+                             const JavaParamRef<jstring>& value) {
+  base::debug::SetCrashKeyValue(ConvertJavaStringToUTF8(env, key),
+                                ConvertJavaStringToUTF8(env, value));
 }
 
 bool RegisterAwDebug(JNIEnv* env) {

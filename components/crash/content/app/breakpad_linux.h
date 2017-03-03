@@ -17,6 +17,8 @@ namespace breakpad {
 extern void InitCrashReporter(const std::string& process_type);
 
 #if defined(OS_ANDROID)
+extern void InitCrashKeysForTesting();
+
 struct SanitizationInfo {
   bool should_sanitize_dumps = false;
   bool skip_dump_if_principal_mapping_not_referenced = false;

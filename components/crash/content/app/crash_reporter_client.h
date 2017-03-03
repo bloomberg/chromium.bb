@@ -144,6 +144,11 @@ class CrashReporterClient {
   // reporting server. Returns the size of the union of all keys.
   virtual size_t RegisterCrashKeys();
 
+  virtual bool UseCrashKeysWhiteList();
+
+  // Returns a NULL-terminated array of crash keys to whitelist.
+  virtual const char* const* GetCrashKeyWhiteList();
+
   // Returns true if running in unattended mode (for automated testing).
   virtual bool IsRunningUnattended();
 
