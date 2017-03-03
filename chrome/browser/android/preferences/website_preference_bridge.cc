@@ -30,6 +30,8 @@
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,6 +65,9 @@ namespace {
 // ManageSpaceActivity.java.
 const int kMaxImportantSites = 10;
 
+const char* kHttpPortSuffix = ":80";
+const char* kHttpsPortSuffix = ":443";
+
 Profile* GetActiveUserProfile(bool is_incognito) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (is_incognito)
@@ -73,6 +78,36 @@ Profile* GetActiveUserProfile(bool is_incognito) {
 HostContentSettingsMap* GetHostContentSettingsMap(bool is_incognito) {
   return HostContentSettingsMapFactory::GetForProfile(
       GetActiveUserProfile(is_incognito));
+}
+
+ScopedJavaLocalRef<jstring> ConvertOriginToJavaString(
+    JNIEnv* env,
+    const std::string& origin) {
+  // The string |jorigin| is used to group permissions together in the Site
+  // Settings list. In order to group sites with the same origin, remove any
+  // standard port from the end of the URL if it's present (i.e. remove :443
+  // for HTTPS sites and :80 for HTTP sites).
+  // TODO(sashab,lgarron): Find out which settings are being saved with the
+  // port and omit it if it's the standard port.
+  // TODO(mvanouwerkerk): Remove all this logic and take two passes through
+  // HostContentSettingsMap: once to get all the 'interesting' hosts, and once
+  // (on SingleWebsitePreferences) to find permission patterns which match
+  // each of these hosts.
+  if (base::StartsWith(origin, url::kHttpsScheme,
+                       base::CompareCase::INSENSITIVE_ASCII) &&
+      base::EndsWith(origin, kHttpsPortSuffix,
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    return ConvertUTF8ToJavaString(
+        env, origin.substr(0, origin.size() - strlen(kHttpsPortSuffix)));
+  } else if (base::StartsWith(origin, url::kHttpScheme,
+                              base::CompareCase::INSENSITIVE_ASCII) &&
+             base::EndsWith(origin, kHttpPortSuffix,
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return ConvertUTF8ToJavaString(
+        env, origin.substr(0, origin.size() - strlen(kHttpPortSuffix)));
+  } else {
+    return ConvertUTF8ToJavaString(env, origin);
+  }
 }
 
 typedef void (*InfoListInsertionFunction)(
@@ -86,13 +121,22 @@ void GetOrigins(JNIEnv* env,
                 InfoListInsertionFunction insertionFunc,
                 jobject list,
                 jboolean managedOnly) {
-  ContentSettingsForOneType all_settings;
   HostContentSettingsMap* content_settings_map =
       GetHostContentSettingsMap(false);  // is_incognito
+  ContentSettingsForOneType all_settings;
+  ContentSettingsForOneType embargo_settings;
+
   content_settings_map->GetSettingsForOneType(
       content_type, std::string(), &all_settings);
+  content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA, std::string(),
+      &embargo_settings);
   ContentSetting default_content_setting = content_settings_map->
       GetDefaultContentSetting(content_type, NULL);
+
+  // Use a vector since the overall number of origins should be small.
+  std::vector<std::string> seen_origins;
+
   // Now add all origins that have a non-default setting to the list.
   for (const auto& settings_it : all_settings) {
     if (settings_it.setting == default_content_setting)
@@ -105,40 +149,35 @@ void GetOrigins(JNIEnv* env,
     const std::string origin = settings_it.primary_pattern.ToString();
     const std::string embedder = settings_it.secondary_pattern.ToString();
 
-    // The string |jorigin| is used to group permissions together in the Site
-    // Settings list. In order to group sites with the same origin, remove any
-    // standard port from the end of the URL if it's present (i.e. remove :443
-    // for HTTPS sites and :80 for HTTP sites).
-    // TODO(sashab,lgarron): Find out which settings are being saved with the
-    // port and omit it if it's the standard port.
-    // TODO(mvanouwerkerk): Remove all this logic and take two passes through
-    // HostContentSettingsMap: once to get all the 'interesting' hosts, and once
-    // (on SingleWebsitePreferences) to find permission patterns which match
-    // each of these hosts.
-    const char* kHttpPortSuffix = ":80";
-    const char* kHttpsPortSuffix = ":443";
-    ScopedJavaLocalRef<jstring> jorigin;
-    if (base::StartsWith(origin, url::kHttpsScheme,
-                         base::CompareCase::INSENSITIVE_ASCII) &&
-        base::EndsWith(origin, kHttpsPortSuffix,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-      jorigin = ConvertUTF8ToJavaString(
-          env, origin.substr(0, origin.size() - strlen(kHttpsPortSuffix)));
-    } else if (base::StartsWith(origin, url::kHttpScheme,
-                                base::CompareCase::INSENSITIVE_ASCII) &&
-               base::EndsWith(origin, kHttpPortSuffix,
-                              base::CompareCase::INSENSITIVE_ASCII)) {
-      jorigin = ConvertUTF8ToJavaString(
-          env, origin.substr(0, origin.size() - strlen(kHttpPortSuffix)));
-    } else {
-      jorigin = ConvertUTF8ToJavaString(env, origin);
-    }
-
     ScopedJavaLocalRef<jstring> jembedder;
     if (embedder != origin)
       jembedder = ConvertUTF8ToJavaString(env, embedder);
 
-    insertionFunc(env, list, jorigin, jembedder);
+    seen_origins.push_back(origin);
+    insertionFunc(env, list, ConvertOriginToJavaString(env, origin), jembedder);
+  }
+
+  // Add any origins which have a default content setting value (thus skipped
+  // above), but have been automatically blocked for this permission type.
+  // We use an empty embedder since embargo doesn't care about it.
+  PermissionDecisionAutoBlocker* auto_blocker =
+      PermissionDecisionAutoBlocker::GetForProfile(
+          GetActiveUserProfile(false /* is_incognito */));
+  ScopedJavaLocalRef<jstring> jembedder;
+
+  for (const auto& settings_it : embargo_settings) {
+    const std::string origin = settings_it.primary_pattern.ToString();
+    if (std::find(seen_origins.begin(), seen_origins.end(), origin) !=
+        seen_origins.end()) {
+      // This origin has already been added to the list, so don't add it again.
+      continue;
+    }
+
+    if (auto_blocker->GetEmbargoResult(GURL(origin), content_type)
+            .content_setting == CONTENT_SETTING_BLOCK) {
+      insertionFunc(env, list, ConvertOriginToJavaString(env, origin),
+                    jembedder);
+    }
   }
 }
 
@@ -149,10 +188,9 @@ ContentSetting GetSettingForOrigin(JNIEnv* env,
                                    jboolean is_incognito) {
   GURL url(ConvertJavaStringToUTF8(env, origin));
   GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
-  ContentSetting setting =
-      GetHostContentSettingsMap(is_incognito)
-          ->GetContentSetting(url, embedder_url, content_type, std::string());
-  return setting;
+  return PermissionManager::Get(GetActiveUserProfile(is_incognito))
+      ->GetPermissionStatus(content_type, url, embedder_url)
+      .content_setting;
 }
 
 void SetSettingForOrigin(JNIEnv* env,

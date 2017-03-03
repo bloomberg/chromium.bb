@@ -355,8 +355,7 @@ public class GeolocationHeader {
 
     /**
      * Returns true if the user has disabled sharing their location with url (e.g. via the
-     * geolocation infobar). If the user has not chosen a preference for url and url uses the https
-     * scheme, this considers the user's preference for url with the http scheme instead.
+     * geolocation infobar).
      */
     static boolean isLocationDisabledForUrl(Uri uri, boolean isIncognito) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION)) {
@@ -371,25 +370,11 @@ public class GeolocationHeader {
 
     /**
      * Returns the location permission for sharing their location with url (e.g. via the
-     * geolocation infobar). If the user has not chosen a preference for url and url uses the https
-     * scheme, this returns the user's preference for url with the http scheme instead.
+     * geolocation infobar).
      */
     static ContentSetting locationContentSettingForUrl(Uri uri, boolean isIncognito) {
         GeolocationInfo locationSettings = new GeolocationInfo(uri.toString(), null, isIncognito);
         ContentSetting locationPermission = locationSettings.getContentSetting();
-
-        // If no preference has been chosen and the scheme is https, fall back to the preference for
-        // this same host over http with no explicit port number.
-        if (locationPermission == null || locationPermission == ContentSetting.ASK) {
-            String scheme = uri.getScheme();
-            if (scheme != null && scheme.toLowerCase(Locale.US).equals("https")
-                    && uri.getAuthority() != null && uri.getUserInfo() == null) {
-                String urlWithHttp = "http://" + uri.getHost();
-                locationSettings = new GeolocationInfo(urlWithHttp, null, isIncognito);
-                locationPermission = locationSettings.getContentSetting();
-            }
-        }
-
         return locationPermission;
     }
 
@@ -442,8 +427,7 @@ public class GeolocationHeader {
     /**
      * Returns the domain permission as either granted, blocked or prompt.
      * This is based upon the location permission for sharing their location with url (e.g. via the
-     * geolocation infobar). If the user has not chosen a preference for url and url uses the https
-     * scheme, this returns the user's preference for url with the http scheme instead.
+     * geolocation infobar).
      */
     @Permission
     private static int getDomainPermission(String url, boolean isIncognito) {

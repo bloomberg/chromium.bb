@@ -130,17 +130,19 @@ public class PreferencesTest extends NativeLibraryTestBase {
 
                 // Make sure a pre-existing ALLOW value does not get deleted when switching away
                 // from a search engine.
-                String keyword4 = pref.getKeywordFromIndexForTesting(4);
-                url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword4);
+                keyword2 = pref.getKeywordFromIndexForTesting(2);
+                url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
                         url, url, ContentSetting.ALLOW.toInt(), false);
-                keyword4 = pref.setValueForTesting("4");
-                assertEquals(keyword4, TemplateUrlService.getInstance()
-                                               .getDefaultSearchEngineTemplateUrl()
-                                               .getKeyword());
-                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword4));
+                keyword2 = pref.setValueForTesting("2");
+                assertEquals(keyword2,
+                        TemplateUrlService.getInstance()
+                                .getDefaultSearchEngineTemplateUrl()
+                                .getKeyword());
+
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword2));
                 pref.setValueForTesting("3");
-                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword4));
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword2));
             }
         });
     }
