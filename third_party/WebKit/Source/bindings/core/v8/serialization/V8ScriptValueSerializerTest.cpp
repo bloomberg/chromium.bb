@@ -1053,5 +1053,18 @@ TEST(V8ScriptValueSerializerTest, DecodeHardcodedNullValue) {
                   ->IsNull());
 }
 
+// This is not the most efficient way to write a small version, but it's
+// technically admissible. We should handle this in a consistent way to avoid
+// DCHECK failure. Thus this is "true" encoded slightly strangely.
+TEST(V8ScriptValueSerializerTest, DecodeWithInefficientVersionEnvelope) {
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x80, 0x09, 0xff, 0x09, 0x54});
+  EXPECT_TRUE(
+      V8ScriptValueDeserializer(scope.getScriptState(), std::move(input))
+          .deserialize()
+          ->IsTrue());
+}
+
 }  // namespace
 }  // namespace blink

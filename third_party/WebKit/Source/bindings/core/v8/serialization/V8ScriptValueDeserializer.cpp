@@ -38,15 +38,41 @@ namespace {
 // See also V8ScriptValueDeserializer.cpp.
 const uint32_t kMinVersionForSeparateEnvelope = 16;
 
-// Check whether the data has a separate Blink envelope.
-// This works even when the version becomes two bytes, because every
-// "continuation byte" in varint encoding is at least 0x80, which is larger than
-// kMinVersionForSeparateEnveloped.
-bool hasSeparateEnvelope(SerializedScriptValue* serializedScriptValue) {
+// Returns the number of bytes consumed reading the Blink version envelope, and
+// sets |*version| to the version. If no Blink envelope was detected, zero is
+// returned.
+size_t readVersionEnvelope(SerializedScriptValue* serializedScriptValue,
+                           uint32_t* outVersion) {
   const uint8_t* rawData = serializedScriptValue->data();
   const size_t length = serializedScriptValue->dataLengthInBytes();
-  return length >= 2 && rawData[0] == VersionTag &&
-         rawData[1] >= kMinVersionForSeparateEnvelope;
+  if (!length || rawData[0] != VersionTag)
+    return 0;
+
+  // Read a 32-bit unsigned integer from varint encoding.
+  uint32_t version = 0;
+  size_t i = 1;
+  unsigned shift = 0;
+  bool hasAnotherByte;
+  do {
+    if (i > length)
+      return 0;
+    uint8_t byte = rawData[i];
+    if (LIKELY(shift < 32)) {
+      version |= static_cast<uint32_t>(byte & 0x7f) << shift;
+      shift += 7;
+    }
+    hasAnotherByte = byte & 0x80;
+    i++;
+  } while (hasAnotherByte);
+
+  // If the version in the envelope is too low, this was not a Blink version
+  // envelope.
+  if (version < kMinVersionForSeparateEnvelope)
+    return 0;
+
+  // Otherwise, we did read the envelope. Hurray!
+  *outVersion = version;
+  return i;
 }
 
 }  // namespace
@@ -74,12 +100,15 @@ v8::Local<v8::Value> V8ScriptValueDeserializer::deserialize() {
   v8::TryCatch tryCatch(isolate);
   v8::Local<v8::Context> context = m_scriptState->context();
 
-  if (hasSeparateEnvelope(m_serializedScriptValue.get())) {
-    SerializationTag expectedVersionTag;
-    if (!readTag(&expectedVersionTag) || !readUint32(&m_version))
-      return v8::Null(isolate);
-    DCHECK_EQ(expectedVersionTag, VersionTag);
+  size_t versionEnvelopeSize =
+      readVersionEnvelope(m_serializedScriptValue.get(), &m_version);
+  if (versionEnvelopeSize) {
+    const void* blinkEnvelope;
+    bool readEnvelope = readRawBytes(versionEnvelopeSize, &blinkEnvelope);
+    DCHECK(readEnvelope);
     DCHECK_GE(m_version, kMinVersionForSeparateEnvelope);
+  } else {
+    DCHECK_EQ(m_version, 0u);
   }
 
   bool readHeader;
