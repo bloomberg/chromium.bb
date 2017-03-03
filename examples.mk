@@ -111,6 +111,20 @@ endif
 aomenc.GUID                  = 548DEC74-7A15-4B2B-AFC3-AA102E7C25C1
 aomenc.DESCRIPTION           = Full featured encoder
 
+ifeq ($(CONFIG_INSPECTION),yes)
+EXAMPLES-$(CONFIG_DECODERS) += inspect.c
+inspect.GUID                 = FA46A420-3356-441F-B0FD-60AA1345C181
+inspect.SRCS                += ivfdec.h ivfdec.c
+inspect.SRCS                += args.c args.h
+inspect.SRCS                += tools_common.h tools_common.c
+inspect.SRCS                += video_common.h
+inspect.SRCS                += video_reader.h video_reader.c
+inspect.SRCS                += aom_ports/mem_ops.h
+inspect.SRCS                += aom_ports/mem_ops_aligned.h
+inspect.SRCS                += aom_ports/msvc.h
+inspect.DESCRIPTION          = Dump inspection data
+endif
+
 EXAMPLES-$(CONFIG_DECODERS)        += simple_decoder.c
 simple_decoder.GUID                 = D3BBF1E9-2427-450D-BBFF-B2843C1D44CC
 simple_decoder.SRCS                += ivfdec.h ivfdec.c

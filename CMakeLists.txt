@@ -229,6 +229,14 @@ add_executable(simple_decoder
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_decoder_app_util>)
 
+if (CONFIG_INSPECTION)
+add_executable(inspect
+               "${AOM_ROOT}/examples/inspect.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_decoder_app_util>)
+set(AOM_APP_TARGETS ${AOM_APP_TARGETS} inspect)
+endif ()
+
 add_executable(simple_encoder
                "${AOM_ROOT}/examples/simple_encoder.c"
                $<TARGET_OBJECTS:aom_common_app_util>
