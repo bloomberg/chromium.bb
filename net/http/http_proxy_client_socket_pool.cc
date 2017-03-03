@@ -266,6 +266,11 @@ void HttpProxyClientSocketPool::CloseIdleSockets() {
   base_.CloseIdleSockets();
 }
 
+void HttpProxyClientSocketPool::CloseIdleSocketsInGroup(
+    const std::string& group_name) {
+  base_.CloseIdleSocketsInGroup(group_name);
+}
+
 int HttpProxyClientSocketPool::IdleSocketCount() const {
   return base_.idle_socket_count();
 }

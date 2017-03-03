@@ -117,6 +117,9 @@ class NET_EXPORT ClientSocketHandle {
   // to.  |higher_pool| must have been added by the above function.
   void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool);
 
+  // Closes idle sockets that are in the same group with |this|.
+  void CloseIdleSocketsInGroup();
+
   // Returns true when Init() has completed successfully.
   bool is_initialized() const { return is_initialized_; }
 

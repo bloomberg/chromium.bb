@@ -463,6 +463,11 @@ void WebSocketTransportClientSocketPool::CloseIdleSockets() {
   // We have no idle sockets.
 }
 
+void WebSocketTransportClientSocketPool::CloseIdleSocketsInGroup(
+    const std::string& group_name) {
+  // We have no idle sockets.
+}
+
 int WebSocketTransportClientSocketPool::IdleSocketCount() const {
   return 0;
 }

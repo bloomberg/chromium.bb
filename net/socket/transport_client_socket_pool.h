@@ -225,6 +225,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
                      int id) override;
   void FlushWithError(int error) override;
   void CloseIdleSockets() override;
+  void CloseIdleSocketsInGroup(const std::string& group_name) override;
   int IdleSocketCount() const override;
   int IdleSocketCountInGroup(const std::string& group_name) const override;
   LoadState GetLoadState(const std::string& group_name,

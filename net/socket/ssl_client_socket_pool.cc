@@ -606,6 +606,11 @@ void SSLClientSocketPool::CloseIdleSockets() {
   base_.CloseIdleSockets();
 }
 
+void SSLClientSocketPool::CloseIdleSocketsInGroup(
+    const std::string& group_name) {
+  base_.CloseIdleSocketsInGroup(group_name);
+}
+
 int SSLClientSocketPool::IdleSocketCount() const {
   return base_.idle_socket_count();
 }

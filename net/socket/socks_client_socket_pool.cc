@@ -261,6 +261,11 @@ void SOCKSClientSocketPool::CloseIdleSockets() {
   base_.CloseIdleSockets();
 }
 
+void SOCKSClientSocketPool::CloseIdleSocketsInGroup(
+    const std::string& group_name) {
+  base_.CloseIdleSocketsInGroup(group_name);
+}
+
 int SOCKSClientSocketPool::IdleSocketCount() const {
   return base_.idle_socket_count();
 }

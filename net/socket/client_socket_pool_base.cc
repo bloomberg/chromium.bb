@@ -620,6 +620,18 @@ void ClientSocketPoolBaseHelper::CloseIdleSockets() {
   DCHECK_EQ(0, idle_socket_count_);
 }
 
+void ClientSocketPoolBaseHelper::CloseIdleSocketsInGroup(
+    const std::string& group_name) {
+  if (idle_socket_count_ == 0)
+    return;
+  GroupMap::iterator it = group_map_.find(group_name);
+  if (it == group_map_.end())
+    return;
+  CleanupIdleSocketsInGroup(true, it->second, base::TimeTicks::Now());
+  if (it->second->IsEmpty())
+    RemoveGroup(it);
+}
+
 int ClientSocketPoolBaseHelper::IdleSocketCountInGroup(
     const std::string& group_name) const {
   GroupMap::const_iterator i = group_map_.find(group_name);
@@ -773,39 +785,43 @@ void ClientSocketPoolBaseHelper::CleanupIdleSockets(bool force) {
   GroupMap::iterator i = group_map_.begin();
   while (i != group_map_.end()) {
     Group* group = i->second;
-
-    auto idle_socket_it = group->mutable_idle_sockets()->begin();
-    while (idle_socket_it != group->idle_sockets().end()) {
-      base::TimeDelta timeout = idle_socket_it->socket->WasEverUsed()
-                                    ? used_idle_socket_timeout_
-                                    : unused_idle_socket_timeout_;
-      bool timed_out = (now - idle_socket_it->start_time) >= timeout;
-      bool should_clean_up = force || timed_out || !idle_socket_it->IsUsable();
-      if (should_clean_up) {
-        if (force) {
-          RecordIdleSocketFate(IDLE_SOCKET_FATE_CLEAN_UP_FORCED);
-        } else if (timed_out) {
-          RecordIdleSocketFate(
-              idle_socket_it->socket->WasEverUsed()
-                  ? IDLE_SOCKET_FATE_CLEAN_UP_TIMED_OUT_REUSED
-                  : IDLE_SOCKET_FATE_CLEAN_UP_TIMED_OUT_UNUSED);
-        } else {
-          DCHECK(!idle_socket_it->IsUsable());
-          RecordIdleSocketFate(IDLE_SOCKET_FATE_CLEAN_UP_UNUSABLE);
-        }
-        delete idle_socket_it->socket;
-        idle_socket_it = group->mutable_idle_sockets()->erase(idle_socket_it);
-        DecrementIdleCount();
-      } else {
-        ++idle_socket_it;
-      }
-    }
-
+    CleanupIdleSocketsInGroup(force, group, now);
     // Delete group if no longer needed.
     if (group->IsEmpty()) {
       RemoveGroup(i++);
     } else {
       ++i;
+    }
+  }
+}
+
+void ClientSocketPoolBaseHelper::CleanupIdleSocketsInGroup(
+    bool force,
+    Group* group,
+    const base::TimeTicks& now) {
+  auto idle_socket_it = group->mutable_idle_sockets()->begin();
+  while (idle_socket_it != group->idle_sockets().end()) {
+    base::TimeDelta timeout = idle_socket_it->socket->WasEverUsed()
+                                  ? used_idle_socket_timeout_
+                                  : unused_idle_socket_timeout_;
+    bool timed_out = (now - idle_socket_it->start_time) >= timeout;
+    bool should_clean_up = force || timed_out || !idle_socket_it->IsUsable();
+    if (should_clean_up) {
+      if (force) {
+        RecordIdleSocketFate(IDLE_SOCKET_FATE_CLEAN_UP_FORCED);
+      } else if (timed_out) {
+        RecordIdleSocketFate(idle_socket_it->socket->WasEverUsed()
+                                 ? IDLE_SOCKET_FATE_CLEAN_UP_TIMED_OUT_REUSED
+                                 : IDLE_SOCKET_FATE_CLEAN_UP_TIMED_OUT_UNUSED);
+      } else {
+        DCHECK(!idle_socket_it->IsUsable());
+        RecordIdleSocketFate(IDLE_SOCKET_FATE_CLEAN_UP_UNUSABLE);
+      }
+      delete idle_socket_it->socket;
+      idle_socket_it = group->mutable_idle_sockets()->erase(idle_socket_it);
+      DecrementIdleCount();
+    } else {
+      ++idle_socket_it;
     }
   }
 }

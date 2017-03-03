@@ -163,6 +163,9 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // Called to close any idle connections held by the connection manager.
   virtual void CloseIdleSockets() = 0;
 
+  // Called to close any idle connections held by the connection manager.
+  virtual void CloseIdleSocketsInGroup(const std::string& group_name) = 0;
+
   // The total number of idle sockets in the pool.
   virtual int IdleSocketCount() const = 0;
 

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -73,6 +74,10 @@ const uint32_t kDefaultInitialHeaderTableSize = 4096;
 const uint32_t kDefaultInitialEnablePush = 1;
 const uint32_t kDefaultInitialInitialWindowSize = 65535;
 const uint32_t kDefaultInitialMaxFrameSize = 16384;
+
+// Experiment to close idle H2 sockets when SpdySession is initialized.
+const base::Feature kCloseIdleH2SocketsEarlyExperiment{
+    "CloseIdleH2SocketsEarly", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSpdySettingAtDefaultInitialValue(SpdySettingsIds setting_id,
                                         uint32_t value) {
@@ -899,6 +904,12 @@ void SpdySession::InitializeWithSocket(
   if (enable_sending_initial_data_)
     SendInitialData();
   pool_ = pool;
+
+  if (base::FeatureList::IsEnabled(kCloseIdleH2SocketsEarlyExperiment)) {
+    // Close idle sockets in this group, since subsequent requests will go over
+    // this HTTP/2 connection.
+    connection_->CloseIdleSocketsInGroup();
+  }
 
   // Bootstrap the read loop.
   base::ThreadTaskRunnerHandle::Get()->PostTask(

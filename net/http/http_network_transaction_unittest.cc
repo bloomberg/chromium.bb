@@ -684,6 +684,7 @@ class CaptureGroupNameSocketPool : public ParentPool {
                      std::unique_ptr<StreamSocket> socket,
                      int id) override {}
   void CloseIdleSockets() override {}
+  void CloseIdleSocketsInGroup(const std::string& group_name) override {}
   int IdleSocketCount() const override { return 0; }
   int IdleSocketCountInGroup(const std::string& group_name) const override {
     return 0;

@@ -147,6 +147,8 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
 
   void CloseIdleSockets() override;
 
+  void CloseIdleSocketsInGroup(const std::string& group_name) override;
+
   int IdleSocketCount() const override;
 
   int IdleSocketCountInGroup(const std::string& group_name) const override;

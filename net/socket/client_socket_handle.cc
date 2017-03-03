@@ -126,6 +126,11 @@ void ClientSocketHandle::RemoveHigherLayeredPool(
   }
 }
 
+void ClientSocketHandle::CloseIdleSocketsInGroup() {
+  if (pool_)
+    pool_->CloseIdleSocketsInGroup(group_name_);
+}
+
 bool ClientSocketHandle::GetLoadTimingInfo(
     bool is_reused,
     LoadTimingInfo* load_timing_info) const {

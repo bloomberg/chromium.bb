@@ -293,6 +293,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // See ClientSocketPool::CloseIdleSockets for documentation on this function.
   void CloseIdleSockets();
 
+  // See ClientSocketPool::CloseIdleSocketsInGroup for documentation.
+  void CloseIdleSocketsInGroup(const std::string& group_name);
+
   // See ClientSocketPool::IdleSocketCount() for documentation on this function.
   int idle_socket_count() const {
     return idle_socket_count_;
@@ -536,6 +539,13 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   typedef std::map<const ClientSocketHandle*, CallbackResultPair>
       PendingCallbackMap;
+
+  // Closes all idle sockets in |group| if |force| is true.  Else, only closes
+  // idle sockets in |group| that timed out with respect to |now| or can't be
+  // reused.
+  void CleanupIdleSocketsInGroup(bool force,
+                                 Group* group,
+                                 const base::TimeTicks& now);
 
   Group* GetOrCreateGroup(const std::string& group_name);
   void RemoveGroup(const std::string& group_name);
@@ -805,6 +815,10 @@ class ClientSocketPoolBase {
   bool IsStalled() const { return helper_.IsStalled(); }
 
   void CloseIdleSockets() { return helper_.CloseIdleSockets(); }
+
+  void CloseIdleSocketsInGroup(const std::string& group_name) {
+    return helper_.CloseIdleSocketsInGroup(group_name);
+  }
 
   int idle_socket_count() const { return helper_.idle_socket_count(); }
 
