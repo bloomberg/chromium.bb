@@ -1,6 +1,10 @@
 #ifndef AOM_INSPECTION_H_
 #define AOM_INSPECTION_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 #if CONFIG_ACCOUNTING
 #include "av1/common/accounting.h"
 #endif
@@ -54,4 +58,7 @@ void ifd_init(insp_frame_data *fd, int frame_width, int frame_height);
 void ifd_clear(insp_frame_data *fd);
 int ifd_inspect(insp_frame_data *fd, void *decoder);
 
-#endif
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+#endif  // AOM_INSPECTION_H_
