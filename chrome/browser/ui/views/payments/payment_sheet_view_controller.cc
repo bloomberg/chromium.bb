@@ -19,7 +19,9 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -28,6 +30,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -36,6 +39,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
@@ -208,6 +212,10 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
       std::move(content_view));
 }
 
+void PaymentSheetViewController::OnSelectedInformationChanged() {
+  UpdatePayButtonState(request()->is_ready_to_pay());
+}
+
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
@@ -220,8 +228,32 @@ PaymentSheetViewController::CreatePrimaryButton() {
   return button;
 }
 
-void PaymentSheetViewController::OnSelectedInformationChanged() {
-  UpdatePayButtonState(request()->is_ready_to_pay());
+// Adds the product logo to the footer.
+// +---------------------------------------------------------+
+// | (•) chrome                               | PAY | CANCEL |
+// +---------------------------------------------------------+
+std::unique_ptr<views::View>
+PaymentSheetViewController::CreateExtraFooterView() {
+  std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
+
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  content_view->SetLayoutManager(layout);
+
+  // Adds the Chrome logo image.
+  std::unique_ptr<views::ImageView> chrome_logo =
+      base::MakeUnique<views::ImageView>();
+  chrome_logo->set_can_process_events_within_subtree(false);
+  chrome_logo->SetImage(ResourceBundle::GetSharedInstance()
+                            .GetImageNamed(IDR_PRODUCT_LOGO_NAME_22)
+                            .AsImageSkia());
+  chrome_logo->SetTooltipText(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  content_view->AddChildView(chrome_logo.release());
+
+  return content_view;
 }
 
 void PaymentSheetViewController::ButtonPressed(

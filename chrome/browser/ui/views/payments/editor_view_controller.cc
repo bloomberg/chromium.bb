@@ -77,6 +77,25 @@ std::unique_ptr<views::View> EditorViewController::CreateView() {
       std::move(content_view));
 }
 
+void EditorViewController::DisplayErrorMessageForField(
+    const EditorField& field,
+    const base::string16& error_message) {
+  const auto& label_it = error_labels_.find(field);
+  DCHECK(label_it != error_labels_.end());
+  label_it->second->SetText(error_message);
+  label_it->second->SchedulePaint();
+  dialog()->Layout();
+}
+
+std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
+  std::unique_ptr<views::Button> button(
+      views::MdTextButton::CreateSecondaryUiBlueButton(
+          this, l10n_util::GetStringUTF16(IDS_DONE)));
+  button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
+  button->set_id(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
+  return button;
+}
+
 // Adds the "required fields" label in disabled text, to obtain this result.
 // +---------------------------------------------------------+
 // | "* indicates required fields"           | CANCEL | DONE |
@@ -99,25 +118,6 @@ std::unique_ptr<views::View> EditorViewController::CreateExtraFooterView() {
   label->SetEnabled(false);
   content_view->AddChildView(label.release());
   return content_view;
-}
-
-void EditorViewController::DisplayErrorMessageForField(
-    const EditorField& field,
-    const base::string16& error_message) {
-  const auto& label_it = error_labels_.find(field);
-  DCHECK(label_it != error_labels_.end());
-  label_it->second->SetText(error_message);
-  label_it->second->SchedulePaint();
-  dialog()->Layout();
-}
-
-std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
-  std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
-          this, l10n_util::GetStringUTF16(IDS_DONE)));
-  button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
-  button->set_id(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
-  return button;
 }
 
 void EditorViewController::ButtonPressed(views::Button* sender,

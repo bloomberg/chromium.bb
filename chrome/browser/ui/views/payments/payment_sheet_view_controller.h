@@ -28,13 +28,14 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
 
   // PaymentRequestSheetController:
   std::unique_ptr<views::View> CreateView() override;
-  std::unique_ptr<views::Button> CreatePrimaryButton() override;
 
   // PaymentRequest::Observer:
   void OnSelectedInformationChanged() override;
 
  private:
   // PaymentRequestSheetController:
+  std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  std::unique_ptr<views::View> CreateExtraFooterView() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void UpdatePayButtonState(bool enabled);

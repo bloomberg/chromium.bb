@@ -93,8 +93,16 @@ class EditorViewController : public PaymentRequestSheetController,
 
   // PaymentRequestSheetController:
   std::unique_ptr<views::View> CreateView() override;
-  std::unique_ptr<views::View> CreateExtraFooterView() override;
 
+  // Will display |error_message| alongside the input field represented by
+  // |field|.
+  void DisplayErrorMessageForField(const EditorField& field,
+                                   const base::string16& error_message);
+
+  const ComboboxMap& comboboxes() const { return comboboxes_; }
+  const TextFieldsMap& text_fields() const { return text_fields_; }
+
+ protected:
   virtual std::unique_ptr<views::View> CreateHeaderView() = 0;
   // Returns the field definitions used to build the UI.
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
@@ -107,17 +115,9 @@ class EditorViewController : public PaymentRequestSheetController,
   virtual std::unique_ptr<ui::ComboboxModel> GetComboboxModelForType(
       const autofill::ServerFieldType& type) = 0;
 
-  // Will display |error_message| alongside the input field represented by
-  // |field|.
-  void DisplayErrorMessageForField(const EditorField& field,
-                                   const base::string16& error_message);
-
-  const ComboboxMap& comboboxes() const { return comboboxes_; }
-  const TextFieldsMap& text_fields() const { return text_fields_; }
-
- protected:
   // PaymentRequestSheetController;
   std::unique_ptr<views::Button> CreatePrimaryButton() override;
+  std::unique_ptr<views::View> CreateExtraFooterView() override;
 
  private:
   // PaymentRequestSheetController:
