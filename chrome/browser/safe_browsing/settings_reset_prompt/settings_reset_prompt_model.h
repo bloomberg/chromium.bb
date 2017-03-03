@@ -47,6 +47,7 @@ class SettingsResetPromptModel {
     NO_RESET_REQUIRED_DUE_TO_ALREADY_PROMPTED_FOR_SETTING = 3,
     NO_RESET_REQUIRED_DUE_TO_RECENTLY_PROMPTED = 4,
     NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET = 5,
+    NO_RESET_REQUIRED_DUE_TO_POLICY = 6,
   };
 
   using ExtensionMap =
@@ -134,6 +135,9 @@ class SettingsResetPromptModel {
 
   // Return true if any setting's reset state is set to |RESET_REQUIRED|.
   bool SomeSettingRequiresReset() const;
+
+  bool SomeSettingIsManaged() const;
+  bool SomeExtensionMustRemainEnabled() const;
 
   Profile* const profile_;
 

@@ -16,7 +16,11 @@
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
@@ -322,8 +326,24 @@ SettingsResetPromptModel::SettingsResetPromptModel(
 
   InitExtensionData();
 
-  // TODO(alito): Figure out cases where settings cannot be reset, for example
-  // due to policy or extensions that cannot be disabled.
+  if (!SomeSettingRequiresReset())
+    return;
+
+  // For now, during the experimental phase, if policy controls any of the
+  // settings that we consider for reset (search, startup pages, homepage) or if
+  // an extension that needs to be disabled is managed by policy, then we do not
+  // show the reset prompt.
+  //
+  // TODO(alito): Consider how clients with policies should be prompted for
+  // reset.
+  if (SomeSettingIsManaged() || SomeExtensionMustRemainEnabled()) {
+    if (homepage_reset_state_ == RESET_REQUIRED)
+      homepage_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
+    if (default_search_reset_state_ == RESET_REQUIRED)
+      default_search_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
+    if (startup_urls_reset_state_ == RESET_REQUIRED)
+      startup_urls_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
+  }
 }
 
 void SettingsResetPromptModel::InitDefaultSearchData() {
@@ -456,6 +476,48 @@ bool SettingsResetPromptModel::SomeSettingRequiresReset() const {
   return default_search_reset_state_ == RESET_REQUIRED ||
          startup_urls_reset_state_ == RESET_REQUIRED ||
          homepage_reset_state_ == RESET_REQUIRED;
+}
+
+bool SettingsResetPromptModel::SomeSettingIsManaged() const {
+  PrefService* prefs = profile_->GetPrefs();
+  DCHECK(prefs);
+
+  // Check if homepage is managed.
+  const PrefService::Preference* homepage =
+      prefs->FindPreference(prefs::kHomePage);
+  if (homepage && (homepage->IsManaged() || homepage->IsManagedByCustodian()))
+    return true;
+
+  // Check if startup pages are managed.
+  if (SessionStartupPref::TypeIsManaged(prefs) ||
+      SessionStartupPref::URLsAreManaged(prefs)) {
+    return true;
+  }
+
+  // Check if default search is managed.
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (service && service->is_default_search_managed())
+    return true;
+
+  return false;
+}
+
+bool SettingsResetPromptModel::SomeExtensionMustRemainEnabled() const {
+  extensions::ManagementPolicy* management_policy =
+      extensions::ExtensionSystem::Get(profile_)->management_policy();
+
+  if (management_policy) {
+    for (const auto& item : extensions_to_disable()) {
+      const extensions::ExtensionId& extension_id = item.first;
+      const extensions::Extension* extension =
+          GetExtension(profile_, extension_id);
+      if (extension && management_policy->MustRemainEnabled(extension, nullptr))
+        return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace safe_browsing.
