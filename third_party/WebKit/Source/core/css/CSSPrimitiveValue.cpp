@@ -30,8 +30,6 @@
 #include "wtf/SizeAssertions.h"
 #include "wtf/StdLibExtras.h"
 
-using namespace WTF;
-
 namespace blink {
 
 namespace {

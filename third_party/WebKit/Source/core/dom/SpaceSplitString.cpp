@@ -25,8 +25,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicStringHash.h"
 
-using namespace WTF;
-
 namespace blink {
 
 template <typename CharacterType>

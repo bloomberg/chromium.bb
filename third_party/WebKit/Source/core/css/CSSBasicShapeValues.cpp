@@ -35,8 +35,6 @@
 #include "platform/Length.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace WTF;
-
 namespace blink {
 
 static String buildCircleString(const String& radius,
