@@ -93,6 +93,7 @@
 /libevdev/src
 /libexif/sources
 /libFuzzer/src
+/libprotobuf-mutator/src
 /libjingle/source
 /libjpeg_turbo
 /liblouis/src

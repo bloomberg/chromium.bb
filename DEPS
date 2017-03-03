@@ -109,6 +109,10 @@ vars = {
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
   'scanbuild_revision': '15bd7ca2934162c51654ddffc52933e45f95e7ef',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libprotobuf-mutator
+  # and whatever else without interference from each other.
+  'libprotobuf-mutator': '9f19110ef75ff7e8c50428247a262a131f312c3c',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -304,6 +308,9 @@ deps = {
   # Used for building libFuzzers (only supports Linux).
   'src/third_party/libFuzzer/src':
     Var('chromium_git') + '/chromium/llvm-project/llvm/lib/Fuzzer.git' + '@' +  Var('libfuzzer_revision'),
+
+  'src/third_party/libprotobuf-mutator/src':
+    Var('chromium_git') + '/external/github.com/google/libprotobuf-mutator.git' + '@' +  Var('libprotobuf-mutator'),
 
   'src/third_party/visualmetrics/src':
     Var('chromium_git') + '/external/github.com/WPO-Foundation/visualmetrics.git' + '@' +  '1edde9d2fe203229c895b648fdec355917200ad6',
