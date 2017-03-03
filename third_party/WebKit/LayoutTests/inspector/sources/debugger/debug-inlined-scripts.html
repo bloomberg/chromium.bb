@@ -36,10 +36,17 @@ var test = function()
     function step2(sourceFrame)
     {
         InspectorTest.addResult("Script source was shown.");
+        InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
+
         InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
         InspectorTest.setBreakpoint(sourceFrame, 9, "", true);
+
+        InspectorTest.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
+            .then(() => {
+                InspectorTest.reloadPage(() => InspectorTest.completeDebuggerTest());
+            });
+
         InspectorTest.waitUntilPaused(step3);
-        InspectorTest.reloadPage(InspectorTest.completeDebuggerTest.bind(InspectorTest));
     }
 
     function step3(callFrames)
