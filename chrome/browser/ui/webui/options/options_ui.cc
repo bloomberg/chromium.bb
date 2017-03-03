@@ -145,6 +145,14 @@ constexpr char kSetupFingerprintHTMLPath[] =
     "people_page/setup_fingerprint_dialog.html";
 constexpr char kSetupFingerprintJSPath[] =
     "people_page/setup_fingerprint_dialog.js";
+constexpr char kFingerprintBrowserProxyHTMLPath[] =
+    "people_page/fingerprint_browser_proxy.html";
+constexpr char kFingerprintBrowserProxyJSPath[] =
+    "people_page/fingerprint_browser_proxy.js";
+constexpr char kFingerprintProgressArcHTMLPath[] =
+    "people_page/fingerprint_progress_arc.html";
+constexpr char kFingerprintProgressArcJSPath[] =
+    "people_page/fingerprint_progress_arc.js";
 constexpr char kSettingsRouteHTMLPath[] = "route.html";
 constexpr char kSettingsRouteJSPath[] = "route.js";
 constexpr char kSettingsSharedCSSHTMLPath[] = "settings_shared_css.html";
@@ -165,6 +173,9 @@ constexpr char kSettingsPrefsBehaviorHTMLPath[] = "prefs/prefs_behavior.html";
 constexpr char kSettingsPrefsBehaviorJSPath[] = "prefs/prefs_behavior.js";
 constexpr char kSettingsPrefsTypesHTMLPath[] = "prefs/prefs_types.html";
 constexpr char kSettingsPrefsTypesJSPath[] = "prefs/prefs_types.js";
+constexpr char kSettingsPrefsHTMLPath[] = "prefs/prefs.html";
+constexpr char kSettingsPrefsJSPath[] = "prefs/prefs.js";
+constexpr char kSettingsI18nHTMLPath[] = "i18n_setup.html";
 constexpr char kOptionsPolymerHTMLPath[] = "options_polymer.html";
 #endif
 
@@ -325,6 +336,17 @@ void OptionsUIHTMLSource::CreateDataSourceMap() {
   path_to_idr_map_[kSettingsPrefsTypesHTMLPath] = IDR_SETTINGS_PREFS_TYPES_HTML;
   path_to_idr_map_[kSettingsPrefsTypesJSPath] = IDR_SETTINGS_PREFS_TYPES_JS;
   path_to_idr_map_[kOptionsPolymerHTMLPath] = IDR_OPTIONS_POLYMER_ELEMENTS_HTML;
+  path_to_idr_map_[kSettingsPrefsHTMLPath] = IDR_SETTINGS_PREFS_HTML;
+  path_to_idr_map_[kSettingsPrefsJSPath] = IDR_SETTINGS_PREFS_JS;
+  path_to_idr_map_[kSettingsI18nHTMLPath] = IDR_OPTIONS_I18N_SETUP_HTML;
+  path_to_idr_map_[kFingerprintBrowserProxyHTMLPath] =
+      IDR_OPTIONS_FINGERPRINT_BROWSER_PROXY_HTML;
+  path_to_idr_map_[kFingerprintBrowserProxyJSPath] =
+      IDR_OPTIONS_FINGERPRINT_BROWSER_PROXY_JS;
+  path_to_idr_map_[kFingerprintProgressArcHTMLPath] =
+      IDR_OPTIONS_FINGERPRINT_PROGRESS_ARC_HTML;
+  path_to_idr_map_[kFingerprintProgressArcJSPath] =
+      IDR_OPTIONS_FINGERPRINT_PROGRESS_ARC_JS;
 #endif
 }
 

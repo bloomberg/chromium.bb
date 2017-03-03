@@ -814,6 +814,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                      chromeos::quick_unlock::IsPinEnabled(profile->GetPrefs()));
   values->SetBoolean("fingerprintUnlockEnabled",
                      chromeos::quick_unlock::IsFingerprintEnabled());
+  values->SetBoolean("pinUnlockEnabled",
+                     chromeos::quick_unlock::IsPinEnabled(profile->GetPrefs()));
   if (chromeos::quick_unlock::IsPinEnabled(profile->GetPrefs())) {
     values->SetString(
         "enableScreenlock",
