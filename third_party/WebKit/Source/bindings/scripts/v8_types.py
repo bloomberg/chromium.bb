@@ -328,10 +328,6 @@ IdlArrayOrSequenceType.is_traceable = property(
 # Includes
 ################################################################################
 
-def includes_for_cpp_class(class_name, relative_dir_posix):
-    return set([posixpath.join('bindings', relative_dir_posix, class_name + '.h')])
-
-
 INCLUDES_FOR_TYPE = {
     'object': set(),
     'ArrayBufferView': set(['bindings/core/v8/V8ArrayBufferView.h',
