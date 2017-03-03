@@ -25,6 +25,7 @@ class GoogleURLTracker;
 
 namespace base {
 class DictionaryValue;
+class TimeDelta;
 class Value;
 }
 
@@ -62,18 +63,23 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
   // ParseJSONCallback Failure callback
   void OnJsonParseFailed(const std::string& error_message);
 
-  base::Optional<DoodleConfig> ParseDoodle(
-      const base::DictionaryValue& ddljson) const;
+  base::Optional<DoodleConfig> ParseDoodleConfigAndTimeToLive(
+      const base::DictionaryValue& ddljson,
+      base::TimeDelta* time_to_live) const;
+
   bool ParseImage(const base::DictionaryValue& image_dict,
                   const std::string& image_name,
                   DoodleImage* image) const;
   void ParseBaseInformation(const base::DictionaryValue& ddljson,
-                            DoodleConfig* config) const;
+                            DoodleConfig* config,
+                            base::TimeDelta* time_to_live) const;
   GURL ParseRelativeUrl(const base::DictionaryValue& dict_value,
                         const std::string& key) const;
 
   void RespondToAllCallbacks(DoodleState state,
+                             base::TimeDelta time_to_live,
                              const base::Optional<DoodleConfig>& config);
+
   GURL GetGoogleBaseUrl() const;
 
   // Returns whether a fetch is still in progress. A fetch begins when a

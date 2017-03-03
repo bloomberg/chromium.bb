@@ -13,6 +13,10 @@
 #include "components/doodle/doodle_fetcher.h"
 #include "components/doodle/doodle_types.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace doodle {
 
 class DoodleService {
@@ -43,6 +47,7 @@ class DoodleService {
 
  private:
   void DoodleFetched(DoodleState state,
+                     base::TimeDelta time_to_live,
                      const base::Optional<DoodleConfig>& doodle_config);
 
   // The fetcher for getting fresh DoodleConfigs from the network.

@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_url_tracker.h"
@@ -106,20 +107,27 @@ class DoodleFetcherImplTest : public testing::Test {
     return url_fetcher;
   }
 
+  // TODO(treib): Replace with a MockCallback plus testing::SaveArgs?
   DoodleFetcherImpl::FinishedCallback CreateResponseSavingCallback(
       DoodleState* state_out,
+      base::TimeDelta* time_to_live_out,
       base::Optional<DoodleConfig>* config_out) {
     return base::BindOnce(
-        [](DoodleState* state_out, base::Optional<DoodleConfig>* config_out,
-           DoodleState state, const base::Optional<DoodleConfig>& config) {
+        [](DoodleState* state_out, base::TimeDelta* time_to_live_out,
+           base::Optional<DoodleConfig>* config_out, DoodleState state,
+           base::TimeDelta time_to_live,
+           const base::Optional<DoodleConfig>& config) {
           if (state_out) {
             *state_out = state;
+          }
+          if (time_to_live_out) {
+            *time_to_live_out = time_to_live;
           }
           if (config_out) {
             *config_out = config;
           }
         },
-        state_out, config_out);
+        state_out, time_to_live_out, config_out);
   }
 
   DoodleFetcherImpl* doodle_fetcher() { return &doodle_fetcher_; }
@@ -139,7 +147,7 @@ TEST_F(DoodleFetcherImplTest, ReturnsFromFetchWithoutError) {
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, nullptr, &response));
   RespondWithData(R"json({"ddljson": {
         "time_to_live_ms":55000,
         "large_image": {"url":"/logos/doodles/2015/some.gif"}
@@ -154,7 +162,7 @@ TEST_F(DoodleFetcherImplTest, ReturnsFrom404FetchWithError) {
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, nullptr, &response));
   RespondWithError(net::ERR_FILE_NOT_FOUND);
 
   EXPECT_THAT(state, Eq(DoodleState::DOWNLOAD_ERROR));
@@ -166,7 +174,7 @@ TEST_F(DoodleFetcherImplTest, ReturnsErrorForInvalidJson) {
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, nullptr, &response));
   RespondWithData("}");
 
   EXPECT_THAT(state, Eq(DoodleState::PARSING_ERROR));
@@ -178,7 +186,7 @@ TEST_F(DoodleFetcherImplTest, ReturnsErrorForIncompleteJson) {
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, nullptr, &response));
   RespondWithData("{}");
 
   EXPECT_THAT(state, Eq(DoodleState::PARSING_ERROR));
@@ -187,10 +195,11 @@ TEST_F(DoodleFetcherImplTest, ReturnsErrorForIncompleteJson) {
 
 TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
   DoodleState state(DoodleState::NO_DOODLE);
+  base::TimeDelta time_to_live;
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, &time_to_live, &response));
   RespondWithData(R"json()]}'{
       "ddljson": {
         "alt_text":"Mouseover Text",
@@ -220,59 +229,59 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
   EXPECT_THAT(config.interactive_html,
               Eq("\u003cstyle\u003e\u003c/style\u003e"));
 
-  EXPECT_THAT(config.time_to_live,
-              Eq(base::TimeDelta::FromMilliseconds(55000)));
+  EXPECT_THAT(time_to_live, Eq(base::TimeDelta::FromMilliseconds(55000)));
 }
 
 TEST_F(DoodleFetcherImplTest, DoodleExpiresWithinThirtyDaysForTooLargeTTL) {
   DoodleState state(DoodleState::NO_DOODLE);
+  base::TimeDelta time_to_live;
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, &time_to_live, &response));
   RespondWithData(R"json({"ddljson": {
       "time_to_live_ms":5184000000,
       "large_image": {"url":"/logos/doodles/2015/some.gif"}
     }})json");  // 60 days
 
   EXPECT_THAT(state, Eq(DoodleState::AVAILABLE));
-  ASSERT_TRUE(response.has_value());
-  EXPECT_THAT(response.value().time_to_live,
+  EXPECT_TRUE(response.has_value());
+  EXPECT_THAT(time_to_live,
               Eq(base::TimeDelta::FromMilliseconds(30ul * 24 * 60 * 60 *
                                                    1000)));  // 30 days
 }
 
 TEST_F(DoodleFetcherImplTest, DoodleExpiresImmediatelyWithNegativeTTL) {
   DoodleState state(DoodleState::NO_DOODLE);
+  base::TimeDelta time_to_live;
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, &time_to_live, &response));
   RespondWithData(R"json({"ddljson": {
       "time_to_live_ms":-1,
       "large_image": {"url":"/logos/doodles/2015/some.gif"}
     }})json");
 
   EXPECT_THAT(state, Eq(DoodleState::AVAILABLE));
-  ASSERT_TRUE(response.has_value());
-  EXPECT_THAT(response.value().time_to_live,
-              Eq(base::TimeDelta::FromMilliseconds(0)));
+  EXPECT_TRUE(response.has_value());
+  EXPECT_THAT(time_to_live, Eq(base::TimeDelta::FromMilliseconds(0)));
 }
 
 TEST_F(DoodleFetcherImplTest, DoodleExpiresImmediatelyWithoutValidTTL) {
   DoodleState state(DoodleState::NO_DOODLE);
+  base::TimeDelta time_to_live;
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, &time_to_live, &response));
   RespondWithData(R"json({"ddljson": {
         "large_image": {"url":"/logos/doodles/2015/some.gif"}
       }})json");
 
   EXPECT_THAT(state, Eq(DoodleState::AVAILABLE));
-  ASSERT_TRUE(response.has_value());
-  EXPECT_THAT(response.value().time_to_live,
-              Eq(base::TimeDelta::FromMilliseconds(0)));
+  EXPECT_TRUE(response.has_value());
+  EXPECT_THAT(time_to_live, Eq(base::TimeDelta::FromMilliseconds(0)));
 }
 
 TEST_F(DoodleFetcherImplTest, ReturnsNoDoodleForMissingLargeImageUrl) {
@@ -280,7 +289,7 @@ TEST_F(DoodleFetcherImplTest, ReturnsNoDoodleForMissingLargeImageUrl) {
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, nullptr, &response));
   RespondWithData(R"json({"ddljson": {
         "time_to_live_ms":55000,
         "large_image": {}
@@ -295,7 +304,7 @@ TEST_F(DoodleFetcherImplTest, EmptyResponsesCausesNoDoodleState) {
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, nullptr, &response));
   RespondWithData("{\"ddljson\":{}}");
 
   EXPECT_THAT(state, Eq(DoodleState::NO_DOODLE));
@@ -307,7 +316,7 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsExactlyTheSampleImages) {
   base::Optional<DoodleConfig> response;
 
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state, &response));
+      CreateResponseSavingCallback(&state, nullptr, &response));
   RespondWithData(R"json()]}'{
       "ddljson": {
         "time_to_live_ms":55000,
@@ -374,10 +383,10 @@ TEST_F(DoodleFetcherImplTest, RespondsToMultipleRequestsWithSameFetcher) {
 
   // Trigger two requests.
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state1, &response1));
+      CreateResponseSavingCallback(&state1, nullptr, &response1));
   net::URLFetcher* first_created_fetcher = GetRunningFetcher();
   doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(&state2, &response2));
+      CreateResponseSavingCallback(&state2, nullptr, &response2));
   net::URLFetcher* second_created_fetcher = GetRunningFetcher();
 
   // Expect that only one fetcher handles both requests.
@@ -396,8 +405,8 @@ TEST_F(DoodleFetcherImplTest, RespondsToMultipleRequestsWithSameFetcher) {
 }
 
 TEST_F(DoodleFetcherImplTest, ReceivesBaseUrlFromTracker) {
-  doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(/*state=*/nullptr, /*response=*/nullptr));
+  doodle_fetcher()->FetchDoodle(CreateResponseSavingCallback(
+      /*state=*/nullptr, nullptr, /*response=*/nullptr));
 
   EXPECT_THAT(GetRunningFetcher()->GetOriginalURL(),
               Eq(GetGoogleBaseURL().Resolve(kDoodleConfigPath)));
@@ -407,8 +416,8 @@ TEST_F(DoodleFetcherImplTest, OverridesBaseUrlWithCommandLineArgument) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kGoogleBaseURL, "http://www.google.kz");
 
-  doodle_fetcher()->FetchDoodle(
-      CreateResponseSavingCallback(/*state=*/nullptr, /*response=*/nullptr));
+  doodle_fetcher()->FetchDoodle(CreateResponseSavingCallback(
+      /*state=*/nullptr, nullptr, /*response=*/nullptr));
 
   EXPECT_THAT(GetRunningFetcher()->GetOriginalURL(),
               Eq(GURL("http://www.google.kz").Resolve(kDoodleConfigPath)));

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/time/time.h"
 
 namespace doodle {
 
@@ -32,30 +33,19 @@ void DoodleService::Refresh() {
 
 void DoodleService::DoodleFetched(
     DoodleState state,
+    base::TimeDelta time_to_live,
     const base::Optional<DoodleConfig>& doodle_config) {
-  if (!cached_config_.has_value() && !doodle_config.has_value()) {
-    // There was no config before and we didn't get a new one, so there's
-    // nothing to do.
+  // If nothing changed, then there's nothing to do. Note that this checks both
+  // for existence changes as well as changes of the configs themselves.
+  if (cached_config_ == doodle_config) {
+    // TODO(treib): Once we support expiry, update the time to live here.
     return;
   }
 
-  bool notify = false;
-  if (cached_config_.has_value() != doodle_config.has_value()) {
-    // We got a new config, or an existing one went away.
-    notify = true;
-  } else {
-    // There was a config both before and after the update. Notify observers
-    // only if something relevant changed.
-    notify = !cached_config_.value().IsEquivalent(doodle_config.value());
-  }
-
-  // In any case, update the cache.
+  // Update the cache and notify observers.
   cached_config_ = doodle_config;
-
-  if (notify) {
-    for (auto& observer : observers_) {
-      observer.OnDoodleConfigUpdated(cached_config_);
-    }
+  for (auto& observer : observers_) {
+    observer.OnDoodleConfigUpdated(cached_config_);
   }
 }
 

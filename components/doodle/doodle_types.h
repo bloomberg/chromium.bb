@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_DOODLE_DOODLE_TYPES_H_
 #define COMPONENTS_DOODLE_DOODLE_TYPES_H_
 
-#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace doodle {
@@ -52,9 +51,8 @@ struct DoodleConfig {
   DoodleConfig(const DoodleConfig& config);  // = default;
   ~DoodleConfig();
 
-  // Checks whether this config is "equivalent" to the other. This compares all
-  // fields for equality, except for |expiry_date|.
-  bool IsEquivalent(const DoodleConfig& other) const;
+  bool operator==(const DoodleConfig& other) const;
+  bool operator!=(const DoodleConfig& other) const;
 
   DoodleType doodle_type;
   std::string alt_text;
@@ -67,9 +65,6 @@ struct DoodleConfig {
   DoodleImage large_image;
   DoodleImage large_cta_image;
   DoodleImage transparent_large_image;
-
-  // TODO(treib,fhorschig): Don't expose this? Clients don't care about it.
-  base::TimeDelta time_to_live;
 
   // Copying and assignment allowed.
 };

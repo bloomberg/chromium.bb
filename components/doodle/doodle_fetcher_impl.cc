@@ -112,7 +112,8 @@ void DoodleFetcherImpl::OnURLFetchComplete(const URLFetcher* source) {
   if (!(source->GetStatus().is_success() &&
         source->GetResponseCode() == net::HTTP_OK &&
         source->GetResponseAsString(&json_string))) {
-    RespondToAllCallbacks(DoodleState::DOWNLOAD_ERROR, base::nullopt);
+    RespondToAllCallbacks(DoodleState::DOWNLOAD_ERROR, base::TimeDelta(),
+                          base::nullopt);
     return;
   }
 
@@ -128,43 +129,51 @@ void DoodleFetcherImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
       base::DictionaryValue::From(std::move(json));
   if (!config.get()) {
     DLOG(WARNING) << "Doodle JSON is not valid.";
-    RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::nullopt);
+    RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::TimeDelta(),
+                          base::nullopt);
     return;
   }
 
   const base::DictionaryValue* ddljson = nullptr;
   if (!config->GetDictionary("ddljson", &ddljson)) {
     DLOG(WARNING) << "Doodle JSON response did not contain 'ddljson' key.";
-    RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::nullopt);
+    RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::TimeDelta(),
+                          base::nullopt);
     return;
   }
 
-  base::Optional<DoodleConfig> doodle = ParseDoodle(*ddljson);
+  base::TimeDelta time_to_live;
+  base::Optional<DoodleConfig> doodle =
+      ParseDoodleConfigAndTimeToLive(*ddljson, &time_to_live);
   if (!doodle.has_value()) {
-    RespondToAllCallbacks(DoodleState::NO_DOODLE, base::nullopt);
+    RespondToAllCallbacks(DoodleState::NO_DOODLE, base::TimeDelta(),
+                          base::nullopt);
     return;
   }
 
-  RespondToAllCallbacks(DoodleState::AVAILABLE, std::move(doodle));
+  RespondToAllCallbacks(DoodleState::AVAILABLE, time_to_live,
+                        std::move(doodle));
 }
 
 void DoodleFetcherImpl::OnJsonParseFailed(const std::string& error_message) {
   DLOG(WARNING) << "JSON parsing failed: " << error_message;
-  RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::nullopt);
+  RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::TimeDelta(),
+                        base::nullopt);
 }
 
-base::Optional<DoodleConfig> DoodleFetcherImpl::ParseDoodle(
-    const base::DictionaryValue& ddljson) const {
+base::Optional<DoodleConfig> DoodleFetcherImpl::ParseDoodleConfigAndTimeToLive(
+    const base::DictionaryValue& ddljson,
+    base::TimeDelta* time_to_live) const {
   DoodleConfig doodle;
   // The |large_image| field is required (it's the "default" representation for
   // the doodle).
   if (!ParseImage(ddljson, "large_image", &doodle.large_image)) {
     return base::nullopt;
   }
+  ParseBaseInformation(ddljson, &doodle, time_to_live);
   ParseImage(ddljson, "transparent_large_image",
              &doodle.transparent_large_image);
   ParseImage(ddljson, "large_cta_image", &doodle.large_cta_image);
-  ParseBaseInformation(ddljson, &doodle);
   return doodle;
 }
 
@@ -190,7 +199,8 @@ bool DoodleFetcherImpl::ParseImage(const base::DictionaryValue& image_parent,
 
 void DoodleFetcherImpl::ParseBaseInformation(
     const base::DictionaryValue& ddljson,
-    DoodleConfig* config) const {
+    DoodleConfig* config,
+    base::TimeDelta* time_to_live) const {
   config->search_url = ParseRelativeUrl(ddljson, "search_url");
   config->target_url = ParseRelativeUrl(ddljson, "target_url");
   config->fullpage_interactive_url =
@@ -211,7 +221,7 @@ void DoodleFetcherImpl::ParseBaseInformation(
     ttl = kMaxTimeToLiveMS;
     DLOG(WARNING) << "Clamping Doodle TTL to 30 days!";
   }
-  config->time_to_live = base::TimeDelta::FromMillisecondsD(ttl);
+  *time_to_live = base::TimeDelta::FromMillisecondsD(ttl);
 }
 
 GURL DoodleFetcherImpl::ParseRelativeUrl(
@@ -227,9 +237,10 @@ GURL DoodleFetcherImpl::ParseRelativeUrl(
 
 void DoodleFetcherImpl::RespondToAllCallbacks(
     DoodleState state,
+    base::TimeDelta time_to_live,
     const base::Optional<DoodleConfig>& config) {
   for (auto& callback : callbacks_) {
-    std::move(callback).Run(state, config);
+    std::move(callback).Run(state, time_to_live, config);
   }
   callbacks_.clear();
 }

@@ -15,10 +15,7 @@ bool DoodleImage::operator!=(const DoodleImage& other) const {
   return !(*this == other);
 }
 
-bool DoodleConfig::IsEquivalent(const DoodleConfig& other) const {
-  // Note: This compares all fields except for |time_to_live|, which by
-  // definition isn't constant over time, and shouldn't be in DoodleConfig in
-  // the first place.
+bool DoodleConfig::operator==(const DoodleConfig& other) const {
   return doodle_type == other.doodle_type && alt_text == other.alt_text &&
          interactive_html == other.interactive_html &&
          search_url == other.search_url && target_url == other.target_url &&
@@ -26,6 +23,10 @@ bool DoodleConfig::IsEquivalent(const DoodleConfig& other) const {
          large_image == other.large_image &&
          large_cta_image == other.large_cta_image &&
          transparent_large_image == other.transparent_large_image;
+}
+
+bool DoodleConfig::operator!=(const DoodleConfig& other) const {
+  return !(*this == other);
 }
 
 }  // namespace doodle
