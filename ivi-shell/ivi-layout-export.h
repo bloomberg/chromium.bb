@@ -453,15 +453,6 @@ struct ivi_layout_interface {
 						   int32_t width, int32_t height);
 
 	/**
-	 * \brief Sets the orientation of a ivi_layer.
-	 *
-	 * \return IVI_SUCCEEDED if the method call was successful
-	 * \return IVI_FAILED if the method call was failed
-	 */
-	int32_t (*layer_set_orientation)(struct ivi_layout_layer *ivilayer,
-					 enum wl_output_transform orientation);
-
-	/**
 	 * \brief Add a ivi_surface to a ivi_layer which is currently managed by the service
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful

@@ -180,31 +180,6 @@ test_layer_opacity(struct test_context *ctx)
 }
 
 static void
-test_layer_orientation(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_layer *ivilayer;
-	const struct ivi_layout_layer_properties *prop;
-
-	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
-	iassert(ivilayer != NULL);
-
-	prop = lyt->get_properties_of_layer(ivilayer);
-	iassert(prop->orientation == WL_OUTPUT_TRANSFORM_NORMAL);
-
-	iassert(lyt->layer_set_orientation(
-		ivilayer, WL_OUTPUT_TRANSFORM_90) == IVI_SUCCEEDED);
-
-	iassert(prop->orientation == WL_OUTPUT_TRANSFORM_NORMAL);
-
-	lyt->commit_changes();
-
-	iassert(prop->orientation == WL_OUTPUT_TRANSFORM_90);
-
-	lyt->layer_destroy(ivilayer);
-}
-
-static void
 test_layer_dimension(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
@@ -398,17 +373,6 @@ test_layer_bad_destination_rectangle(struct test_context *ctx)
 }
 
 static void
-test_layer_bad_orientation(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-
-	iassert(lyt->layer_set_orientation(
-		NULL, WL_OUTPUT_TRANSFORM_90) == IVI_FAILED);
-
-	lyt->commit_changes();
-}
-
-static void
 test_layer_bad_source_rectangle(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
@@ -450,21 +414,6 @@ test_commit_changes_after_opacity_set_layer_destroy(struct test_context *ctx)
 
 	iassert(lyt->layer_set_opacity(
 		    ivilayer, wl_fixed_from_double(0.5)) == IVI_SUCCEEDED);
-	lyt->layer_destroy(ivilayer);
-	lyt->commit_changes();
-}
-
-static void
-test_commit_changes_after_orientation_set_layer_destroy(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_layer *ivilayer;
-
-	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
-	iassert(ivilayer != NULL);
-
-	iassert(lyt->layer_set_orientation(
-		    ivilayer, WL_OUTPUT_TRANSFORM_90) == IVI_SUCCEEDED);
 	lyt->layer_destroy(ivilayer);
 	lyt->commit_changes();
 }
@@ -937,7 +886,6 @@ run_internal_tests(void *data)
 	test_layer_create(ctx);
 	test_layer_visibility(ctx);
 	test_layer_opacity(ctx);
-	test_layer_orientation(ctx);
 	test_layer_dimension(ctx);
 	test_layer_position(ctx);
 	test_layer_destination_rectangle(ctx);
@@ -946,12 +894,10 @@ run_internal_tests(void *data)
 	test_layer_bad_visibility(ctx);
 	test_layer_bad_opacity(ctx);
 	test_layer_bad_destination_rectangle(ctx);
-	test_layer_bad_orientation(ctx);
 	test_layer_bad_source_rectangle(ctx);
 	test_layer_bad_properties(ctx);
 	test_commit_changes_after_visibility_set_layer_destroy(ctx);
 	test_commit_changes_after_opacity_set_layer_destroy(ctx);
-	test_commit_changes_after_orientation_set_layer_destroy(ctx);
 	test_commit_changes_after_source_rectangle_set_layer_destroy(ctx);
 	test_commit_changes_after_destination_rectangle_set_layer_destroy(ctx);
 	test_layer_create_duplicate(ctx);
