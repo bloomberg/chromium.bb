@@ -308,13 +308,9 @@ component("proxy") {
 
 source_set("common") {
   sources = [
-    "tcp_socket_resource_constants.cc",
     "tcp_socket_resource_constants.h",
-    "udp_socket_resource_constants.cc",
     "udp_socket_resource_constants.h",
   ]
-
-  configs += [ ":proxy_implementation" ]
 }
 
 group("ipc") {

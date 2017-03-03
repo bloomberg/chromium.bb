@@ -207,7 +207,8 @@ int32_t TCPSocketResourceBase::ReadImpl(
     return PP_ERROR_INPROGRESS;
   read_buffer_ = buffer;
   bytes_to_read_ =
-      std::min(bytes_to_read, TCPSocketResourceConstants::kMaxReadSize);
+      std::min(bytes_to_read,
+               static_cast<int32_t>(TCPSocketResourceConstants::kMaxReadSize));
   read_callback_ = callback;
 
   Call<PpapiPluginMsg_TCPSocket_ReadReply>(

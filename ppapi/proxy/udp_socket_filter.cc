@@ -153,7 +153,8 @@ void UDPSocketFilter::RecvQueue::DataReceivedOnIOThread(
     const PP_NetAddress_Private& addr) {
   DCHECK(PluginGlobals::Get()->ipc_task_runner()->RunsTasksOnCurrentThread());
   DCHECK_LT(recv_buffers_.size(),
-            UDPSocketResourceConstants::kPluginReceiveBufferSlots);
+            static_cast<size_t>(
+                UDPSocketResourceConstants::kPluginReceiveBufferSlots));
 
   if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_) {
     recv_buffers_.push(RecvBuffer());
@@ -213,8 +214,9 @@ int32_t UDPSocketFilter::RecvQueue::RequestData(
 
   if (recv_buffers_.empty()) {
     read_buffer_ = buffer_out;
-    bytes_to_read_ =
-        std::min(num_bytes, UDPSocketResourceConstants::kMaxReadSize);
+    bytes_to_read_ = std::min(
+        num_bytes,
+        static_cast<int32_t>(UDPSocketResourceConstants::kMaxReadSize));
     recvfrom_addr_resource_ = addr_out;
     recvfrom_callback_ = callback;
     return PP_OK_COMPLETIONPENDING;

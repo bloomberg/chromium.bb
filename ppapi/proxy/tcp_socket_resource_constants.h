@@ -5,30 +5,29 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace ppapi {
 namespace proxy {
 
-class PPAPI_PROXY_EXPORT TCPSocketResourceConstants {
+class TCPSocketResourceConstants {
  public:
   // The maximum number of bytes that each PpapiHostMsg_PPBTCPSocket_Read
   // message is allowed to request.
-  static const int32_t kMaxReadSize;
+  enum { kMaxReadSize = 1024 * 1024 };
   // The maximum number of bytes that each PpapiHostMsg_PPBTCPSocket_Write
   // message is allowed to carry.
-  static const int32_t kMaxWriteSize;
+  enum { kMaxWriteSize = 1024 * 1024 };
 
   // The maximum number that we allow for setting
   // PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE. This number is only for input
   // argument sanity check, it doesn't mean the browser guarantees to support
   // such a buffer size.
-  static const int32_t kMaxSendBufferSize;
+  enum { kMaxSendBufferSize = 1024 * kMaxWriteSize };
   // The maximum number that we allow for setting
   // PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE. This number is only for input
   // argument sanity check, it doesn't mean the browser guarantees to support
   // such a buffer size.
-  static const int32_t kMaxReceiveBufferSize;
+  enum { kMaxReceiveBufferSize = 1024 * kMaxReadSize };
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TCPSocketResourceConstants);
