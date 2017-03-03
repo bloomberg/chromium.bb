@@ -668,17 +668,28 @@ void LayerTreeImpl::SetCurrentlyScrollingNode(ScrollNode* node) {
 
   ScrollTree& scroll_tree = property_trees()->scroll_tree;
   ScrollNode* old_node = scroll_tree.CurrentlyScrollingNode();
-  // TODO(pdr): Refactor these to not use owning_layer_id.
+
+  ElementId old_element_id = old_node ? old_node->element_id : ElementId();
+  ElementId new_element_id = node ? node->element_id : ElementId();
+
+#if DCHECK_IS_ON()
   int old_layer_id = old_node ? old_node->owning_layer_id : Layer::INVALID_ID;
   int new_layer_id = node ? node->owning_layer_id : Layer::INVALID_ID;
+  DCHECK(old_layer_id == LayerIdByElementId(old_element_id));
+  DCHECK(new_layer_id == LayerIdByElementId(new_element_id));
+#endif
 
-  if (old_layer_id == new_layer_id)
+  if (old_element_id == new_element_id)
     return;
 
+  // TODO(pdr): Make the scrollbar animation controller lookup based on
+  // element ids instead of layer ids.
   ScrollbarAnimationController* old_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForId(old_layer_id);
+      layer_tree_host_impl_->ScrollbarAnimationControllerForId(
+          LayerIdByElementId(old_element_id));
   ScrollbarAnimationController* new_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForId(new_layer_id);
+      layer_tree_host_impl_->ScrollbarAnimationControllerForId(
+          LayerIdByElementId(new_element_id));
 
   if (old_animation_controller)
     old_animation_controller->DidScrollEnd();

@@ -326,6 +326,8 @@ class LayerTreeHostImplTest : public testing::Test,
         LayerImpl::Create(layer_tree_impl, kPageScaleLayerId);
 
     inner_scroll->SetScrollClipLayer(inner_clip->id());
+    inner_scroll->SetElementId(
+        LayerIdToElementIdForTesting(inner_scroll->id()));
     inner_scroll->SetBounds(content_size);
     inner_scroll->SetPosition(gfx::PointF());
 
@@ -338,6 +340,8 @@ class LayerTreeHostImplTest : public testing::Test,
     std::unique_ptr<LayerImpl> outer_scroll =
         LayerImpl::Create(layer_tree_impl, kOuterViewportScrollLayerId);
     outer_scroll->SetScrollClipLayer(outer_clip->id());
+    outer_scroll->SetElementId(
+        LayerIdToElementIdForTesting(outer_scroll->id()));
     outer_scroll->layer_tree_impl()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(outer_scroll->id(),
@@ -401,9 +405,6 @@ class LayerTreeHostImplTest : public testing::Test,
     inner_clip_layer->SetBounds(viewport_size);
     host_impl_->InnerViewportScrollLayer()->SetBounds(viewport_size);
 
-    // Needs to happen before building property trees as the latter propagates
-    // these element ids to property tree nodes.
-    host_impl_->active_tree()->SetElementIdsForTesting();
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
     host_impl_->SetViewportSize(viewport_size);
@@ -420,6 +421,7 @@ class LayerTreeHostImplTest : public testing::Test,
     std::unique_ptr<LayerImpl> layer =
         LayerImpl::Create(host_impl_->active_tree(), id);
     layer->SetScrollClipLayer(clip_layer->id());
+    layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
     layer->SetDrawsContent(true);
     layer->SetBounds(size);
     clip_layer->SetBounds(gfx::Size(size.width() / 2, size.height() / 2));
@@ -661,6 +663,7 @@ TEST_F(LayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
   root_clip->test_properties()->AddChild(std::move(root_owned));
   root->SetBounds(gfx::Size(110, 110));
   root->SetScrollClipLayer(root_clip->id());
+  root->SetElementId(LayerIdToElementIdForTesting(root->id()));
   root->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(root->id(), scroll_offset);
@@ -966,6 +969,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithOverlappingNonScrollableLayer) {
   std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 3);
   scroll->SetBounds(scroll_content_size);
   scroll->SetScrollClipLayer(clip->id());
+  scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
   scroll->SetDrawsContent(true);
 
   std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
@@ -1037,6 +1041,7 @@ TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
   std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 3);
   scroll->SetBounds(scroll_content_size);
   scroll->SetScrollClipLayer(clip->id());
+  scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
   scroll->SetDrawsContent(true);
 
   std::unique_ptr<SolidColorScrollbarLayerImpl> drawn_scrollbar =
@@ -1281,6 +1286,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   overflow->SetBounds(overflow_size);
   overflow->SetScrollClipLayer(
       scroll_layer->test_properties()->parent->test_properties()->parent->id());
+  overflow->SetElementId(LayerIdToElementIdForTesting(overflow->id()));
   overflow->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(overflow->id(),
@@ -3192,6 +3198,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
 
   // Check scrollbar registration on a sublayer.
   child->SetScrollClipLayer(child_clip->id());
+  child->SetElementId(LayerIdToElementIdForTesting(child->id()));
   child_clip->test_properties()->AddChild(std::move(child));
   root_scroll->test_properties()->AddChild(std::move(child_clip));
   EXPECT_EQ(0ul, host_impl_->ScrollbarsFor(child_scroll_id).size());
@@ -4031,6 +4038,7 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
 
     root_clip->SetBounds(inner_viewport_size);
     root->SetScrollClipLayer(root_clip->id());
+    root->SetElementId(LayerIdToElementIdForTesting(root->id()));
     root->SetBounds(outer_viewport_size);
     root->SetPosition(gfx::PointF());
     root->SetDrawsContent(false);
@@ -4038,6 +4046,8 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
     root->test_properties()->is_container_for_fixed_position_layers = true;
     outer_clip->SetBounds(outer_viewport_size);
     outer_scroll->SetScrollClipLayer(outer_clip->id());
+    outer_scroll->SetElementId(
+        LayerIdToElementIdForTesting(outer_scroll->id()));
     outer_scroll->SetBounds(scroll_layer_size);
     outer_scroll->SetPosition(gfx::PointF());
     outer_scroll->SetDrawsContent(false);
@@ -4391,6 +4401,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
   child_clip->SetBounds(sub_content_layer_size);
   child->SetScrollClipLayer(child_clip->id());
+  child->SetElementId(LayerIdToElementIdForTesting(child->id()));
   child->SetBounds(sub_content_size);
   child->SetPosition(gfx::PointF());
   child->SetDrawsContent(true);
@@ -4937,6 +4948,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonCompositedRoot) {
   std::unique_ptr<LayerImpl> scroll_layer =
       LayerImpl::Create(host_impl_->active_tree(), 12);
   scroll_layer->SetScrollClipLayer(scroll_clip_layer->id());
+  scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
   scroll_layer->SetBounds(contents_size);
   scroll_layer->SetPosition(gfx::PointF());
   scroll_layer->test_properties()->AddChild(std::move(content_layer));
@@ -6520,6 +6532,7 @@ TEST_F(LayerTreeHostImplTest, ScrollFromOuterViewportSibling) {
     std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 11);
     scroll->SetBounds(gfx::Size(400, 400));
     scroll->SetScrollClipLayer(clip->id());
+    scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
     scroll->SetDrawsContent(true);
 
     scroll_layer = scroll.get();
@@ -6610,6 +6623,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChainingWithReplacedOuterViewport) {
     std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 11);
     scroll->SetBounds(gfx::Size(400, 400));
     scroll->SetScrollClipLayer(clip->id());
+    scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
     scroll->SetDrawsContent(true);
 
     std::unique_ptr<LayerImpl> clip2 = LayerImpl::Create(layer_tree_impl, 12);
@@ -6620,6 +6634,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChainingWithReplacedOuterViewport) {
     std::unique_ptr<LayerImpl> scroll2 = LayerImpl::Create(layer_tree_impl, 13);
     scroll2->SetBounds(gfx::Size(500, 500));
     scroll2->SetScrollClipLayer(clip2->id());
+    scroll2->SetElementId(LayerIdToElementIdForTesting(scroll2->id()));
     scroll2->SetDrawsContent(true);
 
     scroll_layer = scroll.get();
@@ -6741,6 +6756,7 @@ TEST_F(LayerTreeHostImplTest, RootScrollerScrollNonDescendant) {
     std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 11);
     scroll->SetBounds(gfx::Size(1200, 1200));
     scroll->SetScrollClipLayer(clip->id());
+    scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
     scroll->SetDrawsContent(true);
 
     outer_scroll_layer = scroll.get();
@@ -6756,6 +6772,7 @@ TEST_F(LayerTreeHostImplTest, RootScrollerScrollNonDescendant) {
     std::unique_ptr<LayerImpl> scroll2 = LayerImpl::Create(layer_tree_impl, 15);
     scroll2->SetBounds(gfx::Size(1200, 1200));
     scroll2->SetScrollClipLayer(clip2->id());
+    scroll2->SetElementId(LayerIdToElementIdForTesting(scroll2->id()));
     scroll2->SetDrawsContent(true);
 
     sibling_scroll_layer = scroll2.get();
@@ -8093,6 +8110,8 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
   gfx::ScrollOffset scroll_offset(100000, 0);
   scrolling_layer->SetScrollClipLayer(root->id());
+  scrolling_layer->SetElementId(
+      LayerIdToElementIdForTesting(scrolling_layer->id()));
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
 
   scrolling_layer->layer_tree_impl()
@@ -9543,6 +9562,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
     std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 11);
     scroll->SetBounds(scroll_content_size);
     scroll->SetScrollClipLayer(clip->id());
+    scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
     scroll->SetDrawsContent(true);
 
     scroll_layer = scroll.get();
@@ -9604,6 +9624,8 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
         LayerImpl::Create(layer_tree_impl, kPageScaleLayerId);
 
     inner_scroll->SetScrollClipLayer(inner_clip->id());
+    inner_scroll->SetElementId(
+        LayerIdToElementIdForTesting(inner_scroll->id()));
     inner_scroll->SetBounds(outer_viewport);
     inner_scroll->SetPosition(gfx::PointF());
 
@@ -9616,6 +9638,8 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
     std::unique_ptr<LayerImpl> outer_scroll =
         LayerImpl::Create(layer_tree_impl, kOuterViewportScrollLayerId);
     outer_scroll->SetScrollClipLayer(outer_clip->id());
+    outer_scroll->SetElementId(
+        LayerIdToElementIdForTesting(outer_scroll->id()));
     outer_scroll->layer_tree_impl()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(outer_scroll->id(),
@@ -11799,6 +11823,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   child->SetBounds(child_layer_size);
   child->SetDrawsContent(true);
   child->SetScrollClipLayer(child_clip_id);
+  child->SetElementId(LayerIdToElementIdForTesting(child->id()));
 
   if (main_thread_scrolling) {
     child->set_main_thread_scrolling_reasons(

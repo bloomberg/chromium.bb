@@ -569,6 +569,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     root_layer->SetBounds(gfx::Size(10, 10));
 
     root_scroll_layer_ = FakePictureLayer::Create(&fake_content_layer_client_);
+    root_scroll_layer_->SetElementId(
+        LayerIdToElementIdForTesting(root_scroll_layer_->id()));
     root_scroll_layer_->SetBounds(gfx::Size(110, 110));
     root_scroll_layer_->SetPosition(gfx::PointF());
     root_scroll_layer_->SetIsDrawable(true);
@@ -581,6 +583,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     child_layer_->set_did_scroll_callback(
         base::Bind(&LayerTreeHostScrollTestCaseWithChild::DidScroll,
                    base::Unretained(this)));
+    child_layer_->SetElementId(
+        LayerIdToElementIdForTesting(child_layer_->id()));
     child_layer_->SetBounds(gfx::Size(110, 110));
 
     if (scroll_child_layer_) {
@@ -598,6 +602,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
 
     child_layer_->SetIsDrawable(true);
     child_layer_->SetScrollClipLayerId(outer_container_layer->id());
+    child_layer_->SetElementId(
+        LayerIdToElementIdForTesting(child_layer_->id()));
     child_layer_->SetBounds(root_scroll_layer_->bounds());
     root_scroll_layer_->AddChild(child_layer_);
 
@@ -1434,6 +1440,8 @@ class LayerTreeHostScrollTestLayerStructureChange
     scroll_layer->SetPosition(gfx::PointF());
     scroll_layer->SetIsDrawable(true);
     scroll_layer->SetScrollClipLayerId(parent->id());
+    scroll_layer->SetElementId(
+        LayerIdToElementIdForTesting(scroll_layer->id()));
     scroll_layer->SetBounds(gfx::Size(parent->bounds().width() + 100,
                                       parent->bounds().height() + 100));
     scroll_layer->set_did_scroll_callback(base::Bind(
