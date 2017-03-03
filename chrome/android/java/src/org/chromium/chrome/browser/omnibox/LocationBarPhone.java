@@ -292,22 +292,29 @@ public class LocationBarPhone extends LocationBarLayout {
         mGoogleGContainer.setVisibility(View.VISIBLE);
         float animationProgress =
                 GOOGLE_G_FADE_INTERPOLATOR.getInterpolation(mUrlFocusChangePercent);
-        mGoogleG.setAlpha(1 - animationProgress);
+
+        final float finalGScale = 0.3f;
+        // How much we have reduced the size of the G, 0 at the beginning, 0.7 at the end.
+        final float shrinkingProgress = animationProgress * (1 - finalGScale);
 
         FrameLayout.LayoutParams layoutParams =
                 (FrameLayout.LayoutParams) mGoogleG.getLayoutParams();
+        layoutParams.width = Math.round(mGoogleGWidth * (1f - shrinkingProgress));
 
-        // Shrink the width down to 30%.
-        layoutParams.width = Math.round(
-                MathUtils.interpolate(mGoogleGWidth, mGoogleGWidth * 0.3f, animationProgress));
-
-        // Shrink the margin down to 50% minus half of the G width (in the end state), i.e. 15%.
-        ApiCompatibilityUtils.setMarginEnd(layoutParams,
-                Math.round(MathUtils.interpolate(mGoogleGMargin,
-                        mGoogleGMargin * 0.5f - mGoogleGWidth * 0.15f, animationProgress)));
-
+        // Shrink the margin down to 50% minus half of the G width (in the end state).
+        final float finalGoogleGMargin = (mGoogleGMargin - mGoogleGWidth * finalGScale) / 2f;
+        ApiCompatibilityUtils.setMarginEnd(layoutParams, Math.round(MathUtils.interpolate(
+                mGoogleGMargin, finalGoogleGMargin, animationProgress)));
         // Just calling requestLayout() would not resolve the end margin.
         mGoogleG.setLayoutParams(layoutParams);
+
+        // We want the G to be fully transparent when it is 45% of its size.
+        final float scaleWhenTransparent = 0.45f;
+        assert scaleWhenTransparent >= finalGScale;
+
+        // How much we have faded out the G, 0 at the beginning, 1 when we've reduced size to 0.45.
+        final float fadingProgress = Math.min(1, shrinkingProgress / (1 - scaleWhenTransparent));
+        mGoogleG.setAlpha(1 - fadingProgress);
     }
 
     @Override
