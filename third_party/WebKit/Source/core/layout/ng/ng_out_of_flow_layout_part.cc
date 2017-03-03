@@ -168,7 +168,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   // the constraint space in the descendant's writing mode.
   NGWritingMode writing_mode(
       FromPlatformWritingMode(descendant.Style().getWritingMode()));
-  NGLogicalSize logical_available_size(
+  NGLogicalSize container_size(
       container_space_->AvailableSize()
           .ConvertToPhysical(container_space_->WritingMode())
           .ConvertToLogical(writing_mode));
@@ -176,13 +176,13 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   LayoutUnit inline_size =
       node_position.size.ConvertToLogical(writing_mode).inline_size;
   LayoutUnit block_size =
-      block_estimate ? *block_estimate : logical_available_size.block_size;
+      block_estimate ? *block_estimate : container_size.block_size;
 
   NGLogicalSize available_size{inline_size, block_size};
 
   NGConstraintSpaceBuilder builder(writing_mode);
   builder.SetAvailableSize(available_size);
-  builder.SetPercentageResolutionSize(logical_available_size);
+  builder.SetPercentageResolutionSize(container_size);
   if (block_estimate)
     builder.SetIsFixedSizeBlock(true);
   builder.SetIsFixedSizeInline(true);
