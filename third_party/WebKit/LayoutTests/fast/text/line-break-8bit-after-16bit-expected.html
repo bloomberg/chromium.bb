@@ -17,3 +17,11 @@ div {
   <div>あああbar</div>
   <div>国国、bar</div>
 </body>
+<script>
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  window.onload = function () {
+    document.fonts.ready.then(function () { testRunner.notifyDone(); });
+  };
+}
+</script>
