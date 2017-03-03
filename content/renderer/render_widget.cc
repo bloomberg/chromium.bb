@@ -378,6 +378,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       focused_pepper_plugin_(nullptr),
       time_to_first_active_paint_recorded_(true),
       was_shown_time_(base::TimeTicks::Now()),
+      current_content_source_id_(0),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   if (!swapped_out)
@@ -1286,6 +1287,7 @@ blink::WebLayerTreeView* RenderWidget::initializeLayerTreeView() {
   compositor_->setViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
   compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());
+  compositor_->SetContentSourceId(current_content_source_id_);
   // For background pages and certain tests, we don't want to trigger
   // CompositorFrameSink creation.
   if (compositor_never_visible_ || !RenderThreadImpl::current())
@@ -2298,6 +2300,15 @@ void RenderWidget::startDragging(blink::WebReferrerPolicy policy,
   Send(new DragHostMsg_StartDragging(routing_id(), drop_data, mask,
                                      image.getSkBitmap(), imageOffset,
                                      possible_drag_event_info_));
+}
+
+uint32_t RenderWidget::GetContentSourceId() {
+  return current_content_source_id_;
+}
+
+void RenderWidget::IncrementContentSourceId() {
+  if (compositor_)
+    compositor_->SetContentSourceId(++current_content_source_id_);
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {

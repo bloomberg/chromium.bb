@@ -304,6 +304,11 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // in BeginNavigationParams.
   IPC_STRUCT_MEMBER(GURL, searchable_form_url)
   IPC_STRUCT_MEMBER(std::string, searchable_form_encoding)
+
+  // This is a non-decreasing value that the browser process can use to
+  // identify and discard compositor frames that correspond to now-unloaded
+  // web content.
+  IPC_STRUCT_MEMBER(uint32_t, content_source_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)

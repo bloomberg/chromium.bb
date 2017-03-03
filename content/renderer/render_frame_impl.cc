@@ -3607,6 +3607,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   // For new page navigations, the browser process needs to be notified of the
   // first paint of that page, so it can cancel the timer that waits for it.
   if (is_main_frame_ && !navigation_state->WasWithinSamePage()) {
+    GetRenderWidget()->IncrementContentSourceId();
     render_view_->QueueMessage(
         new ViewHostMsg_DidFirstPaintAfterLoad(render_view_->routing_id_),
         MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
@@ -4878,6 +4879,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // this frame, rather than the whole tree.  It will be stored in the
   // corresponding FrameNavigationEntry.
   params.page_state = SingleHistoryItemToPageState(item);
+
+  params.content_source_id = GetRenderWidget()->GetContentSourceId();
 
   params.method = request.httpMethod().latin1();
   if (params.method == "POST")
