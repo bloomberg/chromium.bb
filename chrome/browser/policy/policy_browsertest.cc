@@ -46,6 +46,7 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -728,27 +729,12 @@ class PolicyTest : public InProcessBrowserTest {
     return details.ptr();
   }
 
-  const extensions::Extension* LoadUnpackedExtension(
-      const base::FilePath::StringType& name, bool expect_success) {
+  scoped_refptr<const extensions::Extension> LoadUnpackedExtension(
+      const base::FilePath::StringType& name) {
     base::FilePath extension_path(ui_test_utils::GetTestFilePath(
         base::FilePath(kTestExtensionsDir), base::FilePath(name)));
-    scoped_refptr<extensions::UnpackedInstaller> installer =
-        extensions::UnpackedInstaller::Create(extension_service());
-    content::WindowedNotificationObserver observer(
-        expect_success ? extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED
-                       : extensions::NOTIFICATION_EXTENSION_LOAD_ERROR,
-        content::NotificationService::AllSources());
-    installer->Load(extension_path);
-    observer.Wait();
-
-    extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(browser()->profile());
-    for (const scoped_refptr<const extensions::Extension>& extension :
-         registry->enabled_extensions()) {
-      if (extension->path() == extension_path)
-        return extension.get();
-    }
-    return NULL;
+    extensions::ChromeTestExtensionLoader loader(browser()->profile());
+    return loader.LoadExtension(extension_path);
   }
 
   void UninstallExtension(const std::string& id, bool expect_success) {
@@ -1670,12 +1656,23 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // The user is not allowed to uninstall force-installed extensions.
   UninstallExtension(kGoodCrxId, false);
 
+  scoped_refptr<extensions::UnpackedInstaller> installer =
+      extensions::UnpackedInstaller::Create(extension_service());
+
   // The user is not allowed to load an unpacked extension with the
   // same ID as a force-installed extension.
-  LoadUnpackedExtension(kGoodUnpackedExt, false);
+  base::FilePath good_extension_path(ui_test_utils::GetTestFilePath(
+      base::FilePath(kTestExtensionsDir), base::FilePath(kGoodUnpackedExt)));
+  content::WindowedNotificationObserver extension_load_error_observer(
+      extensions::NOTIFICATION_EXTENSION_LOAD_ERROR,
+      content::NotificationService::AllSources());
+  installer->Load(good_extension_path);
+  extension_load_error_observer.Wait();
 
   // Loading other unpacked extensions are not blocked.
-  LoadUnpackedExtension(kAppUnpackedExt, true);
+  scoped_refptr<const extensions::Extension> extension =
+      LoadUnpackedExtension(kAppUnpackedExt);
+  ASSERT_TRUE(extension);
 
   const std::string old_version_number =
       service->GetExtensionById(kGoodCrxId, true)->version()->GetString();
@@ -2532,15 +2529,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
                base::MakeUnique<base::Value>(false), nullptr);
   UpdateProviderPolicy(policies);
 
-  const extensions::Extension* extension =
-      LoadUnpackedExtension(kUnpackedFullscreenAppName, true);
+  scoped_refptr<const extensions::Extension> extension =
+      LoadUnpackedExtension(kUnpackedFullscreenAppName);
   ASSERT_TRUE(extension);
 
   // Launch an app that tries to open a fullscreen window.
   TestAddAppWindowObserver add_window_observer(
       extensions::AppWindowRegistry::Get(browser()->profile()));
   OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
+      browser()->profile(), extension.get(), extensions::LAUNCH_CONTAINER_NONE,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
   extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
