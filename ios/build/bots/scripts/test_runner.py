@@ -143,6 +143,7 @@ class TestRunner(object):
     xcode_version,
     out_dir,
     env_vars=None,
+    retries=None,
     test_args=None,
     xctest=False,
   ):
@@ -153,6 +154,7 @@ class TestRunner(object):
       xcode_version: Version of Xcode to use when running the test.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
+      retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
       xctest: Whether or not this is an XCTest.
@@ -183,6 +185,7 @@ class TestRunner(object):
     self.env_vars = env_vars or []
     self.logs = collections.OrderedDict()
     self.out_dir = out_dir
+    self.retries = retries or 0
     self.test_args = test_args or []
     self.xcode_version = xcode_version
     self.xctest_path = ''
@@ -356,6 +359,16 @@ class TestRunner(object):
         else:
           raise
 
+      # Retry failed test cases.
+      if self.retries and failed:
+        print '%s tests failed and will be retried.' % len(failed)
+        print
+      for i in xrange(self.retries):
+        for test in failed:
+          print 'Retry #%s for %s.' % (i + 1, test)
+          print
+          self._run(self.get_launch_command(test_filter=[test]))
+
       # Build test_results.json.
       self.test_results['interrupted'] = result.crashed
       self.test_results['num_failures_by_type'] = {
@@ -394,6 +407,7 @@ class SimulatorTestRunner(TestRunner):
       xcode_version,
       out_dir,
       env_vars=None,
+      retries=None,
       test_args=None,
       xctest=False,
   ):
@@ -409,6 +423,7 @@ class SimulatorTestRunner(TestRunner):
       xcode_version: Version of Xcode to use when running the test.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
+      retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
       xctest: Whether or not this is an XCTest.
@@ -424,6 +439,7 @@ class SimulatorTestRunner(TestRunner):
         xcode_version,
         out_dir,
         env_vars=env_vars,
+        retries=retries,
         test_args=test_args,
         xctest=xctest,
     )
@@ -602,6 +618,7 @@ class DeviceTestRunner(TestRunner):
     xcode_version,
     out_dir,
     env_vars=None,
+    retries=None,
     test_args=None,
     xctest=False,
   ):
@@ -612,6 +629,7 @@ class DeviceTestRunner(TestRunner):
       xcode_version: Version of Xcode to use when running the test.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
+      retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
       xctest: Whether or not this is an XCTest.
@@ -627,6 +645,7 @@ class DeviceTestRunner(TestRunner):
       xcode_version,
       out_dir,
       env_vars=env_vars,
+      retries=retries,
       test_args=test_args,
       xctest=xctest,
     )

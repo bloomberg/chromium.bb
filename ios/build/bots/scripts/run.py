@@ -42,6 +42,7 @@ def main(args, test_args):
         args.xcode_version,
         args.out_dir,
         env_vars=args.env_var,
+        retries=args.retries,
         test_args=test_args,
         xctest=args.xctest,
       )
@@ -51,6 +52,7 @@ def main(args, test_args):
         args.xcode_version,
         args.out_dir,
         env_vars=args.env_var,
+        retries=args.retries,
         test_args=test_args,
         xctest=args.xctest,
       )
@@ -118,6 +120,13 @@ if __name__ == '__main__':
     '--platform',
     help='Platform to simulate.',
     metavar='sim',
+  )
+  parser.add_argument(
+    '-r',
+    '--retries',
+    help='Number of times to retry failed test cases.',
+    metavar='n',
+    type=int,
   )
   parser.add_argument(
     '-v',
