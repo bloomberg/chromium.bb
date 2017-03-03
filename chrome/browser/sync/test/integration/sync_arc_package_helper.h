@@ -20,10 +20,6 @@ namespace arc {
 class FakeAppInstance;
 }
 
-namespace chromeos {
-class ScopedUserManagerEnabler;
-}
-
 namespace arc {
 
 class SyncArcPackageHelper {
@@ -31,8 +27,6 @@ class SyncArcPackageHelper {
   static SyncArcPackageHelper* GetInstance();
 
   void SetupTest(SyncTest* test);
-
-  void CleanUp();
 
   void InstallPackageWithIndex(Profile* profile, size_t id);
 
@@ -44,7 +38,7 @@ class SyncArcPackageHelper {
 
   bool AllProfilesHaveSamePackageDetails();
 
-  void SetupArcService(Profile* profile, size_t id);
+  void SetupArcService(Profile* profile);
 
  private:
   friend struct base::DefaultSingletonTraits<SyncArcPackageHelper>;
@@ -67,8 +61,6 @@ class SyncArcPackageHelper {
   bool setup_completed_;
 
   std::unordered_map<Profile*, std::unique_ptr<FakeAppInstance>> instance_map_;
-
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncArcPackageHelper);
 };

@@ -265,19 +265,23 @@ ArcAppListPrefs::~ArcAppListPrefs() {
 }
 
 void ArcAppListPrefs::StartPrefs() {
-  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
-  CHECK(arc_session_manager);
+  // Don't tie ArcAppListPrefs created with sync test profie in sync integration
+  // test to ArcSessionManager.
+  if (!ArcAppListPrefsFactory::IsFactorySetForSyncTest()) {
+    arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+    CHECK(arc_session_manager);
 
-  if (arc_session_manager->profile()) {
-    // Note: If ArcSessionManager has profile, it should be as same as the one
-    // this instance has, because ArcAppListPrefsFactory creates an instance
-    // only if the given Profile meets ARC's requirement.
-    // Anyway, just in case, check it here.
-    DCHECK_EQ(profile_, arc_session_manager->profile());
-    OnArcPlayStoreEnabledChanged(
-        arc::IsArcPlayStoreEnabledForProfile(profile_));
+    if (arc_session_manager->profile()) {
+      // Note: If ArcSessionManager has profile, it should be as same as the one
+      // this instance has, because ArcAppListPrefsFactory creates an instance
+      // only if the given Profile meets ARC's requirement.
+      // Anyway, just in case, check it here.
+      DCHECK_EQ(profile_, arc_session_manager->profile());
+      OnArcPlayStoreEnabledChanged(
+          arc::IsArcPlayStoreEnabledForProfile(profile_));
+    }
+    arc_session_manager->AddObserver(this);
   }
-  arc_session_manager->AddObserver(this);
 
   app_instance_holder_->AddObserver(this);
   if (!app_instance_holder_->has_instance())

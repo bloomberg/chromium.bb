@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +33,11 @@ void ArcAppListPrefsFactory::SetFactoryForSyncTest() {
   is_sync_test_ = true;
 }
 
+// static
+bool ArcAppListPrefsFactory::IsFactorySetForSyncTest() {
+  return is_sync_test_;
+}
+
 void ArcAppListPrefsFactory::RecreateServiceInstanceForTesting(
     content::BrowserContext* context) {
   Disassociate(context);
@@ -50,15 +56,17 @@ ArcAppListPrefsFactory::~ArcAppListPrefsFactory() {
 KeyedService* ArcAppListPrefsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  if (!arc::IsArcAllowedForProfile(profile))
-    return nullptr;
 
+  // Profiles are always treated as allowed to ARC in sync integration test.
   if (is_sync_test_) {
-    sync_test_app_instance_holders_[context].reset(
-        new arc::InstanceHolder<arc::mojom::AppInstance>());
+    sync_test_app_instance_holders_[context] =
+        base::MakeUnique<arc::InstanceHolder<arc::mojom::AppInstance>>();
     return ArcAppListPrefs::Create(
         profile, sync_test_app_instance_holders_[context].get());
   }
+
+  if (!arc::IsArcAllowedForProfile(profile))
+    return nullptr;
 
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager)

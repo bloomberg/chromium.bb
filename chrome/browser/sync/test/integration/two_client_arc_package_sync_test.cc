@@ -6,6 +6,8 @@
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "components/arc/arc_util.h"
 
 namespace arc {
 
@@ -37,8 +39,19 @@ class TwoClientArcPackageSyncTest : public SyncTest {
     return sync_helper_ != nullptr;
   }
 
+  void SetUpOnMainThread() override {
+    // This setting does not affect the profile created by InProcessBrowserTest.
+    // Only sync test profiles are affected.
+    ArcAppListPrefsFactory::SetFactoryForSyncTest();
+  }
+
+  // Sets up command line flags required for Arc sync tests.
+  void SetUpCommandLine(base::CommandLine* cl) override {
+    SetArcAvailableCommandLineForTesting(cl);
+    SyncTest::SetUpCommandLine(cl);
+  }
+
   void TearDownOnMainThread() override {
-    sync_helper_->CleanUp();
     sync_helper_ = nullptr;
     SyncTest::TearDownOnMainThread();
   }
@@ -85,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientArcPackageSyncTest,
   ASSERT_FALSE(AllProfilesHaveSameArcPackageDetails());
 
   ASSERT_TRUE(SetupSync());
-
+  ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameArcPackageDetails());
 }
 
@@ -108,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientArcPackageSyncTest,
   ASSERT_FALSE(AllProfilesHaveSameArcPackageDetails());
 
   ASSERT_TRUE(SetupSync());
-
+  ASSERT_TRUE(AwaitQuiescence());
   EXPECT_TRUE(AllProfilesHaveSameArcPackageDetails());
 }
 
@@ -128,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientArcPackageSyncTest,
   EXPECT_FALSE(AllProfilesHaveSameArcPackageDetails());
 
   ASSERT_TRUE(SetupSync());
-
+  ASSERT_TRUE(AwaitQuiescence());
   EXPECT_TRUE(AllProfilesHaveSameArcPackageDetails());
 }
 

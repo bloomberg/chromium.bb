@@ -6,7 +6,9 @@
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
+#include "components/arc/arc_util.h"
 
 namespace arc {
 
@@ -36,10 +38,21 @@ class SingleClientArcPackageSyncTest : public SyncTest {
     return sync_helper_ != nullptr;
   }
 
+  void SetUpOnMainThread() override {
+    // This setting does not affect the profile created by InProcessBrowserTest.
+    // Only sync test profiles are affected.
+    ArcAppListPrefsFactory::SetFactoryForSyncTest();
+  }
+
   void TearDownOnMainThread() override {
-    sync_helper_->CleanUp();
     sync_helper_ = nullptr;
     SyncTest::TearDownOnMainThread();
+  }
+
+  // Sets up command line flags required for Arc sync tests.
+  void SetUpCommandLine(base::CommandLine* cl) override {
+    SetArcAvailableCommandLineForTesting(cl);
+    SyncTest::SetUpCommandLine(cl);
   }
 
   SyncArcPackageHelper* sync_helper() { return sync_helper_; }
