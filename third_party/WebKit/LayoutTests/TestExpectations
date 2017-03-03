@@ -1779,14 +1779,6 @@ crbug.com/694525 external/wpt/content-security-policy/securitypolicyviolation [ 
 # 2017-02-17: These directories were just imported but expectations and baselines haven't been set yet.
 crbug.com/692105 external/wpt/service-workers/service-worker/fetch-event-within-sw-manual.https.html [ Skip ]
 crbug.com/692105 external/wpt/service-workers/service-worker/fetch-event-within-sw.https.html [ Skip ]
-crbug.com/692105 external/wpt/streams/readable-streams/floating-point-total-queue-size.dedicatedworker.html [ Skip ]
-crbug.com/692105 external/wpt/streams/readable-streams/floating-point-total-queue-size.html [ Skip ]
-crbug.com/692105 external/wpt/streams/readable-streams/floating-point-total-queue-size.serviceworker.https.html [ Skip ]
-crbug.com/692105 external/wpt/streams/readable-streams/floating-point-total-queue-size.sharedworker.html [ Skip ]
-crbug.com/692105 external/wpt/streams/writable-streams/floating-point-total-queue-size.dedicatedworker.html [ Skip ]
-crbug.com/692105 external/wpt/streams/writable-streams/floating-point-total-queue-size.html [ Skip ]
-crbug.com/692105 external/wpt/streams/writable-streams/floating-point-total-queue-size.serviceworker.https.html [ Skip ]
-crbug.com/692105 external/wpt/streams/writable-streams/floating-point-total-queue-size.sharedworker.html [ Skip ]
 
 # These policies are not implemented yet.
 crbug.com/627968 external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/ [ Skip ]
@@ -1841,6 +1833,10 @@ crbug.com/695270 [ Linux ] external/csswg-test/css-writing-modes-3/overconstrain
 crbug.com/695270 [ Linux ] external/csswg-test/css-writing-modes-3/overconstrained-rel-pos-rtl-top-bottom-vrl-006.xht [ Failure ]
 
 # ====== New tests from w3c-test-autoroller added here ======
+crbug.com/626703 external/wpt/streams/readable-streams/floating-point-total-queue-size.dedicatedworker.html [ Timeout ]
+crbug.com/626703 external/wpt/streams/readable-streams/floating-point-total-queue-size.sharedworker.html [ Timeout ]
+crbug.com/626703 external/wpt/streams/writable-streams/floating-point-total-queue-size.dedicatedworker.html [ Timeout ]
+crbug.com/626703 external/wpt/streams/writable-streams/floating-point-total-queue-size.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element.html [ Failure ]
@@ -2148,7 +2144,6 @@ crbug.com/626703 external/wpt/streams/readable-streams/cancel.html [ Failure Tim
 crbug.com/626703 external/wpt/streams/readable-streams/count-queuing-strategy-integration.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/garbage-collection.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/general.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/streams/readable-streams/pipe-through.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/readable-stream-reader.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/tee.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/templated.html [ Failure Timeout ]
