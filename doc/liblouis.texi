@@ -1625,7 +1625,7 @@ for use with an embosser.
 @opcode{multind, dots opcode opcode ...}
 The @code{multind} opcode tells the back-translator that a sequence of
 braille cells represents more than one braille indicator. For example,
-in @file{en-us-g1.ctb} we have @code{multind 56-6 letsign capsign}.
+in @file{en-us-g2.ctb} we have @code{multind 56-6 letsign capsletter}.
 The back-translator can generally handle single braille indicators,
 but it cannot apply them when they immediately follow each other. It
 recognizes the letter sign if it is followed by a letter and takes
@@ -1844,7 +1844,7 @@ dot pattern. They include @kbd{h}, @kbd{f}, @kbd{b}, @kbd{c}, @kbd{d},
 
 @item i
 Show braille indicators. This shows the dot patterns for various
-opcodes such as the @opcoderef{capsign} and the @opcoderef{numsign}.
+opcodes such as the @opcoderef{capsletter} and the @opcoderef{numsign}.
 It also shows emphasis dot patterns, such as those for the
 @opcoderef{begemphword}, the @opcoderef{begemphphrase}, etc. If a
 given opcode has not been used nothing is printed for it.
@@ -3131,7 +3131,7 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  getTable checkTable readCharFromFile itemx
 @c  LocalWords:  README liblouisxml pindex samp kbd opcodes opcoderef numsign
 @c  LocalWords:  FIXME ctb nemeth filename multipass suboperand uplow litdigit
-@c  LocalWords:  capsign begcaps endcaps letsign noletsign largesign typeform
+@c  LocalWords:  begcaps endcaps letsign noletsign largesign typeform
 @c  LocalWords:  noletsignbefore noletsignafter compbrl firstwordital
 @c  LocalWords:  lenitalphrase doubleOpcode lastworditalbefore firstletterital
 @c  LocalWords:  lastworditalafter lastletterital firstwordbold UTF
