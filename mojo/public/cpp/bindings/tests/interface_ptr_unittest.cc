@@ -795,7 +795,7 @@ TEST_F(InterfacePtrTest, InterfaceRequestResetWithReason) {
   run_loop.Run();
 }
 
-TEST_F(InterfacePtrTest, CallbackOwnsInterfacePtr) {
+TEST_F(InterfacePtrTest, CallbackIsPassedInterfacePtr) {
   sample::PingTestPtr ptr;
   sample::PingTestRequest request(&ptr);
 
@@ -810,6 +810,28 @@ TEST_F(InterfacePtrTest, CallbackOwnsInterfacePtr) {
   // Trigger an error on |ptr|. This will ultimately lead to the proxy's
   // response callbacks being destroyed, which will in turn lead to the proxy
   // being destroyed. This should not crash.
+  request.PassMessagePipe();
+  run_loop.Run();
+}
+
+TEST_F(InterfacePtrTest, ConnectionErrorHandlerOwnsInterfacePtr) {
+  sample::PingTestPtr* ptr = new sample::PingTestPtr;
+  sample::PingTestRequest request(ptr);
+
+  base::RunLoop run_loop;
+
+  // Make a call with |ptr|'s lifetime bound to the connection error handler
+  // callback.
+  ptr->set_connection_error_handler(base::Bind(
+      [](const base::Closure& quit, sample::PingTestPtr* ptr) {
+        ptr->reset();
+        quit.Run();
+      },
+      run_loop.QuitClosure(), base::Owned(ptr)));
+
+  // Trigger an error on |ptr|. In the error handler |ptr| is reset. This
+  // shouldn't immediately destroy the callback (and |ptr| that it owns), before
+  // the callback is completed.
   request.PassMessagePipe();
   run_loop.Run();
 }

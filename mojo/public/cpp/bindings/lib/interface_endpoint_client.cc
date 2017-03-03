@@ -312,13 +312,15 @@ void InterfaceEndpointClient::NotifyError(
   control_message_proxy_.OnConnectionError();
 
   if (!error_handler_.is_null()) {
-    error_handler_.Run();
+    base::Closure error_handler = std::move(error_handler_);
+    error_handler.Run();
   } else if (!error_with_reason_handler_.is_null()) {
+    ConnectionErrorWithReasonCallback error_with_reason_handler =
+        std::move(error_with_reason_handler_);
     if (reason) {
-      error_with_reason_handler_.Run(reason->custom_reason,
-                                     reason->description);
+      error_with_reason_handler.Run(reason->custom_reason, reason->description);
     } else {
-      error_with_reason_handler_.Run(0, std::string());
+      error_with_reason_handler.Run(0, std::string());
     }
   }
 }
