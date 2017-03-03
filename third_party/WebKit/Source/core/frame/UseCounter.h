@@ -1470,6 +1470,12 @@ class CORE_EXPORT UseCounter {
     HTMLEmbedElementGetter = 1840,
     HTMLEmbedElementSetter = 1841,
     TransformUsesBoxSizeOnSVG = 1842,
+    ScrollByKeyboardArrowKeys = 1843,
+    ScrollByKeyboardPageUpDownKeys = 1844,
+    ScrollByKeyboardHomeEndKeys = 1845,
+    ScrollByKeyboardSpacebarKey = 1846,
+    ScrollByTouch = 1847,
+    ScrollByWheel = 1848,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
