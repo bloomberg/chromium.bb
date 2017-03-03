@@ -621,7 +621,7 @@
         'audio_message_filter|video_layer|media_internals',
     },
     'media_capture_from_element': {
-      'filepath': 'content/renderer/media_capture_from_element/' \'
+      'filepath': 'content/renderer/media_capture_from_element/' \
                   '|third_party/WebKit/Source/modules/mediacapture/' \
                   '|third_party/WebKit/Source/platform/exported/WebCanvasCapture' \
                   '|third_party/WebKit/LayoutTests/fast/mediacapturefromelement/' \
@@ -640,7 +640,7 @@
       'filepath': 'media/mojo/*'
     },
     'media_recorder': {
-      'filepath': 'content/renderer/media_recorder/' \'
+      'filepath': 'content/renderer/media_recorder/' \
                   '|third_party/WebKit/Source/modules/mediarecorder/' \
                   '|third_party/WebKit/Source/platform/exported/WebMediaRecorder' \
                   '|third_party/WebKit/LayoutTests/fast/mediarecorder/' \
