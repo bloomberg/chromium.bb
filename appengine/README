@@ -7,15 +7,4 @@ arguments for serving at <yourhostname>:8080 (which can then be
 accessed from other machines on intranet).  See contents of script
 for details on what it does (it is very short).
 
-Examples based on project name chromiumos-build-stats.
-
-To start the dev server on <yourhostname>:8080 do this:
-%> ./dev_appserver chromiumos-build-stats/app.yaml
-
-To clear DB before starting:
-%> ./dev_appserver -c chromiumos-build-stats/app.yaml
-
-To update on chromiumos-build-stats.appspot.com (WHEN READY):
-%> ./google_appengine/appcfg.py update chromiumos-build-stats/
-
 See cq_stats/README to learn about how to work with that zapping good app!

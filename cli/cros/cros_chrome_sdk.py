@@ -22,7 +22,6 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
-from chromite.lib import stats
 from chromite.cbuildbot import archive_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -437,21 +436,8 @@ class ChromeSDKCommand(command.CliCommand):
   GOMACC_PORT_CMD = ['./gomacc', 'port']
   FETCH_GOMA_CMD = ['wget', _GOMA_URL]
 
-  # Override base class property to enable stats upload.
-  upload_stats = True
-
   # Override base class property to use cache related commandline options.
   use_caching_options = True
-
-  @property
-  def upload_stats_timeout(self):
-    # Give a longer timeout for interactive SDK shell invocations, since the
-    # user will not notice a longer wait because it's happening in the
-    # background.
-    if self.options.cmd:
-      return super(ChromeSDKCommand, self).upload_stats_timeout
-    else:
-      return stats.StatsUploader.UPLOAD_TIMEOUT
 
   @staticmethod
   def ValidateVersion(version):

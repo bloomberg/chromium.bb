@@ -37,9 +37,6 @@ For more information of cros build usage:
   cros build -h
 """
 
-  # Override base class property to enable stats upload.
-  upload_stats = True
-
   @classmethod
   def AddParser(cls, parser):
     """Add a parser."""

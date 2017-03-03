@@ -58,9 +58,6 @@ Examples:
   http://dev.chromium.org/chromium-os/build/cros-flash
 """
 
-  # Override base class property to enable stats upload.
-  upload_stats = True
-
   @classmethod
   def AddParser(cls, parser):
     """Add parser arguments."""

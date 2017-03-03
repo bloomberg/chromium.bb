@@ -39,7 +39,6 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import remote_access as remote
-from chromite.lib import stats
 from chromite.lib import timeout_util
 from gn_helpers import gn_helpers
 
@@ -621,19 +620,14 @@ def main(argv):
   else:
     logging.getLogger().setLevel(logging.INFO)
 
-  with stats.UploadContext() as queue:
-    cmd_stats = stats.Stats.SafeInit(cmd_line=argv, cmd_base='deploy_chrome')
-    if cmd_stats:
-      queue.put([cmd_stats, stats.StatsUploader.URL, 1])
+  with osutils.TempDir(set_global=True) as tempdir:
+    staging_dir = options.staging_dir
+    if not staging_dir:
+      staging_dir = os.path.join(tempdir, 'chrome')
 
-    with osutils.TempDir(set_global=True) as tempdir:
-      staging_dir = options.staging_dir
-      if not staging_dir:
-        staging_dir = os.path.join(tempdir, 'chrome')
-
-      deploy = DeployChrome(options, tempdir, staging_dir)
-      try:
-        deploy.Perform()
-      except failures_lib.StepFailure as ex:
-        raise SystemExit(str(ex).strip())
-      deploy.Cleanup()
+    deploy = DeployChrome(options, tempdir, staging_dir)
+    try:
+      deploy.Perform()
+    except failures_lib.StepFailure as ex:
+      raise SystemExit(str(ex).strip())
+    deploy.Cleanup()

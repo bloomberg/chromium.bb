@@ -28,9 +28,6 @@ from chromite.lib import osutils
 class CleanCommand(command.CliCommand):
   """Clean up working files from the build."""
 
-  # Override base class property to enable stats upload.
-  upload_stats = False
-
   @classmethod
   def AddParser(cls, parser):
     """Add parser arguments."""

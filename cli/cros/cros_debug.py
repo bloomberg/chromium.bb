@@ -38,9 +38,6 @@ To debug a process by its pid:
   cros debug device --pid=1234
 """
 
-  # Override base class property to enable stats upload.
-  upload_stats = True
-
   def __init__(self, options):
     """Initialize DebugCommand."""
     super(DebugCommand, self).__init__(options)

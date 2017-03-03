@@ -12,7 +12,7 @@
 # Run in appengine project directory.  Example:
 # cd chromiumos-build-stats ; ../ae_pylint main.py
 # Or run from this directory.  Example:
-# ./ae_pylint chromiumos-build-stats/main.py
+# ./ae_pylint cq_stats/main.py
 
 ROOT=$(realpath $(dirname $0))
 PYTHONPATH="${ROOT}"/google_appengine pylint --rcfile="${ROOT}"/../pylintrc $@

@@ -18,8 +18,6 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 from chromite.lib import remote_access_unittest
-from chromite.lib import stats
-from chromite.lib import stats_unittest
 from chromite.scripts import deploy_chrome
 
 
@@ -126,27 +124,6 @@ class DeployChromeMock(partial_mock.PartialMock):
   def _KillProcsIfNeeded(self, _inst):
     # Fully stub out for now.
     pass
-
-
-class MainTest(cros_test_lib.MockLoggingTestCase):
-  """Main tests."""
-
-  def setUp(self):
-    self.PatchObject(deploy_chrome.DeployChrome, 'Perform', autospec=True)
-    self.stats_module_mock = stats_unittest.StatsModuleMock()
-    self.StartPatcher(self.stats_module_mock)
-
-  def testStatsUpload(self, call_count=1):
-    """The stats upload path."""
-    deploy_chrome.main(['--board=lumpy', '--staging-only',
-                        '--build-dir=/tmp/abc'])
-    self.assertEquals(stats.StatsUploader._Upload.call_count, call_count)
-
-  def testStatsUploadError(self):
-    """Don't upload stats if we fail to create it."""
-    self.stats_module_mock.stats_mock.init_exception = True
-    with cros_test_lib.LoggingCapturer():
-      self.testStatsUpload(call_count=0)
 
 
 class DeployTest(cros_test_lib.MockTempDirTestCase):

@@ -122,14 +122,6 @@ class CliCommand(object):
   parser that you can add your own custom arguments. See argparse for more
   information.
   """
-  # Indicates whether command stats should be uploaded for this command.
-  # Override to enable command stats uploading.
-  upload_stats = False
-  # We set the default timeout to 1 second, to prevent overly long waits for
-  # commands to complete.  From manual tests, stat uploads usually take
-  # between 0.35s-0.45s in MTV.
-  upload_stats_timeout = 1
-
   # Indicates whether command uses cache related commandline options.
   use_caching_options = False
 

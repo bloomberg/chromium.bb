@@ -17,9 +17,6 @@ from chromite.lib import cros_build_lib
 class ChrootCommand(command.CliCommand):
   """Enter the chroot."""
 
-  # Override base class property to enable stats upload.
-  upload_stats = True
-
   def _RunChrootCommand(self, cmd):
     """Run the specified command inside the chroot.
 

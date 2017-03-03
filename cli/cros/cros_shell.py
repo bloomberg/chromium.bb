@@ -50,9 +50,6 @@ Quoting can be tricky; the rules are the same as with ssh:
     cros shell <ip> -- sh -c "'exit 42'"  (executes: sh -c 'exit 42')
 """
 
-  # Override base class property to enable stats upload.
-  upload_stats = True
-
   def __init__(self, options):
     """Initializes ShellCommand."""
     super(ShellCommand, self).__init__(options)
