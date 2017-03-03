@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 
+#include <UIKit/UIKit.h>
+
 #include <memory>
 #include <utility>
 
@@ -31,9 +33,10 @@ namespace {
 // The infobar to display when a popup is blocked.
 class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  BlockPopupInfoBarDelegate(ios::ChromeBrowserState* browser_state,
-                            web::WebState* web_state,
-                            const std::vector<web::BlockedPopupInfo>& popups)
+  BlockPopupInfoBarDelegate(
+      ios::ChromeBrowserState* browser_state,
+      web::WebState* web_state,
+      const std::vector<BlockedPopupTabHelper::Popup>& popups)
       : browser_state_(browser_state), web_state_(web_state), popups_(popups) {}
 
   ~BlockPopupInfoBarDelegate() override {}
@@ -65,16 +68,15 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   bool Accept() override {
-    std::vector<web::BlockedPopupInfo>::iterator it;
     scoped_refptr<HostContentSettingsMap> host_content_map_settings(
         ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state_));
     for (auto& popup : popups_) {
       web::WebState::OpenURLParams params(
-          popup.url(), popup.referrer(), WindowOpenDisposition::NEW_POPUP,
+          popup.popup_url, popup.referrer, WindowOpenDisposition::NEW_POPUP,
           ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
       web_state_->OpenURL(params);
       host_content_map_settings->SetContentSettingCustomScope(
-          ContentSettingsPattern::FromURL(popup.referrer().url),
+          ContentSettingsPattern::FromURL(popup.referrer.url),
           ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_POPUPS,
           std::string(), CONTENT_SETTING_ALLOW);
     }
@@ -87,7 +89,7 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   ios::ChromeBrowserState* browser_state_;
   web::WebState* web_state_;
   // The popups to open.
-  std::vector<web::BlockedPopupInfo> popups_;
+  std::vector<BlockedPopupTabHelper::Popup> popups_;
   // The icon to display.
   mutable gfx::Image icon_;
 };
@@ -106,10 +108,10 @@ bool BlockedPopupTabHelper::ShouldBlockPopup(const GURL& source_url) {
   return setting != CONTENT_SETTING_ALLOW;
 }
 
-void BlockedPopupTabHelper::HandlePopup(
-    const web::BlockedPopupInfo& blocked_popup_info) {
-  DCHECK(ShouldBlockPopup(blocked_popup_info.referrer().url));
-  popups_.push_back(blocked_popup_info);
+void BlockedPopupTabHelper::HandlePopup(const GURL& popup_url,
+                                        const web::Referrer& referrer) {
+  DCHECK(ShouldBlockPopup(referrer.url));
+  popups_.push_back(Popup(popup_url, referrer));
   ShowInfoBar();
 }
 

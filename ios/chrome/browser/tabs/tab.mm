@@ -2006,8 +2006,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       web::NavigationItem* item =
           webState->GetNavigationManager()->GetLastCommittedItem();
       web::Referrer referrer(openerURL, item->GetReferrer().policy);
-      web::BlockedPopupInfo poupInfo(URL, referrer);
-      helper->HandlePopup(poupInfo);
+      helper->HandlePopup(URL, referrer);
       return nil;
     }
   }

@@ -16,7 +16,6 @@
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
-#include "ios/web/web_state/blocked_popup_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -87,8 +86,7 @@ TEST_F(BlockedPopupTabHelperTest, AllowBlockedPopup) {
   // Block popup.
   const GURL target_url("https://target-url");
   web::Referrer referrer(source_url, web::ReferrerPolicyDefault);
-  web::BlockedPopupInfo popup_info(target_url, referrer);
-  GetBlockedPopupTabHelper()->HandlePopup(popup_info);
+  GetBlockedPopupTabHelper()->HandlePopup(target_url, referrer);
 
   // Allow blocked popup.
   ASSERT_EQ(1U, GetInfobarManager()->infobar_count());
@@ -123,8 +121,7 @@ TEST_F(BlockedPopupTabHelperTest, DestroyWebState) {
   // Block popup.
   const GURL target_url("https://target-url");
   web::Referrer referrer(source_url, web::ReferrerPolicyDefault);
-  web::BlockedPopupInfo popup_info(target_url, referrer);
-  GetBlockedPopupTabHelper()->HandlePopup(popup_info);
+  GetBlockedPopupTabHelper()->HandlePopup(target_url, referrer);
 
   // Verify that destroying WebState does not crash.
   DestroyWebState();
@@ -133,15 +130,13 @@ TEST_F(BlockedPopupTabHelperTest, DestroyWebState) {
 // Tests that an infobar is added to the infobar manager when
 // BlockedPopupTabHelper::HandlePopup() is called.
 TEST_F(BlockedPopupTabHelperTest, ShowAndDismissInfoBar) {
-  const GURL test_url("https://popups.example.com");
-  web::BlockedPopupInfo popup_info(test_url, web::Referrer());
-
   // Check that there are no infobars showing and no registered observers.
   EXPECT_EQ(0U, GetInfobarManager()->infobar_count());
   EXPECT_FALSE(IsObservingSources());
 
   // Call |HandlePopup| to show an infobar.
-  GetBlockedPopupTabHelper()->HandlePopup(popup_info);
+  const GURL test_url("https://popups.example.com");
+  GetBlockedPopupTabHelper()->HandlePopup(test_url, web::Referrer());
   ASSERT_EQ(1U, GetInfobarManager()->infobar_count());
   EXPECT_TRUE(IsObservingSources());
 

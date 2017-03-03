@@ -182,8 +182,6 @@ source_set("web_arc") {
     "url_scheme_util.mm",
     "url_util.cc",
     "web_kit_constants.cc",
-    "web_state/blocked_popup_info.h",
-    "web_state/blocked_popup_info.mm",
     "web_state/context_menu_params.mm",
     "web_state/context_menu_params_utils.h",
     "web_state/context_menu_params_utils.mm",
