@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/mojo-helpers.js"></script>
+<script src="presentation-service-mock.js"></script>
+<script>
+
+internals.settings.setPresentationReceiver(true);
+
+var connection = null;
+
+presentationServiceMock.then(mockService => {
+  const url = 'http://example.com/a.html';
+  const id = 'fakeSessionId';
+
+  mockService.onSetClient = () => {
+    mockService.onReceiverConnectionAvailable(url, id);
+  };
+
+  navigator.presentation.receiver.connectionList.then(list => {
+    assert_equals(list.connections.length, 1);
+    connection = list.connections[0];
+    connection.terminate();
+  });
+});
+
+window.onunload = () => {
+  if (connection.state == 'terminated') {
+    opener.postMessage('passed', '*');
+  } else {
+    opener.postMessage('failed', '*');
+  }
+  internals.settings.setPresentationReceiver(false);
+};
+
+</script>
+</body>
+</html>

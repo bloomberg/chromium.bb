@@ -46,6 +46,9 @@ class MODULES_EXPORT PresentationReceiver final
   // Implementation of WebPresentationController.
   WebPresentationConnection* onReceiverConnectionAvailable(
       const WebPresentationSessionInfo&) override;
+  void didChangeSessionState(WebPresentationConnectionState) override;
+  void terminateConnection() override;
+
   void registerConnection(PresentationConnection*);
 
   DECLARE_VIRTUAL_TRACE();

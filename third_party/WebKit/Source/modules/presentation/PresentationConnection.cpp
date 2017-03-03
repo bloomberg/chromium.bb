@@ -409,7 +409,7 @@ void PresentationConnection::terminate() {
     return;
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (client)
-    client->terminateSession(m_url, m_id);
+    client->terminateConnection(m_url, m_id);
 
   tearDown();
 }
@@ -425,10 +425,20 @@ bool PresentationConnection::matches(const String& id, const KURL& url) const {
 
 void PresentationConnection::didChangeState(
     WebPresentationConnectionState state) {
+  didChangeState(state, true /* shouldDispatchEvent */);
+}
+
+void PresentationConnection::didChangeState(
+    WebPresentationConnectionState state,
+    bool shouldDispatchEvent) {
   if (m_state == state)
     return;
 
   m_state = state;
+
+  if (!shouldDispatchEvent)
+    return;
+
   switch (m_state) {
     case WebPresentationConnectionState::Connecting:
       NOTREACHED();

@@ -133,8 +133,8 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       const blink::WebPresentationConnectionProxy* connection_proxy) override;
-  void terminateSession(const blink::WebURL& presentationUrl,
-                        const blink::WebString& presentationId) override;
+  void terminateConnection(const blink::WebURL& presentationUrl,
+                           const blink::WebString& presentationId) override;
   void getAvailability(
       const blink::WebVector<blink::WebURL>& availabilityUrls,
       std::unique_ptr<blink::WebPresentationAvailabilityCallbacks> callbacks)
@@ -149,6 +149,7 @@ class CONTENT_EXPORT PresentationDispatcher
       bool is_new_navigation,
       bool is_same_page_navigation) override;
   void OnDestruct() override;
+  void WidgetWillClose() override;
 
   // blink::mojom::PresentationServiceClient
   void OnScreenAvailabilityNotSupported(const GURL& url) override;

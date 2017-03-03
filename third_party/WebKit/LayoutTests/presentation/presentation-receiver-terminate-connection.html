@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+async_test(t => {
+  const w = window.open("resources/presentation-receiver-postmessage.html");
+  window.addEventListener("message", t.step_func(e => {
+    if (e.data == "passed" || e.data == "failed") {
+      assert_equals("passed", e.data, "Receiver connection is terminated!");
+      t.done();
+    }
+  }));
+}, "receiver connection.terminate() should close receiver frame");
+
+</script>
+</body>
+</html>

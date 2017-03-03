@@ -282,9 +282,14 @@ void PresentationDispatcher::closeSession(
                                          presentationId.utf8());
 }
 
-void PresentationDispatcher::terminateSession(
+void PresentationDispatcher::terminateConnection(
     const blink::WebURL& presentationUrl,
     const blink::WebString& presentationId) {
+  if (receiver_) {
+    receiver_->terminateConnection();
+    return;
+  }
+
   ConnectToPresentationServiceIfNeeded();
   presentation_service_->Terminate(presentationUrl, presentationId.utf8());
 }
@@ -401,6 +406,14 @@ void PresentationDispatcher::DidCommitProvisionalLoad(
 
 void PresentationDispatcher::OnDestruct() {
   delete this;
+}
+
+void PresentationDispatcher::WidgetWillClose() {
+  if (!receiver_)
+    return;
+
+  receiver_->didChangeSessionState(
+      blink::WebPresentationConnectionState::Terminated);
 }
 
 void PresentationDispatcher::OnScreenAvailabilityUpdated(const GURL& url,

@@ -120,6 +120,10 @@ class TestPresentationReceiver : public blink::WebPresentationReceiver {
     return &connection_;
   }
 
+  MOCK_METHOD1(didChangeSessionState,
+               void(blink::WebPresentationConnectionState));
+  MOCK_METHOD0(terminateConnection, void());
+
   TestPresentationConnection connection_;
 };
 
@@ -506,7 +510,7 @@ TEST_F(PresentationDispatcherTest, TestTerminateSession) {
   base::RunLoop run_loop;
   EXPECT_CALL(presentation_service_,
               Terminate(gurl1_, presentation_id_.utf8()));
-  dispatcher_.terminateSession(url1_, presentation_id_);
+  dispatcher_.terminateConnection(url1_, presentation_id_);
   run_loop.RunUntilIdle();
 }
 

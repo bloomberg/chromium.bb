@@ -25,10 +25,15 @@ let presentationServiceMock = loadMojoModules(
           this.pendingResponse_ = null;
           this.bindingSet_ = new bindings.BindingSet(
               presentationService.PresentationService);
+
+          this.onSetClient = null;
         }
 
         setClient(client) {
           this.client_ = client;
+
+          if (this.onSetClient)
+            this.onSetClient();
         }
 
         startSession(urls) {
@@ -43,6 +48,19 @@ let presentationServiceMock = loadMojoModules(
               sessionInfo: { url: urls[0], id: 'fakeSessionId' },
               error: null,
           });
+        }
+
+        terminate(presentationUrl, presentationId) {
+          this.client_.onConnectionStateChanged(
+              { url: presentationUrl, id: presentationId },
+              presentationService.PresentationConnectionState.TERMINATED);
+        }
+
+        setPresentationConnection(
+            seesionInfo, controllerConnectionPtr, receiverConnectionRequest) {
+          this.client_.onConnectionStateChanged(
+              seesionInfo,
+              presentationService.PresentationConnectionState.CONNECTED);
         }
 
         onReceiverConnectionAvailable(strUrl, id) {

@@ -91,7 +91,7 @@ class MockWebPresentationClient : public WebPresentationClient {
                     const WebString& presentationId,
                     const WebPresentationConnectionProxy*));
 
-  MOCK_METHOD2(terminateSession,
+  MOCK_METHOD2(terminateConnection,
                void(const WebURL& presentationUrl,
                     const WebString& presentationId));
 

@@ -91,6 +91,7 @@ class PresentationConnection final : public EventTargetWithInlineData,
   void didChangeState(WebPresentationConnectionState) override;
 
   WebPresentationConnectionState getState();
+  void didChangeState(WebPresentationConnectionState, bool shouldDispatchEvent);
 
  protected:
   // EventTarget implementation.
