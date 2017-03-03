@@ -109,6 +109,9 @@ enum class ProvisioningResult : int {
   // ArcSessionManager::OnProvisioningFinished for details.
   CHROME_SERVER_COMMUNICATION_ERROR = 18,
 
+  // Network connection is unavailable in ARC.
+  NO_NETWORK_CONNECTION = 19,
+
   // The size of this enum; keep last.
   SIZE,
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -12,7 +12,7 @@ enum ArcSignInFailureReason {
   // Negative values are reserved for internal use.
   // The values are shuffled to keep the backward compatibility and don't match
   // ProvisioningResult in arc_optin_uma.h
-  // Next value: 15.
+  // Next value: 16.
   UNKNOWN_ERROR = 0,
 
   // Mojo errors:
@@ -61,6 +61,9 @@ enum ArcSignInFailureReason {
   CLOUD_PROVISION_FLOW_FAILED = 5,
   CLOUD_PROVISION_FLOW_TIMEOUT = 13,
   CLOUD_PROVISION_FLOW_INTERNAL_ERROR = 14,
+
+  // Network connection is unavailable.
+  [MinVersion=8] NO_NETWORK_CONNECTION = 15,
 };
 
 // These values describe the type of the Chrome account to provision.

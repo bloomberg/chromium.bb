@@ -339,6 +339,10 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     case ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR:
       error = ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR;
       break;
+    case ProvisioningResult::NO_NETWORK_CONNECTION:
+      // TODO(khmel): Use explicit error for M58+ builds.
+      error = ArcSupportHost::Error::SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
+      break;
     default:
       error = ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR;
       break;

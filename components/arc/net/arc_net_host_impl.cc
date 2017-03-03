@@ -55,7 +55,7 @@ std::string GetStringFromOncDictionary(const base::DictionaryValue* dict,
   std::string value;
   dict->GetString(key, &value);
   if (required && value.empty())
-    NOTREACHED();
+    VLOG(1) << "Required parameter " << key << " was not found.";
   return value;
 }
 
