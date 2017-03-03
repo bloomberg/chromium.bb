@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -300,6 +301,9 @@ storage::WatcherManager* FileSystemBackend::GetWatcherManager(
           chromeos::switches::kDisableMtpWriteSupport)) {
     return mtp_delegate_->GetWatcherManager(type);
   }
+
+  if (type == storage::kFileSystemTypeArcDocumentsProvider)
+    return arc_documents_provider_delegate_->GetWatcherManager(type);
 
   // TODO(mtomasz): Add support for other backends.
   return NULL;
