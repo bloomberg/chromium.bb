@@ -54,20 +54,20 @@ TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
   list.insert(2);
   list.insert(3);
 
-  EXPECT_EQ(-1, list.first());
+  EXPECT_EQ(-1, list.front());
   EXPECT_EQ(3, list.last());
 
   list.removeFirst();
-  EXPECT_EQ(0, list.first());
+  EXPECT_EQ(0, list.front());
 
   list.removeLast();
   EXPECT_EQ(2, list.last());
 
   list.removeFirst();
-  EXPECT_EQ(1, list.first());
+  EXPECT_EQ(1, list.front());
 
   list.removeFirst();
-  EXPECT_EQ(2, list.first());
+  EXPECT_EQ(2, list.front());
 
   list.removeFirst();
   EXPECT_TRUE(list.isEmpty());
@@ -172,10 +172,10 @@ TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToLastWithDuplicates) {
   EXPECT_EQ(3UL, list.size());
 
   // Prepending 2 move it to the beginning.
-  EXPECT_EQ(1, list.first());
+  EXPECT_EQ(1, list.front());
   result = list.prependOrMoveToFirst(2);
   EXPECT_FALSE(result.isNewEntry);
-  EXPECT_EQ(2, list.first());
+  EXPECT_EQ(2, list.front());
 
   // Inverse the list by moving each element to the first position.
   result = list.prependOrMoveToFirst(1);
@@ -264,7 +264,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   }
   set.insertBefore(2, 42);
   set.insertBefore(-1, 103);
-  EXPECT_EQ(103, set.first());
+  EXPECT_EQ(103, set.front());
   if (!canModifyWhileIterating)
     it = set.find(1);
   ++it;
@@ -408,7 +408,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   set.insert(ptr);
   // Referenced only once (to store a copy in the container).
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
-  EXPECT_EQ(ptr, set.first());
+  EXPECT_EQ(ptr, set.front());
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
 
   DummyRefCounted* rawPtr = ptr.get();

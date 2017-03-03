@@ -464,7 +464,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(
     if (m_multiColumnSetList.isEmpty())
       return nullptr;
     if (offset < LayoutUnit()) {
-      columnSet = m_multiColumnSetList.first();
+      columnSet = m_multiColumnSetList.front();
     } else {
       MultiColumnSetSearchAdapter adapter(offset);
       m_multiColumnSetIntervalTree

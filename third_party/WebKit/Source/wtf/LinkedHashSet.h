@@ -235,8 +235,8 @@ class LinkedHashSet {
     return makeConstReverseIterator(anchor());
   }
 
-  Value& first();
-  const Value& first() const;
+  Value& front();
+  const Value& front() const;
   void removeFirst();
 
   Value& last();
@@ -700,13 +700,13 @@ inline LinkedHashSet<T, U, V, Allocator>::~LinkedHashSet() {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline T& LinkedHashSet<T, U, V, W>::first() {
+inline T& LinkedHashSet<T, U, V, W>::front() {
   DCHECK(!isEmpty());
   return firstNode()->m_value;
 }
 
 template <typename T, typename U, typename V, typename W>
-inline const T& LinkedHashSet<T, U, V, W>::first() const {
+inline const T& LinkedHashSet<T, U, V, W>::front() const {
   DCHECK(!isEmpty());
   return firstNode()->m_value;
 }

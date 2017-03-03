@@ -533,7 +533,7 @@ bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect) {
   const HitTestResult::NodeSet& nodes = result.listBasedTestResult();
   if (nodes.size() != 1)
     return false;
-  return nodes.first().get() == m_element;
+  return nodes.front().get() == m_element;
 }
 
 void WebPluginContainerImpl::requestTouchEventType(

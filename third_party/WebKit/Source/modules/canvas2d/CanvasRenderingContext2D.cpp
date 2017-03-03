@@ -526,7 +526,7 @@ void CanvasRenderingContext2D::pruneLocalFontCache(size_t targetSize) {
     return;
   }
   while (m_fontLRUList.size() > targetSize) {
-    m_fontsResolvedUsingCurrentStyle.erase(m_fontLRUList.first());
+    m_fontsResolvedUsingCurrentStyle.erase(m_fontLRUList.front());
     m_fontLRUList.removeFirst();
   }
 }

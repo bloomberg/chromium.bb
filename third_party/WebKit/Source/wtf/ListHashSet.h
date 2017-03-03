@@ -163,8 +163,8 @@ class ListHashSet
   }
   const_reverse_iterator rend() const { return makeConstReverseIterator(0); }
 
-  ValueType& first();
-  const ValueType& first() const;
+  ValueType& front();
+  const ValueType& front() const;
   void removeFirst();
 
   ValueType& last();
@@ -809,7 +809,7 @@ inline void ListHashSet<T, inlineCapacity, U, V>::finalize() {
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline T& ListHashSet<T, inlineCapacity, U, V>::first() {
+inline T& ListHashSet<T, inlineCapacity, U, V>::front() {
   DCHECK(!isEmpty());
   return m_head->m_value;
 }
@@ -822,7 +822,7 @@ inline void ListHashSet<T, inlineCapacity, U, V>::removeFirst() {
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline const T& ListHashSet<T, inlineCapacity, U, V>::first() const {
+inline const T& ListHashSet<T, inlineCapacity, U, V>::front() const {
   DCHECK(!isEmpty());
   return m_head->m_value;
 }
