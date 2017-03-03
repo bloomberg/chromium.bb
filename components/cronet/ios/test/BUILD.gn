@@ -8,6 +8,7 @@ import("//testing/test.gni")
 test("cronet_test") {
   testonly = true
   sources = [
+    "cronet_acceptlang_test.mm",
     "cronet_http_test.mm",
     "cronet_netlog_test.mm",
     "cronet_test_runner.mm",

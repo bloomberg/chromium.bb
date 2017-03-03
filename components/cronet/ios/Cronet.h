@@ -31,6 +31,10 @@ typedef BOOL (^RequestFilterBlock)(NSURLRequest* request);
 GRPC_SUPPORT_EXPORT
 @interface Cronet : NSObject
 
+// Sets the HTTP Accept-Language header.  This method only has any effect before
+// |start| is called.
++ (void)setAcceptLanguages:(NSString*)acceptLanguages;
+
 // Sets whether HTTP/2 should be supported by CronetEngine. This method only has
 // any effect before |start| is called.
 + (void)setHttp2Enabled:(BOOL)http2Enabled;

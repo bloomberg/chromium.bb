@@ -20,6 +20,7 @@ void StartCronetIfNecessary(int port) {
     [Cronet setUserAgent:@"CronetTest/1.0.0.0" partial:NO];
     [Cronet setHttp2Enabled:true];
     [Cronet setQuicEnabled:true];
+    [Cronet setAcceptLanguages:@"en-US,en"];
     [Cronet setSslKeyLogFileName:@"SSLKEYLOGFILE"];
     [Cronet addQuicHint:@"test.example.com" port:443 altPort:443];
     [Cronet enableTestCertVerifierForTesting];

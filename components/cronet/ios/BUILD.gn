@@ -33,6 +33,7 @@ process_version("cronet_version_header") {
 source_set("cronet_sources") {
   deps = [
     ":cronet_version_header",
+    ":generate_accept_languages",
     "//base:base",
     "//components/grpc_support",
     "//components/metrics:metrics",
@@ -70,77 +71,11 @@ tweak_info_plist("tweak_cronet_plist") {
   info_plist = "Info.plist"
 }
 
-bundle_data("cronet_framework_resources") {
-  # This bundle contains "Accept-Languages" header values for known locales.
-  # TODO(mef): These strings should be auto-generated from chrome's .xtb
-  # files, not hardcoded.
-  sources = [
-    "Resources/Localization/am.lproj",
-    "Resources/Localization/ar.lproj",
-    "Resources/Localization/bg.lproj",
-    "Resources/Localization/bn.lproj",
-    "Resources/Localization/ca.lproj",
-    "Resources/Localization/cs.lproj",
-    "Resources/Localization/da.lproj",
-    "Resources/Localization/de.lproj",
-    "Resources/Localization/el.lproj",
-    "Resources/Localization/en-GB.lproj",
-    "Resources/Localization/en.lproj",
-    "Resources/Localization/es-419.lproj",
-    "Resources/Localization/es.lproj",
-    "Resources/Localization/fa.lproj",
-    "Resources/Localization/fi.lproj",
-    "Resources/Localization/fil.lproj",
-    "Resources/Localization/fr.lproj",
-    "Resources/Localization/gu.lproj",
-    "Resources/Localization/he.lproj",
-    "Resources/Localization/hi.lproj",
-    "Resources/Localization/hr.lproj",
-    "Resources/Localization/hu.lproj",
-    "Resources/Localization/id.lproj",
-    "Resources/Localization/it.lproj",
-    "Resources/Localization/ja.lproj",
-    "Resources/Localization/kn.lproj",
-    "Resources/Localization/ko.lproj",
-    "Resources/Localization/lt.lproj",
-    "Resources/Localization/lv.lproj",
-    "Resources/Localization/ml.lproj",
-    "Resources/Localization/mr.lproj",
-    "Resources/Localization/ms.lproj",
-    "Resources/Localization/nb.lproj",
-    "Resources/Localization/nl.lproj",
-    "Resources/Localization/pl.lproj",
-    "Resources/Localization/pt-BR.lproj",
-    "Resources/Localization/pt-PT.lproj",
-    "Resources/Localization/pt.lproj",
-    "Resources/Localization/ro.lproj",
-    "Resources/Localization/ru.lproj",
-    "Resources/Localization/sk.lproj",
-    "Resources/Localization/sl.lproj",
-    "Resources/Localization/sr.lproj",
-    "Resources/Localization/sv.lproj",
-    "Resources/Localization/sw.lproj",
-    "Resources/Localization/ta.lproj",
-    "Resources/Localization/te.lproj",
-    "Resources/Localization/th.lproj",
-    "Resources/Localization/tr.lproj",
-    "Resources/Localization/uk.lproj",
-    "Resources/Localization/vi.lproj",
-    "Resources/Localization/zh-Hans.lproj",
-    "Resources/Localization/zh-Hant.lproj",
-    "Resources/Localization/zh.lproj",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/cronet_resources.bundle/{{source_file_part}}",
-  ]
-}
-
 ios_framework_bundle("cronet_framework") {
   output_name = "Cronet"
   info_plist_target = ":tweak_cronet_plist"
 
   deps = [
-    ":cronet_framework_resources",
     ":cronet_sources",
     "//base",
     "//net:net",
@@ -186,6 +121,17 @@ test("cronet_unittests") {
     "//components/metrics",
     "//net",
     "//testing/gtest",
+  ]
+}
+
+action("generate_accept_languages") {
+  script = "//components/cronet/tools/generate_accept_languages.py"
+  args = [
+    rebase_path("$target_gen_dir"),
+    rebase_path("//"),
+  ]
+  outputs = [
+    "$target_gen_dir/accept_languages_table.h",
   ]
 }
 
