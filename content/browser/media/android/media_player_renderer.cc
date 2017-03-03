@@ -32,7 +32,6 @@ media::MediaUrlInterceptor* g_media_url_interceptor = nullptr;
 
 MediaPlayerRenderer::MediaPlayerRenderer(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host),
-      duration_(media::kInfiniteDuration),
       has_error_(false),
       weak_factory_(this) {}
 
