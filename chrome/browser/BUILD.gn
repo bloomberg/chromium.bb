@@ -520,6 +520,8 @@ split_static_library("browser") {
     "mac/exception_processor.mm",
     "mac/install_from_dmg.h",
     "mac/install_from_dmg.mm",
+    "mac/keychain_reauthorize.h",
+    "mac/keychain_reauthorize.mm",
     "mac/keystone_glue.h",
     "mac/keystone_glue.mm",
     "mac/keystone_registration.h",

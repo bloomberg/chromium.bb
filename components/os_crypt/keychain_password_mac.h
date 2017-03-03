@@ -27,6 +27,10 @@ class KeychainPassword {
   // empty string is returned.
   std::string GetPassword() const;
 
+  // The service and account names used in Chrome's Safe Storage keychain item.
+  static const char service_name[];
+  static const char account_name[];
+
  private:
   const crypto::AppleKeychain& keychain_;
 
