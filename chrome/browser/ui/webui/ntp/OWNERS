@@ -3,3 +3,6 @@ dbeam@chromium.org
 
 per-file ntp_user_data_logger*=beaudoin@chromium.org
 per-file ntp_user_data_logger*=file://chrome/browser/search/OWNERS
+
+# TEAM: ntp-dev@chromium.org
+# COMPONENT: UI>Browser>NewTabPage
