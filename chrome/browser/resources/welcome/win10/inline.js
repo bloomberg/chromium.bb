@@ -2,71 +2,61 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('inline', function() {
-  'use strict';
+Polymer({
+  is: 'welcome-win10-inline',
 
-  function computeClasses(isCombined) {
+  properties: {
+    // Determines if the combined variant should be displayed. The combined
+    // variant includes instructions on how to pin Chrome to the taskbar.
+    isCombined: Boolean
+  },
+
+  receivePinnedState: function(isPinnedToTaskbar) {
+    this.isCombined = !isPinnedToTaskbar;
+    // Allow overriding of the result via a query parameter.
+    // TODO(pmonette): Remove these checks when they are no longer needed.
+    /** @const */
+    var VARIANT_KEY = 'variant';
+    var VariantType = {
+      DEFAULT_ONLY: 'defaultonly',
+      COMBINED: 'combined'
+    };
+    var params = new URLSearchParams(location.search.slice(1));
+    if (params.has(VARIANT_KEY)) {
+      if (params.get(VARIANT_KEY) === VariantType.DEFAULT_ONLY)
+        this.isCombined = false;
+      else if (params.get(VARIANT_KEY) === VariantType.COMBINED)
+        this.isCombined = true;
+    }
+  },
+
+  ready: function() {
+    this.isCombined = false;
+    // Asynchronously check if Chrome is pinned to the taskbar.
+    cr.sendWithPromise('getPinnedToTaskbarState').then(
+      this.receivePinnedState.bind(this));
+  },
+
+  computeClasses: function(isCombined) {
     if (isCombined)
       return 'section expandable expanded';
     return 'section';
-  }
+  },
 
-  function onContinue() {
+  onContinue: function() {
     chrome.send('handleContinue');
-  }
+  },
 
-  function onOpenSettings() {
+  onOpenSettings: function() {
     chrome.send('handleSetDefaultBrowser');
-  }
+  },
 
-  function onToggle(app) {
-    if (app.isCombined) {
-      var sections = document.querySelectorAll('.section.expandable');
+  onToggle: function() {
+    if (this.isCombined) {
+      var sections = this.shadowRoot.querySelectorAll('.section.expandable');
       sections.forEach(function(section) {
         section.classList.toggle('expanded');
       });
     }
   }
-
-  function initialize() {
-    var app = $('inline-app');
-
-    // Set variables.
-    // Determines if the combined variant should be displayed. The combined
-    // variant includes instructions on how to pin Chrome to the taskbar.
-    app.isCombined = false;
-
-    // Set handlers.
-    app.computeClasses = computeClasses;
-    app.onContinue = onContinue;
-    app.onOpenSettings = onOpenSettings;
-    app.onToggle = onToggle.bind(this, app);
-
-    // Asynchronously check if Chrome is pinned to the taskbar.
-    cr.sendWithPromise('getPinnedToTaskbarState').then(
-      function(isPinnedToTaskbar) {
-        // Allow overriding of the result via a query parameter.
-        // TODO(pmonette): Remove these checks when they are no longer needed.
-        /** @const */ var VARIANT_KEY = 'variant';
-        var VariantType = {
-          DEFAULT_ONLY: 'defaultonly',
-          COMBINED: 'combined'
-        };
-        var params = new URLSearchParams(location.search.slice(1));
-        if (params.has(VARIANT_KEY)) {
-          if (params.get(VARIANT_KEY) === VariantType.DEFAULT_ONLY)
-            app.isCombined = false;
-          else if (params.get(VARIANT_KEY) === VariantType.COMBINED)
-            app.isCombined = true;
-        } else {
-          app.isCombined = !isPinnedToTaskbar;
-        }
-      });
-  }
-
-  return {
-    initialize: initialize
-  };
 });
-
-document.addEventListener('DOMContentLoaded', inline.initialize);
