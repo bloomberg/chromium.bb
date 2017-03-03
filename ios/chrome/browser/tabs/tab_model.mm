@@ -740,15 +740,14 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
     [self saveSessionImmediately:NO];
 }
 
-- (void)navigationCommittedInTab:(Tab*)tab {
+- (void)navigationCommittedInTab:(Tab*)tab
+                    previousItem:(web::NavigationItem*)previousItem {
   if (self.offTheRecord)
     return;
   if (![tab navigationManager])
     return;
 
   // See if the navigation was within a page; if so ignore it.
-  web::NavigationItem* previousItem =
-      [tab navigationManagerImpl]->GetPreviousItem();
   if (previousItem) {
     GURL previousURL = previousItem->GetURL();
     GURL currentURL = [tab navigationManager]->GetVisibleItem()->GetURL();

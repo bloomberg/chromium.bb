@@ -110,7 +110,6 @@ class NavigationManagerImpl : public NavigationManager {
   // -previousEntry methods.
   // TODO(crbug.com/546365): Remove these methods.
   NavigationItem* GetLastUserItem() const;
-  NavigationItem* GetPreviousItem() const;
 
   // Temporary method. Returns a vector of NavigationItems corresponding to
   // the SessionEntries of the uderlying CRWSessionController.

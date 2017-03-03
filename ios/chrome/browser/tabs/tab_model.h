@@ -270,7 +270,8 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Called by |tab| to inform the model that a navigation has taken place.
 // TODO(crbug.com/661983): once more of the navigation state has moved into WC,
 // replace this with WebStateObserver.
-- (void)navigationCommittedInTab:(Tab*)tab;
+- (void)navigationCommittedInTab:(Tab*)tab
+                    previousItem:(web::NavigationItem*)previousItem;
 
 @end
 

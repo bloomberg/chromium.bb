@@ -221,6 +221,10 @@
   return [self itemListForEntryList:self.entries];
 }
 
+- (NSUInteger)itemCount {
+  return self.entries.count;
+}
+
 - (web::NavigationItemImpl*)currentItem {
   return self.currentEntry.navigationItemImpl;
 }
@@ -641,12 +645,18 @@
 }
 
 - (NSInteger)indexOfItem:(const web::NavigationItem*)item {
-  web::NavigationItemList items = self.items;
-  for (NSInteger i = 0; i < static_cast<NSInteger>(items.size()); ++i) {
-    if (items[i] == item)
-      return i;
+  for (NSUInteger index = 0; index < self.entries.count; ++index) {
+    if ([self.entries[index] navigationItem] == item)
+      return static_cast<NSInteger>(index);
   }
   return NSNotFound;
+}
+
+- (web::NavigationItemImpl*)itemAtIndex:(NSInteger)index {
+  if (index < 0 || self.entries.count <= static_cast<NSUInteger>(index))
+    return nullptr;
+  return static_cast<web::NavigationItemImpl*>(
+      [self.entries[index] navigationItem]);
 }
 
 #pragma mark -

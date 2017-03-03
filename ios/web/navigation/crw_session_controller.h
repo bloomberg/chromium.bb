@@ -44,6 +44,8 @@ struct Referrer;
 
 // The list of CRWSessionEntries in |_entries|'s NavigationItemImpls.
 @property(nonatomic, readonly) web::NavigationItemList items;
+// The number of elements in |self.items|.
+@property(nonatomic, readonly) NSUInteger itemCount;
 // The current NavigationItem.  During a pending navigation, returns the
 // NavigationItem for that navigation.  If a transient NavigationItem exists,
 // this NavigationItem will be returned.
@@ -151,6 +153,9 @@ struct Referrer;
 
 // Returns the index of |item| in |items|.
 - (NSInteger)indexOfItem:(const web::NavigationItem*)item;
+
+// Returns the item at |index| in |items|.
+- (web::NavigationItemImpl*)itemAtIndex:(NSInteger)index;
 
 @end
 

@@ -52,7 +52,6 @@ class NavigationManagerTest : public PlatformTest {
 TEST_F(NavigationManagerTest, EmptyManager) {
   EXPECT_EQ(0, navigation_manager()->GetItemCount());
   EXPECT_EQ(-1, navigation_manager()->GetCurrentItemIndex());
-  EXPECT_FALSE(navigation_manager()->GetPreviousItem());
   EXPECT_EQ(-1, navigation_manager()->GetCurrentItemIndex());
   EXPECT_FALSE(navigation_manager()->GetPendingItem());
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());

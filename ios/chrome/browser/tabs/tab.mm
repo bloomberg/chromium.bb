@@ -128,6 +128,7 @@
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/interstitials/web_interstitial.h"
+#include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/serializable_user_data_manager.h"
@@ -1710,7 +1711,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                       object:parentTabModel_
                     userInfo:@{kTabModelTabKey : self}];
   }
-  [parentTabModel_ navigationCommittedInTab:self];
+
+  web::NavigationItem* previousItem = nullptr;
+  if (details.previous_item_index >= 0) {
+    previousItem = webState->GetNavigationManager()->GetItemAtIndex(
+        details.previous_item_index);
+  }
+
+  [parentTabModel_ navigationCommittedInTab:self previousItem:previousItem];
 
   // Sending a notification about the url change for crash reporting.
   // TODO(crbug.com/661675): Consider using the navigation entry committed

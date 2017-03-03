@@ -140,8 +140,8 @@ void NavigationManagerImpl::OnNavigationItemCommitted() {
   DCHECK(details.item);
   details.previous_item_index = [session_controller_ previousNavigationIndex];
   if (details.previous_item_index >= 0) {
-    DCHECK(GetPreviousItem());
-    details.previous_url = GetPreviousItem()->GetURL();
+    DCHECK([session_controller_ previousItem]);
+    details.previous_url = [session_controller_ previousItem]->GetURL();
     details.is_in_page =
         AreURLsInPageNavigation(details.previous_url, details.item->GetURL());
   } else {
@@ -219,10 +219,6 @@ NavigationItem* NavigationManagerImpl::GetLastUserItem() const {
   return [session_controller_ lastUserItem];
 }
 
-NavigationItem* NavigationManagerImpl::GetPreviousItem() const {
-  return [session_controller_ previousItem];
-}
-
 NavigationItemList NavigationManagerImpl::GetItems() const {
   return [session_controller_ items];
 }
@@ -275,12 +271,11 @@ void NavigationManagerImpl::AddTransientURLRewriter(
 }
 
 int NavigationManagerImpl::GetItemCount() const {
-  return GetItems().size();
+  return [session_controller_ itemCount];
 }
 
 NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
-  NavigationItemList items = GetItems();
-  return index < items.size() ? items[index] : nullptr;
+  return [session_controller_ itemAtIndex:index];
 }
 
 int NavigationManagerImpl::GetCurrentItemIndex() const {
@@ -300,7 +295,7 @@ int NavigationManagerImpl::GetPendingItemIndex() const {
 }
 
 int NavigationManagerImpl::GetLastCommittedItemIndex() const {
-  if (GetItems().empty())
+  if (GetItemCount() == 0)
     return -1;
   return [session_controller_ currentNavigationIndex];
 }
@@ -309,8 +304,7 @@ bool NavigationManagerImpl::RemoveItemAtIndex(int index) {
   if (index == GetLastCommittedItemIndex() || index == GetPendingItemIndex())
     return false;
 
-  size_t idx = static_cast<size_t>(index);
-  if (idx >= GetItems().size())
+  if (index < 0 || index >= GetItemCount())
     return false;
 
   [session_controller_ removeItemAtIndex:index];
