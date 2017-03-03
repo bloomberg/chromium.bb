@@ -23,9 +23,6 @@ crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
 crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
 
-# Issue with ServiceWorker timing.
-Bug(none) external/wpt/service-workers/service-worker/navigate-window.https.html [ Failure ]
-
 # Missing console warning about usage of legacy protocol.
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Failure ]
 
