@@ -94,12 +94,16 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
                              features::kTouchpadAndWheelScrollLatching)),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f) {
-  if (base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents))
+  // TODO(dtapuska): Figure out regression caused by activating
+  // the passthrough queue. crbug.com/697871
+  if (false &&
+      base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents)) {
     touch_event_queue_.reset(
         new PassthroughTouchEventQueue(this, config.touch_config));
-  else
+  } else {
     touch_event_queue_.reset(
         new LegacyTouchEventQueue(this, config.touch_config));
+  }
 
   DCHECK(sender);
   DCHECK(client);

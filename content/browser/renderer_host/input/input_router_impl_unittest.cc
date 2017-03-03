@@ -1522,8 +1522,9 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
 
 // Test that the double tap gesture depends on the touch action of the first
 // tap.
+// TODO(dtapuska): Disabled for now crbug.com/697871
 TEST_F(InputRouterImplRafAlignedTouchEnabledTest,
-       DoubleTapGestureDependsOnFirstTap) {
+       DISABLED_DoubleTapGestureDependsOnFirstTap) {
   OnHasTouchEventHandlers(true);
 
   // Sequence 1.
