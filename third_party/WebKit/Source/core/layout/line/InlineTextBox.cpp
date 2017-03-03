@@ -187,14 +187,7 @@ SelectionState InlineTextBox::getSelectionState() const {
 }
 
 bool InlineTextBox::hasWrappedSelectionNewline() const {
-  // TODO(wkorman): We shouldn't need layout at this point and it should be
-  // enforced by DocumentLifecycle. http://crbug.com/537821
-  // Bail out as currently looking up selection state can cause the editing code
-  // can force a re-layout while scrutinizing the editing position, and
-  // InlineTextBox instances are not guaranteed to survive a re-layout.
-  if (getLineLayoutItem().needsLayout())
-    return false;
-
+  DCHECK(!getLineLayoutItem().needsLayout());
   SelectionState state = getSelectionState();
   return (state == SelectionStart || state == SelectionInside)
          // Checking last leaf child can be slow, so we make sure to do this
