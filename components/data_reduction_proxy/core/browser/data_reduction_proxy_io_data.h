@@ -95,10 +95,15 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Applies a serialized Data Reduction Proxy configuration.
   void SetDataReductionProxyConfiguration(const std::string& serialized_config);
 
-  // Returns true when Lo-Fi mode should be activated. When Lo-Fi mode is
+  // Returns true when Lo-Fi Previews should be activated. When Lo-Fi is
   // active, URL requests are modified to request low fidelity versions of the
   // resources, except when the user is in the Lo-Fi control group.
-  bool ShouldEnableLoFiMode(const net::URLRequest& request);
+  bool ShouldEnableLoFi(const net::URLRequest& request);
+
+  // Returns true when Lite Page Previews should be activated. When Lite Pages
+  // are active, a low fidelity transcoded page is requested on the main frame
+  // resource, except when the user is in the control group.
+  bool ShouldEnableLitePages(const net::URLRequest& request);
 
   // Sets Lo-Fi mode off in |config_|.
   void SetLoFiModeOff();

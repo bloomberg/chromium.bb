@@ -24,7 +24,7 @@ ContentLoFiDecider::ContentLoFiDecider() {}
 
 ContentLoFiDecider::~ContentLoFiDecider() {}
 
-bool ContentLoFiDecider::IsUsingLoFiMode(const net::URLRequest& request) const {
+bool ContentLoFiDecider::IsUsingLoFi(const net::URLRequest& request) const {
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
   // The Lo-Fi directive should not be added for users in the Lo-Fi field
@@ -43,7 +43,7 @@ bool ContentLoFiDecider::IsUsingLoFiMode(const net::URLRequest& request) const {
 
 void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
     const net::URLRequest& request,
-    bool is_previews_disabled,
+    bool are_previews_disabled,
     net::HttpRequestHeaders* headers) const {
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
@@ -83,7 +83,7 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
   }
 
   // Previews has been disabled.
-  if (is_previews_disabled)
+  if (are_previews_disabled)
     return;
 
   // Do not add the Chrome-Proxy-Accept-Transform header when the page load
@@ -91,7 +91,7 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
   if (request_info->GetPreviewsState() & content::PREVIEWS_NO_TRANSFORM)
     return;
 
-  // LoFi is not allowed on the main frame, stylesheet, script, font resource,
+  // Lo-Fi is not allowed on the main frame, stylesheet, script, font resource,
   // media, service worker, or CSP report.
   bool resource_type_supports_empty_image =
       !(resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
@@ -101,24 +101,38 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
         resource_type == content::RESOURCE_TYPE_MEDIA ||
         resource_type == content::RESOURCE_TYPE_CSP_REPORT);
 
-  // If in the lite page field trial or the lite page flag is enabled, only add
-  // the "lite-page" directive on main frame requests. Do not add "empty-image"
-  // directives to other requests when Lite Page previews are enabled.
-  // Add the "if-heavy" qualifier to allow the server to provide a preview when
-  // the page is data heavy on if a preview was not otherwise triggered.
+  // If the Lite Page field trial or flag is enabled, only add the "lite-page"
+  // directive on main frame requests. Only add "empty-image" directives to
+  // other requests when Lite Page previews are not enabled after the main
+  // frame. Add the "if-heavy" qualifier to allow the server to provide a
+  // preview when the page is data heavy on if a preview was not otherwise
+  // triggered.
   std::string accept_transform_value;
-  if (lite_page_enabled_via_flags_or_field_trial) {
-    if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
-      accept_transform_value = lite_page_directive();
-  } else if (lofi_enabled_via_flags_or_field_trial) {
-    if (resource_type_supports_empty_image)
-      accept_transform_value = empty_image_directive();
+  if (lite_page_enabled_via_flags_or_field_trial &&
+      resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+    accept_transform_value = lite_page_directive();
+
+    // Since a Lite Page was not triggered client side, ask the server to
+    // provide a Lite Page only if the page is otherwise data-heavy.
+    if (!(request_info->GetPreviewsState() & content::SERVER_LITE_PAGE_ON))
+      accept_transform_value += base::StringPrintf(";%s", if_heavy_qualifier());
+  } else if (lofi_enabled_via_flags_or_field_trial &&
+             // Only use Lo-Fi if Lite Pages aren't enabled or fallback from
+             // Lite Pages to Lo-Fi is enabled.
+             (!lite_page_enabled_via_flags_or_field_trial ||
+              params::IsLitePageFallbackEnabled()) &&
+             resource_type_supports_empty_image &&
+             !(request_info->GetPreviewsState() &
+               content::SERVER_LITE_PAGE_ON)) {
+    accept_transform_value = empty_image_directive();
+
+    // Since Lo-Fi was not triggered client side, ask the server to provide
+    // Lo-Fi only if the page is otherwise data-heavy.
+    if (!(request_info->GetPreviewsState() & content::SERVER_LOFI_ON))
+      accept_transform_value += base::StringPrintf(";%s", if_heavy_qualifier());
   }
   if (accept_transform_value.empty())
     return;
-
-  if (!(request_info->GetPreviewsState() & content::SERVER_LOFI_ON))
-    accept_transform_value += base::StringPrintf(";%s", if_heavy_qualifier());
 
   headers->SetHeader(chrome_proxy_accept_transform_header(),
                      accept_transform_value);
@@ -189,7 +203,8 @@ bool ContentLoFiDecider::ShouldRecordLoFiUMA(
 
   // User is not using Lo-Fi.
   if (!request_info ||
-      !(request_info->GetPreviewsState() & content::SERVER_LOFI_ON)) {
+      !(request_info->GetPreviewsState() & content::SERVER_LOFI_ON ||
+        request_info->GetPreviewsState() & content::SERVER_LITE_PAGE_ON)) {
     return false;
   }
 

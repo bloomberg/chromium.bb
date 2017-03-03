@@ -945,7 +945,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
         context_.CreateRequest(GURL(), net::IDLE, &delegate_);
     request->SetLoadFlags(request->load_flags() |
                           net::LOAD_MAIN_FRAME_DEPRECATED);
-    bool should_enable_lofi = config()->ShouldEnableLoFiMode(*request.get());
+    bool should_enable_lofi = config()->ShouldEnableLoFi(*request.get());
     if (tests[i].expect_bucket_count != 0) {
       histogram_tester.ExpectBucketCount(
           "DataReductionProxy.AutoLoFiRequestHeaderState.Unknown",

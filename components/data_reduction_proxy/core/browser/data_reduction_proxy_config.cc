@@ -969,7 +969,7 @@ bool DataReductionProxyConfig::IsEffectiveConnectionTypeSlowerThanThreshold(
          effective_connection_type <= lofi_effective_connection_type_threshold_;
 }
 
-bool DataReductionProxyConfig::ShouldEnableLoFiMode(
+bool DataReductionProxyConfig::ShouldEnableLoFi(
     const net::URLRequest& request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
@@ -980,7 +980,7 @@ bool DataReductionProxyConfig::ShouldEnableLoFiMode(
       request.context() ? request.context()->network_quality_estimator()
                         : nullptr;
 
-  bool enable_lofi = ShouldEnableLoFiModeInternal(network_quality_estimator);
+  bool enable_lofi = ShouldEnableLoFiInternal(network_quality_estimator);
 
   if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
       params::IsIncludedInLoFiEnabledFieldTrial()) {
@@ -992,12 +992,23 @@ bool DataReductionProxyConfig::ShouldEnableLoFiMode(
   return enable_lofi;
 }
 
+bool DataReductionProxyConfig::ShouldEnableLitePages(
+    const net::URLRequest& request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
+  DCHECK(!request.url().SchemeIsCryptographic());
+
+  return ShouldEnableLitePagesInternal(
+      request.context() ? request.context()->network_quality_estimator()
+                        : nullptr);
+}
+
 bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return enabled_by_user_ && !unreachable_;
 }
 
-bool DataReductionProxyConfig::ShouldEnableLoFiModeInternal(
+bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
     const net::NetworkQualityEstimator* network_quality_estimator) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1024,6 +1035,35 @@ bool DataReductionProxyConfig::ShouldEnableLoFiModeInternal(
   // If Lo-Fi is not enabled through command line and the user is not in
   // Lo-Fi field trials, set Lo-Fi to off.
   lofi_off_ = true;
+  return false;
+}
+
+bool DataReductionProxyConfig::ShouldEnableLitePagesInternal(
+    const net::NetworkQualityEstimator* network_quality_estimator) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit will
+  // be removed when Lo-Fi and Lite Pages are moved over to using the Previews
+  // blacklist.
+  if (lofi_off_)
+    return false;
+
+  if (params::IsLoFiAlwaysOnViaFlags() && params::AreLitePagesEnabledViaFlags())
+    return true;
+
+  if (params::IsLoFiCellularOnlyViaFlags() &&
+      params::AreLitePagesEnabledViaFlags()) {
+    return net::NetworkChangeNotifier::IsConnectionCellular(
+        net::NetworkChangeNotifier::GetConnectionType());
+  }
+
+  if ((params::IsLoFiSlowConnectionsOnlyViaFlags() &&
+       params::AreLitePagesEnabledViaFlags()) ||
+      params::IsIncludedInLitePageFieldTrial() ||
+      params::IsIncludedInLoFiControlFieldTrial()) {
+    return IsNetworkQualityProhibitivelySlow(network_quality_estimator);
+  }
+
   return false;
 }
 

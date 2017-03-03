@@ -14,20 +14,30 @@
 
 namespace content {
 
-// The Previews state which determines whether to request a Preview version of
+// Chrome Proxy Previews header and directives.
+const char kChromeProxyContentTransformHeader[] =
+    "chrome-proxy-content-transform";
+const char kChromeProxyEmptyImageDirective[] = "empty-image";
+const char kChromeProxyLitePageDirective[] = "lite-page";
+
+typedef int PreviewsState;
+
+// The Previews types which determines whether to request a Preview version of
 // the resource. Previews are optimizations that change the format and
 // content of web pages to improve data savings and / or performance. This enum
 // determines which Previews types to request.
-enum PreviewsState {
+enum PreviewsTypes {
   PREVIEWS_UNSPECIFIED = 0,        // Let the browser process decide whether or
                                    // not to request Preview types.
   SERVER_LOFI_ON = 1 << 0,         // Request a Lo-Fi version of the resource
                                    // from the server.
   CLIENT_LOFI_ON = 1 << 1,         // Request a Lo-Fi version of the resource
                                    // from the client.
-  PREVIEWS_NO_TRANSFORM = 1 << 2,  // Explicitly forbid Previews
+  SERVER_LITE_PAGE_ON = 1 << 2,    // Request a Lite Page version of the
+                                   // resource from the server.
+  PREVIEWS_NO_TRANSFORM = 1 << 3,  // Explicitly forbid Previews
                                    // transformations.
-  PREVIEWS_OFF = 1 << 3,           // Request a normal (non-Preview) version of
+  PREVIEWS_OFF = 1 << 4,           // Request a normal (non-Preview) version of
                                    // the resource. Server transformations may
                                    // still happen if the page is heavy.
   PREVIEWS_STATE_LAST = PREVIEWS_OFF
@@ -39,6 +49,8 @@ STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_UNSPECIFIED,
                             blink::WebURLRequest::PreviewsUnspecified);
 STATIC_ASSERT_PREVIEWS_ENUM(SERVER_LOFI_ON, blink::WebURLRequest::ServerLoFiOn);
 STATIC_ASSERT_PREVIEWS_ENUM(CLIENT_LOFI_ON, blink::WebURLRequest::ClientLoFiOn);
+STATIC_ASSERT_PREVIEWS_ENUM(SERVER_LITE_PAGE_ON,
+                            blink::WebURLRequest::ServerLitePageOn);
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_NO_TRANSFORM,
                             blink::WebURLRequest::PreviewsNoTransform);
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_OFF, blink::WebURLRequest::PreviewsOff);

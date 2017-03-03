@@ -400,8 +400,7 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
       data_reduction_proxy_io_data_ &&
           data_reduction_proxy_io_data_->IsEnabled() &&
           data_reduction_proxy_io_data_->lofi_decider() &&
-          data_reduction_proxy_io_data_->lofi_decider()->IsUsingLoFiMode(
-              request),
+          data_reduction_proxy_io_data_->lofi_decider()->IsUsingLoFi(request),
       request.received_response_content_length(), original_content_length,
       freshness_lifetime);
 

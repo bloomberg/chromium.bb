@@ -136,18 +136,22 @@ class WebURLRequest {
     ReportIntent,  // Report metrics with UI action displayed intent.
   };
 
-  // The Previews state which determines whether to request a Preview version of
+  typedef int PreviewsState;
+
+  // The Previews types which determines whether to request a Preview version of
   // the resource.
-  enum PreviewsState {
+  enum PreviewsTypes {
     PreviewsUnspecified = 0,       // Let the browser process decide whether or
                                    // not to request Preview types.
     ServerLoFiOn = 1 << 0,         // Request a Lo-Fi version of the resource
                                    // from the server.
     ClientLoFiOn = 1 << 1,         // Request a Lo-Fi version of the resource
                                    // from the client.
-    PreviewsNoTransform = 1 << 2,  // Explicitly forbid Previews
+    ServerLitePageOn = 1 << 2,     // Request a Lite Page version of the
+                                   // resource from the server.
+    PreviewsNoTransform = 1 << 3,  // Explicitly forbid Previews
                                    // transformations.
-    PreviewsOff = 1 << 3,          // Request a normal (non-Preview) version of
+    PreviewsOff = 1 << 4,          // Request a normal (non-Preview) version of
                                    // the resource. Server transformations may
                                    // still happen if the page is heavy.
     PreviewsStateLast = PreviewsOff

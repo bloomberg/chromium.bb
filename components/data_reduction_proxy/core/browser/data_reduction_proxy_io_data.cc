@@ -290,14 +290,24 @@ void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
     config_client_->ApplySerializedConfig(serialized_config);
 }
 
-bool DataReductionProxyIOData::ShouldEnableLoFiMode(
+bool DataReductionProxyIOData::ShouldEnableLoFi(
     const net::URLRequest& request) {
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   if (!config_ || (config_->IsBypassedByDataReductionProxyLocalRules(
                       request, configurator_->GetProxyConfig()))) {
     return false;
   }
-  return config_->ShouldEnableLoFiMode(request);
+  return config_->ShouldEnableLoFi(request);
+}
+
+bool DataReductionProxyIOData::ShouldEnableLitePages(
+    const net::URLRequest& request) {
+  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
+  if (!config_ || (config_->IsBypassedByDataReductionProxyLocalRules(
+                      request, configurator_->GetProxyConfig()))) {
+    return false;
+  }
+  return config_->ShouldEnableLitePages(request);
 }
 
 void DataReductionProxyIOData::SetLoFiModeOff() {

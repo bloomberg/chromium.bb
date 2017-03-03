@@ -3581,14 +3581,24 @@ void RenderFrameImpl::didCommitProvisionalLoad(
       DocumentState::FromDataSource(frame->dataSource());
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  const WebURLResponse& web_url_response = frame->dataSource()->response();
   WebURLResponseExtraDataImpl* extra_data =
-      GetExtraDataFromResponse(frame->dataSource()->response());
+      GetExtraDataFromResponse(web_url_response);
   // Only update the PreviewsState and effective connection type states for new
   // main frame documents. Subframes inherit from the main frame and should not
   // change at commit time.
   if (is_main_frame_ && !navigation_state->WasWithinSamePage()) {
     previews_state_ =
         extra_data ? extra_data->previews_state() : PREVIEWS_OFF;
+
+    // Set lite pages off if a lite page was not loaded for the main frame.
+    if (web_url_response
+            .httpHeaderField(
+                WebString::fromUTF8(kChromeProxyContentTransformHeader))
+            .utf8() != kChromeProxyLitePageDirective) {
+      previews_state_ &= ~(SERVER_LITE_PAGE_ON);
+    }
+
     if (extra_data) {
       effective_connection_type_ =
           EffectiveConnectionTypeToWebEffectiveConnectionType(

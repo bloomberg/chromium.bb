@@ -867,12 +867,18 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
   data_reduction_proxy::DataReductionProxyIOData* data_reduction_proxy_io_data =
       io_data->data_reduction_proxy_io_data();
 
+  content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
+
   if (data_reduction_proxy_io_data) {
-    return data_reduction_proxy_io_data->ShouldEnableLoFiMode(url_request)
-               ? content::SERVER_LOFI_ON
-               : content::PREVIEWS_OFF;
+    if (data_reduction_proxy_io_data->ShouldEnableLoFi(url_request))
+      previews_state |= content::SERVER_LOFI_ON;
+    if (data_reduction_proxy_io_data->ShouldEnableLitePages(url_request))
+      previews_state |= content::SERVER_LITE_PAGE_ON;
   }
-  return content::PREVIEWS_OFF;
+
+  if (previews_state == content::PREVIEWS_UNSPECIFIED)
+    return content::PREVIEWS_OFF;
+  return previews_state;
 }
 
 // static

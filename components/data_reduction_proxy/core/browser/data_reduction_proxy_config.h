@@ -191,10 +191,14 @@ class DataReductionProxyConfig
   // Returns |lofi_off_|.
   bool lofi_off() const { return lofi_off_; }
 
-  // Returns true when Lo-Fi mode should be activated. Records metrics for Lo-Fi
-  // state changes. |request| is used to get the network quality estimator from
-  // the URLRequestContext.
-  bool ShouldEnableLoFiMode(const net::URLRequest& request);
+  // Returns true when Lo-Fi Previews should be activated. Records metrics for
+  // Lo-Fi state changes. |request| is used to get the network quality estimator
+  // from the URLRequestContext.
+  bool ShouldEnableLoFi(const net::URLRequest& request);
+
+  // Returns true when Lite Page Previews should be activated. |request| is used
+  // to get the network quality estimator from the URLRequestContext.
+  bool ShouldEnableLitePages(const net::URLRequest& request);
 
   // Returns true if the data saver has been enabled by the user, and the data
   // saver proxy is reachable.
@@ -291,10 +295,17 @@ class DataReductionProxyConfig
       bool is_https,
       base::TimeDelta* min_retry_delay) const;
 
-  // Returns true when Lo-Fi mode should be activated. Determines if Lo-Fi mode
-  // should be activated by checking the Lo-Fi flags and if the network quality
-  // is prohibitively slow. |network_quality_estimator| may be NULL.
-  bool ShouldEnableLoFiModeInternal(
+  // Returns true when Lo-Fi Previews should be activated. Determines if Lo-Fi
+  // Previews should be activated by checking the Lo-Fi flags and if the network
+  // quality is prohibitively slow. |network_quality_estimator| may be NULL.
+  bool ShouldEnableLoFiInternal(
+      const net::NetworkQualityEstimator* network_quality_estimator);
+
+  // Returns true when Lite Page Previews should be activated. Determines if
+  // Lite Page Previewsmode should be activated by checking the Lite Page
+  // Previews flags and if the network quality is prohibitively slow.
+  // |network_quality_estimator| may be NULL.
+  bool ShouldEnableLitePagesInternal(
       const net::NetworkQualityEstimator* network_quality_estimator);
 
   // Returns true if the network quality is at least as poor as the one

@@ -101,11 +101,11 @@ class TestLoFiDecider : public LoFiDecider {
         ignore_is_using_data_reduction_proxy_check_(false) {}
   ~TestLoFiDecider() override {}
 
-  bool IsUsingLoFiMode(const net::URLRequest& request) const override {
+  bool IsUsingLoFi(const net::URLRequest& request) const override {
     return should_request_lofi_resource_;
   }
 
-  void SetIsUsingLoFiMode(bool should_request_lofi_resource) {
+  void SetIsUsingLoFi(bool should_request_lofi_resource) {
     should_request_lofi_resource_ = should_request_lofi_resource;
   }
 
@@ -523,15 +523,15 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request =
           context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFiMode(
-          config()->ShouldEnableLoFiMode(*fake_request.get()));
+      lofi_decider()->SetIsUsingLoFi(
+          config()->ShouldEnableLoFi(*fake_request.get()));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
 
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
       VerifyDataReductionProxyData(
           *fake_request, tests[i].is_data_reduction_proxy,
-          config()->ShouldEnableLoFiMode(*fake_request.get()));
+          config()->ShouldEnableLoFi(*fake_request.get()));
     }
 
     {
@@ -541,7 +541,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::TestDelegate delegate;
       std::unique_ptr<net::URLRequest> fake_request =
           context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
-      lofi_decider()->SetIsUsingLoFiMode(false);
+      lofi_decider()->SetIsUsingLoFi(false);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
@@ -557,7 +557,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request =
           context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
 
-      lofi_decider()->SetIsUsingLoFiMode(true);
+      lofi_decider()->SetIsUsingLoFi(true);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
@@ -574,7 +574,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request =
           context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFiMode(false);
+      lofi_decider()->SetIsUsingLoFi(false);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
@@ -589,7 +589,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::TestDelegate delegate;
       std::unique_ptr<net::URLRequest> fake_request =
           context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
-      lofi_decider()->SetIsUsingLoFiMode(false);
+      lofi_decider()->SetIsUsingLoFi(false);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
@@ -605,13 +605,13 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request =
           context()->CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFiMode(
-          config()->ShouldEnableLoFiMode(*fake_request.get()));
+      lofi_decider()->SetIsUsingLoFi(
+          config()->ShouldEnableLoFi(*fake_request.get()));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyDataReductionProxyData(
           *fake_request, tests[i].is_data_reduction_proxy,
-          config()->ShouldEnableLoFiMode(*fake_request.get()));
+          config()->ShouldEnableLoFi(*fake_request.get()));
     }
   }
 }
@@ -664,7 +664,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
         GURL(kTestURL), net::RequestPriority::IDLE, nullptr);
     request->SetLoadFlags(test.main_frame ? net::LOAD_MAIN_FRAME_DEPRECATED
                                           : 0);
-    lofi_decider()->SetIsUsingLoFiMode(test.lofi_on);
+    lofi_decider()->SetIsUsingLoFi(test.lofi_on);
     io_data()->request_options()->SetSecureSession("fake-session");
     network_delegate()->NotifyBeforeSendHeaders(
         request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
@@ -752,7 +752,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
       GURL(kTestURL), net::RequestPriority::IDLE, nullptr);
   request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-  lofi_decider()->SetIsUsingLoFiMode(true);
+  lofi_decider()->SetIsUsingLoFi(true);
   io_data()->request_options()->SetSecureSession("fake-session");
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
@@ -898,8 +898,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
           switches::kDataReductionProxyLoFiValueAlwaysOn);
     }
 
-    lofi_decider()->SetIsUsingLoFiMode(
-        config()->ShouldEnableLoFiMode(*fake_request.get()));
+    lofi_decider()->SetIsUsingLoFi(
+        config()->ShouldEnableLoFi(*fake_request.get()));
 
     fake_request = (FetchURLRequest(GURL(kTestURL), nullptr, response_headers,
                                     kResponseContentLength));

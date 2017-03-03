@@ -106,9 +106,6 @@ IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::Last)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::PreviewsState,
-                              content::PREVIEWS_UNSPECIFIED,
-                              content::PREVIEWS_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::FileChooserParams::Mode,
                           content::FileChooserParams::Save)
 IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDirective::Name,
