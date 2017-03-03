@@ -47,6 +47,14 @@ class VersionUpdaterCros : public VersionUpdater,
   // Callback from UpdateEngineClient::RequestUpdateCheck().
   void OnUpdateCheck(chromeos::UpdateEngineClient::UpdateCheckResult result);
 
+  // Callback from UpdateEngineClient::GetChannel().
+  void OnGetChannel(const ChannelCallback& cb,
+                    const std::string& current_channel);
+
+  // Callback from UpdateEngineClient::GetEolStatus().
+  void OnGetEolStatus(const EolStatusCallback& cb,
+                      update_engine::EndOfLifeStatus status);
+
   // BrowserContext in which the class was instantiated.
   content::BrowserContext* context_;
 
