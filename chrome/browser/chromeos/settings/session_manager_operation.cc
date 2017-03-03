@@ -47,7 +47,7 @@ void SessionManagerOperation::Start(
 
 void SessionManagerOperation::RestartLoad(bool key_changed) {
   if (key_changed)
-    public_key_ = NULL;
+    public_key_ = nullptr;
 
   if (!is_loading_)
     return;
@@ -84,20 +84,17 @@ void SessionManagerOperation::ReportResult(
 }
 
 void SessionManagerOperation::EnsurePublicKey(const base::Closure& callback) {
-  if (force_key_load_ || !public_key_.get() || !public_key_->is_loaded()) {
+  if (force_key_load_ || !public_key_ || !public_key_->is_loaded()) {
     scoped_refptr<base::TaskRunner> task_runner =
         content::BrowserThread::GetBlockingPool()
             ->GetTaskRunnerWithShutdownBehavior(
                 base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
     base::PostTaskAndReplyWithResult(
-        task_runner.get(),
-        FROM_HERE,
-        base::Bind(&SessionManagerOperation::LoadPublicKey,
-                   owner_key_util_,
-                   public_key_),
+        task_runner.get(), FROM_HERE,
+        base::Bind(&SessionManagerOperation::LoadPublicKey, owner_key_util_,
+                   force_key_load_ ? nullptr : public_key_),
         base::Bind(&SessionManagerOperation::StorePublicKey,
-                   weak_factory_.GetWeakPtr(),
-                   callback));
+                   weak_factory_.GetWeakPtr(), callback));
   } else {
     callback.Run();
   }
@@ -110,7 +107,7 @@ scoped_refptr<PublicKey> SessionManagerOperation::LoadPublicKey(
   scoped_refptr<PublicKey> public_key(new PublicKey());
 
   // Keep already-existing public key.
-  if (current_key.get() && current_key->is_loaded()) {
+  if (current_key && current_key->is_loaded()) {
     public_key->data() = current_key->data();
   }
   if (!public_key->is_loaded() && util->IsPublicKeyPresent()) {
@@ -126,7 +123,7 @@ void SessionManagerOperation::StorePublicKey(const base::Closure& callback,
   force_key_load_ = false;
   public_key_ = new_key;
 
-  if (!public_key_.get() || !public_key_->is_loaded()) {
+  if (!public_key_ || !public_key_->is_loaded()) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
   }
@@ -261,7 +258,10 @@ StoreSettingsOperation::StoreSettingsOperation(
     std::unique_ptr<em::PolicyFetchResponse> policy)
     : SessionManagerOperation(callback),
       policy_(std::move(policy)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  if (policy_->has_new_public_key())
+    force_key_load_ = true;
+}
 
 StoreSettingsOperation::~StoreSettingsOperation() {}
 
