@@ -295,9 +295,9 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   // invalidation.
   LayoutRect localVisualRect() const override;
 
-  bool mapToVisualRectInAncestorSpace(
+  bool mapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      TransformState&,
       VisualRectFlags = DefaultVisualRectFlags) const final;
 
   PositionWithAffinity positionForPoint(const LayoutPoint&) final;

@@ -2063,9 +2063,9 @@ bool LayoutTableSection::isRepeatingHeaderGroup() const {
   return true;
 }
 
-bool LayoutTableSection::mapToVisualRectInAncestorSpace(
+bool LayoutTableSection::mapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    TransformState& transformState,
     VisualRectFlags flags) const {
   if (ancestor == this)
     return true;
@@ -2075,10 +2075,14 @@ bool LayoutTableSection::mapToVisualRectInAncestorSpace(
   // the header in all columns.
   // Note that this is in flow thread coordinates, not visual coordinates. The
   // enclosing LayoutFlowThread will convert to visual coordinates.
-  if (table()->header() == this && isRepeatingHeaderGroup())
+  if (table()->header() == this && isRepeatingHeaderGroup()) {
+    transformState.flatten();
+    FloatRect rect = transformState.lastPlanarQuad().boundingBox();
     rect.setHeight(table()->logicalHeight());
-  return LayoutTableBoxComponent::mapToVisualRectInAncestorSpace(ancestor, rect,
-                                                                 flags);
+    transformState.setQuad(FloatQuad(rect));
+  }
+  return LayoutTableBoxComponent::mapToVisualRectInAncestorSpaceInternal(
+      ancestor, transformState, flags);
 }
 
 }  // namespace blink

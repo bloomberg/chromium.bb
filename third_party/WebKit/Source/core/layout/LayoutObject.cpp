@@ -1273,6 +1273,19 @@ bool LayoutObject::mapToVisualRectInAncestorSpace(
     const LayoutBoxModelObject* ancestor,
     LayoutRect& rect,
     VisualRectFlags visualRectFlags) const {
+  TransformState transformState(TransformState::ApplyTransformDirection,
+                                FloatQuad(FloatRect(rect)));
+  bool retval = mapToVisualRectInAncestorSpaceInternal(ancestor, transformState,
+                                                       visualRectFlags);
+  transformState.flatten();
+  rect = LayoutRect(transformState.lastPlanarQuad().boundingBox());
+  return retval;
+}
+
+bool LayoutObject::mapToVisualRectInAncestorSpaceInternal(
+    const LayoutBoxModelObject* ancestor,
+    TransformState& transformState,
+    VisualRectFlags visualRectFlags) const {
   // For any layout object that doesn't override this method (the main example
   // is LayoutText), the rect is assumed to be in the parent's coordinate space,
   // except for container flip.
@@ -1285,15 +1298,27 @@ bool LayoutObject::mapToVisualRectInAncestorSpace(
       LayoutBox* parentBox = toLayoutBox(parent);
 
       // Never flip for SVG as it handles writing modes itself.
-      if (!isSVG())
+      if (!isSVG()) {
+        transformState.flatten();
+        LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
         parentBox->flipForWritingMode(rect);
+        transformState.setQuad(FloatQuad(FloatRect(rect)));
+      }
+
+      bool preserve3D = (parent->style()->preserves3D() && !parent->isText()) ||
+                        (style()->preserves3D() && !isText());
+
+      TransformState::TransformAccumulation accumulation =
+          preserve3D ? TransformState::AccumulateTransform
+                     : TransformState::FlattenTransform;
 
       if (parent != ancestor &&
-          !parentBox->mapScrollingContentsRectToBoxSpace(rect, visualRectFlags))
+          !parentBox->mapScrollingContentsRectToBoxSpace(
+              transformState, accumulation, visualRectFlags))
         return false;
     }
-    return parent->mapToVisualRectInAncestorSpace(ancestor, rect,
-                                                  visualRectFlags);
+    return parent->mapToVisualRectInAncestorSpaceInternal(
+        ancestor, transformState, visualRectFlags);
   }
   return true;
 }
@@ -2265,6 +2290,8 @@ FloatQuad LayoutObject::localToAncestorQuadInternal(
   // mapLocalToAncestor() calls offsetFromContainer(), it will use that point
   // as the reference point to decide which column's transform to apply in
   // multiple-column blocks.
+  // TODO(chrishtr): the second argument to this constructor is unnecessary,
+  // since we never call lastPlanarPoint().
   TransformState transformState(TransformState::ApplyTransformDirection,
                                 localQuad.boundingBox().center(), localQuad);
   mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip);

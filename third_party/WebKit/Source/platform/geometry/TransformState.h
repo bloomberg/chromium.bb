@@ -26,14 +26,15 @@
 #ifndef TransformState_h
 #define TransformState_h
 
+#include <memory>
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/Allocator.h"
-#include <memory>
 
 namespace blink {
 
@@ -87,7 +88,10 @@ class PLATFORM_EXPORT TransformState {
 
   TransformState& operator=(const TransformState&);
 
+  // Note: this overrides the quad and ignores any accumulatedOffset.
+  // If it's desired to include the offset, call flatten() first.
   void setQuad(const FloatQuad& quad) {
+    DCHECK(!m_accumulatingTransform);
     // FIXME: this assumes that the quad being added is in the coordinate system
     // of the current state.  This breaks if we're simultaneously mapping a
     // point.  https://bugs.webkit.org/show_bug.cgi?id=106680
@@ -106,6 +110,10 @@ class PLATFORM_EXPORT TransformState {
   void move(const IntSize& size,
             TransformAccumulation accumulate = FlattenTransform) {
     move(LayoutSize(size), accumulate);
+  }
+  void moveBy(const LayoutPoint& point,
+              TransformAccumulation accumulate = FlattenTransform) {
+    move(LayoutSize(point.x(), point.y()), accumulate);
   }
   void applyTransform(const AffineTransform& transformFromContainer,
                       TransformAccumulation = FlattenTransform,

@@ -1160,14 +1160,15 @@ LayoutRect LayoutBox::clippingRect() const {
 }
 
 bool LayoutBox::mapScrollingContentsRectToBoxSpace(
-    LayoutRect& rect,
+    TransformState& transformState,
+    TransformState::TransformAccumulation accumulation,
     VisualRectFlags visualRectFlags) const {
   if (!hasClipRelatedProperty())
     return true;
 
   if (hasOverflowClip()) {
     LayoutSize offset = LayoutSize(-scrolledContentOffset());
-    rect.move(offset);
+    transformState.move(offset, accumulation);
   }
 
   // This won't work fully correctly for fixed-position elements, who should
@@ -1175,6 +1176,8 @@ bool LayoutBox::mapScrollingContentsRectToBoxSpace(
   // block chain.
   LayoutRect clipRect = clippingRect();
 
+  transformState.flatten();
+  LayoutRect rect(transformState.lastPlanarQuad().enclosingBoundingBox());
   bool doesIntersect;
   if (visualRectFlags & EdgeInclusive) {
     doesIntersect = rect.inclusiveIntersect(clipRect);
@@ -1182,6 +1185,7 @@ bool LayoutBox::mapScrollingContentsRectToBoxSpace(
     rect.intersect(clipRect);
     doesIntersect = !rect.isEmpty();
   }
+  transformState.setQuad(FloatQuad(FloatRect(rect)));
 
   return doesIntersect;
 }
@@ -2308,35 +2312,36 @@ LayoutRect LayoutBox::localVisualRect() const {
 }
 
 void LayoutBox::inflateVisualRectForFilterUnderContainer(
-    LayoutRect& rect,
+    TransformState& transformState,
     const LayoutObject& container,
     const LayoutBoxModelObject* ancestorToStopAt) const {
+  transformState.flatten();
   // Apply visual overflow caused by reflections and filters defined on objects
   // between this object and container (not included) or ancestorToStopAt
   // (included).
   LayoutSize offsetFromContainer = this->offsetFromContainer(&container);
-  rect.move(offsetFromContainer);
+  transformState.move(offsetFromContainer);
   for (LayoutObject* parent = this->parent(); parent && parent != container;
        parent = parent->parent()) {
     if (parent->isBox()) {
       // Convert rect into coordinate space of parent to apply parent's
       // reflection and filter.
       LayoutSize parentOffset = parent->offsetFromAncestorContainer(&container);
-      rect.move(-parentOffset);
-      toLayoutBox(parent)->inflateVisualRectForFilter(rect);
-      rect.move(parentOffset);
+      transformState.move(-parentOffset);
+      toLayoutBox(parent)->inflateVisualRectForFilter(transformState);
+      transformState.move(parentOffset);
     }
     if (parent == ancestorToStopAt)
       break;
   }
-  rect.move(-offsetFromContainer);
+  transformState.move(-offsetFromContainer);
 }
 
-bool LayoutBox::mapToVisualRectInAncestorSpace(
+bool LayoutBox::mapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    TransformState& transformState,
     VisualRectFlags visualRectFlags) const {
-  inflateVisualRectForFilter(rect);
+  inflateVisualRectForFilter(transformState);
 
   if (ancestor == this)
     return true;
@@ -2356,60 +2361,78 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
   if (!container)
     return true;
 
-  if (skipInfo.filterSkipped())
-    inflateVisualRectForFilterUnderContainer(rect, *container, ancestor);
-
-  // We are now in our parent container's coordinate space. Apply our transform
-  // to obtain a bounding box in the parent's coordinate space that encloses us.
-  if (hasLayer() && layer()->transform()) {
-    // Use enclosingIntRect because we cannot properly compute pixel snapping
-    // for painted elements within the transform since we don't know the desired
-    // subpixel accumulation at this point, and the transform may include a
-    // scale.
-    rect = LayoutRect(layer()->transform()->mapRect(enclosingIntRect(rect)));
-  }
-  LayoutPoint topLeft = rect.location();
+  LayoutPoint containerOffset;
   if (container->isBox()) {
-    topLeft.moveBy(physicalLocation(toLayoutBox(container)));
+    containerOffset.moveBy(physicalLocation(toLayoutBox(container)));
+
     // If the row is the ancestor, however, add its offset back in. In effect,
     // this passes from the joint <td> / <tr> coordinate space to the parent
     // space, then back to <tr> / <td>.
     if (tableRowContainer) {
-      topLeft.moveBy(
+      containerOffset.moveBy(
           -tableRowContainer->physicalLocation(toLayoutBox(container)));
     }
   } else if (container->isRuby()) {
     // TODO(wkorman): Generalize Ruby specialization and/or document more
     // clearly. See the accompanying specialization in
-    // LayoutInline::mapToVisualRectInAncestorSpace.
-    topLeft.moveBy(physicalLocation());
+    // LayoutInline::mapToVisualRectInAncestorSpaceInternal.
+    containerOffset.moveBy(physicalLocation());
   } else {
-    topLeft.moveBy(location());
+    containerOffset.moveBy(location());
   }
 
   const ComputedStyle& styleToUse = styleRef();
   EPosition position = styleToUse.position();
   if (position == EPosition::kAbsolute && container->isInFlowPositioned() &&
       container->isLayoutInline()) {
-    topLeft +=
-        toLayoutInline(container)->offsetForInFlowPositionedInline(*this);
+    containerOffset.move(
+        toLayoutInline(container)->offsetForInFlowPositionedInline(*this));
   } else if (styleToUse.hasInFlowPosition() && layer()) {
     // Apply the relative position offset when invalidating a rectangle. The
     // layer is translated, but the layout box isn't, so we need to do this to
     // get the right dirty rect.  Since this is called from
     // LayoutObject::setStyle, the relative position flag on the LayoutObject
     // has been cleared, so use the one on the style().
-    topLeft += layer()->offsetForInFlowPosition();
+    containerOffset.move(layer()->offsetForInFlowPosition());
+  }
+
+  bool preserve3D = container->style()->preserves3D() || style()->preserves3D();
+
+  TransformState::TransformAccumulation accumulation =
+      preserve3D ? TransformState::AccumulateTransform
+                 : TransformState::FlattenTransform;
+
+  if (skipInfo.filterSkipped()) {
+    inflateVisualRectForFilterUnderContainer(transformState, *container,
+                                             ancestor);
+  }
+
+  // We are now in our parent container's coordinate space. Apply our transform
+  // to obtain a bounding box in the parent's coordinate space that encloses us.
+  if (shouldUseTransformFromContainer(container)) {
+    TransformationMatrix t;
+    getTransformFromContainer(container, toLayoutSize(containerOffset), t);
+    transformState.applyTransform(t, accumulation);
+
+    // Use enclosingBoundingBox because we cannot properly compute pixel
+    // snapping for painted elements within the transform since we don't know
+    // the desired subpixel accumulation at this point, and the transform may
+    // include a scale.
+    if (!preserve3D) {
+      transformState.flatten();
+      transformState.setQuad(
+          FloatQuad(transformState.lastPlanarQuad().enclosingBoundingBox()));
+    }
+  } else {
+    transformState.move(toLayoutSize(containerOffset), accumulation);
   }
 
   // FIXME: We ignore the lightweight clipping rect that controls use, since if
   // |o| is in mid-layout, its controlClipRect will be wrong. For overflow clip
   // we use the values cached by the layer.
-  rect.setLocation(topLeft);
-
   if (container->isBox() && container != ancestor &&
       !toLayoutBox(container)->mapScrollingContentsRectToBoxSpace(
-          rect, visualRectFlags))
+          transformState, accumulation, visualRectFlags))
     return false;
 
   if (skipInfo.ancestorSkipped()) {
@@ -2417,27 +2440,35 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
     // ancestor's coordinates.
     LayoutSize containerOffset =
         ancestor->offsetFromAncestorContainer(container);
-    rect.move(-containerOffset);
+    transformState.move(-containerOffset, accumulation);
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
     if (ancestor->style()->position() != EPosition::kFixed &&
-        container->isLayoutView() && position == EPosition::kFixed)
-      rect.move(toLayoutView(container)->offsetForFixedPosition(true));
+        container->isLayoutView() && position == EPosition::kFixed) {
+      transformState.move(toLayoutView(container)->offsetForFixedPosition(true),
+                          accumulation);
+    }
     return true;
   }
 
   if (container->isLayoutView())
-    return toLayoutView(container)->mapToVisualRectInAncestorSpace(
-        ancestor, rect, position == EPosition::kFixed ? IsFixed : 0,
+    return toLayoutView(container)->mapToVisualRectInAncestorSpaceInternal(
+        ancestor, transformState, position == EPosition::kFixed ? IsFixed : 0,
         visualRectFlags);
   else
-    return container->mapToVisualRectInAncestorSpace(ancestor, rect,
-                                                     visualRectFlags);
+    return container->mapToVisualRectInAncestorSpaceInternal(
+        ancestor, transformState, visualRectFlags);
 }
 
-void LayoutBox::inflateVisualRectForFilter(LayoutRect& visualRect) const {
-  if (layer() && layer()->hasFilterInducingProperty())
-    visualRect = layer()->mapLayoutRectForFilter(visualRect);
+void LayoutBox::inflateVisualRectForFilter(
+    TransformState& transformState) const {
+  if (!layer() || !layer()->hasFilterInducingProperty())
+    return;
+
+  transformState.flatten();
+  LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
+  transformState.setQuad(
+      FloatQuad(FloatRect(layer()->mapLayoutRectForFilter(rect))));
 }
 
 void LayoutBox::updateLogicalWidth() {

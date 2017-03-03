@@ -892,9 +892,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
   LayoutRect localVisualRect() const override;
-  bool mapToVisualRectInAncestorSpace(
+  bool mapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      TransformState&,
       VisualRectFlags = DefaultVisualRectFlags) const override;
 
   LayoutUnit containingBlockLogicalHeightForGetComputedStyle() const;
@@ -1235,12 +1235,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual IntSize originAdjustmentForScrollbars() const;
   IntSize scrolledContentOffset() const;
 
-  // Maps a rect in scrolling contents space to box space and apply overflow
-  // clip if needed. Returns true if no clipping applied or the rect actually
-  // intersects the clipping region. If edgeInclusive is true, then this method
-  // may return true even if the resulting rect has zero area.
+  // Maps from scrolling contents space to box space and apply overflow
+  // clip if needed. Returns true if no clipping applied or the flattened quad
+  // bounds actually intersects the clipping region. If edgeInclusive is true,
+  // then this method may return true even if the resulting rect has zero area.
+  //
+  // When applying offsets and not clips, the TransformAccumulation is
+  // respected. If there is a clip, the TransformState is flattened first.
   bool mapScrollingContentsRectToBoxSpace(
-      LayoutRect&,
+      TransformState&,
+      TransformState::TransformAccumulation,
       VisualRectFlags = DefaultVisualRectFlags) const;
 
   virtual bool hasRelativeLogicalWidth() const;
@@ -1568,9 +1572,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void updateBackgroundAttachmentFixedStatusAfterStyleChange();
 
-  void inflateVisualRectForFilter(LayoutRect&) const;
+  void inflateVisualRectForFilter(TransformState&) const;
   void inflateVisualRectForFilterUnderContainer(
-      LayoutRect&,
+      TransformState&,
       const LayoutObject& container,
       const LayoutBoxModelObject* ancestorToStopAt) const;
 

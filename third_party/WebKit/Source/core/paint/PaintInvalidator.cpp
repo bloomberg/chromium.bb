@@ -33,11 +33,12 @@ static LayoutRect slowMapToVisualRectInAncestorSpace(
   }
 
   LayoutRect result(rect);
-  if (object.isLayoutView())
+  if (object.isLayoutView()) {
     toLayoutView(object).mapToVisualRectInAncestorSpace(
         &ancestor, result, InputIsInFrameCoordinates, DefaultVisualRectFlags);
-  else
-    object.mapToVisualRectInAncestorSpace(&ancestor, result);
+  }
+
+  object.mapToVisualRectInAncestorSpace(&ancestor, result);
   return result;
 }
 

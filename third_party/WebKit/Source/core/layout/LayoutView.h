@@ -114,16 +114,24 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   FrameView* frameView() const { return m_frameView; }
 
+  // See comments for the equivalent method on LayoutObject.
+  bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor,
+                                      LayoutRect&,
+                                      MapCoordinatesFlags mode,
+                                      VisualRectFlags) const;
+
   // |ancestor| can be nullptr, which will map the rect to the main frame's
   // space, even if the main frame is remote (or has intermediate remote
   // frames in the chain).
-  bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor,
-                                      LayoutRect&,
-                                      MapCoordinatesFlags,
-                                      VisualRectFlags) const;
-  bool mapToVisualRectInAncestorSpace(
+  bool mapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      TransformState&,
+      MapCoordinatesFlags,
+      VisualRectFlags) const;
+
+  bool mapToVisualRectInAncestorSpaceInternal(
+      const LayoutBoxModelObject* ancestor,
+      TransformState&,
       VisualRectFlags = DefaultVisualRectFlags) const override;
   LayoutSize offsetForFixedPosition(bool includePendingScroll = false) const;
 

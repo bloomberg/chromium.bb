@@ -115,9 +115,9 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
     return !m_columnSetsInvalidated && !m_multiColumnSetList.isEmpty();
   }
 
-  bool mapToVisualRectInAncestorSpace(
+  bool mapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      TransformState&,
       VisualRectFlags = DefaultVisualRectFlags) const override;
 
   LayoutUnit pageLogicalHeightForOffset(LayoutUnit);

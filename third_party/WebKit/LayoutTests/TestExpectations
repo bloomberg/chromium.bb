@@ -738,6 +738,10 @@ crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ P
 crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ Pass Crash Failure ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
+crbug.com/590095 virtual/disable-spinvalidation/paint/invalidation/invalidation-with-scale-transform.html [ NeedsRebaseline ]
+crbug.com/590095 virtual/disable-spinvalidation/paint/invalidation/transform-layout-repaint.html [ NeedsRebaseline ]
+crbug.com/590095 virtual/disable-spinvalidation/paint/invalidation/reflection-repaint-test.html [ NeedsRebaseline ]
+
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 

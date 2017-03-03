@@ -48,9 +48,9 @@ class LayoutSVGBlock : public LayoutBlockFlow {
   const LayoutObject* pushMappingToContainer(
       const LayoutBoxModelObject* ancestorToStopAt,
       LayoutGeometryMap&) const final;
-  bool mapToVisualRectInAncestorSpace(
+  bool mapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      TransformState&,
       VisualRectFlags = DefaultVisualRectFlags) const final;
 
   AffineTransform localSVGTransform() const final { return m_localTransform; }

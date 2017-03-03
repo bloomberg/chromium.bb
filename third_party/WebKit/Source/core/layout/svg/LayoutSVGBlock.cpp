@@ -131,15 +131,19 @@ LayoutRect LayoutSVGBlock::absoluteVisualRect() const {
   return SVGLayoutSupport::visualRectInAncestorSpace(*this, *view());
 }
 
-bool LayoutSVGBlock::mapToVisualRectInAncestorSpace(
+bool LayoutSVGBlock::mapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    TransformState& transformState,
     VisualRectFlags) const {
+  transformState.flatten();
+  LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
   // Convert from local HTML coordinates to local SVG coordinates.
   rect.moveBy(location());
   // Apply other mappings on local SVG coordinates.
-  return SVGLayoutSupport::mapToVisualRectInAncestorSpace(
+  bool retval = SVGLayoutSupport::mapToVisualRectInAncestorSpace(
       *this, ancestor, FloatRect(rect), rect);
+  transformState.setQuad(FloatQuad(FloatRect(rect)));
+  return retval;
 }
 
 bool LayoutSVGBlock::nodeAtPoint(HitTestResult&,

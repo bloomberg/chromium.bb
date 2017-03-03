@@ -45,6 +45,7 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/geometry/TransformState.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
@@ -68,7 +69,6 @@ class LayoutView;
 class ObjectPaintProperties;
 class PaintLayer;
 class PseudoStyleRequest;
-class TransformState;
 
 struct PaintInfo;
 struct PaintInvalidatorContext;
@@ -1403,9 +1403,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // return value will be true only if the clipped rect has non-zero area.
   // See the documentation for LayoutRect::inclusiveIntersect for more
   // information.
-  virtual bool mapToVisualRectInAncestorSpace(
+  bool mapToVisualRectInAncestorSpace(
       const LayoutBoxModelObject* ancestor,
       LayoutRect&,
+      VisualRectFlags = DefaultVisualRectFlags) const;
+
+  // Do not call this method directly. Call mapToVisualRectInAncestorSpace
+  // instead.
+  virtual bool mapToVisualRectInAncestorSpaceInternal(
+      const LayoutBoxModelObject* ancestor,
+      TransformState&,
       VisualRectFlags = DefaultVisualRectFlags) const;
 
   // Allows objects to adjust |visualEffect|, which is in the space of the

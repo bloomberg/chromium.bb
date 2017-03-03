@@ -1193,9 +1193,9 @@ LayoutRect LayoutInline::visualOverflowRect() const {
   return overflowRect;
 }
 
-bool LayoutInline::mapToVisualRectInAncestorSpace(
+bool LayoutInline::mapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    TransformState& transformState,
     VisualRectFlags visualRectFlags) const {
   if (ancestor == this)
     return true;
@@ -1205,26 +1205,37 @@ bool LayoutInline::mapToVisualRectInAncestorSpace(
   if (!container)
     return true;
 
+  bool preserve3D = container->style()->preserves3D() || style()->preserves3D();
+
+  TransformState::TransformAccumulation accumulation =
+      preserve3D ? TransformState::AccumulateTransform
+                 : TransformState::FlattenTransform;
+
   if (style()->hasInFlowPosition() && layer()) {
     // Apply the in-flow position offset when invalidating a rectangle. The
     // layer is translated, but the layout box isn't, so we need to do this to
     // get the right dirty rect. Since this is called from LayoutObject::
     // setStyle, the relative position flag on the LayoutObject has been
     // cleared, so use the one on the style().
-    rect.move(layer()->offsetForInFlowPosition());
+    transformState.move(layer()->offsetForInFlowPosition(), accumulation);
   }
 
   LayoutBox* containerBox =
       container->isBox() ? toLayoutBox(container) : nullptr;
   if (containerBox && container != ancestor &&
-      !containerBox->mapScrollingContentsRectToBoxSpace(rect, visualRectFlags))
+      !containerBox->mapScrollingContentsRectToBoxSpace(
+          transformState, accumulation, visualRectFlags))
     return false;
 
   // TODO(wkorman): Generalize Ruby specialization and/or document more clearly.
-  if (containerBox && !isRuby())
+  if (containerBox && !isRuby()) {
+    transformState.flatten();
+    LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
     containerBox->flipForWritingMode(rect);
-  return container->mapToVisualRectInAncestorSpace(ancestor, rect,
-                                                   visualRectFlags);
+    transformState.setQuad(FloatQuad(FloatRect(rect)));
+  }
+  return container->mapToVisualRectInAncestorSpaceInternal(
+      ancestor, transformState, visualRectFlags);
 }
 
 LayoutSize LayoutInline::offsetFromContainer(

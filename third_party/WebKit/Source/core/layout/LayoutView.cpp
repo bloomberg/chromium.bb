@@ -465,36 +465,62 @@ void LayoutView::invalidatePaintForViewAndCompositedLayers() {
 bool LayoutView::mapToVisualRectInAncestorSpace(
     const LayoutBoxModelObject* ancestor,
     LayoutRect& rect,
+    MapCoordinatesFlags mode,
     VisualRectFlags visualRectFlags) const {
-  return mapToVisualRectInAncestorSpace(ancestor, rect, 0, visualRectFlags);
+  TransformState transformState(TransformState::ApplyTransformDirection,
+                                FloatQuad(FloatRect(rect)));
+  bool retval = mapToVisualRectInAncestorSpaceInternal(ancestor, transformState,
+                                                       mode, visualRectFlags);
+  transformState.flatten();
+  rect = LayoutRect(transformState.lastPlanarQuad().boundingBox());
+  return retval;
 }
 
-bool LayoutView::mapToVisualRectInAncestorSpace(
+bool LayoutView::mapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    TransformState& transformState,
+    VisualRectFlags visualRectFlags) const {
+  return mapToVisualRectInAncestorSpaceInternal(ancestor, transformState, 0,
+                                                visualRectFlags);
+}
+
+bool LayoutView::mapToVisualRectInAncestorSpaceInternal(
+    const LayoutBoxModelObject* ancestor,
+    TransformState& transformState,
     MapCoordinatesFlags mode,
     VisualRectFlags visualRectFlags) const {
   if (mode & IsFixed)
-    rect.move(offsetForFixedPosition(true));
+    transformState.move(offsetForFixedPosition(true));
 
   // Apply our transform if we have one (because of full page zooming).
-  if (layer() && layer()->transform())
-    rect = layer()->transform()->mapRect(rect);
+  if (layer() && layer()->transform()) {
+    transformState.applyTransform(layer()->currentTransform(),
+                                  TransformState::FlattenTransform);
+  }
+
+  transformState.flatten();
 
   if (ancestor == this)
     return true;
 
   Element* owner = document().localOwner();
-  if (!owner)
-    return frameView()->mapToVisualRectInTopFrameSpace(rect);
+  if (!owner) {
+    LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
+    bool retval = frameView()->mapToVisualRectInTopFrameSpace(rect);
+    transformState.setQuad(FloatQuad(FloatRect(rect)));
+    return retval;
+  }
 
   if (LayoutBox* obj = owner->layoutBox()) {
+    LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
     if (!(mode & InputIsInFrameCoordinates)) {
       // Intersect the viewport with the visual rect.
       LayoutRect viewRectangle = viewRect();
       if (visualRectFlags & EdgeInclusive) {
-        if (!rect.inclusiveIntersect(viewRectangle))
+        if (!rect.inclusiveIntersect(viewRectangle)) {
+          transformState.setQuad(FloatQuad(FloatRect(rect)));
           return false;
+        }
       } else {
         rect.intersect(viewRectangle);
       }
@@ -510,11 +536,14 @@ bool LayoutView::mapToVisualRectInAncestorSpace(
 
     // Adjust for frame border.
     rect.move(obj->contentBoxOffset());
-    return obj->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
+    transformState.setQuad(FloatQuad(FloatRect(rect)));
+
+    return obj->mapToVisualRectInAncestorSpaceInternal(ancestor, transformState,
+                                                       visualRectFlags);
   }
 
   // This can happen, e.g., if the iframe element has display:none.
-  rect = LayoutRect();
+  transformState.setQuad(FloatQuad(FloatRect()));
   return false;
 }
 

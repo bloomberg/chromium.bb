@@ -85,15 +85,18 @@ void LayoutFlowThread::validateColumnSets() {
   generateColumnSetIntervalTree();
 }
 
-bool LayoutFlowThread::mapToVisualRectInAncestorSpace(
+bool LayoutFlowThread::mapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    TransformState& transformState,
     VisualRectFlags visualRectFlags) const {
   // A flow thread should never be an invalidation container.
   DCHECK(ancestor != this);
+  transformState.flatten();
+  LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
   rect = fragmentsBoundingBox(rect);
-  return LayoutBlockFlow::mapToVisualRectInAncestorSpace(ancestor, rect,
-                                                         visualRectFlags);
+  transformState.setQuad(FloatQuad(FloatRect(rect)));
+  return LayoutBlockFlow::mapToVisualRectInAncestorSpaceInternal(
+      ancestor, transformState, visualRectFlags);
 }
 
 void LayoutFlowThread::layout() {

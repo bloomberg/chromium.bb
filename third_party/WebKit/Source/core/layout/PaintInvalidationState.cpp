@@ -499,11 +499,12 @@ static void slowMapToVisualRectInAncestorSpace(
   if (object.isBox())
     toLayoutBox(&object)->flipForWritingMode(rect);
 
-  if (object.isLayoutView())
+  if (object.isLayoutView()) {
     toLayoutView(object).mapToVisualRectInAncestorSpace(
         &ancestor, rect, InputIsInFrameCoordinates, DefaultVisualRectFlags);
-  else
+  } else {
     object.mapToVisualRectInAncestorSpace(&ancestor, rect);
+  }
 }
 
 void PaintInvalidationState::mapLocalRectToPaintInvalidationContainer(

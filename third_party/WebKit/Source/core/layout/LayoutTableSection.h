@@ -322,9 +322,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   int paginationStrutForRow(LayoutTableRow*, LayoutUnit logicalOffset) const;
 
-  bool mapToVisualRectInAncestorSpace(
+  bool mapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      TransformState&,
       VisualRectFlags = DefaultVisualRectFlags) const override;
 
   bool isRepeatingHeaderGroup() const;
