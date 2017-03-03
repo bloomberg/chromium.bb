@@ -13,6 +13,7 @@ namespace net {
 // to/from host order (can be either little or big endian depending on the
 // platform).
 class QuicEndian {
+ public:
   // Convert |x| from host order (can be either little or big endian depending
   // on the platform) to network order (big endian).
   static uint16_t HostToNet16(uint16_t x) {
@@ -35,6 +36,11 @@ class QuicEndian {
   }
   static uint64_t NetToHost64(uint64_t x) {
     return QuicEndianImpl::NetToHost64(x);
+  }
+
+  // Returns true if current host order is little endian.
+  static bool HostIsLittleEndian() {
+    return QuicEndianImpl::HostIsLittleEndian();
   }
 };
 

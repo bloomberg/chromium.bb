@@ -4481,6 +4481,7 @@ test("net_unittests") {
     "quic/core/quic_versions_test.cc",
     "quic/core/quic_write_blocked_list_test.cc",
     "quic/core/spdy_utils_test.cc",
+    "quic/platform/api/quic_endian_test.cc",
     "quic/platform/api/quic_estimate_memory_usage.h",
     "quic/platform/api/quic_hostname_utils_test.cc",
     "quic/platform/api/quic_lru_cache_test.cc",
