@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/task_runner.h"
-#include "net/base/crypto_module.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/crypto_module.h"
 #include "net/cert/x509_certificate.h"
 
 using content::BrowserThread;

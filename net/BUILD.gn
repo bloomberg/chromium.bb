@@ -397,9 +397,6 @@ component("net") {
       "base/cache_type.h",
       "base/chunked_upload_data_stream.cc",
       "base/chunked_upload_data_stream.h",
-      "base/crypto_module.h",
-      "base/crypto_module_nss.cc",
-      "base/crypto_module_openssl.cc",
       "base/data_url.cc",
       "base/data_url.h",
       "base/elements_upload_data_stream.cc",
@@ -1693,7 +1690,6 @@ component("net") {
 
     if (!use_openssl_certs) {
       sources -= [
-        "base/crypto_module_openssl.cc",
         "cert/cert_database_openssl.cc",
         "cert/cert_verify_proc_openssl.cc",
         "cert/cert_verify_proc_openssl.h",
@@ -1726,7 +1722,6 @@ component("net") {
 
     if (!use_nss_certs) {
       sources -= [
-        "base/crypto_module_nss.cc",
         "cert/cert_database_nss.cc",
         "cert/internal/cert_issuer_source_nss.cc",
         "cert/internal/cert_issuer_source_nss.h",

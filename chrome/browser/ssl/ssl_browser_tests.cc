@@ -114,7 +114,6 @@
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/net/nss_context.h"
-#include "net/base/crypto_module.h"
 #include "net/cert/nss_cert_database.h"
 #endif  // defined(USE_NSS_CERTS)
 

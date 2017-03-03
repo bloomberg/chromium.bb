@@ -22,7 +22,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/scoped_nss_types.h"
-#include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/x509_certificate.h"
