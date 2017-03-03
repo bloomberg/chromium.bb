@@ -243,7 +243,6 @@ class BlinkPerfEvents(_BlinkPerfBenchmark):
 
 
 @benchmark.Disabled('win8')  # http://crbug.com/462350
-@benchmark.Disabled('win-reference')  # http://crbug.com/642884
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   tag = 'layout'
   subdir = 'Layout'
