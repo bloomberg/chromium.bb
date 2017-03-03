@@ -38,9 +38,6 @@ namespace {
 
 constexpr char kMimeType[] = "application/vnd.chrome.ukm";
 
-// The UKM server's URL.
-constexpr char kDefaultServerUrl[] = "https://clients4.google.com/ukm";
-
 // The delay, in seconds, after starting recording before doing expensive
 // initialization work.
 constexpr int kInitializationDelaySeconds = 5;
@@ -61,15 +58,9 @@ constexpr int kMinPersistedBytes = 300000;
 // limit is exceeded.
 constexpr size_t kMaxLogRetransmitSize = 100 * 1024;
 
-// Maximum number of Sources we'll keep in memory before discarding any
-// new ones being added.
-const size_t kMaxSources = 500;
-
-// Maximum number of Entries we'll keep in memory before discarding any
-// new ones being added.
-const size_t kMaxEntries = 5000;
-
+// Gets the UKM Server URL.
 std::string GetServerUrl() {
+  constexpr char kDefaultServerUrl[] = "https://clients4.google.com/ukm";
   std::string server_url =
       base::GetFieldTrialParamValueByFeature(kUkmFeature, "ServerUrl");
   if (!server_url.empty())
@@ -77,11 +68,29 @@ std::string GetServerUrl() {
   return kDefaultServerUrl;
 }
 
+// Gets the maximum number of Sources we'll keep in memory before discarding any
+// new ones being added.
+size_t GetMaxSources() {
+  constexpr size_t kDefaultMaxSources = 500;
+  return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+      kUkmFeature, "MaxSources", kDefaultMaxSources));
+}
+
+// Gets the maximum number of Entries we'll keep in memory before discarding any
+// new ones being added.
+size_t GetMaxEntries() {
+  constexpr size_t kDefaultMaxEntries = 5000;
+  return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+      kUkmFeature, "MaxEntries", kDefaultMaxEntries));
+}
+
+// True if we should record the initial_url field of the UKM Source proto.
 bool ShouldRecordInitialUrl() {
   return base::GetFieldTrialParamByFeatureAsBool(kUkmFeature,
                                                  "RecordInitialUrl", false);
 }
 
+// True if we should record session ids in the UKM Report proto.
 bool ShouldRecordSessionId() {
   return base::GetFieldTrialParamByFeatureAsBool(kUkmFeature, "RecordSessionId",
                                                  false);
@@ -418,7 +427,7 @@ void UkmService::RecordSource(std::unique_ptr<UkmSource> source) {
     RecordDroppedSource(DroppedDataReason::RECORDING_DISABLED);
     return;
   }
-  if (sources_.size() >= kMaxSources) {
+  if (sources_.size() >= GetMaxSources()) {
     RecordDroppedSource(DroppedDataReason::MAX_HIT);
     return;
   }
@@ -459,7 +468,7 @@ void UkmService::UpdateSourceURL(int32_t source_id, const GURL& url) {
     return;
   }
 
-  if (sources_.size() >= kMaxSources) {
+  if (sources_.size() >= GetMaxSources()) {
     RecordDroppedSource(DroppedDataReason::MAX_HIT);
     return;
   }
@@ -476,7 +485,7 @@ void UkmService::AddEntry(std::unique_ptr<UkmEntry> entry) {
     RecordDroppedEntry(DroppedDataReason::RECORDING_DISABLED);
     return;
   }
-  if (entries_.size() >= kMaxEntries) {
+  if (entries_.size() >= GetMaxEntries()) {
     RecordDroppedEntry(DroppedDataReason::MAX_HIT);
     return;
   }

@@ -423,21 +423,51 @@ TEST_F(UkmServiceTest, RecordSessionId) {
 
     ClearPrefs();
     UkmService service(&prefs_, &client_);
-    EXPECT_EQ(GetPersistedLogCount(), 0);
+    EXPECT_EQ(0, GetPersistedLogCount());
     service.Initialize();
     task_runner_->RunUntilIdle();
     service.EnableRecording();
     service.EnableReporting();
 
-    int32_t id = UkmService::GetNewSourceID();
+    auto id = UkmService::GetNewSourceID();
     service.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
     service.Flush();
-    EXPECT_EQ(GetPersistedLogCount(), 1);
+    EXPECT_EQ(1, GetPersistedLogCount());
 
-    Report proto_report = GetPersistedReport();
+    auto proto_report = GetPersistedReport();
     EXPECT_EQ(should_record_session_id, proto_report.has_session_id());
   }
+}
+
+TEST_F(UkmServiceTest, SourceSize) {
+  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+  // Set a threshold of number of Sources via Feature Params.
+  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                                {{"MaxSources", "2"}});
+
+  ClearPrefs();
+  UkmService service(&prefs_, &client_);
+  EXPECT_EQ(0, GetPersistedLogCount());
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  auto id = UkmService::GetNewSourceID();
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
+  id = UkmService::GetNewSourceID();
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar2"));
+  id = UkmService::GetNewSourceID();
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar3"));
+
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+
+  auto proto_report = GetPersistedReport();
+  // Note, 2 instead of 3 sources, since we overrode the max number of sources
+  // via Feature params.
+  EXPECT_EQ(2, proto_report.sources_size());
 }
 
 }  // namespace ukm
