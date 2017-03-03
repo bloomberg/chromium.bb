@@ -79,6 +79,44 @@
 #define GBM_BO_USE_CURSOR GBM_BO_USE_CURSOR_64X64
 #endif
 
+/**
+ * List of properties attached to a DRM connector
+ */
+enum wdrm_connector_property {
+	WDRM_CONNECTOR_EDID = 0,
+	WDRM_CONNECTOR_DPMS,
+	WDRM_CONNECTOR__COUNT
+};
+
+/**
+ * Represents the values of an enum-type KMS property
+ */
+struct drm_property_enum_info {
+	const char *name; /**< name as string (static, not freed) */
+	bool valid; /**< true if value is supported; ignore if false */
+	uint64_t value; /**< raw value */
+};
+
+/**
+ * Holds information on a DRM property, including its ID and the enum
+ * values it holds.
+ *
+ * DRM properties are allocated dynamically, and maintained as DRM objects
+ * within the normal object ID space; they thus do not have a stable ID
+ * to refer to. This includes enum values, which must be referred to by
+ * integer values, but these are not stable.
+ *
+ * drm_property_info allows a cache to be maintained where Weston can use
+ * enum values internally to refer to properties, with the mapping to DRM
+ * ID values being maintained internally.
+ */
+struct drm_property_info {
+	const char *name; /**< name as string (static, not freed) */
+	uint32_t prop_id; /**< KMS property object ID */
+	unsigned int num_enum_values; /**< number of enum values */
+	struct drm_property_enum_info *enum_values; /**< array of enum values */
+};
+
 struct drm_backend {
 	struct weston_backend base;
 	struct weston_compositor *compositor;
@@ -215,7 +253,9 @@ struct drm_output {
 	uint32_t connector_id;
 	drmModeCrtcPtr original_crtc;
 	struct drm_edid edid;
-	drmModePropertyPtr dpms_prop;
+
+	/* Holds the properties for the connector */
+	struct drm_property_info props_conn[WDRM_CONNECTOR__COUNT];
 
 	enum dpms_enum dpms;
 	struct backlight *backlight;
@@ -311,6 +351,208 @@ drm_output_pageflip_timer_create(struct drm_output *output)
 	}
 
 	return 0;
+}
+
+/**
+ * Get the current value of a KMS property
+ *
+ * Given a drmModeObjectGetProperties return, as well as the drm_property_info
+ * for the target property, return the current value of that property,
+ * with an optional default. If the property is a KMS enum type, the return
+ * value will be translated into the appropriate internal enum.
+ *
+ * If the property is not present, the default value will be returned.
+ *
+ * @param info Internal structure for property to look up
+ * @param props Raw KMS properties for the target object
+ * @param def Value to return if property is not found
+ */
+static uint64_t
+drm_property_get_value(struct drm_property_info *info,
+		       drmModeObjectPropertiesPtr props,
+		       uint64_t def)
+{
+	unsigned int i;
+
+	if (info->prop_id == 0)
+		return def;
+
+	for (i = 0; i < props->count_props; i++) {
+		unsigned int j;
+
+		if (props->props[i] != info->prop_id)
+			continue;
+
+		/* Simple (non-enum) types can return the value directly */
+		if (info->num_enum_values == 0)
+			return props->prop_values[i];
+
+		/* Map from raw value to enum value */
+		for (j = 0; j < info->num_enum_values; j++) {
+			if (!info->enum_values[j].valid)
+				continue;
+			if (info->enum_values[j].value != props->prop_values[i])
+				continue;
+
+			return j;
+		}
+
+		/* We don't have a mapping for this enum; return default. */
+		break;
+	}
+
+	return def;
+}
+
+/**
+ * Cache DRM property values
+ *
+ * Update a per-object array of drm_property_info structures, given the
+ * DRM properties of the object.
+ *
+ * Call this every time an object newly appears (note that only connectors
+ * can be hotplugged), the first time it is seen, or when its status changes
+ * in a way which invalidates the potential property values (currently, the
+ * only case for this is connector hotplug).
+ *
+ * This updates the property IDs and enum values within the drm_property_info
+ * array.
+ *
+ * DRM property enum values are dynamic at runtime; the user must query the
+ * property to find out the desired runtime value for a requested string
+ * name. Using the 'type' field on planes as an example, there is no single
+ * hardcoded constant for primary plane types; instead, the property must be
+ * queried at runtime to find the value associated with the string "Primary".
+ *
+ * This helper queries and caches the enum values, to allow us to use a set
+ * of compile-time-constant enums portably across various implementations.
+ * The values given in enum_names are searched for, and stored in the
+ * same-indexed field of the map array.
+ *
+ * @param b DRM backend object
+ * @param src DRM property info array to source from
+ * @param info DRM property info array to copy into
+ * @param num_infos Number of entries in the source array
+ * @param props DRM object properties for the object
+ */
+static void
+drm_property_info_populate(struct drm_backend *b,
+		           const struct drm_property_info *src,
+			   struct drm_property_info *info,
+			   unsigned int num_infos,
+			   drmModeObjectProperties *props)
+{
+	drmModePropertyRes *prop;
+	unsigned i, j;
+
+	for (i = 0; i < num_infos; i++) {
+		unsigned int j;
+
+		info[i].name = src[i].name;
+		info[i].prop_id = 0;
+		info[i].num_enum_values = src[i].num_enum_values;
+
+		if (src[i].num_enum_values == 0)
+			continue;
+
+		info[i].enum_values =
+			malloc(src[i].num_enum_values *
+			       sizeof(*info[i].enum_values));
+		assert(info[i].enum_values);
+		for (j = 0; j < info[i].num_enum_values; j++) {
+			info[i].enum_values[j].name = src[i].enum_values[j].name;
+			info[i].enum_values[j].valid = false;
+		}
+	}
+
+	for (i = 0; i < props->count_props; i++) {
+		unsigned int k;
+
+		prop = drmModeGetProperty(b->drm.fd, props->props[i]);
+		if (!prop)
+			continue;
+
+		for (j = 0; j < num_infos; j++) {
+			if (!strcmp(prop->name, info[j].name))
+				break;
+		}
+
+		/* We don't know/care about this property. */
+		if (j == num_infos) {
+#ifdef DEBUG
+			weston_log("DRM debug: unrecognized property %u '%s'\n",
+				   prop->prop_id, prop->name);
+#endif
+			drmModeFreeProperty(prop);
+			continue;
+		}
+
+		if (info[j].num_enum_values == 0 &&
+		    (prop->flags & DRM_MODE_PROP_ENUM)) {
+			weston_log("DRM: expected property %s to not be an"
+			           " enum, but it is; ignoring\n", prop->name);
+			drmModeFreeProperty(prop);
+			continue;
+		}
+
+		info[j].prop_id = props->props[i];
+
+		if (info[j].num_enum_values == 0) {
+			drmModeFreeProperty(prop);
+			continue;
+		}
+
+		if (!(prop->flags & DRM_MODE_PROP_ENUM)) {
+			weston_log("DRM: expected property %s to be an enum,"
+				   " but it is not; ignoring\n", prop->name);
+			drmModeFreeProperty(prop);
+			info[j].prop_id = 0;
+			continue;
+		}
+
+		for (k = 0; k < info[j].num_enum_values; k++) {
+			int l;
+
+			for (l = 0; l < prop->count_enums; l++) {
+				if (!strcmp(prop->enums[l].name,
+					    info[j].enum_values[k].name))
+					break;
+			}
+
+			if (l == prop->count_enums)
+				continue;
+
+			info[j].enum_values[k].valid = true;
+			info[j].enum_values[k].value = prop->enums[l].value;
+		}
+
+		drmModeFreeProperty(prop);
+	}
+
+#ifdef DEBUG
+	for (i = 0; i < num_infos; i++) {
+		if (info[i].prop_id == 0)
+			weston_log("DRM warning: property '%s' missing\n",
+				   info[i].name);
+	}
+#endif
+}
+
+/**
+ * Free DRM property information
+ *
+ * Frees all memory associated with a DRM property info array.
+ *
+ * @param info DRM property info array
+ * @param num_props Number of entries in array to free
+ */
+static void
+drm_property_info_free(struct drm_property_info *info, int num_props)
+{
+	int i;
+
+	for (i = 0; i < num_props; i++)
+		free(info[i].enum_values);
 }
 
 static void
@@ -2046,39 +2288,21 @@ drm_set_backlight(struct weston_output *output_base, uint32_t value)
 	backlight_set_brightness(output->backlight, new_brightness);
 }
 
-static drmModePropertyPtr
-drm_get_prop(int fd, drmModeConnectorPtr connector, const char *name)
-{
-	drmModePropertyPtr props;
-	int i;
-
-	for (i = 0; i < connector->count_props; i++) {
-		props = drmModeGetProperty(fd, connector->props[i]);
-		if (!props)
-			continue;
-
-		if (!strcmp(props->name, name))
-			return props;
-
-		drmModeFreeProperty(props);
-	}
-
-	return NULL;
-}
-
 static void
 drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
 {
 	struct drm_output *output = to_drm_output(output_base);
 	struct weston_compositor *ec = output_base->compositor;
 	struct drm_backend *b = to_drm_backend(ec);
+	struct drm_property_info *prop =
+		&output->props_conn[WDRM_CONNECTOR_DPMS];
 	int ret;
 
-	if (!output->dpms_prop)
+	if (!prop->prop_id)
 		return;
 
 	ret = drmModeConnectorSetProperty(b->drm.fd, output->connector_id,
-				 	  output->dpms_prop->prop_id, level);
+					  prop->prop_id, level);
 	if (ret) {
 		weston_log("DRM: DPMS: failed property set for %s\n",
 			   output->base.name);
@@ -2433,26 +2657,20 @@ edid_parse(struct drm_edid *edid, const uint8_t *data, size_t length)
 }
 
 static void
-find_and_parse_output_edid(struct drm_backend *b,
-			   struct drm_output *output,
-			   drmModeConnector *connector)
+find_and_parse_output_edid(struct drm_backend *b, struct drm_output *output,
+			   drmModeObjectPropertiesPtr props)
 {
 	drmModePropertyBlobPtr edid_blob = NULL;
-	drmModePropertyPtr property;
-	int i;
+	uint32_t blob_id;
 	int rc;
 
-	for (i = 0; i < connector->count_props && !edid_blob; i++) {
-		property = drmModeGetProperty(b->drm.fd, connector->props[i]);
-		if (!property)
-			continue;
-		if ((property->flags & DRM_MODE_PROP_BLOB) &&
-		    !strcmp(property->name, "EDID")) {
-			edid_blob = drmModeGetPropertyBlob(b->drm.fd,
-							   connector->prop_values[i]);
-		}
-		drmModeFreeProperty(property);
-	}
+	blob_id =
+		drm_property_get_value(&output->props_conn[WDRM_CONNECTOR_EDID],
+				       props, 0);
+	if (!blob_id)
+		return;
+
+	edid_blob = drmModeGetPropertyBlob(b->drm.fd, blob_id);
 	if (!edid_blob)
 		return;
 
@@ -2743,19 +2961,17 @@ drm_output_enable(struct weston_output *base)
 	struct drm_backend *b = to_drm_backend(base->compositor);
 	struct weston_mode *m;
 
-	output->dpms_prop = drm_get_prop(b->drm.fd, output->connector, "DPMS");
-
 	if (b->pageflip_timeout)
 		drm_output_pageflip_timer_create(output);
 
 	if (b->use_pixman) {
 		if (drm_output_init_pixman(output, b) < 0) {
 			weston_log("Failed to init output pixman state\n");
-			goto err_free;
+			goto err;
 		}
 	} else if (drm_output_init_egl(output, b) < 0) {
 		weston_log("Failed to init output gl state\n");
-		goto err_free;
+		goto err;
 	}
 
 	if (output->backlight) {
@@ -2778,7 +2994,6 @@ drm_output_enable(struct weston_output *base)
 
 	output->base.subpixel = drm_subpixel_to_wayland(output->connector->subpixel);
 
-	find_and_parse_output_edid(b, output, output->connector);
 	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
 	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
 		output->base.connection_internal = true;
@@ -2807,9 +3022,7 @@ drm_output_enable(struct weston_output *base)
 
 	return 0;
 
-err_free:
-	drmModeFreeProperty(output->dpms_prop);
-
+err:
 	return -1;
 }
 
@@ -2833,8 +3046,6 @@ drm_output_deinit(struct weston_output *base)
 
 	weston_plane_release(&output->scanout_plane);
 	weston_plane_release(&output->cursor_plane);
-
-	drmModeFreeProperty(output->dpms_prop);
 
 	/* Turn off hardware cursor */
 	drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
@@ -2875,6 +3086,8 @@ drm_output_destroy(struct weston_output *base)
 		wl_event_source_remove(output->pageflip_timer);
 
 	weston_output_destroy(&output->base);
+
+	drm_property_info_free(output->props_conn, WDRM_CONNECTOR__COUNT);
 
 	drmModeFreeConnector(output->connector);
 
@@ -2927,8 +3140,14 @@ create_output_for_connector(struct drm_backend *b,
 			    struct udev_device *drm_device)
 {
 	struct drm_output *output;
+	drmModeObjectPropertiesPtr props;
 	struct drm_mode *drm_mode;
 	int i;
+
+	static const struct drm_property_info connector_props[] = {
+		[WDRM_CONNECTOR_EDID] = { .name = "EDID" },
+		[WDRM_CONNECTOR_DPMS] = { .name = "DPMS" },
+	};
 
 	i = find_crtc_for_connector(b, resources, connector);
 	if (i < 0) {
@@ -2957,6 +3176,17 @@ create_output_for_connector(struct drm_backend *b,
 
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
+
+	props = drmModeObjectGetProperties(b->drm.fd, connector->connector_id,
+					   DRM_MODE_OBJECT_CONNECTOR);
+	if (!props) {
+		weston_log("failed to get connector properties\n");
+		goto err;
+	}
+	drm_property_info_populate(b, connector_props, output->props_conn,
+				   WDRM_CONNECTOR__COUNT, props);
+	find_and_parse_output_edid(b, output, props);
+	drmModeFreeObjectProperties(props);
 
 	weston_output_init(&output->base, b->compositor);
 
@@ -2999,6 +3229,8 @@ create_outputs(struct drm_backend *b, struct udev_device *drm_device)
 	b->max_height = resources->max_height;
 
 	for (i = 0; i < resources->count_connectors; i++) {
+		int ret;
+
 		connector = drmModeGetConnector(b->drm.fd,
 						resources->connectors[i]);
 		if (connector == NULL)
@@ -3007,9 +3239,10 @@ create_outputs(struct drm_backend *b, struct udev_device *drm_device)
 		if (connector->connection == DRM_MODE_CONNECTED &&
 		    (b->connector == 0 ||
 		     connector->connector_id == b->connector)) {
-			if (create_output_for_connector(b, resources,
-							connector, drm_device) < 0)
-				continue;
+			ret = create_output_for_connector(b, resources,
+							  connector, drm_device);
+			if (ret < 0)
+				weston_log("failed to create new connector\n");
 		} else {
 			drmModeFreeConnector(connector);
 		}
