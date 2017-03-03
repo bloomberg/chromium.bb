@@ -11,6 +11,8 @@
 
 #include "components/translate/core/browser/translate_ranker.h"
 
+class GURL;
+
 namespace metrics {
 class TranslateEventProto;
 }
@@ -42,8 +44,8 @@ class MockTranslateRanker : public TranslateRanker {
   bool ShouldOfferTranslation(const TranslatePrefs& translate_prefs,
                               const std::string& src_lang,
                               const std::string& dst_lang) override;
-  void AddTranslateEvent(
-      const metrics::TranslateEventProto& translate_event) override;
+  void AddTranslateEvent(const metrics::TranslateEventProto& translate_event,
+                         const GURL& url) override;
   void FlushTranslateEvents(
       std::vector<metrics::TranslateEventProto>* events) override;
 

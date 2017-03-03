@@ -39,7 +39,7 @@ std::unique_ptr<KeyedService> TranslateRankerFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   return base::MakeUnique<TranslateRankerImpl>(
       TranslateRankerImpl::GetModelPath(browser_state->GetStatePath()),
-      TranslateRankerImpl::GetModelURL());
+      TranslateRankerImpl::GetModelURL(), nullptr /* ukm::UkmService */);
 }
 
 web::BrowserState* TranslateRankerFactory::GetBrowserStateToUse(

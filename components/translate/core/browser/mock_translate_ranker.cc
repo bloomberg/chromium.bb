@@ -5,6 +5,7 @@
 #include "components/translate/core/browser/mock_translate_ranker.h"
 
 #include "components/metrics/proto/translate_event.pb.h"
+#include "url/gurl.h"
 
 namespace translate {
 namespace testing {
@@ -37,7 +38,8 @@ bool MockTranslateRanker::ShouldOfferTranslation(
 }
 
 void MockTranslateRanker::AddTranslateEvent(
-    const metrics::TranslateEventProto& translate_event) {
+    const metrics::TranslateEventProto& translate_event,
+    const GURL& /* url */) {
   event_cache_.push_back(translate_event);
 }
 

@@ -24,6 +24,10 @@ class PrefRegistrySimple;
 class PrefService;
 class UkmPageLoadMetricsObserver;
 
+namespace translate {
+class TranslateRankerImpl;
+}
+
 namespace metrics {
 class MetricsLogUploader;
 class MetricsServiceClient;
@@ -105,6 +109,7 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
 
  private:
   friend UkmPageLoadMetricsObserver;
+  friend translate::TranslateRankerImpl;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,
