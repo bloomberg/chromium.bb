@@ -19,6 +19,7 @@
 #include "components/user_manager/user_manager.h"
 
 class ArcAppTest;
+class SessionControllerClientTest;
 class Profile;
 
 namespace base {
@@ -167,11 +168,11 @@ class ProfileHelper
   friend class PrinterDetectorAppSearchEnabledTest;
   friend class ProfileHelperTest;
   friend class ProfileListChromeOSTest;
-  friend class SessionStateDelegateChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
   friend class arc::SyncArcPackageHelper;
   friend class ash::test::MultiUserWindowManagerChromeOSTest;
   friend class ::ArcAppTest;
+  friend class ::SessionControllerClientTest;
   friend class ::test::BrowserFinderChromeOSTest;
 
   // Called when signin profile is cleared.

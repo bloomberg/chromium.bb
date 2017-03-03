@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 
 #include <memory>
 #include <string>
@@ -28,7 +28,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+using chromeos::FakeChromeUserManager;
 
 namespace {
 
@@ -36,7 +36,7 @@ const char* kUser = "user@test.com";
 
 // Weak ptr to PolicyCertVerifier - object is freed in test destructor once
 // we've ensured the profile has been shut down.
-policy::PolicyCertVerifier* g_policy_cert_verifier_for_factory = NULL;
+policy::PolicyCertVerifier* g_policy_cert_verifier_for_factory = nullptr;
 
 std::unique_ptr<KeyedService> CreateTestPolicyCertService(
     content::BrowserContext* context) {
@@ -47,12 +47,10 @@ std::unique_ptr<KeyedService> CreateTestPolicyCertService(
 
 }  // namespace
 
-class SessionStateDelegateChromeOSTest : public testing::Test {
+class SessionControllerClientTest : public testing::Test {
  protected:
-  SessionStateDelegateChromeOSTest() : user_manager_(NULL) {
-  }
-
-  ~SessionStateDelegateChromeOSTest() override {}
+  SessionControllerClientTest() {}
+  ~SessionControllerClientTest() override {}
 
   void SetUp() override {
     // Initialize the UserManager singleton to a fresh FakeChromeUserManager
@@ -61,18 +59,15 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(user_manager_));
 
-    // Create our SessionStateDelegate to experiment with.
-    session_state_delegate_.reset(new SessionStateDelegateChromeos());
     testing::Test::SetUp();
   }
 
   void TearDown() override {
     testing::Test::TearDown();
-    session_state_delegate_.reset();
     user_manager_enabler_.reset();
-    user_manager_ = NULL;
+    user_manager_ = nullptr;
     // Clear our cached pointer to the PolicyCertVerifier.
-    g_policy_cert_verifier_for_factory = NULL;
+    g_policy_cert_verifier_for_factory = nullptr;
     profile_manager_.reset();
 
     // We must ensure that the PolicyCertVerifier outlives the
@@ -99,9 +94,6 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
   }
 
   FakeChromeUserManager* user_manager() { return user_manager_; }
-  SessionStateDelegateChromeos* session_state_delegate() {
-    return session_state_delegate_.get();
-  }
 
   void InitForMultiProfile() {
     profile_manager_.reset(
@@ -126,27 +118,26 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
 
  private:
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
-  std::unique_ptr<SessionStateDelegateChromeos> session_state_delegate_;
 
-  // Not owned.
-  FakeChromeUserManager* user_manager_;
+  // Owned by |user_manager_enabler_|.
+  FakeChromeUserManager* user_manager_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateChromeOSTest);
+  DISALLOW_COPY_AND_ASSIGN(SessionControllerClientTest);
 };
 
 // Make sure that cycling one user does not cause any harm.
-TEST_F(SessionStateDelegateChromeOSTest, CyclingOneUser) {
+TEST_F(SessionControllerClientTest, CyclingOneUser) {
   UserAddedToSession("firstuser@test.com");
 
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(ash::CycleUserDirection::NEXT);
+  SessionControllerClient::DoCycleActiveUser(ash::CycleUserDirection::NEXT);
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(ash::CycleUserDirection::PREVIOUS);
+  SessionControllerClient::DoCycleActiveUser(ash::CycleUserDirection::PREVIOUS);
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
 // Cycle three users forwards and backwards to see that it works.
-TEST_F(SessionStateDelegateChromeOSTest, CyclingThreeUsers) {
+TEST_F(SessionControllerClientTest, CyclingThreeUsers) {
   UserAddedToSession("firstuser@test.com");
   UserAddedToSession("seconduser@test.com");
   UserAddedToSession("thirduser@test.com");
@@ -154,65 +145,73 @@ TEST_F(SessionStateDelegateChromeOSTest, CyclingThreeUsers) {
 
   // Cycle forward.
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(forward);
+  SessionControllerClient::DoCycleActiveUser(forward);
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(forward);
+  SessionControllerClient::DoCycleActiveUser(forward);
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(forward);
+  SessionControllerClient::DoCycleActiveUser(forward);
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 
   // Cycle backwards.
   const ash::CycleUserDirection backward = ash::CycleUserDirection::PREVIOUS;
-  session_state_delegate()->CycleActiveUser(backward);
+  SessionControllerClient::DoCycleActiveUser(backward);
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(backward);
+  SessionControllerClient::DoCycleActiveUser(backward);
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
-  session_state_delegate()->CycleActiveUser(backward);
+  SessionControllerClient::DoCycleActiveUser(backward);
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
 // Make sure MultiProfile disabled by primary user policy.
-TEST_F(SessionStateDelegateChromeOSTest, MultiProfileDisallowedByUserPolicy) {
+TEST_F(SessionControllerClientTest, MultiProfileDisallowedByUserPolicy) {
   InitForMultiProfile();
-  EXPECT_TRUE(
-      session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
+            SessionControllerClient::GetAddUserSessionPolicy());
   const AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
-  EXPECT_TRUE(
-      session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
+  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS,
+            SessionControllerClient::GetAddUserSessionPolicy());
+
+  user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
+            SessionControllerClient::GetAddUserSessionPolicy());
 
   user_profile_->GetPrefs()->SetString(
       prefs::kMultiProfileUserBehavior,
       chromeos::MultiProfileUserController::kBehaviorNotAllowed);
-  EXPECT_FALSE(
-      session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
+  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
+            SessionControllerClient::GetAddUserSessionPolicy());
 }
 
 // Make sure MultiProfile disabled by primary user policy certificates.
-TEST_F(SessionStateDelegateChromeOSTest,
+TEST_F(SessionControllerClientTest,
        MultiProfileDisallowedByPolicyCertificates) {
   InitForMultiProfile();
+  user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
+
   const AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
-  EXPECT_TRUE(
-      session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
+            SessionControllerClient::GetAddUserSessionPolicy());
   policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(
       account_id.GetUserEmail());
-  EXPECT_FALSE(
-      session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
+  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
+            SessionControllerClient::GetAddUserSessionPolicy());
 
   // Flush tasks posted to IO.
   base::RunLoop().RunUntilIdle();
 }
 
 // Make sure MultiProfile disabled by primary user certificates in memory.
-TEST_F(SessionStateDelegateChromeOSTest,
+TEST_F(SessionControllerClientTest,
        MultiProfileDisallowedByPrimaryUserCertificatesInMemory) {
   InitForMultiProfile();
+  user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
+
   const AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
-  EXPECT_TRUE(
-      session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
+            SessionControllerClient::GetAddUserSessionPolicy());
   cert_verifier_.reset(new policy::PolicyCertVerifier(base::Closure()));
   g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
@@ -228,8 +227,8 @@ TEST_F(SessionStateDelegateChromeOSTest,
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
   service->OnTrustAnchorsChanged(certificates);
   EXPECT_TRUE(service->has_policy_certificates());
-  EXPECT_FALSE(
-      session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
+  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
+            SessionControllerClient::GetAddUserSessionPolicy());
 
   // Flush tasks posted to IO.
   base::RunLoop().RunUntilIdle();
@@ -237,44 +236,44 @@ TEST_F(SessionStateDelegateChromeOSTest,
 
 // Make sure adding users to multiprofiles disabled by reaching maximum
 // number of users in sessions.
-TEST_F(SessionStateDelegateChromeOSTest,
+TEST_F(SessionControllerClientTest,
        AddUserToMultiprofileDisallowedByMaximumUsers) {
   InitForMultiProfile();
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            session_state_delegate()->GetAddUserSessionPolicy());
+            SessionControllerClient::GetAddUserSessionPolicy());
   const AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
-  while (session_state_delegate()->NumberOfLoggedInUsers() <
-         session_state_delegate()->GetMaximumNumberOfLoggedInUsers()) {
+  while (user_manager()->GetLoggedInUsers().size() <
+         session_manager::kMaxmiumNumberOfUserSessions) {
     UserAddedToSession("bb@b.b");
   }
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED,
-            session_state_delegate()->GetAddUserSessionPolicy());
+            SessionControllerClient::GetAddUserSessionPolicy());
 }
 
 // Make sure adding users to multiprofiles disabled by logging in all possible
 // users.
-TEST_F(SessionStateDelegateChromeOSTest,
+TEST_F(SessionControllerClientTest,
        AddUserToMultiprofileDisallowedByAllUsersLogged) {
   InitForMultiProfile();
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            session_state_delegate()->GetAddUserSessionPolicy());
+            SessionControllerClient::GetAddUserSessionPolicy());
   const AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
   UserAddedToSession("bb@b.b");
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS,
-            session_state_delegate()->GetAddUserSessionPolicy());
+            SessionControllerClient::GetAddUserSessionPolicy());
 }
 
 // Make sure adding users to multiprofiles disabled by primary user policy.
-TEST_F(SessionStateDelegateChromeOSTest,
+TEST_F(SessionControllerClientTest,
        AddUserToMultiprofileDisallowedByPrimaryUserPolicy) {
   InitForMultiProfile();
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
-            session_state_delegate()->GetAddUserSessionPolicy());
+            SessionControllerClient::GetAddUserSessionPolicy());
   const AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
   user_profile_->GetPrefs()->SetString(
@@ -282,7 +281,5 @@ TEST_F(SessionStateDelegateChromeOSTest,
       chromeos::MultiProfileUserController::kBehaviorNotAllowed);
   user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
-            session_state_delegate()->GetAddUserSessionPolicy());
+            SessionControllerClient::GetAddUserSessionPolicy());
 }
-
-}  // namespace chromeos
