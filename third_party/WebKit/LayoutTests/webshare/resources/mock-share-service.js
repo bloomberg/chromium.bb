@@ -9,6 +9,7 @@ let mockShareService = loadMojoModules(
 
   class MockShareService {
     constructor(interfaceProvider) {
+      this.webshare_ = webshare;
       this.bindingSet_ = new bindings.BindingSet(webshare.ShareService);
 
       interfaceProvider.addInterfaceOverrideForTesting(
@@ -59,7 +60,7 @@ let mockShareService = loadMojoModules(
 function share_test(func, name, properties) {
   promise_test(t => mockShareService.then(mock => {
     let mockPromise = mock.init_();
-    return Promise.race([func(t, mock), mockPromise]);
+    return Promise.race([func(t, mock.webshare_, mock), mockPromise]);
   }), name, properties);
 }
 

@@ -7,11 +7,16 @@ module blink.mojom;
 
 import "url/mojo/url.mojom";
 
+enum ShareError {
+  // Share successful.
+  OK,
+  // Something went wrong in the implementation.
+  INTERNAL_ERROR,
+  // Share was canceled by user.
+  CANCELED,
+};
+
 interface ShareService {
-  // The web contents has requested to send a share text action. Returns null on
-  // success, or an error message on failure.
-  // TODO(mgiuca): Return an error enum, instead of a string (so the actual
-  // error messages are generated in a single place, rather than many service
-  // handlers).
-  Share(string title, string text, url.mojom.Url url) => (string? error);
+  // The web contents has requested to send a share text action.
+  Share(string title, string text, url.mojom.Url url) => (ShareError error);
 };

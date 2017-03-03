@@ -34,8 +34,8 @@ constexpr char kManifestUrlLow[] =
 constexpr char kManifestUrlMin[] =
     "https://www.example-min.com/target/manifest.json";
 
-void DidShare(const base::Optional<std::string>& expected_error,
-              const base::Optional<std::string>& error) {
+void DidShare(blink::mojom::ShareError expected_error,
+              blink::mojom::ShareError error) {
   EXPECT_EQ(expected_error, error);
 }
 
@@ -175,8 +175,8 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
                                                 kUrlTemplate);
 
-  base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&DidShare, base::Optional<std::string>());
+  base::Callback<void(blink::mojom::ShareError)> callback =
+      base::Bind(&DidShare, blink::mojom::ShareError::OK);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
@@ -206,8 +206,8 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
 // any targets.
 TEST_F(ShareServiceImplUnittest, ShareCancelNoTargets) {
   // Expect an error message in response.
-  base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&DidShare, base::Optional<std::string>("Share was cancelled"));
+  base::Callback<void(blink::mojom::ShareError)> callback =
+      base::Bind(&DidShare, blink::mojom::ShareError::CANCELED);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
@@ -233,8 +233,8 @@ TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
                                                 kUrlTemplate);
 
   // Expect an error message in response.
-  base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&DidShare, base::Optional<std::string>("Share was cancelled"));
+  base::Callback<void(blink::mojom::ShareError)> callback =
+      base::Bind(&DidShare, blink::mojom::ShareError::CANCELED);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
@@ -264,10 +264,8 @@ TEST_F(ShareServiceImplUnittest, ShareBrokenUrl) {
                                                 kBrokenUrlTemplate);
 
   // Expect an error message in response.
-  base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&DidShare,
-                 base::Optional<std::string>(
-                     "Error: unable to replace placeholders in url template"));
+  base::Callback<void(blink::mojom::ShareError)> callback =
+      base::Bind(&DidShare, blink::mojom::ShareError::INTERNAL_ERROR);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
@@ -295,8 +293,8 @@ TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
                                                 kUrlTemplate);
 
-  base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind(&DidShare, base::Optional<std::string>());
+  base::Callback<void(blink::mojom::ShareError)> callback =
+      base::Bind(&DidShare, blink::mojom::ShareError::OK);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
@@ -335,8 +333,8 @@ TEST_F(ShareServiceImplUnittest, ShareServiceDeletion) {
   // destroyed before the picker is closed).
   // TODO(mgiuca): This probably should still complete the share, if not
   // cancelled, even if the underlying tab is closed.
-  base::Callback<void(const base::Optional<std::string>&)> callback =
-      base::Bind([](const base::Optional<std::string>& error) { FAIL(); });
+  base::Callback<void(blink::mojom::ShareError)> callback =
+      base::Bind([](blink::mojom::ShareError error) { FAIL(); });
   share_service()->Share(kTitle, kText, url, callback);
 
   run_loop.Run();

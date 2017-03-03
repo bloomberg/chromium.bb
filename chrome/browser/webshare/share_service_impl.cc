@@ -199,7 +199,7 @@ void ShareServiceImpl::OnPickerClosed(
     const ShareCallback& callback,
     base::Optional<std::string> result) {
   if (!result.has_value()) {
-    callback.Run(base::Optional<std::string>("Share was cancelled"));
+    callback.Run(blink::mojom::ShareError::CANCELED);
     return;
   }
 
@@ -209,8 +209,10 @@ void ShareServiceImpl::OnPickerClosed(
   std::string url_template_filled;
   if (!ReplacePlaceholders(url_template, title, text, share_url,
                            &url_template_filled)) {
-    callback.Run(base::Optional<std::string>(
-        "Error: unable to replace placeholders in url template"));
+    // TODO(mgiuca): This error should not be possible at share time, because
+    // targets with invalid templates should not be chooseable. Fix
+    // https://crbug.com/694380 and replace this with a DCHECK.
+    callback.Run(blink::mojom::ShareError::INTERNAL_ERROR);
     return;
   }
 
@@ -229,5 +231,5 @@ void ShareServiceImpl::OnPickerClosed(
   DCHECK(target.is_valid());
   OpenTargetURL(target);
 
-  callback.Run(base::nullopt);
+  callback.Run(blink::mojom::ShareError::OK);
 }

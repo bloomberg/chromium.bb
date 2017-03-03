@@ -17,12 +17,32 @@
 
 namespace blink {
 
+namespace {
+
+// Gets the human-friendly error message for a ShareError. |error| must not be
+// ShareError::OK.
+String errorToString(mojom::blink::ShareError error) {
+  switch (error) {
+    case mojom::blink::ShareError::OK:
+      NOTREACHED();
+      break;
+    case mojom::blink::ShareError::INTERNAL_ERROR:
+      return "Share failed";
+    case mojom::blink::ShareError::CANCELED:
+      return "Share canceled";
+  }
+  NOTREACHED();
+  return String();
+}
+
+}  // namespace
+
 class NavigatorShare::ShareClientImpl final
     : public GarbageCollected<ShareClientImpl> {
  public:
   ShareClientImpl(NavigatorShare*, ScriptPromiseResolver*);
 
-  void callback(const String& error);
+  void callback(mojom::blink::ShareError);
 
   void onConnectionError();
 
@@ -41,15 +61,15 @@ NavigatorShare::ShareClientImpl::ShareClientImpl(
     ScriptPromiseResolver* resolver)
     : m_navigator(navigator_share), m_resolver(resolver) {}
 
-void NavigatorShare::ShareClientImpl::callback(const String& error) {
+void NavigatorShare::ShareClientImpl::callback(mojom::blink::ShareError error) {
   if (m_navigator)
     m_navigator->m_clients.erase(this);
 
-  if (error.isNull()) {
+  if (error == mojom::blink::ShareError::OK) {
     m_resolver->resolve();
   } else {
     // TODO(mgiuca): Work out which error type to use.
-    m_resolver->reject(DOMException::create(AbortError, error));
+    m_resolver->reject(DOMException::create(AbortError, errorToString(error)));
   }
 }
 

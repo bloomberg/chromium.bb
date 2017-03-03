@@ -5,17 +5,17 @@
 <script src="resources/mock-share-service.js"></script>
 <script>
 
-share_test((t, mock) => {
+share_test((t, webshare, mock) => {
   return callWithKeyDown(() => promise_rejects(t, new TypeError(), navigator.share()));
 }, '0 arguments (promise rejection)');
 
-share_test((t, mock) => {
-  mock.pushShareResult('the title', 'the message', 'data:the url', null);
+share_test((t, webshare, mock) => {
+  mock.pushShareResult('the title', 'the message', 'data:the url', webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share({title: 'the title', text: 'the message', url: 'data:the url', unused: 'unexpected field'}));
 }, 'extra ShareData field (extra field ignored)');
 
-share_test((t, mock) => {
-  mock.pushShareResult('the title', 'the message', 'data:the url', null);
+share_test((t, webshare, mock) => {
+  mock.pushShareResult('the title', 'the message', 'data:the url', webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share({title: 'the title', text: 'the message', url: 'data:the url'}, 'more than required'));
 }, '2 arguments (extra argument ignored)');
 
