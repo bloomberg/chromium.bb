@@ -11,8 +11,8 @@
 #include "chromecast/public/cast_egl_platform.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {

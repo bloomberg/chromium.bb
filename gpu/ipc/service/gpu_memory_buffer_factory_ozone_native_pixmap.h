@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
-#include "ui/ozone/public/native_pixmap.h"
+#include "ui/gfx/native_pixmap.h"
 
 namespace gl {
 class GLImage;

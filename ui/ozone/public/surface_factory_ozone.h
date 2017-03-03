@@ -16,12 +16,12 @@
 #include "base/native_library.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/ozone/ozone_base_export.h"
 #include "ui/ozone/public/gl_ozone.h"
-#include "ui/ozone/public/native_pixmap.h"
 
 namespace ui {
 

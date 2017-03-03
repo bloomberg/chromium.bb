@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer_base.h"
-#include "ui/ozone/public/native_pixmap.h"
 
 struct gbm_bo;
 

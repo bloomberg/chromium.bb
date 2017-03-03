@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "base/command_line.h"
-#include "ui/ozone/public/native_pixmap.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {

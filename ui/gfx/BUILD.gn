@@ -533,6 +533,7 @@ source_set("memory_buffer_sources") {
     "gfx_export.h",
     "mac/io_surface.cc",
     "mac/io_surface.h",
+    "native_pixmap.h",
     "native_pixmap_handle.cc",
     "native_pixmap_handle.h",
   ]
@@ -549,6 +550,7 @@ source_set("memory_buffer_sources") {
   defines = [ "GFX_IMPLEMENTATION" ]
 
   deps = [
+    ":native_widget_types",
     "//base",
     "//ui/gfx/geometry",
   ]

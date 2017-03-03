@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/gpu/vaapi_drm_picture.h"
+
 #include "base/file_descriptor_posix.h"
 #include "media/gpu/va_surface.h"
-#include "media/gpu/vaapi_drm_picture.h"
 #include "media/gpu/vaapi_wrapper.h"
 #include "third_party/libva/va/drm/va_drm.h"
 #include "third_party/libva/va/va.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
-#include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 

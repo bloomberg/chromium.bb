@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PUBLIC_NATIVE_PIXMAP_H_
-#define UI_OZONE_PUBLIC_NATIVE_PIXMAP_H_
+#ifndef UI_GFX_NATIVE_PIXMAP_H_
+#define UI_GFX_NATIVE_PIXMAP_H_
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
@@ -78,4 +79,4 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PUBLIC_NATIVE_PIXMAP_H_
+#endif  // UI_GFX_NATIVE_PIXMAP_H_

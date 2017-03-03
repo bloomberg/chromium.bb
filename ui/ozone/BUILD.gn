@@ -67,7 +67,6 @@ component("ozone_base") {
     "public/gpu_platform_support_host.h",
     "public/input_controller.cc",
     "public/input_controller.h",
-    "public/native_pixmap.h",
     "public/overlay_candidates_ozone.cc",
     "public/overlay_candidates_ozone.h",
     "public/overlay_manager_ozone.h",

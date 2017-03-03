@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
-#include "ui/ozone/public/native_pixmap.h"
 
 namespace ui {
 

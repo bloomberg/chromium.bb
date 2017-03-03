@@ -10,9 +10,9 @@
 #include <string>
 
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_image_egl.h"
 #include "ui/ozone/gl/ozone_gl_export.h"
-#include "ui/ozone/public/native_pixmap.h"
 
 namespace ui {
 
