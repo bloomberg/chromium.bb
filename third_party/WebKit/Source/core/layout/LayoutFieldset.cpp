@@ -28,8 +28,6 @@
 #include "core/html/HTMLLegendElement.h"
 #include "core/paint/FieldsetPainter.h"
 
-using namespace std;
-
 namespace blink {
 
 using namespace HTMLNames;

@@ -33,8 +33,6 @@
 #include <algorithm>
 #include <memory>
 
-using namespace WTF;
-
 namespace blink {
 
 struct SameSizeAsFloatingObject {

@@ -27,8 +27,6 @@
 #include "core/layout/LayoutSliderThumb.h"
 #include "wtf/MathExtras.h"
 
-using namespace ::std;
-
 namespace blink {
 
 const int LayoutSlider::defaultTrackLength = 129;

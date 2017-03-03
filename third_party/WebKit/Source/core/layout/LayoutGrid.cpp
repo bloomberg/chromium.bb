@@ -53,11 +53,6 @@ struct ContentAlignmentData {
   LayoutUnit distributionOffset = LayoutUnit(-1);
 };
 
-enum TrackSizeRestriction {
-  AllowInfinity,
-  ForbidInfinity,
-};
-
 LayoutGrid::LayoutGrid(Element* element)
     : LayoutBlock(element), m_grid(this), m_trackSizingAlgorithm(this, m_grid) {
   ASSERT(!childrenInline());

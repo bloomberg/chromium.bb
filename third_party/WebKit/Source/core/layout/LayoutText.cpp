@@ -54,9 +54,6 @@
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace WTF;
-using namespace Unicode;
-
 namespace blink {
 
 struct SameSizeAsLayoutText : public LayoutObject {
@@ -139,10 +136,12 @@ static void makeCapitalized(String* string, UChar previous) {
   int32_t startOfWord = boundary->first();
   for (endOfWord = boundary->next(); endOfWord != TextBreakDone;
        startOfWord = endOfWord, endOfWord = boundary->next()) {
-    if (startOfWord)  // Ignore first char of previous string
-      result.append(input[startOfWord - 1] == noBreakSpaceCharacter
-                        ? noBreakSpaceCharacter
-                        : toTitleCase(stringWithPrevious[startOfWord]));
+    if (startOfWord) {  // Ignore first char of previous string
+      result.append(
+          input[startOfWord - 1] == noBreakSpaceCharacter
+              ? noBreakSpaceCharacter
+              : WTF::Unicode::toTitleCase(stringWithPrevious[startOfWord]));
+    }
     for (int i = startOfWord + 1; i < endOfWord; i++)
       result.append(input[i - 1]);
   }

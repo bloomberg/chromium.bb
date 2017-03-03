@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef ColumnBalancer_h
+#define ColumnBalancer_h
+
 #include "core/layout/LayoutMultiColumnSet.h"
 
 namespace blink {
@@ -270,3 +273,5 @@ class MinimumSpaceShortageFinder final : public ColumnBalancer {
 };
 
 }  // namespace blink
+
+#endif  // ColumnBalancer_h
