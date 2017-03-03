@@ -501,7 +501,7 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
   DWORD dummy = 0;
   DWORD length = ::GetFileVersionInfoSize(exe_path.c_str(), &dummy);
   if (length) {
-    std::unique_ptr<char> data(new char[length]);
+    std::unique_ptr<char[]> data(new char[length]);
     if (::GetFileVersionInfo(exe_path.c_str(), dummy, length, data.get())) {
       GetValueFromVersionResource(data.get(), L"ProductVersion", version);
 
