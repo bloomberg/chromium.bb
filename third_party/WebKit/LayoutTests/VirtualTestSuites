@@ -328,22 +328,22 @@
   {
     "prefix": "layout_ng",
     "base": "fast/block/basic",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
   },
   {
     "prefix": "layout_ng",
     "base": "fast/block/margin-collapse",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
   },
   {
     "prefix": "layout_ng",
     "base": "css2.1/20110323",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
   },
   {
     "prefix": "layout_ng",
     "base": "fast/block/float",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG, LayoutNGInline"]
   },
   {
     "prefix": "feature-policy",
