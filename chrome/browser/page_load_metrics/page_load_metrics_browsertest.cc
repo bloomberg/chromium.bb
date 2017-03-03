@@ -45,7 +45,8 @@ class TimingUpdatedObserver : public content::BrowserMessageFilter {
   // A bitvector to express which timing fields to match on.
   enum ExpectedTimingFields {
     FIRST_PAINT = 1 << 0,
-    FIRST_CONTENTFUL_PAINT = 1 << 1
+    FIRST_CONTENTFUL_PAINT = 1 << 1,
+    STYLE_UPDATE_BEFORE_FCP = 1 << 2
   };
 
   explicit TimingUpdatedObserver(content::RenderWidgetHost* render_widget_host)
@@ -112,7 +113,9 @@ class TimingUpdatedObserver : public content::BrowserMessageFilter {
 
     if ((!(matching_fields_ & FIRST_PAINT) || timing.first_paint) &&
         (!(matching_fields_ & FIRST_CONTENTFUL_PAINT) ||
-         timing.first_contentful_paint)) {
+         timing.first_contentful_paint) &&
+        (!(matching_fields_ & STYLE_UPDATE_BEFORE_FCP) ||
+         timing.style_sheet_timing.update_style_duration_before_fcp)) {
       // Ensure that any other handlers of this message, for example the real
       // PageLoadMetric observers, get a chance to handle this message before
       // this waiter unblocks.
@@ -720,6 +723,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::STYLE_UPDATE_BEFORE_FCP);
+
   // Careful: Blink code clamps timestamps to 5us, so any CSS parsing we do here
   // must take >> 5us, otherwise we'll log 0 for the value and it will remain
   // unset here.
@@ -727,6 +735,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
       browser(),
       embedded_test_server()->GetURL("/page_load_metrics/page_with_css.html"));
   NavigateToUntrackedUrl();
+  fcp_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
                                      1);
