@@ -19,7 +19,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -44,30 +43,19 @@
 
 namespace {
 
-// Represents whether ZeroSuggestProvider is allowed to display contextual
-// suggestions on focus, and if not, why not.
-// These values are written to logs.  New enum values can be added, but existing
-// enums must never be renumbered or deleted and reused.
-enum class ZeroSuggestEligibility {
-  ELIGIBLE = 0,
-  // URL_INELIGIBLE would be ELIGIBLE except some property of the current URL
-  // itself prevents ZeroSuggest from triggering.
-  URL_INELIGIBLE = 1,
-  GENERALLY_INELIGIBLE = 2,
-  ELIGIBLE_MAX_VALUE
-};
-
 // TODO(hfung): The histogram code was copied and modified from
 // search_provider.cc.  Refactor and consolidate the code.
 // We keep track in a histogram how many suggest requests we send, how
 // many suggest requests we invalidate (e.g., due to a user typing
 // another character), and how many replies we receive.
-// These values are written to logs.  New enum values can be added, but existing
-// enums must never be renumbered or deleted and reused.
+// *** ADD NEW ENUMS AFTER ALL PREVIOUSLY DEFINED ONES! ***
+//     (excluding the end-of-list enum value)
+// We do not want values of existing enums to change or else it screws
+// up the statistics.
 enum ZeroSuggestRequestsHistogramValue {
   ZERO_SUGGEST_REQUEST_SENT = 1,
-  ZERO_SUGGEST_REQUEST_INVALIDATED = 2,
-  ZERO_SUGGEST_REPLY_RECEIVED = 3,
+  ZERO_SUGGEST_REQUEST_INVALIDATED,
+  ZERO_SUGGEST_REPLY_RECEIVED,
   ZERO_SUGGEST_MAX_REQUEST_HISTOGRAM_VALUE
 };
 
@@ -79,9 +67,6 @@ void LogOmniboxZeroSuggestRequest(
 
 // Relevance value to use if it was not set explicitly by the server.
 const int kDefaultZeroSuggestRelevance = 100;
-
-// Used for testing whether zero suggest is ever available.
-std::string kArbitraryInsecureUrlString = "http://www.google.com/";
 
 }  // namespace
 
@@ -116,37 +101,32 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   current_query_ = input.current_url().spec();
   current_page_classification_ = input.current_page_classification();
   current_url_match_ = MatchForCurrentURL();
+  TemplateURLService* template_url_service = client()->GetTemplateURLService();
 
-  std::string url_string = GetContextualSuggestionsUrl();
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  if (default_provider == NULL)
+    return;
+
+  base::string16 prefix;
+  TemplateURLRef::SearchTermsArgs search_term_args(prefix);
+  std::string url_string;
+  if (OmniboxFieldTrial::InZeroSuggestRedirectToChromeFieldTrial()) {
+    url_string = OmniboxFieldTrial::ZeroSuggestRedirectToChromeServerAddress();
+  } else {
+    url_string = default_provider->suggestions_url_ref().ReplaceSearchTerms(
+        search_term_args, template_url_service->search_terms_data());
+  }
   GURL suggest_url(url_string);
+
   if (!suggest_url.is_valid())
     return;
 
   // No need to send the current page URL in personalized suggest or
   // most visited field trials.
-  const TemplateURLService* template_url_service =
-      client()->GetTemplateURLService();
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-  const bool can_send_current_url =
-      CanSendURL(input.current_url(), suggest_url, default_provider,
+  if (CanSendURL(input.current_url(), suggest_url, default_provider,
                  current_page_classification_,
-                 template_url_service->search_terms_data(), client());
-  GURL arbitrary_insecure_url(kArbitraryInsecureUrlString);
-  ZeroSuggestEligibility eligibility = ZeroSuggestEligibility::ELIGIBLE;
-  if (!can_send_current_url) {
-    const bool can_send_ordinary_url =
-        CanSendURL(arbitrary_insecure_url, suggest_url, default_provider,
-                   current_page_classification_,
-                   template_url_service->search_terms_data(), client());
-    eligibility = can_send_ordinary_url
-                      ? ZeroSuggestEligibility::URL_INELIGIBLE
-                      : ZeroSuggestEligibility::GENERALLY_INELIGIBLE;
-  }
-  UMA_HISTOGRAM_ENUMERATION(
-      "Omnibox.ZeroSuggest.Eligible.OnFocus", static_cast<int>(eligibility),
-      static_cast<int>(ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE));
-  if (can_send_current_url &&
+                 template_url_service->search_terms_data(), client()) &&
       !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() &&
       !OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
     // Update suggest_url to include the current_page_url.
@@ -156,8 +136,6 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
           OmniboxFieldTrial::ZeroSuggestRedirectToChromeAdditionalFields();
       suggest_url = GURL(url_string);
     } else {
-      base::string16 prefix;
-      TemplateURLRef::SearchTermsArgs search_term_args(prefix);
       search_term_args.current_page_url = current_query_;
       suggest_url =
           GURL(default_provider->suggestions_url_ref().ReplaceSearchTerms(
@@ -231,23 +209,6 @@ ZeroSuggestProvider::ZeroSuggestProvider(
       results_from_cache_(false),
       waiting_for_most_visited_urls_request_(false),
       weak_ptr_factory_(this) {
-  // Record whether contextual zero suggest is possible for this user / profile.
-  const TemplateURLService* template_url_service =
-      client->GetTemplateURLService();
-  // Template URL service can be null in tests.
-  if (template_url_service != nullptr) {
-    GURL suggest_url(GetContextualSuggestionsUrl());
-    // To check whether this is allowed, use an arbitrary insecure (http) URL
-    // as the URL we'd want suggestions for.  The value of OTHER as the current
-    // page classification is to correspond with that URL.
-    UMA_HISTOGRAM_BOOLEAN(
-        "Omnibox.ZeroSuggest.Eligible.OnProfileOpen",
-        suggest_url.is_valid() &&
-            CanSendURL(GURL(kArbitraryInsecureUrlString), suggest_url,
-                       template_url_service->GetDefaultSearchProvider(),
-                       metrics::OmniboxEventProto::OTHER,
-                       template_url_service->search_terms_data(), client));
-  }
 }
 
 ZeroSuggestProvider::~ZeroSuggestProvider() {
@@ -516,24 +477,6 @@ bool ZeroSuggestProvider::ShouldShowNonContextualZeroSuggest(
     return false;
 
   return true;
-}
-
-std::string ZeroSuggestProvider::GetContextualSuggestionsUrl() const {
-  // Without a default search provider, refuse to do anything (even if the user
-  // is in the redirect-to-chrome field trial).
-  const TemplateURLService* template_url_service =
-      client()->GetTemplateURLService();
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-  if (default_provider == nullptr)
-    return std::string();
-
-  if (OmniboxFieldTrial::InZeroSuggestRedirectToChromeFieldTrial())
-    return OmniboxFieldTrial::ZeroSuggestRedirectToChromeServerAddress();
-  base::string16 prefix;
-  TemplateURLRef::SearchTermsArgs search_term_args(prefix);
-  return default_provider->suggestions_url_ref().ReplaceSearchTerms(
-      search_term_args, template_url_service->search_terms_data());
 }
 
 void ZeroSuggestProvider::MaybeUseCachedSuggestions() {
