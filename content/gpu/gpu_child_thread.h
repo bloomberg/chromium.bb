@@ -114,12 +114,6 @@ class GpuChildThread : public ChildThreadImpl,
   void OnCollectGraphicsInfo();
   void OnSetVideoMemoryWindowCount(uint32_t window_count);
 
-  void OnClean();
-  void OnCrash();
-  void OnHang();
-#if defined(OS_ANDROID)
-  void OnJavaCrash();
-#endif
   void OnGpuSwitched();
 
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

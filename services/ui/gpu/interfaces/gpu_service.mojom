@@ -47,4 +47,10 @@ interface GpuService {
 
   // Tells GPU to wake up the GPU because we're about to draw.
   WakeUpGpu();
+
+  DestroyAllChannels();
+
+  Crash();
+  Hang();
+  ThrowJavaException();
 };

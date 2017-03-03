@@ -51,7 +51,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/android/throw_uncaught_exception.h"
 #include "media/base/android/media_client_android.h"
 #endif
 
@@ -249,12 +248,6 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_Finalize, OnFinalize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
-    IPC_MESSAGE_HANDLER(GpuMsg_Clean, OnClean)
-    IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
-    IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(GpuMsg_JavaCrash, OnJavaCrash)
-#endif
     IPC_MESSAGE_HANDLER(GpuMsg_GpuSwitched, OnGpuSwitched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -412,33 +405,6 @@ void GpuChildThread::OnCollectGraphicsInfo() {
   }
 #endif  // OS_WIN
 }
-
-void GpuChildThread::OnClean() {
-  DVLOG(1) << "GPU: Removing all contexts";
-  if (gpu_channel_manager())
-    gpu_channel_manager()->DestroyAllChannels();
-}
-
-void GpuChildThread::OnCrash() {
-  DVLOG(1) << "GPU: Simulating GPU crash";
-  // Good bye, cruel world.
-  volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
-  *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
-}
-
-void GpuChildThread::OnHang() {
-  DVLOG(1) << "GPU: Simulating GPU hang";
-  for (;;) {
-    // Do not sleep here. The GPU watchdog timer tracks the amount of user
-    // time this thread is using and it doesn't use much while calling Sleep.
-  }
-}
-
-#if defined(OS_ANDROID)
-void GpuChildThread::OnJavaCrash() {
-  base::android::ThrowUncaughtException();
-}
-#endif
 
 void GpuChildThread::OnGpuSwitched() {
   DVLOG(1) << "GPU: GPU has switched";

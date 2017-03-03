@@ -741,6 +741,7 @@ test("content_browsertests") {
     "//ppapi/features",
     "//services/catalog:lib",
     "//services/service_manager/public/cpp",
+    "//services/ui/gpu/interfaces",
     "//services/ui/public/cpp/gpu",
     "//storage/browser",
     "//testing/gmock",

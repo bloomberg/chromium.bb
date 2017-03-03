@@ -103,9 +103,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Helper function to run a callback on the IO thread. The callback receives
   // the appropriate GpuProcessHost instance. If |force_create| is false, and no
   // GpuProcessHost instance exists, then the callback is never called.
-  static void CallOnIO(GpuProcessKind kind,
-                       bool force_create,
-                       const base::Callback<void(GpuProcessHost*)>& callback);
+  CONTENT_EXPORT static void CallOnIO(
+      GpuProcessKind kind,
+      bool force_create,
+      const base::Callback<void(GpuProcessHost*)>& callback);
 
   service_manager::InterfaceProvider* GetRemoteInterfaces();
 

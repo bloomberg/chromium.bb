@@ -36,6 +36,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/throw_uncaught_exception.h"
 #include "media/gpu/avda_codec_allocator.h"
 #endif
 
@@ -231,6 +232,36 @@ void GpuService::WakeUpGpu() {
   gpu_channel_manager_->WakeUpGpu();
 #else
   NOTREACHED() << "WakeUpGpu() not supported on this platform.";
+#endif
+}
+
+void GpuService::DestroyAllChannels() {
+  if (!gpu_channel_manager_)
+    return;
+  DVLOG(1) << "GPU: Removing all contexts";
+  gpu_channel_manager_->DestroyAllChannels();
+}
+
+void GpuService::Crash() {
+  DVLOG(1) << "GPU: Simulating GPU crash";
+  // Good bye, cruel world.
+  volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
+  *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
+}
+
+void GpuService::Hang() {
+  DVLOG(1) << "GPU: Simulating GPU hang";
+  for (;;) {
+    // Do not sleep here. The GPU watchdog timer tracks the amount of user
+    // time this thread is using and it doesn't use much while calling Sleep.
+  }
+}
+
+void GpuService::ThrowJavaException() {
+#if defined(OS_ANDROID)
+  base::android::ThrowUncaughtException();
+#else
+  NOTREACHED() << "Java exception not supported on this platform.";
 #endif
 }
 

@@ -17,7 +17,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -167,32 +167,36 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   }
 
   if (url == kChromeUIGpuCleanURL) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim)
-      shim->SimulateRemoveAllContext();
+    GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                             false /* force_create */,
+                             base::Bind([](GpuProcessHost* host) {
+                               host->gpu_service()->DestroyAllChannels();
+                             }));
     return true;
   }
 
   if (url == kChromeUIGpuCrashURL) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim)
-      shim->SimulateCrash();
+    GpuProcessHost::CallOnIO(
+        GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+        base::Bind([](GpuProcessHost* host) { host->gpu_service()->Crash(); }));
     return true;
   }
 
 #if defined(OS_ANDROID)
   if (url == kChromeUIGpuJavaCrashURL) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim)
-      shim->SimulateJavaCrash();
+    GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                             false /* force_create */,
+                             base::Bind([](GpuProcessHost* host) {
+                               host->gpu_service()->ThrowJavaException();
+                             }));
     return true;
   }
 #endif
 
   if (url == kChromeUIGpuHangURL) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim)
-      shim->SimulateHang();
+    GpuProcessHost::CallOnIO(
+        GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+        base::Bind([](GpuProcessHost* host) { host->gpu_service()->Hang(); }));
     return true;
   }
 

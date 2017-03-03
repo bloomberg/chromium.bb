@@ -43,14 +43,6 @@ namespace {
 base::LazyInstance<IDMap<GpuProcessHostUIShim*>> g_hosts_by_id =
     LAZY_INSTANCE_INITIALIZER;
 
-void SendOnIOThreadTask(int host_id, IPC::Message* msg) {
-  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
-  if (host)
-    host->Send(msg);
-  else
-    delete msg;
-}
-
 void StopGpuProcessOnIO(int host_id) {
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
   if (host)
@@ -113,24 +105,6 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::FromID(int host_id) {
   return g_hosts_by_id.Pointer()->Lookup(host_id);
 }
 
-// static
-GpuProcessHostUIShim* GpuProcessHostUIShim::GetOneInstance() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (g_hosts_by_id.Pointer()->IsEmpty())
-    return NULL;
-  IDMap<GpuProcessHostUIShim*>::iterator it(g_hosts_by_id.Pointer());
-  return it.GetCurrentValue();
-}
-
-bool GpuProcessHostUIShim::Send(IPC::Message* msg) {
-  DCHECK(CalledOnValidThread());
-  return BrowserThread::PostTask(BrowserThread::IO,
-                                 FROM_HERE,
-                                 base::Bind(&SendOnIOThreadTask,
-                                            host_id_,
-                                            msg));
-}
-
 bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
 
@@ -153,24 +127,6 @@ void GpuProcessHostUIShim::StopGpuProcess(const base::Closure& callback) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, base::Bind(&StopGpuProcessOnIO, host_id_));
 }
-
-void GpuProcessHostUIShim::SimulateRemoveAllContext() {
-  Send(new GpuMsg_Clean());
-}
-
-void GpuProcessHostUIShim::SimulateCrash() {
-  Send(new GpuMsg_Crash());
-}
-
-void GpuProcessHostUIShim::SimulateHang() {
-  Send(new GpuMsg_Hang());
-}
-
-#if defined(OS_ANDROID)
-void GpuProcessHostUIShim::SimulateJavaCrash() {
-  Send(new GpuMsg_JavaCrash());
-}
-#endif
 
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());

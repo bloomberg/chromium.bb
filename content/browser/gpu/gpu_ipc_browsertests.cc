@@ -8,10 +8,11 @@
 #include "build/build_config.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
+#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -283,10 +284,9 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
       base::Bind(&BrowserGpuChannelHostFactoryTest::OnContextLost,
                  base::Unretained(this), run_loop.QuitClosure(), &counter));
   EXPECT_TRUE(provider->BindToCurrentThread());
-  GpuProcessHostUIShim* shim =
-      GpuProcessHostUIShim::FromID(GetFactory()->GpuProcessHostId());
-  EXPECT_TRUE(shim != NULL);
-  shim->SimulateCrash();
+  GpuProcessHost::CallOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      base::Bind([](GpuProcessHost* host) { host->gpu_service()->Crash(); }));
   run_loop.Run();
 
   EXPECT_EQ(1, counter);
