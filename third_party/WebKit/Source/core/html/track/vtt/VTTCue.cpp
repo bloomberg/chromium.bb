@@ -983,23 +983,38 @@ void VTTCue::parseSettings(const VTTRegionMap* regionMap,
         //    If parse a percentage string from linepos doesn't fail, let
         //    number be the returned percentage, otherwise jump to the step
         //    labeled next setting.
-        bool isPercentage = scanPercentage(input, number);
-        if (!isPercentage) {
+        bool isPercentage = input.scanPercentage(number);
+        if (isPercentage) {
+          if (isInvalidPercentage(number))
+            break;
+        } else {
           // Otherwise
           //
           // 1. If linepos contains any characters other than U+002D
-          //    HYPHEN-MINUS characters (-) and ASCII digits, then jump to
-          //    the step labeled next setting.
-          // 2. If any character in linepos other than the first character is
-          //    a U+002D HYPHEN-MINUS character (-), then jump to the step
+          //    HYPHEN-MINUS characters (-), ASCII digits, and U+002E DOT
+          //    character (.), then jump to the step labeled next setting.
+          //
+          // 2. If any character in linepos other than the first character is a
+          //    U+002D HYPHEN-MINUS character (-), then jump to the step
           //    labeled next setting.
+          //
+          // 3. If there are more than one U+002E DOT characters (.), then jump
+          //    to the step labeled next setting.
+          //
+          // 4. If there is a U+002E DOT character (.) and the character before
+          //    or the character after is not an ASCII digit, or if the U+002E
+          //    DOT character (.) is the first or the last character, then jump
+          //    to the step labeled next setting.
+          //
+          // 5. Interpret linepos as a (potentially signed) real number, and
+          //    let number be that number.
           bool isNegative = input.scan('-');
-          int intLinePosition;
-          if (!input.scanDigits(intLinePosition))
+          if (!input.scanFloat(number))
             break;
-          // 3. Interpret linepos as a (potentially signed) integer, and let
-          //    number be that number.
-          number = isNegative ? -intLinePosition : intLinePosition;
+          // Negate number if it was preceded by a hyphen-minus - unless it's
+          // zero.
+          if (isNegative && number)
+            number = -number;
         }
         if (!input.isAt(valueRun.end()))
           break;
