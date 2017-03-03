@@ -1174,8 +1174,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
   const NGPhysicalBoxFragment* container_fragment;
   const NGPhysicalBoxFragment* block_fragment;
   const NGPhysicalBoxFragment* adjoining_clearance_fragment;
+  RefPtr<const NGPhysicalBoxFragment> fragment;
   auto run_with_clearance = [&](EClear clear_value) {
-    RefPtr<NGPhysicalBoxFragment> fragment;
     Element* el_with_clear = document().getElementById("clearance");
     el_with_clear->mutableComputedStyle()->setClear(clear_value);
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(

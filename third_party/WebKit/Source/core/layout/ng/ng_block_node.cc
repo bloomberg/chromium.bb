@@ -85,16 +85,16 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout()) {
     DCHECK(layout_box_);
-    layout_result_ = RunOldLayout(*constraint_space);
-    return layout_result_;
+    return RunOldLayout(*constraint_space);
   }
 
-  layout_result_ = NGBlockLayoutAlgorithm(this, constraint_space,
-                                          toNGBlockBreakToken(break_token))
-                       .Layout();
+  RefPtr<NGLayoutResult> layout_result =
+      NGBlockLayoutAlgorithm(this, constraint_space,
+                             toNGBlockBreakToken(break_token))
+          .Layout();
 
-  CopyFragmentDataToLayoutBox(*constraint_space);
-  return layout_result_;
+  CopyFragmentDataToLayoutBox(*constraint_space, layout_result.get());
+  return layout_result;
 }
 
 MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
@@ -155,8 +155,6 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
 }
 
 const ComputedStyle& NGBlockNode::Style() const {
-  if (style_)
-    return *style_.get();
   DCHECK(layout_box_);
   return layout_box_->styleRef();
 }
@@ -226,13 +224,14 @@ bool NGBlockNode::HasInlineChildren() {
 }
 
 void NGBlockNode::CopyFragmentDataToLayoutBox(
-    const NGConstraintSpace& constraint_space) {
+    const NGConstraintSpace& constraint_space,
+    NGLayoutResult* layout_result) {
   // We may not have a layout_box_ during unit tests.
   if (!layout_box_)
     return;
 
   NGPhysicalBoxFragment* fragment =
-      toNGPhysicalBoxFragment(layout_result_->PhysicalFragment().get());
+      toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
 
   layout_box_->setWidth(fragment->Width());
   layout_box_->setHeight(fragment->Height());

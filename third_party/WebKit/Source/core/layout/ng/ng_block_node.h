@@ -67,18 +67,13 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
-  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&);
+  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&, NGLayoutResult*);
 
-  // We can either wrap a layout_box_ or a style_/next_sibling_/first_child_
+  // We can either wrap a layout_box_ or a next_sibling_/first_child_
   // combination.
   LayoutBox* layout_box_;
-  RefPtr<ComputedStyle> style_;
   Member<NGLayoutInputNode> next_sibling_;
   Member<NGLayoutInputNode> first_child_;
-  // TODO(mstensho): An input node may produce multiple fragments, so this
-  // should probably be renamed to last_result_ or something like that, since
-  // the last fragment is all we care about when resuming layout.
-  RefPtr<NGLayoutResult> layout_result_;
 };
 
 DEFINE_TYPE_CASTS(NGBlockNode,
