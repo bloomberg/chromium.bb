@@ -53,6 +53,8 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
 
   bool Initialize(std::unique_ptr<gfx::VSyncProvider> vsync_provider);
 
+  scoped_refptr<base::TaskRunner> GetWindowTaskRunnerForTesting();
+
  protected:
   ~DirectCompositionSurfaceWin() override;
 

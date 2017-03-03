@@ -5,6 +5,7 @@
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -32,6 +33,14 @@ class TestImageTransportSurfaceDelegate
   void AddFilter(IPC::MessageFilter* message_filter) override {}
   int32_t GetRouteID() const override { return 0; }
 };
+
+void RunPendingTasks(scoped_refptr<base::TaskRunner> task_runner) {
+  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  task_runner->PostTask(FROM_HERE,
+                        Bind(&base::WaitableEvent::Signal, Unretained(&done)));
+  done.Wait();
+}
 
 TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
   if (!gl::QueryDirectCompositionDevice(
@@ -90,11 +99,22 @@ TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
   // It should be possible to switch back to the previous surface and
   // unsuspend it.
   EXPECT_TRUE(context->MakeCurrent(surface.get()));
+  scoped_refptr<base::TaskRunner> task_runner1 =
+      surface->GetWindowTaskRunnerForTesting();
+  scoped_refptr<base::TaskRunner> task_runner2 =
+      surface2->GetWindowTaskRunnerForTesting();
 
   context2 = nullptr;
   surface2 = nullptr;
   context = nullptr;
   surface = nullptr;
+
+  // Ensure that the ChildWindowWin posts the task to delete the thread to the
+  // main loop before doing RunUntilIdle. Otherwise the child threads could
+  // outlive the main thread.
+  RunPendingTasks(task_runner1);
+  RunPendingTasks(task_runner2);
+
   base::RunLoop().RunUntilIdle();
 }
 

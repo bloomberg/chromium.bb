@@ -6,6 +6,7 @@
 #define GPU_IPC_SERVICE_CHILD_WINDOW_WIN_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/task_runner.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 
 #include <windows.h>
@@ -26,6 +27,8 @@ class ChildWindowWin {
   bool Initialize();
   void ClearInvalidContents();
   HWND window() const { return window_; }
+
+  scoped_refptr<base::TaskRunner> GetTaskRunnerForTesting();
 
  private:
   // This member contains all the data that can be accessed from the main or

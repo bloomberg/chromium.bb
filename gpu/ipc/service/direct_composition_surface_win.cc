@@ -323,6 +323,11 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
   return true;
 }
 
+scoped_refptr<base::TaskRunner>
+DirectCompositionSurfaceWin::GetWindowTaskRunnerForTesting() {
+  return child_window_.GetTaskRunnerForTesting();
+}
+
 DirectCompositionSurfaceWin::Overlay::Overlay(int z_order,
                                               gfx::OverlayTransform transform,
                                               scoped_refptr<gl::GLImage> image,

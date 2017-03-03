@@ -207,4 +207,9 @@ ChildWindowWin::~ChildWindowWin() {
   }
 }
 
+scoped_refptr<base::TaskRunner> ChildWindowWin::GetTaskRunnerForTesting() {
+  DCHECK(shared_data_);
+  return shared_data_->thread.task_runner();
+}
+
 }  // namespace gpu
