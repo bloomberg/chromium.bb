@@ -1080,7 +1080,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 // NativeControllerDelegate method, called to inform that title has changed.
 - (void)nativeContent:(id)content titleDidChange:(NSString*)title {
-  _webStateImpl->OnTitleChanged();
+  [self setNavigationItemTitle:title];
 }
 
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled {
