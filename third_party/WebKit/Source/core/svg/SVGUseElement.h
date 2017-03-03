@@ -54,6 +54,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   SVGAnimatedLength* height() const { return m_height.get(); }
 
   void buildPendingResource() override;
+  String title() const override;
 
   void dispatchPendingEvent();
   void toClipPath(Path&) const;

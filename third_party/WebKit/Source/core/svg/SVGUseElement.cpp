@@ -40,6 +40,7 @@
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGSymbolElement.h"
+#include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGTreeScopeResources.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/loader/fetch/FetchRequest.h"
@@ -337,6 +338,22 @@ void SVGUseElement::buildPendingResource() {
   }
 
   ASSERT(!m_needsShadowTreeRecreation);
+}
+
+String SVGUseElement::title() const {
+  // Find the first <title> child in <use> which doesn't cover shadow tree.
+  if (Element* titleElement = Traversal<SVGTitleElement>::firstChild(*this))
+    return titleElement->innerText();
+
+  // If there is no <title> child in <use>, we lookup first <title> child in
+  // shadow tree.
+  if (m_targetElementInstance) {
+    if (Element* titleElement =
+            Traversal<SVGTitleElement>::firstChild(*m_targetElementInstance))
+      return titleElement->innerText();
+  }
+  // Otherwise return a null string.
+  return String();
 }
 
 static void associateCorrespondingElements(SVGElement& targetRoot,
