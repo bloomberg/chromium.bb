@@ -10,11 +10,23 @@
       .then(device => device.gatt.connect())
       .then(gattServer => {
         // iframe1 can access heart_rate service.
-        gattServer.getPrimaryService('heart_rate');
+        return gattServer.getPrimaryService('heart_rate');
+      }).then(() => {
         parent.postMessage('Iframe1Connected', '*');
       }).catch(err => {
         console.error(err);
         parent.postMessage('FAIL: ' + err, '*');
+      });
+    } else if (messageEvent.data === 'Iframe1TryAccessGenericAccessService') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]
+      })
+      .then(device => device.gatt.connect())
+      .then(gattServer => {
+        // iframe1 can not access generic_access service.
+        return gattServer.getPrimaryService('generic_access');
+      }).catch(err => {
+        parent.postMessage('Iframe1AccessGenericAccessServiceFailed', '*');
       });
     } else if (messageEvent.data === 'Iframe2RequestAndConnect') {
       navigator.bluetooth.requestDevice({
@@ -22,11 +34,12 @@
       })
       .then(device => device.gatt.connect())
       .then(gattServer => {
-        gattServer.getPrimaryService('generic_access');
         // Since iframe1 can access heart_rate service, and iframe2 has the
         // same origin as iframe1, iframe2 should also be able to access
         // heart_rate service.
-        gattServer.getPrimaryService('heart_rate');
+        return Promise.all([gattServer.getPrimaryService('generic_access'),
+          gattServer.getPrimaryService('heart_rate')]);
+      }).then(() => {
         parent.postMessage('Iframe2Connected', '*');
       }).catch(err => {
         console.error(err);
@@ -41,7 +54,8 @@
         // Since iframe2 can access generic_access service, and iframe1 has the
         // same origin as iframe2, iframe1 should also be able to access
         // generic_access service.
-        gattServer.getPrimaryService('generic_access');
+        return gattServer.getPrimaryService('generic_access');
+      }).then(() => {
         parent.postMessage('DoneTest', '*');
       }).catch(err => {
         console.error(err);

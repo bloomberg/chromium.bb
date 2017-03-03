@@ -25,6 +25,10 @@
         }
         firstIframe = false;
       } else if (messageEvent.data === 'Iframe1Connected') {
+        callWithKeyDown(() => {
+          iframe1.contentWindow.postMessage('Iframe1TryAccessGenericAccessService', '*');
+        });
+      } else if (messageEvent.data === 'Iframe1AccessGenericAccessServiceFailed') {
         document.body.appendChild(iframe2);
       } else if (messageEvent.data === 'Iframe2Connected') {
         callWithKeyDown(() => {
