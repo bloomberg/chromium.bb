@@ -72,8 +72,8 @@ function test()
         function testNoMappingEntry(next)
         {
             var mappingPayload = {
-                "mappings":"AAAA,C,CAAE;",
-                "sources":["example.js"]
+                "mappings": "AAAA,C,CAAE;",
+                "sources": ["example.js"]
             };
             var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 0, "example.js", 0, 0, mapping);
@@ -92,6 +92,28 @@ function test()
             var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 0, "example.js", 0, 0, mapping);
             checkReverseMapping(3, 1, "example.js", 1, mapping);
+            next();
+        },
+
+        function testNonSortedMappings(next)
+        {
+            /*
+                example.js:
+                ABCD
+
+                compiled.js:
+                DCBA
+             */
+            var mappingPayload = {
+                // mappings go in reversed direction.
+                "mappings": "GAAA,DAAC,DAAC,DAAC",
+                "sources": ["example.js"]
+            };
+            var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
+            checkMapping(0, 0, "example.js", 0, 3, mapping);
+            checkMapping(0, 1, "example.js", 0, 2, mapping);
+            checkMapping(0, 2, "example.js", 0, 1, mapping);
+            checkMapping(0, 3, "example.js", 0, 0, mapping);
             next();
         },
 
