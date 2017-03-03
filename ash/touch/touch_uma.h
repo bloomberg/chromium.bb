@@ -22,7 +22,7 @@ class TouchEvent;
 namespace ash {
 
 // Records some touch/gesture event specific details (e.g. what gestures are
-// targetted to which components etc.)
+// targeted to which components etc.)
 class ASH_EXPORT TouchUMA {
  public:
   // Returns the singleton instance.
@@ -38,15 +38,9 @@ class ASH_EXPORT TouchUMA {
   TouchUMA();
   ~TouchUMA();
 
-  void UpdateTouchState(const ui::TouchEvent& event);
   GestureActionType FindGestureActionType(aura::Window* window,
                                           const ui::GestureEvent& event);
 
-  bool is_single_finger_gesture_;
-  // These are used to measure the number of touch-start events we receive in a
-  // quick succession, regardless of the target window.
-  bool touch_in_progress_;
-  int burst_length_;
   base::TimeTicks last_touch_down_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchUMA);
