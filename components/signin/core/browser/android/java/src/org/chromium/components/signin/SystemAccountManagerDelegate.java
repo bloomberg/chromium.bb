@@ -14,7 +14,6 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,7 +23,6 @@ import android.os.SystemClock;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
-import com.google.android.gms.auth.UserRecoverableAuthException;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -38,8 +36,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Default implementation of {@link AccountManagerDelegate} which delegates all calls to the Android
- * account manager.
+ * Default implementation of {@link AccountManagerDelegate} which delegates all calls to the
+ * Android account manager.
  */
 @MainDex
 public class SystemAccountManagerDelegate implements AccountManagerDelegate {
@@ -87,26 +85,8 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
             return GoogleAuthUtil.getTokenWithNotification(
                     mApplicationContext, account, authTokenScope, null);
         } catch (GoogleAuthException ex) {
-            // TODO(bauerb): Investigate integrating the callback with ConnectionRetry.
-            throw new AuthException(false /* isTransientError */, ex);
-        } catch (IOException ex) {
-            throw new AuthException(true /* isTransientError */, ex);
-        }
-    }
-
-    @Override
-    public String getAuthTokenAndFixUserRecoverableErrorIfNeeded(
-            Account account, String authTokenScope) throws AuthException {
-        assert !ThreadUtils.runningOnUiThread();
-        assert AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(account.type);
-        try {
-            return GoogleAuthUtil.getToken(mApplicationContext, account, authTokenScope, null);
-        } catch (UserRecoverableAuthException ex) {
-            Intent intent = ex.getIntent();
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mApplicationContext.startActivity(intent);
-            throw new AuthException(false /* isTransientError */, ex);
-        } catch (GoogleAuthException ex) {
+            // This case includes a UserRecoverableNotifiedException, but most clients will have
+            // their own retry mechanism anyway.
             // TODO(bauerb): Investigate integrating the callback with ConnectionRetry.
             throw new AuthException(false /* isTransientError */, ex);
         } catch (IOException ex) {
@@ -162,8 +142,8 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     /**
      * Records a histogram value for how long time an action has taken using
-     * {@link RecordHistogram#recordTimesHistogram(String, long, TimeUnit))} iff the browser process
-     * has been initialized.
+     * {@link RecordHistogram#recordTimesHistogram(String, long, TimeUnit))} iff the browser
+     * process has been initialized.
      *
      * @param histogramName the name of the histogram.
      * @param elapsedMs the elapsed time in milliseconds.

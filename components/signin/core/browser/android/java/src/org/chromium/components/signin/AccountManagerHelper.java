@@ -14,7 +14,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.net.NetworkChangeNotifier.ConnectionTypeObserver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -292,23 +291,15 @@ public class AccountManagerHelper {
      * Gets the auth token and returns the response asynchronously.
      * This should be called when we have a foreground activity that needs an auth token.
      * If encountered an IO error, it will attempt to retry when the network is back.
-     * If {@code handleUserRecoverableErrors} is true, attempt to immediately resolve
-     * user-recoverable errors. This should only be used if getting the auth token is absolutely
-     * necessary for the browser to function.
      *
      * - Assumes that the account is a valid account.
      */
     public void getAuthToken(final Account account, final String authTokenType,
-            final boolean handleUserRecoverableErrors, final GetAuthTokenCallback callback) {
+            final GetAuthTokenCallback callback) {
         ConnectionRetry.runAuthTask(new AuthTask<String>() {
             @Override
             public String run() throws AuthException {
-                if (handleUserRecoverableErrors) {
-                    return mAccountManager.getAuthTokenAndFixUserRecoverableErrorIfNeeded(
-                            account, authTokenType);
-                } else {
-                    return mAccountManager.getAuthToken(account, authTokenType);
-                }
+                return mAccountManager.getAuthToken(account, authTokenType);
             }
             @Override
             public void onSuccess(String token) {
@@ -329,7 +320,7 @@ public class AccountManagerHelper {
     public void getNewAuthToken(Account account, String authToken, String authTokenType,
             GetAuthTokenCallback callback) {
         invalidateAuthToken(authToken);
-        getAuthToken(account, authTokenType, false /* handleUserRecoverableErrors */, callback);
+        getAuthToken(account, authTokenType, callback);
     }
 
     /**
