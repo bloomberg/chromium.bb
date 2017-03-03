@@ -44,6 +44,9 @@ class PrePaintTreeWalk {
       const LayoutPoint& ancestorPaintOffset,
       bool& hasClip);
 
+  // Returns true if the tree walk should stop before processing this object.
+  bool shouldEndWalkBefore(const LayoutObject&, const PrePaintTreeWalkContext&);
+
   PaintPropertyTreeBuilder m_propertyTreeBuilder;
   PaintInvalidator m_paintInvalidator;
   GeometryMapper& m_geometryMapper;

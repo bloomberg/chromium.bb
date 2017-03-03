@@ -3144,12 +3144,6 @@ void FrameView::prePaint() {
   });
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    // TODO(chrishtr): the cache only needs to be invalidated if one or more of
-    // the property tree nodes changed.
-    geometryMapper().clearCache();
-  }
-
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
     PrePaintTreeWalk(geometryMapper()).walk(*this);
   }

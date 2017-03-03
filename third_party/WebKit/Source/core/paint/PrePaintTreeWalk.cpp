@@ -44,6 +44,13 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame) {
   PrePaintTreeWalkContext initialContext;
   initialContext.treeBuilderContext =
       m_propertyTreeBuilder.setupInitialContext();
+
+  // GeometryMapper depends on paint properties.
+  if (rootFrame.needsPaintPropertyUpdate() ||
+      (rootFrame.layoutView() &&
+       !shouldEndWalkBefore(*rootFrame.layoutView(), initialContext)))
+    m_geometryMapper.clearCache();
+
   walk(rootFrame, initialContext);
   m_paintInvalidator.processPendingDelayedPaintInvalidations();
 }
@@ -213,17 +220,23 @@ void PrePaintTreeWalk::invalidatePaintLayerOptimizationsIfNeeded(
   paintLayer.setPreviousPaintingClipRects(*clipRects);
 }
 
-void PrePaintTreeWalk::walk(const LayoutObject& object,
-                            const PrePaintTreeWalkContext& parentContext) {
-  PrePaintTreeWalkContext context(parentContext);
-
-  // Early out from the treewalk if possible.
-  if (!object.needsPaintPropertyUpdate() &&
+bool PrePaintTreeWalk::shouldEndWalkBefore(
+    const LayoutObject& object,
+    const PrePaintTreeWalkContext& context) {
+  return (
+      !object.needsPaintPropertyUpdate() &&
       !object.descendantNeedsPaintPropertyUpdate() &&
       !context.treeBuilderContext.forceSubtreeUpdate &&
       !context.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
       !object
-           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
+           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState());
+}
+
+void PrePaintTreeWalk::walk(const LayoutObject& object,
+                            const PrePaintTreeWalkContext& parentContext) {
+  PrePaintTreeWalkContext context(parentContext);
+
+  if (shouldEndWalkBefore(object, parentContext))
     return;
 
   // This must happen before updatePropertiesForSelf, because the latter reads
