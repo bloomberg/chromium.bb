@@ -636,6 +636,7 @@ void CompositorImpl::CreateVulkanOutputSurface() {
   if (!vulkan_context_provider)
     return;
 
+  // TODO(crbug.com/582558): Need to match GL and implement DidSwapBuffers.
   auto vulkan_surface = base::MakeUnique<VulkanOutputSurface>(
       vulkan_context_provider, base::ThreadTaskRunnerHandle::Get());
   if (!vulkan_surface->Initialize(window_))
