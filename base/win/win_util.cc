@@ -33,8 +33,10 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -499,8 +501,9 @@ bool IsEnrolledToDomain() {
 
 bool IsDeviceRegisteredWithManagement() {
   static bool is_device_registered_with_management = []() {
-    HMODULE mdm_dll = ::LoadLibrary(L"MDMRegistration.dll");
-    if (!mdm_dll)
+    ScopedNativeLibrary library(
+        FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
+    if (!library.is_valid())
       return false;
 
     using IsDeviceRegisteredWithManagementFunction =
@@ -508,7 +511,7 @@ bool IsDeviceRegisteredWithManagement() {
     IsDeviceRegisteredWithManagementFunction
         is_device_registered_with_management_function =
             reinterpret_cast<IsDeviceRegisteredWithManagementFunction>(
-                ::GetProcAddress(mdm_dll, "IsDeviceRegisteredWithManagement"));
+                library.GetFunctionPointer("IsDeviceRegisteredWithManagement"));
     if (!is_device_registered_with_management_function)
       return false;
 
