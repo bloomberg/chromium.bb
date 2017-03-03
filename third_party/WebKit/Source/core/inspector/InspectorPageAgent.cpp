@@ -779,9 +779,11 @@ InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame) {
             .setUrl(urlWithoutFragment(cachedResource->url()).getString())
             .setType(cachedResourceTypeJson(*cachedResource))
             .setMimeType(cachedResource->response().mimeType())
-            .setLastModified(cachedResource->response().lastModified())
             .setContentSize(cachedResource->response().decodedBodyLength())
             .build();
+    double lastModified = cachedResource->response().lastModified();
+    if (!std::isnan(lastModified))
+      resourceObject->setLastModified(lastModified);
     if (cachedResource->wasCanceled())
       resourceObject->setCanceled(true);
     else if (cachedResource->getStatus() == ResourceStatus::LoadError)
