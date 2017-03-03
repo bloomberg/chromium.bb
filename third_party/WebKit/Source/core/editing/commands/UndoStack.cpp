@@ -99,4 +99,11 @@ DEFINE_TRACE(UndoStack) {
   visitor->trace(m_redoStack);
 }
 
+UndoStack::UndoStepRange::UndoStepRange(const UndoStepStack& steps)
+    : m_stepStack(steps) {}
+
+UndoStack::UndoStepRange UndoStack::undoSteps() const {
+  return UndoStepRange(m_undoStack);
+}
+
 }  // namespace blink

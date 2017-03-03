@@ -43,6 +43,7 @@ class UndoStep;
 // |UndoStack| is owned by and always 1:1 to |Editor|. Since |Editor| is 1:1 to
 // |LocalFrame|, |UndoStack| is also 1:1 to |LocalFrame|.
 class UndoStack final : public GarbageCollected<UndoStack> {
+  using UndoStepStack = HeapDeque<Member<UndoStep>>;
   WTF_MAKE_NONCOPYABLE(UndoStack);
 
  public:
@@ -56,12 +57,26 @@ class UndoStack final : public GarbageCollected<UndoStack> {
   void redo();
   void clear();
 
+  class UndoStepRange {
+    STACK_ALLOCATED();
+
+   public:
+    using ConstIterator = UndoStepStack::const_reverse_iterator;
+    ConstIterator begin() { return m_stepStack.rbegin(); }
+    ConstIterator end() { return m_stepStack.rend(); }
+
+    explicit UndoStepRange(const UndoStepStack&);
+
+   private:
+    const UndoStepStack& m_stepStack;
+  };
+
+  UndoStepRange undoSteps() const;
+
   DECLARE_TRACE();
 
  private:
   UndoStack();
-
-  typedef HeapDeque<Member<UndoStep>> UndoStepStack;
 
   bool m_inRedo;
   UndoStepStack m_undoStack;
