@@ -101,7 +101,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
 
         // Start the billing address normalization.
         PersonalDataManager.getInstance().normalizeAddress(
-                mBillingAddress.getGUID(), AutofillAddress.getCountryCode(mBillingAddress), this);
+                mBillingAddress, AutofillAddress.getCountryCode(mBillingAddress), this);
 
         // Start to get the full card details.
         PersonalDataManager.getInstance().getFullCard(mWebContents, mCard, this);

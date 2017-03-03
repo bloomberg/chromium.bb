@@ -708,22 +708,21 @@ void PersonalDataManagerAndroid::LoadRulesForRegion(
 void PersonalDataManagerAndroid::StartAddressNormalization(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
-    const JavaParamRef<jstring>& jguid,
+    const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& jregion_code,
     jint jtimeout_seconds,
     const JavaParamRef<jobject>& jdelegate) {
   const std::string region_code = ConvertJavaStringToUTF8(env, jregion_code);
-  const std::string guid = ConvertJavaStringToUTF8(env, jguid);
 
-  // Get the profile to normalize.
-  AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(guid);
+  AutofillProfile profile;
+  PopulateNativeProfileFromJava(jprofile, env, &profile);
 
   // Self-deleting object.
   AndroidAddressNormalizerDelegate* requester =
       new AndroidAddressNormalizerDelegate(env, jdelegate);
 
   // Start the normalization.
-  address_normalizer_.StartAddressNormalization(*profile, region_code,
+  address_normalizer_.StartAddressNormalization(profile, region_code,
                                                 jtimeout_seconds, requester);
 }
 
