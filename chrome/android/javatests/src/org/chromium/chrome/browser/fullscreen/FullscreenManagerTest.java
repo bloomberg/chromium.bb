@@ -329,8 +329,10 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         }
     }
 
-    @LargeTest
-    @Feature({"Fullscreen"})
+    /* @LargeTest
+     * @Feature({"Fullscreen"})
+     */
+    @DisabledTest(message = "crbug.com/698413")
     public void testBrowserControlsShownWhenInputIsFocused()
             throws InterruptedException, TimeoutException {
         disableBrowserOverrides();
