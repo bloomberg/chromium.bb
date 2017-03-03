@@ -144,10 +144,6 @@ EphemeralRange firstEphemeralRangeOf(const VisibleSelection& selection) {
   return EphemeralRange(start, end);
 }
 
-Range* firstRangeOf(const VisibleSelection& selection) {
-  return createRange(firstEphemeralRangeOf(selection));
-}
-
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>
 VisibleSelectionTemplate<Strategy>::toNormalizedEphemeralRange() const {

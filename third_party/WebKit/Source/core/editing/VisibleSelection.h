@@ -196,9 +196,6 @@ createVisibleSelection(const SelectionInFlatTree&);
 // to return.
 CORE_EXPORT EphemeralRange firstEphemeralRangeOf(const VisibleSelection&);
 
-// TODO(sof): move more firstRangeOf() uses to be over EphemeralRange instead.
-CORE_EXPORT Range* firstRangeOf(const VisibleSelection&);
-
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisibleSelection&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&,
                                      const VisibleSelectionInFlatTree&);

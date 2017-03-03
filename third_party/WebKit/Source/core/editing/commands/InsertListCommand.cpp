@@ -184,7 +184,8 @@ void InsertListCommand::doApply(EditingState* editingState) {
         startOfParagraph(visibleEndOfSelection, CanSkipOverEditingBoundary)
             .deepEquivalent();
 
-    Range* currentSelection = firstRangeOf(endingSelection());
+    Range* currentSelection =
+        createRange(firstEphemeralRangeOf(endingSelection()));
     ContainerNode* scopeForStartOfSelection = nullptr;
     ContainerNode* scopeForEndOfSelection = nullptr;
     // FIXME: This is an inefficient way to keep selection alive because
@@ -296,9 +297,9 @@ void InsertListCommand::doApply(EditingState* editingState) {
     return;
   }
 
-  DCHECK(firstRangeOf(endingSelection()));
-  doApplyForSingleParagraph(false, listTag, *firstRangeOf(endingSelection()),
-                            editingState);
+  Range* const range = createRange(firstEphemeralRangeOf(endingSelection()));
+  DCHECK(range);
+  doApplyForSingleParagraph(false, listTag, *range, editingState);
 }
 
 InputEvent::InputType InsertListCommand::inputType() const {

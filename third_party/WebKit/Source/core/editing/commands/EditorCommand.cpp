@@ -205,8 +205,8 @@ StaticRangeVector* RangesFromCurrentSelectionOrExtendCaret(
   // We only supports single selections.
   if (selectionModifier.selection().isNone())
     return ranges;
-  ranges->push_back(
-      StaticRange::create(firstRangeOf(selectionModifier.selection())));
+  ranges->push_back(StaticRange::create(
+      createRange(firstEphemeralRangeOf(selectionModifier.selection()))));
   return ranges;
 }
 
@@ -2076,7 +2076,8 @@ static String valueFormatBlock(LocalFrame& frame, Event*) {
   if (!selection.isNonOrphanedCaretOrRange() || !selection.isContentEditable())
     return "";
   Element* formatBlockElement =
-      FormatBlockCommand::elementForFormatBlockCommand(firstRangeOf(selection));
+      FormatBlockCommand::elementForFormatBlockCommand(
+          createRange(firstEphemeralRangeOf(selection)));
   if (!formatBlockElement)
     return "";
   return formatBlockElement->localName();

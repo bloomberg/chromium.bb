@@ -131,7 +131,7 @@ bool TextFinder::find(int identifier,
                                  .computeVisibleSelectionInDOMTreeDeprecated());
   bool activeSelection = !selection.isNone();
   if (activeSelection) {
-    m_activeMatch = firstRangeOf(selection);
+    m_activeMatch = createRange(firstEphemeralRangeOf(selection));
     ownerFrame().frame()->selection().clear();
   }
 

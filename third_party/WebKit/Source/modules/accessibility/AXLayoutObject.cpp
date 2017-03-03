@@ -1791,7 +1791,7 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const {
           ->frame()
           ->selection()
           .computeVisibleSelectionInDOMTreeDeprecated();
-  Range* selectionRange = firstRangeOf(selection);
+  Range* selectionRange = createRange(firstEphemeralRangeOf(selection));
   ContainerNode* parentNode = getNode()->parentNode();
   int nodeIndex = getNode()->nodeIndex();
   if (!selectionRange

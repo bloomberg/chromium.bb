@@ -113,7 +113,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
 
   {
     VisibleSelection selection = select(0, 5);
-    SurroundingText surroundingText(*firstRangeOf(selection), 1);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 1);
 
     EXPECT_EQ("Lorem ", surroundingText.content());
     EXPECT_EQ(0u, surroundingText.startOffsetInContent());
@@ -122,7 +123,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
 
   {
     VisibleSelection selection = select(0, 5);
-    SurroundingText surroundingText(*firstRangeOf(selection), 5);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 5);
 
     EXPECT_EQ("Lorem ip", surroundingText.content().simplifyWhiteSpace());
     EXPECT_EQ(1u, surroundingText.startOffsetInContent());
@@ -131,7 +133,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
 
   {
     VisibleSelection selection = select(0, 5);
-    SurroundingText surroundingText(*firstRangeOf(selection), 42);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 42);
 
     EXPECT_EQ("Lorem ipsum dolor sit amet",
               surroundingText.content().simplifyWhiteSpace());
@@ -141,7 +144,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
 
   {
     VisibleSelection selection = select(6, 11);
-    SurroundingText surroundingText(*firstRangeOf(selection), 2);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 2);
 
     EXPECT_EQ(" ipsum ", surroundingText.content());
     EXPECT_EQ(1u, surroundingText.startOffsetInContent());
@@ -150,7 +154,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
 
   {
     VisibleSelection selection = select(6, 11);
-    SurroundingText surroundingText(*firstRangeOf(selection), 42);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 42);
 
     EXPECT_EQ("Lorem ipsum dolor sit amet",
               surroundingText.content().simplifyWhiteSpace());
@@ -219,7 +224,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
 
   {
     VisibleSelection selection = select(0, 1);
-    SurroundingText surroundingText(*firstRangeOf(selection), 1);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 1);
 
     EXPECT_EQ("fo", surroundingText.content().simplifyWhiteSpace());
     EXPECT_EQ(0u, surroundingText.startOffsetInContent());
@@ -228,7 +234,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
 
   {
     VisibleSelection selection = select(0, 3);
-    SurroundingText surroundingText(*firstRangeOf(selection), 12);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 12);
 
     EXPECT_EQ("e of foo bar", surroundingText.content().simplifyWhiteSpace());
     EXPECT_EQ(5u, surroundingText.startOffsetInContent());
@@ -237,7 +244,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
 
   {
     VisibleSelection selection = select(0, 3);
-    SurroundingText surroundingText(*firstRangeOf(selection), 1337);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               surroundingText.content().simplifyWhiteSpace());
@@ -247,7 +255,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
 
   {
     VisibleSelection selection = select(4, 7);
-    SurroundingText surroundingText(*firstRangeOf(selection), 12);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 12);
 
     EXPECT_EQ("foo bar the se", surroundingText.content().simplifyWhiteSpace());
     EXPECT_EQ(5u, surroundingText.startOffsetInContent());
@@ -256,7 +265,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
 
   {
     VisibleSelection selection = select(0, 7);
-    SurroundingText surroundingText(*firstRangeOf(selection), 1337);
+    SurroundingText surroundingText(
+        *createRange(firstEphemeralRangeOf(selection)), 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               surroundingText.content().simplifyWhiteSpace());

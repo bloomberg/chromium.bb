@@ -208,7 +208,7 @@ TEST_F(VisibleSelectionTest, Initialisation) {
   EXPECT_TRUE(selection.isCaret());
   EXPECT_TRUE(selectionInFlatTree.isCaret());
 
-  Range* range = firstRangeOf(selection);
+  Range* range = createRange(firstEphemeralRangeOf(selection));
   EXPECT_EQ(0u, range->startOffset());
   EXPECT_EQ(0u, range->endOffset());
   EXPECT_EQ("", range->text());
@@ -381,7 +381,7 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
     selectionInFlatTree =
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
-    Range* range = firstRangeOf(selection);
+    Range* range = createRange(firstEphemeralRangeOf(selection));
     EXPECT_EQ(0u, range->startOffset());
     EXPECT_EQ(5u, range->endOffset());
     EXPECT_EQ("Lorem", range->text());
@@ -397,7 +397,7 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
     selectionInFlatTree =
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
-    Range* range = firstRangeOf(selection);
+    Range* range = createRange(firstEphemeralRangeOf(selection));
     EXPECT_EQ(6u, range->startOffset());
     EXPECT_EQ(11u, range->endOffset());
     EXPECT_EQ("ipsum", range->text());
@@ -415,7 +415,7 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
     selectionInFlatTree =
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
-    Range* range = firstRangeOf(selection);
+    Range* range = createRange(firstEphemeralRangeOf(selection));
     EXPECT_EQ(5u, range->startOffset());
     EXPECT_EQ(6u, range->endOffset());
     EXPECT_EQ(" ", range->text());
@@ -433,7 +433,7 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
     selectionInFlatTree =
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
-    Range* range = firstRangeOf(selection);
+    Range* range = createRange(firstEphemeralRangeOf(selection));
     EXPECT_EQ(26u, range->startOffset());
     EXPECT_EQ(27u, range->endOffset());
     EXPECT_EQ(",", range->text());
@@ -449,7 +449,7 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
     selectionInFlatTree =
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
-    Range* range = firstRangeOf(selection);
+    Range* range = createRange(firstEphemeralRangeOf(selection));
     EXPECT_EQ(27u, range->startOffset());
     EXPECT_EQ(28u, range->endOffset());
     EXPECT_EQ(" ", range->text());
@@ -465,7 +465,7 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
     selectionInFlatTree =
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
-    Range* range = firstRangeOf(selection);
+    Range* range = createRange(firstEphemeralRangeOf(selection));
     EXPECT_EQ(0u, range->startOffset());
     EXPECT_EQ(5u, range->endOffset());
     EXPECT_EQ("Lorem", range->text());
@@ -481,7 +481,7 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
     selectionInFlatTree =
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
-    Range* range = firstRangeOf(selection);
+    Range* range = createRange(firstEphemeralRangeOf(selection));
     EXPECT_EQ(0u, range->startOffset());
     EXPECT_EQ(11u, range->endOffset());
     EXPECT_EQ("Lorem ipsum", range->text());

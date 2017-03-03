@@ -2082,11 +2082,11 @@ const StaticRangeVector* targetRangesForInputEvent(const Node& node) {
   if (!hasRichlyEditableStyle(node))
     return nullptr;
   return new StaticRangeVector(
-      1, StaticRange::create(
-             firstRangeOf(node.document()
-                              .frame()
-                              ->selection()
-                              .computeVisibleSelectionInDOMTreeDeprecated())));
+      1, StaticRange::create(createRange(firstEphemeralRangeOf(
+             node.document()
+                 .frame()
+                 ->selection()
+                 .computeVisibleSelectionInDOMTreeDeprecated()))));
 }
 
 DispatchEventResult dispatchBeforeInputInsertText(Node* target,

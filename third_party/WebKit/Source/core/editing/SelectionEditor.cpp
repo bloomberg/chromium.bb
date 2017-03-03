@@ -368,7 +368,7 @@ void SelectionEditor::setLogicalRange(Range* range) {
 Range* SelectionEditor::firstRange() const {
   if (m_logicalRange)
     return m_logicalRange->cloneRange();
-  return firstRangeOf(computeVisibleSelectionInDOMTree());
+  return createRange(firstEphemeralRangeOf(computeVisibleSelectionInDOMTree()));
 }
 
 bool SelectionEditor::shouldAlwaysUseDirectionalSelection() const {
