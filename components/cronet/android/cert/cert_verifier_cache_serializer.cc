@@ -55,7 +55,7 @@ bool SerializeCertificate(net::X509Certificate* cert,
   certificate->add_cert_numbers(cert_number);
   const net::X509Certificate::X509Certificate::OSCertHandles&
       intermediate_ca_certs = cert->GetIntermediateCertificates();
-  for (const auto& intermediate : intermediate_ca_certs) {
+  for (auto* const intermediate : intermediate_ca_certs) {
     if (!SerializeCertHandle(intermediate, serialized_certs, &cert_number))
       return false;
     certificate->add_cert_numbers(cert_number);

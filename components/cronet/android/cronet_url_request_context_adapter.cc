@@ -799,7 +799,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 
   // Iterate through PKP configuration for every host.
-  for (const auto& pkp : config->pkp_list) {
+  for (auto* const pkp : config->pkp_list) {
     // Add the host pinning.
     context_->transport_security_state()->AddHPKP(
         pkp->host, pkp->expiration_date, pkp->include_subdomains,
