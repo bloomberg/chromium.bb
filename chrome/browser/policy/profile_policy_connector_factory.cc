@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
@@ -21,8 +20,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -110,17 +107,7 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
 
 #if defined(OS_CHROMEOS)
   Profile* const profile = Profile::FromBrowserContext(context);
-  if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    policy::DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager =
-        g_browser_process->platform_part()
-            ->browser_policy_connector_chromeos()
-            ->GetDeviceCloudPolicyManager();
-    // TODO(tnagel): Do we need to do something for Active Directory management?
-    if (device_cloud_policy_manager) {
-      device_cloud_policy_manager->SetSigninProfileSchemaRegistry(
-          schema_registry);
-    }
-  } else {
+  if (!chromeos::ProfileHelper::IsSigninProfile(profile)) {
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     CHECK(user);
   }
