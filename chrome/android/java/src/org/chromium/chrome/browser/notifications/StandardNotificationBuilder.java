@@ -67,7 +67,7 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         builder.setOnlyAlertOnce(!mRenotify);
         setGroupOnBuilder(builder, mOrigin);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Notification.Builder.setPublicVersion was added in Android L.
+            // Public versions only supported since L, and createPublicNotification requires L+.
             builder.setPublicVersion(createPublicNotification(mContext));
         }
         return builder.build();
