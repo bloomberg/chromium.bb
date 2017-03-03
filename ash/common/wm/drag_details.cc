@@ -6,7 +6,8 @@
 
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 
@@ -66,7 +67,7 @@ DragDetails::DragDetails(WmWindow* window,
       source(source),
       should_attach_to_shelf(
           window->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
-          window->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED)) {
+          window->aura_window()->GetProperty(kPanelAttachedKey)) {
   wm::WindowState* window_state = window->GetWindowState();
   if ((window_state->IsNormalOrSnapped() || window_state->IsDocked()) &&
       window_state->HasRestoreBounds() && window_component == HTCAPTION) {

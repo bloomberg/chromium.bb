@@ -10,8 +10,8 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace/magnetism_matcher.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ui/base/hit_test.h"
@@ -205,7 +205,7 @@ void DockedWindowResizer::FinishedDragging(
   WmWindow* window = GetTarget();
   const bool is_attached_panel =
       window->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
-      window->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED);
+      window->aura_window()->GetProperty(kPanelAttachedKey);
   const bool is_resized =
       (details().bounds_change & WindowResizer::kBoundsChange_Resizes) != 0;
 

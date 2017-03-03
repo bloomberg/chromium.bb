@@ -25,7 +25,6 @@ class Display;
 }
 
 namespace gfx {
-class ImageSkia;
 class Point;
 class Rect;
 class Size;
@@ -167,18 +166,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   gfx::Transform GetTargetTransform() const;
 
   bool IsSystemModal() const;
-
-  bool GetBoolProperty(WmWindowProperty key);
-  void SetBoolProperty(WmWindowProperty key, bool value);
-  SkColor GetColorProperty(WmWindowProperty key);
-  void SetColorProperty(WmWindowProperty key, SkColor value);
-  int GetIntProperty(WmWindowProperty key);
-  void SetIntProperty(WmWindowProperty key, int value);
-  std::string GetStringProperty(WmWindowProperty key);
-  void SetStringProperty(WmWindowProperty key, const std::string& value);
-
-  gfx::ImageSkia GetWindowIcon();
-  gfx::ImageSkia GetAppIcon();
 
   wm::WindowState* GetWindowState() {
     return const_cast<wm::WindowState*>(

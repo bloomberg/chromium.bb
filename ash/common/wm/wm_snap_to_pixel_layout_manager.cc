@@ -5,9 +5,10 @@
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/window_properties.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 namespace wm {
@@ -22,8 +23,7 @@ void WmSnapToPixelLayoutManager::InstallOnContainers(WmWindow* window) {
     if (child->GetShellWindowId() < kShellWindowId_Min ||
         child->GetShellWindowId() > kShellWindowId_Max)  // not a container
       continue;
-    if (child->GetBoolProperty(
-            WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY)) {
+    if (child->aura_window()->GetProperty(kSnapChildrenToPixelBoundary)) {
       if (!child->GetLayoutManager())
         child->SetLayoutManager(base::MakeUnique<WmSnapToPixelLayoutManager>());
     } else {

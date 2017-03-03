@@ -6,7 +6,6 @@
 
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -105,7 +104,7 @@ ui::Layer* WindowMirrorView::GetMirrorLayer() {
 }
 
 gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
-  int insets = target_->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
+  int insets = target_->aura_window()->GetProperty(aura::client::kTopViewInset);
   if (insets > 0) {
     gfx::Rect bounds(target_->GetBounds().size());
     bounds.Inset(0, insets, 0, 0);

@@ -16,8 +16,8 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/wm/window_properties.h"
 #include "base/auto_reset.h"
@@ -339,7 +339,7 @@ void PanelLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   if (in_add_window_)
     return;
   base::AutoReset<bool> auto_reset_in_add_window(&in_add_window_, true);
-  if (!child->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED)) {
+  if (!child->aura_window()->GetProperty(kPanelAttachedKey)) {
     // This should only happen when a window is added to panel container as a
     // result of bounds change from within the application during a drag.
     // If so we have already stopped the drag and should reparent the panel

@@ -10,8 +10,8 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -92,7 +92,7 @@ WmWindow* GetDefaultParent(WmWindow* context,
       return target_root->GetChildByShellWindowId(
           kShellWindowId_UnparentedControlContainer);
     case ui::wm::WINDOW_TYPE_PANEL:
-      if (window->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED))
+      if (window->aura_window()->GetProperty(kPanelAttachedKey))
         return target_root->GetChildByShellWindowId(
             kShellWindowId_PanelContainer);
       return GetContainerFromAlwaysOnTopController(target_root, window);

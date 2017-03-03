@@ -17,9 +17,9 @@
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -43,8 +43,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(WmWindow* window)
   shell_->AddActivationObserver(this);
   root_window_->aura_window()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
-  DCHECK(window->GetBoolProperty(
-      WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY));
+  DCHECK(window->aura_window()->GetProperty(kSnapChildrenToPixelBoundary));
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {

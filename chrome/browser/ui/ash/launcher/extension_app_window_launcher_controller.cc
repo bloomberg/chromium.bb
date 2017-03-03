@@ -7,7 +7,7 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -192,8 +192,8 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     app_controller_map_[app_shelf_id] = controller;
   }
   owner()->SetItemStatus(shelf_id, status);
-  ash::WmWindow::Get(window)->SetIntProperty(ash::WmWindowProperty::SHELF_ID,
-                                             shelf_id);
+  ash::WmWindow::Get(window)->aura_window()->SetProperty(ash::kShelfIDKey,
+                                                         shelf_id);
 }
 
 void ExtensionAppWindowLauncherController::UnregisterApp(aura::Window* window) {

@@ -16,10 +16,10 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_view_test_api.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
@@ -2162,7 +2162,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
 
   int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   ash::ShelfID browser_id = model_->items()[browser_index].id;
-  ash::ShelfID id = window->GetIntProperty(ash::WmWindowProperty::SHELF_ID);
+  ash::ShelfID id = window->aura_window()->GetProperty(ash::kShelfIDKey);
   EXPECT_EQ(browser_id, id);
 
   ash::ShelfID app_id = CreateShortcut("app1");
@@ -2172,13 +2172,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   WmShelf::ActivateShelfItem(model_->ItemIndexByID(app_id));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  id = window->GetIntProperty(ash::WmWindowProperty::SHELF_ID);
+  id = window->aura_window()->GetProperty(ash::kShelfIDKey);
   EXPECT_EQ(app_id, id);
 
   // Activate the tab at index 0 (NTP) and expect a browser ShelfID.
   browser()->tab_strip_model()->ActivateTabAt(0, false);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
-  id = window->GetIntProperty(ash::WmWindowProperty::SHELF_ID);
+  id = window->aura_window()->GetProperty(ash::kShelfIDKey);
   EXPECT_EQ(browser_id, id);
 }
 

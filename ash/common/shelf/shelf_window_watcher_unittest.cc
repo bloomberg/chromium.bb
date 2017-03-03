@@ -11,8 +11,8 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/base/hit_test.h"
@@ -37,7 +37,8 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
 
   static ShelfID CreateShelfItem(WmWindow* window) {
     ShelfID id = WmShell::Get()->shelf_model()->next_id();
-    window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_DIALOG);
+    window->aura_window()->SetProperty(kShelfItemTypeKey,
+                                       static_cast<int32_t>(TYPE_DIALOG));
     return id;
   }
 
@@ -102,12 +103,15 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w2].status);
 
   // ShelfItem is removed when the item type window property is cleared.
-  window1->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_UNDEFINED);
+  window1->aura_window()->SetProperty(kShelfItemTypeKey,
+                                      static_cast<int32_t>(TYPE_UNDEFINED));
   EXPECT_EQ(2, model_->item_count());
-  window2->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_UNDEFINED);
+  window2->aura_window()->SetProperty(kShelfItemTypeKey,
+                                      static_cast<int32_t>(TYPE_UNDEFINED));
   EXPECT_EQ(1, model_->item_count());
   // Clearing twice doesn't do anything.
-  window2->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_UNDEFINED);
+  window2->aura_window()->SetProperty(kShelfItemTypeKey,
+                                      static_cast<int32_t>(TYPE_UNDEFINED));
   EXPECT_EQ(1, model_->item_count());
 }
 
@@ -169,7 +173,8 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
 
   // Update the ShelfItemType for |window|.
-  window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP);
+  window->aura_window()->SetProperty(kShelfItemTypeKey,
+                                     static_cast<int32_t>(TYPE_APP));
   // No new item is created after updating a launcher item.
   EXPECT_EQ(2, model_->item_count());
   // index and id are not changed after updating a launcher item.
@@ -302,12 +307,14 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_PanelContainer, gfx::Rect());
   WmWindow* window1 = WmWindow::Get(widget1->GetNativeWindow());
-  window1->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP_PANEL);
+  window1->aura_window()->SetProperty(kShelfItemTypeKey,
+                                      static_cast<int32_t>(TYPE_APP_PANEL));
   EXPECT_EQ(2, model_->item_count());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   WmWindow* window2 = WmWindow::Get(widget2->GetNativeWindow());
-  window2->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP_PANEL);
+  window2->aura_window()->SetProperty(kShelfItemTypeKey,
+                                      static_cast<int32_t>(TYPE_APP_PANEL));
   EXPECT_EQ(3, model_->item_count());
 
   // Create a panel-type widget to mimic Chrome's app panel windows.
@@ -322,8 +329,8 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   panel_widget.Init(panel_params);
   panel_widget.Show();
   WmWindow* panel_window = WmWindow::Get(panel_widget.GetNativeWindow());
-  panel_window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE,
-                               TYPE_APP_PANEL);
+  panel_window->aura_window()->SetProperty(
+      kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP_PANEL));
   EXPECT_EQ(4, model_->item_count());
 
   // Each ShelfItem is removed when the associated window is destroyed.
@@ -340,7 +347,8 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
 
   WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
                                                ui::LAYER_NOT_DRAWN);
-  window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP);
+  window->aura_window()->SetProperty(kShelfItemTypeKey,
+                                     static_cast<int32_t>(TYPE_APP));
   WmShell::Get()
       ->GetPrimaryRootWindow()
       ->GetChildByShellWindowId(kShellWindowId_DefaultContainer)
@@ -350,7 +358,8 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
 
   WmWindow* child_window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
                                                      ui::LAYER_NOT_DRAWN);
-  child_window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP);
+  child_window->aura_window()->SetProperty(kShelfItemTypeKey,
+                                           static_cast<int32_t>(TYPE_APP));
   window->AddChild(child_window);
   child_window->Show();
   // |child_window| should not result in adding a new entry.

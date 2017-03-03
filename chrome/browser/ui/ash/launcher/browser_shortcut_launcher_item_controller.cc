@@ -11,9 +11,9 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -178,10 +178,9 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
       IsSettingsBrowser(browser))
     return;
 
-  ash::WmWindow::Get(browser->window()->GetNativeWindow())
-      ->SetIntProperty(
-          ash::WmWindowProperty::SHELF_ID,
-          launcher_controller()->GetShelfIDForWebContents(web_contents));
+  browser->window()->GetNativeWindow()->SetProperty(
+      ash::kShelfIDKey,
+      launcher_controller()->GetShelfIDForWebContents(web_contents));
 }
 
 ash::ShelfAction BrowserShortcutLauncherItemController::ItemSelected(

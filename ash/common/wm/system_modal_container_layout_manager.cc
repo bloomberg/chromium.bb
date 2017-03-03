@@ -10,7 +10,6 @@
 #include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -27,7 +26,7 @@ const int kCenterPixelDelta = 32;
 
 ui::ModalType GetModalType(WmWindow* window) {
   return static_cast<ui::ModalType>(
-      window->GetIntProperty(WmWindowProperty::MODAL_TYPE));
+      window->aura_window()->GetProperty(aura::client::kModalKey));
 }
 
 bool HasTransientAncestor(const WmWindow* window, const WmWindow* ancestor) {

@@ -587,7 +587,6 @@ component("ash") {
     "common/wm_transient_window_observer.h",
     "common/wm_window.cc",
     "common/wm_window.h",
-    "common/wm_window_property.h",
     "common/wm_window_user_data.h",
     "debug.cc",
     "debug.h",

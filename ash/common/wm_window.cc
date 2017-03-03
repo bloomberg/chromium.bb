@@ -11,7 +11,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
 #include "ash/common/wm_transient_window_observer.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -295,126 +294,6 @@ gfx::Transform WmWindow::GetTargetTransform() const {
 
 bool WmWindow::IsSystemModal() const {
   return window_->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
-}
-
-bool WmWindow::GetBoolProperty(WmWindowProperty key) {
-  switch (key) {
-    case WmWindowProperty::DRAW_ATTENTION:
-      return window_->GetProperty(aura::client::kDrawAttentionKey);
-
-    case WmWindowProperty::PANEL_ATTACHED:
-      return window_->GetProperty(kPanelAttachedKey);
-
-    case WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY:
-      return window_->GetProperty(kSnapChildrenToPixelBoundary);
-
-    case WmWindowProperty::ALWAYS_ON_TOP:
-      return window_->GetProperty(aura::client::kAlwaysOnTopKey);
-
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  return false;
-}
-
-void WmWindow::SetBoolProperty(WmWindowProperty key, bool value) {
-  switch (key) {
-    case WmWindowProperty::PANEL_ATTACHED:
-      window_->SetProperty(kPanelAttachedKey, value);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-SkColor WmWindow::GetColorProperty(WmWindowProperty key) {
-  if (key == WmWindowProperty::TOP_VIEW_COLOR)
-    return window_->GetProperty(aura::client::kTopViewColor);
-
-  NOTREACHED();
-  return 0;
-}
-
-void WmWindow::SetColorProperty(WmWindowProperty key, SkColor value) {
-  if (key == WmWindowProperty::TOP_VIEW_COLOR) {
-    window_->SetProperty(aura::client::kTopViewColor, value);
-    return;
-  }
-
-  NOTREACHED();
-}
-
-int WmWindow::GetIntProperty(WmWindowProperty key) {
-  if (key == WmWindowProperty::MODAL_TYPE)
-    return window_->GetProperty(aura::client::kModalKey);
-
-  if (key == WmWindowProperty::SHELF_ID)
-    return window_->GetProperty(kShelfIDKey);
-
-  if (key == WmWindowProperty::SHELF_ITEM_TYPE) {
-    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
-        window_->GetProperty(kShelfItemTypeKey) != TYPE_UNDEFINED) {
-      return window_->GetProperty(kShelfItemTypeKey);
-    }
-    // Mash provides a default shelf item type for non-ignored windows.
-    return GetWindowState()->ignored_by_shelf() ? TYPE_UNDEFINED : TYPE_APP;
-  }
-
-  if (key == WmWindowProperty::TOP_VIEW_INSET)
-    return window_->GetProperty(aura::client::kTopViewInset);
-
-  NOTREACHED();
-  return 0;
-}
-
-void WmWindow::SetIntProperty(WmWindowProperty key, int value) {
-  if (key == WmWindowProperty::SHELF_ID) {
-    window_->SetProperty(kShelfIDKey, value);
-    return;
-  }
-  if (key == WmWindowProperty::SHELF_ITEM_TYPE) {
-    window_->SetProperty(kShelfItemTypeKey, value);
-    return;
-  }
-  if (key == WmWindowProperty::TOP_VIEW_INSET) {
-    window_->SetProperty(aura::client::kTopViewInset, value);
-    return;
-  }
-
-  NOTREACHED();
-}
-
-std::string WmWindow::GetStringProperty(WmWindowProperty key) {
-  if (key == WmWindowProperty::APP_ID) {
-    std::string* value = window_->GetProperty(aura::client::kAppIdKey);
-    return value ? *value : std::string();
-  }
-
-  NOTREACHED();
-  return std::string();
-}
-
-void WmWindow::SetStringProperty(WmWindowProperty key,
-                                 const std::string& value) {
-  if (key == WmWindowProperty::APP_ID) {
-    window_->SetProperty(aura::client::kAppIdKey, new std::string(value));
-    return;
-  }
-
-  NOTREACHED();
-}
-
-gfx::ImageSkia WmWindow::GetWindowIcon() {
-  gfx::ImageSkia* image = window_->GetProperty(aura::client::kWindowIconKey);
-  return image ? *image : gfx::ImageSkia();
-}
-
-gfx::ImageSkia WmWindow::GetAppIcon() {
-  gfx::ImageSkia* image = window_->GetProperty(aura::client::kAppIconKey);
-  return image ? *image : gfx::ImageSkia();
 }
 
 const wm::WindowState* WmWindow::GetWindowState() const {

@@ -26,7 +26,6 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -160,7 +159,8 @@ class WindowSelectorTest : public test::AshTestBase {
     widget->Init(params);
     widget->Show();
     WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
-    window->SetIntProperty(WmWindowProperty::TOP_VIEW_INSET, kHeaderHeight);
+    window->aura_window()->SetProperty(aura::client::kTopViewInset,
+                                       kHeaderHeight);
     ParentWindowInPrimaryRootWindow(widget->GetNativeWindow());
     return widget;
   }
@@ -1130,7 +1130,8 @@ TEST_F(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
   widget->Init(params);
   widget->Show();
   WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
-  window->SetIntProperty(WmWindowProperty::TOP_VIEW_INSET, kHeaderHeight);
+  window->aura_window()->SetProperty(aura::client::kTopViewInset,
+                                     kHeaderHeight);
 
   ASSERT_EQ(root_windows[1], window1->GetRootWindow());
 

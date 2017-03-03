@@ -14,8 +14,8 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/root_window_controller.h"
+#include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -63,8 +63,7 @@ void PrintWindowHierarchy(const WmWindow* active_window,
        << ((window == active_window) ? " [active] " : " ")
        << (window->IsVisible() ? " visible " : " ")
        << window->GetBounds().ToString()
-       << (window->GetBoolProperty(
-               WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY)
+       << (window->aura_window()->GetProperty(kSnapChildrenToPixelBoundary)
                ? " [snapped] "
                : "")
        << ", subpixel offset="

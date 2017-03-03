@@ -13,12 +13,12 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/root_window_controller.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -275,7 +275,7 @@ SkColor ScopedTransformOverviewWindow::GetTopColor() const {
       return SK_ColorTRANSPARENT;
     }
   }
-  return window_->GetColorProperty(WmWindowProperty::TOP_VIEW_COLOR);
+  return window_->aura_window()->GetProperty(aura::client::kTopViewColor);
 }
 
 int ScopedTransformOverviewWindow::GetTopInset() const {
@@ -290,7 +290,7 @@ int ScopedTransformOverviewWindow::GetTopInset() const {
       return 0;
     }
   }
-  return window_->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
+  return window_->aura_window()->GetProperty(aura::client::kTopViewInset);
 }
 
 void ScopedTransformOverviewWindow::OnWindowDestroyed() {

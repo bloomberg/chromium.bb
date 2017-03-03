@@ -6,7 +6,6 @@
 
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -31,7 +30,7 @@ AlwaysOnTopController::~AlwaysOnTopController() {
 
 WmWindow* AlwaysOnTopController::GetContainer(WmWindow* window) const {
   DCHECK(always_on_top_container_);
-  if (window->GetBoolProperty(WmWindowProperty::ALWAYS_ON_TOP))
+  if (window->aura_window()->GetProperty(aura::client::kAlwaysOnTopKey))
     return always_on_top_container_;
   return always_on_top_container_->GetRootWindow()->GetChildByShellWindowId(
       kShellWindowId_DefaultContainer);

@@ -9,8 +9,9 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
 
 namespace ash {
@@ -41,7 +42,7 @@ ShelfAction ShelfWindowWatcherItemDelegate::ItemSelected(
     ShelfLaunchSource source) {
   // Move panels attached on another display to the current display.
   if (GetShelfItemType(id_) == TYPE_APP_PANEL &&
-      window_->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED) &&
+      window_->aura_window()->GetProperty(kPanelAttachedKey) &&
       wm::MoveWindowToDisplay(window_->aura_window(), display_id)) {
     window_->Activate();
     return SHELF_ACTION_WINDOW_ACTIVATED;

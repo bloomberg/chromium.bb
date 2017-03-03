@@ -12,8 +12,8 @@
 #include "ash/common/test/test_shelf_item_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/root_window_controller.h"
+#include "ash/wm/window_properties.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 
@@ -62,7 +62,7 @@ void TestShelfDelegate::AddShelfItem(WmWindow* window) {
 void TestShelfDelegate::AddShelfItem(WmWindow* window,
                                      const std::string& app_id) {
   AddShelfItem(window, STATUS_CLOSED);
-  ShelfID shelf_id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
+  ShelfID shelf_id = window->aura_window()->GetProperty(kShelfIDKey);
   AddShelfIDToAppIDMapping(shelf_id, app_id);
 }
 
@@ -80,11 +80,11 @@ void TestShelfDelegate::AddShelfItem(WmWindow* window, ShelfItemStatus status) {
 
   model->SetShelfItemDelegate(id,
                               base::MakeUnique<TestShelfItemDelegate>(window));
-  window->SetIntProperty(WmWindowProperty::SHELF_ID, id);
+  window->aura_window()->SetProperty(kShelfIDKey, id);
 }
 
 void TestShelfDelegate::RemoveShelfItemForWindow(WmWindow* window) {
-  ShelfID shelf_id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
+  ShelfID shelf_id = window->aura_window()->GetProperty(kShelfIDKey);
   if (shelf_id == 0)
     return;
   ShelfModel* model = WmShell::Get()->shelf_model();
