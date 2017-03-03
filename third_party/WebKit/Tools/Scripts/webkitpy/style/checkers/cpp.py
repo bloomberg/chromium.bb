@@ -32,7 +32,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # This is the modified version of Google's cpplint. The original code is
-# http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py
+# https://github.com/google/styleguide/tree/gh-pages/cpplint
 
 """Support for check-webkit-style."""
 
@@ -1597,7 +1597,7 @@ def check_for_function_lengths(clean_lines, line_number, function_state, error):
     """Reports for long function bodies.
 
     For an overview why this is done, see:
-    http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Write_Short_Functions
+    https://google.github.io/styleguide/cppguide.html#Write_Short_Functions
 
     Blank/comment lines are not counted so as to avoid encouraging the removal
     of vertical space and comments just to get through a lint check.
@@ -2818,7 +2818,7 @@ def check_language(filename, clean_lines, line_number, file_extension, include_s
             and line[-1] != '\\'):
         error(line_number, 'build/namespaces', 4,
               'Do not use unnamed namespaces in header files.  See '
-              'http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Namespaces'
+              'https://google.github.io/styleguide/cppguide.html#Unnamed_Namespaces_and_Static_Variables'
               ' for more information.')
 
     # Check for plain bitfields declared without either "singed" or "unsigned".

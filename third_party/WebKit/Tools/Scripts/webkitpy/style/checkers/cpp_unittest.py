@@ -1691,7 +1691,7 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_language_rules_check(
             'foo.h', 'namespace {',
             'Do not use unnamed namespaces in header files.  See'
-            ' http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Namespaces'
+            ' https://google.github.io/styleguide/cppguide.html#Unnamed_Namespaces_and_Static_Variables'
             ' for more information.  [build/namespaces] [4]')
         # namespace registration macros are OK.
         self.assert_language_rules_check('foo.h', 'namespace {  \\', '')
