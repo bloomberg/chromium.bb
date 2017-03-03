@@ -13,11 +13,11 @@ source_set("public") {
     "cwv.h",
     "cwv_delegate.h",
     "cwv_html_element.h",
+    "cwv_navigation_delegate.h",
     "cwv_translate_delegate.h",
     "cwv_ui_delegate.h",
     "cwv_web_view.h",
     "cwv_web_view_configuration.h",
-    "cwv_web_view_delegate.h",
     "cwv_website_data_store.h",
   ]
 

@@ -23,34 +23,38 @@
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/internal/web_view_java_script_dialog_presenter.h"
+#import "ios/web_view/internal/web_view_web_state_policy_decider.h"
+#import "ios/web_view/public/cwv_navigation_delegate.h"
 #import "ios/web_view/public/cwv_ui_delegate.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
-#import "ios/web_view/public/cwv_web_view_delegate.h"
 #import "ios/web_view/public/cwv_website_data_store.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
   CWVWebViewConfiguration* _configuration;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+  std::unique_ptr<ios_web_view::WebViewWebStatePolicyDecider>
+      _webStatePolicyDecider;
   CGFloat _loadProgress;
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<ios_web_view::WebViewJavaScriptDialogPresenter>
       _javaScriptDialogPresenter;
 }
 
+// Redefine the property as readwrite to define -setLoadProgress:, which can be
+// used to send KVO notification.
+@property(nonatomic, readwrite) CGFloat loadProgress;
+
 @end
 
 @implementation CWVWebView
 
-@synthesize delegate = _delegate;
+@synthesize navigationDelegate = _navigationDelegate;
+@synthesize translationDelegate = _translationDelegate;
 @synthesize loadProgress = _loadProgress;
 @synthesize UIDelegate = _UIDelegate;
 
@@ -70,9 +74,9 @@
     _webStateDelegate = base::MakeUnique<web::WebStateDelegateBridge>(self);
     _webState->SetDelegate(_webStateDelegate.get());
 
-    _javaScriptDialogPresenter =
-        base::MakeUnique<ios_web_view::WebViewJavaScriptDialogPresenter>(
-            self, _UIDelegate);
+    _webStatePolicyDecider =
+        base::MakeUnique<ios_web_view::WebViewWebStatePolicyDecider>(
+            _webState.get(), self);
 
     // Initialize Translate.
     ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
@@ -151,56 +155,55 @@
                                        completionHandler:completionHandler];
 }
 
-- (void)setDelegate:(id<CWVWebViewDelegate>)delegate {
-  _delegate = delegate;
-
-  // Set up the translate delegate.
-  ios_web_view::WebViewTranslateClient* translateClient =
-      ios_web_view::WebViewTranslateClient::FromWebState(_webState.get());
-  id<CWVTranslateDelegate> translateDelegate = nil;
-  if ([_delegate respondsToSelector:@selector(translateDelegate)])
-    translateDelegate = [_delegate translateDelegate];
-  translateClient->set_translate_delegate(translateDelegate);
-}
-
 - (void)setUIDelegate:(id<CWVUIDelegate>)UIDelegate {
   _UIDelegate = UIDelegate;
 
   _javaScriptDialogPresenter->SetUIDelegate(_UIDelegate);
 }
 
-- (void)notifyDidUpdateWithChanges:(CRIWVWebViewUpdateType)changes {
-  SEL selector = @selector(webView:didUpdateWithChanges:);
-  if ([_delegate respondsToSelector:selector]) {
-    [_delegate webView:self didUpdateWithChanges:changes];
-  }
+- (void)setTranslationDelegate:(id<CWVTranslateDelegate>)translationDelegate {
+  _translationDelegate = translationDelegate;
+  ios_web_view::WebViewTranslateClient::FromWebState(_webState.get())
+      ->set_translate_delegate(translationDelegate);
 }
 
 // -----------------------------------------------------------------------
 // WebStateObserver implementation.
 
-- (void)didStartProvisionalNavigationForURL:(const GURL&)URL {
-  [self notifyDidUpdateWithChanges:CRIWVWebViewUpdateTypeURL];
+- (void)webState:(web::WebState*)webState
+    didStartProvisionalNavigationForURL:(const GURL&)URL {
+  SEL selector = @selector(webViewDidStartProvisionalNavigation:);
+  if ([_navigationDelegate respondsToSelector:selector]) {
+    [_navigationDelegate webViewDidStartProvisionalNavigation:self];
+  }
 }
 
-- (void)didCommitNavigationWithDetails:
-    (const web::LoadCommittedDetails&)details {
-  [self notifyDidUpdateWithChanges:CRIWVWebViewUpdateTypeURL];
+- (void)webState:(web::WebState*)webState
+    didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
+  if ([_navigationDelegate
+          respondsToSelector:@selector(webViewDidCommitNavigation:)]) {
+    [_navigationDelegate webViewDidCommitNavigation:self];
+  }
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState.get(), webState);
-  SEL selector = @selector(webView:didFinishLoadingWithURL:loadSuccess:);
-  if ([_delegate respondsToSelector:selector]) {
-    [_delegate webView:self
-        didFinishLoadingWithURL:[self visibleURL]
-                    loadSuccess:success];
+  SEL selector = @selector(webView:didLoadPageWithSuccess:);
+  if ([_navigationDelegate respondsToSelector:selector]) {
+    [_navigationDelegate webView:self didLoadPageWithSuccess:success];
   }
 }
 
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress {
-  [self notifyDidUpdateWithChanges:CRIWVWebViewUpdateTypeProgress];
+  self.loadProgress = progress;
+}
+
+- (void)renderProcessGoneForWebState:(web::WebState*)webState {
+  SEL selector = @selector(webViewWebContentProcessDidTerminate:);
+  if ([_navigationDelegate respondsToSelector:selector]) {
+    [_navigationDelegate webViewWebContentProcessDidTerminate:self];
+  }
 }
 
 - (BOOL)webState:(web::WebState*)webState

@@ -32,6 +32,8 @@ source_set("internal") {
     "web_view_web_main_delegate.mm",
     "web_view_web_main_parts.h",
     "web_view_web_main_parts.mm",
+    "web_view_web_state_policy_decider.h",
+    "web_view_web_state_policy_decider.mm",
   ]
   deps = [
     "//base",

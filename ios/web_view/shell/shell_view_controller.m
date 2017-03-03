@@ -19,8 +19,8 @@
 NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
     @"WebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier";
 
-@interface ShellViewController ()<CWVUIDelegate,
-                                  CWVWebViewDelegate,
+@interface ShellViewController ()<CWVNavigationDelegate,
+                                  CWVUIDelegate,
                                   UITextFieldDelegate>
 // Container for |webView|.
 @property(nonatomic, strong) UIView* containerView;
@@ -130,8 +130,10 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   [_toolbar addSubview:_field];
 
   self.webView = [CWV webViewWithFrame:[_containerView bounds]];
-  [_webView setDelegate:self];
-  [_webView setUIDelegate:self];
+  _webView.navigationDelegate = self;
+  _translateController = [[TranslateController alloc] init];
+  _webView.translationDelegate = _translateController;
+
   [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                 UIViewAutoresizingFlexibleHeight];
   [_containerView addSubview:_webView];
@@ -295,35 +297,39 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   [self presentViewController:alert animated:YES completion:nil];
 }
 
-#pragma mark CWVWebViewDelegate methods
+#pragma mark CWVNavigationDelegate methods
 
-- (void)webView:(CWVWebView*)webView
-    didFinishLoadingWithURL:(NSURL*)url
-                loadSuccess:(BOOL)loadSuccess {
+- (BOOL)webView:(CWVWebView*)webView
+    shouldStartLoadWithRequest:(NSURLRequest*)request {
+  NSLog(@"shouldStartLoadWithRequest");
+  return YES;
+}
+
+- (BOOL)webView:(CWVWebView*)webView
+    shouldContinueLoadWithResponse:(NSURLResponse*)response {
+  NSLog(@"shouldContinueLoadWithResponse");
+  return YES;
+}
+
+- (void)webViewDidStartProvisionalNavigation:(CWVWebView*)webView {
+  NSLog(@"webViewDidStartProvisionalNavigation");
+  [self updateToolbar];
+}
+
+- (void)webViewDidCommitNavigation:(CWVWebView*)webView {
+  NSLog(@"webViewDidCommitNavigation");
+  [self updateToolbar];
+}
+
+- (void)webView:(CWVWebView*)webView didLoadPageWithSuccess:(BOOL)success {
+  NSLog(@"webView:didLoadPageWithSuccess");
   // TODO(crbug.com/679895): Add some visual indication that the page load has
   // finished.
   [self updateToolbar];
 }
 
-- (void)webView:(CWVWebView*)webView
-    didUpdateWithChanges:(CRIWVWebViewUpdateType)changes {
-  if (changes & CRIWVWebViewUpdateTypeProgress) {
-    // TODO(crbug.com/679895): Add a progress indicator.
-  }
-
-  if (changes & CRIWVWebViewUpdateTypeTitle) {
-    // TODO(crbug.com/679895): Add a title display.
-  }
-
-  if (changes & CRIWVWebViewUpdateTypeURL) {
-    [self updateToolbar];
-  }
-}
-
-- (id<CWVTranslateDelegate>)translateDelegate {
-  if (!_translateController)
-    self.translateController = [[TranslateController alloc] init];
-  return _translateController;
+- (void)webViewWebContentProcessDidTerminate:(CWVWebView*)webView {
+  NSLog(@"webViewWebContentProcessDidTerminate");
 }
 
 @end

@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/web_view/public/cwv_navigation_delegate.h"
 #import "ios/web_view/public/cwv_ui_delegate.h"
-#import "ios/web_view/public/cwv_web_view_delegate.h"
 
 // Accessibility identifier added to the text field of JavaScript prompts.
 extern NSString* const

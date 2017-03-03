@@ -8,7 +8,8 @@
 
 @class CWVWebViewConfiguration;
 @protocol CWVUIDelegate;
-@protocol CWVWebViewDelegate;
+@protocol CWVTranslateDelegate;
+@protocol CWVNavigationDelegate;
 
 // A web view component (like WKWebView) which uses iOS Chromium's web view
 // implementation.
@@ -22,11 +23,14 @@
 // The view used to display web content.
 @property(nonatomic, readonly) UIView* view;
 
-// This web view's delegate.
-@property(nonatomic, weak) id<CWVWebViewDelegate> delegate;
+// This web view's navigation delegate.
+@property(nonatomic, weak) id<CWVNavigationDelegate> navigationDelegate;
 
 // This web view's UI delegate
 @property(nonatomic, weak) id<CWVUIDelegate> UIDelegate;
+
+// A delegate for the translation feature.
+@property(nonatomic, weak) id<CWVTranslateDelegate> translationDelegate;
 
 // Whether or not this web view can go backwards or forwards.
 @property(nonatomic, readonly) BOOL canGoBack;
