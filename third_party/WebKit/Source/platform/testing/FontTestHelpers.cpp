@@ -11,7 +11,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 namespace testing {
@@ -48,10 +47,10 @@ class TestFontSelector : public FontSelector {
   void fontCacheInvalidated() override {}
 
  private:
-  TestFontSelector(std::unique_ptr<FontCustomPlatformData> customPlatformData)
-      : m_customPlatformData(std::move(customPlatformData)) {}
+  TestFontSelector(PassRefPtr<FontCustomPlatformData> customPlatformData)
+      : m_customPlatformData(customPlatformData) {}
 
-  std::unique_ptr<FontCustomPlatformData> m_customPlatformData;
+  RefPtr<FontCustomPlatformData> m_customPlatformData;
 };
 
 }  // namespace

@@ -12,6 +12,7 @@
 namespace blink {
 
 class CSSFontSelector;
+class FontCustomPlatformData;
 
 enum FontDisplay {
   FontDisplayAuto,
@@ -88,7 +89,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
                     bool loadError,
                     bool isInterventionTriggered);
     void longLimitExceeded(bool isInterventionTriggered);
-    void recordFallbackTime(const FontResource*);
+    void recordFallbackTime();
     void recordRemoteFont(const FontResource*, bool isInterventionTriggered);
     bool hadBlankText() { return m_blankPaintTime; }
     DataSource dataSource() { return m_dataSource; }
@@ -112,8 +113,14 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   bool shouldTriggerWebFontsIntervention();
   bool isLowPriorityLoadingAllowedForRemoteFont() const override;
 
+  // Cleared once load is finished.
   Member<FontResource> m_font;
+
   Member<CSSFontSelector> m_fontSelector;
+
+  // |nullptr| if font is not loaded or failed to decode.
+  RefPtr<FontCustomPlatformData> m_customFontData;
+
   const FontDisplay m_display;
   DisplayPeriod m_period;
   FontLoadHistograms m_histograms;

@@ -29,20 +29,17 @@
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "platform/Timer.h"
-#include "platform/fonts/FontOrientation.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
-#include <memory>
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
 class FetchRequest;
 class ResourceFetcher;
-class FontPlatformData;
 class FontCustomPlatformData;
 class FontResourceClient;
-class FontVariationSettings;
 
 class CORE_EXPORT FontResource final : public Resource {
  public:
@@ -62,13 +59,7 @@ class CORE_EXPORT FontResource final : public Resource {
   bool isCORSFailed() const { return m_corsFailed; }
   String otsParsingMessage() const { return m_otsParsingMessage; }
 
-  bool ensureCustomFontData();
-  FontPlatformData platformDataFromCustomData(
-      float size,
-      bool bold,
-      bool italic,
-      FontOrientation = FontOrientation::Horizontal,
-      FontVariationSettings* = nullptr);
+  PassRefPtr<FontCustomPlatformData> getCustomFontData();
 
   // Returns true if the loading priority of the remote font resource can be
   // lowered. The loading priority of the font can be lowered only if the
@@ -108,7 +99,7 @@ class CORE_EXPORT FontResource final : public Resource {
     LoadLimitStateEnumMax
   };
 
-  std::unique_ptr<FontCustomPlatformData> m_fontData;
+  RefPtr<FontCustomPlatformData> m_fontData;
   String m_otsParsingMessage;
   LoadLimitState m_loadLimitState;
   bool m_corsFailed;

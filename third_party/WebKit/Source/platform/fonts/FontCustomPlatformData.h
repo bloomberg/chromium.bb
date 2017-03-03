@@ -38,8 +38,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 class SkTypeface;
 
@@ -49,14 +49,14 @@ class FontPlatformData;
 class SharedBuffer;
 class FontVariationSettings;
 
-class PLATFORM_EXPORT FontCustomPlatformData {
+class PLATFORM_EXPORT FontCustomPlatformData
+    : public RefCounted<FontCustomPlatformData> {
   USING_FAST_MALLOC(FontCustomPlatformData);
   WTF_MAKE_NONCOPYABLE(FontCustomPlatformData);
 
  public:
-  static std::unique_ptr<FontCustomPlatformData> create(
-      SharedBuffer*,
-      String& otsParseMessage);
+  static PassRefPtr<FontCustomPlatformData> create(SharedBuffer*,
+                                                   String& otsParseMessage);
   ~FontCustomPlatformData();
 
   FontPlatformData fontPlatformData(

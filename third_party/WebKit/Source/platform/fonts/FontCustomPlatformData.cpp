@@ -41,7 +41,6 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -98,7 +97,7 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(
                           italic && !m_baseTypeface->isItalic(), orientation);
 }
 
-std::unique_ptr<FontCustomPlatformData> FontCustomPlatformData::create(
+PassRefPtr<FontCustomPlatformData> FontCustomPlatformData::create(
     SharedBuffer* buffer,
     String& otsParseMessage) {
   DCHECK(buffer);
@@ -108,7 +107,7 @@ std::unique_ptr<FontCustomPlatformData> FontCustomPlatformData::create(
     otsParseMessage = decoder.getErrorString();
     return nullptr;
   }
-  return WTF::wrapUnique(
+  return adoptRef(
       new FontCustomPlatformData(std::move(typeface), decoder.decodedSize()));
 }
 
