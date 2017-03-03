@@ -228,7 +228,16 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
         self.assertEqual(
             self.tool.executive.calls,
-            [['git', 'cl', 'try', '-b', 'MOCK Try Linux']])
+            [
+                [
+                    'python',
+                    '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
+                    '--work',
+                    '--tests-root',
+                    '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'
+                ],
+                ['git', 'cl', 'try', '-b', 'MOCK Try Linux']
+            ])
 
     def test_rebaseline_calls(self):
         """Tests the list of commands that are invoked when rebaseline is called."""

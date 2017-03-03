@@ -749,6 +749,9 @@ class Port(object):
     @memoized
     def _wpt_manifest(self):
         manifest_path = self._filesystem.join(self.layout_tests_dir(), 'external', 'wpt', 'MANIFEST.json')
+        if not self._filesystem.exists(manifest_path):
+            _log.error('Manifest not found at %s. See http://crbug.com/698294', manifest_path)
+            return WPTManifest('{}')
         return WPTManifest(self._filesystem.read_text_file(manifest_path))
 
     def is_slow_wpt_test(self, test_file):

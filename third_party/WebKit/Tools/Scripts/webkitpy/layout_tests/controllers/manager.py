@@ -99,8 +99,8 @@ class Manager(object):
         self._printer.write_update("Collecting tests ...")
         running_all_tests = False
 
-        # Regenerate MANIFEST.json from template, necessary for web-platform-tests metadata.
-        self._ensure_manifest()
+        self._printer.write_update('Generating MANIFEST.json for web-platform-tests ...')
+        WPTManifest.ensure_manifest(self._port.host)
 
         try:
             paths, all_test_names, running_all_tests = self._collect_tests(args)
@@ -552,18 +552,3 @@ class Manager(object):
         for name, value in stats.iteritems():
             json_results_generator.add_path_to_trie(name, value, stats_trie)
         return stats_trie
-
-    def _ensure_manifest(self):
-        fs = self._filesystem
-        external_path = self._webkit_finder.path_from_webkit_base('LayoutTests', 'external')
-        wpt_path = fs.join(external_path, 'wpt')
-        manifest_path = fs.join(external_path, 'wpt', 'MANIFEST.json')
-        base_manifest_path = fs.join(external_path, 'WPT_BASE_MANIFEST.json')
-
-        if not self._filesystem.exists(manifest_path):
-            fs.copyfile(base_manifest_path, manifest_path)
-
-        self._printer.write_update('Generating MANIFEST.json for web-platform-tests ...')
-
-        # TODO(jeffcarp): handle errors
-        WPTManifest.generate_manifest(self._port.host, wpt_path)

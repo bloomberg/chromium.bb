@@ -11,6 +11,7 @@ import optparse
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
+from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
@@ -42,6 +43,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
     def execute(self, options, args, tool):
         self._tool = tool
+
+        # TODO(qyearsley): Move this call to somewhere else.
+        WPTManifest.ensure_manifest(tool)
 
         unstaged_baselines = self.unstaged_baselines()
         if unstaged_baselines:
