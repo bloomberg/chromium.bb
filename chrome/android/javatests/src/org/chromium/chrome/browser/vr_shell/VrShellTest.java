@@ -46,7 +46,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mDelegate = getActivity().getVrShellDelegate();
+        mDelegate = VrShellDelegate.getInstanceForTesting();
     }
 
     @Override
@@ -61,16 +61,16 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         if (!supported) {
             mDelegate.overrideDaydreamApiForTesting(mockApi);
         }
-        VrUtils.forceEnterVr(mDelegate);
+        VrUtils.forceEnterVr();
         if (supported) {
-            VrUtils.waitForVrSupported(mDelegate);
-            assertTrue(mDelegate.isInVR());
+            VrUtils.waitForVrSupported();
+            assertTrue(VrShellDelegate.isInVR());
         } else {
             assertFalse(mockApi.getLaunchInVrCalled());
-            assertFalse(mDelegate.isInVR());
+            assertFalse(VrShellDelegate.isInVR());
         }
         VrUtils.forceExitVr(mDelegate);
-        assertFalse(mDelegate.isInVR());
+        assertFalse(VrShellDelegate.isInVR());
     }
 
     private void enterExitVrModeImage(boolean supported) throws IOException {
@@ -81,7 +81,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
                 getActivity().getWindow().getDecorView().getRootView(),
                 "blank_page");
 
-        VrUtils.forceEnterVr(mDelegate);
+        VrUtils.forceEnterVr();
         // Currently, screenshots only show the static UI overlay, not the
         // actual content. Thus, 1:1 pixel checking is reliable until a
         // way to take screenshots of VR content is added, in which case
@@ -89,7 +89,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         // assuming that if the UI overlay is visible, then the device has
         // successfully entered VR mode.
         if (supported) {
-            VrUtils.waitForVrSupported(mDelegate);
+            VrUtils.waitForVrSupported();
             mViewRenderer.renderAndCompare(
                     getActivity().getWindow().getDecorView().getRootView(),
                     "vr_entered");
@@ -115,10 +115,10 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         getInstrumentation().waitForIdleSync();
         VrUtils.simNfc(getActivity());
         if (supported) {
-            VrUtils.waitForVrSupported(mDelegate);
-            assertTrue(mDelegate.isInVR());
+            VrUtils.waitForVrSupported();
+            assertTrue(VrShellDelegate.isInVR());
         } else {
-            assertFalse(mDelegate.isInVR());
+            assertFalse(VrShellDelegate.isInVR());
         }
         VrUtils.forceExitVr(mDelegate);
         // TODO(bsheedy): Figure out why NFC tests cause the next test to fail

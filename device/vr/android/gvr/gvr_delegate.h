@@ -37,7 +37,8 @@ class DEVICE_VR_EXPORT GvrDelegate {
 
 class DEVICE_VR_EXPORT GvrDelegateProvider {
  public:
-  static void SetInstance(GvrDelegateProvider* delegate_provider);
+  static void SetInstance(
+      const base::Callback<GvrDelegateProvider*()>& provider_callback);
   static GvrDelegateProvider* GetInstance();
 
   virtual void SetDeviceProvider(GvrDeviceProvider* device_provider) = 0;
@@ -52,7 +53,7 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual ~GvrDelegateProvider() {}
 
  private:
-  static GvrDelegateProvider* delegate_provider_;
+  static base::Callback<GvrDelegateProvider*()> delegate_provider_;
 };
 
 }  // namespace device

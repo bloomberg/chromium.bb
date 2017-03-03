@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.WebContentsFactory;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -79,7 +78,6 @@ public class VrShellImpl
 
     private final ChromeActivity mActivity;
     private final VrShellDelegate mDelegate;
-    private final CompositorViewHolder mCompositorViewHolder;
     private final VirtualDisplayAndroid mContentVirtualDisplay;
     private final VirtualDisplayAndroid mUiVirtualDisplay;
     private final TabRedirectHandler mTabRedirectHandler;
@@ -116,13 +114,12 @@ public class VrShellImpl
 
     private MotionEventSynthesizer mMotionEventSynthesizer;
 
-    public VrShellImpl(ChromeActivity activity, VrShellDelegate delegate,
-            CompositorViewHolder compositorViewHolder) {
+    public VrShellImpl(
+            ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector) {
         super(activity);
         mActivity = activity;
         mDelegate = delegate;
-        mCompositorViewHolder = compositorViewHolder;
-        mTabModelSelector = mCompositorViewHolder.detachForVR();
+        mTabModelSelector = tabModelSelector;
         mUiCVCContainer = new FrameLayout(getContext()) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent event) {
@@ -485,7 +482,6 @@ public class VrShellImpl
         mContentVirtualDisplay.destroy();
         mUiVirtualDisplay.destroy();
         super.shutdown();
-        mCompositorViewHolder.onExitVR(mTabModelSelector);
     }
 
     @Override

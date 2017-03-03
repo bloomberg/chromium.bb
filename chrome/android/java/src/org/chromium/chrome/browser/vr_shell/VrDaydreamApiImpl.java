@@ -24,7 +24,6 @@ import org.chromium.ui.base.WindowAndroid;
  * use it, or API calls begin to silently fail.
  */
 public class VrDaydreamApiImpl implements VrDaydreamApi {
-    private static final String TAG = "VrDaydreamApiImpl";
     private final Context mContext;
 
     public VrDaydreamApiImpl(Context context) {
@@ -70,10 +69,10 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public boolean exitFromVr(int requestCode, final Intent intent) {
-        DaydreamApi daydreamApi = DaydreamApi.create(mContext);
-        if (daydreamApi == null) return false;
         Activity activity = WindowAndroid.activityFromContext(mContext);
         Assert.assertNotNull(activity);
+        DaydreamApi daydreamApi = DaydreamApi.create(activity);
+        if (daydreamApi == null) return false;
         daydreamApi.exitFromVr(activity, requestCode, intent);
         daydreamApi.close();
         return true;

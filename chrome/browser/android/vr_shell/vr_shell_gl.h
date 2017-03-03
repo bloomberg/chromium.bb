@@ -82,7 +82,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void UpdateWebVRTextureBounds(int16_t frame_index,
                                 const gvr::Rectf& left_bounds,
                                 const gvr::Rectf& right_bounds);
-  void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num);
   gvr::Sizei GetWebVRCompositorSurfaceSize();
 
   void UpdateScene(std::unique_ptr<base::ListValue> commands);

@@ -4,7 +4,12 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import android.app.Activity;
+import android.content.Context;
+
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 /**
  * Abstracts away the VrClassesWrapperImpl class, which may or may not be present at runtime
@@ -14,18 +19,24 @@ public interface VrClassesWrapper {
     /**
      * Creates a NonPresentingGvrContextImpl instance.
      */
-    public NonPresentingGvrContext createNonPresentingGvrContext();
+    public NonPresentingGvrContext createNonPresentingGvrContext(ChromeActivity activity);
 
     /**
      * Creates a VrShellImpl instance.
      */
-    public VrShell createVrShell(VrShellDelegate delegate,
-            CompositorViewHolder compositorViewHolder);
+    public VrShell createVrShell(
+            ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector);
 
     /**
      * Creates a VrDaydreamApImpl instance.
      */
-    public VrDaydreamApi createVrDaydreamApi();
+    public VrDaydreamApi createVrDaydreamApi(Activity activity);
+
+    /**
+     * Creates a VrDaydreamApImpl instance.
+     */
+    @VisibleForTesting
+    public VrDaydreamApi createVrDaydreamApi(Context context);
 
     /**
     * Creates a VrCoreVersionCheckerImpl instance.
@@ -35,5 +46,5 @@ public interface VrClassesWrapper {
     /**
      * Sets VR Mode to |enabled|.
      */
-    public void setVrModeEnabled(boolean enabled);
+    public void setVrModeEnabled(Activity activity, boolean enabled);
 }

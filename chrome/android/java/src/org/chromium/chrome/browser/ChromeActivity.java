@@ -132,6 +132,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -820,6 +821,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (tab != null) {
             getTabContentManager().cacheTabThumbnail(tab);
         }
+        VrShellDelegate.maybePauseVR(this);
         markSessionEnd();
         super.onPauseWithNative();
     }
@@ -1150,6 +1152,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         DownloadManagerService.getDownloadManagerService(
                 getApplicationContext()).onActivityLaunched();
 
+        VrShellDelegate.onNativeLibraryAvailable();
         super.finishNativeInitialization();
     }
 
@@ -1679,6 +1682,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public final void onBackPressed() {
         RecordUserAction.record("SystemBack");
+        if (VrShellDelegate.onBackPressed()) return;
         if (mCompositorViewHolder != null) {
             LayoutManager layoutManager = mCompositorViewHolder.getLayoutManager();
             if (layoutManager != null && layoutManager.onBackPressed()) return;
@@ -2089,4 +2093,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP, 50);
         }
     }
+
+    /**
+     * Called when VR mode is entered using this activity. 2D UI components that steal focus or
+     * draw over VR contents should be hidden in this call.
+     */
+    public void onEnterVR() {}
+
+    /**
+     * Called when VR mode using this activity is exited. Any state set for VR should be restored
+     * in this call, including showing 2D UI that was hidden.
+     */
+    public void onExitVR() {}
 }

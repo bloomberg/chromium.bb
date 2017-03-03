@@ -21,14 +21,21 @@ namespace vr_shell {
 VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
     : weak_ptr_factory_(this) {
   j_vr_shell_delegate_.Reset(env, obj);
-  GvrDelegateProvider::SetInstance(this);
 }
 
 VrShellDelegate::~VrShellDelegate() {
-  GvrDelegateProvider::SetInstance(nullptr);
   if (device_provider_) {
     device_provider_->Device()->OnDelegateChanged();
   }
+}
+
+device::GvrDelegateProvider* VrShellDelegate::CreateVrShellDelegate() {
+  JNIEnv* env = AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> jdelegate =
+      Java_VrShellDelegate_getInstance(env);
+  if (!jdelegate.is_null())
+    return GetNativeVrShellDelegate(env, jdelegate.obj());
+  return nullptr;
 }
 
 VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(JNIEnv* env,
@@ -115,6 +122,10 @@ void VrShellDelegate::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   }
 }
 
+void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  delete this;
+}
+
 void VrShellDelegate::ShowTab(int id) {
   JNIEnv* env = AttachCurrentThread();
   Java_VrShellDelegate_showTab(env, j_vr_shell_delegate_.obj(), id);
@@ -139,7 +150,6 @@ void VrShellDelegate::ClearDeviceProvider() {
   JNIEnv* env = AttachCurrentThread();
   Java_VrShellDelegate_shutdownNonPresentingNativeContext(
       env, j_vr_shell_delegate_.obj());
-  device_provider_->Device()->OnDelegateChanged();
   device_provider_ = nullptr;
 }
 
@@ -211,6 +221,11 @@ bool RegisterVrShellDelegate(JNIEnv* env) {
 
 jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new VrShellDelegate(env, obj));
+}
+
+static void OnLibraryAvailable(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+  device::GvrDelegateProvider::SetInstance(
+      base::Bind(&VrShellDelegate::CreateVrShellDelegate));
 }
 
 }  // namespace vr_shell

@@ -78,7 +78,7 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                     VrClassesWrapper vrClassesBuilder =
                             (VrClassesWrapper) vrClassesBuilderConstructor.newInstance(
                                     getTargetContext());
-                    mDaydreamApi = vrClassesBuilder.createVrDaydreamApi();
+                    mDaydreamApi = vrClassesBuilder.createVrDaydreamApi(getTargetContext());
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                         | IllegalArgumentException | InvocationTargetException
                         | NoSuchMethodException e) {
@@ -99,7 +99,7 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
             }
             // isDaydreamCurrentViewer() creates a concrete instance of DaydreamApi,
             // which can only be done on the main thread
-            FutureTask<Boolean> checker = new FutureTask<Boolean>(new Callable<Boolean>() {
+            FutureTask<Boolean> checker = new FutureTask<>(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return getDaydreamApi().isDaydreamCurrentViewer();

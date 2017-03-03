@@ -42,13 +42,12 @@ public class VrUtils {
 
     /**
      * Forces the browser into VR mode via a VrShellDelegate call.
-     * @param vrDelegate The VRShellDelegate associated with this activity.
      */
-    public static void forceEnterVr(final VrShellDelegate vrDelegate) {
+    public static void forceEnterVr() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                vrDelegate.enterVRIfNecessary();
+                VrShellDelegate.enterVRIfNecessary();
             }
         });
     }
@@ -114,15 +113,14 @@ public class VrUtils {
     /**
      * Waits until the given VrShellDelegate's isInVR() returns true. Should
      * only be used when VR Shell support is expected.
-     * @param delegate The delegate whose VR status will be polled
      */
-    public static void waitForVrSupported(final VrShellDelegate delegate) {
+    public static void waitForVrSupported() {
         // If VR Shell is supported, mInVr should eventually go to true
         // Relatively long timeout because sometimes GVR takes a while to enter VR
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return delegate.isInVR();
+                return VrShellDelegate.isInVR();
             }
         }), 10000, 50);
     }

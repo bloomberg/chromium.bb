@@ -27,6 +27,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   VrShellDelegate(JNIEnv* env, jobject obj);
   ~VrShellDelegate() override;
 
+  static device::GvrDelegateProvider* CreateVrShellDelegate();
+
   static VrShellDelegate* GetNativeVrShellDelegate(JNIEnv* env,
                                                    jobject jdelegate);
 
@@ -44,6 +46,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
                            jdouble interval_seconds);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void ShowTab(int id);
   void OpenNewTab(bool incognito);
 

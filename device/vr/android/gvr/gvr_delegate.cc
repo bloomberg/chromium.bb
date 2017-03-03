@@ -8,19 +8,17 @@
 
 namespace device {
 
-GvrDelegateProvider* GvrDelegateProvider::delegate_provider_ = nullptr;
+base::Callback<GvrDelegateProvider*()> GvrDelegateProvider::delegate_provider_;
 
 GvrDelegateProvider* GvrDelegateProvider::GetInstance() {
-  return delegate_provider_;
+  if (delegate_provider_.is_null())
+    return nullptr;
+  return delegate_provider_.Run();
 }
 
-void GvrDelegateProvider::SetInstance(GvrDelegateProvider* delegate_provider) {
-  if (delegate_provider) {
-    // Don't initialize the delegate_provider_ twice.  Re-enable
-    // (crbug.com/655297)
-    // DCHECK(!delegate_provider_);
-  }
-  delegate_provider_ = delegate_provider;
+void GvrDelegateProvider::SetInstance(
+    const base::Callback<GvrDelegateProvider*()>& provider_callback) {
+  delegate_provider_ = provider_callback;
 }
 
 }  // namespace device

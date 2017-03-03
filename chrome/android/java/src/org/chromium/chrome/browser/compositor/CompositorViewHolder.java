@@ -975,11 +975,12 @@ public class CompositorViewHolder extends FrameLayout
      * @return The detached {@link TabModelSelector}.
      */
     public TabModelSelector detachForVR() {
-        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        if (mTabModelSelector != null) mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         TabModelSelector selector = mTabModelSelector;
         mTabModelSelector = null;
         mLayerTitleCache.setTabModelSelector(null);
         setTab(null);
+        getSurfaceView().setVisibility(View.INVISIBLE);
         return selector;
     }
 
@@ -989,6 +990,7 @@ public class CompositorViewHolder extends FrameLayout
      * @param tabModelSelector
      */
     public void onExitVR(TabModelSelector tabModelSelector) {
+        getSurfaceView().setVisibility(View.VISIBLE);
         attachToTabModelSelector(tabModelSelector);
     }
 
