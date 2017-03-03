@@ -404,9 +404,9 @@
             "experiments": [
                 {
                     "name": "Expected",
-                    "params": {
-                        "contextual_cards_version": "6"
-                    }
+                    "enable_features": [
+                        "ContextualSearchUrlActions"
+                    ]
                 }
             ]
         }
