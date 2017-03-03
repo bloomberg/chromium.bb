@@ -677,7 +677,10 @@ test("gfx_unittests") {
   }
 
   if (!is_android && !is_ios) {
-    sources += [ "render_text_unittest.cc" ]
+    sources += [
+      "paint_vector_icon_unittest.cc",
+      "render_text_unittest.cc",
+    ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

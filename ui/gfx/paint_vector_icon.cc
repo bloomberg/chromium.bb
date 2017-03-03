@@ -148,6 +148,13 @@ void PaintPath(Canvas* canvas,
       }
 
       case R_MOVE_TO: {
+        if (previous_command_type == CLOSE) {
+          // This triggers injectMoveToIfNeeded() so that the next subpath will
+          // start at the correct place. See
+          // [ https://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand ].
+          path.rLineTo(0, 0);
+        }
+
         SkScalar x = path_elements[++i].arg;
         SkScalar y = path_elements[++i].arg;
         path.rMoveTo(x, y);
