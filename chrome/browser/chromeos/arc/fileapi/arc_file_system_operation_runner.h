@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_OPERATION_RUNNER_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_OPERATION_RUNNER_H_
 
+#include <stdint.h>
+
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,10 +15,13 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 
 namespace arc {
 
@@ -44,6 +50,7 @@ namespace arc {
 // All member functions must be called on the UI thread.
 class ArcFileSystemOperationRunner
     : public ArcService,
+      public mojom::FileSystemHost,
       public ArcSessionManager::Observer,
       public InstanceHolder<mojom::FileSystemInstance>::Observer {
  public:
@@ -53,6 +60,22 @@ class ArcFileSystemOperationRunner
   using GetDocumentCallback = mojom::FileSystemInstance::GetDocumentCallback;
   using GetChildDocumentsCallback =
       mojom::FileSystemInstance::GetChildDocumentsCallback;
+  using AddWatcherCallback = base::Callback<void(int64_t watcher_id)>;
+  using RemoveWatcherCallback = base::Callback<void(bool success)>;
+  using ChangeType = storage::WatcherManager::ChangeType;
+  using WatcherCallback = base::Callback<void(ChangeType type)>;
+
+  class Observer {
+   public:
+    // Called when the installed watchers are invalidated.
+    // This can happen when Android system restarts, for example.
+    // After this event is fired, watcher IDs issued before the event can be
+    // reused.
+    virtual void OnWatchersCleared() = 0;
+
+   protected:
+    virtual ~Observer() = default;
+  };
 
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
@@ -70,6 +93,10 @@ class ArcFileSystemOperationRunner
                                const Profile* profile);
   ~ArcFileSystemOperationRunner() override;
 
+  // Adds or removes observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // Runs file system operations. See file_system.mojom for documentation.
   void GetFileSize(const GURL& url, const GetFileSizeCallback& callback);
   void OpenFileToRead(const GURL& url, const OpenFileToReadCallback& callback);
@@ -79,6 +106,14 @@ class ArcFileSystemOperationRunner
   void GetChildDocuments(const std::string& authority,
                          const std::string& parent_document_id,
                          const GetChildDocumentsCallback& callback);
+  void AddWatcher(const std::string& authority,
+                  const std::string& document_id,
+                  const WatcherCallback& watcher_callback,
+                  const AddWatcherCallback& callback);
+  void RemoveWatcher(int64_t watcher_id, const RemoveWatcherCallback& callback);
+
+  // FileSystemHost overrides:
+  void OnDocumentChanged(int64_t watcher_id, mojom::ChangeType type) override;
 
   // ArcSessionManager::Observer overrides:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
@@ -92,7 +127,11 @@ class ArcFileSystemOperationRunner
 
   ArcFileSystemOperationRunner(ArcBridgeService* bridge_service,
                                const Profile* profile,
-                               bool observe_events);
+                               bool set_should_defer_by_events);
+
+  void OnWatcherAdded(const WatcherCallback& watcher_callback,
+                      const AddWatcherCallback& callback,
+                      int64_t watcher_id);
 
   // Called whenever ARC states related to |should_defer_| are changed.
   void OnStateChanged();
@@ -106,9 +145,9 @@ class ArcFileSystemOperationRunner
   // unit tests.
   const Profile* const profile_;
 
-  // Indicates if this instance should register observers to receive events.
+  // Indicates if this instance should enable/disable deferring by events.
   // Usually true, but set to false in unit tests.
-  const bool observe_events_;
+  bool set_should_defer_by_events_;
 
   // Set to true if operations should be deferred at this moment.
   // The default is set to false so that operations are not deferred in
@@ -117,6 +156,13 @@ class ArcFileSystemOperationRunner
 
   // List of deferred operations.
   std::vector<base::Closure> deferred_operations_;
+
+  // Map from a watcher ID to a watcher callback.
+  std::map<int64_t, WatcherCallback> watcher_callbacks_;
+
+  base::ObserverList<Observer> observer_list_;
+
+  mojo::Binding<mojom::FileSystemHost> binding_;
 
   base::WeakPtrFactory<ArcFileSystemOperationRunner> weak_ptr_factory_;
 

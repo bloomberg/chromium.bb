@@ -41,6 +41,11 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
     arc_service_manager_->AddService(
         ArcFileSystemOperationRunner::CreateForTesting(
             arc_service_manager_->arc_bridge_service()));
+
+    // Run the message loop until FileSystemInstance::Init() is called.
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(file_system_instance_.InitCalled());
+
     runner_ = arc_service_manager_->GetService<ArcFileSystemOperationRunner>();
   }
 
@@ -48,6 +53,41 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
   // Calls private ArcFileSystemOperationRunner::SetShouldDefer().
   void CallSetShouldDefer(bool should_defer) {
     runner_->SetShouldDefer(should_defer);
+  }
+
+  // Calls all functions implemented by ArcFileSystemOperationRunner.
+  void CallAllFunctions(int* counter) {
+    // Following functions are deferred.
+    runner_->AddWatcher(
+        kAuthority, kDocumentId,
+        base::Bind([](ArcFileSystemOperationRunner::ChangeType type) {}),
+        base::Bind([](int* counter, int64_t watcher_id) { ++*counter; },
+                   counter));
+    runner_->GetChildDocuments(
+        kAuthority, kDocumentId,
+        base::Bind(
+            [](int* counter,
+               base::Optional<std::vector<mojom::DocumentPtr>> documents) {
+              ++*counter;
+            },
+            counter));
+    runner_->GetDocument(
+        kAuthority, kDocumentId,
+        base::Bind(
+            [](int* counter, mojom::DocumentPtr document) { ++*counter; },
+            counter));
+    runner_->GetFileSize(
+        GURL(kUrl),
+        base::Bind([](int* counter, int64_t size) { ++*counter; }, counter));
+    runner_->OpenFileToRead(
+        GURL(kUrl),
+        base::Bind([](int* counter, mojo::ScopedHandle handle) { ++*counter; },
+                   counter));
+
+    // RemoveWatcher() is never deferred.
+    runner_->RemoveWatcher(
+        123,
+        base::Bind([](int* counter, bool success) { ++*counter; }, counter));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -63,87 +103,33 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
 TEST_F(ArcFileSystemOperationRunnerTest, RunImmediately) {
   int counter = 0;
   CallSetShouldDefer(false);
-  runner_->GetChildDocuments(
-      kAuthority, kDocumentId,
-      base::Bind(
-          [](int* counter,
-             base::Optional<std::vector<mojom::DocumentPtr>> documents) {
-            ++*counter;
-          },
-          &counter));
-  runner_->GetDocument(
-      kAuthority, kDocumentId,
-      base::Bind([](int* counter, mojom::DocumentPtr document) { ++*counter; },
-                 &counter));
-  runner_->GetFileSize(
-      GURL(kUrl),
-      base::Bind([](int* counter, int64_t size) { ++*counter; }, &counter));
-  runner_->OpenFileToRead(
-      GURL(kUrl),
-      base::Bind([](int* counter, mojo::ScopedHandle handle) { ++*counter; },
-                 &counter));
+  CallAllFunctions(&counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(4, counter);
+  EXPECT_EQ(6, counter);
 }
 
 TEST_F(ArcFileSystemOperationRunnerTest, DeferAndRun) {
   int counter = 0;
   CallSetShouldDefer(true);
-  runner_->GetChildDocuments(
-      kAuthority, kDocumentId,
-      base::Bind(
-          [](int* counter,
-             base::Optional<std::vector<mojom::DocumentPtr>> documents) {
-            ++*counter;
-          },
-          &counter));
-  runner_->GetDocument(
-      kAuthority, kDocumentId,
-      base::Bind([](int* counter, mojom::DocumentPtr document) { ++*counter; },
-                 &counter));
-  runner_->GetFileSize(
-      GURL(kUrl),
-      base::Bind([](int* counter, int64_t size) { ++*counter; }, &counter));
-  runner_->OpenFileToRead(
-      GURL(kUrl),
-      base::Bind([](int* counter, mojo::ScopedHandle handle) { ++*counter; },
-                 &counter));
+  CallAllFunctions(&counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, counter);
+  EXPECT_EQ(1, counter);
 
   CallSetShouldDefer(false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(4, counter);
+  EXPECT_EQ(6, counter);
 }
 
 TEST_F(ArcFileSystemOperationRunnerTest, DeferAndDiscard) {
   int counter = 0;
   CallSetShouldDefer(true);
-  runner_->GetChildDocuments(
-      kAuthority, kDocumentId,
-      base::Bind(
-          [](int* counter,
-             base::Optional<std::vector<mojom::DocumentPtr>> documents) {
-            ++*counter;
-          },
-          &counter));
-  runner_->GetDocument(
-      kAuthority, kDocumentId,
-      base::Bind([](int* counter, mojom::DocumentPtr document) { ++*counter; },
-                 &counter));
-  runner_->GetFileSize(
-      GURL(kUrl),
-      base::Bind([](int* counter, int64_t size) { ++*counter; }, &counter));
-  runner_->OpenFileToRead(
-      GURL(kUrl),
-      base::Bind([](int* counter, mojo::ScopedHandle handle) { ++*counter; },
-                 &counter));
+  CallAllFunctions(&counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, counter);
+  EXPECT_EQ(1, counter);
 
   arc_service_manager_.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, counter);
+  EXPECT_EQ(1, counter);
 }
 
 TEST_F(ArcFileSystemOperationRunnerTest, FileInstanceUnavailable) {
@@ -152,27 +138,9 @@ TEST_F(ArcFileSystemOperationRunnerTest, FileInstanceUnavailable) {
 
   int counter = 0;
   CallSetShouldDefer(false);
-  runner_->GetChildDocuments(
-      kAuthority, kDocumentId,
-      base::Bind(
-          [](int* counter,
-             base::Optional<std::vector<mojom::DocumentPtr>> documents) {
-            ++*counter;
-          },
-          &counter));
-  runner_->GetDocument(
-      kAuthority, kDocumentId,
-      base::Bind([](int* counter, mojom::DocumentPtr document) { ++*counter; },
-                 &counter));
-  runner_->GetFileSize(
-      GURL(kUrl),
-      base::Bind([](int* counter, int64_t size) { ++*counter; }, &counter));
-  runner_->OpenFileToRead(
-      GURL(kUrl),
-      base::Bind([](int* counter, mojo::ScopedHandle handle) { ++*counter; },
-                 &counter));
+  CallAllFunctions(&counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(4, counter);
+  EXPECT_EQ(6, counter);
 }
 
 }  // namespace arc
