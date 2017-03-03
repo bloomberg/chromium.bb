@@ -85,13 +85,6 @@ set(AOM_AV1_DECODER_SOURCES
     "${AOM_ROOT}/av1/decoder/dthread.c"
     "${AOM_ROOT}/av1/decoder/dthread.h")
 
-if (CONFIG_INSPECTION)
-  set(AOM_AV1_DECODER_SOURCES
-      ${AOM_AV1_DECODER_SOURCES}
-      "${AOM_ROOT}/av1/decoder/inspection.c"
-      "${AOM_ROOT}/av1/decoder/inspection.h")
-endif ()
-
 set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/av1_cx_iface.c"
     "${AOM_ROOT}/av1/encoder/aq_complexity.c"
@@ -157,13 +150,6 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/variance_tree.c"
     "${AOM_ROOT}/av1/encoder/variance_tree.h")
 
-if (CONFIG_PALETTE)
-  set(AOM_AV1_ENCODER_SOURCES
-      ${AOM_AV1_ENCODER_SOURCES}
-      "${AOM_ROOT}/av1/encoder/palette.c"
-      "${AOM_ROOT}/av1/encoder/palette.h")
-endif ()
-
 set(AOM_AV1_COMMON_SSE2_INTRIN
     # Requires CONFIG_GLOBAL_MOTION or CONFIG_WARPED_MOTION
     #"${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c"
@@ -173,16 +159,8 @@ set(AOM_AV1_COMMON_SSSE3_INTRIN
     "${AOM_ROOT}/av1/common/x86/av1_convolve_ssse3.c")
 
 set(AOM_AV1_COMMON_SSE4_1_INTRIN
-    # Requires CONFIG_CDEF
-    #"${AOM_ROOT}/av1/common/x86/od_dering_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm1d_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm2d_sse4.c")
-
-if (CONFIG_FILTER_INTRA)
-  set(AOM_AV1_COMMON_SSE4_1_INTRIN
-      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
-      "${AOM_ROOT}/av1/common/x86/filterintra_sse4.c")
-endif ()
 
 set(AOM_AV1_COMMON_AVX2_INTRIN
     "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
@@ -212,6 +190,22 @@ if (CONFIG_ACCOUNTING)
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/accounting.c"
       "${AOM_ROOT}/av1/common/accounting.h")
+endif ()
+
+if (CONFIG_AOM_HIGHBITDEPTH)
+  set(AOM_AV1_COMMON_SSE4_1_INTRIN
+      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+      "${AOM_ROOT}/av1/common/x86/av1_highbd_convolve_sse4.c"
+      "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_sse4.c")
+
+  set(AOM_AV1_COMMON_AVX2_INTRIN
+      ${AOM_AV1_COMMON_AVX2_INTRIN}
+      "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c")
+
+  set(AOM_AV1_ENCODER_SSE4_1_INTRIN
+      ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
+      "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
+      "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
 endif ()
 
 if (CONFIG_CDEF)
@@ -269,26 +263,32 @@ if (CONFIG_EXT_INTER)
       "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
 endif ()
 
+if (CONFIG_FILTER_INTRA)
+  set(AOM_AV1_COMMON_SSE4_1_INTRIN
+      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+      "${AOM_ROOT}/av1/common/x86/filterintra_sse4.c")
+endif ()
+
+if (CONFIG_INSPECTION)
+  set(AOM_AV1_DECODER_SOURCES
+      ${AOM_AV1_DECODER_SOURCES}
+      "${AOM_ROOT}/av1/decoder/inspection.c"
+      "${AOM_ROOT}/av1/decoder/inspection.h")
+endif ()
+
 if (CONFIG_INTERNAL_STATS)
   set(AOM_AV1_ENCODER_SOURCES
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/blockiness.c")
 endif ()
 
-if (CONFIG_AOM_HIGHBITDEPTH)
-  set(AOM_AV1_COMMON_SSE4_1_INTRIN
-      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
-      "${AOM_ROOT}/av1/common/x86/av1_highbd_convolve_sse4.c"
-      "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_sse4.c")
+if (CONFIG_PALETTE)
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/palette.c"
+      "${AOM_ROOT}/av1/encoder/palette.h")
+endif ()
 
-  set(AOM_AV1_COMMON_AVX2_INTRIN
-      ${AOM_AV1_COMMON_AVX2_INTRIN}
-      "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c")
-
-  set(AOM_AV1_ENCODER_SSE4_1_INTRIN
-      ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
-      "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
-      "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
 endif ()
 
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
