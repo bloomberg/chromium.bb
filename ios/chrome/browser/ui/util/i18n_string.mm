@@ -15,5 +15,5 @@ NSString* AdjustStringForLocaleDirection(NSString* text) {
   if (has_changed) {
     return base::SysUTF16ToNSString(converted_text);
   }
-  return text;
+  return [[text copy] autorelease];
 }
