@@ -18,7 +18,7 @@ SurfaceFactoryOzone::~SurfaceFactoryOzone() {}
 
 std::vector<gl::GLImplementation>
 SurfaceFactoryOzone::GetAllowedGLImplementations() {
-  return std::vector<gl::GLImplementation>{gl::kGLImplementationOSMesaGL};
+  return std::vector<gl::GLImplementation>();
 }
 
 GLOzone* SurfaceFactoryOzone::GetGLOzone(gl::GLImplementation implementation) {

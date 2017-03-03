@@ -6,12 +6,14 @@
 
 #include <X11/Xlib.h>
 
+#include "base/memory/ptr_util.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/x11/gl_ozone_glx.h"
 
 namespace ui {
@@ -149,21 +151,19 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
 
 }  // namespace
 
-X11SurfaceFactory::X11SurfaceFactory() {
-  glx_implementation_.reset(new GLOzoneGLX());
-  egl_implementation_.reset(new GLOzoneEGLX11());
-}
+X11SurfaceFactory::X11SurfaceFactory()
+    : glx_implementation_(base::MakeUnique<GLOzoneGLX>()),
+      egl_implementation_(base::MakeUnique<GLOzoneEGLX11>()),
+      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()) {}
 
 X11SurfaceFactory::~X11SurfaceFactory() {}
 
 std::vector<gl::GLImplementation>
 X11SurfaceFactory::GetAllowedGLImplementations() {
-  std::vector<gl::GLImplementation> impls;
-  impls.push_back(gl::kGLImplementationEGLGLES2);
   // DesktopGL (GLX) should be the first option when crbug.com/646982 is fixed.
-  impls.push_back(gl::kGLImplementationDesktopGL);
-  impls.push_back(gl::kGLImplementationOSMesaGL);
-  return impls;
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationEGLGLES2,
+                                           gl::kGLImplementationDesktopGL,
+                                           gl::kGLImplementationOSMesaGL};
 }
 
 GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
@@ -172,6 +172,8 @@ GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
       return glx_implementation_.get();
     case gl::kGLImplementationEGLGLES2:
       return egl_implementation_.get();
+    case gl::kGLImplementationOSMesaGL:
+      return osmesa_implementation_.get();
     default:
       return nullptr;
   }

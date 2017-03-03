@@ -14,6 +14,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/wayland/gl_surface_wayland.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
@@ -128,7 +129,8 @@ namespace {
 
 class GLOzoneEGLWayland : public GLOzoneEGL {
  public:
-  GLOzoneEGLWayland(WaylandConnection* connection) : connection_(connection) {}
+  explicit GLOzoneEGLWayland(WaylandConnection* connection)
+      : connection_(connection) {}
   ~GLOzoneEGLWayland() override {}
 
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
@@ -182,9 +184,10 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings() {
 }  // namespace
 
 WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
-    : connection_(connection) {
+    : connection_(connection),
+      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()) {
   if (connection_)
-    egl_implementation_.reset(new GLOzoneEGLWayland(connection_));
+    egl_implementation_ = base::MakeUnique<GLOzoneEGLWayland>(connection_);
 }
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
@@ -201,7 +204,9 @@ WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
 std::vector<gl::GLImplementation>
 WaylandSurfaceFactory::GetAllowedGLImplementations() {
   std::vector<gl::GLImplementation> impls;
-  impls.push_back(gl::kGLImplementationEGLGLES2);
+  if (egl_implementation_)
+    impls.push_back(gl::kGLImplementationEGLGLES2);
+  impls.push_back(gl::kGLImplementationOSMesaGL);
   return impls;
 }
 
@@ -210,6 +215,8 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
   switch (implementation) {
     case gl::kGLImplementationEGLGLES2:
       return egl_implementation_.get();
+    case gl::kGLImplementationOSMesaGL:
+      return osmesa_implementation_.get();
     default:
       return nullptr;
   }

@@ -5,7 +5,11 @@
 #ifndef UI_OZONE_PLATFORM_HEADLESS_HEADLESS_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_HEADLESS_HEADLESS_SURFACE_FACTORY_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
+#include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
@@ -19,6 +23,8 @@ class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
   ~HeadlessSurfaceFactory() override;
 
   // SurfaceFactoryOzone:
+  std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
+  GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget w) override;
   scoped_refptr<NativePixmap> CreateNativePixmap(
@@ -29,6 +35,8 @@ class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
 
  private:
   HeadlessWindowManager* window_manager_;
+
+  std::unique_ptr<GLOzone> osmesa_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessSurfaceFactory);
 };

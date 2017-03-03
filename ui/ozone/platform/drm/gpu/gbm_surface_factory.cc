@@ -17,6 +17,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -75,7 +76,9 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
 }  // namespace
 
 GbmSurfaceFactory::GbmSurfaceFactory(DrmThreadProxy* drm_thread_proxy)
-    : egl_implementation_(new GLOzoneEGLGbm(this, drm_thread_proxy)),
+    : egl_implementation_(
+          base::MakeUnique<GLOzoneEGLGbm>(this, drm_thread_proxy)),
+      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()),
       drm_thread_proxy_(drm_thread_proxy) {}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {
@@ -104,10 +107,8 @@ GbmSurfaceless* GbmSurfaceFactory::GetSurface(
 std::vector<gl::GLImplementation>
 GbmSurfaceFactory::GetAllowedGLImplementations() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<gl::GLImplementation> impls;
-  impls.push_back(gl::kGLImplementationEGLGLES2);
-  impls.push_back(gl::kGLImplementationOSMesaGL);
-  return impls;
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationEGLGLES2,
+                                           gl::kGLImplementationOSMesaGL};
 }
 
 GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
@@ -115,6 +116,8 @@ GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
   switch (implementation) {
     case gl::kGLImplementationEGLGLES2:
       return egl_implementation_.get();
+    case gl::kGLImplementationOSMesaGL:
+      return osmesa_implementation_.get();
     default:
       return nullptr;
   }

@@ -7,8 +7,6 @@
 #include "base/logging.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
-#include "ui/gl/gl_implementation_osmesa.h"
-#include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/ozone_util.h"
 
@@ -20,13 +18,13 @@ bool InitializeGLOneOffPlatform() {
     return GetGLOzone()->InitializeGLOneOffPlatform();
 
   switch (GetGLImplementation()) {
-    case kGLImplementationOSMesaGL:
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       return true;
     default:
-      return false;
+      NOTREACHED();
   }
+  return false;
 }
 
 bool InitializeStaticGLBindings(GLImplementation implementation) {
@@ -41,8 +39,6 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   }
 
   switch (implementation) {
-    case kGLImplementationOSMesaGL:
-      return InitializeStaticGLBindingsOSMesaGL();
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       SetGLImplementation(implementation);
@@ -62,7 +58,6 @@ void InitializeDebugGLBindings() {
   }
 
   InitializeDebugGLBindingsGL();
-  InitializeDebugGLBindingsOSMESA();
 }
 
 void ShutdownGLPlatform() {
@@ -72,7 +67,6 @@ void ShutdownGLPlatform() {
   }
 
   ClearBindingsGL();
-  ClearBindingsOSMESA();
 }
 
 }  // namespace init

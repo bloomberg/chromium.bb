@@ -16,6 +16,7 @@
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/headless/headless_window.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
@@ -111,9 +112,25 @@ HeadlessSurfaceFactory::HeadlessSurfaceFactory()
 
 HeadlessSurfaceFactory::HeadlessSurfaceFactory(
     HeadlessWindowManager* window_manager)
-    : window_manager_(window_manager) {}
+    : window_manager_(window_manager),
+      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()) {}
 
 HeadlessSurfaceFactory::~HeadlessSurfaceFactory() {}
+
+std::vector<gl::GLImplementation>
+HeadlessSurfaceFactory::GetAllowedGLImplementations() {
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationOSMesaGL};
+}
+
+GLOzone* HeadlessSurfaceFactory::GetGLOzone(
+    gl::GLImplementation implementation) {
+  switch (implementation) {
+    case gl::kGLImplementationOSMesaGL:
+      return osmesa_implementation_.get();
+    default:
+      return nullptr;
+  }
+}
 
 std::unique_ptr<SurfaceOzoneCanvas>
 HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
