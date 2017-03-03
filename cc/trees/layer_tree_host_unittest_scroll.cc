@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/completion_event.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -2072,20 +2071,12 @@ class LayerTreeHostScrollTestPropertyTreeUpdate
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestPropertyTreeUpdate);
 
-// Disabled due to flakes/crashes on Linux TSan Tests, linux_chromium_asan_rel
-// and Android N5X Swarm; see https://crbug.com/697652.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#define MAYBE_LayerTreeHostScrollTestImplSideInvalidation \
-  DISABLED_LayerTreeHostScrollTestImplSideInvalidation
-#else
-#define MAYBE_LayerTreeHostScrollTestImplSideInvalidation \
-  LayerTreeHostScrollTestImplSideInvalidation
-#endif
-class MAYBE_LayerTreeHostScrollTestImplSideInvalidation
+// Disabled due to flakes/crashes, see https://crbug.com/697652.
+class DISABLED_LayerTreeHostScrollTestImplSideInvalidation
     : public LayerTreeHostScrollTest {
   void BeginTest() override {
     layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
-        base::Bind(&MAYBE_LayerTreeHostScrollTestImplSideInvalidation::
+        base::Bind(&DISABLED_LayerTreeHostScrollTestImplSideInvalidation::
                        DidScrollOuterViewport,
                    base::Unretained(this)));
     PostSetNeedsCommitToMainThread();
@@ -2098,7 +2089,7 @@ class MAYBE_LayerTreeHostScrollTestImplSideInvalidation
       CompletionEvent completion;
       task_runner_provider()->ImplThreadTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&MAYBE_LayerTreeHostScrollTestImplSideInvalidation::
+          base::Bind(&DISABLED_LayerTreeHostScrollTestImplSideInvalidation::
                          WaitForInvalidationOnImplThread,
                      base::Unretained(this), &completion));
       completion.Wait();
@@ -2249,7 +2240,7 @@ class MAYBE_LayerTreeHostScrollTestImplSideInvalidation
   int num_of_deltas_ = 0;
 };
 
-MULTI_THREAD_TEST_F(MAYBE_LayerTreeHostScrollTestImplSideInvalidation);
+MULTI_THREAD_TEST_F(DISABLED_LayerTreeHostScrollTestImplSideInvalidation);
 
 }  // namespace
 }  // namespace cc
