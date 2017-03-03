@@ -25,8 +25,8 @@ namespace sql {
 // either case, the original handle is poisoned so that operations on the stack
 // do not accidentally disrupt the restored data.
 //
-// RecoverDatabaseOrRaze() automates this, including recoverying the schema of
-// from the suspect database.  If a database requires special handling, such as
+// RecoverDatabase() automates this, including recoverying the schema of from
+// the suspect database.  If a database requires special handling, such as
 // recovering between different schema, or tables requiring post-processing,
 // then the module can be used manually like:
 //
