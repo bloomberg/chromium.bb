@@ -159,7 +159,6 @@ int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   return filt_best;
 }
 
-#if !CONFIG_LOOP_RESTORATION
 void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                            LPF_PICK_METHOD method) {
   AV1_COMMON *const cm = &cpi->common;
@@ -210,4 +209,3 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   lf->filter_level = 0;
 #endif  // CONFIG_EXT_TILE
 }
-#endif  // !CONFIG_LOOP_RESTORATION

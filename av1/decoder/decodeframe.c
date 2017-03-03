@@ -4986,13 +4986,6 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   } else {
     *p_data_end = decode_tiles(pbi, data + first_partition_size, data_end);
   }
-#if CONFIG_LOOP_RESTORATION
-  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
-      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
-      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    av1_loop_restoration_frame(new_fb, cm, cm->rst_info, 7, 0, NULL);
-  }
-#endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_CDEF
   if (cm->dering_level && !cm->skip_loop_filter) {
@@ -5017,7 +5010,15 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     }
   }
   if (cm->clpf_blocks) aom_free(cm->clpf_blocks);
-#endif
+#endif  // CONFIG_CDEF
+
+#if CONFIG_LOOP_RESTORATION
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    av1_loop_restoration_frame(new_fb, cm, cm->rst_info, 7, 0, NULL);
+  }
+#endif  // CONFIG_LOOP_RESTORATION
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {

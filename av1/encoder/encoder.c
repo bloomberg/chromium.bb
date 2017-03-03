@@ -3462,11 +3462,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
     aom_usec_timer_start(&timer);
 
-#if CONFIG_LOOP_RESTORATION
-    av1_pick_filter_restoration(cpi->Source, cpi, cpi->sf.lpf_pick);
-#else
     av1_pick_filter_level(cpi->Source, cpi, cpi->sf.lpf_pick);
-#endif  // CONFIG_LOOP_RESTORATION
 
     aom_usec_timer_mark(&timer);
     cpi->time_pick_lpf += aom_usec_timer_elapsed(&timer);
@@ -3540,6 +3536,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 #endif
 #if CONFIG_LOOP_RESTORATION
+  av1_pick_filter_restoration(cpi->Source, cpi, cpi->sf.lpf_pick);
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
