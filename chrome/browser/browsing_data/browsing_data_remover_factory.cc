@@ -46,7 +46,7 @@ BrowsingDataRemoverFactory* BrowsingDataRemoverFactory::GetInstance() {
 // static
 BrowsingDataRemover* BrowsingDataRemoverFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<BrowsingDataRemoverImpl*>(
+  return static_cast<BrowsingDataRemover*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 

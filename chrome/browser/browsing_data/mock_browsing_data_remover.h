@@ -8,7 +8,6 @@
 #include <list>
 
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowserContext;
@@ -17,8 +16,7 @@ class BrowserContext;
 // A BrowsingDataRemover that only records Remove*() calls.
 // Some of the other methods are NOTIMPLEMENTED() as they are not needed for
 // existing testcases.
-class MockBrowsingDataRemover : public BrowsingDataRemover,
-                                public KeyedService {
+class MockBrowsingDataRemover : public BrowsingDataRemover {
  public:
   explicit MockBrowsingDataRemover(content::BrowserContext* context);
 

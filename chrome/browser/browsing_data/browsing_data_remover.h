@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowsingDataFilterBuilder;
@@ -50,7 +51,7 @@ class BrowsingDataFilterBuilder;
 //
 // TODO(crbug.com/668114): BrowsingDataRemover does not currently support plugin
 // data deletion. Use PluginDataRemover instead.
-class BrowsingDataRemover {
+class BrowsingDataRemover : public KeyedService {
  public:
   // Mask used for Remove.
   enum RemoveDataMask {
