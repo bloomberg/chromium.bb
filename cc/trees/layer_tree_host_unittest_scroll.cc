@@ -2072,9 +2072,9 @@ class LayerTreeHostScrollTestPropertyTreeUpdate
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestPropertyTreeUpdate);
 
-// Disabled due to flakes/crashes on Linux TSan Tests and on
-// linux_chromium_asan_rel; see https://crbug.com/697652.
-#if defined(OS_LINUX)
+// Disabled due to flakes/crashes on Linux TSan Tests, linux_chromium_asan_rel
+// and Android N5X Swarm; see https://crbug.com/697652.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #define MAYBE_LayerTreeHostScrollTestImplSideInvalidation \
   DISABLED_LayerTreeHostScrollTestImplSideInvalidation
 #else
