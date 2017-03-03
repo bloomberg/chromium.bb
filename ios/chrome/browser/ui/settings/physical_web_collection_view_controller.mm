@@ -85,14 +85,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Preference switch
 
 + (BOOL)shouldEnableForPreferenceState:(int)preferenceState {
-  // In the default (onboarding) state, render the preference as On if the
-  // location app permission is granted.
-  if (preferenceState == physical_web::kPhysicalWebOnboarding) {
-    CLAuthorizationStatus authStatus = [CLLocationManager authorizationStatus];
-    return (authStatus == kCLAuthorizationStatusAuthorizedWhenInUse ||
-            authStatus == kCLAuthorizationStatusAuthorizedAlways);
-  }
-
+  // Render the preference as "on" only if the preference is explicitly enabled.
   return (preferenceState == physical_web::kPhysicalWebOn);
 }
 
