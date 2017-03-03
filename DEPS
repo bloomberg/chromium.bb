@@ -775,28 +775,6 @@ hooks = [
                '-l', 'third_party/xstream'
     ],
   },
-  # Downloads the VR Services and Daydream Home APKs used for VR testing on
-  # Android.
-  {
-    'name': 'vr_services_apks',
-    'pattern': '.',
-    'action': ['python',
-               'src/build/android/update_deps/update_third_party_deps.py',
-               'download',
-               '-b', 'chrome-vr-test-apks/vr_services',
-               '-l', 'third_party/gvr-android-sdk/test-apks/vr_services'
-    ],
-  },
-  {
-    'name': 'daydream_home_apks',
-    'pattern': '.',
-    'action': ['python',
-               'src/build/android/update_deps/update_third_party_deps.py',
-               'download',
-               '-b', 'chrome-vr-test-apks/daydream_home',
-               '-l', 'third_party/gvr-android-sdk/test-apks/daydream_home'
-    ],
-  },
   {
     # Downloads the current stable linux sysroot to build/linux/ if needed.
     # This sysroot updates at about the same rate that the chrome build deps
@@ -1146,6 +1124,14 @@ hooks = [
                 '--no_auth',
                 '--bucket', 'chromium-nodejs',
                 '-s', 'src/third_party/node/node_modules.tar.gz.sha1',
+    ],
+  },
+  # Download VR test APKs only if the environment variable is set
+  {
+    'name': 'vr_test_apks',
+    'pattern': '.',
+    'action': [ 'python',
+               'src/third_party/gvr-android-sdk/test-apks/update.py',
     ],
   },
 ]
