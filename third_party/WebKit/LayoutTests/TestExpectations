@@ -2466,6 +2466,8 @@ crbug.com/689781 virtual/mojo-loading/http/tests/media/media-source/mediasource-
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
 
+crbug.com/v8/6005 inspector/console/console-format.html [ NeedsManualRebaseline ]
+
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 
 # CQ and Rebaseline-cl for crrev.com/2626973005 does not include this
