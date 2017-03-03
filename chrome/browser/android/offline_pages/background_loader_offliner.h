@@ -57,7 +57,7 @@ class BackgroundLoaderOffliner : public Offliner,
   friend class TestBackgroundLoaderOffliner;
 
   enum SaveState { NONE, SAVING, DELETE_AFTER_SAVE };
-  enum PageLoadState { SUCCESS, RETRIABLE, NONRETRIABLE };
+  enum PageLoadState { SUCCESS, RETRIABLE, NONRETRIABLE, DELAY_RETRY };
 
   // Called when the page is ready to be saved.
   void SavePage();

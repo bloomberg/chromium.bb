@@ -215,6 +215,9 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
       case net::ERR_UNKNOWN_URL_SCHEME:
         page_load_state_ = NONRETRIABLE;
         break;
+      case net::ERR_INTERNET_DISCONNECTED:
+        page_load_state_ = DELAY_RETRY;
+        break;
       default:
         page_load_state_ = RETRIABLE;
     }
@@ -244,10 +247,22 @@ void BackgroundLoaderOffliner::SavePage() {
   SavePageRequest request(*pending_request_.get());
   // If there was an error navigating to page, return loading failed.
   if (page_load_state_ != SUCCESS) {
-    Offliner::RequestStatus status =
-        (page_load_state_ == RETRIABLE)
-            ? Offliner::RequestStatus::LOADING_FAILED
-            : Offliner::RequestStatus::LOADING_FAILED_NO_RETRY;
+    Offliner::RequestStatus status;
+    switch (page_load_state_) {
+      case RETRIABLE:
+        status = Offliner::RequestStatus::LOADING_FAILED;
+        break;
+      case NONRETRIABLE:
+        status = Offliner::RequestStatus::LOADING_FAILED_NO_RETRY;
+        break;
+      case DELAY_RETRY:
+        status = Offliner::RequestStatus::LOADING_FAILED_NO_NEXT;
+        break;
+      default:
+        // We should've already checked for Success before entering here.
+        NOTREACHED();
+        status = Offliner::RequestStatus::LOADING_FAILED;
+    }
     completion_callback_.Run(request, status);
     ResetState();
     return;

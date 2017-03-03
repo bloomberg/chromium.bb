@@ -369,6 +369,29 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
   EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_RETRY, request_status());
 }
 
+TEST_F(BackgroundLoaderOfflinerTest, NoNextOnInternetDisconnected) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+
+  // Create handle with net error code.
+  // Called after calling LoadAndSave so we have web_contents to work with.
+  std::unique_ptr<content::NavigationHandle> handle(
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
+          net::Error::ERR_INTERNET_DISCONNECTED));
+  // Call DidFinishNavigation with handle that contains error.
+  offliner()->DidFinishNavigation(handle.get());
+  // NavigationHandle is always destroyed after finishing navigation.
+  handle.reset();
+  offliner()->DidStopLoading();
+  PumpLoop();
+
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_NEXT, request_status());
+}
+
 TEST_F(BackgroundLoaderOfflinerTest, OnlySavesOnceOnMultipleLoads) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
