@@ -411,6 +411,8 @@ source_set("test_support") {
     "public/test/fakes/test_web_state_delegate.mm",
     "public/test/fakes/test_web_state_observer.h",
     "public/test/fakes/test_web_state_observer.mm",
+    "public/test/fakes/test_web_state_observer_util.h",
+    "public/test/fakes/test_web_state_observer_util.mm",
     "public/test/fakes/test_web_view_content_view.h",
     "public/test/fakes/test_web_view_content_view.mm",
     "public/test/http_server.h",

@@ -5,6 +5,9 @@
 #import "ios/web/public/test/fakes/crw_test_web_state_observer.h"
 
 #include "base/memory/ptr_util.h"
+#include "ios/web/public/web_state/navigation_context.h"
+#include "ios/web/web_state/navigation_context_impl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace web {
 TestFormActivityInfo::TestFormActivityInfo() {}
@@ -26,8 +29,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   std::unique_ptr<web::TestLoadPageInfo> _loadPageInfo;
   // Arguments passed to |webStateDidDismissInterstitial:|.
   std::unique_ptr<web::TestDismissInterstitialInfo> _dismissInterstitialInfo;
-  // Arguments passed to |webStateDidChangeHistoryState:|.
-  std::unique_ptr<web::TestChangeHistoryStateInfo> _changeHistoryStateInfo;
   // Arguments passed to |webState:didChangeLoadingProgress:|.
   std::unique_ptr<web::TestChangeLoadingProgressInfo>
       _changeLoadingProgressInfo;
@@ -70,10 +71,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (web::TestDismissInterstitialInfo*)dismissInterstitialInfo {
   return _dismissInterstitialInfo.get();
-}
-
-- (web::TestChangeHistoryStateInfo*)changeHistoryStateInfo {
-  return _changeHistoryStateInfo.get();
 }
 
 - (web::TestChangeLoadingProgressInfo*)changeLoadingProgressInfo {
@@ -135,7 +132,21 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   _didFinishNavigationInfo =
       base::MakeUnique<web::TestDidFinishNavigationInfo>();
   _didFinishNavigationInfo->web_state = webState;
-  _didFinishNavigationInfo->context = navigation;
+  if (navigation->IsSamePage()) {
+    ASSERT_FALSE(navigation->IsErrorPage());
+    _didFinishNavigationInfo->context =
+        web::NavigationContextImpl::CreateSamePageNavigationContext(
+            navigation->GetWebState(), navigation->GetUrl());
+  } else if (navigation->IsErrorPage()) {
+    ASSERT_FALSE(navigation->IsSamePage());
+    _didFinishNavigationInfo->context =
+        web::NavigationContextImpl::CreateErrorPageNavigationContext(
+            navigation->GetWebState(), navigation->GetUrl());
+  } else {
+    _didFinishNavigationInfo->context =
+        web::NavigationContextImpl::CreateNavigationContext(
+            navigation->GetWebState(), navigation->GetUrl());
+  }
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -148,11 +159,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   _dismissInterstitialInfo =
       base::MakeUnique<web::TestDismissInterstitialInfo>();
   _dismissInterstitialInfo->web_state = webState;
-}
-
-- (void)webStateDidChangeHistoryState:(web::WebState*)webState {
-  _changeHistoryStateInfo = base::MakeUnique<web::TestChangeHistoryStateInfo>();
-  _changeHistoryStateInfo->web_state = webState;
 }
 
 - (void)webState:(web::WebState*)webState

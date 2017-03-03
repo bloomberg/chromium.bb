@@ -53,7 +53,13 @@ TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
 
   ASSERT_TRUE([observer_ didFinishNavigationInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ didFinishNavigationInfo]->web_state);
-  EXPECT_EQ(context.get(), [observer_ didFinishNavigationInfo]->context);
+  web::NavigationContext* actual_context =
+      [observer_ didFinishNavigationInfo]->context.get();
+  ASSERT_TRUE(actual_context);
+  EXPECT_EQ(&test_web_state_, actual_context->GetWebState());
+  EXPECT_EQ(context->IsSamePage(), actual_context->IsSamePage());
+  EXPECT_EQ(context->IsErrorPage(), actual_context->IsErrorPage());
+  EXPECT_EQ(context->GetUrl(), actual_context->GetUrl());
 }
 
 // Tests |webState:didCommitNavigationWithDetails:| forwarding.

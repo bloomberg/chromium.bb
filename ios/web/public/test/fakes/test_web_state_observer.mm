@@ -4,45 +4,144 @@
 
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 
+#include "base/memory/ptr_util.h"
+#include "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "ios/web/web_state/navigation_context_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace web {
 
-void TestWebStateObserver::ProvisionalNavigationStarted(const GURL&) {
-  provisional_navigation_started_called_ = true;
-}
+TestWebStateObserver::TestWebStateObserver(WebState* web_state)
+    : WebStateObserver(web_state) {}
+TestWebStateObserver::~TestWebStateObserver() = default;
 
-void TestWebStateObserver::NavigationItemsPruned(size_t) {
-  navigation_items_pruned_called_ = true;
-}
-
-void TestWebStateObserver::NavigationItemChanged() {
-  navigation_item_changed_called_ = true;
+void TestWebStateObserver::ProvisionalNavigationStarted(const GURL& url) {
+  start_provisional_navigation_info_ =
+      base::MakeUnique<web::TestStartProvisionalNavigationInfo>();
+  start_provisional_navigation_info_->web_state = web_state();
+  start_provisional_navigation_info_->url = url;
 }
 
 void TestWebStateObserver::NavigationItemCommitted(
     const LoadCommittedDetails& load_details) {
-  navigation_item_committed_called_ = true;
+  commit_navigation_info_ = base::MakeUnique<web::TestCommitNavigationInfo>();
+  commit_navigation_info_->web_state = web_state();
+  commit_navigation_info_->load_details = load_details;
 }
 
-void TestWebStateObserver::DidFinishNavigation(NavigationContext*) {
-  did_finish_navigation_called_ = true;
+void TestWebStateObserver::PageLoaded(
+    PageLoadCompletionStatus load_completion_status) {
+  load_page_info_ = base::MakeUnique<web::TestLoadPageInfo>();
+  load_page_info_->web_state = web_state();
+  load_page_info_->success =
+      load_completion_status == PageLoadCompletionStatus::SUCCESS;
 }
 
-void TestWebStateObserver::PageLoaded(PageLoadCompletionStatus status) {
-  page_loaded_called_with_success_ =
-      status == PageLoadCompletionStatus::SUCCESS;
+void TestWebStateObserver::InterstitialDismissed() {
+  dismiss_interstitial_info_ =
+      base::MakeUnique<web::TestDismissInterstitialInfo>();
+  dismiss_interstitial_info_->web_state = web_state();
+}
+
+void TestWebStateObserver::LoadProgressChanged(double progress) {
+  change_loading_progress_info_ =
+      base::MakeUnique<web::TestChangeLoadingProgressInfo>();
+  change_loading_progress_info_->web_state = web_state();
+  change_loading_progress_info_->progress = progress;
+}
+
+void TestWebStateObserver::NavigationItemsPruned(size_t pruned_item_count) {
+  navigation_items_pruned_info_ =
+      base::MakeUnique<web::TestNavigationItemsPrunedInfo>();
+  navigation_items_pruned_info_->web_state = web_state();
+  navigation_items_pruned_info_->count = pruned_item_count;
+}
+
+void TestWebStateObserver::NavigationItemChanged() {
+  navigation_item_changed_info_ =
+      base::MakeUnique<web::TestNavigationItemChangedInfo>();
+  navigation_item_changed_info_->web_state = web_state();
+}
+
+void TestWebStateObserver::DidFinishNavigation(NavigationContext* context) {
+  did_finish_navigation_info_ =
+      base::MakeUnique<web::TestDidFinishNavigationInfo>();
+  did_finish_navigation_info_->web_state = web_state();
+  if (context->IsSamePage()) {
+    ASSERT_FALSE(context->IsErrorPage());
+    did_finish_navigation_info_->context =
+        NavigationContextImpl::CreateSamePageNavigationContext(
+            context->GetWebState(), context->GetUrl());
+  } else if (context->IsErrorPage()) {
+    ASSERT_FALSE(context->IsSamePage());
+    did_finish_navigation_info_->context =
+        NavigationContextImpl::CreateErrorPageNavigationContext(
+            context->GetWebState(), context->GetUrl());
+  } else {
+    did_finish_navigation_info_->context =
+        NavigationContextImpl::CreateNavigationContext(context->GetWebState(),
+                                                       context->GetUrl());
+  }
 }
 
 void TestWebStateObserver::TitleWasSet() {
-  title_was_set_called_ = true;
+  title_was_set_info_ = base::MakeUnique<web::TestTitleWasSetInfo>();
+  title_was_set_info_->web_state = web_state();
+}
+
+void TestWebStateObserver::DocumentSubmitted(const std::string& form_name,
+                                             bool user_initiated) {
+  submit_document_info_ = base::MakeUnique<web::TestSubmitDocumentInfo>();
+  submit_document_info_->web_state = web_state();
+  submit_document_info_->form_name = form_name;
+  submit_document_info_->user_initiated = user_initiated;
+}
+
+void TestWebStateObserver::FormActivityRegistered(const std::string& form_name,
+                                                  const std::string& field_name,
+                                                  const std::string& type,
+                                                  const std::string& value,
+                                                  bool input_missing) {
+  form_activity_info_ = base::MakeUnique<web::TestFormActivityInfo>();
+  form_activity_info_->web_state = web_state();
+  form_activity_info_->form_name = form_name;
+  form_activity_info_->field_name = field_name;
+  form_activity_info_->type = type;
+  form_activity_info_->value = value;
+  form_activity_info_->input_missing = input_missing;
+}
+
+void TestWebStateObserver::FaviconUrlUpdated(
+    const std::vector<FaviconURL>& candidates) {
+  update_favicon_url_candidates_info_ =
+      base::MakeUnique<web::TestUpdateFaviconUrlCandidatesInfo>();
+  update_favicon_url_candidates_info_->web_state = web_state();
+  update_favicon_url_candidates_info_->candidates = candidates;
+}
+
+void TestWebStateObserver::RenderProcessGone() {
+  render_process_gone_info_ =
+      base::MakeUnique<web::TestRenderProcessGoneInfo>();
+  render_process_gone_info_->web_state = web_state();
 }
 
 void TestWebStateObserver::WebStateDestroyed() {
   EXPECT_TRUE(web_state()->IsBeingDestroyed());
-  web_state_destroyed_called_ = true;
+  web_state_destroyed_info_ =
+      base::MakeUnique<web::TestWebStateDestroyedInfo>();
+  web_state_destroyed_info_->web_state = web_state();
   Observe(nullptr);
+}
+
+void TestWebStateObserver::DidStartLoading() {
+  start_loading_info_ = base::MakeUnique<web::TestStartLoadingInfo>();
+  start_loading_info_->web_state = web_state();
+}
+
+void TestWebStateObserver::DidStopLoading() {
+  stop_loading_info_ = base::MakeUnique<web::TestStopLoadingInfo>();
+  stop_loading_info_->web_state = web_state();
 }
 
 }  // namespace web
