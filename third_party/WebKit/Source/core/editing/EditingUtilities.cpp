@@ -2081,12 +2081,14 @@ bool isTextSecurityNode(const Node* node) {
 const StaticRangeVector* targetRangesForInputEvent(const Node& node) {
   if (!hasRichlyEditableStyle(node))
     return nullptr;
-  return new StaticRangeVector(
-      1, StaticRange::create(createRange(firstEphemeralRangeOf(
-             node.document()
-                 .frame()
-                 ->selection()
-                 .computeVisibleSelectionInDOMTreeDeprecated()))));
+  Range* range = createRange(
+      firstEphemeralRangeOf(node.document()
+                                .frame()
+                                ->selection()
+                                .computeVisibleSelectionInDOMTreeDeprecated()));
+  if (!range)
+    return nullptr;
+  return new StaticRangeVector(1, StaticRange::create(range));
 }
 
 DispatchEventResult dispatchBeforeInputInsertText(Node* target,
