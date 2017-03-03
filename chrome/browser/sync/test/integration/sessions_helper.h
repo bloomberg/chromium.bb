@@ -27,20 +27,9 @@ using SessionWindowMap = std::map<SessionID::id_type, sessions::SessionWindow*>;
 using ScopedWindowMap =
     std::map<SessionID::id_type, std::unique_ptr<sessions::SessionWindow>>;
 
-// Copies the local session windows of profile |index| to |local_windows|.
+// Copies the local session windows of profile at |index| to |local_windows|.
 // Returns true if successful.
 bool GetLocalWindows(int index, ScopedWindowMap* local_windows);
-
-// Creates and verifies the creation of a new window for profile |index| with
-// one tab displaying |url|. Copies the SessionWindow associated with the new
-// window to |local_windows|. Returns true if successful. This call results in
-// multiple sessions changes, and performs synchronous blocking. It is rare, but
-// possible, that multiple sync cycle commits occur as a result of this call.
-// Test cases should be written to handle this possibility, otherwise they may
-// flake.
-bool OpenTabAndGetLocalWindows(int index,
-                               const GURL& url,
-                               ScopedWindowMap* local_windows);
 
 // Checks that window count and foreign session count are 0.
 bool CheckInitialState(int index);
@@ -84,13 +73,39 @@ bool WindowsMatch(const SessionWindowMap& win1, const ScopedWindowMap& win2);
 // with a reference SessionWindow list.
 // Returns true if the session windows of the foreign session matches the
 // reference.
-bool CheckForeignSessionsAgainst(
-    int index,
-    const std::vector<ScopedWindowMap>& windows);
+bool CheckForeignSessionsAgainst(int index,
+                                 const std::vector<ScopedWindowMap>& windows);
 
-// Open a single tab and block until the session model associator is aware
-// of it. Returns true upon success, false otherwise.
+// Open a single tab  in the browser at |index| and block until the
+// session model associator is aware of it. Returns true upon success, false
+// otherwise.
 bool OpenTab(int index, const GURL& url);
+
+// See OpenTab, except that the tab is opened in position |tab_index|.
+// If |tab_index| is -1 or greater than the number of tabs, the tab will be
+// appended to the end of the strip. i.e. if tab_index is 3 for a tab strip of
+// size 1, the new tab will be in position 1.
+bool OpenTabAtIndex(int index, int tab_index, const GURL& url);
+
+// Moves the tab in position |tab_index| in the TabStrip for browser at
+// |from_index| to the TabStrip for browser at |to_index|.
+void MoveTab(int from_index, int to_index, int tab_index);
+
+// Navigate the active tab for browser in position |index| to the given
+// url, and blocks until the session model associator is aware of it.
+// WARNING: it's dangerous to assume this will return for any arbitrary URL.
+// For URLs that don't resolve to a valid server response, this can block
+// indefinitely. Use a data uri or the embedded_test_server to ensure that this
+// doesn't happen.
+bool NavigateTab(int index, const GURL& url);
+
+// Navigate the active tab for browser in position |index| back by one;
+// if this isn't possible, does nothing
+void NavigateTabBack(int index);
+
+// Navigate the active tab for browser in position |index| forward by
+// one; if this isn't possible, does nothing
+void NavigateTabForward(int index);
 
 // Open multiple tabs and block until the session model associator is aware
 // of all of them.  Returns true on success, false on failure.
