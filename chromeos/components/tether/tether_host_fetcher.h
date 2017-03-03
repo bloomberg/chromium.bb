@@ -51,7 +51,7 @@ class TetherHostFetcher {
   virtual void FetchTetherHost(const std::string& device_id,
                                const TetherHostCallback& callback);
 
- private:
+ protected:
   struct TetherHostFetchRequest {
     TetherHostFetchRequest(const TetherHostListCallback& list_callback);
     TetherHostFetchRequest(const std::string& device_id,
@@ -69,15 +69,17 @@ class TetherHostFetcher {
     TetherHostCallback single_callback;
   };
 
-  void StartLoadingDevicesIfNeeded();
   void OnRemoteDevicesLoaded(const cryptauth::RemoteDeviceList& remote_devices);
+
+  std::vector<TetherHostFetchRequest> requests_;
+
+ private:
+  void StartLoadingDevicesIfNeeded();
 
   const std::string user_id_;
   const std::string user_private_key_;
   std::unique_ptr<Delegate> delegate_;
   cryptauth::CryptAuthDeviceManager* device_manager_;
-
-  std::vector<TetherHostFetchRequest> requests_;
 
   std::unique_ptr<cryptauth::RemoteDeviceLoader> remote_device_loader_;
 

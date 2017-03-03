@@ -28,7 +28,7 @@ class HostScanDevicePrioritizer {
   // Note: The PrefService* passed here must be created using the same registry
   // passed to RegisterPrefs().
   HostScanDevicePrioritizer(PrefService* pref_service);
-  ~HostScanDevicePrioritizer();
+  virtual ~HostScanDevicePrioritizer();
 
   // Registers the prefs used by this class to |registry|. Must be called before
   // this class is utilized.
@@ -46,7 +46,7 @@ class HostScanDevicePrioritizer {
       const cryptauth::RemoteDevice& remote_device);
 
   // Prioritizes |remote_devices| using the rules described above.
-  void SortByHostScanOrder(
+  virtual void SortByHostScanOrder(
       std::vector<cryptauth::RemoteDevice>* remote_devices) const;
 
  private:

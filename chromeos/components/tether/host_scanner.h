@@ -5,18 +5,66 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H
 #define CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H
 
+#include <vector>
+
+#include "base/memory/weak_ptr.h"
+#include "chromeos/components/tether/host_scanner_operation.h"
+#include "components/cryptauth/remote_device.h"
+
 namespace chromeos {
 
 namespace tether {
 
+class BleConnectionManager;
+class HostScanDevicePrioritizer;
+class TetherHostFetcher;
+
 // Scans for nearby tether hosts.
-// TODO(khorimoto): Implement.
-class HostScanner {
+// TODO(khorimoto): Add some sort of "staleness" timeout which removes scan
+//                  results which occurred long enough ago that they are no
+//                  longer valid.
+// TODO(hansberry): Implement handling for scan results.
+class HostScanner : public HostScannerOperation::Observer {
  public:
-  HostScanner();
+  HostScanner(TetherHostFetcher* tether_host_fetcher,
+              BleConnectionManager* connection_manager,
+              HostScanDevicePrioritizer* host_scan_device_prioritizer);
   virtual ~HostScanner();
 
+  // Starts a host scan if there is no current scan. If a scan is ongoing, this
+  // function is a no-op.
   virtual void StartScan();
+
+  bool IsScanActive();
+
+  std::vector<HostScannerOperation::ScannedDeviceInfo>
+  most_recent_scan_results() {
+    return most_recent_scan_results_;
+  }
+
+  // HostScannerOperation::Observer:
+  void OnTetherAvailabilityResponse(
+      std::vector<HostScannerOperation::ScannedDeviceInfo>&
+          scanned_device_list_so_far,
+      bool is_final_scan_result) override;
+
+ private:
+  friend class HostScannerTest;
+
+  void OnTetherHostsFetched(const cryptauth::RemoteDeviceList& tether_hosts);
+
+  TetherHostFetcher* tether_host_fetcher_;
+  BleConnectionManager* connection_manager_;
+  HostScanDevicePrioritizer* host_scan_device_prioritizer_;
+
+  bool is_fetching_hosts_;
+  std::unique_ptr<HostScannerOperation> host_scanner_operation_;
+  std::vector<HostScannerOperation::ScannedDeviceInfo>
+      most_recent_scan_results_;
+
+  base::WeakPtrFactory<HostScanner> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostScanner);
 };
 
 }  // namespace tether

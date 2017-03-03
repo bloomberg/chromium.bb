@@ -24,6 +24,8 @@ static_library("tether") {
     "host_scan_scheduler.h",
     "host_scanner.cc",
     "host_scanner.h",
+    "host_scanner_operation.cc",
+    "host_scanner_operation.h",
     "initializer.cc",
     "initializer.h",
     "local_device_data_provider.cc",
@@ -60,6 +62,8 @@ static_library("test_support") {
   sources = [
     "fake_ble_connection_manager.cc",
     "fake_ble_connection_manager.h",
+    "fake_tether_host_fetcher.cc",
+    "fake_tether_host_fetcher.h",
     "mock_local_device_data_provider.cc",
     "mock_local_device_data_provider.h",
   ]
@@ -86,6 +90,8 @@ source_set("unit_tests") {
     "connect_tethering_operation_unittest.cc",
     "host_scan_device_prioritizer_unittest.cc",
     "host_scan_scheduler_unittest.cc",
+    "host_scanner_operation_unittest.cc",
+    "host_scanner_unittest.cc",
     "local_device_data_provider_unittest.cc",
     "message_transfer_operation_unittest.cc",
     "message_wrapper_unittest.cc",
