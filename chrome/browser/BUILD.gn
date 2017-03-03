@@ -1716,6 +1716,8 @@ split_static_library("browser") {
       "safe_browsing/settings_reset_prompt/settings_reset_prompt_controller.h",
       "safe_browsing/settings_reset_prompt/settings_reset_prompt_model.cc",
       "safe_browsing/settings_reset_prompt/settings_reset_prompt_model.h",
+      "safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.cc",
+      "safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h",
       "search/hotword_audio_history_handler.cc",
       "search/hotword_audio_history_handler.h",
       "search/hotword_client.h",

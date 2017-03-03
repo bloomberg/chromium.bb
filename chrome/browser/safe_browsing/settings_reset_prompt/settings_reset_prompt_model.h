@@ -15,7 +15,9 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/extension_info.h"
+#include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
@@ -42,7 +44,9 @@ class SettingsResetPromptModel {
   enum ResetState {
     RESET_REQUIRED = 1,
     NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED = 2,
-    NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET = 3,
+    NO_RESET_REQUIRED_DUE_TO_ALREADY_PROMPTED_FOR_SETTING = 3,
+    NO_RESET_REQUIRED_DUE_TO_RECENTLY_PROMPTED = 4,
+    NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET = 5,
   };
 
   using ExtensionMap =
@@ -76,6 +80,9 @@ class SettingsResetPromptModel {
   //
   // NOTE: Can only be called once during the lifetime of this object.
   virtual void PerformReset(const base::Closure& done_callback);
+  // To be called when the reset prompt dialog has been shown so that
+  // preferences can be updated.
+  virtual void DialogShown();
 
   virtual GURL homepage() const;
   virtual ResetState homepage_reset_state() const;
@@ -119,16 +126,31 @@ class SettingsResetPromptModel {
   void InitStartupUrlsData();
   void InitHomepageData();
   void InitExtensionData();
+
+  // Helper function for the Init* functions above to determine the reset state
+  // of settings that have a match in the config.
+  ResetState GetResetStateForSetting(
+      const base::Time& last_triggered_for_setting) const;
+
   // Return true if any setting's reset state is set to |RESET_REQUIRED|.
   bool SomeSettingRequiresReset() const;
 
   Profile* const profile_;
+
+  SettingsResetPromptPrefsManager prefs_manager_;
   std::unique_ptr<SettingsResetPromptConfig> prompt_config_;
   std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot_;
   // |default_settings_| should only be accessed on the UI thread after
   // construction.
   std::unique_ptr<BrandcodedDefaultSettings> default_settings_;
   std::unique_ptr<ProfileResetter> profile_resetter_;
+
+  // A single timestamp to be used by all initialization functions to determine
+  // if enough time has passed between the last time the prompt was shown and
+  // "now" for a new prompt to be shown.
+  base::Time now_;
+  // The time since the last prompt was shown for any setting.
+  base::TimeDelta time_since_last_prompt_;
 
   // Bits to keep track of which settings types have been initialized.
   uint32_t settings_types_initialized_;

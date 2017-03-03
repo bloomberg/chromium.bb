@@ -101,6 +101,14 @@ base::TimeDelta SettingsResetPromptConfig::delay_before_prompt() const {
   return delay_before_prompt_;
 }
 
+int SettingsResetPromptConfig::prompt_wave() const {
+  return prompt_wave_;
+}
+
+base::TimeDelta SettingsResetPromptConfig::time_between_prompts() const {
+  return time_between_prompts_;
+}
+
 // Implements the hash function for SHA256Hash objects. Simply uses the
 // first bytes of the SHA256 hash as its own hash.
 size_t SettingsResetPromptConfig::SHA256HashHasher::operator()(
@@ -123,6 +131,8 @@ enum SettingsResetPromptConfig::ConfigError : int {
   CONFIG_ERROR_BAD_DOMAIN_ID = 5,
   CONFIG_ERROR_DUPLICATE_DOMAIN_HASH = 6,
   CONFIG_ERROR_BAD_DELAY_BEFORE_PROMPT_SECONDS_PARAM = 7,
+  CONFIG_ERROR_BAD_PROMPT_WAVE_PARAM = 8,
+  CONFIG_ERROR_BAD_TIME_BETWEEN_PROMPTS_SECONDS_PARAM = 9,
   CONFIG_ERROR_MAX
 };
 
@@ -151,6 +161,28 @@ bool SettingsResetPromptConfig::Init() {
   }
   delay_before_prompt_ =
       base::TimeDelta::FromSeconds(delay_before_prompt_seconds);
+
+  // Get the prompt_wave feature paramter.
+  prompt_wave_ = base::GetFieldTrialParamByFeatureAsInt(kSettingsResetPrompt,
+                                                        "prompt_wave", 0);
+  if (prompt_wave_ <= 0) {
+    UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ConfigError",
+                              CONFIG_ERROR_BAD_PROMPT_WAVE_PARAM,
+                              CONFIG_ERROR_MAX);
+    return false;
+  }
+
+  // Get the time_between_prompts_seconds feature parameter.
+  int time_between_prompts_seconds = base::GetFieldTrialParamByFeatureAsInt(
+      kSettingsResetPrompt, "time_between_prompts_seconds", -1);
+  if (time_between_prompts_seconds < 0) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "SettingsResetPrompt.ConfigError",
+        CONFIG_ERROR_BAD_TIME_BETWEEN_PROMPTS_SECONDS_PARAM, CONFIG_ERROR_MAX);
+    return false;
+  }
+  time_between_prompts_ =
+      base::TimeDelta::FromSeconds(time_between_prompts_seconds);
 
   UMA_HISTOGRAM_ENUMERATION("SettingsResetPrompt.ConfigError", CONFIG_ERROR_OK,
                             CONFIG_ERROR_MAX);

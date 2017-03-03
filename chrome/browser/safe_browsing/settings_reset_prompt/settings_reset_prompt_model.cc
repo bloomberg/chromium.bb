@@ -218,6 +218,19 @@ void SettingsResetPromptModel::PerformReset(
                            done_callback);
 }
 
+void SettingsResetPromptModel::DialogShown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(SomeSettingRequiresReset());
+
+  base::Time now = base::Time::Now();
+  if (default_search_reset_state() == RESET_REQUIRED)
+    prefs_manager_.RecordPromptShownForDefaultSearch(now);
+  if (startup_urls_reset_state() == RESET_REQUIRED)
+    prefs_manager_.RecordPromptShownForStartupUrls(now);
+  if (homepage_reset_state() == RESET_REQUIRED)
+    prefs_manager_.RecordPromptShownForHomepage(now);
+}
+
 GURL SettingsResetPromptModel::homepage() const {
   return homepage_url_;
 }
@@ -283,10 +296,13 @@ SettingsResetPromptModel::SettingsResetPromptModel(
     std::unique_ptr<BrandcodedDefaultSettings> default_settings,
     std::unique_ptr<ProfileResetter> profile_resetter)
     : profile_(profile),
+      prefs_manager_(profile, prompt_config->prompt_wave()),
       prompt_config_(std::move(prompt_config)),
       settings_snapshot_(std::move(settings_snapshot)),
       default_settings_(std::move(default_settings)),
       profile_resetter_(std::move(profile_resetter)),
+      time_since_last_prompt_(base::Time::Now() -
+                              prefs_manager_.LastTriggeredPrompt()),
       settings_types_initialized_(0),
       homepage_reset_domain_id_(-1),
       homepage_reset_state_(NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED),
@@ -322,7 +338,8 @@ void SettingsResetPromptModel::InitDefaultSearchData() {
   if (default_search_reset_domain_id_ < 0)
     return;
 
-  default_search_reset_state_ = RESET_REQUIRED;
+  default_search_reset_state_ = GetResetStateForSetting(
+      prefs_manager_.LastTriggeredPromptForDefaultSearch());
 }
 
 void SettingsResetPromptModel::InitStartupUrlsData() {
@@ -341,14 +358,16 @@ void SettingsResetPromptModel::InitStartupUrlsData() {
     startup_urls_.push_back(fixed_url);
     int reset_domain_id = prompt_config_->UrlToResetDomainId(fixed_url);
     if (reset_domain_id >= 0) {
-      startup_urls_reset_state_ =
-          SomeSettingRequiresReset()
-              ? NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET
-              : RESET_REQUIRED;
       startup_urls_to_reset_.push_back(fixed_url);
       domain_ids_for_startup_urls_to_reset_.insert(reset_domain_id);
     }
   }
+
+  if (startup_urls_to_reset_.empty())
+    return;
+
+  startup_urls_reset_state_ = GetResetStateForSetting(
+      prefs_manager_.LastTriggeredPromptForStartupUrls());
 }
 
 void SettingsResetPromptModel::InitHomepageData() {
@@ -376,9 +395,7 @@ void SettingsResetPromptModel::InitHomepageData() {
     return;
 
   homepage_reset_state_ =
-      SomeSettingRequiresReset()
-          ? NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET
-          : RESET_REQUIRED;
+      GetResetStateForSetting(prefs_manager_.LastTriggeredPromptForHomepage());
 }
 
 // Populate |extensions_to_disable_| with all enabled extensions that override
@@ -418,6 +435,21 @@ void SettingsResetPromptModel::InitExtensionData() {
           std::make_pair(extension_info.id, extension_info));
     }
   }
+}
+
+SettingsResetPromptModel::ResetState
+SettingsResetPromptModel::GetResetStateForSetting(
+    const base::Time& last_triggered_for_setting) const {
+  if (!last_triggered_for_setting.is_null())
+    return NO_RESET_REQUIRED_DUE_TO_ALREADY_PROMPTED_FOR_SETTING;
+
+  if (time_since_last_prompt_ < prompt_config_->time_between_prompts())
+    return NO_RESET_REQUIRED_DUE_TO_RECENTLY_PROMPTED;
+
+  if (SomeSettingRequiresReset())
+    return NO_RESET_REQUIRED_DUE_TO_OTHER_SETTING_REQUIRING_RESET;
+
+  return RESET_REQUIRED;
 }
 
 bool SettingsResetPromptModel::SomeSettingRequiresReset() const {

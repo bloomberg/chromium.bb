@@ -48,6 +48,44 @@ bool ResetHomepageEnabled(const SettingsResetPromptModel& model) {
          SettingsResetPromptModel::RESET_REQUIRED;
 }
 
+// Function that is passed the newly created |SettingsResetPromptModel| object
+// as a result of a call to |MaybeShowSettingsResetPrompt()| below. Will display
+// the settings reset prompt if required by the model and there is at least one
+// non-incognito browser available for the corresponding profile.
+void OnModelCreated(std::unique_ptr<SettingsResetPromptModel> model) {
+  if (!model || !model->ShouldPromptForReset())
+    return;
+
+  Profile* profile = model->profile();
+
+  // Ensure that there is at least one non-incognito browser open for the
+  // profile before attempting to show the dialog.
+  if (!chrome::FindTabbedBrowser(profile, /*match_original_profiles=*/false))
+    return;
+
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+  // The |SettingsResetPromptController| object will delete itself after the
+  // reset prompt dialog has been closed.
+  SettingsResetPromptController::ShowSettingsResetPrompt(
+      displayer.browser(), new SettingsResetPromptController(std::move(model)));
+}
+
+void MaybeShowSettingsResetPrompt(
+    std::unique_ptr<SettingsResetPromptConfig> config) {
+  DCHECK(config);
+
+  Browser* browser = chrome::FindLastActive();
+  if (!browser)
+    return;
+
+  // Get the original profile in case the last active browser was incognito. We
+  // ensure that there is at least one non-incognito browser open before
+  // displaying the dialog.
+  Profile* profile = browser->profile()->GetOriginalProfile();
+  SettingsResetPromptModel::Create(profile, std::move(config),
+                                   base::Bind(OnModelCreated));
+}
+
 }  // namespace.
 
 SettingsResetPromptController::SettingsResetPromptController(
@@ -95,6 +133,10 @@ base::string16 SettingsResetPromptController::GetMainText() const {
 
 gfx::Range SettingsResetPromptController::GetMainTextUrlRange() const {
   return main_text_url_range_;
+}
+
+void SettingsResetPromptController::DialogShown() {
+  model_->DialogShown();
 }
 
 void SettingsResetPromptController::Accept() {
@@ -165,4 +207,17 @@ void SettingsResetPromptController::OnInteractionDone() {
   // TODO(alito): Add metrics reporting here.
   delete this;
 }
+
+void MaybeShowSettingsResetPromptWithDelay() {
+  std::unique_ptr<SettingsResetPromptConfig> config =
+      SettingsResetPromptConfig::Create();
+  if (!config)
+    return;
+
+  base::TimeDelta delay = config->delay_before_prompt();
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(MaybeShowSettingsResetPrompt, base::Passed(&config)), delay);
+}
+
 }  // namespace safe_browsing

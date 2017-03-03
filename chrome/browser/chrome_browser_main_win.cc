@@ -37,6 +37,8 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
+#include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_controller.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
@@ -368,6 +370,14 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
       base::Bind(&VerifyInstallation));
 
   InitializeChromeElf();
+
+  if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
+    content::BrowserThread::PostAfterStartupTask(
+        FROM_HERE,
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::UI),
+        base::Bind(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
+  }
 
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.

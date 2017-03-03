@@ -45,7 +45,9 @@ class SettingsResetPromptConfigTest : public ::testing::Test {
   Parameters GetDefaultFeatureParams() {
     return {
         {"domain_hashes", base::StringPrintf("{\"%s\": \"1\"}", kDomainHash)},
-        {"delay_before_prompt_seconds", "42"}};
+        {"delay_before_prompt_seconds", "42"},
+        {"prompt_wave", "20170101"},
+        {"time_between_prompts_seconds", "3600"}};
   }
 
   variations::testing::VariationParamsManager params_manager_;
@@ -205,7 +207,7 @@ TEST_F(SettingsResetPromptConfigTest, UrlToResetDomainIdTLDs) {
 }
 
 TEST_F(SettingsResetPromptConfigTest, DelayBeforePromptSecondsParam) {
-  constexpr char kDelayParam[] = "delay_before_prompt_seconds";
+  constexpr const char kDelayParam[] = "delay_before_prompt_seconds";
 
   Parameters params = GetDefaultFeatureParams();
 
@@ -245,6 +247,77 @@ TEST_F(SettingsResetPromptConfigTest, DelayBeforePromptSecondsParam) {
     auto config = SettingsResetPromptConfig::Create();
     ASSERT_TRUE(config);
     EXPECT_EQ(config->delay_before_prompt(), base::TimeDelta::FromSeconds(0));
+  }
+}
+
+TEST_F(SettingsResetPromptConfigTest, PromptWaveParam) {
+  constexpr const char kPromptWaveParam[] = "prompt_wave";
+
+  Parameters params = GetDefaultFeatureParams();
+
+  // Missing parameter.
+  ASSERT_EQ(params.erase(kPromptWaveParam), 1U);
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Empty parameter.
+  params[kPromptWaveParam] = "";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Bad parameter value.
+  params[kPromptWaveParam] = "not-a-number";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Negative parameter value.
+  params[kPromptWaveParam] = "-3";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Correct parameter value.
+  params[kPromptWaveParam] = "20170202";
+  SetFeatureParams(params);
+  {
+    auto config = SettingsResetPromptConfig::Create();
+    ASSERT_TRUE(config);
+    EXPECT_EQ(config->prompt_wave(), 20170202);
+  }
+}
+
+TEST_F(SettingsResetPromptConfigTest, TimeBetweenPromptsParam) {
+  constexpr const char kParamName[] = "time_between_prompts_seconds";
+
+  Parameters params = GetDefaultFeatureParams();
+
+  // Missing parameter.
+  ASSERT_EQ(params.erase(kParamName), 1U);
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Empty parameter.
+  params[kParamName] = "";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Bad parameter value.
+  params[kParamName] = "not-a-number";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Negative parameter value.
+  params[kParamName] = "-3";
+  SetFeatureParams(params);
+  EXPECT_FALSE(SettingsResetPromptConfig::Create());
+
+  // Correct parameter value.
+  params[kParamName] = "3600";
+  SetFeatureParams(params);
+  {
+    auto config = SettingsResetPromptConfig::Create();
+    ASSERT_TRUE(config);
+    EXPECT_EQ(config->time_between_prompts(),
+              base::TimeDelta::FromSeconds(3600));
   }
 }
 

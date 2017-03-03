@@ -40,6 +40,13 @@ class SettingsResetPromptConfig {
 
   // The delay before showing the reset prompt after Chrome startup.
   base::TimeDelta delay_before_prompt() const;
+  // Integer that identifies the current prompt wave. This number will increase
+  // with each new prompt wave.
+  int prompt_wave() const;
+  // The minimum time that must pass since the last time the prompt was shown
+  // before a new prompt can be shown. Applies only to prompts shown during the
+  // same prompt wave.
+  base::TimeDelta time_between_prompts() const;
 
  protected:
   SettingsResetPromptConfig();
@@ -59,6 +66,8 @@ class SettingsResetPromptConfig {
 
   // Other feature parameters.
   base::TimeDelta delay_before_prompt_;
+  int prompt_wave_ = 0;
+  base::TimeDelta time_between_prompts_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptConfig);
 };

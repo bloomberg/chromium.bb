@@ -241,6 +241,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
+#include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
 #endif
 
@@ -618,6 +619,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   component_updater::RegisterProfilePrefsForSwReporter(registry);
   desktop_ios_promotion::RegisterProfilePrefs(registry);
   NetworkProfileBubble::RegisterProfilePrefs(registry);
+  safe_browsing::SettingsResetPromptPrefsManager::RegisterProfilePrefs(
+      registry);
 #endif
 
 #if defined(TOOLKIT_VIEWS)

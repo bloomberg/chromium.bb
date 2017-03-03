@@ -64,6 +64,7 @@ void SettingsResetPromptDialog::Show(Browser* browser) {
   constrained_window::CreateBrowserModalDialogViews(
       this, browser_view->GetNativeWindow())
       ->Show();
+  controller_->DialogShown();
 }
 
 // WidgetDelegate overrides.

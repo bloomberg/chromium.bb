@@ -2487,4 +2487,29 @@ const char kNumberHistoryPageIOSPromoShown[] =
 const char kHistoryPageIOSPromoDismissed[] = "history_page_ios_promo_dismissed";
 #endif
 
+// An integer that keeps track of prompt waves for the settings reset
+// prompt. Users will be prompted to reset settings at most once per prompt wave
+// for each setting that the prompt targets (default search, startup URLs and
+// homepage). The value is obtained via a feature parameter. When the stored
+// value is different from the feature parameter, a new prompt wave begins.
+const char kSettingsResetPromptPromptWave[] =
+    "settings_reset_prompt.prompt_wave";
+
+// Timestamp of the last time the settings reset prompt was shown during the
+// current prompt wave asking the user if they want to restore their search
+// engine.
+const char kSettingsResetPromptLastTriggeredForDefaultSearch[] =
+    "settings_reset_prompt.last_triggered_for_default_search";
+
+// Timestamp of the last time the settings reset prompt was shown during the
+// current prompt wave asking the user if they want to restore their startup
+// settings.
+const char kSettingsResetPromptLastTriggeredForStartupUrls[] =
+    "settings_reset_prompt.last_triggered_for_startup_urls";
+
+// Timestamp of the last time the settings reset prompt was shown during the
+// current prompt wave asking the user if they want to restore their homepage.
+const char kSettingsResetPromptLastTriggeredForHomepage[] =
+    "settings_reset_prompt.last_triggered_for_homepage";
+
 }  // namespace prefs

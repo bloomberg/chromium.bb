@@ -40,6 +40,10 @@ class SettingsResetPromptController {
   // Returns the offset into the main text string where a URL was inserted. To
   // be used by the dialog to apply an appropriate style to the URL text.
   gfx::Range GetMainTextUrlRange() const;
+  // |DialogShown()| will be called by the dialog when the dialog's |Show()|
+  // method is called. This allows the controller to notify the model that the
+  // dialog has been shown so that preferences can be updated.
+  void DialogShown();
   // |Accept()| will be called by the dialog when the user clicks the main
   // button, after which the dialog will be closed.
   void Accept();
@@ -61,6 +65,12 @@ class SettingsResetPromptController {
 
   DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptController);
 };
+
+// Function to be called after startup in order to display the settings reset
+// prompt. The function will figure out if a prompt is needed, and if so, show
+// the dialog after a delay as determined by the |kSettingsResetPrompt|
+// feature parameters.
+void MaybeShowSettingsResetPromptWithDelay();
 
 }  // namespace safe_browsing
 

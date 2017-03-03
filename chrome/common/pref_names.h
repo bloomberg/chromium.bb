@@ -904,6 +904,10 @@ extern const char kNumberHistoryPageIOSPromoShown[];
 extern const char kHistoryPageIOSPromoDismissed[];
 #endif
 
+extern const char kSettingsResetPromptPromptWave[];
+extern const char kSettingsResetPromptLastTriggeredForDefaultSearch[];
+extern const char kSettingsResetPromptLastTriggeredForStartupUrls[];
+extern const char kSettingsResetPromptLastTriggeredForHomepage[];
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

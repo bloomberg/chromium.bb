@@ -30,6 +30,7 @@
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,7 +97,22 @@ class SettingsResetPromptModelTest
 
   void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
-    InitializeEmptyExtensionService();
+
+    // By not specifying a pref_file filepath, we get a
+    // sync_preferences::TestingPrefServiceSyncable, which in turn provides us
+    // with a convient way of registring preferences.
+    ExtensionServiceInitParams init_params = CreateDefaultInitParams();
+    init_params.pref_file.clear();
+    InitializeExtensionService(init_params);
+
+#if !defined(OS_WIN)
+    // In production code, the settings reset prompt profile preferences are
+    // registered on Windows only. We explicitly register the prefs on
+    // non-Windows systems so that we can continue testing the model on more
+    // than just Windows.
+    SettingsResetPromptPrefsManager::RegisterProfilePrefs(
+        testing_pref_service()->registry());
+#endif  // !defined(OS_WIN)
 
     profile_->CreateWebDataService();
     TemplateURLServiceFactory::GetInstance()->SetTestingFactory(

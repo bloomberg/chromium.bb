@@ -221,6 +221,32 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
     PrefHashFilter::VALUE_PERSONAL
   },
+#if defined(OS_WIN)
+  {
+    25, prefs::kSettingsResetPromptPromptWave,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
+  },
+  {
+    26, prefs::kSettingsResetPromptLastTriggeredForDefaultSearch,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
+  },
+  {
+    27, prefs::kSettingsResetPromptLastTriggeredForStartupUrls,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
+  },
+  {
+    28, prefs::kSettingsResetPromptLastTriggeredForHomepage,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_IMPERSONAL
+  },
+#endif  // defined(OS_WIN)
   // See note at top, new items added here also need to be added to
   // histograms.xml's TrackedPreference enum.
 };

@@ -90,9 +90,9 @@ class MockSettingsResetPromptModel
                                  id, "Extension " + base::IntToString(i))));
     }
 
-    ON_CALL(*this, PerformReset(_)).WillByDefault(Return());
-
     ON_CALL(*this, ShouldPromptForReset()).WillByDefault(Return(true));
+    ON_CALL(*this, PerformReset(_)).WillByDefault(Return());
+    ON_CALL(*this, DialogShown()).WillByDefault(Return());
 
     ON_CALL(*this, homepage()).WillByDefault(Return(GURL(kHomepageUrl)));
     ON_CALL(*this, homepage_reset_state())
@@ -124,6 +124,7 @@ class MockSettingsResetPromptModel
 
   MOCK_METHOD1(PerformReset, void(const base::Closure&));
   MOCK_CONST_METHOD0(ShouldPromptForReset, bool());
+  MOCK_METHOD0(DialogShown, void());
   MOCK_CONST_METHOD0(homepage, GURL());
   MOCK_CONST_METHOD0(homepage_reset_state, ResetState());
   MOCK_CONST_METHOD0(default_search, GURL());
