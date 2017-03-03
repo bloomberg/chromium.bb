@@ -1721,6 +1721,11 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
 // Tests first monitor when display order doesn't match left to right screen
 // positions.
 TEST_F(WindowSelectorTest, MultiMonitorReversedOrder) {
+  // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
+  // http://crbug.com/698043.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("400x400,400x400");
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),

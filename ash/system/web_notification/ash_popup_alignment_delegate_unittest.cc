@@ -9,6 +9,7 @@
 
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -26,7 +27,6 @@
 
 namespace ash {
 
-// TODO(jamescook): Move this to //ash/common. http://crbug.com/620955
 class AshPopupAlignmentDelegateTest : public test::AshTestBase {
  public:
   AshPopupAlignmentDelegateTest() {}
@@ -196,6 +196,10 @@ TEST_F(AshPopupAlignmentDelegateTest, DisplayResize) {
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
+  // TODO: needs unified mode. http://crbug.com/698024.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
@@ -234,7 +238,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
   SetAlignmentDelegate(
       base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
 
-  display::Display second_display = display_manager()->GetDisplayAt(1u);
+  display::Display second_display = GetSecondaryDisplay();
   WmShelf* second_shelf =
       WmLookup::Get()
           ->GetRootWindowControllerWithDisplayId(second_display.id())
@@ -248,6 +252,10 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, Unified) {
+  // TODO: needs unified mode. http://crbug.com/698024.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Reset the delegate as the primary display's shelf will be destroyed during

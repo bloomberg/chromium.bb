@@ -57,8 +57,6 @@ class PanedWidgetDelegate : public views::WidgetDelegate {
 
 }  // namespace
 
-// TODO(jamescook): Migrate this test to //ash/common after the status area
-// widget moves. http://crbug.com/620955
 class FocusCyclerTest : public AshTestBase {
  public:
   FocusCyclerTest() {}

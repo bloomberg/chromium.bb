@@ -12,6 +12,7 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace/phantom_window_controller.h"
 #include "ash/common/wm/workspace_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
@@ -797,6 +798,11 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
 
 // Makes sure we don't allow dragging on the work area with multidisplay.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
+  // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
+  // http://crbug.com/698043.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
 

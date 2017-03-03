@@ -47,7 +47,6 @@ OverviewButtonTray* GetSecondaryTray() {
 
 }  // namespace
 
-// TODO(jamescook): Migrate to //ash/common/system. http://crbug.com/620955
 class OverviewButtonTrayTest : public test::AshTestBase {
  public:
   OverviewButtonTrayTest() {}
@@ -111,6 +110,10 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
 
 // Tests that tapping on the control will record the user action Tray_Overview.
 TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
+  // TODO: investigate failure in mash, http://crbug.com/698129.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   ASSERT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
 
   // Tapping on the control when there are no windows (and thus the user cannot
@@ -207,6 +210,11 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
 // Test that when a hide animation is aborted via deletion, that the
 // OverviewButton is still hidden.
 TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
+  // TODO: disabled as ScreenRotationAnimator does not work in mash,
+  // http://crbug.com/696754.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
 

@@ -93,8 +93,11 @@ class LockStateControllerTest : public AshTestBase {
   }
 
   void TearDown() override {
+    const bool is_mash = WmShell::Get()->IsRunningInMash();
     AshTestBase::TearDown();
-    chromeos::DBusThreadManager::Shutdown();
+    // Mash shuts down DBus during normal destruction.
+    if (!is_mash)
+      chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -397,7 +400,9 @@ TEST_F(LockStateControllerTest, LegacyLockAndShutDown) {
   EXPECT_EQ(0, NumShutdownRequests());
   // Make sure a mouse move event won't show the cursor.
   GenerateMouseMoveEvent();
-  EXPECT_FALSE(cursor_visible());
+  // TODO: CursorManager not created in mash. http://crbug.com/631103.
+  if (!WmShell::Get()->IsRunningInMash())
+    EXPECT_FALSE(cursor_visible());
 
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
   test_api_->trigger_real_shutdown_timeout();
@@ -806,7 +811,9 @@ TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
       SessionStateAnimator::kAllNonRootContainersMask,
       SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   GenerateMouseMoveEvent();
-  EXPECT_FALSE(cursor_visible());
+  // TODO: CursorManager not created in mash. http://crbug.com/631103.
+  if (!WmShell::Get()->IsRunningInMash())
+    EXPECT_FALSE(cursor_visible());
 }
 
 // Test that we display the fast-close animation and shut down when we get an
@@ -820,7 +827,9 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLoginScreen) {
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
 
   GenerateMouseMoveEvent();
-  EXPECT_FALSE(cursor_visible());
+  // TODO: CursorManager not created in mash. http://crbug.com/631103.
+  if (!WmShell::Get()->IsRunningInMash())
+    EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, NumShutdownRequests());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
@@ -842,7 +851,9 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
 
   GenerateMouseMoveEvent();
-  EXPECT_FALSE(cursor_visible());
+  // TODO: CursorManager not created in mash. http://crbug.com/631103.
+  if (!WmShell::Get()->IsRunningInMash())
+    EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, NumShutdownRequests());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
@@ -1019,6 +1030,10 @@ TEST_F(LockStateControllerTest, TestHiddenWallpaperLockUnlock) {
 }
 
 TEST_F(LockStateControllerTest, Screenshot) {
+  // TODO: fails because of no screenshot in mash. http://crbug.com/698033.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
   delegate->set_can_take_screenshot(true);
 

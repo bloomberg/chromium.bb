@@ -7,6 +7,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -814,6 +815,11 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
 // Tests that dragging a snapped window to another display updates the window's
 // bounds correctly.
 TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
+  // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
+  // http://crbug.com/698043.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   UpdateDisplay("940x550,940x550");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();

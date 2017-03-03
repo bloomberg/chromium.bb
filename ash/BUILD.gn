@@ -1235,6 +1235,19 @@ source_set("common_unittests") {
     "system/chromeos/power/power_event_observer_unittest.cc",
     "system/chromeos/power/tablet_power_button_controller_unittest.cc",
     "system/chromeos/power/video_activity_notifier_unittest.cc",
+    "system/overview/overview_button_tray_unittest.cc",
+    "system/toast/toast_manager_unittest.cc",
+    "system/web_notification/ash_popup_alignment_delegate_unittest.cc",
+    "system/web_notification/web_notification_tray_unittest.cc",
+    "test/ash_test_helper_unittest.cc",
+    "tooltips/tooltip_controller_unittest.cc",
+    "wm/ash_focus_rules_unittest.cc",
+    "wm/dock/docked_window_layout_manager_unittest.cc",
+    "wm/dock/docked_window_resizer_unittest.cc",
+    "wm/immersive_fullscreen_controller_unittest.cc",
+    "wm/lock_state_controller_unittest.cc",
+    "wm/maximize_mode/accelerometer_test_data_literals.cc",
+    "wm/maximize_mode/maximize_mode_window_manager_unittest.cc",
   ]
   deps = [
     "//ash",
@@ -1324,32 +1337,42 @@ test("ash_unittests") {
 
     # TODO: investigate failure in mash, http://crbug.com/695887.
     "system/chromeos/rotation/tray_rotation_lock_unittest.cc",
+
+    # TODO: fails as ScreenLayoutObserver is not installed in mash,
+    # http://crbug.com/696752.
     "system/chromeos/screen_layout_observer_unittest.cc",
-    "system/overview/overview_button_tray_unittest.cc",
-    "system/toast/toast_manager_unittest.cc",
-    "system/web_notification/ash_popup_alignment_delegate_unittest.cc",
-    "system/web_notification/web_notification_tray_unittest.cc",
-    "test/ash_test_helper_unittest.cc",
     "test/ash_test_suite.cc",
     "test/ash_test_suite.h",
     "test/ash_unittests.cc",
-    "tooltips/tooltip_controller_unittest.cc",
+
+    # TODO(riajiang): port to work with mash. http://crbug.com/698032.
     "touch/touch_observer_hud_unittest.cc",
+
+    # TODO(moshayedi): port to work with mash. http://crbug.com/698033.
     "utility/screenshot_controller_unittest.cc",
+
+    # TODO: keyboard is not enabled in mash. http://crbug.com/648733.
     "virtual_keyboard_controller_unittest.cc",
+
+    # TODO: keyboard is not enabled in mash. http://crbug.com/648733.
     "wm/always_on_top_controller_unittest.cc",
-    "wm/ash_focus_rules_unittest.cc",
+
+    # TODO: mash doesn't support CursorManager. http://crbug.com/631103.
     "wm/ash_native_cursor_manager_unittest.cc",
-    "wm/dock/docked_window_layout_manager_unittest.cc",
-    "wm/dock/docked_window_resizer_unittest.cc",
+
+    # TODO: mash doesn't support DragWindowResizer. http://crbug.com/633782.
     "wm/drag_window_resizer_unittest.cc",
+
+    # TODO: mash doesn't support OverviewGestureHandler.
+    # http://crbug.com/634994.
     "wm/gestures/overview_gesture_handler_unittest.cc",
-    "wm/immersive_fullscreen_controller_unittest.cc",
+
+    # TODO: fails because keyboard is not enabled in mash.
+    # http://crbug.com/648733.
     "wm/lock_layout_manager_unittest.cc",
-    "wm/lock_state_controller_unittest.cc",
-    "wm/maximize_mode/accelerometer_test_data_literals.cc",
+
+    # TODO: investigate failures in mash. http://crbug.com/698092.
     "wm/maximize_mode/maximize_mode_controller_unittest.cc",
-    "wm/maximize_mode/maximize_mode_window_manager_unittest.cc",
     "wm/overlay_event_filter_unittest.cc",
     "wm/overview/window_selector_unittest.cc",
     "wm/panels/panel_layout_manager_unittest.cc",

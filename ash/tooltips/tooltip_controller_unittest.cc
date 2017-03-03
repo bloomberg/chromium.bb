@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/corewm/tooltip_controller.h"
+
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
@@ -11,7 +14,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -111,6 +113,10 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
 
   // Mouse event triggers tooltip update so it becomes visible.
   EXPECT_TRUE(helper_->IsTooltipVisible());
+
+  // TODO: CursorManager not created in mash. http://crbug.com/631103.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
 
   // Disable mouse event which hides the cursor and check again.
   ash::Shell::GetInstance()->cursor_manager()->DisableMouseEvents();

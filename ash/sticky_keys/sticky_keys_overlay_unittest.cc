@@ -56,6 +56,10 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
       display_manager()->GetCurrentDisplayIdList();
   int64_t primary_display_id = display_ids[0];
   int64_t secondary_display_id = display_ids[1];
+  // TODO: disabled as ScreenRotationAnimator does not work in mash,
+  // http://crbug.com/696754.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::LEFT, 0));

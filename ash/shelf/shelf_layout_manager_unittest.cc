@@ -752,6 +752,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
     return;
 
   UpdateDisplay("800x600,800x600");
+  // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
+  // http://crbug.com/698043.
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::RIGHT, 0));
