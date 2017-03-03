@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_controller.h"
 
 #include "base/bind.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_view.h"
 #include "chrome/browser/ui/desktop_ios_promotion/sms_service.h"
 #include "chrome/browser/ui/desktop_ios_promotion/sms_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
 
 DesktopIOSPromotionController::DesktopIOSPromotionController(
@@ -76,6 +78,14 @@ void DesktopIOSPromotionController::OnPromotionShown() {
   double last_impression = base::Time::NowFromSystemTime().ToDoubleT();
   profile_prefs_->SetDouble(prefs::kIOSPromotionLastImpression,
                             last_impression);
+
+  // If the variation id paramater is set on the finch experiement, set this
+  // variation id to chrome sync pref to be accessed from iOS side.
+  int variation_id = base::GetFieldTrialParamByFeatureAsInt(
+      features::kDesktopIOSPromotion, "promo_variation_id", 0);
+  if (variation_id)
+    profile_prefs_->SetInteger(prefs::kIOSPromotionVariationId, variation_id);
+
   // Update histograms.
   UMA_HISTOGRAM_ENUMERATION(
       "DesktopIOSPromotion.ImpressionFromEntryPoint",
@@ -104,7 +114,7 @@ void DesktopIOSPromotionController::OnGotPhoneNumber(
     bool success,
     const std::string& number) {
   if (success) {
-    recovery_number_ = number;
+    recovery_number_ = desktop_ios_promotion::FormatPhoneNumber(number);
     promotion_view_->UpdateRecoveryPhoneLabel();
   }
   UMA_HISTOGRAM_BOOLEAN("DesktopIOSPromotion.QueryPhoneNumberSucceeded",

@@ -9,6 +9,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -18,6 +20,14 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/libphonenumber/phonenumber_api.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
+
+using i18n::phonenumbers::PhoneNumber;
+using i18n::phonenumbers::PhoneNumberUtil;
 
 namespace desktop_ios_promotion {
 
@@ -35,41 +45,23 @@ const char* kPromotionEntryPointNames[] = {
     "", "SavePasswordsBubblePromotion", "BookmarksBubblePromotion",
     "BookmarksFootnotePromotion", "HistoryPagePromotion"};
 
-// Text used on the promotion body, the first dimension is the entrypoint and
-// the second is the text version specified by body_text_id Finch parameter.
-// TODO(crbug.com/676655): Only Password text is defined update the array when
-// other promotions text is defined.
-const int kBodyTextIDForEntryPoint[5][2] = {
-    // The first entry is padding as PromotionEntryPoints enum starts from 1.
-    {0, 0},
+// Text used on the promotion body, the first dimension is the text version
+// specified by body_text_id Finch parameter, and the second dimension is for
+// specifying if the phone number is available or not.
+// TODO(crbug.com/676655): Add another dimension for entry points when needed.
+const int kBodyTextId[2][2] = {
     {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2},
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2},
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2},
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2}};
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER},
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER_V2}};
 
-// Text used on the promotion title, the first dimension is the entrypoint and
-// the second is the text version specified by title_text_id Finch parameter.
-// TODO(crbug.com/676655): Only Password text is defined update the array when
-// other promotions text is defined.
-const int kTitleTextIDForEntryPoint[5][3] = {
-    // The first entry is padding as PromotionEntryPoints enum starts from 1.
-    {0, 0},
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3},
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3},
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3},
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3}};
+// Text used on the promotion title, This array is indexed by the text version
+// specified by title_text_id Finch parameter.
+// TODO(crbug.com/676655): Add another dimension for entry points when needed.
+const int kTitleTextId[3] = {
+    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
+    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
+    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3};
 
 bool IsEligibleForIOSPromotion(
     PrefService* prefs,
@@ -121,20 +113,32 @@ bool IsEligibleForIOSPromotion(
   bool did_promo_done_before = prefs->GetBoolean(prefs::kIOSPromotionDone);
   return is_user_eligible && !did_promo_done_before;
 }
+
+gfx::ImageSkia GetPromoImage(SkColor color) {
+  gfx::ImageSkia icon = gfx::CreateVectorIcon(
+      kOpenInPhoneIcon, color_utils::DeriveDefaultIconColor(color));
+  return icon;
+}
+
 base::string16 GetPromoText(
-    desktop_ios_promotion::PromotionEntryPoint entry_point) {
+    desktop_ios_promotion::PromotionEntryPoint entry_point,
+    const std::string& phone_number) {
   int text_id_from_finch = base::GetFieldTrialParamByFeatureAsInt(
       features::kDesktopIOSPromotion, "body_text_id", 0);
-  return l10n_util::GetStringUTF16(kBodyTextIDForEntryPoint[static_cast<int>(
-      entry_point)][text_id_from_finch]);
+  int body_text_i10_id = kBodyTextId[text_id_from_finch][!phone_number.empty()];
+  if (phone_number.empty()) {
+    return l10n_util::GetStringUTF16(body_text_i10_id)
+        .append(base::string16(13, ' '));
+  }
+  return l10n_util::GetStringFUTF16(body_text_i10_id,
+                                    base::UTF8ToUTF16(phone_number));
 }
 
 base::string16 GetPromoTitle(
     desktop_ios_promotion::PromotionEntryPoint entry_point) {
   int text_id_from_finch = base::GetFieldTrialParamByFeatureAsInt(
       features::kDesktopIOSPromotion, "title_text_id", 0);
-  return l10n_util::GetStringUTF16(kTitleTextIDForEntryPoint[static_cast<int>(
-      entry_point)][text_id_from_finch]);
+  return l10n_util::GetStringUTF16(kTitleTextId[text_id_from_finch]);
 }
 
 std::string GetSMSID() {
@@ -143,6 +147,20 @@ std::string GetSMSID() {
   std::string finch_sms_id = base::GetFieldTrialParamValueByFeature(
       features::kDesktopIOSPromotion, "sms_id");
   return finch_sms_id.empty() ? default_sms_message_id : finch_sms_id;
+}
+
+std::string FormatPhoneNumber(const std::string& number) {
+  PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
+  PhoneNumber number_object;
+  if (phone_util->Parse(number, std::string(), &number_object) !=
+      PhoneNumberUtil::NO_PARSING_ERROR) {
+    return number;
+  }
+  std::string formatted_number;
+  phone_util->Format(number_object,
+                     PhoneNumberUtil::PhoneNumberFormat::NATIONAL,
+                     &formatted_number);
+  return formatted_number;
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -160,6 +178,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterDoublePref(
       prefs::kIOSPromotionLastImpression, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kIOSPromotionVariationId, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }
 

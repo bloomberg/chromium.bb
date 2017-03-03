@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace syncer {
 class SyncService;
@@ -75,13 +76,18 @@ bool IsEligibleForIOSPromotion(PrefService* prefs,
 // Returns the SMS ID to be used with send SMS API call.
 std::string GetSMSID();
 
-// Returns the Promotion text based on the promotion entry point and finch
-// parameters.
-base::string16 GetPromoText(PromotionEntryPoint entry_point);
+// Returns the Promotion text based on the promotion entry point, Finch
+// parameters and phone number presence.
+base::string16 GetPromoText(PromotionEntryPoint entry_point,
+                            const std::string& phone_number = std::string());
 
 // Returns the Promotion title based on the promotion entry point and finch
 // parameters.
 base::string16 GetPromoTitle(PromotionEntryPoint entry_point);
+
+gfx::ImageSkia GetPromoImage(SkColor color);
+
+std::string FormatPhoneNumber(const std::string& number);
 
 // Register all Priority Sync preferences.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

@@ -24,6 +24,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/link.h"
@@ -790,11 +793,26 @@ base::string16 ManagePasswordsBubbleView::GetWindowTitle() const {
   return model_.title();
 }
 
+gfx::ImageSkia ManagePasswordsBubbleView::GetWindowIcon() {
+#if defined(OS_WIN)
+  if (model_.state() == password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
+    return desktop_ios_promotion::GetPromoImage(
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_TextfieldDefaultColor));
+  }
+#endif
+  return gfx::ImageSkia();
+}
+
 bool ManagePasswordsBubbleView::ShouldShowWindowTitle() const {
   // Since bubble titles don't support links, fall back to a custom title view
   // if we need to show a link. Only use the normal title path if there's no
   // link.
   return model_.title_brand_link_range().is_empty();
+}
+
+bool ManagePasswordsBubbleView::ShouldShowWindowIcon() const {
+  return model_.state() == password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE;
 }
 
 bool ManagePasswordsBubbleView::ShouldShowCloseButton() const {
@@ -810,6 +828,7 @@ void ManagePasswordsBubbleView::Refresh() {
 
   // Show/hide the close button.
   GetWidget()->non_client_view()->ResetWindowControls();
+  GetWidget()->UpdateWindowIcon();
   GetWidget()->UpdateWindowTitle();
   SizeToContents();
 }

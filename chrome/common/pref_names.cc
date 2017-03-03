@@ -2445,6 +2445,10 @@ const char kIOSPromotionShownEntryPoints[] =
 const char kIOSPromotionLastImpression[] =
     "ios.desktop_ios_promo_last_impression";
 
+// Integer that represents which variation of title and text of the
+// "desktop to iOS" promotion was presented to the user.
+const char kIOSPromotionVariationId[] = "ios.desktop_ios_promo_variation_id";
+
 // Number of times user has seen the "desktop to iOS" save passwords bubble
 // promotion.
 const char kNumberSavePasswordsBubbleIOSPromoShown[] =

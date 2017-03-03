@@ -37,8 +37,8 @@ class DesktopIOSPromotionBubbleView : public DesktopIOSPromotionView,
 
   views::Button* send_sms_button_ = nullptr;
   views::Button* no_button_ = nullptr;
-  views::Label* recovery_phone_label_ = nullptr;
-
+  // The text that will appear on the promotion body.
+  views::Label* promotion_text_label_;
   std::unique_ptr<DesktopIOSPromotionController> promotion_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopIOSPromotionBubbleView);
