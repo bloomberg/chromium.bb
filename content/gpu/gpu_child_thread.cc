@@ -53,7 +53,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/throw_uncaught_exception.h"
 #include "media/base/android/media_client_android.h"
-#include "media/gpu/avda_codec_allocator.h"
 #endif
 
 namespace content {
@@ -269,14 +268,7 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
-    IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
-    IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(GpuMsg_WakeUpGpu, OnWakeUpGpu);
-    IPC_MESSAGE_HANDLER(GpuMsg_DestroyingVideoSurface,
-                        OnDestroyingVideoSurface);
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   if (handled)
@@ -455,16 +447,6 @@ void GpuChildThread::OnGpuSwitched() {
     ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
 }
 
-void GpuChildThread::OnCloseChannel(int32_t client_id) {
-  if (gpu_channel_manager())
-    gpu_channel_manager()->RemoveChannel(client_id);
-}
-
-void GpuChildThread::OnLoadedShader(const std::string& shader) {
-  if (gpu_channel_manager())
-    gpu_channel_manager()->PopulateShaderCache(shader);
-}
-
 void GpuChildThread::OnDestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
@@ -472,18 +454,6 @@ void GpuChildThread::OnDestroyGpuMemoryBuffer(
   if (gpu_channel_manager())
     gpu_channel_manager()->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
-
-#if defined(OS_ANDROID)
-void GpuChildThread::OnWakeUpGpu() {
-  if (gpu_channel_manager())
-    gpu_channel_manager()->WakeUpGpu();
-}
-
-void GpuChildThread::OnDestroyingVideoSurface(int surface_id) {
-  media::AVDACodecAllocator::Instance()->OnSurfaceDestroyed(surface_id);
-  Send(new GpuHostMsg_DestroyingVideoSurfaceAck(surface_id));
-}
-#endif
 
 void GpuChildThread::BindServiceFactoryRequest(
     service_manager::mojom::ServiceFactoryRequest request) {

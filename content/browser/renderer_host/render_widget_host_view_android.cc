@@ -46,7 +46,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -401,6 +401,14 @@ void PrepareTextureCopyOutputResult(
 
 bool FloatEquals(float a, float b) {
   return std::abs(a - b) < FLT_EPSILON;
+}
+
+void WakeUpGpu(GpuProcessHost* host) {
+  DCHECK(host);
+  GpuDataManagerImpl* gpu_data = GpuDataManagerImpl::GetInstance();
+  if (gpu_data &&
+      gpu_data->IsDriverBugWorkaroundActive(gpu::WAKE_UP_GPU_BEFORE_DRAWING))
+    host->gpu_service()->WakeUpGpu();
 }
 
 }  // namespace
@@ -1534,11 +1542,8 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
 
   if (input_event.type() == blink::WebInputEvent::GestureTapDown ||
       input_event.type() == blink::WebInputEvent::TouchStart) {
-    GpuDataManagerImpl* gpu_data = GpuDataManagerImpl::GetInstance();
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim && gpu_data &&
-        gpu_data->IsDriverBugWorkaroundActive(gpu::WAKE_UP_GPU_BEFORE_DRAWING))
-      shim->Send(new GpuMsg_WakeUpGpu);
+    GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                             false /* force_create */, base::Bind(&WakeUpGpu));
   }
 
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;

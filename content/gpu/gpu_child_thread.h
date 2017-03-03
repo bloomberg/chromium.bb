@@ -122,16 +122,9 @@ class GpuChildThread : public ChildThreadImpl,
 #endif
   void OnGpuSwitched();
 
-  void OnCloseChannel(int32_t client_id);
-  void OnLoadedShader(const std::string& shader);
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 int client_id,
                                 const gpu::SyncToken& sync_token);
-#if defined(OS_ANDROID)
-  void OnWakeUpGpu();
-  void OnDestroyingVideoSurface(int surface_id);
-#endif
-
   void BindServiceFactoryRequest(
       service_manager::mojom::ServiceFactoryRequest request);
 

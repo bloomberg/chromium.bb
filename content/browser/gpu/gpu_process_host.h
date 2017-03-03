@@ -207,7 +207,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                      const gpu::GpuFeatureInfo& gpu_feature_info);
   void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
 #if defined(OS_ANDROID)
-  void OnDestroyingVideoSurfaceAck(int surface_id);
+  void OnDestroyingVideoSurfaceAck();
 #endif
   void OnFieldTrialActivated(const std::string& trial_name);
 

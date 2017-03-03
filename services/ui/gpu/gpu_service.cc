@@ -35,6 +35,10 @@
 #include "ui/gl/init/gl_factory.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "media/gpu/avda_codec_allocator.h"
+#endif
+
 namespace ui {
 
 GpuService::GpuService(const gpu::GPUInfo& gpu_info,
@@ -195,6 +199,39 @@ void GpuService::EstablishGpuChannel(
   channel_handle.reset(handle.mojo_handle);
   media_gpu_channel_manager_->AddChannel(client_id);
   callback.Run(std::move(channel_handle));
+}
+
+void GpuService::CloseChannel(int32_t client_id) {
+  if (!gpu_channel_manager_)
+    return;
+  gpu_channel_manager_->RemoveChannel(client_id);
+}
+
+void GpuService::LoadedShader(const std::string& data) {
+  if (!gpu_channel_manager_)
+    return;
+  gpu_channel_manager_->PopulateShaderCache(data);
+}
+
+void GpuService::DestroyingVideoSurface(
+    int32_t surface_id,
+    const DestroyingVideoSurfaceCallback& callback) {
+#if defined(OS_ANDROID)
+  media::AVDACodecAllocator::Instance()->OnSurfaceDestroyed(surface_id);
+#else
+  NOTREACHED() << "DestroyingVideoSurface() not supported on this platform.";
+#endif
+  callback.Run();
+}
+
+void GpuService::WakeUpGpu() {
+#if defined(OS_ANDROID)
+  if (!gpu_channel_manager_)
+    return;
+  gpu_channel_manager_->WakeUpGpu();
+#else
+  NOTREACHED() << "WakeUpGpu() not supported on this platform.";
+#endif
 }
 
 }  // namespace ui

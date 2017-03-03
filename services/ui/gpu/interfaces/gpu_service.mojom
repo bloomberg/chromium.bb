@@ -20,6 +20,10 @@ interface GpuService {
                       bool is_gpu_host)
       => (handle<message_pipe>? channel_handle);
 
+  // Tells the GPU process to close the channel identified by |client_id|.
+  // If no channel can be identified, do nothing.
+  CloseChannel(int32 client_id);
+
   [Sync]
   CreateGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,
                         gfx.mojom.Size size,
@@ -34,4 +38,13 @@ interface GpuService {
                          gpu.mojom.SyncToken sync_token);
 
   GetVideoMemoryUsageStats() => (gpu.mojom.VideoMemoryUsageStats stats);
+
+  // Notify GPU that a shader was loaded from disk.
+  LoadedShader(string data);
+
+  // Tells GPU to release the surface because it's being destroyed.
+  DestroyingVideoSurface(int32 surface_id) => ();
+
+  // Tells GPU to wake up the GPU because we're about to draw.
+  WakeUpGpu();
 };

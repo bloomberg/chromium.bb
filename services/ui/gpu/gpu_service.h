@@ -111,6 +111,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
       uint64_t client_tracing_id,
       bool is_gpu_host,
       const EstablishGpuChannelCallback& callback) override;
+  void CloseChannel(int32_t client_id) override;
   void CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
@@ -124,6 +125,11 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
                               const gpu::SyncToken& sync_token) override;
   void GetVideoMemoryUsageStats(
       const GetVideoMemoryUsageStatsCallback& callback) override;
+  void LoadedShader(const std::string& data) override;
+  void DestroyingVideoSurface(
+      int32_t surface_id,
+      const DestroyingVideoSurfaceCallback& callback) override;
+  void WakeUpGpu() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 

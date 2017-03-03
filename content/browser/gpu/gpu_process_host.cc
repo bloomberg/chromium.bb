@@ -428,6 +428,9 @@ void GpuProcessHost::GetProcessHandles(
 void GpuProcessHost::SendOnIO(GpuProcessKind kind,
                               bool force_create,
                               IPC::Message* message) {
+#if !defined(OS_WIN)
+  DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED);
+#endif
   if (!BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&SendGpuProcessMessage, kind, force_create, message))) {
@@ -440,6 +443,9 @@ void GpuProcessHost::CallOnIO(
     GpuProcessKind kind,
     bool force_create,
     const base::Callback<void(GpuProcessHost*)>& callback) {
+#if !defined(OS_WIN)
+  DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED);
+#endif
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&RunCallbackOnIO, kind, force_create, callback));
@@ -682,10 +688,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_Initialized, OnInitialized)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryBufferCreated,
                         OnGpuMemoryBufferCreated)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyingVideoSurfaceAck,
-                        OnDestroyingVideoSurfaceAck)
-#endif
     IPC_MESSAGE_HANDLER(GpuHostMsg_FieldTrialActivated, OnFieldTrialActivated);
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
@@ -777,11 +779,10 @@ void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
   TRACE_EVENT0("gpu", "GpuProcessHost::SendDestroyingVideoSurface");
   DCHECK(send_destroying_video_surface_done_cb_.is_null());
   DCHECK(!done_cb.is_null());
-  if (Send(new GpuMsg_DestroyingVideoSurface(surface_id))) {
-    send_destroying_video_surface_done_cb_ = done_cb;
-  } else {
-    done_cb.Run();
-  }
+  send_destroying_video_surface_done_cb_ = done_cb;
+  gpu_service_ptr_->DestroyingVideoSurface(
+      surface_id, base::Bind(&GpuProcessHost::OnDestroyingVideoSurfaceAck,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 #endif
 
@@ -814,7 +815,7 @@ void GpuProcessHost::OnChannelEstablished(
   // GPU channel.
   if (channel_handle.is_valid() &&
       !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(nullptr)) {
-    Send(new GpuMsg_CloseChannel(client_id));
+    gpu_service_ptr_->CloseChannel(client_id);
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
     RouteOnUIThread(
         GpuHostMsg_OnLogMessage(logging::LOG_WARNING, "WARNING",
@@ -839,7 +840,7 @@ void GpuProcessHost::OnGpuMemoryBufferCreated(
 }
 
 #if defined(OS_ANDROID)
-void GpuProcessHost::OnDestroyingVideoSurfaceAck(int surface_id) {
+void GpuProcessHost::OnDestroyingVideoSurfaceAck() {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyingVideoSurfaceAck");
   if (!send_destroying_video_surface_done_cb_.is_null())
     base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
@@ -1200,7 +1201,7 @@ void GpuProcessHost::LoadedShader(const std::string& key,
   bool prefix_ok = !key.compare(0, prefix.length(), prefix);
   UMA_HISTOGRAM_BOOLEAN("GPU.ShaderLoadPrefixOK", prefix_ok);
   if (prefix_ok)
-    Send(new GpuMsg_LoadedShader(data));
+    gpu_service_ptr_->LoadedShader(data);
 }
 
 void GpuProcessHost::CreateChannelCache(int32_t client_id) {
