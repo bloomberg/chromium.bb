@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_switches.h"
@@ -181,6 +182,9 @@ int main(int argc, char* argv[]) {
         base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
 #endif
   }
+
+  const int kMaxBackgroundThreads = 5;
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
 
   // Update the logging verbosity level if user specified one.
   std::string verbosity_level(
