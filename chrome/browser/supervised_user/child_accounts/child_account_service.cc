@@ -246,6 +246,10 @@ void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
   SetIsChildAccount(info.is_child_account);
 }
 
+void ChildAccountService::OnAccountRemoved(const AccountInfo& info) {
+  SetIsChildAccount(false);
+}
+
 void ChildAccountService::OnGetFamilyMembersSuccess(
     const std::vector<FamilyInfoFetcher::FamilyMember>& members) {
   bool hoh_found = false;
