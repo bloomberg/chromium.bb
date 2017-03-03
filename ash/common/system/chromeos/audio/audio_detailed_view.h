@@ -10,7 +10,6 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "base/macros.h"
 #include "chromeos/audio/audio_device.h"
-#include "ui/gfx/font.h"
 
 namespace gfx {
 struct VectorIcon;

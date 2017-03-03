@@ -26,8 +26,6 @@
 
 namespace {
 
-const int kCheckLabelPadding = 4;
-
 const gfx::FontList& GetFontList(bool highlight) {
   return ui::ResourceBundle::GetSharedInstance().GetFontList(
       highlight ? ui::ResourceBundle::BoldFont : ui::ResourceBundle::BaseFont);
@@ -252,44 +250,6 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
 
   SetAccessibleName(text);
   return text_label_;
-}
-
-views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
-                                                    bool highlight,
-                                                    bool checked) {
-  DCHECK(!MaterialDesignController::IsSystemTrayMenuMaterial());
-
-  if (checked) {
-    accessibility_state_ = AccessibilityState::CHECKED_CHECKBOX;
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* check =
-        rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
-    int margin = kTrayPopupPaddingHorizontal +
-                 kTrayPopupDetailsLabelExtraLeftMargin - kCheckLabelPadding;
-    box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
-                                       kCheckLabelPadding);
-    SetLayoutManager(box_layout_);
-    views::ImageView* image_view = new FixedSizedImageView(margin, 0);
-    image_view->SetImage(check);
-    image_view->SetHorizontalAlignment(views::ImageView::TRAILING);
-    image_view->SetEnabled(enabled());
-    AddChildView(image_view);
-
-    text_label_ = new views::Label(text);
-    text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    text_label_->SetFontList(GetFontList(highlight));
-    text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
-    if (text_default_color_)
-      text_label_->SetEnabledColor(text_default_color_);
-    text_label_->SetEnabled(enabled());
-    AddChildView(text_label_);
-
-    SetAccessibleName(text);
-    return text_label_;
-  }
-
-  accessibility_state_ = AccessibilityState::UNCHECKED_CHECKBOX;
-  return AddLabel(text, gfx::ALIGN_LEFT, highlight);
 }
 
 void HoverHighlightView::AddLabelRowMd(const base::string16& text) {

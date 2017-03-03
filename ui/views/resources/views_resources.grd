@@ -156,9 +156,6 @@
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_H" file="maximize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_P" file="maximize_pressed.png" />
       </if>
-      <if expr="chromeos">
-        <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="cros/menu_check.png" />
-      </if>
       <if expr="desktop_linux">
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="linux/linux_minimize.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="linux/linux_minimize_hover.png" />

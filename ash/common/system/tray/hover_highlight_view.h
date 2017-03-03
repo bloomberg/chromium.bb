@@ -82,13 +82,6 @@ class HoverHighlightView : public ActionableView {
                          gfx::HorizontalAlignment alignment,
                          bool highlight);
 
-  // Convenience function for adding an optional check and a label. In the
-  // absence of a check, padding is added to align with checked items.
-  // Returns label after parenting it.
-  views::Label* AddCheckableLabel(const base::string16& text,
-                                  bool highlight,
-                                  bool checked);
-
   // Adds a row containing only a text label, inset on the left by the
   // horizontal space that would normally be occupied by an icon.
   void AddLabelRowMd(const base::string16& text);

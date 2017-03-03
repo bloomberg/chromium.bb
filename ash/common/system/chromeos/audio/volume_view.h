@@ -13,7 +13,6 @@
 namespace views {
 class CustomButton;
 class ImageView;
-class Slider;
 }
 
 namespace ash {
