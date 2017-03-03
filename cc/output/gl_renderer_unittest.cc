@@ -1480,7 +1480,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
 }
 
 TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
-  gfx::Size viewport_size(1, 1);
+  gfx::Size viewport_size(30, 30);  // Don't translate out of the viewport.
+  gfx::Size quad_size(3, 3);
   int root_pass_id = 1;
   RenderPass* root_pass;
 
@@ -1491,7 +1492,7 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
   root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                             gfx::Rect(viewport_size), gfx::Transform(),
                             FilterOperations());
-  AddTransformedQuad(root_pass, gfx::Rect(viewport_size), SK_ColorYELLOW,
+  AddTransformedQuad(root_pass, gfx::Rect(quad_size), SK_ColorYELLOW,
                      pixel_aligned_transform_causing_aa);
 
   renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
