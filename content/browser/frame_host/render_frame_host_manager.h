@@ -280,11 +280,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // which one so we tell both.
   void SetIsLoading(bool is_loading);
 
-  // Whether to close the tab or not when there is a hang during an unload
-  // handler. If we are mid-crosssite navigation, then we should proceed
-  // with the navigation instead of closing the tab.
-  bool ShouldCloseTabOnUnresponsiveRenderer();
-
   // Confirms whether we should close the page or navigate away.  This is called
   // before a cross-site request or before a tab/window is closed (as indicated
   // by the first parameter) to allow the appropriate renderer to approve or

@@ -57,6 +57,10 @@ bool RenderViewHostDelegate::IsJavaScriptDialogShowing() const {
   return false;
 }
 
+bool RenderViewHostDelegate::ShouldIgnoreUnresponsiveRenderer() {
+  return false;
+}
+
 bool RenderViewHostDelegate::HideDownloadUI() const {
   return false;
 }

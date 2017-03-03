@@ -1727,9 +1727,7 @@ TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Simulate the unresponsiveness timer.  The tab should close.
-  contents()->RendererUnresponsive(
-      rfh1->render_view_host()->GetWidget(),
-      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_CLOSE_PAGE);
+  rfh1->render_view_host()->ClosePageTimeout();
   EXPECT_TRUE(close_delegate.is_closed());
 }
 

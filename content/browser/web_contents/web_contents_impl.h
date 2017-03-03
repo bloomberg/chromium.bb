@@ -571,6 +571,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsVirtualKeyboardRequested() override;
   bool IsOverridingUserAgent() override;
   bool IsJavaScriptDialogShowing() const override;
+  bool ShouldIgnoreUnresponsiveRenderer() override;
   bool HideDownloadUI() const override;
   bool HasPersistentVideo() const override;
 

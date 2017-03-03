@@ -317,42 +317,6 @@ void RenderFrameHostManager::SetIsLoading(bool is_loading) {
   }
 }
 
-bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
-  // If we're waiting for a close ACK, then the tab should close whether there's
-  // a navigation in progress or not.  Unfortunately, we also need to check for
-  // cases that we arrive here with no navigation in progress, since there are
-  // some tab closure paths that don't set is_waiting_for_close_ack to true.
-  // TODO(creis): Clean this up in http://crbug.com/418266.
-  if (!pending_render_frame_host_ ||
-      render_frame_host_->render_view_host()->is_waiting_for_close_ack())
-    return true;
-
-  // We should always have a pending RFH when there's a cross-process navigation
-  // in progress.  Sanity check this for http://crbug.com/276333.
-  CHECK(pending_render_frame_host_);
-
-  // Unload handlers run in the background, so we should never get an
-  // unresponsiveness warning for them.
-  CHECK(!render_frame_host_->IsWaitingForUnloadACK());
-
-  // If the tab becomes unresponsive during beforeunload while doing a
-  // cross-process navigation, proceed with the navigation.  (This assumes that
-  // the pending RenderFrameHost is still responsive.)
-  if (render_frame_host_->is_waiting_for_beforeunload_ack()) {
-    // Haven't gotten around to starting the request, because we're still
-    // waiting for the beforeunload handler to finish.  We'll pretend that it
-    // did finish, to let the navigation proceed.  Note that there's a danger
-    // that the beforeunload handler will later finish and possibly return
-    // false (meaning the navigation should not proceed), but we'll ignore it
-    // in this case because it took too long.
-    if (pending_render_frame_host_->are_navigations_suspended()) {
-      pending_render_frame_host_->SetNavigationsSuspended(
-          false, base::TimeTicks::Now());
-    }
-  }
-  return false;
-}
-
 void RenderFrameHostManager::OnBeforeUnloadACK(
     bool for_cross_site_transition,
     bool proceed,
@@ -365,10 +329,7 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
 
     if (proceed) {
       // Ok to unload the current page, so proceed with the cross-process
-      // navigation.  Note that if navigations are not currently suspended, it
-      // might be because the renderer was deemed unresponsive and this call was
-      // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
-      // is ok to do nothing here.
+      // navigation.
       if (pending_render_frame_host_ &&
           pending_render_frame_host_->are_navigations_suspended()) {
         pending_render_frame_host_->SetNavigationsSuspended(false,

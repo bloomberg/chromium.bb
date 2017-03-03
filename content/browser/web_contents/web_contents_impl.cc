@@ -2419,6 +2419,15 @@ bool WebContentsImpl::IsJavaScriptDialogShowing() const {
   return is_showing_javascript_dialog_;
 }
 
+bool WebContentsImpl::ShouldIgnoreUnresponsiveRenderer() {
+  // Ignore unresponsive renderers if the debugger is attached to them since the
+  // unresponsiveness might be a result of the renderer sitting on a breakpoint.
+  //
+  // TODO(pfeldman): Fix this to only return true if the renderer is *actually*
+  // sitting on a breakpoint. https://crbug.com/684202
+  return DevToolsAgentHost::IsDebuggerAttached(this);
+}
+
 AccessibilityMode WebContentsImpl::GetAccessibilityMode() const {
   return accessibility_mode_;
 }
@@ -4841,13 +4850,7 @@ void WebContentsImpl::RendererUnresponsive(
   if (render_widget_host != GetRenderViewHost()->GetWidget())
     return;
 
-  RenderFrameHostImpl* rfhi =
-      static_cast<RenderFrameHostImpl*>(GetRenderViewHost()->GetMainFrame());
-
-  // Ignore renderer unresponsive event if debugger is attached to the tab
-  // since the event may be a result of the renderer sitting on a breakpoint.
-  // See http://crbug.com/65458
-  if (DevToolsAgentHost::IsDebuggerAttached(this))
+  if (ShouldIgnoreUnresponsiveRenderer())
     return;
 
   // Record histograms about the type of renderer hang.
@@ -4855,23 +4858,8 @@ void WebContentsImpl::RendererUnresponsive(
       "ChildProcess.HangRendererType", type,
       RendererUnresponsiveType::RENDERER_UNRESPONSIVE_MAX);
 
-  // We might have been waiting for both beforeunload and unload ACK.
-  // Check if tab is to be unloaded first.
-  if (rfhi->IsWaitingForUnloadACK()) {
-    // Hang occurred while firing the unload handler.
-    // Pretend the handler fired so tab closing continues as if it had.
-    GetRenderViewHost()->set_sudden_termination_allowed(true);
-
-    if (!GetRenderManager()->ShouldCloseTabOnUnresponsiveRenderer())
-      return;
-
-    // If the tab hangs in the unload handler there's really nothing we can do
-    // to recover. Pretend the unload listeners have all fired and close
-    // the tab.
-    Close();
-    return;
-  }
-
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(GetRenderViewHost()->GetMainFrame());
   if (rfhi->is_waiting_for_beforeunload_ack()) {
     // If the hang is in the beforeunload handler, pretend the beforeunload
     // listeners have all fired and allow the delegate to continue closing;
