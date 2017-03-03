@@ -322,71 +322,12 @@ update_opacity(struct ivi_layout_layer *ivilayer,
 }
 
 static void
-get_rotate_values(enum wl_output_transform orientation,
-		  float *v_sin,
-		  float *v_cos)
-{
-	switch (orientation) {
-	case WL_OUTPUT_TRANSFORM_90:
-		*v_sin = 1.0f;
-		*v_cos = 0.0f;
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-		*v_sin = 0.0f;
-		*v_cos = -1.0f;
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-		*v_sin = -1.0f;
-		*v_cos = 0.0f;
-		break;
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	default:
-		*v_sin = 0.0f;
-		*v_cos = 1.0f;
-		break;
-	}
-}
-
-static void
-get_scale(enum wl_output_transform orientation,
-	  float dest_width,
-	  float dest_height,
-	  float source_width,
-	  float source_height,
-	  float *scale_x,
-	  float *scale_y)
-{
-	switch (orientation) {
-	case WL_OUTPUT_TRANSFORM_90:
-		*scale_x = dest_width / source_height;
-		*scale_y = dest_height / source_width;
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-		*scale_x = dest_width / source_width;
-		*scale_y = dest_height / source_height;
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-		*scale_x = dest_width / source_height;
-		*scale_y = dest_height / source_width;
-		break;
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	default:
-		*scale_x = dest_width / source_width;
-		*scale_y = dest_height / source_height;
-		break;
-	}
-}
-
-static void
 calc_transformation_matrix(struct ivi_rectangle *source_rect,
 			   struct ivi_rectangle *dest_rect,
-			   enum wl_output_transform orientation,
 			   struct weston_matrix *m)
 {
 	float source_center_x;
 	float source_center_y;
-	float vsin;
-	float vcos;
 	float scale_x;
 	float scale_y;
 	float translate_x;
@@ -396,16 +337,8 @@ calc_transformation_matrix(struct ivi_rectangle *source_rect,
 	source_center_y = source_rect->y + source_rect->height * 0.5f;
 	weston_matrix_translate(m, -source_center_x, -source_center_y, 0.0f);
 
-	get_rotate_values(orientation, &vsin, &vcos);
-	weston_matrix_rotate_xy(m, vcos, vsin);
-
-	get_scale(orientation,
-		  dest_rect->width,
-		  dest_rect->height,
-		  source_rect->width,
-		  source_rect->height,
-		  &scale_x,
-		  &scale_y);
+	scale_x = (float) dest_rect->width / (float) source_rect->width;
+	scale_y = (float) dest_rect->height / (float) source_rect->height;
 	weston_matrix_scale(m, scale_x, scale_y, 1.0f);
 
 	translate_x = dest_rect->width * 0.5f + dest_rect->x;
@@ -582,13 +515,8 @@ calc_surface_to_global_matrix_and_mask_to_weston_surface(
 	 * - single screen-local coordinates to multi-screen coordinates,
 	 *   which are global coordinates.
 	 */
-	calc_transformation_matrix(&surface_source_rect,
-				   &surface_dest_rect,
-				   sp->orientation, m);
-
-	calc_transformation_matrix(&layer_source_rect,
-				   &layer_dest_rect,
-				   lp->orientation, m);
+	calc_transformation_matrix(&surface_source_rect, &surface_dest_rect, m);
+	calc_transformation_matrix(&layer_source_rect, &layer_dest_rect, m);
 
 	weston_matrix_translate(m, output->x, output->y, 0.0f);
 
