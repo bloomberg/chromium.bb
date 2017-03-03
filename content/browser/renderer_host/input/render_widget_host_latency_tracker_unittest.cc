@@ -434,23 +434,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
           HistogramSizeEq("Event.Latency.TouchToScrollUpdateSwapBegin_"
                           "IsRunningNavigationHintTask",
                           is_running_navigation_hint_task ? 1 : 0));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollUpdate.TouchToHandled_Main",
-                          rendering_on_main ? 1 : 0));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollUpdate.TouchToHandled_Impl",
-                          rendering_on_main ? 0 : 1));
-      EXPECT_TRUE(HistogramSizeEq(
-          "Event.Latency.ScrollUpdate.HandledToRendererSwap_Main",
-          rendering_on_main ? 1 : 0));
-      EXPECT_TRUE(HistogramSizeEq(
-          "Event.Latency.ScrollUpdate.HandledToRendererSwap_Impl",
-          rendering_on_main ? 0 : 1));
-      EXPECT_TRUE(HistogramSizeEq(
-          "Event.Latency.ScrollUpdate.RendererSwapToBrowserNotified", 1));
-      EXPECT_TRUE(HistogramSizeEq(
-          "Event.Latency.ScrollUpdate.BrowserNotifiedToBeforeGpuSwap", 1));
-      EXPECT_TRUE(HistogramSizeEq("Event.Latency.ScrollUpdate.GpuSwap", 1));
       EXPECT_TRUE(HistogramSizeEq(
           "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 1));
 
