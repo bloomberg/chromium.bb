@@ -137,7 +137,6 @@ static_library("test_support_without_gmock") {
     ":chromeos",
     ":cryptohome_proto",
     ":power_manager_proto",
-    "//components/policy/proto",
     "//crypto",
   ]
   sources = [
