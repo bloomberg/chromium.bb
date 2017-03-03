@@ -16,7 +16,7 @@ PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
   if (interface_provider) {
     device::mojom::PowerMonitorPtr power_monitor;
     interface_provider->GetInterface(mojo::MakeRequest(&power_monitor));
-    power_monitor->SetClient(binding_.CreateInterfacePtrAndBind());
+    power_monitor->AddClient(binding_.CreateInterfacePtrAndBind());
   }
 }
 

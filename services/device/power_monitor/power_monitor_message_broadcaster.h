@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/interfaces/power_monitor.mojom.h"
 
 namespace device {
@@ -16,13 +18,13 @@ namespace device {
 class PowerMonitorMessageBroadcaster : public base::PowerObserver,
                                        public device::mojom::PowerMonitor {
  public:
-  explicit PowerMonitorMessageBroadcaster();
+  PowerMonitorMessageBroadcaster();
   ~PowerMonitorMessageBroadcaster() override;
 
-  static void Create(device::mojom::PowerMonitorRequest request);
+  void Bind(device::mojom::PowerMonitorRequest request);
 
   // device::mojom::PowerMonitor:
-  void SetClient(
+  void AddClient(
       device::mojom::PowerMonitorClientPtr power_monitor_client) override;
 
   // base::PowerObserver:
@@ -31,7 +33,8 @@ class PowerMonitorMessageBroadcaster : public base::PowerObserver,
   void OnResume() override;
 
  private:
-  device::mojom::PowerMonitorClientPtr power_monitor_client_;
+  mojo::BindingSet<device::mojom::PowerMonitor> bindings_;
+  mojo::InterfacePtrSet<device::mojom::PowerMonitorClient> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorMessageBroadcaster);
 };

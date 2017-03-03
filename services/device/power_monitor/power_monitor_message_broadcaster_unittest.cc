@@ -66,8 +66,8 @@ TEST_F(PowerMonitorMessageBroadcasterTest, PowerMessageBroadcast) {
   FakePowerMonitorClient client(mojo::MakeRequest(&proxy));
   PowerMonitorMessageBroadcaster broadcaster;
 
-  // Calling SetClient should invoke a power state change.
-  broadcaster.SetClient(std::move(proxy));
+  // Calling AddClient should invoke a power state change.
+  broadcaster.AddClient(std::move(proxy));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(client.power_state_changes(), 1);

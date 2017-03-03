@@ -5,8 +5,8 @@
 module device.mojom;
 
 interface PowerMonitor {
-  // Set client that will be notified on PowerStateChange, Suspend and Resume.
-  SetClient(PowerMonitorClient client);
+  // Add a client that will be notified on PowerStateChange, Suspend and Resume.
+  AddClient(PowerMonitorClient client);
 };
 
 interface PowerMonitorClient {

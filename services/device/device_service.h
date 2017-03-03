@@ -15,6 +15,7 @@
 
 namespace device {
 
+class PowerMonitorMessageBroadcaster;
 class TimeZoneMonitor;
 
 std::unique_ptr<service_manager::Service> CreateDeviceService(
@@ -47,6 +48,8 @@ class DeviceService
   void Create(const service_manager::Identity& remote_identity,
               mojom::TimeZoneMonitorRequest request) override;
 
+  std::unique_ptr<device::PowerMonitorMessageBroadcaster>
+      power_monitor_message_broadcaster_;
   std::unique_ptr<device::TimeZoneMonitor> time_zone_monitor_;
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;

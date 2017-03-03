@@ -55,7 +55,11 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
 
 void DeviceService::Create(const service_manager::Identity& remote_identity,
                            mojom::PowerMonitorRequest request) {
-  PowerMonitorMessageBroadcaster::Create(std::move(request));
+  if (!power_monitor_message_broadcaster_) {
+    power_monitor_message_broadcaster_ =
+        base::MakeUnique<PowerMonitorMessageBroadcaster>();
+  }
+  power_monitor_message_broadcaster_->Bind(std::move(request));
 }
 
 void DeviceService::Create(const service_manager::Identity& remote_identity,
