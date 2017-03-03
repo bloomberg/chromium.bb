@@ -338,11 +338,22 @@ void OnWebappDataStored(JNIEnv* env,
 void OnWebApksRetrieved(JNIEnv* env,
                         const JavaParamRef<jclass>& clazz,
                         const jlong jcallback_pointer,
+                        const JavaParamRef<jobjectArray>& jnames,
                         const JavaParamRef<jobjectArray>& jshort_names,
                         const JavaParamRef<jobjectArray>& jpackage_names,
                         const JavaParamRef<jintArray>& jshell_apk_versions,
-                        const JavaParamRef<jintArray>& jversion_codes) {
+                        const JavaParamRef<jintArray>& jversion_codes,
+                        const JavaParamRef<jobjectArray>& juris,
+                        const JavaParamRef<jobjectArray>& jscopes,
+                        const JavaParamRef<jobjectArray>& jmanifest_urls,
+                        const JavaParamRef<jobjectArray>& jmanifest_start_urls,
+                        const JavaParamRef<jintArray>& jdisplay_modes,
+                        const JavaParamRef<jintArray>& jorientations,
+                        const JavaParamRef<jlongArray>& jtheme_colors,
+                        const JavaParamRef<jlongArray>& jbackground_colors) {
   DCHECK(jcallback_pointer);
+  std::vector<std::string> names;
+  base::android::AppendJavaStringArrayToStringVector(env, jnames, &names);
   std::vector<std::string> short_names;
   base::android::AppendJavaStringArrayToStringVector(env, jshort_names,
                                                      &short_names);
@@ -354,17 +365,50 @@ void OnWebApksRetrieved(JNIEnv* env,
                                          &shell_apk_versions);
   std::vector<int> version_codes;
   base::android::JavaIntArrayToIntVector(env, jversion_codes, &version_codes);
+  std::vector<std::string> uris;
+  base::android::AppendJavaStringArrayToStringVector(env, juris, &uris);
+  std::vector<std::string> scopes;
+  base::android::AppendJavaStringArrayToStringVector(env, jscopes, &scopes);
+  std::vector<std::string> manifest_urls;
+  base::android::AppendJavaStringArrayToStringVector(env, jmanifest_urls,
+                                                     &manifest_urls);
+  std::vector<std::string> manifest_start_urls;
+  base::android::AppendJavaStringArrayToStringVector(env, jmanifest_start_urls,
+                                                     &manifest_start_urls);
+  std::vector<int> display_modes;
+  base::android::JavaIntArrayToIntVector(env, jdisplay_modes, &display_modes);
+  std::vector<int> orientations;
+  base::android::JavaIntArrayToIntVector(env, jorientations, &orientations);
+  std::vector<int64_t> theme_colors;
+  base::android::JavaLongArrayToInt64Vector(env, jtheme_colors, &theme_colors);
+  std::vector<int64_t> background_colors;
+  base::android::JavaLongArrayToInt64Vector(env, jbackground_colors,
+                                            &background_colors);
 
+  DCHECK(short_names.size() == names.size());
   DCHECK(short_names.size() == package_names.size());
   DCHECK(short_names.size() == shell_apk_versions.size());
   DCHECK(short_names.size() == version_codes.size());
+  DCHECK(short_names.size() == uris.size());
+  DCHECK(short_names.size() == scopes.size());
+  DCHECK(short_names.size() == manifest_urls.size());
+  DCHECK(short_names.size() == manifest_start_urls.size());
+  DCHECK(short_names.size() == display_modes.size());
+  DCHECK(short_names.size() == orientations.size());
+  DCHECK(short_names.size() == theme_colors.size());
+  DCHECK(short_names.size() == background_colors.size());
 
   std::vector<WebApkInfo> webapk_list;
   webapk_list.reserve(short_names.size());
   for (size_t i = 0; i < short_names.size(); ++i) {
-    webapk_list.push_back(WebApkInfo(std::move(short_names[i]),
-                                     std::move(package_names[i]),
-                                     shell_apk_versions[i], version_codes[i]));
+    webapk_list.push_back(WebApkInfo(
+        std::move(names[i]), std::move(short_names[i]),
+        std::move(package_names[i]), shell_apk_versions[i], version_codes[i],
+        std::move(uris[i]), std::move(scopes[i]), std::move(manifest_urls[i]),
+        std::move(manifest_start_urls[i]),
+        static_cast<blink::WebDisplayMode>(display_modes[i]),
+        static_cast<blink::WebScreenOrientationLockType>(orientations[i]),
+        theme_colors[i], background_colors[i]));
   }
 
   ShortcutHelper::WebApkInfoCallback* webapk_list_callback =

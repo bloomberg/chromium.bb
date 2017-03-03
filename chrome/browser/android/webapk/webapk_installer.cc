@@ -33,6 +33,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_utils.h"
 #include "url/gurl.h"
 
 namespace {
@@ -78,13 +79,8 @@ GURL GetScope(const ShortcutInfo& info) {
 std::string ColorToString(int64_t color) {
   if (color == content::Manifest::kInvalidOrMissingColor)
     return "";
-
   SkColor sk_color = reinterpret_cast<uint32_t&>(color);
-  int r = SkColorGetR(sk_color);
-  int g = SkColorGetG(sk_color);
-  int b = SkColorGetB(sk_color);
-  double a = SkColorGetA(sk_color) / 255.0;
-  return base::StringPrintf("rgba(%d,%d,%d,%.2f)", r, g, b, a);
+  return color_utils::SkColorToRgbaString(sk_color);
 }
 
 // Get Chrome's current ABI. It depends on whether Chrome is running as a 32 bit

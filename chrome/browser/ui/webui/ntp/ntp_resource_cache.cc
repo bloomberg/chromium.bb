@@ -90,27 +90,6 @@ const char kLearnMoreGuestSessionUrl[] =
     "https://support.google.com/chrome/?p=ui_guest";
 #endif
 
-std::string SkColorToRGBAString(SkColor color) {
-  // We convert the alpha using DoubleToString because StringPrintf will use
-  // locale specific formatters (e.g., use , instead of . in German).
-  return base::StringPrintf(
-      "rgba(%d,%d,%d,%s)",
-      SkColorGetR(color),
-      SkColorGetG(color),
-      SkColorGetB(color),
-      base::DoubleToString(SkColorGetA(color) / 255.0).c_str());
-}
-
-// Creates an rgb string for an SkColor, but leaves the alpha blank so that the
-// css can fill it in.
-std::string SkColorToRGBComponents(SkColor color) {
-  return base::StringPrintf(
-      "%d,%d,%d",
-      SkColorGetR(color),
-      SkColorGetG(color),
-      SkColorGetB(color));
-}
-
 SkColor GetThemeColor(const ui::ThemeProvider& tp, int id) {
   SkColor color = tp.GetColor(id);
   // If web contents are being inverted because the system is in high-contrast
@@ -520,7 +499,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
       profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 
   // Colors.
-  substitutions["colorBackground"] = SkColorToRGBAString(color_background);
+  substitutions["colorBackground"] =
+      color_utils::SkColorToRgbaString(color_background);
   substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
   substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
   substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
@@ -572,15 +552,17 @@ void NTPResourceCache::CreateNewTabCSS() {
       profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 
   // Colors.
-  substitutions["colorBackground"] = SkColorToRGBAString(color_background);
+  substitutions["colorBackground"] =
+      color_utils::SkColorToRgbaString(color_background);
   substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
   substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
   substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
-  substitutions["colorTextRgba"] = SkColorToRGBAString(color_text);
-  substitutions["colorTextLight"] = SkColorToRGBAString(color_text_light);
+  substitutions["colorTextRgba"] = color_utils::SkColorToRgbaString(color_text);
+  substitutions["colorTextLight"] =
+      color_utils::SkColorToRgbaString(color_text_light);
   substitutions["colorSectionBorder"] =
-      SkColorToRGBComponents(color_section_border);
-  substitutions["colorText"] = SkColorToRGBComponents(color_text);
+      color_utils::SkColorToRgbString(color_section_border);
+  substitutions["colorText"] = color_utils::SkColorToRgbString(color_text);
 
   // For themes that right-align the background, we flip the attribution to the
   // left to avoid conflicts.

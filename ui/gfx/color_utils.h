@@ -5,6 +5,8 @@
 #ifndef UI_GFX_COLOR_UTILS_H_
 #define UI_GFX_COLOR_UTILS_H_
 
+#include <string>
+
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -137,6 +139,12 @@ GFX_EXPORT bool IsInvertedColorScheme();
 // Derives a color for icons on a UI surface based on the text color on the same
 // surface.
 GFX_EXPORT SkColor DeriveDefaultIconColor(SkColor text_color);
+
+// Creates an rgba string for an SkColor. For example: 'rgba(255,0,255,0.5)'.
+GFX_EXPORT std::string SkColorToRgbaString(SkColor color);
+
+// Creates an rgb string for an SkColor. For example: '255,0,255'.
+GFX_EXPORT std::string SkColorToRgbString(SkColor color);
 
 }  // namespace color_utils
 

@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "content/public/common/manifest.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 // Structure with information about a WebAPK.
 //
@@ -16,14 +18,26 @@
 // move-constructs its string arguments (which are copied from Java to C++ into
 // a temporary prior to construction).
 struct WebApkInfo {
-  WebApkInfo(std::string short_name,
+  WebApkInfo(std::string name,
+             std::string short_name,
              std::string package_name,
              int shell_apk_version,
-             int version_code);
+             int version_code,
+             std::string uri,
+             std::string scope,
+             std::string manifest_url,
+             std::string manifest_start_url,
+             blink::WebDisplayMode display,
+             blink::WebScreenOrientationLockType orientation,
+             int64_t theme_color,
+             int64_t background_color);
   ~WebApkInfo();
 
-  WebApkInfo& operator=(WebApkInfo&& other) = default;
-  WebApkInfo(WebApkInfo&& other) = default;
+  WebApkInfo& operator=(WebApkInfo&& other);
+  WebApkInfo(WebApkInfo&& other);
+
+  // Short name of the WebAPK.
+  std::string name;
 
   // Short name of the WebAPK.
   std::string short_name;
@@ -36,6 +50,15 @@ struct WebApkInfo {
 
   // Version code of the WebAPK.
   int version_code;
+
+  std::string uri;
+  std::string scope;
+  std::string manifest_url;
+  std::string manifest_start_url;
+  blink::WebDisplayMode display;
+  blink::WebScreenOrientationLockType orientation;
+  int64_t theme_color;
+  int64_t background_color;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebApkInfo);

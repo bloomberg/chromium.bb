@@ -4,10 +4,19 @@
 
 /**
  * @typedef {{
+ *   name: string,
  *   shortName: string,
  *   packageName: string,
  *   shellApkVersion: number,
- *   versionCode: number
+ *   versionCode: number,
+ *   uri: string,
+ *   scope: string,
+ *   manifestUrl: string,
+ *   manifestStartUrl: string,
+ *   displayMode: string,
+ *   orientation: string,
+ *   themeColor: string,
+ *   backgroundColor: string,
  * }}
  */
 var WebApkInfo;
@@ -17,11 +26,12 @@ var WebApkInfo;
  * |className| class.
  *
  * @param {string} text Text to be shown in the span.
+ * @param {string} type Type of element to be added such as 'div'.
  * @param {string} className Class to be assigned to the new element.
  * @return {Element} The created element.
  */
-function createSpanWithTextAndClass(text, className) {
-  var element = createElementWithClassName('span', className);
+function createElementWithTextAndClass(text, type, className) {
+  var element = createElementWithClassName(type, className);
   element.textContent = text;
   return element;
 }
@@ -41,29 +51,47 @@ function returnWebApksInfo(webApkList) {
 }
 
 /**
+ * @param {HTMLElement} webApkList List of elements which contain WebAPK
+ * attributes.
+ * @param {string} label Text that identifies the new element.
+ * @param {string} value Text to set in the new element.
+ */
+function addWebApkField(webApkList, label, value) {
+  var divElement =
+      createElementWithTextAndClass(label, 'div', 'app-property-label');
+  divElement.appendChild(
+      createElementWithTextAndClass(value, 'span', 'app-property-value'));
+  webApkList.appendChild(divElement);
+}
+
+/**
  * Adds a new entry to the page with the information of a WebAPK.
  *
  * @param {WebApkInfo} webApkInfo Information about an installed WebAPK.
  */
 function addWebApk(webApkInfo) {
-  var webApkList = $('webapk-list');
+  /** @type {HTMLElement} */ var webApkList = $('webapk-list');
 
   webApkList.appendChild(
-      createSpanWithTextAndClass(webApkInfo.shortName, 'app-name'));
+      createElementWithTextAndClass(webApkInfo.name, 'span', 'app-name'));
 
-  webApkList.appendChild(
-      createSpanWithTextAndClass('Package name: ', 'app-property-label'));
-  webApkList.appendChild(document.createTextNode(webApkInfo.packageName));
+  webApkList.appendChild(createElementWithTextAndClass(
+      'Short name: ', 'span', 'app-property-label'));
+  webApkList.appendChild(document.createTextNode(webApkInfo.shortName));
 
-  webApkList.appendChild(document.createElement('br'));
-  webApkList.appendChild(createSpanWithTextAndClass(
-      'Shell APK version: ', 'app-property-label'));
-  webApkList.appendChild(document.createTextNode(webApkInfo.shellApkVersion));
-
-  webApkList.appendChild(document.createElement('br'));
-  webApkList.appendChild(
-      createSpanWithTextAndClass('Version code: ', 'app-property-label'));
-  webApkList.appendChild(document.createTextNode(webApkInfo.versionCode));
+  addWebApkField(webApkList, 'Package name: ', webApkInfo.packageName);
+  addWebApkField(
+      webApkList, 'Shell APK version: ', "" + webApkInfo.shellApkVersion);
+  addWebApkField(webApkList, 'Version code: ', "" + webApkInfo.versionCode);
+  addWebApkField(webApkList, 'URI: ', webApkInfo.uri);
+  addWebApkField(webApkList, 'Scope: ', webApkInfo.scope);
+  addWebApkField(webApkList, 'Manifest URL: ', webApkInfo.manifestUrl);
+  addWebApkField(
+      webApkList, 'Manifest Start URL: ', webApkInfo.manifestStartUrl);
+  addWebApkField(webApkList, 'Display Mode: ', webApkInfo.displayMode);
+  addWebApkField(webApkList, 'Orientation: ', webApkInfo.orientation);
+  addWebApkField(webApkList, 'Theme color: ', webApkInfo.themeColor);
+  addWebApkField(webApkList, 'Background color: ', webApkInfo.backgroundColor);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

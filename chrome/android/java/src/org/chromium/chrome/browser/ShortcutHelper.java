@@ -671,10 +671,19 @@ public class ShortcutHelper {
      */
     @CalledByNative
     public static void retrieveWebApks(long callbackPointer) {
+        List<String> names = new ArrayList<>();
         List<String> shortNames = new ArrayList<>();
         List<String> packageNames = new ArrayList<>();
         List<Integer> shellApkVersions = new ArrayList<>();
         List<Integer> versionCodes = new ArrayList<>();
+        List<String> uris = new ArrayList<>();
+        List<String> scopes = new ArrayList<>();
+        List<String> manifestUrls = new ArrayList<>();
+        List<String> manifestStartUrls = new ArrayList<>();
+        List<Integer> displayModes = new ArrayList<>();
+        List<Integer> orientations = new ArrayList<>();
+        List<Long> themeColors = new ArrayList<>();
+        List<Long> backgroundColors = new ArrayList<>();
 
         Context context = ContextUtils.getApplicationContext();
         PackageManager packageManager = context.getPackageManager();
@@ -685,16 +694,29 @@ public class ShortcutHelper {
                 WebApkInfo webApkInfo =
                         WebApkInfo.create(packageInfo.packageName, "", ShortcutSource.UNKNOWN);
                 if (webApkInfo != null) {
+                    names.add(webApkInfo.name());
                     shortNames.add(webApkInfo.shortName());
                     packageNames.add(webApkInfo.webApkPackageName());
                     shellApkVersions.add(webApkInfo.shellApkVersion());
                     versionCodes.add(packageInfo.versionCode);
+                    uris.add(webApkInfo.uri().toString());
+                    scopes.add(webApkInfo.scopeUri().toString());
+                    manifestUrls.add(webApkInfo.manifestUrl());
+                    manifestStartUrls.add(webApkInfo.manifestStartUrl());
+                    displayModes.add(webApkInfo.displayMode());
+                    orientations.add(webApkInfo.orientation());
+                    themeColors.add(webApkInfo.themeColor());
+                    backgroundColors.add(webApkInfo.backgroundColor());
                 }
             }
         }
-        nativeOnWebApksRetrieved(callbackPointer, shortNames.toArray(new String[0]),
-                packageNames.toArray(new String[0]), integerListToIntArray(shellApkVersions),
-                integerListToIntArray(versionCodes));
+        nativeOnWebApksRetrieved(callbackPointer, names.toArray(new String[0]),
+                shortNames.toArray(new String[0]), packageNames.toArray(new String[0]),
+                integerListToIntArray(shellApkVersions), integerListToIntArray(versionCodes),
+                uris.toArray(new String[0]), scopes.toArray(new String[0]),
+                manifestUrls.toArray(new String[0]), manifestStartUrls.toArray(new String[0]),
+                integerListToIntArray(displayModes), integerListToIntArray(orientations),
+                longListToLongArray(themeColors), longListToLongArray(backgroundColors));
     }
 
     private static int[] integerListToIntArray(@NonNull List<Integer> list) {
@@ -705,7 +727,17 @@ public class ShortcutHelper {
         return array;
     }
 
+    private static long[] longListToLongArray(@NonNull List<Long> list) {
+        long[] array = new long[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
+    }
+
     private static native void nativeOnWebappDataStored(long callbackPointer);
-    private static native void nativeOnWebApksRetrieved(long callbackPointer, String[] shortNames,
-            String[] packageName, int[] shellApkVersions, int[] versionCodes);
+    private static native void nativeOnWebApksRetrieved(long callbackPointer, String[] names,
+            String[] shortNames, String[] packageName, int[] shellApkVersions, int[] versionCodes,
+            String[] uris, String[] scopes, String[] manifestUrls, String[] manifestStartUrls,
+            int[] displayModes, int[] orientations, long[] themeColors, long[] backgroundColors);
 }

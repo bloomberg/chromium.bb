@@ -46,3 +46,9 @@ body {
   text-align: start;
   white-space: nowrap;
 }
+
+.app-property-value {
+  font-weight: normal;
+  text-align: start;
+  white-space: nowrap;
+}
