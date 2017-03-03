@@ -1330,7 +1330,7 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
 
 gfx::ColorSpace LayerTreeHostImpl::GetTileColorSpace() const {
   if (!sync_tree())
-    return gfx::ColorSpace();
+    return gfx::ColorSpace::CreateSRGB();
   return sync_tree()->device_color_space();
 }
 
@@ -3784,7 +3784,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 
   id = resource_provider_->CreateResource(
       upload_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
-      gfx::ColorSpace());
+      gfx::ColorSpace::CreateSRGB());
 
   if (!scaled) {
     AutoLockUIResourceBitmap bitmap_lock(bitmap);

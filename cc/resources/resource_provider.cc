@@ -884,7 +884,10 @@ sk_sp<SkColorSpace> ResourceProvider::GetResourceSkColorSpace(
     const Resource* resource) const {
   if (!settings_.enable_color_correct_rendering)
     return nullptr;
-  return resource->color_space.ToSkColorSpace();
+  // Returning the nonlinear blended color space matches the expectation of the
+  // web that colors are blended in the output color space, not in a
+  // physically-based linear space.
+  return resource->color_space.ToNonlinearBlendedSkColorSpace();
 }
 
 void ResourceProvider::CopyToResource(ResourceId id,
