@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "media/base/video_facing.h"
 
 namespace media {
 struct AudioDeviceDescription;
@@ -41,6 +42,7 @@ struct CONTENT_EXPORT MediaDeviceInfo {
   std::string device_id;
   std::string label;
   std::string group_id;
+  media::VideoFacingMode video_facing;
 };
 
 using MediaDeviceInfoArray = std::vector<MediaDeviceInfo>;

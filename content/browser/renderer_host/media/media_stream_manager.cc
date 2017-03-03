@@ -1762,7 +1762,8 @@ MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
     const MediaDeviceInfoArray& device_infos) {
   MediaStreamDevices devices;
   for (const auto& info : device_infos)
-    devices.emplace_back(stream_type, info.device_id, info.label);
+    devices.emplace_back(stream_type, info.device_id, info.label,
+                         info.video_facing);
 
   if (stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
     return devices;

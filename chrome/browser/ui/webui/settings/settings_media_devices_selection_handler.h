@@ -51,6 +51,10 @@ class MediaDevicesSelectionHandler
   void UpdateDevicesMenu(DeviceType type,
                          const content::MediaStreamDevices& devices);
 
+  // Gets the human readable name of the device.
+  std::string GetDeviceDisplayName(
+      const content::MediaStreamDevice& device) const;
+
   Profile* profile_;  // Weak pointer.
 
   ScopedObserver<MediaCaptureDevicesDispatcher,

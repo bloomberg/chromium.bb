@@ -251,6 +251,12 @@
       <message name="IDS_DEVICE_PERMISSIONS_PROMPT_MULTIPLE_SELECTION" desc="Instructions asking the user to select one or more devices for use with an app.">
         "<ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>" is requesting access to one or more of your devices:
       </message>
+      <message name="IDS_CAMERA_FACING_USER" desc="Camera that faces the user. Aka. front camera.">
+        User-facing
+      </message>
+      <message name="IDS_CAMERA_FACING_ENVIRONMENT" desc="Camera that faces environment. Aka. back camera.">
+        Environment-facing
+      </message>
       <message name="IDS_EXTENSION_USB_DEVICE_PRODUCT_NAME_AND_VENDOR" desc="USB device name and vendor string, used in various permission messages for USB devices.">
         <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
       </message>

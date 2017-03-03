@@ -627,6 +627,7 @@ split_static_library("ui") {
     deps += [
       "//components/drive",
       "//extensions/browser",
+      "//extensions/strings",
     ]
   }
 

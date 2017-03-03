@@ -8,7 +8,8 @@
 
 namespace content {
 
-MediaDeviceInfo::MediaDeviceInfo() = default;
+MediaDeviceInfo::MediaDeviceInfo()
+    : video_facing(media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE) {}
 
 MediaDeviceInfo::MediaDeviceInfo(const MediaDeviceInfo& other) = default;
 
@@ -17,17 +18,23 @@ MediaDeviceInfo::MediaDeviceInfo(MediaDeviceInfo&& other) = default;
 MediaDeviceInfo::MediaDeviceInfo(const std::string& device_id,
                                  const std::string& label,
                                  const std::string& group_id)
-    : device_id(device_id), label(label), group_id(group_id) {}
+    : device_id(device_id),
+      label(label),
+      group_id(group_id),
+      video_facing(media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE) {}
 
 MediaDeviceInfo::MediaDeviceInfo(
     const media::AudioDeviceDescription& device_description)
     : device_id(device_description.unique_id),
       label(device_description.device_name),
-      group_id(device_description.group_id) {}
+      group_id(device_description.group_id),
+      video_facing(media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE) {}
 
 MediaDeviceInfo::MediaDeviceInfo(
     const media::VideoCaptureDeviceDescriptor& descriptor)
-    : device_id(descriptor.device_id), label(descriptor.GetNameAndModel()) {}
+    : device_id(descriptor.device_id),
+      label(descriptor.GetNameAndModel()),
+      video_facing(descriptor.facing) {}
 
 MediaDeviceInfo::~MediaDeviceInfo() = default;
 
