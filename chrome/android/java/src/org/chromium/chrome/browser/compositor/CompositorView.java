@@ -336,8 +336,8 @@ public class CompositorView extends SurfaceView implements SurfaceHolder.Callbac
         List<Runnable> runnables = mDrawingFinishedCallbacks;
         mDrawingFinishedCallbacks = null;
         if (runnables == null) return;
-        for (Runnable r : runnables) {
-            r.run();
+        for (int i = 0; i < runnables.size(); ++i) {
+            runnables.get(i).run();
         }
     }
 
