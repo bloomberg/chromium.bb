@@ -608,24 +608,43 @@ computer braille, etc. The opcodes which define them are followed only
 by a dot pattern, which may be one or more cells.
 
 @table @code
-@opcode{capsign, dots}
+@opcode{capsletter, dots}
 The dot pattern which indicates capitalization of a single letter. In
 English, this is dot 6. For example:
 
 @example
-capsign 6
+capsletter 6
+@end example
+
+@opcode{begcapsword, dots}
+The dot pattern which begins a block of capital letters at the
+beginning or within a word. For example:
+
+@example
+begcapsword 6-6
+@end example
+
+@opcode{endcapsword, dots}
+The dot pattern which ends a block of capital letters within a word.
+For example:
+
+@example
+endcapsword 6-3
 @end example
 
 @opcode{begcaps, dots}
-The dot pattern which begins a block of capital letters. For example:
+The dot pattern which begins a block of capital letters defined by the
+provided @code{typeform} without regard for any other rules. For
+example:
 
 @example
 begcaps 6-6
 @end example
 
 @opcode{endcaps, dots}
-The dot pattern which ends a block of capital letters within a word.
-For example:
+The dot pattern which ends a block of capital letters defined by the
+provided @code{typeform} without regard for any other rules. For
+example:
 
 @example
 endcaps 6-3
