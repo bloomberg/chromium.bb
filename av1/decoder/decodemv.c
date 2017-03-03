@@ -1696,15 +1696,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       zeromv[0].as_int = zeromv[1].as_int = 0;
 #endif
       for (ref = 0; ref < 2; ++ref) {
+        if (rf[ref] == NONE_FRAME) continue;
         lower_mv_precision(&ref_mvs[rf[ref]][0].as_mv, allow_hp);
         lower_mv_precision(&ref_mvs[rf[ref]][1].as_mv, allow_hp);
-      }
 
-      if (ref_mvs[rf[0]][0].as_int != zeromv[0].as_int ||
-          ref_mvs[rf[0]][1].as_int != zeromv[0].as_int ||
-          ref_mvs[rf[1]][0].as_int != zeromv[1].as_int ||
-          ref_mvs[rf[1]][1].as_int != zeromv[1].as_int)
-        inter_mode_ctx[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
+        if (ref_mvs[rf[ref]][0].as_int != zeromv[0].as_int ||
+            ref_mvs[rf[ref]][1].as_int != zeromv[1].as_int)
+          inter_mode_ctx[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
+      }
     }
   }
 
