@@ -94,6 +94,12 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
                                           const JavaParamRef<jobject>& obj,
                                           bool is_off_the_record);
 
+  // Called to update the last access time associated with a download.
+  void UpdateLastAccessTime(JNIEnv* env,
+                            const JavaParamRef<jobject>& obj,
+                            const JavaParamRef<jstring>& jdownload_guid,
+                            bool is_off_the_record);
+
   // DownloadHistory::Observer methods.
   void OnHistoryQueryComplete() override;
 

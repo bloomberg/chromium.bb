@@ -137,8 +137,8 @@ DownloadItemImpl::DownloadItemImpl(
     const GURL& tab_refererr_url,
     const std::string& mime_type,
     const std::string& original_mime_type,
-    const base::Time& start_time,
-    const base::Time& end_time,
+    base::Time start_time,
+    base::Time end_time,
     const std::string& etag,
     const std::string& last_modified,
     int64_t received_bytes,
@@ -148,6 +148,7 @@ DownloadItemImpl::DownloadItemImpl(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened,
+    base::Time last_access_time,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log)
     : guid_(base::ToUpperASCII(guid)),
@@ -169,6 +170,7 @@ DownloadItemImpl::DownloadItemImpl(
       end_time_(end_time),
       delegate_(delegate),
       opened_(opened),
+      last_access_time_(last_access_time),
       current_path_(current_path),
       received_bytes_(received_bytes),
       all_data_saved_(state == COMPLETE),
@@ -461,6 +463,7 @@ void DownloadItemImpl::OpenDownload() {
   delegate_->CheckForFileRemoval(this);
   RecordOpen(GetEndTime(), !GetOpened());
   opened_ = true;
+  last_access_time_ = base::Time::Now();
   for (auto& observer : observers_)
     observer.OnDownloadOpened(this);
   delegate_->OpenDownload(this);
@@ -774,6 +777,10 @@ bool DownloadItemImpl::GetOpened() const {
   return opened_;
 }
 
+base::Time DownloadItemImpl::GetLastAccessTime() const {
+  return last_access_time_;
+}
+
 BrowserContext* DownloadItemImpl::GetBrowserContext() const {
   return delegate_->GetBrowserContext();
 }
@@ -811,6 +818,11 @@ void DownloadItemImpl::SetOpenWhenComplete(bool open) {
 
 void DownloadItemImpl::SetOpened(bool opened) {
   opened_ = opened;
+}
+
+void DownloadItemImpl::SetLastAccessTime(base::Time last_access_time) {
+  last_access_time_ = last_access_time;
+  UpdateObservers();
 }
 
 void DownloadItemImpl::SetDisplayName(const base::FilePath& name) {

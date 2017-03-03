@@ -31,8 +31,8 @@ DownloadRow::DownloadRow(
     const std::string& http_method,
     const std::string& mime_type,
     const std::string& original_mime_type,
-    const base::Time& start,
-    const base::Time& end,
+    base::Time start,
+    base::Time end,
     const std::string& etag,
     const std::string& last_modified,
     int64_t received,
@@ -44,6 +44,7 @@ DownloadRow::DownloadRow(
     DownloadId id,
     const std::string& guid,
     bool download_opened,
+    base::Time last_access,
     const std::string& ext_id,
     const std::string& ext_name,
     const std::vector<DownloadSliceInfo>& download_slice_info)
@@ -70,6 +71,7 @@ DownloadRow::DownloadRow(
       id(id),
       guid(guid),
       opened(download_opened),
+      last_access_time(last_access),
       by_ext_id(ext_id),
       by_ext_name(ext_name),
       download_slice_info(download_slice_info) {}
@@ -92,6 +94,7 @@ bool DownloadRow::operator==(const DownloadRow& rhs) const {
          danger_type == rhs.danger_type &&
          interrupt_reason == rhs.interrupt_reason && hash == rhs.hash &&
          id == rhs.id && guid == rhs.guid && opened == rhs.opened &&
+         last_access_time == rhs.last_access_time &&
          by_ext_id == rhs.by_ext_id && by_ext_name == rhs.by_ext_name &&
          download_slice_info == rhs.download_slice_info;
 }

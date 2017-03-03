@@ -52,6 +52,7 @@ class MockDownloadManager : public DownloadManager {
     DownloadDangerType danger_type;
     DownloadInterruptReason interrupt_reason;
     bool opened;
+    base::Time last_access_time;
     std::vector<DownloadItem::ReceivedSlice> received_slices;
 
     CreateDownloadItemAdapter(
@@ -66,8 +67,8 @@ class MockDownloadManager : public DownloadManager {
         const GURL& tab_refererr_url,
         const std::string& mime_type,
         const std::string& original_mime_type,
-        const base::Time& start_time,
-        const base::Time& end_time,
+        base::Time start_time,
+        base::Time end_time,
         const std::string& etag,
         const std::string& last_modified,
         int64_t received_bytes,
@@ -77,6 +78,7 @@ class MockDownloadManager : public DownloadManager {
         DownloadDangerType danger_type,
         DownloadInterruptReason interrupt_reason,
         bool opened,
+        base::Time last_access_time,
         const std::vector<DownloadItem::ReceivedSlice>& received_slices);
     // Required by clang compiler.
     CreateDownloadItemAdapter(const CreateDownloadItemAdapter& rhs);
@@ -127,8 +129,8 @@ class MockDownloadManager : public DownloadManager {
       const GURL& tab_refererr_url,
       const std::string& mime_type,
       const std::string& original_mime_type,
-      const base::Time& start_time,
-      const base::Time& end_time,
+      base::Time start_time,
+      base::Time end_time,
       const std::string& etag,
       const std::string& last_modified,
       int64_t received_bytes,
@@ -138,6 +140,7 @@ class MockDownloadManager : public DownloadManager {
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
+      base::Time last_access_time,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
 
   MOCK_METHOD1(MockCreateDownloadItem,

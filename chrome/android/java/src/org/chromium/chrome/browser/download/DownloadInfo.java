@@ -32,6 +32,7 @@ public final class DownloadInfo {
     private final boolean mIsOffTheRecord;
     private final boolean mIsOfflinePage;
     private final int mState;
+    private final long mLastAccessTime;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -55,6 +56,7 @@ public final class DownloadInfo {
         mIsOffTheRecord = builder.mIsOffTheRecord;
         mIsOfflinePage = builder.mIsOfflinePage;
         mState = builder.mState;
+        mLastAccessTime = builder.mLastAccessTime;
     }
 
     public String getUrl() {
@@ -147,6 +149,10 @@ public final class DownloadInfo {
         return mState;
     }
 
+    public long getLastAccessTime() {
+        return mLastAccessTime;
+    }
+
     /**
      * Helper class for building the DownloadInfo object.
      */
@@ -172,6 +178,7 @@ public final class DownloadInfo {
         private boolean mIsOffTheRecord;
         private boolean mIsOfflinePage;
         private int mState = DownloadState.IN_PROGRESS;
+        private long mLastAccessTime;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -279,6 +286,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setLastAccessTime(long lastAccessTime) {
+            mLastAccessTime = lastAccessTime;
+            return this;
+        }
+
         public DownloadInfo build() {
             return new DownloadInfo(this);
         }
@@ -310,17 +322,18 @@ public final class DownloadInfo {
                     .setIsPaused(downloadInfo.isPaused())
                     .setIsOffTheRecord(downloadInfo.isOffTheRecord())
                     .setIsOfflinePage(downloadInfo.isOfflinePage())
-                    .setState(downloadInfo.state());
+                    .setState(downloadInfo.state())
+                    .setLastAccessTime(downloadInfo.getLastAccessTime());
             return builder;
         }
     }
 
     @CalledByNative
-    private static DownloadInfo createDownloadInfo(
-            String downloadGuid, String fileName, String filePath, String url, String mimeType,
-            long bytesReceived, boolean isIncognito, int state, int percentCompleted,
-            boolean isPaused, boolean hasUserGesture, boolean isResumable,
-            String originalUrl, String referrerUrl, long timeRemainingInMs) {
+    private static DownloadInfo createDownloadInfo(String downloadGuid, String fileName,
+            String filePath, String url, String mimeType, long bytesReceived, boolean isIncognito,
+            int state, int percentCompleted, boolean isPaused, boolean hasUserGesture,
+            boolean isResumable, String originalUrl, String referrerUrl, long timeRemainingInMs,
+            long lastAccessTime) {
         String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
                 mimeType, url, fileName);
         return new DownloadInfo.Builder()
@@ -339,6 +352,8 @@ public final class DownloadInfo {
                 .setReferrer(referrerUrl)
                 .setState(state)
                 .setTimeRemainingInMillis(timeRemainingInMs)
-                .setUrl(url).build();
+                .setLastAccessTime(lastAccessTime)
+                .setUrl(url)
+                .build();
     }
 }

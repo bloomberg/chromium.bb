@@ -88,6 +88,9 @@ public class StubbedProvider implements BackendProvider {
         public boolean isDownloadOpenableInBrowser(boolean isOffTheRecord, String mimeType) {
             return false;
         }
+
+        @Override
+        public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {}
     }
 
     /** Stubs out the OfflinePageDownloadBridge. */

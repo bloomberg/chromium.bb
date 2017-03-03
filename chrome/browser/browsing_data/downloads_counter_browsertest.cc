@@ -129,28 +129,12 @@ class DownloadsCounterTest : public InProcessBrowserTest,
 
     content::DownloadManager* manager = incognito ? otr_manager_ : manager_;
     manager->CreateDownloadItem(
-        guid,
-        content::DownloadItem::kInvalidId + (++items_count_),
+        guid, content::DownloadItem::kInvalidId + (++items_count_),
         base::FilePath(FILE_PATH_LITERAL("current/path")),
-        base::FilePath(FILE_PATH_LITERAL("target/path")),
-        url_chain,
-        GURL(),
-        GURL(),
-        GURL(),
-        GURL(),
-        mime_type,
-        std::string(),
-        time_,
-        time_,
-        std::string(),
-        std::string(),
-        1,
-        1,
-        std::string(),
-        state,
-        danger,
-        reason,
-        false,
+        base::FilePath(FILE_PATH_LITERAL("target/path")), url_chain, GURL(),
+        GURL(), GURL(), GURL(), mime_type, std::string(), time_, time_,
+        std::string(), std::string(), 1, 1, std::string(), state, danger,
+        reason, false, time_,
         std::vector<content::DownloadItem::ReceivedSlice>());
 
     return guid;

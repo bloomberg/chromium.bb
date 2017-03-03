@@ -65,8 +65,8 @@ class CONTENT_EXPORT DownloadItemImpl
       const GURL& tab_referrer_url,
       const std::string& mime_type,
       const std::string& original_mime_type,
-      const base::Time& start_time,
-      const base::Time& end_time,
+      base::Time start_time,
+      base::Time end_time,
       const std::string& etag,
       const std::string& last_modified,
       int64_t received_bytes,
@@ -76,6 +76,7 @@ class CONTENT_EXPORT DownloadItemImpl
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
+      base::Time last_access_time,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log);
 
@@ -163,11 +164,13 @@ class CONTENT_EXPORT DownloadItemImpl
   bool GetOpenWhenComplete() const override;
   bool GetAutoOpened() override;
   bool GetOpened() const override;
+  base::Time GetLastAccessTime() const override;
   BrowserContext* GetBrowserContext() const override;
   WebContents* GetWebContents() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
+  void SetLastAccessTime(base::Time last_access_time) override;
   void SetDisplayName(const base::FilePath& name) override;
   std::string DebugString(bool verbose) const override;
 
@@ -622,6 +625,9 @@ class CONTENT_EXPORT DownloadItemImpl
   // when the user closes the shelf before the item has been opened but should
   // be treated as though the user opened it.
   bool opened_ = false;
+
+  // Time when the download was last accessed.
+  base::Time last_access_time_;
 
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_ = false;

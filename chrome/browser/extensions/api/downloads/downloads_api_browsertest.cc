@@ -432,7 +432,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
           (history_info[i].state != content::DownloadItem::CANCELLED
                ? content::DOWNLOAD_INTERRUPT_REASON_NONE
                : content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED),
-          false,                  // opened
+          false,    // opened
+          current,  // last_access_time
           std::vector<DownloadItem::ReceivedSlice>());
       items->push_back(item);
     }

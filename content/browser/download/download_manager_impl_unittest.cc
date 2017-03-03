@@ -139,8 +139,8 @@ class MockDownloadItemFactory
       const GURL& tab_referrer_url,
       const std::string& mime_type,
       const std::string& original_mime_type,
-      const base::Time& start_time,
-      const base::Time& end_time,
+      base::Time start_time,
+      base::Time end_time,
       const std::string& etag,
       const std::string& last_modofied,
       int64_t received_bytes,
@@ -150,6 +150,7 @@ class MockDownloadItemFactory
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
+      base::Time last_access_time,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log) override;
   DownloadItemImpl* CreateActiveItem(
@@ -212,8 +213,8 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     const GURL& tab_referrer_url,
     const std::string& mime_type,
     const std::string& original_mime_type,
-    const base::Time& start_time,
-    const base::Time& end_time,
+    base::Time start_time,
+    base::Time end_time,
     const std::string& etag,
     const std::string& last_modified,
     int64_t received_bytes,
@@ -223,6 +224,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened,
+    base::Time last_access_time,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log) {
   DCHECK(items_.find(download_id) == items_.end());
@@ -607,7 +609,7 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
       DownloadItem::INTERRUPTED, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
+      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, base::Time::Now(),
       std::vector<DownloadItem::ReceivedSlice>());
   ASSERT_TRUE(persisted_item);
 

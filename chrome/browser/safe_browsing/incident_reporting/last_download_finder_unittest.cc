@@ -299,6 +299,7 @@ class LastDownloadFinderTest : public testing::Test {
         download_id_++,                                // id
         base::GenerateGUID(),                          // GUID
         false,                                         // download_opened
+        now - base::TimeDelta::FromMinutes(5),         // last_access_time
         std::string(),                                 // ext_id
         std::string(),                                 // ext_name
         std::vector<history::DownloadSliceInfo>());    // download_slice_info

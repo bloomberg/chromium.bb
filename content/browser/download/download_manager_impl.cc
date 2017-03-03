@@ -130,8 +130,8 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       const GURL& tab_refererr_url,
       const std::string& mime_type,
       const std::string& original_mime_type,
-      const base::Time& start_time,
-      const base::Time& end_time,
+      base::Time start_time,
+      base::Time end_time,
       const std::string& etag,
       const std::string& last_modified,
       int64_t received_bytes,
@@ -141,6 +141,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
+      base::Time last_access_time,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log) override {
     return new DownloadItemImpl(
@@ -148,7 +149,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
         referrer_url, site_url, tab_url, tab_refererr_url, mime_type,
         original_mime_type, start_time, end_time, etag, last_modified,
         received_bytes, total_bytes, hash, state, danger_type, interrupt_reason,
-        opened, received_slices, net_log);
+        opened, last_access_time, received_slices, net_log);
   }
 
   DownloadItemImpl* CreateActiveItem(
@@ -639,8 +640,8 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     const GURL& tab_refererr_url,
     const std::string& mime_type,
     const std::string& original_mime_type,
-    const base::Time& start_time,
-    const base::Time& end_time,
+    base::Time start_time,
+    base::Time end_time,
     const std::string& etag,
     const std::string& last_modified,
     int64_t received_bytes,
@@ -650,6 +651,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened,
+    base::Time last_access_time,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
   if (base::ContainsKey(downloads_, id)) {
     NOTREACHED();
@@ -660,7 +662,8 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       this, guid, id, current_path, target_path, url_chain, referrer_url,
       site_url, tab_url, tab_refererr_url, mime_type, original_mime_type,
       start_time, end_time, etag, last_modified, received_bytes, total_bytes,
-      hash, state, danger_type, interrupt_reason, opened, received_slices,
+      hash, state, danger_type, interrupt_reason, opened, last_access_time,
+      received_slices,
       net::NetLogWithSource::Make(net_log_, net::NetLogSourceType::DOWNLOAD));
   downloads_[id] = base::WrapUnique(item);
   downloads_by_guid_[guid] = item;

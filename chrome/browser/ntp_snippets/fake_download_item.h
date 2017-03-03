@@ -48,10 +48,10 @@ class FakeDownloadItem : public content::DownloadItem {
   void SetFileExternallyRemoved(bool is_file_externally_removed);
   bool GetFileExternallyRemoved() const override;
 
-  void SetStartTime(const base::Time& start_time);
+  void SetStartTime(base::Time start_time);
   base::Time GetStartTime() const override;
 
-  void SetEndTime(const base::Time& end_time);
+  void SetEndTime(base::Time end_time);
   base::Time GetEndTime() const override;
 
   void SetState(const DownloadState& state);
@@ -115,12 +115,14 @@ class FakeDownloadItem : public content::DownloadItem {
   bool GetOpenWhenComplete() const override;
   bool GetAutoOpened() override;
   bool GetOpened() const override;
+  base::Time GetLastAccessTime() const override;
   content::BrowserContext* GetBrowserContext() const override;
   content::WebContents* GetWebContents() const override;
   void OnContentCheckCompleted(
       content::DownloadDangerType danger_type) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
+  void SetLastAccessTime(base::Time time) override;
   void SetDisplayName(const base::FilePath& name) override;
   std::string DebugString(bool verbose) const override;
 

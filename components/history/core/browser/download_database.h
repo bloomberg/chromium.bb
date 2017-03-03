@@ -93,6 +93,9 @@ class DownloadDatabase {
   // table.
   bool MigrateDownloadSiteInstanceUrl();
 
+  // Returns true if able to add last_access_time column to the download table.
+  bool MigrateDownloadLastAccessTime();
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 

@@ -121,7 +121,8 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       ConvertUTF8ToJavaString(env, original_url),
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
       time_remaining_known ? time_delta.InMilliseconds()
-                           : kUnknownRemainingTime);
+                           : kUnknownRemainingTime,
+      item->GetLastAccessTime().ToJavaTime());
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
@@ -237,6 +238,21 @@ void DownloadManagerService::CheckForExternallyRemovedDownloads(
   if (!manager)
     return;
   manager->CheckForHistoryFilesRemoval();
+}
+
+void DownloadManagerService::UpdateLastAccessTime(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jdownload_guid,
+    bool is_off_the_record) {
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (!manager)
+    return;
+
+  content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  if (item)
+    item->SetLastAccessTime(base::Time::Now());
 }
 
 void DownloadManagerService::CancelDownload(

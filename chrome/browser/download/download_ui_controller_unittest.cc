@@ -240,6 +240,7 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetTargetDisposition()).WillRepeatedly(
       Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
   EXPECT_CALL(*item, GetOpened()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*item, GetLastAccessTime()).WillRepeatedly(Return(base::Time()));
   EXPECT_CALL(*item, GetMimeType()).WillRepeatedly(Return(std::string()));
   EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRefOfCopy(GURL()));
   EXPECT_CALL(*item, GetWebContents()).WillRepeatedly(Return(nullptr));

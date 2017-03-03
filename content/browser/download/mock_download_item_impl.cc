@@ -30,6 +30,7 @@ MockDownloadItemImpl::MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
                        DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                        DOWNLOAD_INTERRUPT_REASON_NONE,
                        false,
+                       base::Time(),
                        std::vector<DownloadItem::ReceivedSlice>(),
                        net::NetLogWithSource()) {}
 

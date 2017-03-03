@@ -94,8 +94,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const GURL& tab_refererr_url,
       const std::string& mime_type,
       const std::string& original_mime_type,
-      const base::Time& start_time,
-      const base::Time& end_time,
+      base::Time start_time,
+      base::Time end_time,
       const std::string& etag,
       const std::string& last_modified,
       int64_t received_bytes,
@@ -105,6 +105,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
+      base::Time last_access_time,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
   int InProgressCount() const override;
   int NonMaliciousInProgressCount() const override;

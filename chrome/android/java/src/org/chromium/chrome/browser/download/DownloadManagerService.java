@@ -1067,6 +1067,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     /** See {@link #openDownloadedContent(Context, String, boolean, long)}. */
     protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId) {
+        // TODO(shaktisahu): Move this to the broader openDownloadedContent() or a better place if
+        // possible.
+        updateLastAccessTime(downloadInfo.getDownloadGuid(), downloadInfo.isOffTheRecord());
         openDownloadedContent(mContext, downloadInfo.getFilePath(),
                 isSupportedMimeType(downloadInfo.getMimeType()), downloadId);
     }
@@ -1777,6 +1780,16 @@ public class DownloadManagerService extends BroadcastReceiver implements
         return mAutoResumptionLimit;
     }
 
+    /**
+     * Updates the last access time of a download.
+     * @param downloadGuid Download GUID.
+     * @param isOffTheRecord Whether the download is off the record.
+     */
+    @Override
+    public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {
+        nativeUpdateLastAccessTime(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+    }
+
     @Override
     public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
 
@@ -1809,4 +1822,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
             long nativeDownloadManagerService, boolean isOffTheRecord);
     private native void nativeCheckForExternallyRemovedDownloads(
             long nativeDownloadManagerService, boolean isOffTheRecord);
+    private native void nativeUpdateLastAccessTime(
+            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
 }
