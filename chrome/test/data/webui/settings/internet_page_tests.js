@@ -119,6 +119,7 @@ suite('Internet', function() {
       var wifi = networkSummary_.$$('#WiFi');
       assertTrue(!!wifi);
       MockInteractions.tap(wifi.$$('button.subpage-arrow'));
+      Polymer.dom.flush();
       var subpage = internetPage.$$('settings-internet-subpage');
       assertTrue(!!subpage);
       assertEquals(2, subpage.networkStateList_.length);
@@ -164,6 +165,7 @@ suite('Internet', function() {
       var vpn = networkSummary_.$$('#VPN');
       assertTrue(!!vpn);
       MockInteractions.tap(vpn.$$('button.subpage-arrow'));
+      Polymer.dom.flush();
       var subpage = internetPage.$$('settings-internet-subpage');
       assertTrue(!!subpage);
       assertEquals(2, subpage.networkStateList_.length);
