@@ -138,7 +138,7 @@ FileBrowserHandlerParser::~FileBrowserHandlerParser() {
 
 namespace {
 
-FileBrowserHandler* LoadFileBrowserHandler(
+std::unique_ptr<FileBrowserHandler> LoadFileBrowserHandler(
     const std::string& extension_id,
     const base::DictionaryValue* file_browser_handler,
     base::string16* error) {
@@ -150,7 +150,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
   if (!file_browser_handler->HasKey(keys::kPageActionId) ||
       !file_browser_handler->GetString(keys::kPageActionId, &handler_id)) {
     *error = base::ASCIIToUTF16(errors::kInvalidPageActionId);
-    return NULL;
+    return nullptr;
   }
   result->set_id(handler_id);
 
@@ -159,18 +159,18 @@ FileBrowserHandler* LoadFileBrowserHandler(
   if (!file_browser_handler->HasKey(keys::kPageActionDefaultTitle) ||
       !file_browser_handler->GetString(keys::kPageActionDefaultTitle, &title)) {
     *error = base::ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
-    return NULL;
+    return nullptr;
   }
   result->set_title(title);
 
   // Initialize access permissions (optional).
-  const base::ListValue* access_list_value = NULL;
+  const base::ListValue* access_list_value = nullptr;
   if (file_browser_handler->HasKey(keys::kFileAccessList)) {
     if (!file_browser_handler->GetList(keys::kFileAccessList,
                                        &access_list_value) ||
         access_list_value->empty()) {
       *error = base::ASCIIToUTF16(errors::kInvalidFileAccessList);
-      return NULL;
+      return nullptr;
     }
     for (size_t i = 0; i < access_list_value->GetSize(); ++i) {
       std::string access;
@@ -178,37 +178,37 @@ FileBrowserHandler* LoadFileBrowserHandler(
           result->AddFileAccessPermission(access)) {
         *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidFileAccessValue, base::IntToString(i));
-        return NULL;
+        return nullptr;
       }
     }
   }
   if (!result->ValidateFileAccessPermissions()) {
     *error = base::ASCIIToUTF16(errors::kInvalidFileAccessList);
-    return NULL;
+    return nullptr;
   }
 
   // Initialize file filters (mandatory, unless "create" access is specified,
   // in which case is ignored). The list can be empty.
   if (!result->HasCreateAccessPermission()) {
-    const base::ListValue* file_filters = NULL;
+    const base::ListValue* file_filters = nullptr;
     if (!file_browser_handler->HasKey(keys::kFileFilters) ||
         !file_browser_handler->GetList(keys::kFileFilters, &file_filters)) {
       *error = base::ASCIIToUTF16(errors::kInvalidFileFiltersList);
-      return NULL;
+      return nullptr;
     }
     for (size_t i = 0; i < file_filters->GetSize(); ++i) {
       std::string filter;
       if (!file_filters->GetString(i, &filter)) {
         *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidFileFilterValue, base::IntToString(i));
-        return NULL;
+        return nullptr;
       }
       filter = base::ToLowerASCII(filter);
       if (!base::StartsWith(filter, std::string(url::kFileSystemScheme) + ':',
                             base::CompareCase::SENSITIVE)) {
         *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);
-        return NULL;
+        return nullptr;
       }
       // The user inputs filesystem:*; we don't actually implement scheme
       // wildcards in URLPattern, so transform to what will match correctly.
@@ -217,7 +217,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
       if (pattern.Parse(filter) != URLPattern::PARSE_SUCCESS) {
         *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);
-        return NULL;
+        return nullptr;
       }
       std::string path = pattern.path();
       bool allowed = path == "/*" || path == "/*.*" ||
@@ -226,7 +226,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
       if (!allowed) {
         *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);
-        return NULL;
+        return nullptr;
       }
       result->AddPattern(pattern);
     }
@@ -239,12 +239,12 @@ FileBrowserHandler* LoadFileBrowserHandler(
             keys::kPageActionDefaultIcon, &default_icon) ||
         default_icon.empty()) {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-      return NULL;
+      return nullptr;
     }
     result->set_icon_path(default_icon);
   }
 
-  return result.release();
+  return result;
 }
 
 // Loads FileBrowserHandlers from |extension_actions| into a list in |result|.
@@ -259,11 +259,11 @@ bool LoadFileBrowserHandlers(
       *error = base::ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
       return false;
     }
-    std::unique_ptr<FileBrowserHandler> action(
-        LoadFileBrowserHandler(extension_id, dict, error));
-    if (!action.get())
+    std::unique_ptr<FileBrowserHandler> action =
+        LoadFileBrowserHandler(extension_id, dict, error);
+    if (!action)
       return false;  // Failed to parse file browser action definition.
-    result->push_back(linked_ptr<FileBrowserHandler>(action.release()));
+    result->push_back(std::move(action));
   }
   return true;
 }
