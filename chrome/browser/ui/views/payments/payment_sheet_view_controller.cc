@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -35,7 +36,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
@@ -187,15 +187,16 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
   // The shipping address and contact info rows are optional.
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentSheetSummaryRow().release());
+
   if (request()->request_shipping()) {
-    layout->StartRow(1, 0);
+    layout->StartRow(0, 0);
     layout->AddView(CreateShippingRow().release());
   }
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentMethodRow().release());
   if (request()->request_payer_name() || request()->request_payer_email() ||
       request()->request_payer_phone()) {
-    layout->StartRow(1, 0);
+    layout->StartRow(0, 0);
     layout->AddView(CreateContactInfoRow().release());
   }
 

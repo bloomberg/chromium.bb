@@ -11,6 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -64,18 +65,26 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreatePaymentView(
 
   // Note: each view is responsible for its own padding (insets).
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                     1, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
   // |header_view| will be deleted when |view| is.
   layout->AddView(header_view.release());
 
-  layout->StartRow(0, 0);
-  // |content_view| will be deleted when |view| is.
-  layout->AddView(content_view.release());
+  layout->StartRow(1, 0);
+  // |content_view| will go into a views::ScrollView so it needs to be sized now
+  // otherwise it'll be sized to the ScrollView's viewport height, preventing
+  // the scroll bar from ever being shown.
+  content_view->SizeToPreferredSize();
 
-  layout->AddPaddingRow(1, 0);
+  std::unique_ptr<views::ScrollView> scroll =
+      base::MakeUnique<views::ScrollView>();
+  scroll->EnableViewPortLayer();
+  scroll->set_hide_horizontal_scrollbar(true);
+  scroll->SetContents(content_view.release());
+  layout->AddView(scroll.release());
+
   layout->StartRow(0, 0);
   layout->AddView(CreateFooterView().release());
 
