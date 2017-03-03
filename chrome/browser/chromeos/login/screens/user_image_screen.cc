@@ -52,7 +52,6 @@ constexpr const char kContextKeyIsCameraPresent[] = "isCameraPresent";
 constexpr const char kContextKeyProfilePictureDataURL[] =
     "profilePictureDataURL";
 constexpr const char kContextKeySelectedImageURL[] = "selectedImageURL";
-constexpr const char kContextKeyHasGaiaAccount[] = "hasGaiaAccount";
 
 // Time histogram suffix for profile image download.
 const char kProfileDownloadReason[] = "OOBE";
@@ -216,14 +215,8 @@ void UserImageScreen::Show() {
       kContextKeySelectedImageURL,
       default_user_image::GetDefaultImageUrl(selected_image_));
 
-  const user_manager::User* user = GetUser();
-  // Fetch profile image for GAIA accounts.
-  if (user && user->HasGaiaAccount()) {
-    GetContextEditor().SetBoolean(kContextKeyHasGaiaAccount, true);
-    GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
-  } else {
-    GetContextEditor().SetBoolean(kContextKeyHasGaiaAccount, false);
-  }
+  // Start fetching the profile image.
+  GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
 }
 
 void UserImageScreen::Hide() {

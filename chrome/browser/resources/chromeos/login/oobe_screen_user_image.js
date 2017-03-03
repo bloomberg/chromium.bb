@@ -10,7 +10,6 @@ login.createScreen('UserImageScreen', 'user-image', function() {
   var CONTEXT_KEY_IS_CAMERA_PRESENT = 'isCameraPresent';
   var CONTEXT_KEY_SELECTED_IMAGE_URL = 'selectedImageURL';
   var CONTEXT_KEY_PROFILE_PICTURE_DATA_URL = 'profilePictureDataURL';
-  var CONTEXT_KEY_HAS_GAIA_ACCOUNT = 'hasGaiaAccount';
 
   var UserImagesGrid = options.UserImagesGrid;
   var ButtonImages = UserImagesGrid.ButtonImages;
@@ -48,6 +47,26 @@ login.createScreen('UserImageScreen', 'user-image', function() {
           loadTimeData.getString('takePhoto'),
           loadTimeData.getString('photoFromCamera'));
 
+      this.profileImageLoading = true;
+
+      // Profile image data (if present).
+      this.profileImage_ = imageGrid.addItem(
+          ButtonImages.PROFILE_PICTURE,           // Image URL.
+          loadTimeData.getString('profilePhoto'), // Title.
+          undefined,                              // Click handler.
+          0,                                      // Position.
+          function(el) {
+            // Custom decorator for Profile image element.
+            var spinner = el.ownerDocument.createElement('div');
+            spinner.className = 'spinner';
+            var spinnerBg = el.ownerDocument.createElement('div');
+            spinnerBg.className = 'spinner-bg';
+            spinnerBg.appendChild(spinner);
+            el.appendChild(spinnerBg);
+            el.id = 'profile-image';
+          });
+      this.profileImage_.type = 'profile';
+
       $('take-photo').addEventListener(
           'click', this.handleTakePhoto_.bind(this));
       $('discard-photo').addEventListener(
@@ -72,31 +91,6 @@ login.createScreen('UserImageScreen', 'user-image', function() {
       });
       this.context.addObserver(CONTEXT_KEY_SELECTED_IMAGE_URL,
                                this.setSelectedImage_);
-      this.context.addObserver(CONTEXT_KEY_HAS_GAIA_ACCOUNT,
-                               function(hasGaiaAccount) {
-        if (!hasGaiaAccount) {
-          imageGrid.removeItem(self.profileImage_);
-        } else {
-          self.profileImageLoading = true;
-          // Profile image data (if present).
-          self.profileImage_ = imageGrid.addItem(
-              ButtonImages.PROFILE_PICTURE,           // Image URL.
-              loadTimeData.getString('profilePhoto'), // Title.
-              undefined,                              // Click handler.
-              0,                                      // Position.
-              function(el) {
-                // Custom decorator for Profile image element.
-                var spinner = el.ownerDocument.createElement('div');
-                spinner.className = 'spinner';
-                var spinnerBg = el.ownerDocument.createElement('div');
-                spinnerBg.className = 'spinner-bg';
-                spinnerBg.appendChild(spinner);
-                el.appendChild(spinnerBg);
-                el.id = 'profile-image';
-              });
-          self.profileImage_.type = 'profile';
-        }
-      });
       this.context.addObserver(CONTEXT_KEY_PROFILE_PICTURE_DATA_URL,
                                function(url) {
         self.profileImageLoading = false;
