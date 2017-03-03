@@ -459,18 +459,16 @@ VisiblePosition TextControlElement::visiblePositionForIndex(int index) const {
   return createVisiblePosition(it.endPosition(), TextAffinity::Upstream);
 }
 
+// TODO(yosin): We should move |TextControlElement::indexForVisiblePosition()|
+// to "AXLayoutObject.cpp" since this funciton is used only there.
 int TextControlElement::indexForVisiblePosition(
     const VisiblePosition& pos) const {
   Position indexPosition = pos.deepEquivalent().parentAnchoredEquivalent();
   if (enclosingTextControl(indexPosition) != this)
     return 0;
-  DCHECK(indexPosition.document());
-  Range* range = Range::create(*indexPosition.document());
-  range->setStart(innerEditorElement(), 0, ASSERT_NO_EXCEPTION);
-  range->setEnd(indexPosition.computeContainerNode(),
-                indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
-  return TextIterator::rangeLength(range->startPosition(),
-                                   range->endPosition());
+  DCHECK(indexPosition.isConnected()) << indexPosition;
+  return TextIterator::rangeLength(Position(innerEditorElement(), 0),
+                                   indexPosition);
 }
 
 unsigned TextControlElement::selectionStart() const {
