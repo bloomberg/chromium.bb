@@ -12,12 +12,12 @@
 
 <body>
   <script>
-
     var sampleRate = 44100;
     var duration = 0.25;
 
     var context = new OfflineAudioContext(1, sampleRate * duration, sampleRate);
     var referenceBuffer;
+    var audioBufferResult;
 
     var audit = Audit.createTaskRunner();
 
@@ -44,6 +44,7 @@
       createSawtoothWithModulation(context, 'detune', 440, 1200);
 
       context.startRendering().then(function (renderedBuffer) {
+        audioBufferResult = renderedBuffer;
         var actual = renderedBuffer.getChannelData(0);
         var expected = referenceBuffer.getChannelData(0);
 
@@ -53,51 +54,15 @@
           thresholdSNR: 93.31,
           thresholdDiffULP: 1.01,
           thresholdDiffCount: 0,
-          bitDepth: 16
-        });
+          bitDepth: 16});
 
+        var filename = 'audiobuffersource-detune-modulation-actual.wav';
+        if (downloadAudioBuffer(renderedBuffer, filename))
+          Should("Saved reference file", true).summarize(filename, "");
       }).then(done);
     });
 
-    // Task: Create a new reference audio file. See .runTasks() below to run
-    // this task.
-    audit.defineTask('generate-reference', function (done) {
-      if (!window.testRunner) {
-        done();
-        return;
-      }
-
-      // With this setting, the detune will be changing continuously and
-      // repeatedly within the range of [-1200, 1200] around 440Hz, based on the
-      // input from the oscillator.
-      createSawtoothWithModulation(context, 'detune', 440, 1200);
-
-      // |finishAudioTest| will automatically create a reference audio file from
-      // the OAC rendering if the reference file does not exist.
-      context.oncomplete = finishAudioTest;
-      context.startRendering();
-      testRunner.waitUntilDone();
-
-      done();
-    });
-
-    audit.defineTask('finish', function (done) {
-      done();
-    });
-
-    window.onload = function () {
-      audit.runTasks(
-        'load-reference',
-        'generate-verify',
-        'finish'
-      );
-    };
-
-    // Use this task to generate a new reference audio file. Make sure to
-    // comment out .runTasks() above before use this.
-    // audit.runTasks('generate-reference');
-
-    successfullyParsed = true;
+    audit.runTasks();
   </script>
 </body>
 

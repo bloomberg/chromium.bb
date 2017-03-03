@@ -48,6 +48,9 @@
                       {absoluteThreshold: 4.0234e-5});
             }
 
+            var filename = 'webm-decode-actual.wav';
+            if (downloadAudioBuffer(decodedAudio, filename))
+              should(true, "Saved reference file").message(filename, "");
             task.done();
           });
 

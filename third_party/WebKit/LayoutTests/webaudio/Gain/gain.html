@@ -107,6 +107,9 @@ audit.define({
         });
         let snr = 10 * Math.log10(computeSNR(actual, reference));
         should(snr, 'SNR (in dB)').beGreaterThanOrEqualTo(89.088);
+        let filename = 'gain-actual.wav';
+        if (downloadAudioBuffer(buffer, filename))
+          should(true, 'Saved reference file').message(filename, "");
       })
       .then(() => task.done());
   ;

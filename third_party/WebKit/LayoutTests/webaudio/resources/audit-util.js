@@ -109,6 +109,35 @@ function finishAudioTest(event) {
     testRunner.notifyDone();
 }
 
+// Save the given |audioBuffer| to a 16-bit WAV file using the name
+// given by |filename|.  This is intended to be run from a browser.
+// The developer is expected to use the console to run
+// downloadAudioBuffer when necessary to create a new reference file
+// for a test.
+function downloadAudioBuffer(audioBuffer, filename) {
+    // Don't download if testRunner is defined; we're running a layout
+    // test where this won't be useful in general.
+    if (window.testRunner)
+        return false;
+    // Convert the audio buffer to an array containing the WAV file
+    // contents.  Then convert it to a blob that can be saved as a WAV
+    // file.
+    let wavData = createAudioData(audioBuffer);
+    let blob = new Blob([wavData], {type: 'audio/wav'});
+    // Manually create html tags for downloading, and simulate a click
+    // to download the file to the given file name.
+    let a = document.createElement('a');
+    a.style.display = 'none';
+    a.download = filename;
+    let audioURL = window.URL.createObjectURL(blob);
+    let audio = new Audio();
+    audio.src = audioURL;
+    a.href = audioURL;
+    document.body.appendChild(a);
+    a.click();
+    return true;
+}
+
 // Compare two arrays (commonly extracted from buffer.getChannelData()) with
 // constraints:
 //   options.thresholdSNR: Minimum allowed SNR between the actual and expected

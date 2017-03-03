@@ -12,24 +12,11 @@
 //
 // QUESTION: Since the tests compare the actual result with an expected reference file, how are the
 // reference files created?
-// ANSWER: Create an html with the following contents in the webaudio directory.  Then run a layout
-// test on this file.  A new file names "<file>-actual.wav" is created that contains the new result
-// that can be used as the new expected reference file.  Replace the "sine" below with the
-// oscillator type that you want to use.
+// ANSWER: Run the test in a browser.  When the test completes, a
+// generated reference file with the name "<file>-actual.wav" is
+// automatically downloaded.  Use this as the new reference, after
+// carefully inspecting to see if this is correct.
 //
-// <!doctype html>
-// <html>
-// <head>
-// <script src="../resources/testharness.js"></script>
-// <script src="resources/oscillator-testing.js"></script>
-// <script src="resources/audit-util.js"></script>
-// </head>
-// <body>
-// <script>
-//   OscillatorTestingUtils.createNewReference("sine");
-// </script>
-// </body>
-// </html>
 
 OscillatorTestingUtils = (function () {
 
@@ -112,7 +99,7 @@ function loadReferenceAndRunTest(context, oscType, task, should) {
             reference = bufferList[0].getChannelData(0);
             generateExponentialOscillatorSweep(context, oscType);
             context.oncomplete = () => {
-              checkResult(event, should);
+              checkResult(event, should, oscType);
               task.done();
             };
             context.startRendering();
@@ -121,7 +108,7 @@ function loadReferenceAndRunTest(context, oscType, task, should) {
     bufferLoader.load();
 }
 
-function checkResult (event, should) {
+function checkResult (event, should, oscType) {
     let renderedData = event.renderedBuffer.getChannelData(0);
     // Compute signal to noise ratio between the result and the reference. Also keep track
     // of the max difference (and position).
@@ -155,6 +142,10 @@ function checkResult (event, should) {
            "Number of differences between actual and expected result out of "
            + renderedData.length + " frames")
         .beLessThanOrEqualTo(thresholdDiffCount);
+
+    var filename = "oscillator-" + oscType + "-actual.wav";
+    if (downloadAudioBuffer(event.renderedBuffer, filename))
+      should(true, "Saved reference file").message(filename, "");
 }
 
 function setThresholds(thresholds) {
