@@ -178,6 +178,21 @@ class ProfileManagerTest : public testing::Test {
     return profile_manager->GetProfile(path);
   }
 
+  // Helper function to set profile ephemeral at prefs and attributes storage.
+  void SetProfileEphemeral(Profile* profile) {
+    profile->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles, true);
+
+    // Update IsEphemeral in attributes storage, normally it happened via
+    // kForceEphemeralProfiles pref change event routed to
+    // ProfileImpl::UpdateIsEphemeralInStorage().
+    ProfileAttributesEntry* entry;
+    ProfileAttributesStorage& storage =
+        g_browser_process->profile_manager()->GetProfileAttributesStorage();
+    EXPECT_TRUE(
+        storage.GetProfileAttributesWithPath(profile->GetPath(), &entry));
+    entry->SetIsEphemeral(true);
+  }
+
 #if defined(OS_CHROMEOS)
   // Helper function to register an user with id |user_id| and create profile
   // with a correct path.
@@ -878,7 +893,7 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastProfile) {
   TestingProfile* profile =
       static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path));
   ASSERT_TRUE(profile);
-  profile->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles, true);
+  SetProfileEphemeral(profile);
 
   // Here the last used profile is still the "Default" profile.
   Profile* last_used_profile = profile_manager->GetLastUsedProfile();
@@ -918,8 +933,7 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
   TestingProfile* ephemeral_profile1 =
       static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path2));
   ASSERT_TRUE(ephemeral_profile1);
-  ephemeral_profile1->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles,
-                                             true);
+  SetProfileEphemeral(ephemeral_profile1);
 
   // Add second ephemeral profile but don't mark it as such yet.
   TestingProfile* ephemeral_profile2 =
@@ -947,8 +961,7 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
   EXPECT_EQ(ephemeral_profile2, last_opened_profiles[1]);
 
   // Mark the second profile ephemeral.
-  ephemeral_profile2->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles,
-                                             true);
+  SetProfileEphemeral(ephemeral_profile2);
 
   // Simulate a shutdown.
   content::NotificationService::current()->Notify(

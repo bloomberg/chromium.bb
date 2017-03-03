@@ -383,6 +383,11 @@ class ProfileManager : public base::NonThreadSafe,
       const CreateCallback& original_callback,
       Profile* loaded_profile,
       Profile::CreateStatus status);
+
+  // Schedules the forced ephemeral profile at the given path to be deleted on
+  // shutdown. New profiles will not be created.
+  void ScheduleForcedEphemeralProfileForDeletion(
+      const base::FilePath& profile_dir);
 #endif  // !defined(OS_ANDROID)
 
   // Object to cache various information about profiles. Contains information
