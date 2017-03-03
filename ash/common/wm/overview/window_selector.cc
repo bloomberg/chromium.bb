@@ -22,7 +22,6 @@
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -197,7 +196,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   gfx::Transform transform;
   transform.Translate(0, -(*text_filter_bottom));
   WmWindow* text_filter_widget_window =
-      WmLookup::Get()->GetWindowForWidget(widget);
+      WmWindow::Get(widget->GetNativeWindow());
   text_filter_widget_window->SetOpacity(0);
   text_filter_widget_window->SetTransform(transform);
   widget->Show();
@@ -623,7 +622,7 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
 }
 
 WmWindow* WindowSelector::GetTextFilterWidgetWindow() {
-  return WmLookup::Get()->GetWindowForWidget(text_filter_widget_.get());
+  return WmWindow::Get(text_filter_widget_->GetNativeWindow());
 }
 
 void WindowSelector::PositionWindows(bool animate) {

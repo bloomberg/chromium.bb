@@ -7,7 +7,6 @@
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -109,8 +108,7 @@ class ShelfTooltipManager::ShelfTooltipBubble
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* bubble_widget) const override {
     // Place the bubble in the same display as the anchor.
-    WmLookup::Get()
-        ->GetWindowForWidget(anchor_widget())
+    WmWindow::Get(anchor_widget()->GetNativeWindow())
         ->GetRootWindowController()
         ->ConfigureWidgetInitParamsForContainer(
             bubble_widget, kShellWindowId_SettingBubbleContainer, params);
@@ -136,14 +134,13 @@ ShelfTooltipManager::~ShelfTooltipManager() {
   shelf_view_->wm_shelf()->RemoveObserver(this);
   WmWindow* window = nullptr;
   if (shelf_view_->GetWidget())
-    window = WmLookup::Get()->GetWindowForWidget(shelf_view_->GetWidget());
+    window = WmWindow::Get(shelf_view_->GetWidget()->GetNativeWindow());
   if (window)
     window->RemoveLimitedPreTargetHandler(this);
 }
 
 void ShelfTooltipManager::Init() {
-  WmWindow* window =
-      WmLookup::Get()->GetWindowForWidget(shelf_view_->GetWidget());
+  WmWindow* window = WmWindow::Get(shelf_view_->GetWidget()->GetNativeWindow());
   window->AddLimitedPreTargetHandler(this);
 }
 
@@ -166,8 +163,7 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
   timer_.Stop();
   if (bubble_) {
     // Cancel the hiding animation to hide the old bubble immediately.
-    WmLookup::Get()
-        ->GetWindowForWidget(bubble_->GetWidget())
+    WmWindow::Get(bubble_->GetWidget()->GetNativeWindow())
         ->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
     Close();
   }
@@ -191,7 +187,7 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
 
   base::string16 text = shelf_view_->GetTitleForView(view);
   bubble_ = new ShelfTooltipBubble(view, arrow, text);
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(bubble_->GetWidget());
+  WmWindow* window = WmWindow::Get(bubble_->GetWidget()->GetNativeWindow());
   window->SetVisibilityAnimationType(
       ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
   window->SetVisibilityAnimationTransition(::wm::ANIMATE_HIDE);

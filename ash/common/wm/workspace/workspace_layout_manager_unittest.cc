@@ -20,7 +20,6 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -244,19 +243,18 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   params.delegate = new MaximizeDelegateView(gfx::Rect(400, 0, 30, 40));
   ConfigureWidgetInitParamsForDisplay(root_windows[0], &params);
   w1->Init(params);
-  WmLookup* wm_lookup = WmLookup::Get();
   EXPECT_EQ(root_windows[0],
-            wm_lookup->GetWindowForWidget(w1.get())->GetRootWindow());
+            WmWindow::Get(w1->GetNativeWindow())->GetRootWindow());
   w1->Show();
   EXPECT_TRUE(w1->IsMaximized());
   EXPECT_EQ(root_windows[1],
-            wm_lookup->GetWindowForWidget(w1.get())->GetRootWindow());
+            WmWindow::Get(w1->GetNativeWindow())->GetRootWindow());
   EXPECT_EQ(
       gfx::Rect(300, 0, 400, 500 - GetShelfConstant(SHELF_SIZE)).ToString(),
       w1->GetWindowBoundsInScreen().ToString());
   w1->Restore();
   EXPECT_EQ(root_windows[1],
-            wm_lookup->GetWindowForWidget(w1.get())->GetRootWindow());
+            WmWindow::Get(w1->GetNativeWindow())->GetRootWindow());
   EXPECT_EQ("400,0 30x40", w1->GetWindowBoundsInScreen().ToString());
 }
 

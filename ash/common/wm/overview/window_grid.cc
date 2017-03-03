@@ -20,7 +20,6 @@
 #include "ash/common/wm/overview/window_selector_item.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -247,7 +246,7 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       widget, kShellWindowId_WallpaperContainer, &params);
   widget->Init(params);
-  WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(widget);
+  WmWindow* widget_window = WmWindow::Get(widget->GetNativeWindow());
   // Disable the "bounce in" animation when showing the window.
   widget_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   // The background widget should not activate the shelf when passing under it.
@@ -307,8 +306,7 @@ void WindowGrid::Shutdown() {
   if (shield_widget_) {
     // Fade out the shield widget. This animation continues past the lifetime
     // of |this|.
-    WmWindow* widget_window =
-        WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
+    WmWindow* widget_window = WmWindow::Get(shield_widget_->GetNativeWindow());
     ui::ScopedLayerAnimationSettings animation_settings(
         widget_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
@@ -343,8 +341,7 @@ void WindowGrid::PositionWindows(bool animate) {
     return;
   DCHECK(shield_widget_.get());
   // Keep the background shield widget covering the whole screen.
-  WmWindow* widget_window =
-      WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
+  WmWindow* widget_window = WmWindow::Get(shield_widget_->GetNativeWindow());
   const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
   widget_window->SetBounds(bounds);
   gfx::Rect total_bounds =
@@ -560,7 +557,7 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
   if (!selection_widget_ || SelectedWindow() != window)
     return;
   WmWindow* selection_widget_window =
-      WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
+      WmWindow::Get(selection_widget_->GetNativeWindow());
   std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings_label =
       ScopedOverviewAnimationSettingsFactory::Get()
           ->CreateOverviewAnimationSettings(
@@ -652,8 +649,7 @@ void WindowGrid::InitShieldWidget() {
   shield_widget_.reset(
       CreateBackgroundWidget(root_window_, ui::LAYER_SOLID_COLOR, kShieldColor,
                              0, 0, SK_ColorTRANSPARENT, initial_opacity));
-  WmWindow* widget_window =
-      WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
+  WmWindow* widget_window = WmWindow::Get(shield_widget_->GetNativeWindow());
   const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
   widget_window->SetBounds(bounds);
   widget_window->SetName("OverviewModeShield");
@@ -673,8 +669,7 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
       root_window_, ui::LAYER_TEXTURED, kWindowSelectionColor,
       kWindowSelectionBorderThickness, kWindowSelectionRadius,
       kWindowSelectionBorderColor, 0.f));
-  WmWindow* widget_window =
-      WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
+  WmWindow* widget_window = WmWindow::Get(selection_widget_->GetNativeWindow());
   const gfx::Rect target_bounds =
       root_window_->ConvertRectFromScreen(SelectedWindow()->target_bounds());
   gfx::Vector2d fade_out_direction =
@@ -700,7 +695,7 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
     // Animate the old selection widget and then destroy it.
     views::Widget* old_selection = selection_widget_.get();
     WmWindow* old_selection_window =
-        WmLookup::Get()->GetWindowForWidget(old_selection);
+        WmWindow::Get(old_selection->GetNativeWindow());
     gfx::Vector2d fade_out_direction =
         GetSlideVectorForFadeIn(direction, old_selection_window->GetBounds());
 
@@ -744,7 +739,7 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
       root_window_->ConvertRectFromScreen(SelectedWindow()->target_bounds());
   if (animate) {
     WmWindow* selection_widget_window =
-        WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
+        WmWindow::Get(selection_widget_->GetNativeWindow());
     ui::ScopedLayerAnimationSettings animation_settings(
         selection_widget_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(

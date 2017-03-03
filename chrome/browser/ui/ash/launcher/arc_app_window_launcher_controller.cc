@@ -8,7 +8,6 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -688,7 +687,7 @@ void ArcAppWindowLauncherController::UnregisterApp(
 void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
     AppWindow* app_window) {
   ash::WmWindow* window =
-      ash::WmLookup::Get()->GetWindowForWidget(app_window->widget());
+      ash::WmWindow::Get(app_window->widget()->GetNativeWindow());
   if (!window)
     return;
   AppWindowInfo* info = GetAppWindowInfoForTask(app_window->task_id());

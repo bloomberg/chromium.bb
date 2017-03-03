@@ -17,7 +17,6 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/status_area_layout_manager.h"
 #include "ash/common/system/status_area_widget.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -306,7 +305,7 @@ void ShelfWidget::UpdateIconPositionForPanel(WmWindow* panel) {
   if (!shelf_view_)
     return;
 
-  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(this);
+  WmWindow* shelf_window = WmWindow::Get(this->GetNativeWindow());
   shelf_view_->UpdatePanelIconPosition(
       panel->GetIntProperty(WmWindowProperty::SHELF_ID),
       shelf_window->ConvertRectFromScreen(panel->GetBoundsInScreen())

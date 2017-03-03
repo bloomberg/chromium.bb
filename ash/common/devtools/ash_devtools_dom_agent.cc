@@ -4,7 +4,6 @@
 
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
 
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -366,8 +365,7 @@ void AshDevToolsDOMAgent::RemoveWidgetNode(views::Widget* widget,
   DCHECK(widget_to_node_id_it != widget_to_node_id_map_.end());
 
   int node_id = widget_to_node_id_it->second;
-  int parent_id =
-      GetNodeIdFromWindow(WmLookup::Get()->GetWindowForWidget(widget));
+  int parent_id = GetNodeIdFromWindow(WmWindow::Get(widget->GetNativeWindow()));
 
   if (remove_observer)
     widget->RemoveRemovalsObserver(this);
@@ -454,15 +452,15 @@ AshDevToolsDOMAgent::GetNodeWindowAndBounds(int node_id) {
 
   views::Widget* widget = GetWidgetFromNodeId(node_id);
   if (widget) {
-    return std::make_pair(WmLookup::Get()->GetWindowForWidget(widget),
+    return std::make_pair(WmWindow::Get(widget->GetNativeWindow()),
                           widget->GetWindowBoundsInScreen());
   }
 
   views::View* view = GetViewFromNodeId(node_id);
   if (view) {
     gfx::Rect bounds = view->GetBoundsInScreen();
-    return std::make_pair(
-        WmLookup::Get()->GetWindowForWidget(view->GetWidget()), bounds);
+    return std::make_pair(WmWindow::Get(view->GetWidget()->GetNativeWindow()),
+                          bounds);
   }
 
   return std::make_pair(nullptr, gfx::Rect());
@@ -495,8 +493,7 @@ void AshDevToolsDOMAgent::UpdateHighlight(
   root_view->SetBorder(views::CreateSolidBorder(kBorderThickness, border));
   root_view->set_background(
       views::Background::CreateSolidBackground(background));
-  WmLookup::Get()
-      ->GetWindowForWidget(widget_for_highlighting_.get())
+  WmWindow::Get(widget_for_highlighting_->GetNativeWindow())
       ->SetBoundsInScreen(window_and_bounds.second,
                           window_and_bounds.first->GetDisplayNearestWindow());
 }

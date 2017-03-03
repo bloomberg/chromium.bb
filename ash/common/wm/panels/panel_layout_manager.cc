@@ -14,7 +14,6 @@
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -181,7 +180,7 @@ class PanelCalloutWidget : public views::Widget {
   }
 
   void SetAlignment(ShelfAlignment alignment) {
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(this);
+    WmWindow* window = WmWindow::Get(this->GetNativeWindow());
     gfx::Rect callout_bounds = window->GetBounds();
     if (IsHorizontalAlignment(alignment)) {
       callout_bounds.set_width(kArrowWidth);
@@ -217,7 +216,7 @@ class PanelCalloutWidget : public views::Widget {
         this, parent->GetShellWindowId(), &params);
     set_focus_on_creation(false);
     Init(params);
-    WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(this);
+    WmWindow* widget_window = WmWindow::Get(this->GetNativeWindow());
     DCHECK_EQ(widget_window->GetRootWindow(), parent->GetRootWindow());
     views::View* content_view = new views::View;
     background_ = new CalloutWidgetBackground;
@@ -814,7 +813,7 @@ void PanelLayoutManager::UpdateCallouts() {
     WmWindow* panel = iter->window;
     views::Widget* callout_widget = iter->callout_widget;
     WmWindow* callout_widget_window =
-        WmLookup::Get()->GetWindowForWidget(callout_widget);
+        WmWindow::Get(callout_widget->GetNativeWindow());
 
     gfx::Rect current_bounds = panel->GetBoundsInScreen();
     gfx::Rect bounds =

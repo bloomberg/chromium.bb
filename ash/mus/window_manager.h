@@ -52,7 +52,6 @@ class AshTestHelper;
 namespace mus {
 
 class AcceleratorHandler;
-class WmLookupMus;
 class WmTestHelper;
 
 // WindowManager serves as the WindowManagerDelegate and
@@ -188,8 +187,6 @@ class WindowManager : public aura::WindowManagerDelegate,
   std::unique_ptr<ScreenMus> screen_;
 
   bool created_shell_ = false;
-
-  std::unique_ptr<WmLookupMus> lookup_;
 
   std::map<uint16_t, AcceleratorHandler*> accelerator_handlers_;
   uint16_t next_accelerator_namespace_id_ = 0u;

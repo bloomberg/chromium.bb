@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -83,7 +82,7 @@ bool HeaderPainterUtil::CanAnimateActivation(views::Widget* widget) {
   // rate.
   // TODO(sky): Expose a better way to determine this rather than assuming the
   // parent is a toplevel container.
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget);
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
   // TODO(sky): GetParent()->GetLayer() is for mash until animations ported.
   if (!window || !window->GetParent() || !window->GetParent()->GetLayer())
     return true;

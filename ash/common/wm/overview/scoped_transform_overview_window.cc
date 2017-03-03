@@ -11,7 +11,6 @@
 #include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/common/wm/overview/window_selector_item.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -468,9 +467,8 @@ void ScopedTransformOverviewWindow::OnMouseEvent(ui::MouseEvent* event) {
 
 WmWindow* ScopedTransformOverviewWindow::GetOverviewWindowForMinimizedState()
     const {
-  return minimized_widget_
-             ? WmLookup::Get()->GetWindowForWidget(minimized_widget_.get())
-             : nullptr;
+  return minimized_widget_ ? WmWindow::Get(minimized_widget_->GetNativeWindow())
+                           : nullptr;
 }
 
 void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {

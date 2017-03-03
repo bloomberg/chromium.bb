@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -122,7 +121,7 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
   if (GetImage().size() == drag_image_size_) {
     canvas->DrawImageInt(GetImage(), 0, 0);
   } else {
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget_.get());
+    WmWindow* window = WmWindow::Get(widget_->GetNativeWindow());
     const float device_scale =
         window->GetDisplayNearestWindow().device_scale_factor();
     // The drag image already has device scale factor applied. But

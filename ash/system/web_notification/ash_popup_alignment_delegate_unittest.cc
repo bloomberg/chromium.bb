@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -240,8 +239,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
 
   display::Display second_display = GetSecondaryDisplay();
   WmShelf* second_shelf =
-      WmLookup::Get()
-          ->GetRootWindowControllerWithDisplayId(second_display.id())
+      Shell::GetRootWindowControllerWithDisplayId(second_display.id())
           ->GetShelf();
   AshPopupAlignmentDelegate for_2nd_display(second_shelf);
   UpdateWorkArea(&for_2nd_display, second_display);

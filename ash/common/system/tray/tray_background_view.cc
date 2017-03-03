@@ -14,7 +14,6 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_event_filter.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -321,7 +320,7 @@ void TrayBackgroundView::Initialize() {
 // static
 void TrayBackgroundView::InitializeBubbleAnimations(
     views::Widget* bubble_widget) {
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(bubble_widget);
+  WmWindow* window = WmWindow::Get(bubble_widget->GetNativeWindow());
   window->SetVisibilityAnimationType(
       ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   window->SetVisibilityAnimationTransition(::wm::ANIMATE_HIDE);

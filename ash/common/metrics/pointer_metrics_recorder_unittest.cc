@@ -5,7 +5,6 @@
 #include "ash/common/metrics/pointer_metrics_recorder.h"
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -159,7 +158,7 @@ TEST_F(PointerMetricsRecorderTest, DownEventPerDestination) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
       base::TimeTicks());
 
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(target.get());
+  WmWindow* window = WmWindow::Get(target->GetNativeWindow());
   CHECK(window);
 
   window->SetAppType(static_cast<int>(AppType::OTHERS));

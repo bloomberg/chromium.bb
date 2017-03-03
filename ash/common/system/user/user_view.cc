@@ -20,7 +20,6 @@
 #include "ash/common/system/user/login_status.h"
 #include "ash/common/system/user/rounded_image_view.h"
 #include "ash/common/system/user/user_card_view.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -338,8 +337,7 @@ void UserView::ToggleAddUserMenuOption() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.name = "AddUserMenuOption";
-  WmLookup::Get()
-      ->GetWindowForWidget(GetWidget())
+  WmWindow::Get(GetWidget()->GetNativeWindow())
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           add_menu_option_.get(), kShellWindowId_DragImageAndTooltipContainer,

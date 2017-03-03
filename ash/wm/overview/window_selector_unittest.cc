@@ -24,7 +24,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -160,7 +159,7 @@ class WindowSelectorTest : public test::AshTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget->Init(params);
     widget->Show();
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+    WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
     window->SetIntProperty(WmWindowProperty::TOP_VIEW_INSET, kHeaderHeight);
     ParentWindowInPrimaryRootWindow(widget->GetNativeWindow());
     return widget;
@@ -1130,7 +1129,7 @@ TEST_F(WindowSelectorTest, CloseButtonOnMultipleDisplay) {
   params.parent = window1->parent();
   widget->Init(params);
   widget->Show();
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
   window->SetIntProperty(WmWindowProperty::TOP_VIEW_INSET, kHeaderHeight);
 
   ASSERT_EQ(root_windows[1], window1->GetRootWindow());

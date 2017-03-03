@@ -5,7 +5,6 @@
 #include "ash/screen_util.h"
 
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
@@ -114,7 +113,7 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
 
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget);
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
 
   UpdateDisplay("500x400");
   EXPECT_EQ("0,0 500x400", wm::GetDisplayBoundsWithShelf(window).ToString());

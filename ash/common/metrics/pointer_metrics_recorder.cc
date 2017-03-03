@@ -5,7 +5,6 @@
 #include "ash/common/metrics/pointer_metrics_recorder.h"
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shared/app_types.h"
@@ -39,7 +38,7 @@ int GetDestination(views::Widget* target) {
   if (!target)
     return static_cast<int>(AppType::OTHERS);
 
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(target);
+  WmWindow* window = WmWindow::Get(target->GetNativeWindow());
   DCHECK(window);
   return window->GetAppType();
 }

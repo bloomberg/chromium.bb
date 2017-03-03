@@ -5,7 +5,6 @@
 #include "ash/common/system/toast/toast_overlay.h"
 
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -237,8 +236,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   overlay_widget_->SetContentsView(overlay_view_.get());
   overlay_widget_->SetBounds(CalculateOverlayBounds());
 
-  WmWindow* overlay_window =
-      WmLookup::Get()->GetWindowForWidget(overlay_widget_.get());
+  WmWindow* overlay_window = WmWindow::Get(overlay_widget_->GetNativeWindow());
   overlay_window->SetVisibilityAnimationType(
       ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
   overlay_window->SetVisibilityAnimationDuration(

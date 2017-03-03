@@ -15,7 +15,6 @@
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -116,7 +115,7 @@ class DockedBackgroundWidget : public views::Widget,
         this, parent->GetShellWindowId(), &params);
     Init(params);
     SetVisibilityChangedAnimationsEnabled(false);
-    WmWindow* wm_window = WmLookup::Get()->GetWindowForWidget(this);
+    WmWindow* wm_window = WmWindow::Get(this->GetNativeWindow());
     wm_window->SetLockedToRoot(true);
     opaque_background_.SetColor(SK_ColorBLACK);
     opaque_background_.SetBounds(gfx::Rect(GetWindowBoundsInScreen().size()));

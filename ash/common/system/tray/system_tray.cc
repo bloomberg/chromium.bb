@@ -46,7 +46,6 @@
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm_activation_observer.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -643,8 +642,7 @@ void SystemTray::OnBeforeBubbleWidgetInit(
     views::Widget* bubble_widget,
     views::Widget::InitParams* params) const {
   // Place the bubble in the same root window as |anchor_widget|.
-  WmLookup::Get()
-      ->GetWindowForWidget(anchor_widget)
+  WmWindow::Get(anchor_widget->GetNativeWindow())
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           bubble_widget, kShellWindowId_SettingBubbleContainer, params);

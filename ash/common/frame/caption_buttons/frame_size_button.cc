@@ -8,7 +8,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace/phantom_window_controller.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/i18n/rtl.h"
@@ -211,7 +210,7 @@ void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
   }
 
   if (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT) {
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(frame_);
+    WmWindow* window = WmWindow::Get(frame_->GetNativeWindow());
     if (!phantom_window_controller_.get())
       phantom_window_controller_.reset(new PhantomWindowController(window));
     gfx::Rect phantom_bounds_in_parent =
@@ -243,7 +242,7 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
   UpdateSnapType(event);
 
   if (in_snap_mode_ && (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(frame_);
+    WmWindow* window = WmWindow::Get(frame_->GetNativeWindow());
     wm::WindowState* window_state = window->GetWindowState();
     const wm::WMEvent snap_event(snap_type_ == SNAP_LEFT
                                      ? wm::WM_EVENT_SNAP_LEFT

@@ -13,7 +13,6 @@
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -148,7 +147,7 @@ bool WmShelf::IsShelfInitialized() const {
 }
 
 WmWindow* WmShelf::GetWindow() {
-  return WmLookup::Get()->GetWindowForWidget(shelf_widget_.get());
+  return WmWindow::Get(shelf_widget_->GetNativeWindow());
 }
 
 void WmShelf::SetAlignment(ShelfAlignment alignment) {

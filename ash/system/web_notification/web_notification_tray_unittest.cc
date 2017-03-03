@@ -15,7 +15,6 @@
 #include "ash/common/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -354,8 +353,7 @@ TEST_F(WebNotificationTrayTest, PopupAndFullscreen) {
   // Put |widget| into fullscreen without forcing the shelf to hide. Currently,
   // this is used by immersive fullscreen and forces the shelf to be auto
   // hidden.
-  WmLookup::Get()
-      ->GetWindowForWidget(widget.get())
+  WmWindow::Get(widget->GetNativeWindow())
       ->GetWindowState()
       ->set_hide_shelf_when_fullscreen(false);
   widget->SetFullscreen(true);

@@ -5,7 +5,6 @@
 #include "ash/common/wm/maximize_mode/workspace_backdrop_delegate.h"
 
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -64,7 +63,7 @@ WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(WmWindow* container)
   container_->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       background_, container_->GetShellWindowId(), &params);
   background_->Init(params);
-  background_window_ = WmLookup::Get()->GetWindowForWidget(background_);
+  background_window_ = WmWindow::Get(background_->GetNativeWindow());
   // Do not use the animation system. We don't want the bounds animation and
   // opacity needs to get set to |kBackdropOpacity|.
   background_window_->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/common/test/ash_test.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ui/gfx/geometry/rect.h"
@@ -21,7 +20,7 @@ TEST_F(ContainerFinderTest, GetContainerForWindow) {
   // Create a normal widget in the default container.
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(gfx::Rect(1, 2, 3, 4));
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
 
   // The window itself is not a container.
   EXPECT_EQ(kShellWindowId_Invalid, window->GetShellWindowId());

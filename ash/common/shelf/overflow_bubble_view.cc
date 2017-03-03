@@ -8,7 +8,6 @@
 
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -175,8 +174,7 @@ void OverflowBubbleView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* bubble_widget) const {
   // Place the bubble in the same root window as the anchor.
-  WmLookup::Get()
-      ->GetWindowForWidget(anchor_widget())
+  WmWindow::Get(anchor_widget()->GetNativeWindow())
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           bubble_widget, kShellWindowId_ShelfBubbleContainer, params);

@@ -29,7 +29,6 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tri_view.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -155,8 +154,7 @@ class NetworkStateListDetailedView::InfoBubble
                                 views::Widget* widget) const override {
     DCHECK(anchor_widget());
     // Place the bubble in the anchor widget's root window.
-    WmLookup::Get()
-        ->GetWindowForWidget(anchor_widget())
+    WmWindow::Get(anchor_widget()->GetNativeWindow())
         ->GetRootWindowController()
         ->ConfigureWidgetInitParamsForContainer(
             widget, kShellWindowId_SettingBubbleContainer, params);

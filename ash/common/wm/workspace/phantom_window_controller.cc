@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "ash/common/wm/root_window_finder.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
@@ -61,7 +60,7 @@ void AnimateToBounds(views::Widget* widget,
     return;
 
   ui::ScopedLayerAnimationSettings scoped_setter(
-      WmLookup::Get()->GetWindowForWidget(widget)->GetLayer()->GetAnimator());
+      WmWindow::Get(widget->GetNativeWindow())->GetLayer()->GetAnimator());
   scoped_setter.SetTweenType(gfx::Tween::EASE_IN);
   scoped_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -120,7 +119,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   phantom_widget->Init(params);
   phantom_widget->SetVisibilityChangedAnimationsEnabled(false);
   WmWindow* phantom_widget_window =
-      WmLookup::Get()->GetWindowForWidget(phantom_widget.get());
+      WmWindow::Get(phantom_widget->GetNativeWindow());
   phantom_widget_window->SetShellWindowId(kShellWindowId_PhantomWindow);
   phantom_widget->SetBounds(bounds_in_screen);
   // TODO(sky): I suspect this is never true, verify that.

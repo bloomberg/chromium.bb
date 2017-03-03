@@ -4,9 +4,9 @@
 
 #include "ash/common/wm/root_window_finder.h"
 
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
@@ -20,7 +20,7 @@ WmWindow* GetRootWindowAt(const gfx::Point& point) {
       display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   DCHECK(display.is_valid());
   RootWindowController* root_window_controller =
-      WmLookup::Get()->GetRootWindowControllerWithDisplayId(display.id());
+      Shell::GetRootWindowControllerWithDisplayId(display.id());
   return root_window_controller ? root_window_controller->GetWindow() : nullptr;
 }
 
@@ -28,7 +28,7 @@ WmWindow* GetRootWindowMatching(const gfx::Rect& rect) {
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayMatching(rect);
   RootWindowController* root_window_controller =
-      WmLookup::Get()->GetRootWindowControllerWithDisplayId(display.id());
+      Shell::GetRootWindowControllerWithDisplayId(display.id());
   return root_window_controller ? root_window_controller->GetWindow() : nullptr;
 }
 

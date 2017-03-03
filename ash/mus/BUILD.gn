@@ -22,8 +22,6 @@ source_set("lib") {
     "accessibility_delegate_mus.h",
     "bridge/immersive_handler_factory_mus.cc",
     "bridge/immersive_handler_factory_mus.h",
-    "bridge/wm_lookup_mus.cc",
-    "bridge/wm_lookup_mus.h",
     "bridge/wm_shell_mus.cc",
     "bridge/wm_shell_mus.h",
     "bridge/workspace_event_handler_mus.cc",

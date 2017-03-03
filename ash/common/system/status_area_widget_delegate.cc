@@ -9,7 +9,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
@@ -78,7 +77,7 @@ const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
 void StatusAreaWidgetDelegate::OnGestureEvent(ui::GestureEvent* event) {
   views::Widget* target_widget =
       static_cast<views::View*>(event->target())->GetWidget();
-  WmWindow* target_window = WmLookup::Get()->GetWindowForWidget(target_widget);
+  WmWindow* target_window = WmWindow::Get(target_widget->GetNativeWindow());
   WmShelf* shelf = target_window->GetRootWindowController()->GetShelf();
   if (shelf->ProcessGestureEvent(*event))
     event->StopPropagation();

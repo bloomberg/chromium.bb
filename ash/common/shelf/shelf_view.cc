@@ -23,7 +23,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wm/root_window_finder.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -450,7 +449,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   DCHECK_LT(-1, last_pressed_index_);
 
   // Place new windows on the same display as the button.
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(sender->GetWidget());
+  WmWindow* window = WmWindow::Get(sender->GetWidget()->GetNativeWindow());
   scoped_root_window_for_new_windows_.reset(
       new ScopedRootWindowForNewWindows(window->GetRootWindow()));
 
@@ -529,8 +528,7 @@ void ShelfView::CreateDragIconProxy(
     float scale_factor) {
   drag_replaced_view_ = replaced_view;
   WmWindow* root_window =
-      WmLookup::Get()
-          ->GetWindowForWidget(drag_replaced_view_->GetWidget())
+      WmWindow::Get(drag_replaced_view_->GetWidget()->GetNativeWindow())
           ->GetRootWindow();
   drag_image_.reset(new DragImageView(
       root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE));
@@ -1082,8 +1080,7 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       delegate_->GetAppIDForShelfID(model_->items()[current_index].id);
 
   gfx::Point screen_location =
-      WmLookup::Get()
-          ->GetWindowForWidget(GetWidget())
+      WmWindow::Get(GetWidget()->GetNativeWindow())
           ->GetRootWindow()
           ->ConvertPointToScreen(event.root_location());
 
@@ -1672,7 +1669,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
       new views::MenuRunner(menu_model_adapter_->CreateMenu(), run_types));
 
   // Place new windows on the same display as the button that spawned the menu.
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(source->GetWidget());
+  WmWindow* window = WmWindow::Get(source->GetWidget()->GetNativeWindow());
   scoped_root_window_for_new_windows_.reset(
       new ScopedRootWindowForNewWindows(window->GetRootWindow()));
 

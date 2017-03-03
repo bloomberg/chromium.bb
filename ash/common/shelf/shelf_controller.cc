@@ -6,10 +6,10 @@
 
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -115,7 +115,7 @@ gfx::ImageSkia GetShelfIconFromBitmap(const SkBitmap& bitmap) {
 WmShelf* GetShelfForDisplay(int64_t display_id) {
   // The controller may be null for invalid ids or for displays being removed.
   RootWindowController* root_window_controller =
-      WmLookup::Get()->GetRootWindowControllerWithDisplayId(display_id);
+      Shell::GetRootWindowControllerWithDisplayId(display_id);
   return root_window_controller ? root_window_controller->GetShelf() : nullptr;
 }
 

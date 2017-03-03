@@ -13,7 +13,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -191,7 +190,7 @@ CustomFrameViewAsh::CustomFrameViewAsh(
       header_view_(new HeaderView(frame)),
       immersive_delegate_(immersive_delegate ? immersive_delegate
                                              : header_view_) {
-  WmWindow* frame_window = WmLookup::Get()->GetWindowForWidget(frame);
+  WmWindow* frame_window = WmWindow::Get(frame->GetNativeWindow());
   frame_window->InstallResizeHandleWindowTargeter(nullptr);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
@@ -220,7 +219,7 @@ void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
 void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
   header_view_->SetFrameColors(active_frame_color, inactive_frame_color);
-  WmWindow* frame_window = WmLookup::Get()->GetWindowForWidget(frame_);
+  WmWindow* frame_window = WmWindow::Get(frame_->GetNativeWindow());
   frame_window->SetColorProperty(WmWindowProperty::TOP_VIEW_COLOR,
                                  header_view_->GetInactiveFrameColor());
 }
@@ -283,7 +282,7 @@ gfx::Size CustomFrameViewAsh::GetPreferredSize() const {
 
 void CustomFrameViewAsh::Layout() {
   views::NonClientFrameView::Layout();
-  WmWindow* frame_window = WmLookup::Get()->GetWindowForWidget(frame_);
+  WmWindow* frame_window = WmWindow::Get(frame_->GetNativeWindow());
   frame_window->SetIntProperty(WmWindowProperty::TOP_VIEW_INSET,
                                NonClientTopBorderHeight());
 }

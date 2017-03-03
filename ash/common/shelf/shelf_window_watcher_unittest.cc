@@ -9,7 +9,6 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -57,11 +56,11 @@ TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
   // Adding windows with valid ShelfItemType properties adds shelf items.
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  CreateShelfItem(WmLookup::Get()->GetWindowForWidget(widget1.get()));
+  CreateShelfItem(WmWindow::Get(widget1->GetNativeWindow()));
   EXPECT_EQ(2, model_->item_count());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  CreateShelfItem(WmLookup::Get()->GetWindowForWidget(widget2.get()));
+  CreateShelfItem(WmWindow::Get(widget2->GetNativeWindow()));
   EXPECT_EQ(3, model_->item_count());
 
   // Each ShelfItem is removed when the associated window is destroyed.
@@ -82,10 +81,10 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
   // Creating windows without a valid ShelfItemType does not add items.
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window1 = WmLookup::Get()->GetWindowForWidget(widget1.get());
+  WmWindow* window1 = WmWindow::Get(widget1->GetNativeWindow());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window2 = WmLookup::Get()->GetWindowForWidget(widget2.get());
+  WmWindow* window2 = WmWindow::Get(widget2->GetNativeWindow());
   EXPECT_EQ(1, model_->item_count());
 
   // Create a ShelfItem for the first window.
@@ -121,10 +120,10 @@ TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
   EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window1 = WmLookup::Get()->GetWindowForWidget(widget1.get());
+  WmWindow* window1 = WmWindow::Get(widget1->GetNativeWindow());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window2 = WmLookup::Get()->GetWindowForWidget(widget2.get());
+  WmWindow* window2 = WmWindow::Get(widget2->GetNativeWindow());
 
   // Create a ShelfItem for the first window.
   ShelfID id_w1 = CreateShelfItem(window1);
@@ -160,7 +159,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
 
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
 
   // Create a ShelfItem for |window|.
   ShelfID id = CreateShelfItem(window);
@@ -188,7 +187,7 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
 
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
   wm::WindowState* window_state = window->GetWindowState();
 
   // Create a ShelfItem for |window|.
@@ -229,7 +228,7 @@ TEST_F(ShelfWindowWatcherTest, DockWindow) {
 
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
 
   // Create a ShelfItem for |window|.
   ShelfID id = CreateShelfItem(window);
@@ -269,7 +268,7 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
 
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
 
   // Create a ShelfItem for |window|.
   ShelfID id = CreateShelfItem(window);
@@ -302,12 +301,12 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   // Adding windows with valid ShelfItemType properties adds shelf items.
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_PanelContainer, gfx::Rect());
-  WmWindow* window1 = WmLookup::Get()->GetWindowForWidget(widget1.get());
+  WmWindow* window1 = WmWindow::Get(widget1->GetNativeWindow());
   window1->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP_PANEL);
   EXPECT_EQ(2, model_->item_count());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window2 = WmLookup::Get()->GetWindowForWidget(widget2.get());
+  WmWindow* window2 = WmWindow::Get(widget2->GetNativeWindow());
   window2->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP_PANEL);
   EXPECT_EQ(3, model_->item_count());
 
@@ -322,7 +321,7 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
           &panel_widget, kShellWindowId_PanelContainer, &panel_params);
   panel_widget.Init(panel_params);
   panel_widget.Show();
-  WmWindow* panel_window = WmLookup::Get()->GetWindowForWidget(&panel_widget);
+  WmWindow* panel_window = WmWindow::Get(panel_widget.GetNativeWindow());
   panel_window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE,
                                TYPE_APP_PANEL);
   EXPECT_EQ(4, model_->item_count());
@@ -375,7 +374,7 @@ TEST_F(ShelfWindowWatcherSessionStartTest, PreExistingWindow) {
   // Construct a window that should get a shelf item once the session starts.
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
   ShelfWindowWatcherTest::CreateShelfItem(window);
   EXPECT_EQ(1, model->item_count());
 

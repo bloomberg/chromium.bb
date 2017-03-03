@@ -7,7 +7,6 @@
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/system/status_area_widget.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "base/auto_reset.h"
 
@@ -33,9 +32,8 @@ void StatusAreaLayoutManager::SetChildBounds(
     const gfx::Rect& requested_bounds) {
   // Only need to have the shelf do a layout if the child changing is the status
   // area and the shelf isn't in the process of doing a layout.
-  if (child !=
-          WmLookup::Get()->GetWindowForWidget(
-              shelf_widget_->status_area_widget()) ||
+  if (child != WmWindow::Get(
+                   shelf_widget_->status_area_widget()->GetNativeWindow()) ||
       in_layout_) {
     wm::WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
     return;

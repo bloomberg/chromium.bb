@@ -20,7 +20,6 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -191,7 +190,7 @@ bool ShelfLayoutManager::IsVisible() const {
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
   const int shelf_size = GetShelfConstant(SHELF_SIZE);
-  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
   gfx::Rect rect(wm::GetDisplayBoundsInParent(shelf_window));
   return SelectValueForShelfAlignment(
       gfx::Rect(rect.x(), rect.bottom() - shelf_size, rect.width(), shelf_size),
@@ -234,7 +233,7 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 
 void ShelfLayoutManager::UpdateVisibilityState() {
   // Bail out early before the shelf is initialized or after it is destroyed.
-  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
   if (in_shutdown_ || !wm_shelf_->IsShelfInitialized() || !shelf_window)
     return;
   if (state_.IsScreenLocked() || state_.IsAddingSecondaryUser()) {
@@ -387,9 +386,9 @@ void ShelfLayoutManager::SetChildBounds(WmWindow* child,
   // We may contain other widgets (such as frame maximize bubble) but they don't
   // effect the layout in anyway.
   if (!updating_bounds_ &&
-      ((WmLookup::Get()->GetWindowForWidget(shelf_widget_) == child) ||
-       (WmLookup::Get()->GetWindowForWidget(
-            shelf_widget_->status_area_widget()) == child))) {
+      ((WmWindow::Get(shelf_widget_->GetNativeWindow()) == child) ||
+       (WmWindow::Get(shelf_widget_->status_area_widget()->GetNativeWindow()) ==
+        child))) {
     LayoutShelf();
   }
 }
@@ -428,7 +427,7 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // window.
   if (WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+    WmWindow* window = WmWindow::Get(shelf_widget_->GetNativeWindow());
     WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets());
   }
 }
@@ -474,7 +473,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
 
-  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
   RootWindowController* controller = shelf_window->GetRootWindowController();
   state.window_state = controller ? controller->GetWorkspaceWindowState()
                                   : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
@@ -581,7 +580,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       status_animation_setter.AddObserver(observer);
 
     GetLayer(shelf_widget_)->SetOpacity(target_bounds.opacity);
-    WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+    WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
     shelf_widget_->SetBounds(shelf_window->GetParent()->ConvertRectToScreen(
         target_bounds.shelf_bounds_in_root));
 
@@ -600,8 +599,8 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // this can be simplified.
     gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
     status_bounds.Offset(target_bounds.shelf_bounds_in_root.OffsetFromOrigin());
-    WmWindow* status_window = WmLookup::Get()->GetWindowForWidget(
-        shelf_widget_->status_area_widget());
+    WmWindow* status_window =
+        WmWindow::Get(shelf_widget_->status_area_widget()->GetNativeWindow());
     shelf_widget_->status_area_widget()->SetBounds(
         status_window->GetParent()->ConvertRectToScreen(status_bounds));
 
@@ -653,7 +652,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
     shelf_size = 0;
   }
 
-  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
   gfx::Rect available_bounds = wm::GetDisplayBoundsWithShelf(shelf_window);
   available_bounds.Inset(0, chromevox_panel_height_, 0, 0);
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
@@ -747,7 +746,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   bool horizontal = wm_shelf_->IsHorizontalAlignment();
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmWindow* window = WmWindow::Get(shelf_widget_->GetNativeWindow());
   gfx::Rect available_bounds = wm::GetDisplayBoundsWithShelf(window);
   int resistance_free_region = 0;
 
@@ -879,10 +878,10 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
        shelf_widget_->status_area_widget()->IsActive()))
     return SHELF_AUTO_HIDE_SHOWN;
 
-  const int64_t shelf_display_id = WmLookup::Get()
-                                       ->GetWindowForWidget(shelf_widget_)
-                                       ->GetDisplayNearestWindow()
-                                       .id();
+  const int64_t shelf_display_id =
+      WmWindow::Get(shelf_widget_->GetNativeWindow())
+          ->GetDisplayNearestWindow()
+          .id();
   const std::vector<WmWindow*> windows =
       WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
   // Process the window list and check if there are any visible windows.
@@ -955,9 +954,9 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 bool ShelfLayoutManager::IsShelfWindow(WmWindow* window) {
   if (!window)
     return false;
-  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
   WmWindow* status_window =
-      WmLookup::Get()->GetWindowForWidget(shelf_widget_->status_area_widget());
+      WmWindow::Get(shelf_widget_->status_area_widget()->GetNativeWindow());
   return (shelf_window && shelf_window->Contains(window)) ||
          (status_window && status_window->Contains(window));
 }
@@ -1042,7 +1041,7 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) {
 
 bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
   const WmWindow* fullscreen_window = wm::GetWindowForFullscreenMode(
-      WmLookup::Get()->GetWindowForWidget(shelf_widget_));
+      WmWindow::Get(shelf_widget_->GetNativeWindow()));
   return fullscreen_window &&
          fullscreen_window->GetWindowState()->hide_shelf_when_fullscreen();
 }

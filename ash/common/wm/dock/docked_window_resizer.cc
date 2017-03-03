@@ -9,11 +9,11 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace/magnetism_matcher.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display.h"
@@ -30,9 +30,7 @@ DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
     return nullptr;
 
   return DockedWindowLayoutManager::Get(
-      WmLookup::Get()
-          ->GetRootWindowControllerWithDisplayId(display.id())
-          ->GetWindow());
+      Shell::GetRootWindowControllerWithDisplayId(display.id())->GetWindow());
 }
 
 }  // namespace

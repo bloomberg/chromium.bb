@@ -229,6 +229,15 @@ Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
 }
 
 // static
+RootWindowController* Shell::GetRootWindowControllerWithDisplayId(
+    int64_t display_id) {
+  CHECK(HasInstance());
+  WmWindow* root_window =
+      instance_->wm_shell_->GetRootWindowForDisplayId(display_id);
+  return root_window ? root_window->GetRootWindowController() : nullptr;
+}
+
+// static
 aura::Window* Shell::GetPrimaryRootWindow() {
   CHECK(HasInstance());
   return instance_->wm_shell_->GetPrimaryRootWindow()->aura_window();

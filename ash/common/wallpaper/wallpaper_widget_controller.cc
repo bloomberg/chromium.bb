@@ -6,7 +6,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
@@ -64,7 +63,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 
 WallpaperWidgetController::WallpaperWidgetController(views::Widget* widget)
     : widget_(widget),
-      widget_parent_(WmLookup::Get()->GetWindowForWidget(widget)->GetParent()) {
+      widget_parent_(WmWindow::Get(widget->GetNativeWindow())->GetParent()) {
   DCHECK(widget_);
   widget_->AddObserver(this);
   widget_parent_->aura_window()->AddObserver(this);
@@ -90,9 +89,9 @@ void WallpaperWidgetController::SetBounds(const gfx::Rect& bounds) {
 bool WallpaperWidgetController::Reparent(WmWindow* root_window, int container) {
   if (widget_) {
     widget_parent_->aura_window()->RemoveObserver(this);
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget_);
+    WmWindow* window = WmWindow::Get(widget_->GetNativeWindow());
     root_window->GetChildByShellWindowId(container)->AddChild(window);
-    widget_parent_ = WmLookup::Get()->GetWindowForWidget(widget_)->GetParent();
+    widget_parent_ = WmWindow::Get(widget_->GetNativeWindow())->GetParent();
     widget_parent_->aura_window()->AddObserver(this);
     return true;
   }

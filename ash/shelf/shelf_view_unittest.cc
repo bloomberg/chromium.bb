@@ -24,7 +24,6 @@
 #include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/test/test_shelf_item_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -182,7 +181,7 @@ TEST_F(WmShelfObserverIconTest, AddRemove) {
   widget.Init(params);
 
   TestShelfDelegate::instance()->AddShelfItem(
-      WmLookup::Get()->GetWindowForWidget(&widget));
+      WmWindow::Get(widget.GetNativeWindow()));
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
@@ -214,7 +213,7 @@ TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   widget.Init(params);
 
   TestShelfDelegate::instance()->AddShelfItem(
-      WmLookup::Get()->GetWindowForWidget(&widget));
+      WmWindow::Get(widget.GetNativeWindow()));
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());

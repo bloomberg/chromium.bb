@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/common/wm/overview/window_selector_delegate.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -125,7 +124,7 @@ TEST_F(CleanupAnimationObserverTest, CreateAnimateComplete) {
   TestWindowSelectorDelegate delegate;
   std::unique_ptr<views::Widget> widget(
       CreateWindowWidget(gfx::Rect(0, 0, 40, 40)));
-  WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* widget_window = WmWindow::Get(widget->GetNativeWindow());
   {
     ui::ScopedLayerAnimationSettings animation_settings(
         widget_window->GetLayer()->GetAnimator());
@@ -156,7 +155,7 @@ TEST_F(CleanupAnimationObserverTest, CreateAnimateShutdown) {
   TestWindowSelectorDelegate delegate;
   std::unique_ptr<views::Widget> widget(
       CreateWindowWidget(gfx::Rect(0, 0, 40, 40)));
-  WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* widget_window = WmWindow::Get(widget->GetNativeWindow());
   {
     // Normal animations for tests have ZERO_DURATION, make sure we are actually
     // animating the movement.

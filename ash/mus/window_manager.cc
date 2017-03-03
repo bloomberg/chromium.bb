@@ -14,7 +14,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
-#include "ash/mus/bridge/wm_lookup_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/move_event_handler.h"
 #include "ash/mus/non_client_frame_controller.h"
@@ -119,8 +118,6 @@ void WindowManager::Init(
       NonClientFrameController::GetMaxTitleBarButtonWidth();
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
-
-  lookup_.reset(new WmLookupMus);
 
   // Notify PointerWatcherEventRouter and CaptureSynchronizer that the capture
   // client has been set.
@@ -259,8 +256,6 @@ void WindowManager::Shutdown() {
       capture_client);
 
   Shell::DeleteInstance();
-
-  lookup_.reset();
 
   pointer_watcher_event_router_.reset();
 

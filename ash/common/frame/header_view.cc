@@ -7,8 +7,8 @@
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/default_header_painter.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
@@ -65,7 +65,7 @@ int HeaderView::GetMinimumWidth() const {
 
 void HeaderView::UpdateAvatarIcon() {
   SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(target_widget_);
+  WmWindow* window = WmWindow::Get(target_widget_->GetNativeWindow());
   bool show = delegate->ShouldShowAvatar(window);
   if (!show) {
     if (!avatar_icon_)

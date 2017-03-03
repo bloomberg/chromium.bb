@@ -5,7 +5,6 @@
 #include "ash/common/devtools/ash_devtools_css_agent.h"
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
 #include "ash/common/test/ash_test.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
@@ -299,7 +298,7 @@ class AshDevToolsTest : public AshTest {
 TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* parent_window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
   parent_window->SetName("parent_window");
   std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
   WmWindow* child_window = child_owner->window();
@@ -329,7 +328,7 @@ TEST_F(AshDevToolsTest, GetDocumentNativeWidgetOwnsWidget) {
   views::internal::NativeWidgetPrivate* native_widget_private =
       CreateTestNativeWidget();
   views::Widget* widget = native_widget_private->GetWidget();
-  WmWindow* parent_window = WmLookup::Get()->GetWindowForWidget(widget);
+  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
@@ -453,7 +452,7 @@ TEST_F(AshDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
 TEST_F(AshDevToolsTest, ViewInserted) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
   widget->Show();
 
   // Initialize DOMAgent
@@ -480,7 +479,7 @@ TEST_F(AshDevToolsTest, ViewRemoved) {
   // Need to store |view| in unique_ptr because it is removed from the widget
   // and needs to be destroyed independently
   std::unique_ptr<views::View> child_view = base::MakeUnique<views::View>();
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
   widget->Show();
   views::View* root_view = widget->GetRootView();
   root_view->AddChildView(child_view.get());
@@ -507,7 +506,7 @@ TEST_F(AshDevToolsTest, ViewRemoved) {
 TEST_F(AshDevToolsTest, ViewRearranged) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
   widget->Show();
   views::View* root_view = widget->GetRootView();
   views::View* parent_view = new views::View;
@@ -545,7 +544,7 @@ TEST_F(AshDevToolsTest, ViewRearranged) {
 TEST_F(AshDevToolsTest, ViewRearrangedRemovedAndInserted) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
   widget->Show();
   views::View* root_view = widget->GetRootView();
   views::View* parent_view = new views::View;
@@ -584,7 +583,7 @@ TEST_F(AshDevToolsTest, ViewRearrangedRemovedAndInserted) {
 TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(0, 0, 400, 400)));
-  WmWindow* parent_window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
   std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
   WmWindow* window = child_owner->window();
   views::View* root_view = widget->GetRootView();
@@ -644,7 +643,7 @@ TEST_F(AshDevToolsTest, MultipleDisplayHighlight) {
 TEST_F(AshDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* parent_window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
   std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
   WmWindow* window = child_owner->window();
   gfx::Rect window_bounds(2, 2, 3, 3);
@@ -671,7 +670,7 @@ TEST_F(AshDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
 TEST_F(AshDevToolsTest, WindowWidgetViewStyleSheetChanged) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* widget_window = WmWindow::Get(widget->GetNativeWindow());
   std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(widget_window));
   WmWindow* child = child_owner->window();
 
@@ -703,7 +702,7 @@ TEST_F(AshDevToolsTest, WindowWidgetViewStyleSheetChanged) {
 TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(0, 0, 400, 400)));
-  WmWindow* parent_window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
   std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
   WmWindow* window = child_owner->window();
   views::View* root_view = widget->GetRootView();

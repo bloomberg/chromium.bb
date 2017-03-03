@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/aura/wm_lookup_aura.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
@@ -93,7 +92,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;
 
-  WmLookupAura wm_lookup_;
   std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter_;
 
   bool added_display_observer_ = false;

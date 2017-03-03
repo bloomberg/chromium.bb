@@ -11,7 +11,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -78,7 +77,7 @@ AppListPresenterDelegate::~AppListPresenterDelegate() {
   if (keyboard_controller)
     keyboard_controller->RemoveObserver(this);
   Shell::GetInstance()->RemovePreTargetHandler(this);
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(view_->GetWidget());
+  WmWindow* window = WmWindow::Get(view_->GetWidget()->GetNativeWindow());
   window->GetRootWindowController()->GetShelf()->RemoveObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
 }
@@ -138,7 +137,7 @@ void AppListPresenterDelegate::OnDismissed() {
   is_visible_ = false;
 
   // Update applist button status when app list visibility is changed.
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(view_->GetWidget());
+  WmWindow* window = WmWindow::Get(view_->GetWidget()->GetNativeWindow());
   AppListButton* app_list_button =
       WmShelf::ForWindow(window)->shelf_widget()->GetAppListButton();
   if (app_list_button)
@@ -151,7 +150,7 @@ void AppListPresenterDelegate::UpdateBounds() {
 
   view_->UpdateBounds();
   view_->SetAnchorPoint(GetCenterOfDisplayForWindow(
-      WmLookup::Get()->GetWindowForWidget(view_->GetWidget()),
+      WmWindow::Get(view_->GetWidget()->GetNativeWindow()),
       GetMinimumBoundsHeightForAppList(view_)));
 }
 

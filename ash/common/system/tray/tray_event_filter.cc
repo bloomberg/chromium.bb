@@ -7,7 +7,6 @@
 #include "ash/common/system/tray/tray_background_view.h"
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "ash/common/wm/container_finder.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -47,7 +46,7 @@ void TrayEventFilter::OnPointerEventObserved(
 void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
                                           views::Widget* target) {
   if (target) {
-    WmWindow* window = WmLookup::Get()->GetWindowForWidget(target);
+    WmWindow* window = WmWindow::Get(target->GetNativeWindow());
     int container_id = wm::GetContainerForWindow(window)->GetShellWindowId();
     // Don't process events that occurred inside an embedded menu, for example
     // the right-click menu in a popup notification.

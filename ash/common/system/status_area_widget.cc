@@ -16,7 +16,6 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -195,7 +194,7 @@ void StatusAreaWidget::AddSystemTray() {
 void StatusAreaWidget::AddWebNotificationTray() {
   DCHECK(system_tray_);
   web_notification_tray_ = new WebNotificationTray(
-      wm_shelf_, WmLookup::Get()->GetWindowForWidget(this), system_tray_);
+      wm_shelf_, WmWindow::Get(this->GetNativeWindow()), system_tray_);
   status_area_widget_delegate_->AddTray(web_notification_tray_);
 }
 
@@ -206,7 +205,7 @@ void StatusAreaWidget::AddLogoutButtonTray() {
 
 void StatusAreaWidget::AddPaletteTray() {
   const display::Display& display =
-      WmLookup::Get()->GetWindowForWidget(this)->GetDisplayNearestWindow();
+      WmWindow::Get(this->GetNativeWindow())->GetDisplayNearestWindow();
 
   // Create the palette only on the internal display, where the stylus is
   // available. We also create a palette on every display if requested from the

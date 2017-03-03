@@ -162,6 +162,11 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // TODO(oshima): move this to |RootWindowController|
   static RootWindowController* GetPrimaryRootWindowController();
 
+  // Returns the RootWindowController for the given display id. If there
+  // is no display for |display_id|, null is returned.
+  static RootWindowController* GetRootWindowControllerWithDisplayId(
+      int64_t display_id);
+
   // Returns all root window controllers.
   // TODO(oshima): move this to |RootWindowController|
   static RootWindowControllerList GetAllRootWindowControllers();

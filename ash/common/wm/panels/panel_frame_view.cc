@@ -7,7 +7,6 @@
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/default_header_painter.h"
 #include "ash/common/frame/frame_border_hit_test.h"
-#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -64,7 +63,7 @@ void PanelFrameView::InitHeaderPainter() {
 }
 
 WmWindow* PanelFrameView::GetWidgetWindow() {
-  return WmLookup::Get()->GetWindowForWidget(frame_);
+  return WmWindow::Get(frame_->GetNativeWindow());
 }
 
 int PanelFrameView::NonClientTopBorderHeight() const {
