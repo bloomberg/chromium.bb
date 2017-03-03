@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/capturefromelement/html_audio_element_capturer_source.h"
+#include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_parameters.h"

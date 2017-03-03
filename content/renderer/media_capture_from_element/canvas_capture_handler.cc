@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/capturefromelement/canvas_capture_handler.h"
+#include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
 
 #include <utility>
 
