@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_discoverer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -49,7 +50,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleRemoveCupsPrinter(const base::ListValue* args);
 
   void HandleAddCupsPrinter(const base::ListValue* args);
-  void OnAddedPrinter(std::unique_ptr<Printer> printer, int32_t result);
+  void OnAddedPrinter(std::unique_ptr<Printer> printer,
+                      chromeos::SetupResult result);
   void OnAddPrinterError();
 
   // Get a list of all manufacturers for which we have at least one model of
@@ -104,6 +106,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   std::unique_ptr<chromeos::PrinterDiscoverer> printer_discoverer_;
   scoped_refptr<chromeos::printing::PpdProvider> ppd_provider_;
+  std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;
 
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;

@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/fake_printer_discoverer.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
+#include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,6 +85,7 @@ CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
       profile_(Profile::FromWebUI(webui)),
       weak_factory_(this) {
   ppd_provider_ = printing::CreateProvider(profile_);
+  printer_configurer_ = chromeos::PrinterConfigurer::Create(profile_);
 }
 
 CupsPrintersHandler::~CupsPrintersHandler() {}
@@ -211,6 +213,8 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   printer->set_manufacturer(printer_manufacturer);
   printer->set_model(printer_model);
   printer->set_uri(printer_uri);
+
+  // Verify a valid ppd path is present.
   if (!printer_ppd_path.empty()) {
     GURL tmp = net::FilePathToFileURL(base::FilePath(printer_ppd_path));
     if (!tmp.is_valid()) {
@@ -229,34 +233,19 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     }
   }
 
-  if (printer->IsIppEverywhere()) {
-    std::string printer_id = printer->id();
-    std::string printer_uri = printer->uri();
-
-    chromeos::DebugDaemonClient* client =
-        chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-
-    client->CupsAddAutoConfiguredPrinter(
-        printer_id, printer_uri,
-        base::Bind(&CupsPrintersHandler::OnAddedPrinter,
-                   weak_factory_.GetWeakPtr(), base::Passed(&printer)),
-        base::Bind(&CupsPrintersHandler::OnAddPrinterError,
-                   weak_factory_.GetWeakPtr()));
-  } else {
-    // We need to save a reference to members of printer since we transfer
-    // ownership in the bind call.
-    const Printer::PpdReference ppd_reference = printer->ppd_reference();
-    ppd_provider_->ResolvePpd(
-        ppd_reference,
-        base::Bind(&CupsPrintersHandler::ResolvePpdDone,
-                   weak_factory_.GetWeakPtr(), base::Passed(&printer)));
-  }
+  // Copy the printer for the configurer.  Ownership needs to be transfered to
+  // the receiver of the callback.
+  const Printer printer_copy = *printer;
+  printer_configurer_->SetUpPrinter(
+      printer_copy,
+      base::Bind(&CupsPrintersHandler::OnAddedPrinter,
+                 weak_factory_.GetWeakPtr(), base::Passed(&printer)));
 }
 
 void CupsPrintersHandler::OnAddedPrinter(std::unique_ptr<Printer> printer,
-                                         int32_t result_code) {
+                                         chromeos::SetupResult result_code) {
   std::string printer_name = printer->display_name();
-  bool success = (result_code == 0);
+  bool success = (result_code == chromeos::SetupResult::SUCCESS);
   if (success) {
     PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
         std::move(printer));
@@ -404,31 +393,6 @@ void CupsPrintersHandler::OnPrintersFound(
 void CupsPrintersHandler::OnDiscoveryDone() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("on-printer-discovery-done"));
-}
-
-void CupsPrintersHandler::ResolvePpdDone(
-    std::unique_ptr<Printer> printer,
-    printing::PpdProvider::CallbackResultCode result,
-    const std::string& ppd_contents) {
-  if (result != printing::PpdProvider::SUCCESS) {
-    // TODO(skau): Add appropriate failure modes crbug.com/670068.
-    LOG(ERROR) << "Error resolving";
-    OnAddPrinterError();
-    return;
-  }
-
-  std::string printer_id = printer->id();
-  std::string printer_uri = printer->uri();
-
-  chromeos::DebugDaemonClient* client =
-      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-
-  client->CupsAddManuallyConfiguredPrinter(
-      printer_id, printer_uri, ppd_contents,
-      base::Bind(&CupsPrintersHandler::OnAddedPrinter,
-                 weak_factory_.GetWeakPtr(), base::Passed(&printer)),
-      base::Bind(&CupsPrintersHandler::OnAddPrinterError,
-                 weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace settings

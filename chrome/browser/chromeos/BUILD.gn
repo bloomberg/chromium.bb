@@ -1212,6 +1212,8 @@ source_set("chromeos") {
     "printing/fake_printer_discoverer.h",
     "printing/ppd_provider_factory.cc",
     "printing/ppd_provider_factory.h",
+    "printing/printer_configurer.cc",
+    "printing/printer_configurer.h",
     "printing/printer_discoverer.h",
     "printing/printers_manager.cc",
     "printing/printers_manager.h",
