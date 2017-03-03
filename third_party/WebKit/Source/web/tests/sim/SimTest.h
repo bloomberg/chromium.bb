@@ -5,12 +5,13 @@
 #ifndef SimTest_h
 #define SimTest_h
 
+#include <gtest/gtest.h>
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimNetwork.h"
 #include "web/tests/sim/SimPage.h"
+#include "web/tests/sim/SimWebFrameClient.h"
 #include "web/tests/sim/SimWebViewClient.h"
-#include <gtest/gtest.h>
 
 namespace blink {
 
@@ -34,12 +35,21 @@ class SimTest : public ::testing::Test {
   const SimWebViewClient& webViewClient() const;
   SimCompositor& compositor();
 
+  Vector<String>& consoleMessages() { return m_consoleMessages; }
+
  private:
+  friend class SimWebFrameClient;
+
+  void addConsoleMessage(const String&);
+
   SimNetwork m_network;
   SimCompositor m_compositor;
   SimWebViewClient m_webViewClient;
+  SimWebFrameClient m_webFrameClient;
   SimPage m_page;
   FrameTestHelpers::WebViewHelper m_webViewHelper;
+
+  Vector<String> m_consoleMessages;
 };
 
 }  // namespace blink

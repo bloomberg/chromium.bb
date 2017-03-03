@@ -133,8 +133,8 @@ void LocalWindowProxy::initialize() {
 
   SecurityOrigin* origin = 0;
   if (m_world->isMainWorld()) {
-    // ActivityLogger for main world is updated within updateDocument().
-    updateDocument();
+    // ActivityLogger for main world is updated within updateDocumentInternal().
+    updateDocumentInternal();
     origin = frame()->document()->getSecurityOrigin();
     // FIXME: Can this be removed when CSP moves to browser?
     ContentSecurityPolicy* csp = frame()->document()->contentSecurityPolicy();
@@ -316,12 +316,22 @@ void LocalWindowProxy::updateDocument() {
   // to update. The update is done when the window proxy gets initialized later.
   if (m_lifecycle == Lifecycle::ContextUninitialized)
     return;
-  // TODO(yukishiino): Is it okay to not update document when the context
-  // is detached? It's not trivial to fix this because udpateDocumentProperty
-  // requires a not-yet-detached context to instantiate a document wrapper.
-  if (m_lifecycle == Lifecycle::ContextDetached)
-    return;
 
+  // If this WindowProxy was previously initialized, reinitialize it now to
+  // preserve JS object identity. Otherwise, extant references to the
+  // WindowProxy will be broken.
+  if (m_lifecycle == Lifecycle::ContextDetached) {
+    initialize();
+    DCHECK_EQ(Lifecycle::ContextInitialized, m_lifecycle);
+    // Initialization internally updates the document properties, so just
+    // return afterwards.
+    return;
+  }
+
+  updateDocumentInternal();
+}
+
+void LocalWindowProxy::updateDocumentInternal() {
   updateActivityLogger();
   updateDocumentProperty();
   updateSecurityOrigin(frame()->document()->getSecurityOrigin());

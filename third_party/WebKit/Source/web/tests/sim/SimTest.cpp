@@ -15,7 +15,7 @@
 
 namespace blink {
 
-SimTest::SimTest() : m_webViewClient(m_compositor) {
+SimTest::SimTest() : m_webViewClient(m_compositor), m_webFrameClient(*this) {
   Document::setThreadedParsingEnabledForTesting(false);
   // Use the mock theme to get more predictable code paths, this also avoids
   // the OS callbacks in ScrollAnimatorMac which can schedule frames
@@ -25,7 +25,7 @@ SimTest::SimTest() : m_webViewClient(m_compositor) {
   // in the middle of a test.
   LayoutTestSupport::setMockThemeEnabledForTest(true);
   ScrollbarTheme::setMockScrollbarsEnabled(true);
-  m_webViewHelper.initialize(true, nullptr, &m_webViewClient);
+  m_webViewHelper.initialize(true, &m_webFrameClient, &m_webViewClient);
   m_compositor.setWebViewImpl(webView());
   m_page.setPage(webView().page());
 }
@@ -71,6 +71,10 @@ const SimWebViewClient& SimTest::webViewClient() const {
 
 SimCompositor& SimTest::compositor() {
   return m_compositor;
+}
+
+void SimTest::addConsoleMessage(const String& message) {
+  m_consoleMessages.push_back(message);
 }
 
 }  // namespace blink

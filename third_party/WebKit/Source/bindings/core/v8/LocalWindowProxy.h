@@ -85,6 +85,12 @@ class LocalWindowProxy final : public WindowProxy {
 
   void setSecurityToken(SecurityOrigin*);
 
+  // Triggers updates of objects that are associated with a Document:
+  // - the activity logger
+  // - the document DOM wrapper
+  // - the security origin
+  void updateDocumentInternal();
+
   // The JavaScript wrapper for the document object is cached on the global
   // object for fast access. UpdateDocumentProperty sets the wrapper
   // for the current document on the global object.
