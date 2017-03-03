@@ -440,6 +440,17 @@ void OfflinePageDownloadBridge::ResumeDownload(
   }
 }
 
+void OfflinePageDownloadBridge::ResumePendingRequestImmediately(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
+  if (coordinator)
+    coordinator->StartImmediateProcessing(base::Bind([](bool result) {}));
+  else
+    LOG(WARNING) << "ResumePendingRequestImmediately has no valid coordinator.";
+}
+
 void OfflinePageDownloadBridge::ItemsLoaded() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);

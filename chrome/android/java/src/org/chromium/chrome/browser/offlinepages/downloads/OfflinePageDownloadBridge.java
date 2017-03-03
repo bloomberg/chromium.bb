@@ -138,8 +138,16 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
 
     @Override
     public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
+        // If the resumption was an user action then we have to resume the specific download item.
+        // Otherwise it can only be called when Chrome starts and we would like to resume all
+        // pending requests.
+        // TODO(romax): it's based on the assumption that if this method is called with
+        // |hasUserGesture| == false then we're trying to resume all pending requests. This
+        // assumption may change.
         if (hasUserGesture) {
             resumeDownload(item.getId());
+        } else {
+            nativeResumePendingRequestImmediately(mNativeOfflinePageDownloadBridge);
         }
     }
 
@@ -297,4 +305,5 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
     native void nativeDeleteItemByGuid(long nativeOfflinePageDownloadBridge, String guid);
     native long nativeGetOfflineIdByGuid(long nativeOfflinePageDownloadBridge, String guid);
     native void nativeStartDownload(long nativeOfflinePageDownloadBridge, Tab tab);
+    native void nativeResumePendingRequestImmediately(long nativeOfflinePageDownloadBridge);
 }
