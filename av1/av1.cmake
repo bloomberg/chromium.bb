@@ -289,6 +289,66 @@ if (CONFIG_PALETTE)
       "${AOM_ROOT}/av1/encoder/palette.h")
 endif ()
 
+if (CONFIG_PVQ)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/laplace_tables.c"
+      "${AOM_ROOT}/av1/common/pvq.c"
+      "${AOM_ROOT}/av1/common/pvq.h"
+      "${AOM_ROOT}/av1/common/pvq_state.c"
+      "${AOM_ROOT}/av1/common/pvq_state.h"
+      "${AOM_ROOT}/av1/common/partition.c"
+      "${AOM_ROOT}/av1/common/partition.h"
+      "${AOM_ROOT}/av1/common/generic_code.c"
+      "${AOM_ROOT}/av1/common/generic_code.h"
+      "${AOM_ROOT}/av1/common/zigzag4.c"
+      "${AOM_ROOT}/av1/common/zigzag8.c"
+      "${AOM_ROOT}/av1/common/zigzag16.c"
+      "${AOM_ROOT}/av1/common/zigzag32.c")
+
+    set(AOM_AV1_DECODER_SOURCES
+        ${AOM_AV1_DECODER_SOURCES}
+        "${AOM_ROOT}/av1/decoder/decint.h"
+        "${AOM_ROOT}/av1/decoder/pvq_decoder.c"
+        "${AOM_ROOT}/av1/decoder/pvq_decoder.h"
+        "${AOM_ROOT}/av1/decoder/generic_decoder.c"
+        "${AOM_ROOT}/av1/decoder/laplace_decoder.c")
+
+    set(AOM_AV1_ENCODER_SOURCES
+        ${AOM_AV1_ENCODER_SOURCES}
+        "${AOM_ROOT}/av1/encoder/daala_compat_enc.c"
+        "${AOM_ROOT}/av1/encoder/encint.h"
+        "${AOM_ROOT}/av1/encoder/pvq_encoder.c"
+        "${AOM_ROOT}/av1/encoder/pvq_encoder.h"
+        "${AOM_ROOT}/av1/encoder/generic_encoder.c"
+        "${AOM_ROOT}/av1/encoder/laplace_encoder.c")
+
+    set(AOM_AV1_COMMON_SSE4_1_INTRIN
+        ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+        "${AOM_ROOT}/av1/common/x86/pvq_sse4.c"
+        "${AOM_ROOT}/av1/common/x86/pvq_sse4.h")
+
+    if (NOT CONFIG_AV1_ENCODER)
+      # TODO(tomfinegan): These should probably be in av1/common, and in a
+      # common source list. For now this mirrors the original build system.
+      set(AOM_AV1_DECODER_SOURCES
+          ${AOM_AV1_DECODER_SOURCES}
+          "${AOM_ROOT}/av1/encoder/dct.c"
+          "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.c"
+          "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.h")
+
+      set(AOM_AV1_DECODER_SSE2_ASM
+          ${AOM_AV1_DECODER_SSE2_ASM}
+          "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm")
+
+      set(AOM_AV1_DECODER_SSE2_INTRIN
+          ${AOM_AV1_DECODER_SSE2_INTRIN}
+          "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c")
+
+      set(AOM_AV1_DECODER_SSSE3_INTRIN
+          ${AOM_AV1_DECODER_SSSE3_INTRIN}
+          "${AOM_ROOT}/av1/encoder/x86/dct_ssse3.c")
+    endif ()
 endif ()
 
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
@@ -314,6 +374,17 @@ function (setup_av1_targets)
     require_flag_nomsvc("-msse2" NO)
     add_intrinsics_object_library("-msse2" "sse2" "aom_av1_common"
                                   "AOM_AV1_COMMON_SSE2_INTRIN")
+    if (CONFIG_AV1_DECODER)
+      if (AOM_AV1_DECODER_SSE2_ASM)
+        add_asm_library("aom_av1_decoder_sse2" "AOM_AV1_DECODER_SSE2_ASM" "aom")
+      endif ()
+
+      if (AOM_AV1_DECODER_SSE2_INTRIN)
+        add_intrinsics_object_library("-msse2" "sse2" "aom_av1_decoder"
+                                      "AOM_AV1_DECODER_SSE2_INTRIN")
+      endif ()
+    endif ()
+
     if (CONFIG_AV1_ENCODER)
       add_asm_library("aom_av1_encoder_sse2" "AOM_AV1_ENCODER_SSE2_ASM" "aom")
       add_intrinsics_object_library("-msse2" "sse2" "aom_av1_encoder"
@@ -325,6 +396,13 @@ function (setup_av1_targets)
     require_flag_nomsvc("-mssse3" NO)
     add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_common"
                                   "AOM_AV1_COMMON_SSSE3_INTRIN")
+
+    if (CONFIG_AV1_DECODER)
+      if (AOM_AV1_DECODER_SSSE3_INTRIN)
+        add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_decoder"
+                                      "AOM_AV1_DECODER_SSSE3_INTRIN")
+      endif ()
+    endif ()
 
     if (CONFIG_AV1_ENCODER)
       add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_encoder"
