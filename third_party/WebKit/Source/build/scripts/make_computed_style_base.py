@@ -25,6 +25,8 @@ NONPROPERTY_FIELDS = set([
     'affectedByDrag',
     # A non-inherited property references a variable or @apply is used
     'hasVariableReferenceFromNonInheritedProperty',
+    # Explicitly inherits a non-inherited property
+    'hasExplicitlyInheritedProperties',
 ])
 
 

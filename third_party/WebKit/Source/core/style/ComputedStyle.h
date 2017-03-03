@@ -265,8 +265,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     unsigned m_styleType : 6;  // PseudoId
     unsigned m_pseudoBits : 8;
-    unsigned m_explicitInheritance : 1;  // Explicitly inherits a non-inherited
-                                         // property
 
     unsigned m_emptyState : 1;
 
@@ -297,7 +295,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         static_cast<unsigned>(initialVerticalAlign());
     m_nonInheritedData.m_styleType = PseudoIdNone;
     m_nonInheritedData.m_pseudoBits = 0;
-    m_nonInheritedData.m_explicitInheritance = false;
     m_nonInheritedData.m_emptyState = false;
     m_nonInheritedData.m_hasViewportUnits = false;
     m_nonInheritedData.m_isLink = false;
@@ -2464,13 +2461,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setInsideLink(EInsideLink insideLink) {
     m_inheritedData.m_insideLink = static_cast<unsigned>(insideLink);
-  }
-
-  bool hasExplicitlyInheritedProperties() const {
-    return m_nonInheritedData.m_explicitInheritance;
-  }
-  void setHasExplicitlyInheritedProperties() {
-    m_nonInheritedData.m_explicitInheritance = true;
   }
 
   bool requiresAcceleratedCompositingForExternalReasons(bool b) {

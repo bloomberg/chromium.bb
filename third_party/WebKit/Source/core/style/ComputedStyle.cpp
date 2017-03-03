@@ -84,7 +84,7 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
   } m_inheritedData;
 
   struct NonInheritedData {
-    unsigned m_bitfields[2];
+    unsigned m_bitfields[1];
   } m_nonInheritedData;
 };
 
