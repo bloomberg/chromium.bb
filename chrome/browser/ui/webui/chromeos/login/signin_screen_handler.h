@@ -235,10 +235,10 @@ class SigninScreenHandler
       JSCallsContainer* js_calls_container);
   ~SigninScreenHandler() override;
 
-  static std::string GetUserLRUInputMethod(const std::string& username);
+  static std::string GetUserLastInputMethod(const std::string& username);
 
   // Update current input method (namely keyboard layout) in the given IME state
-  // to LRU by this user.
+  // to last input method used by this user.
   static void SetUserInputMethod(
       const std::string& username,
       input_method::InputMethodManager::State* ime_state);

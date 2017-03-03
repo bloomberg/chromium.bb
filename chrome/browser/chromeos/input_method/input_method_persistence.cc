@@ -27,44 +27,44 @@ void PersistSystemInputMethod(const std::string& input_method) {
         language_prefs::kPreferredKeyboardLayout, input_method);
 }
 
-static void SetUserLRUInputMethodPreference(const std::string& username,
-                                            const std::string& input_method,
-                                            PrefService* local_state) {
+static void SetUserLastInputMethodPreference(const std::string& username,
+                                             const std::string& input_method,
+                                             PrefService* local_state) {
   if (!username.empty() && !local_state->ReadOnly()) {
     bool update_succeed = false;
     {
       // Updater may have side-effects, therefore we do not replace
       // entry while updater exists.
-      DictionaryPrefUpdate updater(local_state, prefs::kUsersLRUInputMethod);
-      base::DictionaryValue* const users_lru_input_methods = updater.Get();
-      if (users_lru_input_methods) {
-        users_lru_input_methods->SetStringWithoutPathExpansion(username,
-                                                               input_method);
+      DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
+      base::DictionaryValue* const users_last_input_methods = updater.Get();
+      if (users_last_input_methods) {
+        users_last_input_methods->SetStringWithoutPathExpansion(username,
+                                                                input_method);
         update_succeed = true;
       }
     }
     if (!update_succeed) {
-      // Somehow key kUsersLRUInputMethod has value of invalid type.
+      // Somehow key kUsersLastInputMethod has value of invalid type.
       // Replace and retry.
-      local_state->Set(prefs::kUsersLRUInputMethod, base::DictionaryValue());
+      local_state->Set(prefs::kUsersLastInputMethod, base::DictionaryValue());
 
-      DictionaryPrefUpdate updater(local_state, prefs::kUsersLRUInputMethod);
-      base::DictionaryValue* const users_lru_input_methods = updater.Get();
-      if (users_lru_input_methods) {
-        users_lru_input_methods->SetStringWithoutPathExpansion(username,
-                                                               input_method);
+      DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
+      base::DictionaryValue* const users_last_input_methods = updater.Get();
+      if (users_last_input_methods) {
+        users_last_input_methods->SetStringWithoutPathExpansion(username,
+                                                                input_method);
         update_succeed = true;
       }
     }
     if (!update_succeed) {
-      DVLOG(1) << "Failed to replace local_state.kUsersLRUInputMethod: '"
-               << prefs::kUsersLRUInputMethod << "' for '" << username << "'";
+      DVLOG(1) << "Failed to replace local_state.kUsersLastInputMethod: '"
+               << prefs::kUsersLastInputMethod << "' for '" << username << "'";
     }
   }
 }
 
-// Update user LRU keyboard layout for login screen
-static void SetUserLRUInputMethod(
+// Update user Last keyboard layout for login screen
+static void SetUserLastInputMethod(
     const std::string& input_method,
     const chromeos::input_method::InputMethodManager* const manager,
     Profile* profile) {
@@ -78,8 +78,8 @@ static void SetUserLRUInputMethod(
 
   PrefService* const local_state = g_browser_process->local_state();
 
-  SetUserLRUInputMethodPreference(
-      profile->GetProfileUserName(), input_method, local_state);
+  SetUserLastInputMethodPreference(profile->GetProfileUserName(), input_method,
+                                   local_state);
 }
 
 void PersistUserInputMethod(const std::string& input_method,
@@ -93,7 +93,7 @@ void PersistUserInputMethod(const std::string& input_method,
     user_prefs = profile->GetPrefs();
   if (!user_prefs)
     return;
-  SetUserLRUInputMethod(input_method, manager, profile);
+  SetUserLastInputMethod(input_method, manager, profile);
 
   const std::string current_input_method_on_pref =
       user_prefs->GetString(prefs::kLanguageCurrentInputMethod);
@@ -153,10 +153,11 @@ void InputMethodPersistence::OnSessionStateChange(
   ui_session_ = new_ui_session;
 }
 
-void SetUserLRUInputMethodPreferenceForTesting(const std::string& username,
-                                               const std::string& input_method,
-                                               PrefService* const local_state) {
-  SetUserLRUInputMethodPreference(username, input_method, local_state);
+void SetUserLastInputMethodPreferenceForTesting(
+    const std::string& username,
+    const std::string& input_method,
+    PrefService* const local_state) {
+  SetUserLastInputMethodPreference(username, input_method, local_state);
 }
 
 }  // namespace input_method

@@ -1871,9 +1871,10 @@ const char kDeviceDMToken[] = "device_dm_token";
 // How many times HID detection OOBE dialog was shown.
 const char kTimesHIDDialogShown[] = "HIDDialog.shown_how_many_times";
 
-// Dictionary of per-user Least Recently Used input method (used at login
-// screen).
-const char kUsersLRUInputMethod[] = "UsersLRUInputMethod";
+// Dictionary of per-user last input method (used at login screen). Note that
+// the pref name is UsersLRUInputMethods for compatibility with previous
+// versions.
+const char kUsersLastInputMethod[] = "UsersLRUInputMethod";
 
 // A dictionary pref of the echo offer check flag. It sets offer info when
 // an offer is checked.

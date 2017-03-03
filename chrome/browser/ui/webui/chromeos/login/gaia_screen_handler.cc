@@ -880,7 +880,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   } else {
     std::vector<std::string> input_methods =
         imm->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
-    const std::string owner_im = SigninScreenHandler::GetUserLRUInputMethod(
+    const std::string owner_im = SigninScreenHandler::GetUserLastInputMethod(
         user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
     const std::string system_im = g_browser_process->local_state()->GetString(
         language_prefs::kPreferredKeyboardLayout);

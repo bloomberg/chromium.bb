@@ -204,16 +204,16 @@ static bool SetUserInputMethodImpl(
   if (!chromeos::input_method::InputMethodManager::Get()->IsLoginKeyboard(
           user_input_method)) {
     LOG(WARNING) << "SetUserInputMethod('" << username
-                 << "'): stored user LRU input method '" << user_input_method
+                 << "'): stored user last input method '" << user_input_method
                  << "' is no longer Full Latin Keyboard Language"
                  << " (entry dropped). Use hardware default instead.";
 
     PrefService* const local_state = g_browser_process->local_state();
-    DictionaryPrefUpdate updater(local_state, prefs::kUsersLRUInputMethod);
+    DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
 
-    base::DictionaryValue* const users_lru_input_methods = updater.Get();
-    if (users_lru_input_methods != nullptr) {
-      users_lru_input_methods->SetStringWithoutPathExpansion(username, "");
+    base::DictionaryValue* const users_last_input_methods = updater.Get();
+    if (users_last_input_methods != nullptr) {
+      users_last_input_methods->SetStringWithoutPathExpansion(username, "");
     }
     return false;
   }
@@ -363,23 +363,23 @@ SigninScreenHandler::~SigninScreenHandler() {
 }
 
 // static
-std::string SigninScreenHandler::GetUserLRUInputMethod(
+std::string SigninScreenHandler::GetUserLastInputMethod(
     const std::string& username) {
   PrefService* const local_state = g_browser_process->local_state();
-  const base::DictionaryValue* users_lru_input_methods =
-      local_state->GetDictionary(prefs::kUsersLRUInputMethod);
+  const base::DictionaryValue* users_last_input_methods =
+      local_state->GetDictionary(prefs::kUsersLastInputMethod);
 
-  if (!users_lru_input_methods) {
-    DLOG(WARNING) << "GetUserLRUInputMethod('" << username
-                  << "'): no kUsersLRUInputMethod";
+  if (!users_last_input_methods) {
+    DLOG(WARNING) << "GetUserLastInputMethod('" << username
+                  << "'): no kUsersLastInputMethod";
     return std::string();
   }
 
   std::string input_method;
 
-  if (!users_lru_input_methods->GetStringWithoutPathExpansion(username,
-                                                              &input_method)) {
-    DVLOG(0) << "GetUserLRUInputMethod('" << username
+  if (!users_last_input_methods->GetStringWithoutPathExpansion(username,
+                                                               &input_method)) {
+    DVLOG(0) << "GetUserLastInputMethod('" << username
              << "'): no input method for this user";
     return std::string();
   }
@@ -394,14 +394,14 @@ void SigninScreenHandler::SetUserInputMethod(
     input_method::InputMethodManager::State* ime_state) {
   bool succeed = false;
 
-  const std::string input_method = GetUserLRUInputMethod(username);
+  const std::string input_method = GetUserLastInputMethod(username);
 
   EnforcePolicyInputMethods(input_method);
 
   if (!input_method.empty())
     succeed = SetUserInputMethodImpl(username, input_method, ime_state);
 
-  // This is also a case when LRU layout is set only for a few local users,
+  // This is also a case when last layout is set only for a few local users,
   // thus others need to be switched to default locale.
   // Otherwise they will end up using another user's locale to log in.
   if (!succeed) {
@@ -982,7 +982,7 @@ gfx::NativeWindow SigninScreenHandler::GetNativeWindow() {
 }
 
 void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kUsersLRUInputMethod);
+  registry->RegisterDictionaryPref(prefs::kUsersLastInputMethod);
 }
 
 void SigninScreenHandler::OnCurrentScreenChanged(OobeScreen current_screen,
@@ -1619,7 +1619,7 @@ void SigninScreenHandler::OnFeedbackFinished() {
 void SigninScreenHandler::OnAllowedInputMethodsChanged() {
   if (focused_pod_account_id_) {
     std::string user_input_method =
-        GetUserLRUInputMethod(focused_pod_account_id_->GetUserEmail());
+        GetUserLastInputMethod(focused_pod_account_id_->GetUserEmail());
     EnforcePolicyInputMethods(user_input_method);
   } else {
     EnforcePolicyInputMethods(std::string());

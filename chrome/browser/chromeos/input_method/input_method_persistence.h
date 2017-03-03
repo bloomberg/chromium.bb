@@ -42,9 +42,9 @@ class InputMethodPersistence : public InputMethodManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(InputMethodPersistence);
 };
 
-void SetUserLRUInputMethodPreferenceForTesting(const std::string& username,
-                                               const std::string& input_method,
-                                               PrefService* local_state);
+void SetUserLastInputMethodPreferenceForTesting(const std::string& username,
+                                                const std::string& input_method,
+                                                PrefService* local_state);
 
 }  // namespace input_method
 }  // namespace chromeos
