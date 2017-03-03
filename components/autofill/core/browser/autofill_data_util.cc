@@ -76,12 +76,12 @@ const char* korean_multi_char_surnames[] = {
 // Returns true if |set| contains |element|, modulo a final period.
 bool ContainsString(const char* const set[],
                     size_t set_size,
-                    const base::string16& element) {
+                    base::StringPiece16 element) {
   if (!base::IsStringASCII(element))
     return false;
 
-  base::string16 trimmed_element;
-  base::TrimString(element, base::ASCIIToUTF16("."), &trimmed_element);
+  base::StringPiece16 trimmed_element =
+      base::TrimString(element, base::ASCIIToUTF16("."), base::TRIM_ALL);
 
   for (size_t i = 0; i < set_size; ++i) {
     if (base::LowerCaseEqualsASCII(trimmed_element, set[i]))
@@ -92,21 +92,21 @@ bool ContainsString(const char* const set[],
 }
 
 // Removes common name prefixes from |name_tokens|.
-void StripPrefixes(std::vector<base::string16>* name_tokens) {
-  std::vector<base::string16>::iterator iter = name_tokens->begin();
+void StripPrefixes(std::vector<base::StringPiece16>* name_tokens) {
+  std::vector<base::StringPiece16>::iterator iter = name_tokens->begin();
   while (iter != name_tokens->end()) {
     if (!ContainsString(name_prefixes, arraysize(name_prefixes), *iter))
       break;
     ++iter;
   }
 
-  std::vector<base::string16> copy_vector;
+  std::vector<base::StringPiece16> copy_vector;
   copy_vector.assign(iter, name_tokens->end());
   *name_tokens = copy_vector;
 }
 
 // Removes common name suffixes from |name_tokens|.
-void StripSuffixes(std::vector<base::string16>* name_tokens) {
+void StripSuffixes(std::vector<base::StringPiece16>* name_tokens) {
   while (!name_tokens->empty()) {
     if (!ContainsString(name_suffixes, arraysize(name_suffixes),
                         name_tokens->back())) {
@@ -157,7 +157,7 @@ bool IsHangulCharacter(UChar32 c) {
 // Returns true if |name| looks like a Korean name, made up entirely of Hangul
 // characters or spaces. |name| should already be confirmed to be a CJK name, as
 // per |IsCJKName()|.
-bool IsHangulName(const base::string16& name) {
+bool IsHangulName(base::StringPiece16 name) {
   for (base::i18n::UTF16CharIterator iter(name.data(), name.length());
        !iter.end(); iter.Advance()) {
     UChar32 c = iter.get();
@@ -171,7 +171,7 @@ bool IsHangulName(const base::string16& name) {
 // Tries to split a Chinese, Japanese, or Korean name into its given name &
 // surname parts, and puts the result in |parts|. If splitting did not work for
 // whatever reason, returns false.
-bool SplitCJKName(const std::vector<base::string16>& name_tokens,
+bool SplitCJKName(const std::vector<base::StringPiece16>& name_tokens,
                   NameParts* parts) {
   // The convention for CJK languages is to put the surname (last name) first,
   // and the given name (first name) second. In a continuous text, there is
@@ -188,7 +188,7 @@ bool SplitCJKName(const std::vector<base::string16>& name_tokens,
     // since we don't have a list of Japanese last names. In the Han alphabet,
     // it might also be difficult for us to differentiate between Chinese &
     // Japanese names.
-    const base::string16& name = name_tokens.front();
+    const base::StringPiece16& name = name_tokens.front();
     const bool is_korean = IsHangulName(name);
     size_t surname_length = 0;
     if (is_korean && name.size() > 3) {
@@ -205,15 +205,15 @@ bool SplitCJKName(const std::vector<base::string16>& name_tokens,
           1, StartsWithAny(name, common_cjk_multi_char_surnames,
                            arraysize(common_cjk_multi_char_surnames)));
     }
-    parts->family = name.substr(0, surname_length);
-    parts->given = name.substr(surname_length);
+    parts->family = name.substr(0, surname_length).as_string();
+    parts->given = name.substr(surname_length).as_string();
     return true;
   }
   if (name_tokens.size() == 2) {
     // The user entered a space between the two name parts. This makes our job
     // easier. Family name first, given name second.
-    parts->family = name_tokens[0];
-    parts->given = name_tokens[1];
+    parts->family = name_tokens[0].as_string();
+    parts->given = name_tokens[1].as_string();
     return true;
   }
   // We don't know what to do if there are more than 2 tokens.
@@ -222,7 +222,7 @@ bool SplitCJKName(const std::vector<base::string16>& name_tokens,
 
 }  // namespace
 
-bool IsCJKName(const base::string16& name) {
+bool IsCJKName(base::StringPiece16 name) {
   // The name is considered to be a CJK name if it is only CJK characters,
   // spaces, and "middle dot" separators, with at least one CJK character, and
   // no more than 2 words.
@@ -255,7 +255,7 @@ bool IsCJKName(const base::string16& name) {
   return word_count > 0 && word_count < 3;
 }
 
-NameParts SplitName(const base::string16& name) {
+NameParts SplitName(base::StringPiece16 name) {
   static const base::char16 kWordSeparators[] = {
     u' ', // ASCII space.
     u',', // ASCII comma.
@@ -264,7 +264,7 @@ NameParts SplitName(const base::string16& name) {
     u'\u00B7', // 'MIDDLE DOT' (U+00B7).
     u'\0' // End of string.
   };
-  std::vector<base::string16> name_tokens = base::SplitString(
+  std::vector<base::StringPiece16> name_tokens = base::SplitStringPiece(
       name, kWordSeparators, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   StripPrefixes(&name_tokens);
 
@@ -285,19 +285,19 @@ NameParts SplitName(const base::string16& name) {
 
   if (name_tokens.empty()) {
     // Bad things have happened; just assume the whole thing is a given name.
-    parts.given = name;
+    parts.given = name.as_string();
     return parts;
   }
 
   // Only one token, assume given name.
   if (name_tokens.size() == 1) {
-    parts.given = name_tokens[0];
+    parts.given = name_tokens[0].as_string();
     return parts;
   }
 
   // 2 or more tokens. Grab the family, which is the last word plus any
   // recognizable family prefixes.
-  std::vector<base::string16> reverse_family_tokens;
+  std::vector<base::StringPiece16> reverse_family_tokens;
   reverse_family_tokens.push_back(name_tokens.back());
   name_tokens.pop_back();
   while (name_tokens.size() >= 1 &&
@@ -307,14 +307,14 @@ NameParts SplitName(const base::string16& name) {
     name_tokens.pop_back();
   }
 
-  std::vector<base::string16> family_tokens(reverse_family_tokens.rbegin(),
-                                            reverse_family_tokens.rend());
+  std::vector<base::StringPiece16> family_tokens(reverse_family_tokens.rbegin(),
+                                                 reverse_family_tokens.rend());
   parts.family = base::JoinString(family_tokens, base::ASCIIToUTF16(" "));
 
   // Take the last remaining token as the middle name (if there are at least 2
   // tokens).
   if (name_tokens.size() >= 2) {
-    parts.middle = name_tokens.back();
+    parts.middle = name_tokens.back().as_string();
     name_tokens.pop_back();
   }
 
@@ -324,11 +324,11 @@ NameParts SplitName(const base::string16& name) {
   return parts;
 }
 
-base::string16 JoinNameParts(const base::string16& given,
-                             const base::string16& middle,
-                             const base::string16& family) {
+base::string16 JoinNameParts(base::StringPiece16 given,
+                             base::StringPiece16 middle,
+                             base::StringPiece16 family) {
   // First Middle Last
-  std::vector<base::string16> full_name;
+  std::vector<base::StringPiece16> full_name;
   if (!given.empty())
     full_name.push_back(given);
 
@@ -348,7 +348,7 @@ base::string16 JoinNameParts(const base::string16& given,
   return base::JoinString(full_name, base::ASCIIToUTF16(separator));
 }
 
-bool ProfileMatchesFullName(const base::string16 full_name,
+bool ProfileMatchesFullName(base::StringPiece16 full_name,
                             const autofill::AutofillProfile& profile) {
   const base::string16 kSpace = base::ASCIIToUTF16(" ");
   const base::string16 kPeriodSpace = base::ASCIIToUTF16(". ");

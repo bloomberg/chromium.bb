@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_DATA_UTIL_H_
 
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 
 namespace autofill {
@@ -27,23 +28,23 @@ struct PaymentRequestData {
 
 // Returns true if |name| looks like a CJK name (or some kind of mish-mash of
 // the three, at least).
-bool IsCJKName(const base::string16& name);
+bool IsCJKName(base::StringPiece16 name);
 
 // TODO(crbug.com/586510): Investigate the use of app_locale to do better name
 // splitting.
 // Returns the different name parts (given, middle and family names) of the full
 // |name| passed as a parameter.
-NameParts SplitName(const base::string16& name);
+NameParts SplitName(base::StringPiece16 name);
 
 // Concatenates the name parts together in the correct order (based on script),
 // and returns the result.
-base::string16 JoinNameParts(const base::string16& given,
-                             const base::string16& middle,
-                             const base::string16& family);
+base::string16 JoinNameParts(base::StringPiece16 given,
+                             base::StringPiece16 middle,
+                             base::StringPiece16 family);
 
 // Returns true iff |full_name| is a concatenation of some combination of the
 // first/middle/last (incl. middle initial) in |profile|.
-bool ProfileMatchesFullName(const base::string16 full_name,
+bool ProfileMatchesFullName(base::StringPiece16 full_name,
                             const autofill::AutofillProfile& profile);
 
 // Returns the Payment Request API basic card payment spec data for the provided
