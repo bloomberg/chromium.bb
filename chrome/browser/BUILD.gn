@@ -236,6 +236,8 @@ split_static_library("browser") {
     "component_updater/component_updater_resource_throttle.h",
     "component_updater/component_updater_utils.cc",
     "component_updater/component_updater_utils.h",
+    "component_updater/cros_component_installer.cc",
+    "component_updater/cros_component_installer.h",
     "component_updater/ev_whitelist_component_installer.cc",
     "component_updater/ev_whitelist_component_installer.h",
     "component_updater/file_type_policies_component_installer.cc",
