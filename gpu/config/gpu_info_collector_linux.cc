@@ -191,20 +191,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return result;
 }
 
-CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
-  DCHECK(vendor_id && device_id);
-  *vendor_id = 0;
-  *device_id = 0;
-
-  GPUInfo gpu_info;
-  CollectInfoResult result = CollectPCIVideoCardInfo(&gpu_info);
-  if (result == kCollectInfoSuccess) {
-    *vendor_id = gpu_info.gpu.vendor_id;
-    *device_id = gpu_info.gpu.device_id;
-  }
-  return result;
-}
-
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 

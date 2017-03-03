@@ -182,18 +182,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return result;
 }
 
-CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
-  DCHECK(vendor_id && device_id);
-
-  GPUInfo::GPUDevice gpu = GetActiveGPU();
-  *vendor_id = gpu.vendor_id;
-  *device_id = gpu.device_id;
-
-  if (*vendor_id != 0 && *device_id != 0)
-    return kCollectInfoSuccess;
-  return kCollectInfoNonFatalFailure;
-}
-
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 

@@ -271,13 +271,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
-CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
-  DCHECK(vendor_id && device_id);
-  *vendor_id = 0;
-  *device_id = 0;
-  return kCollectInfoNonFatalFailure;
-}
-
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   // When command buffer is compiled as a standalone library, the process might
   // not have a Java environment.
