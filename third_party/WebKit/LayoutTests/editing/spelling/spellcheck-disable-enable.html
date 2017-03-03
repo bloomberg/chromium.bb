@@ -1,66 +1,103 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body onload="test(document.getElementById('destination'), document.getElementById('frame').contentWindow.document);">
-<div id="container">
-  <div id="destination" contentEditable></div>
-  <iframe id="frame" src="data:text/html,<body contenteditable></body>"></iframe>
-</div>
-
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 <script>
-description("Spell check markers should be removed from the whole page when disabling spell checker "
-    + "but they should be restored in the focused editable if spell checker gets enabled. "
-    + "To test manually, turn spell checker off - misspelling markers should disappear. "
-    + "Having the editable focused, turn spell checker on. Misspellings in the editable should be marked.");
+const steps = [];
+var sample1;
+var sample2;
 
-jsTestIsAsync = true;
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
+// Setup two subframes with spelling markers.
 
-function hasSpellingMarkerOnSetting(element, enableSpellChecking)
-{
-    internals.setSpellCheckingEnabled(enableSpellChecking);
-    return !!internals.markerCountForNode(element.firstChild, "spelling");
-}
+steps.push(() =>
+    spellcheck_test(
+        '<div contenteditable>|</div>',
+        'insertText zz.',
+        '<div contenteditable>#zz#.</div>',
+        {
+          title: 'Setup subframe 1.',
+          callback: sample => {
+            sample1 = sample;
+            steps.shift()();
+          }
+        }));
 
-var editableDiv = null;
-var editableBodyInFrame = null;
+steps.push(() =>
+    spellcheck_test(
+        '<div contenteditable>|</div>',
+        'insertText zz.',
+        '<div contenteditable>#zz#.</div>',
+        {
+          title: 'Setup subframe 2.',
+          callback: sample => {
+            sample2 = sample;
+            steps.shift()();
+          }
+        }));
 
-function test(div, frameDocument)
-{
-    editableDiv = div;
-    editableBodyInFrame = frameDocument.body;
+// When disabling spell checker, markers should be removed from the whole page.
 
-    // Type misspellings to trigger spellchecking on editable fields.
-    editableDiv.focus();
-    document.execCommand("InsertText", false, "zz.");
-    editableBodyInFrame.focus();
-    frameDocument.execCommand("InsertText", false, "zz.");
+steps.push(() => {
+  internals.setSpellCheckingEnabled(false);
+  sample1.selection.removeAllRanges();
+  sample2.selection.removeAllRanges();
+  steps.shift()();
+});
 
-    if (!window.internals) {
-        debug("Automatic testing impossible. Test manually.");
-        return;
-    }
+steps.push(() =>
+    spellcheck_test(
+        sample1,
+        '',
+        '<div contenteditable>zz.</div>',
+        {
+          title: 'Marker in subframe 1 disappear when disabling spell checker.',
+          noSpellCheckRequest: true,
+          callback: () => steps.shift()()
+        }));
 
-    shouldBecomeEqual('hasSpellingMarkerOnSetting(editableDiv, true)', 'true', function() {
-        shouldBecomeEqual('hasSpellingMarkerOnSetting(editableBodyInFrame, true)', 'true', function() {
-            // Turn off spellchecking, all misspellings should disappear.
-            shouldBecomeEqual('hasSpellingMarkerOnSetting(editableDiv, false)', 'false', function() {
-                shouldBecomeEqual('hasSpellingMarkerOnSetting(editableBodyInFrame, false)', 'false', function() {
-                    // Focus element and turn on spellchecking.
-                    // Only misspellings of the focused element should be restored.
-                    editableDiv.focus();
-                    shouldBecomeEqual('hasSpellingMarkerOnSetting(editableDiv, true)', 'true', function() {
-                        shouldBecomeEqual('hasSpellingMarkerOnSetting(editableBodyInFrame, true)', 'false', finishJSTest);
-                    });
-                });
-            });
-        });
-    });
-}
+steps.push(() =>
+    spellcheck_test(
+        sample2,
+        '',
+        '<div contenteditable>zz.</div>',
+        {
+          title: 'Marker in subframe 2 disappear when disabling spell checker.',
+          noSpellCheckRequest: true,
+          callback: () => steps.shift()()
+        }));
 
+// Markers should be restored in the focused editable if spell checker gets
+// re-enabled.
+
+steps.push(() =>
+    spellcheck_test(
+        sample1,
+        document => {
+          internals.setSpellCheckingEnabled(true);
+          document.querySelector('div').focus();
+        },
+        '<div contenteditable>#zz#.</div>',
+        {
+          title: 'Marker in subframe 1 is restored due to focus.',
+          callback: () => steps.shift()()
+        }));
+
+steps.push(() =>
+    spellcheck_test(
+        sample2,
+        '',
+        '<div contenteditable>zz.</div>',
+        {
+          title: 'Marker in subframe 2 is not restored without focus.',
+          noSpellCheckRequest: true,
+          callback: () => steps.shift()()
+        }));
+
+steps.push(() => {
+  sample1.remove();
+  sample2.remove();
+});
+
+steps.shift()();
 </script>
-</body>
-</html>
