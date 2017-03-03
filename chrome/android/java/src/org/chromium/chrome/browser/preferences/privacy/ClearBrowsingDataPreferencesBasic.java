@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.privacy;
 
+import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
+
 /**
  * A simpler version of {@link ClearBrowsingDataPreferences} with fewer dialog options and more
  * explanatory text.
@@ -11,9 +13,12 @@ package org.chromium.chrome.browser.preferences.privacy;
 public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferencesTab {
     @Override
     protected DialogOption[] getDialogOptions() {
-        return new DialogOption[] {
-                DialogOption.CLEAR_HISTORY, DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
-                DialogOption.CLEAR_CACHE
-        };
+        return new DialogOption[] {DialogOption.CLEAR_HISTORY,
+                DialogOption.CLEAR_COOKIES_AND_SITE_DATA, DialogOption.CLEAR_CACHE};
+    }
+
+    @Override
+    protected int getPreferenceType() {
+        return ClearBrowsingDataTab.BASIC;
     }
 }

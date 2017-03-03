@@ -120,7 +120,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
 
   void SetSinceAndVerify(browsing_data::TimePeriod since_pref) {
     PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetInteger(browsing_data::prefs::kDeleteTimePeriod, since_pref);
+    prefs->SetInteger(browsing_data::prefs::kDeleteTimePeriod,
+                      static_cast<int>(since_pref));
 
     scoped_refptr<BrowsingDataSettingsFunction> function =
         new BrowsingDataSettingsFunction();
@@ -136,7 +137,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
     EXPECT_TRUE(options->GetDouble("since", &since));
 
     double expected_since = 0;
-    if (since_pref != browsing_data::ALL_TIME) {
+    if (since_pref != browsing_data::TimePeriod::ALL_TIME) {
       base::Time time = CalculateBeginDeleteTime(since_pref);
       expected_since = time.ToJsTime();
     }
@@ -456,11 +457,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, ShortcutFunctionRemovalMask) {
 
 // Test the processing of the 'delete since' preference.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSince) {
-  SetSinceAndVerify(browsing_data::ALL_TIME);
-  SetSinceAndVerify(browsing_data::LAST_HOUR);
-  SetSinceAndVerify(browsing_data::LAST_DAY);
-  SetSinceAndVerify(browsing_data::LAST_WEEK);
-  SetSinceAndVerify(browsing_data::FOUR_WEEKS);
+  SetSinceAndVerify(browsing_data::TimePeriod::ALL_TIME);
+  SetSinceAndVerify(browsing_data::TimePeriod::LAST_HOUR);
+  SetSinceAndVerify(browsing_data::TimePeriod::LAST_DAY);
+  SetSinceAndVerify(browsing_data::TimePeriod::LAST_WEEK);
+  SetSinceAndVerify(browsing_data::TimePeriod::FOUR_WEEKS);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionEmpty) {

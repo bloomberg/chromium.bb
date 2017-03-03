@@ -173,7 +173,7 @@ void DoNothing(int n) {}
                                         decrementCallbackCounterCount];
 
   if (mask & IOSChromeBrowsingDataRemover::REMOVE_DOWNLOADS) {
-    DCHECK_EQ(browsing_data::ALL_TIME, timePeriod)
+    DCHECK_EQ(browsing_data::TimePeriod::ALL_TIME, timePeriod)
         << "Partial clearing not supported";
     callbackCounter->IncrementCount();
     [_delegate

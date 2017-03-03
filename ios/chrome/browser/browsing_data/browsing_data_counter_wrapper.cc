@@ -38,7 +38,7 @@ BrowsingDataCounterWrapper::BrowsingDataCounterWrapper(
     PrefService* pref_service,
     const UpdateUICallback& update_ui_callback)
     : counter_(std::move(counter)), update_ui_callback_(update_ui_callback) {
-  counter_->Init(pref_service,
+  counter_->Init(pref_service, browsing_data::ClearBrowsingDataTab::ADVANCED,
                  base::Bind(&BrowsingDataCounterWrapper::UpdateWithResult,
                             base::Unretained(this)));
 }

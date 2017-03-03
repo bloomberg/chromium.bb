@@ -317,6 +317,7 @@ void ClearBrowsingDataHandler::UpdateHistoryDeletionDialog(bool show) {
 void ClearBrowsingDataHandler::AddCounter(
     std::unique_ptr<browsing_data::BrowsingDataCounter> counter) {
   counter->Init(profile_->GetPrefs(),
+                browsing_data::ClearBrowsingDataTab::ADVANCED,
                 base::Bind(&ClearBrowsingDataHandler::UpdateCounterText,
                            base::Unretained(this)));
   counters_.push_back(std::move(counter));
@@ -325,8 +326,7 @@ void ClearBrowsingDataHandler::AddCounter(
 void ClearBrowsingDataHandler::UpdateCounterText(
     std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
   CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("update-counter-text"),
+      "cr.webUIListenerCallback", base::StringValue("update-counter-text"),
       base::StringValue(result->source()->GetPrefName()),
       base::StringValue(GetChromeCounterTextFromResult(result.get())));
 }

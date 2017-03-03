@@ -375,6 +375,7 @@ void ClearBrowserDataHandler::AddCounter(
   DCHECK(AreCountersEnabled());
 
   counter->Init(Profile::FromWebUI(web_ui())->GetPrefs(),
+                browsing_data::ClearBrowsingDataTab::ADVANCED,
                 base::Bind(&ClearBrowserDataHandler::UpdateCounterText,
                            base::Unretained(this)));
   counters_.push_back(std::move(counter));

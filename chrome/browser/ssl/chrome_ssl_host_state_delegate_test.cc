@@ -619,11 +619,13 @@ class RemoveBrowsingHistorySSLHostStateDelegateTest
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(profile);
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->RemoveAndReply(
-        browsing_data::CalculateBeginDeleteTime(browsing_data::LAST_HOUR),
-        browsing_data::CalculateEndDeleteTime(browsing_data::LAST_HOUR),
-        BrowsingDataRemover::REMOVE_HISTORY,
-        BrowsingDataHelper::UNPROTECTED_WEB, &completion_observer);
+    remover->RemoveAndReply(browsing_data::CalculateBeginDeleteTime(
+                                browsing_data::TimePeriod::LAST_HOUR),
+                            browsing_data::CalculateEndDeleteTime(
+                                browsing_data::TimePeriod::LAST_HOUR),
+                            BrowsingDataRemover::REMOVE_HISTORY,
+                            BrowsingDataHelper::UNPROTECTED_WEB,
+                            &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 };

@@ -249,6 +249,7 @@ android_library("chrome_java") {
     "//chrome:page_info_connection_type_javagen",
     "//chrome:website_settings_action_javagen",
     "//components/browsing_data/core:browsing_data_utils_java",
+    "//components/browsing_data/core:clear_browsing_data_tab_java",
     "//components/infobars/core:infobar_enums_java",
     "//components/ntp_snippets:ntp_snippets_java_enums_srcjar",
     "//components/ntp_tiles:ntp_tiles_enums_java",

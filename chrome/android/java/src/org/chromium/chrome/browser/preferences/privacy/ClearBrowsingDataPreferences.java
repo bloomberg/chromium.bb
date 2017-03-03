@@ -19,6 +19,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
+import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
@@ -67,7 +68,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             mParent = parent;
             mOption = option;
             mCheckbox = checkbox;
-            mCounter = new BrowsingDataCounterBridge(this, mOption.getDataType());
+            mCounter = new BrowsingDataCounterBridge(
+                    this, mOption.getDataType(), mParent.getPreferenceType());
 
             mCheckbox.setOnPreferenceClickListener(this);
             mCheckbox.setEnabled(enabled);
@@ -99,7 +101,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             mParent.updateButtonState();
             mShouldAnnounceCounterResult = true;
             PrefServiceBridge.getInstance().setBrowsingDataDeletionPreference(
-                    mOption.getDataType(), mCheckbox.isChecked());
+                    mOption.getDataType(), mParent.getPreferenceType(), mCheckbox.isChecked());
             return true;
         }
 
@@ -303,6 +305,14 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     /**
+     * Returns whether this preference page is a basic or advanced tab in order to use separate
+     * preferences.
+     */
+    protected int getPreferenceType() {
+        return ClearBrowsingDataTab.ADVANCED;
+    }
+
+    /**
      * Returns the Array of time periods. Options are displayed in the same order as they appear
      * in the array.
      */
@@ -332,7 +342,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      */
     private boolean isOptionSelectedByDefault(DialogOption option) {
         return PrefServiceBridge.getInstance().getBrowsingDataDeletionPreference(
-                option.getDataType());
+                option.getDataType(), getPreferenceType());
     }
 
     /**
@@ -420,7 +430,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             }
 
             PrefServiceBridge.getInstance().setBrowsingDataDeletionTimePeriod(
-                    ((TimePeriodSpinnerOption) value).getTimePeriod());
+                    getPreferenceType(), ((TimePeriodSpinnerOption) value).getTimePeriod());
             return true;
         }
         return false;
@@ -461,7 +471,11 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
                     && !PrefServiceBridge.getInstance().canDeleteBrowsingHistory()) {
                 enabled = false;
                 PrefServiceBridge.getInstance().setBrowsingDataDeletionPreference(
-                        DialogOption.CLEAR_HISTORY.getDataType(), false);
+                        DialogOption.CLEAR_HISTORY.getDataType(), ClearBrowsingDataTab.BASIC,
+                        false);
+                PrefServiceBridge.getInstance().setBrowsingDataDeletionPreference(
+                        DialogOption.CLEAR_HISTORY.getDataType(), ClearBrowsingDataTab.ADVANCED,
+                        false);
             }
 
             mItems[i] = new Item(
@@ -484,8 +498,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         SpinnerPreference spinner = (SpinnerPreference) findPreference(PREF_TIME_RANGE);
         spinner.setOnPreferenceChangeListener(this);
         TimePeriodSpinnerOption[] spinnerOptions = getTimePeriodSpinnerOptions();
-        int selectedTimePeriod =
-                PrefServiceBridge.getInstance().getBrowsingDataDeletionTimePeriod();
+        int selectedTimePeriod = PrefServiceBridge.getInstance().getBrowsingDataDeletionTimePeriod(
+                getPreferenceType());
         int spinnerOptionIndex = -1;
         for (int i = 0; i < spinnerOptions.length; ++i) {
             if (spinnerOptions[i].getTimePeriod() == selectedTimePeriod) {

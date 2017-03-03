@@ -132,6 +132,15 @@ PrefService* GetPrefService() {
   return GetOriginalProfile()->GetPrefs();
 }
 
+browsing_data::ClearBrowsingDataTab ToTabEnum(jint clear_browsing_data_tab) {
+  DCHECK_GE(clear_browsing_data_tab, 0);
+  DCHECK_LT(clear_browsing_data_tab,
+            static_cast<int>(browsing_data::ClearBrowsingDataTab::NUM_TYPES));
+
+  return static_cast<browsing_data::ClearBrowsingDataTab>(
+      clear_browsing_data_tab);
+}
+
 }  // namespace
 
 // ----------------------------------------------------------------------------
@@ -539,9 +548,11 @@ class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
 static jboolean GetBrowsingDataDeletionPreference(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jint data_type) {
+    jint data_type,
+    jint clear_browsing_data_tab) {
   DCHECK_GE(data_type, 0);
-  DCHECK_LT(data_type, browsing_data::NUM_TYPES);
+  DCHECK_LT(data_type,
+            static_cast<int>(browsing_data::BrowsingDataType::NUM_TYPES));
 
   // If there is no corresponding preference for this |data_type|, pretend
   // that it's set to false.
@@ -549,43 +560,50 @@ static jboolean GetBrowsingDataDeletionPreference(
   // data types for consistency.
   std::string pref;
   if (!browsing_data::GetDeletionPreferenceFromDataType(
-          static_cast<browsing_data::BrowsingDataType>(data_type), &pref)) {
+          static_cast<browsing_data::BrowsingDataType>(data_type),
+          ToTabEnum(clear_browsing_data_tab), &pref)) {
     return false;
   }
 
   return GetOriginalProfile()->GetPrefs()->GetBoolean(pref);
 }
 
-static void SetBrowsingDataDeletionPreference(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint data_type,
-    jboolean value) {
+static void SetBrowsingDataDeletionPreference(JNIEnv* env,
+                                              const JavaParamRef<jobject>& obj,
+                                              jint data_type,
+                                              jint clear_browsing_data_tab,
+                                              jboolean value) {
   DCHECK_GE(data_type, 0);
-  DCHECK_LT(data_type, browsing_data::NUM_TYPES);
+  DCHECK_LT(data_type,
+            static_cast<int>(browsing_data::BrowsingDataType::NUM_TYPES));
 
   std::string pref;
   if (!browsing_data::GetDeletionPreferenceFromDataType(
-          static_cast<browsing_data::BrowsingDataType>(data_type), &pref)) {
+          static_cast<browsing_data::BrowsingDataType>(data_type),
+          ToTabEnum(clear_browsing_data_tab), &pref)) {
     return;
   }
 
   GetOriginalProfile()->GetPrefs()->SetBoolean(pref, value);
 }
 
-static jint GetBrowsingDataDeletionTimePeriod(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
+static jint GetBrowsingDataDeletionTimePeriod(JNIEnv* env,
+                                              const JavaParamRef<jobject>& obj,
+                                              jint clear_browsing_data_tab) {
+  return GetPrefService()->GetInteger(
+      browsing_data::GetTimePeriodPreferenceName(
+          ToTabEnum(clear_browsing_data_tab)));
 }
 
-static void SetBrowsingDataDeletionTimePeriod(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint time_period) {
+static void SetBrowsingDataDeletionTimePeriod(JNIEnv* env,
+                                              const JavaParamRef<jobject>& obj,
+                                              jint clear_browsing_data_tab,
+                                              jint time_period) {
   DCHECK_GE(time_period, 0);
-  DCHECK_LE(time_period, browsing_data::TIME_PERIOD_LAST);
-  GetPrefService()->SetInteger(browsing_data::prefs::kDeleteTimePeriod,
+  DCHECK_LE(time_period,
+            static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST));
+  GetPrefService()->SetInteger(browsing_data::GetTimePeriodPreferenceName(
+                                   ToTabEnum(clear_browsing_data_tab)),
                                time_period);
 }
 
@@ -602,6 +620,11 @@ static void SetLastClearBrowsingDataTab(JNIEnv* env,
   DCHECK_LT(tab_index, 2);
   GetPrefService()->SetInteger(browsing_data::prefs::kLastClearBrowsingDataTab,
                                tab_index);
+}
+
+static void MigrateBrowsingDataPreferences(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
+  browsing_data::MigratePreferencesToBasic(GetOriginalProfile()->GetPrefs());
 }
 
 static void ClearBrowsingData(
@@ -622,27 +645,27 @@ static void ClearBrowsingData(
   int remove_mask = 0;
   for (const int data_type : data_types_vector) {
     switch (static_cast<browsing_data::BrowsingDataType>(data_type)) {
-      case browsing_data::HISTORY:
+      case browsing_data::BrowsingDataType::HISTORY:
         remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
         break;
-      case browsing_data::CACHE:
+      case browsing_data::BrowsingDataType::CACHE:
         remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
         break;
-      case browsing_data::COOKIES:
+      case browsing_data::BrowsingDataType::COOKIES:
         remove_mask |= BrowsingDataRemover::REMOVE_COOKIES;
         remove_mask |= BrowsingDataRemover::REMOVE_SITE_DATA;
         break;
-      case browsing_data::PASSWORDS:
+      case browsing_data::BrowsingDataType::PASSWORDS:
         remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
         break;
-      case browsing_data::FORM_DATA:
+      case browsing_data::BrowsingDataType::FORM_DATA:
         remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
         break;
-      case browsing_data::BOOKMARKS:
+      case browsing_data::BrowsingDataType::BOOKMARKS:
         // Bookmarks are deleted separately on the Java side.
         NOTREACHED();
         break;
-      case browsing_data::NUM_TYPES:
+      case browsing_data::BrowsingDataType::NUM_TYPES:
         NOTREACHED();
     }
   }

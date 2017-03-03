@@ -9,6 +9,7 @@
 #include "components/browsing_data/core/counters/history_counter.h"
 #include "components/browsing_data/core/counters/passwords_counter.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -18,19 +19,19 @@ base::Time CalculateBeginDeleteTime(TimePeriod time_period) {
   base::TimeDelta diff;
   base::Time delete_begin_time = base::Time::Now();
   switch (time_period) {
-    case LAST_HOUR:
+    case TimePeriod::LAST_HOUR:
       diff = base::TimeDelta::FromHours(1);
       break;
-    case LAST_DAY:
+    case TimePeriod::LAST_DAY:
       diff = base::TimeDelta::FromHours(24);
       break;
-    case LAST_WEEK:
+    case TimePeriod::LAST_WEEK:
       diff = base::TimeDelta::FromHours(7 * 24);
       break;
-    case FOUR_WEEKS:
+    case TimePeriod::FOUR_WEEKS:
       diff = base::TimeDelta::FromHours(4 * 7 * 24);
       break;
-    case ALL_TIME:
+    case TimePeriod::ALL_TIME:
       delete_begin_time = base::Time();
       break;
   }
@@ -44,20 +45,20 @@ base::Time CalculateEndDeleteTime(TimePeriod time_period) {
 
 void RecordDeletionForPeriod(TimePeriod period) {
   switch (period) {
-    case browsing_data::LAST_HOUR:
+    case TimePeriod::LAST_HOUR:
       base::RecordAction(base::UserMetricsAction("ClearBrowsingData_LastHour"));
       break;
-    case browsing_data::LAST_DAY:
+    case TimePeriod::LAST_DAY:
       base::RecordAction(base::UserMetricsAction("ClearBrowsingData_LastDay"));
       break;
-    case browsing_data::LAST_WEEK:
+    case TimePeriod::LAST_WEEK:
       base::RecordAction(base::UserMetricsAction("ClearBrowsingData_LastWeek"));
       break;
-    case browsing_data::FOUR_WEEKS:
+    case TimePeriod::FOUR_WEEKS:
       base::RecordAction(
           base::UserMetricsAction("ClearBrowsingData_LastMonth"));
       break;
-    case browsing_data::ALL_TIME:
+    case TimePeriod::ALL_TIME:
       base::RecordAction(
           base::UserMetricsAction("ClearBrowsingData_Everything"));
       break;
@@ -85,7 +86,8 @@ base::string16 GetCounterTextFromResult(
             ? IDS_DEL_PASSWORDS_COUNTER
             : IDS_DEL_DOWNLOADS_COUNTER,
         count);
-  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
+  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory ||
+             pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {
     // History counter.
     const browsing_data::HistoryCounter::HistoryResult* history_result =
         static_cast<const browsing_data::HistoryCounter::HistoryResult*>(
@@ -169,36 +171,75 @@ base::string16 GetCounterTextFromResult(
   return text;
 }
 
+const char* GetTimePeriodPreferenceName(
+    ClearBrowsingDataTab clear_browsing_data_tab) {
+  return clear_browsing_data_tab == ClearBrowsingDataTab::BASIC
+             ? prefs::kDeleteTimePeriodBasic
+             : prefs::kDeleteTimePeriod;
+}
+
 bool GetDeletionPreferenceFromDataType(
     BrowsingDataType data_type,
+    ClearBrowsingDataTab clear_browsing_data_tab,
     std::string* out_pref) {
+  if (clear_browsing_data_tab == ClearBrowsingDataTab::BASIC) {
+    switch (data_type) {
+      case BrowsingDataType::HISTORY:
+        *out_pref = prefs::kDeleteBrowsingHistoryBasic;
+        return true;
+      case BrowsingDataType::CACHE:
+        *out_pref = prefs::kDeleteCacheBasic;
+        return true;
+      case BrowsingDataType::COOKIES:
+        *out_pref = prefs::kDeleteCookiesBasic;
+        return true;
+      default:
+        // This is not a valid type for the basic tab.
+        NOTREACHED();
+        return false;
+    }
+  }
   switch (data_type) {
-    case HISTORY:
+    case BrowsingDataType::HISTORY:
       *out_pref = prefs::kDeleteBrowsingHistory;
       return true;
-    case CACHE:
+    case BrowsingDataType::CACHE:
       *out_pref = prefs::kDeleteCache;
       return true;
-    case COOKIES:
+    case BrowsingDataType::COOKIES:
       *out_pref = prefs::kDeleteCookies;
       return true;
-    case PASSWORDS:
+    case BrowsingDataType::PASSWORDS:
       *out_pref = prefs::kDeletePasswords;
       return true;
-    case FORM_DATA:
+    case BrowsingDataType::FORM_DATA:
       *out_pref = prefs::kDeleteFormData;
       return true;
-    case BOOKMARKS:
+    case BrowsingDataType::BOOKMARKS:
       // Bookmarks are deleted on the Android side. No corresponding deletion
       // preference.
       return false;
-    case NUM_TYPES:
+    case BrowsingDataType::NUM_TYPES:
       // This is not an actual type.
       NOTREACHED();
       return false;
   }
   NOTREACHED();
   return false;
+}
+
+void MigratePreferencesToBasic(PrefService* prefs) {
+  if (!prefs->GetBoolean(prefs::kPreferencesMigratedToBasic)) {
+    prefs->SetBoolean(prefs::kDeleteBrowsingHistoryBasic,
+                      prefs->GetBoolean(prefs::kDeleteBrowsingHistory));
+    prefs->SetBoolean(prefs::kDeleteCacheBasic,
+                      prefs->GetBoolean(prefs::kDeleteCache));
+    prefs->SetBoolean(prefs::kDeleteCookiesBasic,
+                      prefs->GetBoolean(prefs::kDeleteCookies));
+    prefs->SetInteger(prefs::kDeleteTimePeriodBasic,
+                      prefs->GetInteger(prefs::kDeleteTimePeriod));
+    prefs->SetBoolean(prefs::kPreferencesMigratedToBasic, true);
+  }
 }
 
 }  // namespace browsing_data

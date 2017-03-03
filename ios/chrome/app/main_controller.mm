@@ -2613,7 +2613,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   callbackCounter->IncrementCount();
   [self removeBrowsingDataFromBrowserState:_mainBrowserState
                                       mask:removeAllMask
-                                timePeriod:browsing_data::ALL_TIME
+                                timePeriod:browsing_data::TimePeriod::ALL_TIME
                          completionHandler:decrementCallbackCounterCount];
 }
 

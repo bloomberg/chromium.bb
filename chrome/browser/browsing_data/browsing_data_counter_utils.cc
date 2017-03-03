@@ -61,7 +61,8 @@ base::string16 GetChromeCounterTextFromResult(
     return l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_CALCULATING);
   }
 
-  if (pref_name == browsing_data::prefs::kDeleteCache) {
+  if (pref_name == browsing_data::prefs::kDeleteCache ||
+      pref_name == browsing_data::prefs::kDeleteCacheBasic) {
     // Cache counter.
     const auto* cache_result =
         static_cast<const CacheCounter::CacheResult*>(result);

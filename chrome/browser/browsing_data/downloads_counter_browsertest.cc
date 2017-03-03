@@ -46,7 +46,7 @@ class DownloadsCounterTest : public InProcessBrowserTest,
         content::BrowserContext::GetDownloadManager(
             browser()->profile()->GetOffTheRecordProfile());
     SetDownloadsDeletionPref(true);
-    SetDeletionPeriodPref(browsing_data::ALL_TIME);
+    SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   }
 
   void TearDownOnMainThread() override {
@@ -248,6 +248,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, Count) {
   Profile* profile = browser()->profile();
   DownloadsCounter counter(profile);
   counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
                base::Bind(&DownloadsCounterTest::ResultCallback,
                           base::Unretained(this)));
   counter.Restart();
@@ -277,6 +278,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, Types) {
   Profile* profile = browser()->profile();
   DownloadsCounter counter(profile);
   counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
                base::Bind(&DownloadsCounterTest::ResultCallback,
                           base::Unretained(this)));
 
@@ -312,6 +314,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, NotPersisted) {
   Profile* profile = browser()->profile();
   DownloadsCounter counter(profile);
   counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
                base::Bind(&DownloadsCounterTest::ResultCallback,
                           base::Unretained(this)));
 
@@ -361,22 +364,23 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, TimeRanges) {
   Profile* profile = browser()->profile();
   DownloadsCounter counter(profile);
   counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
                base::Bind(&DownloadsCounterTest::ResultCallback,
                           base::Unretained(this)));
 
-  SetDeletionPeriodPref(browsing_data::LAST_HOUR);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_HOUR);
   EXPECT_EQ(2u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::LAST_DAY);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_DAY);
   EXPECT_EQ(5u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::LAST_WEEK);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_WEEK);
   EXPECT_EQ(7u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::FOUR_WEEKS);
   EXPECT_EQ(8u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::ALL_TIME);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   EXPECT_EQ(11u, GetResult());
 }
 

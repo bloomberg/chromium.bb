@@ -156,6 +156,7 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, Empty) {
   Profile* profile = browser()->profile();
   MediaLicensesCounter counter(profile);
   counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
                base::Bind(&MediaLicensesCounterTest::CountingCallback,
                           base::Unretained(this)));
   counter.Restart();
@@ -174,6 +175,7 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, NonEmpty) {
   Profile* profile = browser()->profile();
   MediaLicensesCounter counter(profile);
   counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
                base::Bind(&MediaLicensesCounterTest::CountingCallback,
                           base::Unretained(this)));
   counter.Restart();
@@ -193,6 +195,7 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, PrefChanged) {
   Profile* profile = browser()->profile();
   MediaLicensesCounter counter(profile);
   counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
                base::Bind(&MediaLicensesCounterTest::CountingCallback,
                           base::Unretained(this)));
   SetMediaLicenseDeletionPref(true);

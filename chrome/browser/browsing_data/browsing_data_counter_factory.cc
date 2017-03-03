@@ -46,7 +46,8 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
   if (!AreCountersEnabled())
     return nullptr;
 
-  if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
+  if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory ||
+      pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {
     return base::MakeUnique<browsing_data::HistoryCounter>(
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS),
@@ -55,7 +56,8 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
         ProfileSyncServiceFactory::GetForProfile(profile));
   }
 
-  if (pref_name == browsing_data::prefs::kDeleteCache)
+  if (pref_name == browsing_data::prefs::kDeleteCache ||
+      pref_name == browsing_data::prefs::kDeleteCacheBasic)
     return base::MakeUnique<CacheCounter>(profile);
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {

@@ -87,7 +87,9 @@ class BrowsingDataCounterTest : public testing::Test {
     pref_service_->registry()->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
 
     counter_.reset(new MockBrowsingDataCounter());
-    counter_->Init(pref_service_.get(), base::Bind(&IgnoreResult));
+    counter_->Init(pref_service_.get(),
+                   browsing_data::ClearBrowsingDataTab::ADVANCED,
+                   base::Bind(&IgnoreResult));
   }
 
   void TearDown() override {

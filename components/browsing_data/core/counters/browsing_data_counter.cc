@@ -25,14 +25,15 @@ BrowsingDataCounter::BrowsingDataCounter()
 BrowsingDataCounter::~BrowsingDataCounter() {}
 
 void BrowsingDataCounter::Init(PrefService* pref_service,
+                               ClearBrowsingDataTab clear_browsing_data_tab,
                                const Callback& callback) {
   DCHECK(!initialized_);
   callback_ = callback;
-  pref_service_ = pref_service;
-  pref_.Init(GetPrefName(), pref_service_,
+  clear_browsing_data_tab_ = clear_browsing_data_tab;
+  pref_.Init(GetPrefName(), pref_service,
              base::Bind(&BrowsingDataCounter::Restart, base::Unretained(this)));
   period_.Init(
-      browsing_data::prefs::kDeleteTimePeriod, pref_service_,
+      GetTimePeriodPreferenceName(GetTab()), pref_service,
       base::Bind(&BrowsingDataCounter::Restart, base::Unretained(this)));
 
   initialized_ = true;
@@ -104,8 +105,8 @@ BrowsingDataCounter::GetStateTransitionsForTesting() {
   return state_transitions_;
 }
 
-PrefService* BrowsingDataCounter::GetPrefs() const {
-  return pref_service_;
+ClearBrowsingDataTab BrowsingDataCounter::GetTab() const {
+  return clear_browsing_data_tab_;
 }
 
 void BrowsingDataCounter::TransitionToShowCalculating() {

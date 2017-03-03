@@ -12,6 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
+#include "components/browsing_data/core/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -33,8 +36,15 @@ class BrowsingDataUtilsTest : public testing::Test {
   BrowsingDataUtilsTest() {}
   ~BrowsingDataUtilsTest() override {}
 
+  void SetUp() override {
+    browsing_data::prefs::RegisterBrowserUserPrefs(prefs_.registry());
+  }
+
+  PrefService* prefs() { return &prefs_; }
+
  private:
   base::MessageLoop loop_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
 };
 
 // Tests the complex output of the Autofill counter.
@@ -76,4 +86,33 @@ TEST_F(BrowsingDataUtilsTest, AutofillCounterResult) {
     base::string16 output = browsing_data::GetCounterTextFromResult(&result);
     EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
   }
+}
+
+TEST_F(BrowsingDataUtilsTest, MigratePreferencesToBasic) {
+  using namespace browsing_data::prefs;
+
+  prefs()->SetBoolean(kDeleteBrowsingHistory, true);
+  prefs()->SetBoolean(kDeleteCookies, false);
+  prefs()->SetBoolean(kDeleteCache, false);
+  prefs()->SetInteger(kDeleteTimePeriod, 42);
+
+  // History, cookies and cache should be migrated to their basic counterpart.
+  browsing_data::MigratePreferencesToBasic(prefs());
+  EXPECT_TRUE(prefs()->GetBoolean(kDeleteBrowsingHistoryBasic));
+  EXPECT_FALSE(prefs()->GetBoolean(kDeleteCookiesBasic));
+  EXPECT_FALSE(prefs()->GetBoolean(kDeleteCacheBasic));
+  EXPECT_EQ(42, prefs()->GetInteger(kDeleteTimePeriodBasic));
+
+  prefs()->SetBoolean(kDeleteBrowsingHistory, true);
+  prefs()->SetBoolean(kDeleteCookies, true);
+  prefs()->SetBoolean(kDeleteCache, true);
+  prefs()->SetInteger(kDeleteTimePeriod, 100);
+
+  // After the first migration all settings should stay the same if the
+  // migration is executed again.
+  browsing_data::MigratePreferencesToBasic(prefs());
+  EXPECT_TRUE(prefs()->GetBoolean(kDeleteBrowsingHistoryBasic));
+  EXPECT_FALSE(prefs()->GetBoolean(kDeleteCookiesBasic));
+  EXPECT_FALSE(prefs()->GetBoolean(kDeleteCacheBasic));
+  EXPECT_EQ(42, prefs()->GetInteger(kDeleteTimePeriodBasic));
 }

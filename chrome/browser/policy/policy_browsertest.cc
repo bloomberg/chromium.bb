@@ -95,6 +95,7 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -2217,6 +2218,54 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   ui_test_utils::HistoryEnumerator enumerator2(browser()->profile());
   ASSERT_EQ(1u, enumerator2.urls().size());
   EXPECT_EQ(url, enumerator2.urls()[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, DeletingBrowsingHistoryDisabled) {
+  // Verifies that deleting the browsing history can be disabled.
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kAllowDeletingBrowserHistory));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+
+  EXPECT_TRUE(prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory));
+  EXPECT_TRUE(prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory));
+  EXPECT_TRUE(
+      prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistoryBasic));
+
+  PolicyMap policies;
+  policies.Set(key::kAllowDeletingBrowserHistory, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kAllowDeletingBrowserHistory));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+
+  EXPECT_TRUE(prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory));
+  EXPECT_TRUE(prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory));
+  EXPECT_TRUE(
+      prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistoryBasic));
+
+  policies.Set(key::kAllowDeletingBrowserHistory, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kAllowDeletingBrowserHistory));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+
+  EXPECT_FALSE(prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory));
+  EXPECT_FALSE(prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory));
+  EXPECT_FALSE(
+      prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistoryBasic));
+
+  policies.Clear();
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kAllowDeletingBrowserHistory));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+
+  EXPECT_TRUE(prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory));
+  EXPECT_TRUE(prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory));
+  EXPECT_TRUE(
+      prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistoryBasic));
 }
 
 // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235

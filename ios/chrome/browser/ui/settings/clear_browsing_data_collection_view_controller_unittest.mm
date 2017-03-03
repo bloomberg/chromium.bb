@@ -234,7 +234,7 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
   ASSERT_EQ("en", GetApplicationContext()->GetApplicationLocale());
   PrefService* prefs = browser_state_->GetPrefs();
   prefs->SetInteger(browsing_data::prefs::kDeleteTimePeriod,
-                    browsing_data::ALL_TIME);
+                    static_cast<int>(browsing_data::TimePeriod::ALL_TIME));
   CacheCounter counter(browser_state_.get());
 
   // Test multiple possible types of formatting.
@@ -274,7 +274,7 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
   }
   PrefService* prefs = browser_state_->GetPrefs();
   prefs->SetInteger(browsing_data::prefs::kDeleteTimePeriod,
-                    browsing_data::LAST_HOUR);
+                    static_cast<int>(browsing_data::TimePeriod::LAST_HOUR));
   CacheCounter counter(browser_state_.get());
 
   // Test multiple possible types of formatting.

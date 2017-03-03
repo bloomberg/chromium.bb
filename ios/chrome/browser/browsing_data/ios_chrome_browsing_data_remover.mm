@@ -96,19 +96,19 @@ IOSChromeBrowsingDataRemover* IOSChromeBrowsingDataRemover::CreateForPeriod(
     ios::ChromeBrowserState* browser_state,
     browsing_data::TimePeriod period) {
   switch (period) {
-    case browsing_data::LAST_HOUR:
+    case browsing_data::TimePeriod::LAST_HOUR:
       base::RecordAction(UserMetricsAction("ClearBrowsingData_LastHour"));
       break;
-    case browsing_data::LAST_DAY:
+    case browsing_data::TimePeriod::LAST_DAY:
       base::RecordAction(UserMetricsAction("ClearBrowsingData_LastDay"));
       break;
-    case browsing_data::LAST_WEEK:
+    case browsing_data::TimePeriod::LAST_WEEK:
       base::RecordAction(UserMetricsAction("ClearBrowsingData_LastWeek"));
       break;
-    case browsing_data::FOUR_WEEKS:
+    case browsing_data::TimePeriod::FOUR_WEEKS:
       base::RecordAction(UserMetricsAction("ClearBrowsingData_LastMonth"));
       break;
-    case browsing_data::ALL_TIME:
+    case browsing_data::TimePeriod::ALL_TIME:
       base::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
       break;
   }

@@ -192,12 +192,14 @@ const int kMaxTimesHistoryNoticeShown = 1;
       int prefValue = browserState->GetPrefs()->GetInteger(
           browsing_data::prefs::kDeleteTimePeriod);
       prefValue = MAX(0, prefValue);
-      if (prefValue > browsing_data::TIME_PERIOD_LAST) {
-        prefValue = browsing_data::TIME_PERIOD_LAST;
+      const int maxValue =
+          static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST);
+      if (prefValue > maxValue) {
+        prefValue = maxValue;
       }
       _timePeriod = static_cast<browsing_data::TimePeriod>(prefValue);
     } else {
-      _timePeriod = browsing_data::ALL_TIME;
+      _timePeriod = browsing_data::TimePeriod::ALL_TIME;
     }
 
     self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
@@ -803,7 +805,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
                                      (~NSByteCountFormatterUseKB);
       formatter.get().countStyle = NSByteCountFormatterCountStyleMemory;
       NSString* formattedSize = [formatter stringFromByteCount:cacheSizeBytes];
-      return (_timePeriod == browsing_data::ALL_TIME)
+      return (_timePeriod == browsing_data::TimePeriod::ALL_TIME)
                  ? formattedSize
                  : l10n_util::GetNSStringF(
                        IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,

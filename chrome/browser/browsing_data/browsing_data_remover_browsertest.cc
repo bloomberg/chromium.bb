@@ -105,6 +105,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
     CacheCounter counter(profile);
     counter.Init(profile->GetPrefs(),
+                 browsing_data::ClearBrowsingDataTab::ADVANCED,
                  base::Bind(&BrowsingDataRemoverBrowserTest::OnCacheSizeResult,
                             base::Unretained(this), base::Unretained(&run_loop),
                             base::Unretained(&size)));

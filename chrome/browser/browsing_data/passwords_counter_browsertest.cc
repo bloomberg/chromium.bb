@@ -28,7 +28,7 @@ class PasswordsCounterTest : public InProcessBrowserTest {
     store_ = PasswordStoreFactory::GetForProfile(
         browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS);
     SetPasswordsDeletionPref(true);
-    SetDeletionPeriodPref(browsing_data::ALL_TIME);
+    SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   }
 
   void AddLogin(const std::string& origin,
@@ -140,8 +140,9 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
   Profile* profile = browser()->profile();
   browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS));
-  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
-                                               base::Unretained(this)));
+  counter.Init(
+      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&PasswordsCounterTest::Callback, base::Unretained(this)));
   counter.Restart();
 
   WaitForCounting();
@@ -159,8 +160,9 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, Blacklisted) {
   browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS));
 
-  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
-                                               base::Unretained(this)));
+  counter.Init(
+      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&PasswordsCounterTest::Callback, base::Unretained(this)));
   counter.Restart();
 
   WaitForCounting();
@@ -178,8 +180,9 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefChanged) {
   Profile* profile = browser()->profile();
   browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS));
-  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
-                                               base::Unretained(this)));
+  counter.Init(
+      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&PasswordsCounterTest::Callback, base::Unretained(this)));
   SetPasswordsDeletionPref(true);
 
   WaitForCounting();
@@ -195,8 +198,9 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, StoreChanged) {
   Profile* profile = browser()->profile();
   browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS));
-  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
-                                               base::Unretained(this)));
+  counter.Init(
+      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&PasswordsCounterTest::Callback, base::Unretained(this)));
   counter.Restart();
 
   WaitForCounting();
@@ -226,26 +230,27 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PeriodChanged) {
   Profile* profile = browser()->profile();
   browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS));
-  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
-                                               base::Unretained(this)));
+  counter.Init(
+      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&PasswordsCounterTest::Callback, base::Unretained(this)));
 
-  SetDeletionPeriodPref(browsing_data::LAST_HOUR);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_HOUR);
   WaitForCounting();
   EXPECT_EQ(1u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::LAST_DAY);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_DAY);
   WaitForCounting();
   EXPECT_EQ(1u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::LAST_WEEK);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_WEEK);
   WaitForCounting();
   EXPECT_EQ(3u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::FOUR_WEEKS);
   WaitForCounting();
   EXPECT_EQ(3u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::ALL_TIME);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   WaitForCounting();
   EXPECT_EQ(4u, GetResult());
 }

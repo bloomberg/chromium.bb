@@ -10,21 +10,31 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/browsing_data/core/browsing_data_utils.h"
 #include "jni/BrowsingDataCounterBridge_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 BrowsingDataCounterBridge::BrowsingDataCounterBridge(
-    JNIEnv* env, const JavaParamRef<jobject>& obj, jint data_type)
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint data_type,
+    jint clear_browsing_data_tab)
     : jobject_(obj) {
   DCHECK_GE(data_type, 0);
-  DCHECK_LT(data_type, browsing_data::NUM_TYPES);
+  DCHECK_LT(data_type,
+            static_cast<int>(browsing_data::BrowsingDataType::NUM_TYPES));
+  DCHECK_GE(clear_browsing_data_tab, 0);
+  DCHECK_LT(clear_browsing_data_tab,
+            static_cast<int>(browsing_data::ClearBrowsingDataTab::NUM_TYPES));
+
+  clear_browsing_data_tab_ =
+      static_cast<browsing_data::ClearBrowsingDataTab>(clear_browsing_data_tab);
 
   std::string pref;
   if (!browsing_data::GetDeletionPreferenceFromDataType(
-          static_cast<browsing_data::BrowsingDataType>(data_type), &pref)) {
+          static_cast<browsing_data::BrowsingDataType>(data_type),
+          clear_browsing_data_tab_, &pref)) {
     return;
   }
 
@@ -35,7 +45,7 @@ BrowsingDataCounterBridge::BrowsingDataCounterBridge(
   if (!counter_)
     return;
 
-  counter_->Init(profile->GetPrefs(),
+  counter_->Init(profile->GetPrefs(), clear_browsing_data_tab_,
                  base::Bind(&BrowsingDataCounterBridge::onCounterFinished,
                             base::Unretained(this)));
   counter_->Restart();
@@ -64,8 +74,10 @@ void BrowsingDataCounterBridge::onCounterFinished(
                                                                result_string);
 }
 
-static jlong Init(
-    JNIEnv* env, const JavaParamRef<jobject>& obj, int data_type) {
-  return reinterpret_cast<intptr_t>(
-      new BrowsingDataCounterBridge(env, obj, data_type));
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jobject>& obj,
+                  jint data_type,
+                  jint clear_browsing_data_tab) {
+  return reinterpret_cast<intptr_t>(new BrowsingDataCounterBridge(
+      env, obj, data_type, clear_browsing_data_tab));
 }

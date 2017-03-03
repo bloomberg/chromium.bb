@@ -37,8 +37,10 @@ const int kStringIDS[] = {
     IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_LAST_FOUR_WEEKS,
     IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME};
 
-static_assert(arraysize(kStringIDS) == browsing_data::TIME_PERIOD_LAST + 1,
-              "Strings have to match the enum values.");
+static_assert(
+    arraysize(kStringIDS) ==
+        static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST) + 1,
+    "Strings have to match the enum values.");
 
 }  // namespace
 
@@ -150,7 +152,8 @@ initWithPrefs:(PrefService*)prefs
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   int timePeriod = itemType - kItemTypeEnumZero;
-  DCHECK_LE(timePeriod, browsing_data::TIME_PERIOD_LAST);
+  DCHECK_LE(timePeriod,
+            static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST));
   [self updatePrefValue:timePeriod];
   [_weakDelegate
       timeRangeSelectorViewController:self

@@ -409,10 +409,12 @@ class SdchBrowserTest : public InProcessBrowserTest,
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->RemoveAndReply(
-        browsing_data::CalculateBeginDeleteTime(browsing_data::LAST_HOUR),
-        browsing_data::CalculateEndDeleteTime(browsing_data::LAST_HOUR),
-        remove_mask, BrowsingDataHelper::UNPROTECTED_WEB, &completion_observer);
+    remover->RemoveAndReply(browsing_data::CalculateBeginDeleteTime(
+                                browsing_data::TimePeriod::LAST_HOUR),
+                            browsing_data::CalculateEndDeleteTime(
+                                browsing_data::TimePeriod::LAST_HOUR),
+                            remove_mask, BrowsingDataHelper::UNPROTECTED_WEB,
+                            &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 

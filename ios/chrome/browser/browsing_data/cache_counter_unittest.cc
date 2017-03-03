@@ -35,7 +35,7 @@ class CacheCounterTest : public testing::Test {
   CacheCounterTest() {
     prefs_.registry()->RegisterIntegerPref(
         browsing_data::prefs::kDeleteTimePeriod,
-        static_cast<int>(browsing_data::ALL_TIME));
+        static_cast<int>(browsing_data::TimePeriod::ALL_TIME));
     prefs_.registry()->RegisterBooleanPref(browsing_data::prefs::kDeleteCache,
                                            true);
 
@@ -236,8 +236,9 @@ class CacheCounterTest : public testing::Test {
 // Tests that for the empty cache, the result is zero.
 TEST_F(CacheCounterTest, Empty) {
   CacheCounter counter(browser_state());
-  counter.Init(prefs(), base::Bind(&CacheCounterTest::CountingCallback,
-                                   base::Unretained(this)));
+  counter.Init(
+      prefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
   counter.Restart();
 
   WaitForIOThread();
@@ -251,8 +252,9 @@ TEST_F(CacheCounterTest, BeforeAndAfterClearing) {
   CreateCacheEntry();
 
   CacheCounter counter(browser_state());
-  counter.Init(prefs(), base::Bind(&CacheCounterTest::CountingCallback,
-                                   base::Unretained(this)));
+  counter.Init(
+      prefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
   counter.Restart();
 
   WaitForIOThread();
@@ -271,8 +273,9 @@ TEST_F(CacheCounterTest, PrefChanged) {
   SetCacheDeletionPref(false);
 
   CacheCounter counter(browser_state());
-  counter.Init(prefs(), base::Bind(&CacheCounterTest::CountingCallback,
-                                   base::Unretained(this)));
+  counter.Init(
+      prefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
   SetCacheDeletionPref(true);
 
   WaitForIOThread();
@@ -287,26 +290,27 @@ TEST_F(CacheCounterTest, PeriodChanged) {
   CreateCacheEntry();
 
   CacheCounter counter(browser_state());
-  counter.Init(prefs(), base::Bind(&CacheCounterTest::CountingCallback,
-                                   base::Unretained(this)));
+  counter.Init(
+      prefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
 
-  SetDeletionPeriodPref(browsing_data::LAST_HOUR);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_HOUR);
   WaitForIOThread();
   browsing_data::BrowsingDataCounter::ResultInt result = GetResult();
 
-  SetDeletionPeriodPref(browsing_data::LAST_DAY);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_DAY);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::LAST_WEEK);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_WEEK);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::FOUR_WEEKS);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::ALL_TIME);
+  SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
 }

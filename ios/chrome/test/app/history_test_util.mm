@@ -28,7 +28,7 @@ void ClearBrowsingHistory() {
       removeBrowsingDataFromBrowserState:active_state
                                     mask:IOSChromeBrowsingDataRemover::
                                              REMOVE_HISTORY
-                              timePeriod:browsing_data::ALL_TIME
+                              timePeriod:browsing_data::TimePeriod::ALL_TIME
                        completionHandler:^{
                          callback_counter->DecrementCount();
                          did_complete = true;

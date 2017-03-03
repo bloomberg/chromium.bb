@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "components/browsing_data/core/clear_browsing_data_tab.h"
 #include "components/prefs/pref_member.h"
 
 class PrefService;
@@ -85,14 +86,12 @@ class BrowsingDataCounter {
   virtual ~BrowsingDataCounter();
 
   // Should be called once to initialize this class.
-  void Init(PrefService* pref_service, const Callback& callback);
+  void Init(PrefService* pref_service,
+            ClearBrowsingDataTab clear_browsing_data_tab,
+            const Callback& callback);
 
   // Name of the preference associated with this counter.
   virtual const char* GetPrefName() const = 0;
-
-  // PrefService that manages the preferences for the user profile
-  // associated with this counter.
-  PrefService* GetPrefs() const;
 
   // Restarts the counter. Will be called automatically if the counting needs
   // to be restarted, e.g. when the deletion preference changes state or when
@@ -121,6 +120,10 @@ class BrowsingDataCounter {
   // Calculates the beginning of the counting period as |period_| before now.
   base::Time GetPeriodStart();
 
+  // Returns if this counter belongs to a preference on the default, basic or
+  // advanced CBD tab.
+  ClearBrowsingDataTab GetTab() const;
+
  private:
   // Called after the class is initialized by calling |Init|.
   virtual void OnInitialized();
@@ -132,9 +135,8 @@ class BrowsingDataCounter {
   void TransitionToShowCalculating();
   void TransitionToReadyToReportResult();
 
-  // Pointer to the PrefService that manages the preferences for the user
-  // profile associated with this counter.
-  PrefService* pref_service_;
+  // Indicates if this counter belongs to a preference on the basic CBD tab.
+  ClearBrowsingDataTab clear_browsing_data_tab_;
 
   // The callback that will be called when the UI should be updated with a new
   // counter value.

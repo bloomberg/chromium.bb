@@ -734,8 +734,9 @@ class BrowsingHistoryPolicyHandler : public TypeCheckingPolicyHandler {
         !deleting_history_allowed) {
       prefs->SetBoolean(
           browsing_data::prefs::kDeleteBrowsingHistory, false);
-      prefs->SetBoolean(
-          browsing_data::prefs::kDeleteDownloadHistory, false);
+      prefs->SetBoolean(browsing_data::prefs::kDeleteBrowsingHistoryBasic,
+                        false);
+      prefs->SetBoolean(browsing_data::prefs::kDeleteDownloadHistory, false);
     }
   }
 };
