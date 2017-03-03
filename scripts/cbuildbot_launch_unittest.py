@@ -14,14 +14,14 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-from chromite.scripts import bootstrap
+from chromite.scripts import cbuildbot_launch
 
 # pylint
 EXPECTED_MANIFEST_URL = 'https://chrome-internal-review.googlesource.com/chromeos/manifest-internal'  # pylint: disable=line-too-long
 
 
-class BootstrapTest(cros_test_lib.MockTestCase):
-  """Tests for bootstrap script."""
+class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
+  """Tests for cbuildbot_launch script."""
 
   def testPreParseArguments(self):
     """Test that we can correctly extract branch values from cbuildbot args."""
@@ -46,7 +46,7 @@ class BootstrapTest(cros_test_lib.MockTestCase):
     for cmd_args, expected in CASES:
       expected_branch, expected_buildroot, expected_cache_dir = expected
 
-      options = bootstrap.PreParseArguments(cmd_args)
+      options = cbuildbot_launch.PreParseArguments(cmd_args)
 
       self.assertEqual(options.branch, expected_branch)
       self.assertEqual(options.buildroot, expected_buildroot)
@@ -56,7 +56,7 @@ class BootstrapTest(cros_test_lib.MockTestCase):
     """Test InitialCheckout with minimum settings."""
     mock_repo = self.PatchObject(repository, 'RepoRepository', autospec=True)
 
-    bootstrap.InitialCheckout(None, '/buildroot', None)
+    cbuildbot_launch.InitialCheckout(None, '/buildroot', None)
 
     self.assertEqual(mock_repo.mock_calls, [
         mock.call(EXPECTED_MANIFEST_URL, '/buildroot',
@@ -68,7 +68,8 @@ class BootstrapTest(cros_test_lib.MockTestCase):
     """Test InitialCheckout with all settings."""
     mock_repo = self.PatchObject(repository, 'RepoRepository', autospec=True)
 
-    bootstrap.InitialCheckout('release-R56-9000.B', '/buildroot', '/git-cache')
+    cbuildbot_launch.InitialCheckout(
+        'release-R56-9000.B', '/buildroot', '/git-cache')
 
     self.assertEqual(mock_repo.mock_calls, [
         mock.call(EXPECTED_MANIFEST_URL, '/buildroot',
@@ -78,7 +79,7 @@ class BootstrapTest(cros_test_lib.MockTestCase):
 
 
 class RunTests(cros_build_lib_unittest.RunCommandTestCase):
-  """Tests for bootstrap script."""
+  """Tests for cbuildbot_launch script."""
 
   ARGS_BASE = ['--buildroot', '/buildroot']
   ARGS_GIT_CACHE = ['--git-cache-dir', '/git-cache']
@@ -87,13 +88,13 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
 
   def verifyRunCbuildbot(self, args, expected_cmd, version):
     """Ensure we invoke cbuildbot correctly."""
-    options = bootstrap.PreParseArguments(args)
+    options = cbuildbot_launch.PreParseArguments(args)
 
     self.PatchObject(
         cros_build_lib, 'GetTargetChromiteApiVersion', autospec=True,
         return_value=version)
 
-    bootstrap.RunCbuildbot(options)
+    cbuildbot_launch.RunCbuildbot(options)
 
     self.assertCommandCalled(
         expected_cmd, cwd=options.buildroot, error_code_ok=True)
@@ -124,11 +125,12 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
     self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
                      autospec=True, return_value=(0, 4))
-    mock_clean = self.PatchObject(bootstrap, 'CleanBuildroot', autospec=True)
-    mock_checkout = self.PatchObject(bootstrap, 'InitialCheckout',
+    mock_clean = self.PatchObject(cbuildbot_launch, 'CleanBuildroot',
+                                  autospec=True)
+    mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
                                      autospec=True)
 
-    bootstrap.main(['--buildroot', '/buildroot', 'config'])
+    cbuildbot_launch.main(['--buildroot', '/buildroot', 'config'])
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
@@ -149,13 +151,14 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
     self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
                      autospec=True, return_value=(0, 4))
-    mock_clean = self.PatchObject(bootstrap, 'CleanBuildroot', autospec=True)
-    mock_checkout = self.PatchObject(bootstrap, 'InitialCheckout',
+    mock_clean = self.PatchObject(cbuildbot_launch, 'CleanBuildroot',
+                                  autospec=True)
+    mock_checkout = self.PatchObject(cbuildbot_launch, 'InitialCheckout',
                                      autospec=True)
 
-    bootstrap.main(['--buildroot', '/buildroot',
-                    '--git-cache-dir', '/git-cache',
-                    'config'])
+    cbuildbot_launch.main(['--buildroot', '/buildroot',
+                           '--git-cache-dir', '/git-cache',
+                           'config'])
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls,
@@ -179,7 +182,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
 
   def setUp(self):
     """Create standard buildroot contents for cleanup."""
-    self.state = os.path.join(self.tempdir, '.bootstrap_state')
+    self.state = os.path.join(self.tempdir, '.cbuildbot_launch_state')
     self.repo = os.path.join(self.tempdir, '.repo/repo')
     self.chroot = os.path.join(self.tempdir, 'chroot/chroot')
     self.general = os.path.join(self.tempdir, 'general/general')
@@ -196,7 +199,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
 
   def testBuildrootEmpty(self):
     """Test CleanBuildroot with no history."""
-    bootstrap.CleanBuildroot(None, self.tempdir)
+    cbuildbot_launch.CleanBuildroot(None, self.tempdir)
 
     self.assertEqual(osutils.ReadFile(self.state), 'TOT')
 
@@ -204,7 +207,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     """Test CleanBuildroot with no state information."""
     self.populateBuildroot()
 
-    bootstrap.CleanBuildroot(None, self.tempdir)
+    cbuildbot_launch.CleanBuildroot(None, self.tempdir)
 
     self.assertEqual(osutils.ReadFile(self.state), 'TOT')
     self.assertExists(self.repo)
@@ -215,7 +218,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     """Test CleanBuildroot with a change in branches."""
     self.populateBuildroot('branchA')
 
-    bootstrap.CleanBuildroot('branchB', self.tempdir)
+    cbuildbot_launch.CleanBuildroot('branchB', self.tempdir)
 
     self.assertEqual(osutils.ReadFile(self.state), 'branchB')
     self.assertExists(self.repo)
@@ -226,7 +229,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     """Test CleanBuildroot with no change in branch."""
     self.populateBuildroot('branchA')
 
-    bootstrap.CleanBuildroot('branchA', self.tempdir)
+    cbuildbot_launch.CleanBuildroot('branchA', self.tempdir)
 
     self.assertEqual(osutils.ReadFile(self.state), 'branchA')
     self.assertExists(self.repo)

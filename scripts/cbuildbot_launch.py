@@ -71,7 +71,7 @@ def CleanBuildroot(branchname, buildroot):
   #   3) EmptyDir(buildroot, excludes=['.repo'])
   #   4) EmptyDir(buildroot)
 
-  state_file = os.path.join(buildroot, '.bootstrap_state')
+  state_file = os.path.join(buildroot, '.cbuildbot_launch_state')
   new_state = branchname or 'TOT'
 
   try:
