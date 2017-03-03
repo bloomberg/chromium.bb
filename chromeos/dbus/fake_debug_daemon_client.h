@@ -72,12 +72,6 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
       const WaitForServiceToBeAvailableCallback& callback) override;
   void SetOomScoreAdj(const std::map<pid_t, int32_t>& pid_to_oom_score_adj,
                       const SetOomScoreAdjCallback& callback) override;
-  void CupsAddPrinter(const std::string& name,
-                      const std::string& uri,
-                      const std::string& ppd_path,
-                      bool ipp_everywhere,
-                      const LegacyCupsAddPrinterCallback& callback,
-                      const base::Closure& error_callback) override;
   void CupsAddManuallyConfiguredPrinter(
       const std::string& name,
       const std::string& uri,

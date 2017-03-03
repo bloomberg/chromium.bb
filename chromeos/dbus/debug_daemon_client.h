@@ -209,29 +209,10 @@ class CHROMEOS_EXPORT DebugDaemonClient
       const std::map<pid_t, int32_t>& pid_to_oom_score_adj,
       const SetOomScoreAdjCallback& callback) = 0;
 
-  // A callback to handle the result of CupsAddPrinter.
-  using LegacyCupsAddPrinterCallback = base::Callback<void(bool status)>;
-
   // A callback to handle the result of CupsAdd[Auto|Manually]ConfiguredPrinter.
   // A zero status means success, non-zero statuses are used to convey different
   // errors.
   using CupsAddPrinterCallback = base::Callback<void(int32_t status)>;
-
-  // Calls CupsAddPrinter.  |name| is the printer name. |uri| is the device
-  // uri. |ppd_path| is the absolute path to the PPD file. |ipp_everywhere|
-  // is true for autoconf of IPP Everywhere printers.  |callback| is called with
-  // true if adding the printer to CUPS was successful and false if there was an
-  // error.  |error_callback| will be called if there was an error in
-  // communicating with debugd.
-  //
-  // Obsoleted by CupsAddAutoConfiguredPrinter and
-  // CupsAddManuallyConfiguredPrinter.
-  virtual void CupsAddPrinter(const std::string& name,
-                              const std::string& uri,
-                              const std::string& ppd_path,
-                              bool ipp_everywhere,
-                              const LegacyCupsAddPrinterCallback& callback,
-                              const base::Closure& error_callback) = 0;
 
   // Calls CupsAddManuallyConfiguredPrinter.  |name| is the printer
   // name. |uri| is the device.  |ppd_contents| is the contents of the
