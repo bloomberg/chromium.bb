@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+PASS Storage API IDL test 
+FAIL Navigator interface: attribute storage assert_true: The prototype object must have a property "storage" expected true got false
+PASS WorkerNavigator interface: existence and properties of interface object 
+PASS StorageManager interface: existence and properties of interface object 
+PASS StorageManager interface object length 
+PASS StorageManager interface object name 
+FAIL StorageManager interface: existence and properties of interface prototype object assert_equals: class string of StorageManager.prototype expected "[object StorageManagerPrototype]" but got "[object StorageManager]"
+PASS StorageManager interface: existence and properties of interface prototype object's "constructor" property 
+PASS StorageManager interface: operation persisted() 
+PASS StorageManager interface: operation persist() 
+PASS StorageManager interface: operation estimate() 
+FAIL StorageManager must be primary interface of navigator.storage assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL Stringification of navigator.storage assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL StorageManager interface: navigator.storage must inherit property "persisted" with the proper type (0) assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL StorageManager interface: navigator.storage must inherit property "persist" with the proper type (1) assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL StorageManager interface: navigator.storage must inherit property "estimate" with the proper type (2) assert_equals: wrong typeof object expected "object" but got "undefined"
+Harness: the test ran to completion.
+

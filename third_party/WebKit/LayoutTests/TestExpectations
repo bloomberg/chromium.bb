@@ -1777,7 +1777,6 @@ crbug.com/694525 external/wpt/content-security-policy/securitypolicyviolation [ 
 # 2017-02-17: These directories were just imported but expectations and baselines haven't been set yet.
 crbug.com/692105 external/wpt/service-workers/service-worker/fetch-event-within-sw-manual.https.html [ Skip ]
 crbug.com/692105 external/wpt/service-workers/service-worker/fetch-event-within-sw.https.html [ Skip ]
-crbug.com/692105 external/wpt/storage/interfaces.html [ Skip ]
 crbug.com/692105 external/wpt/streams/readable-streams/floating-point-total-queue-size.dedicatedworker.html [ Skip ]
 crbug.com/692105 external/wpt/streams/readable-streams/floating-point-total-queue-size.html [ Skip ]
 crbug.com/692105 external/wpt/streams/readable-streams/floating-point-total-queue-size.serviceworker.https.html [ Skip ]
