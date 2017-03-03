@@ -251,14 +251,16 @@ class CC_SURFACES_EXPORT SurfaceManager {
     FrameSinkSourceMapping();
     FrameSinkSourceMapping(const FrameSinkSourceMapping& other);
     ~FrameSinkSourceMapping();
-    bool is_empty() const { return !client && children.empty(); }
-    // The client that's responsible for creating this namespace.  Never null.
-    SurfaceFactoryClient* client;
+    bool has_children() const { return !children.empty(); }
     // The currently assigned begin frame source for this client.
     BeginFrameSource* source;
     // This represents a dag of parent -> children mapping.
     std::vector<FrameSinkId> children;
   };
+
+  std::unordered_map<FrameSinkId, SurfaceFactoryClient*, FrameSinkIdHash>
+      clients_;
+
   std::unordered_map<FrameSinkId, FrameSinkSourceMapping, FrameSinkIdHash>
       frame_sink_source_map_;
 

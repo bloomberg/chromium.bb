@@ -27,14 +27,14 @@ class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
     if (manager_) {
       Unregister();
     }
-    EXPECT_EQ(source_, nullptr);
+    EXPECT_EQ(nullptr, source_);
   }
 
   BeginFrameSource* source() { return source_; }
   const FrameSinkId& frame_sink_id() { return frame_sink_id_; }
 
   void Register(SurfaceManager* manager) {
-    EXPECT_EQ(manager_, nullptr);
+    EXPECT_EQ(nullptr, manager_);
     manager_ = manager;
     manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
   }
@@ -84,34 +84,34 @@ TEST_F(SurfaceManagerTest, SingleClients) {
   FakeSurfaceFactoryClient other_client(FrameSinkId(2, 2));
   StubBeginFrameSource source;
 
-  EXPECT_EQ(client.source(), nullptr);
-  EXPECT_EQ(other_client.source(), nullptr);
+  EXPECT_EQ(nullptr, client.source());
+  EXPECT_EQ(nullptr, other_client.source());
   client.Register(&manager_);
   other_client.Register(&manager_);
-  EXPECT_EQ(client.source(), nullptr);
-  EXPECT_EQ(other_client.source(), nullptr);
+  EXPECT_EQ(nullptr, client.source());
+  EXPECT_EQ(nullptr, other_client.source());
 
   // Test setting unsetting BFS
   manager_.RegisterBeginFrameSource(&source, client.frame_sink_id());
-  EXPECT_EQ(client.source(), &source);
-  EXPECT_EQ(other_client.source(), nullptr);
+  EXPECT_EQ(&source, client.source());
+  EXPECT_EQ(nullptr, other_client.source());
   manager_.UnregisterBeginFrameSource(&source);
-  EXPECT_EQ(client.source(), nullptr);
-  EXPECT_EQ(other_client.source(), nullptr);
+  EXPECT_EQ(nullptr, client.source());
+  EXPECT_EQ(nullptr, other_client.source());
 
   // Set BFS for other namespace
   manager_.RegisterBeginFrameSource(&source, other_client.frame_sink_id());
-  EXPECT_EQ(other_client.source(), &source);
-  EXPECT_EQ(client.source(), nullptr);
+  EXPECT_EQ(&source, other_client.source());
+  EXPECT_EQ(nullptr, client.source());
   manager_.UnregisterBeginFrameSource(&source);
-  EXPECT_EQ(client.source(), nullptr);
-  EXPECT_EQ(other_client.source(), nullptr);
+  EXPECT_EQ(nullptr, client.source());
+  EXPECT_EQ(nullptr, other_client.source());
 
   // Re-set BFS for original
   manager_.RegisterBeginFrameSource(&source, client.frame_sink_id());
-  EXPECT_EQ(client.source(), &source);
+  EXPECT_EQ(&source, client.source());
   manager_.UnregisterBeginFrameSource(&source);
-  EXPECT_EQ(client.source(), nullptr);
+  EXPECT_EQ(nullptr, client.source());
 }
 
 TEST_F(SurfaceManagerTest, MultipleDisplays) {
@@ -162,15 +162,15 @@ TEST_F(SurfaceManagerTest, MultipleDisplays) {
 
   // Detach root1 from BFS.  root1 should now have no source.
   manager_.UnregisterBeginFrameSource(&root1_source);
-  EXPECT_EQ(root1.source(), nullptr);
-  EXPECT_NE(root2.source(), nullptr);
+  EXPECT_EQ(nullptr, root1.source());
+  EXPECT_NE(nullptr, root2.source());
 
   // Detatch root2 from BFS.
   manager_.UnregisterBeginFrameSource(&root2_source);
-  EXPECT_EQ(client_a.source(), nullptr);
-  EXPECT_EQ(client_b.source(), nullptr);
-  EXPECT_EQ(client_c.source(), nullptr);
-  EXPECT_EQ(root2.source(), nullptr);
+  EXPECT_EQ(nullptr, client_a.source());
+  EXPECT_EQ(nullptr, client_b.source());
+  EXPECT_EQ(nullptr, client_c.source());
+  EXPECT_EQ(nullptr, root2.source());
 
   // Cleanup hierarchy.
   manager_.UnregisterFrameSinkHierarchy(root2.frame_sink_id(),
@@ -200,9 +200,9 @@ class SurfaceManagerOrderingTest : public SurfaceManagerTest {
   }
 
   ~SurfaceManagerOrderingTest() override {
-    EXPECT_EQ(hierarchy_registered_, false);
-    EXPECT_EQ(clients_registered_, false);
-    EXPECT_EQ(bfs_registered_, false);
+    EXPECT_FALSE(hierarchy_registered_);
+    EXPECT_FALSE(clients_registered_);
+    EXPECT_FALSE(bfs_registered_);
     AssertCorrectBFSState();
   }
 
@@ -257,15 +257,15 @@ class SurfaceManagerOrderingTest : public SurfaceManagerTest {
   }
 
   void AssertEmptyBFS() {
-    EXPECT_EQ(client_a_.source(), nullptr);
-    EXPECT_EQ(client_b_.source(), nullptr);
-    EXPECT_EQ(client_c_.source(), nullptr);
+    EXPECT_EQ(nullptr, client_a_.source());
+    EXPECT_EQ(nullptr, client_b_.source());
+    EXPECT_EQ(nullptr, client_c_.source());
   }
 
   void AssertAllValidBFS() {
-    EXPECT_EQ(client_a_.source(), &source_);
-    EXPECT_EQ(client_b_.source(), &source_);
-    EXPECT_EQ(client_c_.source(), &source_);
+    EXPECT_EQ(&source_, client_a_.source());
+    EXPECT_EQ(&source_, client_b_.source());
+    EXPECT_EQ(&source_, client_c_.source());
   }
 
  protected:
@@ -276,9 +276,9 @@ class SurfaceManagerOrderingTest : public SurfaceManagerTest {
     }
     if (!hierarchy_registered_) {
       // A valid but not attached to anything.
-      EXPECT_EQ(client_a_.source(), &source_);
-      EXPECT_EQ(client_b_.source(), nullptr);
-      EXPECT_EQ(client_c_.source(), nullptr);
+      EXPECT_EQ(&source_, client_a_.source());
+      EXPECT_EQ(nullptr, client_b_.source());
+      EXPECT_EQ(nullptr, client_c_.source());
       return;
     }
 

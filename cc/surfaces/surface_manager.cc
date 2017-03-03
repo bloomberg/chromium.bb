@@ -24,14 +24,12 @@
 namespace cc {
 
 SurfaceManager::FrameSinkSourceMapping::FrameSinkSourceMapping()
-    : client(nullptr), source(nullptr) {}
+    : source(nullptr) {}
 
 SurfaceManager::FrameSinkSourceMapping::FrameSinkSourceMapping(
     const FrameSinkSourceMapping& other) = default;
 
 SurfaceManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {
-  DCHECK(is_empty()) << "client: " << client
-                     << ", children: " << children.size();
 }
 
 SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
@@ -62,9 +60,9 @@ SurfaceManager::~SurfaceManager() {
   }
   surfaces_to_destroy_.clear();
 
-  // All hierarchies, sources, and surface factory clients should be
-  // unregistered prior to SurfaceManager destruction.
-  DCHECK_EQ(frame_sink_source_map_.size(), 0u);
+  // All surface factory clients should be unregistered prior to SurfaceManager
+  // destruction.
+  DCHECK_EQ(clients_.size(), 0u);
   DCHECK_EQ(registered_sources_.size(), 0u);
 }
 
@@ -400,32 +398,29 @@ void SurfaceManager::RegisterSurfaceFactoryClient(
   DCHECK(client);
   DCHECK_EQ(valid_frame_sink_ids_.count(frame_sink_id), 1u);
 
-  // Will create a new FrameSinkSourceMapping for |frame_sink_id| if necessary.
-  FrameSinkSourceMapping& frame_sink_source =
-      frame_sink_source_map_[frame_sink_id];
-  DCHECK(!frame_sink_source.client);
-  frame_sink_source.client = client;
+  clients_[frame_sink_id] = client;
 
-  // Propagate any previously set sources to the new client.
-  if (frame_sink_source.source)
-    client->SetBeginFrameSource(frame_sink_source.source);
+  auto it = frame_sink_source_map_.find(frame_sink_id);
+  if (it != frame_sink_source_map_.end()) {
+    if (it->second.source)
+      client->SetBeginFrameSource(it->second.source);
+  }
 }
 
 void SurfaceManager::UnregisterSurfaceFactoryClient(
     const FrameSinkId& frame_sink_id) {
   DCHECK_EQ(valid_frame_sink_ids_.count(frame_sink_id), 1u);
-  DCHECK_EQ(frame_sink_source_map_.count(frame_sink_id), 1u);
+  auto client_iter = clients_.find(frame_sink_id);
+  DCHECK(client_iter != clients_.end());
 
-  auto iter = frame_sink_source_map_.find(frame_sink_id);
-  if (iter->second.source)
-    iter->second.client->SetBeginFrameSource(nullptr);
-  iter->second.client = nullptr;
-
-  // The SurfaceFactoryClient and hierarchy can be registered/unregistered
-  // in either order, so empty namespace_client_map entries need to be
-  // checked when removing either clients or relationships.
-  if (iter->second.is_empty())
-    frame_sink_source_map_.erase(iter);
+  auto source_iter = frame_sink_source_map_.find(frame_sink_id);
+  if (source_iter != frame_sink_source_map_.end()) {
+    if (source_iter->second.source)
+      client_iter->second->SetBeginFrameSource(nullptr);
+    if (!source_iter->second.has_children())
+      frame_sink_source_map_.erase(source_iter);
+  }
+  clients_.erase(client_iter);
 }
 
 void SurfaceManager::RegisterBeginFrameSource(
@@ -464,8 +459,9 @@ void SurfaceManager::RecursivelyAttachBeginFrameSource(
   FrameSinkSourceMapping& mapping = frame_sink_source_map_[frame_sink_id];
   if (!mapping.source) {
     mapping.source = source;
-    if (mapping.client)
-      mapping.client->SetBeginFrameSource(source);
+    auto client_iter = clients_.find(frame_sink_id);
+    if (client_iter != clients_.end())
+      client_iter->second->SetBeginFrameSource(source);
   }
   for (size_t i = 0; i < mapping.children.size(); ++i)
     RecursivelyAttachBeginFrameSource(mapping.children[i], source);
@@ -479,11 +475,12 @@ void SurfaceManager::RecursivelyDetachBeginFrameSource(
     return;
   if (iter->second.source == source) {
     iter->second.source = nullptr;
-    if (iter->second.client)
-      iter->second.client->SetBeginFrameSource(nullptr);
+    auto client_iter = clients_.find(frame_sink_id);
+    if (client_iter != clients_.end())
+      client_iter->second->SetBeginFrameSource(nullptr);
   }
 
-  if (iter->second.is_empty()) {
+  if (!iter->second.has_children() && !clients_.count(frame_sink_id)) {
     frame_sink_source_map_.erase(iter);
     return;
   }
@@ -538,11 +535,11 @@ void SurfaceManager::RegisterFrameSinkHierarchy(
 void SurfaceManager::UnregisterFrameSinkHierarchy(
     const FrameSinkId& parent_frame_sink_id,
     const FrameSinkId& child_frame_sink_id) {
-  // Deliberately do not check validity of either parent or child namespace
+  // Deliberately do not check validity of either parent or child FrameSinkId
   // here.  They were valid during the registration, so were valid at some
   // point in time.  This makes it possible to invalidate parent and child
-  // namespaces independently of each other and not have an ordering dependency
-  // of unregistering the hierarchy first before either of them.
+  // FrameSinkIds independently of each other and not have an ordering
+  // dependency  of unregistering the hierarchy first before either of them.
   DCHECK_EQ(frame_sink_source_map_.count(parent_frame_sink_id), 1u);
 
   auto iter = frame_sink_source_map_.find(parent_frame_sink_id);
@@ -560,9 +557,9 @@ void SurfaceManager::UnregisterFrameSinkHierarchy(
   DCHECK(found_child);
 
   // The SurfaceFactoryClient and hierarchy can be registered/unregistered
-  // in either order, so empty namespace_client_map entries need to be
+  // in either order, so empty frame_sink_source_map entries need to be
   // checked when removing either clients or relationships.
-  if (iter->second.is_empty()) {
+  if (!iter->second.has_children() && !clients_.count(parent_frame_sink_id)) {
     frame_sink_source_map_.erase(iter);
     return;
   }
