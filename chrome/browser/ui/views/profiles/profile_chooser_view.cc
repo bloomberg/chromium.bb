@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -67,9 +68,9 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -439,7 +440,7 @@ class EditableProfilePhoto : public views::LabelButton {
     photo_overlay_->set_background(
         views::Background::CreateSolidBackground(kBackgroundColor));
     photo_overlay_->SetImage(gfx::CreateVectorIcon(
-        gfx::VectorIconId::PHOTO_CAMERA, 48u, SkColorSetRGB(0x33, 0x33, 0x33)));
+        kPhotoCameraIcon, 48u, SkColorSetRGB(0x33, 0x33, 0x33)));
 
     photo_overlay_->SetSize(gfx::Size(icon_image_side(), icon_image_side()));
     photo_overlay_->SetY(badge_spacing());
@@ -483,13 +484,12 @@ class EditableProfilePhoto : public views::LabelButton {
           ui::NativeTheme::kColorId_BubbleBackground));
       canvas->DrawCircle(center_point, GetProfileBadgeSize() / 2, flags);
 
-      gfx::VectorIconId icon_id;
+      const gfx::VectorIcon* icon;
       int icon_size;
       SkColor icon_color;
       if (switches::IsMaterialDesignUserMenu()) {
-        icon_id = profile_->IsChild()
-            ? gfx::VectorIconId::ACCOUNT_CHILD_CIRCLE
-            : gfx::VectorIconId::SUPERVISOR_ACCOUNT_CIRCLE;
+        icon = profile_->IsChild() ? &kAccountChildCircleIcon
+                                   : &kSupervisorAccountCircleIcon;
         icon_size = 22;
         icon_color = gfx::kChromeIconGrey;
       } else {
@@ -499,9 +499,8 @@ class EditableProfilePhoto : public views::LabelButton {
             center_point, GetProfileBadgeSize() / 2 - kProfileBadgeWhitePadding,
             flags);
 
-        icon_id = profile_->IsChild()
-            ? gfx::VectorIconId::ACCOUNT_CHILD
-            : gfx::VectorIconId::SUPERVISOR_ACCOUNT;
+        icon =
+            profile_->IsChild() ? &kAccountChildIcon : &kSupervisorAccountIcon;
         icon_size = profile_->IsChild() ? 26 : 20;
         icon_color = SkColorSetRGB(0, 0x66, 0xff);
       }
@@ -509,7 +508,7 @@ class EditableProfilePhoto : public views::LabelButton {
       // Paint the badge icon.
       int offset = (GetProfileBadgeSize() - icon_size) / 2;
       canvas->Translate(badge_offset_vector + gfx::Vector2d(offset, offset));
-      gfx::PaintVectorIcon(canvas, icon_id, icon_size, icon_color);
+      gfx::PaintVectorIcon(canvas, *icon, icon_size, icon_color);
     }
   }
 
@@ -605,13 +604,11 @@ class EditableProfileName : public views::View,
     button_->SetImage(views::LabelButton::STATE_NORMAL,
                       CreateSquarePlaceholderImage(kIconSize));
     button_->SetImage(views::LabelButton::STATE_HOVERED,
-                      gfx::CreateVectorIcon(
-                          gfx::VectorIconId::MODE_EDIT, kIconSize,
-                          SkColorSetRGB(0x33, 0x33, 0x33)));
+                      gfx::CreateVectorIcon(kModeEditIcon, kIconSize,
+                                            SkColorSetRGB(0x33, 0x33, 0x33)));
     button_->SetImage(views::LabelButton::STATE_PRESSED,
-                      gfx::CreateVectorIcon(
-                          gfx::VectorIconId::MODE_EDIT, kIconSize,
-                          SkColorSetRGB(0x20, 0x20, 0x20)));
+                      gfx::CreateVectorIcon(kModeEditIcon, kIconSize,
+                                            SkColorSetRGB(0x20, 0x20, 0x20)));
     // We need to add a left padding as well as a small top/bottom padding
     // to the text to account for the textfield's border.
     const int kIconTextLabelButtonSpacing = 5;
@@ -1581,8 +1578,8 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
 
   // Adds the sync problem icon.
   views::ImageView* sync_problem_icon = new views::ImageView();
-  sync_problem_icon->SetImage(gfx::CreateVectorIcon(
-      gfx::VectorIconId::SYNC_PROBLEM, 20, gfx::kGoogleRed700));
+  sync_problem_icon->SetImage(
+      gfx::CreateVectorIcon(kSyncProblemIcon, 20, gfx::kGoogleRed700));
   view->AddChildView(sync_problem_icon);
 
   // Adds a vertical view to organize the error title, message, and button.
@@ -1687,8 +1684,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
         auth_error_email_button_->SetElideBehavior(gfx::ELIDE_EMAIL);
         auth_error_email_button_->SetImage(
             views::LabelButton::STATE_NORMAL,
-            gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 18,
-                                  gfx::kChromeIconGrey));
+            gfx::CreateVectorIcon(ui::kWarningIcon, 18, gfx::kChromeIconGrey));
         auth_error_email_button_->SetFocusForPlatform();
         gfx::Insets insets =
             views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
@@ -1960,7 +1956,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
       if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
         guest_profile_button_ = new BackgroundColorHoverButton(
             this, l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
-            gfx::CreateVectorIcon(gfx::VectorIconId::ACCOUNT_CIRCLE, kIconSize,
+            gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize,
                                   gfx::kChromeIconGrey));
         layout->StartRow(1, 0);
         layout->AddView(guest_profile_button_);
@@ -1968,23 +1964,18 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     }
   }
 
-  base::string16 text;
-  gfx::VectorIconId settings_icon;
-  if (switches::IsMaterialDesignUserMenu()) {
-    text = is_guest
-               ? l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST)
-               : l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON);
-    settings_icon =
-        is_guest ? gfx::VectorIconId::CLOSE_ALL : gfx::VectorIconId::SETTINGS;
-  } else {
-    text = is_guest
-               ? l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST)
-               : l10n_util::GetStringUTF16(IDS_PROFILES_SWITCH_USERS_BUTTON);
-    settings_icon = gfx::VectorIconId::ACCOUNT_BOX;
-  }
+  base::string16 text = l10n_util::GetStringUTF16(
+      is_guest ? IDS_PROFILES_EXIT_GUEST
+               : (switches::IsMaterialDesignUserMenu()
+                      ? IDS_PROFILES_MANAGE_USERS_BUTTON
+                      : IDS_PROFILES_SWITCH_USERS_BUTTON));
+  const gfx::VectorIcon& settings_icon =
+      switches::IsMaterialDesignUserMenu()
+          ? (is_guest ? kCloseAllIcon : kSettingsIcon)
+          : kAccountBoxIcon;
   users_button_ = new BackgroundColorHoverButton(
-      this, text, gfx::CreateVectorIcon(settings_icon, kIconSize,
-                                        gfx::kChromeIconGrey));
+      this, text,
+      gfx::CreateVectorIcon(settings_icon, kIconSize, gfx::kChromeIconGrey));
 
   layout->StartRow(1, 0);
   layout->AddView(users_button_);
@@ -2010,8 +2001,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
 
     lock_button_ = new BackgroundColorHoverButton(
         this, l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON),
-        gfx::CreateVectorIcon(gfx::VectorIconId::LOCK, kIconSize,
-                              gfx::kChromeIconGrey));
+        gfx::CreateVectorIcon(kLockIcon, kIconSize, gfx::kChromeIconGrey));
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
   } else if (switches::IsMaterialDesignUserMenu() && !is_guest) {
@@ -2025,7 +2015,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
       close_all_windows_button_ = new BackgroundColorHoverButton(
           this,
           l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON),
-          gfx::CreateVectorIcon(gfx::VectorIconId::CLOSE_ALL, kIconSize,
+          gfx::CreateVectorIcon(kCloseAllIcon, kIconSize,
                                 gfx::kChromeIconGrey));
       layout->StartRow(1, 0);
       layout->AddView(close_all_windows_button_);
@@ -2124,8 +2114,8 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   int warning_button_width = 0;
   if (reauth_required) {
     const int kIconSize = 18;
-    warning_default_image = gfx::CreateVectorIcon(
-        gfx::VectorIconId::WARNING, kIconSize, gfx::kChromeIconGrey);
+    warning_default_image = gfx::CreateVectorIcon(ui::kWarningIcon, kIconSize,
+                                                  gfx::kChromeIconGrey);
     warning_button_width = kIconSize + views::kRelatedButtonHSpacing;
   }
   int available_width = width - 2 * views::kButtonHEdgeMarginNew -
@@ -2366,8 +2356,7 @@ views::View* ProfileChooserView::CreateSwitchUserView() {
   const int kIconSize = 24;
   add_person_button_ = new BackgroundColorHoverButton(
       this, l10n_util::GetStringUTF16(IDS_PROFILES_ADD_PERSON_BUTTON),
-      gfx::CreateVectorIcon(gfx::VectorIconId::ACCOUNT_BOX, kIconSize,
-                            gfx::kChromeIconGrey));
+      gfx::CreateVectorIcon(kAccountBoxIcon, kIconSize, gfx::kChromeIconGrey));
   layout->StartRow(1, 0);
   layout->AddView(add_person_button_);
 
@@ -2377,8 +2366,7 @@ views::View* ProfileChooserView::CreateSwitchUserView() {
 
   disconnect_button_ = new BackgroundColorHoverButton(
       this, l10n_util::GetStringUTF16(IDS_PROFILES_DISCONNECT_BUTTON),
-      gfx::CreateVectorIcon(gfx::VectorIconId::REMOVE_BOX, kIconSize,
-                            gfx::kChromeIconGrey));
+      gfx::CreateVectorIcon(kRemoveBoxIcon, kIconSize, gfx::kChromeIconGrey));
   layout->StartRow(1, 0);
   layout->AddView(disconnect_button_);
 

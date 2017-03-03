@@ -13,21 +13,14 @@ action("aggregate_vector_icons") {
   script = "aggregate_vector_icons.py"
 
   icons = [
-    "account_box.icon",
-    "account_child.icon",
-    "account_child_circle.icon",
-    "account_circle.icon",
     "business.icon",
     "check_circle.1x.icon",
     "check_circle.icon",
-    "close_all.icon",
     "default_favicon.icon",
     "eol.icon",
     "fullscreen.icon",
     "help_outline.icon",
     "info_outline.icon",
-    "lock.icon",
-    "mode_edit.icon",
     "notifications.icon",
     "notifications_off.icon",
 
@@ -36,14 +29,6 @@ action("aggregate_vector_icons") {
     "omnibox_search.icon",
     "pdf.1x.icon",
     "pdf.icon",
-    "photo_camera.icon",
-    "remove_box.icon",
-    "remove_circle.icon",
-    "settings.icon",
-    "supervisor_account.icon",
-    "supervisor_account_circle.icon",
-    "sync_problem.icon",
-    "user_account_avatar.icon",
     "warning.icon",
     "web.icon",
   ]

@@ -6,11 +6,13 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#import "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,7 +21,6 @@
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button.h"
 #include "chrome/grit/generated_resources.h"
-#import "chrome/browser/themes/theme_properties.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -29,7 +30,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
@@ -263,15 +263,15 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
       base::mac::ObjCCastStrict<AvatarButton>(button_);
 
   if (useGenericButton) {
-    NSImage* avatarIcon = NSImageFromImageSkia(gfx::CreateVectorIcon(
-        gfx::VectorIconId::USER_ACCOUNT_AVATAR, 18, kAvatarIconColor));
+    NSImage* avatarIcon = NSImageFromImageSkia(
+        gfx::CreateVectorIcon(kUserAccountAvatarIcon, 18, kAvatarIconColor));
     [button setDefaultImage:avatarIcon];
     [button setHoverImage:nil];
     [button setPressedImage:nil];
     [button setImagePosition:NSImageOnly];
   } else if (hasError_) {
-    NSImage* errorIcon = NSImageFromImageSkia(gfx::CreateVectorIcon(
-        gfx::VectorIconId::SYNC_PROBLEM, 16, gfx::kGoogleRed700));
+    NSImage* errorIcon = NSImageFromImageSkia(
+        gfx::CreateVectorIcon(kSyncProblemIcon, 16, gfx::kGoogleRed700));
     [button setDefaultImage:errorIcon];
     [button setHoverImage:nil];
     [button setPressedImage:nil];

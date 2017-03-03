@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -20,7 +21,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
@@ -202,12 +203,11 @@ void NewAvatarButton::Update() {
   } else if (error_controller_.HasAvatarError()) {
     if (switches::IsMaterialDesignUserMenu()) {
       SetImage(views::Button::STATE_NORMAL,
-               gfx::CreateVectorIcon(gfx::VectorIconId::SYNC_PROBLEM, 16,
-                                     gfx::kGoogleRed700));
+               gfx::CreateVectorIcon(kSyncProblemIcon, 16, gfx::kGoogleRed700));
     } else {
-      SetImage(views::Button::STATE_NORMAL,
-               gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13,
-                                     gfx::kGoogleYellow700));
+      SetImage(
+          views::Button::STATE_NORMAL,
+          gfx::CreateVectorIcon(ui::kWarningIcon, 13, gfx::kGoogleYellow700));
     }
   } else {
     SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
