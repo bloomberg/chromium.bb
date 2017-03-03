@@ -218,12 +218,19 @@ if (CONFIG_CDEF)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/clpf.c"
-      "${AOM_ROOT}/av1/common/clpf.h")
+      "${AOM_ROOT}/av1/common/clpf.h"
+      "${AOM_ROOT}/av1/common/clpf_simd.h"
+      "${AOM_ROOT}/av1/common/clpf_simd_kernel.h"
+      "${AOM_ROOT}/av1/common/dering.c"
+      "${AOM_ROOT}/av1/common/dering.h"
+      "${AOM_ROOT}/av1/common/od_dering.c"
+      "${AOM_ROOT}/av1/common/od_dering.h")
 
   set(AOM_AV1_ENCODER_SOURCES
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/clpf_rdo.c"
-      "${AOM_ROOT}/av1/encoder/clpf_rdo.h")
+      "${AOM_ROOT}/av1/encoder/clpf_rdo.h"
+      "${AOM_ROOT}/av1/encoder/pickdering.c")
 
   set(AOM_AV1_COMMON_SSE2_INTRIN
       ${AOM_AV1_COMMON_SSE2_INTRIN}
@@ -247,7 +254,9 @@ if (CONFIG_CDEF)
 
   set(AOM_AV1_ENCODER_SSE4_1_INTRIN
       ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
-      "${AOM_ROOT}/av1/encoder/clpf_rdo_sse4.c")
+      "${AOM_ROOT}/av1/encoder/clpf_rdo_sse4.c"
+      "${AOM_ROOT}/av1/common/x86/od_dering_sse4.c"
+      "${AOM_ROOT}/av1/common/x86/od_dering_sse4.h")
 endif ()
 
 if (CONFIG_EXT_INTER)
