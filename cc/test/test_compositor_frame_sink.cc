@@ -14,6 +14,7 @@
 #include "cc/output/direct_renderer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/texture_mailbox_deleter.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
 
 namespace cc {
 
@@ -38,8 +39,7 @@ TestCompositorFrameSink::TestCompositorFrameSink(
       frame_sink_id_(kCompositorFrameSinkId),
       surface_manager_(new SurfaceManager),
       local_surface_id_allocator_(new LocalSurfaceIdAllocator()),
-      surface_factory_(
-          new SurfaceFactory(frame_sink_id_, surface_manager_.get(), this)),
+      external_begin_frame_source_(this),
       weak_ptr_factory_(this) {
   // Since this CompositorFrameSink and the Display are tightly coupled and in
   // the same process/thread, the LayerTreeHostImpl can reclaim resources from
@@ -98,26 +98,23 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   if (display_context_shared_with_compositor && context_provider())
     context_provider()->SetLostContextCallback(base::Closure());
 
-  surface_manager_->RegisterFrameSinkId(frame_sink_id_);
-  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
+  support_ = base::MakeUnique<CompositorFrameSinkSupport>(
+      this, surface_manager_.get(), frame_sink_id_, false /* is_root */,
+      true /* handles_frame_sink_id_invalidation */,
+      true /* needs_sync_points */);
+  client_->SetBeginFrameSource(&external_begin_frame_source_);
+
   display_->Initialize(this, surface_manager_.get());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
   display_->SetVisible(true);
-  bound_ = true;
   return true;
 }
 
 void TestCompositorFrameSink::DetachFromClient() {
-  // Some tests make BindToClient fail on purpose. ^__^
-  if (bound_) {
-    surface_factory_->EvictSurface();
-    surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
-    surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
-    display_ = nullptr;
-    bound_ = false;
-  }
-  surface_factory_ = nullptr;
+  client_->SetBeginFrameSource(nullptr);
+  support_ = nullptr;
+  display_ = nullptr;
   local_surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
   test_client_ = nullptr;
@@ -136,58 +133,52 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);
 
-  bool synchronous = !display_->has_scheduler();
-
-  SurfaceFactory::DrawCallback draw_callback;
-  if (!synchronous) {
-    // For async draws, we use a callback tell when it is done, but for sync
-    // draws we don't need one. Unretained is safe here because the callback
-    // will be run when |surface_factory_| is destroyed which is owned by this
-    // class.
-    draw_callback = base::Bind(&TestCompositorFrameSink::DidDrawCallback,
-                               base::Unretained(this));
-  }
-
-  surface_factory_->SubmitCompositorFrame(delegated_local_surface_id_,
-                                          std::move(frame), draw_callback);
+  support_->SubmitCompositorFrame(delegated_local_surface_id_,
+                                  std::move(frame));
 
   for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_) {
-    surface_factory_->RequestCopyOfSurface(std::move(copy_request));
+    support_->RequestCopyOfSurface(std::move(copy_request));
   }
   copy_requests_.clear();
 
-  if (synchronous) {
+  if (!display_->has_scheduler()) {
     display_->DrawAndSwap();
     // Post this to get a new stack frame so that we exit this function before
     // calling the client to tell it that it is done.
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&TestCompositorFrameSink::DidDrawCallback,
-                                      weak_ptr_factory_.GetWeakPtr()));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&TestCompositorFrameSink::SendCompositorFrameAckToClient,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void TestCompositorFrameSink::DidDrawCallback() {
-  // This is to unthrottle the next frame, not actually a notice that drawing is
-  // done.
-  client_->DidReceiveCompositorFrameAck();
 }
 
 void TestCompositorFrameSink::ForceReclaimResources() {
   if (capabilities_.can_force_reclaim_resources &&
       delegated_local_surface_id_.is_valid()) {
-    surface_factory_->ClearSurface();
+    support_->ForceReclaimResources();
   }
 }
 
-void TestCompositorFrameSink::ReturnResources(
+void TestCompositorFrameSink::DidReceiveCompositorFrameAck() {
+  // In synchronous mode, we manually send acks and this method should not be
+  // used.
+  if (!display_->has_scheduler())
+    return;
+  client_->DidReceiveCompositorFrameAck();
+}
+
+void TestCompositorFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
+  external_begin_frame_source_.OnBeginFrame(args);
+}
+
+void TestCompositorFrameSink::ReclaimResources(
     const ReturnedResourceArray& resources) {
   client_->ReclaimResources(resources);
 }
 
-void TestCompositorFrameSink::SetBeginFrameSource(
-    BeginFrameSource* begin_frame_source) {
-  client_->SetBeginFrameSource(begin_frame_source);
-}
+void TestCompositorFrameSink::WillDrawSurface(
+    const LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {}
 
 void TestCompositorFrameSink::DisplayOutputSurfaceLost() {
   client_->DidLoseCompositorFrameSink();
@@ -201,6 +192,16 @@ void TestCompositorFrameSink::DisplayWillDrawAndSwap(
 
 void TestCompositorFrameSink::DisplayDidDrawAndSwap() {
   test_client_->DisplayDidDrawAndSwap();
+}
+
+void TestCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
+  support_->SetNeedsBeginFrame(needs_begin_frames);
+}
+
+void TestCompositorFrameSink::OnDidFinishFrame(const BeginFrameAck& ack) {}
+
+void TestCompositorFrameSink::SendCompositorFrameAckToClient() {
+  client_->DidReceiveCompositorFrameAck();
 }
 
 }  // namespace cc
