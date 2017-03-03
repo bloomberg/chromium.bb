@@ -1793,8 +1793,8 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_EXT_INTER
 void modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi) {
+#if CONFIG_EXT_INTER
   if (is_interintra_pred(mbmi)) {
     mbmi->ref_frame[1] = NONE_FRAME;
   } else if (has_second_ref(mbmi) &&
@@ -1802,9 +1802,10 @@ void modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi) {
     mbmi->interinter_compound_data.type = COMPOUND_AVERAGE;
     mbmi->ref_frame[1] = NONE_FRAME;
   }
+#endif  // CONFIG_EXT_INTER
+  if (has_second_ref(mbmi)) mbmi->ref_frame[1] = NONE_FRAME;
   return;
 }
-#endif  // CONFIG_EXT_INTER
 
 void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int mi_row, int mi_col,
@@ -1830,9 +1831,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     MODE_INFO *above_mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
     const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
-#if CONFIG_EXT_INTER
     MB_MODE_INFO backup_mbmi;
-#endif  // CONFIG_EXT_INTER
 
     mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
 
@@ -1841,10 +1840,8 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     neighbor_count++;
     if (neighbor_count > neighbor_limit) break;
 
-#if CONFIG_EXT_INTER
     backup_mbmi = *above_mbmi;
     modify_neighbor_predictor_for_obmc(above_mbmi);
-#endif  // CONFIG_EXT_INTER
 
     for (j = 0; j < MAX_MB_PLANE; ++j) {
       struct macroblockd_plane *const pd = &xd->plane[j];
@@ -1907,9 +1904,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       }
 #endif  // CONFIG_WARPED_MOTION
     }
-#if CONFIG_EXT_INTER
     *above_mbmi = backup_mbmi;
-#endif  // CONFIG_EXT_INTER
   }
   xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
   xd->mb_to_right_edge = mb_to_right_edge_base;
@@ -1940,9 +1935,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     MODE_INFO *left_mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
     const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
-#if CONFIG_EXT_INTER
     MB_MODE_INFO backup_mbmi;
-#endif  // CONFIG_EXT_INTER
 
     mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
 
@@ -1951,10 +1944,8 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     neighbor_count++;
     if (neighbor_count > neighbor_limit) break;
 
-#if CONFIG_EXT_INTER
     backup_mbmi = *left_mbmi;
     modify_neighbor_predictor_for_obmc(left_mbmi);
-#endif  // CONFIG_EXT_INTER
 
     for (j = 0; j < MAX_MB_PLANE; ++j) {
       struct macroblockd_plane *const pd = &xd->plane[j];
@@ -2017,9 +2008,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       }
 #endif  // CONFIG_WARPED_MOTION
     }
-#if CONFIG_EXT_INTER
     *left_mbmi = backup_mbmi;
-#endif  // CONFIG_EXT_INTER
   }
   xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
   xd->mb_to_bottom_edge = mb_to_bottom_edge_base;
