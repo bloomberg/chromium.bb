@@ -540,6 +540,9 @@ public class NewTabPageView
             }
         }
 
+        // Update snap scrolling for the fakebox.
+        mRecyclerView.setContainsLocationBar(mManager.isLocationBarShownInNTP());
+
         updateTileGridPlaceholderVisibility();
 
         onUrlFocusAnimationChanged();
