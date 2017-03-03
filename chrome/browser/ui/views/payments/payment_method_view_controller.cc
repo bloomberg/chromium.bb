@@ -190,8 +190,7 @@ PaymentMethodViewController::CreateExtraFooterView() {
   std::unique_ptr<views::View> extra_view = base::MakeUnique<views::View>();
 
   extra_view->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kPaymentRequestRowHorizontalInsets,
-      kPaymentRequestRowVerticalInsets, kPaymentRequestButtonSpacing));
+      views::BoxLayout::kHorizontal, 0, 0, kPaymentRequestButtonSpacing));
 
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_CAPTION));

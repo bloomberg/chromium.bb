@@ -123,8 +123,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
       base::MakeUnique<views::View>();
 
   trailing_buttons_container->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kPaymentRequestRowHorizontalInsets,
-      kPaymentRequestRowVerticalInsets, kPaymentRequestButtonSpacing));
+      views::BoxLayout::kHorizontal, 0, 0, kPaymentRequestButtonSpacing));
 
   std::unique_ptr<views::Button> primary_button = CreatePrimaryButton();
   if (primary_button)

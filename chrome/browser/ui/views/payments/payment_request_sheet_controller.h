@@ -57,7 +57,8 @@ class PaymentRequestSheetController : public views::VectorIconButtonDelegate {
   // extra view is to be displayed.The caller takes ownership of the view but
   // the view is guaranteed to be outlived by the controller so subclasses may
   // retain a raw pointer to the returned view (for example to control its
-  // enabled state).
+  // enabled state). The horizontal and vertical insets (to the left and bottom
+  // borders) is taken care of by the caller, so can be set to 0.
   // +---------------------------+
   // | EXTRA VIEW | PAY | CANCEL |
   // +---------------------------+
