@@ -906,7 +906,8 @@ void NetworkQualityEstimator::MaybeQueryExternalEstimateProvider() const {
 
 void NetworkQualityEstimator::UpdateSignalStrength() {
 #if defined(OS_ANDROID)
-  if (!android::cellular_signal_strength::GetSignalStrengthDbm(
+  if (!NetworkChangeNotifier::IsConnectionCellular(current_network_id_.type) ||
+      !android::cellular_signal_strength::GetSignalStrengthDbm(
           &signal_strength_dbm_)) {
     signal_strength_dbm_ = INT32_MIN;
   }
