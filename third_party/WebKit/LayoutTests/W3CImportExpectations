@@ -500,14 +500,6 @@ crbug.com/626703 external/csswg-test/css-values-4/ic-unit-004.html [ Failure ]
 crbug.com/626703 external/csswg-test/css-values-4/ic-unit-001.html [ Failure ]
 crbug.com/626703 external/csswg-test/css-values-4/ic-unit-003.html [ Failure ]
 
-# https://github.com/w3c/web-platform-tests/issues/1861: A function can be
-# called before it's defined.
-# crbug.com/493465: Requires the pipe feature of wptserve
-external/wpt/html/browsers/the-window-object/security-window/window-security.sub.html [ Skip ]
-
-# crbug.com/493465: Requires the pipe feature of wptserve
-external/wpt/html/infrastructure/urls/resolving-urls [ Skip ]
-
 # It contains only manual SVG tests.
 external/wpt/html/editing/dnd/svg [ Skip ]
 
