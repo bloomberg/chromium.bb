@@ -48,7 +48,6 @@ MediaRouterAction::MediaRouterAction(Browser* browser,
       browser_(browser),
       toolbar_actions_bar_(toolbar_actions_bar),
       platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)),
-      contextual_menu_(browser),
       tab_strip_model_observer_(this),
       toolbar_actions_bar_observer_(this),
       weak_ptr_factory_(this) {
@@ -135,7 +134,13 @@ gfx::NativeView MediaRouterAction::GetPopupNativeView() {
 }
 
 ui::MenuModel* MediaRouterAction::GetContextMenu() {
-  return contextual_menu_.menu_model();
+  if (toolbar_actions_bar_->IsActionVisibleOnMainBar(this)) {
+    contextual_menu_ = MediaRouterContextualMenu::CreateForToolbar(browser_);
+  } else {
+    contextual_menu_ =
+        MediaRouterContextualMenu::CreateForOverflowMenu(browser_);
+  }
+  return contextual_menu_->menu_model();
 }
 
 void MediaRouterAction::OnContextMenuClosed() {
@@ -172,7 +177,7 @@ bool MediaRouterAction::DisabledClickOpensMenu() const {
 }
 
 void MediaRouterAction::OnIssue(const media_router::Issue& issue) {
-  current_issue_.reset(new media_router::IssueInfo(issue.info()));
+  current_issue_ = base::MakeUnique<media_router::IssueInfo>(issue.info());
   MaybeUpdateIcon();
 }
 

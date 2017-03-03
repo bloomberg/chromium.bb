@@ -89,6 +89,11 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
         ->action();
   }
 
+  ui::SimpleMenuModel* GetActionContextMenu() {
+    return static_cast<ui::SimpleMenuModel*>(
+        GetMediaRouterAction()->GetContextMenu());
+  }
+
   void ExecuteMediaRouterAction(AppMenuButton* app_menu_button) {
     EXPECT_TRUE(app_menu_button->IsMenuShowing());
     GetMediaRouterAction()->ExecuteAction(true);
@@ -322,6 +327,28 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
   EXPECT_TRUE(ActionExists());
   browser2->window()->Close();
   EXPECT_TRUE(ActionExists());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, UpdateActionLocation) {
+  SetAlwaysShowActionPref(true);
+
+  // Get the index for "Hide in Chrome menu" / "Show in toolbar" menu item.
+  const int command_index = GetActionContextMenu()->GetIndexOfCommandId(
+      IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR);
+
+  // Start out with the action visible on the main bar.
+  EXPECT_TRUE(
+      toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
+  GetActionContextMenu()->ActivatedAt(command_index);
+
+  // The action should get hidden in the overflow menu.
+  EXPECT_FALSE(
+      toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
+  GetActionContextMenu()->ActivatedAt(command_index);
+
+  // The action should be back on the main bar.
+  EXPECT_TRUE(
+      toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
 }
 
 }  // namespace media_router

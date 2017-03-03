@@ -135,7 +135,7 @@ class MediaRouterAction : public ToolbarActionViewController,
   // The delegate to handle platform-specific implementations.
   std::unique_ptr<MediaRouterActionPlatformDelegate> platform_delegate_;
 
-  MediaRouterContextualMenu contextual_menu_;
+  std::unique_ptr<MediaRouterContextualMenu> contextual_menu_;
 
   ScopedObserver<TabStripModel, TabStripModelObserver>
       tab_strip_model_observer_;
