@@ -1102,15 +1102,6 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
     return false;
   }
 
-  if (new_pic_size == pic_size_) {
-    // Already have surfaces and this SPS keeps the same resolution,
-    // no need to request a new set.
-    return true;
-  }
-
-  pic_size_ = new_pic_size;
-  DVLOG(1) << "New picture size: " << pic_size_.ToString();
-
   int level = sps->level_idc;
   int max_dpb_mbs = LevelToMaxDpbMbs(level);
   if (max_dpb_mbs == 0)
@@ -1118,19 +1109,25 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
 
   size_t max_dpb_size = std::min(max_dpb_mbs / (width_mb * height_mb),
                                  static_cast<int>(H264DPB::kDPBMaxSize));
-  DVLOG(1) << "Codec level: " << level << ", DPB size: " << max_dpb_size;
   if (max_dpb_size == 0) {
     DVLOG(1) << "Invalid DPB Size";
     return false;
   }
 
-  dpb_.set_max_num_pics(max_dpb_size);
+  if ((pic_size_ != new_pic_size) || (dpb_.max_num_pics() != max_dpb_size)) {
+    if (!Flush())
+      return false;
+    DVLOG(1) << "Codec level: " << level << ", DPB size: " << max_dpb_size
+             << ", Picture size: " << new_pic_size.ToString();
+    *need_new_buffers = true;
+    pic_size_ = new_pic_size;
+    dpb_.set_max_num_pics(max_dpb_size);
+  }
 
   if (!UpdateMaxNumReorderFrames(sps))
     return false;
   DVLOG(1) << "max_num_reorder_frames: " << max_num_reorder_frames_;
 
-  *need_new_buffers = true;
   return true;
 }
 
@@ -1383,9 +1380,6 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
           state_ = kAfterReset;
 
         if (need_new_buffers) {
-          if (!Flush())
-            return kDecodeError;
-
           curr_pic_ = nullptr;
           curr_nalu_ = nullptr;
           ref_pic_list_p0_.clear();
