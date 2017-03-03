@@ -27,7 +27,8 @@
   <template>
     <link rel="stylesheet" href="oobe_update.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
-    <oobe-dialog hidden="[[!checkingForUpdate]]">
+    <oobe-dialog hidden="[[!checkingForUpdate]]" tabindex="0"
+        aria-live="polite">
       <iron-icon icon="oobe-update:googleg" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="checkingForUpdates"></h1>
@@ -39,7 +40,8 @@
         <paper-progress id="checking-progress" indeterminate></paper-progress>
       </div>
     </oobe-dialog>
-    <oobe-dialog hidden="[[checkingForUpdate]]">
+    <oobe-dialog hidden="[[checkingForUpdate]]" tabindex="0"
+        aria-live="polite">
       <iron-icon icon="oobe-update:googleg" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="updatingScreenTitle"></h1>
