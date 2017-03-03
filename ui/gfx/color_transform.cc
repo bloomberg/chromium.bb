@@ -8,6 +8,7 @@
 #include <cmath>
 #include <list>
 #include <memory>
+#include <sstream>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -35,8 +36,17 @@ namespace gfx {
 
 namespace {
 
+void InitStringStream(std::stringstream* ss) {
+  ss->imbue(std::locale::classic());
+  ss->precision(8);
+  *ss << std::scientific;
+}
+
 std::string Str(float f) {
-  return base::StringPrintf("%+1.8e", f);
+  std::stringstream ss;
+  InitStringStream(&ss);
+  ss << f;
+  return ss.str();
 }
 
 // Helper for scoped QCMS profiles.
@@ -52,7 +62,7 @@ using ScopedQcmsProfile = std::unique_ptr<qcms_profile, QcmsProfileDeleter>;
 Transform Invert(const Transform& t) {
   Transform ret = t;
   if (!t.GetInverse(&ret)) {
-    LOG(ERROR) << "Inverse should alsways be possible.";
+    LOG(ERROR) << "Inverse should always be possible.";
   }
   return ret;
 }
@@ -259,7 +269,7 @@ class ColorTransformStep {
   virtual bool IsNull() { return false; }
   virtual void Transform(ColorTransform::TriStim* color, size_t num) const = 0;
   virtual bool CanAppendShaderSource() { return false; }
-  virtual void AppendShaderSource(std::string* result) { NOTREACHED(); }
+  virtual void AppendShaderSource(std::stringstream* result) { NOTREACHED(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ColorTransformStep);
@@ -300,19 +310,13 @@ class ColorTransformInternal : public ColorTransform {
   gfx::ColorSpace dst_;
 };
 
-#define SRC(...)                                                     \
-  do {                                                               \
-    *result += std::string("  ") + base::StringPrintf(__VA_ARGS__) + \
-               std::string("\n");                                    \
-  } while (0)
-
 class ColorTransformNull : public ColorTransformStep {
  public:
   ColorTransformNull* GetNull() override { return this; }
   bool IsNull() override { return true; }
   void Transform(ColorTransform::TriStim* color, size_t num) const override {}
   bool CanAppendShaderSource() override { return true; }
-  void AppendShaderSource(std::string* result) override {}
+  void AppendShaderSource(std::stringstream* result) override {}
 };
 
 class ColorTransformMatrix : public ColorTransformStep {
@@ -341,16 +345,24 @@ class ColorTransformMatrix : public ColorTransformStep {
 
   bool CanAppendShaderSource() override { return true; }
 
-  void AppendShaderSource(std::string* result) override {
+  void AppendShaderSource(std::stringstream* result) override {
     const SkMatrix44& m = matrix_.matrix();
-    SRC("color = mat3(%+1.8e, %+1.8e, %+1.8e,",  // column 1
-        m.get(0, 0), m.get(1, 0), m.get(2, 0));
-    SRC("             %+1.8e, %+1.8e, %+1.8e,",  // column 2
-        m.get(0, 1), m.get(1, 1), m.get(2, 1));
-    SRC("             %+1.8e, %+1.8e, %+1.8e) * color;",  // column 3
-        m.get(0, 2), m.get(1, 2), m.get(2, 2));
-    SRC("color = vec3(%+1.8e, %+1.8e, %+1.8e) + color;",  // column 4
-        m.get(0, 3), m.get(1, 3), m.get(2, 3));
+    *result << "  color = mat3(";
+    *result << m.get(0, 0) << ", " << m.get(1, 0) << ", " << m.get(2, 0) << ",";
+    *result << std::endl;
+    *result << "               ";
+    *result << m.get(0, 1) << ", " << m.get(1, 1) << ", " << m.get(2, 1) << ",";
+    *result << std::endl;
+    *result << "               ";
+    *result << m.get(0, 2) << ", " << m.get(1, 2) << ", " << m.get(2, 2) << ")";
+    *result << " * color;" << std::endl;
+
+    // Only print the translational component if it isn't the identity.
+    if (m.get(0, 3) != 0.f || m.get(1, 3) != 0.f || m.get(2, 3) != 0.f) {
+      *result << "  color += vec3(";
+      *result << m.get(0, 3) << ", " << m.get(1, 3) << ", " << m.get(2, 3);
+      *result << ");" << std::endl;
+    }
   }
 
  private:
@@ -393,7 +405,7 @@ class ColorTransformSkTransferFn : public ColorTransformStep {
 
   bool CanAppendShaderSource() override { return true; }
 
-  void AppendShaderSourceChannel(std::string* result, const char* value) {
+  void AppendShaderSourceChannel(std::stringstream* result, const char* value) {
     const float kEpsilon = 1.f / 1024.f;
 
     // Construct the linear segment
@@ -421,16 +433,16 @@ class ColorTransformSkTransferFn : public ColorTransformStep {
 
     // Add both parts, skpping the if clause if possible.
     if (fn_.fD > kEpsilon) {
-      SRC("if (%s < %f)", value, fn_.fD);
-      SRC("  %s = %s;", value, linear.c_str());
-      SRC("else");
-      SRC("  %s = %s;", value, nonlinear.c_str());
+      *result << "  if (" << value << " < " << Str(fn_.fD) << ")" << std::endl;
+      *result << "    " << value << " = " << linear << ";" << std::endl;
+      *result << "  else" << std::endl;
+      *result << "    " << value << " = " << nonlinear << ";" << std::endl;
     } else {
-      SRC("%s = %s;", value, nonlinear.c_str());
+      *result << "  " << value << " = " << nonlinear << ";" << std::endl;
     }
   }
 
-  void AppendShaderSource(std::string* result) override {
+  void AppendShaderSource(std::stringstream* result) override {
     // Append the transfer function for each channel.
     AppendShaderSourceChannel(result, "color.r");
     AppendShaderSourceChannel(result, "color.g");
@@ -816,13 +828,14 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
 }
 
 std::string ColorTransformInternal::GetShaderSource() const {
-  std::string result;
-  result += "vec3 DoColorConversion(vec3 color) {\n";
+  std::stringstream result;
+  InitStringStream(&result);
+  result << "vec3 DoColorConversion(vec3 color) {" << std::endl;
   for (const auto& step : steps_)
     step->AppendShaderSource(&result);
-  result += "  return color;\n";
-  result += "}\n";
-  return result;
+  result << "  return color;" << std::endl;
+  result << "}" << std::endl;
+  return result.str();
 }
 
 bool ColorTransformInternal::CanGetShaderSource() const {
