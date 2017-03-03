@@ -676,8 +676,6 @@ crbug.com/520739 [ Mac ] virtual/mojo-loading/http/tests/websocket/close-code-an
 crbug.com/520737 [ Mac ] external/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
-crbug.com/109362 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
-
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
 crbug.com/521858 [ Win7 ] virtual/mojo-loading/http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
@@ -835,9 +833,6 @@ crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 crbug.com/411164 [ Win ] virtual/mojo-loading/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
-crbug.com/688911 inspector/console/console-dir-es6.html [ NeedsManualRebaseline ]
-crbug.com/688911 inspector/console/console-format-es6-2.html [ NeedsManualRebaseline ]
-
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
@@ -897,8 +892,6 @@ crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto-nowrap.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-locale.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-orphaned-word.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/midword-break-priority.html [ Pass ]
-
-crbug.com/655963 inspector/console/console-dir.html [ NeedsManualRebaseline ]
 
 crbug.com/405389 external/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 crbug.com/424365 external/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]

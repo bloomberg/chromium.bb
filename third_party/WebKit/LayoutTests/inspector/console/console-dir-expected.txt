@@ -11,14 +11,14 @@ CONSOLE MESSAGE: line 39: [object Uint8Array]
 CONSOLE MESSAGE: line 44: [object Event]
 Tests that console logging dumps proper messages.
 
-console-dir.html:4 Array[2]
+console-dir.html:4 Array(2)
     0: "test1"
     1: "test2"
     length: 2
-    __proto__: Array[0]
-console-dir.html:5 NodeList[1]
-    0: html
+    __proto__: Array(0)
+console-dir.html:5 NodeList(1)
     length: 1
+    0: html
     __proto__: NodeList
 console-dir.html:6 XPathResult
     invalidIteratorState: false
@@ -39,7 +39,7 @@ console-dir.html:19 function anonymous()
     length: 0
     name: ""
     prototype: Object
-    __proto__: ()
+    __proto__: function ()
     [[FunctionLocation]]: console-dir.html:19
     [[Scopes]]: Scopes[1]
 console-dir.html:23 inner
@@ -50,14 +50,13 @@ console-dir.html:27 Object
     foo: Object
         No Properties
     __proto__: Object
-console-dir.html:29 function get __proto__()
+console-dir.html:29 function __proto__()
     arguments: null
     caller: null
     length: 0
     name: "get __proto__"
-    __proto__: ()
-    [[FunctionLocation]]: <unknown>
-console-dir.html:34 Uint8Array[400000000]
+    __proto__: function ()
+console-dir.html:34 Uint8Array(400000000)
     [0 … 99999999]
     [100000000 … 199999999]
     [200000000 … 299999999]
@@ -72,11 +71,11 @@ console-dir.html:39 Event
     defaultPrevented: false
     eventPhase: 0
     isTrusted: false
-    path: Array[0]
+    path: Array(0)
     returnValue: true
     srcElement: null
     target: null
-    timeStamp: 0
     type: ""
+    timeStamp: 0
     __proto__: Event
 
