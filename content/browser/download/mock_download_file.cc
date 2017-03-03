@@ -27,4 +27,12 @@ MockDownloadFile::MockDownloadFile() {
 MockDownloadFile::~MockDownloadFile() {
 }
 
+void MockDownloadFile::AddByteStream(
+    std::unique_ptr<ByteStreamReader> stream_reader,
+    int64_t offset) {
+  // Gmock currently can't mock method that takes move-only parameters,
+  // delegate the EXPECT_CALL count to |DoAddByteStream|.
+  DoAddByteStream(stream_reader.get(), offset);
+}
+
 }  // namespace content

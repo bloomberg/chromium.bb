@@ -210,6 +210,7 @@ DownloadFileWithDelay::DownloadFileWithDelay(
                        default_download_directory,
                        std::move(stream),
                        net_log,
+                       false,
                        observer),
       owner_(owner) {}
 
@@ -314,6 +315,7 @@ class CountingDownloadFile : public DownloadFileImpl {
                          default_downloads_directory,
                          std::move(stream),
                          net_log,
+                         false,
                          observer) {}
 
   ~CountingDownloadFile() override {

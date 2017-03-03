@@ -44,8 +44,10 @@ class DownloadFileWithError: public DownloadFileImpl {
   void Initialize(const InitializeCallback& callback) override;
 
   // DownloadFile interface.
-  DownloadInterruptReason AppendDataToFile(const char* data,
-                                           size_t data_len) override;
+  DownloadInterruptReason WriteDataToFile(int64_t offset,
+                                          const char* data,
+                                          size_t data_len) override;
+
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(const base::FilePath& full_path,
@@ -111,6 +113,7 @@ DownloadFileWithError::DownloadFileWithError(
                        default_download_directory,
                        std::move(byte_stream),
                        net_log,
+                       false, /* is_sparse_file */
                        observer),
       error_info_(error_info),
       destruction_callback_(dtor_callback) {
@@ -154,11 +157,13 @@ void DownloadFileWithError::Initialize(
   DownloadFileImpl::Initialize(callback_to_use);
 }
 
-DownloadInterruptReason DownloadFileWithError::AppendDataToFile(
-    const char* data, size_t data_len) {
+DownloadInterruptReason DownloadFileWithError::WriteDataToFile(
+    int64_t offset,
+    const char* data,
+    size_t data_len) {
   return ShouldReturnError(
       TestFileErrorInjector::FILE_OPERATION_WRITE,
-      DownloadFileImpl::AppendDataToFile(data, data_len));
+      DownloadFileImpl::WriteDataToFile(offset, data, data_len));
 }
 
 void DownloadFileWithError::RenameAndUniquify(

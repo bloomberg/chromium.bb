@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -17,6 +18,8 @@
 class GURL;
 
 namespace content {
+
+class ByteStreamReader;
 
 // These objects live exclusively on the file thread and handle the writing
 // operations for one download. These objects live only for the duration that
@@ -44,6 +47,11 @@ class CONTENT_EXPORT DownloadFile {
   // thread as per the comment above, passing DOWNLOAD_INTERRUPT_REASON_NONE
   // on success, or a network download interrupt reason on failure.
   virtual void Initialize(const InitializeCallback& callback) = 0;
+
+  // Add a byte stream reader to write into a slice of the file, used for
+  // parallel download. Called on the file thread.
+  virtual void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
+                             int64_t offset) = 0;
 
   // Rename the download file to |full_path|.  If that file exists
   // |full_path| will be uniquified by suffixing " (<number>)" to the

@@ -197,6 +197,7 @@ void RecordNetworkBlockage(base::TimeDelta resource_handler_lifetime,
                            base::TimeDelta resource_handler_blocked_time);
 
 // Record overall bandwidth stats at the file end.
+// Does not count in any hash computation or file open/close time.
 void RecordFileBandwidth(size_t length,
                          base::TimeDelta disk_write_time,
                          base::TimeDelta elapsed_time);
