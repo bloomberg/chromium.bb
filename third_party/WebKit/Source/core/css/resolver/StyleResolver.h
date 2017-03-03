@@ -244,9 +244,10 @@ class CORE_EXPORT StyleResolver final
       const MatchResult&,
       const Element* animatingElement);
   CacheSuccess applyMatchedCache(StyleResolverState&, const MatchResult&);
+  enum ApplyAnimations { ExcludeAnimations, IncludeAnimations };
   void applyCustomProperties(StyleResolverState&,
                              const MatchResult&,
-                             bool applyAnimations,
+                             ApplyAnimations,
                              const CacheSuccess&,
                              NeedsApplyPass&);
   void applyMatchedAnimationProperties(StyleResolverState&,

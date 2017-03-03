@@ -1606,7 +1606,7 @@ void StyleResolver::applyMatchedPropertiesAndCustomPropertyAnimations(
   CacheSuccess cacheSuccess = applyMatchedCache(state, matchResult);
   NeedsApplyPass needsApplyPass;
   if (!cacheSuccess.isFullCacheHit()) {
-    applyCustomProperties(state, matchResult, false, cacheSuccess,
+    applyCustomProperties(state, matchResult, ExcludeAnimations, cacheSuccess,
                           needsApplyPass);
     applyMatchedAnimationProperties(state, matchResult, cacheSuccess,
                                     needsApplyPass);
@@ -1616,7 +1616,7 @@ void StyleResolver::applyMatchedPropertiesAndCustomPropertyAnimations(
     calculateAnimationUpdate(state, animatingElement);
     if (state.isAnimatingCustomProperties()) {
       cacheSuccess.setFailed();
-      applyCustomProperties(state, matchResult, true, cacheSuccess,
+      applyCustomProperties(state, matchResult, IncludeAnimations, cacheSuccess,
                             needsApplyPass);
     }
   }
@@ -1686,7 +1686,7 @@ StyleResolver::CacheSuccess StyleResolver::applyMatchedCache(
 
 void StyleResolver::applyCustomProperties(StyleResolverState& state,
                                           const MatchResult& matchResult,
-                                          bool applyAnimations,
+                                          ApplyAnimations applyAnimations,
                                           const CacheSuccess& cacheSuccess,
                                           NeedsApplyPass& needsApplyPass) {
   DCHECK(!cacheSuccess.isFullCacheHit());
@@ -1700,7 +1700,7 @@ void StyleResolver::applyCustomProperties(StyleResolverState& state,
   applyMatchedProperties<ResolveVariables, CheckNeedsApplyPass>(
       state, matchResult.authorRules(), true, applyInheritedOnly,
       needsApplyPass);
-  if (applyAnimations) {
+  if (applyAnimations == IncludeAnimations) {
     applyAnimatedProperties<ResolveVariables>(
         state, state.animationUpdate().activeInterpolationsForAnimations());
   }
@@ -1716,7 +1716,7 @@ void StyleResolver::applyCustomProperties(StyleResolverState& state,
       applyMatchedProperties<ResolveVariables, CheckNeedsApplyPass>(
           state, matchResult.authorRules(), true, applyInheritedOnly,
           needsApplyPass);
-      if (applyAnimations) {
+      if (applyAnimations == IncludeAnimations) {
         applyAnimatedProperties<ResolveVariables>(
             state, state.animationUpdate().activeInterpolationsForAnimations());
       }
