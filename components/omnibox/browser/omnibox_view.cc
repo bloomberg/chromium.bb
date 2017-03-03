@@ -19,6 +19,7 @@
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/toolbar/toolbar_model.h"
+#include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
 
@@ -184,4 +185,64 @@ void OmniboxView::TextChanged() {
   EmphasizeURLComponents();
   if (model_.get())
     model_->OnChanged();
+}
+
+bool OmniboxView::CurrentTextIsURL() {
+  return model_->CurrentTextIsURL();
+}
+
+void OmniboxView::UpdateTextStyle(
+    const base::string16& display_text,
+    const AutocompleteSchemeClassifier& classifier) {
+  enum DemphasizeComponents {
+    EVERYTHING,
+    ALL_BUT_SCHEME,
+    ALL_BUT_HOST,
+    NOTHING,
+  } deemphasize = NOTHING;
+
+  url::Component scheme, host;
+  AutocompleteInput::ParseForEmphasizeComponents(display_text, classifier,
+                                                 &scheme, &host);
+
+  if (CurrentTextIsURL()) {
+    const base::string16 url_scheme =
+        display_text.substr(scheme.begin, scheme.len);
+    // Extension IDs are not human-readable, so deemphasize everything to draw
+    // attention to the human-readable name in the location icon text.
+    // Data URLs are rarely human-readable and can be used for spoofing, so draw
+    // attention to the scheme to emphasize "this is just a bunch of data".
+    // For normal URLs, the host is the best proxy for "identity".
+    if (url_scheme == base::UTF8ToUTF16(extensions::kExtensionScheme))
+      deemphasize = EVERYTHING;
+    else if (url_scheme == base::UTF8ToUTF16(url::kDataScheme))
+      deemphasize = ALL_BUT_SCHEME;
+    else if (host.is_nonempty())
+      deemphasize = ALL_BUT_HOST;
+  }
+
+  gfx::Range scheme_range = scheme.is_nonempty()
+                                ? gfx::Range(scheme.begin, scheme.end())
+                                : gfx::Range::InvalidRange();
+  switch (deemphasize) {
+    case EVERYTHING:
+      SetEmphasis(false, gfx::Range::InvalidRange());
+      break;
+    case NOTHING:
+      SetEmphasis(true, gfx::Range::InvalidRange());
+      break;
+    case ALL_BUT_SCHEME:
+      DCHECK(scheme_range.IsValid());
+      SetEmphasis(false, gfx::Range::InvalidRange());
+      SetEmphasis(true, scheme_range);
+      break;
+    case ALL_BUT_HOST:
+      SetEmphasis(false, gfx::Range::InvalidRange());
+      SetEmphasis(true, gfx::Range(host.begin, host.end()));
+      break;
+  }
+
+  // Emphasize the scheme for security UI display purposes (if necessary).
+  if (!model()->user_input_in_progress() && scheme_range.IsValid())
+    UpdateSchemeStyle(scheme_range);
 }

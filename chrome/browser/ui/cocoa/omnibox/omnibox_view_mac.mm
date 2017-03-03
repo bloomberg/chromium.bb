@@ -6,6 +6,7 @@
 
 #include <Carbon/Carbon.h>  // kVK_Return
 
+#include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -129,13 +130,6 @@ const OmniboxViewMacState* GetStateFromTab(const WebContents* tab) {
       tab->GetUserData(&kOmniboxViewMacStateKey));
 }
 
-// Helper to make converting url ranges to NSRange easier to
-// read.
-NSRange ComponentToNSRange(const url::Component& component) {
-  return NSMakeRange(static_cast<NSInteger>(component.begin),
-                     static_cast<NSInteger>(component.len));
-}
-
 }  // namespace
 
 // static
@@ -192,7 +186,8 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
       delete_at_end_pressed_(false),
       in_coalesced_update_block_(false),
       do_coalesced_text_update_(false),
-      do_coalesced_range_update_(false) {
+      do_coalesced_range_update_(false),
+      attributing_display_string_(nil) {
   [field_ setObserver:this];
 
   // Needed so that editing doesn't lose the styling.
@@ -545,69 +540,69 @@ void OmniboxViewMac::ApplyTextStyle(
                            range:NSMakeRange(0, [attributedString length])];
 }
 
-void OmniboxViewMac::ApplyTextAttributes(
-    const base::string16& display_text,
-    NSMutableAttributedString* attributedString) {
-  NSUInteger as_length = [attributedString length];
-  if (as_length == 0) {
-    return;
-  }
-  NSRange as_entire_string = NSMakeRange(0, as_length);
+void OmniboxViewMac::SetEmphasis(bool emphasize, const gfx::Range& range) {
   bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
 
-  ApplyTextStyle(attributedString);
+  NSRange ns_range = range.IsValid()
+                         ? range.ToNSRange()
+                         : NSMakeRange(0, [attributing_display_string_ length]);
 
-  // A kinda hacky way to add breaking at periods. This is what Safari does.
-  // This works for IDNs too, despite the "en_US".
-  [attributedString addAttribute:@"NSLanguage"
-                           value:@"en_US_POSIX"
-                           range:as_entire_string];
+  [attributing_display_string_
+      addAttribute:NSForegroundColorAttributeName
+             value:(emphasize) ? HostTextColor(in_dark_mode)
+                               : BaseTextColor(in_dark_mode)
+             range:ns_range];
+}
 
-  [attributedString addAttribute:NSForegroundColorAttributeName
-                           value:HostTextColor(in_dark_mode)
-                           range:as_entire_string];
+void OmniboxViewMac::UpdateSchemeStyle(const gfx::Range& range) {
+  if (!range.IsValid())
+    return;
 
-  url::Component scheme, host;
-  AutocompleteInput::ParseForEmphasizeComponents(
-      display_text, ChromeAutocompleteSchemeClassifier(profile_), &scheme,
-      &host);
-  bool grey_out_url = display_text.substr(scheme.begin, scheme.len) ==
-      base::UTF8ToUTF16(extensions::kExtensionScheme);
-  if (model()->CurrentTextIsURL() &&
-      (host.is_nonempty() || grey_out_url)) {
-    [attributedString addAttribute:NSForegroundColorAttributeName
-                             value:BaseTextColor(in_dark_mode)
-                             range:as_entire_string];
-
-    if (!grey_out_url) {
-      [attributedString addAttribute:NSForegroundColorAttributeName
-                               value:HostTextColor(in_dark_mode)
-                               range:ComponentToNSRange(host)];
-    }
-  }
-
-  // TODO(shess): GTK has this as a member var, figure out why.
-  // [Could it be to not change if no change?  If so, I'm guessing
-  // AppKit may already handle that.]
   const security_state::SecurityLevel security_level =
       controller()->GetToolbarModel()->GetSecurityLevel(false);
 
-  // Emphasize the scheme for security UI display purposes (if necessary).
-  if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
-      scheme.is_nonempty() &&
-      (security_level != security_state::NONE) &&
-      (security_level != security_state::HTTP_SHOW_WARNING)) {
-    if (security_level == security_state::DANGEROUS) {
-      // Add a strikethrough through the scheme.
-      [attributedString addAttribute:NSStrikethroughStyleAttributeName
-                 value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
-                 range:ComponentToNSRange(scheme)];
-    }
-    [attributedString
-        addAttribute:NSForegroundColorAttributeName
-               value:GetSecureTextColor(security_level, in_dark_mode)
-               range:ComponentToNSRange(scheme)];
+  if ((security_level == security_state::NONE) ||
+      (security_level == security_state::HTTP_SHOW_WARNING))
+    return;
+
+  if (security_level == security_state::DANGEROUS) {
+    // Add a strikethrough through the scheme.
+    [attributing_display_string_
+        addAttribute:NSStrikethroughStyleAttributeName
+               value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
+               range:range.ToNSRange()];
   }
+
+  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
+
+  [attributing_display_string_
+      addAttribute:NSForegroundColorAttributeName
+             value:GetSecureTextColor(security_level, in_dark_mode)
+             range:range.ToNSRange()];
+}
+
+void OmniboxViewMac::ApplyTextAttributes(
+    const base::string16& display_text,
+    NSMutableAttributedString* attributed_string) {
+  NSUInteger as_length = [attributed_string length];
+  if (as_length == 0) {
+    return;
+  }
+
+  ApplyTextStyle(attributed_string);
+
+  // A kinda hacky way to add breaking at periods. This is what Safari does.
+  // This works for IDNs too, despite the "en_US".
+  [attributed_string addAttribute:@"NSLanguage"
+                            value:@"en_US_POSIX"
+                            range:NSMakeRange(0, as_length)];
+
+  // Cache a pointer to the attributed string to allow the superclass'
+  // virtual method invocations to add attributes.
+  DCHECK(attributing_display_string_ == nil);
+  base::AutoReset<NSMutableAttributedString*> resetter(
+      &attributing_display_string_, attributed_string);
+  UpdateTextStyle(display_text, ChromeAutocompleteSchemeClassifier(profile_));
 }
 
 void OmniboxViewMac::OnTemporaryTextMaybeChanged(

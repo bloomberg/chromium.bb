@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,10 +33,15 @@ class TestingOmniboxViewViews : public OmniboxViewViews {
   TestingOmniboxViewViews(OmniboxEditController* controller,
                           Profile* profile,
                           CommandUpdater* command_updater)
-      : OmniboxViewViews(controller, profile, command_updater, false, NULL,
+      : OmniboxViewViews(controller,
+                         profile,
+                         command_updater,
+                         false,
+                         nullptr,
                          gfx::FontList()),
-        update_popup_call_count_(0) {
-  }
+        update_popup_call_count_(0),
+        profile_(profile),
+        base_text_is_emphasized_(false) {}
 
   void CheckUpdatePopupCallInfo(size_t call_count, const base::string16& text,
                                 const gfx::Range& selection_range) {
@@ -43,6 +49,14 @@ class TestingOmniboxViewViews : public OmniboxViewViews {
     EXPECT_EQ(text, update_popup_text_);
     EXPECT_EQ(selection_range, update_popup_selection_range_);
   }
+
+  void EmphasizeURLComponents() override {
+    UpdateTextStyle(text(), ChromeAutocompleteSchemeClassifier(profile_));
+  }
+
+  gfx::Range scheme_range() const { return scheme_range_; }
+  gfx::Range emphasis_range() const { return emphasis_range_; }
+  bool base_text_is_emphasized() const { return base_text_is_emphasized_; }
 
  private:
   // OmniboxView:
@@ -52,9 +66,42 @@ class TestingOmniboxViewViews : public OmniboxViewViews {
     update_popup_selection_range_ = GetSelectedRange();
   }
 
+  void SetEmphasis(bool emphasize, const gfx::Range& range) override {
+    if (range == gfx::Range::InvalidRange()) {
+      base_text_is_emphasized_ = emphasize;
+      return;
+    }
+
+    EXPECT_TRUE(emphasize);
+    emphasis_range_ = range;
+  }
+
+  void UpdateSchemeStyle(const gfx::Range& range) override {
+    scheme_range_ = range;
+  }
+
+  // Simplistic test override returns whether a given string looks like a URL
+  // without having to mock AutocompleteClassifier objects and their
+  // dependencies.
+  bool CurrentTextIsURL() override {
+    bool looks_like_url = (text().find(':') != std::string::npos ||
+                           text().find('/') != std::string::npos);
+    return looks_like_url;
+  }
+
   size_t update_popup_call_count_;
   base::string16 update_popup_text_;
   gfx::Range update_popup_selection_range_;
+  Profile* profile_;
+
+  // Range of the last scheme logged by UpdateSchemeStyle().
+  gfx::Range scheme_range_;
+
+  // Range of the last text emphasized by SetEmphasis().
+  gfx::Range emphasis_range_;
+
+  // SetEmphasis() logs whether the base color of the text is emphasized.
+  bool base_text_is_emphasized_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxViewViews);
 };
@@ -95,6 +142,11 @@ class OmniboxViewViewsTest : public testing::Test {
 
   ui::TextEditCommand scheduled_text_edit_command() const {
     return test_api_->scheduled_text_edit_command();
+  }
+
+  void SetAndEmphasizeText(const std::string& new_text) {
+    omnibox_textfield()->SetText(base::ASCIIToUTF16(new_text));
+    omnibox_view()->EmphasizeURLComponents();
   }
 
  private:
@@ -162,4 +214,69 @@ TEST_F(OmniboxViewViewsTest, ScheduledTextEditCommand) {
   omnibox_textfield()->OnKeyEvent(&up_pressed);
   EXPECT_EQ(ui::TextEditCommand::INVALID_COMMAND,
             scheduled_text_edit_command());
+}
+
+// Ensure that the scheme is emphasized for data: URLs.
+TEST_F(OmniboxViewViewsTest, TestEmphasisForDATA) {
+  SetAndEmphasizeText("data:text/html,Hello%20World");
+  EXPECT_EQ(gfx::Range(0, 4), omnibox_view()->scheme_range());
+  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
+  EXPECT_EQ(gfx::Range(0, 4), omnibox_view()->emphasis_range());
+}
+
+// Ensure that the origin is emphasized for http: URLs.
+TEST_F(OmniboxViewViewsTest, TestEmphasisForHTTP) {
+  SetAndEmphasizeText("http://www.example.com/path/file.htm");
+  EXPECT_EQ(gfx::Range(0, 4), omnibox_view()->scheme_range());
+  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
+  EXPECT_EQ(gfx::Range(7, 22), omnibox_view()->emphasis_range());
+}
+
+// Ensure that the origin is emphasized for https: URLs.
+TEST_F(OmniboxViewViewsTest, TestEmphasisForHTTPS) {
+  SetAndEmphasizeText("https://www.example.com/path/file.htm");
+  EXPECT_EQ(gfx::Range(0, 5), omnibox_view()->scheme_range());
+  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
+  EXPECT_EQ(gfx::Range(8, 23), omnibox_view()->emphasis_range());
+}
+
+// Ensure that nothing is emphasized for chrome-extension: URLs.
+TEST_F(OmniboxViewViewsTest, TestEmphasisForChromeExtensionScheme) {
+  SetAndEmphasizeText("chrome-extension://ldfbacdbackkjhclmhnjabngnppnkagl");
+  EXPECT_EQ(gfx::Range(0, 16), omnibox_view()->scheme_range());
+  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
+  EXPECT_EQ(gfx::Range(), omnibox_view()->emphasis_range());
+}
+
+// Ensure that everything is emphasized for unknown scheme hierarchical URLs.
+TEST_F(OmniboxViewViewsTest, TestEmphasisForUnknownHierarchicalScheme) {
+  SetAndEmphasizeText("nosuchscheme://opaque/string");
+  EXPECT_EQ(gfx::Range(0, 12), omnibox_view()->scheme_range());
+  EXPECT_TRUE(omnibox_view()->base_text_is_emphasized());
+  EXPECT_EQ(gfx::Range(), omnibox_view()->emphasis_range());
+}
+
+// Ensure that everything is emphasized for unknown scheme URLs.
+TEST_F(OmniboxViewViewsTest, TestEmphasisForUnknownScheme) {
+  SetAndEmphasizeText("nosuchscheme:opaquestring");
+  EXPECT_EQ(gfx::Range(0, 12), omnibox_view()->scheme_range());
+  EXPECT_TRUE(omnibox_view()->base_text_is_emphasized());
+  EXPECT_EQ(gfx::Range(), omnibox_view()->emphasis_range());
+}
+
+// Ensure that the origin is emphasized for URL-like text.
+TEST_F(OmniboxViewViewsTest, TestEmphasisForPartialURLs) {
+  SetAndEmphasizeText("example/path/file");
+  EXPECT_EQ(gfx::Range(), omnibox_view()->scheme_range());
+  EXPECT_FALSE(omnibox_view()->base_text_is_emphasized());
+  EXPECT_EQ(gfx::Range(0, 7), omnibox_view()->emphasis_range());
+}
+
+// Ensure that everything is emphasized for plain text.
+TEST_F(OmniboxViewViewsTest, TestEmphasisForNonURLs) {
+  SetAndEmphasizeText("This is plain text");
+
+  EXPECT_EQ(gfx::Range(), omnibox_view()->scheme_range());
+  EXPECT_TRUE(omnibox_view()->base_text_is_emphasized());
+  EXPECT_EQ(gfx::Range(), omnibox_view()->emphasis_range());
 }

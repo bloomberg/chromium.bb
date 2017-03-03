@@ -31,7 +31,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -564,6 +563,24 @@ int OmniboxViewViews::GetOmniboxTextLength() const {
   return static_cast<int>(text().length());
 }
 
+void OmniboxViewViews::SetEmphasis(bool emphasize, const gfx::Range& range) {
+  SkColor color = location_bar_view_->GetColor(
+      emphasize ? LocationBarView::TEXT : LocationBarView::DEEMPHASIZED_TEXT);
+  if (range.IsValid())
+    ApplyColor(color, range);
+  else
+    SetColor(color);
+}
+
+void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
+  DCHECK(range.IsValid());
+  const SkColor security_color =
+      location_bar_view_->GetSecureTextColor(security_level_);
+  const bool strike = security_level_ == security_state::DANGEROUS;
+  ApplyColor(security_color, range);
+  ApplyStyle(gfx::DIAGONAL_STRIKE, strike, range);
+}
+
 void OmniboxViewViews::EmphasizeURLComponents() {
   if (!location_bar_view_)
     return;
@@ -576,41 +593,8 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   GetRenderText()->SetDirectionalityMode(text_is_url
                                              ? gfx::DIRECTIONALITY_FORCE_LTR
                                              : gfx::DIRECTIONALITY_FROM_TEXT);
-
-  // See whether the contents are a URL with a non-empty host portion, which we
-  // should emphasize.  To check for a URL, rather than using the type returned
-  // by Parse(), ask the model, which will check the desired page transition for
-  // this input.  This can tell us whether an UNKNOWN input string is going to
-  // be treated as a search or a navigation, and is the same method the Paste
-  // And Go system uses.
-  url::Component scheme, host;
-  AutocompleteInput::ParseForEmphasizeComponents(
-      text(), ChromeAutocompleteSchemeClassifier(profile_), &scheme, &host);
-  bool grey_out_url = text().substr(scheme.begin, scheme.len) ==
-      base::UTF8ToUTF16(extensions::kExtensionScheme);
-  bool grey_base = text_is_url && (host.is_nonempty() || grey_out_url);
-  SetColor(location_bar_view_->GetColor(
-      grey_base ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
-  if (grey_base && !grey_out_url) {
-    ApplyColor(location_bar_view_->GetColor(LocationBarView::TEXT),
-               gfx::Range(host.begin, host.end()));
-  }
-
-  // Emphasize the scheme for security UI display purposes (if necessary).
-  // Note that we check CurrentTextIsURL() because if we're replacing search
-  // URLs with search terms, we may have a non-URL even when the user is not
-  // editing; and in some cases, e.g. for "site:foo.com" searches, the parser
-  // may have incorrectly identified a qualifier as a scheme.
   SetStyle(gfx::DIAGONAL_STRIKE, false);
-  if (!model()->user_input_in_progress() && text_is_url &&
-      scheme.is_nonempty() && (security_level_ != security_state::NONE)) {
-    SkColor security_color =
-        location_bar_view_->GetSecureTextColor(security_level_);
-    const bool strike = (security_level_ == security_state::DANGEROUS);
-    const gfx::Range scheme_range(scheme.begin, scheme.end());
-    ApplyColor(security_color, scheme_range);
-    ApplyStyle(gfx::DIAGONAL_STRIKE, strike, scheme_range);
-  }
+  UpdateTextStyle(text(), ChromeAutocompleteSchemeClassifier(profile_));
 }
 
 bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {

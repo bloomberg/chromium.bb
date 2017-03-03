@@ -19,6 +19,7 @@ include_rules = [
   "+components/toolbar",
   "+components/url_formatter",
   "+components/variations",
+  "+extensions/common/constants.h",
   "+net",
   "+sql",
   "+third_party/protobuf/src/google",

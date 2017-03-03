@@ -153,6 +153,8 @@ class OmniboxViewViews
   void OnMatchOpened(AutocompleteMatch::Type match_type) override;
   int GetOmniboxTextLength() const override;
   void EmphasizeURLComponents() override;
+  void SetEmphasis(bool emphasize, const gfx::Range& range) override;
+  void UpdateSchemeStyle(const gfx::Range& range) override;
 
   // views::Textfield:
   bool IsItemForCommandIdDynamic(int command_id) const override;

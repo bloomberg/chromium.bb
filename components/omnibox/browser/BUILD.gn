@@ -157,6 +157,7 @@ static_library("browser") {
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/net",
+    "//extensions/common:common_constants",
     "//net",
     "//skia",
     "//sql",

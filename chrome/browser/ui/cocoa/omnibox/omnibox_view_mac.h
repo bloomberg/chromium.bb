@@ -32,6 +32,8 @@ class OmniboxViewMac : public OmniboxView,
  public:
   static SkColor BaseTextColorSkia(bool in_dark_mode);
   static NSColor* BaseTextColor(bool in_dark_mode);
+  // Returns a color representing |security_level|, adjusted based on whether
+  // the browser is in Incognito mode.
   static NSColor* GetSecureTextColor(
       security_state::SecurityLevel security_level,
       bool in_dark_mode);
@@ -180,9 +182,13 @@ class OmniboxViewMac : public OmniboxView,
   void ApplyTextStyle(NSMutableAttributedString* attributedString);
 
   // Calculates text attributes according to |display_text| and applies them
-  // to the given |attributedString| object.
+  // to the given |attributed_string| object.
   void ApplyTextAttributes(const base::string16& display_text,
-                           NSMutableAttributedString* attributedString);
+                           NSMutableAttributedString* attributed_string);
+
+  // OmniboxView:
+  void SetEmphasis(bool emphasize, const gfx::Range& range) override;
+  void UpdateSchemeStyle(const gfx::Range& scheme_range) override;
 
   // Return the number of UTF-16 units in the current buffer, excluding the
   // suggested text.
@@ -230,6 +236,10 @@ class OmniboxViewMac : public OmniboxView,
 
   // The time when OnBeforeDrawRect() was called.
   base::TimeTicks draw_rect_start_time_;
+
+  // Temporary pointer to the attributed display string, stored as color and
+  // other emphasis attributes are applied by the superclass.
+  NSMutableAttributedString* attributing_display_string_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewMac);
 };

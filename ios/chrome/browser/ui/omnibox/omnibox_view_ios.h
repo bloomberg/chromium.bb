@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #include <memory>
-
 #include "base/mac/scoped_nsobject.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/toolbar/toolbar_model.h"
@@ -39,6 +38,12 @@ class OmniboxViewIOS : public OmniboxView {
                  id<PreloadProvider> prerender,
                  id<OmniboxPopupPositioner> positioner);
   ~OmniboxViewIOS() override;
+
+  // Returns a color representing |security_level|, adjusted based on whether
+  // the browser is in Incognito mode.
+  static UIColor* GetSecureTextColor(
+      security_state::SecurityLevel security_level,
+      bool in_dark_mode);
 
   // OmniboxView implementation.
   void OpenMatch(const AutocompleteMatch& match,
@@ -137,6 +142,9 @@ class OmniboxViewIOS : public OmniboxView {
   // returns them in an autoreleased object.
   NSAttributedString* ApplyTextAttributes(const base::string16& text);
 
+  void SetEmphasis(bool emphasize, const gfx::Range& range) override;
+  void UpdateSchemeStyle(const gfx::Range& scheme_range) override;
+
   // Removes the query refinement chip from the omnibox.
   void RemoveQueryRefinementChip();
 
@@ -168,6 +176,10 @@ class OmniboxViewIOS : public OmniboxView {
 
   // Bridges delegate method calls from |field_| to C++ land.
   base::scoped_nsobject<AutocompleteTextFieldDelegate> field_delegate_;
+
+  // Temporary pointer to the attributed display string, stored as color and
+  // other emphasis attributes are applied by the superclass.
+  NSMutableAttributedString* attributing_display_string_;  // weak
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_IOS_H_
