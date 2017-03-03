@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/memory/memory_state_updater.h"
+#include "content/browser/memory/memory_condition_observer.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,16 +19,15 @@ namespace {
 const int kDefaultExpectedRendererSizeMB = 40;
 #elif defined(OS_WIN)
 const int kDefaultExpectedRendererSizeMB = 70;
-#else // Mac, Linux, and ChromeOS
+#else  // Mac, Linux, and ChromeOS
 const int kDefaultExpectedRendererSizeMB = 120;
 #endif
 
 // Default values for parameters to determine the global state.
-const int kDefaultNewRenderersUntilThrottled = 4;
-const int kDefaultNewRenderersUntilSuspended = 2;
+const int kDefaultNewRenderersUntilWarning = 4;
+const int kDefaultNewRenderersUntilCritical = 2;
 const int kDefaultNewRenderersBackToNormal = 5;
-const int kDefaultNewRenderersBackToThrottled = 3;
-const int kDefaultMinimumTransitionPeriodSeconds = 30;
+const int kDefaultNewRenderersBackToWarning = 3;
 const int kDefaultMonitoringIntervalSeconds = 5;
 
 void SetIntVariationParameter(const std::map<std::string, std::string> params,
@@ -60,7 +59,7 @@ void SetSecondsVariationParameter(
 
 }  // namespace
 
-MemoryStateUpdater::MemoryStateUpdater(
+MemoryConditionObserver::MemoryConditionObserver(
     MemoryCoordinatorImpl* coordinator,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : coordinator_(coordinator), task_runner_(task_runner) {
@@ -69,11 +68,16 @@ MemoryStateUpdater::MemoryStateUpdater(
   DCHECK(ValidateParameters());
 }
 
-MemoryStateUpdater::~MemoryStateUpdater() {}
+MemoryConditionObserver::~MemoryConditionObserver() {}
 
-base::MemoryState MemoryStateUpdater::CalculateNextState() {
-  using MemoryState = base::MemoryState;
+void MemoryConditionObserver::ScheduleUpdateCondition(base::TimeDelta delta) {
+  update_condition_closure_.Reset(base::Bind(
+      &MemoryConditionObserver::UpdateCondition, base::Unretained(this)));
+  task_runner_->PostDelayedTask(FROM_HERE, update_condition_closure_.callback(),
+                                delta);
+}
 
+MemoryCondition MemoryConditionObserver::CalculateNextCondition() {
   int available =
       coordinator_->memory_monitor()->GetFreeMemoryUntilCriticalMB();
 
@@ -83,63 +87,47 @@ base::MemoryState MemoryStateUpdater::CalculateNextState() {
                                 available);
 
   if (available <= 0)
-    return MemoryState::SUSPENDED;
+    return MemoryCondition::CRITICAL;
 
-  auto current_state = coordinator_->GetGlobalMemoryState();
+  auto current = coordinator_->GetMemoryCondition();
   int expected_renderer_count = available / expected_renderer_size_;
 
-  switch (current_state) {
-    case MemoryState::NORMAL:
-      if (expected_renderer_count <= new_renderers_until_suspended_)
-        return MemoryState::SUSPENDED;
-      if (expected_renderer_count <= new_renderers_until_throttled_)
-        return MemoryState::THROTTLED;
-      return MemoryState::NORMAL;
-    case MemoryState::THROTTLED:
-      if (expected_renderer_count <= new_renderers_until_suspended_)
-        return MemoryState::SUSPENDED;
+  switch (current) {
+    case MemoryCondition::NORMAL:
+      if (expected_renderer_count <= new_renderers_until_critical_)
+        return MemoryCondition::CRITICAL;
+      if (expected_renderer_count <= new_renderers_until_warning_)
+        return MemoryCondition::WARNING;
+      return MemoryCondition::NORMAL;
+    case MemoryCondition::WARNING:
+      if (expected_renderer_count <= new_renderers_until_critical_)
+        return MemoryCondition::CRITICAL;
       if (expected_renderer_count >= new_renderers_back_to_normal_)
-        return MemoryState::NORMAL;
-      return MemoryState::THROTTLED;
-    case MemoryState::SUSPENDED:
+        return MemoryCondition::NORMAL;
+      return MemoryCondition::WARNING;
+    case MemoryCondition::CRITICAL:
       if (expected_renderer_count >= new_renderers_back_to_normal_)
-        return MemoryState::NORMAL;
-      if (expected_renderer_count >= new_renderers_back_to_throttled_)
-        return MemoryState::THROTTLED;
-      return MemoryState::SUSPENDED;
-    case MemoryState::UNKNOWN:
-      // Fall through
-    default:
-      NOTREACHED();
-      return MemoryState::UNKNOWN;
+        return MemoryCondition::NORMAL;
+      if (expected_renderer_count >= new_renderers_back_to_warning_)
+        return MemoryCondition::WARNING;
+      return MemoryCondition::CRITICAL;
   }
+  NOTREACHED();
+  return MemoryCondition::NORMAL;
 }
 
-void MemoryStateUpdater::UpdateState() {
-  auto current_state = coordinator_->GetGlobalMemoryState();
-  auto next_state = CalculateNextState();
-  if (coordinator_->ChangeStateIfNeeded(current_state, next_state)) {
-    ScheduleUpdateState(minimum_transition_period_);
-  } else {
-    ScheduleUpdateState(monitoring_interval_);
-  }
+void MemoryConditionObserver::UpdateCondition() {
+  auto next_condition = CalculateNextCondition();
+  coordinator_->UpdateConditionIfNeeded(next_condition);
+  ScheduleUpdateCondition(monitoring_interval_);
 }
 
-void MemoryStateUpdater::ScheduleUpdateState(base::TimeDelta delta) {
-  update_state_closure_.Reset(base::Bind(&MemoryStateUpdater::UpdateState,
-                                         base::Unretained(this)));
-  task_runner_->PostDelayedTask(FROM_HERE, update_state_closure_.callback(),
-                                delta);
-}
-
-void MemoryStateUpdater::InitializeParameters() {
+void MemoryConditionObserver::InitializeParameters() {
   expected_renderer_size_ = kDefaultExpectedRendererSizeMB;
-  new_renderers_until_throttled_ = kDefaultNewRenderersUntilThrottled;
-  new_renderers_until_suspended_ = kDefaultNewRenderersUntilSuspended;
+  new_renderers_until_warning_ = kDefaultNewRenderersUntilWarning;
+  new_renderers_until_critical_ = kDefaultNewRenderersUntilCritical;
   new_renderers_back_to_normal_ = kDefaultNewRenderersBackToNormal;
-  new_renderers_back_to_throttled_ = kDefaultNewRenderersBackToThrottled;
-  minimum_transition_period_ =
-      base::TimeDelta::FromSeconds(kDefaultMinimumTransitionPeriodSeconds);
+  new_renderers_back_to_warning_ = kDefaultNewRenderersBackToWarning;
   monitoring_interval_ =
       base::TimeDelta::FromSeconds(kDefaultMonitoringIntervalSeconds);
 
@@ -153,30 +141,28 @@ void MemoryStateUpdater::InitializeParameters() {
   SetIntVariationParameter(params, "expected_renderer_size",
                            &expected_renderer_size_);
   SetIntVariationParameter(params, "new_renderers_until_throttled",
-                           &new_renderers_until_throttled_);
+                           &new_renderers_until_warning_);
   SetIntVariationParameter(params, "new_renderers_until_warning",
-                           &new_renderers_until_throttled_);
+                           &new_renderers_until_warning_);
   SetIntVariationParameter(params, "new_renderers_until_suspended",
-                           &new_renderers_until_suspended_);
+                           &new_renderers_until_critical_);
   SetIntVariationParameter(params, "new_renderers_until_critical",
-                           &new_renderers_until_suspended_);
+                           &new_renderers_until_critical_);
   SetIntVariationParameter(params, "new_renderers_back_to_normal",
                            &new_renderers_back_to_normal_);
   SetIntVariationParameter(params, "new_renderers_back_to_throttled",
-                           &new_renderers_back_to_throttled_);
+                           &new_renderers_back_to_warning_);
   SetIntVariationParameter(params, "new_renderers_back_to_warning",
-                           &new_renderers_back_to_throttled_);
-  SetSecondsVariationParameter(params, "minimum_transition_period",
-                               &minimum_transition_period_);
+                           &new_renderers_back_to_warning_);
   SetSecondsVariationParameter(params, "monitoring_interval",
                                &monitoring_interval_);
 }
 
-bool MemoryStateUpdater::ValidateParameters() {
-  return (new_renderers_until_throttled_ > new_renderers_until_suspended_) &&
-      (new_renderers_back_to_normal_ > new_renderers_back_to_throttled_) &&
-      (new_renderers_back_to_normal_ > new_renderers_until_throttled_) &&
-      (new_renderers_back_to_throttled_ > new_renderers_until_suspended_);
+bool MemoryConditionObserver::ValidateParameters() {
+  return (new_renderers_until_warning_ > new_renderers_until_critical_) &&
+         (new_renderers_back_to_normal_ > new_renderers_back_to_warning_) &&
+         (new_renderers_back_to_normal_ > new_renderers_until_warning_) &&
+         (new_renderers_back_to_warning_ > new_renderers_until_critical_);
 }
 
 }  // namespace content
