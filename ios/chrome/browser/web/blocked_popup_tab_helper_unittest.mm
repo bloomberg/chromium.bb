@@ -100,7 +100,7 @@ TEST_F(BlockedPopupTabHelperTest, AllowBlockedPopup) {
   EXPECT_FALSE(GetBlockedPopupTabHelper()->ShouldBlockPopup(source_url));
 
   // Verify that child window was open.
-  auto open_url_request = web_state_delegate_.last_open_url_request();
+  auto* open_url_request = web_state_delegate_.last_open_url_request();
   ASSERT_TRUE(open_url_request);
   EXPECT_EQ(web_state(), open_url_request->web_state);
   WebState::OpenURLParams params = open_url_request->params;

@@ -1397,7 +1397,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   if (navigation->IsSamePage()) {
-    auto faviconDriver = favicon::WebFaviconDriver::FromWebState(webState);
+    auto* faviconDriver = favicon::WebFaviconDriver::FromWebState(webState);
     if (faviconDriver) {
       // Fetch the favicon for the new URL.
       faviconDriver->FetchFavicon(navigation->GetUrl());
