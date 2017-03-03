@@ -497,23 +497,6 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   return tab;
 }
 
-- (Tab*)insertBlankTabWithTransition:(ui::PageTransition)transition
-                              opener:(Tab*)parentTab
-                         openedByDOM:(BOOL)openedByDOM
-                             atIndex:(NSUInteger)index
-                        inBackground:(BOOL)inBackground {
-  GURL emptyURL;
-  web::NavigationManager::WebLoadParams params(emptyURL);
-  params.transition_type = transition;
-  // Tabs open by DOM are always renderer initiated.
-  params.is_renderer_initiated = openedByDOM;
-  return [self insertTabWithLoadParams:params
-                                opener:parentTab
-                           openedByDOM:openedByDOM
-                               atIndex:index
-                          inBackground:inBackground];
-}
-
 - (Tab*)insertTabWithWebState:(std::unique_ptr<web::WebState>)webState
                       atIndex:(NSUInteger)index {
   DCHECK(_browserState);

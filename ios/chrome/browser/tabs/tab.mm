@@ -2014,12 +2014,17 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   // Requested web controller should not be blocked from opening.
   [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+
+  // Tabs open by DOM are always renderer initiated.
+  web::NavigationManager::WebLoadParams params(GURL{});
+  params.transition_type = ui::PAGE_TRANSITION_LINK;
+  params.is_renderer_initiated = YES;
   Tab* tab = [parentTabModel_
-      insertBlankTabWithTransition:ui::PAGE_TRANSITION_LINK
-                            opener:self
-                       openedByDOM:YES
-                           atIndex:TabModelConstants::kTabPositionAutomatically
-                      inBackground:NO];
+      insertTabWithLoadParams:params
+                       opener:self
+                  openedByDOM:YES
+                      atIndex:TabModelConstants::kTabPositionAutomatically
+                 inBackground:NO];
   return tab.webController;
 }
 

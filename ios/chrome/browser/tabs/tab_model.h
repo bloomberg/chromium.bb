@@ -191,14 +191,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
                         atIndex:(NSUInteger)index
                    inBackground:(BOOL)inBackground;
 
-// Opens a blank tab without URL and updates the current tab if |inBackground|
-// is NO.
-- (Tab*)insertBlankTabWithTransition:(ui::PageTransition)transition
-                              opener:(Tab*)parentTab
-                         openedByDOM:(BOOL)openedByDOM
-                             atIndex:(NSUInteger)index
-                        inBackground:(BOOL)inBackground;
-
 // Inserts a new tab at the given |index| with the session history specified by
 // |webState|. Does not go through the order controller as this is generally
 // used only for restoring a previous session and the index is fixed.
