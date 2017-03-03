@@ -787,11 +787,21 @@ SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerImplWithMailboxThreadedCallback);
 
 class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
  protected:
-  TextureLayerMailboxIsActivatedDuringCommit() : activate_count_(0) {}
-
-  static void ReleaseCallback(const gpu::SyncToken& original_sync_token,
-                              const gpu::SyncToken& release_sync_token,
-                              bool lost_resource) {}
+  void ReleaseCallback(const gpu::SyncToken& original_sync_token,
+                       const gpu::SyncToken& release_sync_token,
+                       bool lost_resource) {
+    released_count_++;
+    switch (released_count_) {
+      case 1:
+        break;
+      case 2:
+        EXPECT_EQ(3, layer_tree_host()->SourceFrameNumber());
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
 
   void SetMailbox(char mailbox_char) {
     const gpu::SyncToken sync_token =
@@ -799,7 +809,7 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
     std::unique_ptr<SingleReleaseCallback> callback =
         SingleReleaseCallback::Create(base::Bind(
             &TextureLayerMailboxIsActivatedDuringCommit::ReleaseCallback,
-            sync_token));
+            base::Unretained(this), sync_token));
     layer_->SetTextureMailbox(TextureMailbox(MailboxFromChar(mailbox_char),
                                              sync_token, GL_TEXTURE_2D),
                               std::move(callback));
@@ -849,8 +859,12 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
         layer_->RemoveFromParent();
         break;
       case 3:
-        EndTest();
+        // This ensures all texture mailboxes are released before the end of the
+        // test.
+        layer_->ClearClient();
         break;
+      default:
+        NOTREACHED();
     }
   }
 
@@ -863,15 +877,13 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
   void AfterTest() override {}
 
   base::Lock activate_count_lock_;
-  int activate_count_;
+  int activate_count_ = 0;
   scoped_refptr<Layer> root_;
   scoped_refptr<TextureLayer> layer_;
+  int released_count_ = 0;
 };
 
-// Flaky on windows and linux. https://crbug.com/641613
-#if !defined(OS_WIN) && !defined(OS_LINUX)
 SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerMailboxIsActivatedDuringCommit);
-#endif
 
 class TextureLayerImplWithMailboxTest : public TextureLayerTest {
  protected:
