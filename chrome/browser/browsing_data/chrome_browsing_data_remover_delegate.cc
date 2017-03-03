@@ -864,8 +864,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
     deauthorize_flash_content_licenses_request_id_ =
         pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
 #if defined(OS_CHROMEOS)
-    // On Chrome OS, also delete any content protection platform keys.
+    // On Chrome OS, delete any content protection platform keys.
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
     if (!user) {
@@ -883,7 +885,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                   weak_ptr_factory_.GetWeakPtr()));
     }
 #endif  // defined(OS_CHROMEOS)
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
   }
 
   //////////////////////////////////////////////////////////////////////////////
