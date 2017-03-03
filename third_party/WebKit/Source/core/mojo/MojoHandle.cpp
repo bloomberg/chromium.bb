@@ -8,6 +8,9 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
+#include "core/mojo/MojoCreateSharedBufferResult.h"
+#include "core/mojo/MojoDuplicateBufferHandleOptions.h"
+#include "core/mojo/MojoMapBufferResult.h"
 #include "core/mojo/MojoReadMessageFlags.h"
 #include "core/mojo/MojoReadMessageResult.h"
 #include "core/mojo/MojoWatcher.h"
@@ -90,6 +93,41 @@ void MojoHandle::readMessage(const MojoReadMessageFlags& flagsDict,
   resultDict.setResult(result);
   resultDict.setBuffer(buffer);
   resultDict.setHandles(handles);
+}
+
+void MojoHandle::mapBuffer(unsigned offset,
+                           unsigned numBytes,
+                           MojoMapBufferResult& resultDict) {
+  void* data = nullptr;
+  MojoResult result = MojoMapBuffer(m_handle->value(), offset, numBytes, &data,
+                                    MOJO_MAP_BUFFER_FLAG_NONE);
+  resultDict.setResult(result);
+  if (result == MOJO_RESULT_OK) {
+    WTF::ArrayBufferContents::DataHandle dataHandle(data, [](void* buffer) {
+      MojoResult result = MojoUnmapBuffer(buffer);
+      DCHECK_EQ(result, MOJO_RESULT_OK);
+    });
+    WTF::ArrayBufferContents contents(std::move(dataHandle), numBytes,
+                                      WTF::ArrayBufferContents::NotShared);
+    resultDict.setBuffer(DOMArrayBuffer::create(contents));
+  }
+}
+
+void MojoHandle::duplicateBufferHandle(
+    const MojoDuplicateBufferHandleOptions& optionsDict,
+    MojoCreateSharedBufferResult& resultDict) {
+  ::MojoDuplicateBufferHandleOptions options = {
+      sizeof(options), MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE};
+  if (optionsDict.readOnly())
+    options.flags |= MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY;
+
+  mojo::Handle handle;
+  MojoResult result = MojoDuplicateBufferHandle(m_handle->value(), &options,
+                                                handle.mutable_value());
+  resultDict.setResult(result);
+  if (result == MOJO_RESULT_OK) {
+    resultDict.setHandle(MojoHandle::create(mojo::MakeScopedHandle(handle)));
+  }
 }
 
 }  // namespace blink

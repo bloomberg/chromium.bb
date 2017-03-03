@@ -9,6 +9,14 @@ callback MojoWatchCallback = void (MojoResult result);
 ] interface MojoHandle {
     void close();
     [CallWith=ScriptState] MojoWatcher watch(MojoHandleSignals signals, MojoWatchCallback callback);
+
+    // TODO(alokp): Create MessagePipeHandle, a subclass of MojoHandle
+    // and move the following member functions.
     MojoResult writeMessage(BufferSource buffer, sequence<MojoHandle> handles);
     MojoReadMessageResult readMessage(optional MojoReadMessageFlags flags);
+
+    // TODO(alokp): Create SharedBufferHandle, a subclass of MojoHandle
+    // and move the following member functions.
+    MojoMapBufferResult mapBuffer(unsigned long offset, unsigned long numBytes);
+    MojoCreateSharedBufferResult duplicateBufferHandle(optional MojoDuplicateBufferHandleOptions options);
 };

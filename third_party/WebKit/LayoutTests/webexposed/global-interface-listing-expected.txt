@@ -4106,6 +4106,7 @@ interface MimeTypeArray
     method namedItem
 interface Mojo
     static method createMessagePipe
+    static method createSharedBuffer
     attribute @@toStringTag
     attribute RESULT_ABORTED
     attribute RESULT_ALREADY_EXISTS
@@ -4130,6 +4131,8 @@ interface MojoHandle
     attribute @@toStringTag
     method close
     method constructor
+    method duplicateBufferHandle
+    method mapBuffer
     method readMessage
     method watch
     method writeMessage

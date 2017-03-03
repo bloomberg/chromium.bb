@@ -5,6 +5,7 @@
 #include "core/mojo/Mojo.h"
 
 #include "core/mojo/MojoCreateMessagePipeResult.h"
+#include "core/mojo/MojoCreateSharedBufferResult.h"
 #include "core/mojo/MojoHandle.h"
 
 namespace blink {
@@ -24,6 +25,20 @@ void Mojo::createMessagePipe(MojoCreateMessagePipeResult& resultDict) {
         MojoHandle::create(mojo::ScopedHandle::From(std::move(handle0))));
     resultDict.setHandle1(
         MojoHandle::create(mojo::ScopedHandle::From(std::move(handle1))));
+  }
+}
+
+// static
+void Mojo::createSharedBuffer(unsigned numBytes,
+                              MojoCreateSharedBufferResult& resultDict) {
+  MojoCreateSharedBufferOptions* options = nullptr;
+  mojo::Handle handle;
+  MojoResult result =
+      MojoCreateSharedBuffer(options, numBytes, handle.mutable_value());
+
+  resultDict.setResult(result);
+  if (result == MOJO_RESULT_OK) {
+    resultDict.setHandle(MojoHandle::create(mojo::MakeScopedHandle(handle)));
   }
 }
 

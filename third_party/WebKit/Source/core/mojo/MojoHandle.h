@@ -11,7 +11,10 @@
 namespace blink {
 
 class ArrayBufferOrArrayBufferView;
+class MojoCreateSharedBufferResult;
+class MojoDuplicateBufferHandleOptions;
 class MojoHandleSignals;
+class MojoMapBufferResult;
 class MojoReadMessageFlags;
 class MojoReadMessageResult;
 class MojoWatchCallback;
@@ -29,9 +32,16 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
   MojoWatcher* watch(ScriptState*,
                      const MojoHandleSignals&,
                      MojoWatchCallback*);
+
+  // MessagePipe handle.
   MojoResult writeMessage(ArrayBufferOrArrayBufferView&,
                           const HeapVector<Member<MojoHandle>>&);
   void readMessage(const MojoReadMessageFlags&, MojoReadMessageResult&);
+
+  // SharedBuffer handle.
+  void mapBuffer(unsigned offset, unsigned numBytes, MojoMapBufferResult&);
+  void duplicateBufferHandle(const MojoDuplicateBufferHandleOptions&,
+                             MojoCreateSharedBufferResult&);
 
   DEFINE_INLINE_TRACE() {}
 
