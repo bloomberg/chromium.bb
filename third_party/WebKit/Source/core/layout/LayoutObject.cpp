@@ -1405,8 +1405,7 @@ Color LayoutObject::selectionBackgroundColor() const {
   if (!isSelectable())
     return Color::transparent;
 
-  if (RefPtr<ComputedStyle> pseudoStyle =
-          getUncachedPseudoStyleFromParentOrShadowHost())
+  if (RefPtr<ComputedStyle> pseudoStyle = getUncachedSelectionStyle())
     return resolveColor(*pseudoStyle, CSSPropertyBackgroundColor)
         .blendWithWhite();
   return frame()->selection().isFocusedAndActive()
@@ -1422,8 +1421,7 @@ Color LayoutObject::selectionColor(
   if (!isSelectable() || (globalPaintFlags & GlobalPaintSelectionOnly))
     return resolveColor(colorProperty);
 
-  if (RefPtr<ComputedStyle> pseudoStyle =
-          getUncachedPseudoStyleFromParentOrShadowHost())
+  if (RefPtr<ComputedStyle> pseudoStyle = getUncachedSelectionStyle())
     return resolveColor(*pseudoStyle, colorProperty);
   if (!LayoutTheme::theme().supportsSelectionForegroundColors())
     return resolveColor(colorProperty);
@@ -3090,11 +3088,15 @@ PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(
       element, pseudoStyleRequest, parentStyle, parentStyle);
 }
 
-PassRefPtr<ComputedStyle>
-LayoutObject::getUncachedPseudoStyleFromParentOrShadowHost() const {
+PassRefPtr<ComputedStyle> LayoutObject::getUncachedSelectionStyle() const {
   if (!node())
     return nullptr;
 
+  // In Blink, ::selection only applies to direct children of the element on
+  // which ::selection is matched. In order to be able to style ::selection
+  // inside elements implemented with a UA shadow tree, like input::selection,
+  // we calculate ::selection style on the shadow host for elements inside the
+  // UA shadow.
   if (ShadowRoot* root = node()->containingShadowRoot()) {
     if (root->type() == ShadowRootType::UserAgent) {
       if (Element* shadowHost = node()->ownerShadowHost()) {
@@ -3104,7 +3106,20 @@ LayoutObject::getUncachedPseudoStyleFromParentOrShadowHost() const {
     }
   }
 
-  return getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdSelection));
+  // If we request ::selection style for LayoutText, query ::selection style on
+  // the parent element instead, as that is the node for which ::selection
+  // matches.
+  const LayoutObject* selectionLayoutObject = this;
+  Element* element = Traversal<Element>::firstAncestorOrSelf(*node());
+  if (!element)
+    return nullptr;
+  if (element != node()) {
+    selectionLayoutObject = element->layoutObject();
+    if (!selectionLayoutObject)
+      return nullptr;
+  }
+  return selectionLayoutObject->getUncachedPseudoStyle(
+      PseudoStyleRequest(PseudoIdSelection));
 }
 
 void LayoutObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {

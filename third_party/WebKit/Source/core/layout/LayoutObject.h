@@ -429,10 +429,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void addAbsoluteRectForLayer(IntRect& result);
   bool requiresAnonymousTableWrappers(const LayoutObject*) const;
 
-  // Gets pseudoStyle from Shadow host(in case of input elements)
-  // or from Parent element.
-  PassRefPtr<ComputedStyle> getUncachedPseudoStyleFromParentOrShadowHost()
-      const;
+  // Gets ::selection pseudo style from Shadow host(in case of input elements)
+  // or from parent element.
+  PassRefPtr<ComputedStyle> getUncachedSelectionStyle() const;
 
  public:
 #ifndef NDEBUG
