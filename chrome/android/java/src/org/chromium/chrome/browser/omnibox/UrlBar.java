@@ -250,6 +250,8 @@ public class UrlBar extends VerticallyFixedEditText {
         boolean hasNonEmptyText = false;
         Editable text = getText();
         if (!TextUtils.isEmpty(text)) {
+            // Make sure the setText in this block does not affect the suggestions.
+            setIgnoreTextChangesForAutocomplete(true);
             setText("");
             hasNonEmptyText = true;
         }
@@ -258,7 +260,10 @@ public class UrlBar extends VerticallyFixedEditText {
         } else {
             setHintTextColor(mLightHintColor);
         }
-        if (hasNonEmptyText) setText(text);
+        if (hasNonEmptyText) {
+            setText(text);
+            setIgnoreTextChangesForAutocomplete(false);
+        }
 
         if (!hasFocus()) {
             deEmphasizeUrl();
