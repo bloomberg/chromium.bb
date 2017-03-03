@@ -20,7 +20,7 @@ bool FLAGS_chromium_http2_flag_spdy_use_hpack_decoder3 = true;
 
 // Use Http2FrameDecoderAdapter.
 // TODO(jamessynge): Remove flag once no longer set by scripts.
-bool FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
+bool FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = true;
 
 // Use NestedSpdyFramerDecoder.
 bool FLAGS_use_nested_spdy_framer_decoder = false;
