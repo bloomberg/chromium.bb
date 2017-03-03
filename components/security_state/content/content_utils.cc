@@ -184,27 +184,16 @@ blink::WebSecurityStyle GetSecurityStyle(
   const blink::WebSecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_info.security_level);
 
-  if (security_info.security_level == security_state::HTTP_SHOW_WARNING) {
-    // If the HTTP_SHOW_WARNING field trial is in use, display an
-    // unauthenticated explanation explaining why the omnibox warning is
-    // present.
+  // The HTTP_SHOW_WARNING state may occur if the page is served as a data: URI
+  // or if it is served non-securely AND contains a sensitive form field.
+  if (security_info.security_level == security_state::HTTP_SHOW_WARNING &&
+      (security_info.displayed_password_field_on_http ||
+       security_info.displayed_credit_card_field_on_http)) {
     security_style_explanations->unauthenticated_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
             l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
-  } else if (security_info.security_level == security_state::NONE &&
-             (security_info.displayed_password_field_on_http ||
-              security_info.displayed_credit_card_field_on_http)) {
-    // If the HTTP_SHOW_WARNING field trial isn't in use yet, display an
-    // informational note that the omnibox will contain a warning for
-    // this site in a future version of Chrome.
-    security_style_explanations->info_explanations.push_back(
-        content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
-            l10n_util::GetStringUTF8(
-                IDS_PRIVATE_USER_DATA_INPUT_FUTURE_DESCRIPTION)));
   }
-
   security_style_explanations->ran_insecure_content_style =
       SecurityLevelToSecurityStyle(security_state::kRanInsecureContentLevel);
   security_style_explanations->displayed_insecure_content_style =

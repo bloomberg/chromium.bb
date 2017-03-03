@@ -796,6 +796,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
+  SecurityStyleTestObserver observer(contents);
+
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
   ASSERT_TRUE(helper);
@@ -804,6 +806,13 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+
+  // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
+  // explanation. Regression test for https://crbug.com/691412.
+  EXPECT_EQ(0u,
+            observer.latest_explanations().unauthenticated_explanations.size());
+  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated,
+            observer.latest_security_style());
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);

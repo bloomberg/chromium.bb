@@ -202,8 +202,8 @@ TEST(SecurityStateContentUtilsTest, ConnectionExplanation) {
   }
 }
 
-// Tests that a security level of HTTP_SHOW_WARNING produces a
-// content::SecurityStyle of UNAUTHENTICATED, with an explanation.
+// Tests that a security level of HTTP_SHOW_WARNING produces
+// blink::WebSecurityStyleUnauthenticated and an explanation if appropriate.
 TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   security_state::SecurityInfo security_info;
   content::SecurityStyleExplanations explanations;
@@ -211,36 +211,25 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   blink::WebSecurityStyle security_style =
       GetSecurityStyle(security_info, &explanations);
   EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
-  EXPECT_EQ(1u, explanations.unauthenticated_explanations.size());
-}
+  // Verify no explanation was shown, because Form Not Secure was not triggered.
+  EXPECT_EQ(0u, explanations.unauthenticated_explanations.size());
 
-// Tests that a security level of NONE when there is a password or
-// credit card field on HTTP produces a content::SecurityStyle of
-// UNAUTHENTICATED, with an info explanation for each.
-TEST(SecurityStateContentUtilsTest, HTTPWarningInFuture) {
-  security_state::SecurityInfo security_info;
-  content::SecurityStyleExplanations explanations;
-  security_info.security_level = security_state::NONE;
-  security_info.displayed_password_field_on_http = true;
-  blink::WebSecurityStyle security_style =
-      GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
-  EXPECT_EQ(1u, explanations.info_explanations.size());
-
-  explanations.info_explanations.clear();
+  explanations.unauthenticated_explanations.clear();
   security_info.displayed_credit_card_field_on_http = true;
   security_style = GetSecurityStyle(security_info, &explanations);
   EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
-  EXPECT_EQ(1u, explanations.info_explanations.size());
+  // Verify one explanation was shown, because Form Not Secure was triggered.
+  EXPECT_EQ(1u, explanations.unauthenticated_explanations.size());
 
   // Check that when both password and credit card fields get displayed, only
   // one explanation is added.
-  explanations.info_explanations.clear();
+  explanations.unauthenticated_explanations.clear();
   security_info.displayed_credit_card_field_on_http = true;
   security_info.displayed_password_field_on_http = true;
   security_style = GetSecurityStyle(security_info, &explanations);
   EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
-  EXPECT_EQ(1u, explanations.info_explanations.size());
+  // Verify only one explanation was shown when Form Not Secure is triggered.
+  EXPECT_EQ(1u, explanations.unauthenticated_explanations.size());
 }
 
 }  // namespace
