@@ -55,7 +55,6 @@ extern const struct av1_token av1_coef_encodings[];
 #endif  // !CONFIG_EC_MULTISYMBOL
 
 int av1_is_skippable_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
-int av1_has_high_freq_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 
 struct AV1_COMP;
 struct ThreadData;

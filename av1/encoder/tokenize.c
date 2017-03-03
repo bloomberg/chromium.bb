@@ -701,26 +701,6 @@ int av1_is_skippable_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   return result;
 }
 
-static void has_high_freq_coeff(int plane, int block, int blk_row, int blk_col,
-                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                                void *argv) {
-  struct is_skippable_args *args = argv;
-  int eobs = (tx_size == TX_4X4) ? 3 : 10;
-  (void)plane;
-  (void)plane_bsize;
-  (void)blk_row;
-  (void)blk_col;
-
-  *(args->skippable) |= (args->eobs[block] > eobs);
-}
-
-int av1_has_high_freq_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
-  int result = 0;
-  struct is_skippable_args args = { x->plane[plane].eobs, &result };
-  av1_foreach_transformed_block_in_plane(&x->e_mbd, bsize, plane,
-                                         has_high_freq_coeff, &args);
-  return result;
-}
 #if CONFIG_PVQ
 void add_pvq_block(AV1_COMMON *const cm, MACROBLOCK *const x, PVQ_INFO *pvq) {
   PVQ_QUEUE *q = x->pvq_q;
