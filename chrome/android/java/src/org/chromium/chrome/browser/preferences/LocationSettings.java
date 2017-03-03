@@ -49,15 +49,21 @@ public class LocationSettings {
     }
 
     @CalledByNative
-    private static boolean canSitesRequestLocationPermission(WebContents webContents) {
+    private static boolean hasAndroidLocationPermission() {
+        return LocationUtils.getInstance().hasAndroidLocationPermission();
+    }
+
+    @CalledByNative
+    private static boolean canPromptForAndroidLocationPermission(WebContents webContents) {
         WindowAndroid windowAndroid = windowFromWebContents(webContents);
         if (windowAndroid == null) return false;
 
-        LocationUtils locationUtils = LocationUtils.getInstance();
-        if (!locationUtils.isSystemLocationSettingEnabled()) return false;
+        return windowAndroid.canRequestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
 
-        return locationUtils.hasAndroidLocationPermission()
-                || windowAndroid.canRequestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+    @CalledByNative
+    private static boolean isSystemLocationSettingEnabled() {
+        return LocationUtils.getInstance().isSystemLocationSettingEnabled();
     }
 
     @CalledByNative

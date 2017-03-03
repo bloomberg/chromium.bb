@@ -24,7 +24,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/android/location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "components/location/android/location_settings_dialog_context.h"
+#include "components/location/android/location_settings_dialog_outcome.h"
 
 namespace content {
 class WebContents;
@@ -34,7 +37,6 @@ namespace infobars {
 class InfoBar;
 }
 
-class LocationSettings;
 class GURL;
 class PermissionRequestID;
 
@@ -69,11 +71,41 @@ class GeolocationPermissionContextAndroid
                            bool persist,
                            ContentSetting content_setting) override;
 
+  bool IsLocationAccessPossible(content::WebContents* web_contents,
+                                const GURL& requesting_origin,
+                                bool user_gesture);
+
+  LocationSettingsDialogContext GetLocationSettingsDialogContext(
+      const GURL& requesting_origin);
+
   void HandleUpdateAndroidPermissions(const PermissionRequestID& id,
                                       const GURL& requesting_frame_origin,
                                       const GURL& embedding_origin,
                                       const BrowserPermissionCallback& callback,
                                       bool permissions_updated);
+
+  // Will return true if the location settings dialog will be shown for the
+  // given origins. This is true if the location setting is off, the dialog can
+  // be shown, any gesture requirements for the origin are met, and the dialog
+  // is not being suppressed for backoff.
+  bool CanShowLocationSettingsDialog(const GURL& requesting_origin,
+                                     bool user_gesture);
+
+  void OnLocationSettingsDialogShown(
+      const PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      const BrowserPermissionCallback& callback,
+      bool persist,
+      ContentSetting content_setting,
+      LocationSettingsDialogOutcome prompt_outcome);
+
+  void FinishNotifyPermissionSet(const PermissionRequestID& id,
+                                 const GURL& requesting_origin,
+                                 const GURL& embedding_origin,
+                                 const BrowserPermissionCallback& callback,
+                                 bool persist,
+                                 ContentSetting content_setting);
 
   // Overrides the LocationSettings object used to determine whether
   // system and Chrome-wide location permissions are enabled.

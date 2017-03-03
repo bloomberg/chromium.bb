@@ -20,12 +20,15 @@ class LocationSettings {
  public:
   virtual ~LocationSettings() {}
 
-  // Returns true if:
-  //  - Location is enabled system-wide (in Android settings)
-  //  - The necessary location permission are granted to Chrome, or if Chrome
-  //    still has the ability to request the permissions to be granted.
-  virtual bool CanSitesRequestLocationPermission(
+  // Returns true if Chrome has location permission.
+  virtual bool HasAndroidLocationPermission() = 0;
+
+  // Returns true if Chrome can prompt to get location permission.
+  virtual bool CanPromptForAndroidLocationPermission(
       content::WebContents* web_contents) = 0;
+
+  // Returns true if the system location is enabled.
+  virtual bool IsSystemLocationSettingEnabled() = 0;
 
   // Returns true iff a prompt can be triggered to ask the user to turn on the
   // system location setting on their device.

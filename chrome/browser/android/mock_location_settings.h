@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/location_settings.h"
+#include "components/location/android/location_settings_dialog_context.h"
+#include "components/location/android/location_settings_dialog_outcome.h"
 
 // Mock implementation of LocationSettings for unit tests.
 class MockLocationSettings : public LocationSettings {
@@ -14,24 +16,32 @@ class MockLocationSettings : public LocationSettings {
   MockLocationSettings();
   ~MockLocationSettings() override;
 
-  static void SetLocationStatus(bool master, bool google_apps);
+  static void SetLocationStatus(bool has_android_location_permission,
+                                bool is_system_location_setting_enabled);
+  static void SetCanPromptForAndroidPermission(bool can_prompt);
+  static void SetLocationSettingsDialogStatus(
+      bool enabled,
+      LocationSettingsDialogOutcome outcome);
+  static bool HasShownLocationSettingsDialog();
 
-  bool CanSitesRequestLocationPermission(
+  // LocationSettings implementation:
+  bool HasAndroidLocationPermission() override;
+  bool CanPromptForAndroidLocationPermission(
       content::WebContents* web_contents) override;
-
+  bool IsSystemLocationSettingEnabled() override;
   bool CanPromptToEnableSystemLocationSetting() override;
-
   void PromptToEnableSystemLocationSetting(
       const LocationSettingsDialogContext prompt_context,
       content::WebContents* web_contents,
       LocationSettingsDialogOutcomeCallback callback) override;
 
-  bool IsMasterLocationSettingEnabled();
-  bool IsGoogleAppsLocationSettingEnabled();
-
  private:
-  static bool master_location_enabled;
-  static bool google_apps_location_enabled;
+  static bool has_android_location_permission_;
+  static bool can_prompt_for_android_location_permission_;
+  static bool is_system_location_setting_enabled_;
+  static bool location_settings_dialog_enabled_;
+  static bool has_shown_location_settings_dialog_;
+  static LocationSettingsDialogOutcome location_settings_dialog_outcome_;
 
   DISALLOW_COPY_AND_ASSIGN(MockLocationSettings);
 };

@@ -18,11 +18,11 @@ class LocationSettingsImpl : public LocationSettings {
   ~LocationSettingsImpl() override;
 
   // LocationSettings implementation:
-  bool CanSitesRequestLocationPermission(
+  bool HasAndroidLocationPermission() override;
+  bool CanPromptForAndroidLocationPermission(
       content::WebContents* web_contents) override;
-
+  bool IsSystemLocationSettingEnabled() override;
   bool CanPromptToEnableSystemLocationSetting() override;
-
   void PromptToEnableSystemLocationSetting(
       const LocationSettingsDialogContext prompt_context,
       content::WebContents* web_contents,
