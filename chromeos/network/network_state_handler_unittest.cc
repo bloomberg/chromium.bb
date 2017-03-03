@@ -606,6 +606,29 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1));
 }
 
+TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
+  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+
+  const NetworkState* tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+
+  EXPECT_FALSE(tether_network->IsConnectingState());
+  EXPECT_FALSE(tether_network->IsConnectedState());
+
+  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectingState());
+
+  network_state_handler_->SetTetherNetworkStateConnected(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectedState());
+
+  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsReconnecting());
+
+  network_state_handler_->SetTetherNetworkStateDisconnected(kTetherGuid1);
+  EXPECT_FALSE(tether_network->IsConnectingState());
+  EXPECT_FALSE(tether_network->IsConnectedState());
+}
+
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
   const std::string eth1 = kShillManagerClientStubDefaultService;
   EXPECT_EQ(0, test_observer_->ConnectionStateChangesForService(eth1));

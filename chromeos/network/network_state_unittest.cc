@@ -209,4 +209,52 @@ TEST_F(NetworkStateTest, VPNThirdPartyProvider) {
             "third-party-vpn-provider-extension-id");
 }
 
+TEST_F(NetworkStateTest, Visible) {
+  EXPECT_FALSE(network_state_.visible());
+
+  network_state_.set_visible(true);
+  EXPECT_TRUE(network_state_.visible());
+
+  network_state_.set_visible(false);
+  EXPECT_FALSE(network_state_.visible());
+}
+
+TEST_F(NetworkStateTest, ConnectionState) {
+  network_state_.set_visible(true);
+
+  network_state_.set_connection_state(shill::kStateConfiguration);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateConfiguration);
+  EXPECT_TRUE(network_state_.IsConnectingState());
+  EXPECT_FALSE(network_state_.IsReconnecting());
+
+  network_state_.set_connection_state(shill::kStateOnline);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateOnline);
+  EXPECT_TRUE(network_state_.IsConnectedState());
+  EXPECT_FALSE(network_state_.IsReconnecting());
+
+  network_state_.set_connection_state(shill::kStateConfiguration);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateConfiguration);
+  EXPECT_TRUE(network_state_.IsConnectingState());
+  EXPECT_TRUE(network_state_.IsReconnecting());
+}
+
+TEST_F(NetworkStateTest, ConnectionStateNotVisible) {
+  network_state_.set_visible(false);
+
+  network_state_.set_connection_state(shill::kStateConfiguration);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
+  EXPECT_FALSE(network_state_.IsConnectingState());
+  EXPECT_FALSE(network_state_.IsReconnecting());
+
+  network_state_.set_connection_state(shill::kStateOnline);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
+  EXPECT_FALSE(network_state_.IsConnectedState());
+  EXPECT_FALSE(network_state_.IsReconnecting());
+
+  network_state_.set_connection_state(shill::kStateConfiguration);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
+  EXPECT_FALSE(network_state_.IsConnectingState());
+  EXPECT_FALSE(network_state_.IsReconnecting());
+}
+
 }  // namespace chromeos

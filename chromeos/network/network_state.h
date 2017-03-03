@@ -53,6 +53,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Accessors
   bool visible() const { return visible_; }
+  void set_visible(bool visible) { visible_ = visible; }
   const std::string& security_class() const { return security_class_; }
   const std::string& device_path() const { return device_path_; }
   const std::string& guid() const { return guid_; }
@@ -63,6 +64,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Returns |connection_state_| if visible, kStateDisconnect otherwise.
   std::string connection_state() const;
+  void set_connection_state(const std::string connection_state);
 
   const base::DictionaryValue& proxy_config() const { return proxy_config_; }
 

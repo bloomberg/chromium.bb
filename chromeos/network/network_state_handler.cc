@@ -380,15 +380,16 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
     }
   }
 
-  std::unique_ptr<NetworkState> tether_managed_state =
+  std::unique_ptr<NetworkState> tether_network_state =
       base::MakeUnique<NetworkState>(guid);
 
-  tether_managed_state->set_name(name);
-  tether_managed_state->set_type(kTypeTether);
-  tether_managed_state->SetGuid(guid);
-  tether_managed_state->set_update_received();
+  tether_network_state->set_name(name);
+  tether_network_state->set_type(kTypeTether);
+  tether_network_state->SetGuid(guid);
+  tether_network_state->set_visible(true);
+  tether_network_state->set_update_received();
 
-  tether_network_list_.push_back(std::move(tether_managed_state));
+  tether_network_list_.push_back(std::move(tether_network_state));
   NotifyNetworkListChanged();
 }
 
@@ -397,6 +398,34 @@ void NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
        iter != tether_network_list_.end(); ++iter) {
     if (iter->get()->AsNetworkState()->guid() == guid) {
       tether_network_list_.erase(iter);
+      NotifyNetworkListChanged();
+      return;
+    }
+  }
+}
+
+void NetworkStateHandler::SetTetherNetworkStateDisconnected(
+    const std::string& guid) {
+  SetTetherNetworkStateConnectionState(guid, shill::kStateDisconnect);
+}
+
+void NetworkStateHandler::SetTetherNetworkStateConnecting(
+    const std::string& guid) {
+  SetTetherNetworkStateConnectionState(guid, shill::kStateConfiguration);
+}
+
+void NetworkStateHandler::SetTetherNetworkStateConnected(
+    const std::string& guid) {
+  SetTetherNetworkStateConnectionState(guid, shill::kStateOnline);
+}
+
+void NetworkStateHandler::SetTetherNetworkStateConnectionState(
+    const std::string& guid,
+    const std::string& connection_state) {
+  for (auto iter = tether_network_list_.begin();
+       iter != tether_network_list_.end(); ++iter) {
+    if (iter->get()->AsNetworkState()->guid() == guid) {
+      iter->get()->AsNetworkState()->set_connection_state(connection_state);
       NotifyNetworkListChanged();
       return;
     }

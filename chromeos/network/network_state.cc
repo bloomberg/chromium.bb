@@ -345,6 +345,11 @@ std::string NetworkState::connection_state() const {
   return connection_state_;
 }
 
+void NetworkState::set_connection_state(const std::string connection_state) {
+  last_connection_state_ = connection_state_;
+  connection_state_ = connection_state;
+}
+
 bool NetworkState::IsDynamicWep() const {
   return security_class_ == shill::kSecurityWep &&
          eap_key_mgmt_ == shill::kKeyManagementIEEE8021X;

@@ -215,6 +215,18 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // AddTetherNetworkState.
   void RemoveTetherNetworkState(const std::string& guid);
 
+  // Set the connection_state of the Tether NetworkState corresponding to the
+  // provided |guid| to "Disconnected". This will be reflected in the UI.
+  void SetTetherNetworkStateDisconnected(const std::string& guid);
+
+  // Set the connection_state of the Tether NetworkState corresponding to the
+  // provided |guid| to "Connecting". This will be reflected in the UI.
+  void SetTetherNetworkStateConnecting(const std::string& guid);
+
+  // Set the connection_state of the Tether NetworkState corresponding to the
+  // provided |guid| to "Connected". This will be reflected in the UI.
+  void SetTetherNetworkStateConnected(const std::string& guid);
+
   // Sets |list| to contain the list of devices.  The returned list contains
   // a copy of DeviceState pointers which should not be stored or used beyond
   // the scope of the calling function (i.e. they may later become invalid, but
@@ -444,6 +456,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Ensure that Shutdown() gets called exactly once.
   bool did_shutdown_ = false;
+
+  // Set the |connection_state| of a Tether NetworkState corresponding to the
+  // provided |guid|.
+  void SetTetherNetworkStateConnectionState(
+      const std::string& guid,
+      const std::string& connection_state);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHandler);
 };
