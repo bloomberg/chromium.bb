@@ -175,6 +175,11 @@ NavigationEvent* NavigationEventList::FindRetargetingNavigationEvent(
 
 void NavigationEventList::RecordNavigationEvent(
     std::unique_ptr<NavigationEvent> nav_event) {
+  // Skip page refresh.
+  if (nav_event->source_url == nav_event->GetDestinationUrl() &&
+      nav_event->source_tab_id == nav_event->target_tab_id)
+    return;
+
   if (navigation_events_.size() == size_limit_)
     navigation_events_.pop_front();
   navigation_events_.push_back(std::move(nav_event));
