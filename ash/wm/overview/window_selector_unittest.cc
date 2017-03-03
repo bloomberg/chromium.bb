@@ -1028,7 +1028,8 @@ TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
 
   ui::EventTarget* root_target = root_window;
-  ui::EventTargeter* targeter = root_target->GetEventTargeter();
+  ui::EventTargeter* targeter =
+      root_window->GetHost()->dispatcher()->GetDefaultEventTargeter();
 
   // The event should target the window because we are still not in overview
   // mode.

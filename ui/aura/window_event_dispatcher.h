@@ -38,6 +38,7 @@ namespace aura {
 class MusMouseLocationUpdater;
 class TestScreen;
 class EnvInputStateController;
+class WindowTargeter;
 class WindowTreeHost;
 
 namespace test {
@@ -59,6 +60,9 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
+
+  // Overridden from ui::EventProcessor:
+  ui::EventTargeter* GetDefaultEventTargeter() override;
 
   // Repost event for re-processing. Used when exiting context menus.
   // We support the ET_MOUSE_PRESSED, ET_TOUCH_PRESSED and ET_GESTURE_TAP_DOWN
@@ -173,7 +177,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   void ReleaseNativeCapture() override;
 
   // Overridden from ui::EventProcessor:
-  ui::EventTarget* GetRootTarget() override;
+  ui::EventTarget* GetRootForEvent(ui::Event* event) override;
   void OnEventProcessingStarted(ui::Event* event) override;
   void OnEventProcessingFinished(ui::Event* event) override;
 
@@ -261,6 +265,9 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   std::unique_ptr<EnvInputStateController> env_controller_;
 
   std::unique_ptr<MusMouseLocationUpdater> mus_mouse_location_updater_;
+
+  // The default EventTargeter for WindowEventDispatcher generated events.
+  std::unique_ptr<WindowTargeter> event_targeter_;
 
   // Used to schedule reposting an event.
   base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_;

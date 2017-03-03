@@ -770,8 +770,9 @@ TEST_F(ImmersiveFullscreenControllerTest, EventsDoNotLeakToWindowUnderneath) {
 
   ui::TouchEvent touch(ui::ET_TOUCH_MOVED, gfx::Point(10, top), 0,
                        ui::EventTimeForNow());
-  ui::EventTarget* root = window()->GetRootWindow();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
+  aura::Window* root = window()->GetRootWindow();
+  ui::EventTargeter* targeter =
+      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
   EXPECT_EQ(window(), targeter->FindTargetForEvent(root, &touch));
 
   SetEnabled(true);

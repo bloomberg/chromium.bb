@@ -31,7 +31,9 @@
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_window_targeter.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/class_property.h"
@@ -499,8 +501,6 @@ namespace {
 
 class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
  public:
-  static uint32_t constexpr kEventId = 1;
-
   explicit InputEventBasicTestWindowDelegate(TestWindowTree* test_window_tree)
       : test_window_tree_(test_window_tree) {}
   ~InputEventBasicTestWindowDelegate() override {}
@@ -508,14 +508,22 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   bool got_move() const { return got_move_; }
   bool was_acked() const { return was_acked_; }
   const gfx::Point& last_event_location() const { return last_event_location_; }
+  void set_event_id(uint32_t event_id) { event_id_ = event_id; }
 
   // TestWindowDelegate::
   void OnMouseEvent(ui::MouseEvent* event) override {
-    was_acked_ = test_window_tree_->WasEventAcked(kEventId);
+    was_acked_ = test_window_tree_->WasEventAcked(event_id_);
     if (event->type() == ui::ET_MOUSE_MOVED)
       got_move_ = true;
     last_event_location_ = event->location();
     event->SetHandled();
+  }
+
+  void reset() {
+    was_acked_ = false;
+    got_move_ = false;
+    last_event_location_ = gfx::Point();
+    event_id_ = 0;
   }
 
  private:
@@ -523,6 +531,7 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   bool was_acked_ = false;
   bool got_move_ = false;
   gfx::Point last_event_location_;
+  uint32_t event_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventBasicTestWindowDelegate);
 };
@@ -547,20 +556,227 @@ TEST_F(WindowTreeClientClientTest, InputEventBasic) {
   EXPECT_FALSE(window_delegate.got_move());
   EXPECT_FALSE(window_delegate.was_acked());
   const gfx::Point event_location_in_child(2, 3);
+  const uint32_t event_id = 1;
+  window_delegate.set_event_id(event_id);
   std::unique_ptr<ui::Event> ui_event(
       new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location_in_child,
                          gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, 0));
   window_tree_client()->OnWindowInputEvent(
-      InputEventBasicTestWindowDelegate::kEventId, server_id(&child),
-      window_tree_host.display_id(), ui::Event::Clone(*ui_event.get()), 0);
-  EXPECT_TRUE(window_tree()->WasEventAcked(
-      InputEventBasicTestWindowDelegate::kEventId));
+      event_id, server_id(&child), window_tree_host.display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ui::mojom::EventResult::HANDLED,
-            window_tree()->GetEventResult(
-                InputEventBasicTestWindowDelegate::kEventId));
+            window_tree()->GetEventResult(event_id));
   EXPECT_TRUE(window_delegate.got_move());
   EXPECT_FALSE(window_delegate.was_acked());
   EXPECT_EQ(event_location_in_child, window_delegate.last_event_location());
+}
+
+TEST_F(WindowTreeClientClientTest, InputEventFindTargetAndConversion) {
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  Window* top_level = window_tree_host.window();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
+  InputEventBasicTestWindowDelegate window_delegate1(window_tree());
+  Window child1(&window_delegate1);
+  child1.Init(ui::LAYER_NOT_DRAWN);
+  child1.SetEventTargeter(base::MakeUnique<WindowTargeter>());
+  top_level->AddChild(&child1);
+  child1.SetBounds(gfx::Rect(10, 10, 100, 100));
+  child1.Show();
+  InputEventBasicTestWindowDelegate window_delegate2(window_tree());
+  Window child2(&window_delegate2);
+  child2.Init(ui::LAYER_NOT_DRAWN);
+  child1.AddChild(&child2);
+  child2.SetBounds(gfx::Rect(20, 30, 100, 100));
+  child2.Show();
+
+  EXPECT_FALSE(window_delegate1.got_move());
+  EXPECT_FALSE(window_delegate2.got_move());
+
+  // child1 has a targeter set and event_location is (50, 60), child2
+  // should get the event even though mus-ws wants to send to child1.
+  const gfx::Point event_location(50, 60);
+  uint32_t event_id = 1;
+  window_delegate1.set_event_id(event_id);
+  window_delegate2.set_event_id(event_id);
+  std::unique_ptr<ui::Event> ui_event(
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location, gfx::Point(),
+                         ui::EventTimeForNow(), ui::EF_NONE, 0));
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child1), window_tree_host.display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_FALSE(window_delegate1.got_move());
+  EXPECT_TRUE(window_delegate2.got_move());
+  EXPECT_EQ(gfx::Point(30, 30), window_delegate2.last_event_location());
+  window_delegate1.reset();
+  window_delegate2.reset();
+
+  // Remove the targeter for child1 and specify the event to go to child1. This
+  // time child1 should receive the event not child2.
+  child1.SetEventTargeter(nullptr);
+  event_id = 2;
+  window_delegate1.set_event_id(event_id);
+  window_delegate2.set_event_id(event_id);
+  std::unique_ptr<ui::Event> ui_event1(
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location, gfx::Point(),
+                         ui::EventTimeForNow(), ui::EF_NONE, 0));
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child1), window_tree_host.display_id(),
+      ui::Event::Clone(*ui_event1.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate1.got_move());
+  EXPECT_FALSE(window_delegate2.got_move());
+  EXPECT_EQ(gfx::Point(50, 60), window_delegate1.last_event_location());
+}
+
+TEST_F(WindowTreeClientClientTest, InputEventCustomWindowTargeter) {
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  Window* top_level = window_tree_host.window();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
+  InputEventBasicTestWindowDelegate window_delegate1(window_tree());
+  Window child1(&window_delegate1);
+  child1.Init(ui::LAYER_NOT_DRAWN);
+  child1.SetEventTargeter(base::MakeUnique<test::TestWindowTargeter>());
+  top_level->AddChild(&child1);
+  child1.SetBounds(gfx::Rect(10, 10, 100, 100));
+  child1.Show();
+  InputEventBasicTestWindowDelegate window_delegate2(window_tree());
+  Window child2(&window_delegate2);
+  child2.Init(ui::LAYER_NOT_DRAWN);
+  child1.AddChild(&child2);
+  child2.SetBounds(gfx::Rect(20, 30, 100, 100));
+  child2.Show();
+
+  EXPECT_FALSE(window_delegate1.got_move());
+  EXPECT_FALSE(window_delegate2.got_move());
+
+  // child1 has a custom targeter set which would always return itself as the
+  // target window therefore event should go to child1 unlike
+  // WindowTreeClientClientTest.InputEventFindTargetAndConversion.
+  const gfx::Point event_location(50, 60);
+  uint32_t event_id = 1;
+  window_delegate1.set_event_id(event_id);
+  window_delegate2.set_event_id(event_id);
+  std::unique_ptr<ui::Event> ui_event(
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location, gfx::Point(),
+                         ui::EventTimeForNow(), ui::EF_NONE, 0));
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child1), window_tree_host.display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate1.got_move());
+  EXPECT_FALSE(window_delegate2.got_move());
+  EXPECT_EQ(gfx::Point(50, 60), window_delegate1.last_event_location());
+  window_delegate1.reset();
+  window_delegate2.reset();
+
+  // child1 should get the event even though mus-ws specifies child2 and it's
+  // actually in child2's space. Event location will be transformed.
+  event_id = 2;
+  window_delegate1.set_event_id(event_id);
+  window_delegate2.set_event_id(event_id);
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child2), window_tree_host.display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate1.got_move());
+  EXPECT_FALSE(window_delegate2.got_move());
+  EXPECT_EQ(gfx::Point(70, 90), window_delegate1.last_event_location());
+}
+
+TEST_F(WindowTreeClientClientTest, InputEventCaptureWindow) {
+  std::unique_ptr<WindowTreeHostMus> window_tree_host =
+      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl());
+  Window* top_level = window_tree_host->window();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host->SetBoundsInPixels(bounds);
+  window_tree_host->InitHost();
+  window_tree_host->Show();
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds, window_tree_host->GetBoundsInPixels());
+  std::unique_ptr<InputEventBasicTestWindowDelegate> window_delegate1(
+      base::MakeUnique<InputEventBasicTestWindowDelegate>(window_tree()));
+  std::unique_ptr<Window> child1(
+      base::MakeUnique<Window>(window_delegate1.get()));
+  child1->Init(ui::LAYER_NOT_DRAWN);
+  child1->SetEventTargeter(base::MakeUnique<test::TestWindowTargeter>());
+  top_level->AddChild(child1.get());
+  child1->SetBounds(gfx::Rect(10, 10, 100, 100));
+  child1->Show();
+  std::unique_ptr<InputEventBasicTestWindowDelegate> window_delegate2(
+      base::MakeUnique<InputEventBasicTestWindowDelegate>(window_tree()));
+  std::unique_ptr<Window> child2(
+      base::MakeUnique<Window>(window_delegate2.get()));
+  child2->Init(ui::LAYER_NOT_DRAWN);
+  child1->AddChild(child2.get());
+  child2->SetBounds(gfx::Rect(20, 30, 100, 100));
+  child2->Show();
+
+  EXPECT_FALSE(window_delegate1->got_move());
+  EXPECT_FALSE(window_delegate2->got_move());
+
+  // child1 has a custom targeter set which would always return itself as the
+  // target window therefore event should go to child1.
+  const gfx::Point event_location(50, 60);
+  uint32_t event_id = 1;
+  window_delegate1->set_event_id(event_id);
+  window_delegate2->set_event_id(event_id);
+  std::unique_ptr<ui::Event> ui_event(
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location, gfx::Point(),
+                         ui::EventTimeForNow(), ui::EF_NONE, 0));
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(child1.get()), window_tree_host->display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate1->got_move());
+  EXPECT_FALSE(window_delegate2->got_move());
+  EXPECT_EQ(gfx::Point(50, 60), window_delegate1->last_event_location());
+  window_delegate1->reset();
+  window_delegate2->reset();
+
+  // The same event should go to child2 if child2 is the capture window.
+  std::unique_ptr<client::DefaultCaptureClient> capture_client(
+      base::MakeUnique<client::DefaultCaptureClient>());
+  client::SetCaptureClient(top_level, capture_client.get());
+  child2->SetCapture();
+  EXPECT_EQ(child2.get(), client::GetCaptureWindow(child2->GetRootWindow()));
+  event_id = 2;
+  window_delegate1->set_event_id(event_id);
+  window_delegate2->set_event_id(event_id);
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(child1.get()), window_tree_host->display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_FALSE(window_delegate1->got_move());
+  EXPECT_TRUE(window_delegate2->got_move());
+  EXPECT_EQ(gfx::Point(30, 30), window_delegate2->last_event_location());
+  child2.reset();
+  child1.reset();
+  window_tree_host.reset();
+  capture_client.reset();
 }
 
 class WindowTreeClientPointerObserverTest : public WindowTreeClientClientTest {
@@ -1594,7 +1810,7 @@ TEST_F(WindowTreeClientClientTestHighDPI, NewTopLevelWindowBounds) {
   EXPECT_EQ(gfx::Rect(2, 4, 6, 8), top_level->GetHost()->GetBoundsInPixels());
 }
 
-TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDips) {
+TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDip) {
   display::Screen* screen = display::Screen::GetScreen();
   const display::Display primary_display = screen->GetPrimaryDisplay();
   ASSERT_EQ(2.0f, primary_display.device_scale_factor());
@@ -1626,6 +1842,79 @@ TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDips) {
             last_event->location());
   EXPECT_EQ(gfx::ConvertPointToDIP(2.0f, root_location_pixels),
             last_event->root_location());
+}
+
+TEST_F(WindowTreeClientClientTestHighDPI, InputEventsInDip) {
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display;
+  ASSERT_TRUE(
+      screen->GetDisplayWithDisplayId(window_tree_host.display_id(), &display));
+  ASSERT_EQ(2.0f, display.device_scale_factor());
+
+  Window* top_level = window_tree_host.window();
+  const gfx::Rect bounds_in_pixels(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds_in_pixels);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+  EXPECT_EQ(gfx::ConvertRectToDIP(2.0f, bounds_in_pixels), top_level->bounds());
+  EXPECT_EQ(bounds_in_pixels, window_tree_host.GetBoundsInPixels());
+
+  InputEventBasicTestWindowDelegate window_delegate1(window_tree());
+  Window child1(&window_delegate1);
+  child1.Init(ui::LAYER_NOT_DRAWN);
+  child1.SetEventTargeter(base::MakeUnique<test::TestWindowTargeter>());
+  top_level->AddChild(&child1);
+  child1.SetBounds(gfx::Rect(10, 10, 100, 100));
+  child1.Show();
+  InputEventBasicTestWindowDelegate window_delegate2(window_tree());
+  Window child2(&window_delegate2);
+  child2.Init(ui::LAYER_NOT_DRAWN);
+  child1.AddChild(&child2);
+  child2.SetBounds(gfx::Rect(20, 30, 100, 100));
+  child2.Show();
+
+  EXPECT_FALSE(window_delegate1.got_move());
+  EXPECT_FALSE(window_delegate2.got_move());
+
+  // child1 has a custom targeter set which would always return itself as the
+  // target window therefore event should go to child1 and should be in dip.
+  const gfx::Point event_location_in_pixels(50, 60);
+  uint32_t event_id = 1;
+  window_delegate1.set_event_id(event_id);
+  window_delegate2.set_event_id(event_id);
+  std::unique_ptr<ui::Event> ui_event(
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location_in_pixels,
+                         gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, 0));
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child1), window_tree_host.display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate1.got_move());
+  EXPECT_FALSE(window_delegate2.got_move());
+  const gfx::Point event_location_in_dip(25, 30);
+  EXPECT_EQ(event_location_in_dip, window_delegate1.last_event_location());
+  window_delegate1.reset();
+  window_delegate2.reset();
+
+  // Event location will be transformed and should be in dip.
+  event_id = 2;
+  window_delegate1.set_event_id(event_id);
+  window_delegate2.set_event_id(event_id);
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child2), window_tree_host.display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate1.got_move());
+  EXPECT_FALSE(window_delegate2.got_move());
+  gfx::Point transformed_event_location_in_dip(event_location_in_dip.x() + 20,
+                                               event_location_in_dip.y() + 30);
+  EXPECT_EQ(transformed_event_location_in_dip,
+            window_delegate1.last_event_location());
 }
 
 }  // namespace aura

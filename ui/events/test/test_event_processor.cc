@@ -19,6 +19,10 @@ TestEventProcessor::TestEventProcessor()
 
 TestEventProcessor::~TestEventProcessor() {}
 
+EventTarget* TestEventProcessor::GetRoot() {
+  return root_.get();
+}
+
 void TestEventProcessor::SetRoot(std::unique_ptr<EventTarget> root) {
   root_ = std::move(root);
 }
@@ -33,8 +37,12 @@ bool TestEventProcessor::CanDispatchToTarget(EventTarget* target) {
   return true;
 }
 
-EventTarget* TestEventProcessor::GetRootTarget() {
+EventTarget* TestEventProcessor::GetRootForEvent(Event* event) {
   return root_.get();
+}
+
+EventTargeter* TestEventProcessor::GetDefaultEventTargeter() {
+  return root_->GetEventTargeter();
 }
 
 EventDispatchDetails TestEventProcessor::OnEventFromSource(Event* event) {

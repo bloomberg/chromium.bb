@@ -486,8 +486,9 @@ WmWindow* RootWindowController::FindEventTarget(
                             location_in_root, ui::EventTimeForNow(),
                             ui::EF_NONE, ui::EF_NONE);
   ui::EventTarget* event_handler =
-      static_cast<ui::EventTarget*>(root_window)
-          ->GetEventTargeter()
+      root_window->GetHost()
+          ->dispatcher()
+          ->GetDefaultEventTargeter()
           ->FindTargetForEvent(root_window, &test_event);
   return WmWindow::Get(static_cast<aura::Window*>(event_handler));
 }

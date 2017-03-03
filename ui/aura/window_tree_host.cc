@@ -260,8 +260,6 @@ void WindowTreeHost::CreateCompositor(const cc::FrameSinkId& frame_sink_id) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);
     window()->SetName("RootWindow");
-    window()->SetEventTargeter(
-        std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
     dispatcher_.reset(new WindowEventDispatcher(this));
   }
 }

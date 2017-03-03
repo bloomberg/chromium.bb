@@ -60,6 +60,22 @@ bool IsEventCandidateForHold(const ui::Event& event) {
   return false;
 }
 
+void ConvertEventLocationToTarget(ui::EventTarget* event_target,
+                                  ui::EventTarget* target,
+                                  ui::Event* event) {
+  if (target == event_target || !event->IsLocatedEvent())
+    return;
+
+  gfx::Point location = event->AsLocatedEvent()->location();
+  gfx::Point root_location = event->AsLocatedEvent()->root_location();
+  Window::ConvertPointToTarget(static_cast<Window*>(event_target),
+                               static_cast<Window*>(target), &location);
+  Window::ConvertPointToTarget(static_cast<Window*>(event_target),
+                               static_cast<Window*>(target), &root_location);
+  event->AsLocatedEvent()->set_location(location);
+  event->AsLocatedEvent()->set_root_location(root_location);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,6 +92,7 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       dispatching_held_event_(nullptr),
       observer_manager_(this),
       env_controller_(new EnvInputStateController),
+      event_targeter_(new WindowTargeter),
       repost_event_factory_(this),
       held_event_factory_(this) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
@@ -88,6 +105,10 @@ WindowEventDispatcher::~WindowEventDispatcher() {
   TRACE_EVENT0("shutdown", "WindowEventDispatcher::Destructor");
   Env::GetInstance()->RemoveObserver(this);
   ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
+}
+
+ui::EventTargeter* WindowEventDispatcher::GetDefaultEventTargeter() {
+  return event_targeter_.get();
 }
 
 void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent* event) {
@@ -416,8 +437,33 @@ void WindowEventDispatcher::ReleaseNativeCapture() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, ui::EventProcessor implementation:
-ui::EventTarget* WindowEventDispatcher::GetRootTarget() {
-  return window();
+ui::EventTarget* WindowEventDispatcher::GetRootForEvent(ui::Event* event) {
+  if (Env::GetInstance()->mode() == Env::Mode::LOCAL)
+    return window();
+
+  if (!event->target())
+    return window();
+
+  ui::EventTarget* event_target = event->target();
+  if (event->IsLocatedEvent()) {
+    ui::EventTarget* target = event_targeter_->FindTargetInRootWindow(
+        window(), *event->AsLocatedEvent());
+    if (target) {
+      ConvertEventLocationToTarget(event_target, target, event);
+      return target;
+    }
+  }
+
+  ui::EventTarget* ancestor_with_targeter = event_target;
+  for (ui::EventTarget* ancestor = event_target->GetParentTarget(); ancestor;
+       ancestor = ancestor->GetParentTarget()) {
+    if (ancestor->GetEventTargeter())
+      ancestor_with_targeter = ancestor;
+    if (ancestor == window())
+      break;
+  }
+  ConvertEventLocationToTarget(event_target, ancestor_with_targeter, event);
+  return ancestor_with_targeter;
 }
 
 void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {

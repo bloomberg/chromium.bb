@@ -250,6 +250,8 @@ static_library("test_support") {
     "test/test_window_delegate.h",
     "test/test_window_parenting_client.cc",
     "test/test_window_parenting_client.h",
+    "test/test_window_targeter.cc",
+    "test/test_window_targeter.h",
     "test/test_windows.cc",
     "test/test_windows.h",
     "test/ui_controls_factory_aura.h",
