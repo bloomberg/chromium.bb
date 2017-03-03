@@ -60,6 +60,7 @@ PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
   if (pipeline_->IsRunning())
     Stop();
 
+  demuxer_.reset();
   pipeline_.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -311,6 +312,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(
   data_source_ = std::move(data_source);
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
+  task_scheduler_.reset(new base::test::ScopedTaskScheduler(&message_loop_));
   demuxer_ = std::unique_ptr<Demuxer>(new FFmpegDemuxer(
       message_loop_.task_runner(), data_source_.get(),
       base::Bind(&PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,

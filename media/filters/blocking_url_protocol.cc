@@ -17,6 +17,7 @@ BlockingUrlProtocol::BlockingUrlProtocol(DataSource* data_source,
                                          const base::Closure& error_cb)
     : data_source_(data_source),
       error_cb_(error_cb),
+      is_streaming_(data_source_->IsStreaming()),
       aborted_(base::WaitableEvent::ResetPolicy::MANUAL,
                base::WaitableEvent::InitialState::NOT_SIGNALED),  // We never
                                                                   // want to
@@ -31,24 +32,32 @@ BlockingUrlProtocol::~BlockingUrlProtocol() {}
 
 void BlockingUrlProtocol::Abort() {
   aborted_.Signal();
+  base::AutoLock lock(data_source_lock_);
+  data_source_ = nullptr;
 }
 
 int BlockingUrlProtocol::Read(int size, uint8_t* data) {
-  // Read errors are unrecoverable.
-  if (aborted_.IsSignaled())
-    return AVERROR(EIO);
+  {
+    // Read errors are unrecoverable.
+    base::AutoLock lock(data_source_lock_);
+    if (!data_source_) {
+      DCHECK(aborted_.IsSignaled());
+      return AVERROR(EIO);
+    }
 
-  // Even though FFmpeg defines AVERROR_EOF, it's not to be used with I/O
-  // routines. Instead return 0 for any read at or past EOF.
-  int64_t file_size;
-  if (data_source_->GetSize(&file_size) && read_position_ >= file_size)
-    return 0;
+    // Even though FFmpeg defines AVERROR_EOF, it's not to be used with I/O
+    // routines. Instead return 0 for any read at or past EOF.
+    int64_t file_size;
+    if (data_source_->GetSize(&file_size) && read_position_ >= file_size)
+      return 0;
 
-  // Blocking read from data source until either:
-  //   1) |last_read_bytes_| is set and |read_complete_| is signalled
-  //   2) |aborted_| is signalled
-  data_source_->Read(read_position_, size, data, base::Bind(
-      &BlockingUrlProtocol::SignalReadCompleted, base::Unretained(this)));
+    // Blocking read from data source until either:
+    //   1) |last_read_bytes_| is set and |read_complete_| is signalled
+    //   2) |aborted_| is signalled
+    data_source_->Read(read_position_, size, data,
+                       base::Bind(&BlockingUrlProtocol::SignalReadCompleted,
+                                  base::Unretained(this)));
+  }
 
   base::WaitableEvent* events[] = { &aborted_, &read_complete_ };
   size_t index = base::WaitableEvent::WaitMany(events, arraysize(events));
@@ -75,8 +84,10 @@ bool BlockingUrlProtocol::GetPosition(int64_t* position_out) {
 }
 
 bool BlockingUrlProtocol::SetPosition(int64_t position) {
+  base::AutoLock lock(data_source_lock_);
   int64_t file_size;
-  if ((data_source_->GetSize(&file_size) && position > file_size) ||
+  if (!data_source_ ||
+      (data_source_->GetSize(&file_size) && position > file_size) ||
       position < 0) {
     return false;
   }
@@ -86,11 +97,12 @@ bool BlockingUrlProtocol::SetPosition(int64_t position) {
 }
 
 bool BlockingUrlProtocol::GetSize(int64_t* size_out) {
-  return data_source_->GetSize(size_out);
+  base::AutoLock lock(data_source_lock_);
+  return data_source_ ? data_source_->GetSize(size_out) : 0;
 }
 
 bool BlockingUrlProtocol::IsStreaming() {
-  return data_source_->IsStreaming();
+  return is_streaming_;
 }
 
 void BlockingUrlProtocol::SignalReadCompleted(int size) {

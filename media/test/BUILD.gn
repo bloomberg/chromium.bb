@@ -39,6 +39,7 @@ source_set("pipeline_integration_test_base") {
 
     deps = [
       "//base",
+      "//base/test:test_support",
       "//media:test_support",
       "//media/audio:test_support",
       "//media/base:test_support",
