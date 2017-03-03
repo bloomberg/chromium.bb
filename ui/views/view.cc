@@ -195,9 +195,11 @@ void View::AddChildViewAt(View* view, int index) {
 
   // If |view| has a parent, remove it from its parent.
   View* parent = view->parent_;
-  ui::NativeTheme* old_theme = NULL;
+  ui::NativeTheme* old_theme = nullptr;
+  Widget* old_widget = nullptr;
   if (parent) {
     old_theme = view->GetNativeTheme();
+    old_widget = view->GetWidget();
     if (parent == this) {
       ReorderChildView(view, index);
       return;
@@ -241,7 +243,7 @@ void View::AddChildViewAt(View* view, int index) {
   for (View* v = this; v; v = v->parent_)
     v->ViewHierarchyChangedImpl(false, details);
 
-  view->PropagateAddNotifications(details);
+  view->PropagateAddNotifications(details, widget && widget != old_widget);
 
   UpdateTooltip();
 
@@ -1516,6 +1518,10 @@ void View::NativeViewHierarchyChanged() {
   }
 }
 
+void View::AddedToWidget() {}
+
+void View::RemovedFromWidget() {}
+
 // Painting --------------------------------------------------------------------
 
 void View::PaintChildren(const ui::PaintContext& context) {
@@ -1929,12 +1935,14 @@ void View::DoRemoveChildView(View* view,
   }
 
   Widget* widget = GetWidget();
+  bool is_removed_from_widget = false;
   if (widget) {
     UnregisterChildrenForVisibleBoundsNotification(view);
     if (view->visible())
       view->SchedulePaint();
 
-    if (!new_parent || new_parent->GetWidget() != widget)
+    is_removed_from_widget = !new_parent || new_parent->GetWidget() != widget;
+    if (is_removed_from_widget)
       widget->NotifyWillRemoveView(view);
   }
 
@@ -1944,7 +1952,7 @@ void View::DoRemoveChildView(View* view,
   if (widget)
     widget->LayerTreeChanged();
 
-  view->PropagateRemoveNotifications(this, new_parent);
+  view->PropagateRemoveNotifications(this, new_parent, is_removed_from_widget);
   view->parent_ = nullptr;
 
   if (delete_removed_view && !view->owned_by_client_)
@@ -1965,26 +1973,35 @@ void View::DoRemoveChildView(View* view,
     observer.OnChildViewRemoved(view, this);
 }
 
-void View::PropagateRemoveNotifications(View* old_parent, View* new_parent) {
+void View::PropagateRemoveNotifications(View* old_parent,
+                                        View* new_parent,
+                                        bool is_removed_from_widget) {
   {
     internal::ScopedChildrenLock lock(this);
-    for (auto* child : children_)
-      child->PropagateRemoveNotifications(old_parent, new_parent);
+    for (auto* child : children_) {
+      child->PropagateRemoveNotifications(old_parent, new_parent,
+                                          is_removed_from_widget);
+    }
   }
 
   ViewHierarchyChangedDetails details(false, old_parent, this, new_parent);
   for (View* v = this; v; v = v->parent_)
     v->ViewHierarchyChangedImpl(true, details);
+
+  if (is_removed_from_widget)
+    RemovedFromWidget();
 }
 
-void View::PropagateAddNotifications(
-    const ViewHierarchyChangedDetails& details) {
+void View::PropagateAddNotifications(const ViewHierarchyChangedDetails& details,
+                                     bool is_added_to_widget) {
   {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_)
-      child->PropagateAddNotifications(details);
+      child->PropagateAddNotifications(details, is_added_to_widget);
   }
   ViewHierarchyChangedImpl(true, details);
+  if (is_added_to_widget)
+    AddedToWidget();
 }
 
 void View::PropagateNativeViewHierarchyChanged() {

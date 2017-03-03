@@ -3335,6 +3335,146 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
   EXPECT_EQ(v2.get(), v4->add_details().move_view);
 }
 
+class WidgetObserverView : public View {
+ public:
+  WidgetObserverView();
+  ~WidgetObserverView() override;
+
+  void ResetTestState();
+
+  int added_to_widget_count() { return added_to_widget_count_; }
+  int removed_from_widget_count() { return removed_from_widget_count_; }
+
+ private:
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
+
+  int added_to_widget_count_ = 0;
+  int removed_from_widget_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetObserverView);
+};
+
+WidgetObserverView::WidgetObserverView() {
+  ResetTestState();
+}
+
+WidgetObserverView::~WidgetObserverView() {}
+
+void WidgetObserverView::ResetTestState() {
+  added_to_widget_count_ = 0;
+  removed_from_widget_count_ = 0;
+}
+
+void WidgetObserverView::AddedToWidget() {
+  ++added_to_widget_count_;
+}
+
+void WidgetObserverView::RemovedFromWidget() {
+  ++removed_from_widget_count_;
+}
+
+// Verifies that AddedToWidget and RemovedFromWidget are called for a view when
+// it is added to hierarchy.
+// The tree looks like this:
+// widget
+// +-- root
+//
+// then v1 is added to root:
+//
+//     v1
+//     +-- v2
+//
+// finally v1 is removed from root.
+TEST_F(ViewTest, AddedToRemovedFromWidget) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget.Init(params);
+
+  View* root = widget.GetRootView();
+
+  WidgetObserverView v1;
+  WidgetObserverView v2;
+  WidgetObserverView v3;
+  v1.set_owned_by_client();
+  v2.set_owned_by_client();
+  v3.set_owned_by_client();
+
+  v1.AddChildView(&v2);
+  EXPECT_EQ(0, v2.added_to_widget_count());
+  EXPECT_EQ(0, v2.removed_from_widget_count());
+
+  root->AddChildView(&v1);
+  EXPECT_EQ(1, v1.added_to_widget_count());
+  EXPECT_EQ(0, v1.removed_from_widget_count());
+  EXPECT_EQ(1, v2.added_to_widget_count());
+  EXPECT_EQ(0, v2.removed_from_widget_count());
+
+  v1.ResetTestState();
+  v2.ResetTestState();
+
+  v2.AddChildView(&v3);
+  EXPECT_EQ(0, v1.added_to_widget_count());
+  EXPECT_EQ(0, v1.removed_from_widget_count());
+  EXPECT_EQ(0, v2.added_to_widget_count());
+  EXPECT_EQ(0, v2.removed_from_widget_count());
+
+  v1.ResetTestState();
+  v2.ResetTestState();
+
+  root->RemoveChildView(&v1);
+  EXPECT_EQ(0, v1.added_to_widget_count());
+  EXPECT_EQ(1, v1.removed_from_widget_count());
+  EXPECT_EQ(0, v2.added_to_widget_count());
+  EXPECT_EQ(1, v2.removed_from_widget_count());
+
+  v2.ResetTestState();
+  v1.RemoveChildView(&v2);
+  EXPECT_EQ(0, v2.removed_from_widget_count());
+
+  // Test move between parents in a single Widget.
+  v2.RemoveChildView(&v3);
+  v1.ResetTestState();
+  v2.ResetTestState();
+  v3.ResetTestState();
+
+  v1.AddChildView(&v2);
+  root->AddChildView(&v1);
+  root->AddChildView(&v3);
+  EXPECT_EQ(1, v1.added_to_widget_count());
+  EXPECT_EQ(1, v2.added_to_widget_count());
+  EXPECT_EQ(1, v3.added_to_widget_count());
+
+  v3.AddChildView(&v1);
+  EXPECT_EQ(1, v1.added_to_widget_count());
+  EXPECT_EQ(0, v1.removed_from_widget_count());
+  EXPECT_EQ(1, v2.added_to_widget_count());
+  EXPECT_EQ(0, v2.removed_from_widget_count());
+  EXPECT_EQ(1, v3.added_to_widget_count());
+  EXPECT_EQ(0, v3.removed_from_widget_count());
+
+  // Test move between widgets.
+  Widget second_widget;
+  params.bounds = gfx::Rect(150, 150, 650, 650);
+  second_widget.Init(params);
+
+  View* second_root = second_widget.GetRootView();
+
+  v1.ResetTestState();
+  v2.ResetTestState();
+  v3.ResetTestState();
+
+  second_root->AddChildView(&v1);
+  EXPECT_EQ(1, v1.removed_from_widget_count());
+  EXPECT_EQ(1, v1.added_to_widget_count());
+  EXPECT_EQ(1, v2.added_to_widget_count());
+  EXPECT_EQ(1, v2.removed_from_widget_count());
+  EXPECT_EQ(0, v3.added_to_widget_count());
+  EXPECT_EQ(0, v3.removed_from_widget_count());
+}
+
 // Verifies if the child views added under the root are all deleted when calling
 // RemoveAllChildViews.
 // The tree looks like this:

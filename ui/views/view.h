@@ -1102,6 +1102,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // required when a view is added or removed from a view hierarchy
   //
   // Refer to comments in struct |ViewHierarchyChangedDetails| for |details|.
+  //
+  // See also AddedToWidget() and RemovedFromWidget() for detecting when the
+  // view is added to/removed from a widget.
   virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details);
 
   // When SetVisible() changes the visibility of a view, this method is
@@ -1115,6 +1118,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // hierarchy. Overriding this method is useful for tracking which
   // FocusManager manages this view.
   virtual void NativeViewHierarchyChanged();
+
+  // This method is invoked for a view when it is attached to a hierarchy with
+  // a widget, i.e. GetWidget() starts returning a non-null result.
+  // It is also called when the view is moved to a different widget.
+  virtual void AddedToWidget();
+
+  // This method is invoked for a view when it is removed from a hierarchy with
+  // a widget or moved to a different widget.
+  virtual void RemovedFromWidget();
 
   // Painting ------------------------------------------------------------------
 
@@ -1298,10 +1310,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |old_parent| is the original parent of the View that was removed.
   // If |new_parent| is not NULL, the View that was removed will be reparented
   // to |new_parent| after the remove operation.
-  void PropagateRemoveNotifications(View* old_parent, View* new_parent);
+  // If is_removed_from_widget is true, calls RemovedFromWidget for all
+  // children.
+  void PropagateRemoveNotifications(View* old_parent,
+                                    View* new_parent,
+                                    bool is_removed_from_widget);
 
   // Call ViewHierarchyChanged() for all children.
-  void PropagateAddNotifications(const ViewHierarchyChangedDetails& details);
+  // If is_added_to_widget is true, calls AddedToWidget for all children.
+  void PropagateAddNotifications(const ViewHierarchyChangedDetails& details,
+                                 bool is_added_to_widget);
 
   // Propagates NativeViewHierarchyChanged() notification through all the
   // children.
