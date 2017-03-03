@@ -68,6 +68,12 @@ def main(args):
         help='The README.chromium file describing the imported project',
         metavar='FILE',
         dest='readme_path')
+    parser.add_argument(
+        '--exclude',
+        default=['codereview.settings'],
+        action='append',
+        help='Files to exclude from the imported copy',
+        metavar='PATH')
     parsed = parser.parse_args(args)
 
     original_head = (
@@ -107,10 +113,41 @@ def main(args):
                         revision_old,
                         parsed.update_to)
 
-    update_range = revision_old + '..' + parsed.update_to
+    # git-filter-branch needs a ref to update. It’s not enough to just tell it
+    # to operate on a range of commits ending at parsed.update_to, because
+    # parsed.update_to is a commit hash that can’t be updated to point to
+    # anything else.
+    subprocess.check_call(['git', 'update-ref', 'UPDATE_TO', parsed.update_to],
+                          shell=IS_WINDOWS)
 
-    # This cherry-picks each change in the window from the upstream project into
-    # the current branch.
+    # Filter the range being updated over to exclude files that ought to be
+    # missing. This points UPDATE_TO to the rewritten (filtered) version.
+    # git-filter-branch insists on running from the top level of the working
+    # tree.
+    toplevel = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'],
+                                       shell=IS_WINDOWS).rstrip()
+    subprocess.check_call(
+        ['git',
+         'filter-branch',
+         '--force',
+         '--index-filter',
+         'git rm --cached --ignore-unmatch ' + ' '.join(parsed.exclude),
+         revision_old + '..UPDATE_TO'],
+        cwd=toplevel,
+        shell=IS_WINDOWS)
+
+    # git-filter-branch saved a copy of the original UPDATE_TO at
+    # original/UPDATE_TO, but this isn’t useful because it refers to the same
+    # thing as parsed.update_to, which is already known.
+    subprocess.check_call(
+        ['git', 'update-ref', '-d', 'refs/original/UPDATE_TO'],
+        shell=IS_WINDOWS)
+
+    filtered_update_range = revision_old + '..UPDATE_TO'
+    unfiltered_update_range = revision_old + '..' + parsed.update_to
+
+    # This cherry-picks each change in the window from the filtered view of the
+    # upstream project into the current branch.
     assisted_cherry_pick = False
     try:
         if not SubprocessCheckCall0Or1(['git',
@@ -119,7 +156,7 @@ def main(args):
                                         '--strategy=subtree',
                                         '-Xsubtree=' + parsed.subtree,
                                         '-x',
-                                        update_range]):
+                                        filtered_update_range]):
             assisted_cherry_pick = True
             print >>sys.stderr, ("""
 Please fix the errors above and run "git cherry-pick --continue".
@@ -135,7 +172,8 @@ Press ^C to abort.
         raise
 
     # Get an abbreviated hash and subject line for each commit in the window,
-    # sorted in chronological order.
+    # sorted in chronological order. Use the unfiltered view so that the commit
+    # hashes are recognizable.
     log_lines = subprocess.check_output(['git',
                                          '-c',
                                          'core.abbrev=12',
@@ -143,14 +181,15 @@ Press ^C to abort.
                                          '--abbrev-commit',
                                          '--pretty=oneline',
                                          '--reverse',
-                                         update_range],
+                                         unfiltered_update_range],
                                          shell=IS_WINDOWS).splitlines(False)
 
     if assisted_cherry_pick:
         # If the user had to help, count the number of cherry-picked commits,
         # expecting it to match.
         cherry_picked_commits = int(subprocess.check_output(
-            ['git', 'rev-list', '--count', original_head + '..HEAD']))
+            ['git', 'rev-list', '--count', original_head + '..HEAD'],
+            shell=IS_WINDOWS))
         if cherry_picked_commits != len(log_lines):
             print >>sys.stderr, 'Something smells fishy, aborting anyway...'
             subprocess.call(['git', 'cherry-pick', '--abort'], shell=IS_WINDOWS)
@@ -192,18 +231,33 @@ Press ^C to abort.
     if SubprocessCheckCall0Or1(['git',
                                 'diff-tree',
                                 '--quiet',
-                                parsed.update_to,
+                                'UPDATE_TO',
                                 'HEAD:' + parsed.subtree]):
         has_local_modifications = False
 
+        if not parsed.exclude:
+            modifications = 'None.\n'
+        elif len(parsed.exclude) == 1:
+            modifications = (
+                ' - %s has been excluded.\n' % parsed.exclude[0])
+        else:
+            modifications = (
+                ' - The following files have been excluded:\n')
+            for excluded in sorted(parsed.exclude):
+                modifications += '    - ' + excluded + '\n'
         readme_content_new = re.sub(r'\nLocal Modifications:\n.*$',
-                                    '\nLocal Modifications:\nNone.',
+                                    '\nLocal Modifications:\n' + modifications,
                                     readme_content_new,
-                                    1)
+                                    1,
+                                    re.DOTALL)
 
-    # This soft-reset causes all of the cherry-picks to show up as staged,
-    # which will have the effect of squashing them along with the README update
-    # when committed below.
+    # The UPDATE_TO ref is no longer useful.
+    subprocess.check_call(['git', 'update-ref', '-d', 'UPDATE_TO'],
+                          shell=IS_WINDOWS)
+
+    # This soft-reset causes all of the cherry-picks to show up as staged, which
+    # will have the effect of squashing them along with the README update when
+    # committed below.
     subprocess.check_call(['git', 'reset', '--soft', original_head],
                           shell=IS_WINDOWS)
 
