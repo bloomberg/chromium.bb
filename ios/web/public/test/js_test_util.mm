@@ -8,9 +8,11 @@
 
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
-#import "base/test/ios/wait_util.h"
+#include "base/strings/sys_string_conversions.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace web {
 
@@ -24,9 +26,15 @@ id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script) {
              completed = true;
            }];
 
-  base::test::ios::WaitUntilCondition(^{
-    return completed;
-  });
+  BOOL success = testing::WaitUntilConditionOrTimeout(
+      testing::kWaitForJSCompletionTimeout, ^{
+        return completed;
+      });
+  // Log stack trace to provide some context.
+  EXPECT_TRUE(success)
+      << "CRWJSInjectionManager failed to complete javascript execution.\n"
+      << base::SysNSStringToUTF8(
+             [[NSThread callStackSymbols] componentsJoinedByString:@"\n"]);
   return [[result retain] autorelease];
 }
 
@@ -50,9 +58,14 @@ id ExecuteJavaScript(WKWebView* web_view, NSString* script, NSError** error) {
                  *error = [[script_error copy] autorelease];
                completed = true;
              }];
-  base::test::ios::WaitUntilCondition(^{
-    return completed;
-  });
+  BOOL success = testing::WaitUntilConditionOrTimeout(
+      testing::kWaitForJSCompletionTimeout, ^{
+        return completed;
+      });
+  // Log stack trace to provide some context.
+  EXPECT_TRUE(success) << "WKWebView failed to complete javascript execution.\n"
+                       << base::SysNSStringToUTF8([[NSThread callStackSymbols]
+                              componentsJoinedByString:@"\n"]);
   return [[result retain] autorelease];
 }
 
