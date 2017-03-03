@@ -20,10 +20,10 @@ class IconCacher {
  public:
   virtual ~IconCacher() = default;
 
-  // Fetches the icon if necessary. It invokes |icon_available| if a new icon
-  // was fetched. This is the only required callback.
+  // Fetches the icon if necessary. If a new icon was fetched, the optional
+  // |icon_available| callback will be invoked.
   // If there are preliminary icons (e.g. provided by static resources), the
-  // |preliminary_icon_available| callback will be invoked additionally.
+  // optional |preliminary_icon_available| callback will be invoked in addition.
   // TODO(fhorschig): In case we keep these, make them OnceClosures.
   virtual void StartFetch(PopularSites::Site site,
                           const base::Closure& icon_available,

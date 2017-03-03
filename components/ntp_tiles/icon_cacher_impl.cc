@@ -49,7 +49,6 @@ void IconCacherImpl::StartFetch(
     PopularSites::Site site,
     const base::Closure& icon_available,
     const base::Closure& preliminary_icon_available) {
-  DCHECK(!icon_available.is_null());
   favicon::GetFaviconImageForPageURL(
       favicon_service_, site.url, IconType(site),
       base::Bind(&IconCacherImpl::OnGetFaviconImageForPageURLFinished,
@@ -85,7 +84,9 @@ void IconCacherImpl::OnFaviconDownloaded(PopularSites::Site site,
   }
 
   SaveIconForSite(site, fetched_image);
-  icon_available.Run();
+  if (icon_available) {
+    icon_available.Run();
+  }
 }
 
 void IconCacherImpl::SaveIconForSite(const PopularSites::Site& site,

@@ -275,6 +275,16 @@ TEST_F(IconCacherTest, LargeNotCachedAndFetchFailed) {
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::TOUCH_ICON));
 }
 
+TEST_F(IconCacherTest, HandlesEmptyCallbacksNicely) {
+  EXPECT_CALL(*image_fetcher_, SetDataUseServiceName(_));
+  EXPECT_CALL(*image_fetcher_, SetDesiredImageFrameSize(_));
+  ON_CALL(*image_fetcher_, StartOrQueueNetworkRequest(_, _, _))
+      .WillByDefault(PassFetch(128, 128));
+  IconCacherImpl cacher(&favicon_service_, std::move(image_fetcher_));
+  cacher.StartFetch(site_, base::Closure(), base::Closure());
+  WaitForTasksToFinish();
+}
+
 TEST_F(IconCacherTest, ProvidesDefaultIconAndSucceedsWithFetching) {
   // We are not interested which delegate function actually handles the call to
   // |GetNativeImageNamed| as long as we receive the right image.
