@@ -11,9 +11,11 @@
 
 namespace doodle {
 
-DoodleService::DoodleService(std::unique_ptr<DoodleFetcher> fetcher)
-    : fetcher_(std::move(fetcher)) {
+DoodleService::DoodleService(std::unique_ptr<DoodleFetcher> fetcher,
+                             std::unique_ptr<base::OneShotTimer> expiry_timer)
+    : fetcher_(std::move(fetcher)), expiry_timer_(std::move(expiry_timer)) {
   DCHECK(fetcher_);
+  DCHECK(expiry_timer_);
 }
 
 DoodleService::~DoodleService() = default;
@@ -35,15 +37,39 @@ void DoodleService::DoodleFetched(
     DoodleState state,
     base::TimeDelta time_to_live,
     const base::Optional<DoodleConfig>& doodle_config) {
-  // If nothing changed, then there's nothing to do. Note that this checks both
-  // for existence changes as well as changes of the configs themselves.
-  if (cached_config_ == doodle_config) {
-    // TODO(treib): Once we support expiry, update the time to live here.
-    return;
+  // Handle the case where the new config is already expired.
+  bool expired = time_to_live <= base::TimeDelta();
+  const base::Optional<DoodleConfig>& new_config =
+      expired ? base::nullopt : doodle_config;
+
+  // If the config changed, update our cache and notify observers.
+  // Note that this checks both for existence changes as well as changes of the
+  // configs themselves.
+  if (cached_config_ != new_config) {
+    cached_config_ = new_config;
+    for (auto& observer : observers_) {
+      observer.OnDoodleConfigUpdated(cached_config_);
+    }
   }
 
-  // Update the cache and notify observers.
-  cached_config_ = doodle_config;
+  // Even if the configs are identical, the time-to-live might have changed.
+  UpdateTimeToLive(time_to_live);
+}
+
+void DoodleService::UpdateTimeToLive(base::TimeDelta time_to_live) {
+  // (Re-)schedule the cache expiry.
+  if (cached_config_.has_value()) {
+    expiry_timer_->Start(
+        FROM_HERE, time_to_live,
+        base::Bind(&DoodleService::DoodleExpired, base::Unretained(this)));
+  } else {
+    expiry_timer_->Stop();
+  }
+}
+
+void DoodleService::DoodleExpired() {
+  DCHECK(cached_config_.has_value());
+  cached_config_.reset();
   for (auto& observer : observers_) {
     observer.OnDoodleConfigUpdated(cached_config_);
   }

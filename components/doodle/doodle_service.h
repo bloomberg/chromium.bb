@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "components/doodle/doodle_fetcher.h"
 #include "components/doodle/doodle_types.h"
 
@@ -26,7 +27,9 @@ class DoodleService {
     virtual void OnDoodleConfigUpdated(const base::Optional<DoodleConfig>&) = 0;
   };
 
-  DoodleService(std::unique_ptr<DoodleFetcher> fetcher);
+  // Both |fetcher| and |expiry_timer| must be non-null.
+  DoodleService(std::unique_ptr<DoodleFetcher> fetcher,
+                std::unique_ptr<base::OneShotTimer> expiry_timer);
   ~DoodleService();
 
   // Returns the current (cached) config, if any.
@@ -46,12 +49,20 @@ class DoodleService {
   void Refresh();
 
  private:
+  // Callback for the fetcher.
   void DoodleFetched(DoodleState state,
                      base::TimeDelta time_to_live,
                      const base::Optional<DoodleConfig>& doodle_config);
 
+  void UpdateTimeToLive(base::TimeDelta time_to_live);
+
+  // Callback for the expiry timer.
+  void DoodleExpired();
+
   // The fetcher for getting fresh DoodleConfigs from the network.
   std::unique_ptr<DoodleFetcher> fetcher_;
+
+  std::unique_ptr<base::OneShotTimer> expiry_timer_;
 
   // The result of the last network fetch.
   base::Optional<DoodleConfig> cached_config_;

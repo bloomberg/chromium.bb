@@ -10,6 +10,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,18 +59,41 @@ class MockDoodleObserver : public DoodleService::Observer {
 
 class DoodleServiceTest : public testing::Test {
  public:
-  DoodleServiceTest() : fetcher_(nullptr) {
+  DoodleServiceTest()
+      : fetcher_(nullptr),
+        task_runner_(new base::TestMockTimeTaskRunner()),
+        task_runner_handle_(task_runner_),
+        tick_clock_(task_runner_->GetMockTickClock()),
+        expiry_timer_(nullptr) {
+    task_runner_->FastForwardBy(base::TimeDelta::FromHours(12345));
+
+    auto expiry_timer = base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
+    expiry_timer->SetTaskRunner(task_runner_);
+    expiry_timer_ = expiry_timer.get();
+
     auto fetcher = base::MakeUnique<FakeDoodleFetcher>();
     fetcher_ = fetcher.get();
-    service_ = base::MakeUnique<DoodleService>(std::move(fetcher));
+
+    service_ = base::MakeUnique<DoodleService>(std::move(fetcher),
+                                               std::move(expiry_timer));
   }
 
   DoodleService* service() { return service_.get(); }
   FakeDoodleFetcher* fetcher() { return fetcher_; }
 
+  base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
+
  private:
-  std::unique_ptr<DoodleService> service_;
+  // Weak, owned by the service.
   FakeDoodleFetcher* fetcher_;
+
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
+  std::unique_ptr<base::TickClock> tick_clock_;
+  // Weak, owned by the service.
+  base::OneShotTimer* expiry_timer_;
+
+  std::unique_ptr<DoodleService> service_;
 };
 
 TEST_F(DoodleServiceTest, FetchesConfigOnRefresh) {
@@ -177,7 +204,7 @@ TEST_F(DoodleServiceTest, CallsObserverOnConfigUpdated) {
   service()->RemoveObserver(&observer);
 }
 
-TEST_F(DoodleServiceTest, DoesNotCallObserverWhenConfigEquivalent) {
+TEST_F(DoodleServiceTest, DoesNotCallObserverIfConfigEquivalent) {
   // Load some doodle config.
   service()->Refresh();
   DoodleConfig config;
@@ -199,6 +226,65 @@ TEST_F(DoodleServiceTest, DoesNotCallObserverWhenConfigEquivalent) {
   DCHECK(config == equivalent_config);
   fetcher()->ServeAllCallbacks(
       DoodleState::AVAILABLE, base::TimeDelta::FromHours(1), equivalent_config);
+
+  // Remove the observer before the service gets destroyed.
+  service()->RemoveObserver(&observer);
+}
+
+TEST_F(DoodleServiceTest, CallsObserverWhenConfigExpires) {
+  // Load some doodle config.
+  service()->Refresh();
+  DoodleConfig config;
+  config.doodle_type = DoodleType::SIMPLE;
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Make sure the task arrived at the timer's task runner.
+  ASSERT_THAT(task_runner()->GetPendingTaskCount(), Eq(1u));
+  EXPECT_THAT(task_runner()->NextPendingTaskDelay(),
+              Eq(base::TimeDelta::FromHours(1)));
+
+  // Register an observer.
+  StrictMock<MockDoodleObserver> observer;
+  service()->AddObserver(&observer);
+
+  // Fast-forward time so that the expiry task will run. The observer should get
+  // notified that there's no config anymore.
+  EXPECT_CALL(observer, OnDoodleConfigUpdated(Eq(base::nullopt)));
+  task_runner()->FastForwardBy(base::TimeDelta::FromHours(1));
+
+  // Remove the observer before the service gets destroyed.
+  service()->RemoveObserver(&observer);
+}
+
+TEST_F(DoodleServiceTest, DisregardsAlreadyExpiredConfigs) {
+  StrictMock<MockDoodleObserver> observer;
+  service()->AddObserver(&observer);
+
+  ASSERT_THAT(service()->config(), Eq(base::nullopt));
+
+  // Load an already-expired config. This should have no effect; in particular
+  // no call to the observer.
+  service()->Refresh();
+  DoodleConfig config;
+  config.doodle_type = DoodleType::SIMPLE;
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromSeconds(0), config);
+  EXPECT_THAT(service()->config(), Eq(base::nullopt));
+
+  // Load a doodle config as usual. Nothing to see here.
+  service()->Refresh();
+  EXPECT_CALL(observer, OnDoodleConfigUpdated(Eq(config)));
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Now load an expired config again. The cached one should go away.
+  service()->Refresh();
+  EXPECT_CALL(observer, OnDoodleConfigUpdated(Eq(base::nullopt)));
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromSeconds(0), config);
 
   // Remove the observer before the service gets destroyed.
   service()->RemoveObserver(&observer);
