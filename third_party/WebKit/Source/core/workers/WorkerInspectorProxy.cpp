@@ -51,7 +51,7 @@ const String& WorkerInspectorProxy::inspectorId() {
 
 WorkerThreadStartMode WorkerInspectorProxy::workerStartMode(
     Document* document) {
-  if (InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(document))
+  if (probe::shouldWaitForDebuggerOnWorkerStart(document))
     return PauseWorkerGlobalScopeOnStart;
   return DontPauseWorkerGlobalScopeOnStart;
 }
@@ -65,16 +65,15 @@ void WorkerInspectorProxy::workerThreadCreated(Document* document,
   inspectorProxies().insert(this);
   // We expect everyone starting worker thread to synchronously ask for
   // workerStartMode right before.
-  bool waitingForDebugger =
-      InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(document);
-  InspectorInstrumentation::didStartWorker(document, this, waitingForDebugger);
+  bool waitingForDebugger = probe::shouldWaitForDebuggerOnWorkerStart(document);
+  probe::didStartWorker(document, this, waitingForDebugger);
 }
 
 void WorkerInspectorProxy::workerThreadTerminated() {
   if (m_workerThread) {
     DCHECK(inspectorProxies().contains(this));
     inspectorProxies().erase(this);
-    InspectorInstrumentation::workerTerminated(m_document, this);
+    probe::workerTerminated(m_document, this);
   }
 
   m_workerThread = nullptr;

@@ -135,7 +135,7 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
   if (defer != FetchRequest::NoDefer)
     return false;
 
-  InspectorInstrumentation::documentWriteFetchScript(&document);
+  probe::documentWriteFetchScript(&document);
 
   if (!request.url().protocolIsInHTTPFamily())
     return false;
@@ -417,8 +417,7 @@ void FrameFetchContext::dispatchDidChangeResourcePriority(
   TRACE_EVENT1(
       "devtools.timeline", "ResourceChangePriority", "data",
       InspectorChangeResourcePriorityEvent::data(identifier, loadPriority));
-  InspectorInstrumentation::didChangeResourcePriority(frame(), identifier,
-                                                      loadPriority);
+  probe::didChangeResourcePriority(frame(), identifier, loadPriority);
 }
 
 void FrameFetchContext::prepareRequest(ResourceRequest& request) {
@@ -442,9 +441,8 @@ void FrameFetchContext::dispatchWillSendRequest(
     frame()->loader().progress().willStartLoading(identifier,
                                                   request.priority());
   }
-  InspectorInstrumentation::willSendRequest(frame(), identifier,
-                                            masterDocumentLoader(), request,
-                                            redirectResponse, initiatorInfo);
+  probe::willSendRequest(frame(), identifier, masterDocumentLoader(), request,
+                         redirectResponse, initiatorInfo);
   if (frame()->frameScheduler())
     frame()->frameScheduler()->didStartLoading(identifier);
 }
@@ -464,8 +462,7 @@ void FrameFetchContext::dispatchDidReceiveData(unsigned long identifier,
                                                const char* data,
                                                int dataLength) {
   frame()->loader().progress().incrementProgress(identifier, dataLength);
-  InspectorInstrumentation::didReceiveData(frame(), identifier, data,
-                                           dataLength);
+  probe::didReceiveData(frame(), identifier, data, dataLength);
 }
 
 void FrameFetchContext::dispatchDidReceiveEncodedData(unsigned long identifier,
@@ -473,8 +470,7 @@ void FrameFetchContext::dispatchDidReceiveEncodedData(unsigned long identifier,
   TRACE_EVENT1(
       "devtools.timeline", "ResourceReceivedData", "data",
       InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
-  InspectorInstrumentation::didReceiveEncodedDataLength(frame(), identifier,
-                                                        encodedDataLength);
+  probe::didReceiveEncodedDataLength(frame(), identifier, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidDownloadData(unsigned long identifier,
@@ -484,9 +480,8 @@ void FrameFetchContext::dispatchDidDownloadData(unsigned long identifier,
       "devtools.timeline", "ResourceReceivedData", "data",
       InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
   frame()->loader().progress().incrementProgress(identifier, dataLength);
-  InspectorInstrumentation::didReceiveData(frame(), identifier, 0, dataLength);
-  InspectorInstrumentation::didReceiveEncodedDataLength(frame(), identifier,
-                                                        encodedDataLength);
+  probe::didReceiveData(frame(), identifier, 0, dataLength);
+  probe::didReceiveEncodedDataLength(frame(), identifier, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier,
@@ -498,8 +493,7 @@ void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier,
       InspectorResourceFinishEvent::data(identifier, finishTime, false,
                                          encodedDataLength, decodedBodyLength));
   frame()->loader().progress().completeProgress(identifier);
-  InspectorInstrumentation::didFinishLoading(frame(), identifier, finishTime,
-                                             encodedDataLength);
+  probe::didFinishLoading(frame(), identifier, finishTime, encodedDataLength);
   if (frame()->frameScheduler())
     frame()->frameScheduler()->didStopLoading(identifier);
 }
@@ -512,7 +506,7 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier,
                InspectorResourceFinishEvent::data(identifier, 0, true,
                                                   encodedDataLength, 0));
   frame()->loader().progress().completeProgress(identifier);
-  InspectorInstrumentation::didFailLoading(frame(), identifier, error);
+  probe::didFailLoading(frame(), identifier, error);
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
   if (!isInternalRequest)
@@ -534,7 +528,7 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
   dispatchWillSendRequest(identifier, request, ResourceResponse(),
                           resource->options().initiatorInfo);
 
-  InspectorInstrumentation::markResourceAsCached(frame(), identifier);
+  probe::markResourceAsCached(frame(), identifier);
   if (!resource->response().isNull()) {
     dispatchDidReceiveResponseInternal(identifier, resource->response(),
                                        frameType, requestContext, resource,
@@ -662,9 +656,8 @@ ResourceRequestBlockedReason FrameFetchContext::canRequest(
                          originRestriction, resourceRequest.redirectStatus());
   if (blockedReason != ResourceRequestBlockedReason::None &&
       reportingPolicy == SecurityViolationReportingPolicy::Report) {
-    InspectorInstrumentation::didBlockRequest(
-        frame(), resourceRequest, masterDocumentLoader(), options.initiatorInfo,
-        blockedReason);
+    probe::didBlockRequest(frame(), resourceRequest, masterDocumentLoader(),
+                           options.initiatorInfo, blockedReason);
   }
   return blockedReason;
 }
@@ -680,9 +673,8 @@ ResourceRequestBlockedReason FrameFetchContext::allowResponse(
                          FetchRequest::UseDefaultOriginRestrictionForType,
                          RedirectStatus::FollowedRedirect);
   if (blockedReason != ResourceRequestBlockedReason::None) {
-    InspectorInstrumentation::didBlockRequest(
-        frame(), resourceRequest, masterDocumentLoader(), options.initiatorInfo,
-        blockedReason);
+    probe::didBlockRequest(frame(), resourceRequest, masterDocumentLoader(),
+                           options.initiatorInfo, blockedReason);
   }
   return blockedReason;
 }
@@ -695,7 +687,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
     SecurityViolationReportingPolicy reportingPolicy,
     FetchRequest::OriginRestriction originRestriction,
     ResourceRequest::RedirectStatus redirectStatus) const {
-  if (InspectorInstrumentation::shouldBlockRequest(frame(), resourceRequest))
+  if (probe::shouldBlockRequest(frame(), resourceRequest))
     return ResourceRequestBlockedReason::Inspector;
 
   SecurityOrigin* securityOrigin = options.securityOrigin.get();
@@ -1083,8 +1075,8 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(
   frame()->loader().progress().incrementProgress(identifier, response);
   localFrameClient()->dispatchDidReceiveResponse(response);
   DocumentLoader* documentLoader = masterDocumentLoader();
-  InspectorInstrumentation::didReceiveResourceResponse(
-      frame(), identifier, documentLoader, response, resource);
+  probe::didReceiveResourceResponse(frame(), identifier, documentLoader,
+                                    response, resource);
   // It is essential that inspector gets resource response BEFORE console.
   frame()->console().reportResourceResponseReceived(documentLoader, identifier,
                                                     response);

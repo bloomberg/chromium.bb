@@ -117,7 +117,7 @@ static Frame* createNewWindow(LocalFrame& openerFrame,
         openerFrame.securityContext()->getSandboxFlags());
 
   // This call may suspend the execution by running nested message loop.
-  InspectorInstrumentation::windowCreated(&openerFrame, &frame);
+  probe::windowCreated(&openerFrame, &frame);
   created = true;
   return &frame;
 }

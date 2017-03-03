@@ -60,8 +60,8 @@ void runCallback(ExecutionContext* executionContext,
   if (!executionContext)
     return;
   DCHECK(executionContext->isContextThread());
-  InspectorInstrumentation::AsyncTask asyncTask(executionContext, task.get(),
-                                                true /* isInstrumented */);
+  probe::AsyncTask asyncTask(executionContext, task.get(),
+                             true /* isInstrumented */);
   (*task)();
 }
 
@@ -208,8 +208,8 @@ void DOMFileSystem::createFile(const FileEntry* fileEntry,
 void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext,
                                      std::unique_ptr<WTF::Closure> task) {
   DCHECK(executionContext->isContextThread());
-  InspectorInstrumentation::asyncTaskScheduled(
-      executionContext, taskNameForInstrumentation(), task.get());
+  probe::asyncTaskScheduled(executionContext, taskNameForInstrumentation(),
+                            task.get());
   TaskRunnerHelper::get(TaskType::FileReading, executionContext)
       ->postTask(BLINK_FROM_HERE,
                  WTF::bind(&runCallback, wrapWeakPersistent(executionContext),

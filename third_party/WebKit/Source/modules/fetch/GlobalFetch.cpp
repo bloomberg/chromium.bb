@@ -54,8 +54,7 @@ class GlobalFetchImpl final
     if (exceptionState.hadException())
       return ScriptPromise();
 
-    InspectorInstrumentation::willSendXMLHttpOrFetchNetworkRequest(
-        executionContext, r->url());
+    probe::willSendXMLHttpOrFetchNetworkRequest(executionContext, r->url());
     return m_fetchManager->fetch(scriptState, r->passRequestData(scriptState));
   }
 

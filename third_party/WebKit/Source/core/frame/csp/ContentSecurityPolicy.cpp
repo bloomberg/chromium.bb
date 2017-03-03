@@ -1461,8 +1461,7 @@ void ContentSecurityPolicy::logToConsole(ConsoleMessage* consoleMessage,
 
 void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(
     const String& directiveText) const {
-  InspectorInstrumentation::scriptExecutionBlockedByCSP(m_executionContext,
-                                                        directiveText);
+  probe::scriptExecutionBlockedByCSP(m_executionContext, directiveText);
 }
 
 bool ContentSecurityPolicy::experimentalFeaturesEnabled() const {

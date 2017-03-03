@@ -58,8 +58,8 @@ bool GenericEventQueue::enqueueEvent(Event* event) {
   TRACE_EVENT_ASYNC_BEGIN1("event", "GenericEventQueue:enqueueEvent", event,
                            "type", event->type().ascii());
   EventTarget* target = event->target() ? event->target() : m_owner.get();
-  InspectorInstrumentation::asyncTaskScheduled(target->getExecutionContext(),
-                                               event->type(), event);
+  probe::asyncTaskScheduled(target->getExecutionContext(), event->type(),
+                            event);
   m_pendingEvents.push_back(event);
 
   if (!m_timer.isActive())
@@ -73,8 +73,7 @@ bool GenericEventQueue::cancelEvent(Event* event) {
 
   if (found) {
     EventTarget* target = event->target() ? event->target() : m_owner.get();
-    InspectorInstrumentation::asyncTaskCanceled(target->getExecutionContext(),
-                                                event);
+    probe::asyncTaskCanceled(target->getExecutionContext(), event);
     m_pendingEvents.remove(m_pendingEvents.find(event));
     TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event,
                            "type", event->type().ascii(), "status",
@@ -98,8 +97,7 @@ void GenericEventQueue::timerFired(TimerBase*) {
     Event* event = pendingEvent.get();
     EventTarget* target = event->target() ? event->target() : m_owner.get();
     CString type(event->type().ascii());
-    InspectorInstrumentation::AsyncTask asyncTask(target->getExecutionContext(),
-                                                  event);
+    probe::AsyncTask asyncTask(target->getExecutionContext(), event);
     TRACE_EVENT_ASYNC_STEP_INTO1("event", "GenericEventQueue:enqueueEvent",
                                  event, "dispatch", "type", type);
     target->dispatchEvent(pendingEvent);
@@ -122,8 +120,7 @@ void GenericEventQueue::cancelAllEvents() {
                            "type", event->type().ascii(), "status",
                            "cancelled");
     EventTarget* target = event->target() ? event->target() : m_owner.get();
-    InspectorInstrumentation::asyncTaskCanceled(target->getExecutionContext(),
-                                                event);
+    probe::asyncTaskCanceled(target->getExecutionContext(), event);
   }
   m_pendingEvents.clear();
 }

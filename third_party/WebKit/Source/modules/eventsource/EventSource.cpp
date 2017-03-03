@@ -123,7 +123,7 @@ EventSource::~EventSource() {
 }
 
 void EventSource::dispose() {
-  InspectorInstrumentation::detachClientRequest(getExecutionContext(), this);
+  probe::detachClientRequest(getExecutionContext(), this);
 }
 
 void EventSource::scheduleInitialConnect() {
@@ -179,8 +179,8 @@ void EventSource::connect() {
   resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
   resourceLoaderOptions.securityOrigin = origin;
 
-  InspectorInstrumentation::willSendEventSourceRequest(&executionContext, this);
-  // InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient
+  probe::willSendEventSourceRequest(&executionContext, this);
+  // probe::documentThreadableLoaderStartedLoadingForClient
   // will be called synchronously.
   m_loader = ThreadableLoader::create(executionContext, this, options,
                                       resourceLoaderOptions);
@@ -188,8 +188,7 @@ void EventSource::connect() {
 }
 
 void EventSource::networkRequestEnded() {
-  InspectorInstrumentation::didFinishEventSourceRequest(getExecutionContext(),
-                                                        this);
+  probe::didFinishEventSourceRequest(getExecutionContext(), this);
 
   m_loader = nullptr;
 
@@ -353,8 +352,8 @@ void EventSource::onMessageEvent(const AtomicString& eventType,
   e->initMessageEvent(eventType, false, false, data, m_eventStreamOrigin,
                       lastEventId, 0, nullptr);
 
-  InspectorInstrumentation::willDispatchEventSourceEvent(
-      getExecutionContext(), this, eventType, lastEventId, data);
+  probe::willDispatchEventSourceEvent(getExecutionContext(), this, eventType,
+                                      lastEventId, data);
   dispatchEvent(e);
 }
 
@@ -373,7 +372,7 @@ void EventSource::abortConnectionAttempt() {
 }
 
 void EventSource::contextDestroyed(ExecutionContext*) {
-  InspectorInstrumentation::detachClientRequest(getExecutionContext(), this);
+  probe::detachClientRequest(getExecutionContext(), this);
   close();
 }
 

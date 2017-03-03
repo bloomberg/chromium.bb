@@ -477,13 +477,13 @@ void NavigationScheduler::navigateTask() {
   if (!m_frame->page())
     return;
   if (m_frame->page()->suspended()) {
-    InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
+    probe::frameClearedScheduledNavigation(m_frame);
     return;
   }
 
   ScheduledNavigation* redirect(m_redirect.release());
   redirect->fire(m_frame);
-  InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
+  probe::frameClearedScheduledNavigation(m_frame);
 }
 
 void NavigationScheduler::schedule(ScheduledNavigation* redirect) {
@@ -528,15 +528,14 @@ void NavigationScheduler::startTimer() {
                                      wrapWeakPersistent(this)),
           m_redirect->delay() * 1000.0);
 
-  InspectorInstrumentation::frameScheduledNavigation(m_frame,
-                                                     m_redirect->delay());
+  probe::frameScheduledNavigation(m_frame, m_redirect->delay());
 }
 
 void NavigationScheduler::cancel() {
   if (m_navigateTaskHandle.isActive()) {
     Platform::current()->currentThread()->scheduler()->removePendingNavigation(
         m_frameType);
-    InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
+    probe::frameClearedScheduledNavigation(m_frame);
   }
   m_navigateTaskHandle.cancel();
   m_redirect.clear();

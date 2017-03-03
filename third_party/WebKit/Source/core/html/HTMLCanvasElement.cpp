@@ -273,7 +273,7 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(
   if (!m_context)
     return nullptr;
 
-  InspectorInstrumentation::didCreateCanvasContext(&document());
+  probe::didCreateCanvasContext(&document());
 
   if (m_context->is3d()) {
     updateExternallyAllocatedMemory();

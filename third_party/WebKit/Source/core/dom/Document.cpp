@@ -426,7 +426,7 @@ class Document::NetworkStateObserver final
     if (!document->domWindow())
       return;
     document->domWindow()->dispatchEvent(Event::create(eventName));
-    InspectorInstrumentation::networkStateChanged(document->frame(), onLine);
+    probe::networkStateChanged(document->frame(), onLine);
   }
 
   void contextDestroyed(ExecutionContext* context) override {
@@ -616,7 +616,7 @@ void Document::mediaQueryAffectingValueChanged() {
     m_evaluateMediaQueriesOnStyleRecalc = true;
   else
     evaluateMediaQueryList();
-  InspectorInstrumentation::mediaQueryResultChanged(this);
+  probe::mediaQueryResultChanged(this);
 }
 
 void Document::setCompatibilityMode(CompatibilityMode mode) {
@@ -1998,7 +1998,7 @@ void Document::updateStyleAndLayoutTree() {
 
   unsigned startElementCount = styleEngine().styleForElementCount();
 
-  InspectorInstrumentation::RecalculateStyle recalculateStyleScope(this);
+  probe::RecalculateStyle recalculateStyleScope(this);
 
   DocumentAnimations::updateAnimationTimingIfNeeded(*this);
   evaluateMediaQueryListIfNeeded();
@@ -2481,7 +2481,7 @@ void Document::shutdown() {
 
   if (page())
     page()->documentDetached(this);
-  InspectorInstrumentation::documentDetached(this);
+  probe::documentDetached(this);
 
   if (m_frame->loader().client()->sharedWorkerRepositoryClient())
     m_frame->loader()
@@ -3236,7 +3236,7 @@ void Document::write(const SegmentedString& text,
   PerformanceMonitor::reportGenericViolation(
       this, PerformanceMonitor::kDiscouragedAPIUse,
       "Avoid using document.write().", 0, nullptr);
-  InspectorInstrumentation::breakIfNeeded(this, "Document.write");
+  probe::breakIfNeeded(this, "Document.write");
   m_parser->insert(text);
 }
 
@@ -4473,8 +4473,7 @@ void Document::sendSensitiveInputVisibilityInternal() {
 void Document::runExecutionContextTask(
     std::unique_ptr<ExecutionContextTask> task,
     bool isInstrumented) {
-  InspectorInstrumentation::AsyncTask asyncTask(this, task.get(),
-                                                isInstrumented);
+  probe::AsyncTask asyncTask(this, task.get(), isInstrumented);
   task->performTask(this);
 }
 
@@ -5331,7 +5330,7 @@ void Document::finishedParsing() {
     TRACE_EVENT_INSTANT1("devtools.timeline", "MarkDOMContent",
                          TRACE_EVENT_SCOPE_THREAD, "data",
                          InspectorMarkLoadEvent::data(frame));
-    InspectorInstrumentation::domContentLoadedEventFired(frame);
+    probe::domContentLoadedEventFired(frame);
   }
 
   // Schedule dropping of the ElementDataCache. We keep it alive for a while
@@ -5828,8 +5827,7 @@ void Document::postTask(TaskType taskType,
                         std::unique_ptr<ExecutionContextTask> task,
                         const String& taskNameForInstrumentation) {
   if (!taskNameForInstrumentation.isEmpty()) {
-    InspectorInstrumentation::asyncTaskScheduled(
-        this, taskNameForInstrumentation, task.get());
+    probe::asyncTaskScheduled(this, taskNameForInstrumentation, task.get());
   }
 
   TaskRunnerHelper::get(taskType, this)

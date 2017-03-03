@@ -215,7 +215,7 @@ void CharacterData::didModifyData(const String& oldData, UpdateSource source) {
                                 nullptr, oldData, m_data));
     dispatchSubtreeModifiedEvent();
   }
-  InspectorInstrumentation::characterDataModified(this);
+  probe::characterDataModified(this);
 }
 
 int CharacterData::maxCharacterOffset() const {

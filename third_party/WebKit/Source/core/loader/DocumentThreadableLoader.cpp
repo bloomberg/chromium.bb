@@ -194,9 +194,8 @@ void DocumentThreadableLoader::start(const ResourceRequest& request) {
 
   if (!m_sameOriginRequest &&
       m_options.crossOriginRequestPolicy == DenyCrossOriginRequests) {
-    InspectorInstrumentation::
-        documentThreadableLoaderFailedToStartLoadingForClient(document(),
-                                                              m_client);
+    probe::documentThreadableLoaderFailedToStartLoadingForClient(document(),
+                                                                 m_client);
     ThreadableLoaderClient* client = m_client;
     clear();
     client->didFail(ResourceError(errorDomainBlinkInternal, 0,
@@ -328,9 +327,8 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
   // send a request, preflighted or not, that's guaranteed to be denied.
   if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(
           request.url().protocol())) {
-    InspectorInstrumentation::
-        documentThreadableLoaderFailedToStartLoadingForClient(document(),
-                                                              m_client);
+    probe::documentThreadableLoaderFailedToStartLoadingForClient(document(),
+                                                                 m_client);
     dispatchDidFailAccessControlCheck(ResourceError(
         errorDomainBlinkInternal, 0, request.url().getString(),
         "Cross origin requests are only supported for protocol schemes: " +
@@ -388,9 +386,8 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
     crossOriginRequest.setServiceWorkerMode(
         WebURLRequest::ServiceWorkerMode::None);
 
-    bool shouldForcePreflight =
-        request.isExternalRequest() ||
-        InspectorInstrumentation::shouldForceCORSPreflight(document());
+    bool shouldForcePreflight = request.isExternalRequest() ||
+                                probe::shouldForceCORSPreflight(document());
     bool canSkipPreflight =
         CrossOriginPreflightResultCache::shared().canSkipPreflight(
             getSecurityOrigin()->toString(), crossOriginRequest.url(),
@@ -556,7 +553,7 @@ bool DocumentThreadableLoader::redirectReceived(
   --m_corsRedirectLimit;
 
   if (document() && document()->frame()) {
-    InspectorInstrumentation::didReceiveCORSRedirectResponse(
+    probe::didReceiveCORSRedirectResponse(
         document()->frame(), resource->identifier(),
         document()->frame()->loader().documentLoader(), redirectResponse,
         resource);
@@ -779,8 +776,8 @@ void DocumentThreadableLoader::reportResponseReceived(
       "devtools.timeline", "ResourceReceiveResponse", "data",
       InspectorReceiveResponseEvent::data(identifier, frame, response));
   DocumentLoader* loader = frame->loader().documentLoader();
-  InspectorInstrumentation::didReceiveResourceResponse(
-      frame, identifier, loader, response, resource());
+  probe::didReceiveResourceResponse(frame, identifier, loader, response,
+                                    resource());
   frame->console().reportResourceResponseReceived(loader, identifier, response);
 }
 
@@ -1014,9 +1011,8 @@ void DocumentThreadableLoader::loadRequestAsync(
     setResource(RawResource::fetch(newRequest, fetcher));
 
   if (!resource()) {
-    InspectorInstrumentation::
-        documentThreadableLoaderFailedToStartLoadingForClient(document(),
-                                                              m_client);
+    probe::documentThreadableLoaderFailedToStartLoadingForClient(document(),
+                                                                 m_client);
     ThreadableLoaderClient* client = m_client;
     clear();
     // setResource() might call notifyFinished() and thus clear()
@@ -1032,12 +1028,11 @@ void DocumentThreadableLoader::loadRequestAsync(
 
   if (resource()->isLoading()) {
     unsigned long identifier = resource()->identifier();
-    InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(
+    probe::documentThreadableLoaderStartedLoadingForClient(
         document(), identifier, m_client);
   } else {
-    InspectorInstrumentation::
-        documentThreadableLoaderFailedToStartLoadingForClient(document(),
-                                                              m_client);
+    probe::documentThreadableLoaderFailedToStartLoadingForClient(document(),
+                                                                 m_client);
   }
 }
 
@@ -1057,8 +1052,8 @@ void DocumentThreadableLoader::loadRequestSync(
                                  : std::numeric_limits<unsigned long>::max();
   ResourceError error = resource ? resource->resourceError() : ResourceError();
 
-  InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(
-      document(), identifier, m_client);
+  probe::documentThreadableLoaderStartedLoadingForClient(document(), identifier,
+                                                         m_client);
   ThreadableLoaderClient* client = m_client;
 
   if (!resource) {

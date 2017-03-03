@@ -103,7 +103,7 @@ class ImageLoader::Task {
         m_weakFactory(this),
         m_referrerPolicy(referrerPolicy) {
     ExecutionContext& context = m_loader->element()->document();
-    InspectorInstrumentation::asyncTaskScheduled(&context, "Image", this);
+    probe::asyncTaskScheduled(&context, "Image", this);
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
     v8::HandleScope scope(isolate);
     // If we're invoked from C++ without a V8 context on the stack, we should
@@ -123,7 +123,7 @@ class ImageLoader::Task {
     if (!m_loader)
       return;
     ExecutionContext& context = m_loader->element()->document();
-    InspectorInstrumentation::AsyncTask asyncTask(&context, this);
+    probe::AsyncTask asyncTask(&context, this);
     if (m_scriptState->contextIsValid()) {
       ScriptState::Scope scope(m_scriptState.get());
       m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP,

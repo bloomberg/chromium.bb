@@ -122,8 +122,7 @@ class StyleAttributeMutationScope {
 
     s_shouldNotifyInspector = false;
     if (localCopyStyleDecl->parentElement())
-      InspectorInstrumentation::didInvalidateStyleAttr(
-          localCopyStyleDecl->parentElement());
+      probe::didInvalidateStyleAttr(localCopyStyleDecl->parentElement());
   }
 
   void enqueueMutationRecord() { s_shouldDeliver = true; }

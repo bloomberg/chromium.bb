@@ -22,8 +22,7 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
     m_state = Detached;
     m_resolver.clear();
   }
-  InspectorInstrumentation::asyncTaskScheduled(getExecutionContext(), "Promise",
-                                               this);
+  probe::asyncTaskScheduled(getExecutionContext(), "Promise", this);
 }
 
 void ScriptPromiseResolver::suspend() {
@@ -43,7 +42,7 @@ void ScriptPromiseResolver::detach() {
   m_resolver.clear();
   m_value.clear();
   m_keepAlive.clear();
-  InspectorInstrumentation::asyncTaskCanceled(getExecutionContext(), this);
+  probe::asyncTaskCanceled(getExecutionContext(), this);
 }
 
 void ScriptPromiseResolver::keepAliveWhilePending() {
@@ -73,7 +72,7 @@ void ScriptPromiseResolver::resolveOrRejectImmediately() {
   DCHECK(!getExecutionContext()->isContextDestroyed());
   DCHECK(!getExecutionContext()->isContextSuspended());
   {
-    InspectorInstrumentation::AsyncTask asyncTask(getExecutionContext(), this);
+    probe::AsyncTask asyncTask(getExecutionContext(), this);
     if (m_state == Resolving) {
       m_resolver.resolve(m_value.newLocal(m_scriptState->isolate()));
     } else {

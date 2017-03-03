@@ -270,7 +270,7 @@ LocalFrame* LocalFrame::create(LocalFrameClient* client,
                         : InterfaceProvider::getEmptyInterfaceProvider(),
       interfaceRegistry ? interfaceRegistry
                         : InterfaceRegistry::getEmptyInterfaceRegistry());
-  InspectorInstrumentation::frameAttachedToParent(frame);
+  probe::frameAttachedToParent(frame);
   return frame;
 }
 
@@ -453,7 +453,7 @@ void LocalFrame::detach(FrameDetachType type) {
   if (page() && page()->scrollingCoordinator() && m_view)
     page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
 
-  InspectorInstrumentation::frameDetachedFromParent(this);
+  probe::frameDetachedFromParent(this);
   Frame::detach(type);
 
   m_supplements.clear();

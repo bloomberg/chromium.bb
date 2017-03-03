@@ -104,7 +104,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
     startRepeating(intervalMilliseconds, BLINK_FROM_HERE);
 
   suspendIfNeeded();
-  InspectorInstrumentation::asyncTaskScheduledBreakable(
+  probe::asyncTaskScheduledBreakable(
       context, singleShot ? "setTimeout" : "setInterval", this, !singleShot);
 }
 
@@ -114,7 +114,7 @@ DOMTimer::~DOMTimer() {
 }
 
 void DOMTimer::stop() {
-  InspectorInstrumentation::asyncTaskCanceledBreakable(
+  probe::asyncTaskCanceledBreakable(
       getExecutionContext(),
       repeatInterval() ? "clearInterval" : "clearTimeout", this);
 
@@ -145,7 +145,7 @@ void DOMTimer::fired() {
                InspectorTimerFireEvent::data(context, m_timeoutID));
   PerformanceMonitor::HandlerCall handlerCall(
       context, repeatInterval() ? "setInterval" : "setTimeout", true);
-  InspectorInstrumentation::AsyncTask asyncTask(context, this, "timerFired");
+  probe::AsyncTask asyncTask(context, this, "timerFired");
 
   // Simple case for non-one-shot timers.
   if (isActive()) {

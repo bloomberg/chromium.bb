@@ -93,8 +93,7 @@ class FileReader::ThrottlingController final
     if (!controller)
       return;
 
-    InspectorInstrumentation::asyncTaskScheduled(context, "FileReader", reader,
-                                                 true);
+    probe::asyncTaskScheduled(context, "FileReader", reader, true);
     controller->pushReader(reader);
   }
 
@@ -115,7 +114,7 @@ class FileReader::ThrottlingController final
       return;
 
     controller->finishReader(reader, nextStep);
-    InspectorInstrumentation::asyncTaskCanceled(context, reader);
+    probe::asyncTaskCanceled(context, reader);
   }
 
   DEFINE_INLINE_TRACE() {
@@ -453,7 +452,7 @@ void FileReader::didFail(FileError::ErrorCode errorCode) {
 }
 
 void FileReader::fireEvent(const AtomicString& type) {
-  InspectorInstrumentation::AsyncTask asyncTask(getExecutionContext(), this);
+  probe::AsyncTask asyncTask(getExecutionContext(), this);
   if (!m_loader) {
     dispatchEvent(ProgressEvent::create(type, false, 0, 0));
     return;

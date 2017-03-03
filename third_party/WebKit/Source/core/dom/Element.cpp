@@ -2873,7 +2873,7 @@ String Element::outerHTML() const {
 }
 
 void Element::setInnerHTML(const String& html, ExceptionState& exceptionState) {
-  InspectorInstrumentation::breakIfNeeded(&document(), "Element.setInnerHTML");
+  probe::breakIfNeeded(&document(), "Element.setInnerHTML");
   if (DocumentFragment* fragment = createFragmentForInnerOuterHTML(
           html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
     ContainerNode* container = this;
@@ -3360,7 +3360,7 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId) {
   element->insertedInto(this);
   element->attachLayoutTree();
 
-  InspectorInstrumentation::pseudoElementCreated(element);
+  probe::pseudoElementCreated(element);
 
   ensureElementRareData().setPseudoElement(pseudoId, element);
 }
@@ -3635,7 +3635,7 @@ void Element::willModifyAttribute(const QualifiedName& name,
     recipients->enqueueMutationRecord(
         MutationRecord::createAttributes(this, name, oldValue));
 
-  InspectorInstrumentation::willModifyDOMAttr(this, oldValue, newValue);
+  probe::willModifyDOMAttr(this, oldValue, newValue);
 }
 
 DISABLE_CFI_PERF
@@ -3645,7 +3645,7 @@ void Element::didAddAttribute(const QualifiedName& name,
     updateId(nullAtom, value);
   attributeChanged(AttributeModificationParams(
       name, nullAtom, value, AttributeModificationReason::kDirectly));
-  InspectorInstrumentation::didModifyDOMAttr(this, name, value);
+  probe::didModifyDOMAttr(this, name, value);
   dispatchSubtreeModifiedEvent();
 }
 
@@ -3656,7 +3656,7 @@ void Element::didModifyAttribute(const QualifiedName& name,
     updateId(oldValue, newValue);
   attributeChanged(AttributeModificationParams(
       name, oldValue, newValue, AttributeModificationReason::kDirectly));
-  InspectorInstrumentation::didModifyDOMAttr(this, name, newValue);
+  probe::didModifyDOMAttr(this, name, newValue);
   // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
 
@@ -3666,7 +3666,7 @@ void Element::didRemoveAttribute(const QualifiedName& name,
     updateId(oldValue, nullAtom);
   attributeChanged(AttributeModificationParams(
       name, oldValue, nullAtom, AttributeModificationReason::kDirectly));
-  InspectorInstrumentation::didRemoveDOMAttr(this, name);
+  probe::didRemoveDOMAttr(this, name);
   dispatchSubtreeModifiedEvent();
 }
 
@@ -3971,7 +3971,7 @@ void Element::styleAttributeChanged(
   setNeedsStyleRecalc(
       LocalStyleChange,
       StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
-  InspectorInstrumentation::didInvalidateStyleAttr(this);
+  probe::didInvalidateStyleAttr(this);
 }
 
 void Element::inlineStyleChanged() {
@@ -3980,7 +3980,7 @@ void Element::inlineStyleChanged() {
                                             StyleChangeReason::Inline));
   DCHECK(elementData());
   elementData()->m_styleAttributeIsDirty = true;
-  InspectorInstrumentation::didInvalidateStyleAttr(this);
+  probe::didInvalidateStyleAttr(this);
 
   if (MutationObserverInterestGroup* recipients =
           MutationObserverInterestGroup::createForAttributesMutation(

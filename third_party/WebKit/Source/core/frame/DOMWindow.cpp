@@ -378,7 +378,7 @@ void DOMWindow::close(ExecutionContext* context) {
   if (!frame()->shouldClose())
     return;
 
-  InspectorInstrumentation::breakIfNeeded(context, "DOMWindow.close");
+  probe::breakIfNeeded(context, "DOMWindow.close");
 
   page->closeSoon();
 

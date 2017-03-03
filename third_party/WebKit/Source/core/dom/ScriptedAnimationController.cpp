@@ -113,8 +113,7 @@ void ScriptedAnimationController::dispatchEvents(
     // avoid special casting window.
     // FIXME: We should not fire events for nodes that are no longer in the
     // tree.
-    InspectorInstrumentation::AsyncTask asyncTask(
-        eventTarget->getExecutionContext(), event);
+    probe::AsyncTask asyncTask(eventTarget->getExecutionContext(), event);
     if (LocalDOMWindow* window = eventTarget->toLocalDOMWindow())
       window->dispatchEvent(event, nullptr);
     else
@@ -175,8 +174,8 @@ void ScriptedAnimationController::enqueueTask(
 }
 
 void ScriptedAnimationController::enqueueEvent(Event* event) {
-  InspectorInstrumentation::asyncTaskScheduled(
-      event->target()->getExecutionContext(), event->type(), event);
+  probe::asyncTaskScheduled(event->target()->getExecutionContext(),
+                            event->type(), event);
   m_eventQueue.push_back(event);
   scheduleAnimationIfNeeded();
 }

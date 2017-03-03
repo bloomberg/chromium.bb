@@ -198,8 +198,7 @@ void ElementShadowV0::distribute() {
             shadowWhereNodeCanBeDistributedForV0(*shadowInsertionPoint))
       shadow->setNeedsDistributionRecalc();
   }
-  InspectorInstrumentation::didPerformElementShadowDistribution(
-      &m_elementShadow->host());
+  probe::didPerformElementShadowDistribution(&m_elementShadow->host());
 }
 
 void ElementShadowV0::didDistributeNode(const Node* node,

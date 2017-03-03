@@ -227,8 +227,7 @@ void PerformanceMonitor::didUpdateLayout() {
   }
 }
 
-void PerformanceMonitor::will(
-    const InspectorInstrumentation::RecalculateStyle&) {
+void PerformanceMonitor::will(const probe::RecalculateStyle&) {
   if (!m_enabled)
     return;
 
@@ -236,8 +235,7 @@ void PerformanceMonitor::will(
     m_styleStartTime = WTF::monotonicallyIncreasingTime();
 }
 
-void PerformanceMonitor::did(
-    const InspectorInstrumentation::RecalculateStyle&) {
+void PerformanceMonitor::did(const probe::RecalculateStyle&) {
   if (!m_enabled)
     return;
   if (m_thresholds[kLongLayout] && m_scriptDepth) {

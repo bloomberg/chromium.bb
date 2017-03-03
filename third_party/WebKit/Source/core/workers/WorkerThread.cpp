@@ -514,7 +514,7 @@ void WorkerThread::prepareForShutdownOnWorkerThread() {
 
   m_inspectorTaskRunner->kill();
   workerReportingProxy().willDestroyWorkerGlobalScope();
-  InspectorInstrumentation::allAsyncTasksCanceled(globalScope());
+  probe::allAsyncTasksCanceled(globalScope());
 
   globalScope()->notifyContextDestroyed();
   if (m_workerInspectorController) {

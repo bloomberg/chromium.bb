@@ -237,8 +237,7 @@ void FileWriter::completeAbort() {
 }
 
 void FileWriter::doOperation(Operation operation) {
-  InspectorInstrumentation::asyncTaskScheduled(getExecutionContext(),
-                                               "FileWriter", this);
+  probe::asyncTaskScheduled(getExecutionContext(), "FileWriter", this);
   switch (operation) {
     case OperationWrite:
       DCHECK_EQ(OperationNone, m_operationInProgress);
@@ -287,11 +286,11 @@ void FileWriter::signalCompletion(FileError::ErrorCode code) {
     fireEvent(EventTypeNames::write);
   fireEvent(EventTypeNames::writeend);
 
-  InspectorInstrumentation::asyncTaskCanceled(getExecutionContext(), this);
+  probe::asyncTaskCanceled(getExecutionContext(), this);
 }
 
 void FileWriter::fireEvent(const AtomicString& type) {
-  InspectorInstrumentation::AsyncTask asyncTask(getExecutionContext(), this);
+  probe::AsyncTask asyncTask(getExecutionContext(), this);
   ++m_recursionDepth;
   dispatchEvent(
       ProgressEvent::create(type, true, m_bytesWritten, m_bytesToWrite));

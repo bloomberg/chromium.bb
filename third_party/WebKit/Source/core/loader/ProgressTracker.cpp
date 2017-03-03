@@ -109,7 +109,7 @@ void ProgressTracker::progressStarted(FrameLoadType type) {
   reset();
   m_progressValue = initialProgressValue;
   m_frame->setIsLoading(true);
-  InspectorInstrumentation::frameStartedLoading(m_frame, type);
+  probe::frameStartedLoading(m_frame, type);
 }
 
 void ProgressTracker::progressCompleted() {
@@ -118,7 +118,7 @@ void ProgressTracker::progressCompleted() {
   sendFinalProgress();
   reset();
   localFrameClient()->didStopLoading();
-  InspectorInstrumentation::frameStoppedLoading(m_frame);
+  probe::frameStoppedLoading(m_frame);
 }
 
 void ProgressTracker::finishedParsing() {

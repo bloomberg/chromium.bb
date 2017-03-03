@@ -51,8 +51,8 @@ void XMLHttpRequestUpload::dispatchProgressEvent(
     unsigned long long totalBytesToBeSent) {
   m_lastBytesSent = bytesSent;
   m_lastTotalBytesToBeSent = totalBytesToBeSent;
-  InspectorInstrumentation::AsyncTask asyncTask(
-      getExecutionContext(), m_xmlHttpRequest, m_xmlHttpRequest->isAsync());
+  probe::AsyncTask asyncTask(getExecutionContext(), m_xmlHttpRequest,
+                             m_xmlHttpRequest->isAsync());
   dispatchEvent(ProgressEvent::create(EventTypeNames::progress, true, bytesSent,
                                       totalBytesToBeSent));
 }
@@ -63,8 +63,8 @@ void XMLHttpRequestUpload::dispatchEventAndLoadEnd(const AtomicString& type,
                                                    unsigned long long total) {
   DCHECK(type == EventTypeNames::load || type == EventTypeNames::abort ||
          type == EventTypeNames::error || type == EventTypeNames::timeout);
-  InspectorInstrumentation::AsyncTask asyncTask(
-      getExecutionContext(), m_xmlHttpRequest, m_xmlHttpRequest->isAsync());
+  probe::AsyncTask asyncTask(getExecutionContext(), m_xmlHttpRequest,
+                             m_xmlHttpRequest->isAsync());
   dispatchEvent(
       ProgressEvent::create(type, lengthComputable, bytesSent, total));
   dispatchEvent(ProgressEvent::create(EventTypeNames::loadend, lengthComputable,
@@ -74,8 +74,8 @@ void XMLHttpRequestUpload::dispatchEventAndLoadEnd(const AtomicString& type,
 void XMLHttpRequestUpload::handleRequestError(const AtomicString& type) {
   bool lengthComputable = m_lastTotalBytesToBeSent > 0 &&
                           m_lastBytesSent <= m_lastTotalBytesToBeSent;
-  InspectorInstrumentation::AsyncTask asyncTask(
-      getExecutionContext(), m_xmlHttpRequest, m_xmlHttpRequest->isAsync());
+  probe::AsyncTask asyncTask(getExecutionContext(), m_xmlHttpRequest,
+                             m_xmlHttpRequest->isAsync());
   dispatchEvent(ProgressEvent::create(EventTypeNames::progress,
                                       lengthComputable, m_lastBytesSent,
                                       m_lastTotalBytesToBeSent));

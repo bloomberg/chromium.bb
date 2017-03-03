@@ -110,8 +110,7 @@ Animation::Animation(ExecutionContext* executionContext,
     }
     m_content->attach(this);
   }
-  InspectorInstrumentation::didCreateAnimation(m_timeline->document(),
-                                               m_sequenceNumber);
+  probe::didCreateAnimation(m_timeline->document(), m_sequenceNumber);
 }
 
 Animation::~Animation() {
@@ -1065,10 +1064,10 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   }
   m_animation->endUpdatingState();
 
-  if (oldPlayState != newPlayState)
-    InspectorInstrumentation::animationPlayStateChanged(
-        m_animation->timeline()->document(), m_animation, oldPlayState,
-        newPlayState);
+  if (oldPlayState != newPlayState) {
+    probe::animationPlayStateChanged(m_animation->timeline()->document(),
+                                     m_animation, oldPlayState, newPlayState);
+  }
 }
 
 void Animation::addedEventListener(

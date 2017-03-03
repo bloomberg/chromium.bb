@@ -54,9 +54,10 @@ SQLStatement::SQLStatement(Database* database,
     : m_statementCallback(callback), m_statementErrorCallback(errorCallback) {
   DCHECK(isMainThread());
 
-  if (hasCallback() || hasErrorCallback())
-    InspectorInstrumentation::asyncTaskScheduled(
-        database->getExecutionContext(), "SQLStatement", this);
+  if (hasCallback() || hasErrorCallback()) {
+    probe::asyncTaskScheduled(database->getExecutionContext(), "SQLStatement",
+                              this);
+  }
 }
 
 DEFINE_TRACE(SQLStatement) {
@@ -87,8 +88,8 @@ bool SQLStatement::performCallback(SQLTransaction* transaction) {
   SQLStatementErrorCallback* errorCallback = m_statementErrorCallback.release();
   SQLErrorData* error = m_backend->sqlError();
 
-  InspectorInstrumentation::AsyncTask asyncTask(
-      transaction->database()->getExecutionContext(), this);
+  probe::AsyncTask asyncTask(transaction->database()->getExecutionContext(),
+                             this);
 
   // Call the appropriate statement callback and track if it resulted in an
   // error, because then we need to jump to the transaction error callback.

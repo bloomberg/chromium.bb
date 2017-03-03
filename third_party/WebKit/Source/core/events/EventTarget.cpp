@@ -703,8 +703,7 @@ bool EventTarget::fireEventListeners(Event* event,
     event->setHandlingPassive(eventPassiveMode(registeredListener));
     bool passiveForced = registeredListener.passiveForcedForDocumentTarget();
 
-    InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this,
-                                                                event);
+    probe::NativeBreakpoint nativeBreakpoint(context, this, event);
     PerformanceMonitor::HandlerCall handlerCall(context, event->type(), false);
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling

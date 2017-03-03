@@ -380,8 +380,7 @@ ScriptPromise Notification::requestPermission(
         "Only request notification permission in response to a user gesture.",
         0, nullptr);
   }
-  InspectorInstrumentation::breakIfNeeded(context,
-                                          "Notification.requestPermission");
+  probe::breakIfNeeded(context, "Notification.requestPermission");
 
   return NotificationManager::from(context)->requestPermission(
       scriptState, deprecatedCallback);

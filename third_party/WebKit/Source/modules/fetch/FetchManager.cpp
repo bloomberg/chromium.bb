@@ -561,9 +561,8 @@ void FetchManager::Loader::loadSucceeded() {
     document()->frame()->page()->chromeClient().ajaxSucceeded(
         document()->frame());
   }
-  InspectorInstrumentation::didFinishFetch(m_executionContext, this,
-                                           m_request->method(),
-                                           m_request->url().getString());
+  probe::didFinishFetch(m_executionContext, this, m_request->method(),
+                        m_request->url().getString());
   notifyFinished();
 }
 
@@ -676,7 +675,7 @@ void FetchManager::Loader::start() {
 }
 
 void FetchManager::Loader::dispose() {
-  InspectorInstrumentation::detachClientRequest(m_executionContext, this);
+  probe::detachClientRequest(m_executionContext, this);
   // Prevent notification
   m_fetchManager = nullptr;
   if (m_loader) {
@@ -838,7 +837,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag,
           DenyCrossOriginRequests;
       break;
   }
-  InspectorInstrumentation::willStartFetch(m_executionContext, this);
+  probe::willStartFetch(m_executionContext, this);
   m_loader =
       ThreadableLoader::create(*m_executionContext, this,
                                threadableLoaderOptions, resourceLoaderOptions);
@@ -871,7 +870,7 @@ void FetchManager::Loader::performDataFetch() {
           : EnforceContentSecurityPolicy;
   threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
 
-  InspectorInstrumentation::willStartFetch(m_executionContext, this);
+  probe::willStartFetch(m_executionContext, this);
   m_loader =
       ThreadableLoader::create(*m_executionContext, this,
                                threadableLoaderOptions, resourceLoaderOptions);
@@ -893,7 +892,7 @@ void FetchManager::Loader::failed(const String& message) {
     m_resolver->reject(
         V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
   }
-  InspectorInstrumentation::didFailFetch(m_executionContext, this);
+  probe::didFailFetch(m_executionContext, this);
   notifyFinished();
 }
 

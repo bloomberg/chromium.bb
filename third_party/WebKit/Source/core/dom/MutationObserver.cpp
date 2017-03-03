@@ -218,8 +218,8 @@ void MutationObserver::enqueueMutationRecord(MutationRecord* mutation) {
   DCHECK(isMainThread());
   m_records.push_back(mutation);
   activateObserver(this);
-  InspectorInstrumentation::asyncTaskScheduled(
-      m_callback->getExecutionContext(), mutation->type(), mutation);
+  probe::asyncTaskScheduled(m_callback->getExecutionContext(), mutation->type(),
+                            mutation);
 }
 
 void MutationObserver::setHasTransientRegistration() {
@@ -241,8 +241,7 @@ bool MutationObserver::shouldBeSuspended() const {
 
 void MutationObserver::cancelInspectorAsyncTasks() {
   for (auto& record : m_records)
-    InspectorInstrumentation::asyncTaskCanceled(
-        m_callback->getExecutionContext(), record);
+    probe::asyncTaskCanceled(m_callback->getExecutionContext(), record);
 }
 
 void MutationObserver::deliver() {
@@ -266,8 +265,8 @@ void MutationObserver::deliver() {
   records.swap(m_records);
 
   // Report the first (earliest) stack as the async cause.
-  InspectorInstrumentation::AsyncTask asyncTask(
-      m_callback->getExecutionContext(), records.front());
+  probe::AsyncTask asyncTask(m_callback->getExecutionContext(),
+                             records.front());
   m_callback->call(records, this);
 }
 

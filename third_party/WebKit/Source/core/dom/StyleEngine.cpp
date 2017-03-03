@@ -340,7 +340,7 @@ void StyleEngine::updateActiveStyleSheets() {
       m_activeTreeScopes.erase(treeScope);
   }
 
-  InspectorInstrumentation::activeStyleSheetsUpdated(m_document);
+  probe::activeStyleSheetsUpdated(m_document);
 
   m_dirtyTreeScopes.clear();
   m_documentScopeDirty = false;
@@ -586,7 +586,7 @@ void StyleEngine::fontsNeedUpdate(CSSFontSelector*) {
   document().setNeedsStyleRecalc(
       SubtreeStyleChange,
       StyleChangeReasonForTracing::create(StyleChangeReason::Fonts));
-  InspectorInstrumentation::fontsUpdated(m_document);
+  probe::fontsUpdated(m_document);
 }
 
 void StyleEngine::setFontSelector(CSSFontSelector* fontSelector) {

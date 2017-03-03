@@ -463,7 +463,7 @@ void PaintLayerCompositor::updateIfNeeded() {
 
   // Inform the inspector that the layer tree has changed.
   if (m_layoutView.frame()->isMainFrame())
-    InspectorInstrumentation::layerTreeDidChange(m_layoutView.frame());
+    probe::layerTreeDidChange(m_layoutView.frame());
 }
 
 void PaintLayerCompositor::updateClippingOnCompositorLayers() {

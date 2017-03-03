@@ -71,7 +71,7 @@ String DataTransferItem::type() const {
 static void runGetAsStringTask(ExecutionContext* context,
                                StringCallback* callback,
                                const String& data) {
-  InspectorInstrumentation::AsyncTask asyncTask(context, callback);
+  probe::AsyncTask asyncTask(context, callback);
   if (context)
     callback->handleEvent(data);
 }
@@ -84,8 +84,7 @@ void DataTransferItem::getAsString(ScriptState* scriptState,
     return;
 
   ExecutionContext* context = scriptState->getExecutionContext();
-  InspectorInstrumentation::asyncTaskScheduled(
-      context, "DataTransferItem.getAsString", callback);
+  probe::asyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
   TaskRunnerHelper::get(TaskType::UserInteraction, scriptState)
       ->postTask(BLINK_FROM_HERE,
                  WTF::bind(&runGetAsStringTask, wrapWeakPersistent(context),

@@ -191,8 +191,7 @@ void FramePainter::paintContents(GraphicsContext& context,
     s_inPaintContents = false;
   }
 
-  InspectorInstrumentation::didPaint(layoutView->frame(), 0, context,
-                                     LayoutRect(rect));
+  probe::didPaint(layoutView->frame(), 0, context, LayoutRect(rect));
 }
 
 void FramePainter::paintScrollbars(GraphicsContext& context,

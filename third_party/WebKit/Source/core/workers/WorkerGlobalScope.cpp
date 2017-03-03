@@ -204,8 +204,8 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
       return;
     }
 
-    InspectorInstrumentation::scriptImported(
-        &executionContext, scriptLoader->identifier(), scriptLoader->script());
+    probe::scriptImported(&executionContext, scriptLoader->identifier(),
+                          scriptLoader->script());
 
     ErrorEvent* errorEvent = nullptr;
     std::unique_ptr<Vector<char>> cachedMetaData(

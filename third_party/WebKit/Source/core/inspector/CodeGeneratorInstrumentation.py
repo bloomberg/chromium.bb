@@ -43,11 +43,10 @@ namespace blink {
 
 ${forward_declarations}
 
-namespace InspectorInstrumentation {
+namespace probe {
 
 $methods
-} // namespace InspectorInstrumentation
-
+} // namespace probe
 } // namespace blink
 
 #endif // !defined(${file_name}_h)
@@ -60,11 +59,10 @@ ${includes}
 namespace blink {
 ${extra_definitions}
 
-namespace InspectorInstrumentation {
+namespace probe {
 $methods
 
-} // namespace InspectorInstrumentation
-
+} // namespace probe
 } // namespace blink
 """)
 

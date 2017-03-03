@@ -3238,9 +3238,8 @@ void CompositedLayerMapping::paintContents(
   } else if (isScrollableAreaLayer(graphicsLayer)) {
     paintScrollableArea(graphicsLayer, context, interestRect);
   }
-  InspectorInstrumentation::didPaint(m_owningLayer.layoutObject().frame(),
-                                     graphicsLayer, context,
-                                     LayoutRect(interestRect));
+  probe::didPaint(m_owningLayer.layoutObject().frame(), graphicsLayer, context,
+                  LayoutRect(interestRect));
 #if DCHECK_IS_ON()
   if (Page* page = layoutObject().frame()->page())
     page->setIsPainting(false);

@@ -346,8 +346,8 @@ void PingLoaderImpl::didReceiveResponse(const WebURLResponse& response) {
         "devtools.timeline", "ResourceFinish", "data",
         InspectorResourceFinishEvent::data(m_identifier, 0, true, 0, 0));
     const ResourceResponse& resourceResponse = response.toResourceResponse();
-    InspectorInstrumentation::didReceiveResourceResponse(
-        frame(), m_identifier, 0, resourceResponse, 0);
+    probe::didReceiveResourceResponse(frame(), m_identifier, 0,
+                                      resourceResponse, 0);
     didFailLoading(frame());
   }
   dispose();
@@ -398,8 +398,8 @@ void PingLoaderImpl::timeout(TimerBase*) {
 }
 
 void PingLoaderImpl::didFailLoading(LocalFrame* frame) {
-  InspectorInstrumentation::didFailLoading(
-      frame, m_identifier, ResourceError::cancelledError(m_url));
+  probe::didFailLoading(frame, m_identifier,
+                        ResourceError::cancelledError(m_url));
   frame->console().didFailLoading(m_identifier,
                                   ResourceError::cancelledError(m_url));
 }

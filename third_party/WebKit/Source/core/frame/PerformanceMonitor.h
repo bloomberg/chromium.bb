@@ -14,7 +14,7 @@
 
 namespace blink {
 
-namespace InspectorInstrumentation {
+namespace probe {
 class RecalculateStyle;
 }
 
@@ -87,8 +87,8 @@ class CORE_EXPORT PerformanceMonitor final
   void didCallFunction(ExecutionContext*, v8::Local<v8::Function>);
   void willUpdateLayout();
   void didUpdateLayout();
-  void will(const InspectorInstrumentation::RecalculateStyle&);
-  void did(const InspectorInstrumentation::RecalculateStyle&);
+  void will(const probe::RecalculateStyle&);
+  void did(const probe::RecalculateStyle&);
   void documentWriteFetchScript(Document*);
 
   // Direct API for core.

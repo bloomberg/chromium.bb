@@ -212,7 +212,7 @@ template <typename Functor>
 void ContainerNode::insertNodeVector(const NodeVector& targets,
                                      Node* next,
                                      const Functor& mutator) {
-  InspectorInstrumentation::willInsertDOMNode(this);
+  probe::willInsertDOMNode(this);
   NodeVector postInsertionNotificationTargets;
   {
     EventDispatchForbiddenScope assertNoEventDispatch;
@@ -225,7 +225,7 @@ void ContainerNode::insertNodeVector(const NodeVector& targets,
       ChildListMutationScope(*this).childAdded(child);
       if (document().containsV1ShadowTree())
         child.checkSlotChangeAfterInserted();
-      InspectorInstrumentation::didInsertDOMNode(&child);
+      probe::didInsertDOMNode(&child);
       notifyNodeInsertedInternal(child, postInsertionNotificationTargets);
     }
   }
@@ -709,7 +709,7 @@ void ContainerNode::notifyNodeInserted(Node& root,
   if (document().containsV1ShadowTree())
     root.checkSlotChangeAfterInserted();
 
-  InspectorInstrumentation::didInsertDOMNode(&root);
+  probe::didInsertDOMNode(&root);
 
   NodeVector postInsertionNotificationTargets;
   notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
@@ -1232,7 +1232,7 @@ static void dispatchChildInsertionEvents(Node& child) {
 
 static void dispatchChildRemovalEvents(Node& child) {
   if (child.isInShadowTree()) {
-    InspectorInstrumentation::willRemoveDOMNode(&child);
+    probe::willRemoveDOMNode(&child);
     return;
   }
 
@@ -1240,7 +1240,7 @@ static void dispatchChildRemovalEvents(Node& child) {
   DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
 #endif
 
-  InspectorInstrumentation::willRemoveDOMNode(&child);
+  probe::willRemoveDOMNode(&child);
 
   Node* c = &child;
   Document* document = &child.document();

@@ -725,11 +725,9 @@ void InspectorPageAgent::didResizeMainFrame() {
   frontend()->frameResized();
 }
 
-void InspectorPageAgent::will(
-    const InspectorInstrumentation::RecalculateStyle&) {}
+void InspectorPageAgent::will(const probe::RecalculateStyle&) {}
 
-void InspectorPageAgent::did(
-    const InspectorInstrumentation::RecalculateStyle&) {
+void InspectorPageAgent::did(const probe::RecalculateStyle&) {
   if (m_enabled && m_client)
     m_client->pageLayoutInvalidated(false);
 }

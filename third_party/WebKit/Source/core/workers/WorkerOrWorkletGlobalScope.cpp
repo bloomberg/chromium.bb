@@ -46,8 +46,7 @@ void WorkerOrWorkletGlobalScope::postTask(
 
   bool isInstrumented = !taskNameForInstrumentation.isEmpty();
   if (isInstrumented) {
-    InspectorInstrumentation::asyncTaskScheduled(this, "Worker task",
-                                                 task.get());
+    probe::asyncTaskScheduled(this, "Worker task", task.get());
   }
 
   thread()->postTask(
@@ -60,8 +59,7 @@ void WorkerOrWorkletGlobalScope::runTask(
     std::unique_ptr<ExecutionContextTask> task,
     bool isInstrumented) {
   DCHECK(thread()->isCurrentThread());
-  InspectorInstrumentation::AsyncTask asyncTask(this, task.get(),
-                                                isInstrumented);
+  probe::AsyncTask asyncTask(this, task.get(), isInstrumented);
   task->performTask(this);
 }
 

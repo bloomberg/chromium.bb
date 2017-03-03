@@ -322,8 +322,8 @@ void WebSharedWorkerImpl::startWorkerContext(
 
 void WebSharedWorkerImpl::didReceiveScriptLoaderResponse() {
   DCHECK(isMainThread());
-  InspectorInstrumentation::didReceiveScriptResponse(
-      m_loadingDocument, m_mainScriptLoader->identifier());
+  probe::didReceiveScriptResponse(m_loadingDocument,
+                                  m_mainScriptLoader->identifier());
   m_client->selectAppCacheID(m_mainScriptLoader->appCacheID());
 }
 
@@ -388,9 +388,8 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
       this, m_parentFrameTaskRunners.get());
   m_workerThread =
       SharedWorkerThread::create(m_name, m_loaderProxy, *m_reportingProxy);
-  InspectorInstrumentation::scriptImported(m_loadingDocument,
-                                           m_mainScriptLoader->identifier(),
-                                           m_mainScriptLoader->script());
+  probe::scriptImported(m_loadingDocument, m_mainScriptLoader->identifier(),
+                        m_mainScriptLoader->script());
   m_mainScriptLoader.clear();
 
   workerThread()->start(std::move(startupData), m_parentFrameTaskRunners.get());

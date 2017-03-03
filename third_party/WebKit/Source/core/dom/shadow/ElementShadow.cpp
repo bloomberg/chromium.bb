@@ -87,7 +87,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost,
       SubtreeStyleChange,
       StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
 
-  InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot);
+  probe::didPushShadowRoot(&shadowHost, shadowRoot);
 
   return *shadowRoot;
 }

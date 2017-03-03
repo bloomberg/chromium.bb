@@ -198,8 +198,7 @@ void ApplicationCacheHost::notifyApplicationCache(
     int errorStatus,
     const String& errorMessage) {
   if (id != kProgressEvent) {
-    InspectorInstrumentation::updateApplicationCacheStatus(
-        m_documentLoader->frame());
+    probe::updateApplicationCacheStatus(m_documentLoader->frame());
   }
 
   if (m_defersEvents) {
@@ -288,8 +287,7 @@ bool ApplicationCacheHost::update() {
 bool ApplicationCacheHost::swapCache() {
   bool success = m_host ? m_host->swapCache() : false;
   if (success) {
-    InspectorInstrumentation::updateApplicationCacheStatus(
-        m_documentLoader->frame());
+    probe::updateApplicationCacheStatus(m_documentLoader->frame());
   }
   return success;
 }

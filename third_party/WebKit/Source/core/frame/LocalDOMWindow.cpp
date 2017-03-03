@@ -114,8 +114,7 @@ class PostMessageTimer final
         m_location(std::move(location)),
         m_userGestureToken(userGestureToken),
         m_disposalAllowed(true) {
-    InspectorInstrumentation::asyncTaskScheduled(window.document(),
-                                                 "postMessage", this);
+    probe::asyncTaskScheduled(window.document(), "postMessage", this);
   }
 
   MessageEvent* event() const { return m_event; }
@@ -147,7 +146,7 @@ class PostMessageTimer final
 
  private:
   void fired() override {
-    InspectorInstrumentation::AsyncTask asyncTask(m_window->document(), this);
+    probe::AsyncTask asyncTask(m_window->document(), this);
     m_disposalAllowed = false;
     m_window->postMessageTimerFired(this);
     dispose();
@@ -1505,7 +1504,7 @@ void LocalDOMWindow::dispatchLoadEvent() {
   TRACE_EVENT_INSTANT1("devtools.timeline", "MarkLoad",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorMarkLoadEvent::data(frame()));
-  InspectorInstrumentation::loadEventFired(frame());
+  probe::loadEventFired(frame());
 }
 
 DispatchEventResult LocalDOMWindow::dispatchEvent(Event* event,

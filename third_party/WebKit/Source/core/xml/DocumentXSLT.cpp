@@ -107,7 +107,7 @@ void DocumentXSLT::applyXSLTransform(Document& document,
   LocalFrame* ownerFrame = document.frame();
   processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType,
                                       &document, ownerFrame);
-  InspectorInstrumentation::frameDocumentUpdated(ownerFrame);
+  probe::frameDocumentUpdated(ownerFrame);
   document.setParsingState(Document::FinishedParsing);
 }
 

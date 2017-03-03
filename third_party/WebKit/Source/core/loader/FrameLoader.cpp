@@ -499,7 +499,7 @@ void FrameLoader::receivedFirstData() {
 
   TRACE_EVENT1("devtools.timeline", "CommitLoad", "data",
                InspectorCommitLoadEvent::data(m_frame));
-  InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
+  probe::didCommitLoad(m_frame, m_documentLoader.get());
   m_frame->page()->didCommitLoad(m_frame);
   dispatchDidClearDocumentOfWindowObject();
 
@@ -1483,7 +1483,7 @@ void FrameLoader::restoreScrollPositionAndViewStateForLoadType(
 
 String FrameLoader::userAgent() const {
   String userAgent = client()->userAgent();
-  InspectorInstrumentation::applyUserAgentOverride(m_frame, &userAgent);
+  probe::applyUserAgentOverride(m_frame, &userAgent);
   return userAgent;
 }
 
@@ -1822,7 +1822,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
   // This should happen after the request is sent, so we don't use
   // clearNavigationHandledByClient() above.
   if (isNavigationHandledByClient)
-    InspectorInstrumentation::frameClearedScheduledClientNavigation(m_frame);
+    probe::frameClearedScheduledClientNavigation(m_frame);
 
   takeObjectSnapshot();
 }
@@ -1866,7 +1866,7 @@ void FrameLoader::dispatchDidClearDocumentOfWindowObject() {
     // Forcibly instantiate WindowProxy.
     m_frame->script().windowProxy(DOMWrapperWorld::mainWorld());
   }
-  InspectorInstrumentation::didClearDocumentOfWindowObject(m_frame);
+  probe::didClearDocumentOfWindowObject(m_frame);
 
   if (m_dispatchingDidClearWindowObjectInMainWorld)
     return;
@@ -2032,12 +2032,12 @@ DocumentLoader* FrameLoader::createDocumentLoader(
 
 void FrameLoader::setNavigationHandledByClient() {
   m_isNavigationHandledByClient = true;
-  InspectorInstrumentation::frameScheduledClientNavigation(m_frame);
+  probe::frameScheduledClientNavigation(m_frame);
 }
 
 void FrameLoader::clearNavigationHandledByClient() {
   m_isNavigationHandledByClient = false;
-  InspectorInstrumentation::frameClearedScheduledClientNavigation(m_frame);
+  probe::frameClearedScheduledClientNavigation(m_frame);
 }
 
 }  // namespace blink

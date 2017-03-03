@@ -50,7 +50,7 @@
 
 namespace blink {
 
-namespace InspectorInstrumentation {
+namespace probe {
 
 AsyncTask::AsyncTask(ExecutionContext* context, void* task)
     : AsyncTask(context, task, true) {}

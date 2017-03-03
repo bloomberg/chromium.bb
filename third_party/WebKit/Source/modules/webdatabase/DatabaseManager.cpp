@@ -63,8 +63,7 @@ DatabaseManager::~DatabaseManager() {}
 // This is just for ignoring DatabaseCallback::handleEvent()'s return value.
 static void databaseCallbackHandleEvent(DatabaseCallback* callback,
                                         Database* database) {
-  InspectorInstrumentation::AsyncTask asyncTask(database->getExecutionContext(),
-                                                callback);
+  probe::AsyncTask asyncTask(database->getExecutionContext(), callback);
   callback->handleEvent(database);
 }
 
@@ -198,8 +197,8 @@ Database* DatabaseManager::openDatabase(ExecutionContext* context,
   if (database->isNew() && creationCallback) {
     STORAGE_DVLOG(1) << "Scheduling DatabaseCreationCallbackTask for database "
                      << database;
-    InspectorInstrumentation::asyncTaskScheduled(
-        database->getExecutionContext(), "openDatabase", creationCallback);
+    probe::asyncTaskScheduled(database->getExecutionContext(), "openDatabase",
+                              creationCallback);
     TaskRunnerHelper::get(TaskType::DatabaseAccess,
                           database->getExecutionContext())
         ->postTask(BLINK_FROM_HERE, WTF::bind(&databaseCallbackHandleEvent,

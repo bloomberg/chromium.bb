@@ -284,7 +284,7 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
   if (!valuesChanged)
     return false;
 
-  InspectorInstrumentation::didUpdateLayout(mainFrame());
+  probe::didUpdateLayout(mainFrame());
   mainFrame()->loader().saveScrollState();
 
   clampToBoundaries();

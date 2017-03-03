@@ -104,7 +104,7 @@ PassRefPtr<ComputedStyle> PseudoElement::customStyleForLayoutObject() {
 void PseudoElement::dispose() {
   DCHECK(parentOrShadowHostElement());
 
-  InspectorInstrumentation::pseudoElementDestroyed(this);
+  probe::pseudoElementDestroyed(this);
 
   DCHECK(!nextSibling());
   DCHECK(!previousSibling());

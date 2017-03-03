@@ -706,8 +706,7 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState) {
 void XMLHttpRequest::send(
     const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData& body,
     ExceptionState& exceptionState) {
-  InspectorInstrumentation::willSendXMLHttpOrFetchNetworkRequest(
-      getExecutionContext(), url());
+  probe::willSendXMLHttpOrFetchNetworkRequest(getExecutionContext(), url());
 
   if (body.isNull()) {
     send(String(), exceptionState);
@@ -936,8 +935,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   // Also, only async requests support upload progress events.
   bool uploadEvents = false;
   if (m_async) {
-    InspectorInstrumentation::asyncTaskScheduled(
-        &executionContext, "XMLHttpRequest.send", this, true);
+    probe::asyncTaskScheduled(&executionContext, "XMLHttpRequest.send", this,
+                              true);
     dispatchProgressEvent(EventTypeNames::loadstart, 0, 0);
     // Event handler could have invalidated this send operation,
     // (re)setting the send flag and/or initiating another send
@@ -990,10 +989,9 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   request.setExternalRequestStateFromRequestorAddressSpace(
       executionContext.securityContext().addressSpace());
 
-  InspectorInstrumentation::willLoadXHR(
-      &executionContext, this, this, m_method, m_url, m_async,
-      httpBody ? httpBody->deepCopy() : nullptr, m_requestHeaders,
-      includeCredentials);
+  probe::willLoadXHR(&executionContext, this, this, m_method, m_url, m_async,
+                     httpBody ? httpBody->deepCopy() : nullptr,
+                     m_requestHeaders, includeCredentials);
 
   if (httpBody) {
     DCHECK_NE(m_method, HTTPNames::GET);
@@ -1094,7 +1092,7 @@ void XMLHttpRequest::abort() {
 }
 
 void XMLHttpRequest::dispose() {
-  InspectorInstrumentation::detachClientRequest(getExecutionContext(), this);
+  probe::detachClientRequest(getExecutionContext(), this);
   m_progressEventThrottle->stop();
   internalAbort();
 }
@@ -1194,11 +1192,11 @@ void XMLHttpRequest::dispatchProgressEvent(const AtomicString& type,
       lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
 
   ExecutionContext* context = getExecutionContext();
-  InspectorInstrumentation::AsyncTask asyncTask(context, this, m_async);
+  probe::AsyncTask asyncTask(context, this, m_async);
   m_progressEventThrottle->dispatchProgressEvent(type, lengthComputable, loaded,
                                                  total);
   if (m_async && type == EventTypeNames::loadend)
-    InspectorInstrumentation::asyncTaskCanceled(context, this);
+    probe::asyncTaskCanceled(context, this);
 }
 
 void XMLHttpRequest::dispatchProgressEventFromSnapshot(
@@ -1241,8 +1239,7 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode,
                                         long long expectedLength) {
   NETWORK_DVLOG(1) << this << " handleRequestError()";
 
-  InspectorInstrumentation::didFailXHRLoading(getExecutionContext(), this, this,
-                                              m_method, m_url);
+  probe::didFailXHRLoading(getExecutionContext(), this, this, m_method, m_url);
 
   m_sendFlag = false;
   if (!m_async) {
@@ -1616,8 +1613,8 @@ void XMLHttpRequest::notifyParserStopped() {
 }
 
 void XMLHttpRequest::endLoading() {
-  InspectorInstrumentation::didFinishXHRLoading(getExecutionContext(), this,
-                                                this, m_method, m_url);
+  probe::didFinishXHRLoading(getExecutionContext(), this, this, m_method,
+                             m_url);
 
   if (m_loader) {
     // Set |m_error| in order to suppress the cancel notification (see

@@ -41,7 +41,7 @@ const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state) {
 
 void runNotifyInitialAvailabilityTask(ExecutionContext* context,
                                       std::unique_ptr<WTF::Closure> task) {
-  InspectorInstrumentation::AsyncTask asyncTask(context, task.get());
+  probe::AsyncTask asyncTask(context, task.get());
   (*task)();
 }
 
@@ -101,8 +101,8 @@ ScriptPromise RemotePlayback::watchAvailability(
   // We can remove the wrapper if InspectorInstrumentation returns a task id.
   std::unique_ptr<WTF::Closure> task = WTF::bind(
       &RemotePlayback::notifyInitialAvailability, wrapPersistent(this), id);
-  InspectorInstrumentation::asyncTaskScheduled(
-      getExecutionContext(), "watchAvailabilityCallback", task.get());
+  probe::asyncTaskScheduled(getExecutionContext(), "watchAvailabilityCallback",
+                            task.get());
   TaskRunnerHelper::get(TaskType::MediaElementEvent, getExecutionContext())
       ->postTask(BLINK_FROM_HERE,
                  WTF::bind(runNotifyInitialAvailabilityTask,

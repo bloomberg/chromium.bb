@@ -44,7 +44,7 @@ class Resource;
 class ThreadDebugger;
 class WorkerGlobalScope;
 
-namespace InspectorInstrumentation {
+namespace probe {
 
 class CORE_EXPORT NativeBreakpoint {
   STACK_ALLOCATED();
