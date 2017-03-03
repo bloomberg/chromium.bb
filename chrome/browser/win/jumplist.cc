@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -265,26 +266,38 @@ void RunUpdateOnFileThread(
   // This variable records the status of three folder operations.
   uint32_t folder_operation_status = FolderOperationResult::SUCCESS;
 
+  base::ScopedClosureRunner log_operation_status_when_done(base::Bind(
+      [](uint32_t* folder_operation_status_ptr) {
+        UMA_HISTOGRAM_ENUMERATION("WinJumplist.DetailedFolderResults",
+                                  *folder_operation_status_ptr,
+                                  FolderOperationResult::END);
+      },
+      base::Unretained(&folder_operation_status)));
+
+  // If deletion of |icon_dir_old| fails, do not move |icon_dir| to
+  // |icon_dir_old|, instead, delete |icon_dir| directly to avoid bloating
+  // |icon_dir_old| by moving more things to it.
   if (!base::DeleteFile(icon_dir_old, true)) {
     folder_operation_status |= FolderOperationResult::DELETE_DEST_FAILED;
-    // If deletion of |icon_dir_old| fails, do not move |icon_dir| to
-    // |icon_dir_old|, instead, delete |icon_dir| directly to avoid bloating
-    // |icon_dir_old| by moving more things to it.
-    if (!base::DeleteFile(icon_dir, true))
+    // If deletion of |icon_dir| fails, exit early. This skips creating the same
+    // directory and updating jumplist icons to avoid bloating the JumplistIcons
+    // folder.
+    if (!base::DeleteFile(icon_dir, true)) {
       folder_operation_status |= FolderOperationResult::DELETE_SRC_FAILED;
+      return;
+    }
   } else if (!base::Move(icon_dir, icon_dir_old)) {
     folder_operation_status |= FolderOperationResult::MOVE_FAILED;
     // If Move() fails, delete |icon_dir| to avoid file accumulation in this
     // directory, which can eventually lead the folder to be huge.
-    if (!base::DeleteFile(icon_dir, true))
+    if (!base::DeleteFile(icon_dir, true)) {
       folder_operation_status |= FolderOperationResult::DELETE_SRC_FAILED;
+      return;
+    }
   }
+
   if (!base::CreateDirectory(icon_dir))
     folder_operation_status |= FolderOperationResult::CREATE_SRC_FAILED;
-
-  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DetailedFolderResults",
-                            folder_operation_status,
-                            FolderOperationResult::END);
 
   // Create temporary icon files for shortcuts in the "Most Visited" category.
   CreateIconFiles(icon_dir, local_most_visited_pages);
@@ -296,10 +309,8 @@ void RunUpdateOnFileThread(
   // We finished collecting all resources needed for updating an application
   // JumpList. So, create a new JumpList and replace the current JumpList
   // with it.
-  UpdateJumpList(app_id.c_str(),
-                 local_most_visited_pages,
-                 local_recently_closed_pages,
-                 incognito_availability);
+  UpdateJumpList(app_id.c_str(), local_most_visited_pages,
+                 local_recently_closed_pages, incognito_availability);
 }
 
 }  // namespace
