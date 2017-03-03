@@ -87,12 +87,7 @@ gfx::Size CustomNotificationView::GetPreferredSize() const {
   const gfx::Insets insets = GetInsets();
   const int contents_width = kNotificationWidth - insets.width();
   const int contents_height = contents_view_->GetHeightForWidth(contents_width);
-
-  // This is union of min height for M (64) and N (92).
-  constexpr int kMinContentHeight = 64;
-  return gfx::Size(kNotificationWidth,
-                   std::max(kMinContentHeight + insets.height(),
-                            contents_height + insets.height()));
+  return gfx::Size(kNotificationWidth, contents_height + insets.height());
 }
 
 void CustomNotificationView::Layout() {

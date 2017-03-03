@@ -384,11 +384,11 @@ TEST_F(CustomNotificationViewTest, ChangeContentHeight) {
   size.Enlarge(0, -notification_view()->GetInsets().height());
   EXPECT_EQ("360x100", size.ToString());
 
-  // The minimum height is 64px.
+  // Allow small notifications.
   custom_view()->set_preferred_size(gfx::Size(10, 10));
   size = notification_view()->GetPreferredSize();
   size.Enlarge(0, -notification_view()->GetInsets().height());
-  EXPECT_EQ("360x64", size.ToString());
+  EXPECT_EQ("360x10", size.ToString());
 
   // The long notification.
   custom_view()->set_preferred_size(gfx::Size(1000, 1000));
