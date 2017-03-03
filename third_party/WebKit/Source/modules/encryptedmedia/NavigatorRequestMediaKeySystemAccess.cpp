@@ -51,12 +51,12 @@ static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(
   for (size_t i = 0; i < capabilities.size(); ++i) {
     const WebString& contentType = capabilities[i].contentType();
     result[i].contentType = contentType;
-    if (ParsedContentType(contentType).isValid()) {
+    ParsedContentType type(contentType);
+    if (type.isValid()) {
       // FIXME: Fail if there are unrecognized parameters.
       // http://crbug.com/690131
-      ContentType type(capabilities[i].contentType());
-      result[i].mimeType = type.type();
-      result[i].codecs = type.parameter("codecs");
+      result[i].mimeType = type.mimeType();
+      result[i].codecs = type.parameterValueForName("codecs");
     }
     result[i].robustness = capabilities[i].robustness();
   }
