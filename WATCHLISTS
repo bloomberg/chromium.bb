@@ -441,9 +441,6 @@
                   'media/cdm/|' \
                   'third_party/widevine/cdm/'
     },
-    'events': {
-      'filepath': 'ui/events/',
-    },
     'extension': {
       'filepath': 'extension',
     },
@@ -1010,6 +1007,9 @@
     },
     'task_manager': {
       'filepath': 'task_manager'
+    },
+    'tbmv2_metrics': {
+      'filepath': 'third_party/catapult/tracing/tracing/metrics'
     },
     'tcmalloc': {
       'filepath': 'third_party/tcmalloc'
@@ -1891,7 +1891,6 @@
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
-    'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
     'feature_policy': ['lunalu@chromium.org',
@@ -2043,7 +2042,8 @@
     'ozone': ['kalyan.kondapally@intel.com',
               'ozone-reviews@chromium.org'],
     'page_load_metrics' : ['csharrison+watch@chromium.org',
-                           'loading-reviews+metrics@chromium.org'],
+                           'loading-reviews+metrics@chromium.org',
+                           'speed-metrics-reviews@chromium.org'],
     'panels': ['dcheng@chromium.org',
                'dimich@chromium.org',
                'jennb@chromium.org',
@@ -2120,6 +2120,7 @@
     'tab_contents': ['ajwong+watch@chromium.org',
                      'avi@chromium.org',
                      'creis+watch@chromium.org'],
+    'tbmv2_metrics': ['speed-metrics-reviews@chromium.org'],
     'tcmalloc': ['dmikurube@chromium.org'],
     'telemetry': ['telemetry-reviews@chromium.org'],
     'test_runner': ['jochen+watch@chromium.org',
