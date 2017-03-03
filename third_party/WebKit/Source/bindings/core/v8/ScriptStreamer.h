@@ -141,14 +141,12 @@ class CORE_EXPORT ScriptStreamer final
   SourceStream* m_stream;
   std::unique_ptr<v8::ScriptCompiler::StreamedSource> m_source;
   bool m_loadingFinished;  // Whether loading from the network is done.
-  // Whether the V8 side processing is done. Will be used by the main thread
-  // and the streamer thread; guarded by m_mutex.
-  bool m_parsingFinished;
+  bool m_parsingFinished;  // Whether the V8 side processing is done.
   // Whether we have received enough data to start the streaming.
   bool m_haveEnoughDataForStreaming;
 
   // Whether the script source code should be retrieved from the Resource
-  // instead of the ScriptStreamer; guarded by m_mutex.
+  // instead of the ScriptStreamer.
   bool m_streamingSuppressed;
 
   // What kind of cached data V8 produces during streaming.
@@ -164,8 +162,6 @@ class CORE_EXPORT ScriptStreamer final
 
   // Keep the script resource dentifier for event tracing.
   const unsigned long m_scriptResourceIdentifier;
-
-  mutable Mutex m_mutex;
 
   // Encoding of the streamed script. Saved for sanity checking purposes.
   v8::ScriptCompiler::StreamedSource::Encoding m_encoding;

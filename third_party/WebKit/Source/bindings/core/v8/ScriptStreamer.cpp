@@ -359,16 +359,12 @@ bool ScriptStreamer::convertEncoding(
 }
 
 bool ScriptStreamer::isFinished() const {
-  MutexLocker locker(m_mutex);
+  DCHECK(isMainThread());
   return m_loadingFinished && (m_parsingFinished || m_streamingSuppressed);
 }
 
 void ScriptStreamer::streamingCompleteOnBackgroundThread() {
   DCHECK(!isMainThread());
-  {
-    MutexLocker locker(m_mutex);
-    m_parsingFinished = true;
-  }
 
   // notifyFinished might already be called, or it might be called in the
   // future (if the parsing finishes earlier because of a parse error).
@@ -379,8 +375,7 @@ void ScriptStreamer::streamingCompleteOnBackgroundThread() {
   // The task might delete ScriptStreamer, so it's not safe to do anything
   // after posting it. Note that there's no way to guarantee that this
   // function has returned before the task is ran - however, we should not
-  // access the "this" object after posting the task. (Especially, we should
-  // not be holding the mutex at this point.)
+  // access the "this" object after posting the task.
 }
 
 void ScriptStreamer::cancel() {
@@ -396,7 +391,7 @@ void ScriptStreamer::cancel() {
 }
 
 void ScriptStreamer::suppressStreaming() {
-  MutexLocker locker(m_mutex);
+  DCHECK(isMainThread());
   DCHECK(!m_loadingFinished);
   // It can be that the parsing task has already finished (e.g., if there was
   // a parse error).
@@ -406,11 +401,8 @@ void ScriptStreamer::suppressStreaming() {
 void ScriptStreamer::notifyAppendData(ScriptResource* resource) {
   DCHECK(isMainThread());
   CHECK_EQ(m_resource, resource);
-  {
-    MutexLocker locker(m_mutex);
-    if (m_streamingSuppressed)
-      return;
-  }
+  if (m_streamingSuppressed)
+    return;
   if (!m_haveEnoughDataForStreaming) {
     // Even if the first data chunk is small, the script can still be big
     // enough - wait until the next data chunk comes before deciding whether
@@ -553,6 +545,7 @@ void ScriptStreamer::streamingComplete() {
   // The background task is completed; do the necessary ramp-down in the main
   // thread.
   DCHECK(isMainThread());
+  m_parsingFinished = true;
 
   // It's possible that the corresponding Resource was deleted before V8
   // finished streaming. In that case, the data or the notification is not
@@ -574,10 +567,7 @@ void ScriptStreamer::notifyFinishedToClient() {
   // time to catch up. But the other way is possible too: if V8 detects a
   // parse error, the V8 side can complete before loading has finished. Send
   // the notification after both loading and V8 side operations have
-  // completed. Here we also check that we have a client: it can happen that a
-  // function calling notifyFinishedToClient was already scheduled in the task
-  // queue and the upper layer decided that it's not interested in the script
-  // and called removeClient.
+  // completed.
   if (!isFinished())
     return;
 
