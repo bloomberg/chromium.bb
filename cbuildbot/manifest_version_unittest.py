@@ -346,7 +346,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
       status_runs: List of dictionaries of expected build and status.
     """
     self.PatchObject(build_status.SlaveStatus,
-                     '_GetAllSlaveCIDBStatusInfo',
+                     'GetAllSlaveCIDBStatusInfo',
                      side_effect=status_runs)
 
     final_status_dict = status_runs[-1]
@@ -436,7 +436,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                         buildbucket_ids.
     """
     self.PatchObject(build_status.SlaveStatus,
-                     '_GetAllSlaveCIDBStatusInfo',
+                     'GetAllSlaveCIDBStatusInfo',
                      side_effect=status_runs)
     self.PatchObject(buildbucket_lib,
                      'GetBuildInfoDict',

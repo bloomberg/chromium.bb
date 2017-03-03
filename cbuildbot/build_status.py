@@ -91,10 +91,14 @@ class SlaveStatus(object):
 
     self.UpdateSlaveStatus()
 
-  def _GetAllSlaveCIDBStatusInfo(self, all_buildbucket_info_dict):
+  @staticmethod
+  def GetAllSlaveCIDBStatusInfo(db, master_build_id,
+                                all_buildbucket_info_dict):
     """Get build status information from CIDB for all slaves.
 
     Args:
+      db: An instance of cidb.CIDBConnection.
+      master_build_id: The build_id of the master build for slaves.
       all_buildbucket_info_dict: A dict mapping all build config names to their
         information fetched from Buildbucket server (in the format of
         BuildbucketInfo).
@@ -106,12 +110,12 @@ class SlaveStatus(object):
       recorded in all_buildbucket_info_dict.
     """
     all_cidb_status_dict = {}
-    if self.db is not None:
+    if db is not None:
       buildbucket_ids = None if all_buildbucket_info_dict is None else [
           info.buildbucket_id for info in all_buildbucket_info_dict.values()]
 
-      slave_statuses = self.db.GetSlaveStatuses(
-          self.master_build_id, buildbucket_ids=buildbucket_ids)
+      slave_statuses = db.GetSlaveStatuses(
+          master_build_id, buildbucket_ids=buildbucket_ids)
 
       all_cidb_status_dict = {
           s['build_config']: CIDBStatusInfo(s['id'], s['status'])
@@ -222,8 +226,8 @@ class SlaveStatus(object):
           self.all_buildbucket_info_dict, self.completed_builds)
       self._SetStatusBuildsDict()
 
-    self.all_cidb_status_dict = self._GetAllSlaveCIDBStatusInfo(
-        self.all_buildbucket_info_dict)
+    self.all_cidb_status_dict = self.GetAllSlaveCIDBStatusInfo(
+        self.db, self.master_build_id, self.all_buildbucket_info_dict)
     self.new_cidb_status_dict = self._GetNewSlaveCIDBStatusInfo(
         self.all_cidb_status_dict, self.completed_builds)
 

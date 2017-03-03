@@ -178,7 +178,7 @@ class TriageRelevantChanges(object):
         their BuildbucketInfos (See SlaveStatus.GetAllSlaveBuildbucketInfo
         for details).
       cidb_status_dict: A dict mapping all slave build config names to their
-        CIDBStatusInfos (See SlaveStatus._GetAllSlaveCIDBStatusInfo for details)
+        CIDBStatusInfos (See SlaveStatus.GetAllSlaveCIDBStatusInfo for details)
       completed_builds: A set of slave build config names (strings) which
         have completed and will not be retried.
       dependency_map: A dict mapping a change (patch.GerritPatch instance) to a
