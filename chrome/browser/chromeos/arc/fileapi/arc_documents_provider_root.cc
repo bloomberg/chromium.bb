@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -75,6 +74,9 @@ ArcDocumentsProviderRoot::ArcDocumentsProviderRoot(
 
 ArcDocumentsProviderRoot::~ArcDocumentsProviderRoot() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (observer_wrapper_)
+    file_system_operation_runner_util::RemoveObserverOnIOThread(
+        std::move(observer_wrapper_));
 }
 
 void ArcDocumentsProviderRoot::GetFileInfo(
@@ -95,6 +97,44 @@ void ArcDocumentsProviderRoot::ReadDirectory(
                        weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void ArcDocumentsProviderRoot::AddWatcher(
+    const base::FilePath& path,
+    const WatcherCallback& watcher_callback,
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (path_to_watcher_id_.count(path)) {
+    callback.Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+  ResolveToDocumentId(
+      path,
+      base::Bind(&ArcDocumentsProviderRoot::AddWatcherWithDocumentId,
+                 weak_ptr_factory_.GetWeakPtr(), path, watcher_callback,
+                 callback));
+}
+
+void ArcDocumentsProviderRoot::RemoveWatcher(const base::FilePath& path,
+                                             const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto iter = path_to_watcher_id_.find(path);
+  if (iter == path_to_watcher_id_.end()) {
+    callback.Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+  int64_t watcher_id = iter->second;
+  path_to_watcher_id_.erase(iter);
+  if (watcher_id < 0) {
+    // This is an orphan watcher. Just remove an entry from
+    // |path_to_watcher_id_| and return success.
+    callback.Run(base::File::FILE_OK);
+    return;
+  }
+  file_system_operation_runner_util::RemoveWatcherOnIOThread(
+      watcher_id,
+      base::Bind(&ArcDocumentsProviderRoot::OnWatcherRemoved,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
 void ArcDocumentsProviderRoot::ResolveToContentUrl(
     const base::FilePath& path,
     const ResolveToContentUrlCallback& callback) {
@@ -105,9 +145,17 @@ void ArcDocumentsProviderRoot::ResolveToContentUrl(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void ArcDocumentsProviderRoot::OnWatchersCleared() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Mark all watchers orphan.
+  for (auto& entry : path_to_watcher_id_)
+    entry.second = -1;
+}
+
 void ArcDocumentsProviderRoot::GetFileInfoWithDocumentId(
     const GetFileInfoCallback& callback,
     const std::string& document_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (document_id.empty()) {
     callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
     return;
@@ -180,6 +228,62 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap(
                                             : storage::DirectoryEntry::FILE);
   }
   callback.Run(base::File::FILE_OK, entry_list, false /* has_more */);
+}
+
+void ArcDocumentsProviderRoot::AddWatcherWithDocumentId(
+    const base::FilePath& path,
+    const WatcherCallback& watcher_callback,
+    const StatusCallback& callback,
+    const std::string& document_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (document_id.empty()) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  // Start observing ArcFileSystemOperationRunner if we have not.
+  if (!observer_wrapper_) {
+    observer_wrapper_ =
+        new file_system_operation_runner_util::ObserverIOThreadWrapper(this);
+    file_system_operation_runner_util::AddObserverOnIOThread(observer_wrapper_);
+  }
+  file_system_operation_runner_util::AddWatcherOnIOThread(
+      authority_, document_id, watcher_callback,
+      base::Bind(&ArcDocumentsProviderRoot::OnWatcherAdded,
+                 weak_ptr_factory_.GetWeakPtr(), path, callback));
+}
+
+void ArcDocumentsProviderRoot::OnWatcherAdded(const base::FilePath& path,
+                                              const StatusCallback& callback,
+                                              int64_t watcher_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (watcher_id < 0) {
+    callback.Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+  if (path_to_watcher_id_.count(path)) {
+    // Multiple watchers have been installed on the same file path in a race.
+    // Following the contract of WatcherManager, we reject all except the first.
+    file_system_operation_runner_util::RemoveWatcherOnIOThread(
+        watcher_id,
+        base::Bind(&ArcDocumentsProviderRoot::OnWatcherAddedButRemoved,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+    return;
+  }
+  path_to_watcher_id_.insert(std::make_pair(path, watcher_id));
+  callback.Run(base::File::FILE_OK);
+}
+
+void ArcDocumentsProviderRoot::OnWatcherAddedButRemoved(
+    const StatusCallback& callback,
+    bool success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  callback.Run(base::File::FILE_ERROR_FAILED);
+}
+
+void ArcDocumentsProviderRoot::OnWatcherRemoved(const StatusCallback& callback,
+                                                bool success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  callback.Run(success ? base::File::FILE_OK : base::File::FILE_ERROR_FAILED);
 }
 
 void ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId(

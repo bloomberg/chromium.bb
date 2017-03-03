@@ -16,12 +16,14 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/common/file_system.mojom.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/common/fileapi/directory_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using ChangeType = arc::ArcDocumentsProviderRoot::ChangeType;
 using storage::DirectoryEntry;
 using Document = arc::FakeFileSystemInstance::Document;
 using EntryList = storage::AsyncFileUtil::EntryList;
@@ -119,6 +121,10 @@ class ArcDocumentsProviderRootTest : public testing::Test {
             arc_service_manager_->arc_bridge_service()));
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &fake_file_system_);
+
+    // Run the message loop until FileSystemInstance::Init() is called.
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(fake_file_system_.InitCalled());
 
     root_ = base::MakeUnique<ArcDocumentsProviderRoot>(kAuthority,
                                                        kRootSpec.document_id);
@@ -285,6 +291,92 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryDups) {
           },
           &run_loop));
   run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
+  int num_called = 0;
+  auto watcher_callback = base::Bind(
+      [](int* num_called, ChangeType type) {
+        EXPECT_EQ(ChangeType::CHANGED, type);
+        ++(*num_called);
+      },
+      &num_called);
+
+  {
+    base::RunLoop run_loop;
+    root_->AddWatcher(base::FilePath(FILE_PATH_LITERAL("dir")),
+                      watcher_callback,
+                      base::Bind(
+                          [](base::RunLoop* run_loop, base::File::Error error) {
+                            EXPECT_EQ(base::File::FILE_OK, error);
+                            run_loop->Quit();
+                          },
+                          &run_loop));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(0, num_called);
+  fake_file_system_.TriggerWatchers(kAuthority, kDirSpec.document_id,
+                                    mojom::ChangeType::CHANGED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, num_called);
+
+  {
+    base::RunLoop run_loop;
+    root_->RemoveWatcher(
+        base::FilePath(FILE_PATH_LITERAL("dir")),
+        base::Bind(
+            [](base::RunLoop* run_loop, base::File::Error error) {
+              EXPECT_EQ(base::File::FILE_OK, error);
+              run_loop->Quit();
+            },
+            &run_loop));
+    run_loop.Run();
+  }
+}
+
+TEST_F(ArcDocumentsProviderRootTest, WatchDeleted) {
+  int num_called = 0;
+  auto watcher_callback = base::Bind(
+      [](int* num_called, ChangeType type) {
+        EXPECT_EQ(ChangeType::DELETED, type);
+        ++(*num_called);
+      },
+      &num_called);
+
+  {
+    base::RunLoop run_loop;
+    root_->AddWatcher(base::FilePath(FILE_PATH_LITERAL("dir")),
+                      watcher_callback,
+                      base::Bind(
+                          [](base::RunLoop* run_loop, base::File::Error error) {
+                            EXPECT_EQ(base::File::FILE_OK, error);
+                            run_loop->Quit();
+                          },
+                          &run_loop));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(0, num_called);
+  fake_file_system_.TriggerWatchers(kAuthority, kDirSpec.document_id,
+                                    mojom::ChangeType::DELETED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, num_called);
+
+  // Even if the watched file was deleted, the watcher is still alive and we
+  // should clean it up.
+  {
+    base::RunLoop run_loop;
+    root_->RemoveWatcher(
+        base::FilePath(FILE_PATH_LITERAL("dir")),
+        base::Bind(
+            [](base::RunLoop* run_loop, base::File::Error error) {
+              EXPECT_EQ(base::File::FILE_OK, error);
+              run_loop->Quit();
+            },
+            &run_loop));
+    run_loop.Run();
+  }
 }
 
 TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrl) {
