@@ -14,9 +14,10 @@ import java.lang.annotation.RetentionPolicy;
  * depending on compile flags.
  */
 public interface VrCoreVersionChecker {
-    public static final int VR_NOT_AVAILABLE = 0;
-    public static final int VR_OUT_OF_DATE = 1;
-    public static final int VR_READY = 2;
+    public static final int VR_NOT_SUPPORTED = 0;
+    public static final int VR_NOT_AVAILABLE = 1;
+    public static final int VR_OUT_OF_DATE = 2;
+    public static final int VR_READY = 3;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({VR_NOT_AVAILABLE, VR_OUT_OF_DATE, VR_READY})

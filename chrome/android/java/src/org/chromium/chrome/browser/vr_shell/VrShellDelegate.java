@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -81,8 +80,6 @@ public class VrShellDelegate {
     // in SDK and we don't want add dependency to SDK just to get these strings.
     private static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
     private static final String CARDBOARD_CATEGORY = "com.google.intent.category.CARDBOARD";
-
-    private static final String MIN_SDK_VERSION_PARAM_NAME = "min_sdk_version";
 
     private static final String VR_ACTIVITY_ALIAS =
             "org.chromium.chrome.browser.VRChromeTabbedActivity";
@@ -228,16 +225,6 @@ public class VrShellDelegate {
         }
 
         if (daydreamApi.isDaydreamReadyDevice()) return VR_DAYDREAM;
-
-        // Check cardboard support for non-daydream devices. Supported Build version is determined
-        // by the webvr cardboard support feature. Default is KITKAT unless specified via server
-        // side finch config.
-        if (Build.VERSION.SDK_INT < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                                            ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
-                                            MIN_SDK_VERSION_PARAM_NAME,
-                                            Build.VERSION_CODES.KITKAT)) {
-            return VR_NOT_AVAILABLE;
-        }
 
         return VR_CARDBOARD;
     }
@@ -624,6 +611,9 @@ public class VrShellDelegate {
     @CalledByNative
     private long createNonPresentingNativeContext() {
         if (mVrClassesWrapper == null) return 0;
+        // Update VR support level as it can change at runtime
+        updateVrSupportLevel();
+        if (mVrSupportLevel == VR_NOT_AVAILABLE) return 0;
         mNonPresentingGvrContext = mVrClassesWrapper.createNonPresentingGvrContext(mActivity);
         if (mNonPresentingGvrContext == null) return 0;
         return mNonPresentingGvrContext.getNativeGvrContext();
@@ -676,23 +666,19 @@ public class VrShellDelegate {
 
     private static boolean isVrCoreCompatible(
             VrCoreVersionChecker versionChecker, Tab tabToShowInfobarIn) {
-        return verifyOrUpdateVrServices(
-                versionChecker.getVrCoreCompatibility(), tabToShowInfobarIn);
+        int vrCoreCompatibility = versionChecker.getVrCoreCompatibility();
+
+        if (vrCoreCompatibility == VrCoreVersionChecker.VR_NOT_AVAILABLE
+                || vrCoreCompatibility == VrCoreVersionChecker.VR_OUT_OF_DATE) {
+            promptToUpdateVrServices(vrCoreCompatibility, tabToShowInfobarIn);
+        }
+
+        return vrCoreCompatibility == VrCoreVersionChecker.VR_READY;
     }
 
-    private static boolean verifyOrUpdateVrServices(int vrCoreCompatibility, Tab tab) {
-        if (vrCoreCompatibility == VrCoreVersionChecker.VR_READY) {
-            return true;
-        }
+    private static void promptToUpdateVrServices(int vrCoreCompatibility, Tab tab) {
         if (tab == null) {
-            return false;
-        }
-        // Make sure OS is supported before showing the user a prompt.
-        if (Build.VERSION.SDK_INT < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                                            ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
-                                            MIN_SDK_VERSION_PARAM_NAME,
-                                            Build.VERSION_CODES.KITKAT)) {
-            return false;
+            return;
         }
         final Activity activity = tab.getActivity();
         String infobarText;
@@ -706,7 +692,7 @@ public class VrShellDelegate {
             buttonText = activity.getString(R.string.vr_services_check_infobar_update_button);
         } else {
             Log.e(TAG, "Unknown VrCore compatibility: " + vrCoreCompatibility);
-            return false;
+            return;
         }
 
         SimpleConfirmInfoBarBuilder.create(tab,
@@ -723,7 +709,6 @@ public class VrShellDelegate {
                 },
                 InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services, infobarText,
                 buttonText, null, true);
-        return false;
     }
 
     private boolean createVrShell() {
