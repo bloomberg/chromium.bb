@@ -23,6 +23,8 @@ public interface VrCoreVersionChecker {
     @IntDef({VR_NOT_AVAILABLE, VR_OUT_OF_DATE, VR_READY})
     public @interface VrCoreCompatibility {}
 
+    public static final String VR_CORE_PACKAGE_ID = "com.google.vr.vrcore";
+
     /**
      * Check if VrCore is installed or if installed version is compatible with Chromium.
      */

@@ -12,6 +12,7 @@ import com.google.vr.vrcore.base.api.VrCoreUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageUtils;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
 
@@ -45,6 +46,15 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
             return VrCoreVersionChecker.VR_READY;
         } catch (VrCoreNotAvailableException e) {
             Log.i(TAG, "Unable to find VrCore.");
+            // Old versions of VrCore are not integrated with the sdk library version check and will
+            // trigger this exception even though VrCore is installed.
+            // Double check package manager to make sure we are not telling user to install
+            // when it should just be an update.
+            if (PackageUtils.getPackageVersion(
+                        ContextUtils.getApplicationContext(), VR_CORE_PACKAGE_ID)
+                    != -1) {
+                return VrCoreVersionChecker.VR_OUT_OF_DATE;
+            }
             return VrCoreVersionChecker.VR_NOT_AVAILABLE;
         }
     }

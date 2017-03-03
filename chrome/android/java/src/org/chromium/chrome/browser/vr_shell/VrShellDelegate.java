@@ -84,8 +84,6 @@ public class VrShellDelegate {
     private static final String VR_ACTIVITY_ALIAS =
             "org.chromium.chrome.browser.VRChromeTabbedActivity";
 
-    private static final String VR_CORE_PACKAGE_ID = "com.google.vr.vrcore";
-
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
 
     private static VrShellDelegate sInstance;
@@ -703,7 +701,8 @@ public class VrShellDelegate {
                     @Override
                     public boolean onInfoBarButtonClicked(boolean isPrimary) {
                         activity.startActivity(new Intent(Intent.ACTION_VIEW,
-                                Uri.parse("market://details?id=" + VR_CORE_PACKAGE_ID)));
+                                Uri.parse("market://details?id="
+                                        + VrCoreVersionChecker.VR_CORE_PACKAGE_ID)));
                         return false;
                     }
                 },
