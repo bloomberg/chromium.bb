@@ -291,7 +291,8 @@ void CompositedLayerMapping::updateBackdropFilters(const ComputedStyle& style) {
 }
 
 void CompositedLayerMapping::updateStickyConstraints(
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    const PaintLayer* compositingContainer) {
   bool sticky = style.position() == EPosition::kSticky;
   const PaintLayer* ancestorOverflowLayer =
       m_owningLayer.ancestorOverflowLayer();
@@ -310,12 +311,18 @@ void CompositedLayerMapping::updateStickyConstraints(
         ancestorOverflowLayer->getScrollableArea()->stickyConstraintsMap().at(
             &m_owningLayer);
 
-    // Find the layout offset of the unshifted sticky box within its enclosing
-    // layer.
+    // Find the layout offset of the unshifted sticky box within its
+    // compositingContainer. If the enclosing layer is not the scroller, then
+    // the offset must be adjusted to include the scroll offset to keep it
+    // relative to compositingContainer.
     LayoutPoint enclosingLayerOffset;
-    m_owningLayer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf)
-        ->convertToLayerCoords(m_owningLayer.ancestorOverflowLayer(),
-                               enclosingLayerOffset);
+    compositingContainer->convertToLayerCoords(ancestorOverflowLayer,
+                                               enclosingLayerOffset);
+    if (compositingContainer != ancestorOverflowLayer) {
+      enclosingLayerOffset += LayoutSize(
+          ancestorOverflowLayer->getScrollableArea()->getScrollOffset());
+    }
+
     FloatPoint stickyBoxOffset =
         constraints.scrollContainerRelativeStickyBoxRect().location();
     DCHECK(!m_contentOffsetInCompositingLayerDirty);
@@ -1014,7 +1021,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
                                           graphicsLayerParentLocation);
   updateContentsOffsetInCompositingLayer(snappedOffsetFromCompositedAncestor,
                                          graphicsLayerParentLocation);
-  updateStickyConstraints(layoutObject().styleRef());
+  updateStickyConstraints(layoutObject().styleRef(), compositingContainer);
   updateSquashingLayerGeometry(
       graphicsLayerParentLocation, compositingContainer, m_squashedLayers,
       m_squashingLayer.get(), &m_squashingLayerOffsetFromTransformedAncestor,

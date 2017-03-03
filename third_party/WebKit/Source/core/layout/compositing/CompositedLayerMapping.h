@@ -247,8 +247,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void updateFilters(const ComputedStyle&);
   void updateBackdropFilters(const ComputedStyle&);
 
-  void updateStickyConstraints(const ComputedStyle&);
-
   void setBlendMode(WebBlendMode);
 
   bool needsGraphicsLayerUpdate() {
@@ -365,6 +363,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const FloatSize& relativeCompositingBoundsSize);
   void updateScrollingLayerGeometry(const IntRect& localCompositingBounds);
   void updateChildClippingMaskLayerGeometry();
+  void updateStickyConstraints(const ComputedStyle&, const PaintLayer*);
 
   void createPrimaryGraphicsLayer();
   void destroyGraphicsLayers();
