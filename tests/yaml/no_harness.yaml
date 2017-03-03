@@ -737,4 +737,5 @@ tests:
   - [ , ' '] # U+2008 (Punctuation Space)
   - [ , ' '] # U+2009 (Thin Space)
   - [e̊, ⠈⠑] # (e̊ sign)
+  - [●, ⠶] # U+25CF(Black Circle)
   - [ݲ, ⠢] # (undefined sign)
