@@ -170,6 +170,7 @@ test("device_unittests") {
       "//device/usb:test_support",
       "//device/usb/mojo",
       "//device/usb/public/interfaces",
+      "//net:test_support",
     ]
   }
 

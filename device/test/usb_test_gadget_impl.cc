@@ -34,6 +34,7 @@
 #include "device/usb/usb_service.h"
 #include "net/base/escape.h"
 #include "net/proxy/proxy_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -130,8 +131,8 @@ std::unique_ptr<net::URLFetcher> CreateURLFetcher(
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* delegate) {
-  std::unique_ptr<net::URLFetcher> url_fetcher =
-      net::URLFetcher::Create(url, request_type, delegate);
+  std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
+      url, request_type, delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   url_fetcher->SetRequestContext(request_context_getter.get());
 
