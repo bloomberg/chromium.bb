@@ -44,8 +44,8 @@ settings.
   "ycmd.confirm_extra_conf": false,
   "ycmd.use_imprecise_get_type": true,
   // clang-format
-  "clang-format.style": "Chromium",
-  "editor.formatOnSave": true
+  "clang-format.executable": "<your_depot_tools>/clang-format",
+  "clang-format.style": "file"
 }
 ```
 
