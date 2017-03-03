@@ -159,12 +159,6 @@ public class MockAccountManager implements AccountManagerDelegate {
     }
 
     @Override
-    public String getAuthTokenAndFixUserRecoverableErrorIfNeeded(
-            Account account, String authTokenScope) {
-        return getAuthToken(account, authTokenScope);
-    }
-
-    @Override
     public void invalidateAuthToken(String authToken) {
         if (authToken == null) {
             throw new IllegalArgumentException("AuthToken can not be null");

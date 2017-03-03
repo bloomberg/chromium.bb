@@ -164,6 +164,8 @@ void SigninManagerAndroid::OnSignInCompleted(
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
+  // TODO(bauerb): This is not only called for a user-triggered signout.
+  // We should pass the reason in here from Java.
   SigninManagerFactory::GetForProfile(profile_)
       ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
                 signin_metrics::SignoutDelete::IGNORE_METRIC);
@@ -282,6 +284,13 @@ jboolean SigninManagerAndroid::IsSignedInOnNative(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
+}
+
+void SigninManagerAndroid::ProhibitSignout(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj,
+                                           jboolean prohibit_signout) {
+  SigninManagerFactory::GetForProfile(profile_)->ProhibitSignout(
+      prohibit_signout);
 }
 
 void SigninManagerAndroid::GoogleSigninFailed(

@@ -14,7 +14,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
@@ -146,11 +145,9 @@ public final class OAuth2TokenService
         }
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
 
-        boolean handleUserRecoverableErrors = ChildAccountService.isChildAccount();
-
         AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(context);
-        accountManagerHelper.getAuthToken(account, oauth2Scope, handleUserRecoverableErrors,
-                new AccountManagerHelper.GetAuthTokenCallback() {
+        accountManagerHelper.getAuthToken(
+                account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token) {
                         nativeOAuth2TokenFetched(token, false, nativeCallback);
@@ -173,9 +170,7 @@ public final class OAuth2TokenService
     public static void getOAuth2AccessToken(Context context, Account account, String scope,
             AccountManagerHelper.GetAuthTokenCallback callback) {
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
-        boolean handleUserRecoverableErrors = ChildAccountService.isChildAccount();
-        AccountManagerHelper.get(context).getAuthToken(
-                account, oauth2Scope, handleUserRecoverableErrors, callback);
+        AccountManagerHelper.get(context).getAuthToken(account, oauth2Scope, callback);
     }
 
     /**
