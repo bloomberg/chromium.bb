@@ -142,65 +142,106 @@ template("idl_compiler") {
   output_dir = invoker.output_dir
   output_name_suffix = invoker.output_name_suffix
 
-  action_foreach(target_name) {
-    # TODO(brettw) GYP adds a "-S before the script name to skip "import site" to
-    # speed up startup. Figure out if we need this and do something similar (not
-    # really expressible in GN now).
-    script = "//third_party/WebKit/Source/bindings/scripts/idl_compiler.py"
+  # TODO(brettw): we used to add a "-S" before the script name to skip
+  # "import site" to speed up startup. Figure out if we need this and do
+  # something similar (not really expressible in GN now).
+  _script = "//third_party/WebKit/Source/bindings/scripts/idl_compiler.py"
+  _inputs = idl_lexer_parser_files + idl_compiler_files  # to be explicit (covered by parsetab)
+  _inputs += [
+    "$bindings_scripts_output_dir/lextab.py",
+    "$bindings_scripts_output_dir/parsetab.pickle",
+    "$bindings_scripts_output_dir/cached_jinja_templates.stamp",
+    "$bindings_dir/IDLExtendedAttributes.txt",
 
-    inputs = idl_lexer_parser_files + idl_compiler_files  # to be explicit (covered by parsetab)
-    inputs += [
-      "$bindings_scripts_output_dir/lextab.py",
-      "$bindings_scripts_output_dir/parsetab.pickle",
-      "$bindings_scripts_output_dir/cached_jinja_templates.stamp",
-      "$bindings_dir/IDLExtendedAttributes.txt",
+    # If the dependency structure or public interface info (e.g.,
+    # [ImplementedAs]) changes, we rebuild all files, since we're not
+    # computing dependencies file-by-file in the build.
+    # This data is generally stable.
+    "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
+  ]
 
-      # If the dependency structure or public interface info (e.g.,
-      # [ImplementedAs]) changes, we rebuild all files, since we're not
-      # computing dependencies file-by-file in the build.
-      # This data is generally stable.
-      "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
-    ]
+  # Further, if any dependency (partial interface or implemented
+  # interface) changes, rebuild everything, since every IDL potentially
+  # depends on them, because we're not computing dependencies
+  # file-by-file.
+  # FIXME: This is too conservative, and causes excess rebuilds:
+  # compute this file-by-file.  http://crbug.com/341748
+  # This should theoretically just be the IDL files passed in.
+  _inputs += core_all_dependency_idl_files + modules_all_dependency_idl_files
 
-    # Further, if any dependency (partial interface or implemented
-    # interface) changes, rebuild everything, since every IDL potentially
-    # depends on them, because we're not computing dependencies
-    # file-by-file.
-    # FIXME: This is too conservative, and causes excess rebuilds:
-    # compute this file-by-file.  http://crbug.com/341748
-    # This should theoretically just be the IDL files passed in.
-    inputs += core_all_dependency_idl_files + modules_all_dependency_idl_files
+  _public_deps = [
+    "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
 
-    sources = invoker.sources
-    outputs = [
-      "$output_dir/V8{{source_name_part}}${output_name_suffix}.cpp",
-      "$output_dir/V8{{source_name_part}}${output_name_suffix}.h",
-    ]
+    # FIXME: should be interfaces_info_core (w/o modules)
+    # http://crbug.com/358074
+    "//third_party/WebKit/Source/bindings/modules:interfaces_info",
+    "//third_party/WebKit/Source/bindings/modules:modules_core_global_constructors_idls",
+    "//third_party/WebKit/Source/bindings/modules:modules_global_constructors_idls",
+    "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
+    "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
+    "//third_party/WebKit/Source/core:generated_testing_idls",
+  ]
 
-    args = [
-      "--cache-dir",
-      rebase_path(bindings_scripts_output_dir, root_build_dir),
-      "--output-dir",
-      rebase_path(output_dir, root_build_dir),
-      "--info-dir",
-      rebase_path("$bindings_output_dir", root_build_dir),
-      "--target-component",
-      invoker.target_component,
-      "{{source}}",
-    ]
+  # On mac spawning a python process per IDL file is slow. Use a single action
+  # instead.
+  # TODO(bashi,tikuta): Use a pool when crbug.com/635308 is fixed.
+  if (is_mac) {
+    action(target_name) {
+      script = _script
+      inputs = _inputs
+      public_deps = _public_deps
 
-    public_deps = [
-      "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
+      sources = invoker.sources
+      outputs = []
+      foreach(_source, sources) {
+        _name_part = get_path_info(_source, "name")
+        outputs += [
+          "$output_dir/V8${_name_part}${output_name_suffix}.cpp",
+          "$output_dir/V8${_name_part}${output_name_suffix}.h",
+        ]
+      }
 
-      # FIXME: should be interfaces_info_core (w/o modules)
-      # http://crbug.com/358074
-      "//third_party/WebKit/Source/bindings/modules:interfaces_info",
-      "//third_party/WebKit/Source/bindings/modules:modules_core_global_constructors_idls",
-      "//third_party/WebKit/Source/bindings/modules:modules_global_constructors_idls",
-      "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
-      "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
-      "//third_party/WebKit/Source/core:generated_testing_idls",
-    ]
+      idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
+      write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
+      inputs += [ idl_files_list ]
+
+      args = [
+        "--cache-dir",
+        rebase_path(bindings_scripts_output_dir, root_build_dir),
+        "--output-dir",
+        rebase_path(output_dir, root_build_dir),
+        "--info-dir",
+        rebase_path("$bindings_output_dir", root_build_dir),
+        "--target-component",
+        invoker.target_component,
+        "--read-idl-list-from-file",
+        rebase_path(idl_files_list, root_build_dir),
+      ]
+    }
+  } else {
+    action_foreach(target_name) {
+      script = _script
+      inputs = _inputs
+      public_deps = _public_deps
+
+      sources = invoker.sources
+      outputs = [
+        "$output_dir/V8{{source_name_part}}${output_name_suffix}.cpp",
+        "$output_dir/V8{{source_name_part}}${output_name_suffix}.h",
+      ]
+
+      args = [
+        "--cache-dir",
+        rebase_path(bindings_scripts_output_dir, root_build_dir),
+        "--output-dir",
+        rebase_path(output_dir, root_build_dir),
+        "--info-dir",
+        rebase_path("$bindings_output_dir", root_build_dir),
+        "--target-component",
+        invoker.target_component,
+        "{{source}}",
+      ]
+    }
   }
 }
 

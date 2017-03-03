@@ -55,6 +55,8 @@ def parse_options():
                       help='cache directory, defaults to output directory')
     parser.add_option('--generate-impl',
                       action="store_true", default=False)
+    parser.add_option('--read-idl-list-from-file',
+                      action="store_true", default=False)
     parser.add_option('--output-directory')
     parser.add_option('--impl-output-directory')
     parser.add_option('--info-dir')
@@ -181,14 +183,18 @@ def main():
     options, input_filename = parse_options()
     info_provider = create_component_info_provider(
         options.info_dir, options.target_component)
-    if options.generate_impl:
-        if not info_provider.interfaces_info:
-            raise Exception('Interfaces info is required to generate '
-                            'union types containers')
+    if options.generate_impl or options.read_idl_list_from_file:
         # |input_filename| should be a file which contains a list of IDL
         # dictionary paths.
         input_filenames = read_idl_files_list_from_file(input_filename,
                                                         is_gyp_format=True)
+    else:
+        input_filenames = [input_filename]
+
+    if options.generate_impl:
+        if not info_provider.interfaces_info:
+            raise Exception('Interfaces info is required to generate '
+                            'impl classes')
         generate_dictionary_impl(CodeGeneratorDictionaryImpl, info_provider,
                                  options, input_filenames)
         generate_union_type_containers(CodeGeneratorUnionType, info_provider,
@@ -196,9 +202,8 @@ def main():
         generate_callback_function_impl(CodeGeneratorCallbackFunction,
                                         info_provider, options)
     else:
-        # |input_filename| should be a path of an IDL file.
         generate_bindings(CodeGeneratorV8, info_provider, options,
-                          [input_filename])
+                          input_filenames)
 
 
 if __name__ == '__main__':
