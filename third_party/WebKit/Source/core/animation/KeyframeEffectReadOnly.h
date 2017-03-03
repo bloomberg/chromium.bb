@@ -55,7 +55,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
 
   bool isKeyframeEffectReadOnly() const override { return true; }
 
-  bool affects(PropertyHandle) const;
+  bool affects(const PropertyHandle&) const;
   const EffectModel* model() const { return m_model.get(); }
   EffectModel* model() { return m_model.get(); }
   void setModel(EffectModel* model) { m_model = model; }
@@ -71,7 +71,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
                                        double timeOffset,
                                        double animationPlaybackRate);
   bool hasActiveAnimationsOnCompositor() const;
-  bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
+  bool hasActiveAnimationsOnCompositor(const PropertyHandle&) const;
   bool cancelAnimationOnCompositor();
   void restartAnimationOnCompositor();
   void cancelIncompatibleAnimationsOnCompositor();

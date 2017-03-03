@@ -60,7 +60,7 @@ class CORE_EXPORT EffectStack {
     m_sampledEffects.push_back(sampledEffect);
   }
   bool isEmpty() const { return m_sampledEffects.isEmpty(); }
-  bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
+  bool hasActiveAnimationsOnCompositor(const PropertyHandle&) const;
 
   using PropertyHandleFilter = bool (*)(const PropertyHandle&);
   bool affectsProperties(PropertyHandleFilter) const;

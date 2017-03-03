@@ -313,11 +313,11 @@ bool KeyframeEffectReadOnly::hasActiveAnimationsOnCompositor() const {
 }
 
 bool KeyframeEffectReadOnly::hasActiveAnimationsOnCompositor(
-    CSSPropertyID property) const {
-  return hasActiveAnimationsOnCompositor() && affects(PropertyHandle(property));
+    const PropertyHandle& property) const {
+  return hasActiveAnimationsOnCompositor() && affects(property);
 }
 
-bool KeyframeEffectReadOnly::affects(PropertyHandle property) const {
+bool KeyframeEffectReadOnly::affects(const PropertyHandle& property) const {
   return m_model && m_model->affects(property);
 }
 

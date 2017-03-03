@@ -162,27 +162,33 @@ class CSSAnimationUpdate final {
     m_updatedCompositorKeyframes.push_back(animation);
   }
 
-  void startTransition(CSSPropertyID id,
+  void startTransition(const PropertyHandle& property,
                        RefPtr<AnimatableValue> from,
                        RefPtr<AnimatableValue> to,
                        PassRefPtr<AnimatableValue> reversingAdjustedStartValue,
                        double reversingShorteningFactor,
                        const InertEffect& effect) {
     NewTransition newTransition;
-    newTransition.id = id;
+    newTransition.property = property;
     newTransition.from = std::move(from);
     newTransition.to = std::move(to);
     newTransition.reversingAdjustedStartValue = reversingAdjustedStartValue;
     newTransition.reversingShorteningFactor = reversingShorteningFactor;
     newTransition.effect = &effect;
-    m_newTransitions.set(id, newTransition);
+    m_newTransitions.set(property, newTransition);
   }
-  void unstartTransition(CSSPropertyID id) { m_newTransitions.remove(id); }
-  bool isCancelledTransition(CSSPropertyID id) const {
-    return m_cancelledTransitions.contains(id);
+  void unstartTransition(const PropertyHandle& property) {
+    m_newTransitions.remove(property);
   }
-  void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.insert(id); }
-  void finishTransition(CSSPropertyID id) { m_finishedTransitions.insert(id); }
+  bool isCancelledTransition(const PropertyHandle& property) const {
+    return m_cancelledTransitions.contains(property);
+  }
+  void cancelTransition(const PropertyHandle& property) {
+    m_cancelledTransitions.insert(property);
+  }
+  void finishTransition(const PropertyHandle& property) {
+    m_finishedTransitions.insert(property);
+  }
 
   const HeapVector<NewCSSAnimation>& newAnimations() const {
     return m_newAnimations;
@@ -209,19 +215,19 @@ class CSSAnimationUpdate final {
    public:
     DEFINE_INLINE_TRACE() { visitor->trace(effect); }
 
-    CSSPropertyID id;
+    PropertyHandle property = HashTraits<blink::PropertyHandle>::emptyValue();
     RefPtr<AnimatableValue> from;
     RefPtr<AnimatableValue> to;
     RefPtr<AnimatableValue> reversingAdjustedStartValue;
     double reversingShorteningFactor;
     Member<const InertEffect> effect;
   };
-  using NewTransitionMap = HeapHashMap<CSSPropertyID, NewTransition>;
+  using NewTransitionMap = HeapHashMap<PropertyHandle, NewTransition>;
   const NewTransitionMap& newTransitions() const { return m_newTransitions; }
-  const HashSet<CSSPropertyID>& cancelledTransitions() const {
+  const HashSet<PropertyHandle>& cancelledTransitions() const {
     return m_cancelledTransitions;
   }
-  const HashSet<CSSPropertyID>& finishedTransitions() const {
+  const HashSet<PropertyHandle>& finishedTransitions() const {
     return m_finishedTransitions;
   }
 
@@ -275,8 +281,8 @@ class CSSAnimationUpdate final {
   HeapVector<Member<Animation>> m_updatedCompositorKeyframes;
 
   NewTransitionMap m_newTransitions;
-  HashSet<CSSPropertyID> m_cancelledTransitions;
-  HashSet<CSSPropertyID> m_finishedTransitions;
+  HashSet<PropertyHandle> m_cancelledTransitions;
+  HashSet<PropertyHandle> m_finishedTransitions;
 
   ActiveInterpolationsMap m_activeInterpolationsForAnimations;
   ActiveInterpolationsMap m_activeInterpolationsForTransitions;

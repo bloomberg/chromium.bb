@@ -61,20 +61,23 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style) {
 
   if (style.hasCurrentOpacityAnimation()) {
     style.setIsRunningOpacityAnimationOnCompositor(
-        m_effectStack.hasActiveAnimationsOnCompositor(CSSPropertyOpacity));
+        m_effectStack.hasActiveAnimationsOnCompositor(
+            PropertyHandle(CSSPropertyOpacity)));
   }
   if (style.hasCurrentTransformAnimation()) {
     style.setIsRunningTransformAnimationOnCompositor(
-        m_effectStack.hasActiveAnimationsOnCompositor(CSSPropertyTransform));
+        m_effectStack.hasActiveAnimationsOnCompositor(
+            PropertyHandle(CSSPropertyTransform)));
   }
   if (style.hasCurrentFilterAnimation()) {
     style.setIsRunningFilterAnimationOnCompositor(
-        m_effectStack.hasActiveAnimationsOnCompositor(CSSPropertyFilter));
+        m_effectStack.hasActiveAnimationsOnCompositor(
+            PropertyHandle(CSSPropertyFilter)));
   }
   if (style.hasCurrentBackdropFilterAnimation()) {
     style.setIsRunningBackdropFilterAnimationOnCompositor(
         m_effectStack.hasActiveAnimationsOnCompositor(
-            CSSPropertyBackdropFilter));
+            PropertyHandle(CSSPropertyBackdropFilter)));
   }
 }
 

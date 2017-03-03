@@ -88,7 +88,7 @@ void copyNewAnimationsToActiveInterpolationsMap(
 EffectStack::EffectStack() {}
 
 bool EffectStack::hasActiveAnimationsOnCompositor(
-    CSSPropertyID property) const {
+    const PropertyHandle& property) const {
   for (const auto& sampledEffect : m_sampledEffects) {
     // TODO(dstockwell): move the playing check into AnimationEffectReadOnly and
     // expose both hasAnimations and hasActiveAnimations

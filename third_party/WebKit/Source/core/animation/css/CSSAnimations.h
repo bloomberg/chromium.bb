@@ -147,7 +147,7 @@ class CSSAnimations final {
 
   HeapVector<Member<RunningAnimation>> m_runningAnimations;
 
-  using TransitionMap = HeapHashMap<CSSPropertyID, RunningTransition>;
+  using TransitionMap = HeapHashMap<PropertyHandle, RunningTransition>;
   TransitionMap m_transitions;
 
   CSSAnimationUpdate m_pendingUpdate;
@@ -155,7 +155,7 @@ class CSSAnimations final {
   ActiveInterpolationsMap m_previousActiveInterpolationsForAnimations;
 
   static void calculateTransitionUpdateForProperty(
-      CSSPropertyID,
+      const PropertyHandle&,
       const CSSTransitionData&,
       size_t transitionIndex,
       const ComputedStyle& oldStyle,
@@ -200,7 +200,8 @@ class CSSAnimations final {
   class TransitionEventDelegate final
       : public AnimationEffectReadOnly::EventDelegate {
    public:
-    TransitionEventDelegate(Element* transitionTarget, CSSPropertyID property)
+    TransitionEventDelegate(Element* transitionTarget,
+                            const PropertyHandle& property)
         : m_transitionTarget(transitionTarget),
           m_property(property),
           m_previousPhase(AnimationEffectReadOnly::PhaseNone) {}
@@ -217,7 +218,7 @@ class CSSAnimations final {
     Document& document() const { return m_transitionTarget->document(); }
 
     Member<Element> m_transitionTarget;
-    const CSSPropertyID m_property;
+    PropertyHandle m_property;
     AnimationEffectReadOnly::Phase m_previousPhase;
   };
 };
