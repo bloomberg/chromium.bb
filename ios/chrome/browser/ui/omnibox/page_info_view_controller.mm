@@ -508,6 +508,9 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
   CGSize sizeWithFont =
       [[[button titleLabel] text] cr_pixelAlignedSizeWithFont:font];
   frame.size = sizeWithFont;
+  // According to iOS Human Interface Guidelines, minimal size of UIButton
+  // should be 44x44.
+  frame.size.height = std::max<CGFloat>(44, frame.size.height);
 
   [button setFrame:frame];
 
