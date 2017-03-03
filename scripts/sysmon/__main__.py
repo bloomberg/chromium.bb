@@ -19,6 +19,7 @@ from chromite.lib import metrics
 from chromite.lib import ts_mon_config
 from infra_libs.ts_mon.common import interface
 
+from chromite.scripts.sysmon import git_metrics
 from chromite.scripts.sysmon import loop
 from chromite.scripts.sysmon import net_metrics
 from chromite.scripts.sysmon import osinfo_metrics
@@ -54,6 +55,7 @@ class _MetricCollector(object):
     system_metrics.collect_proc_info()
     system_metrics.collect_load_avg()
     puppet_metrics.collect_puppet_summary()
+    git_metrics.collect_git_metrics()
     self._collect_prod_hosts()
     self._collect_osinfo()
     system_metrics.collect_unix_time()  # must be just before flush
