@@ -83,9 +83,9 @@ public class CardUnmaskPrompt
     private String mExpirationDateErrorMessage;
     private String mCvcAndExpirationErrorMessage;
 
-    private boolean mStartedTypingMonth;
-    private boolean mStartedTypingYear;
-    private boolean mStartedTypingCvc;
+    private boolean mDidFocusOnMonth;
+    private boolean mDidFocusOnYear;
+    private boolean mDidFocusOnCvc;
 
     private static final int EXPIRATION_FIELDS_LENGTH = 2;
 
@@ -204,57 +204,22 @@ public class CardUnmaskPrompt
         mCardUnmaskInput.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+                mDidFocusOnCvc = true;
                 validate();
             }
         });
         mMonthInput.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+                mDidFocusOnMonth = true;
                 validate();
             }
         });
         mYearInput.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+                mDidFocusOnYear = true;
                 validate();
-            }
-        });
-
-        // Create the listeners to be notified when the user types into the input fields.
-        mCardUnmaskInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {}
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mStartedTypingCvc = true;
-            }
-        });
-        mMonthInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {}
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mStartedTypingMonth = true;
-            }
-        });
-        mYearInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {}
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mStartedTypingYear = true;
             }
         });
 
@@ -507,10 +472,23 @@ public class CardUnmaskPrompt
         if (errorType == ERROR_TYPE_NOT_ENOUGH_INFO) {
             if (mMonthInput.isFocused()
                     && mMonthInput.getText().length() == EXPIRATION_FIELDS_LENGTH) {
-                mYearInput.requestFocus();
+                // The user just finished typing in the month field and there are no validation
+                // errors.
+                if (mYearInput.getText().length() == EXPIRATION_FIELDS_LENGTH) {
+                    // Year was already filled, move focus to CVC field.
+                    mCardUnmaskInput.requestFocus();
+                    mDidFocusOnCvc = true;
+                } else {
+                    // Year was not filled, move focus there.
+                    mYearInput.requestFocus();
+                    mDidFocusOnYear = true;
+                }
             } else if (mYearInput.isFocused()
                     && mYearInput.getText().length() == EXPIRATION_FIELDS_LENGTH) {
+                // The user just finished typing in the year field and there are no validation
+                // errors. Move focus to CVC field.
                 mCardUnmaskInput.requestFocus();
+                mDidFocusOnCvc = true;
             }
         }
     }
@@ -597,7 +575,7 @@ public class CardUnmaskPrompt
         // If the CVC is valid, return the error type determined so far.
         if (isCvcValid()) return errorType;
 
-        if (mStartedTypingCvc && !mCardUnmaskInput.isFocused()) {
+        if (mDidFocusOnCvc && !mCardUnmaskInput.isFocused()) {
             // The CVC is invalid and the user has typed in the CVC field, but is not focused on it
             // now. Add the CVC error to the current error.
             if (errorType == ERROR_TYPE_NONE || errorType == ERROR_TYPE_NOT_ENOUGH_INFO) {
@@ -630,7 +608,7 @@ public class CardUnmaskPrompt
         int month = getMonth();
         if (month < 1 || month > 12) {
             if (mMonthInput.getText().length() == EXPIRATION_FIELDS_LENGTH
-                    || (!mMonthInput.isFocused() && mStartedTypingMonth)) {
+                    || (!mMonthInput.isFocused() && mDidFocusOnMonth)) {
                 // mFinishedTypingMonth = true;
                 return ERROR_TYPE_EXPIRATION_MONTH;
             }
@@ -640,7 +618,7 @@ public class CardUnmaskPrompt
         int year = getFourDigitYear();
         if (year < mThisYear || year > mThisYear + 10) {
             if (mYearInput.getText().length() == EXPIRATION_FIELDS_LENGTH
-                    || (!mYearInput.isFocused() && mStartedTypingYear)) {
+                    || (!mYearInput.isFocused() && mDidFocusOnYear)) {
                 // mFinishedTypingYear = true;
                 return ERROR_TYPE_EXPIRATION_YEAR;
             }
