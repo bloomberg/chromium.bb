@@ -353,7 +353,6 @@ class CORE_EXPORT UseCounter {
     MapElement = 482,
     MeterElement = 483,
     ProgressElement = 484,
-    PrefixedHTMLElementDropzone = 490,
     WheelEventWheelDeltaX = 491,
     WheelEventWheelDeltaY = 492,
     WheelEventWheelDelta = 493,

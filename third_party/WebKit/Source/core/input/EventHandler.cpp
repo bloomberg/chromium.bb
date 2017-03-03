@@ -1006,48 +1006,6 @@ static bool targetIsFrame(Node* target, LocalFrame*& frame) {
   return true;
 }
 
-static bool findDropZone(Node* target, DataTransfer* dataTransfer) {
-  Element* element =
-      target->isElementNode() ? toElement(target) : target->parentElement();
-  for (; element; element = element->parentElement()) {
-    bool matched = false;
-    AtomicString dropZoneStr = element->fastGetAttribute(webkitdropzoneAttr);
-
-    if (dropZoneStr.isEmpty())
-      continue;
-
-    UseCounter::count(element->document(),
-                      UseCounter::PrefixedHTMLElementDropzone);
-
-    dropZoneStr = dropZoneStr.lower();
-
-    SpaceSplitString keywords(dropZoneStr, SpaceSplitString::ShouldNotFoldCase);
-    if (keywords.isNull())
-      continue;
-
-    DragOperation dragOperation = DragOperationNone;
-    for (unsigned i = 0; i < keywords.size(); i++) {
-      DragOperation op = convertDropZoneOperationToDragOperation(keywords[i]);
-      if (op != DragOperationNone) {
-        if (dragOperation == DragOperationNone)
-          dragOperation = op;
-      } else {
-        matched =
-            matched || dataTransfer->hasDropZoneType(keywords[i].getString());
-      }
-
-      if (matched && dragOperation != DragOperationNone)
-        break;
-    }
-    if (matched) {
-      dataTransfer->setDropEffect(
-          convertDragOperationToDropZoneOperation(dragOperation));
-      return true;
-    }
-  }
-  return false;
-}
-
 WebInputEventResult EventHandler::updateDragAndDrop(
     const WebMouseEvent& event,
     DataTransfer* dataTransfer) {
@@ -1095,9 +1053,6 @@ WebInputEventResult EventHandler::updateDragAndDrop(
       }
       eventResult = m_mouseEventManager->dispatchDragEvent(
           EventTypeNames::dragenter, newTarget, event, dataTransfer);
-      if (eventResult == WebInputEventResult::NotHandled &&
-          findDropZone(newTarget, dataTransfer))
-        eventResult = WebInputEventResult::HandledSystem;
     }
 
     if (targetIsFrame(m_dragTarget.get(), targetFrame)) {
@@ -1133,9 +1088,6 @@ WebInputEventResult EventHandler::updateDragAndDrop(
       }
       eventResult = m_mouseEventManager->dispatchDragEvent(
           EventTypeNames::dragover, newTarget, event, dataTransfer);
-      if (eventResult == WebInputEventResult::NotHandled &&
-          findDropZone(newTarget, dataTransfer))
-        eventResult = WebInputEventResult::HandledSystem;
       m_shouldOnlyFireDragOverEvent = false;
     }
   }

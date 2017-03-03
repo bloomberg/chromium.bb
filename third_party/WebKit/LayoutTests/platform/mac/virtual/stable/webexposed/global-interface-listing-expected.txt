@@ -1799,7 +1799,6 @@ interface HTMLElement : Element
     getter tabIndex
     getter title
     getter translate
-    getter webkitdropzone
     method blur
     method click
     method constructor
@@ -1891,7 +1890,6 @@ interface HTMLElement : Element
     setter tabIndex
     setter title
     setter translate
-    setter webkitdropzone
 interface HTMLEmbedElement : HTMLElement
     attribute @@toStringTag
     getter align
