@@ -13,7 +13,7 @@
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
-#include "chrome/browser/android/webapk/webapk_installer.h"
+#include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -346,9 +346,9 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
   Java_AppBannerInfoBarDelegateAndroid_setWebApkInstallingState(
       env, java_delegate_, true);
   UpdateInstallState(env, nullptr);
-  WebApkInstaller::FinishCallback callback =
+  WebApkInstallService::FinishCallback callback =
       base::Bind(&AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished,
-                  weak_ptr_factory_.GetWeakPtr());
+                 weak_ptr_factory_.GetWeakPtr());
   ShortcutHelper::InstallWebApkWithSkBitmap(web_contents, *shortcut_info_,
                                             *icon_.get(), callback);
   SendBannerAccepted();

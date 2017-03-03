@@ -158,7 +158,7 @@ void ShortcutHelper::InstallWebApkWithSkBitmap(
     content::WebContents* web_contents,
     const ShortcutInfo& info,
     const SkBitmap& icon_bitmap,
-    const WebApkInstaller::FinishCallback& callback) {
+    const WebApkInstallService::FinishCallback& callback) {
   WebApkInstallService::Get(web_contents->GetBrowserContext())
       ->InstallAsync(info, icon_bitmap, callback);
   // Don't record metric for users who install WebAPKs via "unsigned sources"
