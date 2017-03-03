@@ -400,29 +400,6 @@ RUNNER_TEST(surface_opacity)
 	runner_assert(prop->opacity == wl_fixed_from_double(0.5));
 }
 
-RUNNER_TEST(surface_orientation)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_surface *ivisurf;
-	const struct ivi_layout_surface_properties *prop;
-
-	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
-	runner_assert(ivisurf != NULL);
-
-	prop = lyt->get_properties_of_surface(ivisurf);
-	runner_assert_or_return(prop);
-	runner_assert(prop->orientation == WL_OUTPUT_TRANSFORM_NORMAL);
-
-	runner_assert(lyt->surface_set_orientation(
-		      ivisurf, WL_OUTPUT_TRANSFORM_90) == IVI_SUCCEEDED);
-
-	runner_assert(prop->orientation == WL_OUTPUT_TRANSFORM_NORMAL);
-
-	lyt->commit_changes();
-
-	runner_assert(prop->orientation == WL_OUTPUT_TRANSFORM_90);
-}
-
 RUNNER_TEST(surface_dimension)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
@@ -661,17 +638,6 @@ RUNNER_TEST(commit_changes_after_opacity_set_surface_destroy)
 	runner_assert(ivisurf != NULL);
 	runner_assert(lyt->surface_set_opacity(
 		      ivisurf, wl_fixed_from_double(0.5)) == IVI_SUCCEEDED);
-}
-
-RUNNER_TEST(commit_changes_after_orientation_set_surface_destroy)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_surface *ivisurf;
-
-	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
-	runner_assert(ivisurf != NULL);
-	runner_assert(lyt->surface_set_orientation(
-		      ivisurf, WL_OUTPUT_TRANSFORM_90) == IVI_SUCCEEDED);
 }
 
 RUNNER_TEST(commit_changes_after_source_rectangle_set_surface_destroy)

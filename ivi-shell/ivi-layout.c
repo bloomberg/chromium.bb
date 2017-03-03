@@ -1621,28 +1621,6 @@ ivi_layout_surface_set_destination_rectangle(struct ivi_layout_surface *ivisurf,
 }
 
 static int32_t
-ivi_layout_surface_set_orientation(struct ivi_layout_surface *ivisurf,
-				   enum wl_output_transform orientation)
-{
-	struct ivi_layout_surface_properties *prop = NULL;
-
-	if (ivisurf == NULL) {
-		weston_log("ivi_layout_surface_set_orientation: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	prop = &ivisurf->pending.prop;
-	prop->orientation = orientation;
-
-	if (ivisurf->prop.orientation != orientation)
-		prop->event_mask |= IVI_NOTIFICATION_ORIENTATION;
-	else
-		prop->event_mask &= ~IVI_NOTIFICATION_ORIENTATION;
-
-	return IVI_SUCCEEDED;
-}
-
-static int32_t
 ivi_layout_screen_add_layer(struct weston_output *output,
 			    struct ivi_layout_layer *addlayer)
 {
@@ -2074,7 +2052,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.surface_set_opacity			= ivi_layout_surface_set_opacity,
 	.surface_set_source_rectangle		= ivi_layout_surface_set_source_rectangle,
 	.surface_set_destination_rectangle	= ivi_layout_surface_set_destination_rectangle,
-	.surface_set_orientation		= ivi_layout_surface_set_orientation,
 	.surface_add_listener			= ivi_layout_surface_add_listener,
 	.surface_get_weston_surface		= ivi_layout_surface_get_weston_surface,
 	.surface_set_transition			= ivi_layout_surface_set_transition,

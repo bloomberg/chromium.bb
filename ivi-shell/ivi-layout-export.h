@@ -276,15 +276,6 @@ struct ivi_layout_interface {
 						     int32_t width, int32_t height);
 
 	/**
-	 * \brief Sets the orientation of a ivi_surface.
-	 *
-	 * \return IVI_SUCCEEDED if the method call was successful
-	 * \return IVI_FAILED if the method call was failed
-	 */
-	int32_t (*surface_set_orientation)(struct ivi_layout_surface *ivisurf,
-					   enum wl_output_transform orientation);
-
-	/**
 	 * \brief add a listener to listen property changes of ivi_surface
 	 *
 	 * When a property of the ivi_surface is changed, the property_changed

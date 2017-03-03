@@ -192,7 +192,6 @@ ivi_window_destroy(struct ivi_window *wnd)
 const char * const basic_test_names[] = {
 	"surface_visibility",
 	"surface_opacity",
-	"surface_orientation",
 	"surface_dimension",
 	"surface_position",
 	"surface_destination_rectangle",
@@ -206,7 +205,6 @@ const char * const basic_test_names[] = {
 const char * const surface_property_commit_changes_test_names[] = {
 	"commit_changes_after_visibility_set_surface_destroy",
 	"commit_changes_after_opacity_set_surface_destroy",
-	"commit_changes_after_orientation_set_surface_destroy",
 	"commit_changes_after_source_rectangle_set_surface_destroy",
 	"commit_changes_after_destination_rectangle_set_surface_destroy",
 };
