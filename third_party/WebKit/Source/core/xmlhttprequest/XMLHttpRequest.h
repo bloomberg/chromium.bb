@@ -48,7 +48,8 @@
 
 namespace blink {
 
-class ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData;
+class
+    ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormDataOrURLSearchParams;
 class Blob;
 class BlobDataHandle;
 class DOMArrayBuffer;
@@ -62,6 +63,7 @@ class ScriptState;
 class SharedBuffer;
 class TextResourceDecoder;
 class ThreadableLoader;
+class URLSearchParams;
 class WebDataConsumerHandle;
 class XMLHttpRequestUpload;
 
@@ -133,7 +135,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
             bool async,
             ExceptionState&);
   void send(
-      const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData&,
+      const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormDataOrURLSearchParams&,
       ExceptionState&);
   void abort();
   void dispose();
@@ -234,6 +236,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void send(const String&, ExceptionState&);
   void send(Blob*, ExceptionState&);
   void send(FormData*, ExceptionState&);
+  void send(URLSearchParams*, ExceptionState&);
   void send(DOMArrayBuffer*, ExceptionState&);
   void send(DOMArrayBufferView*, ExceptionState&);
 
@@ -276,6 +279,9 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
                           const AtomicString&,
                           long long,
                           long long);
+
+  void updateContentTypeAndCharset(const AtomicString& contentType,
+                                   const String& charset);
 
   XMLHttpRequestProgressEventThrottle& progressEventThrottle();
 

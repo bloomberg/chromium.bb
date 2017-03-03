@@ -23,7 +23,8 @@
 
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 
-#include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData.h"
+#include <memory>
+#include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormDataOrURLSearchParams.h"
 #include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrUSVString.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -37,6 +38,7 @@
 #include "core/dom/DocumentParser.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/URLSearchParams.h"
 #include "core/dom/XMLDocument.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/Event.h"
@@ -81,7 +83,6 @@
 #include "wtf/AutoReset.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
-#include <memory>
 
 namespace blink {
 
@@ -704,7 +705,8 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState) {
 }
 
 void XMLHttpRequest::send(
-    const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData& body,
+    const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormDataOrURLSearchParams&
+        body,
     ExceptionState& exceptionState) {
   probe::willSendXMLHttpOrFetchNetworkRequest(getExecutionContext(), url());
 
@@ -735,6 +737,11 @@ void XMLHttpRequest::send(
 
   if (body.isFormData()) {
     send(body.getAsFormData(), exceptionState);
+    return;
+  }
+
+  if (body.isURLSearchParams()) {
+    send(body.getAsURLSearchParams(), exceptionState);
     return;
   }
 
@@ -784,17 +791,9 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState) {
   RefPtr<EncodedFormData> httpBody;
 
   if (!body.isNull() && areMethodAndURLValidForSend()) {
-    String contentType = getRequestHeader(HTTPNames::Content_Type);
-    if (contentType.isEmpty()) {
-      setRequestHeaderInternal(HTTPNames::Content_Type,
-                               "text/plain;charset=UTF-8");
-    } else {
-      replaceCharsetInMediaType(contentType, "UTF-8");
-      m_requestHeaders.set(HTTPNames::Content_Type, AtomicString(contentType));
-    }
-
     httpBody = EncodedFormData::create(
         UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
+    updateContentTypeAndCharset("text/plain;charset=UTF-8", "UTF-8");
   }
 
   createRequest(std::move(httpBody), exceptionState);
@@ -846,12 +845,32 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exceptionState) {
   if (areMethodAndURLValidForSend()) {
     httpBody = body->encodeMultiPartFormData();
 
+    // TODO (sof): override any author-provided charset= in the
+    // content type value to UTF-8 ?
     if (getRequestHeader(HTTPNames::Content_Type).isEmpty()) {
       AtomicString contentType =
           AtomicString("multipart/form-data; boundary=") +
           httpBody->boundary().data();
       setRequestHeaderInternal(HTTPNames::Content_Type, contentType);
     }
+  }
+
+  createRequest(std::move(httpBody), exceptionState);
+}
+
+void XMLHttpRequest::send(URLSearchParams* body,
+                          ExceptionState& exceptionState) {
+  NETWORK_DVLOG(1) << this << " send() URLSearchParams " << body;
+
+  if (!initSend(exceptionState))
+    return;
+
+  RefPtr<EncodedFormData> httpBody;
+
+  if (areMethodAndURLValidForSend()) {
+    httpBody = body->toEncodedFormData();
+    updateContentTypeAndCharset(
+        "application/x-www-form-urlencoded;charset=UTF-8", "UTF-8");
   }
 
   createRequest(std::move(httpBody), exceptionState);
@@ -1441,6 +1460,20 @@ AtomicString XMLHttpRequest::finalResponseMIMETypeWithFallback() const {
   // FIXME: This fallback is not specified in the final MIME type algorithm
   // of the XHR spec. Move this to more appropriate place.
   return AtomicString("text/xml");
+}
+
+void XMLHttpRequest::updateContentTypeAndCharset(
+    const AtomicString& defaultContentType,
+    const String& charset) {
+  // http://xhr.spec.whatwg.org/#the-send()-method step 4's concilliation of
+  // "charset=" in any author-provided Content-Type: request header.
+  String contentType = getRequestHeader(HTTPNames::Content_Type);
+  if (contentType.isEmpty()) {
+    setRequestHeaderInternal(HTTPNames::Content_Type, defaultContentType);
+    return;
+  }
+  replaceCharsetInMediaType(contentType, charset);
+  m_requestHeaders.set(HTTPNames::Content_Type, AtomicString(contentType));
 }
 
 bool XMLHttpRequest::responseIsXML() const {
