@@ -32,6 +32,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.accessibility.AXTextStyle;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,6 +146,11 @@ import java.util.UUID;
     @CalledByNative
     private long getNativePointer() {
         return mNativeWebContentsAndroid;
+    }
+
+    @Override
+    public WindowAndroid getTopLevelNativeWindow() {
+        return nativeGetTopLevelNativeWindow(mNativeWebContentsAndroid);
     }
 
     @Override
@@ -557,6 +563,7 @@ import java.util.UUID;
 
     private static native WebContents nativeFromNativePtr(long webContentsAndroidPtr);
 
+    private native WindowAndroid nativeGetTopLevelNativeWindow(long nativeWebContentsAndroid);
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
     private native boolean nativeIsLoading(long nativeWebContentsAndroid);

@@ -21,7 +21,6 @@ import org.chromium.IsReadyToPayService;
 import org.chromium.IsReadyToPayServiceCallback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -143,13 +142,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         if (mIsReadyToPayService != null) {
             sendIsReadyToPayIntentToPaymentApp();
         } else {
-            ContentViewCore contentView = ContentViewCore.fromWebContents(mWebContents);
-            if (contentView == null) {
-                respondToGetInstrumentsQuery(null);
-                return;
-            }
-
-            WindowAndroid window = contentView.getWindowAndroid();
+            WindowAndroid window = mWebContents.getTopLevelNativeWindow();
             if (window == null) {
                 respondToGetInstrumentsQuery(null);
                 return;
@@ -248,13 +241,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
 
         mInstrumentDetailsCallback = callback;
 
-        ContentViewCore contentView = ContentViewCore.fromWebContents(mWebContents);
-        if (contentView == null) {
-            notifyError();
-            return;
-        }
-
-        WindowAndroid window = contentView.getWindowAndroid();
+        WindowAndroid window = mWebContents.getTopLevelNativeWindow();
         if (window == null) {
             notifyError();
             return;

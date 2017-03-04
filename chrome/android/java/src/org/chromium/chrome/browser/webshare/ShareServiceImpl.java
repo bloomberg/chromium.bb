@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.ui.base.WindowAndroid;
@@ -82,10 +81,7 @@ public class ShareServiceImpl implements ShareService {
     private static Activity activityFromWebContents(@Nullable WebContents webContents) {
         if (webContents == null) return null;
 
-        ContentViewCore contentViewCore = ContentViewCore.fromWebContents(webContents);
-        if (contentViewCore == null) return null;
-
-        WindowAndroid window = contentViewCore.getWindowAndroid();
+        WindowAndroid window = webContents.getTopLevelNativeWindow();
         if (window == null) return null;
 
         return window.getActivity().get();

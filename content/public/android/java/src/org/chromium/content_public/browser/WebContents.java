@@ -11,6 +11,7 @@ import android.os.Parcelable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.OverscrollRefreshHandler;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * The WebContents Java wrapper to allow communicating with the native WebContents object.
@@ -37,6 +38,11 @@ import org.chromium.ui.OverscrollRefreshHandler;
  * webContents = bundle.get("WEBCONTENTSKEY");
  */
 public interface WebContents extends Parcelable {
+    /**
+     * @return The top level WindowAndroid associated with this WebContents.  This can be null.
+     */
+    WindowAndroid getTopLevelNativeWindow();
+
     /**
      * Deletes the Web Contents object.
      */

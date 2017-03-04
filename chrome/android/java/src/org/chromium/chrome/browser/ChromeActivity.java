@@ -2059,10 +2059,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Nullable public static ChromeActivity fromWebContents(@Nullable WebContents webContents) {
         if (webContents == null) return null;
 
-        ContentViewCore contentViewCore = ContentViewCore.fromWebContents(webContents);
-        if (contentViewCore == null) return null;
-
-        WindowAndroid window = contentViewCore.getWindowAndroid();
+        WindowAndroid window = webContents.getTopLevelNativeWindow();
         if (window == null) return null;
 
         Activity activity = window.getActivity().get();

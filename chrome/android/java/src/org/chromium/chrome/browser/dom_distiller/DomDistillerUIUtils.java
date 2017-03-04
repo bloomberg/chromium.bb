@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChange
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -118,10 +117,7 @@ public final class DomDistillerUIUtils {
     private static Activity getActivityFromWebContents(WebContents webContents) {
         if (webContents == null) return null;
 
-        ContentViewCore contentView = ContentViewCore.fromWebContents(webContents);
-        if (contentView == null) return null;
-
-        WindowAndroid window = contentView.getWindowAndroid();
+        WindowAndroid window = webContents.getTopLevelNativeWindow();
         if (window == null) return null;
 
         return window.getActivity().get();

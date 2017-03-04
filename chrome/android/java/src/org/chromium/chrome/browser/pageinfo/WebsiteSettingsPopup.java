@@ -68,7 +68,6 @@ import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.location.LocationUtils;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -312,7 +311,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
         if (offlinePageCreationDate != null) {
             mOfflinePageCreationDate = offlinePageCreationDate;
         }
-        mWindowAndroid = ContentViewCore.fromWebContents(mTab.getWebContents()).getWindowAndroid();
+        mWindowAndroid = mTab.getWebContents().getTopLevelNativeWindow();
         mContentPublisher = publisher;
 
         // Find the container and all it's important subviews.

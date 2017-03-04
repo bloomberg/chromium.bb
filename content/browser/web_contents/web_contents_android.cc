@@ -39,6 +39,7 @@
 #include "net/android/network_library.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/android/overscroll_refresh_handler.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -282,6 +283,15 @@ WebContentsAndroid::~WebContentsAndroid() {
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(obj_);
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+WebContentsAndroid::GetTopLevelNativeWindow(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
+  ui::WindowAndroid* window_android = web_contents_->GetTopLevelNativeWindow();
+  if (!window_android)
+    return nullptr;
+  return window_android->GetJavaObject();
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetTitle(
