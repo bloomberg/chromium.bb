@@ -199,9 +199,6 @@ class Port(object):
     def supports_per_test_timeout(self):
         return False
 
-    def default_pixel_tests(self):
-        return True
-
     def default_smoke_test_only(self):
         return False
 

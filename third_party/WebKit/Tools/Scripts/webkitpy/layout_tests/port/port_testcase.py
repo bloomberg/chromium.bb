@@ -126,9 +126,6 @@ class PortTestCase(LoggingTestCase):
         self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Release'})).default_timeout_ms(), 6000)
         self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Debug'})).default_timeout_ms(), 18000)
 
-    def test_default_pixel_tests(self):
-        self.assertEqual(self.make_port().default_pixel_tests(), True)
-
     def test_driver_cmd_line(self):
         port = self.make_port()
         self.assertTrue(len(port.driver_cmd_line()))

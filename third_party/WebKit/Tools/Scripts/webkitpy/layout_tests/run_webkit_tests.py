@@ -190,12 +190,14 @@ def parse_args(args):
                 "--pixel-tests",
                 dest="pixel_tests",
                 action="store_true",
-                help="Enable pixel-to-pixel PNG comparisons"),
+                default=True,
+                help="Enable pixel-to-pixel PNG comparisons (enabled by default)"),
             optparse.make_option(
                 "--no-pixel",
                 "--no-pixel-tests",
                 dest="pixel_tests",
                 action="store_false",
+                default=True,
                 help="Disable pixel-to-pixel PNG comparisons"),
             # FIXME: we should support a comma separated list with
             # --pixel-test-directory as well.
@@ -484,9 +486,6 @@ def _set_up_derived_options(port, options, args):
 
     if not options.configuration:
         options.configuration = port.default_configuration()
-
-    if options.pixel_tests is None:
-        options.pixel_tests = port.default_pixel_tests()
 
     if not options.time_out_ms:
         options.time_out_ms = str(port.default_timeout_ms())

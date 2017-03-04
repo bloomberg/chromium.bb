@@ -427,8 +427,8 @@ class TestPort(Port):
             'linux': ['precise', 'trusty']
         }
 
-    def default_pixel_tests(self):
-        return True
+    def buildbot_archives_baselines(self):
+        return self._name != 'test-win-win7'
 
     def _path_to_driver(self):
         # This routine shouldn't normally be called, but it is called by
