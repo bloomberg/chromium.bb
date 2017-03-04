@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/test/base/testing_profile.h"
@@ -19,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
 class TestOmniboxClient : public OmniboxClient {
  public:
   explicit TestOmniboxClient(Profile* profile)
@@ -31,62 +31,10 @@ class TestOmniboxClient : public OmniboxClient {
       override {
     return base::MakeUnique<ChromeAutocompleteProviderClient>(profile_);
   }
-  std::unique_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
-      const base::string16& text,
-      const AutocompleteMatch& match,
-      const AutocompleteMatch& alternate_nav_match) override {
-    return nullptr;
-  }
-  bool CurrentPageExists() const override { return true; }
-  const GURL& GetURL() const override { return GURL::EmptyGURL(); }
-  const base::string16& GetTitle() const override {
-    return base::EmptyString16();
-  }
-  gfx::Image GetFavicon() const override { return gfx::Image(); }
-  bool IsInstantNTP() const override { return false; }
-  bool IsSearchResultsPage() const override { return false; }
-  bool IsLoading() const override { return false; }
-  bool IsPasteAndGoEnabled() const override { return false; }
-  bool IsNewTabPage(const std::string& url) const override { return false; }
-  bool IsHomePage(const std::string& url) const override { return false; }
   const SessionID& GetSessionID() const override { return session_id_; }
-  bookmarks::BookmarkModel* GetBookmarkModel() override { return nullptr; }
-  TemplateURLService* GetTemplateURLService() override { return nullptr; }
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
     return scheme_classifier_;
   }
-  AutocompleteClassifier* GetAutocompleteClassifier() override {
-    return nullptr;
-  }
-  gfx::Image GetIconIfExtensionMatch(
-      const AutocompleteMatch& match) const override {
-    return gfx::Image();
-  }
-  bool ProcessExtensionKeyword(TemplateURL* template_url,
-                               const AutocompleteMatch& match,
-                               WindowOpenDisposition disposition,
-                               OmniboxNavigationObserver* observer) override {
-    return false;
-  }
-  void OnInputStateChanged() override {}
-  void OnFocusChanged(OmniboxFocusState state,
-                      OmniboxFocusChangeReason reason) override {}
-  void OnResultChanged(const AutocompleteResult& result,
-                       bool default_match_changed,
-                       const base::Callback<void(const SkBitmap& bitmap)>&
-                           on_bitmap_fetched) override {}
-  void OnCurrentMatchChanged(const AutocompleteMatch& match) override {}
-  void OnTextChanged(const AutocompleteMatch& current_match,
-                     bool user_input_in_progress,
-                     base::string16& user_text,
-                     const AutocompleteResult& result,
-                     bool is_popup_open,
-                     bool has_focus) override {}
-  void OnInputAccepted(const AutocompleteMatch& match) override {}
-  void OnRevert() override {}
-  void OnURLOpenedFromOmnibox(OmniboxLog* log) override {}
-  void OnBookmarkLaunched() override {}
-  void DiscardNonCommittedNavigations() override {}
 
  private:
   Profile* profile_;

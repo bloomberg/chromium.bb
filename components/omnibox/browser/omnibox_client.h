@@ -43,54 +43,53 @@ class OmniboxClient {
   // Returns an OmniboxNavigationObserver specific to the embedder context. May
   // return null if the embedder has no need to observe omnibox navigations.
   virtual std::unique_ptr<OmniboxNavigationObserver>
-  CreateOmniboxNavigationObserver(
-      const base::string16& text,
-      const AutocompleteMatch& match,
-      const AutocompleteMatch& alternate_nav_match) = 0;
+  CreateOmniboxNavigationObserver(const base::string16& text,
+                                  const AutocompleteMatch& match,
+                                  const AutocompleteMatch& alternate_nav_match);
 
   // Returns whether there is any associated current page.  For example, during
   // startup or shutdown, the omnibox may exist but have no attached page.
-  virtual bool CurrentPageExists() const = 0;
+  virtual bool CurrentPageExists() const;
 
   // Returns the URL of the current page.
-  virtual const GURL& GetURL() const = 0;
+  virtual const GURL& GetURL() const;
 
   // Returns the title of the current page.
-  virtual const base::string16& GetTitle() const = 0;
+  virtual const base::string16& GetTitle() const;
 
   // Returns the favicon of the current page.
-  virtual gfx::Image GetFavicon() const = 0;
+  virtual gfx::Image GetFavicon() const;
 
   // Returns true if the visible entry is a New Tab Page rendered by Instant.
-  virtual bool IsInstantNTP() const = 0;
+  virtual bool IsInstantNTP() const;
 
   // Returns true if the committed entry is a search results page.
-  virtual bool IsSearchResultsPage() const = 0;
+  virtual bool IsSearchResultsPage() const;
 
   // Returns whether the current page is loading.
-  virtual bool IsLoading() const = 0;
+  virtual bool IsLoading() const;
 
   // Returns whether paste-and-go functionality is enabled.
-  virtual bool IsPasteAndGoEnabled() const = 0;
+  virtual bool IsPasteAndGoEnabled() const;
 
   // Returns whether |url| corresponds to the new tab page.
-  virtual bool IsNewTabPage(const std::string& url) const = 0;
+  virtual bool IsNewTabPage(const std::string& url) const;
 
   // Returns whether |url| corresponds to the user's home page.
-  virtual bool IsHomePage(const std::string& url) const = 0;
+  virtual bool IsHomePage(const std::string& url) const;
 
   // Returns the session ID of the current page.
   virtual const SessionID& GetSessionID() const = 0;
 
-  virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
-  virtual TemplateURLService* GetTemplateURLService() = 0;
+  virtual bookmarks::BookmarkModel* GetBookmarkModel();
+  virtual TemplateURLService* GetTemplateURLService();
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
-  virtual AutocompleteClassifier* GetAutocompleteClassifier() = 0;
+  virtual AutocompleteClassifier* GetAutocompleteClassifier();
 
   // Returns the icon corresponding to |match| if match is an extension match
   // and an empty icon otherwise.
   virtual gfx::Image GetIconIfExtensionMatch(
-      const AutocompleteMatch& match) const = 0;
+      const AutocompleteMatch& match) const;
 
   // Checks whether |template_url| is an extension keyword; if so, asks the
   // ExtensionOmniboxEventRouter to process |match| for it and returns true.
@@ -101,25 +100,25 @@ class OmniboxClient {
   virtual bool ProcessExtensionKeyword(TemplateURL* template_url,
                                        const AutocompleteMatch& match,
                                        WindowOpenDisposition disposition,
-                                       OmniboxNavigationObserver* observer) = 0;
+                                       OmniboxNavigationObserver* observer);
 
   // Called to notify clients that the omnibox input state has changed.
-  virtual void OnInputStateChanged() = 0;
+  virtual void OnInputStateChanged() {}
 
   // Called to notify clients that the omnibox focus state has changed.
   virtual void OnFocusChanged(OmniboxFocusState state,
-                              OmniboxFocusChangeReason reason) = 0;
+                              OmniboxFocusChangeReason reason) {}
 
   // Called when the autocomplete result has changed. If the embedder supports
   // fetching of bitmaps for URLs (not all embedders do), |on_bitmap_fetched|
   // will be called when the bitmap has been fetched.
-  virtual void OnResultChanged(
-      const AutocompleteResult& result,
-      bool default_match_changed,
-      const BitmapFetchedCallback& on_bitmap_fetched) = 0;
+  virtual void OnResultChanged(const AutocompleteResult& result,
+                               bool default_match_changed,
+                               const BitmapFetchedCallback& on_bitmap_fetched) {
+  }
 
   // Called when the current autocomplete match has changed.
-  virtual void OnCurrentMatchChanged(const AutocompleteMatch& match) = 0;
+  virtual void OnCurrentMatchChanged(const AutocompleteMatch& match) {}
 
   // Called when the text may have changed in the edit.
   virtual void OnTextChanged(const AutocompleteMatch& current_match,
@@ -127,22 +126,22 @@ class OmniboxClient {
                              base::string16& user_text,
                              const AutocompleteResult& result,
                              bool is_popup_open,
-                             bool has_focus) = 0;
+                             bool has_focus) {}
 
   // Called when input has been accepted.
-  virtual void OnInputAccepted(const AutocompleteMatch& match) = 0;
+  virtual void OnInputAccepted(const AutocompleteMatch& match) {}
 
   // Called when the edit model is being reverted back to its unedited state.
-  virtual void OnRevert() = 0;
+  virtual void OnRevert() {}
 
   // Called to notify clients that a URL was opened from the omnibox.
-  virtual void OnURLOpenedFromOmnibox(OmniboxLog* log) = 0;
+  virtual void OnURLOpenedFromOmnibox(OmniboxLog* log) {}
 
   // Called when a bookmark is launched from the omnibox.
-  virtual void OnBookmarkLaunched() = 0;
+  virtual void OnBookmarkLaunched() {}
 
   // Discards the state for all pending and transient navigations.
-  virtual void DiscardNonCommittedNavigations() = 0;
+  virtual void DiscardNonCommittedNavigations() {}
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_
