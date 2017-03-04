@@ -290,6 +290,9 @@ function load() {
   window.setTimeout(function() {
     document.documentElement.classList.remove('loading');
     chrome.send('onFinishedLoadingOptions');
+    chrome.send(
+        'metricsHandler:recordTime',
+        ['Settings.TimeUntilInteractive', window.performance.now()]);
   }, 0);
 }
 
