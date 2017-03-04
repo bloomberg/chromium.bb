@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,12 @@ package org.chromium.content_shell_apk;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -16,31 +22,36 @@ import java.util.concurrent.ExecutionException;
 /**
  * Test suite to verify the behavior of the shell management logic.
  */
-public class ContentShellShellManagementTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ContentShellShellManagementTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
     private static final String TEST_PAGE_1 = UrlUtils.encodeHtmlDataUri(
             "<html><body style='background: red;'></body></html>");
     private static final String TEST_PAGE_2 = UrlUtils.encodeHtmlDataUri(
             "<html><body style='background: green;'></body></html>");
 
+    @Test
     @SmallTest
     @Feature({"Main"})
     @RetryOnFailure
     public void testMultipleShellsLaunched() throws InterruptedException, ExecutionException {
-        final ContentShellActivity activity = launchContentShellWithUrl(TEST_PAGE_1);
-        assertEquals(TEST_PAGE_1, activity.getActiveShell().getContentViewCore()
-                .getWebContents().getUrl());
+        final ContentShellActivity activity =
+                mActivityTestRule.launchContentShellWithUrl(TEST_PAGE_1);
+        Assert.assertEquals(TEST_PAGE_1,
+                activity.getActiveShell().getContentViewCore().getWebContents().getUrl());
 
         Shell previousActiveShell = activity.getActiveShell();
-        assertFalse(previousActiveShell.isDestroyed());
+        Assert.assertFalse(previousActiveShell.isDestroyed());
 
-        loadNewShell(TEST_PAGE_2);
-        assertEquals(TEST_PAGE_2, activity.getActiveShell().getContentViewCore()
-                .getWebContents().getUrl());
+        mActivityTestRule.loadNewShell(TEST_PAGE_2);
+        Assert.assertEquals(TEST_PAGE_2,
+                activity.getActiveShell().getContentViewCore().getWebContents().getUrl());
 
-        assertNotSame(previousActiveShell, activity.getActiveShell());
-        assertTrue(previousActiveShell.isDestroyed());
-        assertFalse(previousActiveShell.getContentViewCore().isAlive());
+        Assert.assertNotSame(previousActiveShell, activity.getActiveShell());
+        Assert.assertTrue(previousActiveShell.isDestroyed());
+        Assert.assertFalse(previousActiveShell.getContentViewCore().isAlive());
     }
 
 }

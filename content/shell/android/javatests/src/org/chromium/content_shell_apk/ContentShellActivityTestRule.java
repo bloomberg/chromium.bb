@@ -1,74 +1,78 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.content_shell_apk;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.app.Instrumentation;
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.ActivityTestRule;
 
-import org.chromium.base.test.BaseActivityInstrumentationTestCase;
+import org.junit.Assert;
+
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
-import org.chromium.content_shell_apk.ContentShellActivityTestRule.RerunWithUpdatedContainerView;
 import org.chromium.content_shell_apk.ContentShellTestCommon.TestCommonCallback;
 
-import java.lang.reflect.AnnotatedElement;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Base test class for all ContentShell based tests.
+ * ActivityTestRule for ContentShellActivity.
+ *
+ * Test can use this ActivityTestRule to launch or get ContentShellActivity.
  */
-@CommandLineFlags.Add(ContentSwitches.ENABLE_TEST_INTENTS)
-public class ContentShellTestBase extends BaseActivityInstrumentationTestCase<ContentShellActivity>
+public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellActivity>
         implements TestCommonCallback<ContentShellActivity> {
-    protected static final long WAIT_PAGE_LOADING_TIMEOUT_SECONDS =
-            ContentShellTestCommon.WAIT_PAGE_LOADING_TIMEOUT_SECONDS;
+    private final ContentShellTestCommon mDelegate;
+    private final boolean mLaunchActivity;
 
-    private ContentShellTestCommon mDelegate;
+    protected static final long WAIT_PAGE_LOADING_TIMEOUT_SECONDS = scaleTimeout(15);
 
-    public ContentShellTestBase() {
-        super(ContentShellActivity.class);
+    public ContentShellActivityTestRule() {
+        this(false, false);
+    }
+
+    public ContentShellActivityTestRule(boolean initialTouchMode, boolean launchActivity) {
+        super(ContentShellActivity.class, initialTouchMode, launchActivity);
+        mLaunchActivity = launchActivity;
         mDelegate = new ContentShellTestCommon(this);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public ContentShellActivity getActivityForTestCommon() {
         return getActivity();
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public Instrumentation getInstrumentationForTestCommon() {
-        return getInstrumentation();
+        return InstrumentationRegistry.getInstrumentation();
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public ContentShellActivity launchActivityWithIntentForTestCommon(Intent intent) {
-        setActivityIntent(intent);
-        return getActivity();
+    public ContentShellActivity launchActivityWithIntentForTestCommon(Intent t) {
+        return launchActivity(t);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void runOnUiThreadForTestCommon(Runnable runnable) throws Throwable {
-        runTestOnUiThread(runnable);
+        runOnUiThread(runnable);
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected void beforeActivityLaunched() {
         mDelegate.assertScreenIsOn();
     }
 
@@ -77,18 +81,17 @@ public class ContentShellTestBase extends BaseActivityInstrumentationTestCase<Co
      * The URL can be null, in which case will default to ContentShellActivity.DEFAULT_SHELL_URL.
      */
     public ContentShellActivity launchContentShellWithUrl(String url) {
+        Assert.assertFalse(mLaunchActivity);
         return mDelegate.launchContentShellWithUrl(url);
     }
 
-    // TODO(cjhopman): These functions are inconsistent with launchContentShell***. Should be
-    // startContentShell*** and should use the url exactly without the getTestFileUrl call. Possibly
-    // these two ways of starting the activity (launch* and start*) should be merged into one.
     /**
      * Starts the content shell activity with the provided test url.
      * The url is synchronously loaded.
      * @param url Test url to load.
      */
-    public void startActivityWithTestUrl(String url) {
+    public void launchContentShellWithUrlSync(String url) {
+        Assert.assertFalse(mLaunchActivity);
         mDelegate.launchContentShellWithUrlSync(url);
     }
 
@@ -165,24 +168,17 @@ public class ContentShellTestBase extends BaseActivityInstrumentationTestCase<Co
      * Replaces the {@link ContentViewCore#mContainerView} with a newly created
      * {@link ContentView}.
      */
-    @SuppressWarnings("javadoc")
     public void replaceContainerView() throws Throwable {
         mDelegate.replaceContainerView();
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void runTest() throws Throwable {
-        super.runTest();
-        try {
-            AnnotatedElement method = getClass().getMethod(getName(), (Class[]) null);
-            if (method.isAnnotationPresent(RerunWithUpdatedContainerView.class)) {
-                replaceContainerView();
-                super.runTest();
-            }
-        } catch (Throwable e) {
-            throw new Throwable("@RerunWithUpdatedContainerView failed."
-                    + " See ContentShellTestBase#runTest.", e);
-        }
-    }
+    /**
+     * Annotation for tests that should be executed a second time after replacing
+     * the ContentViewCore's container view.
+     * <p>Please note that activity launch is only invoked once before both runs,
+     * and that any state changes produced by the first run are visible to the second run.
+     */
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface RerunWithUpdatedContainerView {}
 }
