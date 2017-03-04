@@ -133,9 +133,10 @@ Product* InstallerState::AddProductInDirectory(
     return nullptr;
 
   if (target_path_.empty()) {
-    target_path_ = product_dir ? *product_dir : GetChromeInstallPath(
-                                                    system_install(),
-                                                    the_product.distribution());
+    DCHECK_EQ(BrowserDistribution::GetDistribution(),
+              the_product.distribution());
+    target_path_ =
+        product_dir ? *product_dir : GetChromeInstallPath(system_install());
   }
 
   if (state_key_.empty())

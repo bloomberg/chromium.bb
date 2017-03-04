@@ -823,6 +823,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                const base::CommandLine& cmd_line) {
   InstallStatus status = installer::UNINSTALL_CONFIRMED;
   BrowserDistribution* browser_dist = product.distribution();
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), browser_dist);
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe));
 
@@ -883,7 +884,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (cmd_line.HasSwitch(installer::switches::kSelfDestruct) &&
       !installer_state.system_install()) {
     const base::FilePath system_chrome_path(
-        GetChromeInstallPath(true, browser_dist).Append(installer::kChromeExe));
+        GetChromeInstallPath(true).Append(installer::kChromeExe));
     VLOG(1) << "Retargeting user-generated Chrome shortcuts.";
     if (base::PathExists(system_chrome_path)) {
       RetargetUserShortcutsWithArgs(installer_state, product, chrome_exe,

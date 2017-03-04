@@ -198,9 +198,7 @@ class InstallWorkerTest : public testing::Test {
     product_state.set_version(new base::Version(*current_version_));
     product_state.set_brand(L"TEST");
     product_state.set_eula_accepted(1);
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    base::FilePath install_path =
-        installer::GetChromeInstallPath(system_level, dist);
+    base::FilePath install_path = installer::GetChromeInstallPath(system_level);
     product_state.SetUninstallProgram(
       install_path.AppendASCII(current_version_->GetString())
           .Append(installer::kInstallerDir)

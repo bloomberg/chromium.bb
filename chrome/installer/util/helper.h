@@ -9,8 +9,6 @@
 
 #include "base/files/file_path.h"
 
-class BrowserDistribution;
-
 namespace installer {
 
 // This function returns the install path for Chrome depending on whether its
@@ -18,8 +16,7 @@ namespace installer {
 // system_install: if true, the function returns system wide location
 //                 (ProgramFiles\Google). Otherwise it returns user specific
 //                 location (Document And Settings\<user>\Local Settings...)
-base::FilePath GetChromeInstallPath(bool system_install,
-                                    BrowserDistribution* dist);
+base::FilePath GetChromeInstallPath(bool system_install);
 
 }  // namespace installer
 

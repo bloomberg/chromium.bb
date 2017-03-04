@@ -178,13 +178,6 @@ base::string16 GoogleChromeDistribution::GetBrowserProgIdDesc() {
   return kBrowserProgIdDesc;
 }
 
-base::string16 GoogleChromeDistribution::GetInstallSubDir() {
-  base::string16 sub_dir(installer::kGoogleChromeInstallSubDir1);
-  sub_dir.append(L"\\");
-  sub_dir.append(installer::kGoogleChromeInstallSubDir2);
-  return sub_dir;
-}
-
 base::string16 GoogleChromeDistribution::GetPublisherName() {
   const base::string16& publisher_name =
       installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);

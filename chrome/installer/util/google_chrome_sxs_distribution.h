@@ -27,7 +27,6 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   base::string16 GetBaseAppId() override;
   base::string16 GetBrowserProgIdPrefix() override;
   base::string16 GetBrowserProgIdDesc() override;
-  base::string16 GetInstallSubDir() override;
   base::string16 GetUninstallRegPath() override;
   DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
   base::string16 GetCommandExecuteImplClsid() override;

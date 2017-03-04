@@ -608,6 +608,10 @@ static_library("constants") {
     # implemented in //ui/base, so we need that dependency.
     deps += [ "//ui/base" ]
   }
+
+  if (is_win) {
+    deps += [ "//chrome/install_static:install_static_util" ]
+  }
 }
 
 if (is_win) {

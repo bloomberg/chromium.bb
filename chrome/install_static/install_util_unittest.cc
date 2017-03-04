@@ -343,6 +343,26 @@ class InstallStaticUtilTest
   DISALLOW_COPY_AND_ASSIGN(InstallStaticUtilTest);
 };
 
+TEST_P(InstallStaticUtilTest, GetChromeInstallSubDirectory) {
+#if defined(GOOGLE_CHROME_BUILD)
+  // The directory strings for the brand's install modes; parallel to
+  // kInstallModes.
+  static constexpr const wchar_t* kInstallDirs[] = {
+      L"Google\\Chrome", L"Google\\Chrome SxS",
+  };
+#else
+  // The directory strings for the brand's install modes; parallel to
+  // kInstallModes.
+  static constexpr const wchar_t* kInstallDirs[] = {
+      L"Chromium",
+  };
+#endif
+  static_assert(arraysize(kInstallDirs) == NUM_INSTALL_MODES,
+                "kInstallDirs out of date.");
+  EXPECT_THAT(GetChromeInstallSubDirectory(),
+              StrCaseEq(kInstallDirs[std::get<0>(GetParam())]));
+}
+
 TEST_P(InstallStaticUtilTest, GetAppGuid) {
   // For brands that do not integrate with Omaha/Google Update, the app guid is
   // an empty string.

@@ -24,6 +24,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/fake_installation_state.h"
 #include "chrome/installer/util/fake_product_state.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -183,9 +184,8 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   EXPECT_EQ(InstallerState::USER_LEVEL, installer_state.level());
   EXPECT_EQ(InstallerState::SINGLE_INSTALL_OR_UPDATE,
             installer_state.operation());
-  EXPECT_TRUE(wcsstr(
-      installer_state.target_path().value().c_str(),
-      BrowserDistribution::GetDistribution()->GetInstallSubDir().c_str()));
+  EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
+                     install_static::GetChromeInstallSubDirectory().c_str()));
   EXPECT_FALSE(installer_state.verbose_logging());
   EXPECT_EQ(installer_state.state_key(),
             BrowserDistribution::GetDistribution()->GetStateKey());
@@ -202,9 +202,8 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   EXPECT_EQ(InstallerState::SYSTEM_LEVEL, installer_state.level());
   EXPECT_EQ(InstallerState::SINGLE_INSTALL_OR_UPDATE,
             installer_state.operation());
-  EXPECT_TRUE(wcsstr(
-      installer_state.target_path().value().c_str(),
-      BrowserDistribution::GetDistribution()->GetInstallSubDir().c_str()));
+  EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
+                     install_static::GetChromeInstallSubDirectory().c_str()));
   EXPECT_TRUE(installer_state.verbose_logging());
   EXPECT_EQ(installer_state.state_key(),
             BrowserDistribution::GetDistribution()->GetStateKey());

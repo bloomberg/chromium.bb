@@ -64,10 +64,6 @@ base::string16 GoogleChromeDistribution::GetBrowserProgIdDesc() {
   return base::string16();
 }
 
-base::string16 GoogleChromeDistribution::GetInstallSubDir() {
-  return base::string16();
-}
-
 base::string16 GoogleChromeDistribution::GetPublisherName() {
   return base::string16();
 }

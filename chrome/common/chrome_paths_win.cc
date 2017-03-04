@@ -16,7 +16,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/install_static/install_util.h"
 #include "components/nacl/common/nacl_switches.h"
 
 namespace chrome {
@@ -45,8 +45,7 @@ bool GetUserDirectory(int csidl_folder, base::FilePath* result) {
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
   if (!PathService::Get(base::DIR_LOCAL_APP_DATA, result))
     return false;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  *result = result->Append(dist->GetInstallSubDir());
+  *result = result->Append(install_static::GetChromeInstallSubDirectory());
   *result = result->Append(chrome::kUserDataDirname);
   return true;
 }
@@ -54,8 +53,7 @@ bool GetDefaultUserDataDirectory(base::FilePath* result) {
 bool GetDefaultRoamingUserDataDirectory(base::FilePath* result) {
   if (!PathService::Get(base::DIR_APP_DATA, result))
     return false;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  *result = result->Append(dist->GetInstallSubDir());
+  *result = result->Append(install_static::GetChromeInstallSubDirectory());
   *result = result->Append(chrome::kUserDataDirname);
   return true;
 }

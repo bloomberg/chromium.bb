@@ -27,7 +27,6 @@
 #include "base/win/scoped_comptr.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/test/scoped_install_details.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "google_update/google_update_idl.h"
@@ -542,8 +541,8 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
     // standard install location for this mode (system-level or user-level).
     base::FilePath file_exe;
     ASSERT_TRUE(PathService::Get(base::FILE_EXE, &file_exe));
-    base::FilePath install_dir(installer::GetChromeInstallPath(
-        system_level_install_, BrowserDistribution::GetDistribution()));
+    base::FilePath install_dir(
+        installer::GetChromeInstallPath(system_level_install_));
     file_exe_override_.reset(new base::ScopedPathOverride(
         base::FILE_EXE, install_dir.Append(file_exe.BaseName()),
         true /* is_absolute */, false /* create */));

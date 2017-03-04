@@ -20,6 +20,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
@@ -160,10 +161,6 @@ base::string16 BrowserDistribution::GetBrowserProgIdDesc() {
 }
 
 
-base::string16 BrowserDistribution::GetInstallSubDir() {
-  return L"Chromium";
-}
-
 base::string16 BrowserDistribution::GetPublisherName() {
   return L"Chromium";
 }
@@ -187,7 +184,8 @@ base::string16 BrowserDistribution::GetDistributionData(HKEY root_key) {
 }
 
 base::string16 BrowserDistribution::GetRegistryPath() {
-  return base::string16(L"Software\\").append(GetInstallSubDir());
+  return base::string16(L"Software\\")
+      .append(install_static::GetChromeInstallSubDirectory());
 }
 
 base::string16 BrowserDistribution::GetUninstallRegPath() {

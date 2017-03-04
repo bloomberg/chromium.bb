@@ -311,6 +311,13 @@ bool IsSystemInstall() {
   return InstallDetails::Get().system_level();
 }
 
+std::wstring GetChromeInstallSubDirectory() {
+  std::wstring result;
+  AppendChromeInstallSubDirectory(InstallDetails::Get().mode(),
+                                  true /* include_suffix */, &result);
+  return result;
+}
+
 const wchar_t* GetAppGuid() {
   return InstallDetails::Get().app_guid();
 }

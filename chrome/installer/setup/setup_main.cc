@@ -490,6 +490,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
     // on top of an existing system-level installation.
     const Product& product = installer_state.product();
     BrowserDistribution* browser_dist = product.distribution();
+    DCHECK_EQ(BrowserDistribution::GetDistribution(), browser_dist);
 
     const ProductState* user_level_product_state =
         original_state.GetProductState(false);
@@ -511,8 +512,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
       // Instruct Google Update to launch the existing system-level Chrome.
       // There should be no error dialog.
       base::FilePath install_path(
-          installer::GetChromeInstallPath(true,  // system
-                                          browser_dist));
+          installer::GetChromeInstallPath(true /* system_install */));
       if (install_path.empty()) {
         // Give up if we failed to construct the install path.
         *status = installer::OS_ERROR;
@@ -590,17 +590,16 @@ installer::InstallStatus UninstallProducts(
     const InstallerState& installer_state,
     const base::FilePath& setup_exe,
     const base::CommandLine& cmd_line) {
+  DCHECK_EQ(BrowserDistribution::GetDistribution(),
+            installer_state.product().distribution());
   // System-level Chrome will be launched via this command if its program gets
   // set below.
   base::CommandLine system_level_cmd(base::CommandLine::NO_PROGRAM);
 
-  const Product& chrome = installer_state.product();
   if (cmd_line.HasSwitch(installer::switches::kSelfDestruct) &&
       !installer_state.system_install()) {
-    BrowserDistribution* dist = chrome.distribution();
     const base::FilePath system_exe_path(
-        installer::GetChromeInstallPath(true, dist)
-            .Append(installer::kChromeExe));
+        installer::GetChromeInstallPath(true).Append(installer::kChromeExe));
     system_level_cmd.SetProgram(system_exe_path);
   }
 

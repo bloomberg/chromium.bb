@@ -98,8 +98,6 @@ class BrowserDistribution {
   // Returns the Browser ProgId description.
   virtual base::string16 GetBrowserProgIdDesc();
 
-  virtual base::string16 GetInstallSubDir();
-
   virtual base::string16 GetPublisherName();
 
   virtual base::string16 GetAppDescription();

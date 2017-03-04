@@ -34,7 +34,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -94,9 +93,8 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
     const base::FilePath& chrome_exe_path,
     bool system_level_install) {
   DCHECK_NE(InstallUtil::IsPerUserInstall(), system_level_install);
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::FilePath user_exe_path = installer::GetChromeInstallPath(false, dist);
-  base::FilePath machine_exe_path = installer::GetChromeInstallPath(true, dist);
+  base::FilePath user_exe_path = installer::GetChromeInstallPath(false);
+  base::FilePath machine_exe_path = installer::GetChromeInstallPath(true);
   if (!base::FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),
                                         user_exe_path.value()) &&
       !base::FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),

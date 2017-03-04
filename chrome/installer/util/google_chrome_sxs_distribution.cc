@@ -59,11 +59,6 @@ base::string16 GoogleChromeSxSDistribution::GetBrowserProgIdDesc() {
   return kBrowserProgIdDesc;
 }
 
-base::string16 GoogleChromeSxSDistribution::GetInstallSubDir() {
-  return GoogleChromeDistribution::GetInstallSubDir().append(
-      installer::kSxSSuffix);
-}
-
 base::string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {
   return GoogleChromeDistribution::GetUninstallRegPath().append(
       installer::kSxSSuffix);

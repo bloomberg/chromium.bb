@@ -51,8 +51,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   base::string16 GetBrowserProgIdDesc() override;
 
-  base::string16 GetInstallSubDir() override;
-
   base::string16 GetPublisherName() override;
 
   base::string16 GetAppDescription() override;
