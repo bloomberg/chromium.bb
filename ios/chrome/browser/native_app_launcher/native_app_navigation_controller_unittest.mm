@@ -8,6 +8,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #include "ios/chrome/browser/native_app_launcher/native_app_infobar_delegate.h"
 #import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller.h"
@@ -16,6 +18,7 @@
 #import "ios/public/provider/chrome/browser/native_app_launcher/fake_native_app_metadata.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/fake_native_app_whitelist_manager.h"
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
+#import "testing/gtest_mac.h"
 
 @interface NativeAppNavigationController (Testing)
 - (void)recordInfobarDisplayedOfType:(NativeAppControllerType)type
@@ -115,6 +118,43 @@ TEST_F(NativeAppNavigationControllerTest, TestUMA) {
   [controller_ recordInfobarDisplayedOfType:NATIVE_APP_OPEN_POLICY_CONTROLLER
                            onLinkNavigation:NO];
   ExpectHandlerCalledAndReset(1);
+}
+
+// Tests presenting NativeAppInfoBar after page is loaded.
+TEST_F(NativeAppNavigationControllerTest, NativeAppInfoBar) {
+  SetExpectedActionName("MobileGALInstallInfoBarDirectNavigation");
+  InfoBarManagerImpl::CreateForWebState(web_state());
+
+  // Set up fake metadata.
+  FakeNativeAppWhitelistManager* fakeManager =
+      [[[FakeNativeAppWhitelistManager alloc] init] autorelease];
+  IOSChromeScopedTestingChromeBrowserProvider provider(
+      base::MakeUnique<FakeChromeBrowserProvider>(fakeManager));
+  FakeNativeAppMetadata* metadata =
+      [[[FakeNativeAppMetadata alloc] init] autorelease];
+  fakeManager.metadata = metadata;
+  metadata.appName = @"App";
+  metadata.appId = @"App-ID";
+
+  // Load the page to trigger infobar presentation.
+  LoadHtml(@"<html><body></body></html>", GURL("http://test.com"));
+
+  // Verify that infobar was presented
+  auto* infobar_manager = InfoBarManagerImpl::FromWebState(web_state());
+  ASSERT_EQ(1U, infobar_manager->infobar_count());
+  infobars::InfoBar* infobar = infobar_manager->infobar_at(0);
+  auto* delegate = infobar->delegate()->AsNativeAppInfoBarDelegate();
+  ASSERT_TRUE(delegate);
+
+  // Verify infobar appearance.
+  EXPECT_EQ("Open this page in the App app?",
+            base::UTF16ToUTF8(delegate->GetInstallText()));
+  EXPECT_EQ("Open this page in the App app?",
+            base::UTF16ToUTF8(delegate->GetLaunchText()));
+  EXPECT_EQ("Open in App", base::UTF16ToUTF8(delegate->GetOpenPolicyText()));
+  EXPECT_EQ("Just once", base::UTF16ToUTF8(delegate->GetOpenOnceText()));
+  EXPECT_EQ("Always", base::UTF16ToUTF8(delegate->GetOpenAlwaysText()));
+  EXPECT_NSEQ(@"App-ID", delegate->GetAppId());
 }
 
 TEST_F(NativeAppNavigationControllerTest,

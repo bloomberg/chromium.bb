@@ -7,9 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller_protocol.h"
-#import "ios/web/public/web_state/crw_web_controller_observer.h"
-
 @class Tab;
 
 namespace net {
@@ -23,8 +20,7 @@ class WebState;
 // NativeAppNavigationController brings up a GAL Infobar if the webpage directs
 // it to do so and there are no other circumstances that would suppress its
 // display.
-@interface NativeAppNavigationController
-    : NSObject<CRWWebControllerObserver, NativeAppNavigationControllerProtocol>
+@interface NativeAppNavigationController : NSObject
 
 // Designated initializer. The use of |tab| will be phased out in the future
 // when all the information needed can be fulfilled by |webState|. Use this

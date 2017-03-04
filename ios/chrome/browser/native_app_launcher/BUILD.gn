@@ -92,6 +92,7 @@ source_set("unit_tests_internal") {
     "//base/test:test_support",
     "//components/infobars/core",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/infobars:infobars",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",

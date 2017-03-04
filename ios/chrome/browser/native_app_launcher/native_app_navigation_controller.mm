@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #include "ios/chrome/browser/native_app_launcher/native_app_infobar_delegate.h"
+#import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller_protocol.h"
 #include "ios/chrome/browser/native_app_launcher/native_app_navigation_util.h"
 #import "ios/chrome/browser/open_url_util.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -23,8 +24,8 @@
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_types.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_thread.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,7 +34,9 @@
 
 using base::UserMetricsAction;
 
-@interface NativeAppNavigationController ()
+@interface NativeAppNavigationController ()<
+    CRWWebStateObserver,
+    NativeAppNavigationControllerProtocol>
 // Shows a native app infobar by looking at the page's URL and by checking
 // wheter that infobar should be bypassed or not.
 - (void)showInfoBarIfNecessary;
@@ -60,6 +63,8 @@ using base::UserMetricsAction;
   id<NativeAppMetadata> _metadata;
   // A set of appIds encoded as NSStrings.
   NSMutableSet* _appsPossiblyBeingInstalled;
+  // Allows this class to subscribe for CRWWebStateObserver callbacks.
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 }
 
 // Designated initializer. Use this instead of -init.
@@ -78,6 +83,8 @@ using base::UserMetricsAction;
     DCHECK(!tab || [tab webState] == webState);
     _tab = tab;
     _appsPossiblyBeingInstalled = [[NSMutableSet alloc] init];
+    _webStateObserver =
+        base::MakeUnique<web::WebStateObserverBridge>(webState, self);
   }
   return self;
 }
@@ -159,8 +166,7 @@ using base::UserMetricsAction;
   }
 }
 
-#pragma mark -
-#pragma mark NativeAppNavigationControllerProtocol methods
+#pragma mark - NativeAppNavigationControllerProtocol methods
 
 - (NSString*)appId {
   return [_metadata appId];
@@ -206,17 +212,19 @@ using base::UserMetricsAction;
   [_metadata updateWithUserAction:userAction];
 }
 
-#pragma mark -
-#pragma mark CRWWebControllerObserver methods
+#pragma mark - CRWWebStateObserver methods
 
-- (void)pageLoaded:(CRWWebController*)webController {
-  if (![_tab isPrerenderTab])
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  if (success && ![_tab isPrerenderTab])
     [self showInfoBarIfNecessary];
 }
 
-- (void)webControllerWillClose:(CRWWebController*)webController {
-  [webController removeObserver:self];
+- (void)webStateDestroyed:(web::WebState*)webState {
+  _webState = nullptr;
+  _webStateObserver.reset();
 }
+
+#pragma mark - Private methods
 
 - (void)appDidInstall:(NSNotification*)notification {
   [self removeAppFromNotification:notification];

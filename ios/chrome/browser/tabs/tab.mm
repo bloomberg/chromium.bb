@@ -2199,7 +2199,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
           initWithWebState:self.webState
       requestContextGetter:browserState_->GetRequestContext()
                        tab:self]);
-  [self.webController addObserver:nativeAppNavigationController_];
   DCHECK(nativeAppNavigationController_);
 }
 
