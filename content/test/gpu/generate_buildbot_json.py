@@ -601,6 +601,7 @@ FYI_WATERFALL = {
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'linux',
+      'instrumentation_type': 'tsan',
     },
     'Android Release (Nexus 5)': {
       'swarming_dimensions': [
@@ -1323,6 +1324,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'build_configs': ['Release', 'Release_x64'],
+        'disabled_instrumentation_types': ['tsan'],
       }
     ],
     # Don't run these tests on Android.
@@ -1384,6 +1386,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ]
   },
@@ -1391,6 +1394,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ]
   },
@@ -1399,6 +1403,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       }
     ],
   },
@@ -1406,6 +1411,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
   },
@@ -1422,6 +1428,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
   },
@@ -1446,6 +1453,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
   },
@@ -1453,6 +1461,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
   },
@@ -1460,6 +1469,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
   },
@@ -1467,6 +1477,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
     'asan_args': ['--is-asan'],
@@ -1533,6 +1544,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['linux'],
+        'disabled_instrumentation_types': ['tsan'],
       }
     ],
     'target_name': 'webgl_conformance',
@@ -1569,6 +1581,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
          # the Debug bots, which is too long.
         'build_configs': ['Release', 'Release_x64'],
         'predicate': Predicates.FYI_OPTIONAL_AND_V8,
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
     'disabled_tester_configs': [
@@ -1620,6 +1633,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
             'os': 'Ubuntu'
           },
         ],
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
     'target_name': 'webgl_conformance',
@@ -1751,6 +1765,11 @@ def tester_config_matches_tester(tester_name, tester_config, tc,
   if 'os_types' in tc:
     if not tester_config['os_type'] in tc['os_types']:
       return False
+  if 'instrumentation_type' in tester_config:
+    if 'disabled_instrumentation_types' in tc:
+      if tester_config['instrumentation_type'] in \
+            tc['disabled_instrumentation_types']:
+        return False
   if 'build_configs' in tc:
     if not tester_config['build_config'] in tc['build_configs']:
       return False
