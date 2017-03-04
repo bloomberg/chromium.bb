@@ -61,6 +61,13 @@ const base::Feature kEnableClipboardProvider {
 const base::Feature kSearchProviderWarmUpOnFocus{
     "OmniboxWarmUpSearchProviderOnFocus", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable the transmission of HTTPS URLs as part of the
+// context to the suggest server (assuming SearchProvider is permitted to
+// transmit URLs for context in the first place).
+const base::Feature kSearchProviderContextAllowHttpsUrls{
+    "OmniboixSearchProviderContextAllowHttpsUrls",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox
 
 namespace {

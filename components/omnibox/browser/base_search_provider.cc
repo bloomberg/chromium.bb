@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -337,13 +338,18 @@ bool BaseSearchProvider::CanSendURL(
   if (!current_page_url.is_valid())
     return false;
 
-  // Only allow HTTP URLs or HTTPS URLs for the same domain as the search
-  // provider.
-  if ((current_page_url.scheme() != url::kHttpScheme) &&
-      ((current_page_url.scheme() != url::kHttpsScheme) ||
-       !net::registry_controlled_domains::SameDomainOrHost(
-           current_page_url, suggest_url,
-           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
+  // Only allow HTTP URLs or HTTPS URLs.  For HTTPS URLs, require that either
+  // the appropriate feature flag is enabled or the URL is the same domain as
+  // the search provider.
+  const bool scheme_allowed =
+      (current_page_url.scheme() == url::kHttpScheme) ||
+      ((current_page_url.scheme() == url::kHttpsScheme) &&
+       (base::FeatureList::IsEnabled(
+            omnibox::kSearchProviderContextAllowHttpsUrls) ||
+        net::registry_controlled_domains::SameDomainOrHost(
+            current_page_url, suggest_url,
+            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)));
+  if (!scheme_allowed)
     return false;
 
   if (!client->TabSyncEnabledAndUnencrypted())
