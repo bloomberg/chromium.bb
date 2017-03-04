@@ -91,6 +91,10 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
   void removeChild(LayoutObject*) override;
+  ItemPosition selfAlignmentNormalBehavior(
+      const LayoutBox* child = nullptr) const override {
+    return ItemPositionStretch;
+  }
 
  private:
   enum FlexSign {

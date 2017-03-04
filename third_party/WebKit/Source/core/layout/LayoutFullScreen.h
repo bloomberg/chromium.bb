@@ -69,7 +69,6 @@ class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
   LayoutBlockFlow* m_placeholder;
   ItemPosition selfAlignmentNormalBehavior(
       const LayoutBox* child = nullptr) const override {
-    DCHECK(!child);
     return ItemPositionCenter;
   }
 };

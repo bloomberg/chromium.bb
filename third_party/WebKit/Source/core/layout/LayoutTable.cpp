@@ -297,17 +297,21 @@ void LayoutTable::updateLogicalWidth() {
       availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(
           marginStart, marginEnd, toLayoutBlockFlow(cb));
 
-    // Ensure we aren't bigger than our available width.
-    LayoutUnit maxWidth = maxPreferredLogicalWidth();
-    // scaledWidthFromPercentColumns depends on m_layoutStruct in
-    // TableLayoutAlgorithmAuto, which maxPreferredLogicalWidth fills in. So
-    // scaledWidthFromPercentColumns has to be called after
-    // maxPreferredLogicalWidth.
-    LayoutUnit scaledWidth = m_tableLayout->scaledWidthFromPercentColumns() +
-                             bordersPaddingAndSpacingInRowDirection();
-    maxWidth = std::max(scaledWidth, maxWidth);
-    setLogicalWidth(
-        LayoutUnit(std::min(availableContentLogicalWidth, maxWidth).floor()));
+    if (hasStretchedLogicalWidth()) {
+      setLogicalWidth(availableContentLogicalWidth);
+    } else {
+      // Ensure we aren't bigger than our available width.
+      LayoutUnit maxWidth = maxPreferredLogicalWidth();
+      // scaledWidthFromPercentColumns depends on m_layoutStruct in
+      // TableLayoutAlgorithmAuto, which maxPreferredLogicalWidth fills in. So
+      // scaledWidthFromPercentColumns has to be called after
+      // maxPreferredLogicalWidth.
+      LayoutUnit scaledWidth = m_tableLayout->scaledWidthFromPercentColumns() +
+                               bordersPaddingAndSpacingInRowDirection();
+      maxWidth = std::max(scaledWidth, maxWidth);
+      setLogicalWidth(
+          LayoutUnit(std::min(availableContentLogicalWidth, maxWidth).floor()));
+    }
   }
 
   // Ensure we aren't bigger than our max-width style.
@@ -465,11 +469,16 @@ void LayoutTable::layoutSection(LayoutTableSection& section,
 
 LayoutUnit LayoutTable::logicalHeightFromStyle() const {
   LayoutUnit computedLogicalHeight;
-  Length logicalHeightLength = style()->logicalHeight();
-  if (logicalHeightLength.isIntrinsic() ||
-      (logicalHeightLength.isSpecified() && logicalHeightLength.isPositive())) {
-    computedLogicalHeight =
-        convertStyleLogicalHeightToComputedHeight(logicalHeightLength);
+  if (hasOverrideLogicalContentHeight()) {
+    computedLogicalHeight = overrideLogicalContentHeight();
+  } else {
+    Length logicalHeightLength = style()->logicalHeight();
+    if (logicalHeightLength.isIntrinsic() ||
+        (logicalHeightLength.isSpecified() &&
+         logicalHeightLength.isPositive())) {
+      computedLogicalHeight =
+          convertStyleLogicalHeightToComputedHeight(logicalHeightLength);
+    }
   }
 
   Length logicalMaxHeightLength = style()->logicalMaxHeight();
