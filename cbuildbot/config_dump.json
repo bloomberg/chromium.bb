@@ -29082,13 +29082,10 @@
     },
     "x86-alex-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "x86-alex"
         ],
-        "chrome_sdk_build_chrome": false,
-        "important": true,
-        "vm_tests": []
+        "buildslave_type": "baremetal"
     },
     "x86-alex-release-afdo": {
         "_template": "release_afdo_generate",

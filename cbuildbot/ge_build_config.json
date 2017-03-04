@@ -1322,18 +1322,6 @@
       ]
     },
     {
-      "name": "x86-alex",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "pineview",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "x86-alex_he",
       "configs": [
         {
