@@ -43,6 +43,7 @@ source_set("unit_tests") {
   sources = [
     "eula_accepted_notifier_unittest.cc",
     "resource_request_allowed_notifier_unittest.cc",
+    "web_resource_service_unittest.cc",
   ]
 
   deps = [

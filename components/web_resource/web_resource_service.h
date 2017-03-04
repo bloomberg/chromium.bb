@@ -64,10 +64,17 @@ class WebResourceService
   // Then begin updating resources.
   void StartAfterDelay();
 
+  // Sets the ResourceRequestAllowedNotifier to make it configurable.
+  void SetResourceRequestAllowedNotifier(
+      std::unique_ptr<ResourceRequestAllowedNotifier> notifier);
+
  protected:
   PrefService* prefs_;
+  bool GetFetchScheduled() const;
 
  private:
+  friend class WebResourceServiceTest;
+
   // For the subclasses to process the result of a fetch.
   virtual void Unpack(const base::DictionaryValue& parsed_json) = 0;
 
@@ -92,7 +99,15 @@ class WebResourceService
 
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.
-  ResourceRequestAllowedNotifier resource_request_allowed_notifier_;
+  std::unique_ptr<ResourceRequestAllowedNotifier>
+      resource_request_allowed_notifier_;
+
+  // True if we have scheduled a fetch after start_fetch_delay_ms_
+  // or another one in |cache_update_delay_ms_| time. Set to false
+  // before fetching starts so that next fetch is scheduled. This
+  // is to make sure not more than one fetch is scheduled for given
+  // point in time.
+  bool fetch_scheduled_;
 
   // The tool that fetches the url data from the server.
   std::unique_ptr<net::URLFetcher> url_fetcher_;
