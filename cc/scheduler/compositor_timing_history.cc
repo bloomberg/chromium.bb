@@ -62,10 +62,6 @@ const double kDrawEstimationPercentile = 90.0;
 constexpr base::TimeDelta kSubmitAckWatchdogTimeout =
     base::TimeDelta::FromSeconds(8);
 
-const int kUmaDurationMinMicros = 1;
-const int64_t kUmaDurationMaxMicros = base::Time::kMicrosecondsPerSecond / 5;
-const int kUmaDurationBucketCount = 100;
-
 // This macro is deprecated since its bucket count uses too much bandwidth.
 // It also has sub-optimal range and bucket distribution.
 // TODO(brianderson): Delete this macro and associated UMAs once there is
@@ -111,7 +107,6 @@ const int kUMADurationBuckets[] = {
 
 #define UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(name, sample)             \
   do {                                                                     \
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample);                       \
     UMA_HISTOGRAM_CUSTOM_ENUMERATION(                                      \
         name "2", sample.InMicroseconds(),                                 \
         std::vector<int>(kUMAVSyncBuckets,                                 \
@@ -120,7 +115,6 @@ const int kUMADurationBuckets[] = {
 
 #define UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(name, sample)           \
   do {                                                              \
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample);                \
     UMA_HISTOGRAM_CUSTOM_ENUMERATION(                               \
         name "2", sample.InMicroseconds(),                          \
         std::vector<int>(                                           \
