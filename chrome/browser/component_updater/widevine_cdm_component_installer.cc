@@ -367,18 +367,35 @@ void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(
     const base::Version& cdm_version,
     const base::FilePath& cdm_install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
+  // On some platforms (e.g. Mac) we use symlinks for paths. Since we are
+  // comparing paths below, convert paths to absolute paths to avoid unexpected
+  // failure. base::MakeAbsoluteFilePath() requires IO so it can only be done
+  // in this function.
+  const base::FilePath absolute_cdm_install_dir =
+      base::MakeAbsoluteFilePath(cdm_install_dir);
+  if (absolute_cdm_install_dir.empty()) {
+    PLOG(WARNING) << "Failed to get absolute CDM install path.";
+    return;
+  }
+
   const base::FilePath adapter_version_path =
-      GetPlatformDirectory(cdm_install_dir).AppendASCII(kCdmAdapterVersionName);
+      GetPlatformDirectory(absolute_cdm_install_dir)
+          .AppendASCII(kCdmAdapterVersionName);
   const base::FilePath adapter_install_path =
-      GetPlatformDirectory(cdm_install_dir)
+      GetPlatformDirectory(absolute_cdm_install_dir)
           .AppendASCII(kWidevineCdmAdapterFileName);
 
-  VLOG(1) << "UpdateCdmAdapter: version" << cdm_version.GetString()
-          << " adapter_install_path=" << adapter_install_path.AsUTF8Unsafe()
-          << " adapter_version_path=" << adapter_version_path.AsUTF8Unsafe();
+  VLOG(1) << "UpdateCdmAdapter: version" << cdm_version.GetString();
+  VLOG(1) << " - adapter_install_path=" << adapter_install_path.AsUTF8Unsafe();
+  VLOG(1) << " - adapter_version_path=" << adapter_version_path.AsUTF8Unsafe();
 
   base::FilePath adapter_source_path;
   PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &adapter_source_path);
+  adapter_source_path = base::MakeAbsoluteFilePath(adapter_source_path);
+  if (adapter_source_path.empty()) {
+    PLOG(WARNING) << "Failed to get absolute adapter source path.";
+    return;
+  }
 
   const std::string chrome_version = version_info::GetVersionNumber();
   DCHECK(!chrome_version.empty());
@@ -414,8 +431,8 @@ void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(
 
   BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&RegisterWidevineCdmWithChrome, cdm_version, cdm_install_dir,
-                 base::Passed(&manifest)));
+      base::Bind(&RegisterWidevineCdmWithChrome, cdm_version,
+                 absolute_cdm_install_dir, base::Passed(&manifest)));
 }
 
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
