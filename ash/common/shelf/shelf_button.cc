@@ -32,7 +32,7 @@ namespace {
 const int kIconSize = 32;
 const int kAttentionThrobDurationMS = 800;
 const int kMaxAnimationSeconds = 10;
-const int kIndicatorOffsetFromBottom = 2;
+const int kIndicatorOffsetFromBottom = 3;
 const int kIndicatorRadiusDip = 2;
 const SkColor kIndicatorColor = SK_ColorWHITE;
 
@@ -146,11 +146,23 @@ class ShelfButton::AppStatusIndicatorView
 
     DCHECK_EQ(width(), height());
     DCHECK_EQ(kIndicatorRadiusDip, width() / 2);
+    const float dsf = canvas->UndoDeviceScaleFactor();
+    const int kStrokeWidthPx = 1;
+    gfx::PointF center = gfx::RectF(GetLocalBounds()).CenterPoint();
+    center.Scale(dsf);
+
+    // Fill the center.
     cc::PaintFlags flags;
     flags.setColor(kIndicatorColor);
     flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-    canvas->DrawCircle(gfx::Point(width() / 2, height() / 2),
-                       kIndicatorRadiusDip, flags);
+    canvas->DrawCircle(center, dsf * kIndicatorRadiusDip - kStrokeWidthPx,
+                       flags);
+
+    // Stroke the border.
+    flags.setColor(SkColorSetA(SK_ColorBLACK, 0x4D));
+    flags.setStyle(SkPaint::kStroke_Style);
+    canvas->DrawCircle(
+        center, dsf * kIndicatorRadiusDip - kStrokeWidthPx / 2.0f, flags);
   }
 
   // ShelfButtonAnimation::Observer
