@@ -63,6 +63,9 @@
     // Secure Contexts
     // https://w3c.github.io/webappsec-secure-contexts/#dom-windoworworkerglobalscope-issecurecontext
     [ImplementedAs=isSecureContextForBindings] readonly attribute boolean isSecureContext;
+
+    // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+    [Replaceable] readonly attribute DOMString origin;
 };
 
 WorkerGlobalScope implements WindowBase64;

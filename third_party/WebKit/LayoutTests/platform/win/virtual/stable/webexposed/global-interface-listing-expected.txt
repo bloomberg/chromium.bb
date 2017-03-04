@@ -7527,6 +7527,7 @@ interface webkitURL
     getter onwebkitanimationstart
     getter onwebkittransitionend
     getter onwheel
+    getter origin
     getter outerHeight
     getter outerWidth
     getter pageXOffset
@@ -7702,6 +7703,7 @@ interface webkitURL
     setter onwebkitanimationstart
     setter onwebkittransitionend
     setter onwheel
+    setter origin
     setter outerHeight
     setter outerWidth
     setter pageXOffset

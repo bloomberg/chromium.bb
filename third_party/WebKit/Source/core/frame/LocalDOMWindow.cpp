@@ -1119,6 +1119,10 @@ void LocalDOMWindow::setDefaultStatus(const String& string) {
   page->chromeClient().setStatusbarText(m_defaultStatus);
 }
 
+String LocalDOMWindow::origin() const {
+  return getExecutionContext()->getSecurityOrigin()->toString();
+}
+
 Document* LocalDOMWindow::document() const {
   return m_document.get();
 }

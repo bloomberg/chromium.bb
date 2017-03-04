@@ -2187,6 +2187,7 @@ interface WorkerGlobalScope : EventTarget
     getter onerror
     getter onrejectionhandled
     getter onunhandledrejection
+    getter origin
     getter performance
     getter self
     method atob
@@ -2202,6 +2203,7 @@ interface WorkerGlobalScope : EventTarget
     setter onerror
     setter onrejectionhandled
     setter onunhandledrejection
+    setter origin
 interface WorkerLocation
     getter hash
     getter host

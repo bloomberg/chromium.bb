@@ -54,6 +54,9 @@ function emitExpectedResult(path, expected)
     case "location.origin":
         expected = "'null'";
         break;
+    case "origin":
+        expected = "'file://'";
+        break;
     case "location.pathname":
         expected = "'blank'";
         break;

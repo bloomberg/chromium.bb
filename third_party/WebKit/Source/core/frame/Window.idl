@@ -37,6 +37,7 @@
     [Unforgeable, CrossOrigin] readonly attribute Window window;
     [Replaceable, CrossOrigin] readonly attribute Window self;
     [Unforgeable, CachedAccessor] readonly attribute Document document;
+    [Replaceable] readonly attribute DOMString origin;
     attribute DOMString name;
     [PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter), Custom=Getter] readonly attribute Location location;
     readonly attribute History history;

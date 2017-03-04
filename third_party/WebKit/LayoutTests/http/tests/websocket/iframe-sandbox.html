@@ -7,12 +7,12 @@ window.jsTestIsAsync = true;
 
 window.addEventListener("message", receiveMessage, false);
 
-var origin;
+var wsOrigin;
 
 function receiveMessage(event)
 {
-    origin = event.data;
-    shouldBeEqualToString("origin", "null");
+    wsOrigin = event.data;
+    shouldBeEqualToString("wsOrigin", "null");
     finishJSTest();
 }
 </script>

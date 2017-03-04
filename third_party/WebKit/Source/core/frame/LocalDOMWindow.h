@@ -152,6 +152,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void setStatus(const String&);
   String defaultStatus() const;
   void setDefaultStatus(const String&);
+  String origin() const;
 
   // DOM Level 2 AbstractView Interface
   Document* document() const;

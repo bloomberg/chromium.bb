@@ -163,6 +163,10 @@ void WorkerGlobalScope::close() {
   m_closing = true;
 }
 
+String WorkerGlobalScope::origin() const {
+  return getSecurityOrigin()->toString();
+}
+
 void WorkerGlobalScope::importScripts(const Vector<String>& urls,
                                       ExceptionState& exceptionState) {
   DCHECK(contentSecurityPolicy());
