@@ -340,20 +340,6 @@ class HWTestList(object):
             config_lib.HWTestConfig('security',
                                     **default_dict)]
 
-  def ToolchainTestLight(self, **kwargs):
-    """Return miminal list of HWTESTConfigs to run toolchain correctness tests.
-
-    This is a minimum set of tests, currently for some x86 boards.
-    """
-    default_dict = dict(pool=constants.HWTEST_SUITES_POOL, async=False,
-                        file_bugs=False,
-                        priority=constants.HWTEST_DEFAULT_PRIORITY)
-    default_dict.update(kwargs)
-    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                    **default_dict),
-            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                    **default_dict)]
-
 
 def append_useflags(useflags):
   """Used to append a set of useflags to existing useflags.
@@ -1713,7 +1699,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   )
 
   ### Toolchain waterfall entries.
-  ### Toolchain builder configs: 4 architectures {amd64,arm,x86,arm64}
+  ### Toolchain builder configs: 3 architectures {amd64,arm,arm64}
   ###                          x 3 toolchains {gcc,llvm,llvm-next}
   ### All of these builders should be slaves of 'master-toolchain'.
 
@@ -1744,29 +1730,18 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
         **kwargs
     )
 
-    if board == 'x86-alex':
-      site_config.Add(
-          name + '-llvm-toolchain',
-          site_config.templates.llvm_toolchain,
-          *args,
-          boards=[board],
-          important=True,
-          active_waterfall=constants.WATERFALL_INTERNAL,
-          **kwargs
-      )
-    else:
-      site_config.Add(
-          name + '-llvm-toolchain',
-          site_config.templates.llvm_toolchain,
-          *args,
-          boards=[board],
-          important=True,
-          active_waterfall=constants.WATERFALL_INTERNAL,
-          hw_tests=hw_test_list.ToolchainTestMedium(constants.HWTEST_MACH_POOL),
-          hw_tests_override=hw_test_list.ToolchainTestMedium(
-              constants.HWTEST_MACH_POOL),
-          **kwargs
-      )
+    site_config.Add(
+        name + '-llvm-toolchain',
+        site_config.templates.llvm_toolchain,
+        *args,
+        boards=[board],
+        important=True,
+        active_waterfall=constants.WATERFALL_INTERNAL,
+        hw_tests=hw_test_list.ToolchainTestMedium(constants.HWTEST_MACH_POOL),
+        hw_tests_override=hw_test_list.ToolchainTestMedium(
+            constants.HWTEST_MACH_POOL),
+        **kwargs
+    )
 
     site_config.Add(
         name + '-llvm-next-toolchain',
@@ -1780,9 +1755,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
 
   # Create all waterfall slave builders.
   toolchainSlaveHelper('amd64', 'samus')
-  toolchainSlaveHelper('x86', 'x86-alex',
-                       hw_tests=hw_test_list.ToolchainTestLight(),
-                       hw_tests_override=hw_test_list.ToolchainTestLight())
   toolchainSlaveHelper('arm', 'veyron_jaq')
   toolchainSlaveHelper('arm64', 'elm')
 
