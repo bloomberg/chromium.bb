@@ -21,7 +21,8 @@ const char kJsScreenPath[] = "login.ErrorMessageScreen";
 
 namespace chromeos {
 
-ErrorScreenHandler::ErrorScreenHandler() : weak_ptr_factory_(this) {
+ErrorScreenHandler::ErrorScreenHandler()
+    : BaseScreenHandler(kScreenId), weak_ptr_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -35,7 +36,7 @@ void ErrorScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  BaseScreenHandler::ShowScreen(OobeScreen::SCREEN_ERROR_MESSAGE);
+  BaseScreenHandler::ShowScreen(kScreenId);
   if (screen_)
     screen_->OnShow();
   showing_ = true;

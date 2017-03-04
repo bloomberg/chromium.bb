@@ -26,7 +26,8 @@ const char kCallbackContextReady[] = "contextReady";
 
 }  // namespace
 
-HostPairingScreenHandler::HostPairingScreenHandler() {
+HostPairingScreenHandler::HostPairingScreenHandler()
+    : BaseScreenHandler(kScreenId) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -95,7 +96,7 @@ void HostPairingScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OobeScreen::SCREEN_OOBE_HOST_PAIRING);
+  ShowScreen(kScreenId);
 }
 
 void HostPairingScreenHandler::Hide() {

@@ -10,11 +10,14 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
 class GaiaView {
  public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_GAIA_SIGNIN;
+
   GaiaView() = default;
   virtual ~GaiaView() = default;
 

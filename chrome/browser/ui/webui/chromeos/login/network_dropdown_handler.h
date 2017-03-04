@@ -10,12 +10,12 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 
 namespace chromeos {
 
-class NetworkDropdownHandler : public BaseScreenHandler,
+class NetworkDropdownHandler : public BaseWebUIHandler,
                                public NetworkDropdown::View {
  public:
   class Observer {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WRONG_HWID_SCREEN_VIEW_H_
 
 #include <string>
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -25,6 +26,8 @@ class WrongHWIDScreenView {
     // is destroyed earlier then it has to call SetDelegate(NULL).
     virtual void OnViewDestroyed(WrongHWIDScreenView* view) = 0;
   };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_WRONG_HWID;
 
   virtual ~WrongHWIDScreenView() {}
 

@@ -239,6 +239,8 @@ split_static_library("ui") {
     "webui/chromeos/login/auto_enrollment_check_screen_handler.h",
     "webui/chromeos/login/base_screen_handler.cc",
     "webui/chromeos/login/base_screen_handler.h",
+    "webui/chromeos/login/base_webui_handler.cc",
+    "webui/chromeos/login/base_webui_handler.h",
     "webui/chromeos/login/controller_pairing_screen_handler.cc",
     "webui/chromeos/login/controller_pairing_screen_handler.h",
     "webui/chromeos/login/core_oobe_handler.cc",

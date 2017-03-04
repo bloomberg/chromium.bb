@@ -55,7 +55,7 @@ namespace chromeos {
 // NetworkScreenHandler, public: -----------------------------------------------
 
 NetworkScreenHandler::NetworkScreenHandler(CoreOobeView* core_oobe_view)
-    : core_oobe_view_(core_oobe_view) {
+    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
   DCHECK(core_oobe_view_);
 }
@@ -97,7 +97,7 @@ void NetworkScreenHandler::Show() {
   network_screen_params.SetBoolean("isDeveloperMode",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kSystemDevMode));
-  ShowScreenWithData(OobeScreen::SCREEN_OOBE_NETWORK, &network_screen_params);
+  ShowScreenWithData(kScreenId, &network_screen_params);
   core_oobe_view_->InitDemoModeDetection();
 }
 

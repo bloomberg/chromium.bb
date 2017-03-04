@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -17,6 +18,9 @@ class ArcTermsOfServiceScreenViewObserver;
 // WebUI representation.
 class ArcTermsOfServiceScreenView {
  public:
+  constexpr static OobeScreen kScreenId =
+      OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
+
   virtual ~ArcTermsOfServiceScreenView() = default;
 
   // Adds/Removes observer for view.

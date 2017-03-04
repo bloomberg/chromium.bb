@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 class GoogleServiceAuthError;
 
@@ -36,6 +37,8 @@ class EnrollmentScreenView {
     virtual void OnDeviceAttributeProvided(const std::string& asset_id,
                                            const std::string& location) = 0;
   };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_ENROLLMENT;
 
   virtual ~EnrollmentScreenView() {}
 

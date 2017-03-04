@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEVICE_DISABLED_SCREEN_VIEW_H_
 
 #include <string>
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -27,6 +28,8 @@ class DeviceDisabledScreenView {
     // Returns the message that should be shown to the user.
     virtual const std::string& GetMessage() const = 0;
   };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_DEVICE_DISABLED;
 
   virtual ~DeviceDisabledScreenView() {}
 

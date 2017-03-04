@@ -16,6 +16,8 @@ class ErrorScreen;
 // representation. Owned by ErrorScreen.
 class NetworkErrorView {
  public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_ERROR_MESSAGE;
+
   virtual ~NetworkErrorView() {}
 
   // Shows the contents of the screen.

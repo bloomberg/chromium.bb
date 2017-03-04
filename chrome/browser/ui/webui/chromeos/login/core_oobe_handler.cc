@@ -57,7 +57,7 @@ namespace chromeos {
 // OOBE UI is not visible by default.
 CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
                                  JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(js_calls_container),
+    : BaseWebUIHandler(js_calls_container),
       oobe_ui_(oobe_ui),
       version_info_updater_(this) {
   DCHECK(js_calls_container);

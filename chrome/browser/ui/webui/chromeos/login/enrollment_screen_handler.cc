@@ -123,13 +123,13 @@ enum ActiveDirectoryErrorState {
 EnrollmentScreenHandler::EnrollmentScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen)
-    : network_state_informer_(network_state_informer),
+    : BaseScreenHandler(kScreenId),
+      network_state_informer_(network_state_informer),
       error_screen_(error_screen),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
       weak_ptr_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
-  set_async_assets_load_id(
-      GetOobeScreenName(OobeScreen::SCREEN_OOBE_ENROLLMENT));
+  set_async_assets_load_id(GetOobeScreenName(kScreenId));
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
   network_state_informer_->AddObserver(this);
@@ -414,13 +414,12 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
 }
 
 bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
-  return (GetCurrentScreen() == OobeScreen::SCREEN_OOBE_ENROLLMENT);
+  return (GetCurrentScreen() == kScreenId);
 }
 
 bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
   return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE &&
-          error_screen_->GetParentScreen() ==
-              OobeScreen::SCREEN_OOBE_ENROLLMENT);
+          error_screen_->GetParentScreen() == kScreenId);
 }
 
 void EnrollmentScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
@@ -500,7 +499,7 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
   if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
     const std::string network_type = network_state_informer_->network_type();
     error_screen_->SetUIState(NetworkError::UI_STATE_SIGNIN);
-    error_screen_->SetParentScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+    error_screen_->SetParentScreen(kScreenId);
     error_screen_->SetHideCallback(base::Bind(&EnrollmentScreenHandler::DoShow,
                                               weak_ptr_factory_.GetWeakPtr()));
     error_screen_->Show();

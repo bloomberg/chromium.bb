@@ -24,7 +24,8 @@ const char kJsScreenPath[] = "login.KioskEnableScreen";
 
 namespace chromeos {
 
-KioskEnableScreenHandler::KioskEnableScreenHandler() : weak_ptr_factory_(this) {
+KioskEnableScreenHandler::KioskEnableScreenHandler()
+    : BaseScreenHandler(kScreenId), weak_ptr_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -54,7 +55,7 @@ void KioskEnableScreenHandler::OnGetConsumerKioskAutoLaunchStatus(
     return;
   }
 
-  ShowScreen(OobeScreen::SCREEN_KIOSK_ENABLE);
+  ShowScreen(kScreenId);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_KIOSK_ENABLE_SCREEN_VIEW_H_
 
 #include <string>
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -25,6 +26,8 @@ class KioskEnableScreenView {
     // is destroyed earlier then it has to call SetDelegate(nullptr).
     virtual void OnViewDestroyed(KioskEnableScreenView* view) = 0;
   };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_KIOSK_ENABLE;
 
   virtual ~KioskEnableScreenView() {}
 

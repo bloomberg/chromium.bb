@@ -16,7 +16,8 @@ const char kJsScreenPath[] = "login.AutoEnrollmentCheckScreen";
 
 namespace chromeos {
 
-AutoEnrollmentCheckScreenHandler::AutoEnrollmentCheckScreenHandler() {
+AutoEnrollmentCheckScreenHandler::AutoEnrollmentCheckScreenHandler()
+    : BaseScreenHandler(kScreenId) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -30,7 +31,7 @@ void AutoEnrollmentCheckScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  ShowScreen(kScreenId);
 }
 
 void AutoEnrollmentCheckScreenHandler::SetDelegate(Delegate* delegate) {

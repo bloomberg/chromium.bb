@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
 class AccountId;
@@ -26,6 +27,8 @@ class UserSelectionScreen;
 // or Views one.
 class UserBoardView {
  public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_USER_SELECTION;
+
   virtual ~UserBoardView() {}
 
   virtual void Bind(UserSelectionScreen* screen) = 0;

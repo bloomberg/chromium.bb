@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_EULA_VIEW_H_
 
 #include <string>
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -16,6 +17,8 @@ class EulaScreen;
 // dtor.
 class EulaView {
  public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_EULA;
+
   virtual ~EulaView() {}
 
   virtual void Show() = 0;

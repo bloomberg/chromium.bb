@@ -30,7 +30,7 @@ namespace chromeos {
 
 HIDDetectionScreenHandler::HIDDetectionScreenHandler(
     CoreOobeView* core_oobe_view)
-    : core_oobe_view_(core_oobe_view) {
+    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -52,7 +52,7 @@ void HIDDetectionScreenHandler::Show() {
   local_state->SetInteger(prefs::kTimesHIDDialogShown,
                           num_of_times_dialog_was_shown + 1);
 
-  ShowScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION);
+  ShowScreen(kScreenId);
 }
 
 void HIDDetectionScreenHandler::Hide() {

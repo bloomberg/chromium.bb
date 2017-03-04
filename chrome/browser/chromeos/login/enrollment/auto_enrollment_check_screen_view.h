@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_AUTO_ENROLLMENT_CHECK_SCREEN_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_AUTO_ENROLLMENT_CHECK_SCREEN_VIEW_H_
 
+#include "chrome/browser/chromeos/login/oobe_screen.h"
+
 namespace chromeos {
 
 // Interface between auto-enrollment check screen and its representation.
@@ -20,6 +22,9 @@ class AutoEnrollmentCheckScreenView {
     // is destroyed earlier then it has to call SetDelegate(NULL).
     virtual void OnViewDestroyed(AutoEnrollmentCheckScreenView* view) = 0;
   };
+
+  constexpr static OobeScreen kScreenId =
+      OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK;
 
   virtual ~AutoEnrollmentCheckScreenView() {}
 

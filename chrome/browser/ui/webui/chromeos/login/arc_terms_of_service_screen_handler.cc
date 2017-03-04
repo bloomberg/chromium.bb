@@ -26,7 +26,8 @@ const char kJsScreenPath[] = "login.ArcTermsOfServiceScreen";
 
 namespace chromeos {
 
-ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler() {
+ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler()
+    : BaseScreenHandler(kScreenId) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -159,7 +160,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 
   system::TimezoneSettings::GetInstance()->AddObserver(this);
 
-  ShowScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  ShowScreen(kScreenId);
 
   UpdateTimeZone();
   pref_handler_.reset(new arc::ArcOptInPreferenceHandler(

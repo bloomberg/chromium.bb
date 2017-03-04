@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -18,6 +19,8 @@ class HIDDetectionScreen;
 // dtor.
 class HIDDetectionView {
  public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_HID_DETECTION;
+
   virtual ~HIDDetectionView() {}
 
   virtual void Show() = 0;

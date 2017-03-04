@@ -131,7 +131,7 @@ class BaseScreen {
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, ContinueClickedOnlyOnce);
 
-  friend class BaseScreenHandler;
+  friend class BaseWebUIHandler;
   friend class NetworkScreenTest;
   friend class ScreenEditor;
   friend class ScreenManager;

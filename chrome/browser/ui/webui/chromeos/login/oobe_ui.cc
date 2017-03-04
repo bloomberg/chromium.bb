@@ -218,46 +218,27 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   auto core_handler =
       base::MakeUnique<CoreOobeHandler>(this, js_calls_container.get());
   core_handler_ = core_handler.get();
-  AddScreenHandler(std::move(core_handler));
+  AddWebUIHandler(std::move(core_handler));
   core_handler_->SetDelegate(this);
 
   auto network_dropdown_handler = base::MakeUnique<NetworkDropdownHandler>();
   network_dropdown_handler_ = network_dropdown_handler.get();
-  AddScreenHandler(std::move(network_dropdown_handler));
+  AddWebUIHandler(std::move(network_dropdown_handler));
 
-  auto update_screen_handler = base::MakeUnique<UpdateScreenHandler>();
-  update_view_ = update_screen_handler.get();
-  AddScreenHandler(std::move(update_screen_handler));
+  AddScreenHandler(base::MakeUnique<UpdateScreenHandler>());
 
-  if (display_type_ == kOobeDisplay) {
-    auto network_screen_handler =
-        base::MakeUnique<NetworkScreenHandler>(core_handler_);
-    network_view_ = network_screen_handler.get();
-    AddScreenHandler(std::move(network_screen_handler));
-  }
+  if (display_type_ == kOobeDisplay)
+    AddScreenHandler(base::MakeUnique<NetworkScreenHandler>(core_handler_));
 
-  auto debugging_screen_handler =
-      base::MakeUnique<EnableDebuggingScreenHandler>();
-  debugging_screen_view_ = debugging_screen_handler.get();
-  AddScreenHandler(std::move(debugging_screen_handler));
+  AddScreenHandler(base::MakeUnique<EnableDebuggingScreenHandler>());
 
-  auto eula_screen_handler = base::MakeUnique<EulaScreenHandler>(core_handler_);
-  eula_view_ = eula_screen_handler.get();
-  AddScreenHandler(std::move(eula_screen_handler));
+  AddScreenHandler(base::MakeUnique<EulaScreenHandler>(core_handler_));
 
-  auto reset_screen_handler = base::MakeUnique<ResetScreenHandler>();
-  reset_view_ = reset_screen_handler.get();
-  AddScreenHandler(std::move(reset_screen_handler));
+  AddScreenHandler(base::MakeUnique<ResetScreenHandler>());
 
-  auto autolaunch_screen_handler =
-      base::MakeUnique<KioskAutolaunchScreenHandler>();
-  autolaunch_screen_view_ = autolaunch_screen_handler.get();
-  AddScreenHandler(std::move(autolaunch_screen_handler));
+  AddScreenHandler(base::MakeUnique<KioskAutolaunchScreenHandler>());
 
-  auto kiosk_enable_screen_handler =
-      base::MakeUnique<KioskEnableScreenHandler>();
-  kiosk_enable_screen_view_ = kiosk_enable_screen_handler.get();
-  AddScreenHandler(std::move(kiosk_enable_screen_handler));
+  AddScreenHandler(base::MakeUnique<KioskEnableScreenHandler>());
 
   auto supervised_user_creation_screen_handler =
       base::MakeUnique<SupervisedUserCreationScreenHandler>();
@@ -265,89 +246,51 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       supervised_user_creation_screen_handler.get();
   AddScreenHandler(std::move(supervised_user_creation_screen_handler));
 
-  auto wrong_hwid_screen_handler = base::MakeUnique<WrongHWIDScreenHandler>();
-  wrong_hwid_screen_view_ = wrong_hwid_screen_handler.get();
-  AddScreenHandler(std::move(wrong_hwid_screen_handler));
+  AddScreenHandler(base::MakeUnique<WrongHWIDScreenHandler>());
 
-  auto auto_enrollment_check_screen_handler =
-      base::MakeUnique<AutoEnrollmentCheckScreenHandler>();
-  auto_enrollment_check_screen_view_ =
-      auto_enrollment_check_screen_handler.get();
-  AddScreenHandler(std::move(auto_enrollment_check_screen_handler));
+  AddScreenHandler(base::MakeUnique<AutoEnrollmentCheckScreenHandler>());
 
-  auto hid_detection_screen_handler =
-      base::MakeUnique<HIDDetectionScreenHandler>(core_handler_);
-  hid_detection_view_ = hid_detection_screen_handler.get();
-  AddScreenHandler(std::move(hid_detection_screen_handler));
+  AddScreenHandler(base::MakeUnique<HIDDetectionScreenHandler>(core_handler_));
 
-  auto error_screen_handler = base::MakeUnique<ErrorScreenHandler>();
-  error_screen_handler_ = error_screen_handler.get();
-  AddScreenHandler(std::move(error_screen_handler));
-  network_dropdown_handler_->AddObserver(error_screen_handler_);
+  AddScreenHandler(base::MakeUnique<ErrorScreenHandler>());
+  network_dropdown_handler_->AddObserver(GetView<ErrorScreenHandler>());
 
-  error_screen_.reset(new ErrorScreen(nullptr, error_screen_handler_));
+  error_screen_.reset(new ErrorScreen(nullptr, GetView<ErrorScreenHandler>()));
   ErrorScreen* error_screen = error_screen_.get();
 
-  auto enrollment_screen_handler = base::MakeUnique<EnrollmentScreenHandler>(
-      network_state_informer_, error_screen);
-  enrollment_screen_view_ = enrollment_screen_handler.get();
-  AddScreenHandler(std::move(enrollment_screen_handler));
+  AddScreenHandler(base::MakeUnique<EnrollmentScreenHandler>(
+      network_state_informer_, error_screen));
 
-  auto terms_of_service_screen_handler =
-      base::MakeUnique<TermsOfServiceScreenHandler>(core_handler_);
-  terms_of_service_screen_view_ = terms_of_service_screen_handler.get();
-  AddScreenHandler(std::move(terms_of_service_screen_handler));
+  AddScreenHandler(
+      base::MakeUnique<TermsOfServiceScreenHandler>(core_handler_));
 
-  auto arc_terms_of_service_screen_handler =
-      base::MakeUnique<ArcTermsOfServiceScreenHandler>();
-  arc_terms_of_service_screen_view_ = arc_terms_of_service_screen_handler.get();
-  AddScreenHandler(std::move(arc_terms_of_service_screen_handler));
+  AddScreenHandler(base::MakeUnique<ArcTermsOfServiceScreenHandler>());
 
-  auto user_image_screen_handler = base::MakeUnique<UserImageScreenHandler>();
-  user_image_view_ = user_image_screen_handler.get();
-  AddScreenHandler(std::move(user_image_screen_handler));
+  AddScreenHandler(base::MakeUnique<UserImageScreenHandler>());
 
-  auto user_board_screen_handler = base::MakeUnique<UserBoardScreenHandler>();
-  user_board_screen_handler_ = user_board_screen_handler.get();
-  AddScreenHandler(std::move(user_board_screen_handler));
+  AddScreenHandler(base::MakeUnique<UserBoardScreenHandler>());
 
-  auto gaia_screen_handler = base::MakeUnique<GaiaScreenHandler>(
-      core_handler_, network_state_informer_);
-  gaia_screen_handler_ = gaia_screen_handler.get();
-  AddScreenHandler(std::move(gaia_screen_handler));
+  AddScreenHandler(base::MakeUnique<GaiaScreenHandler>(
+      core_handler_, network_state_informer_));
 
   auto signin_screen_handler = base::MakeUnique<SigninScreenHandler>(
       network_state_informer_, error_screen, core_handler_,
-      gaia_screen_handler_, js_calls_container.get());
+      GetView<GaiaScreenHandler>(), js_calls_container.get());
   signin_screen_handler_ = signin_screen_handler.get();
-  AddScreenHandler(std::move(signin_screen_handler));
+  AddWebUIHandler(std::move(signin_screen_handler));
 
-  auto app_launch_splash_screen_handler =
-      base::MakeUnique<AppLaunchSplashScreenHandler>(network_state_informer_,
-                                                     error_screen);
-  app_launch_splash_screen_view_ = app_launch_splash_screen_handler.get();
-  AddScreenHandler(std::move(app_launch_splash_screen_handler));
+  AddScreenHandler(base::MakeUnique<AppLaunchSplashScreenHandler>(
+      network_state_informer_, error_screen));
 
-  auto arc_kiosk_splash_screen_handler =
-      base::MakeUnique<ArcKioskSplashScreenHandler>();
-  arc_kiosk_splash_screen_view_ = arc_kiosk_splash_screen_handler.get();
-  AddScreenHandler(std::move(arc_kiosk_splash_screen_handler));
+  AddScreenHandler(base::MakeUnique<ArcKioskSplashScreenHandler>());
 
   if (display_type_ == kOobeDisplay) {
-    auto controller_pairing_handler =
-        base::MakeUnique<ControllerPairingScreenHandler>();
-    controller_pairing_screen_view_ = controller_pairing_handler.get();
-    AddScreenHandler(std::move(controller_pairing_handler));
+    AddScreenHandler(base::MakeUnique<ControllerPairingScreenHandler>());
 
-    auto host_pairing_handler = base::MakeUnique<HostPairingScreenHandler>();
-    host_pairing_screen_view_ = host_pairing_handler.get();
-    AddScreenHandler(std::move(host_pairing_handler));
+    AddScreenHandler(base::MakeUnique<HostPairingScreenHandler>());
   }
 
-  auto device_disabled_screen_handler =
-      base::MakeUnique<DeviceDisabledScreenHandler>();
-  device_disabled_screen_view_ = device_disabled_screen_handler.get();
-  AddScreenHandler(std::move(device_disabled_screen_handler));
+  AddScreenHandler(base::MakeUnique<DeviceDisabledScreenHandler>());
 
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
   auto kiosk_app_menu_handler =
@@ -386,7 +329,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
 OobeUI::~OobeUI() {
   core_handler_->SetDelegate(nullptr);
-  network_dropdown_handler_->RemoveObserver(error_screen_handler_);
+  network_dropdown_handler_->RemoveObserver(GetView<ErrorScreenHandler>());
   if (ash_util::IsRunningInMash()) {
     // TODO: Ash needs to expose screen dimming api. See
     // http://crbug.com/646034.
@@ -399,71 +342,71 @@ CoreOobeView* OobeUI::GetCoreOobeView() {
 }
 
 NetworkView* OobeUI::GetNetworkView() {
-  return network_view_;
+  return GetView<NetworkScreenHandler>();
 }
 
 EulaView* OobeUI::GetEulaView() {
-  return eula_view_;
+  return GetView<EulaScreenHandler>();
 }
 
 UpdateView* OobeUI::GetUpdateView() {
-  return update_view_;
+  return GetView<UpdateScreenHandler>();
 }
 
 EnableDebuggingScreenView* OobeUI::GetEnableDebuggingScreenView() {
-  return debugging_screen_view_;
+  return GetView<EnableDebuggingScreenHandler>();
 }
 
 EnrollmentScreenView* OobeUI::GetEnrollmentScreenView() {
-  return enrollment_screen_view_;
+  return GetView<EnrollmentScreenHandler>();
 }
 
 ResetView* OobeUI::GetResetView() {
-  return reset_view_;
+  return GetView<ResetScreenHandler>();
 }
 
 KioskAutolaunchScreenView* OobeUI::GetKioskAutolaunchScreenView() {
-  return autolaunch_screen_view_;
+  return GetView<KioskAutolaunchScreenHandler>();
 }
 
 KioskEnableScreenView* OobeUI::GetKioskEnableScreenView() {
-  return kiosk_enable_screen_view_;
+  return GetView<KioskEnableScreenHandler>();
 }
 
 TermsOfServiceScreenView* OobeUI::GetTermsOfServiceScreenView() {
-  return terms_of_service_screen_view_;
+  return GetView<TermsOfServiceScreenHandler>();
 }
 
 ArcTermsOfServiceScreenView* OobeUI::GetArcTermsOfServiceScreenView() {
-  return arc_terms_of_service_screen_view_;
+  return GetView<ArcTermsOfServiceScreenHandler>();
 }
 
 WrongHWIDScreenView* OobeUI::GetWrongHWIDScreenView() {
-  return wrong_hwid_screen_view_;
+  return GetView<WrongHWIDScreenHandler>();
 }
 
 AutoEnrollmentCheckScreenView* OobeUI::GetAutoEnrollmentCheckScreenView() {
-  return auto_enrollment_check_screen_view_;
+  return GetView<AutoEnrollmentCheckScreenHandler>();
 }
 
 HIDDetectionView* OobeUI::GetHIDDetectionView() {
-  return hid_detection_view_;
+  return GetView<HIDDetectionScreenHandler>();
 }
 
 ControllerPairingScreenView* OobeUI::GetControllerPairingScreenView() {
-  return controller_pairing_screen_view_;
+  return GetView<ControllerPairingScreenHandler>();
 }
 
 HostPairingScreenView* OobeUI::GetHostPairingScreenView() {
-  return host_pairing_screen_view_;
+  return GetView<HostPairingScreenHandler>();
 }
 
 DeviceDisabledScreenView* OobeUI::GetDeviceDisabledScreenView() {
-  return device_disabled_screen_view_;
+  return GetView<DeviceDisabledScreenHandler>();
 }
 
 UserImageView* OobeUI::GetUserImageView() {
-  return user_image_view_;
+  return GetView<UserImageScreenHandler>();
 }
 
 ErrorScreen* OobeUI::GetErrorScreen() {
@@ -476,11 +419,11 @@ OobeUI::GetSupervisedUserCreationScreenView() {
 }
 
 GaiaView* OobeUI::GetGaiaScreenView() {
-  return gaia_screen_handler_;
+  return GetView<GaiaScreenHandler>();
 }
 
 UserBoardView* OobeUI::GetUserBoardView() {
-  return user_board_screen_handler_;
+  return GetView<UserBoardScreenHandler>();
 }
 
 void OobeUI::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
@@ -488,18 +431,16 @@ void OobeUI::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
 }
 
 AppLaunchSplashScreenView* OobeUI::GetAppLaunchSplashScreenView() {
-  return app_launch_splash_screen_view_;
+  return GetView<AppLaunchSplashScreenHandler>();
 }
 
 ArcKioskSplashScreenView* OobeUI::GetArcKioskSplashScreenView() {
-  return arc_kiosk_splash_screen_view_;
+  return GetView<ArcKioskSplashScreenHandler>();
 }
 
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
-  // Note, handlers_[0] is a GenericHandler used by the WebUI.
-  for (size_t i = 0; i < handlers_.size(); ++i) {
-    handlers_[i]->GetLocalizedStrings(localized_strings);
-  }
+  for (BaseWebUIHandler* handler : webui_handlers_)
+    handler->GetLocalizedStrings(localized_strings);
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
   kiosk_app_menu_handler_->GetLocalizedStrings(localized_strings);
@@ -531,8 +472,14 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("newOobeUI", oobe_ui_md_mode_ ? "on" : "off");
 }
 
+void OobeUI::AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler) {
+  webui_handlers_.push_back(handler.get());
+  web_ui()->AddMessageHandler(std::move(handler));
+}
+
 void OobeUI::AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler) {
-  handlers_.push_back(handler.get());
+  webui_handlers_.push_back(handler.get());
+  screen_handlers_.push_back(handler.get());
   web_ui()->AddMessageHandler(std::move(handler));
 }
 
@@ -543,9 +490,9 @@ void OobeUI::InitializeHandlers() {
   ready_callbacks_.clear();
 
   // Notify 'initialize' for synchronously loaded screens.
-  for (size_t i = 0; i < handlers_.size(); ++i) {
-    if (handlers_[i]->async_assets_load_id().empty())
-      handlers_[i]->InitializeBase();
+  for (BaseWebUIHandler* handler : webui_handlers_) {
+    if (handler->async_assets_load_id().empty())
+      handler->InitializeBase();
   }
 
   // Instantiate the ShutdownPolicyHandler.
@@ -559,9 +506,9 @@ void OobeUI::InitializeHandlers() {
 void OobeUI::OnScreenAssetsLoaded(const std::string& async_assets_load_id) {
   DCHECK(!async_assets_load_id.empty());
 
-  for (size_t i = 0; i < handlers_.size(); ++i) {
-    if (handlers_[i]->async_assets_load_id() == async_assets_load_id)
-      handlers_[i]->InitializeBase();
+  for (BaseWebUIHandler* handler : webui_handlers_) {
+    if (handler->async_assets_load_id() == async_assets_load_id)
+      handler->InitializeBase();
   }
 }
 

@@ -24,7 +24,8 @@ constexpr char kJsScreenPath[] = "login.ArcKioskSplashScreen";
 
 namespace chromeos {
 
-ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler() {
+ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler()
+    : BaseScreenHandler(kScreenId) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -61,7 +62,7 @@ void ArcKioskSplashScreenHandler::Show() {
       base::MakeUnique<base::DictionaryValue>();
   PopulateAppInfo(app_info.get());
   data.Set("appInfo", std::move(app_info));
-  ShowScreenWithData(OobeScreen::SCREEN_ARC_KIOSK_SPLASH, &data);
+  ShowScreenWithData(kScreenId, &data);
 }
 
 void ArcKioskSplashScreenHandler::RegisterMessages() {

@@ -293,7 +293,7 @@ SigninScreenHandler::SigninScreenHandler(
     CoreOobeView* core_oobe_view,
     GaiaScreenHandler* gaia_screen_handler,
     JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(js_calls_container),
+    : BaseWebUIHandler(js_calls_container),
       network_state_informer_(network_state_informer),
       error_screen_(error_screen),
       core_oobe_view_(core_oobe_view),

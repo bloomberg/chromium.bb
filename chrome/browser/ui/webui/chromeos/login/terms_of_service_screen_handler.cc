@@ -38,7 +38,7 @@ namespace chromeos {
 
 TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
     CoreOobeView* core_oobe_view)
-    : core_oobe_view_(core_oobe_view) {
+    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -169,7 +169,7 @@ void TermsOfServiceScreenHandler::DoShow() {
   // Update the UI to show an error message or the Terms of Service.
   UpdateTermsOfServiceInUI();
 
-  ShowScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE);
+  ShowScreen(kScreenId);
 }
 
 void TermsOfServiceScreenHandler::UpdateDomainInUI() {

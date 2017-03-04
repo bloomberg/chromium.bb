@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_APP_LAUNCH_SPLASH_SCREEN_VIEW_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -40,6 +41,8 @@ class AppLaunchSplashScreenView {
    protected:
     virtual ~Delegate() {}
   };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_APP_LAUNCH_SPLASH;
 
   virtual ~AppLaunchSplashScreenView() {}
 

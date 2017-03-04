@@ -9,7 +9,8 @@
 
 namespace chromeos {
 
-UserBoardScreenHandler::UserBoardScreenHandler() : weak_factory_(this) {}
+UserBoardScreenHandler::UserBoardScreenHandler()
+    : BaseScreenHandler(kScreenId), weak_factory_(this) {}
 
 UserBoardScreenHandler::~UserBoardScreenHandler() {
 }
@@ -95,12 +96,12 @@ void UserBoardScreenHandler::SetAuthType(
 
 void UserBoardScreenHandler::Bind(UserSelectionScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseWebUIHandler::SetBaseScreen(screen_);
 }
 
 void UserBoardScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseWebUIHandler::SetBaseScreen(nullptr);
 }
 
 base::WeakPtr<UserBoardView> UserBoardScreenHandler::GetWeakPtr() {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_UPDATE_VIEW_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -15,6 +16,8 @@ class UpdateScreen;
 // representation. Owned by UpdateScreen.
 class UpdateView {
  public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_UPDATE;
+
   virtual ~UpdateView() {}
 
   // Shows the contents of the screen.

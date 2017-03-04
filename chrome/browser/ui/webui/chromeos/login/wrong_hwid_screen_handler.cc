@@ -16,7 +16,8 @@ const char kJsScreenPath[] = "login.WrongHWIDScreen";
 
 namespace chromeos {
 
-WrongHWIDScreenHandler::WrongHWIDScreenHandler() {
+WrongHWIDScreenHandler::WrongHWIDScreenHandler()
+    : BaseScreenHandler(kScreenId) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -30,7 +31,7 @@ void WrongHWIDScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OobeScreen::SCREEN_WRONG_HWID);
+  ShowScreen(kScreenId);
 }
 
 void WrongHWIDScreenHandler::Hide() {

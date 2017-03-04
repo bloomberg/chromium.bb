@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_VIEW_H_
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace base {
 class DictionaryValue;
@@ -46,6 +47,8 @@ class HostPairingScreenView {
     virtual ~Delegate() {}
     virtual void OnViewDestroyed(HostPairingScreenView* view) = 0;
   };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_HOST_PAIRING;
 
   HostPairingScreenView();
   virtual ~HostPairingScreenView();

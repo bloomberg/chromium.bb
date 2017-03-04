@@ -39,7 +39,8 @@ namespace chromeos {
 AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen)
-    : network_state_informer_(network_state_informer),
+    : BaseScreenHandler(kScreenId),
+      network_state_informer_(network_state_informer),
       error_screen_(error_screen) {
   set_call_js_prefix(kJsScreenPath);
   network_state_informer_->AddObserver(this);
@@ -90,7 +91,7 @@ void AppLaunchSplashScreenHandler::Show(const std::string& app_id) {
   data.Set("appInfo", app_info);
 
   SetLaunchText(l10n_util::GetStringUTF8(GetProgressMessageFromState(state_)));
-  ShowScreenWithData(OobeScreen::SCREEN_APP_LAUNCH_SPLASH, &data);
+  ShowScreenWithData(kScreenId, &data);
 }
 
 void AppLaunchSplashScreenHandler::RegisterMessages() {
@@ -176,7 +177,7 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
   }
 
   if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE)
-    error_screen_->SetParentScreen(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
+    error_screen_->SetParentScreen(kScreenId);
   error_screen_->Show();
 }
 

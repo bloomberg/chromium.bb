@@ -83,7 +83,7 @@ void ShowCreditsDialog(Profile* profile,
 namespace chromeos {
 
 EulaScreenHandler::EulaScreenHandler(CoreOobeView* core_oobe_view)
-    : core_oobe_view_(core_oobe_view) {
+    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -97,7 +97,7 @@ void EulaScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OobeScreen::SCREEN_OOBE_EULA);
+  ShowScreen(kScreenId);
 }
 
 void EulaScreenHandler::Hide() {

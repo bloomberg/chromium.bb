@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_VIEW_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -15,6 +16,8 @@ class NetworkScreen;
 // representation, either views based or WebUI. Owned by NetworkScreen.
 class NetworkView {
  public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_NETWORK;
+
   virtual ~NetworkView() {}
 
   // Shows the contents of the screen.

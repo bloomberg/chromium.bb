@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_RESET_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_RESET_VIEW_H_
 
+#include "chrome/browser/chromeos/login/oobe_screen.h"
+
 namespace chromeos {
 
 class ResetScreen;
@@ -13,6 +15,8 @@ class ResetScreen;
 // representation, either views based or WebUI.
 class ResetView {
  public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_RESET;
+
   virtual ~ResetView() {}
 
   virtual void Bind(ResetScreen* screen) = 0;

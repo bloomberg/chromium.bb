@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_TERMS_OF_SERVICE_SCREEN_VIEW_H_
 
 #include <string>
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
@@ -26,6 +27,8 @@ class TermsOfServiceScreenView {
     // Called when view is destroyed so there is no dead reference to it.
     virtual void OnViewDestroyed(TermsOfServiceScreenView* view) = 0;
   };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_TERMS_OF_SERVICE;
 
   virtual ~TermsOfServiceScreenView() {}
 

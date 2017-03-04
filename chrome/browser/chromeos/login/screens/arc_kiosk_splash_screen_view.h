@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_ARC_KIOSK_SPLASH_SCREEN_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_ARC_KIOSK_SPLASH_SCREEN_VIEW_H_
 
+#include "chrome/browser/chromeos/login/oobe_screen.h"
+
 namespace chromeos {
 
 // Interface for UI implemenations of the ArcKioskSplashScreen.
@@ -28,6 +30,8 @@ class ArcKioskSplashScreenView {
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
+
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_ARC_KIOSK_SPLASH;
 
   ArcKioskSplashScreenView() = default;
 

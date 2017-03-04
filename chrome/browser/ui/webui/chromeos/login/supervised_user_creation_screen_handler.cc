@@ -36,7 +36,8 @@ const char kJsScreenPath[] = "login.SupervisedUserCreationScreen";
 
 namespace chromeos {
 
-SupervisedUserCreationScreenHandler::SupervisedUserCreationScreenHandler() {
+SupervisedUserCreationScreenHandler::SupervisedUserCreationScreenHandler()
+    : BaseScreenHandler(OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW) {
   set_call_js_prefix(kJsScreenPath);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();

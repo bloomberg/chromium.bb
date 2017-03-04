@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace base {
 class DictionaryValue;
@@ -68,6 +69,9 @@ class ControllerPairingScreenView {
     virtual void OnScreenContextChanged(const base::DictionaryValue& diff) = 0;
     virtual void OnUserActed(const std::string& action) = 0;
   };
+
+  constexpr static OobeScreen kScreenId =
+      OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING;
 
   ControllerPairingScreenView();
   virtual ~ControllerPairingScreenView();

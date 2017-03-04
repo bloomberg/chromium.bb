@@ -32,7 +32,8 @@ const char kJsScreenPath[] = "login.AutolaunchScreen";
 
 namespace chromeos {
 
-KioskAutolaunchScreenHandler::KioskAutolaunchScreenHandler() {
+KioskAutolaunchScreenHandler::KioskAutolaunchScreenHandler()
+    : BaseScreenHandler(kScreenId) {
   set_call_js_prefix(kJsScreenPath);
   KioskAppManager::Get()->AddObserver(this);
 }
@@ -50,7 +51,7 @@ void KioskAutolaunchScreenHandler::Show() {
     return;
   }
   UpdateKioskApp();
-  ShowScreen(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
+  ShowScreen(kScreenId);
 }
 
 void KioskAutolaunchScreenHandler::SetDelegate(Delegate* delegate) {

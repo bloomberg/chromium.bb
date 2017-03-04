@@ -228,7 +228,8 @@ GaiaScreenHandler::GaiaContext::GaiaContext() {}
 GaiaScreenHandler::GaiaScreenHandler(
     CoreOobeView* core_oobe_view,
     const scoped_refptr<NetworkStateInformer>& network_state_informer)
-    : network_state_informer_(network_state_informer),
+    : BaseScreenHandler(kScreenId),
+      network_state_informer_(network_state_informer),
       core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
@@ -461,7 +462,7 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
   if (offline_login_is_active() ||
       IsOnline(captive_portal_status_) == IsOnline(previous_status) ||
       disable_restrictive_proxy_check_for_test_ ||
-      GetCurrentScreen() != OobeScreen::SCREEN_GAIA_SIGNIN)
+      GetCurrentScreen() != kScreenId)
     return;
 
   LoadAuthExtension(true /* force */, false /* offline */);

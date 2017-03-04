@@ -30,7 +30,8 @@ bool IsBootstrappingMaster() {
 
 }  // namespace
 
-ControllerPairingScreenHandler::ControllerPairingScreenHandler() {
+ControllerPairingScreenHandler::ControllerPairingScreenHandler()
+    : BaseScreenHandler(kScreenId) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -150,7 +151,7 @@ void ControllerPairingScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING);
+  ShowScreen(kScreenId);
 }
 
 void ControllerPairingScreenHandler::Hide() {
