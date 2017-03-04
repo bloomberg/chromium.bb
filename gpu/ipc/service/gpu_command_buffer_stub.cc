@@ -1093,12 +1093,10 @@ void GpuCommandBufferStub::OnWaitSyncTokenCompleted(
   DCHECK(waiting_for_sync_point_);
   TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncTokenCompleted", this,
                          "GpuCommandBufferStub", this);
+  // Don't call PullTextureUpdates here because we can't MakeCurrent if we're
+  // executing commands on another context. The WaitSyncToken command will run
+  // again and call PullTextureUpdates once this command buffer gets scheduled.
   waiting_for_sync_point_ = false;
-
-  gles2::MailboxManager* mailbox_manager = context_group_->mailbox_manager();
-  if (mailbox_manager->UsesSync() && MakeCurrent())
-    mailbox_manager->PullTextureUpdates(sync_token);
-
   executor_->SetScheduled(true);
   channel_->OnStreamRescheduled(stream_id_, true);
 }
