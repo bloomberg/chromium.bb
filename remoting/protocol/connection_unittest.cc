@@ -635,6 +635,8 @@ TEST_P(ConnectionTest, Audio) {
   client_audio_player_.Verify();
 }
 
+#if !defined(MEMORY_SANITIZER)
+// Test fails under msan, https://crbug.com/697178
 TEST_P(ConnectionTest, FirstCaptureFailed) {
   Connect();
 
@@ -667,6 +669,7 @@ TEST_P(ConnectionTest, FirstCaptureFailed) {
     EXPECT_EQ(event_timestamp, stats.host_stats.latest_event_timestamp);
   }
 }
+#endif
 
 TEST_P(ConnectionTest, SecondCaptureFailed) {
   Connect();
