@@ -216,10 +216,6 @@
     },
 
     {
-      name: "mediaControlsOverlayPlayButtonEnabled",
-      initial: false,
-    },
-    {
       name: "mediaPlaybackRequiresUserGesture",
       initial: false,
     },

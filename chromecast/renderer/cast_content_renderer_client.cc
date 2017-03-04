@@ -26,6 +26,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -98,9 +99,6 @@ void CastContentRendererClient::RenderViewCreated(
     blink::WebFrameWidget* web_frame_widget = render_view->GetWebFrameWidget();
     web_frame_widget->setBaseBackgroundColor(kColorBlack);
 
-    // Settings for ATV (Android defaults are not what we want):
-    webview->settings()->setMediaControlsOverlayPlayButtonEnabled(false);
-
     // Disable application cache as Chromecast doesn't support off-line
     // application running.
     webview->settings()->setOfflineWebApplicationCacheEnabled(false);
@@ -146,6 +144,12 @@ void CastContentRendererClient::RunWhenInForeground(
 
 bool CastContentRendererClient::AllowMediaSuspend() {
   return false;
+}
+
+void CastContentRendererClient::
+    SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
+  // Settings for ATV (Android defaults are not what we want).
+  blink::WebRuntimeFeatures::enableMediaControlsOverlayPlayButton(false);
 }
 
 }  // namespace shell

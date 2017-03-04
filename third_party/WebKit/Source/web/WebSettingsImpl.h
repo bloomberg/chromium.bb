@@ -120,7 +120,6 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void setMainFrameClipsContent(bool) override;
   void setMainFrameResizesAreOrientationChanges(bool) override;
   void setMaxTouchPoints(int) override;
-  void setMediaControlsOverlayPlayButtonEnabled(bool) override;
   void setMediaPlaybackRequiresUserGesture(bool) override;
   void setMediaPlaybackGestureWhitelistScope(const WebString&) override;
   void setPresentationRequiresUserGesture(bool) override;

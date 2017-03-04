@@ -45,6 +45,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   // Android does not yet support SystemMonitor.
   WebRuntimeFeatures::enableOnDeviceChange(false);
   WebRuntimeFeatures::enableMediaSession(true);
+  WebRuntimeFeatures::enableMediaControlsOverlayPlayButton(true);
 #else  // defined(OS_ANDROID)
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
   if (base::FeatureList::IsEnabled(

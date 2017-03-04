@@ -1025,6 +1025,10 @@
     {
       name: "BlockLegacySubresources",
       status: "experimental",
+    },
+    {
+      name: "MediaControlsOverlayPlayButton",
+      settable_from_internals: true,
     }
   ],
 }

@@ -222,8 +222,7 @@ void MediaControls::initializeControls() {
   MediaControlOverlayEnclosureElement* overlayEnclosure =
       MediaControlOverlayEnclosureElement::create(*this);
 
-  if (document().settings() &&
-      document().settings()->getMediaControlsOverlayPlayButtonEnabled()) {
+  if (RuntimeEnabledFeatures::mediaControlsOverlayPlayButtonEnabled()) {
     MediaControlOverlayPlayButtonElement* overlayPlayButton =
         MediaControlOverlayPlayButtonElement::create(*this);
     m_overlayPlayButton = overlayPlayButton;

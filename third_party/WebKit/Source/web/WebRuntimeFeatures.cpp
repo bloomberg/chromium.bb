@@ -392,4 +392,8 @@ void WebRuntimeFeatures::enableVideoFullscreenOrientationLock(bool enable) {
   RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableMediaControlsOverlayPlayButton(bool enable) {
+  RuntimeEnabledFeatures::setMediaControlsOverlayPlayButtonEnabled(enable);
+}
+
 }  // namespace blink

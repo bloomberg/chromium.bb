@@ -621,10 +621,6 @@ void WebSettingsImpl::setShouldRespectImageOrientation(bool enabled) {
   m_settings->setShouldRespectImageOrientation(enabled);
 }
 
-void WebSettingsImpl::setMediaControlsOverlayPlayButtonEnabled(bool enabled) {
-  m_settings->setMediaControlsOverlayPlayButtonEnabled(enabled);
-}
-
 void WebSettingsImpl::setMediaPlaybackRequiresUserGesture(bool required) {
   m_settings->setMediaPlaybackRequiresUserGesture(required);
 }
