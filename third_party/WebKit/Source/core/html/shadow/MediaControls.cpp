@@ -337,6 +337,35 @@ void MediaControls::initializeControls() {
           *this, MediaControlToggleClosedCaptionsButtonElement::create(*this)));
 }
 
+Node::InsertionNotificationRequest MediaControls::insertedInto(
+    ContainerNode* root) {
+  if (!mediaElement().isConnected())
+    return HTMLDivElement::insertedInto(root);
+
+  // TODO(mlamouri): we should show the controls instead of having
+  // HTMLMediaElement do it.
+
+  // m_windowEventListener doesn't need to be re-attached as it's only needed
+  // when a menu is visible.
+  m_mediaEventListener->attach();
+  if (m_orientationLockDelegate)
+    m_orientationLockDelegate->attach();
+
+  return HTMLDivElement::insertedInto(root);
+}
+
+void MediaControls::removedFrom(ContainerNode*) {
+  DCHECK(!mediaElement().isConnected());
+
+  // TODO(mlamouri): we hide show the controls instead of having
+  // HTMLMediaElement do it.
+
+  m_windowEventListener->stop();
+  m_mediaEventListener->detach();
+  if (m_orientationLockDelegate)
+    m_orientationLockDelegate->detach();
+}
+
 void MediaControls::reset() {
   EventDispatchForbiddenScope::AllowUserAgentEvents allowEventsInShadow;
   BatchedControlUpdate batch(this);
@@ -685,27 +714,6 @@ bool MediaControls::containsRelatedTarget(Event* event) {
   if (!relatedTarget)
     return false;
   return contains(relatedTarget->toNode());
-}
-
-void MediaControls::onInsertedIntoDocument() {
-  // TODO(mlamouri): we should show the controls instead of having
-  // HTMLMediaElement do it.
-
-  // m_windowEventListener doesn't need to be re-attached as it's only needed
-  // when a menu is visible.
-  m_mediaEventListener->attach();
-  if (m_orientationLockDelegate)
-    m_orientationLockDelegate->attach();
-}
-
-void MediaControls::onRemovedFromDocument() {
-  // TODO(mlamouri): we hide show the controls instead of having
-  // HTMLMediaElement do it.
-
-  m_windowEventListener->stop();
-  m_mediaEventListener->detach();
-  if (m_orientationLockDelegate)
-    m_orientationLockDelegate->detach();
 }
 
 void MediaControls::onVolumeChange() {

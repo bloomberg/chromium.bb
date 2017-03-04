@@ -44,6 +44,10 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
 
   HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
 
+  // Node override.
+  Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
+
   void reset();
 
   void show();
@@ -166,8 +170,6 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   bool containsRelatedTarget(Event*);
 
   // Methods called by MediaControlsMediaEventListener.
-  void onInsertedIntoDocument();
-  void onRemovedFromDocument();
   void onVolumeChange();
   void onFocusIn();
   void onTimeUpdate();

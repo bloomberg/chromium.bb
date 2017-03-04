@@ -69,6 +69,8 @@ MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
 }
 
 void MediaControlsOrientationLockDelegate::attach() {
+  DCHECK(videoElement().isConnected());
+
   document().addEventListener(EventTypeNames::fullscreenchange, this, true);
   videoElement().addEventListener(EventTypeNames::webkitfullscreenchange, this,
                                   true);
@@ -76,6 +78,8 @@ void MediaControlsOrientationLockDelegate::attach() {
 }
 
 void MediaControlsOrientationLockDelegate::detach() {
+  DCHECK(!videoElement().isConnected());
+
   document().removeEventListener(EventTypeNames::fullscreenchange, this, true);
   videoElement().removeEventListener(EventTypeNames::webkitfullscreenchange,
                                      this, true);

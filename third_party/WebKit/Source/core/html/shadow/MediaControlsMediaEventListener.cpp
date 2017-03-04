@@ -14,18 +14,13 @@ namespace blink {
 MediaControlsMediaEventListener::MediaControlsMediaEventListener(
     MediaControls* mediaControls)
     : EventListener(CPPEventListenerType), m_mediaControls(mediaControls) {
-  // These events are always active because they are needed in order to attach
-  // or detach the whole controls.
-  mediaElement().addEventListener(EventTypeNames::DOMNodeInsertedIntoDocument,
-                                  this, false);
-  mediaElement().addEventListener(EventTypeNames::DOMNodeRemovedFromDocument,
-                                  this, false);
-
   if (mediaElement().isConnected())
     attach();
 }
 
 void MediaControlsMediaEventListener::attach() {
+  DCHECK(mediaElement().isConnected());
+
   mediaElement().addEventListener(EventTypeNames::volumechange, this, false);
   mediaElement().addEventListener(EventTypeNames::focusin, this, false);
   mediaElement().addEventListener(EventTypeNames::timeupdate, this, false);
@@ -50,6 +45,8 @@ void MediaControlsMediaEventListener::attach() {
 }
 
 void MediaControlsMediaEventListener::detach() {
+  DCHECK(!mediaElement().isConnected());
+
   m_mediaControls->document().removeEventListener(
       EventTypeNames::fullscreenchange, this, false);
 
@@ -71,14 +68,6 @@ HTMLMediaElement& MediaControlsMediaEventListener::mediaElement() {
 void MediaControlsMediaEventListener::handleEvent(
     ExecutionContext* executionContext,
     Event* event) {
-  if (event->type() == EventTypeNames::DOMNodeInsertedIntoDocument) {
-    m_mediaControls->onInsertedIntoDocument();
-    return;
-  }
-  if (event->type() == EventTypeNames::DOMNodeRemovedFromDocument) {
-    m_mediaControls->onRemovedFromDocument();
-    return;
-  }
   if (event->type() == EventTypeNames::volumechange) {
     m_mediaControls->onVolumeChange();
     return;
