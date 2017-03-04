@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -552,11 +553,9 @@ public class DownloadNotificationService extends Service {
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, notificationId));
 
-        updateNotification(notificationId, builder.build());
-
         int itemType = isOfflinePage ? DownloadSharedPreferenceEntry.ITEM_TYPE_OFFLINE_PAGE
                                      : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD;
-        mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(
+        updateNotification(notificationId, builder.build(), downloadGuid, isOfflinePage,
                 new DownloadSharedPreferenceEntry(notificationId, isOffTheRecord,
                         canDownloadWhileMetered, downloadGuid, fileName, itemType, true));
         startTrackingInProgressDownload(downloadGuid);
@@ -599,7 +598,7 @@ public class DownloadNotificationService extends Service {
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(downloadGuid);
         if (entry == null) return;
         if (!isResumable) {
-            notifyDownloadFailed(downloadGuid, entry.fileName);
+            notifyDownloadFailed(entry.isOfflinePage(), downloadGuid, entry.fileName);
             return;
         }
         // If download is already paused, do nothing.
@@ -640,11 +639,9 @@ public class DownloadNotificationService extends Service {
         dismissIntent.putExtra(EXTRA_NOTIFICATION_DISMISSED, true);
         builder.setDeleteIntent(buildPendingIntent(dismissIntent, entry.notificationId));
 
-        updateNotification(entry.notificationId, builder.build());
-        // Update the SharedPreference entry with the new isAutoResumable value.
-        mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(
-                new DownloadSharedPreferenceEntry(
-                        entry.notificationId, entry.isOffTheRecord,
+        updateNotification(entry.notificationId, builder.build(), downloadGuid,
+                entry.isOfflinePage(),
+                new DownloadSharedPreferenceEntry(entry.notificationId, entry.isOffTheRecord,
                         entry.canDownloadWhileMetered, entry.downloadGuid, entry.fileName,
                         entry.itemType, isAutoResumable));
         stopTrackingInProgressDownload(downloadGuid);
@@ -689,19 +686,19 @@ public class DownloadNotificationService extends Service {
             mDownloadSuccessLargeIcon = getLargeNotificationIcon(bitmap);
         }
         builder.setLargeIcon(mDownloadSuccessLargeIcon);
-        updateNotification(notificationId, builder.build());
-        mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(downloadGuid);
+        updateNotification(notificationId, builder.build(), downloadGuid, isOfflinePage, null);
         stopTrackingInProgressDownload(downloadGuid);
         return notificationId;
     }
 
     /**
      * Add a download failed notification.
+     * @param isOfflinePage Whether or not the download was for an offline page.
      * @param downloadGuid GUID of the download.
      * @param fileName GUID of the download.
      */
     @VisibleForTesting
-    public void notifyDownloadFailed(String downloadGuid, String fileName) {
+    public void notifyDownloadFailed(boolean isOfflinePage, String downloadGuid, String fileName) {
         // If the download is not in history db, fileName could be empty. Get it from
         // SharedPreferences.
         if (TextUtils.isEmpty(fileName)) {
@@ -715,8 +712,7 @@ public class DownloadNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 buildNotification(android.R.drawable.stat_sys_download_done, fileName,
                         mContext.getResources().getString(R.string.download_notification_failed));
-        updateNotification(notificationId, builder.build());
-        mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(downloadGuid);
+        updateNotification(notificationId, builder.build(), downloadGuid, isOfflinePage, null);
         stopTrackingInProgressDownload(downloadGuid);
     }
 
@@ -964,15 +960,31 @@ public class DownloadNotificationService extends Service {
         }
         return DownloadManagerService.getDownloadManagerService(getApplicationContext());
     }
-
-    /**
-     * Update the notification with id.
-     * @param id Id of the notification that has to be updated.
-     * @param notification the notification object that needs to be updated.
-     */
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
         mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
+    }
+
+    private void updateNotification(int id, Notification notification, String downloadGuid,
+            boolean isOfflinePage, DownloadSharedPreferenceEntry entry) {
+        updateNotification(id, notification);
+        trackNotificationUma(isOfflinePage, downloadGuid);
+
+        if (entry != null) {
+            mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(entry);
+        } else {
+            mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(downloadGuid);
+        }
+    }
+
+    private void trackNotificationUma(boolean isOfflinePage, String downloadGuid) {
+        // Check if we already have an entry in the DownloadSharedPreferenceHelper.  This is a
+        // reasonable indicator for whether or not a notification is already showing (or at least if
+        // we had built one for this download before.
+        if (mDownloadSharedPreferenceHelper.hasEntry(downloadGuid)) return;
+        NotificationUmaTracker.getInstance().onNotificationShown(isOfflinePage
+                        ? NotificationUmaTracker.DOWNLOAD_PAGES
+                        : NotificationUmaTracker.DOWNLOAD_FILES);
     }
 
     /**

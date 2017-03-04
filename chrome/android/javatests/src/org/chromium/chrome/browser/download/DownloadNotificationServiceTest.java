@@ -294,7 +294,7 @@ public class DownloadNotificationServiceTest extends
                 sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(2, entries.size());
 
-        service.notifyDownloadFailed(guid2, "failed");
+        service.notifyDownloadFailed(false, guid2, "failed");
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(1, entries.size());

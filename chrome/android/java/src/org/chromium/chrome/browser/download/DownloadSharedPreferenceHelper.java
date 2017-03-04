@@ -53,6 +53,15 @@ public class DownloadSharedPreferenceHelper {
     }
 
     /**
+     * Helper method to make querying whether or not an entry exists for {@code guid} easier.
+     * @param guid The guid that represents the download entry.
+     * @return Whether or not that entry currently has metadata.
+     */
+    public boolean hasEntry(String guid) {
+        return getDownloadSharedPreferenceEntry(guid) != null;
+    }
+
+    /**
      * Adds a DownloadSharedPreferenceEntry to SharedPrefs. If an entry with the GUID already exists
      * in SharedPrefs, update it if it has changed.
      * @param pendingEntry A DownloadSharedPreferenceEntry to be added.

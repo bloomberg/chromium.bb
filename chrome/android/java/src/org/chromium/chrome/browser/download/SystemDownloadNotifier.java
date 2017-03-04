@@ -286,7 +286,8 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
                 onSuccessNotificationShown(notificationInfo, notificationId);
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
-                mBoundService.notifyDownloadFailed(info.getDownloadGuid(), info.getFileName());
+                mBoundService.notifyDownloadFailed(
+                        info.isOfflinePage(), info.getDownloadGuid(), info.getFileName());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
                 mBoundService.notifyDownloadCanceled(info.getDownloadGuid());

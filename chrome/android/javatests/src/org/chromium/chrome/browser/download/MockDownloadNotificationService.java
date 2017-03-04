@@ -100,12 +100,13 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    public void notifyDownloadFailed(final String downloadGuid, final String fileName) {
+    public void notifyDownloadFailed(
+            final boolean isOfflinePage, final String downloadGuid, final String fileName) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 MockDownloadNotificationService.super.notifyDownloadFailed(
-                        downloadGuid, fileName);
+                        isOfflinePage, downloadGuid, fileName);
             }
         });
     }
