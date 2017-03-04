@@ -196,11 +196,12 @@ class SearchProvider : public BaseSearchProvider,
   // if suggested relevances cause undesirable behavior. Updates |done_|.
   void UpdateMatches();
 
-  // Check constraints that may be violated by suggested relevances and revises/
-  // rolls back the suggested relevance scores to make all constraints old.
+  // Checks constraints that may be violated by suggested relevances and
+  // revises/rolls back the suggested relevance scores to make all constraints
+  // hold.
   void EnforceConstraints();
 
-  // Record the top suggestion (if any) for future use.  SearchProvider tries
+  // Records the top suggestion (if any) for future use.  SearchProvider tries
   // to ensure that an inline autocomplete suggestion does not change
   // asynchronously.
   void RecordTopSuggestion();

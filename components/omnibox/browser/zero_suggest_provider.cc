@@ -81,7 +81,7 @@ void LogOmniboxZeroSuggestRequest(
 const int kDefaultZeroSuggestRelevance = 100;
 
 // Used for testing whether zero suggest is ever available.
-const char kArbitraryInsecureUrlString[] = "http://www.google.com/";
+constexpr char kArbitraryInsecureUrlString[] = "http://www.google.com/";
 
 }  // namespace
 

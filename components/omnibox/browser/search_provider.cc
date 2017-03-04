@@ -271,12 +271,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
   providers_.set(default_provider_keyword, keyword_provider_keyword);
 
   if (input.from_omnibox_focus()) {
-    // Don't display any suggestions for on-focus requests.  Stop any pending
-    // requests here (there likely aren't yet, though it doesn't hurt to be safe
-    // so that we can create a new request later in this flow (to warm-up the
-    // suggest server by alerting it that the user is likely about to start
-    // typing).
-    StopSuggest();
+    // Don't display any suggestions for on-focus requests.
+    DCHECK(done_);
     ClearAllResults();
   } else if (input.text().empty()) {
     // User typed "?" alone.  Give them a placeholder result indicating what
