@@ -182,7 +182,7 @@ class PLATFORM_EXPORT Font {
                        const FloatPoint&,
                        float deviceScaleFactor) const;
 
-  bool getEmphasisMarkGlyphData(const AtomicString&, GlyphData&) const;
+  GlyphData getEmphasisMarkGlyphData(const AtomicString&) const;
 
   bool computeCanShapeWordByWord() const;
 

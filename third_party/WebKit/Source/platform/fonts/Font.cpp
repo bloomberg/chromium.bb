@@ -203,11 +203,7 @@ void Font::drawEmphasisMarks(PaintCanvas* canvas,
 
   FontCachePurgePreventer purgePreventer;
 
-  GlyphData emphasisGlyphData;
-  if (!getEmphasisMarkGlyphData(mark, emphasisGlyphData))
-    return;
-
-  ASSERT(emphasisGlyphData.fontData);
+  const auto emphasisGlyphData = getEmphasisMarkGlyphData(mark);
   if (!emphasisGlyphData.fontData)
     return;
 
@@ -491,36 +487,19 @@ PassRefPtr<FontFallbackIterator> Font::createFontFallbackIterator(
                                       fallbackPriority);
 }
 
-bool Font::getEmphasisMarkGlyphData(const AtomicString& mark,
-                                    GlyphData& glyphData) const {
+GlyphData Font::getEmphasisMarkGlyphData(const AtomicString& mark) const {
   if (mark.isEmpty())
-    return false;
+    return GlyphData();
 
   TextRun emphasisMarkRun(mark, mark.length());
-  TextRunPaintInfo emphasisPaintInfo(emphasisMarkRun);
-  GlyphBuffer glyphBuffer;
-  buildGlyphBuffer(emphasisPaintInfo, glyphBuffer);
-
-  if (glyphBuffer.isEmpty())
-    return false;
-
-  ASSERT(glyphBuffer.fontDataAt(0));
-  glyphData.fontData =
-      glyphBuffer.fontDataAt(0)->emphasisMarkFontData(m_fontDescription).get();
-  glyphData.glyph = glyphBuffer.glyphAt(0);
-
-  return true;
+  return CachingWordShaper(*this).emphasisMarkGlyphData(emphasisMarkRun);
 }
 
 int Font::emphasisMarkAscent(const AtomicString& mark) const {
   FontCachePurgePreventer purgePreventer;
 
-  GlyphData markGlyphData;
-  if (!getEmphasisMarkGlyphData(mark, markGlyphData))
-    return 0;
-
+  const auto markGlyphData = getEmphasisMarkGlyphData(mark);
   const SimpleFontData* markFontData = markGlyphData.fontData;
-  ASSERT(markFontData);
   if (!markFontData)
     return 0;
 
@@ -530,12 +509,8 @@ int Font::emphasisMarkAscent(const AtomicString& mark) const {
 int Font::emphasisMarkDescent(const AtomicString& mark) const {
   FontCachePurgePreventer purgePreventer;
 
-  GlyphData markGlyphData;
-  if (!getEmphasisMarkGlyphData(mark, markGlyphData))
-    return 0;
-
+  const auto markGlyphData = getEmphasisMarkGlyphData(mark);
   const SimpleFontData* markFontData = markGlyphData.fontData;
-  ASSERT(markFontData);
   if (!markFontData)
     return 0;
 
@@ -545,12 +520,8 @@ int Font::emphasisMarkDescent(const AtomicString& mark) const {
 int Font::emphasisMarkHeight(const AtomicString& mark) const {
   FontCachePurgePreventer purgePreventer;
 
-  GlyphData markGlyphData;
-  if (!getEmphasisMarkGlyphData(mark, markGlyphData))
-    return 0;
-
+  const auto markGlyphData = getEmphasisMarkGlyphData(mark);
   const SimpleFontData* markFontData = markGlyphData.fontData;
-  ASSERT(markFontData);
   if (!markFontData)
     return 0;
 

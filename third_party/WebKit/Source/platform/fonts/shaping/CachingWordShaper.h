@@ -32,7 +32,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
-#include <tuple>
 
 namespace blink {
 
@@ -72,6 +71,8 @@ class PLATFORM_EXPORT CachingWordShaper final {
   Vector<CharacterRange> individualCharacterRanges(const TextRun&);
 
   Vector<ShapeResultBuffer::RunFontData> runFontData(const TextRun&) const;
+
+  GlyphData emphasisMarkGlyphData(const TextRun&) const;
 
  private:
   ShapeCache* shapeCache() const;

@@ -15,6 +15,7 @@
 namespace blink {
 
 struct CharacterRange;
+class FontDescription;
 class GlyphBuffer;
 struct GlyphData;
 class TextRun;
@@ -64,6 +65,8 @@ class PLATFORM_EXPORT ShapeResultBuffer {
   };
 
   Vector<RunFontData> runFontData() const;
+
+  GlyphData emphasisMarkGlyphData(const FontDescription&) const;
 
  private:
   static CharacterRange getCharacterRangeInternal(

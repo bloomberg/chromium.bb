@@ -146,4 +146,12 @@ Vector<ShapeResultBuffer::RunFontData> CachingWordShaper::runFontData(
   return buffer.runFontData();
 }
 
+GlyphData CachingWordShaper::emphasisMarkGlyphData(
+    const TextRun& emphasisMarkRun) const {
+  ShapeResultBuffer buffer;
+  shapeResultsForRun(shapeCache(), &m_font, emphasisMarkRun, &buffer);
+
+  return buffer.emphasisMarkGlyphData(m_font.m_fontDescription);
+}
+
 };  // namespace blink

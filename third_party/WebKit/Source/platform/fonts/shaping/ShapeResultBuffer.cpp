@@ -497,4 +497,21 @@ ShapeResultBuffer::runFontData() const {
   return fontData;
 }
 
+GlyphData ShapeResultBuffer::emphasisMarkGlyphData(
+    const FontDescription& fontDescription) const {
+  for (const auto& result : m_results) {
+    for (const auto& run : result->m_runs) {
+      DCHECK(run->m_fontData);
+      if (run->m_glyphData.isEmpty())
+        continue;
+
+      return GlyphData(
+          run->m_glyphData[0].glyph,
+          run->m_fontData->emphasisMarkFontData(fontDescription).get());
+    }
+  }
+
+  return GlyphData();
+}
+
 }  // namespace blink

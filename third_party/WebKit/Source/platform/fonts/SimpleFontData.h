@@ -48,7 +48,8 @@ namespace blink {
 // given
 // character.
 struct GlyphData {
-  GlyphData(Glyph g = 0, const SimpleFontData* f = 0) : glyph(g), fontData(f) {}
+  GlyphData(Glyph g = 0, const SimpleFontData* f = nullptr)
+      : glyph(g), fontData(f) {}
   Glyph glyph;
   const SimpleFontData* fontData;
 };
