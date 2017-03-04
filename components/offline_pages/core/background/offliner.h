@@ -63,6 +63,9 @@ class Offliner {
   // TODO(dougarnett): consider passing back a request id instead of request.
   typedef base::Callback<void(const SavePageRequest&, RequestStatus)>
       CompletionCallback;
+  // Reports that the cancel operation has completed.
+  // TODO(chili): make save operation cancellable.
+  typedef base::Callback<void(int64_t request_id)> CancelCallback;
 
   Offliner() {}
   virtual ~Offliner() {}
@@ -75,7 +78,7 @@ class Offliner {
 
   // Clears the currently processing request, if any, and skips running its
   // CompletionCallback.
-  virtual void Cancel() = 0;
+  virtual void Cancel(const CancelCallback& callback) = 0;
 
   // Handles timeout scenario. Returns true if lowbar is met and try to do a
   // snapshot of the current webcontents.

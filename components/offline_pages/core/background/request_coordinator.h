@@ -274,6 +274,17 @@ class RequestCoordinator : public KeyedService,
   void HandleRemovedRequests(RequestNotifier::BackgroundSavePageResult status,
                              std::unique_ptr<UpdateRequestsResult> result);
 
+  // Handle updating of request status after cancel is called. Will call
+  // HandleCancelRecordResultCallback for UMA handling
+  void HandleCancelUpdateStatusCallback(
+      const Offliner::CancelCallback& next_callback,
+      Offliner::RequestStatus stop_status,
+      int64_t offline_id);
+  void UpdateStatusForCancel(Offliner::RequestStatus stop_status);
+  void ResetActiveRequestCallback(int64_t offline_id);
+  void StartSchedulerCallback(int64_t offline_id);
+  void TryNextRequestCallback(int64_t offline_id);
+
   bool StartProcessingInternal(const ProcessingWindowState processing_state,
                                const base::Callback<void(bool)>& callback);
 
@@ -318,7 +329,8 @@ class RequestCoordinator : public KeyedService,
   void HandleWatchdogTimeout();
 
   // Cancels an in progress pre-rendering, and updates state appropriately.
-  void StopPrerendering(Offliner::RequestStatus stop_status);
+  void StopPrerendering(const Offliner::CancelCallback& callback,
+                        Offliner::RequestStatus stop_status);
 
   // Marks attempt on the request and sends it to offliner in continuation.
   void SendRequestToOffliner(const SavePageRequest& request);

@@ -130,9 +130,14 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
     return base::Bind(&BackgroundLoaderOfflinerTest::OnCompletion,
                       base::Unretained(this));
   }
+  Offliner::CancelCallback const cancel_callback() {
+    return base::Bind(&BackgroundLoaderOfflinerTest::OnCancel,
+                      base::Unretained(this));
+  }
   Profile* profile() { return &profile_; }
   bool completion_callback_called() { return completion_callback_called_; }
   Offliner::RequestStatus request_status() { return request_status_; }
+  bool cancel_callback_called() { return cancel_callback_called_; }
   bool SaveInProgress() const { return model_->mock_saving(); }
   MockOfflinePageModel* model() const { return model_; }
   const base::HistogramTester& histograms() const { return histogram_tester_; }
@@ -148,11 +153,13 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
  private:
   void OnCompletion(const SavePageRequest& request,
                     Offliner::RequestStatus status);
+  void OnCancel(int64_t offline_id);
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<TestBackgroundLoaderOffliner> offliner_;
   MockOfflinePageModel* model_;
   bool completion_callback_called_;
+  bool cancel_callback_called_;
   Offliner::RequestStatus request_status_;
   base::HistogramTester histogram_tester_;
 
@@ -162,6 +169,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
 BackgroundLoaderOfflinerTest::BackgroundLoaderOfflinerTest()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       completion_callback_called_(false),
+      cancel_callback_called_(false),
       request_status_(Offliner::RequestStatus::UNKNOWN) {}
 
 BackgroundLoaderOfflinerTest::~BackgroundLoaderOfflinerTest() {}
@@ -178,6 +186,11 @@ void BackgroundLoaderOfflinerTest::OnCompletion(
   DCHECK(!completion_callback_called_);  // Expect 1 callback per request.
   completion_callback_called_ = true;
   request_status_ = status;
+}
+
+void BackgroundLoaderOfflinerTest::OnCancel(int64_t offline_id) {
+  DCHECK(!cancel_callback_called_);
+  cancel_callback_called_ = true;
 }
 
 TEST_F(BackgroundLoaderOfflinerTest,
@@ -249,7 +262,9 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoading) {
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
-  offliner()->Cancel();
+  offliner()->Cancel(cancel_callback());
+  PumpLoop();
+  EXPECT_TRUE(cancel_callback_called());
   EXPECT_FALSE(offliner()->is_loading());  // Offliner reset.
 }
 
@@ -260,11 +275,13 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoaded) {
   EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
   CompleteLoading();
   PumpLoop();
-  offliner()->Cancel();
+  offliner()->Cancel(cancel_callback());
+  PumpLoop();
 
   // Subsequent save callback cause no crash.
   model()->CompleteSavingAsArchiveCreationFailed();
   PumpLoop();
+  EXPECT_TRUE(cancel_callback_called());
   EXPECT_FALSE(completion_callback_called());
   EXPECT_FALSE(SaveInProgress());
   EXPECT_FALSE(offliner()->is_loading());  // Offliner reset.

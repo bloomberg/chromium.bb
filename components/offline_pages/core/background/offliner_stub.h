@@ -19,7 +19,7 @@ class OfflinerStub : public Offliner {
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& callback) override;
 
-  void Cancel() override;
+  void Cancel(const CancelCallback& callback) override;
 
   void disable_loading() { disable_loading_ = true; }
 

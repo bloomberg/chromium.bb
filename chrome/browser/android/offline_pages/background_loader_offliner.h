@@ -37,7 +37,7 @@ class BackgroundLoaderOffliner : public Offliner,
   // Offliner implementation.
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& callback) override;
-  void Cancel() override;
+  void Cancel(const CancelCallback& callback) override;
   bool HandleTimeout(const SavePageRequest& request) override;
 
   // WebContentsObserver implementation.
@@ -68,6 +68,8 @@ class BackgroundLoaderOffliner : public Offliner,
   // Called when application state has changed.
   void OnApplicationStateChange(
       base::android::ApplicationState application_state);
+  void HandleApplicationStateChangeCancel(const SavePageRequest& request,
+                                          int64_t offline_id);
 
   std::unique_ptr<background_loader::BackgroundLoaderContents> loader_;
   // Not owned.
@@ -82,12 +84,16 @@ class BackgroundLoaderOffliner : public Offliner,
   std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
   // Whether we are on a low-end device.
   bool is_low_end_device_;
+
   // Save state.
   SaveState save_state_;
   // Page load state.
   PageLoadState page_load_state_;
   // Seconds to delay before taking snapshot.
   long page_delay_ms_;
+
+  // Callback for cancel.
+  CancelCallback cancel_callback_;
 
   base::WeakPtrFactory<BackgroundLoaderOffliner> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderOffliner);

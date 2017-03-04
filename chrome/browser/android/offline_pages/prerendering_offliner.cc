@@ -210,13 +210,16 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
   return accepted;
 }
 
-void PrerenderingOffliner::Cancel() {
+void PrerenderingOffliner::Cancel(const CancelCallback& callback) {
+  int64_t request_id = 0LL;
   if (pending_request_) {
+    request_id = pending_request_->request_id();
     pending_request_.reset(nullptr);
     app_listener_.reset(nullptr);
     GetOrCreateLoader()->StopLoading();
     // TODO(dougarnett): Consider ability to cancel SavePage request.
   }
+  callback.Run(request_id);
 }
 
 bool PrerenderingOffliner::HandleTimeout(const SavePageRequest& request) {
@@ -271,10 +274,20 @@ void PrerenderingOffliner::OnApplicationStateChange(
           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
     DVLOG(1) << "App became active, canceling current offlining request";
     SavePageRequest* request = pending_request_.get();
-    Cancel();
-    completion_callback_.Run(*request,
-                             Offliner::RequestStatus::FOREGROUND_CANCELED);
+    // This works because Bind will make a copy of request, and we
+    // should not have to worry about reset being called before cancel callback.
+    Cancel(base::Bind(&PrerenderingOffliner::HandleApplicationStateChangeCancel,
+                      weak_ptr_factory_.GetWeakPtr(), *request));
   }
 }
 
+void PrerenderingOffliner::HandleApplicationStateChangeCancel(
+    const SavePageRequest& request,
+    int64_t offline_id) {
+  // This shouldn't be immediate, but account for case where request was reset
+  // while waiting for callback.
+  if (pending_request_ && pending_request_->request_id() != offline_id)
+    return;
+  completion_callback_.Run(request, RequestStatus::FOREGROUND_CANCELED);
+}
 }  // namespace offline_pages

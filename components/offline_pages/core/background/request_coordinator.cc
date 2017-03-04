@@ -263,35 +263,21 @@ void RequestCoordinator::GetQueuedRequestsCallback(
   callback.Run(std::move(requests));
 }
 
-void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
+void RequestCoordinator::StopPrerendering(
+    const Offliner::CancelCallback& final_callback,
+    Offliner::RequestStatus stop_status) {
   if (offliner_ && is_busy_) {
     DCHECK(active_request_.get());
-    offliner_->Cancel();
-
-    if (stop_status == Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT ||
-        stop_status == Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED) {
-      // Consider watchdog timeout a completed attempt.
-      SavePageRequest request(*active_request_.get());
-      UpdateRequestForCompletedAttempt(request, stop_status);
-    } else {
-      // Otherwise consider this stop an aborted attempt.
-      UpdateRequestForAbortedAttempt(*active_request_.get());
-    }
+    offliner_->Cancel(base::Bind(
+        &RequestCoordinator::HandleCancelUpdateStatusCallback,
+        weak_ptr_factory_.GetWeakPtr(), final_callback, stop_status));
+    return;
   }
 
-  // Stopping offliner means it will not call callback so set last status.
-  last_offlining_status_ = stop_status;
-
-  if (active_request_) {
-    event_logger_.RecordOfflinerResult(active_request_->client_id().name_space,
-                                       last_offlining_status_,
-                                       active_request_->request_id());
-    RecordOfflinerResultUMA(active_request_->client_id(),
-                            active_request_->creation_time(),
-                            last_offlining_status_);
-    is_busy_ = false;
-    active_request_.reset();
-  }
+  UpdateStatusForCancel(stop_status);
+  int64_t request_id =
+      active_request_.get() ? active_request_->request_id() : 0LL;
+  final_callback.Run(request_id);
 }
 
 void RequestCoordinator::GetRequestsForSchedulingCallback(
@@ -322,8 +308,10 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
   if (active_request_ != nullptr) {
     if (request_ids.end() != std::find(request_ids.begin(), request_ids.end(),
                                        active_request_->request_id())) {
-      StopPrerendering(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
-      active_request_.reset(nullptr);
+      StopPrerendering(
+          base::Bind(&RequestCoordinator::ResetActiveRequestCallback,
+                     weak_ptr_factory_.GetWeakPtr()),
+          Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
       return true;
     }
   }
@@ -505,6 +493,53 @@ void RequestCoordinator::HandleRemovedRequests(
     NotifyCompleted(request, status);
 }
 
+void RequestCoordinator::HandleCancelUpdateStatusCallback(
+    const Offliner::CancelCallback& final_callback,
+    Offliner::RequestStatus stop_status,
+    int64_t offline_id) {
+  if (stop_status == Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT ||
+      stop_status == Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED) {
+    // Consider watchdog timeout a completed attempt.
+    SavePageRequest request(*active_request_.get());
+    UpdateRequestForCompletedAttempt(request, stop_status);
+  } else {
+    // Otherwise consider this stop an aborted attempt.
+    UpdateRequestForAbortedAttempt(*active_request_.get());
+  }
+
+  UpdateStatusForCancel(stop_status);
+  final_callback.Run(offline_id);
+}
+
+void RequestCoordinator::UpdateStatusForCancel(
+    Offliner::RequestStatus stop_status) {
+  // Stopping offliner means it will not call callback so set last status.
+  last_offlining_status_ = stop_status;
+
+  if (active_request_) {
+    event_logger_.RecordOfflinerResult(active_request_->client_id().name_space,
+                                       last_offlining_status_,
+                                       active_request_->request_id());
+    RecordOfflinerResultUMA(active_request_->client_id(),
+                            active_request_->creation_time(),
+                            last_offlining_status_);
+    is_busy_ = false;
+    active_request_.reset();
+  }
+}
+
+void RequestCoordinator::ResetActiveRequestCallback(int64_t offline_id) {
+  active_request_.reset();
+}
+
+void RequestCoordinator::StartSchedulerCallback(int64_t offline_id) {
+  scheduler_callback_.Run(true);
+}
+
+void RequestCoordinator::TryNextRequestCallback(int64_t offline_id) {
+  TryNextRequest(!kStartOfProcessing);
+}
+
 void RequestCoordinator::ScheduleAsNeeded() {
   // Get all requests from queue (there is no filtering mechanism).
   queue_->GetRequests(
@@ -514,10 +549,9 @@ void RequestCoordinator::ScheduleAsNeeded() {
 
 void RequestCoordinator::StopProcessing(Offliner::RequestStatus stop_status) {
   processing_state_ = ProcessingWindowState::STOPPED;
-  StopPrerendering(stop_status);
-
-  // Let the scheduler know we are done processing.
-  scheduler_callback_.Run(true);
+  StopPrerendering(base::Bind(&RequestCoordinator::StartSchedulerCallback,
+                              weak_ptr_factory_.GetWeakPtr()),
+                   stop_status);
 }
 
 void RequestCoordinator::HandleWatchdogTimeout() {
@@ -525,8 +559,9 @@ void RequestCoordinator::HandleWatchdogTimeout() {
       Offliner::REQUEST_COORDINATOR_TIMED_OUT;
   if (offliner_->HandleTimeout(*active_request_.get()))
     return;
-  StopPrerendering(watchdog_status);
-  TryNextRequest(!kStartOfProcessing);
+  StopPrerendering(base::Bind(&RequestCoordinator::TryNextRequestCallback,
+                              weak_ptr_factory_.GetWeakPtr()),
+                   watchdog_status);
 }
 
 // Returns true if the caller should expect a callback, false otherwise. For

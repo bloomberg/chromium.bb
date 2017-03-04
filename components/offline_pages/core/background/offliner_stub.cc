@@ -34,8 +34,9 @@ bool OfflinerStub::LoadAndSave(const SavePageRequest& request,
   return true;
 }
 
-void OfflinerStub::Cancel() {
+void OfflinerStub::Cancel(const CancelCallback& callback) {
   cancel_called_ = true;
+  callback.Run(0LL);
 }
 
 bool OfflinerStub::HandleTimeout(const SavePageRequest& request) {

@@ -172,6 +172,10 @@ class PrerenderingOfflinerTest : public testing::Test {
     return base::Bind(&PrerenderingOfflinerTest::OnCompletion,
                       base::Unretained(this));
   }
+  Offliner::CancelCallback const cancel_callback() {
+    return base::Bind(&PrerenderingOfflinerTest::OnCancel,
+                      base::Unretained(this));
+  }
 
   bool SaveInProgress() const { return model_->mock_saving(); }
   MockPrerenderingLoader* loader() { return loader_; }
@@ -179,10 +183,12 @@ class PrerenderingOfflinerTest : public testing::Test {
   bool completion_callback_called() { return completion_callback_called_; }
   Offliner::RequestStatus request_status() { return request_status_; }
   OfflinerPolicy* policy() { return policy_; }
+  bool cancel_callback_called() { return cancel_callback_called_; }
 
  private:
   void OnCompletion(const SavePageRequest& request,
                     Offliner::RequestStatus status);
+  void OnCancel(int64_t offline_id);
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
@@ -191,6 +197,7 @@ class PrerenderingOfflinerTest : public testing::Test {
   MockPrerenderingLoader* loader_;
   MockOfflinePageModel* model_;
   bool completion_callback_called_;
+  bool cancel_callback_called_;
   Offliner::RequestStatus request_status_;
   OfflinerPolicy* policy_;
 
@@ -200,6 +207,7 @@ class PrerenderingOfflinerTest : public testing::Test {
 PrerenderingOfflinerTest::PrerenderingOfflinerTest()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       completion_callback_called_(false),
+      cancel_callback_called_(false),
       request_status_(Offliner::RequestStatus::UNKNOWN) {}
 
 PrerenderingOfflinerTest::~PrerenderingOfflinerTest() {}
@@ -219,6 +227,11 @@ void PrerenderingOfflinerTest::OnCompletion(const SavePageRequest& request,
   DCHECK(!completion_callback_called_);  // Expect single callback per request.
   completion_callback_called_ = true;
   request_status_ = status;
+}
+
+void PrerenderingOfflinerTest::OnCancel(int64_t offline_id) {
+  DCHECK(!cancel_callback_called_);
+  cancel_callback_called_ = true;
 }
 
 TEST_F(PrerenderingOfflinerTest, LoadAndSaveBadUrl) {
@@ -285,7 +298,9 @@ TEST_F(PrerenderingOfflinerTest, CancelWhenLoading) {
   EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
   EXPECT_FALSE(loader()->IsIdle());
 
-  offliner()->Cancel();
+  offliner()->Cancel(cancel_callback());
+  PumpLoop();
+  EXPECT_TRUE(cancel_callback_called());
   EXPECT_TRUE(loader()->IsIdle());
 }
 
@@ -303,9 +318,10 @@ TEST_F(PrerenderingOfflinerTest, CancelWhenLoaded) {
   EXPECT_TRUE(loader()->IsLoaded());
   EXPECT_TRUE(SaveInProgress());
 
-  offliner()->Cancel();
+  offliner()->Cancel(cancel_callback());
   PumpLoop();
   EXPECT_FALSE(completion_callback_called());
+  EXPECT_TRUE(cancel_callback_called());
   EXPECT_FALSE(loader()->IsLoaded());
   // Note: save still in progress since it does not support canceling.
   EXPECT_TRUE(SaveInProgress());

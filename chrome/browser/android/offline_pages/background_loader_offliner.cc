@@ -117,18 +117,24 @@ bool BackgroundLoaderOffliner::LoadAndSave(const SavePageRequest& request,
   return true;
 }
 
-void BackgroundLoaderOffliner::Cancel() {
+void BackgroundLoaderOffliner::Cancel(const CancelCallback& callback) {
   // TODO(chili): We are not able to cancel a pending
-  // OfflinePageModel::SavePage() operation. We just ignore the callback.
-  if (!pending_request_)
-    return;
-
-  if (save_state_ != NONE) {
-    save_state_ = DELETE_AFTER_SAVE;
+  // OfflinePageModel::SavePage() operation. We will notify caller that
+  // cancel completed once the SavePage operation returns.
+  if (!pending_request_) {
+    callback.Run(0LL);
     return;
   }
 
+  if (save_state_ != NONE) {
+    save_state_ = DELETE_AFTER_SAVE;
+    cancel_callback_ = callback;
+    return;
+  }
+
+  int64_t request_id = pending_request_->request_id();
   ResetState();
+  callback.Run(request_id);
 }
 
 bool BackgroundLoaderOffliner::HandleTimeout(const SavePageRequest& request) {
@@ -304,6 +310,7 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
 
   if (save_state_ == DELETE_AFTER_SAVE) {
     save_state_ = NONE;
+    cancel_callback_.Run(request.request_id());
     return;
   }
 
@@ -338,9 +345,21 @@ void BackgroundLoaderOffliner::OnApplicationStateChange(
           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
     DVLOG(1) << "App became active, canceling current offlining request";
     SavePageRequest* request = pending_request_.get();
-    Cancel();
-    completion_callback_.Run(*request, RequestStatus::FOREGROUND_CANCELED);
+    // This works because Bind will make a copy of request, and we
+    // should not have to worry about reset being called before cancel callback.
+    Cancel(base::Bind(
+        &BackgroundLoaderOffliner::HandleApplicationStateChangeCancel,
+        weak_ptr_factory_.GetWeakPtr(), *request));
   }
 }
 
+void BackgroundLoaderOffliner::HandleApplicationStateChangeCancel(
+    const SavePageRequest& request,
+    int64_t offline_id) {
+  // If for some reason the request was reset during while waiting for callback
+  // ignore the completion callback.
+  if (pending_request_ && pending_request_->request_id() != offline_id)
+    return;
+  completion_callback_.Run(request, RequestStatus::FOREGROUND_CANCELED);
+}
 }  // namespace offline_pages
