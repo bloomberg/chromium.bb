@@ -795,7 +795,7 @@ void NetworkQualityEstimator::ReportEffectiveConnectionTypeForTesting(
     EffectiveConnectionType effective_connection_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  event_creator_.MaybeAddEffectiveConnectionTypeChangedEventToNetLog(
+  event_creator_.MaybeAddNetworkQualityChangedEventToNetLog(
       effective_connection_type_,
       typical_network_quality_[effective_connection_type]);
 
@@ -1105,7 +1105,7 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   if (past_type != effective_connection_type_)
     NotifyObserversOfEffectiveConnectionTypeChanged();
 
-  event_creator_.MaybeAddEffectiveConnectionTypeChangedEventToNetLog(
+  event_creator_.MaybeAddNetworkQualityChangedEventToNetLog(
       effective_connection_type_, network_quality_);
 
   rtt_observations_size_at_last_ect_computation_ = rtt_observations_.Size();
