@@ -14,7 +14,7 @@
       <settings-radio-group id="onStartupRadioGroup"
           pref="{{prefs.session.restore_on_startup}}">
         <controlled-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
-            pref="[[prefs.session.restore_on_startup]]">
+            pref="[[prefs.session.restore_on_startup]]" ignore-extensions>
           $i18n{onStartupOpenNewTab}
         </controlled-radio-button>
         <template is="dom-if" if="[[showIndicator_(

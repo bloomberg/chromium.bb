@@ -8,21 +8,35 @@
 
 /** @polymerBehavior */
 var CrPolicyPrefBehavior = {
+  properties: {
+    /**
+     * Showing that an extension is controlling a pref is sometimes done with a
+     * different UI (e.g. extension-controlled-indicator). In  those cases,
+     * avoid showing an (extra) indicator here.
+     * @public
+     */
+    ignoreExtensions: Boolean,
+  },
+
   /**
+   * Is the |pref| controlled by something that prevents user control of the
+   * preference.
    * @return {boolean} True if |this.pref| is controlled by an enforced policy.
    */
-  isPrefPolicyControlled: function() {
-    return (
-        this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&
-        this.pref.controlledBy !=
-            chrome.settingsPrivate.ControlledBy.EXTENSION);
+  isPrefEnforced: function() {
+    if (this.ignoreExtensions &&
+        this.pref.controlledBy ==
+            chrome.settingsPrivate.ControlledBy.EXTENSION) {
+      return false;
+    }
+    return this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /**
    * @return {boolean} True if |this.pref| has a recommended or enforced policy.
    */
   hasPrefPolicyIndicator: function() {
-    return this.isPrefPolicyControlled() ||
+    return this.isPrefEnforced() ||
         this.pref.enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED;
   },
 };

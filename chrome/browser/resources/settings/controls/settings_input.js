@@ -123,6 +123,6 @@ Polymer({
    * @private
    */
   isDisabled_: function(disabled) {
-    return disabled || this.isPrefPolicyControlled();
+    return disabled || this.isPrefEnforced();
   },
 });

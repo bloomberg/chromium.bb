@@ -48,6 +48,8 @@ Polymer({
       return CrPolicyIndicatorType.RECOMMENDED;
     if (enforcement == chrome.settingsPrivate.Enforcement.ENFORCED) {
       switch (controlledBy) {
+        case chrome.settingsPrivate.ControlledBy.EXTENSION:
+          return CrPolicyIndicatorType.EXTENSION;
         case chrome.settingsPrivate.ControlledBy.PRIMARY_USER:
           return CrPolicyIndicatorType.PRIMARY_USER;
         case chrome.settingsPrivate.ControlledBy.OWNER:

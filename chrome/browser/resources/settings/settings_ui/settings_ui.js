@@ -90,6 +90,8 @@ Polymer({
     }.bind(this));
 
     CrPolicyStrings = {
+      controlledSettingExtension:
+          loadTimeData.getString('controlledSettingExtension'),
       controlledSettingPolicy:
           loadTimeData.getString('controlledSettingPolicy'),
       controlledSettingRecommendedMatches:

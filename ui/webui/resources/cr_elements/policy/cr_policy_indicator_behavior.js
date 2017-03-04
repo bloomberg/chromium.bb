@@ -12,6 +12,7 @@
  * Strings required for policy indicators. These must be set at runtime.
  * Chrome OS only strings may be undefined.
  * @type {{
+ *   controlledSettingExtension: string,
  *   controlledSettingPolicy: string,
  *   controlledSettingRecommendedMatches: string,
  *   controlledSettingRecommendedDiffers: string,
@@ -79,8 +80,7 @@ var CrPolicyIndicatorBehavior = {
    * @private
    */
   getIndicatorVisible_: function(type) {
-    return type != CrPolicyIndicatorType.NONE &&
-        type != CrPolicyIndicatorType.EXTENSION;
+    return type != CrPolicyIndicatorType.NONE;
   },
 
   /**
@@ -89,26 +89,22 @@ var CrPolicyIndicatorBehavior = {
    * @private
    */
   getIndicatorIcon_: function(type) {
-    var icon = '';
     switch (type) {
       case CrPolicyIndicatorType.EXTENSION:
+        return 'cr:extension';
       case CrPolicyIndicatorType.NONE:
-        return icon;
+        return '';
       case CrPolicyIndicatorType.PRIMARY_USER:
-        icon = 'cr:group';
-        break;
+        return 'cr:group';
       case CrPolicyIndicatorType.OWNER:
-        icon = 'cr:person';
-        break;
+        return 'cr:person';
       case CrPolicyIndicatorType.USER_POLICY:
       case CrPolicyIndicatorType.DEVICE_POLICY:
       case CrPolicyIndicatorType.RECOMMENDED:
-        icon = 'cr20:domain';
-        break;
+        return 'cr20:domain';
       default:
         assertNotReached();
     }
-    return icon;
   },
 
   /**
@@ -123,6 +119,8 @@ var CrPolicyIndicatorBehavior = {
     if (!CrPolicyStrings)
       return '';  // Tooltips may not be defined, e.g. in OOBE.
     switch (type) {
+      case CrPolicyIndicatorType.EXTENSION:
+        return CrPolicyStrings.controlledSettingExtension;
       case CrPolicyIndicatorType.PRIMARY_USER:
         return CrPolicyStrings.controlledSettingShared.replace('$1', name);
       case CrPolicyIndicatorType.OWNER:

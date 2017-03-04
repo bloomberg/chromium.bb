@@ -40,7 +40,7 @@ suite('controlled button', function() {
     controlledButton.pref = extensionControlledPref;
     Polymer.dom.flush();
     assertTrue(controlledButton.$$('paper-button').disabled);
-    assertFalse(!!controlledButton.$$('cr-policy-pref-indicator'));
+    assertTrue(!!controlledButton.$$('cr-policy-pref-indicator'));
 
     controlledButton.pref = policyControlledPref;
     Polymer.dom.flush();

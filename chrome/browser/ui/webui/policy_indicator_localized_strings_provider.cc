@@ -18,6 +18,8 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "controlledSettingRecommendedDiffers",
       IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION);
+  html_source->AddLocalizedString("controlledSettingExtension",
+                                  IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION);
 #if defined(OS_CHROMEOS)
   html_source->AddLocalizedString("controlledSettingShared",
                                   IDS_OPTIONS_CONTROLLED_SETTING_SHARED);
