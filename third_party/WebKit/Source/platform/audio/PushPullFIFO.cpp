@@ -85,10 +85,24 @@ void PushPullFIFO::push(const AudioBus* inputBus) {
 void PushPullFIFO::pull(AudioBus* outputBus, size_t framesRequested) {
 #if OS(ANDROID)
   if (!outputBus) {
-    // Log when outputBus is invalid. (crbug.com/692423)
-    LOG(WARNING) << "[WebAudio/PushPullFIFO::pull] |outputBus| is invalid.";
+    // Log when outputBus or FIFO object is invalid. (crbug.com/692423)
+    LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << (void*)this << ">] "
+                 << "|outputBus| is invalid.";
     // Silently return to avoid crash.
     return;
+  }
+
+  // The following checks are in place to catch the inexplicable crash.
+  // (crbug.com/692423)
+  if (framesRequested > m_fifoLength) {
+    LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << (void*)this << ">] "
+                 << "framesRequested > m_fifoLength (" << framesRequested
+                 << " > " << m_fifoLength << ")";
+  }
+  if (m_indexRead >= m_fifoLength) {
+    LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << (void*)this << ">] "
+                 << "m_indexRead >= m_fifoLength (" << m_indexRead
+                 << " >= " << m_fifoLength << ")";
   }
 #endif
   CHECK(outputBus);
