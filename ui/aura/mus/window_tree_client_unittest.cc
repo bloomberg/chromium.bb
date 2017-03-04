@@ -43,6 +43,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -536,6 +537,37 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(InputEventBasicTestWindowDelegate);
 };
 
+class InputEventBasicTestEventHandler : public ui::test::TestEventHandler {
+ public:
+  InputEventBasicTestEventHandler() {}
+  ~InputEventBasicTestEventHandler() override {}
+
+  bool got_move() const { return got_move_; }
+  const gfx::Point& last_event_location() const { return last_event_location_; }
+  void set_event_id(uint32_t event_id) { event_id_ = event_id; }
+
+  // ui::test::TestEventHandler overrides.
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->type() == ui::ET_MOUSE_MOVED)
+      got_move_ = true;
+    last_event_location_ = event->location();
+    event->SetHandled();
+  }
+
+  void reset() {
+    got_move_ = false;
+    last_event_location_ = gfx::Point();
+    event_id_ = 0;
+  }
+
+ private:
+  bool got_move_ = false;
+  gfx::Point last_event_location_;
+  uint32_t event_id_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(InputEventBasicTestEventHandler);
+};
+
 }  // namespace
 
 TEST_F(WindowTreeClientClientTest, InputEventBasic) {
@@ -777,6 +809,47 @@ TEST_F(WindowTreeClientClientTest, InputEventCaptureWindow) {
   child1.reset();
   window_tree_host.reset();
   capture_client.reset();
+}
+
+TEST_F(WindowTreeClientClientTest, InputEventRootWindow) {
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  Window* top_level = window_tree_host.window();
+  InputEventBasicTestEventHandler root_handler;
+  top_level->AddPreTargetHandler(&root_handler);
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
+  InputEventBasicTestWindowDelegate child_delegate(window_tree());
+  Window child(&child_delegate);
+  child.Init(ui::LAYER_NOT_DRAWN);
+  top_level->AddChild(&child);
+  child.SetBounds(gfx::Rect(10, 10, 100, 100));
+  child.Show();
+
+  EXPECT_FALSE(root_handler.got_move());
+  EXPECT_FALSE(child_delegate.got_move());
+
+  const gfx::Point event_location_in_child(20, 30);
+  const uint32_t event_id = 1;
+  root_handler.set_event_id(event_id);
+  child_delegate.set_event_id(event_id);
+  std::unique_ptr<ui::Event> ui_event(
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location_in_child,
+                         gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, 0));
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(top_level), window_tree_host.display_id(),
+      ui::Event::Clone(*ui_event.get()), 0);
+
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(root_handler.got_move());
+  EXPECT_EQ(gfx::Point(20, 30), root_handler.last_event_location());
+  EXPECT_FALSE(child_delegate.got_move());
+  EXPECT_EQ(gfx::Point(), child_delegate.last_event_location());
 }
 
 class WindowTreeClientPointerObserverTest : public WindowTreeClientClientTest {

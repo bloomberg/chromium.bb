@@ -455,7 +455,7 @@ ui::EventTarget* WindowEventDispatcher::GetRootForEvent(ui::Event* event) {
   }
 
   ui::EventTarget* ancestor_with_targeter = event_target;
-  for (ui::EventTarget* ancestor = event_target->GetParentTarget(); ancestor;
+  for (ui::EventTarget* ancestor = event_target; ancestor;
        ancestor = ancestor->GetParentTarget()) {
     if (ancestor->GetEventTargeter())
       ancestor_with_targeter = ancestor;
