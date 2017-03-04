@@ -35,75 +35,19 @@ from webkitpy.common.webkit_finder import WebKitFinder
 
 class BaselineOptimizerTest(unittest.TestCase):
 
-    # Protected method _move_baselines is tested below - pylint: disable=protected-access
-    def test_move_baselines(self):
-        host = MockHost()
-        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
-        host.filesystem.write_binary_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
-        baseline_optimizer = BaselineOptimizer(
-            host, host.port_factory.get(), host.port_factory.all_port_names())
-        baseline_optimizer._move_baselines(
-            'another/test-expected.txt',
-            {
-                '/mock-checkout/third_party/WebKit/LayoutTests/platform/win': 'aaa',
-                '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac': 'aaa',
-                '/mock-checkout/third_party/WebKit/LayoutTests': 'bbb',
-            },
-            {
-                '/mock-checkout/third_party/WebKit/LayoutTests': 'aaa',
-            })
-        self.assertEqual(host.filesystem.read_binary_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'), 'result A')
-
-    def test_move_baselines_skip_git_commands(self):
-        host = MockHost()
-        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
-        host.filesystem.write_binary_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
-        baseline_optimizer = BaselineOptimizer(host, host.port_factory.get(
-        ), host.port_factory.all_port_names())
-        baseline_optimizer._move_baselines(
-            'another/test-expected.txt',
-            {
-                '/mock-checkout/third_party/WebKit/LayoutTests/platform/win': 'aaa',
-                '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac': 'aaa',
-                '/mock-checkout/third_party/WebKit/LayoutTests': 'bbb',
-            },
-            {
-                '/mock-checkout/third_party/WebKit/LayoutTests/platform/linux': 'bbb',
-                '/mock-checkout/third_party/WebKit/LayoutTests': 'aaa',
-            })
-        self.assertEqual(
-            host.filesystem.read_binary_file(
-                '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'),
-            'result A')
-
-    def _assert_optimization(
-            self,
-            results_by_directory,
-            directory_to_new_results,
-            baseline_dirname='', host=None):
-        if not host:
-            host = MockHost()
+    def _assert_optimization(self, results_by_directory, directory_to_new_results, baseline_dirname='', host=None):
+        host = host or MockHost()
         fs = host.filesystem
         webkit_base = WebKitFinder(fs).webkit_base()
         baseline_name = 'mock-baseline-expected.txt'
-        fs.write_text_file(fs.join(webkit_base, 'LayoutTests', 'VirtualTestSuites'),
-                           '[{"prefix": "gpu", "base": "fast/canvas", "args": ["--foo"]}]')
+        fs.write_text_file(
+            fs.join(webkit_base, 'LayoutTests', 'VirtualTestSuites'),
+            '[{"prefix": "gpu", "base": "fast/canvas", "args": ["--foo"]}]')
 
         for dirname, contents in results_by_directory.items():
-            path = fs.join(webkit_base, 'LayoutTests', dirname, baseline_name)
-            fs.write_binary_file(path, contents)
+            fs.write_binary_file(fs.join(webkit_base, 'LayoutTests', dirname, baseline_name), contents)
 
-        baseline_optimizer = BaselineOptimizer(host, host.port_factory.get(
-        ), host.port_factory.all_port_names())
+        baseline_optimizer = BaselineOptimizer(host, host.port_factory.get(), host.port_factory.all_port_names())
         self.assertTrue(baseline_optimizer.optimize(fs.join(baseline_dirname, baseline_name)))
 
         for dirname, contents in directory_to_new_results.items():
@@ -254,3 +198,54 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'platform/mac/fast/canvas': '1',
             },
             baseline_dirname='virtual/gpu/fast/canvas')
+
+    # Tests for protected methods - pylint: disable=protected-access
+
+    def test_move_baselines(self):
+        host = MockHost()
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
+        host.filesystem.write_binary_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
+        host.filesystem.write_binary_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
+        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
+        baseline_optimizer = BaselineOptimizer(
+            host, host.port_factory.get(), host.port_factory.all_port_names())
+        baseline_optimizer._move_baselines(
+            'another/test-expected.txt',
+            {
+                '/mock-checkout/third_party/WebKit/LayoutTests/platform/win': 'aaa',
+                '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac': 'aaa',
+                '/mock-checkout/third_party/WebKit/LayoutTests': 'bbb',
+            },
+            {
+                '/mock-checkout/third_party/WebKit/LayoutTests': 'aaa',
+            })
+        self.assertEqual(host.filesystem.read_binary_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'), 'result A')
+
+    def test_move_baselines_skip_git_commands(self):
+        host = MockHost()
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
+        host.filesystem.write_binary_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
+        host.filesystem.write_binary_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
+        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
+        baseline_optimizer = BaselineOptimizer(host, host.port_factory.get(
+        ), host.port_factory.all_port_names())
+        baseline_optimizer._move_baselines(
+            'another/test-expected.txt',
+            {
+                '/mock-checkout/third_party/WebKit/LayoutTests/platform/win': 'aaa',
+                '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac': 'aaa',
+                '/mock-checkout/third_party/WebKit/LayoutTests': 'bbb',
+            },
+            {
+                '/mock-checkout/third_party/WebKit/LayoutTests/platform/linux': 'bbb',
+                '/mock-checkout/third_party/WebKit/LayoutTests': 'aaa',
+            })
+        self.assertEqual(
+            host.filesystem.read_binary_file(
+                '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'),
+            'result A')

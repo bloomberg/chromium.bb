@@ -48,8 +48,144 @@ class BaselineOptimizer(object):
         self._webkit_base = port.webkit_base()
         self._layout_tests_dir = port.layout_tests_dir()
 
-        # Only used by unittests.
+        # Only used by unit tests.
         self.new_results_by_directory = []
+
+    def optimize(self, baseline_name):
+        # The virtual fallback path is the same as the non-virtual one
+        # tacked on to the bottom of the non-virtual path. See
+        # https://docs.google.com/a/chromium.org/drawings/d/1eGdsIKzJ2dxDDBbUaIABrN4aMLD1bqJTfyxNGZsTdmg/edit
+        # for a visual representation of this.
+        # So, we can optimize the virtual path, then the virtual root, and then
+        # the regular path.
+
+        _log.debug("Optimizing regular fallback path.")
+        result = self._optimize_subtree(baseline_name)
+        non_virtual_baseline_name = self._virtual_base(baseline_name)
+        if not non_virtual_baseline_name:
+            return result
+
+        self._optimize_virtual_root(baseline_name, non_virtual_baseline_name)
+
+        _log.debug("Optimizing non-virtual fallback path.")
+        result |= self._optimize_subtree(non_virtual_baseline_name)
+        return result
+
+    def write_by_directory(self, results_by_directory, writer, indent):
+        for path in sorted(results_by_directory):
+            writer("%s%s: %s" % (indent, self._platform(path), results_by_directory[path][0:6]))
+
+    def read_results_by_directory(self, baseline_name):
+        results_by_directory = {}
+        directories = functools.reduce(set.union, map(set, [self._relative_baseline_search_paths(
+            port, baseline_name) for port in self._ports.values()]))
+
+        for directory in directories:
+            path = self._join_directory(directory, baseline_name)
+            if self._filesystem.exists(path):
+                results_by_directory[directory] = self._filesystem.sha1(path)
+        return results_by_directory
+
+    def _optimize_subtree(self, baseline_name):
+        basename = self._filesystem.basename(baseline_name)
+        results_by_directory, new_results_by_directory = self._find_optimal_result_placement(baseline_name)
+
+        if new_results_by_directory == results_by_directory:
+            if new_results_by_directory:
+                _log.debug("  %s: (already optimal)", basename)
+                self.write_by_directory(results_by_directory, _log.debug, "    ")
+            else:
+                _log.debug("  %s: (no baselines found)", basename)
+            # This is just used for unit tests.
+            # Intentionally set it to the old data if we don't modify anything.
+            self.new_results_by_directory.append(results_by_directory)
+            return True
+
+        if (self._results_by_port_name(results_by_directory, baseline_name) !=
+                self._results_by_port_name(new_results_by_directory, baseline_name)):
+            # This really should never happen. Just a sanity check to make
+            # sure the script fails in the case of bugs instead of committing
+            # incorrect baselines.
+            _log.error("  %s: optimization failed", basename)
+            self.write_by_directory(results_by_directory, _log.warning, "      ")
+            return False
+
+        _log.debug("  %s:", basename)
+        _log.debug("    Before: ")
+        self.write_by_directory(results_by_directory, _log.debug, "      ")
+        _log.debug("    After: ")
+        self.write_by_directory(new_results_by_directory, _log.debug, "      ")
+
+        self._move_baselines(baseline_name, results_by_directory, new_results_by_directory)
+        return True
+
+    def _move_baselines(self, baseline_name, results_by_directory, new_results_by_directory):
+        data_for_result = {}
+        for directory, result in results_by_directory.items():
+            if result not in data_for_result:
+                source = self._join_directory(directory, baseline_name)
+                data_for_result[result] = self._filesystem.read_binary_file(source)
+
+        fs_files = []
+        for directory, result in results_by_directory.items():
+            if new_results_by_directory.get(directory) != result:
+                file_name = self._join_directory(directory, baseline_name)
+                if self._filesystem.exists(file_name):
+                    fs_files.append(file_name)
+
+        if fs_files:
+            _log.debug("    Deleting (file system):")
+            for platform_dir in sorted(self._platform(filename) for filename in fs_files):
+                _log.debug("      " + platform_dir)
+            for filename in fs_files:
+                self._filesystem.remove(filename)
+        else:
+            _log.debug("    (Nothing to delete)")
+
+        file_names = []
+        for directory, result in new_results_by_directory.items():
+            if results_by_directory.get(directory) != result:
+                destination = self._join_directory(directory, baseline_name)
+                self._filesystem.maybe_make_directory(self._filesystem.split(destination)[0])
+                self._filesystem.write_binary_file(destination, data_for_result[result])
+                file_names.append(destination)
+
+        if file_names:
+            _log.debug("    Adding:")
+            for platform_dir in sorted(self._platform(filename) for filename in file_names):
+                _log.debug("      " + platform_dir)
+        else:
+            _log.debug("    (Nothing to add)")
+
+    def _platform(self, filename):
+        platform_dir = self.ROOT_LAYOUT_TESTS_DIRECTORY + self._filesystem.sep + 'platform' + self._filesystem.sep
+        if filename.startswith(platform_dir):
+            return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
+        platform_dir = self._filesystem.join(self._webkit_base, platform_dir)
+        if filename.startswith(platform_dir):
+            return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
+        return '(generic)'
+
+    def _optimize_virtual_root(self, baseline_name, non_virtual_baseline_name):
+        virtual_root_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
+        if not self._filesystem.exists(virtual_root_baseline_path):
+            return
+        root_sha1 = self._filesystem.sha1(virtual_root_baseline_path)
+
+        results_by_directory = self.read_results_by_directory(non_virtual_baseline_name)
+        # See if all the immediate predecessors of the virtual root have the same expected result.
+        for port in self._ports.values():
+            directories = self._relative_baseline_search_paths(port, non_virtual_baseline_name)
+            for directory in directories:
+                if directory not in results_by_directory:
+                    continue
+                if results_by_directory[directory] != root_sha1:
+                    return
+                break
+
+        _log.debug("Deleting redundant virtual root expected result.")
+        _log.debug("    Deleting (file system): " + virtual_root_baseline_path)
+        self._filesystem.remove(virtual_root_baseline_path)
 
     def _baseline_root(self, baseline_name):
         virtual_suite = self._virtual_suite(baseline_name)
@@ -70,17 +206,21 @@ class BaselineOptimizer(object):
         return self._default_port.lookup_virtual_test_base(baseline_name)
 
     def _relative_baseline_search_paths(self, port, baseline_name):
+        """Returns a list of paths to check for baselines in order."""
         baseline_search_path = self._baseline_search_path(port, baseline_name)
         baseline_root = self._baseline_root(baseline_name)
         relative_paths = [self._filesystem.relpath(path, self._webkit_base) for path in baseline_search_path]
         return relative_paths + [baseline_root]
 
     def _join_directory(self, directory, baseline_name):
-        # This code is complicated because both the directory name and the baseline_name have the virtual
-        # test suite in the name and the virtual baseline name is not a strict superset of the non-virtual name.
-        # For example, virtual/gpu/fast/canvas/foo-expected.png corresponds to fast/canvas/foo-expected.png and
-        # the baseline directories are like platform/mac/virtual/gpu/fast/canvas. So, to get the path
-        # to the baseline in the platform directory, we need to append just foo-expected.png to the directory.
+        # This code is complicated because both the directory name and the
+        # baseline_name have the virtual test suite in the name and the virtual
+        # baseline name is not a strict superset of the non-virtual name.
+        # For example, virtual/gpu/fast/canvas/foo-expected.png corresponds to
+        # fast/canvas/foo-expected.png and the baseline directories are like
+        # platform/mac/virtual/gpu/fast/canvas. So, to get the path to the
+        # baseline in the platform directory, we need to append just
+        # foo-expected.png to the directory.
         virtual_suite = self._virtual_suite(baseline_name)
         if virtual_suite:
             baseline_name_without_virtual = baseline_name[len(virtual_suite.name) + 1:]
@@ -88,16 +228,6 @@ class BaselineOptimizer(object):
             baseline_name_without_virtual = baseline_name
         return self._filesystem.join(self._webkit_base, directory, baseline_name_without_virtual)
 
-    def read_results_by_directory(self, baseline_name):
-        results_by_directory = {}
-        directories = functools.reduce(set.union, map(set, [self._relative_baseline_search_paths(
-            port, baseline_name) for port in self._ports.values()]))
-
-        for directory in directories:
-            path = self._join_directory(directory, baseline_name)
-            if self._filesystem.exists(path):
-                results_by_directory[directory] = self._filesystem.sha1(path)
-        return results_by_directory
 
     def _results_by_port_name(self, results_by_directory, baseline_name):
         results_by_port_name = {}
@@ -194,124 +324,3 @@ class BaselineOptimizer(object):
                 return index, directory
         assert False, "result %s not found in fallback_path %s, %s" % (current_result, fallback_path, results_by_directory)
 
-    def _platform(self, filename):
-        platform_dir = self.ROOT_LAYOUT_TESTS_DIRECTORY + self._filesystem.sep + 'platform' + self._filesystem.sep
-        if filename.startswith(platform_dir):
-            return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
-        platform_dir = self._filesystem.join(self._webkit_base, platform_dir)
-        if filename.startswith(platform_dir):
-            return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
-        return '(generic)'
-
-    def _move_baselines(self, baseline_name, results_by_directory, new_results_by_directory):
-        data_for_result = {}
-        for directory, result in results_by_directory.items():
-            if result not in data_for_result:
-                source = self._join_directory(directory, baseline_name)
-                data_for_result[result] = self._filesystem.read_binary_file(source)
-
-        fs_files = []
-        for directory, result in results_by_directory.items():
-            if new_results_by_directory.get(directory) != result:
-                file_name = self._join_directory(directory, baseline_name)
-                if self._filesystem.exists(file_name):
-                    fs_files.append(file_name)
-
-        if fs_files:
-            _log.debug("    Deleting (file system):")
-            for platform_dir in sorted(self._platform(filename) for filename in fs_files):
-                _log.debug("      " + platform_dir)
-            for filename in fs_files:
-                self._filesystem.remove(filename)
-        else:
-            _log.debug("    (Nothing to delete)")
-
-        file_names = []
-        for directory, result in new_results_by_directory.items():
-            if results_by_directory.get(directory) != result:
-                destination = self._join_directory(directory, baseline_name)
-                self._filesystem.maybe_make_directory(self._filesystem.split(destination)[0])
-                self._filesystem.write_binary_file(destination, data_for_result[result])
-                file_names.append(destination)
-
-        if file_names:
-            _log.debug("    Adding:")
-            for platform_dir in sorted(self._platform(filename) for filename in file_names):
-                _log.debug("      " + platform_dir)
-        else:
-            _log.debug("    (Nothing to add)")
-
-    def write_by_directory(self, results_by_directory, writer, indent):
-        for path in sorted(results_by_directory):
-            writer("%s%s: %s" % (indent, self._platform(path), results_by_directory[path][0:6]))
-
-    def _optimize_subtree(self, baseline_name):
-        basename = self._filesystem.basename(baseline_name)
-        results_by_directory, new_results_by_directory = self._find_optimal_result_placement(baseline_name)
-
-        if new_results_by_directory == results_by_directory:
-            if new_results_by_directory:
-                _log.debug("  %s: (already optimal)", basename)
-                self.write_by_directory(results_by_directory, _log.debug, "    ")
-            else:
-                _log.debug("  %s: (no baselines found)", basename)
-            # This is just used for unittests. Intentionally set it to the old data if we don't modify anything.
-            self.new_results_by_directory.append(results_by_directory)
-            return True
-
-        if self._results_by_port_name(results_by_directory, baseline_name) != self._results_by_port_name(
-                new_results_by_directory, baseline_name):
-            # This really should never happen. Just a sanity check to make sure the script fails in the case of bugs
-            # instead of committing incorrect baselines.
-            _log.error("  %s: optimization failed", basename)
-            self.write_by_directory(results_by_directory, _log.warning, "      ")
-            return False
-
-        _log.debug("  %s:", basename)
-        _log.debug("    Before: ")
-        self.write_by_directory(results_by_directory, _log.debug, "      ")
-        _log.debug("    After: ")
-        self.write_by_directory(new_results_by_directory, _log.debug, "      ")
-
-        self._move_baselines(baseline_name, results_by_directory, new_results_by_directory)
-        return True
-
-    def _optimize_virtual_root(self, baseline_name, non_virtual_baseline_name):
-        virtual_root_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
-        if not self._filesystem.exists(virtual_root_baseline_path):
-            return
-        root_sha1 = self._filesystem.sha1(virtual_root_baseline_path)
-
-        results_by_directory = self.read_results_by_directory(non_virtual_baseline_name)
-        # See if all the immediate predecessors of the virtual root have the same expected result.
-        for port in self._ports.values():
-            directories = self._relative_baseline_search_paths(port, non_virtual_baseline_name)
-            for directory in directories:
-                if directory not in results_by_directory:
-                    continue
-                if results_by_directory[directory] != root_sha1:
-                    return
-                break
-
-        _log.debug("Deleting redundant virtual root expected result.")
-        _log.debug("    Deleting (file system): " + virtual_root_baseline_path)
-        self._filesystem.remove(virtual_root_baseline_path)
-
-    def optimize(self, baseline_name):
-        # The virtual fallback path is the same as the non-virtual one tacked on to the bottom of the non-virtual path.
-        # See https://docs.google.com/a/chromium.org/drawings/d/1eGdsIKzJ2dxDDBbUaIABrN4aMLD1bqJTfyxNGZsTdmg/edit for
-        # a visual representation of this.
-        #
-        # So, we can optimize the virtual path, then the virtual root and then the regular path.
-
-        _log.debug("Optimizing regular fallback path.")
-        result = self._optimize_subtree(baseline_name)
-        non_virtual_baseline_name = self._virtual_base(baseline_name)
-        if not non_virtual_baseline_name:
-            return result
-
-        self._optimize_virtual_root(baseline_name, non_virtual_baseline_name)
-
-        _log.debug("Optimizing non-virtual fallback path.")
-        result |= self._optimize_subtree(non_virtual_baseline_name)
-        return result
