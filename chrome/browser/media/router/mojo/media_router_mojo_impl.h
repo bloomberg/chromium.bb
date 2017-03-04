@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/issue.h"
@@ -170,13 +171,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     // True if the query has been sent to the MRPM.
     bool is_active = false;
 
-    // True if cached result is available.
-    bool has_cached_result = false;
-
-    // Cached list of sinks for the query, if |has_cached_result| is true.
-    // Empty otherwise.
-    std::vector<MediaSink> cached_sink_list;
+    // Cached list of sinks and origins for the query.
+    base::Optional<std::vector<MediaSink>> cached_sink_list;
     std::vector<url::Origin> origins;
+
     base::ObserverList<MediaSinksObserver> observers;
 
    private:
@@ -190,6 +188,11 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
     // True if the query has been sent to the MRPM.  False otherwise.
     bool is_active = false;
+
+    // Cached list of routes and joinable route IDs for the query.
+    base::Optional<std::vector<MediaRoute>> cached_route_list;
+    std::vector<std::string> joinable_route_ids;
+
     base::ObserverList<MediaRoutesObserver> observers;
 
    private:
@@ -231,6 +234,11 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void UnregisterIssuesObserver(IssuesObserver* observer) override;
   void RegisterRouteMessageObserver(RouteMessageObserver* observer) override;
   void UnregisterRouteMessageObserver(RouteMessageObserver* observer) override;
+
+  // Notifies |observer| of any existing cached routes, if it is still
+  // registered.
+  void NotifyOfExistingRoutesIfRegistered(const MediaSource::Id& source_id,
+                                          MediaRoutesObserver* observer) const;
 
   // These calls invoke methods in the component extension via Mojo.
   void DoCreateRoute(const MediaSource::Id& source_id,

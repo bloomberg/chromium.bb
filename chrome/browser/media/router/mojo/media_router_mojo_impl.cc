@@ -185,18 +185,17 @@ void MediaRouterMojoImpl::OnSinksReceived(
   }
 
   auto* sinks_query = it->second.get();
-  sinks_query->has_cached_result = true;
-  sinks_query->origins = origins;
   sinks_query->cached_sink_list = sinks;
+  sinks_query->origins = origins;
 
-  if (!sinks_query->observers.might_have_observers()) {
-    DVLOG_WITH_INSTANCE(1)
-        << "Received sink list without any active observers: " << media_source;
-  } else {
+  if (sinks_query->observers.might_have_observers()) {
     for (auto& observer : sinks_query->observers) {
-      observer.OnSinksUpdated(sinks_query->cached_sink_list,
+      observer.OnSinksUpdated(*sinks_query->cached_sink_list,
                               sinks_query->origins);
     }
+  } else {
+    DVLOG_WITH_INSTANCE(1)
+        << "Received sink list without any active observers: " << media_source;
   }
 }
 
@@ -215,8 +214,18 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
     return;
   }
 
-  for (auto& observer : it->second->observers)
-    observer.OnRoutesUpdated(routes, joinable_route_ids);
+  auto* routes_query = it->second.get();
+  routes_query->cached_route_list = routes;
+  routes_query->joinable_route_ids = joinable_route_ids;
+
+  if (routes_query->observers.might_have_observers()) {
+    for (auto& observer : routes_query->observers)
+      observer.OnRoutesUpdated(routes, joinable_route_ids);
+  } else {
+    DVLOG_WITH_INSTANCE(1)
+        << "Received routes update without any active observers: "
+        << media_source;
+  }
 }
 
 void MediaRouterMojoImpl::RouteResponseReceived(
@@ -393,9 +402,9 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // to it. Fail if |observer| is already registered.
   const std::string& source_id = observer->source().id();
   std::unique_ptr<MediaSinksQuery>& sinks_query = sinks_queries_[source_id];
-  bool new_query = false;
+  bool is_new_query = false;
   if (!sinks_query) {
-    new_query = true;
+    is_new_query = true;
     sinks_query = base::MakeUnique<MediaSinksQuery>();
   } else {
     DCHECK(!sinks_query->observers.HasObserver(observer));
@@ -409,12 +418,12 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
                              std::vector<url::Origin>());
   } else {
     // Need to call MRPM to start observing sinks if the query is new.
-    if (new_query) {
+    if (is_new_query) {
       SetWakeReason(MediaRouteProviderWakeReason::START_OBSERVING_MEDIA_SINKS);
       RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
                             base::Unretained(this), source_id));
-    } else if (sinks_query->has_cached_result) {
-      observer->OnSinksUpdated(sinks_query->cached_sink_list,
+    } else if (sinks_query->cached_sink_list) {
+      observer->OnSinksUpdated(*sinks_query->cached_sink_list,
                                sinks_query->origins);
     }
   }
@@ -459,16 +468,48 @@ void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const MediaSource::Id source_id = observer->source_id();
   auto& routes_query = routes_queries_[source_id];
+  bool is_new_query = false;
   if (!routes_query) {
+    is_new_query = true;
     routes_query = base::MakeUnique<MediaRoutesQuery>();
   } else {
     DCHECK(!routes_query->observers.HasObserver(observer));
   }
 
   routes_query->observers.AddObserver(observer);
-  SetWakeReason(MediaRouteProviderWakeReason::START_OBSERVING_MEDIA_ROUTES);
-  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaRoutes,
-                        base::Unretained(this), source_id));
+  if (is_new_query) {
+    SetWakeReason(MediaRouteProviderWakeReason::START_OBSERVING_MEDIA_ROUTES);
+    RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaRoutes,
+                          base::Unretained(this), source_id));
+    // The MRPM will call MediaRouterMojoImpl::OnRoutesUpdated() soon, if there
+    // are any existing routes the new observer should be aware of.
+  } else if (routes_query->cached_route_list) {
+    // Return to the event loop before notifying of a cached route list because
+    // MediaRoutesObserver is calling this method from its constructor, and that
+    // must complete before invoking its virtual OnRoutesUpdated() method.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&MediaRouterMojoImpl::NotifyOfExistingRoutesIfRegistered,
+                   weak_factory_.GetWeakPtr(), source_id, observer));
+  }
+}
+
+void MediaRouterMojoImpl::NotifyOfExistingRoutesIfRegistered(
+    const MediaSource::Id& source_id,
+    MediaRoutesObserver* observer) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Check that the route query still exists with a cached result, and that the
+  // observer is still registered. Otherwise, there is nothing to report to the
+  // observer.
+  const auto it = routes_queries_.find(source_id);
+  if (it == routes_queries_.end() || !it->second->cached_route_list ||
+      !it->second->observers.HasObserver(observer)) {
+    return;
+  }
+
+  observer->OnRoutesUpdated(*it->second->cached_route_list,
+                            it->second->joinable_route_ids);
 }
 
 void MediaRouterMojoImpl::UnregisterMediaRoutesObserver(
@@ -685,8 +726,7 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
     for (auto& source_and_query : sinks_queries_) {
       const auto& query = source_and_query.second;
       query->is_active = false;
-      query->has_cached_result = false;
-      query->cached_sink_list.clear();
+      query->cached_sink_list = base::nullopt;
       query->origins.clear();
     }
   } else {

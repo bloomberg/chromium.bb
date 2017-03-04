@@ -56,6 +56,7 @@ using testing::Pointee;
 using testing::Return;
 using testing::ReturnRef;
 using testing::SaveArg;
+using testing::Sequence;
 
 namespace media_router {
 
@@ -806,7 +807,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   MediaSource different_media_source(kSource2);
   EXPECT_CALL(mock_media_route_provider_,
               StartObservingMediaRoutes(media_source.id()))
-      .Times(2);
+      .Times(1);
   EXPECT_CALL(
       mock_media_route_provider_,
       StartObservingMediaRoutes(different_media_source.id()))
@@ -866,6 +867,62 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   EXPECT_CALL(
       mock_media_route_provider_,
       StopObservingMediaRoutes(different_media_source.id()));
+  ProcessEventLoop();
+}
+
+// Tests that multiple MediaRoutesObservers having the same query do not cause
+// extra extension wake-ups because the OnRoutesUpdated() results are cached.
+TEST_F(MediaRouterMojoImplTest, RegisterMediaRoutesObserver_DedupingWithCache) {
+  const MediaSource media_source = MediaSource(kSource);
+  std::vector<MediaRoute> expected_routes;
+  expected_routes.push_back(MediaRoute(kRouteId, media_source, kSinkId,
+                                       kDescription, false, "", false));
+  std::vector<MediaRoute::Id> expected_joinable_route_ids;
+  expected_joinable_route_ids.push_back(kJoinableRouteId);
+
+  Sequence sequence;
+
+  // Creating the first observer will wake-up the provider and ask it to start
+  // observing routes having source |kSource|. The provider will respond with
+  // the existing route.
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaRoutes(media_source.id()))
+      .Times(1);
+  std::unique_ptr<MockMediaRoutesObserver> observer1(
+      new MockMediaRoutesObserver(router(), media_source.id()));
+  ProcessEventLoop();
+  EXPECT_CALL(*observer1, OnRoutesUpdated(SequenceEquals(expected_routes),
+                                          expected_joinable_route_ids))
+      .Times(1);
+  media_router_proxy_->OnRoutesUpdated(expected_routes, media_source.id(),
+                                       expected_joinable_route_ids);
+  ProcessEventLoop();
+
+  // Creating two more observers will not wake up the provider. Instead, the
+  // cached route list will be returned.
+  std::unique_ptr<MockMediaRoutesObserver> observer2(
+      new MockMediaRoutesObserver(router(), media_source.id()));
+  std::unique_ptr<MockMediaRoutesObserver> observer3(
+      new MockMediaRoutesObserver(router(), media_source.id()));
+  EXPECT_CALL(*observer2, OnRoutesUpdated(SequenceEquals(expected_routes),
+                                          expected_joinable_route_ids))
+      .Times(1);
+  EXPECT_CALL(*observer3, OnRoutesUpdated(SequenceEquals(expected_routes),
+                                          expected_joinable_route_ids))
+      .Times(1);
+  ProcessEventLoop();
+
+  // Kill 2 of three observers, and expect nothing happens at the provider.
+  observer1.reset();
+  observer2.reset();
+  ProcessEventLoop();
+
+  // Kill the final observer, and expect the provider to be woken-up and called
+  // with the "stop observing" notification.
+  EXPECT_CALL(mock_media_route_provider_,
+              StopObservingMediaRoutes(media_source.id()))
+      .Times(1);
+  observer3.reset();
   ProcessEventLoop();
 }
 
