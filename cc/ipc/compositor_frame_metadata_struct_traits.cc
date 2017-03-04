@@ -36,7 +36,6 @@ bool StructTraits<cc::mojom::CompositorFrameMetadataDataView,
   out->top_controls_shown_ratio = data.top_controls_shown_ratio();
   out->bottom_controls_height = data.bottom_controls_height();
   out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
-  out->content_source_id = data.content_source_id();
 
   out->root_background_color = data.root_background_color();
   out->can_activate_before_dependencies =

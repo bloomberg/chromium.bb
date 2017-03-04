@@ -1242,7 +1242,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
       base::TimeDelta::FromMicroseconds(10));
 
   // Test immediate start and stop, ensuring that the timeout doesn't fire.
-  host_->StartNewContentRenderingTimeout(0);
+  host_->StartNewContentRenderingTimeout();
   host_->OnFirstPaintAfterLoad();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
@@ -1254,7 +1254,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   // Test that the timer doesn't fire if it receives a stop before
   // a start.
   host_->OnFirstPaintAfterLoad();
-  host_->StartNewContentRenderingTimeout(0);
+  host_->StartNewContentRenderingTimeout();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
@@ -1263,45 +1263,12 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
 
   // Test with a long delay to ensure that it does fire this time.
-  host_->StartNewContentRenderingTimeout(0);
+  host_->StartNewContentRenderingTimeout();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
-}
-
-// This tests that a compositor frame received with a stale content source ID
-// in its metadata is properly discarded.
-TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
-  host_->StartNewContentRenderingTimeout(100);
-  host_->OnFirstPaintAfterLoad();
-
-  // First swap a frame with an invalid ID.
-  cc::CompositorFrame frame;
-  frame.metadata.content_source_id = 99;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, frame, std::vector<IPC::Message>()));
-  EXPECT_FALSE(
-      static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
-  static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
-
-  // Test with a valid content ID as a control.
-  frame.metadata.content_source_id = 100;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, frame, std::vector<IPC::Message>()));
-  EXPECT_TRUE(
-      static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
-  static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
-
-  // We also accept frames with higher content IDs, to cover the case where
-  // the browser process receives a compositor frame for a new page before
-  // the corresponding DidCommitProvisionalLoad (it's a race).
-  frame.metadata.content_source_id = 101;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, frame, std::vector<IPC::Message>()));
-  EXPECT_TRUE(
-      static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
 }
 
 TEST_F(RenderWidgetHostTest, TouchEmulator) {

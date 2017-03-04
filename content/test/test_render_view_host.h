@@ -111,7 +111,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool is_showing() const { return is_showing_; }
   bool is_occluded() const { return is_occluded_; }
   bool did_swap_compositor_frame() const { return did_swap_compositor_frame_; }
-  void reset_did_swap_compositor_frame() { did_swap_compositor_frame_ = false; }
 
  protected:
   RenderWidgetHostImpl* rwh_;

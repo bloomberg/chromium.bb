@@ -414,9 +414,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void TransferActiveWheelFlingAnimation(
       const blink::WebActiveWheelFlingParameters& params) {}
 
-  uint32_t GetContentSourceId();
-  void IncrementContentSourceId();
-
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -849,19 +846,6 @@ class CONTENT_EXPORT RenderWidget
 
   bool time_to_first_active_paint_recorded_;
   base::TimeTicks was_shown_time_;
-
-  // This is initialized to zero and is incremented on each non-same-page
-  // navigation commit by RenderFrameImpl. At that time it is sent to the
-  // compositor so that it can tag compositor frames, and RenderFrameImpl is
-  // responsible for sending it to the browser process to be used to match
-  // each compositor frame to the most recent page navigation before it was
-  // generated.
-  // This only applies to main frames, and is not touched for subframe
-  // RenderWidgets, where there is no concern around displaying unloaded
-  // content.
-  // TODO(kenrb, fsamuel): This should be removed when SurfaceIDs can be used
-  // to replace it. See https://crbug.com/695579.
-  uint32_t current_content_source_id_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 

@@ -1130,8 +1130,4 @@ void RenderWidgetCompositor::SetIsForOopif(bool is_for_oopif) {
   is_for_oopif_ = is_for_oopif;
 }
 
-void RenderWidgetCompositor::SetContentSourceId(uint32_t id) {
-  layer_tree_host_->SetContentSourceId(id);
-}
-
 }  // namespace content

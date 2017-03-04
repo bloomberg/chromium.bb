@@ -1305,7 +1305,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   if (frame_tree_node_->IsMainFrame() && GetView() &&
       !validated_params.was_within_same_page) {
     RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
-        ->StartNewContentRenderingTimeout(validated_params.content_source_id);
+        ->StartNewContentRenderingTimeout();
   }
 }
 

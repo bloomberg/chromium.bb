@@ -325,10 +325,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void StopHangMonitorTimeout();
 
   // Starts the rendering timeout, which will clear displayed graphics if
-  // a new compositor frame is not received before it expires. This also causes
-  // any new compositor frames received with content_source_id less than
-  // |next_source_id| to be discarded.
-  void StartNewContentRenderingTimeout(uint32_t next_source_id);
+  // a new compositor frame is not received before it expires.
+  void StartNewContentRenderingTimeout();
 
   // Notification that a new compositor frame has been generated following
   // a page load. This stops |new_content_rendering_timeout_|, or prevents
@@ -890,14 +888,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // This value indicates how long to wait for a new compositor frame from a
   // renderer process before clearing any previously displayed content.
   base::TimeDelta new_content_rendering_delay_;
-
-  // This identifier tags compositor frames according to the page load with
-  // which they are associated, to prevent an unloaded web page from being
-  // drawn after a navigation to a new page has already committed. This is
-  // a no-op for non-top-level RenderWidgets, as that should always be zero.
-  // TODO(kenrb, fsamuel): We should use SurfaceIDs for this purpose when they
-  // are available in the renderer process. See https://crbug.com/695579.
-  uint32_t current_content_source_id_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;

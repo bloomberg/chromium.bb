@@ -104,7 +104,6 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       debug_state_(settings_.initial_debug_state),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       task_graph_runner_(params->task_graph_runner),
-      content_source_id_(0),
       event_listener_properties_(),
       mutator_host_(params->mutator_host) {
   DCHECK(task_graph_runner_);
@@ -973,13 +972,6 @@ void LayerTreeHost::SetDeviceColorSpace(
       this, [](Layer* layer) { layer->SetNeedsDisplay(); });
 }
 
-void LayerTreeHost::SetContentSourceId(uint32_t id) {
-  if (content_source_id_ == id)
-    return;
-  content_source_id_ = id;
-  SetNeedsCommit();
-}
-
 void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
@@ -1149,8 +1141,6 @@ void LayerTreeHost::PushPropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);
 
   tree_impl->SetDeviceColorSpace(device_color_space_);
-
-  tree_impl->set_content_source_id(content_source_id_);
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(

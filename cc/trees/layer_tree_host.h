@@ -309,9 +309,6 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
     return painted_device_scale_factor_;
   }
 
-  void SetContentSourceId(uint32_t);
-  uint32_t content_source_id() const { return content_source_id_; }
-
   void SetDeviceColorSpace(const gfx::ColorSpace& device_color_space);
   const gfx::ColorSpace& device_color_space() const {
     return device_color_space_;
@@ -572,8 +569,6 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   float min_page_scale_factor_ = 1.f;
   float max_page_scale_factor_ = 1.f;
   gfx::ColorSpace device_color_space_;
-
-  uint32_t content_source_id_;
 
   SkColor background_color_ = SK_ColorWHITE;
   bool has_transparent_background_ = false;
