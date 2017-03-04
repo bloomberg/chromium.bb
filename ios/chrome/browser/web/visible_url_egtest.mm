@@ -18,6 +18,7 @@
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/test/response_providers/html_response_provider.h"
+#include "ios/web/public/test/url_test_util.h"
 #include "url/gurl.h"
 
 using chrome_test_util::WebViewContainingText;
@@ -237,8 +238,9 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // though URL1 is a pending URL.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_longPress()];
-  NSString* URL1Spec = base::SysUTF8ToNSString(_testURL1.spec());
-  [[EarlGrey selectElementWithMatcher:grey_text(URL1Spec)]
+  NSString* URL1Title =
+      base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(_testURL1));
+  [[EarlGrey selectElementWithMatcher:grey_text(URL1Title)]
       performAction:grey_tap()];
   GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
              @"Last request URL: %@", self.lastRequestURLSpec);

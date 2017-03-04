@@ -22,6 +22,7 @@
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/test/response_providers/data_response_provider.h"
+#include "ios/web/public/test/url_test_util.h"
 
 namespace {
 
@@ -276,8 +277,9 @@ void TestResponseProvider::GetResponseHeadersAndBody(
   [self openBackHistory];
   [self waitForTabHistoryView];
 
-  id<GREYMatcher> historyItem = grey_text(base::SysUTF8ToNSString(
-      TestResponseProvider::GetPrintFormDataUrl().spec()));
+  GURL history_url = TestResponseProvider::GetPrintFormDataUrl();
+  id<GREYMatcher> historyItem = grey_text(
+      base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(history_url)));
   [[EarlGrey selectElementWithMatcher:historyItem] performAction:grey_tap()];
 
   [ChromeEarlGrey waitForPageToFinishLoading];

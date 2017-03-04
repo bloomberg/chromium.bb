@@ -12,7 +12,6 @@
 #import "ios/chrome/browser/ui/history/tab_history_cell.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #include "ui/gfx/image/image.h"
@@ -26,10 +25,13 @@ namespace {
 // Visible percentage of the last visible row on the Tools menu if the
 // Tools menu is scrollable.
 const CGFloat kLastRowVisiblePercentage = 0.6;
+// The collection view's a11y ID.
+// TODO(crbug.com/697648): Decide better a11y behavior for this feature.
+NSString* const kCollectionViewIdentifier = @"Tab History";
 // Reuse identifier for cells.
-NSString* cellIdentifier = @"TabHistoryCell";
-NSString* footerIdentifier = @"Footer";
-NSString* headerIdentifier = @"Header";
+NSString* const kCellIdentifier = @"TabHistoryCell";
+NSString* const kFooterIdentifier = @"Footer";
+NSString* const kHeaderIdentifier = @"Header";
 // Height of rows.
 const CGFloat kCellHeight = 48.0;
 // Fraction height for partially visible row.
@@ -69,6 +71,36 @@ NS_INLINE CGFloat OffsetForSection(const ItemOffsetVector& offsets,
 // Height for the footer view.
 NS_INLINE CGFloat FooterHeight() {
   return 1.0 / [[UIScreen mainScreen] scale];
+}
+
+// Returns a vector of of NavigationItemLists where the NavigationItems in
+// |items| are separated by host.
+NS_INLINE std::vector<web::NavigationItemList> PartitionItemsByHost(
+    const web::NavigationItemList& items) {
+  std::vector<web::NavigationItemList> partitionedItems;
+  // Used to store the previous host when partitioning NavigationItems.
+  std::string previousHost;
+  // The NavigationItemList containing NavigationItems with the same host.
+  web::NavigationItemList itemsWithSameHostname;
+  // Separate the items in |items| by host.
+  for (web::NavigationItem* item : items) {
+    std::string currentHost = item->GetURL().host();
+    if (previousHost.empty())
+      previousHost = currentHost;
+    // TODO: This should use some sort of Top Level Domain matching instead of
+    // explicit host match so that images.googe.com matches shopping.google.com.
+    if (previousHost == currentHost) {
+      itemsWithSameHostname.push_back(item);
+    } else {
+      partitionedItems.push_back(itemsWithSameHostname);
+      itemsWithSameHostname = web::NavigationItemList(1, item);
+      previousHost = currentHost;
+    }
+  }
+  // Add the last list contiaining the same host.
+  if (!itemsWithSameHostname.empty())
+    partitionedItems.push_back(itemsWithSameHostname);
+  return partitionedItems;
 }
 
 }  // namespace
@@ -219,15 +251,50 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 
 @interface TabHistoryViewController ()<MDCInkTouchControllerDelegate> {
   MDCInkTouchController* _inkTouchController;
-  NSArray* _partitionedEntries;
-  NSArray* _sessionEntries;
+  // A vector of NavigationItemLists where the NavigationItems are separated
+  // by hostname.
+  std::vector<web::NavigationItemList> _partitionedItems;
 }
+
+// Returns the NavigationItem corresponding with |indexPath|.
+- (const web::NavigationItem*)itemAtIndexPath:(NSIndexPath*)indexPath;
+
+// Removes all NavigationItem pointers from this class.  Tapping a cell that
+// triggers a navigation may delete NavigationItems, so NavigationItem
+// references should be reset to avoid use-after-free errors.
+- (void)clearNavigationItems;
+
 @end
 
 @implementation TabHistoryViewController
 
-- (NSArray*)sessionEntries {
-  return _sessionEntries;
+- (instancetype)initWithItems:(const web::NavigationItemList&)items {
+  TabHistoryViewControllerLayout* layout =
+      [[TabHistoryViewControllerLayout alloc] init];
+  if ((self = [super initWithCollectionViewLayout:layout])) {
+    // Populate |_partitionedItems|.
+    _partitionedItems = PartitionItemsByHost(items);
+
+    // Set up the UICollectionView.
+    UICollectionView* collectionView = [self collectionView];
+    collectionView.accessibilityIdentifier = kCollectionViewIdentifier;
+    collectionView.backgroundColor = [UIColor whiteColor];
+    [collectionView registerClass:[TabHistoryCell class]
+        forCellWithReuseIdentifier:kCellIdentifier];
+    [collectionView registerClass:[TabHistorySectionHeader class]
+        forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+               withReuseIdentifier:kHeaderIdentifier];
+    [collectionView registerClass:[TabHistorySectionFooter class]
+        forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
+               withReuseIdentifier:kFooterIdentifier];
+
+    // Set up the ink controller.
+    _inkTouchController =
+        [[MDCInkTouchController alloc] initWithView:collectionView];
+    [_inkTouchController setDelegate:self];
+    [_inkTouchController addInkView];
+  }
+  return self;
 }
 
 #pragma mark Public Methods
@@ -236,9 +303,8 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
   DCHECK(suggestedHeight >= kCellHeight);
   CGFloat optimalHeight = 0;
 
-  for (NSArray* sectionArray in _partitionedEntries) {
-    NSUInteger sectionItemCount = [sectionArray count];
-    for (NSUInteger i = 0; i < sectionItemCount; ++i) {
+  for (web::NavigationItemList& itemsWithSameHost : _partitionedItems) {
+    for (size_t count = 0; count < itemsWithSameHost.size(); ++count) {
       CGFloat proposedHeight = optimalHeight + kCellHeight;
 
       if (proposedHeight > suggestedHeight) {
@@ -263,151 +329,65 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
   return optimalHeight;
 }
 
-- (instancetype)init {
-  TabHistoryViewControllerLayout* layout =
-      [[TabHistoryViewControllerLayout alloc] init];
-
-  return [self initWithCollectionViewLayout:layout];
-}
-
-- (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout*)layout {
-  self = [super initWithCollectionViewLayout:layout];
-  if (self) {
-    UICollectionView* collectionView = [self collectionView];
-    [collectionView setBackgroundColor:[UIColor whiteColor]];
-
-    [collectionView registerClass:[TabHistoryCell class]
-        forCellWithReuseIdentifier:cellIdentifier];
-
-    [collectionView registerClass:[TabHistorySectionHeader class]
-        forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
-               withReuseIdentifier:headerIdentifier];
-
-    [collectionView registerClass:[TabHistorySectionFooter class]
-        forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
-               withReuseIdentifier:footerIdentifier];
-
-    _inkTouchController =
-        [[MDCInkTouchController alloc] initWithView:collectionView];
-    [_inkTouchController setDelegate:self];
-    [_inkTouchController addInkView];
-  }
-
-  return self;
-}
-
 #pragma mark UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [collectionView cellForItemAtIndexPath:indexPath];
+  TabHistoryCell* cell = base::mac::ObjCCastStrict<TabHistoryCell>(
+      [collectionView cellForItemAtIndexPath:indexPath]);
   [collectionView chromeExecuteCommand:cell];
+  [self clearNavigationItems];
 }
 
 #pragma mark UICollectionViewDataSource
 
-- (CRWSessionEntry*)entryForIndexPath:(NSIndexPath*)indexPath {
-  NSInteger section = [indexPath section];
-  NSInteger item = [indexPath item];
-
-  DCHECK(section < (NSInteger)[_partitionedEntries count]);
-  DCHECK(item < (NSInteger)[[_partitionedEntries objectAtIndex:section] count]);
-  NSArray* sectionedArray = [_partitionedEntries objectAtIndex:section];
-
-  return [sectionedArray objectAtIndex:item];
-}
-
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  DCHECK(section < (NSInteger)[_partitionedEntries count]);
-  return [[_partitionedEntries objectAtIndex:section] count];
+  size_t sectionIdx = static_cast<size_t>(section);
+  DCHECK_LT(sectionIdx, _partitionedItems.size());
+  return _partitionedItems[sectionIdx].size();
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
   TabHistoryCell* cell =
-      [collectionView dequeueReusableCellWithReuseIdentifier:cellIdentifier
+      [collectionView dequeueReusableCellWithReuseIdentifier:kCellIdentifier
                                                 forIndexPath:indexPath];
-
-  [cell setEntry:[self entryForIndexPath:indexPath]];
-  [cell setTag:IDC_BACK_FORWARD_IN_TAB_HISTORY];
-
+  cell.item = [self itemAtIndexPath:indexPath];
+  cell.tag = IDC_BACK_FORWARD_IN_TAB_HISTORY;
   return cell;
 }
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView*)view {
-  return [_partitionedEntries count];
+  return _partitionedItems.size();
 }
 
 - (UICollectionReusableView*)collectionView:(UICollectionView*)view
           viewForSupplementaryElementOfKind:(NSString*)kind
                                 atIndexPath:(NSIndexPath*)indexPath {
+  // Return a footer cell if requested.
   if ([kind isEqualToString:UICollectionElementKindSectionFooter]) {
     return [view dequeueReusableSupplementaryViewOfKind:kind
-                                    withReuseIdentifier:footerIdentifier
+                                    withReuseIdentifier:kFooterIdentifier
                                            forIndexPath:indexPath];
   }
-
   DCHECK([kind isEqualToString:UICollectionElementKindSectionHeader]);
-  CRWSessionEntry* sessionEntry = [self entryForIndexPath:indexPath];
-  web::NavigationItem* navigationItem = [sessionEntry navigationItem];
 
+  // Dequeue a header cell and populate its favicon image.
   TabHistorySectionHeader* header =
       [view dequeueReusableSupplementaryViewOfKind:kind
-                               withReuseIdentifier:headerIdentifier
+                               withReuseIdentifier:kHeaderIdentifier
                                       forIndexPath:indexPath];
-
   UIImage* iconImage = nil;
-  const gfx::Image& image = navigationItem->GetFavicon().image;
+  const gfx::Image& image =
+      [self itemAtIndexPath:indexPath]->GetFavicon().image;
   if (!image.IsEmpty())
     iconImage = image.ToUIImage();
   else
     iconImage = [UIImage imageNamed:@"default_favicon"];
-
   [[header iconView] setImage:iconImage];
 
   return header;
-}
-
-- (void)setSessionEntries:(NSArray*)sessionEntries {
-  _sessionEntries = sessionEntries;
-
-  std::string previousHost;
-
-  NSMutableArray* sectionArray = [NSMutableArray array];
-  NSMutableArray* partitionedEntries = [NSMutableArray array];
-
-  NSInteger numberOfEntries = [_sessionEntries count];
-  for (NSInteger index = 0; index < numberOfEntries; ++index) {
-    CRWSessionEntry* sessionEntry = [_sessionEntries objectAtIndex:index];
-    web::NavigationItem* navigationItem = [sessionEntry navigationItem];
-
-    std::string currentHost;
-    if (navigationItem)
-      currentHost = navigationItem->GetURL().host();
-
-    if (previousHost.empty())
-      previousHost = currentHost;
-
-    // TODO: This should use some sort of Top Level Domain matching instead of
-    // explicit host match so that images.googe.com matches shopping.google.com.
-    if (previousHost == currentHost) {
-      [sectionArray addObject:sessionEntry];
-    } else {
-      [partitionedEntries addObject:sectionArray];
-      sectionArray = [NSMutableArray arrayWithObject:sessionEntry];
-      previousHost = currentHost;
-    }
-  }
-
-  if ([sectionArray count])
-    [partitionedEntries addObject:sectionArray];
-
-  if (![partitionedEntries count])
-    partitionedEntries = nil;
-
-  _partitionedEntries = partitionedEntries;
 }
 
 #pragma mark MDCInkTouchControllerDelegate
@@ -429,6 +409,24 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
   inkViewFrame.size.width = CGRectGetWidth([self.collectionView bounds]);
   [[inkTouchController defaultInkView] setFrame:inkViewFrame];
   return YES;
+}
+
+#pragma mark -
+
+- (const web::NavigationItem*)itemAtIndexPath:(NSIndexPath*)indexPath {
+  size_t section = static_cast<size_t>([indexPath section]);
+  size_t item = static_cast<size_t>([indexPath item]);
+  DCHECK_LT(section, _partitionedItems.size());
+  DCHECK_LT(item, _partitionedItems[section].size());
+  return _partitionedItems[section][item];
+}
+
+- (void)clearNavigationItems {
+  _partitionedItems.clear();
+  for (UICollectionViewCell* cell in self.collectionView.visibleCells) {
+    TabHistoryCell* historyCell = base::mac::ObjCCast<TabHistoryCell>(cell);
+    historyCell.item = nullptr;
+  }
 }
 
 @end

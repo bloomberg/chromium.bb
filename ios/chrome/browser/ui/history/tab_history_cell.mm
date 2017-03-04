@@ -8,7 +8,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/public/navigation_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -42,10 +41,10 @@ NS_INLINE CGFloat HeaderLineRadius() {
 }
 }
 
-@implementation TabHistoryCell {
-  CRWSessionEntry* _entry;
-  UILabel* _titleLabel;
-}
+@implementation TabHistoryCell
+
+@synthesize item = _item;
+@synthesize titleLabel = _titleLabel;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -73,59 +72,34 @@ NS_INLINE CGFloat HeaderLineRadius() {
 
 - (void)layoutSubviews {
   [super layoutSubviews];
-
-  CGRect bounds = [[self contentView] bounds];
-  CGRect frame = AlignRectOriginAndSizeToPixels(bounds);
-  [_titleLabel setFrame:frame];
+  self.titleLabel.frame =
+      AlignRectOriginAndSizeToPixels(self.contentView.bounds);
 }
 
-- (CRWSessionEntry*)entry {
-  return _entry;
-}
+#pragma mark Accessors
 
-- (void)setEntry:(CRWSessionEntry*)entry {
-  _entry = entry;
+- (void)setItem:(const web::NavigationItem*)item {
+  _item = item;
 
-  NSString* title = nil;
-  web::NavigationItem* navigationItem = [_entry navigationItem];
-  if (navigationItem) {
-    // TODO(rohitrao): Can this use GetTitleForDisplay() instead?
-    if (navigationItem->GetTitle().empty())
-      title = base::SysUTF8ToNSString(navigationItem->GetURL().spec());
-    else
-      title = base::SysUTF16ToNSString(navigationItem->GetTitle());
-  }
-
-  [_titleLabel setText:title];
-  [self setAccessibilityLabel:title];
+  self.titleLabel.text =
+      _item ? base::SysUTF16ToNSString(_item->GetTitleForDisplay()) : nil;
+  [self setAccessibilityLabel:self.titleLabel.text];
   [self setNeedsLayout];
 }
 
-- (UILabel*)titleLabel {
-  return _titleLabel;
-}
+#pragma mark UICollectionViewCell
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  _entry = nil;
-  [_titleLabel setText:nil];
-  [self setAccessibilityLabel:nil];
+  self.item = nullptr;
 }
 
 @end
 
-@implementation TabHistorySectionHeader {
-  UIImageView* _iconView;
-  UIView* _lineView;
-}
+@implementation TabHistorySectionHeader
 
-- (UIImageView*)iconView {
-  return _iconView;
-}
-
-- (UIView*)lineView {
-  return _lineView;
-}
+@synthesize iconView = _iconView;
+@synthesize lineView = _lineView;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -134,16 +108,16 @@ NS_INLINE CGFloat HeaderLineRadius() {
     _iconView = [[UIImageView alloc] initWithFrame:iconFrame];
     [self addSubview:_iconView];
 
-    UIColor* lineColor = UIColorFromRGB(kHeaderLineRGB);
-
     _lineView = [[UIView alloc] initWithFrame:CGRectZero];
-    [[_lineView layer] setCornerRadius:HeaderLineRadius()];
-    [_lineView setBackgroundColor:lineColor];
+    _lineView.layer.cornerRadius = HeaderLineRadius();
+    _lineView.backgroundColor = UIColorFromRGB(kHeaderLineRGB);
     [self addSubview:_lineView];
   }
 
   return self;
 }
+
+#pragma mark UIView
 
 - (void)layoutSubviews {
   [super layoutSubviews];
@@ -153,7 +127,7 @@ NS_INLINE CGFloat HeaderLineRadius() {
 
   CGRect iconViewFrame = AlignRectToPixel(bounds);
   iconViewFrame.size = CGSizeMake(kSiteIconViewWidth, kSiteIconViewWidth);
-  [_iconView setFrame:iconViewFrame];
+  self.iconView.frame = iconViewFrame;
 
   CGFloat iconViewMaxY = CGRectGetMaxY(iconViewFrame);
   CGFloat height =
@@ -167,8 +141,7 @@ NS_INLINE CGFloat HeaderLineRadius() {
   lineViewFrame.size.width = HeaderLineWidth();
   lineViewFrame.size.height = height;
   lineViewFrame = AlignRectOriginAndSizeToPixels(lineViewFrame);
-
-  [_lineView setFrame:lineViewFrame];
+  self.lineView.frame = lineViewFrame;
 }
 
 @end
@@ -178,7 +151,7 @@ NS_INLINE CGFloat HeaderLineRadius() {
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self)
-    [self setBackgroundColor:UIColorFromRGB(kFooterRGB)];
+    self.backgroundColor = UIColorFromRGB(kFooterRGB);
 
   return self;
 }

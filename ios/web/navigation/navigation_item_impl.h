@@ -119,6 +119,10 @@ class NavigationItemImpl : public web::NavigationItem {
   // non-persisted state, as documented on the members below.
   void ResetForCommit();
 
+  // Returns the title string to be used for a page with |url| if that page
+  // doesn't specify a title.
+  static base::string16 GetDisplayTitleForURL(const GURL& url);
+
  private:
   // The NavigationManItemStorageBuilder functions require access to
   // private variables of NavigationItemImpl.

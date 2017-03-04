@@ -11,6 +11,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/public/test/http_server_util.h"
+#include "ios/web/public/test/url_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,10 +32,10 @@
   const GURL URL3 = web::test::HttpServer::MakeUrl("http://page3");
   const GURL URL4 = web::test::HttpServer::MakeUrl("http://page4");
   NSString* entry0 = @"New Tab";
-  NSString* entry1 = base::SysUTF8ToNSString(URL1.spec());
-  NSString* entry2 = base::SysUTF8ToNSString(URL2.spec());
-  NSString* entry3 = base::SysUTF8ToNSString(URL3.spec());
-  NSString* entry4 = base::SysUTF8ToNSString(URL4.spec());
+  NSString* entry1 = base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(URL1));
+  NSString* entry2 = base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(URL2));
+  NSString* entry3 = base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(URL3));
+  NSString* entry4 = base::SysUTF16ToNSString(web::GetDisplayTitleForUrl(URL4));
 
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;

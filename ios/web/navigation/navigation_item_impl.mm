@@ -155,23 +155,8 @@ const base::string16& NavigationItemImpl::GetTitleForDisplay() const {
   if (!cached_display_title_.empty())
     return cached_display_title_;
 
-  // Use the virtual URL first if any, and fall back on using the real URL.
-  base::string16 title;
-  if (!virtual_url_.is_empty()) {
-    title = url_formatter::FormatUrl(virtual_url_);
-  } else if (!url_.is_empty()) {
-    title = url_formatter::FormatUrl(url_);
-  }
-
-  // For file:// URLs use the filename as the title, not the full path.
-  if (url_.SchemeIsFile()) {
-    base::string16::size_type slashpos = title.rfind('/');
-    if (slashpos != base::string16::npos)
-      title = title.substr(slashpos + 1);
-  }
-
-  const size_t kMaxTitleChars = 4 * 1024;
-  gfx::ElideString(title, kMaxTitleChars, &cached_display_title_);
+  cached_display_title_ =
+      NavigationItemImpl::GetDisplayTitleForURL(GetVirtualURL());
   return cached_display_title_;
 }
 
@@ -310,6 +295,25 @@ void NavigationItemImpl::ResetForCommit() {
   // Navigation initiation type is only valid for pending navigations, thus
   // always reset to NONE after the item is committed.
   SetNavigationInitiationType(web::NavigationInitiationType::NONE);
+}
+
+// static
+base::string16 NavigationItemImpl::GetDisplayTitleForURL(const GURL& url) {
+  if (url.is_empty())
+    return base::string16();
+
+  base::string16 title = url_formatter::FormatUrl(url);
+
+  // For file:// URLs use the filename as the title, not the full path.
+  if (url.SchemeIsFile()) {
+    base::string16::size_type slashpos = title.rfind('/');
+    if (slashpos != base::string16::npos)
+      title = title.substr(slashpos + 1);
+  }
+
+  const size_t kMaxTitleChars = 4 * 1024;
+  gfx::ElideString(title, kMaxTitleChars, &title);
+  return title;
 }
 
 }  // namespace web
