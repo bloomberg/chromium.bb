@@ -207,7 +207,7 @@
   decisionHandler(
       [self
           shouldStartLoadWithRequest:navigationAction.request
-                       fromMainFrame:[navigationAction.sourceFrame isMainFrame]]
+                       fromMainFrame:[navigationAction.targetFrame isMainFrame]]
           ? WKNavigationActionPolicyAllow
           : WKNavigationActionPolicyCancel);
 }
