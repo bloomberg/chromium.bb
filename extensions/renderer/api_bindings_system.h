@@ -85,6 +85,7 @@ class APIBindingsSystem {
                           const CustomTypeHandler& function);
 
   APIRequestHandler* request_handler() { return &request_handler_; }
+  APIEventHandler* event_handler() { return &event_handler_; }
   APITypeReferenceMap* type_reference_map() { return &type_reference_map_; }
 
  private:

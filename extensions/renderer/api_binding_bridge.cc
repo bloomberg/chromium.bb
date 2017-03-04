@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/api_event_handler.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_signature.h"
 #include "extensions/renderer/api_type_reference_map.h"
@@ -30,6 +31,7 @@ gin::WrapperInfo APIBindingBridge::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 APIBindingBridge::APIBindingBridge(const APITypeReferenceMap* type_refs,
                                    APIRequestHandler* request_handler,
+                                   APIEventHandler* event_handler,
                                    APIBindingHooks* hooks,
                                    v8::Local<v8::Context> context,
                                    v8::Local<v8::Value> api_object,
@@ -38,6 +40,7 @@ APIBindingBridge::APIBindingBridge(const APITypeReferenceMap* type_refs,
                                    const binding::RunJSFunction& run_js)
     : type_refs_(type_refs),
       request_handler_(request_handler),
+      event_handler_(event_handler),
       hooks_(hooks),
       extension_id_(extension_id),
       context_type_(context_type),
@@ -64,7 +67,9 @@ gin::ObjectTemplateBuilder APIBindingBridge::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return Wrappable<APIBindingBridge>::GetObjectTemplateBuilder(isolate)
       .SetMethod("registerCustomHook", &APIBindingBridge::RegisterCustomHook)
-      .SetMethod("sendRequest", &APIBindingBridge::SendRequest);
+      .SetMethod("sendRequest", &APIBindingBridge::SendRequest)
+      .SetMethod("registerEventArgumentMassager",
+                 &APIBindingBridge::RegisterEventArgumentMassager);
 }
 
 void APIBindingBridge::RegisterCustomHook(v8::Isolate* isolate,
@@ -131,6 +136,19 @@ void APIBindingBridge::SendRequest(
   request_handler_->StartRequest(context, name, std::move(converted_arguments),
                                  callback,
                                  hooks_->GetCustomJSCallback(name, context));
+}
+
+void APIBindingBridge::RegisterEventArgumentMassager(
+    gin::Arguments* arguments,
+    const std::string& event_name,
+    v8::Local<v8::Function> massager) {
+  v8::Isolate* isolate = arguments->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Object> holder;
+  CHECK(arguments->GetHolder(&holder));
+  v8::Local<v8::Context> context = holder->CreationContext();
+
+  event_handler_->RegisterArgumentMassager(context, event_name, massager);
 }
 
 }  // namespace extensions

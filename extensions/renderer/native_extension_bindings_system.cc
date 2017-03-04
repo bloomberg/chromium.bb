@@ -186,7 +186,8 @@ v8::Local<v8::Object> CreateRootBinding(v8::Local<v8::Context> context,
   gin::Handle<APIBindingBridge> bridge_handle = gin::CreateHandle(
       context->GetIsolate(),
       new APIBindingBridge(bindings_system->type_reference_map(),
-                           bindings_system->request_handler(), hooks, context,
+                           bindings_system->request_handler(),
+                           bindings_system->event_handler(), hooks, context,
                            binding_object, script_context->GetExtensionID(),
                            script_context->GetContextTypeDescription(),
                            base::Bind(&CallJsFunction)));

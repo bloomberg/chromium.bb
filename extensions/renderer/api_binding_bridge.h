@@ -18,6 +18,7 @@ class Arguments;
 
 namespace extensions {
 class APIBindingHooks;
+class APIEventHandler;
 class APIRequestHandler;
 class APITypeReferenceMap;
 
@@ -28,6 +29,7 @@ class APIBindingBridge final : public gin::Wrappable<APIBindingBridge> {
  public:
   APIBindingBridge(const APITypeReferenceMap* type_refs,
                    APIRequestHandler* request_handler,
+                   APIEventHandler* event_handler,
                    APIBindingHooks* hooks,
                    v8::Local<v8::Context> context,
                    v8::Local<v8::Value> api_object,
@@ -60,11 +62,20 @@ class APIBindingBridge final : public gin::Wrappable<APIBindingBridge> {
                    const std::string& name,
                    const std::vector<v8::Local<v8::Value>>& request_args);
 
+  // A handler to register an argument massager for a specific event.
+  // Replacement for event_bindings.registerArgumentMassager.
+  void RegisterEventArgumentMassager(gin::Arguments* arguments,
+                                     const std::string& event_name,
+                                     v8::Local<v8::Function> massager);
+
   // Type references. Guaranteed to outlive this object.
   const APITypeReferenceMap* type_refs_;
 
   // The request handler. Guaranteed to outlive this object.
   APIRequestHandler* request_handler_;
+
+  // The event handler. Guaranteed to outlive this object.
+  APIEventHandler* event_handler_;
 
   // The hooks associated with this API. Guaranteed to outlive this object.
   APIBindingHooks* hooks_;

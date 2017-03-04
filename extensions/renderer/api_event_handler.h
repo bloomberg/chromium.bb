@@ -44,6 +44,15 @@ class APIEventHandler {
                           v8::Local<v8::Context> context,
                           const base::ListValue& arguments);
 
+  // Registers a |function| to serve as an "argument massager" for the given
+  // |event_name|, mutating the original arguments.
+  // The function is called with two arguments: the array of original arguments
+  // being dispatched to the event, and the function to dispatch the event to
+  // listeners.
+  void RegisterArgumentMassager(v8::Local<v8::Context> context,
+                                const std::string& event_name,
+                                v8::Local<v8::Function> function);
+
   // Returns the EventListeners for a given |event_name| and |context|.
   size_t GetNumEventListenersForTesting(const std::string& event_name,
                                         v8::Local<v8::Context> context);

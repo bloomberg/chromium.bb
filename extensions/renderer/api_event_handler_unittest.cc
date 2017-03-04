@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
+#include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -705,6 +706,158 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
   }
   EXPECT_EQ(1u,
             handler.GetNumEventListenersForTesting(kEventName1, context_b));
+}
+
+// Test registering an argument massager for a given event.
+TEST_F(APIEventHandlerTest, TestArgumentMassagers) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  const char kEventName[] = "alpha";
+  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          base::Bind(&DoNothingOnEventListenersChanged));
+  v8::Local<v8::Object> event =
+      handler.CreateEventInstance(kEventName, context);
+  ASSERT_FALSE(event.IsEmpty());
+
+  const char kArgumentMassager[] =
+      "(function(originalArgs, dispatch) {\n"
+      "  this.originalArgs = originalArgs;\n"
+      "  dispatch(['primary', 'secondary']);\n"
+      "});";
+  v8::Local<v8::Function> massager =
+      FunctionFromString(context, kArgumentMassager);
+  handler.RegisterArgumentMassager(context, "alpha", massager);
+
+  const char kListenerFunction[] =
+      "(function() { this.eventArgs = Array.from(arguments); })";
+  v8::Local<v8::Function> listener_function =
+      FunctionFromString(context, kListenerFunction);
+  ASSERT_FALSE(listener_function.IsEmpty());
+
+  {
+    const char kAddListenerFunction[] =
+        "(function(event, listener) { event.addListener(listener); })";
+    v8::Local<v8::Function> add_listener_function =
+        FunctionFromString(context, kAddListenerFunction);
+    v8::Local<v8::Value> argv[] = {event, listener_function};
+    RunFunction(add_listener_function, context, arraysize(argv), argv);
+  }
+
+  const char kArguments[] = "['first','second']";
+  std::unique_ptr<base::ListValue> event_args = ListValueFromString(kArguments);
+  ASSERT_TRUE(event_args);
+  handler.FireEventInContext(kEventName, context, *event_args);
+
+  EXPECT_EQ(
+      "[\"first\",\"second\"]",
+      GetStringPropertyFromObject(context->Global(), context, "originalArgs"));
+  EXPECT_EQ(
+      "[\"primary\",\"secondary\"]",
+      GetStringPropertyFromObject(context->Global(), context, "eventArgs"));
+}
+
+// Test registering an argument massager for a given event and dispatching
+// asynchronously.
+TEST_F(APIEventHandlerTest, TestArgumentMassagersAsyncDispatch) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  const char kEventName[] = "alpha";
+  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          base::Bind(&DoNothingOnEventListenersChanged));
+  v8::Local<v8::Object> event =
+      handler.CreateEventInstance(kEventName, context);
+  ASSERT_FALSE(event.IsEmpty());
+
+  const char kArgumentMassager[] =
+      "(function(originalArgs, dispatch) {\n"
+      "  this.originalArgs = originalArgs;\n"
+      "  this.dispatch = dispatch;\n"
+      "});";
+  v8::Local<v8::Function> massager =
+      FunctionFromString(context, kArgumentMassager);
+  handler.RegisterArgumentMassager(context, "alpha", massager);
+
+  const char kListenerFunction[] =
+      "(function() { this.eventArgs = Array.from(arguments); })";
+  v8::Local<v8::Function> listener_function =
+      FunctionFromString(context, kListenerFunction);
+  ASSERT_FALSE(listener_function.IsEmpty());
+
+  {
+    const char kAddListenerFunction[] =
+        "(function(event, listener) { event.addListener(listener); })";
+    v8::Local<v8::Function> add_listener_function =
+        FunctionFromString(context, kAddListenerFunction);
+    v8::Local<v8::Value> argv[] = {event, listener_function};
+    RunFunction(add_listener_function, context, arraysize(argv), argv);
+  }
+
+  const char kArguments[] = "['first','second']";
+  std::unique_ptr<base::ListValue> event_args = ListValueFromString(kArguments);
+  ASSERT_TRUE(event_args);
+  handler.FireEventInContext(kEventName, context, *event_args);
+
+  // The massager should have been triggered, but since it doesn't call
+  // dispatch(), the listener shouldn't have been notified.
+  EXPECT_EQ(
+      "[\"first\",\"second\"]",
+      GetStringPropertyFromObject(context->Global(), context, "originalArgs"));
+  EXPECT_EQ("undefined", GetStringPropertyFromObject(context->Global(), context,
+                                                     "eventArgs"));
+
+  // Dispatch the event.
+  v8::Local<v8::Value> dispatch_value =
+      GetPropertyFromObject(context->Global(), context, "dispatch");
+  ASSERT_FALSE(dispatch_value.IsEmpty());
+  ASSERT_TRUE(dispatch_value->IsFunction());
+  v8::Local<v8::Value> dispatch_args[] = {
+      V8ValueFromScriptSource(context, "['primary', 'secondary']"),
+  };
+  RunFunction(dispatch_value.As<v8::Function>(), context,
+              arraysize(dispatch_args), dispatch_args);
+
+  EXPECT_EQ(
+      "[\"primary\",\"secondary\"]",
+      GetStringPropertyFromObject(context->Global(), context, "eventArgs"));
+}
+
+// Test registering an argument massager and never dispatching.
+TEST_F(APIEventHandlerTest, TestArgumentMassagersNeverDispatch) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  const char kEventName[] = "alpha";
+  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          base::Bind(&DoNothingOnEventListenersChanged));
+  v8::Local<v8::Object> event =
+      handler.CreateEventInstance(kEventName, context);
+  ASSERT_FALSE(event.IsEmpty());
+
+  // A massager that never dispatches.
+  const char kArgumentMassager[] = "(function(originalArgs, dispatch) {})";
+  v8::Local<v8::Function> massager =
+      FunctionFromString(context, kArgumentMassager);
+  handler.RegisterArgumentMassager(context, "alpha", massager);
+
+  const char kListenerFunction[] = "(function() {})";
+  v8::Local<v8::Function> listener_function =
+      FunctionFromString(context, kListenerFunction);
+  ASSERT_FALSE(listener_function.IsEmpty());
+
+  const char kAddListenerFunction[] =
+      "(function(event, listener) { event.addListener(listener); })";
+  v8::Local<v8::Function> add_listener_function =
+      FunctionFromString(context, kAddListenerFunction);
+  v8::Local<v8::Value> argv[] = {event, listener_function};
+  RunFunction(add_listener_function, context, arraysize(argv), argv);
+
+  handler.FireEventInContext(kEventName, context, base::ListValue());
+
+  // Nothing should blow up. (We tested in the previous test that the event
+  // isn't notified without calling dispatch, so all there is to test here is
+  // that we don't crash.)
 }
 
 }  // namespace extensions
