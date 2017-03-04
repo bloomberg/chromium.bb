@@ -1240,4 +1240,49 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_EQ(speculative_rfh, main_test_rfh());
 }
 
+// Feature Policy: Test that the feature policy is reset when navigating pages
+// within a site.
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       FeaturePolicySameSiteNavigation) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.chromium.org/Home");
+
+  contents()->NavigateAndCommit(kUrl1);
+
+  // Check the feature policy before navigation.
+  FeaturePolicy* original_feature_policy =
+      main_test_rfh()->get_feature_policy();
+  ASSERT_TRUE(original_feature_policy);
+
+  // Navigate to the new URL.
+  contents()->NavigateAndCommit(kUrl2);
+
+  // Check the feature policy after navigation.
+  FeaturePolicy* final_feature_policy = main_test_rfh()->get_feature_policy();
+  ASSERT_TRUE(final_feature_policy);
+  ASSERT_NE(original_feature_policy, final_feature_policy);
+}
+
+// Feature Policy: Test that the feature policy is not reset when navigating
+// within a page.
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       FeaturePolicyFragmentNavigation) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.chromium.org/#Home");
+
+  contents()->NavigateAndCommit(kUrl1);
+
+  // Check the feature policy before navigation.
+  FeaturePolicy* original_feature_policy =
+      main_test_rfh()->get_feature_policy();
+  ASSERT_TRUE(original_feature_policy);
+
+  // Navigate to the new URL.
+  contents()->NavigateAndCommit(kUrl2);
+
+  // Check the feature policy after navigation.
+  FeaturePolicy* final_feature_policy = main_test_rfh()->get_feature_policy();
+  ASSERT_EQ(original_feature_policy, final_feature_policy);
+}
+
 }  // namespace content
