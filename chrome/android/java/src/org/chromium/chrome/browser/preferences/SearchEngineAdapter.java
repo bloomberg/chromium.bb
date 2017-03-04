@@ -82,6 +82,8 @@ public class SearchEngineAdapter extends BaseAdapter
 
     private boolean mHasLoadObserver;
 
+    private boolean mIsLocationPermissionChanged;
+
     /**
      * Construct a SearchEngineAdapter.
      * @param context The current context.
@@ -139,7 +141,13 @@ public class SearchEngineAdapter extends BaseAdapter
         }
 
         List<TemplateUrl> templateUrls = templateUrlService.getSearchEngines();
-        if (!didSearchEnginesChange(templateUrls)) return;
+        boolean forceRefresh = mIsLocationPermissionChanged;
+        mIsLocationPermissionChanged = false;
+        if (!didSearchEnginesChange(templateUrls)) {
+            if (forceRefresh) notifyDataSetChanged();
+            return;
+        }
+
         mPrepopulatedSearchEngines = new ArrayList<>();
         mRecentSearchEngines = new ArrayList<>();
 
@@ -424,6 +432,7 @@ public class SearchEngineAdapter extends BaseAdapter
     }
 
     private void onLocationLinkClicked() {
+        mIsLocationPermissionChanged = true;
         if (!LocationUtils.getInstance().isSystemLocationSettingEnabled()) {
             mContext.startActivity(LocationUtils.getInstance().getSystemLocationSettingsIntent());
         } else {
