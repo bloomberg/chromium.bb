@@ -988,8 +988,8 @@ int VerifyWithGivenFlags(X509Certificate* cert,
       break;
   }
 
-  // Perform hostname verification independent of SecTrustEvaluate. In order to
-  // do so, mask off any reported name errors first.
+  // Hostname validation is handled by CertVerifyProc, so mask off any errors
+  // that SecTrustEvaluate may have set, as its results are not used.
   verify_result->cert_status &= ~CERT_STATUS_COMMON_NAME_INVALID;
 
   // TODO(wtc): Suppress CERT_STATUS_NO_REVOCATION_MECHANISM for now to be

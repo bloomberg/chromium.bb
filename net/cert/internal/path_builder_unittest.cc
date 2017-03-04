@@ -134,7 +134,7 @@ class PathBuilderMultiRootTest : public ::testing::Test {
       d_by_d_, e_by_e_, f_by_e_;
 
   SimpleSignaturePolicy signature_policy_;
-  der::GeneralizedTime time_ = {2016, 4, 11, 0, 0, 0};
+  der::GeneralizedTime time_ = {2017, 3, 1, 0, 0, 0};
 };
 
 void AddTrustedCertificate(scoped_refptr<ParsedCertificate> cert,

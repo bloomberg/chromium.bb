@@ -266,6 +266,9 @@ int CertVerifyProcIOS::VerifyInternal(
 
   GetCertChainInfo(final_chain, verify_result);
 
+  // iOS lacks the ability to distinguish built-in versus non-built-in roots,
+  // so opt to 'fail open' of any restrictive policies that apply to built-in
+  // roots.
   verify_result->is_issued_by_known_root = false;
 
   if (IsCertStatusError(verify_result->cert_status))

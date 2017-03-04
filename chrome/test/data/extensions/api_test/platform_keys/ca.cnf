@@ -27,6 +27,7 @@ basicConstraints       = critical, CA:false
 subjectKeyIdentifier   = hash
 authorityKeyIdentifier = keyid:always
 extendedKeyUsage       = serverAuth, clientAuth
+subjectAltName         = DNS:${ENV::CN}
 
 [ca_cert]
 # Extensions to add when signing a request for an intermediate/CA cert
@@ -54,4 +55,4 @@ encrypt_key        = no
 distinguished_name = dn
 
 [dn]
-CN = $ENV::CN
+CN = ${ENV::CN}

@@ -695,8 +695,7 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
     return false;
   }
 
-  bool unused = false;
-  if (!ssl_info.cert->VerifyNameMatch(new_hostname, &unused))
+  if (!ssl_info.cert->VerifyNameMatch(new_hostname, false))
     return false;
 
   std::string pinning_failure_log;

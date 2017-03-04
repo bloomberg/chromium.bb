@@ -398,6 +398,7 @@ int CertVerifyProcAndroid::VerifyInternal(
     NOTREACHED();
     return ERR_FAILED;
   }
+
   if (IsCertStatusError(verify_result->cert_status))
     return MapCertStatusToNetError(verify_result->cert_status);
 

@@ -693,6 +693,16 @@
     ]
   },
 
+  "EnableCommonNameFallbackForLocalAnchors": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "EnableCommonNameFallbackForLocalAnchors": true },
+    "pref_mappings": [
+      { "pref": "ssl.common_name_fallback_enabled_for_local_anchors",
+        "local_state": true
+      }
+    ]
+  },
+
   "AuthSchemes": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "AuthSchemes": "AuthSchemes" },

@@ -9,6 +9,7 @@ server that supports http only to be accessed over https.
 import BaseHTTPServer
 import minica
 import re
+import socket
 import SocketServer
 import sys
 import urllib2
@@ -161,9 +162,32 @@ class ServerRunner(testserver_base.TestServerRunner):
     host = self.options.host
     ssl_host = self.options.ssl_host
 
+    # Allow |ssl_host| to be an IP address or a domain name, and ensure
+    # it gets added as the appropriate subjectAltName of the generated
+    # certificate.
+    dns_sans = None
+    ip_sans = None
+    ip = None
+    if ip is None:
+      try:
+        ip = socket.inet_pton(socket.AF_INET, ssl_host)
+        ip_sans = [ip]
+      except socket.error:
+        pass
+    if ip is None:
+      try:
+        ip = socket.inet_pton(socket.AF_INET6, ssl_host)
+        ip_sans = [ip]
+      except socket.error:
+        pass
+    if ip is None:
+      dns_sans = [ssl_host]
+
     (pem_cert_and_key, ocsp_der) = minica.GenerateCertKeyAndOCSP(
         subject = self.options.ssl_host,
-        ocsp_url = None)
+        ocsp_url = None,
+        ip_sans = ip_sans,
+        dns_sans = dns_sans)
 
     server = MultiThreadedHTTPSServer((host, port),
                                       RequestForwarder,
