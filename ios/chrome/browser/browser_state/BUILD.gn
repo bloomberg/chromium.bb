@@ -14,6 +14,7 @@ source_set("browser_state") {
     "//base",
     "//components/prefs",
     "//components/sync_preferences",
+    "//ios/chrome/browser/net:net_types",
     "//ios/chrome/browser/tabs",
     "//ios/web",
     "//net",

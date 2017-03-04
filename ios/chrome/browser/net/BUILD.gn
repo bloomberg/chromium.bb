@@ -21,7 +21,6 @@ source_set("net") {
     "ios_chrome_network_delegate.h",
     "ios_chrome_url_request_context_getter.cc",
     "ios_chrome_url_request_context_getter.h",
-    "net_types.h",
     "proxy_service_factory.cc",
     "proxy_service_factory.h",
     "retryable_url_fetcher.h",
@@ -44,10 +43,21 @@ source_set("net") {
     "//net:extras",
     "//url",
   ]
-  allow_circular_includes_from = [
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/browser_state",
+  public_deps = [
+    ":net_types",
   ]
+  allow_circular_includes_from = [ "//ios/chrome/browser" ]
+}
+
+source_set("net_types") {
+  sources = [
+    "net_types.h",
+  ]
+  deps = [
+    "//base",
+    "//net",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {
