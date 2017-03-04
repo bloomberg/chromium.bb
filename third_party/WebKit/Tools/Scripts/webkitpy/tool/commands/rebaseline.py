@@ -165,8 +165,6 @@ class CopyExistingBaselinesInternal(AbstractRebaseliningCommand):
         immediate_predecessors = []
         for port_name in port_names:
             port = self._tool.port_factory.get(port_name)
-            if not port.buildbot_archives_baselines():
-                continue
             baseline_search_path = port.baseline_search_path()
             try:
                 index = baseline_search_path.index(path_to_rebaseline)

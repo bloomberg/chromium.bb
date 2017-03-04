@@ -191,9 +191,6 @@ class Port(object):
         return "Port{name=%s, version=%s, architecture=%s, test_configuration=%s}" % (
             self._name, self._version, self._architecture, self._test_configuration)
 
-    def buildbot_archives_baselines(self):
-        return True
-
     def additional_driver_flag(self):
         if self.driver_name() == self.CONTENT_SHELL_NAME:
             return ['--run-layout-test']
