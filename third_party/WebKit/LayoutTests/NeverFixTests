@@ -216,7 +216,6 @@ external/wpt/clear-site-data [ WontFix ]
 external/wpt/css-values [ WontFix ]
 external/wpt/gyroscope [ WontFix ]
 external/wpt/magnetometer [ WontFix ]
-external/wpt/preload [ WontFix ]
 external/wpt/upgrade-insecure-requests [ WontFix ]
 
 # WPT manual tests without automation

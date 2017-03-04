@@ -2504,3 +2504,6 @@ crbug.com/697087 external/wpt/service-workers/service-worker/registration-iframe
 
 crbug.com/697342 http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
 crbug.com/697342 virtual/mojo-loading/http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
+
+crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pass ]
+crbug.com/698521 external/wpt/preload/preload-with-type.html [ Failure Pass ]
