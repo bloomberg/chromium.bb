@@ -360,6 +360,8 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   # superset of CPP_EXCEPTIONS.
   CPP_FILE_EXTS = ('c', 'cc')
   CPP_EXCEPTIONS = ('#define', '#endif', '#if', '#include', '#pragma')
+  HTML_FILE_EXTS = ('html',)
+  HTML_EXCEPTIONS = ('<link',)
   JAVA_FILE_EXTS = ('java',)
   JAVA_EXCEPTIONS = ('import ', 'package ')
   JS_FILE_EXTS = ('js',)
@@ -372,6 +374,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
 
   LANGUAGE_EXCEPTIONS = [
     (CPP_FILE_EXTS, CPP_EXCEPTIONS),
+    (HTML_FILE_EXTS, HTML_EXCEPTIONS),
     (JAVA_FILE_EXTS, JAVA_EXCEPTIONS),
     (JS_FILE_EXTS, JS_EXCEPTIONS),
     (OBJC_FILE_EXTS, OBJC_EXCEPTIONS),
