@@ -28,43 +28,11 @@ class LoFi(IntegrationTest):
           continue
         if not response.request_headers:
           continue
-        if (self.assertLoFiResponse(response, True)):
+        if (self.checkLoFiResponse(response, True)):
           lofi_responses = lofi_responses + 1
 
       # Verify that Lo-Fi responses were seen.
       self.assertNotEqual(0, lofi_responses)
-
-  # Checks that a Lite Page is served and that the ignore_preview_blacklist
-  # experiment is being used.
-  def testLitePage(self):
-    with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=always-on')
-      test_driver.AddChromeArg('--enable-data-reduction-proxy-lite-page')
-
-      test_driver.LoadURL('http://check.googlezip.net/test.html')
-
-      lite_page_responses = 0
-      for response in test_driver.GetHTTPResponses():
-        # Skip CSI requests when validating Lite Page headers. CSI requests
-        # aren't expected to have LoFi headers.
-        if '/csi?' in response.url:
-          continue
-        if response.url.startswith('data:'):
-          continue
-        chrome_proxy_request = response.request_headers['chrome-proxy']
-        cpat_request = response.request_headers['chrome-proxy-accept-transform']
-        cpct_response = response.response_headers[
-                          'chrome-proxy-content-transform']
-        self.assertHasChromeProxyViaHeader(response)
-        self.assertIn('exp=ignore_preview_blacklist',
-          chrome_proxy_request)
-        if ('lite-page' in cpct_response):
-          lite_page_responses = lite_page_responses + 1
-          self.assertIn('lite-page', cpat_request)
-
-      # Verify that a Lite Page response for the main frame was seen.
-      self.assertEqual(1, lite_page_responses)
 
   # Checks that Lo-Fi placeholder images are not loaded from cache on page
   # reloads when Lo-Fi mode is disabled or data reduction proxy is disabled.
@@ -96,7 +64,7 @@ class LoFi(IntegrationTest):
           continue
         if not response.request_headers:
           continue
-        if (self.assertLoFiResponse(response, True)):
+        if (self.checkLoFiResponse(response, True)):
           lofi_responses = lofi_responses + 1
 
       # Verify that Lo-Fi responses were seen.
@@ -115,7 +83,7 @@ class LoFi(IntegrationTest):
           continue
         responses = responses + 1
         self.assertNotHasChromeProxyViaHeader(response)
-        self.assertLoFiResponse(response, False)
+        self.checkLoFiResponse(response, False)
 
       # Verify that responses were seen.
       self.assertNotEqual(0, responses)
@@ -135,7 +103,7 @@ class LoFi(IntegrationTest):
           continue
         responses = responses + 1
         self.assertHasChromeProxyViaHeader(response)
-        self.assertLoFiResponse(response, False)
+        self.checkLoFiResponse(response, False)
 
       # Verify that responses were seen.
       self.assertNotEqual(0, responses)

@@ -578,11 +578,12 @@ class IntegrationTest(unittest.TestCase):
       self.assertNotIn(expected_via_header,
         http_response.response_headers['via'])
 
-  def assertLoFiResponse(self, http_response, expected_lo_fi):
-    """Asserts that the response and request headers contain the given directive
-    and the content size is less than 100 if |expected_lo_fi|. Otherwise, checks
-    that the response and request headers don't contain the Lo-Fi directive and
-    the content size is greater than 100.
+  def checkLoFiResponse(self, http_response, expected_lo_fi):
+    """Asserts that if expected the response headers contain the Lo-Fi directive
+    then the request headers do too. Also checks that the content size is less
+    than 100 if |expected_lo_fi|. Otherwise, checks that the response and
+    request headers don't contain the Lo-Fi directive and the content size is
+    greater than 100.
 
     Args:
       http_response: The HTTPResponse object to check.
@@ -612,6 +613,29 @@ class IntegrationTest(unittest.TestCase):
       content_length = http_response.response_headers['content-length']
       self.assertTrue(int(content_length) > 100)
       return False;
+
+  def checkLitePageResponse(self, http_response):
+    """Asserts that if the response headers contain the Lite Page directive then
+    the request headers do too.
+
+    Args:
+      http_response: The HTTPResponse object to check.
+
+    Returns:
+      Whether the response was a Lite Page.
+    """
+
+    self.assertHasChromeProxyViaHeader(http_response)
+    if ('chrome-proxy-content-transform' not in http_response.response_headers):
+      return False;
+    cpct_response = http_response.response_headers[
+                      'chrome-proxy-content-transform']
+    cpat_request = http_response.request_headers[
+                      'chrome-proxy-accept-transform']
+    if ('lite-page' in cpct_response):
+      self.assertIn('lite-page', cpat_request)
+      return True;
+    return False;
 
   @staticmethod
   def RunAllTests(run_all_tests=False):
