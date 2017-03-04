@@ -37,7 +37,7 @@ _log = logging.getLogger(__name__)
 
 
 class MacPort(base.Port):
-    SUPPORTED_VERSIONS = ('mac10.9', 'mac10.10', 'mac10.11', 'retina')
+    SUPPORTED_VERSIONS = ('mac10.9', 'mac10.10', 'mac10.11', 'mac10.12', 'retina')
     port_name = 'mac'
 
     # FIXME: We treat Retina (High-DPI) devices as if they are running
@@ -48,7 +48,8 @@ class MacPort(base.Port):
     # We also currently only support Retina on 10.11.
 
     FALLBACK_PATHS = {}
-    FALLBACK_PATHS['mac10.11'] = ['mac']
+    FALLBACK_PATHS['mac10.12'] = ['mac']
+    FALLBACK_PATHS['mac10.11'] = ['mac-mac10.11'] + FALLBACK_PATHS['mac10.12']
     FALLBACK_PATHS['mac10.10'] = ['mac-mac10.10'] + FALLBACK_PATHS['mac10.11']
     FALLBACK_PATHS['mac10.9'] = ['mac-mac10.9'] + FALLBACK_PATHS['mac10.10']
     FALLBACK_PATHS['retina'] = ['mac-retina', 'mac']
@@ -62,10 +63,7 @@ class MacPort(base.Port):
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('mac'):
-            if host.platform.os_version in ('future',):
-                version = 'mac10.11'
-            else:
-                version = host.platform.os_version
+            version = host.platform.os_version
             if host.platform.is_highdpi():
                 version = 'retina'
             return port_name + '-' + version

@@ -47,7 +47,7 @@ def fake_sys(platform_str='darwin', windows_version_tuple=None):
     return FakeSysModule()
 
 
-def fake_platform(mac_version_string='10.6.3', release_string='bar', linux_version='trusty'):
+def fake_platform(mac_version_string='10.12.3', release_string='bar', linux_version='trusty'):
 
     class FakePlatformModule(object):
 
@@ -108,7 +108,7 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertFalse(info.is_win())
         self.assertFalse(info.is_freebsd())
 
-        info = self.make_info(fake_sys('darwin'), fake_platform('10.6.3'))
+        info = self.make_info(fake_sys('darwin'), fake_platform('10.12.3'))
         self.assertEqual(info.os_name, 'mac')
         self.assertFalse(info.is_linux())
         self.assertTrue(info.is_mac())
@@ -139,11 +139,12 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertRaises(AssertionError, self.make_info, fake_sys('vms'))
 
     def test_os_version(self):
-        self.assertRaises(AssertionError, self.make_info, fake_sys('darwin'), fake_platform('10.4.3'))
+        self.assertRaises(AssertionError, self.make_info, fake_sys('darwin'), fake_platform('10.6.3'))
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.9.0')).os_version, 'mac10.9')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.10.0')).os_version, 'mac10.10')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.11.0')).os_version, 'mac10.11')
-        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.12.0')).os_version, 'future')
+        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.12.0')).os_version, 'mac10.12')
+        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.15.0')).os_version, 'future')
 
         self.assertEqual(self.make_info(fake_sys('linux2')).os_version, 'trusty')
         info = self.make_info(fake_sys('linux2'), fake_platform(linux_version='utopic'))
@@ -203,7 +204,7 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertNotEquals(info.display_name(), '')
 
     def test_total_bytes_memory(self):
-        info = self.make_info(fake_sys('darwin'), fake_platform('10.6.3'), executive=fake_executive('1234'))
+        info = self.make_info(fake_sys('darwin'), fake_platform('10.12.3'), executive=fake_executive('1234'))
         self.assertEqual(info.total_bytes_memory(), 1234)
 
         info = self.make_info(fake_sys('win32', tuple([6, 1, 7600])))

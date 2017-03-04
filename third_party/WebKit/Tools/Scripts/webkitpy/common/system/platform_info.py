@@ -147,9 +147,8 @@ class PlatformInfo(object):
 
     def _determine_mac_version(self, mac_version_string):
         minor_release = int(mac_version_string.split('.')[1])
-        # FIXME: This should really be >= 9, and we should get rid of 'future'.
-        assert minor_release >= 6, 'Unsupported mac os version: %s' % mac_version_string
-        if minor_release in (9, 10, 11):
+        assert minor_release >= 9, 'Unsupported mac OS version: %s' % mac_version_string
+        if minor_release <= 12:
             return 'mac10.%d' % minor_release
         return 'future'
 

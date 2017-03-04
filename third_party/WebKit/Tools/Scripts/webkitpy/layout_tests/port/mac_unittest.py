@@ -34,9 +34,9 @@ from webkitpy.layout_tests.port import port_testcase
 
 class MacPortTest(port_testcase.PortTestCase):
     os_name = 'mac'
-    os_version = 'mac10.11'
+    os_version = 'mac10.12'
     port_name = 'mac'
-    full_port_name = 'mac-mac10.11'
+    full_port_name = 'mac-mac10.12'
     port_maker = mac.MacPort
 
     def assert_name(self, port_name, os_version_string, expected):
