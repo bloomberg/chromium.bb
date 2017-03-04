@@ -612,9 +612,16 @@ LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::enclosingFlowThread()
 }
 
 FragmentationContext*
-LayoutMultiColumnFlowThread::enclosingFragmentationContext() const {
-  if (LayoutMultiColumnFlowThread* enclosingFlowThread =
-          this->enclosingFlowThread())
+LayoutMultiColumnFlowThread::enclosingFragmentationContext(
+    AncestorSearchConstraint constraint) const {
+  // If this multicol container is strictly unbreakable (due to having
+  // scrollbars, for instance), it's also strictly unbreakable in any outer
+  // fragmentation context. As such, what kind of fragmentation that goes on
+  // inside this multicol container is completely opaque to the ancestors.
+  if (constraint == IsolateUnbreakableContainers &&
+      multiColumnBlockFlow()->getPaginationBreakability() == ForbidBreaks)
+    return nullptr;
+  if (auto* enclosingFlowThread = this->enclosingFlowThread())
     return enclosingFlowThread;
   return view()->fragmentationContext();
 }
