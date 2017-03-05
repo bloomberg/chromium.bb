@@ -4,13 +4,13 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"

@@ -4,8 +4,9 @@
 
 #include "ash/system/media_security/multi_profile_media_tray_item.h"
 
-#include "ash/ash_view_ids.h"
-#include "ash/media_controller.h"
+#include "ash/common/ash_view_ids.h"
+#include "ash/common/media_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/media.mojom.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
@@ -16,7 +17,6 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm_shell.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {

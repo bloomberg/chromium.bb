@@ -7,14 +7,16 @@
 #include <string>
 #include <utility>
 
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_observer.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "ash/test/ash_test.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
@@ -22,8 +24,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"

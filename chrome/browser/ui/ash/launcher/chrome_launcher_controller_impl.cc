@@ -8,7 +8,9 @@
 
 #include <vector>
 
-#include "ash/multi_profile_uma.h"
+#include "ash/common/multi_profile_uma.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_model.h"
@@ -17,8 +19,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/pattern.h"

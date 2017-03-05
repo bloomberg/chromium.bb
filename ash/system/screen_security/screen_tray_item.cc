@@ -4,7 +4,7 @@
 
 #include "ash/system/screen_security/screen_tray_item.h"
 
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/wm_shelf_util.h"

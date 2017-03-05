@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_BOOT_PHASE_MONITOR_ARC_INSTANCE_THROTTLE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_BOOT_PHASE_MONITOR_ARC_INSTANCE_THROTTLE_H_
 
-#include "ash/wm_activation_observer.h"
+#include "ash/common/wm_activation_observer.h"
 #include "base/macros.h"
 
 namespace arc {

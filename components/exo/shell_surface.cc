@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/common/wm_window.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/wm_shelf.h"
@@ -13,7 +14,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

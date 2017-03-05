@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/grit/ash_resources.h"
@@ -19,7 +20,6 @@
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

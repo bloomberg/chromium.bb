@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_state.h"
@@ -13,8 +15,6 @@
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"

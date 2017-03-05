@@ -9,9 +9,9 @@
 #include <memory>
 #include <vector>
 
+#include "ash/common/wm_shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

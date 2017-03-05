@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <string>
 
-#include "ash/login_status.h"
-#include "ash/wm_shell.h"
+#include "ash/common/login_status.h"
+#include "ash/common/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

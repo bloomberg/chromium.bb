@@ -4,14 +4,14 @@
 
 #include "ash/system/status_area_widget_delegate.h"
 
-#include "ash/focus_cycler.h"
+#include "ash/common/focus_cycler.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"

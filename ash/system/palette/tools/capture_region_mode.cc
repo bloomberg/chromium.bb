@@ -5,13 +5,13 @@
 #include "ash/system/palette/tools/capture_region_mode.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/palette_delegate.h"
+#include "ash/common/palette_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
-#include "ash/wm_shell.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/power/login_lock_state_notifier.h"
 
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"

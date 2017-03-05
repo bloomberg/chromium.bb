@@ -6,14 +6,14 @@
 
 #include <algorithm>
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"

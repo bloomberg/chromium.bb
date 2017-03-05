@@ -4,8 +4,8 @@
 
 #include "ash/system/tray/special_popup_row.h"
 
-#include "ash/ash_constants.h"
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/ash_constants.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/hover_highlight_view.h"

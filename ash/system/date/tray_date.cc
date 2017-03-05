@@ -4,6 +4,7 @@
 
 #include "ash/system/date/tray_date.h"
 
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/system/date/date_default_view.h"
 #include "ash/system/date/date_view.h"
@@ -11,7 +12,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_item_view.h"
-#include "ash/wm_shell.h"
 
 namespace ash {
 

@@ -4,11 +4,11 @@
 
 #include "ash/wm/immersive_context_ash.h"
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/logging.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

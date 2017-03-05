@@ -4,7 +4,8 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
+#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
@@ -15,7 +16,6 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"

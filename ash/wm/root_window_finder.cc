@@ -4,9 +4,9 @@
 
 #include "ash/wm/root_window_finder.h"
 
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"

@@ -4,7 +4,7 @@
 
 #include "ash/wm/root_window_layout_manager.h"
 
-#include "ash/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 

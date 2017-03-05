@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_DATE_SYSTEM_INFO_DEFAULT_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 

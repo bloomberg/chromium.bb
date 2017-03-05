@@ -6,13 +6,13 @@
 
 #include <vector>
 
-#include "ash/keyboard/keyboard_ui.h"
+#include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "ui/display/display.h"

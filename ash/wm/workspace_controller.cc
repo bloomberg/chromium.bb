@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
@@ -16,8 +18,6 @@
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

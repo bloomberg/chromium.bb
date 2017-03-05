@@ -5,9 +5,11 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/accessibility_delegate.h"
-#include "ash/accessibility_types.h"
-#include "ash/ash_switches.h"
+#include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
+#include "ash/common/ash_switches.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -34,8 +36,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"

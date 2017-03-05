@@ -4,7 +4,7 @@
 
 #include "ash/frame/caption_buttons/frame_size_button.h"
 
-#include "ash/ash_layout_constants.h"
+#include "ash/common/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/resources/grit/ash_resources.h"

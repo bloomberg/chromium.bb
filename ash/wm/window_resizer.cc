@@ -4,11 +4,11 @@
 
 #include "ash/wm/window_resizer.h"
 
+#include "ash/common/wm_window.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display.h"

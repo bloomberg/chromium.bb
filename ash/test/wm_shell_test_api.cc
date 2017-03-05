@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm_shell.h"
 
 namespace ash {
 

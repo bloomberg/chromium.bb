@@ -6,12 +6,12 @@
 
 #include <memory>
 
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm_shell.h"
 #include "ui/views/view.h"
 
 namespace ash {

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"

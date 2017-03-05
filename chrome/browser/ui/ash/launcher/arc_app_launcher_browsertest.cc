@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"

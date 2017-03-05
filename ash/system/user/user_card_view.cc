@@ -8,18 +8,18 @@
 #include <memory>
 #include <vector>
 
-#include "ash/ash_view_ids.h"
-#include "ash/login_status.h"
-#include "ash/media_controller.h"
+#include "ash/common/ash_view_ids.h"
+#include "ash/common/login_status.h"
+#include "ash/common/media_controller.h"
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/user/rounded_image_view.h"
-#include "ash/wm_shell.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"

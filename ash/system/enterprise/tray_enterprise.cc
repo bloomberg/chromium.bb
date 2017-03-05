@@ -4,12 +4,12 @@
 
 #include "ash/system/enterprise/tray_enterprise.h"
 
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
+#include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/system/tray/label_tray_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 

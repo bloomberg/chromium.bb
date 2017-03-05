@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"

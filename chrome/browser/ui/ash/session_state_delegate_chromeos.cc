@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 
+#include "ash/common/session/session_state_observer.h"
+#include "ash/common/wm_window.h"
 #include "ash/content/shell_content_state.h"
-#include "ash/session/session_state_observer.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"

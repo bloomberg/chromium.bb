@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_SESSION_LOGOUT_BUTTON_TRAY_H_
 
 #include "ash/ash_export.h"
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
 #include "ash/system/session/logout_button_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"

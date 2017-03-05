@@ -8,6 +8,8 @@
 #include <map>
 #include <utility>
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -18,8 +20,6 @@
 #include "ash/wm/window_parenting_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"

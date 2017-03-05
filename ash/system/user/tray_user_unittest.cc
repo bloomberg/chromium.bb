@@ -4,7 +4,8 @@
 
 #include <vector>
 
-#include "ash/shell_delegate.h"
+#include "ash/common/shell_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/tray_user.h"
@@ -13,7 +14,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/account_id/account_id.h"

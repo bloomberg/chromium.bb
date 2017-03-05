@@ -4,9 +4,9 @@
 
 #include "ash/wm/default_window_resizer.h"
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 
 namespace ash {
 

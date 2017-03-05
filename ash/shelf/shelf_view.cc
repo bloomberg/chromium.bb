@@ -7,9 +7,12 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
+#include "ash/common/scoped_root_window_for_new_windows.h"
+#include "ash/common/shell_delegate.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/drag_drop/drag_image_view.h"
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -21,11 +24,8 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/root_window_finder.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"

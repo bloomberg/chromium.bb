@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"

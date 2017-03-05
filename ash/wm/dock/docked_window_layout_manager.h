@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
+#include "ash/common/wm_activation_observer.h"
 #include "ash/wm/dock/dock_types.h"
 #include "ash/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
-#include "ash/wm_activation_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

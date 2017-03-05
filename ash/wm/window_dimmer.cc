@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"

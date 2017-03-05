@@ -9,11 +9,11 @@
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_layout_manager.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_types.h"
-#include "ash/wm_activation_observer.h"
-#include "ash/wm_layout_manager.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"

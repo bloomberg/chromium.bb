@@ -4,10 +4,10 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm_shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

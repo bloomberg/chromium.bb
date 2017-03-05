@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "ash/login_status.h"
-#include "ash/session/session_state_delegate.h"
-#include "ash/wm_shell.h"
+#include "ash/common/login_status.h"
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "base/time/time.h"
 
 namespace ash {

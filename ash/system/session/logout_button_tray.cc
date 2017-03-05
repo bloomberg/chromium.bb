@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -17,7 +18,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/user/login_status.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/event.h"

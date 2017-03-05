@@ -9,8 +9,8 @@
 #include <memory>
 #include <utility>
 
-#include "ash/new_window_controller.h"
-#include "ash/wm_shell.h"
+#include "ash/common/new_window_controller.h"
+#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/global_shortcut_listener_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/wm_shell.h"
+#include "ash/common/wm_shell.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

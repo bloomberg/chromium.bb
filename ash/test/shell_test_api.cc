@@ -4,9 +4,9 @@
 
 #include "ash/test/shell_test_api.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 
 namespace ash {

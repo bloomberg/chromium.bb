@@ -8,9 +8,9 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_router.h"
+#include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/window_manager.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "services/ui/common/accelerator_util.h"
 #include "ui/base/accelerators/accelerator_history.h"

@@ -4,10 +4,10 @@
 
 #include "ash/metrics/pointer_metrics_recorder.h"
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/shared/app_types.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"

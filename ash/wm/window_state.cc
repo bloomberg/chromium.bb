@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "ash/common/wm_window.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 
 namespace ash {

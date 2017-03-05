@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shelf/shelf_application_menu_model.h"
 #include "ash/shelf/shelf_constants.h"
@@ -26,7 +27,6 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"

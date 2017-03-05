@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_default_view.h"

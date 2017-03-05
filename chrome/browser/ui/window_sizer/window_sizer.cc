@@ -23,7 +23,7 @@
 #include "ui/display/screen.h"
 
 #if defined(USE_ASH)
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/shell.h"  // nogncheck
 #include "ash/wm/window_positioner.h"  // nogncheck
 #include "chrome/browser/ui/ash/ash_util.h"  // nogncheck

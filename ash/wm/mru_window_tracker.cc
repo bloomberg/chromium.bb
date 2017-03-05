@@ -6,12 +6,12 @@
 
 #include <algorithm>
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/focus_rules.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
 

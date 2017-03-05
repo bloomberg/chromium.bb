@@ -10,8 +10,10 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accessibility_delegate.h"
-#include "ash/accessibility_types.h"
+#include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -24,8 +26,6 @@
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_screen_util.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"

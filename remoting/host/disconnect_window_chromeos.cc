@@ -4,8 +4,8 @@
 
 #include <string>
 
+#include "ash/common/wm_shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

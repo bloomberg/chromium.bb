@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "ash/accelerators/key_hold_detector.h"
-#include "ash/accessibility_delegate.h"
-#include "ash/accessibility_types.h"
-#include "ash/wm_shell.h"
+#include "ash/common/accessibility_delegate.h"
+#include "ash/common/accessibility_types.h"
+#include "ash/common/wm_shell.h"
 #include "ui/events/event.h"
 
 namespace ash {

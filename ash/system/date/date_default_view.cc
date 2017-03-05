@@ -4,11 +4,12 @@
 
 #include "ash/system/date/date_default_view.h"
 
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shutdown_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/grit/ash_resources.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/tray/special_popup_row.h"
@@ -17,7 +18,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm_shell.h"
 #include "base/i18n/rtl.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"

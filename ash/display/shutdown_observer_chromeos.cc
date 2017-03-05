@@ -4,7 +4,7 @@
 
 #include "ash/display/shutdown_observer_chromeos.h"
 
-#include "ash/wm_shell.h"
+#include "ash/common/wm_shell.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace ash {

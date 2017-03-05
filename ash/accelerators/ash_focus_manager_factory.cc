@@ -5,7 +5,7 @@
 #include "ash/accelerators/ash_focus_manager_factory.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/wm_shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/views/focus/focus_manager.h"
 

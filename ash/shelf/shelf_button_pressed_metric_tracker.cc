@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 
-#include "ash/wm_shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "ui/views/controls/button/button.h"

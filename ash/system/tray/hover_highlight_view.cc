@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/hover_highlight_view.h"
 
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"

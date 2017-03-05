@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_resizer.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/browser.h"

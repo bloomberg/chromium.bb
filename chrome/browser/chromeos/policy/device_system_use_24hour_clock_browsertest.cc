@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_default_view.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/date/system_info_default_view.h"
 #include "ash/system/date/tray_system_info.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"

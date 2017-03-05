@@ -4,6 +4,7 @@
 
 #include "ash/shelf/app_list_button.h"
 
+#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_constants.h"
@@ -11,7 +12,6 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_popup_utils.h"
-#include "ash/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"

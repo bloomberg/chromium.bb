@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/accessibility_types.h"
+#include "ash/common/accessibility_types.h"
 #include "ash/system/supervised/custodian_info_tray_observer.h"
 #include "ash/system/tray/ime_info.h"
 #include "ash/system/tray/system_tray_delegate.h"

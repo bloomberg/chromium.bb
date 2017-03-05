@@ -55,7 +55,7 @@ class WindowOwner {
 
 // Base class for ash tests. This class calls through to AshTestImpl for the
 // real implementation. This class exists so that tests can be written to
-// run in both mus ash and classic ash.
+// ash/common and run in both mus and aura.
 //
 // The implementation of AshTestImpl that is used depends upon gn targets. To
 // use the aura backend depend on "//ash/test:ash_with_aura_test_support." The

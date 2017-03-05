@@ -7,8 +7,8 @@
 #include <stdint.h>
 #include <utility>
 
+#include "ash/common/wm_shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"

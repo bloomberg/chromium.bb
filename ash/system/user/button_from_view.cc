@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "ash/ash_constants.h"
+#include "ash/common/ash_constants.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/strings/string_util.h"

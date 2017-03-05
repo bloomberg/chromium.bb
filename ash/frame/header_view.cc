@@ -4,11 +4,11 @@
 
 #include "ash/frame/header_view.h"
 
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
-#include "ash/session/session_state_delegate.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"

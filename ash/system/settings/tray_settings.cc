@@ -4,9 +4,10 @@
 
 #include "ash/system/settings/tray_settings.h"
 
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/power_status_view.h"
@@ -16,7 +17,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
-#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
+#include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/label_tray_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "ui/base/resource/resource_bundle.h"

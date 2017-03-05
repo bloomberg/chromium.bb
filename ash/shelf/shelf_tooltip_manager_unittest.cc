@@ -4,6 +4,7 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
@@ -11,7 +12,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_item_delegate.h"
-#include "ash/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"

@@ -5,6 +5,8 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/animation/animation_change_type.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
@@ -19,8 +21,6 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkColor.h"

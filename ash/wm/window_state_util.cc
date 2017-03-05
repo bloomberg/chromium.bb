@@ -4,9 +4,9 @@
 
 #include "ash/wm/window_state_util.h"
 
+#include "ash/common/wm_window.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
-#include "ash/wm_window.h"
 
 namespace ash {
 namespace wm {

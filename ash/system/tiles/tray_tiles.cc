@@ -4,10 +4,10 @@
 
 #include "ash/system/tiles/tray_tiles.h"
 
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_action.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/system/tiles/tiles_default_view.h"
-#include "ash/wm_shell.h"
 
 namespace ash {
 

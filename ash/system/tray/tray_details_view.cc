@@ -4,8 +4,8 @@
 
 #include "ash/system/tray/tray_details_view.h"
 
-#include "ash/ash_view_ids.h"
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/ash_view_ids.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"

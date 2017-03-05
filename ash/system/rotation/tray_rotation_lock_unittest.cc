@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -15,7 +16,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "ui/display/display_switches.h"

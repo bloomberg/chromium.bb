@@ -6,11 +6,11 @@
 
 #include <utility>
 
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_button_pressed_metric_tracker_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"

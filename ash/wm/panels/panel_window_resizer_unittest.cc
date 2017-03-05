@@ -4,6 +4,8 @@
 
 #include "ash/wm/panels/panel_window_resizer.h"
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -21,8 +23,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"

@@ -13,9 +13,9 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/wm_shell.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/session/logout_confirmation_dialog.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"

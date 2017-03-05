@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_USER_LOGIN_STATUS_H_
 #define ASH_SYSTEM_USER_LOGIN_STATUS_H_
 
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
 #include "base/strings/string16.h"
 
 namespace ash {

@@ -6,7 +6,7 @@
 #define ASH_WM_LOCK_LAYOUT_MANAGER_H_
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/wm/wm_types.h"
 #include "base/macros.h"

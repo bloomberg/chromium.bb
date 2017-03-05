@@ -1120,7 +1120,7 @@
       'filepath': 'ui/keyboard/'\
                   '|chrome/test/data/chromeos/virtual_keyboard/'\
                   '|extensions/browser/api/virtual_keyboard_private/'\
-                  '|ash/system/virtual_keyboard/'\
+                  '|ash/common/system/chromeos/virtual_keyboard/'\
                   '|ash/virtual_keyboard',
     },
     'virtual_reality': {

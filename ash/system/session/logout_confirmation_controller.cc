@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/session/logout_confirmation_dialog.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/wm_shell.h"
 #include "base/location.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"

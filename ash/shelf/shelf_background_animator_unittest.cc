@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "ash/animation/animation_change_type.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/test_mock_time_task_runner.h"

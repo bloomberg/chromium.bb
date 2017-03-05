@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/login_status.h"
+#include "ash/common/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"

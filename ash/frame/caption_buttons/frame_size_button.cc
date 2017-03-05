@@ -4,12 +4,12 @@
 
 #include "ash/frame/caption_buttons/frame_size_button.h"
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget.h"

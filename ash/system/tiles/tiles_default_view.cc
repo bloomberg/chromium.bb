@@ -4,11 +4,12 @@
 
 #include "ash/system/tiles/tiles_default_view.h"
 
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shutdown_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
@@ -18,7 +19,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm_shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "ui/base/l10n/l10n_util.h"

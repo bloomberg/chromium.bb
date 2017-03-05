@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf_widget.h"
@@ -20,8 +22,6 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"

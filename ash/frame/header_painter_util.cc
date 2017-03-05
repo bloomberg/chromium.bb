@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/font_list.h"

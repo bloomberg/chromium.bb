@@ -9,13 +9,14 @@
 #include <utility>
 #include <vector>
 
-#include "ash/cast_config_controller.h"
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/cast_config_controller.h"
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/cast_config.mojom.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/screen_security/screen_tray_item.h"
@@ -29,7 +30,6 @@
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -4,12 +4,12 @@
 
 #include <memory>
 
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/wm_shell.h"
-#include "ash/wm_window.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/app_list/presenter/app_list.h"

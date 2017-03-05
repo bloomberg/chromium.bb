@@ -9,13 +9,13 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/shell_observer.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_display_observer.h"
+#include "ash/common/wm_layout_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf_observer.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
-#include "ash/wm_activation_observer.h"
-#include "ash/wm_display_observer.h"
-#include "ash/wm_layout_manager.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

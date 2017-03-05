@@ -8,13 +8,13 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/user_action_tester.h"

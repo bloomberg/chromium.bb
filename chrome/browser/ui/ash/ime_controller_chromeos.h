@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_IME_CONTROLLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_IME_CONTROLLER_CHROMEOS_H_
 
-#include "ash/ime_control_delegate.h"
+#include "ash/common/ime_control_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 

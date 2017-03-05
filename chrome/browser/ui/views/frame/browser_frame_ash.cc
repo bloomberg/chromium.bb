@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 
-#include "ash/ash_switches.h"
+#include "ash/common/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
