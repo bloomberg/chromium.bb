@@ -26,6 +26,7 @@ const size_t kMaxPacketsAfterNewMissing = 4;
 QuicReceivedPacketManager::QuicReceivedPacketManager(QuicConnectionStats* stats)
     : peer_least_packet_awaiting_ack_(0),
       ack_frame_updated_(false),
+      max_ack_ranges_(0),
       time_largest_observed_(QuicTime::Zero()),
       stats_(stats) {
   ack_frame_.largest_observed = 0;
@@ -86,6 +87,10 @@ const QuicFrame QuicReceivedPacketManager::GetUpdatedAckFrame(
     ack_frame_.ack_delay_time = approximate_now < time_largest_observed_
                                     ? QuicTime::Delta::Zero()
                                     : approximate_now - time_largest_observed_;
+  }
+  while (max_ack_ranges_ > 0 &&
+         ack_frame_.packets.NumIntervals() > max_ack_ranges_) {
+    ack_frame_.packets.RemoveSmallestInterval();
   }
 
   // Clear all packet times if any are too far from largest observed.

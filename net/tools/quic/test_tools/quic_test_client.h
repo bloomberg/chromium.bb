@@ -63,6 +63,7 @@ class MockableQuicClient : public QuicClient {
   void set_track_last_incoming_packet(bool track) {
     track_last_incoming_packet_ = track;
   }
+  void set_peer_address(const QuicSocketAddress& address);
 
  private:
   QuicConnectionId override_connection_id_;  // ConnectionId to use, if nonzero
@@ -245,6 +246,10 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
 
   void set_server_address(const QuicSocketAddress& server_address) {
     client_->set_server_address(server_address);
+  }
+
+  void set_peer_address(const QuicSocketAddress& address) {
+    client_->set_peer_address(address);
   }
 
   // Explicitly set the SNI value for this client, overriding the default

@@ -703,11 +703,6 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
                   << QuicTagToString(tag) << "'";
   }
 
-  if (header.public_header.multipath_flag &&
-      !writer->WriteUInt8(header.path_id)) {
-    return false;
-  }
-
   if (header.public_header.nonce != nullptr &&
       !writer->WriteBytes(header.public_header.nonce,
                           kDiversificationNonceSize)) {
@@ -924,13 +919,6 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
 
 bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                               QuicPacketHeader* header) {
-  header->path_id = kDefaultPathId;
-  if (header->public_header.multipath_flag &&
-      !ProcessPathId(encrypted_reader, &header->path_id)) {
-    set_detailed_error("Unable to read path id.");
-    return RaiseError(QUIC_INVALID_PACKET_HEADER);
-  }
-
   QuicPacketNumber base_packet_number = largest_packet_number_;
 
   if (!ProcessPacketSequenceNumber(
@@ -950,14 +938,6 @@ bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
         "Visitor asked to stop processing of unauthenticated header.");
     return false;
   }
-  return true;
-}
-
-bool QuicFramer::ProcessPathId(QuicDataReader* reader, QuicPathId* path_id) {
-  if (!reader->ReadBytes(path_id, 1)) {
-    return false;
-  }
-
   return true;
 }
 
@@ -1525,7 +1505,6 @@ void QuicFramer::SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter) {
 }
 
 size_t QuicFramer::EncryptInPlace(EncryptionLevel level,
-                                  QuicPathId path_id,
                                   QuicPacketNumber packet_number,
                                   size_t ad_len,
                                   size_t total_len,

@@ -124,6 +124,23 @@ TEST_P(QuicReceivedPacketManagerTest, UpdateReceivedConnectionStats) {
   EXPECT_EQ(1u, stats_.packets_reordered);
 }
 
+TEST_P(QuicReceivedPacketManagerTest, LimitAckRanges) {
+  received_manager_.set_max_ack_ranges(10);
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
+  for (int i = 0; i < 100; ++i) {
+    RecordPacketReceipt(1 + 2 * i);
+    EXPECT_TRUE(received_manager_.ack_frame_updated());
+    received_manager_.GetUpdatedAckFrame(QuicTime::Zero());
+    EXPECT_GE(10u, received_manager_.ack_frame().packets.NumIntervals());
+    EXPECT_EQ(1u + 2 * i, received_manager_.ack_frame().packets.Max());
+    for (int j = 0; j < std::min(10, i + 1); ++j) {
+      EXPECT_TRUE(
+          received_manager_.ack_frame().packets.Contains(1 + (i - j) * 2));
+      EXPECT_FALSE(received_manager_.ack_frame().packets.Contains((i - j) * 2));
+    }
+  }
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

@@ -67,37 +67,29 @@ size_t GetPathIdOffset(QuicConnectionIdLength connection_id_length,
 
 // Index into the packet number offset in the header.
 size_t GetPacketNumberOffset(QuicConnectionIdLength connection_id_length,
-                             bool include_version,
-                             bool include_path_id) {
+                             bool include_version) {
   return kConnectionIdOffset + connection_id_length +
-         (include_version ? kQuicVersionSize : 0) +
-         (include_path_id ? kQuicPathIdSize : 0);
+         (include_version ? kQuicVersionSize : 0);
 }
 
-size_t GetPacketNumberOffset(bool include_version, bool include_path_id) {
-  return GetPacketNumberOffset(PACKET_8BYTE_CONNECTION_ID, include_version,
-                               include_path_id);
+size_t GetPacketNumberOffset(bool include_version) {
+  return GetPacketNumberOffset(PACKET_8BYTE_CONNECTION_ID, include_version);
 }
 
 // Index into the private flags offset in the data packet header.
 size_t GetPrivateFlagsOffset(QuicConnectionIdLength connection_id_length,
-                             bool include_version,
-                             bool include_path_id) {
-  return GetPacketNumberOffset(connection_id_length, include_version,
-                               include_path_id) +
+                             bool include_version) {
+  return GetPacketNumberOffset(connection_id_length, include_version) +
          PACKET_6BYTE_PACKET_NUMBER;
 }
 
-size_t GetPrivateFlagsOffset(bool include_version, bool include_path_id) {
-  return GetPrivateFlagsOffset(PACKET_8BYTE_CONNECTION_ID, include_version,
-                               include_path_id);
+size_t GetPrivateFlagsOffset(bool include_version) {
+  return GetPrivateFlagsOffset(PACKET_8BYTE_CONNECTION_ID, include_version);
 }
 
 size_t GetPrivateFlagsOffset(bool include_version,
-                             bool include_path_id,
                              QuicPacketNumberLength packet_number_length) {
-  return GetPacketNumberOffset(PACKET_8BYTE_CONNECTION_ID, include_version,
-                               include_path_id) +
+  return GetPacketNumberOffset(PACKET_8BYTE_CONNECTION_ID, include_version) +
          packet_number_length;
 }
 
@@ -355,9 +347,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
     return static_cast<unsigned char>('0' + (version_ / 10) % 10);
   }
 
-  bool CheckEncryption(QuicPathId path_id,
-                       QuicPacketNumber packet_number,
-                       QuicPacket* packet) {
+  bool CheckEncryption(QuicPacketNumber packet_number, QuicPacket* packet) {
     EXPECT_EQ(version_, encrypter_->version_);
     if (packet_number != encrypter_->packet_number_) {
       QUIC_LOG(ERROR) << "Encrypted incorrect packet number.  expected "
@@ -663,7 +653,7 @@ TEST_P(QuicFramerTest, PacketHeader) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
-    } else if (i < GetPacketNumberOffset(!kIncludeVersion, !kIncludePathId)) {
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion)) {
       expected_error = "Unable to read ConnectionId.";
     } else {
       expected_error = "Unable to read packet number.";
@@ -706,7 +696,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
     } else if (i < GetPacketNumberOffset(PACKET_0BYTE_CONNECTION_ID,
-                                         !kIncludeVersion, !kIncludePathId)) {
+                                         !kIncludeVersion)) {
       expected_error = "Unable to read ConnectionId.";
     } else {
       expected_error = "Unable to read packet number.";
@@ -751,7 +741,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
       expected_error = "Unable to read public flags.";
     } else if (i < kVersionOffset) {
       expected_error = "Unable to read ConnectionId.";
-    } else if (i < GetPacketNumberOffset(kIncludeVersion, !kIncludePathId)) {
+    } else if (i < GetPacketNumberOffset(kIncludeVersion)) {
       expected_error = "Unable to read protocol version.";
     } else {
       expected_error = "Unable to read packet number.";
@@ -793,7 +783,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
-    } else if (i < GetPacketNumberOffset(!kIncludeVersion, !kIncludePathId)) {
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion)) {
       expected_error = "Unable to read ConnectionId.";
     } else {
       expected_error = "Unable to read packet number.";
@@ -837,7 +827,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
-    } else if (i < GetPacketNumberOffset(!kIncludeVersion, !kIncludePathId)) {
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion)) {
       expected_error = "Unable to read ConnectionId.";
     } else {
       expected_error = "Unable to read packet number.";
@@ -881,7 +871,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
-    } else if (i < GetPacketNumberOffset(!kIncludeVersion, !kIncludePathId)) {
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion)) {
       expected_error = "Unable to read ConnectionId.";
     } else {
       expected_error = "Unable to read packet number.";
@@ -3359,7 +3349,7 @@ TEST_P(QuicFramerTest, EncryptPacket) {
       ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
 
   ASSERT_NE(0u, encrypted_length);
-  EXPECT_TRUE(CheckEncryption(kDefaultPathId, packet_number, raw.get()));
+  EXPECT_TRUE(CheckEncryption(packet_number, raw.get()));
 }
 
 TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
@@ -3394,7 +3384,7 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
       ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
 
   ASSERT_NE(0u, encrypted_length);
-  EXPECT_TRUE(CheckEncryption(kDefaultPathId, packet_number, raw.get()));
+  EXPECT_TRUE(CheckEncryption(packet_number, raw.get()));
 }
 
 TEST_P(QuicFramerTest, AckTruncationLargePacket) {
@@ -3579,7 +3569,7 @@ TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
   QuicVersionVector versions;
   versions.push_back(framer_.version());
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      42, false, false, false, kDefaultPathId, kTestQuicStreamId, kTestString,
+      42, false, false, false, kTestQuicStreamId, kTestString,
       PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, &versions));
 
   MockFramerVisitor visitor;
@@ -3615,7 +3605,7 @@ TEST_P(QuicFramerTest, ConstructMisFramedEncryptedPacket) {
   QuicVersionVector versions;
   versions.push_back(framer_.version());
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
-      42, false, false, kDefaultPathId, kTestQuicStreamId, kTestString,
+      42, false, false, kTestQuicStreamId, kTestString,
       PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, &versions,
       Perspective::IS_CLIENT));
 

@@ -362,9 +362,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Send a WINDOW_UPDATE frame to the peer.
   virtual void SendWindowUpdate(QuicStreamId id, QuicStreamOffset byte_offset);
 
-  // Send a PATH_CLOSE frame to the peer.
-  virtual void SendPathClose(QuicPathId path_id);
-
   // Closes the connection.
   // |connection_close_behavior| determines whether or not a connection close
   // packet is sent to the peer.
@@ -741,6 +738,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Returns true if the packet should be discarded and not sent.
   virtual bool ShouldDiscardPacket(const SerializedPacket& packet);
 
+  // Returns true if this connection allows self address change.
+  virtual bool AllowSelfAddressChange() const;
+
+  // Called when a self address change is observed.
+  virtual void OnSelfAddressChange() {}
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::PacketSavingConnection;
@@ -1082,6 +1085,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Indicates whether a write error is encountered currently. This is used to
   // avoid infinite write errors.
   bool write_error_occured_;
+
+  // Indicates not to send or process stop waiting frames.
+  bool no_stop_waiting_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

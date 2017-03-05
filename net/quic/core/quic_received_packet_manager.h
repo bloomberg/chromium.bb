@@ -65,6 +65,10 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
   // For logging purposes.
   const QuicAckFrame& ack_frame() const { return ack_frame_; }
 
+  void set_max_ack_ranges(size_t max_ack_ranges) {
+    max_ack_ranges_ = max_ack_ranges;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
 
@@ -78,6 +82,9 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
   // True if |ack_frame_| has been updated since UpdateReceivedPacketInfo was
   // last called.
   bool ack_frame_updated_;
+
+  // Maximum number of ack ranges allowed to be stored in the ack frame.
+  size_t max_ack_ranges_;
 
   // The time we received the largest_observed packet number, or zero if
   // no packet numbers have been received since UpdateReceivedPacketInfo.

@@ -296,7 +296,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // data. |total_len| is the length of the associated data plus plaintext.
   // |buffer_len| is the full length of the allocated buffer.
   size_t EncryptInPlace(EncryptionLevel level,
-                        QuicPathId path_id,
                         QuicPacketNumber packet_number,
                         size_t ad_len,
                         size_t total_len,
@@ -370,7 +369,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                     QuicPacketHeader* header);
 
-  bool ProcessPathId(QuicDataReader* reader, QuicPathId* path_id);
   bool ProcessPacketSequenceNumber(QuicDataReader* reader,
                                    QuicPacketNumberLength packet_number_length,
                                    QuicPacketNumber base_packet_number,
