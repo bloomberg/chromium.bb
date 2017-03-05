@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/device_stylus_handler.h"
 
-#include "ash/system/palette/palette_utils.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"

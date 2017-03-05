@@ -15,7 +15,7 @@
 #include "ash/mus/window_manager_application.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
-#include "ash/system/screen_layout_observer.h"
+#include "ash/system/chromeos/screen_layout_observer.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test/shell_test_api.h"

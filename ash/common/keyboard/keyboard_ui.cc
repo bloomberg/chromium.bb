@@ -6,10 +6,10 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/keyboard/keyboard_ui_observer.h"
+#include "ash/common/system/accessibility_observer.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/accessibility_observer.h"
-#include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray_accessibility.h"
 #include "base/memory/ptr_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 

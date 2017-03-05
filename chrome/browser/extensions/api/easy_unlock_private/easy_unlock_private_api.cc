@@ -53,7 +53,7 @@
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/devicetype_utils.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "components/user_manager/user.h"

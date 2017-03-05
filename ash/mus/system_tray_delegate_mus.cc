@@ -4,7 +4,7 @@
 
 #include "ash/mus/system_tray_delegate_mus.h"
 
-#include "ash/system/networking_config_delegate.h"
+#include "ash/common/system/networking_config_delegate.h"
 
 namespace ash {
 namespace {

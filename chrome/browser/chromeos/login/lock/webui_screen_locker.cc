@@ -6,7 +6,7 @@
 
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/system/power/power_event_observer.h"
+#include "ash/system/chromeos/power/power_event_observer.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"

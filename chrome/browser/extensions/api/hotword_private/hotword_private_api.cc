@@ -30,7 +30,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/devicetype_utils.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #endif
 
 namespace extensions {

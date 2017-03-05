@@ -4,9 +4,9 @@
 
 #include "ash/laser/laser_pointer_controller.h"
 
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/shell.h"
-#include "ash/system/palette/palette_utils.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 

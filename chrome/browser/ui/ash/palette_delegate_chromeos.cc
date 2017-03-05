@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
-#include "ash/system/palette/palette_utils.h"
 #include "ash/utility/screenshot_controller.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"

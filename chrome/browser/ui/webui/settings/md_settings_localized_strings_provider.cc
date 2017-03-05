@@ -34,7 +34,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/ash_switches.h"
-#include "ash/system/devicetype_utils.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"

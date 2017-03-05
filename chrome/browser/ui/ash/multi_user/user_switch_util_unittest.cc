@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/screen_security/screen_tray_item.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"

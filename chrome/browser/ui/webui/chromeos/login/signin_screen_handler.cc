@@ -9,9 +9,9 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/system/devicetype_utils.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"

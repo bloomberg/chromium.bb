@@ -5,8 +5,8 @@
 #ifndef ASH_COMMON_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 #define ASH_COMMON_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 
-#include "ash/system/tray/default_system_tray_delegate.h"
-#include "ash/system/tray/ime_info.h"
+#include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/common/system/tray/ime_info.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 

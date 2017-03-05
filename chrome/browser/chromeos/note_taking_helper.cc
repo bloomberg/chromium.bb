@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "apps/launcher.h"
-#include "ash/system/palette/palette_utils.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"

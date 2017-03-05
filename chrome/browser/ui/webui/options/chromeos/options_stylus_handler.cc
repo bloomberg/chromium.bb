@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/options_stylus_handler.h"
 
-#include "ash/system/palette/palette_utils.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"

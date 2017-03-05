@@ -1,0 +1,424 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/system/chromeos/screen_layout_observer.h"
+
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "ash/common/metrics/user_metrics_action.h"
+#include "ash/common/system/chromeos/devicetype_utils.h"
+#include "ash/common/system/system_notifier.h"
+#include "ash/common/system/tray/fixed_sized_image_view.h"
+#include "ash/common/system/tray/system_tray_controller.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/resources/grit/ash_resources.h"
+#include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "base/bind.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/types/display_constants.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_delegate.h"
+#include "ui/strings/grit/ui_strings.h"
+
+using message_center::Notification;
+
+namespace ash {
+namespace {
+
+display::DisplayManager* GetDisplayManager() {
+  return Shell::GetInstance()->display_manager();
+}
+
+base::string16 GetDisplayName(int64_t display_id) {
+  return base::UTF8ToUTF16(
+      GetDisplayManager()->GetDisplayNameForId(display_id));
+}
+
+base::string16 GetDisplaySize(int64_t display_id) {
+  display::DisplayManager* display_manager = GetDisplayManager();
+
+  const display::Display* display =
+      &display_manager->GetDisplayForId(display_id);
+
+  // We don't show display size for mirrored display. Fallback
+  // to empty string if this happens on release build.
+  bool mirroring = display_manager->mirroring_display_id() == display_id;
+  DCHECK(!mirroring);
+  if (mirroring)
+    return base::string16();
+
+  DCHECK(display->is_valid());
+  return base::UTF8ToUTF16(display->size().ToString());
+}
+
+// Attempts to open the display settings, returns true if successful.
+bool OpenSettings() {
+  // switch is intentionally introduced without default, to cause an error when
+  // a new type of login status is introduced.
+  switch (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus()) {
+    case LoginStatus::NOT_LOGGED_IN:
+    case LoginStatus::LOCKED:
+      return false;
+
+    case LoginStatus::USER:
+    case LoginStatus::OWNER:
+    case LoginStatus::GUEST:
+    case LoginStatus::PUBLIC:
+    case LoginStatus::SUPERVISED:
+    case LoginStatus::KIOSK_APP:
+    case LoginStatus::ARC_KIOSK_APP:
+      SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+      if (delegate->ShouldShowSettings()) {
+        WmShell::Get()->system_tray_controller()->ShowDisplaySettings();
+        return true;
+      }
+      break;
+  }
+
+  return false;
+}
+
+// Callback to handle a user selecting the notification view.
+void OpenSettingsFromNotification() {
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SELECTED);
+  if (OpenSettings()) {
+    WmShell::Get()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SHOW_SETTINGS);
+  }
+}
+
+// Returns the name of the currently connected external display whose ID is
+// |external_display_id|. This should not be used when the external display is
+// used for mirroring.
+base::string16 GetExternalDisplayName(int64_t external_display_id) {
+  DCHECK(!display::Display::IsInternalDisplayId(external_display_id));
+
+  display::DisplayManager* display_manager = GetDisplayManager();
+  DCHECK(!display_manager->IsInMirrorMode());
+
+  if (external_display_id == display::kInvalidDisplayId)
+    return l10n_util::GetStringUTF16(IDS_DISPLAY_NAME_UNKNOWN);
+
+  // The external display name may have an annotation of "(width x height)" in
+  // case that the display is rotated or its resolution is changed.
+  base::string16 name = GetDisplayName(external_display_id);
+  const display::ManagedDisplayInfo& display_info =
+      display_manager->GetDisplayInfo(external_display_id);
+  if (display_info.GetActiveRotation() != display::Display::ROTATE_0 ||
+      display_info.configured_ui_scale() != 1.0f ||
+      !display_info.overscan_insets_in_dip().IsEmpty()) {
+    name =
+        l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
+                                   name, GetDisplaySize(external_display_id));
+  } else if (display_info.overscan_insets_in_dip().IsEmpty() &&
+             display_info.has_overscan()) {
+    name = l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME, name,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION_OVERSCAN));
+  }
+
+  return name;
+}
+
+// Returns true if docked mode is currently enabled.
+bool IsDockedModeEnabled() {
+  display::DisplayManager* display_manager = GetDisplayManager();
+  if (!display::Display::HasInternalDisplay())
+    return false;
+
+  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
+    if (display::Display::IsInternalDisplayId(
+            display_manager->GetDisplayAt(i).id())) {
+      return false;
+    }
+  }
+
+  // We have an internal display but it's not one of the active displays.
+  return true;
+}
+
+// Returns the notification message that should be shown when mirror display
+// mode is entered.
+base::string16 GetEnterMirrorModeMessage() {
+  if (display::Display::HasInternalDisplay()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
+        GetDisplayName(GetDisplayManager()->mirroring_display_id()));
+  }
+
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL);
+}
+
+// Returns the notification message that should be shown when unified desktop
+// mode is entered.
+base::string16 GetEnterUnifiedModeMessage() {
+  return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED);
+}
+
+// Returns the notification message that should be shown when unified desktop
+// mode is exited.
+base::string16 GetExitUnifiedModeMessage() {
+  return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED_EXITING);
+}
+
+base::string16 GetDisplayRemovedMessage(
+    const display::ManagedDisplayInfo& removed_display_info,
+    base::string16* out_additional_message) {
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED,
+      base::UTF8ToUTF16(removed_display_info.name()));
+}
+
+base::string16 GetDisplayAddedMessage(int64_t added_display_id,
+                                      base::string16* additional_message_out) {
+  if (!display::Display::HasInternalDisplay()) {
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL);
+  }
+
+  return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
+                                    GetExternalDisplayName(added_display_id));
+}
+
+}  // namespace
+
+const char ScreenLayoutObserver::kNotificationId[] =
+    "chrome://settings/display";
+
+ScreenLayoutObserver::ScreenLayoutObserver() {
+  WmShell::Get()->AddDisplayObserver(this);
+  UpdateDisplayInfo(NULL);
+}
+
+ScreenLayoutObserver::~ScreenLayoutObserver() {
+  WmShell::Get()->RemoveDisplayObserver(this);
+}
+
+void ScreenLayoutObserver::UpdateDisplayInfo(
+    ScreenLayoutObserver::DisplayInfoMap* old_info) {
+  if (old_info)
+    old_info->swap(display_info_);
+  display_info_.clear();
+
+  display::DisplayManager* display_manager = GetDisplayManager();
+  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
+    int64_t id = display_manager->GetDisplayAt(i).id();
+    display_info_[id] = display_manager->GetDisplayInfo(id);
+  }
+}
+
+bool ScreenLayoutObserver::GetDisplayMessageForNotification(
+    const ScreenLayoutObserver::DisplayInfoMap& old_info,
+    base::string16* out_message,
+    base::string16* out_additional_message) {
+  if (old_display_mode_ != current_display_mode_) {
+    // Detect changes in the mirror mode status.
+    if (current_display_mode_ == DisplayMode::MIRRORING) {
+      *out_message = GetEnterMirrorModeMessage();
+      return true;
+    }
+    if (old_display_mode_ == DisplayMode::MIRRORING &&
+        GetExitMirrorModeMessage(out_message, out_additional_message)) {
+      return true;
+    }
+
+    // Detect changes in the unified mode status.
+    if (current_display_mode_ == DisplayMode::UNIFIED) {
+      *out_message = GetEnterUnifiedModeMessage();
+      return true;
+    }
+    if (old_display_mode_ == DisplayMode::UNIFIED) {
+      *out_message = GetExitUnifiedModeMessage();
+      return true;
+    }
+
+    if (current_display_mode_ == DisplayMode::DOCKED ||
+        old_display_mode_ == DisplayMode::DOCKED) {
+      // We no longer show any notification for docked mode events.
+      // crbug.com/674719.
+      return false;
+    }
+  }
+
+  // Displays are added or removed.
+  if (display_info_.size() < old_info.size()) {
+    // A display has been removed.
+    for (const auto& iter : old_info) {
+      if (display_info_.count(iter.first))
+        continue;
+
+      *out_message =
+          GetDisplayRemovedMessage(iter.second, out_additional_message);
+      return true;
+    }
+  } else if (display_info_.size() > old_info.size()) {
+    // A display has been added.
+    for (const auto& iter : display_info_) {
+      if (old_info.count(iter.first))
+        continue;
+
+      *out_message = GetDisplayAddedMessage(iter.first, out_additional_message);
+      return true;
+    }
+  }
+
+  for (const auto& iter : display_info_) {
+    DisplayInfoMap::const_iterator old_iter = old_info.find(iter.first);
+    if (old_iter == old_info.end()) {
+      // The display's number is same but different displays. This happens
+      // for the transition between docked mode and mirrored display.
+      // This condition can never be reached here, since it is handled above.
+      NOTREACHED() << "A display mode transition that should have been handled"
+                      "earlier.";
+      return false;
+    }
+
+    if (iter.second.configured_ui_scale() !=
+        old_iter->second.configured_ui_scale()) {
+      *out_additional_message = l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
+          GetDisplayName(iter.first), GetDisplaySize(iter.first));
+      return true;
+    }
+    if (iter.second.GetActiveRotation() !=
+        old_iter->second.GetActiveRotation()) {
+      int rotation_text_id = 0;
+      switch (iter.second.GetActiveRotation()) {
+        case display::Display::ROTATE_0:
+          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION;
+          break;
+        case display::Display::ROTATE_90:
+          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90;
+          break;
+        case display::Display::ROTATE_180:
+          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180;
+          break;
+        case display::Display::ROTATE_270:
+          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270;
+          break;
+      }
+      *out_additional_message = l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetDisplayName(iter.first),
+          l10n_util::GetStringUTF16(rotation_text_id));
+      return true;
+    }
+  }
+
+  // Found nothing special
+  return false;
+}
+
+void ScreenLayoutObserver::CreateOrUpdateNotification(
+    const base::string16& message,
+    const base::string16& additional_message) {
+  // Always remove the notification to make sure the notification appears
+  // as a popup in any situation.
+  message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
+                                                           false /* by_user */);
+
+  if (message.empty() && additional_message.empty())
+    return;
+
+  // Don't display notifications for accelerometer triggered screen rotations.
+  // See http://crbug.com/364949
+  if (Shell::GetInstance()
+          ->screen_orientation_controller()
+          ->ignore_display_configuration_updates()) {
+    return;
+  }
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  std::unique_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
+      additional_message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
+      base::string16(),  // display_source
+      GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 system_notifier::kNotifierDisplay),
+      message_center::RichNotificationData(),
+      new message_center::HandleNotificationClickedDelegate(
+          base::Bind(&OpenSettingsFromNotification))));
+
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DISPLAY_NOTIFICATION_CREATED);
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
+}
+
+void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
+  DisplayInfoMap old_info;
+  UpdateDisplayInfo(&old_info);
+
+  old_display_mode_ = current_display_mode_;
+  if (GetDisplayManager()->IsInMirrorMode())
+    current_display_mode_ = DisplayMode::MIRRORING;
+  else if (GetDisplayManager()->IsInUnifiedMode())
+    current_display_mode_ = DisplayMode::UNIFIED;
+  else if (IsDockedModeEnabled())
+    current_display_mode_ = DisplayMode::DOCKED;
+  else if (GetDisplayManager()->GetNumDisplays() > 2)
+    current_display_mode_ = DisplayMode::EXTENDED_3_PLUS;
+  else if (GetDisplayManager()->GetNumDisplays() == 2)
+    current_display_mode_ = DisplayMode::EXTENDED_2;
+  else
+    current_display_mode_ = DisplayMode::SINGLE;
+
+  if (!show_notifications_for_testing)
+    return;
+
+  base::string16 message;
+  base::string16 additional_message;
+  if (GetDisplayMessageForNotification(old_info, &message, &additional_message))
+    CreateOrUpdateNotification(message, additional_message);
+}
+
+bool ScreenLayoutObserver::GetExitMirrorModeMessage(
+    base::string16* out_message,
+    base::string16* out_additional_message) {
+  switch (current_display_mode_) {
+    case DisplayMode::EXTENDED_3_PLUS:
+      // Mirror mode was turned off due to having more than two displays.
+      // Show a message that mirror mode for 3+ displays is not supported.
+      *out_message =
+          l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED);
+      return true;
+
+    case DisplayMode::DOCKED:
+      // Handle disabling mirror mode as a result of going to docked mode
+      // when we only have a single display (this means we actually have two
+      // physical displays, one of which is the internal display, but they
+      // were in mirror mode, and hence considered as one. Closing the
+      // internal display disables mirror mode and we still have a single
+      // active display).
+      // Falls through.
+    case DisplayMode::SINGLE:
+      // We're exiting mirror mode because we removed one of the two
+      // displays.
+      *out_message =
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT);
+      return true;
+
+    default:
+      // Mirror mode was turned off; other messages should be shown e.g.
+      // extended mode is on, ... etc.
+      return false;
+  }
+}
+
+}  // namespace ash
