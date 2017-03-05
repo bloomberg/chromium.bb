@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"

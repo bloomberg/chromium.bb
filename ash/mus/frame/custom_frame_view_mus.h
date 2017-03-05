@@ -5,7 +5,7 @@
 #ifndef ASH_MUS_FRAME_CUSTOM_FRAME_VIEW_MUS_H_
 #define ASH_MUS_FRAME_CUSTOM_FRAME_VIEW_MUS_H_
 
-#include "ash/common/frame/custom_frame_view_ash.h"
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ui/compositor/paint_cache.h"
 
 namespace ash {

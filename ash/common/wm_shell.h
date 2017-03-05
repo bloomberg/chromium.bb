@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/metrics/gesture_action_type.h"
-#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/session/session_state_observer.h"
-#include "ash/common/wm/lock_state_observer.h"
+#include "ash/metrics/gesture_action_type.h"
+#include "ash/metrics/user_metrics_action.h"
+#include "ash/wm/lock_state_observer.h"
 #include "base/observer_list.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "ui/base/ui_base_types.h"

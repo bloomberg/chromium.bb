@@ -4,10 +4,10 @@
 
 #include "ash/system/date/date_default_view.h"
 
-#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/common/wm/window_resizer.h"
+#include "ash/wm/window_resizer.h"
 #include "base/macros.h"
 
 namespace ash {

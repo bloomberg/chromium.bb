@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 
-#include "ash/common/wm/screen_dimmer.h"
 #include "ash/shell.h"
+#include "ash/wm/screen_dimmer.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/manager/chromeos/display_configurator.h"

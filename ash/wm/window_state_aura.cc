@@ -4,9 +4,9 @@
 
 #include "ash/wm/window_state_aura.h"
 
-#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 

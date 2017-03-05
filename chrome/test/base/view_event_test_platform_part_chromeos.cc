@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "ash/common/test/test_session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/command_line.h"
 #include "base/macros.h"

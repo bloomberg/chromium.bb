@@ -4,9 +4,9 @@
 
 #include "ash/system/network/sms_observer.h"
 
-#include "ash/common/shelf/shelf_widget.h"
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/public/interfaces/vpn_list.mojom.h"
+#include "ash/shelf/shelf_widget.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"

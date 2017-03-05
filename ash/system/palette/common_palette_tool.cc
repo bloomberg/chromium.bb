@@ -4,8 +4,8 @@
 
 #include "ash/system/palette/common_palette_tool.h"
 
-#include "ash/common/shelf/shelf_constants.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/tray/hover_highlight_view.h"

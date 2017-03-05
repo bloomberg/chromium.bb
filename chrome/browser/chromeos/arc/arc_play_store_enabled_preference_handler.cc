@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 
-#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"

@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "ash/common/test/test_session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"

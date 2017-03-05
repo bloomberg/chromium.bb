@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "ash/common/wm/wm_window_animations.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/wm_window_animations.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"

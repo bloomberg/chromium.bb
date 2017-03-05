@@ -6,20 +6,20 @@
 
 #include <utility>
 
-#include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/common/cast_config_controller.h"
 #include "ash/common/media_controller.h"
 #include "ash/common/new_window_controller.h"
 #include "ash/common/session/session_controller.h"
-#include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shelf/shelf_controller.h"
 #include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/app_list/presenter/app_list.h"

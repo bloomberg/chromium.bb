@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/shelf/shelf_widget.h"
+#include "ash/shelf/shelf_widget.h"
 
-#include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_layout_manager.h"
-#include "ash/common/shelf/shelf_view.h"
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"

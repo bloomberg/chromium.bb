@@ -12,9 +12,8 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_layout_constants.h"
-#include "ash/common/frame/custom_frame_view_ash.h"
-#include "ash/common/wm/panels/panel_frame_view.h"
 #include "ash/common/wm_window.h"
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/mus/frame/custom_frame_view_mus.h"
 #include "ash/mus/frame/detached_title_area_renderer.h"
 #include "ash/mus/move_event_handler.h"
@@ -22,6 +21,7 @@
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_properties.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
+#include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_properties.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

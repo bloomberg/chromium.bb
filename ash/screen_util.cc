@@ -4,8 +4,8 @@
 
 #include "ash/screen_util.h"
 
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"

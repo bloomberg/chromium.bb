@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include "ash/common/wm/window_positioner.h"
 #include "ash/shell.h"
+#include "ash/wm/window_positioner.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"

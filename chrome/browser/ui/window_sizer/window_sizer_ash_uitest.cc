@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/shelf/shelf_view.h"
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_window.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/location.h"

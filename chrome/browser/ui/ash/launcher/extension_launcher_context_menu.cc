@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 
-#include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shelf/shelf_item_delegate.h"
 #include "base/bind.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"

@@ -5,8 +5,8 @@
 #ifndef ASH_MUS_TEST_ASH_TEST_IMPL_MUS_H_
 #define ASH_MUS_TEST_ASH_TEST_IMPL_MUS_H_
 
-#include "ash/common/test/ash_test_impl.h"
 #include "ash/mus/test/wm_test_base.h"
+#include "ash/test/ash_test_impl.h"
 #include "base/macros.h"
 
 namespace ash {

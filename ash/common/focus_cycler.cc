@@ -4,10 +4,10 @@
 
 #include "ash/common/focus_cycler.h"
 
-#include "ash/common/wm/mru_window_tracker.h"
-#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_state.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/widget/widget.h"

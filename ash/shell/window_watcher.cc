@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "ash/common/shelf/shelf_model.h"
-#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf_model.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
 #include "ash/wm/window_properties.h"

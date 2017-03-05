@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "ash/common/test/ash_test.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/test/ash_test.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"

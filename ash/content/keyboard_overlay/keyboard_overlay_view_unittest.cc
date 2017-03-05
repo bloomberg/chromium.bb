@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/common/accelerators/accelerator_table.h"
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/content/keyboard_overlay/keyboard_overlay_delegate.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/test/ash_test_base.h"

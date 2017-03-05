@@ -4,9 +4,9 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
-#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

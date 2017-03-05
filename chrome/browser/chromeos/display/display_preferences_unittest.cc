@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_util.h"
 #include "ash/display/json_converter.h"
@@ -19,6 +18,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"

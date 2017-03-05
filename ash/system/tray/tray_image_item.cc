@@ -4,8 +4,8 @@
 
 #include "ash/system/tray/tray_image_item.h"
 
-#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/wm_shelf_util.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"

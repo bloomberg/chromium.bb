@@ -35,9 +35,9 @@
 
 #if defined(USE_ASH)
 // Note: gn check complains here, despite the correct conditional //ash dep.
-#include "ash/common/shelf/shelf_item_types.h"    // nogncheck
 #include "ash/public/cpp/window_properties.h"     // nogncheck
 #include "ash/resources/grit/ash_resources.h"     // nogncheck
+#include "ash/shelf/shelf_item_types.h"    // nogncheck
 #include "ash/wm/window_util.h"                   // nogncheck
 #include "chrome/browser/ui/ash/ash_util.h"       // nogncheck
 #include "ui/aura/client/aura_constants.h"

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "ash/common/scoped_root_window_for_new_windows.h"
-#include "ash/common/wm/window_positioner.h"
-#include "ash/common/wm/window_resizer.h"
-#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_positioner.h"
+#include "ash/wm/window_resizer.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"

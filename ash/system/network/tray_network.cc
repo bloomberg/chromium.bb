@@ -4,9 +4,9 @@
 
 #include "ash/system/network/tray_network.h"
 
-#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shelf/wm_shelf_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"

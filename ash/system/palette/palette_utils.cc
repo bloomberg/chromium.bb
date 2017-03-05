@@ -5,9 +5,9 @@
 #include "ash/system/palette/palette_utils.h"
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "base/command_line.h"

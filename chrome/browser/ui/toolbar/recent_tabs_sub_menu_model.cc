@@ -46,7 +46,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/common/accelerators/accelerator_table.h"  // nogncheck
+#include "ash/accelerators/accelerator_table.h"  // nogncheck
 #endif  // defined(USE_ASH)
 
 namespace {

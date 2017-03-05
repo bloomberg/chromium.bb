@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "ash/common/keyboard/keyboard_ui.h"
-#include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/wm_shelf.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/base/l10n/l10n_util.h"

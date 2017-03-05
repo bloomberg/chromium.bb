@@ -6,11 +6,11 @@
 
 #include <memory>
 
-#include "ash/common/shelf/shelf_widget.h"
 #include "ash/display/display_util.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"

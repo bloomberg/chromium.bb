@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 
-#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"

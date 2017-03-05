@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "ash/common/wm/window_state.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"

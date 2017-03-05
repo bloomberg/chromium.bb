@@ -5,7 +5,7 @@
 #ifndef ASH_SHELL_CONTEXT_MENU_H_
 #define ASH_SHELL_CONTEXT_MENU_H_
 
-#include "ash/common/shelf/shelf_alignment_menu.h"
+#include "ash/shelf/shelf_alignment_menu.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 

@@ -4,8 +4,8 @@
 
 #include "ash/system/date/tray_system_info.h"
 
-#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shelf/wm_shelf_util.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/date/system_info_default_view.h"
 #include "ash/system/system_clock_observer.h"

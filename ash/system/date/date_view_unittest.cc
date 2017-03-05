@@ -4,7 +4,7 @@
 
 #include "ash/system/date/date_view.h"
 
-#include "ash/common/test/ash_test.h"
+#include "ash/test/ash_test.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {

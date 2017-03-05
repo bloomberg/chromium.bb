@@ -5,11 +5,11 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
