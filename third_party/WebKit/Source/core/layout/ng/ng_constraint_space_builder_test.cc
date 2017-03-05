@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_units.h"
 
 #include "core/layout/LayoutTestHelper.h"
 

@@ -14,7 +14,6 @@
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_text_fragment.h"
-#include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/text/BidiRunList.h"
 

@@ -107,8 +107,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   LayoutUnit width =
       container_size_.inline_size - left - margin_left - right - margin_right;
 
-  Optional<MinAndMaxContentSizes> estimated_inline;
-  MinAndMaxContentSizes minmax_60{LayoutUnit(60), LayoutUnit(60)};
+  Optional<MinMaxContentSize> estimated_inline;
+  MinMaxContentSize minmax_60{LayoutUnit(60), LayoutUnit(60)};
 
   style_->setBorderLeftWidth(border_left.toInt());
   style_->setBorderRightWidth(border_right.toInt());
@@ -430,7 +430,7 @@ TEST_F(NGAbsoluteUtilsTest, MinMax) {
 
   NGStaticPosition static_position{NGStaticPosition::kTopLeft,
                                    {LayoutUnit(), LayoutUnit()}};
-  MinAndMaxContentSizes estimated_inline{LayoutUnit(20), LayoutUnit(20)};
+  MinMaxContentSize estimated_inline{LayoutUnit(20), LayoutUnit(20)};
   NGAbsolutePhysicalPosition p;
 
   // WIDTH TESTS

@@ -106,7 +106,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   static_position.offset -= container_border_physical_offset_;
 
   // The inline and block estimates are in the descendant's writing mode.
-  Optional<MinAndMaxContentSizes> inline_estimate;
+  Optional<MinMaxContentSize> inline_estimate;
   Optional<LayoutUnit> block_estimate;
 
   RefPtr<NGLayoutResult> layout_result = nullptr;
@@ -114,7 +114,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
       FromPlatformWritingMode(descendant.Style().getWritingMode()));
 
   if (AbsoluteNeedsChildInlineSize(descendant.Style())) {
-    inline_estimate = descendant.ComputeMinAndMaxContentSizes();
+    inline_estimate = descendant.ComputeMinMaxContentSize();
   }
 
   NGAbsolutePhysicalPosition node_position =

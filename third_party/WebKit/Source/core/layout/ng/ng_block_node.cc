@@ -17,6 +17,7 @@
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_min_max_content_size.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -97,8 +98,8 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
   return layout_result;
 }
 
-MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
-  MinAndMaxContentSizes sizes;
+MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
+  MinMaxContentSize sizes;
   if (!CanUseNewLayout()) {
     DCHECK(layout_box_);
     // TODO(layout-ng): This could be somewhat optimized by directly calling
@@ -124,8 +125,8 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGBlockLayoutAlgorithm minmax_algorithm(this, constraint_space.get());
-  Optional<MinAndMaxContentSizes> maybe_sizes =
-      minmax_algorithm.ComputeMinAndMaxContentSizes();
+  Optional<MinMaxContentSize> maybe_sizes =
+      minmax_algorithm.ComputeMinMaxContentSize();
   if (maybe_sizes.has_value())
     return *maybe_sizes;
 

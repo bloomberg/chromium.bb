@@ -17,7 +17,6 @@
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_out_of_flow_layout_part.h"
-#include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/Optional.h"
@@ -313,9 +312,9 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       builder_(NGPhysicalFragment::kFragmentBox, node),
       space_builder_(constraint_space_) {}
 
-Optional<MinAndMaxContentSizes>
-NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes() const {
-  MinAndMaxContentSizes sizes;
+Optional<MinMaxContentSize> NGBlockLayoutAlgorithm::ComputeMinMaxContentSize()
+    const {
+  MinMaxContentSize sizes;
 
   // Size-contained elements don't consider their contents for intrinsic sizing.
   if (Style().containsSize())
@@ -324,7 +323,7 @@ NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes() const {
   // TODO: handle floats & orthogonal children.
   for (NGLayoutInputNode* node = node_->FirstChild(); node;
        node = node->NextSibling()) {
-    MinAndMaxContentSizes child_sizes;
+    MinMaxContentSize child_sizes;
     if (node->Type() == NGLayoutInputNode::kLegacyInline) {
       // From |NGBlockLayoutAlgorithm| perspective, we can handle |NGInlineNode|
       // almost the same as |NGBlockNode|, because an |NGInlineNode| includes
@@ -332,13 +331,12 @@ NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes() const {
       // an anonymous box that contains all line boxes.
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
-      child_sizes = toNGInlineNode(node)->ComputeMinAndMaxContentSizes();
+      child_sizes = toNGInlineNode(node)->ComputeMinMaxContentSize();
     } else {
-      Optional<MinAndMaxContentSizes> child_minmax;
+      Optional<MinMaxContentSize> child_minmax;
       NGBlockNode* block_child = toNGBlockNode(node);
-      if (NeedMinAndMaxContentSizesForContentContribution(
-              block_child->Style())) {
-        child_minmax = block_child->ComputeMinAndMaxContentSizes();
+      if (NeedMinMaxContentSizeForContentContribution(block_child->Style())) {
+        child_minmax = block_child->ComputeMinMaxContentSize();
       }
 
       child_sizes = ComputeMinAndMaxContentContribution(block_child->Style(),
@@ -378,9 +376,9 @@ void NGBlockLayoutAlgorithm::UpdateFragmentBfcOffset(
 }
 
 RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
-  WTF::Optional<MinAndMaxContentSizes> sizes;
-  if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style()))
-    sizes = ComputeMinAndMaxContentSizes();
+  WTF::Optional<MinMaxContentSize> sizes;
+  if (NeedMinMaxContentSize(ConstraintSpace(), Style()))
+    sizes = ComputeMinMaxContentSize();
 
   border_and_padding_ = ComputeBorders(ConstraintSpace(), Style()) +
                         ComputePadding(ConstraintSpace(), Style());
@@ -672,9 +670,9 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   DCHECK(child);
   const ComputedStyle& child_style = child->Style();
 
-  WTF::Optional<MinAndMaxContentSizes> sizes;
-  if (NeedMinAndMaxContentSizes(space, child_style))
-    sizes = child->ComputeMinAndMaxContentSizes();
+  WTF::Optional<MinMaxContentSize> sizes;
+  if (NeedMinMaxContentSize(space, child_style))
+    sizes = child->ComputeMinMaxContentSize();
 
   LayoutUnit child_inline_size =
       ComputeInlineSizeForFragment(space, child_style, sizes);

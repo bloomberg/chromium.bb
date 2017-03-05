@@ -5,11 +5,12 @@
 #ifndef NGLayoutOpportunityTreeNode_h
 #define NGLayoutOpportunityTreeNode_h
 
-#include "core/layout/ng/ng_units.h"
+#include "core/layout/ng/geometry/ng_edge.h"
+#include "core/layout/ng/geometry/ng_logical_rect.h"
+#include "core/layout/ng/ng_exclusion.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
-
 
 // 3 node R-Tree that represents available space(left, bottom, right) or
 // layout opportunity after the parent spatial rectangle is split by the
