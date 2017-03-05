@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/ui/accessibility_cursor_ring_layer.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
+#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"

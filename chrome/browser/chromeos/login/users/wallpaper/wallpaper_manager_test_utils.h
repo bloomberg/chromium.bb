@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/common/ash_constants.h"
+#include "ash/ash_constants.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {

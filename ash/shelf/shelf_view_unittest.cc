@@ -9,8 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_button.h"
@@ -34,6 +32,8 @@
 #include "ash/test/test_shelf_item_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

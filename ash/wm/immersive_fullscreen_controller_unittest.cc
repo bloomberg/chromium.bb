@@ -4,7 +4,6 @@
 
 #include "ash/shared/immersive_fullscreen_controller.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
@@ -15,6 +14,7 @@
 #include "ash/test/immersive_fullscreen_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm_shell.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"

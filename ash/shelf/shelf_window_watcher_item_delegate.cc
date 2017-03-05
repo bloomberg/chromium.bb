@@ -4,13 +4,13 @@
 
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
 

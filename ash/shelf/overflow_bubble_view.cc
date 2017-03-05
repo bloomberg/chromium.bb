@@ -6,11 +6,11 @@
 
 #include <algorithm>
 
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/wm_window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"

@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_STATUS_AREA_WIDGET_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/login_status.h"
+#include "ash/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "base/macros.h"

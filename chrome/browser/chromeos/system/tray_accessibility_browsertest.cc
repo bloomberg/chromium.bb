@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/accessibility_types.h"
-#include "ash/common/login_status.h"
+#include "ash/accessibility_types.h"
+#include "ash/login_status.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"

@@ -14,6 +14,6 @@ specific_include_rules = {
   # This is temporary rule before SessionStateDelegate(ChromeOS) can be fully
   # removed.
   "session_state_delegate_chromeos\.(cc|h)": [
-    "+ash/common/session",
+    "+ash/session",
   ]
 }

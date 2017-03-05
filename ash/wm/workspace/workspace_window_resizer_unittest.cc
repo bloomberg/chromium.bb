@@ -4,9 +4,7 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_constants.h"
@@ -20,6 +18,8 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

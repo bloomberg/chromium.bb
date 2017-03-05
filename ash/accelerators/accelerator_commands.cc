@@ -4,11 +4,11 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/metrics/user_metrics.h"
 
 namespace ash {

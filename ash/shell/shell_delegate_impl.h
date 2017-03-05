@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/shell_delegate.h"
+#include "ash/shell_delegate.h"
 #include "base/macros.h"
 
 namespace keyboard {

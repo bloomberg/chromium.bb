@@ -4,7 +4,7 @@
 
 #include "ash/system/power/power_status_view.h"
 
-#include "ash/common/material_design/material_design_controller.h"
+#include "ash/material_design/material_design_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/tray_power.h"

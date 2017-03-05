@@ -4,9 +4,7 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_switches.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -19,6 +17,8 @@
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/wm_screen_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"

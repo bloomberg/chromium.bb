@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "ash/common/shell_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell_delegate.h"
+#include "ash/wm_shell.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"

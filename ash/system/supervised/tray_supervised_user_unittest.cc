@@ -4,7 +4,7 @@
 
 #include "ash/system/supervised/tray_supervised_user.h"
 
-#include "ash/common/login_status.h"
+#include "ash/login_status.h"
 #include "ash/test/ash_test.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ui/message_center/message_center.h"

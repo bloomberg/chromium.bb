@@ -7,10 +7,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/common/ash_constants.h"
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_constants.h"
+#include "ash/material_design/material_design_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
@@ -35,6 +33,8 @@
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

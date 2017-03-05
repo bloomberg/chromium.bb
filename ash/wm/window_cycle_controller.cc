@@ -4,15 +4,15 @@
 
 #include "ash/wm/window_cycle_controller.h"
 
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/metrics/task_switch_source.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_cycle_event_filter.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace ash {

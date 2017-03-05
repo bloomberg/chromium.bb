@@ -4,8 +4,8 @@
 
 #include "ash/mus/disconnected_app_handler.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 

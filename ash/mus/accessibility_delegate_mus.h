@@ -5,7 +5,7 @@
 #ifndef ASH_MUS_ACCESSIBILITY_DELEGATE_MUS_H_
 #define ASH_MUS_ACCESSIBILITY_DELEGATE_MUS_H_
 
-#include "ash/common/default_accessibility_delegate.h"
+#include "ash/default_accessibility_delegate.h"
 #include "base/macros.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 

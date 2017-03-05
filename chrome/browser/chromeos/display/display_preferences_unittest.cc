@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/wm_shell.h"
 #include "ash/display/display_util.h"
 #include "ash/display/json_converter.h"
 #include "ash/display/resolution_notification_controller.h"
@@ -19,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"

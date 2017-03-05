@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "ash/common/shell_observer.h"
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"

@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/ash_switches.h"
+#include "ash/accessibility_delegate.h"
+#include "ash/ash_switches.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"

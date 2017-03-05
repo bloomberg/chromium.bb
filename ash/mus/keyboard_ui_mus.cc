@@ -4,7 +4,7 @@
 
 #include "ash/mus/keyboard_ui_mus.h"
 
-#include "ash/common/keyboard/keyboard_ui_observer.h"
+#include "ash/keyboard/keyboard_ui_observer.h"
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 

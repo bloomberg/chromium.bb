@@ -8,16 +8,16 @@
 #include <string>
 #include <utility>
 
+#include "ash/accessibility_delegate.h"
 #include "ash/cancel_mode.h"
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/shell_delegate.h"
-#include "ash/common/shutdown_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
+#include "ash/shutdown_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_animator_impl.h"
+#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"

@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_SPECIAL_POPUP_ROW_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/login_status.h"
+#include "ash/login_status.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"

@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_TEST_PALETTE_DELEGATE_H_
 #define ASH_TEST_TEST_PALETTE_DELEGATE_H_
 
-#include "ash/common/palette_delegate.h"
+#include "ash/palette_delegate.h"
 #include "base/macros.h"
 
 namespace ash {

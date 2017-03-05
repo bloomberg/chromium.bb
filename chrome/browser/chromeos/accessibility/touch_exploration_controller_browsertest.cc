@@ -4,11 +4,11 @@
 
 #include "ui/chromeos/touch_exploration_controller.h"
 
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/accessibility_types.h"
-#include "ash/common/wm_shell.h"
+#include "ash/accessibility_delegate.h"
+#include "ash/accessibility_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"

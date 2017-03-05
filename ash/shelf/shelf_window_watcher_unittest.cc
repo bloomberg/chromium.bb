@@ -4,17 +4,17 @@
 
 #include "ash/shelf/shelf_window_watcher.h"
 
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
 

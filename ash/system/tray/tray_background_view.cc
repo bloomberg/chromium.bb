@@ -6,10 +6,8 @@
 
 #include <algorithm>
 
-#include "ash/common/ash_constants.h"
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_constants.h"
+#include "ash/material_design/material_design_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shelf/shelf_constants.h"
@@ -18,6 +16,8 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/nine_image_painter_factory.h"

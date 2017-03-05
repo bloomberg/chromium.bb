@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"

@@ -6,7 +6,7 @@
 cr.exportPath('settings');
 
 /**
- * Mirrors DeviceType from ash/common/system/chromeos/power/power_status.h.
+ * Mirrors DeviceType from ash/system/power/power_status.h.
  * @enum {number}
  */
 settings.PowerDeviceType = {

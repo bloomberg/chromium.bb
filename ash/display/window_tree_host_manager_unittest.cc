@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/wm_window.h"
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_widget.h"
@@ -20,6 +19,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"

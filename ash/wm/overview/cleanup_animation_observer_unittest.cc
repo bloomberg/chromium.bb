@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "ash/common/wm_window.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_delegate.h"
+#include "ash/wm_window.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

@@ -4,7 +4,6 @@
 
 #include "ash/wm/panels/panel_window_resizer.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -13,6 +12,7 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_parenting_utils.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display.h"

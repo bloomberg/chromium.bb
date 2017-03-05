@@ -4,12 +4,10 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_state.h"
@@ -20,6 +18,8 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"

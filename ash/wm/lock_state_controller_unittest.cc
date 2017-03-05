@@ -7,10 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shutdown_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shutdown_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/lock_state_controller_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
@@ -20,6 +19,7 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
+#include "ash/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"

@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm_shell.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/wm_shell.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

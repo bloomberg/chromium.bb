@@ -8,7 +8,7 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/common/key_event_watcher.h"
+#include "ash/key_event_watcher.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {

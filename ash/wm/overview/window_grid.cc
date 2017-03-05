@@ -10,8 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -25,6 +24,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_screen_util.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/ptr_util.h"

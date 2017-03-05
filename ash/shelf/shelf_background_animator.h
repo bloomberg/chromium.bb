@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/wm_shelf_observer.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "third_party/skia/include/core/SkColor.h"

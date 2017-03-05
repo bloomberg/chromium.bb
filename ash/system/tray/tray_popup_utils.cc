@@ -7,15 +7,15 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/common/ash_constants.h"
-#include "ash/common/ash_view_ids.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/ash_constants.h"
+#include "ash/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
+#include "ash/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"

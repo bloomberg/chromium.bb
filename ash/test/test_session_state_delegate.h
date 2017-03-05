@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"

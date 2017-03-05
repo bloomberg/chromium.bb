@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_CHROMEOS_H_
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

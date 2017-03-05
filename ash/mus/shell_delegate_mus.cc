@@ -6,15 +6,15 @@
 
 #include <utility>
 
-#include "ash/common/gpu_support_stub.h"
-#include "ash/common/palette_delegate.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/gpu_support_stub.h"
 #include "ash/mus/accessibility_delegate_mus.h"
 #include "ash/mus/context_menu_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
 #include "ash/mus/system_tray_delegate_mus.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
+#include "ash/palette_delegate.h"
+#include "ash/session/session_state_delegate.h"
+#include "ash/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

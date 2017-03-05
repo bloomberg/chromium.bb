@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm_shell.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"

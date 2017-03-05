@@ -4,13 +4,13 @@
 
 #include "ash/shell/shell_delegate_impl.h"
 
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/default_accessibility_delegate.h"
-#include "ash/common/gpu_support_stub.h"
-#include "ash/common/palette_delegate.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/accessibility_delegate.h"
+#include "ash/default_accessibility_delegate.h"
 #include "ash/default_wallpaper_delegate.h"
+#include "ash/gpu_support_stub.h"
+#include "ash/palette_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"

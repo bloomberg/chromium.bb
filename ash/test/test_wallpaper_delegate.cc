@@ -4,8 +4,8 @@
 
 #include "ash/test/test_wallpaper_delegate.h"
 
-#include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm_shell.h"
 
 namespace ash {
 namespace test {

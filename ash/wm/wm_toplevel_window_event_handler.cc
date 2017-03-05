@@ -4,12 +4,12 @@
 
 #include "ash/wm/wm_toplevel_window_event_handler.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"

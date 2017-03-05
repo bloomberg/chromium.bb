@@ -5,7 +5,7 @@
 #ifndef ASH_WM_PANELS_ATTACHED_PANEL_WINDOW_TARGETER_H_
 #define ASH_WM_PANELS_ATTACHED_PANEL_WINDOW_TARGETER_H_
 
-#include "ash/common/shell_observer.h"
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 

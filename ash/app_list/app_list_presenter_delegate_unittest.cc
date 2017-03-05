@@ -4,13 +4,13 @@
 
 #include <memory>
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/macros.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/test/test_windows.h"

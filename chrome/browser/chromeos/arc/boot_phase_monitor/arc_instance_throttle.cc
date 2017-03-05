@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/shared/app_types.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

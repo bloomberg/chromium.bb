@@ -7,12 +7,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/common/key_event_watcher.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shell_delegate.h"
-#include "ash/common/shell_observer.h"
-#include "ash/common/wallpaper/wallpaper_delegate.h"
-#include "ash/common/wm_window.h"
+#include "ash/key_event_watcher.h"
 #include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
 #include "ash/mus/accelerators/accelerator_controller_registrar.h"
 #include "ash/mus/bridge/immersive_handler_factory_mus.h"
@@ -23,16 +18,21 @@
 #include "ash/mus/window_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_init_params.h"
+#include "ash/shell_observer.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_cycle_event_filter.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -49,7 +49,7 @@ namespace mus {
 
 namespace {
 
-// TODO(jamescook): After ShellDelegate is ported to ash/common use
+// TODO(jamescook): After ShellDelegate works with mus switching to using
 // ShellDelegate::CreateSessionStateDelegate() to construct the mus version
 // of SessionStateDelegate.
 class SessionStateDelegateStub : public SessionStateDelegate {

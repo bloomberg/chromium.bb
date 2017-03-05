@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/focus_cycler.h"
+#include "ash/focus_cycler.h"
 
 #include <memory>
 
-#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/system/status_area_widget.h"
@@ -15,6 +14,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

@@ -4,8 +4,8 @@
 
 #include "ash/test/test_shelf_item_delegate.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_window.h"
 
 namespace ash {
 namespace test {

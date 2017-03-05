@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/new_window_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/new_window_controller.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"

@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "ash/common/new_window_controller.h"
-#include "ash/common/shell_delegate.h"
-#include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/new_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm_shell.h"
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"

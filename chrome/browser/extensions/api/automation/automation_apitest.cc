@@ -34,7 +34,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/wm_shell.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #endif
 

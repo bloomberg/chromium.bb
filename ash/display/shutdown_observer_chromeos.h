@@ -5,7 +5,7 @@
 #ifndef ASH_DISPLAY_SHUTDOWN_OBSERVER_CHROMEOS_H_
 #define ASH_DISPLAY_SHUTDOWN_OBSERVER_CHROMEOS_H_
 
-#include "ash/common/shell_observer.h"
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 
 namespace display {

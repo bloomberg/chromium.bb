@@ -4,9 +4,9 @@
 
 #include "ash/wm/drag_details.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"

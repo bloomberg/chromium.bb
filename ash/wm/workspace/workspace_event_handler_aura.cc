@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
 
-#include "ash/common/wm_window.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 

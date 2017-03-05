@@ -4,8 +4,6 @@
 
 #include "ash/shelf/shelf_widget.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -17,6 +15,8 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/events/event_utils.h"

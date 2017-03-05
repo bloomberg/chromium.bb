@@ -6,14 +6,14 @@
 
 #include <utility>
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 

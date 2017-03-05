@@ -10,17 +10,7 @@ include_rules = [
   "+services/service_manager/public",
   "+services/tracing/public",
 ]
-# Shelf code is being moved into //ash/common. Please ask jamescook@ or msw@
-# before adding items here. http://crbug.com/615155
 specific_include_rules = {
-  "root_window_controller.cc": [
-    "+ash/shelf/shelf_layout_manager.h",
-  ],
-  "shelf_delegate_mus.cc": [
-    "+ash/shelf/shelf.h",
-    "+ash/shelf/shelf_widget.h",
-  ],
-
   "app_launch_unittest.cc": [
     "+mash/quick_launch/public",
   ],

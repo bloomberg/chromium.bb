@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/spoken_feedback_toggler.h"
-#include "ash/common/accessibility_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/accessibility_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"

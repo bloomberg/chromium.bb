@@ -6,10 +6,10 @@
 
 #include <utility>
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm_shell.h"
+#include "ash/ash_switches.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"

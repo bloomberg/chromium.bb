@@ -7,10 +7,10 @@
 #include <algorithm>
 
 #include "ash/animation/animation_change_type.h"
-#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
 

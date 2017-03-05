@@ -4,10 +4,10 @@
 
 #include "ash/wm/workspace/workspace_event_handler.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 

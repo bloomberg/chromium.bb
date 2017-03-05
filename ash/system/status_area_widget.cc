@@ -4,9 +4,7 @@
 
 #include "ash/system/status_area_widget.h"
 
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/material_design/material_design_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
@@ -20,6 +18,8 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/i18n/time_formatting.h"
 #include "ui/display/display.h"
 #include "ui/native_theme/native_theme_dark_aura.h"

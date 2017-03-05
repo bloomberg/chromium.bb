@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "ash/common/ash_switches.h"
+#include "ash/ash_switches.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"

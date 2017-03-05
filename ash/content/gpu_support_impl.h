@@ -5,8 +5,8 @@
 #ifndef ASH_CONTENT_GPU_SUPPORT_IMPL_H_
 #define ASH_CONTENT_GPU_SUPPORT_IMPL_H_
 
-#include "ash/common/gpu_support.h"
 #include "ash/content/ash_with_content_export.h"
+#include "ash/gpu_support.h"
 #include "base/macros.h"
 
 namespace ash {

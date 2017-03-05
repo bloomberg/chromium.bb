@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 
-#include "ash/common/accessibility_types.h"
+#include "ash/accessibility_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
 class Profile;

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/wallpaper/arc_wallpaper_service.h"
 
-#include "ash/common/wallpaper/wallpaper_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm_shell.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"

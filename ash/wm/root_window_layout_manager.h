@@ -5,7 +5,7 @@
 #ifndef ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 #define ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 
-#include "ash/common/wm_layout_manager.h"
+#include "ash/wm_layout_manager.h"
 #include "base/macros.h"
 
 namespace ash {

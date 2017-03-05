@@ -12,7 +12,7 @@
 #include "ui/views/focus/focus_manager.h"
 
 #if defined(USE_ASH)
-#include "ash/common/ash_switches.h"
+#include "ash/ash_switches.h"
 #endif
 
 #if defined(USE_AURA)

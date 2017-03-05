@@ -5,8 +5,6 @@
 #include "ash/test/ash_test_helper.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
@@ -21,6 +19,8 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/wm_shell_test_api.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"

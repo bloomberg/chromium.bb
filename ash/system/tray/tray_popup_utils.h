@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/common/login_status.h"
+#include "ash/login_status.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_ink_drop_style.h"
 #include "ash/system/tray/tri_view.h"

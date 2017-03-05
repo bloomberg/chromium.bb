@@ -7,8 +7,8 @@
 
 #include <set>
 
-#include "ash/common/accessibility_types.h"
-#include "ash/common/shell_observer.h"
+#include "ash/accessibility_types.h"
+#include "ash/shell_observer.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"

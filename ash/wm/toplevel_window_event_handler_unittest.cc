@@ -4,7 +4,6 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -16,6 +15,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/wm_shell.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"

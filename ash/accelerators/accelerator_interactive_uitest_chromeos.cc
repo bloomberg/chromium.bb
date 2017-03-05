@@ -4,9 +4,8 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
-#include "ash/common/shell_observer.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "ash/shell_observer.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -15,6 +14,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
 #include "base/run_loop.h"
 #include "base/test/user_action_tester.cc"
 #include "chromeos/network/network_handler.h"

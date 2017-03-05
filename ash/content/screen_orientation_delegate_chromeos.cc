@@ -4,9 +4,9 @@
 
 #include "ash/content/screen_orientation_delegate_chromeos.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
+#include "ash/wm_window.h"
 #include "content/public/browser/web_contents.h"
 
 namespace ash {

@@ -4,9 +4,9 @@
 
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
 
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 

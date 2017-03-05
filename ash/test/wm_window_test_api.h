@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_WM_WINDOW_TEST_API_H_
 #define ASH_TEST_WM_WINDOW_TEST_API_H_
 
-#include "ash/common/wm_window.h"
+#include "ash/wm_window.h"
 
 namespace ash {
 

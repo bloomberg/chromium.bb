@@ -6,14 +6,14 @@
 
 #include <utility>
 
-#include "ash/common/shell_observer.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell_observer.h"
 #include "ash/test/test_shelf_item_delegate.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 

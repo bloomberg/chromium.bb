@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/system_menu_button.h"
 
-#include "ash/common/ash_constants.h"
+#include "ash/ash_constants.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"

@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "ash/common/wallpaper/wallpaper_controller_observer.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/macros.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/arc/arc_service.h"

@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm_display_observer.h"
 #include "ash/wm/wm_types.h"
+#include "ash/wm_display_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"

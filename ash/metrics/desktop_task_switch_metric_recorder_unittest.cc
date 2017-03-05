@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm_shell.h"
 #include "base/test/user_action_tester.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"

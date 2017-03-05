@@ -4,12 +4,10 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/metrics/pointer_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model.h"
@@ -19,6 +17,8 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"

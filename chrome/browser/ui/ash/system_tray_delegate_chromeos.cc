@@ -13,9 +13,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/login_status.h"
-#include "ash/common/shell_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/login_status.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
@@ -25,6 +24,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/user/user_observer.h"
+#include "ash/wm_shell.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"

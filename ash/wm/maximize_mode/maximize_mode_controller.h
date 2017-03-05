@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/shell_observer.h"
-#include "ash/common/wm_display_observer.h"
 #include "ash/public/interfaces/touch_view.mojom.h"
+#include "ash/shell_observer.h"
+#include "ash/wm_display_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"

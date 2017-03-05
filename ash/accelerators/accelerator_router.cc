@@ -5,9 +5,9 @@
 #include "ash/accelerators/accelerator_router.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/base/accelerators/accelerator.h"

@@ -4,8 +4,8 @@
 
 #include "ash/display/cursor_window_controller.h"
 
-#include "ash/common/ash_constants.h"
-#include "ash/common/ash_switches.h"
+#include "ash/ash_constants.h"
+#include "ash/ash_switches.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"

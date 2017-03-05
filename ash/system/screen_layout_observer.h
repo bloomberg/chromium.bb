@@ -10,7 +10,7 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm_display_observer.h"
+#include "ash/wm_display_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/display/manager/managed_display_info.h"

@@ -4,15 +4,15 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm_shell.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"

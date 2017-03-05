@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_locking_manager.h"
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/test/ash_test_base.h"
 

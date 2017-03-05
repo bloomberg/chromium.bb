@@ -4,9 +4,9 @@
 
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm_shell.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {

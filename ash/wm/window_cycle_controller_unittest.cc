@@ -7,12 +7,10 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/common/focus_cycler.h"
-#include "ash/common/scoped_root_window_for_new_windows.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/focus_cycler.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/scoped_root_window_for_new_windows.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
@@ -26,6 +24,8 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"

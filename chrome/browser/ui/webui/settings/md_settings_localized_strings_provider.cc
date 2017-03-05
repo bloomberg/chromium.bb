@@ -33,7 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/ash_switches.h"
+#include "ash/ash_switches.h"
 #include "ash/system/devicetype_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/common/shell_observer.h"
+#include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/language_preferences.h"

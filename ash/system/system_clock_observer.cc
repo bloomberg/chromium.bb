@@ -4,8 +4,8 @@
 
 #include "ash/system/system_clock_observer.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm_shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace ash {

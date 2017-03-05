@@ -4,14 +4,14 @@
 
 #include "ash/test/ash_test.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_impl.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "ui/compositor/layer_type.h"

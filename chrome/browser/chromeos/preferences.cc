@@ -6,11 +6,11 @@
 
 #include <vector>
 
+#include "ash/accessibility_types.h"
+#include "ash/ash_constants.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/common/accessibility_types.h"
-#include "ash/common/ash_constants.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "ash/wm_shell.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"

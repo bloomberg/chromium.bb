@@ -9,12 +9,10 @@
 #include <vector>
 
 #include "ash/animation/animation_change_type.h"
-#include "ash/common/session/session_controller.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
@@ -24,6 +22,8 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_screen_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"

@@ -4,8 +4,8 @@
 
 #include "ash/mus/shelf_delegate_mus.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_controller.h"
+#include "ash/wm_shell.h"
 #include "base/strings/string_util.h"
 
 namespace ash {

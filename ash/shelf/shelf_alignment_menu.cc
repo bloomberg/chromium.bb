@@ -4,11 +4,11 @@
 
 #include "ash/shelf/shelf_alignment_menu.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm_shell.h"
 
 namespace ash {
 

@@ -4,12 +4,12 @@
 
 #include "ash/wm/window_positioner.h"
 
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_screen_util.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/common/shell_observer.h"
+#include "ash/shell_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"

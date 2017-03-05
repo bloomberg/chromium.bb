@@ -5,7 +5,7 @@
 #ifndef ASH_MUS_WALLPAPER_DELEGATE_MUS_H_
 #define ASH_MUS_WALLPAPER_DELEGATE_MUS_H_
 
-#include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/wallpaper/wallpaper_delegate.h"
 #include "base/macros.h"
 
 namespace ash {

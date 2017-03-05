@@ -4,7 +4,7 @@
 
 #include "ash/wm/window_parenting_utils.h"
 
-#include "ash/common/wm_window.h"
+#include "ash/wm_window.h"
 
 namespace ash {
 namespace wm {

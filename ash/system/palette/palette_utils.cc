@@ -4,12 +4,12 @@
 
 #include "ash/system/palette/palette_utils.h"
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/ash_switches.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm_shell.h"
+#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"

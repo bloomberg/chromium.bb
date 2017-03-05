@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/login_status.h"
+#include "ash/login_status.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"

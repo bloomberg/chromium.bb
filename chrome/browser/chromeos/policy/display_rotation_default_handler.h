@@ -10,8 +10,8 @@
 #include <memory>
 #include <set>
 
-#include "ash/common/shell_observer.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "ui/display/display.h"
