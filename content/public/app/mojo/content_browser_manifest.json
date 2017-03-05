@@ -62,8 +62,7 @@
         ],
         "shape_detection": [
           "barcode_detection",
-          "face_detection",
-          "text_detection"
+          "face_detection"
         ]
       }
     },
