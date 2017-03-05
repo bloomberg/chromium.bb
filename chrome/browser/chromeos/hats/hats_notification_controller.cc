@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"

@@ -4,8 +4,8 @@
 
 #include "ash/magnifier/partial_magnification_controller.h"
 
-#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/shell.h"
+#include "ash/system/palette/palette_utils.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"

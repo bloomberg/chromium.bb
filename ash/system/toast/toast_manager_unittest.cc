@@ -4,10 +4,10 @@
 
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "ash/system/toast/toast_manager.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"

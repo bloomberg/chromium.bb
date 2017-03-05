@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "ash/common/system/chromeos/network/network_icon.h"
-#include "ash/common/system/chromeos/network/network_icon_animation.h"
+#include "ash/system/network/network_icon.h"
+#include "ash/system/network/network_icon_animation.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"

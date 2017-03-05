@@ -4,7 +4,7 @@
 
 #include "chrome/browser/notifications/system_component_notifier_source_chromeos.h"
 
-#include "ash/common/system/system_notifier.h"
+#include "ash/system/system_notifier.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/grit/theme_resources.h"

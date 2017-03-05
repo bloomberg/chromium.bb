@@ -8,10 +8,10 @@
 
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/system/status_area_widget.h"
-#include "ash/common/system/status_area_widget_delegate.h"
-#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm_shell.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_delegate.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/window_util.h"

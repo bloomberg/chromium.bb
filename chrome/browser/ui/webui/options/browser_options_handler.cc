@@ -119,8 +119,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/accessibility_types.h"  // nogncheck
-#include "ash/common/system/chromeos/devicetype_utils.h"  // nogncheck
 #include "ash/shell.h"  // nogncheck
+#include "ash/system/devicetype_utils.h"  // nogncheck
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"

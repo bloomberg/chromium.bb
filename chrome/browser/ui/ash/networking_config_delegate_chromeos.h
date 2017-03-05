@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/common/system/networking_config_delegate.h"
+#include "ash/system/networking_config_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_context.h"

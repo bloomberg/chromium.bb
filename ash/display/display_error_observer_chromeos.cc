@@ -4,9 +4,9 @@
 
 #include "ash/display/display_error_observer_chromeos.h"
 
-#include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/display/display_util.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/devicetype_utils.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 

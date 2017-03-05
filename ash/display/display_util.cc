@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/common/new_window_controller.h"
-#include "ash/common/system/system_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/null_mouse_warp_controller.h"
@@ -17,6 +16,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/system_notifier.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/common/system/chromeos/devicetype_utils.h"
+#include "ash/system/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/i18n/timezone.h"
 #include "base/json/json_reader.h"

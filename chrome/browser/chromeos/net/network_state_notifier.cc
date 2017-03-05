@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/net/network_state_notifier.h"
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string16.h"

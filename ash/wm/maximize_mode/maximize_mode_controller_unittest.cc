@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/test/simple_test_tick_clock.h"

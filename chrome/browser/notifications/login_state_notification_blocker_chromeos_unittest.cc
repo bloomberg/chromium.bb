@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/macros.h"

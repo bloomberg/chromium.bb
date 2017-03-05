@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/chromeos/cast/tray_cast.h"
+#include "ash/system/cast/tray_cast.h"
 #include "base/macros.h"
 
 namespace ash {

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 
-#include "ash/common/system/chromeos/devicetype_utils.h"
+#include "ash/system/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/guid.h"

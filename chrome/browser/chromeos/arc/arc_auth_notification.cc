@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/common/system/chromeos/devicetype_utils.h"
+#include "ash/system/devicetype_utils.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"

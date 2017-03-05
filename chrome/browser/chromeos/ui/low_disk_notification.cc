@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "ash/common/system/system_notifier.h"
+#include "ash/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"

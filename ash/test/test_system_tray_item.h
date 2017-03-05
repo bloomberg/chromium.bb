@@ -5,7 +5,7 @@
 #ifndef ASH_COMMON_SYSTEM_TRAY_TEST_TEST_SYSTEM_TRAY_ITEM_H_
 #define ASH_COMMON_SYSTEM_TRAY_TEST_TEST_SYSTEM_TRAY_ITEM_H_
 
-#include "ash/common/system/tray/system_tray_item.h"
+#include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
 namespace test {

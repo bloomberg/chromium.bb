@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "ash/common/mojo_interface_factory.h"
-#include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/wm_shell.h"
 #include "ash/mus/network_connect_delegate_mus.h"
 #include "ash/mus/window_manager.h"
+#include "ash/system/power/power_status.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"

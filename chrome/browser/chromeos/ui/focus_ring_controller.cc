@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 
-#include "ash/common/system/tray/actionable_view.h"
-#include "ash/common/system/tray/tray_background_view.h"
-#include "ash/common/system/tray/tray_popup_header_button.h"
+#include "ash/system/tray/actionable_view.h"
+#include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 #include "ui/aura/window.h"

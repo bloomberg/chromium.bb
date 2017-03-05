@@ -5,9 +5,9 @@
 #include <string>
 
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

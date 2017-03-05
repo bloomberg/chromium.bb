@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
-#include "ash/common/system/system_notifier.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/system_notifier.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"

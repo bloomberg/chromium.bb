@@ -44,8 +44,8 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/palette/palette_utils.h"
-#include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/system/palette/palette_utils.h"
+#include "ash/system/power/power_status.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/ash/ash_util.h"
