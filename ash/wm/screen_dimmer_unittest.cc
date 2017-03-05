@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/screen_dimmer.h"
+#include "ash/common/wm/screen_dimmer.h"
 
 #include <memory>
 
+#include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_user_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/window_dimmer.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/compositor/layer.h"

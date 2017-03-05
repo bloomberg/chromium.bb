@@ -4,12 +4,12 @@
 
 #include "ash/first_run/first_run_helper_impl.h"
 
+#include "ash/common/shelf/app_list_button.h"
+#include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shelf/app_list_button.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/logging.h"

@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/root_window_transformers.h"

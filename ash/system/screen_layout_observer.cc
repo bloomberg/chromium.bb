@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
-#include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"

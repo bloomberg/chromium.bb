@@ -7,12 +7,12 @@
 #include <limits>
 #include <vector>
 
+#include "ash/common/shelf/shelf_delegate.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/resources/grit/ash_resources.h"
-#include "ash/shelf/shelf_delegate.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"

@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/common/shelf/shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
-#include "ash/shelf/shelf_item_delegate.h"
-#include "ash/shelf/shelf_item_types.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"

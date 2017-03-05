@@ -4,6 +4,8 @@
 
 #include "ash/mus/top_level_window_factory.h"
 
+#include "ash/common/wm/container_finder.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/mus/disconnected_app_handler.h"
@@ -14,8 +16,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
-#include "ash/wm/container_finder.h"
-#include "ash/wm/window_state.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"

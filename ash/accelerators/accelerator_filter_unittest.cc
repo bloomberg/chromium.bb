@@ -6,16 +6,16 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_delegate.h"
+#include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/test/test_session_state_delegate.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_screenshot_delegate.h"
-#include "ash/test/test_session_state_delegate.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

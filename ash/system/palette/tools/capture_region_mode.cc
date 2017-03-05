@@ -4,7 +4,7 @@
 
 #include "ash/system/palette/tools/capture_region_mode.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"

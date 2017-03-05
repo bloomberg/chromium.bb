@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_action.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"

@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -15,9 +18,6 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/wm_shelf.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"

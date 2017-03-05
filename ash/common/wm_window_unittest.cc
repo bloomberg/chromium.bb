@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/test/ash_test.h"
+#include "ash/common/test/ash_test.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 

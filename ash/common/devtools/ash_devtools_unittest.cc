@@ -4,10 +4,10 @@
 
 #include "ash/common/devtools/ash_devtools_css_agent.h"
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
+#include "ash/common/test/ash_test.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
-#include "ash/test/ash_test.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/display.h"

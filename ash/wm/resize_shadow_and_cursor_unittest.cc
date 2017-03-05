@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "ash/common/ash_constants.h"
-#include "ash/frame/custom_frame_view_ash.h"
+#include "ash/common/frame/custom_frame_view_ash.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/bind.h"
 #include "ui/aura/window_event_dispatcher.h"

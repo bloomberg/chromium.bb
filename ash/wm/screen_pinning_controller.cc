@@ -7,14 +7,14 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/wm/container_finder.h"
+#include "ash/common/wm/window_dimmer.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_user_data.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/wm/container_finder.h"
-#include "ash/wm/window_dimmer.h"
-#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

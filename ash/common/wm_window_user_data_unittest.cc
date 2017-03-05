@@ -6,10 +6,10 @@
 
 #include <memory>
 
+#include "ash/common/test/ash_test.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_user_data.h"
-#include "ash/test/ash_test.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {

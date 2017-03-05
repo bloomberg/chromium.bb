@@ -6,8 +6,8 @@
 
 #include <limits>
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_router.h"
+#include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_router.h"
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/window_manager.h"

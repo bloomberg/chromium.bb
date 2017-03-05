@@ -5,8 +5,8 @@
 #include "ash/system/tray/tray_item_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/wm_shelf_util.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"

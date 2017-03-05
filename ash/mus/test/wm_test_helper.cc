@@ -4,13 +4,13 @@
 
 #include "ash/mus/test/wm_test_helper.h"
 
+#include "ash/common/test/wm_shell_test_api.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/test/wm_shell_test_api.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"

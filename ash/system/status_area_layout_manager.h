@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_STATUS_AREA_LAYOUT_MANAGER_H_
 #define ASH_SYSTEM_STATUS_AREA_LAYOUT_MANAGER_H_
 
-#include "ash/wm/wm_snap_to_pixel_layout_manager.h"
+#include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "base/macros.h"
 
 namespace ash {

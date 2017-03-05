@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"

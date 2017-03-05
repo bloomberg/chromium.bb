@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/ash_util.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/mojo_interface_factory.h"
 #include "ash/common/wm_shell.h"
 #include "base/macros.h"

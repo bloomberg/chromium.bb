@@ -4,8 +4,9 @@
 
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/status_area_widget.h"
@@ -13,7 +14,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"

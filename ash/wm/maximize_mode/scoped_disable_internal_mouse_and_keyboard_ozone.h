@@ -5,7 +5,7 @@
 #ifndef ASH_WM_MAXIMIZE_MODE_SCOPED_DISABLE_INTERNAL_MOUSE_AND_KEYBOARD_OZONE_H_
 #define ASH_WM_MAXIMIZE_MODE_SCOPED_DISABLE_INTERNAL_MOUSE_AND_KEYBOARD_OZONE_H_
 
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/macros.h"
 
 namespace ash {

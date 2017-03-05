@@ -4,8 +4,8 @@
 
 #include "ash/system/update/tray_update.h"
 
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/user_metrics_action.h"
 #include "ash/public/interfaces/update.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"

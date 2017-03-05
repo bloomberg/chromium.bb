@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 
 #include <math.h>
 #include <utility>
 #include <vector>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/test/test_system_tray_delegate.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm/overview/window_selector_controller.h"
 #include "base/command_line.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/user_action_tester.h"

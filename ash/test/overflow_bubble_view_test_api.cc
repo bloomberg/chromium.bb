@@ -4,7 +4,7 @@
 
 #include "ash/test/overflow_bubble_view_test_api.h"
 
-#include "ash/shelf/overflow_bubble_view.h"
+#include "ash/common/shelf/overflow_bubble_view.h"
 
 namespace ash {
 namespace test {

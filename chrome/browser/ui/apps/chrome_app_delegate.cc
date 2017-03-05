@@ -41,7 +41,7 @@
 #include "printing/features/features.h"
 
 #if defined(USE_ASH)
-#include "ash/shelf/shelf_constants.h"  // nogncheck
+#include "ash/common/shelf/shelf_constants.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)

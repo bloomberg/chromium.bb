@@ -5,7 +5,7 @@
 #ifndef ASH_WM_WINDOW_CYCLE_EVENT_FILTER_AURA_H_
 #define ASH_WM_WINDOW_CYCLE_EVENT_FILTER_AURA_H_
 
-#include "ash/wm/window_cycle_event_filter.h"
+#include "ash/common/wm/window_cycle_event_filter.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/events/event_handler.h"

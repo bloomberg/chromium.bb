@@ -4,9 +4,10 @@
 
 #include "ash/wm/power_button_controller.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -14,7 +15,6 @@
 #include "ash/system/power/tablet_power_button_controller.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/command_line.h"
 #include "chromeos/audio/cras_audio_handler.h"

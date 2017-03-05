@@ -4,8 +4,8 @@
 
 #include "ash/wm/window_mirror_view.h"
 
+#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
