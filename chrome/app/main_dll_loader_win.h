@@ -20,7 +20,7 @@ class FilePath;
 
 // Implements the common aspects of loading the main dll for both chrome and
 // chromium scenarios, which are in charge of implementing two abstract
-// methods: GetRegistryPath() and OnBeforeLaunch().
+// methods: OnBeforeLaunch() and OnBeforeExit().
 class MainDllLoader {
  public:
   MainDllLoader();
