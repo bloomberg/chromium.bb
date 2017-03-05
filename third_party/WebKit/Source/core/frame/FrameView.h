@@ -954,10 +954,10 @@ class CORE_EXPORT FrameView final
 
   // Override FrameViewBase methods to do point conversion via layoutObjects, in
   // order to take transforms into account.
-  IntRect convertToContainingWidget(const IntRect&) const override;
-  IntRect convertFromContainingWidget(const IntRect&) const override;
-  IntPoint convertToContainingWidget(const IntPoint&) const override;
-  IntPoint convertFromContainingWidget(const IntPoint&) const override;
+  IntRect convertToContainingFrameViewBase(const IntRect&) const override;
+  IntRect convertFromContainingFrameViewBase(const IntRect&) const override;
+  IntPoint convertToContainingFrameViewBase(const IntPoint&) const override;
+  IntPoint convertFromContainingFrameViewBase(const IntPoint&) const override;
 
   void didChangeGlobalRootScroller() override;
 

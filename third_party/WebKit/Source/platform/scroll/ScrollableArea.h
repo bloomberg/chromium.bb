@@ -187,22 +187,26 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   virtual IntRect convertFromScrollbarToContainingWidget(
       const Scrollbar& scrollbar,
       const IntRect& scrollbarRect) const {
-    return scrollbar.FrameViewBase::convertToContainingWidget(scrollbarRect);
+    return scrollbar.FrameViewBase::convertToContainingFrameViewBase(
+        scrollbarRect);
   }
   virtual IntRect convertFromContainingWidgetToScrollbar(
       const Scrollbar& scrollbar,
       const IntRect& parentRect) const {
-    return scrollbar.FrameViewBase::convertFromContainingWidget(parentRect);
+    return scrollbar.FrameViewBase::convertFromContainingFrameViewBase(
+        parentRect);
   }
   virtual IntPoint convertFromScrollbarToContainingWidget(
       const Scrollbar& scrollbar,
       const IntPoint& scrollbarPoint) const {
-    return scrollbar.FrameViewBase::convertToContainingWidget(scrollbarPoint);
+    return scrollbar.FrameViewBase::convertToContainingFrameViewBase(
+        scrollbarPoint);
   }
   virtual IntPoint convertFromContainingWidgetToScrollbar(
       const Scrollbar& scrollbar,
       const IntPoint& parentPoint) const {
-    return scrollbar.FrameViewBase::convertFromContainingWidget(parentPoint);
+    return scrollbar.FrameViewBase::convertFromContainingFrameViewBase(
+        parentPoint);
   }
 
   virtual Scrollbar* horizontalScrollbar() const { return nullptr; }

@@ -570,39 +570,40 @@ bool Scrollbar::isWindowActive() const {
   return m_scrollableArea && m_scrollableArea->isActive();
 }
 
-IntRect Scrollbar::convertToContainingWidget(const IntRect& localRect) const {
+IntRect Scrollbar::convertToContainingFrameViewBase(
+    const IntRect& localRect) const {
   if (m_scrollableArea)
     return m_scrollableArea->convertFromScrollbarToContainingWidget(*this,
                                                                     localRect);
 
-  return FrameViewBase::convertToContainingWidget(localRect);
+  return FrameViewBase::convertToContainingFrameViewBase(localRect);
 }
 
-IntRect Scrollbar::convertFromContainingWidget(
+IntRect Scrollbar::convertFromContainingFrameViewBase(
     const IntRect& parentRect) const {
   if (m_scrollableArea)
     return m_scrollableArea->convertFromContainingWidgetToScrollbar(*this,
                                                                     parentRect);
 
-  return FrameViewBase::convertFromContainingWidget(parentRect);
+  return FrameViewBase::convertFromContainingFrameViewBase(parentRect);
 }
 
-IntPoint Scrollbar::convertToContainingWidget(
+IntPoint Scrollbar::convertToContainingFrameViewBase(
     const IntPoint& localPoint) const {
   if (m_scrollableArea)
     return m_scrollableArea->convertFromScrollbarToContainingWidget(*this,
                                                                     localPoint);
 
-  return FrameViewBase::convertToContainingWidget(localPoint);
+  return FrameViewBase::convertToContainingFrameViewBase(localPoint);
 }
 
-IntPoint Scrollbar::convertFromContainingWidget(
+IntPoint Scrollbar::convertFromContainingFrameViewBase(
     const IntPoint& parentPoint) const {
   if (m_scrollableArea)
     return m_scrollableArea->convertFromContainingWidgetToScrollbar(
         *this, parentPoint);
 
-  return FrameViewBase::convertFromContainingWidget(parentPoint);
+  return FrameViewBase::convertFromContainingFrameViewBase(parentPoint);
 }
 
 float Scrollbar::scrollableAreaCurrentPos() const {

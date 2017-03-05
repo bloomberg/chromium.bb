@@ -112,10 +112,10 @@ class PLATFORM_EXPORT FrameViewBase
 
   virtual void widgetGeometryMayHaveChanged() {}
 
-  virtual IntRect convertToContainingWidget(const IntRect&) const;
-  virtual IntRect convertFromContainingWidget(const IntRect&) const;
-  virtual IntPoint convertToContainingWidget(const IntPoint&) const;
-  virtual IntPoint convertFromContainingWidget(const IntPoint&) const;
+  virtual IntRect convertToContainingFrameViewBase(const IntRect&) const;
+  virtual IntRect convertFromContainingFrameViewBase(const IntRect&) const;
+  virtual IntPoint convertToContainingFrameViewBase(const IntPoint&) const;
+  virtual IntPoint convertFromContainingFrameViewBase(const IntPoint&) const;
 
   // Virtual methods to convert points to/from child frameviewbases.
   virtual IntPoint convertChildToSelf(const FrameViewBase*,

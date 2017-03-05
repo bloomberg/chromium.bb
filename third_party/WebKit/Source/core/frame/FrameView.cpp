@@ -3556,7 +3556,8 @@ IntPoint FrameView::convertToLayoutItem(const LayoutItem& layoutItem,
   return roundedIntPoint(layoutItem.absoluteToLocal(point, UseTransforms));
 }
 
-IntRect FrameView::convertToContainingWidget(const IntRect& localRect) const {
+IntRect FrameView::convertToContainingFrameViewBase(
+    const IntRect& localRect) const {
   if (const FrameView* parentView = toFrameView(parent())) {
     // Get our layoutObject in the parent view
     LayoutPartItem layoutItem = m_frame->ownerLayoutItem();
@@ -3573,7 +3574,7 @@ IntRect FrameView::convertToContainingWidget(const IntRect& localRect) const {
   return localRect;
 }
 
-IntRect FrameView::convertFromContainingWidget(
+IntRect FrameView::convertFromContainingFrameViewBase(
     const IntRect& parentRect) const {
   if (const FrameView* parentView = toFrameView(parent())) {
     // Get our layoutObject in the parent view
@@ -3591,7 +3592,7 @@ IntRect FrameView::convertFromContainingWidget(
   return parentRect;
 }
 
-IntPoint FrameView::convertToContainingWidget(
+IntPoint FrameView::convertToContainingFrameViewBase(
     const IntPoint& localPoint) const {
   if (const FrameView* parentView = toFrameView(parent())) {
     // Get our layoutObject in the parent view
@@ -3610,7 +3611,7 @@ IntPoint FrameView::convertToContainingWidget(
   return localPoint;
 }
 
-IntPoint FrameView::convertFromContainingWidget(
+IntPoint FrameView::convertFromContainingFrameViewBase(
     const IntPoint& parentPoint) const {
   if (const FrameView* parentView = toFrameView(parent())) {
     // Get our layoutObject in the parent view

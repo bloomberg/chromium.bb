@@ -235,7 +235,7 @@ static NSSize abs(NSSize size) {
 
   ASSERT(scrollerImp == scrollbarPainterForScrollbar(*scrollbar));
 
-  return scrollbar->convertFromContainingWidget(
+  return scrollbar->convertFromContainingFrameViewBase(
       blink::IntPoint(pointInContentArea));
 }
 
@@ -493,7 +493,7 @@ class BlinkScrollbarPartAnimationTimer {
 
   DCHECK_EQ(scrollerImp, scrollbarPainterForScrollbar(*_scrollbar));
 
-  return _scrollbar->convertFromContainingWidget(
+  return _scrollbar->convertFromContainingFrameViewBase(
       _scrollbar->getScrollableArea()->lastKnownMousePosition());
 }
 
@@ -1072,7 +1072,7 @@ void ScrollAnimatorMac::setVisibleScrollerThumbRect(
   IntRect rectInViewCoordinates = scrollerThumb;
   if (Scrollbar* verticalScrollbar = m_scrollableArea->verticalScrollbar())
     rectInViewCoordinates =
-        verticalScrollbar->convertToContainingWidget(scrollerThumb);
+        verticalScrollbar->convertToContainingFrameViewBase(scrollerThumb);
 
   if (rectInViewCoordinates == m_visibleScrollerThumbRect)
     return;

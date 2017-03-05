@@ -156,11 +156,11 @@ class PLATFORM_EXPORT Scrollbar : public FrameViewBase,
 
   ScrollbarTheme& theme() const { return m_theme; }
 
-  IntRect convertToContainingWidget(const IntRect&) const override;
-  IntRect convertFromContainingWidget(const IntRect&) const override;
+  IntRect convertToContainingFrameViewBase(const IntRect&) const override;
+  IntRect convertFromContainingFrameViewBase(const IntRect&) const override;
 
-  IntPoint convertToContainingWidget(const IntPoint&) const override;
-  IntPoint convertFromContainingWidget(const IntPoint&) const override;
+  IntPoint convertToContainingFrameViewBase(const IntPoint&) const override;
+  IntPoint convertFromContainingFrameViewBase(const IntPoint&) const override;
 
   void moveThumb(int pos, bool draggingDocument = false);
 

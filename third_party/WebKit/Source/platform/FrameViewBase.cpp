@@ -62,14 +62,14 @@ IntRect FrameViewBase::convertFromRootFrame(
   if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntRect parentRect =
         parentFrameViewBase->convertFromRootFrame(rectInRootFrame);
-    return convertFromContainingWidget(parentRect);
+    return convertFromContainingFrameViewBase(parentRect);
   }
   return rectInRootFrame;
 }
 
 IntRect FrameViewBase::convertToRootFrame(const IntRect& localRect) const {
   if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntRect parentRect = convertToContainingWidget(localRect);
+    IntRect parentRect = convertToContainingFrameViewBase(localRect);
     return parentFrameViewBase->convertToRootFrame(parentRect);
   }
   return localRect;
@@ -80,7 +80,7 @@ IntPoint FrameViewBase::convertFromRootFrame(
   if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntPoint parentPoint =
         parentFrameViewBase->convertFromRootFrame(pointInRootFrame);
-    return convertFromContainingWidget(parentPoint);
+    return convertFromContainingFrameViewBase(parentPoint);
   }
   return pointInRootFrame;
 }
@@ -108,13 +108,13 @@ FloatPoint FrameViewBase::convertFromRootFrame(
 
 IntPoint FrameViewBase::convertToRootFrame(const IntPoint& localPoint) const {
   if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntPoint parentPoint = convertToContainingWidget(localPoint);
+    IntPoint parentPoint = convertToContainingFrameViewBase(localPoint);
     return parentFrameViewBase->convertToRootFrame(parentPoint);
   }
   return localPoint;
 }
 
-IntRect FrameViewBase::convertToContainingWidget(
+IntRect FrameViewBase::convertToContainingFrameViewBase(
     const IntRect& localRect) const {
   if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntRect parentRect(localRect);
@@ -125,7 +125,7 @@ IntRect FrameViewBase::convertToContainingWidget(
   return localRect;
 }
 
-IntRect FrameViewBase::convertFromContainingWidget(
+IntRect FrameViewBase::convertFromContainingFrameViewBase(
     const IntRect& parentRect) const {
   if (const FrameViewBase* parentFrameViewBase = parent()) {
     IntRect localRect = parentRect;
@@ -137,7 +137,7 @@ IntRect FrameViewBase::convertFromContainingWidget(
   return parentRect;
 }
 
-IntPoint FrameViewBase::convertToContainingWidget(
+IntPoint FrameViewBase::convertToContainingFrameViewBase(
     const IntPoint& localPoint) const {
   if (const FrameViewBase* parentFrameViewBase = parent())
     return parentFrameViewBase->convertChildToSelf(this, localPoint);
@@ -145,7 +145,7 @@ IntPoint FrameViewBase::convertToContainingWidget(
   return localPoint;
 }
 
-IntPoint FrameViewBase::convertFromContainingWidget(
+IntPoint FrameViewBase::convertFromContainingFrameViewBase(
     const IntPoint& parentPoint) const {
   if (const FrameViewBase* parentFrameViewBase = parent())
     return parentFrameViewBase->convertSelfToChild(this, parentPoint);
