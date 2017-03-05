@@ -472,7 +472,9 @@ void FontCache::crashWithFontInfo(const FontDescription* fontDescription) {
       numFamilies = fontMgr->countFamilies();
   }
 
-  debug::alias(&fontDescription);
+  FontDescription fontDescriptionCopy = *fontDescription;
+  debug::alias(&fontDescriptionCopy);
+
   debug::alias(&fontCache);
   debug::alias(&fontMgr);
   debug::alias(&numFamilies);
