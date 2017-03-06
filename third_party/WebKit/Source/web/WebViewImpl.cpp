@@ -3043,7 +3043,7 @@ void WebViewImpl::disableAutoResizeMode() {
 }
 
 void WebViewImpl::setDefaultPageScaleLimits(float minScale, float maxScale) {
-  return page()->frameHost().setDefaultPageScaleLimits(minScale, maxScale);
+  return page()->setDefaultPageScaleLimits(minScale, maxScale);
 }
 
 void WebViewImpl::setInitialPageScaleOverride(
@@ -3056,7 +3056,7 @@ void WebViewImpl::setInitialPageScaleOverride(
     return;
 
   pageScaleConstraintsSet().setNeedsReset(true);
-  page()->frameHost().setUserAgentPageScaleConstraints(constraints);
+  page()->setUserAgentPageScaleConstraints(constraints);
 }
 
 void WebViewImpl::setMaximumLegibleScale(float maximumLegibleScale) {
@@ -3075,7 +3075,7 @@ void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore) {
     constraints.minimumScale = -1;
     constraints.maximumScale = -1;
   }
-  page()->frameHost().setUserAgentPageScaleConstraints(constraints);
+  page()->setUserAgentPageScaleConstraints(constraints);
 }
 
 IntSize WebViewImpl::mainFrameSize() {

@@ -33,7 +33,6 @@
 #include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/PageScaleConstraints.h"
 #include "core/frame/VisualViewport.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
@@ -152,15 +151,6 @@ int FrameHost::subframeCount() const {
   checkFrameCountConsistency(m_subframeCount + 1, m_page->mainFrame());
 #endif
   return m_subframeCount;
-}
-
-void FrameHost::setDefaultPageScaleLimits(float minScale, float maxScale) {
-  page().setDefaultPageScaleLimits(minScale, maxScale);
-}
-
-void FrameHost::setUserAgentPageScaleConstraints(
-    const PageScaleConstraints& newConstraints) {
-  page().setUserAgentPageScaleConstraints(newConstraints);
 }
 
 }  // namespace blink

@@ -32,9 +32,9 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8DevToolsHost.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/DevToolsHost.h"
+#include "core/page/Page.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDevToolsFrontendClient.h"
@@ -54,7 +54,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
     WebDevToolsFrontendClient* client)
     : m_webFrame(webFrame), m_client(client) {
   m_webFrame->setDevToolsFrontend(this);
-  m_webFrame->frame()->host()->setDefaultPageScaleLimits(1.f, 1.f);
+  m_webFrame->frame()->page()->setDefaultPageScaleLimits(1.f, 1.f);
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {

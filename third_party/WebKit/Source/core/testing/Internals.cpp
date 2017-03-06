@@ -2247,7 +2247,7 @@ void Internals::setPageScaleFactorLimits(float minScaleFactor,
   }
 
   Page* page = m_document->page();
-  page->frameHost().setDefaultPageScaleLimits(minScaleFactor, maxScaleFactor);
+  page->setDefaultPageScaleLimits(minScaleFactor, maxScaleFactor);
 }
 
 bool Internals::magnifyScaleAroundAnchor(float scaleFactor, float x, float y) {

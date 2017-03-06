@@ -45,7 +45,6 @@ class ConsoleMessageStorage;
 class EventHandlerRegistry;
 class OverscrollController;
 class Page;
-struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class TopDocumentRootScrollerController;
 class VisualViewport;
@@ -104,10 +103,6 @@ class CORE_EXPORT FrameHost final
     --m_subframeCount;
   }
   int subframeCount() const;
-
-  void setDefaultPageScaleLimits(float minScale, float maxScale);
-  void setUserAgentPageScaleConstraints(
-      const PageScaleConstraints& newConstraints);
 
  private:
   explicit FrameHost(Page&);
