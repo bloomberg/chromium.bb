@@ -47,10 +47,6 @@
       #exceptionsDiv network-proxy-exclusions {
         margin: 10px 0;
       }
-
-      #proxyDiv paper-toggle-button {
-        padding: 10px 0;
-      }
     </style>
 
     <!-- Policy indicator. Only one dom-if below will be shown. -->
@@ -124,18 +120,20 @@
     </div>
 
     <!-- Manual -->
-    <div id="proxyDiv" class="settings-box continuation single-column indent"
+    <div class="settings-box continuation indent"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.MANUAL)]]">
-      <div class="flex layout horizontal">
-        <div id="networkProxyToggleLabel" class="flex">
-          $i18n{networkProxyUseSame}
-        </div>
-        <paper-toggle-button checked="{{useSameProxy_}}"
-            disabled="[[!isEditable_('Type', networkProperties, editable,
-                useSharedProxies_)]]"
-            aria-labelledby="networkProxyToggleLabel">
-        </paper-toggle-button>
+      <div id="networkProxyToggleLabel" class="flex">
+        $i18n{networkProxyUseSame}
       </div>
+      <paper-toggle-button checked="{{useSameProxy_}}"
+          disabled="[[!isEditable_('Type', networkProperties, editable,
+              useSharedProxies_)]]"
+          aria-labelledby="networkProxyToggleLabel">
+      </paper-toggle-button>
+    </div>
+
+    <div class="settings-box continuation single-column indent"
+        hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.MANUAL)]]">
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"

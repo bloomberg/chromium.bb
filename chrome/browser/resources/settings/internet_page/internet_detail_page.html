@@ -32,16 +32,17 @@
         -webkit-padding-end: 8px;
       }
 
-      cr-policy-network-indicator {
-        -webkit-margin-start: 10px;
-      }
-
       iron-collapse {
         margin: 10px 0;
       }
 
       iron-icon {
         -webkit-margin-end: 10px;
+      }
+
+      paper-toggle-button,
+      cr-policy-network-indicator {
+        -webkit-margin-start: var(--checkbox-spacing);
       }
 
       /* Use <span> for subtitles so as not to interfere with
@@ -80,10 +81,6 @@
 
       #networkState[connected] {
         color: var(--google-green-500);
-      }
-
-      #proxyDiv {
-        max-width: 500px;
       }
     </style>
     <!-- Title section: Icon + name + connection state. -->

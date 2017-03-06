@@ -17,10 +17,11 @@
     }
   </style>
   <template>
-    <iron-icon id="indicator" tabindex="0" hidden$="[[!indicatorVisible]]"
-        icon="[[indicatorIcon]]">
+    <iron-icon id="indicator" tabindex="0" aria-describedby="tooltip"
+        hidden$="[[!indicatorVisible]]" icon="[[indicatorIcon]]">
     </iron-icon>
-    <paper-tooltip for="indicator" position="top" fit-to-visible-bounds>
+    <paper-tooltip id="tooltip" for="indicator" position="top"
+        fit-to-visible-bounds>
       [[indicatorTooltip]]
     </paper-tooltip>
   </template>
