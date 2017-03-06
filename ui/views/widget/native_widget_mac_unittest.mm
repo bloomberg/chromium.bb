@@ -1375,6 +1375,9 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
   Widget* bubble_widget = BubbleDialogDelegateView::CreateBubble(bubble_view);
   EXPECT_TRUE([bubble_widget->GetNativeWindow() canBecomeKeyWindow]);
   EXPECT_FALSE([bubble_widget->GetNativeWindow() canBecomeMainWindow]);
+  EXPECT_EQ(NSWindowCollectionBehaviorTransient,
+            [bubble_widget->GetNativeWindow() collectionBehavior] &
+                NSWindowCollectionBehaviorTransient);
 
   // But a bubble without a parent should still be able to become main.
   Widget* toplevel_bubble_widget =

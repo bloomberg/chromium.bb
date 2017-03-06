@@ -428,6 +428,11 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
     } else {
       parent_ = new WidgetOwnerNSWindowAdapter(this, params.parent);
     }
+    // crbug.com/697829: Widget::ShowInactive() could result in a Space switch
+    // when the widget has a parent, and we're calling -orderWindow:relativeTo:.
+    // Use Transient collection behaviour to prevent that.
+    [window_ setCollectionBehavior:[window_ collectionBehavior] |
+                                   NSWindowCollectionBehaviorTransient];
   }
 
   // OSX likes to put shadows on most things. However, frameless windows (with
