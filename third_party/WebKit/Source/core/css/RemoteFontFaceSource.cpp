@@ -65,8 +65,6 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font,
                                           : FontLoadHistograms::FromUnknown,
                    m_display),
       m_isInterventionTriggered(false) {
-  m_font->addClient(this);
-
   if (shouldTriggerWebFontsIntervention()) {
     m_isInterventionTriggered = true;
     m_period = SwapPeriod;
@@ -75,6 +73,9 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font,
         "Slow network is detected. Fallback font will be used while loading: " +
             m_font->url().elidedString()));
   }
+
+  // Note: this may call notifyFinished() and clear m_font.
+  m_font->addClient(this);
 }
 
 RemoteFontFaceSource::~RemoteFontFaceSource() {}
