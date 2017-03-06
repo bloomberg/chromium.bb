@@ -7,6 +7,8 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/grit/components_scaled_resources.h"
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
@@ -25,6 +27,7 @@
 #import "ios/chrome/browser/ui/settings/cells/account_control_item.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/cells/native_app_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
@@ -207,6 +210,10 @@ const CGFloat kHorizontalImageFixedSize = 40;
   [model addItem:[self autofillItemWithLeadingTextOnly]
       toSectionWithIdentifier:SectionIdentifierAutofill];
   [model addItem:[self autofillItemWithAllText]
+      toSectionWithIdentifier:SectionIdentifierAutofill];
+  [model addItem:[self autofillEditItem]
+      toSectionWithIdentifier:SectionIdentifierAutofill];
+  [model addItem:[self autofillEditItemWithIcon]
       toSectionWithIdentifier:SectionIdentifierAutofill];
   [model addItem:[self cvcItem]
       toSectionWithIdentifier:SectionIdentifierAutofill];
@@ -530,6 +537,30 @@ const CGFloat kHorizontalImageFixedSize = 40;
   item.leadingDetailText = @"Leading Detail Text";
   item.trailingDetailText = @"Trailing Detail Text";
   item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  return item;
+}
+
+- (CollectionViewItem*)autofillEditItem {
+  AutofillEditItem* item = [[[AutofillEditItem alloc]
+      initWithType:ItemTypeAutofillDynamicHeight] autorelease];
+  item.textFieldName = @"Credit Number";
+  item.textFieldValue = @"4111111111111111";
+  item.textFieldEnabled = YES;
+  return item;
+}
+
+- (CollectionViewItem*)autofillEditItemWithIcon {
+  AutofillEditItem* item = [[[AutofillEditItem alloc]
+      initWithType:ItemTypeAutofillDynamicHeight] autorelease];
+  item.textFieldName = @"Credit Number";
+  item.textFieldValue = @"4111111111111111";
+  item.textFieldEnabled = YES;
+  int resourceID =
+      autofill::data_util::GetPaymentRequestData(autofill::kVisaCard)
+          .icon_resource_id;
+  item.cardTypeIcon =
+      ResizeImage(NativeImage(resourceID), CGSizeMake(30.0, 30.0),
+                  ProjectionMode::kAspectFillNoClipping);
   return item;
 }
 

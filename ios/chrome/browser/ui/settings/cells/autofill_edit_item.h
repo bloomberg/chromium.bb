@@ -21,6 +21,9 @@
 // The value of the text field.
 @property(nonatomic, copy) NSString* textFieldValue;
 
+// An image corresponding to the type of the credit card, if any.
+@property(nonatomic, copy) UIImage* cardTypeIcon;
+
 // The field type this item is describing.
 @property(nonatomic, assign) autofill::ServerFieldType autofillType;
 
@@ -39,6 +42,9 @@
 // Text field at the trailing edge of the cell. It displays the item's
 // |textFieldValue|.
 @property(nonatomic, readonly, strong) UITextField* textField;
+
+// UIImageView containing the credit card type icon.
+@property(nonatomic, readonly, strong) UIImageView* cardTypeIconView;
 
 @end
 

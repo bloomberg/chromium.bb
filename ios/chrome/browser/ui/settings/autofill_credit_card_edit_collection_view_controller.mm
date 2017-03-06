@@ -11,6 +11,7 @@
 #include "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
@@ -22,6 +23,7 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller+protected.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -34,6 +36,8 @@ namespace {
 
 NSString* const kAutofillCreditCardEditCollectionViewId =
     @"kAutofillCreditCardEditCollectionViewId";
+
+const CGFloat kCardTypeIconDimension = 30.0;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierFields = kSectionIdentifierEnumZero,
@@ -156,6 +160,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           : base::SysUTF16ToNSString(_creditCard.LastFourDigits());
   cardNumberitem.textFieldEnabled = isEditing;
   cardNumberitem.autofillType = autofill::CREDIT_CARD_NUMBER;
+  [self setCardTypeIconForItem:cardNumberitem];
   [model addItem:cardNumberitem
       toSectionWithIdentifier:SectionIdentifierFields];
 
@@ -191,6 +196,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [model addItem:copiedToChromeItem
         toSectionWithIdentifier:SectionIdentifierCopiedToChrome];
   }
+}
+
+#pragma mark - UITextFieldDelegate
+
+- (void)textFieldDidEndEditing:(UITextField*)textField {
+  NSIndexPath* cellPath = [self indexPathForCurrentTextField];
+  DCHECK(cellPath);
+  NSIndexPath* itemPath = [NSIndexPath indexPathForItem:[cellPath row]
+                                              inSection:[cellPath section]];
+  AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
+      [self.collectionViewModel itemAtIndexPath:itemPath]);
+
+  if (item.autofillType == autofill::CREDIT_CARD_NUMBER)
+    [self setCardTypeIconForItem:item];
+
+  // Update the cell.
+  [self reconfigureCellsForItems:@[ item ]
+         inSectionWithIdentifier:SectionIdentifierFields];
+
+  [super textFieldDidEndEditing:textField];
 }
 
 #pragma mark - MDCCollectionViewEditingDelegate
@@ -268,6 +293,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _creditCard.set_record_type(autofill::CreditCard::MASKED_SERVER_CARD);
   _creditCard.SetNumber(_creditCard.LastFourDigits());
   [self reloadData];
+}
+
+#pragma mark - Helper Methods
+
+- (void)setCardTypeIconForItem:(AutofillEditItem*)item {
+  const char* cardType = autofill::CreditCard::GetCreditCardType(
+      base::SysNSStringToUTF16(item.textFieldValue));
+  if (cardType != autofill::kGenericCard) {
+    int resourceID =
+        autofill::data_util::GetPaymentRequestData(cardType).icon_resource_id;
+    // Resize and set the card type icon.
+    CGFloat dimension = kCardTypeIconDimension;
+    item.cardTypeIcon =
+        ResizeImage(NativeImage(resourceID), CGSizeMake(dimension, dimension),
+                    ProjectionMode::kAspectFillNoClipping);
+  } else {
+    item.cardTypeIcon = nil;
+  }
 }
 
 @end

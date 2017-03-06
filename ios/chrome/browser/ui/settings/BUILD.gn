@@ -37,6 +37,7 @@ source_set("settings") {
     "autofill_credit_card_edit_collection_view_controller.mm",
     "autofill_edit_accessory_view.h",
     "autofill_edit_accessory_view.mm",
+    "autofill_edit_collection_view_controller+protected.h",
     "autofill_edit_collection_view_controller.h",
     "autofill_edit_collection_view_controller.mm",
     "autofill_profile_edit_collection_view_controller.h",

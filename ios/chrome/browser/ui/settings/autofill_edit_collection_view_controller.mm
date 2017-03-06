@@ -8,6 +8,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/settings/autofill_edit_accessory_view.h"
+#import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller+protected.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
@@ -128,6 +129,20 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 
 #pragma mark - AutofillEditAccessoryDelegate
 
+- (void)nextPressed {
+  [self moveToAnotherCellWithOffset:1];
+}
+
+- (void)previousPressed {
+  [self moveToAnotherCellWithOffset:-1];
+}
+
+- (void)closePressed {
+  [[_currentEditingCell textField] resignFirstResponder];
+}
+
+#pragma mark - Helper methods
+
 - (NSIndexPath*)indexPathForCurrentTextField {
   DCHECK(_currentEditingCell);
   return [[self collectionView] indexPathForCell:_currentEditingCell];
@@ -147,18 +162,6 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
         [collectionView cellForItemAtIndexPath:nextCellPath]);
     [nextCell.textField becomeFirstResponder];
   }
-}
-
-- (void)nextPressed {
-  [self moveToAnotherCellWithOffset:1];
-}
-
-- (void)previousPressed {
-  [self moveToAnotherCellWithOffset:-1];
-}
-
-- (void)closePressed {
-  [[_currentEditingCell textField] resignFirstResponder];
 }
 
 - (void)updateAccessoryViewButtonState {

@@ -28,6 +28,7 @@ const CGFloat kLabelAndFieldGap = 5;
 
 @synthesize textFieldName = _textFieldName;
 @synthesize textFieldValue = _textFieldValue;
+@synthesize cardTypeIcon = _cardTypeIcon;
 @synthesize textFieldEnabled = _textFieldEnabled;
 @synthesize autofillType = _autofillType;
 
@@ -56,6 +57,7 @@ const CGFloat kLabelAndFieldGap = 5;
   [cell.textField addTarget:self
                      action:@selector(textFieldChanged:)
            forControlEvents:UIControlEventEditingChanged];
+  cell.cardTypeIconView.image = self.cardTypeIcon;
 }
 
 #pragma mark - Actions
@@ -66,10 +68,15 @@ const CGFloat kLabelAndFieldGap = 5;
 
 @end
 
-@implementation AutofillEditCell
+@implementation AutofillEditCell {
+  NSLayoutConstraint* _iconHeightConstraint;
+  NSLayoutConstraint* _iconWidthConstraint;
+  NSLayoutConstraint* _textFieldTrailingConstraint;
+}
 
 @synthesize textField = _textField;
 @synthesize textLabel = _textLabel;
+@synthesize cardTypeIconView = _cardTypeIconView;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -101,6 +108,24 @@ const CGFloat kLabelAndFieldGap = 5;
     _textField.textAlignment =
         UseRTLLayout() ? NSTextAlignmentLeft : NSTextAlignmentRight;
 
+    // Card type icon.
+    _cardTypeIconView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    _cardTypeIconView.layer.borderColor =
+        [UIColor colorWithWhite:0.9 alpha:1.0].CGColor;
+    _cardTypeIconView.layer.borderWidth = 1.0;
+    _cardTypeIconView.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView addSubview:_cardTypeIconView];
+
+    // Set up the icons size constraints. They are activated here and updated in
+    // layoutSubviews.
+    _iconHeightConstraint =
+        [_cardTypeIconView.heightAnchor constraintEqualToConstant:0];
+    _iconWidthConstraint =
+        [_cardTypeIconView.widthAnchor constraintEqualToConstant:0];
+
+    _textFieldTrailingConstraint = [_textField.trailingAnchor
+        constraintEqualToAnchor:_cardTypeIconView.leadingAnchor];
+
     // Set up the constraints.
     [NSLayoutConstraint activateConstraints:@[
       [_textLabel.leadingAnchor
@@ -110,20 +135,46 @@ const CGFloat kLabelAndFieldGap = 5;
                                            constant:kVerticalPadding],
       [_textLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
                                               constant:-kVerticalPadding],
-      [_textField.trailingAnchor
-          constraintEqualToAnchor:contentView.trailingAnchor
-                         constant:-kHorizontalPadding],
+      _textFieldTrailingConstraint,
       [_textField.firstBaselineAnchor
           constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
       [_textField.leadingAnchor
           constraintEqualToAnchor:_textLabel.trailingAnchor
                          constant:kLabelAndFieldGap],
+      [_cardTypeIconView.trailingAnchor
+          constraintEqualToAnchor:contentView.trailingAnchor
+                         constant:-kHorizontalPadding],
+      [_cardTypeIconView.centerYAnchor
+          constraintEqualToAnchor:contentView.centerYAnchor],
+      _iconHeightConstraint,
+      _iconWidthConstraint,
     ]];
     [_textField setContentHuggingPriority:UILayoutPriorityDefaultLow
                                   forAxis:UILayoutConstraintAxisHorizontal];
   }
   return self;
 }
+
+#pragma mark - UIView
+
+- (void)layoutSubviews {
+  if (self.cardTypeIconView.image) {
+    _textFieldTrailingConstraint.constant = -kLabelAndFieldGap;
+
+    // Set the size constraints of the icon view to the dimensions of the image.
+    _iconHeightConstraint.constant = self.cardTypeIconView.image.size.height;
+    _iconWidthConstraint.constant = self.cardTypeIconView.image.size.width;
+  } else {
+    _textFieldTrailingConstraint.constant = 0;
+
+    _iconHeightConstraint.constant = 0;
+    _iconWidthConstraint.constant = 0;
+  }
+
+  [super layoutSubviews];
+}
+
+#pragma mark - UICollectionReusableView
 
 - (void)prepareForReuse {
   [super prepareForReuse];
@@ -138,6 +189,7 @@ const CGFloat kLabelAndFieldGap = 5;
   [self.textField removeTarget:nil
                         action:nil
               forControlEvents:UIControlEventAllEvents];
+  self.cardTypeIconView.image = nil;
 }
 
 #pragma mark - Accessibility
