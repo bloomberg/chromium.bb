@@ -70,7 +70,7 @@ void StrokeData::setupPaint(PaintFlags* flags, int length) const {
 void StrokeData::setupPaintDashPathEffect(PaintFlags* flags, int length) const {
   if (m_dash) {
     flags->setPathEffect(m_dash);
-  } else if (m_style == DashedStroke || m_style == DottedStroke) {
+  } else if (strokeIsDashed(m_thickness, m_style)) {
     float width =
         m_style == DashedStroke ? dashRatio * m_thickness : m_thickness;
 
@@ -96,10 +96,39 @@ void StrokeData::setupPaintDashPathEffect(PaintFlags* flags, int length) const {
     SkScalar intervals[2] = {dashLengthSk, dashLengthSk};
     flags->setPathEffect(
         SkDashPathEffect::Make(intervals, 2, SkIntToScalar(phase)));
+  } else if (m_style == DottedStroke) {
+    flags->setStrokeCap((PaintFlags::Cap)RoundCap);
+    // Adjust the width to get equal dot spacing as much as possible.
+    float perDotLength = m_thickness * 2;
+    static float epsilon = 1.0e-2f;
+    if (length < perDotLength + m_thickness) {
+      // Exactly 2 dots with whatever space we can get
+      SkScalar intervals[2] = {0, length - m_thickness - epsilon};
+      flags->setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+      return;
+    }
+
+    // Determine what number of dots gives the minimum deviation from
+    // idealGap between dots. Set the gap to that width.
+    float minNumDots = floorf((length + m_thickness) / perDotLength);
+    float maxNumDots = minNumDots + 1;
+    float minGap = (length - minNumDots * m_thickness) / (minNumDots - 1);
+    float maxGap = (length - maxNumDots * m_thickness) / (maxNumDots - 1);
+    if (fabs(minGap - m_thickness) < fabs(maxGap - m_thickness)) {
+      SkScalar intervals[2] = {0, minGap + m_thickness - epsilon};
+      flags->setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+    } else {
+      SkScalar intervals[2] = {0, maxGap + m_thickness - epsilon};
+      flags->setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+    }
   } else {
-    // TODO(schenney): WavyStroke:  https://crbug.com/229574
+    // TODO(schenney): WavyStroke https://crbug.com/229574
     flags->setPathEffect(0);
   }
+}
+
+bool StrokeData::strokeIsDashed(float width, StrokeStyle style) {
+  return style == DashedStroke || (style == DottedStroke && width <= 3);
 }
 
 }  // namespace blink

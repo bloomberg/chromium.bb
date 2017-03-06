@@ -501,9 +501,9 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2) {
   int length = SkScalarRoundToInt(disp.width() + disp.height());
   PaintFlags flags(immutableState()->strokeFlags(length));
 
-  if (getStrokeStyle() == DottedStroke || getStrokeStyle() == DashedStroke) {
+  if (StrokeData::strokeIsDashed(width, getStrokeStyle())) {
     // Do a rect fill of our endpoints.  This ensures we always have the
-    // appearance of being a border.  We then draw the actual dotted/dashed
+    // appearance of being a border. We then draw the actual dotted/dashed
     // line.
     SkRect r1, r2;
     r1.set(p1.x(), p1.y(), p1.x() + width, p1.y() + width);
@@ -520,6 +520,17 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2) {
     fillFlags.setColor(flags.getColor());
     drawRect(r1, fillFlags);
     drawRect(r2, fillFlags);
+  } else if (getStrokeStyle() == DottedStroke) {
+    // We draw thick dotted lines with 0 length dash strokes and round endcaps,
+    // producing circles. The endcaps extend beyond the line's endpoints,
+    // so move the start and end in.
+    if (isVerticalLine) {
+      p1.setY(p1.y() + width / 2.f);
+      p2.setY(p2.y() - width / 2.f);
+    } else {
+      p1.setX(p1.x() + width / 2.f);
+      p2.setX(p2.x() - width / 2.f);
+    }
   }
 
   adjustLineToPixelBoundaries(p1, p2, width, penStyle);
@@ -1298,7 +1309,7 @@ void GraphicsContext::adjustLineToPixelBoundaries(FloatPoint& p1,
   // pass us (y1+y2)/2, e.g., (50+53)/2 = 103/2 = 51 when we want 51.5.  It is
   // always true that an even width gave us a perfect position, but an odd width
   // gave us a position that is off by exactly 0.5.
-  if (penStyle == DottedStroke || penStyle == DashedStroke) {
+  if (StrokeData::strokeIsDashed(strokeWidth, penStyle)) {
     if (p1.x() == p2.x()) {
       p1.setY(p1.y() + strokeWidth);
       p2.setY(p2.y() - strokeWidth);

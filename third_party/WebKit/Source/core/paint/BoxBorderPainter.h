@@ -77,11 +77,14 @@ class BoxBorderPainter {
                            Color,
                            EBorderStyle) const;
   void drawDashedDottedBoxSideFromPath(GraphicsContext&,
-                                       const Path&,
+                                       const LayoutRect&,
                                        float thickness,
                                        float drawThickness,
                                        Color,
                                        EBorderStyle) const;
+  void drawWideDottedBoxSideFromPath(GraphicsContext&,
+                                     const Path&,
+                                     float thickness) const;
   void drawDoubleBoxSideFromPath(GraphicsContext&,
                                  const LayoutRect&,
                                  const Path&,

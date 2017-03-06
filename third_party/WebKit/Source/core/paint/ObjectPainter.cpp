@@ -14,6 +14,7 @@
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -415,8 +416,7 @@ void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext& graphicsContext,
                                               bool antialias) {
   DCHECK_GT(thickness, 0);
 
-  bool wasAntialiased = graphicsContext.shouldAntialias();
-  StrokeStyle oldStrokeStyle = graphicsContext.getStrokeStyle();
+  GraphicsContextStateSaver stateSaver(graphicsContext);
   graphicsContext.setShouldAntialias(antialias);
   graphicsContext.setStrokeColor(color);
   graphicsContext.setStrokeThickness(thickness);
@@ -437,8 +437,6 @@ void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext& graphicsContext,
       break;
     }
   }
-  graphicsContext.setShouldAntialias(wasAntialiased);
-  graphicsContext.setStrokeStyle(oldStrokeStyle);
 }
 
 void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext,

@@ -976,7 +976,7 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
       return;
     case BorderStyleDotted:
     case BorderStyleDashed: {
-      drawDashedDottedBoxSideFromPath(graphicsContext, borderPath, thickness,
+      drawDashedDottedBoxSideFromPath(graphicsContext, borderRect, thickness,
                                       drawThickness, color, borderStyle);
       return;
     }
@@ -1011,18 +1011,34 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
 
 void BoxBorderPainter::drawDashedDottedBoxSideFromPath(
     GraphicsContext& graphicsContext,
-    const Path& borderPath,
+    const LayoutRect& borderRect,
     float thickness,
     float drawThickness,
     Color color,
     EBorderStyle borderStyle) const {
+  // Convert the path to be down the middle of the dots or dashes.
+  const LayoutRectOutsets centerOffsets(
+      -m_edges[BSTop].usedWidth() * 0.5, -m_edges[BSRight].usedWidth() * 0.5,
+      -m_edges[BSBottom].usedWidth() * 0.5, -m_edges[BSLeft].usedWidth() * 0.5);
+  Path centerlinePath;
+  centerlinePath.addRoundedRect(m_style.getRoundedInnerBorderFor(
+      borderRect, centerOffsets, m_includeLogicalLeftEdge,
+      m_includeLogicalRightEdge));
+
   graphicsContext.setStrokeColor(color);
+
+  if (!StrokeData::strokeIsDashed(thickness, borderStyle == BorderStyleDashed
+                                                 ? DashedStroke
+                                                 : DottedStroke)) {
+    drawWideDottedBoxSideFromPath(graphicsContext, centerlinePath, thickness);
+    return;
+  }
 
   // The stroke is doubled here because the provided path is the
   // outside edge of the border so half the stroke is clipped off.
   // The extra multiplier is so that the clipping mask can antialias
   // the edges to prevent jaggies.
-  graphicsContext.setStrokeThickness(drawThickness * 2 * 1.1f);
+  graphicsContext.setStrokeThickness(drawThickness * 1.1f);
   graphicsContext.setStrokeStyle(
       borderStyle == BorderStyleDashed ? DashedStroke : DottedStroke);
 
@@ -1034,11 +1050,10 @@ void BoxBorderPainter::drawDashedDottedBoxSideFromPath(
   // do the same thing as StrokeData::setupPaintDashPathEffect and should be
   // refactored to re-use that code. It would require
   // GraphicsContext::strokePath to take a length parameter.
-
   float dashLength =
       thickness * ((borderStyle == BorderStyleDashed) ? 3.0f : 1.0f);
   float gapLength = dashLength;
-  float numberOfDashes = borderPath.length() / dashLength;
+  float numberOfDashes = centerlinePath.length() / dashLength;
   // Don't try to show dashes if we have less than 2 dashes + 2 gaps.
   // FIXME: should do this test per side.
   if (numberOfDashes >= 4) {
@@ -1057,8 +1072,50 @@ void BoxBorderPainter::drawDashedDottedBoxSideFromPath(
 
   // FIXME: stroking the border path causes issues with tight corners:
   // https://bugs.webkit.org/show_bug.cgi?id=58711
-  // Also, to get the best appearance we should stroke a path between the
-  // two borders.
+  graphicsContext.strokePath(centerlinePath);
+}
+
+void BoxBorderPainter::drawWideDottedBoxSideFromPath(
+    GraphicsContext& graphicsContext,
+    const Path& borderPath,
+    float thickness) const {
+  graphicsContext.setStrokeThickness(thickness);
+  graphicsContext.setStrokeStyle(DottedStroke);
+
+  // TODO(schenney): This code for setting up the dash effect is largely
+  // duplicated from StrokeData::setupPaintDashPathEffect and both this code
+  // and the method above should be refactored to re-use that code. It would
+  // require GraphicsContext::strokePath to take a length parameter.
+  graphicsContext.setLineCap(RoundCap);
+
+  // Adjust the width to get equal dot spacing as much as possible.
+  float perDotLength = thickness * 2;
+  static float epsilon = 1.0e-2f;
+  float pathLength = borderPath.length();
+
+  if (pathLength < perDotLength + thickness) {
+    // Exactly 2 dots with whatever space we can get
+    DashArray lineDash;
+    lineDash.push_back(0);
+    lineDash.push_back(pathLength - thickness - epsilon);
+    graphicsContext.setLineDash(lineDash, 0);
+  } else {
+    // Determine what number of dots gives the minimum deviation from
+    // idealGap between dots. Set the gap to that width.
+    float minNumDots = floorf((pathLength + thickness) / perDotLength);
+    float maxNumDots = minNumDots + 1;
+    float minGap = (pathLength - minNumDots * thickness) / (minNumDots - 1);
+    float maxGap = (pathLength - maxNumDots * thickness) / (maxNumDots - 1);
+    auto gap =
+        fabs(minGap - thickness) < fabs(maxGap - thickness) ? minGap : maxGap;
+    DashArray lineDash;
+    lineDash.push_back(0);
+    lineDash.push_back(gap + thickness - epsilon);
+    graphicsContext.setLineDash(lineDash, 0);
+  }
+
+  // TODO(schenney): stroking the border path causes issues with tight corners:
+  // https://bugs.webkit.org/show_bug.cgi?id=58711
   graphicsContext.strokePath(borderPath);
 }
 

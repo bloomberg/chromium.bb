@@ -82,6 +82,11 @@ class PLATFORM_EXPORT StrokeData final {
   // line will be adjusted to start and end that length with a dash/dot.
   void setupPaintDashPathEffect(PaintFlags*, int) const;
 
+  // Determine whether a stroked line should be drawn using dashes. In practice,
+  // we draw dashes when a dashed stroke is specified or when a dotted stroke
+  // is specified but the line width is too small to draw circles.
+  static bool strokeIsDashed(float width, StrokeStyle);
+
  private:
   StrokeStyle m_style;
   float m_thickness;
