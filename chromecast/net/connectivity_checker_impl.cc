@@ -15,9 +15,11 @@
 #include "chromecast/chromecast_features.h"
 #include "chromecast/net/net_switches.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -212,6 +214,15 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
     net::URLRequest* request,
     const net::SSLInfo& ssl_info,
     bool fatal) {
+  if (url_request_context_->http_transaction_factory()
+          ->GetSession()
+          ->params()
+          .ignore_certificate_errors) {
+    LOG(WARNING) << "OnSSLCertificateError: ignore cert_status="
+                 << ssl_info.cert_status;
+    request->ContinueDespiteLastError();
+    return;
+  }
   DCHECK(task_runner_->BelongsToCurrentThread());
   LOG(ERROR) << "OnSSLCertificateError: cert_status=" << ssl_info.cert_status;
   net::SSLClientSocket::ClearSessionCache();

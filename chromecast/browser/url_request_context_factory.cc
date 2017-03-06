@@ -73,6 +73,11 @@ class IgnoresCTPolicyEnforcer : public net::CTPolicyEnforcer {
   }
 };
 
+bool IgnoreCertificateErrors() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  return cmd_line->HasSwitch(switches::kIgnoreCertificateErrors);
+}
+
 }  // namespace
 
 // Private classes to expose URLRequestContextGetter that call back to the
@@ -336,7 +341,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   InitializeSystemContextDependencies();
   net::HttpNetworkSession::Params system_params;
-  PopulateNetworkSessionParams(false, &system_params);
+  PopulateNetworkSessionParams(IgnoreCertificateErrors(), &system_params);
   system_transaction_factory_.reset(new net::HttpNetworkLayer(
       new net::HttpNetworkSession(system_params)));
   system_job_factory_.reset(new net::URLRequestJobFactoryImpl());
@@ -392,13 +397,8 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   InitializeSystemContextDependencies();
 
-  bool ignore_certificate_errors = false;
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors)) {
-    ignore_certificate_errors = true;
-  }
   net::HttpNetworkSession::Params network_session_params;
-  PopulateNetworkSessionParams(ignore_certificate_errors,
+  PopulateNetworkSessionParams(IgnoreCertificateErrors(),
                                &network_session_params);
   InitializeMainContextDependencies(
       new net::HttpNetworkLayer(
