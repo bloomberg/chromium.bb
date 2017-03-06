@@ -19,23 +19,24 @@
 
 namespace {
 
+struct HDCContextRec {
+  HDC hdc_;
+  HBITMAP prev_bitmap_;
+};
+
 static void DeleteHDCCallback(void*, void* context) {
   DCHECK_NE(context, nullptr);
-  HDC hdc = static_cast<HDC>(context);
+  const HDCContextRec* rec = static_cast<const HDCContextRec*>(context);
 
-  // We must get this before we call RestoreDC, as that will drop hbitmap and
-  // reselect the original/default bitmap.
-  HGDIOBJ hbitmap = GetCurrentObject(hdc, OBJ_BITMAP);
-  DCHECK_NE(hbitmap, nullptr);
-
-  bool success = RestoreDC(hdc, -1); // effectly performs the deselect of hbitmap
+  // Must select back in the old bitmap before we delete the hdc, and so we can
+  // recover the new_bitmap that we allocated, so we can delete it.
+  HBITMAP new_bitmap =
+      static_cast<HBITMAP>(SelectObject(rec->hdc_, rec->prev_bitmap_));
+  bool success = DeleteObject(new_bitmap);
   DCHECK(success);
-
-  // Now we are the only owner, so we can delete our bitmap
-  success = DeleteObject(hbitmap);
+  success = DeleteDC(rec->hdc_);
   DCHECK(success);
-  success = DeleteDC(hdc);
-  DCHECK(success);
+  delete rec;
 }
 
 // Allocate the layer and fill in the fields for the Rec, or return false
@@ -47,9 +48,9 @@ static bool Create(int width,
                    bool do_clear,
                    SkRasterHandleAllocator::Rec* rec) {
   void* pixels;
-  HBITMAP hbitmap =
+  HBITMAP new_bitmap =
       skia::CreateHBitmap(width, height, is_opaque, shared_section, &pixels);
-  if (!hbitmap) {
+  if (!new_bitmap) {
     LOG(ERROR) << "CreateHBitmap failed";
     return false;
   }
@@ -60,21 +61,16 @@ static bool Create(int width,
 
   HDC hdc = CreateCompatibleDC(nullptr);
   if (!hdc) {
-    DeleteObject(hbitmap);
+    DeleteObject(new_bitmap);
     return false;
   }
   SetGraphicsMode(hdc, GM_ADVANCED);
 
-  int saveIndex = SaveDC(hdc);  // so we can Restore in the delete callback
-  DCHECK_NE(saveIndex, 0);
-
-  // Be sure to select *after* we called SaveDC.
-  // Because we're using save/restore, we don't need to explicitly track the
-  // returned "previous" value.
-  SelectObject(hdc, hbitmap);
+  HBITMAP prev_bitmap = static_cast<HBITMAP>(SelectObject(hdc, new_bitmap));
+  DCHECK(prev_bitmap);
 
   rec->fReleaseProc = DeleteHDCCallback;
-  rec->fReleaseCtx = hdc;
+  rec->fReleaseCtx = new HDCContextRec{hdc, prev_bitmap};
   rec->fPixels = pixels;
   rec->fRowBytes = row_bytes;
   rec->fHandle = hdc;
