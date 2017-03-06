@@ -157,7 +157,9 @@ MemoryCoordinatorImpl::MemoryCoordinatorImpl(
   base::MemoryCoordinatorProxy::SetMemoryCoordinator(this);
 }
 
-MemoryCoordinatorImpl::~MemoryCoordinatorImpl() {}
+MemoryCoordinatorImpl::~MemoryCoordinatorImpl() {
+  base::MemoryCoordinatorProxy::SetMemoryCoordinator(nullptr);
+}
 
 void MemoryCoordinatorImpl::Start() {
   DCHECK(CalledOnValidThread());
