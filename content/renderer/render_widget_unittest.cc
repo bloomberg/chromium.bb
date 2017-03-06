@@ -12,6 +12,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/test/fake_compositor_dependencies.h"
@@ -46,6 +47,12 @@ enum {
   PASSIVE_LISTENER_UMA_ENUM_COUNT
 };
 
+bool ShouldBlockEventStream(const blink::WebInputEvent& event) {
+  return ui::WebInputEventTraits::ShouldBlockEventStream(
+      event,
+      base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents));
+}
+
 class MockWebWidget : public blink::WebWidget {
  public:
   MOCK_METHOD1(
@@ -76,7 +83,7 @@ class InteractiveRenderWidget : public RenderWidget {
   void SendInputEvent(const blink::WebInputEvent& event) {
     OnHandleInputEvent(
         &event, std::vector<const blink::WebInputEvent*>(), ui::LatencyInfo(),
-        ui::WebInputEventTraits::ShouldBlockEventStream(event)
+        ShouldBlockEventStream(event)
             ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
             : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING);
   }

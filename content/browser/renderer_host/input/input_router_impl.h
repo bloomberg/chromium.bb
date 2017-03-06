@@ -262,6 +262,7 @@ class CONTENT_EXPORT InputRouterImpl
   InputEventStreamValidator output_stream_validator_;
 
   float device_scale_factor_;
+  bool raf_aligned_touch_enabled_;
 
   // Last touch position relative to screen. Used to compute movementX/Y.
   std::map<int, gfx::Point> global_touch_position_;

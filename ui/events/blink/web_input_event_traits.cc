@@ -197,7 +197,9 @@ WebScopedInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {
   return scoped_event;
 }
 
-bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
+bool WebInputEventTraits::ShouldBlockEventStream(
+    const WebInputEvent& event,
+    bool raf_aligned_touch_enabled) {
   switch (event.type()) {
     case WebInputEvent::MouseDown:
     case WebInputEvent::MouseUp:
@@ -228,9 +230,16 @@ bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
       return static_cast<const WebTouchEvent&>(event).dispatchType ==
              WebInputEvent::Blocking;
 
-    // Touch move events may be non-blocking but are always explicitly
-    // acknowledge by the renderer so they block the event stream.
     case WebInputEvent::TouchMove:
+      // Non-blocking touch moves can be ack'd right away if raf_aligned
+      // touch is enabled.
+      if (raf_aligned_touch_enabled) {
+        return static_cast<const WebTouchEvent&>(event).dispatchType ==
+               WebInputEvent::Blocking;
+      }
+      // Touch move events may be non-blocking but are always explicitly
+      // acknowledge by the renderer so they block the event stream.
+      return true;
     default:
       return true;
   }

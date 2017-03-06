@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_features.h"
 #include "ipc/ipc_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -206,6 +207,12 @@ class InputEventTimer {
   DISALLOW_COPY_AND_ASSIGN(InputEventTimer);
 };
 
+bool ShouldBlockEventStream(const blink::WebInputEvent& event) {
+  return ui::WebInputEventTraits::ShouldBlockEventStream(
+      event,
+      base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents));
+}
+
 }  // namespace
 
 class InputRouterImplPerfTest : public testing::Test {
@@ -247,7 +254,7 @@ class InputRouterImplPerfTest : public testing::Test {
 
   void SendEventAckIfNecessary(const blink::WebInputEvent& event,
                                InputEventAckState ack_result) {
-    if (!ui::WebInputEventTraits::ShouldBlockEventStream(event))
+    if (!ShouldBlockEventStream(event))
       return;
     InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, event.type(),
                       ack_result);

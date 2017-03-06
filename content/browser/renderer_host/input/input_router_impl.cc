@@ -93,11 +93,10 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
                          base::FeatureList::IsEnabled(
                              features::kTouchpadAndWheelScrollLatching)),
       gesture_event_queue_(this, this, config.gesture_config),
-      device_scale_factor_(1.f) {
-  // TODO(dtapuska): Figure out regression caused by activating
-  // the passthrough queue. crbug.com/697871
-  if (false &&
-      base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents)) {
+      device_scale_factor_(1.f),
+      raf_aligned_touch_enabled_(
+          base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents)) {
+  if (raf_aligned_touch_enabled_) {
     touch_event_queue_.reset(
         new PassthroughTouchEventQueue(this, config.touch_config));
   } else {
@@ -380,7 +379,8 @@ void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
   if (OfferToClient(input_event, latency_info))
     return;
 
-  bool should_block = WebInputEventTraits::ShouldBlockEventStream(input_event);
+  bool should_block = WebInputEventTraits::ShouldBlockEventStream(
+      input_event, raf_aligned_touch_enabled_);
   OfferToRenderer(input_event, latency_info,
                   should_block
                       ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING

@@ -18,6 +18,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_features.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "ipc/ipc_listener.h"
@@ -35,6 +36,12 @@ namespace content {
 namespace {
 
 const int kTestRoutingID = 13;
+
+bool ShouldBlockEventStream(const blink::WebInputEvent& event) {
+  return ui::WebInputEventTraits::ShouldBlockEventStream(
+      event,
+      base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents));
+}
 
 class InputEventRecorder : public content::InputHandlerManager {
  public:
@@ -137,7 +144,7 @@ void AddEventsToFilter(IPC::MessageFilter* message_filter,
     messages.push_back(InputMsg_HandleInputEvent(
         kTestRoutingID, &events[i], std::vector<const WebInputEvent*>(),
         ui::LatencyInfo(),
-        ui::WebInputEventTraits::ShouldBlockEventStream(events[i])
+        ShouldBlockEventStream(events[i])
             ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
             : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
   }
@@ -274,7 +281,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
   messages.push_back(InputMsg_HandleInputEvent(
       kTestRoutingID, &mouse_down, std::vector<const WebInputEvent*>(),
       ui::LatencyInfo(),
-      ui::WebInputEventTraits::ShouldBlockEventStream(mouse_down)
+      ShouldBlockEventStream(mouse_down)
           ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
           : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
   // Control where input events are delivered.
@@ -305,7 +312,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
   messages.push_back(InputMsg_HandleInputEvent(
       kTestRoutingID, &mouse_up, std::vector<const WebInputEvent*>(),
       ui::LatencyInfo(),
-      ui::WebInputEventTraits::ShouldBlockEventStream(mouse_up)
+      ShouldBlockEventStream(mouse_up)
           ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
           : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
   AddMessagesToFilter(filter_.get(), messages);
