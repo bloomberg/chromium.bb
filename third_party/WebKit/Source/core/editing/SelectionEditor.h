@@ -67,9 +67,6 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   Range* firstRange() const;
 
   // There functions are exposed for |FrameSelection|.
-  void resetLogicalRange();
-  void setLogicalRange(Range*);
-
   void cacheRangeOfDocument(Range*);
   Range* documentCachedRange() const;
   void clearDocumentCachedRange();
@@ -111,13 +108,6 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   Member<LocalFrame> m_frame;
 
   SelectionInDOMTree m_selection;
-
-  // TODO(editing-dev): Removing |m_logicalRange|
-  // The range specified by the user, which may not be visually canonicalized
-  // (hence "logical"). This will be invalidated if the underlying
-  // |VisibleSelection| changes. If that happens, this variable will
-  // become |nullptr|, in which case logical positions == visible positions.
-  Member<Range> m_logicalRange;
 
   // If document is root, document.getSelection().addRange(range) is cached on
   // this.

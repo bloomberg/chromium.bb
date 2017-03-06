@@ -61,7 +61,6 @@ void SelectionEditor::clearVisibleSelection() {
 }
 
 void SelectionEditor::dispose() {
-  resetLogicalRange();
   clearDocumentCachedRange();
   clearVisibleSelection();
 }
@@ -122,7 +121,6 @@ void SelectionEditor::setSelection(const SelectionInDOMTree& newSelection) {
   newSelection.assertValidFor(document());
   if (m_selection == newSelection)
     return;
-  resetLogicalRange();
   clearDocumentCachedRange();
   markCacheDirty();
   m_selection = newSelection;
@@ -350,24 +348,7 @@ void SelectionEditor::didSplitTextNode(const Text& oldNode) {
   didFinishTextChange(newBase, newExtent);
 }
 
-void SelectionEditor::resetLogicalRange() {
-  // Non-collapsed ranges are not allowed to start at the end of a line that
-  // is wrapped, they start at the beginning of the next line instead
-  if (!m_logicalRange)
-    return;
-  m_logicalRange->dispose();
-  m_logicalRange = nullptr;
-}
-
-void SelectionEditor::setLogicalRange(Range* range) {
-  DCHECK_EQ(range->ownerDocument(), document());
-  DCHECK(!m_logicalRange) << "A logical range should be one.";
-  m_logicalRange = range;
-}
-
 Range* SelectionEditor::firstRange() const {
-  if (m_logicalRange)
-    return m_logicalRange->cloneRange();
   return createRange(firstEphemeralRangeOf(computeVisibleSelectionInDOMTree()));
 }
 
@@ -420,7 +401,6 @@ DEFINE_TRACE(SelectionEditor) {
   visitor->trace(m_selection);
   visitor->trace(m_cachedVisibleSelectionInDOMTree);
   visitor->trace(m_cachedVisibleSelectionInFlatTree);
-  visitor->trace(m_logicalRange);
   visitor->trace(m_cachedRange);
   SynchronousMutationObserver::trace(visitor);
 }

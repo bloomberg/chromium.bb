@@ -56,6 +56,22 @@ Text* FrameSelectionTest::appendTextNode(const String& data) {
   return text;
 }
 
+TEST_F(FrameSelectionTest, FirstRange) {
+  setBodyContent("<div id=sample>0123456789</div>abc");
+  Element* const sample = document().getElementById("sample");
+  Node* const text = sample->firstChild();
+  selection().setSelectedRange(
+      EphemeralRange(Position(text, 3), Position(text, 6)), VP_DEFAULT_AFFINITY,
+      SelectionDirectionalMode::NonDirectional, 0);
+  sample->setAttribute(HTMLNames::styleAttr, "display:none");
+  // Move |VisibleSelection| before "abc".
+  updateAllLifecyclePhases();
+  Range* const range = selection().firstRange();
+  EXPECT_EQ(Position(sample->nextSibling(), 0), range->startPosition())
+      << "firstRagne() should return current selection value";
+  EXPECT_EQ(Position(sample->nextSibling(), 0), range->endPosition());
+}
+
 TEST_F(FrameSelectionTest, SetValidSelection) {
   Text* text = appendTextNode("Hello, World!");
   document().view()->updateAllLifecyclePhases();
