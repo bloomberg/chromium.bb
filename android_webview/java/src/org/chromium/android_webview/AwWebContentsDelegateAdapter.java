@@ -125,7 +125,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
                 (reverse == (mContainerView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL))
                 ? View.FOCUS_RIGHT : View.FOCUS_LEFT;
         if (tryToMoveFocus(direction)) return true;
-        direction = reverse ? View.FOCUS_UP : View.FOCUS_DOWN;
+        direction = reverse ? View.FOCUS_BACKWARD : View.FOCUS_FORWARD;
         return tryToMoveFocus(direction);
     }
 
