@@ -177,17 +177,24 @@ void X11WindowBase::Close() {
 }
 
 void X11WindowBase::SetBounds(const gfx::Rect& bounds) {
-  if (bounds == bounds_)
-    return;
-
   if (window_mapped_) {
     XWindowChanges changes = {0};
-    unsigned value_mask = CWX | CWY | CWWidth | CWHeight;
-    changes.x = bounds.x();
-    changes.y = bounds.y();
-    changes.width = bounds.width();
-    changes.height = bounds.height();
-    XConfigureWindow(xdisplay_, xwindow_, value_mask, &changes);
+    unsigned value_mask = 0;
+
+    if (bounds_.size() != bounds.size()) {
+      changes.width = bounds.width();
+      changes.height = bounds.height();
+      value_mask |= CWHeight | CWWidth;
+    }
+
+    if (bounds_.origin() != bounds.origin()) {
+      changes.x = bounds.x();
+      changes.y = bounds.y();
+      value_mask |= CWX | CWY;
+    }
+
+    if (value_mask)
+      XConfigureWindow(xdisplay_, xwindow_, value_mask, &changes);
   }
 
   // Assume that the resize will go through as requested, which should be the
@@ -196,6 +203,10 @@ void X11WindowBase::SetBounds(const gfx::Rect& bounds) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
   bounds_ = bounds;
+
+  // Even if the pixel bounds didn't change this call to the delegate should
+  // still happen. The device scale factor may have changed which effectively
+  // changes the bounds.
   delegate_->OnBoundsChanged(bounds_);
 }
 
