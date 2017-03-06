@@ -327,6 +327,14 @@ class GaiaCookieManagerService : public KeyedService,
 
   bool list_accounts_stale_;
 
+  // The time when the profile was loaded and used to compute the time passed
+  // between the moment the profile was loaded and the moment a new list
+  // account request is started.
+  base::Time profile_load_time_;
+
+  // Counter for list account requests.
+  int list_accounts_request_counter_;
+
   DISALLOW_COPY_AND_ASSIGN(GaiaCookieManagerService);
 };
 

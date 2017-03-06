@@ -8,6 +8,7 @@
 
 #include <queue>
 
+#include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -298,7 +299,12 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       fetcher_retries_(0),
       source_(source),
       external_cc_result_fetched_(false),
-      list_accounts_stale_(true) {
+      list_accounts_stale_(true),
+      // |GaiaCookieManagerService| is created as soon as the profle is
+      // initialized so it is acceptable to use of this
+      // |GaiaCookieManagerService| as the time when the profile is loaded.
+      profile_load_time_(base::Time::Now()),
+      list_accounts_request_counter_(0) {
   DCHECK(!source_.empty());
 }
 
@@ -468,8 +474,21 @@ void GaiaCookieManagerService::CancelAll() {
 
 std::string GaiaCookieManagerService::GetSourceForRequest(
     const GaiaCookieManagerService::GaiaCookieRequest& request) {
-  return request.source().empty() ? GetDefaultSourceForRequest() :
-      request.source();
+  std::string source = request.source().empty() ? GetDefaultSourceForRequest()
+                                                : request.source();
+  if (request.request_type() != LIST_ACCOUNTS)
+    return source;
+
+  // For list accounts requests, the source also includes the time since the
+  // profile was loaded and the number of the request in order to debug channel
+  // ID issues observed on Gaia.
+  // TODO(msarda): Remove this debug code once the investigations on Gaia side
+  // are over.
+  std::string source_with_debug_info = base::StringPrintf(
+      "%s,counter:%" PRId32 ",load_time_ms:%" PRId64, source.c_str(),
+      list_accounts_request_counter_++,
+      (base::Time::Now() - profile_load_time_).InMilliseconds());
+  return source_with_debug_info;
 }
 
 std::string GaiaCookieManagerService::GetDefaultSourceForRequest() {
@@ -754,6 +773,7 @@ void GaiaCookieManagerService::StartFetchingLogOut() {
 
 void GaiaCookieManagerService::StartFetchingListAccounts() {
   VLOG(1) << "GaiaCookieManagerService::ListAccounts";
+
   gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
       this, GetSourceForRequest(requests_.front()),
       signin_client_->GetURLRequestContext()));
