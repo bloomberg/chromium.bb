@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -164,6 +165,25 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
   return std::move(row);
 }
 
+// Creates a GridLayout object to be used in the Order Summary section's list of
+// items and the list of prices. |host| is the view that will be assigned the
+// returned Layout Manager and |trailing| indicates whether the elements added
+// to the manager should have trailing horizontal alignment. If trailing is
+// |false|, their horizontal alignment is leading.
+std::unique_ptr<views::GridLayout> CreateOrderSummarySectionContainerLayout(
+    views::View* host,
+    bool trailing) {
+  std::unique_ptr<views::GridLayout> layout =
+      base::MakeUnique<views::GridLayout>(host);
+
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddColumn(
+      trailing ? views::GridLayout::TRAILING : views::GridLayout::LEADING,
+      views::GridLayout::LEADING, 1, views::GridLayout::USE_PREF, 0, 0);
+
+  return layout;
+}
+
 }  // namespace
 
 PaymentSheetViewController::PaymentSheetViewController(
@@ -288,33 +308,80 @@ void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
   pay_button_->SetEnabled(enabled);
 }
 
-std::unique_ptr<views::View>
-PaymentSheetViewController::CreateOrderSummarySectionContent() {
-  CurrencyFormatter* formatter = request()->GetOrCreateCurrencyFormatter(
-      request()->details()->total->amount->currency,
-      request()->details()->total->amount->currency_system,
-      g_browser_process->GetApplicationLocale());
-  base::string16 label_value = l10n_util::GetStringFUTF16(
-      IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT,
-      base::UTF8ToUTF16(request()->details()->total->label),
-      base::UTF8ToUTF16(formatter->formatted_currency_code()),
-      formatter->Format(request()->details()->total->amount->value));
-
-  return base::MakeUnique<views::Label>(label_value);
-}
-
 // Creates the Order Summary row, which contains an "Order Summary" label,
-// a Total Amount label, and a Chevron.
+// an inline list of display items, a Total Amount label, and a Chevron.
 // +----------------------------------------------+
-// | Order Summary           Total USD $12.34   > |
+// | Order Summary   Item 1            $ 1.34     |
+// |                 Item 2            $ 2.00   > |
+// |                 2 more items...              |
+// |                 Total         USD $12.34     |
 // +----------------------------------------------+
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
+  std::unique_ptr<views::View> item_summaries = base::MakeUnique<views::View>();
+  std::unique_ptr<views::GridLayout> item_summaries_layout =
+      CreateOrderSummarySectionContainerLayout(item_summaries.get(),
+                                               /* trailing =*/false);
+
+  std::unique_ptr<views::View> item_amounts = base::MakeUnique<views::View>();
+  std::unique_ptr<views::GridLayout> item_amounts_layout =
+      CreateOrderSummarySectionContainerLayout(item_amounts.get(),
+                                               /* trailing =*/true);
+
+  const std::vector<mojom::PaymentItemPtr>& items =
+      request()->details()->display_items;
+  // The inline items section contains the first 2 display items of the
+  // request's details, followed by a label indicating "N more items..." if
+  // there are more than 2 items in the details. The total label and amount
+  // always follow.
+  constexpr int kMaxNumberOfItemsShown = 2;
+  for (size_t i = 0; i < items.size() && i < kMaxNumberOfItemsShown; ++i) {
+    item_summaries_layout->StartRow(0, 0);
+    item_summaries_layout->AddView(
+        new views::Label(base::ASCIIToUTF16(items[i]->label)));
+
+    item_amounts_layout->StartRow(0, 0);
+    item_amounts_layout->AddView(new views::Label(
+        request()->GetFormattedCurrencyAmount(items[i]->amount->value)));
+  }
+
+  int hidden_item_count = items.size() - kMaxNumberOfItemsShown;
+  if (hidden_item_count > 0) {
+    item_summaries_layout->StartRow(0, 0);
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
+        l10n_util::GetStringFUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS,
+                                   base::IntToString16(hidden_item_count)));
+    label->SetDisabledColor(label->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelDisabledColor));
+    label->SetEnabled(false);
+    item_summaries_layout->AddView(label.release());
+
+    item_amounts_layout->StartRow(0, 0);
+    item_amounts_layout->AddView(new views::Label(base::ASCIIToUTF16("")));
+  }
+
+  item_summaries_layout->StartRow(0, 0);
+  item_summaries_layout->AddView(
+      CreateBoldLabel(base::ASCIIToUTF16(request()->details()->total->label))
+          .release());
+
+  item_amounts_layout->StartRow(0, 0);
+  item_amounts_layout->AddView(
+      CreateBoldLabel(
+          l10n_util::GetStringFUTF16(
+              IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
+              base::UTF8ToUTF16(request()->GetFormattedCurrencyCode()),
+              request()->GetFormattedCurrencyAmount(
+                  request()->details()->total->amount->value)))
+          .release());
+
+  item_summaries->SetLayoutManager(item_summaries_layout.release());
+  item_amounts->SetLayoutManager(item_amounts_layout.release());
+
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
       this,
       l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME),
-      std::unique_ptr<views::View>(nullptr),
-      CreateOrderSummarySectionContent(),
+      std::move(item_summaries), std::move(item_amounts),
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(
       PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON));

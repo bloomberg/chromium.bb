@@ -86,6 +86,14 @@ class PaymentRequest : payments::mojom::PaymentRequest {
       const std::string& currency_system,
       const std::string& locale_name);
 
+  // Uses CurrencyFormatter to format |amount| with the currency symbol for this
+  // request's currency.
+  base::string16 GetFormattedCurrencyAmount(const std::string& amount);
+
+  // Uses CurrencyFormatter to get the formatted currency code for this
+  // request's currency.
+  std::string GetFormattedCurrencyCode();
+
   // Returns the appropriate Autofill Profiles for this user. On the first
   // invocation of either getter, the profiles are fetched from the
   // PersonalDataManager; on subsequent invocations, a cached version is

@@ -40,7 +40,6 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
 
   void UpdatePayButtonState(bool enabled);
 
-  std::unique_ptr<views::View> CreateOrderSummarySectionContent();
   std::unique_ptr<views::View> CreateShippingSectionContent();
   std::unique_ptr<views::Button> CreateShippingRow();
   std::unique_ptr<views::Button> CreatePaymentSheetSummaryRow();

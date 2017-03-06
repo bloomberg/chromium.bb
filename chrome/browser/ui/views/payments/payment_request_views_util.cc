@@ -237,4 +237,13 @@ std::unique_ptr<views::Border> CreatePaymentRequestRowBorder() {
       gfx::Insets());
 }
 
+std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text) {
+  std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(text);
+
+  label->SetFontList(
+      label->font_list().DeriveWithWeight(gfx::Font::Weight::BOLD));
+
+  return label;
+}
+
 }  // namespace payments

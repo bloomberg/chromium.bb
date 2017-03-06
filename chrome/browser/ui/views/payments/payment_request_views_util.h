@@ -17,6 +17,7 @@ class AutofillProfile;
 namespace views {
 class Border;
 class ImageView;
+class Label;
 class VectorIconButtonDelegate;
 class View;
 }
@@ -83,6 +84,9 @@ std::unique_ptr<views::View> GetContactInfoLabel(
 // Creates a views::Border object that can paint the gray horizontal ruler used
 // as a separator between items in the Payment Request dialog.
 std::unique_ptr<views::Border> CreatePaymentRequestRowBorder();
+
+// Creates a label with a bold font.
+std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text);
 
 }  // namespace payments
 

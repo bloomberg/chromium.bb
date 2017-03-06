@@ -135,6 +135,24 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
   return currency_formatter_.get();
 }
 
+base::string16 PaymentRequest::GetFormattedCurrencyAmount(
+    const std::string& amount) {
+  CurrencyFormatter* formatter =
+      GetOrCreateCurrencyFormatter(details()->total->amount->currency,
+                                   details()->total->amount->currency_system,
+                                   delegate_->GetApplicationLocale());
+  return formatter->Format(amount);
+}
+
+std::string PaymentRequest::GetFormattedCurrencyCode() {
+  CurrencyFormatter* formatter =
+      GetOrCreateCurrencyFormatter(details()->total->amount->currency,
+                                   details()->total->amount->currency_system,
+                                   delegate_->GetApplicationLocale());
+
+  return formatter->formatted_currency_code();
+}
+
 void PaymentRequest::SetSelectedShippingProfile(
     autofill::AutofillProfile* profile) {
   selected_shipping_profile_ = profile;

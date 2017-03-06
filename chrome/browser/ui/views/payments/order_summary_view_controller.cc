@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -102,11 +103,6 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   content_view->SetLayoutManager(layout);
 
-  CurrencyFormatter* formatter = request()->GetOrCreateCurrencyFormatter(
-      request()->details()->total->amount->currency,
-      request()->details()->total->amount->currency_system,
-      g_browser_process->GetApplicationLocale());
-
   // Set the ID for the first few line items labels, for testing.
   const std::vector<DialogViewID> line_items{
       DialogViewID::ORDER_SUMMARY_LINE_ITEM_1,
@@ -118,7 +114,7 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
     content_view->AddChildView(
         CreateLineItemView(
             base::UTF8ToUTF16(request()->details()->display_items[i]->label),
-            formatter->Format(
+            request()->GetFormattedCurrencyAmount(
                 request()->details()->display_items[i]->amount->value),
             false, view_id)
             .release());
@@ -127,7 +123,8 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
   base::string16 total_label_value = l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(request()->details()->total->amount->currency),
-      formatter->Format(request()->details()->total->amount->value));
+      request()->GetFormattedCurrencyAmount(
+          request()->details()->total->amount->value));
 
   content_view->AddChildView(
       CreateLineItemView(base::UTF8ToUTF16(request()->details()->total->label),
