@@ -862,6 +862,7 @@
     },
     'polymer': {
       'filepath': 'third_party/polymer/|'\
+                  'third_party/web-animations-js/|'\
                   'tools/polymer|'\
                   'ui/webui/resources/polymer_resources.grdp',
     },
