@@ -52,8 +52,7 @@ enum StyleRecalcChange {
   IndependentInherit,
   Inherit,
   Force,
-  Reattach,
-  ReattachNoLayoutObject
+  Reattach
 };
 
 // Static pseudo styles. Dynamic ones are produced on the fly.

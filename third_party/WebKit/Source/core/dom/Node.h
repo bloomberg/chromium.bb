@@ -830,7 +830,9 @@ class CORE_EXPORT Node : public EventTarget {
     NeedsReattachLayoutTree = 1 << 26,
     ChildNeedsReattachLayoutTree = 1 << 27,
 
-    DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
+    DefaultNodeFlags = IsFinishedParsingChildrenFlag |
+                       NeedsReattachStyleChange |
+                       NeedsReattachLayoutTree
   };
 
   // 4 bits remaining.
@@ -853,8 +855,9 @@ class CORE_EXPORT Node : public EventTarget {
   enum ConstructionType {
     CreateOther = DefaultNodeFlags,
     CreateText = DefaultNodeFlags | IsTextFlag,
-    CreateContainer =
-        DefaultNodeFlags | ChildNeedsStyleRecalcFlag | IsContainerFlag,
+    CreateContainer = DefaultNodeFlags | ChildNeedsStyleRecalcFlag |
+                      ChildNeedsReattachLayoutTree |
+                      IsContainerFlag,
     CreateElement = CreateContainer | IsElementFlag,
     CreateShadowRoot =
         CreateContainer | IsDocumentFragmentFlag | IsInShadowTreeFlag,
@@ -974,6 +977,7 @@ inline void Node::lazyReattachIfAttached() {
 
   detachLayoutTree(context);
   markAncestorsWithChildNeedsStyleRecalc();
+  markAncestorsWithChildNeedsReattachLayoutTree();
 }
 
 inline bool Node::shouldCallRecalcStyle(StyleRecalcChange change) {

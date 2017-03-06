@@ -417,7 +417,7 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual LayoutObject* createLayoutObject(const ComputedStyle&);
   virtual bool layoutObjectIsNeeded(const ComputedStyle&);
   void recalcStyle(StyleRecalcChange, Text* nextTextSibling = nullptr);
-  StyleRecalcChange rebuildLayoutTree();
+  void rebuildLayoutTree();
   void pseudoStateChanged(CSSSelector::PseudoType);
   void setAnimationStyleChange(bool);
   void clearAnimationStyleChange();
@@ -847,6 +847,8 @@ class CORE_EXPORT Element : public ContainerNode {
   PassRefPtr<ComputedStyle> propagateInheritedProperties(StyleRecalcChange);
 
   StyleRecalcChange recalcOwnStyle(StyleRecalcChange, Text*);
+  void reattachPseudoElementLayoutTree(PseudoId);
+  void rebuildShadowRootLayoutTree();
   inline void checkForEmptyStyleChange();
 
   void updatePseudoElement(PseudoId, StyleRecalcChange);
