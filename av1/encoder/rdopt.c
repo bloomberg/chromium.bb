@@ -1116,6 +1116,7 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const int ref = is_inter_block(mbmi);
   aom_prob *blockz_probs =
       cm->fc->blockzero_probs[txsize_sqr_map[tx_size]][type][ref];
+
 #endif  // CONFIG_NEW_TOKENSET
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -1145,7 +1146,11 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       int v = qcoeff[0];
       int16_t prev_t;
       cost = av1_get_token_cost(v, &prev_t, cat6_high_cost);
+#if CONFIG_NEW_TOKENSET
+      cost += (*token_costs)[!prev_t][pt][prev_t];
+#else
       cost += (*token_costs)[0][pt][prev_t];
+#endif
 
       token_cache[0] = av1_pt_energy_class[prev_t];
       ++token_costs;
@@ -1157,7 +1162,11 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
         v = qcoeff[rc];
         cost += av1_get_token_cost(v, &t, cat6_high_cost);
+#if CONFIG_NEW_TOKENSET
+        cost += (*token_costs)[!t][!prev_t][t];
+#else
         cost += (*token_costs)[!prev_t][!prev_t][t];
+#endif
         prev_t = t;
         if (!--band_left) {
           band_left = *band_count++;
@@ -1166,7 +1175,8 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       }
 
       // eob token
-      if (band_left) cost += (*token_costs)[0][!prev_t][EOB_TOKEN];
+      if (band_left || CONFIG_NEW_TOKENSET)
+        cost += (*token_costs)[0][!prev_t][EOB_TOKEN];
 
     } else {  // !use_fast_coef_costing
       int band_left = *band_count++;
@@ -1174,14 +1184,22 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       // dc token
       int v = qcoeff[0];
       int16_t tok;
+#if !CONFIG_NEW_TOKENSET
       unsigned int(*tok_cost_ptr)[COEFF_CONTEXTS][ENTROPY_TOKENS];
+#endif
       cost = av1_get_token_cost(v, &tok, cat6_high_cost);
+#if CONFIG_NEW_TOKENSET
+      cost += (*token_costs)[!tok][pt][tok];
+#else
       cost += (*token_costs)[0][pt][tok];
+#endif
 
       token_cache[0] = av1_pt_energy_class[tok];
       ++token_costs;
 
+#if !CONFIG_NEW_TOKENSET
       tok_cost_ptr = &((*token_costs)[!tok]);
+#endif
 
       // ac tokens
       for (c = 1; c < eob; c++) {
@@ -1190,17 +1208,23 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
         v = qcoeff[rc];
         cost += av1_get_token_cost(v, &tok, cat6_high_cost);
         pt = get_coef_context(nb, token_cache, c);
+#if CONFIG_NEW_TOKENSET
+        cost += (*token_costs)[!tok][pt][tok];
+#else
         cost += (*tok_cost_ptr)[pt][tok];
+#endif
         token_cache[rc] = av1_pt_energy_class[tok];
         if (!--band_left) {
           band_left = *band_count++;
           ++token_costs;
         }
+#if !CONFIG_NEW_TOKENSET
         tok_cost_ptr = &((*token_costs)[!tok]);
+#endif
       }
 
       // eob token
-      if (band_left) {
+      if (band_left || CONFIG_NEW_TOKENSET) {
         pt = get_coef_context(nb, token_cache, c);
         cost += (*token_costs)[0][pt][EOB_TOKEN];
       }
