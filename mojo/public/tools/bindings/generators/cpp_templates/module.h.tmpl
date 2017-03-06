@@ -86,6 +86,16 @@ namespace {{variant}} {
 #include "{{export_header}}"
 {%- endif %}
 
+{#--- WTF enum hashing #}
+{%- from "enum_macros.tmpl" import enum_hash_blink%}
+{%- if for_blink %}
+{%-   for enum in all_enums %}
+{%-     if not enum|is_native_only_kind %}
+{{enum_hash_blink(enum)}}
+{%-     endif %}
+{%-   endfor %}
+{%- endif %}
+
 {{namespace_begin()}}
 
 {#--- Enums #}

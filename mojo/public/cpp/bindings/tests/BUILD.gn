@@ -21,6 +21,7 @@ source_set("tests") {
     "handle_passing_unittest.cc",
     "hash_unittest.cc",
     "interface_ptr_unittest.cc",
+    "map_unittest.cc",
     "message_queue.cc",
     "message_queue.h",
     "multiplex_router_unittest.cc",
@@ -80,6 +81,7 @@ if (!is_ios) {
       "container_test_util.h",
       "variant_test_util.h",
       "wtf_hash_unittest.cc",
+      "wtf_map_unittest.cc",
       "wtf_types_unittest.cc",
     ]
 

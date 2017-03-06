@@ -30,8 +30,4 @@ foreach(typemap, _typemaps) {
       } ]
 }
 
-blacklist = [
-  # TODO(sammc): Remove the following once |for_blink| bindings support WTF
-  # maps with enum keys. See https://crbug.com/583738.
-  "//mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom",
-]
+blacklist = []

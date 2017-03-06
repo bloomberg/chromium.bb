@@ -25,13 +25,26 @@ union TestWTFCodeGeneration2 {
 };
 
 struct TestWTFStruct {
+  enum NestedEnum {
+    E0,
+    E1,
+  };
   string str;
   int32 integer;
 };
 
 interface TestWTF {
+  enum NestedEnum {
+    E0,
+    E1,
+  };
   EchoString(string? str) => (string? str);
   EchoStringArray(array<string?>? arr) => (array<string?>? arr);
   EchoStringMap(map<string, string?>? str_map)
       => (map<string, string?>? str_map);
+};
+
+enum TopLevelEnum {
+  E0,
+  E1,
 };

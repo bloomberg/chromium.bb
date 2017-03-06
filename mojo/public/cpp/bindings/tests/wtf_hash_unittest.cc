@@ -5,7 +5,9 @@
 #include "mojo/public/cpp/bindings/lib/wtf_hash_util.h"
 
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom-blink.h"
+#include "mojo/public/interfaces/bindings/tests/test_wtf_types.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/wtf/HashFunctions.h"
 
 namespace mojo {
 namespace test {
@@ -29,6 +31,28 @@ TEST_F(WTFHashTest, UnmappedNativeStruct) {
                                    blink::UnmappedNativeStruct::New()),
             ::mojo::internal::Hash(::mojo::internal::kHashSeed,
                                    blink::UnmappedNativeStruct::New()));
+}
+
+TEST_F(WTFHashTest, Enum) {
+  // Just check that this template instantiation compiles.
+
+  // Top-level.
+  ASSERT_EQ(WTF::DefaultHash<blink::TopLevelEnum>::Hash().hash(
+                blink::TopLevelEnum::E0),
+            WTF::DefaultHash<blink::TopLevelEnum>::Hash().hash(
+                blink::TopLevelEnum::E0));
+
+  // Nested in struct.
+  ASSERT_EQ(WTF::DefaultHash<blink::TestWTFStruct::NestedEnum>::Hash().hash(
+                blink::TestWTFStruct::NestedEnum::E0),
+            WTF::DefaultHash<blink::TestWTFStruct::NestedEnum>::Hash().hash(
+                blink::TestWTFStruct::NestedEnum::E0));
+
+  // Nested in interface.
+  ASSERT_EQ(WTF::DefaultHash<blink::TestWTF::NestedEnum>::Hash().hash(
+                blink::TestWTF::NestedEnum::E0),
+            WTF::DefaultHash<blink::TestWTF::NestedEnum>::Hash().hash(
+                blink::TestWTF::NestedEnum::E0));
 }
 
 }  // namespace

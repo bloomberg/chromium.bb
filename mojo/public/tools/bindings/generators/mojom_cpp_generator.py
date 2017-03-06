@@ -153,10 +153,19 @@ def GetNameForKind(kind, internal=False, flatten_nested_kind=False,
       internal=internal, flatten_nested_kind=flatten_nested_kind,
       add_same_module_namespaces=add_same_module_namespaces)
 
-def GetQualifiedNameForKind(kind, internal=False, flatten_nested_kind=False):
-  return _NameFormatter(kind, _variant).FormatForCpp(
-      internal=internal, add_same_module_namespaces=True,
-      flatten_nested_kind=flatten_nested_kind)
+def GetQualifiedNameForKind(kind, internal=False, flatten_nested_kind=False,
+                            include_variant=True):
+  return _NameFormatter(
+      kind, _variant if include_variant else None).FormatForCpp(
+          internal=internal, add_same_module_namespaces=True,
+          flatten_nested_kind=flatten_nested_kind)
+
+
+def GetWtfHashFnNameForEnum(enum):
+  return _NameFormatter(
+      enum, None).Format("_", internal=True, add_same_module_namespaces=True,
+                         flatten_nested_kind=True) + "HashFn"
+
 
 def GetFullMojomNameForKind(kind):
   return _NameFormatter(kind, _variant).FormatForMojom()
@@ -209,6 +218,18 @@ def IsHashableKind(kind):
     else:
       return True
   return Check(kind)
+
+
+def AllEnumValues(enum):
+  """Return all enum values associated with an enum.
+
+  Args:
+    enum: {mojom.Enum} The enum type.
+
+  Returns:
+   {Set[int]} The values.
+  """
+  return set(field.numeric_value for field in enum.fields)
 
 
 def GetNativeTypeName(typemapped_kind):
@@ -584,6 +605,7 @@ def GetNewContainerValidateParams(kind):
 class Generator(generator.Generator):
 
   cpp_filters = {
+    "all_enum_values": AllEnumValues,
     "constant_value": ConstantValue,
     "contains_handles_or_interfaces": mojom.ContainsHandlesOrInterfaces,
     "contains_move_only_members": ContainsMoveOnlyMembers,
@@ -630,6 +652,7 @@ class Generator(generator.Generator):
     "stylize_method": generator.StudlyCapsToCamel,
     "under_to_camel": generator.UnderToCamel,
     "unmapped_type_for_serializer": GetUnmappedTypeForSerializer,
+    "wtf_hash_fn_name_for_enum": GetWtfHashFnNameForEnum,
   }
 
   def GetExtraTraitsHeaders(self):

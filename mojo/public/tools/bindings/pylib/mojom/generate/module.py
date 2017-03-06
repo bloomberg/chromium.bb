@@ -303,7 +303,7 @@ class Struct(ReferenceKind):
     module: {Module} The defining module.
     imported_from: {dict} Information about where this union was
         imported from.
-    fields: {List[StructField]} The members of the union.
+    fields: {List[StructField]} The members of the struct.
     attributes: {dict} Additional information about the struct, such as
         if it's a native struct.
   """
