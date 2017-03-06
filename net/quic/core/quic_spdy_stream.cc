@@ -167,8 +167,7 @@ void QuicSpdyStream::OnStreamHeaderList(bool fin,
   // be reset.
   // TODO(rch): Use an explicit "headers too large" signal. An empty header list
   // might be acceptable if it corresponds to a trailing header frame.
-  if (FLAGS_quic_reloadable_flag_quic_limit_uncompressed_headers &&
-      header_list.empty()) {
+  if (header_list.empty()) {
     OnHeadersTooLarge();
     if (IsDoneReading()) {
       return;

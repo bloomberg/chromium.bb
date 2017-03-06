@@ -1159,13 +1159,7 @@ TEST_P(EndToEndTest, LargeHeaders) {
   headers["key3"] = string(15 * 1024, 'a');
 
   client_->SendCustomSynchronousRequest(headers, body);
-  if (FLAGS_quic_reloadable_flag_quic_limit_uncompressed_headers) {
-    EXPECT_EQ(QUIC_HEADERS_TOO_LARGE, client_->stream_error());
-  } else {
-    EXPECT_EQ(QUIC_STREAM_NO_ERROR, client_->stream_error());
-    EXPECT_EQ(kFooResponseBody, client_->response_body());
-    EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-  }
+  EXPECT_EQ(QUIC_HEADERS_TOO_LARGE, client_->stream_error());
   EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
 }
 

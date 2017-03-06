@@ -144,7 +144,6 @@ TEST_P(QuicSpdyStreamTest, ProcessHeaderList) {
 }
 
 TEST_P(QuicSpdyStreamTest, ProcessTooLargeHeaderList) {
-  FLAGS_quic_reloadable_flag_quic_limit_uncompressed_headers = true;
   Initialize(kShouldProcessData);
 
   QuicHeaderList headers;
