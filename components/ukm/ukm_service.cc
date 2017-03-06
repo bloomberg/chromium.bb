@@ -408,7 +408,10 @@ void UkmService::OnLogUploadComplete(int response_code) {
   }
 
   if (upload_succeeded || discard_log) {
-    persisted_logs_.DiscardStagedLog();
+    // TODO(holte): The if below is a temporary fix for a crash bug. We should
+    // revisit the logic and update it with a more correct fix. crbug.com/698819
+    if (persisted_logs_.has_staged_log())
+      persisted_logs_.DiscardStagedLog();
     // Store the updated list to disk now that the removed log is uploaded.
     persisted_logs_.PersistUnsentLogs();
   }
