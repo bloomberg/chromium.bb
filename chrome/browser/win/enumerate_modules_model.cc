@@ -241,7 +241,7 @@ void ModuleEnumerator::ScanImplModule(size_t index) {
     Module& entry = enumerated_modules_->at(index);
     PopulateModuleInformation(&entry);
     NormalizeModule(&entry);
-    CollapsePath(&entry);
+    CollapseMatchingPrefixInPath(path_mapping_, &entry.location);
     base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
     enumeration_inspection_time_ += elapsed;
     enumeration_total_time_ += elapsed;
@@ -396,51 +396,10 @@ void ModuleEnumerator::AddToListWithoutDuplicating(const Module& module) {
 }
 
 void ModuleEnumerator::PreparePathMappings() {
-  path_mapping_.clear();
-
-  std::unique_ptr<base::Environment> environment(base::Environment::Create());
-  std::vector<base::string16> env_vars;
-  env_vars.push_back(L"LOCALAPPDATA");
-  env_vars.push_back(L"ProgramFiles");
-  env_vars.push_back(L"ProgramData");
-  env_vars.push_back(L"USERPROFILE");
-  env_vars.push_back(L"SystemRoot");
-  env_vars.push_back(L"TEMP");
-  env_vars.push_back(L"TMP");
-  env_vars.push_back(L"CommonProgramFiles");
-  for (std::vector<base::string16>::const_iterator variable = env_vars.begin();
-       variable != env_vars.end(); ++variable) {
-    std::string path;
-    if (environment->GetVar(base::UTF16ToASCII(*variable).c_str(), &path)) {
-      path_mapping_.push_back(
-          std::make_pair(base::i18n::ToLower(base::UTF8ToUTF16(path)) + L"\\",
-                         L"%" + base::i18n::ToLower(*variable) + L"%"));
-    }
-  }
-}
-
-void ModuleEnumerator::CollapsePath(Module* entry) {
-  // Take the path and see if we can use any of the substitution values
-  // from the vector constructed above to replace c:\windows with, for
-  // example, %systemroot%. The most collapsed path (the one with the
-  // minimum length) wins.
-  size_t min_length = MAXINT;
-  base::string16 location = entry->location;
-  for (PathMapping::const_iterator mapping = path_mapping_.begin();
-       mapping != path_mapping_.end(); ++mapping) {
-    const base::string16& prefix = mapping->first;
-    if (base::StartsWith(base::i18n::ToLower(location),
-                         base::i18n::ToLower(prefix),
-                         base::CompareCase::SENSITIVE)) {
-      base::string16 new_location = mapping->second +
-                              location.substr(prefix.length() - 1);
-      size_t length = new_location.length() - mapping->second.length();
-      if (length < min_length) {
-        entry->location = new_location;
-        min_length = length;
-      }
-    }
-  }
+  path_mapping_ = GetEnvironmentVariablesMapping({
+      L"LOCALAPPDATA", L"ProgramFiles", L"ProgramData", L"USERPROFILE",
+      L"SystemRoot", L"TEMP", L"TMP", L"CommonProgramFiles",
+  });
 }
 
 void ModuleEnumerator::ReportThirdPartyMetrics() {

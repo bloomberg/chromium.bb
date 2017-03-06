@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CONFLICTS_MODULE_INFO_UTIL_WIN_H_
 #define CHROME_BROWSER_CONFLICTS_MODULE_INFO_UTIL_WIN_H_
 
+#include <utility>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
@@ -39,5 +42,22 @@ struct CertificateInfo {
 // constructed.
 void GetCertificateInfo(const base::FilePath& file,
                         CertificateInfo* certificate_info);
+
+// Returns a mapping of the value of an environment variable to its name.
+// Removes any existing trailing backslash in the values.
+//
+// e.g. c:\windows\system32 -> %systemroot%
+using StringMapping = std::vector<std::pair<base::string16, base::string16>>;
+StringMapping GetEnvironmentVariablesMapping(
+    const std::vector<base::string16>& environment_variables);
+
+// If |prefix_mapping| contains a matching prefix with |path|, substitutes that
+// prefix with its associated value. If multiple matches are found, the longest
+// prefix is chosen. Unmodified if no matches are found.
+//
+// This function expects |prefix_mapping| and |path| to contain lowercase
+// strings. Also, |prefix_mapping| must not contain any trailing backslashes.
+void CollapseMatchingPrefixInPath(const StringMapping& prefix_mapping,
+                                  base::string16* path);
 
 #endif  // CHROME_BROWSER_CONFLICTS_MODULE_INFO_UTIL_WIN_H_

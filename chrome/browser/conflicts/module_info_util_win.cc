@@ -13,10 +13,15 @@
 // This must be after wincrypt and wintrust.
 #include <mscat.h>
 
+#include <limits>
 #include <memory>
-#include <vector>
+#include <string>
 
+#include "base/environment.h"
+#include "base/i18n/case_conversion.h"
 #include "base/scoped_generic.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 
 namespace {
@@ -237,4 +242,50 @@ void GetCertificateInfo(const base::FilePath& filename,
   certificate_info->type = CertificateType::CERTIFICATE_IN_FILE;
   certificate_info->path = filename;
   certificate_info->subject = subject;
+}
+
+StringMapping GetEnvironmentVariablesMapping(
+    const std::vector<base::string16>& environment_variables) {
+  std::unique_ptr<base::Environment> environment(base::Environment::Create());
+
+  StringMapping string_mapping;
+  for (const base::string16& variable : environment_variables) {
+    std::string value;
+    if (environment->GetVar(base::UTF16ToASCII(variable).c_str(), &value)) {
+      value = base::TrimString(value, "\\", base::TRIM_TRAILING).as_string();
+      string_mapping.push_back(
+          std::make_pair(base::i18n::ToLower(base::UTF8ToUTF16(value)),
+                         L"%" + base::i18n::ToLower(variable) + L"%"));
+    }
+  }
+
+  return string_mapping;
+}
+
+void CollapseMatchingPrefixInPath(const StringMapping& prefix_mapping,
+                                  base::string16* path) {
+  const base::string16 path_copy = *path;
+  DCHECK_EQ(base::i18n::ToLower(path_copy), path_copy);
+
+  size_t min_length = std::numeric_limits<size_t>::max();
+  for (const auto& mapping : prefix_mapping) {
+    DCHECK_EQ(base::i18n::ToLower(mapping.first), mapping.first);
+    if (base::StartsWith(path_copy, mapping.first,
+                         base::CompareCase::SENSITIVE)) {
+      // Make sure the matching prefix is a full path component.
+      if (path_copy[mapping.first.length()] != '\\' &&
+          path_copy[mapping.first.length()] != '\0') {
+        continue;
+      }
+
+      base::string16 collapsed_path = path_copy;
+      base::ReplaceFirstSubstringAfterOffset(&collapsed_path, 0, mapping.first,
+                                             mapping.second);
+      size_t length = collapsed_path.length() - mapping.second.length();
+      if (length < min_length) {
+        *path = collapsed_path;
+        min_length = length;
+      }
+    }
+  }
 }

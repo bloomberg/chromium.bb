@@ -186,23 +186,16 @@ class ModuleEnumerator {
   // likely to appear there.
   void PreparePathMappings();
 
-  // For a given |module|, collapse the path from c:\windows to %systemroot%,
-  // based on the |path_mapping_| vector.
-  void CollapsePath(Module* module);
-
   // Reports (via UMA) a handful of high-level metrics regarding third party
   // modules in this process. Called by ScanImplFinish.
   void ReportThirdPartyMetrics();
-
-  // The typedef for the vector that maps a regular file path to %env_var%.
-  typedef std::vector<std::pair<base::string16, base::string16>> PathMapping;
 
   // The TaskRunner to perform work in the background.
   const scoped_refptr<base::TaskRunner> background_task_runner_;
 
   // The vector of paths to %env_var%, used to account for differences in
   // where people keep there files, c:\windows vs. d:\windows, etc.
-  PathMapping path_mapping_;
+  StringMapping path_mapping_;
 
   // The vector containing all the enumerated modules (loaded and modules of
   // interest).

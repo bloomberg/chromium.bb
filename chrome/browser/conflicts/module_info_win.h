@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CONFLICTS_MODULE_INFO_WIN_H_
 #define CHROME_BROWSER_CONFLICTS_MODULE_INFO_WIN_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 
@@ -43,22 +45,12 @@ struct ModuleInfoKey {
   ModuleId module_id;
 };
 
-// Holds more detailed information about a given module. Because most of this
-// information is expensive to gather and require disk access, it should be
-// collected on a task runner that allow blocking.
-struct ModuleInfoData {
-  ModuleInfoData();
-  ModuleInfoData(const ModuleInfoData& others);
-  ~ModuleInfoData();
-
-  // Set of all process types in which this module has been seen (may not be
-  // currently present in a process of that type). This is a conversion of
-  // ProcessType enumeration to a bitfield. See "ProcessTypeToBit" and
-  // "BitIndexToProcessType" for details.
-  uint32_t process_types;
-
-  // The following pieces of information are determined via a detailed
-  // inspection of the module.
+// Holds more detailed information about a given module. Because all of this
+// information is expensive to gather and requires disk access, it should be
+// collected via InspectModule() on a task runner that allow blocking.
+struct ModuleInspectionResult {
+  ModuleInspectionResult();
+  ~ModuleInspectionResult();
 
   // The module path, not including the basename. This is cleaned and normalized
   // so that common paths are converted to their environment variable mappings
@@ -81,5 +73,43 @@ struct ModuleInfoData {
   // The certificate info for the module.
   CertificateInfo certificate_info;
 };
+
+// Contains the inspection result of a module and additional information that is
+// useful to the ModuleDatabase.
+struct ModuleInfoData {
+  ModuleInfoData();
+  ~ModuleInfoData();
+
+  // Set of all process types in which this module has been seen (may not be
+  // currently present in a process of that type). This is a conversion of
+  // ProcessType enumeration to a bitfield. See "ProcessTypeToBit" and
+  // "BitIndexToProcessType" for details.
+  uint32_t process_types;
+
+  // The inspection result obtained via InspectModule().
+  std::unique_ptr<ModuleInspectionResult> inspection_result;
+};
+
+// Given a module identified by |module_key|, returns a populated
+// ModuleInspectionResult that contains detailed information about the module on
+// disk. This is a blocking task that requires access to disk.
+std::unique_ptr<ModuleInspectionResult> InspectModule(
+    const StringMapping& env_variable_mapping,
+    const ModuleInfoKey& module_key);
+
+namespace internal {
+
+// Normalizes the information already contained in |inspection_result|. In
+// particular:
+// - The path is split in 2 parts: The basename and the location.
+// - If it uses commas, the version string is modified to use periods.
+// - If there is one, the version string suffix is removed.
+// - If there is one, the trailing null character in the subject string of the
+//   certificate info is removed.
+//
+// Exposed for testing.
+void NormalizeInspectionResult(ModuleInspectionResult* inspection_result);
+
+}  // namespace internal
 
 #endif  // CHROME_BROWSER_CONFLICTS_MODULE_INFO_WIN_H_
