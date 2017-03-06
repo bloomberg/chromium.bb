@@ -74,7 +74,7 @@ bool SetOmniboxDefaultSuggestion(
   std::unique_ptr<base::DictionaryValue> dict = suggestion.ToValue();
   // Add the content field so that the dictionary can be used to populate an
   // omnibox::SuggestResult.
-  dict->SetWithoutPathExpansion(kSuggestionContent, new base::StringValue(""));
+  dict->SetWithoutPathExpansion(kSuggestionContent, new base::Value(""));
   prefs->UpdateExtensionPref(extension_id,
                              kOmniboxDefaultSuggestion,
                              dict.release());
@@ -112,7 +112,7 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
     return false;
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, new base::StringValue(input));
+  args->Set(0, new base::Value(input));
   args->Set(1, new base::Value(suggest_id));
 
   std::unique_ptr<Event> event = base::MakeUnique<Event>(
@@ -140,13 +140,13 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
       active_tab_permission_granter()->GrantIfRequested(extension);
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, new base::StringValue(input));
+  args->Set(0, new base::Value(input));
   if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
-    args->Set(1, new base::StringValue(kForegroundTabDisposition));
+    args->Set(1, new base::Value(kForegroundTabDisposition));
   else if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
-    args->Set(1, new base::StringValue(kBackgroundTabDisposition));
+    args->Set(1, new base::Value(kBackgroundTabDisposition));
   else
-    args->Set(1, new base::StringValue(kCurrentTabDisposition));
+    args->Set(1, new base::Value(kCurrentTabDisposition));
 
   std::unique_ptr<Event> event = base::MakeUnique<Event>(
       events::OMNIBOX_ON_INPUT_ENTERED, omnibox::OnInputEntered::kEventName,

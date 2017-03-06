@@ -143,7 +143,7 @@ TEST_F(ShillProfileClientTest, GetEntry) {
   // Create the expected value.
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(shill::kTypeProperty,
-                                new base::StringValue(shill::kTypeWifi));
+                                new base::Value(shill::kTypeWifi));
   // Set expectations.
   PrepareForMethodCall(shill::kGetEntryFunction,
                        base::Bind(&ExpectStringArgument, kExampleEntryPath),

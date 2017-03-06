@@ -301,7 +301,7 @@ void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {
     // Special case, removing partially-constructed supervised user or
     // boostrapping user during user list loading.
     ListPrefUpdate users_update(GetLocalState(), kRegularUsers);
-    users_update->Remove(base::StringValue(account_id.GetUserEmail()), nullptr);
+    users_update->Remove(base::Value(account_id.GetUserEmail()), nullptr);
     OnUserRemoved(account_id);
   } else {
     NOTREACHED() << "Users are not loaded yet.";
@@ -401,7 +401,7 @@ void UserManagerBase::SaveUserDisplayName(const AccountId& account_id,
       DictionaryPrefUpdate display_name_update(GetLocalState(),
                                                kUserDisplayName);
       display_name_update->SetWithoutPathExpansion(
-          account_id.GetUserEmail(), new base::StringValue(display_name));
+          account_id.GetUserEmail(), new base::Value(display_name));
     }
   }
 }
@@ -430,8 +430,8 @@ void UserManagerBase::SaveUserDisplayEmail(const AccountId& account_id,
     return;
 
   DictionaryPrefUpdate display_email_update(GetLocalState(), kUserDisplayEmail);
-  display_email_update->SetWithoutPathExpansion(
-      account_id.GetUserEmail(), new base::StringValue(display_email));
+  display_email_update->SetWithoutPathExpansion(account_id.GetUserEmail(),
+                                                new base::Value(display_email));
 }
 
 std::string UserManagerBase::GetUserDisplayEmail(
@@ -473,8 +473,8 @@ void UserManagerBase::UpdateUserAccountData(
     user->set_given_name(given_name);
     if (!IsUserNonCryptohomeDataEphemeral(account_id)) {
       DictionaryPrefUpdate given_name_update(GetLocalState(), kUserGivenName);
-      given_name_update->SetWithoutPathExpansion(
-          account_id.GetUserEmail(), new base::StringValue(given_name));
+      given_name_update->SetWithoutPathExpansion(account_id.GetUserEmail(),
+                                                 new base::Value(given_name));
     }
   }
 
@@ -867,8 +867,8 @@ void UserManagerBase::GuestUserLoggedIn() {
 void UserManagerBase::AddUserRecord(User* user) {
   // Add the user to the front of the user list.
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsers);
-  prefs_users_update->Insert(0, base::MakeUnique<base::StringValue>(
-                                    user->GetAccountId().GetUserEmail()));
+  prefs_users_update->Insert(
+      0, base::MakeUnique<base::Value>(user->GetAccountId().GetUserEmail()));
   users_.insert(users_.begin(), user);
 }
 

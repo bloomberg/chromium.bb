@@ -197,9 +197,8 @@ void ExtensionLoaderHandler::AddFailure(
   highlighter.SetHighlightedRegions(manifest_value.get());
 
   std::unique_ptr<base::DictionaryValue> failure(new base::DictionaryValue());
-  failure->Set("path",
-               new base::StringValue(prettified_path.LossyDisplayName()));
-  failure->Set("error", new base::StringValue(base::UTF8ToUTF16(error)));
+  failure->Set("path", new base::Value(prettified_path.LossyDisplayName()));
+  failure->Set("error", new base::Value(base::UTF8ToUTF16(error)));
   failure->Set("manifest", manifest_value.release());
   failures_.Append(std::move(failure));
 

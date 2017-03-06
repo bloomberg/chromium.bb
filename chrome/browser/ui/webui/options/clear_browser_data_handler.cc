@@ -145,7 +145,7 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(
-      "ClearBrowserDataOverlay.setBannerText", base::StringValue(text));
+      "ClearBrowserDataOverlay.setBannerText", base::Value(text));
 }
 
 void ClearBrowserDataHandler::OnPageOpened(const base::ListValue* value) {
@@ -386,8 +386,8 @@ void ClearBrowserDataHandler::UpdateCounterText(
   DCHECK(AreCountersEnabled());
   web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.updateCounter",
-      base::StringValue(result->source()->GetPrefName()),
-      base::StringValue(GetChromeCounterTextFromResult(result.get())));
+      base::Value(result->source()->GetPrefName()),
+      base::Value(GetChromeCounterTextFromResult(result.get())));
 }
 
 void ClearBrowserDataHandler::OnStateChanged(syncer::SyncService* sync) {

@@ -261,7 +261,7 @@ void StorageManagerHandler::OnGetDownloadsSize(int64_t size) {
   updating_downloads_size_ = false;
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.StorageManager.setDownloadsSize",
-      base::StringValue(ui::FormatBytes(size)));
+      base::Value(ui::FormatBytes(size)));
 }
 
 void StorageManagerHandler::UpdateDriveCacheSize() {
@@ -286,7 +286,7 @@ void StorageManagerHandler::OnGetDriveCacheSize(int64_t size) {
   updating_drive_cache_size_ = false;
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.StorageManager.setDriveCacheSize",
-      base::StringValue(ui::FormatBytes(size)));
+      base::Value(ui::FormatBytes(size)));
 }
 
 void StorageManagerHandler::UpdateBrowsingDataSize() {
@@ -357,8 +357,7 @@ void StorageManagerHandler::OnGetBrowsingDataSize(bool is_site_data,
     }
     updating_browsing_data_size_ = false;
     web_ui()->CallJavascriptFunctionUnsafe(
-        "options.StorageManager.setBrowsingDataSize",
-        base::StringValue(size_string));
+        "options.StorageManager.setBrowsingDataSize", base::Value(size_string));
   }
 }
 
@@ -385,7 +384,7 @@ void StorageManagerHandler::UpdateOtherUsersSize() {
     updating_other_users_size_ = false;
     web_ui()->CallJavascriptFunctionUnsafe(
         "options.StorageManager.setOtherUsersSize",
-        base::StringValue(ui::FormatBytes(0)));
+        base::Value(ui::FormatBytes(0)));
   }
 }
 
@@ -403,8 +402,7 @@ void StorageManagerHandler::OnGetOtherUserSize(bool success, int64_t size) {
     }
     updating_other_users_size_ = false;
     web_ui()->CallJavascriptFunctionUnsafe(
-        "options.StorageManager.setOtherUsersSize",
-        base::StringValue(size_string));
+        "options.StorageManager.setOtherUsersSize", base::Value(size_string));
   }
 }
 
@@ -443,7 +441,7 @@ void StorageManagerHandler::OnGetArcSize(bool succeeded,
   }
   updating_arc_size_ = false;
   web_ui()->CallJavascriptFunctionUnsafe("options.StorageManager.setArcSize",
-                                         base::StringValue(size_string));
+                                         base::Value(size_string));
 }
 
 void StorageManagerHandler::OnClearDriveCacheDone(bool success) {

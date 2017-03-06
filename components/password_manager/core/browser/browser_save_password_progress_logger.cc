@@ -161,7 +161,7 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
 
 void BrowserSavePasswordProgressLogger::LogString(StringID label,
                                                   const std::string& s) {
-  LogValue(label, base::StringValue(s));
+  LogValue(label, base::Value(s));
 }
 
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {

@@ -89,8 +89,8 @@ void SystemStorageEjectDeviceFunction::HandleResponse(
       result = api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
   }
 
-  Respond(OneArgument(base::MakeUnique<base::StringValue>(
-      api::system_storage::ToString(result))));
+  Respond(OneArgument(
+      base::MakeUnique<base::Value>(api::system_storage::ToString(result))));
 }
 
 SystemStorageGetAvailableCapacityFunction::

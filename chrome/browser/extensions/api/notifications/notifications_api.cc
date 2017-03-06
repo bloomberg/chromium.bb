@@ -704,7 +704,7 @@ bool NotificationsCreateFunction::RunNotificationsApi() {
       notification_id = base::RandBytesAsString(16);
   }
 
-  SetResult(base::MakeUnique<base::StringValue>(notification_id));
+  SetResult(base::MakeUnique<base::Value>(notification_id));
 
   // TODO(dewittj): Add more human-readable error strings if this fails.
   if (!CreateNotification(notification_id, &params_->options))
@@ -817,8 +817,8 @@ bool NotificationsGetPermissionLevelFunction::RunNotificationsApi() {
           ? api::notifications::PERMISSION_LEVEL_GRANTED
           : api::notifications::PERMISSION_LEVEL_DENIED;
 
-  SetResult(base::MakeUnique<base::StringValue>(
-      api::notifications::ToString(result)));
+  SetResult(
+      base::MakeUnique<base::Value>(api::notifications::ToString(result)));
   SendResponse(true);
 
   return true;

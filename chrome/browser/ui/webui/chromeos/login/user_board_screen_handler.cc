@@ -91,7 +91,7 @@ void UserBoardScreenHandler::SetAuthType(
     proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
     const base::string16& initial_value) {
   CallJS("login.AccountPickerScreen.setAuthType", account_id,
-         static_cast<int>(auth_type), base::StringValue(initial_value));
+         static_cast<int>(auth_type), base::Value(initial_value));
 }
 
 void UserBoardScreenHandler::Bind(UserSelectionScreen* screen) {

@@ -371,8 +371,8 @@ SyncFileSystemSetConflictResolutionPolicyFunction::Run() {
 
 ExtensionFunction::ResponseAction
 SyncFileSystemGetConflictResolutionPolicyFunction::Run() {
-  return RespondNow(OneArgument(
-      base::MakeUnique<base::StringValue>(api::sync_file_system::ToString(
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::Value>(api::sync_file_system::ToString(
           api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN))));
 }
 

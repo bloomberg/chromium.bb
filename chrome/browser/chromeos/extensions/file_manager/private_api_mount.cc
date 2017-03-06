@@ -155,7 +155,7 @@ void FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
   }
 
   // Pass back the actual source path of the mount point.
-  SetResult(base::MakeUnique<base::StringValue>(file_path.AsUTF8Unsafe()));
+  SetResult(base::MakeUnique<base::Value>(file_path.AsUTF8Unsafe()));
   SendResponse(true);
 
   // MountPath() takes a std::string.

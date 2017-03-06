@@ -568,7 +568,7 @@ void TranslatePrefs::RemoveValueFromBlacklist(const char* pref_id,
     NOTREACHED() << "Unregistered translate blacklist pref";
     return;
   }
-  base::StringValue string_value(value);
+  base::Value string_value(value);
   blacklist->Remove(string_value, NULL);
 }
 

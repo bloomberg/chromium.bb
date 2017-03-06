@@ -305,11 +305,10 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   std::string expected_json = "{\n   \"SSID\": \"MyNetwork\"\n}\n";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
-  std::unique_ptr<base::StringValue> networkNameValue(
-      new base::StringValue(networkName));
+  std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
 
   base::DictionaryValue value;
-  value.Set(key, new base::StringValue(networkName));
+  value.Set(key, new base::Value(networkName));
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_,
               SetProperty(dbus::ObjectPath(service_path), key,
@@ -334,11 +333,10 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   std::string service_path = "/service/1";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
-  std::unique_ptr<base::StringValue> networkNameValue(
-      new base::StringValue(networkName));
+  std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
 
   base::DictionaryValue value;
-  value.Set(key, new base::StringValue(networkName));
+  value.Set(key, new base::Value(networkName));
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(
@@ -354,12 +352,11 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
   std::string service_path = "/service/1";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
-  std::unique_ptr<base::StringValue> networkNameValue(
-      new base::StringValue(networkName));
+  std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
 
   // First set up a value to clear.
   base::DictionaryValue value;
-  value.Set(key, new base::StringValue(networkName));
+  value.Set(key, new base::Value(networkName));
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(
@@ -386,12 +383,11 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
   std::string service_path = "/service/1";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
-  std::unique_ptr<base::StringValue> networkNameValue(
-      new base::StringValue(networkName));
+  std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
 
   // First set up a value to clear.
   base::DictionaryValue value;
-  value.Set(key, new base::StringValue(networkName));
+  value.Set(key, new base::Value(networkName));
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(
@@ -421,10 +417,9 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   std::string profile = "profile path";
   base::DictionaryValue value;
   shill_property_util::SetSSID(networkName, &value);
-  value.SetWithoutPathExpansion(shill::kTypeProperty,
-                                new base::StringValue(type));
+  value.SetWithoutPathExpansion(shill::kTypeProperty, new base::Value(type));
   value.SetWithoutPathExpansion(shill::kProfileProperty,
-                                new base::StringValue(profile));
+                                new base::Value(profile));
 
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(dbus::ObjectPath(profile), _, _, _))

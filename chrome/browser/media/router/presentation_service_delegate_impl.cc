@@ -1056,7 +1056,7 @@ bool PresentationServiceDelegateImpl::ShouldCancelAutoJoinForOrigin(
           ->GetPrefs()
           ->GetList(prefs::kMediaRouterTabMirroringSources);
   return origins &&
-         origins->Find(base::StringValue(origin.Serialize())) != origins->end();
+         origins->Find(base::Value(origin.Serialize())) != origins->end();
 }
 #endif  // !defined(OS_ANDROID)
 

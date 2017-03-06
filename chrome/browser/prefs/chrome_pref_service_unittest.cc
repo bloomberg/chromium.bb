@@ -59,14 +59,12 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     // Set some (WebKit) user preferences.
     sync_preferences::TestingPrefServiceSyncable* pref_services =
         profile()->GetTestingPrefService();
-    pref_services->SetUserPref(prefs::kDefaultCharset,
-                               new base::StringValue("utf8"));
+    pref_services->SetUserPref(prefs::kDefaultCharset, new base::Value("utf8"));
     pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
                                new base::Value(20));
     pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
                                new base::Value(false));
-    pref_services->SetUserPref("webkit.webprefs.foo",
-                               new base::StringValue("bar"));
+    pref_services->SetUserPref("webkit.webprefs.foo", new base::Value("bar"));
   }
 };
 

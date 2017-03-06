@@ -22,9 +22,8 @@ void CommandLinePrefStore::ApplyStringSwitches(
   for (size_t i = 0; i < size; ++i) {
     if (command_line_->HasSwitch(string_switch[i].switch_name)) {
       SetValue(string_switch[i].preference_path,
-               base::MakeUnique<base::StringValue>(
-                   command_line_->GetSwitchValueASCII(
-                       string_switch[i].switch_name)),
+               base::MakeUnique<base::Value>(command_line_->GetSwitchValueASCII(
+                   string_switch[i].switch_name)),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -35,12 +34,11 @@ void CommandLinePrefStore::ApplyPathSwitches(
     size_t size) {
   for (size_t i = 0; i < size; ++i) {
     if (command_line_->HasSwitch(path_switch[i].switch_name)) {
-      SetValue(
-          path_switch[i].preference_path,
-          base::MakeUnique<base::StringValue>(
-              command_line_->GetSwitchValuePath(path_switch[i].switch_name)
-                  .value()),
-          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+      SetValue(path_switch[i].preference_path,
+               base::MakeUnique<base::Value>(
+                   command_line_->GetSwitchValuePath(path_switch[i].switch_name)
+                       .value()),
+               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
 }

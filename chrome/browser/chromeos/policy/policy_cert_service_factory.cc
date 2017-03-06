@@ -60,13 +60,13 @@ void PolicyCertServiceFactory::ClearUsedPolicyCertificates(
     const std::string& user_id) {
   ListPrefUpdate update(g_browser_process->local_state(),
                         prefs::kUsedPolicyCertificates);
-  update->Remove(base::StringValue(user_id), NULL);
+  update->Remove(base::Value(user_id), NULL);
 }
 
 // static
 bool PolicyCertServiceFactory::UsedPolicyCertificates(
     const std::string& user_id) {
-  base::StringValue value(user_id);
+  base::Value value(user_id);
   const base::ListValue* list =
       g_browser_process->local_state()->GetList(prefs::kUsedPolicyCertificates);
   if (!list) {

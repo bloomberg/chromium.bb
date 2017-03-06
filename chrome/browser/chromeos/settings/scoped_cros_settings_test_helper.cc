@@ -95,7 +95,7 @@ void ScopedCrosSettingsTestHelper::SetDouble(const std::string& path,
 
 void ScopedCrosSettingsTestHelper::SetString(const std::string& path,
                                              const std::string& in_value) {
-  Set(path, base::StringValue(in_value));
+  Set(path, base::Value(in_value));
 }
 
 void ScopedCrosSettingsTestHelper::StoreCachedDeviceSetting(

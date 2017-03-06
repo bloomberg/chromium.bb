@@ -486,7 +486,7 @@ Status ExecuteGetCurrentUrl(Session* session,
         return status;
     }
   }
-  value->reset(new base::StringValue(url));
+  value->reset(new base::Value(url));
   return Status(kOk);
 }
 
@@ -885,7 +885,7 @@ Status ExecuteScreenshot(Session* session,
   if (status.IsError())
     return status;
 
-  value->reset(new base::StringValue(screenshot));
+  value->reset(new base::Value(screenshot));
   return Status(kOk);
 }
 

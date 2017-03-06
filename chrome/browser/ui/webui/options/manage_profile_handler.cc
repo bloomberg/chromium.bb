@@ -218,13 +218,13 @@ void ManageProfileHandler::OnProfileWasRemoved(
 void ManageProfileHandler::OnProfileNameChanged(
     const base::FilePath& profile_path,
     const base::string16& old_profile_name) {
-  base::StringValue value(kManageProfileIdentifier);
+  base::Value value(kManageProfileIdentifier);
   SendProfileIconsAndNames(value);
 }
 
 void ManageProfileHandler::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
-  base::StringValue value(kManageProfileIdentifier);
+  base::Value value(kManageProfileIdentifier);
   SendProfileIconsAndNames(value);
 }
 
@@ -273,7 +273,7 @@ void ManageProfileHandler::RequestDefaultProfileIcons(
   DCHECK(ok);
   DCHECK(mode == kCreateProfileIdentifier || mode == kManageProfileIdentifier);
   if (ok) {
-    base::StringValue value(mode);
+    base::Value value(mode);
     SendProfileIconsAndNames(value);
   }
 }
@@ -293,8 +293,7 @@ void ManageProfileHandler::RequestNewProfileDefaults(
       "ManageProfileOverlay.receiveNewProfileDefaults", profile_info);
 }
 
-void ManageProfileHandler::SendProfileIconsAndNames(
-    const base::StringValue& mode) {
+void ManageProfileHandler::SendProfileIconsAndNames(const base::Value& mode) {
   base::ListValue image_url_list;
   base::ListValue default_name_list;
 
@@ -435,8 +434,8 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
   if (gaia_name.empty())
     return;
 
-  base::StringValue gaia_name_value(gaia_name);
-  base::StringValue mode_value(kManageProfileIdentifier);
+  base::Value gaia_name_value(gaia_name);
+  base::Value mode_value(kManageProfileIdentifier);
   web_ui()->CallJavascriptFunctionUnsafe("ManageProfileOverlay.setProfileName",
                                          gaia_name_value, mode_value);
 }
@@ -488,7 +487,7 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
                     state == GoogleServiceAuthError::ACCOUNT_DELETED ||
                     state == GoogleServiceAuthError::ACCOUNT_DISABLED);
   web_ui()->CallJavascriptFunctionUnsafe(
-      "CreateProfileOverlay.updateSignedInStatus", base::StringValue(username),
+      "CreateProfileOverlay.updateSignedInStatus", base::Value(username),
       base::Value(has_error));
 
   OnCreateSupervisedUserPrefChange();

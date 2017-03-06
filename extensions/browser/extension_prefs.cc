@@ -1361,8 +1361,7 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(
   const base::Time install_time = time_provider_->GetCurrentTime();
   pending_install_dict->Set(
       kPrefInstallTime,
-      new base::StringValue(
-          base::Int64ToString(install_time.ToInternalValue())));
+      new base::Value(base::Int64ToString(install_time.ToInternalValue())));
 
   // Commit the delayed install data.
   for (base::DictionaryValue::Iterator it(*pending_install_dict); !it.IsAtEnd();
@@ -1694,9 +1693,8 @@ std::string ExtensionPrefs::GetInstallParam(
 
 void ExtensionPrefs::SetInstallParam(const std::string& extension_id,
                                      const std::string& install_parameter) {
-  UpdateExtensionPref(extension_id,
-                      kPrefInstallParam,
-                      new base::StringValue(install_parameter));
+  UpdateExtensionPref(extension_id, kPrefInstallParam,
+                      new base::Value(install_parameter));
 }
 
 int ExtensionPrefs::GetCorruptedDisableCount() const {
@@ -1844,18 +1842,17 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
                       new base::Value(extension->was_installed_by_default()));
   extension_dict->Set(kPrefWasInstalledByOem,
                       new base::Value(extension->was_installed_by_oem()));
-  extension_dict->Set(kPrefInstallTime,
-                      new base::StringValue(
-                          base::Int64ToString(install_time.ToInternalValue())));
+  extension_dict->Set(
+      kPrefInstallTime,
+      new base::Value(base::Int64ToString(install_time.ToInternalValue())));
   if (install_flags & kInstallFlagIsBlacklistedForMalware)
     extension_dict->Set(kPrefBlacklist, new base::Value(true));
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,
                                                      extension->path());
-  extension_dict->Set(kPrefPath, new base::StringValue(path));
+  extension_dict->Set(kPrefPath, new base::Value(path));
   if (!install_parameter.empty()) {
-    extension_dict->Set(kPrefInstallParam,
-                        new base::StringValue(install_parameter));
+    extension_dict->Set(kPrefInstallParam, new base::Value(install_parameter));
   }
   // We store prefs about LOAD extensions, but don't cache their manifest
   // since it may change on disk.

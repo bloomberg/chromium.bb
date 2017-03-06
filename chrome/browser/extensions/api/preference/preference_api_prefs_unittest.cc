@@ -192,9 +192,8 @@ void ExtensionControlledPrefsTest::EnsureExtensionUninstalled(
 class ControlledPrefsInstallOneExtension
     : public ExtensionControlledPrefsTest {
   void Initialize() override {
-    InstallExtensionControlledPref(extension1(),
-                                   kPref1,
-                                   new base::StringValue("val1"));
+    InstallExtensionControlledPref(extension1(), kPref1,
+                                   new base::Value("val1"));
   }
   void Verify() override {
     std::string actual = prefs()->pref_service()->GetString(kPref1);
@@ -209,10 +208,10 @@ class ControlledPrefsInstallIncognitoPersistent
     : public ExtensionControlledPrefsTest {
  public:
   void Initialize() override {
-    InstallExtensionControlledPref(
-        extension1(), kPref1, new base::StringValue("val1"));
-    InstallExtensionControlledPrefIncognito(
-        extension1(), kPref1, new base::StringValue("val2"));
+    InstallExtensionControlledPref(extension1(), kPref1,
+                                   new base::Value("val1"));
+    InstallExtensionControlledPrefIncognito(extension1(), kPref1,
+                                            new base::Value("val2"));
     std::unique_ptr<PrefService> incog_prefs(
         prefs_.CreateIncognitoPrefService());
     std::string actual = incog_prefs->GetString(kPref1);
@@ -240,10 +239,10 @@ class ControlledPrefsInstallIncognitoSessionOnly
   ControlledPrefsInstallIncognitoSessionOnly() : iteration_(0) {}
 
   void Initialize() override {
-    InstallExtensionControlledPref(
-        extension1(), kPref1, new base::StringValue("val1"));
-    InstallExtensionControlledPrefIncognitoSessionOnly(
-        extension1(), kPref1, new base::StringValue("val2"));
+    InstallExtensionControlledPref(extension1(), kPref1,
+                                   new base::Value("val1"));
+    InstallExtensionControlledPrefIncognitoSessionOnly(extension1(), kPref1,
+                                                       new base::Value("val2"));
     std::unique_ptr<PrefService> incog_prefs(
         prefs_.CreateIncognitoPrefService());
     std::string actual = incog_prefs->GetString(kPref1);
@@ -273,10 +272,10 @@ TEST_F(ControlledPrefsInstallIncognitoSessionOnly,
 
 class ControlledPrefsUninstallExtension : public ExtensionControlledPrefsTest {
   void Initialize() override {
-    InstallExtensionControlledPref(
-        extension1(), kPref1, new base::StringValue("val1"));
-    InstallExtensionControlledPref(
-        extension1(), kPref2, new base::StringValue("val2"));
+    InstallExtensionControlledPref(extension1(), kPref1,
+                                   new base::Value("val1"));
+    InstallExtensionControlledPref(extension1(), kPref2,
+                                   new base::Value("val2"));
     scoped_refptr<ContentSettingsStore> store = content_settings_store();
     ContentSettingsPattern pattern =
         ContentSettingsPattern::FromString("http://[*.]example.com");
@@ -325,7 +324,7 @@ class ControlledPrefsNotifyWhenNeeded : public ExtensionControlledPrefsTest {
     EXPECT_CALL(observer, OnPreferenceChanged(_));
     EXPECT_CALL(incognito_observer, OnPreferenceChanged(_));
     InstallExtensionControlledPref(extension1(), kPref1,
-        new base::StringValue("https://www.chromium.org"));
+                                   new base::Value("https://www.chromium.org"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
@@ -333,7 +332,7 @@ class ControlledPrefsNotifyWhenNeeded : public ExtensionControlledPrefsTest {
     EXPECT_CALL(observer, OnPreferenceChanged(_)).Times(0);
     EXPECT_CALL(incognito_observer, OnPreferenceChanged(_)).Times(0);
     InstallExtensionControlledPref(extension1(), kPref1,
-        new base::StringValue("https://www.chromium.org"));
+                                   new base::Value("https://www.chromium.org"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
@@ -341,22 +340,22 @@ class ControlledPrefsNotifyWhenNeeded : public ExtensionControlledPrefsTest {
     EXPECT_CALL(observer, OnPreferenceChanged(_));
     EXPECT_CALL(incognito_observer, OnPreferenceChanged(_));
     InstallExtensionControlledPref(extension1(), kPref1,
-        new base::StringValue("chrome://newtab"));
+                                   new base::Value("chrome://newtab"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
     // Change only incognito persistent value.
     EXPECT_CALL(observer, OnPreferenceChanged(_)).Times(0);
     EXPECT_CALL(incognito_observer, OnPreferenceChanged(_));
-    InstallExtensionControlledPrefIncognito(extension1(), kPref1,
-        new base::StringValue("chrome://newtab2"));
+    InstallExtensionControlledPrefIncognito(
+        extension1(), kPref1, new base::Value("chrome://newtab2"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
     // Change only incognito session-only value.
     EXPECT_CALL(observer, OnPreferenceChanged(_)).Times(0);
     EXPECT_CALL(incognito_observer, OnPreferenceChanged(_));
-    InstallExtensionControlledPrefIncognito(extension1(), kPref1,
-        new base::StringValue("chrome://newtab3"));
+    InstallExtensionControlledPrefIncognito(
+        extension1(), kPref1, new base::Value("chrome://newtab3"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
@@ -381,8 +380,8 @@ TEST_F(ControlledPrefsNotifyWhenNeeded,
 // Tests disabling an extension.
 class ControlledPrefsDisableExtension : public ExtensionControlledPrefsTest {
   void Initialize() override {
-    InstallExtensionControlledPref(
-        extension1(), kPref1, new base::StringValue("val1"));
+    InstallExtensionControlledPref(extension1(), kPref1,
+                                   new base::Value("val1"));
     std::string actual = prefs()->pref_service()->GetString(kPref1);
     EXPECT_EQ("val1", actual);
     prefs()->SetExtensionDisabled(extension1()->id(),
@@ -398,8 +397,8 @@ TEST_F(ControlledPrefsDisableExtension, ControlledPrefsDisableExtension) { }
 // Tests disabling and reenabling an extension.
 class ControlledPrefsReenableExtension : public ExtensionControlledPrefsTest {
   void Initialize() override {
-    InstallExtensionControlledPref(
-        extension1(), kPref1, new base::StringValue("val1"));
+    InstallExtensionControlledPref(extension1(), kPref1,
+                                   new base::Value("val1"));
     prefs()->SetExtensionDisabled(extension1()->id(),
                                   Extension::DISABLE_USER_ACTION);
     prefs()->SetExtensionEnabled(extension1()->id());
@@ -415,10 +414,10 @@ class ControlledPrefsSetExtensionControlledPref
     : public ExtensionControlledPrefsTest {
  public:
   void Initialize() override {
-    base::StringValue* v1 = new base::StringValue("https://www.chromium.org");
-    base::StringValue* v2 = new base::StringValue("https://www.chromium.org");
-    base::StringValue* v1i = new base::StringValue("https://www.chromium.org");
-    base::StringValue* v2i = new base::StringValue("https://www.chromium.org");
+    base::Value* v1 = new base::Value("https://www.chromium.org");
+    base::Value* v2 = new base::Value("https://www.chromium.org");
+    base::Value* v1i = new base::Value("https://www.chromium.org");
+    base::Value* v2i = new base::Value("https://www.chromium.org");
     // Ownership is taken, value shall not be deleted.
     InstallExtensionControlledPref(extension1(), kPref1, v1);
     InstallExtensionControlledPrefIncognito(extension1(), kPref1, v1i);
@@ -441,8 +440,8 @@ class ControlledPrefsDisableExtensions : public ExtensionControlledPrefsTest {
       : iteration_(0) {}
   ~ControlledPrefsDisableExtensions() override {}
   void Initialize() override {
-    InstallExtensionControlledPref(
-        extension1(), kPref1, new base::StringValue("val1"));
+    InstallExtensionControlledPref(extension1(), kPref1,
+                                   new base::Value("val1"));
     // This becomes only active in the second verification phase.
     prefs_.set_extensions_disabled(true);
   }

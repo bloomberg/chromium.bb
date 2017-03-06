@@ -66,7 +66,7 @@ TEST(IPCMessageTest, BasicMessageTest) {
 TEST(IPCMessageTest, ListValue) {
   base::ListValue input;
   input.Set(0, new base::Value(42.42));
-  input.Set(1, new base::StringValue("forty"));
+  input.Set(1, new base::Value("forty"));
   input.Set(2, base::Value::CreateNullValue());
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
@@ -93,13 +93,13 @@ TEST(IPCMessageTest, DictionaryValue) {
   input.SetWithoutPathExpansion("int.with.dot", new base::Value(43));
 
   std::unique_ptr<base::DictionaryValue> subdict(new base::DictionaryValue());
-  subdict->Set("str", new base::StringValue("forty two"));
+  subdict->Set("str", new base::Value("forty two"));
   subdict->Set("bool", new base::Value(false));
 
   std::unique_ptr<base::ListValue> sublist(new base::ListValue());
   sublist->Set(0, new base::Value(42.42));
-  sublist->Set(1, new base::StringValue("forty"));
-  sublist->Set(2, new base::StringValue("two"));
+  sublist->Set(1, new base::Value("forty"));
+  sublist->Set(2, new base::Value("two"));
   subdict->Set("list", sublist.release());
 
   input.Set("dict", subdict.release());

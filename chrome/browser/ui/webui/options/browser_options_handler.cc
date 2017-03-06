@@ -1312,9 +1312,8 @@ void BrowserOptionsHandler::OnDefaultBrowserWorkerFinished(
 }
 
 void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
-  base::StringValue status_string(
-      l10n_util::GetStringFUTF16(status_string_id,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  base::Value status_string(l10n_util::GetStringFUTF16(
+      status_string_id, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
   base::Value is_default(status_string_id ==
                          IDS_OPTIONS_DEFAULTBROWSER_DEFAULT);
@@ -1559,7 +1558,7 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
   if (!email.empty()) {
     web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.updateAccountPicture");
-    base::StringValue email_value(email);
+    base::Value email_value(email);
     web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.updateAccountPicture", email_value);
     web_ui()->CallJavascriptFunctionUnsafe(
@@ -1827,7 +1826,7 @@ void BrowserOptionsHandler::SetHotwordAudioHistorySectionVisible(
   bool visible = logging_enabled && success;
   web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setAudioHistorySectionVisible", base::Value(visible),
-      base::StringValue(audio_history_state));
+      base::Value(audio_history_state));
 }
 
 void BrowserOptionsHandler::HandleRequestGoogleNowAvailable(
@@ -1934,10 +1933,10 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     } else {
       base::string16 hotword_help_url =
           base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL);
-      base::StringValue error_message(l10n_util::GetStringUTF16(error));
+      base::Value error_message(l10n_util::GetStringUTF16(error));
       if (error == IDS_HOTWORD_GENERIC_ERROR_MESSAGE) {
-        error_message = base::StringValue(
-            l10n_util::GetStringFUTF16(error, hotword_help_url));
+        error_message =
+            base::Value(l10n_util::GetStringFUTF16(error, hotword_help_url));
       }
       web_ui()->CallJavascriptFunctionUnsafe(function_name, error_message);
     }

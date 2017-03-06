@@ -159,13 +159,13 @@ std::unique_ptr<base::Value> PopDataAsValue(MessageReader* reader) {
     case Message::STRING: {
       std::string value;
       if (reader->PopString(&value))
-        result = base::MakeUnique<base::StringValue>(value);
+        result = base::MakeUnique<base::Value>(value);
       break;
     }
     case Message::OBJECT_PATH: {
       ObjectPath value;
       if (reader->PopObjectPath(&value))
-        result = base::MakeUnique<base::StringValue>(value.value());
+        result = base::MakeUnique<base::Value>(value.value());
       break;
     }
     case Message::UNIX_FD: {

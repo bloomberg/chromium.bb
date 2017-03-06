@@ -37,7 +37,7 @@ class ChromeOSInfoPrivateTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, TestGetAndSet) {
   // Set the initial timezone different from what JS function
   // timezoneSetTest() will attempt to set.
-  base::StringValue initial_timezone("America/Los_Angeles");
+  base::Value initial_timezone("America/Los_Angeles");
   chromeos::CrosSettings::Get()->Set(chromeos::kSystemTimezone,
                                      initial_timezone);
 

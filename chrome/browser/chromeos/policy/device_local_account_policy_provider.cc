@@ -71,7 +71,7 @@ DeviceLocalAccountPolicyProvider::Create(
     chrome_policy_overrides->Set(
         key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE, POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-        base::MakeUnique<base::StringValue>("Never"), nullptr);
+        base::MakeUnique<base::Value>("Never"), nullptr);
     // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
     // red logout button is shown in the ash system tray.
     chrome_policy_overrides->Set(key::kShowLogoutButtonInTray,

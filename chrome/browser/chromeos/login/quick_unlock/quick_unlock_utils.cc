@@ -68,8 +68,8 @@ bool IsPinEnabled(PrefService* pref_service) {
   // Check if policy allows PIN.
   const base::ListValue* quick_unlock_whitelist =
       pref_service->GetList(prefs::kQuickUnlockModeWhitelist);
-  base::StringValue all_value(kQuickUnlockWhitelistOptionAll);
-  base::StringValue pin_value(kQuickUnlockWhitelistOptionPin);
+  base::Value all_value(kQuickUnlockWhitelistOptionAll);
+  base::Value pin_value(kQuickUnlockWhitelistOptionPin);
   if (quick_unlock_whitelist->Find(all_value) ==
           quick_unlock_whitelist->end() &&
       quick_unlock_whitelist->Find(pin_value) ==

@@ -92,7 +92,7 @@ void ManageProfileHandler::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   // This is necessary to send the potentially updated GAIA photo.
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("available-icons-changed"),
+                         base::Value("available-icons-changed"),
                          *GetAvailableIcons());
 }
 
@@ -194,8 +194,8 @@ void ManageProfileHandler::HandleRequestProfileShortcutStatus(
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
   if (storage.GetNumberOfProfiles() <= 1u) {
-    ResolveJavascriptCallback(base::StringValue(callback_id),
-                              base::StringValue(kProfileShortcutSettingHidden));
+    ResolveJavascriptCallback(base::Value(callback_id),
+                              base::Value(kProfileShortcutSettingHidden));
     return;
   }
 
@@ -212,9 +212,9 @@ void ManageProfileHandler::OnHasProfileShortcuts(
     const std::string& callback_id, bool has_shortcuts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ResolveJavascriptCallback(
-      base::StringValue(callback_id),
-      base::StringValue(has_shortcuts ? kProfileShortcutFound
-                                      : kProfileShortcutNotFound));
+      base::Value(callback_id),
+      base::Value(has_shortcuts ? kProfileShortcutFound
+                                : kProfileShortcutNotFound));
 }
 
 void ManageProfileHandler::HandleAddProfileShortcut(

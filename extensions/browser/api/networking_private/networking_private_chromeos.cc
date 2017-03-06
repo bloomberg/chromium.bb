@@ -280,9 +280,9 @@ void SetManualProxy(base::DictionaryValue* manual,
   base::DictionaryValue* dict = EnsureDictionaryValue(key, manual);
   base::DictionaryValue* host_dict =
       EnsureDictionaryValue(::onc::proxy::kHost, dict);
-  SetProxyEffectiveValue(host_dict, state,
-                         base::MakeUnique<base::StringValue>(
-                             proxy.server.host_port_pair().host()));
+  SetProxyEffectiveValue(
+      host_dict, state,
+      base::MakeUnique<base::Value>(proxy.server.host_port_pair().host()));
   uint16_t port = proxy.server.host_port_pair().port();
   base::DictionaryValue* port_dict =
       EnsureDictionaryValue(::onc::proxy::kPort, dict);
@@ -779,7 +779,7 @@ void NetworkingPrivateChromeOS::SetManagedActiveProxyValues(
   base::DictionaryValue* proxy_type_dict =
       EnsureDictionaryValue(::onc::network_config::kType, proxy_settings);
   SetProxyEffectiveValue(proxy_type_dict, state,
-                         base::WrapUnique<base::Value>(new base::StringValue(
+                         base::WrapUnique<base::Value>(new base::Value(
                              GetProxySettingsType(config.mode))));
 
   // Update any appropriate sub dictionary based on the new type.
@@ -806,9 +806,9 @@ void NetworkingPrivateChromeOS::SetManagedActiveProxyValues(
     case UIProxyConfig::MODE_PAC_SCRIPT: {
       base::DictionaryValue* pac =
           EnsureDictionaryValue(::onc::proxy::kPAC, proxy_settings);
-      SetProxyEffectiveValue(
-          pac, state, base::WrapUnique<base::Value>(new base::StringValue(
-                          config.automatic_proxy.pac_url.spec())));
+      SetProxyEffectiveValue(pac, state,
+                             base::WrapUnique<base::Value>(new base::Value(
+                                 config.automatic_proxy.pac_url.spec())));
       break;
     }
     case UIProxyConfig::MODE_DIRECT:

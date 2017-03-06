@@ -126,10 +126,8 @@ class NetworkPortalDetectorImplBrowserTest
                              shill::kStateIdle,
                              true /* add_to_visible */);
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
-        dbus::ObjectPath(kWifiServicePath),
-        shill::kStateProperty,
-        base::StringValue(shill::kStatePortal),
-        base::Bind(&base::DoNothing),
+        dbus::ObjectPath(kWifiServicePath), shill::kStateProperty,
+        base::Value(shill::kStatePortal), base::Bind(&base::DoNothing),
         base::Bind(&ErrorCallbackFunction));
 
     network_portal_detector_ = new NetworkPortalDetectorImpl(

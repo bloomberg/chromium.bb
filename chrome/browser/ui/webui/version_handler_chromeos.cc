@@ -40,16 +40,16 @@ void VersionHandlerChromeOS::HandleRequestVersionInfo(
 }
 
 void VersionHandlerChromeOS::OnVersion(const std::string& version) {
-  base::StringValue arg(version);
+  base::Value arg(version);
   web_ui()->CallJavascriptFunctionUnsafe("returnOsVersion", arg);
 }
 
 void VersionHandlerChromeOS::OnOSFirmware(const std::string& version) {
-  base::StringValue arg(version);
+  base::Value arg(version);
   web_ui()->CallJavascriptFunctionUnsafe("returnOsFirmwareVersion", arg);
 }
 
 void VersionHandlerChromeOS::OnARCVersion(const std::string& version) {
-  base::StringValue arg(version);
+  base::Value arg(version);
   web_ui()->CallJavascriptFunctionUnsafe("returnARCVersion", arg);
 }

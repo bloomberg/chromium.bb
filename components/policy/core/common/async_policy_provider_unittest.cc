@@ -34,7 +34,7 @@ void SetPolicy(PolicyBundle* bundle,
                const std::string& value) {
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_PLATFORM, base::MakeUnique<base::StringValue>(value),
+           POLICY_SOURCE_PLATFORM, base::MakeUnique<base::Value>(value),
            nullptr);
 }
 

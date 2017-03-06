@@ -102,7 +102,7 @@ void LayoutTestDevToolsFrontend::EvaluateInFrontend(
   }
 
   std::string encoded_script;
-  base::JSONWriter::Write(base::StringValue(script), &encoded_script);
+  base::JSONWriter::Write(base::Value(script), &encoded_script);
   std::string source =
       base::StringPrintf("DevToolsAPI.evaluateForTestInFrontend(%d, %s);",
                          call_id,

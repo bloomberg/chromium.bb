@@ -271,7 +271,7 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreSplitHash(
 
     for (base::DictionaryValue::Iterator it(*split_macs); !it.IsAtEnd();
          it.Advance()) {
-      const base::StringValue* value_as_string;
+      const base::Value* value_as_string;
       bool is_string = it.value().GetAsString(&value_as_string);
       DCHECK(is_string);
 

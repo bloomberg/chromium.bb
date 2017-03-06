@@ -32,7 +32,7 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result,
 
   CFTypeID result_type = CFGetTypeID(wk_result);
   if (result_type == CFStringGetTypeID()) {
-    result.reset(new base::StringValue(base::SysNSStringToUTF16(wk_result)));
+    result.reset(new base::Value(base::SysNSStringToUTF16(wk_result)));
     DCHECK(result->IsType(base::Value::Type::STRING));
   } else if (result_type == CFNumberGetTypeID()) {
     result.reset(new base::Value([wk_result doubleValue]));

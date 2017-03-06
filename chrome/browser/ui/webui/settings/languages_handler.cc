@@ -61,7 +61,7 @@ void LanguagesHandler::HandleGetProspectiveUILanguage(
         g_browser_process->local_state()->GetString(prefs::kApplicationLocale);
   }
 
-  ResolveJavascriptCallback(*callback_id, base::StringValue(locale));
+  ResolveJavascriptCallback(*callback_id, base::Value(locale));
 #else
   NOTREACHED() << "Attempting to get locale on unsupported platform";
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)

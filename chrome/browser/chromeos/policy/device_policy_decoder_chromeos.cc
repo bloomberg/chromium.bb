@@ -107,7 +107,7 @@ std::unique_ptr<base::Value> DecodeConnectionType(int value) {
   if (value < 0 || value >= static_cast<int>(arraysize(kConnectionTypes)))
     return nullptr;
 
-  return base::MakeUnique<base::StringValue>(kConnectionTypes[value]);
+  return base::MakeUnique<base::Value>(kConnectionTypes[value]);
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -238,11 +238,10 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   std::move(account_list), nullptr);
     if (container.has_auto_login_id()) {
-      policies->Set(
-          key::kDeviceLocalAccountAutoLoginId, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          base::MakeUnique<base::StringValue>(container.auto_login_id()),
-          nullptr);
+      policies->Set(key::kDeviceLocalAccountAutoLoginId, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::MakeUnique<base::Value>(container.auto_login_id()),
+                    nullptr);
     }
     if (container.has_auto_login_delay()) {
       policies->Set(key::kDeviceLocalAccountAutoLoginDelay,
@@ -357,7 +356,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     policies->Set(key::kDeviceLoginScreenDomainAutoComplete,
                   POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                   POLICY_SOURCE_CLOUD,
-                  base::MakeUnique<base::StringValue>(
+                  base::MakeUnique<base::Value>(
                       container.login_screen_domain_auto_complete()),
                   nullptr);
   }
@@ -425,7 +424,7 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
         policy.open_network_configuration().open_network_configuration());
     policies->Set(key::kDeviceOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                  base::MakeUnique<base::StringValue>(config), nullptr);
+                  base::MakeUnique<base::Value>(config), nullptr);
   }
 }
 
@@ -533,7 +532,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       std::string channel(container.release_channel());
       policies->Set(key::kChromeOsReleaseChannel, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::StringValue>(channel), nullptr);
+                    base::MakeUnique<base::Value>(channel), nullptr);
       // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
       // have to pass the channel in here, only ping the update engine to tell
       // it to fetch the channel from the policy.
@@ -559,11 +558,11 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
     }
 
     if (container.has_target_version_prefix()) {
-      policies->Set(key::kDeviceTargetVersionPrefix, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::StringValue>(
-                        container.target_version_prefix()),
-                    nullptr);
+      policies->Set(
+          key::kDeviceTargetVersionPrefix, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          base::MakeUnique<base::Value>(container.target_version_prefix()),
+          nullptr);
     }
 
     // target_version_display_name is not actually a policy, but a display
@@ -708,11 +707,11 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 
   if (policy.has_system_timezone()) {
     if (policy.system_timezone().has_timezone()) {
-      policies->Set(key::kSystemTimezone, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::StringValue>(
-                        policy.system_timezone().timezone()),
-                    nullptr);
+      policies->Set(
+          key::kSystemTimezone, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+          POLICY_SOURCE_CLOUD,
+          base::MakeUnique<base::Value>(policy.system_timezone().timezone()),
+          nullptr);
     }
 
     if (policy.system_timezone().has_timezone_detection_type()) {
@@ -761,7 +760,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::StartUpFlagsProto& container(policy.start_up_flags());
     std::unique_ptr<base::ListValue> flags(new base::ListValue());
     for (const auto& entry : container.flags())
-      flags->Append(base::MakeUnique<base::StringValue>(entry));
+      flags->Append(base::MakeUnique<base::Value>(entry));
     policies->Set(key::kDeviceStartUpFlags, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(flags),
                   nullptr);
@@ -772,7 +771,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceVariationsRestrictParameter,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::StringValue>(
+                    base::MakeUnique<base::Value>(
                         policy.variations_parameter().parameter()),
                     nullptr);
     }

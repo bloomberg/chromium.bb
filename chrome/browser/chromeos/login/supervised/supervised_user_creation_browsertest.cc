@@ -77,7 +77,7 @@ class SupervisedUserOwnerCreationTest : public SupervisedUserTestBase {
   void SetUpInProcessBrowserTestFixture() override {
     SupervisedUserTestBase::SetUpInProcessBrowserTestFixture();
     cros_settings_provider_.reset(new StubCrosSettingsProvider());
-    cros_settings_provider_->Set(kDeviceOwner, base::StringValue(kTestManager));
+    cros_settings_provider_->Set(kDeviceOwner, base::Value(kTestManager));
   }
 
  private:

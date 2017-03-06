@@ -266,7 +266,7 @@ void FakeShillDeviceClient::SetCarrier(const dbus::ObjectPath& device_path,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
   SetPropertyInternal(device_path, shill::kCarrierProperty,
-                      base::StringValue(carrier), callback, error_callback);
+                      base::Value(carrier), callback, error_callback);
 }
 
 void FakeShillDeviceClient::Reset(const dbus::ObjectPath& device_path,

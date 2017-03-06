@@ -2241,7 +2241,7 @@ void RenderFrameImpl::OnPostMessageEvent(
     V8ValueConverterImpl converter;
     converter.SetDateAllowed(true);
     converter.SetRegExpAllowed(true);
-    std::unique_ptr<base::Value> value(new base::StringValue(params.data));
+    std::unique_ptr<base::Value> value(new base::Value(params.data));
     v8::Local<v8::Value> result_value = converter.ToV8Value(value.get(),
                                                              context);
     serialized_script_value = WebSerializedScriptValue::serialize(result_value);

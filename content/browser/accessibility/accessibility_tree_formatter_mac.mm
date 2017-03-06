@@ -92,7 +92,7 @@ std::unique_ptr<base::ListValue> PopulateArray(NSArray* array) {
   return list;
 }
 
-std::unique_ptr<base::StringValue> StringForBrowserAccessibility(
+std::unique_ptr<base::Value> StringForBrowserAccessibility(
     BrowserAccessibilityCocoa* obj) {
   NSMutableArray* tokens = [[NSMutableArray alloc] init];
 
@@ -122,8 +122,8 @@ std::unique_ptr<base::StringValue> StringForBrowserAccessibility(
   }
 
   NSString* result = [tokens componentsJoinedByString:@" "];
-  return std::unique_ptr<base::StringValue>(
-      new base::StringValue(SysNSStringToUTF16(result)));
+  return std::unique_ptr<base::Value>(
+      new base::Value(SysNSStringToUTF16(result)));
 }
 
 std::unique_ptr<base::Value> PopulateObject(id value) {
@@ -138,7 +138,7 @@ std::unique_ptr<base::Value> PopulateObject(id value) {
         StringForBrowserAccessibility((BrowserAccessibilityCocoa*)value));
   }
 
-  return std::unique_ptr<base::Value>(new base::StringValue(
+  return std::unique_ptr<base::Value>(new base::Value(
       SysNSStringToUTF16([NSString stringWithFormat:@"%@", value])));
 }
 

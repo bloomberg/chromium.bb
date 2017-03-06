@@ -158,7 +158,7 @@ void CloudExternalDataManagerBaseTest::SetUp() {
   // Set |kStringPolicy| to a string value.
   cloud_policy_store_.policy_map_.Set(
       kStringPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>(std::string()),
+      POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(std::string()),
       nullptr);
   // Make |k10BytePolicy| reference 10 bytes of external data.
   SetExternalDataReference(

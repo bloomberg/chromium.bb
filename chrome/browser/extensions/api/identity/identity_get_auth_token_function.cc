@@ -186,7 +186,7 @@ void IdentityGetAuthTokenFunction::CompleteAsyncRun(bool success) {
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithResult(
     const std::string& access_token) {
-  SetResult(base::MakeUnique<base::StringValue>(access_token));
+  SetResult(base::MakeUnique<base::Value>(access_token));
   CompleteAsyncRun(true);
 }
 

@@ -199,7 +199,7 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(test_keys::kKeyString, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
            POLICY_SOURCE_PLATFORM,
-           base::MakeUnique<base::StringValue>("string value"), nullptr);
+           base::MakeUnique<base::Value>("string value"), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
 }
 

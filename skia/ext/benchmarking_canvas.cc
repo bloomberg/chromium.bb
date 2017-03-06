@@ -117,8 +117,7 @@ std::unique_ptr<base::Value> AsValue(SkColor color) {
 }
 
 std::unique_ptr<base::Value> AsValue(SkBlendMode mode) {
-  std::unique_ptr<base::StringValue> val(
-      new base::StringValue(SkBlendMode_Name(mode)));
+  std::unique_ptr<base::Value> val(new base::Value(SkBlendMode_Name(mode)));
 
   return val;
 }
@@ -127,8 +126,7 @@ std::unique_ptr<base::Value> AsValue(SkCanvas::PointMode mode) {
   static const char* gModeStrings[] = { "Points", "Lines", "Polygon" };
   DCHECK_LT(static_cast<size_t>(mode), SK_ARRAY_COUNT(gModeStrings));
 
-  std::unique_ptr<base::StringValue> val(
-      new base::StringValue(gModeStrings[mode]));
+  std::unique_ptr<base::Value> val(new base::Value(gModeStrings[mode]));
 
   return val;
 }
@@ -256,7 +254,7 @@ std::unique_ptr<base::Value> SaveLayerFlagsAsValue(
   builder.addFlag(flags & SkCanvas::kPreserveLCDText_SaveLayerFlag,
                   "kPreserveLCDText");
 
-  std::unique_ptr<base::StringValue> val(new base::StringValue(builder.str()));
+  std::unique_ptr<base::Value> val(new base::Value(builder.str()));
 
   return val;
 }
@@ -271,8 +269,7 @@ std::unique_ptr<base::Value> AsValue(SkClipOp op) {
                                     };
   size_t index = static_cast<size_t>(op);
   DCHECK_LT(index, SK_ARRAY_COUNT(gOpStrings));
-  std::unique_ptr<base::StringValue> val(
-      new base::StringValue(gOpStrings[index]));
+  std::unique_ptr<base::Value> val(new base::Value(gOpStrings[index]));
   return val;
 }
 

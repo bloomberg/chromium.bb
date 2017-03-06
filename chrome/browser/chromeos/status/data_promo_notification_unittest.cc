@@ -134,7 +134,7 @@ class DataPromoNotificationTest : public testing::Test {
                              "activated", true /* visible */);
     service_test->SetServiceProperty(
         kCellularServicePath, shill::kActivationStateProperty,
-        base::StringValue(shill::kActivationStateActivated));
+        base::Value(shill::kActivationStateActivated));
     service_test->SetServiceProperty(
         kCellularServicePath, shill::kConnectableProperty, base::Value(true));
   }

@@ -80,7 +80,7 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
     return num_bytes;
 
   base::Value* id = new base::Value(stream_id_);
-  base::StringValue* chunkValue = new base::StringValue(chunk);
+  base::Value* chunkValue = new base::Value(chunk);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

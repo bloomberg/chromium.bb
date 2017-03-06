@@ -123,8 +123,7 @@ void DeviceEmulatorMessageHandler::BluetoothObserver::DevicePropertyChanged(
   const std::string& property_name) {
   if (property_name == kPairedPropertyName) {
     owner_->web_ui()->CallJavascriptFunctionUnsafe(
-        kDevicePairedFromTrayJSCallback,
-        base::StringValue(object_path.value()));
+        kDevicePairedFromTrayJSCallback, base::Value(object_path.value()));
   }
 }
 
@@ -132,7 +131,7 @@ void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceRemoved(
     const dbus::ObjectPath& object_path) {
   owner_->web_ui()->CallJavascriptFunctionUnsafe(
       kDeviceRemovedFromMainAdapterJSCallback,
-      base::StringValue(object_path.value()));
+      base::Value(object_path.value()));
 }
 
 class DeviceEmulatorMessageHandler::CrasAudioObserver
@@ -292,7 +291,7 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
       props->address.value());
   if (!props->paired.value()) {
     web_ui()->CallJavascriptFunctionUnsafe(kPairFailedJSCallback,
-                                           base::StringValue(path));
+                                           base::Value(path));
   }
 }
 

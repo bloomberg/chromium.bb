@@ -68,7 +68,7 @@ void DownloadsHandler::SendAutoOpenDownloadsToJavascript() {
   bool auto_open_downloads =
       manager && DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("auto-open-downloads-changed"),
+                         base::Value("auto-open-downloads-changed"),
                          base::Value(auto_open_downloads));
 }
 

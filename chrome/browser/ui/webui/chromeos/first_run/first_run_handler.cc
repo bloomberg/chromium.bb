@@ -43,7 +43,7 @@ void FirstRunHandler::RemoveBackgroundHoles() {
 void FirstRunHandler::ShowStepPositioned(const std::string& name,
                                          const StepPosition& position) {
   web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.FirstRun.showStep", base::StringValue(name), *position.AsValue());
+      "cr.FirstRun.showStep", base::Value(name), *position.AsValue());
 }
 
 void FirstRunHandler::ShowStepPointingTo(const std::string& name,
@@ -55,9 +55,8 @@ void FirstRunHandler::ShowStepPointingTo(const std::string& name,
   point_with_offset.AppendInteger(x);
   point_with_offset.AppendInteger(y);
   point_with_offset.AppendInteger(offset);
-  web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.showStep",
-                                         base::StringValue(name), *null,
-                                         point_with_offset);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.FirstRun.showStep", base::Value(name), *null, point_with_offset);
 }
 
 void FirstRunHandler::HideCurrentStep() {

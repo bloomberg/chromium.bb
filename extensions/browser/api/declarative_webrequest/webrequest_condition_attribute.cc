@@ -35,7 +35,6 @@
 using base::CaseInsensitiveCompareASCII;
 using base::DictionaryValue;
 using base::ListValue;
-using base::StringValue;
 using base::Value;
 
 namespace helpers = extension_web_request_api_helpers;

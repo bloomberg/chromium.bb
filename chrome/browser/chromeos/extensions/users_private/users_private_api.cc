@@ -85,8 +85,8 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::UserList& users = user_manager->GetUsers();
   for (const auto* user : users) {
-    email_list->AppendIfNotPresent(base::MakeUnique<base::StringValue>(
-        user->GetAccountId().GetUserEmail()));
+    email_list->AppendIfNotPresent(
+        base::MakeUnique<base::Value>(user->GetAccountId().GetUserEmail()));
   }
 
   if (chromeos::OwnerSettingsServiceChromeOS* service =
@@ -137,7 +137,7 @@ UsersPrivateAddWhitelistedUserFunction::Run() {
     return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
   }
 
-  base::StringValue username_value(username);
+  base::Value username_value(username);
 
   UsersPrivateDelegate* delegate =
       UsersPrivateDelegateFactory::GetForBrowserContext(browser_context());
@@ -171,7 +171,7 @@ UsersPrivateRemoveWhitelistedUserFunction::Run() {
     return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
   }
 
-  base::StringValue canonical_email(gaia::CanonicalizeEmail(parameters->email));
+  base::Value canonical_email(gaia::CanonicalizeEmail(parameters->email));
 
   UsersPrivateDelegate* delegate =
       UsersPrivateDelegateFactory::GetForBrowserContext(browser_context());

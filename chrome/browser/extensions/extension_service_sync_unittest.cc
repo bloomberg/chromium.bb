@@ -1692,7 +1692,7 @@ class ExtensionServiceTestSupervised
         supervised_users::kApprovedExtensions, extension_id);
     syncer::SyncData sync_data =
         SupervisedUserSettingsService::CreateSyncDataForSetting(
-            key, base::StringValue(version));
+            key, base::Value(version));
 
     SyncChangeList list(1, SyncChange(FROM_HERE, type, sync_data));
 

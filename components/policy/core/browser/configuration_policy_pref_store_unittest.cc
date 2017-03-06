@@ -87,13 +87,12 @@ TEST_F(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::StringValue>("http://chromium.org"),
-             nullptr);
+             base::MakeUnique<base::Value>("http://chromium.org"), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   ASSERT_TRUE(value);
-  EXPECT_TRUE(base::StringValue("http://chromium.org").Equals(value));
+  EXPECT_TRUE(base::Value("http://chromium.org").Equals(value));
 }
 
 // Test cases for boolean-valued policy settings.
@@ -186,12 +185,11 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::StringValue>("http://www.chromium.org"),
-             nullptr);
+             base::MakeUnique<base::Value>("http://www.chromium.org"), nullptr);
   UpdateProviderPolicy(policy);
   observer_.VerifyAndResetChangedKey(kTestPref);
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
-  EXPECT_TRUE(base::StringValue("http://www.chromium.org").Equals(value));
+  EXPECT_TRUE(base::Value("http://www.chromium.org").Equals(value));
 
   UpdateProviderPolicy(policy);
   EXPECT_TRUE(observer_.changed_keys.empty());

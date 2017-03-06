@@ -19,7 +19,6 @@
 using base::BinaryValue;
 using base::DictionaryValue;
 using base::ListValue;
-using base::StringValue;
 using base::Value;
 
 namespace keys = extension_web_request_api_constants;
@@ -98,7 +97,7 @@ void RawDataPresenter::FeedNextBytes(const char* bytes, size_t size) {
 void RawDataPresenter::FeedNextFile(const std::string& filename) {
   // Insert the file path instead of the contents, which may be too large.
   subtle::AppendKeyValuePair(keys::kRequestBodyRawFileKey,
-                             base::MakeUnique<base::StringValue>(filename),
+                             base::MakeUnique<base::Value>(filename),
                              list_.get());
 }
 

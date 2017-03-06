@@ -223,7 +223,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
 ExtensionFunction::ResponseAction FeedbackPrivateGetUserEmailFunction::Run() {
   SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context()));
-  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
+  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
       signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
                      : std::string())));
 }

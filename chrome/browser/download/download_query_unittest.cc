@@ -128,17 +128,17 @@ void DownloadQueryTest::AddFilter(DownloadQuery::FilterType name,
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, const char* cpp_value) {
-  CHECK(query_.AddFilter(name, base::StringValue(cpp_value)));
+  CHECK(query_.AddFilter(name, base::Value(cpp_value)));
 }
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, std::string cpp_value) {
-  CHECK(query_.AddFilter(name, base::StringValue(cpp_value)));
+  CHECK(query_.AddFilter(name, base::Value(cpp_value)));
 }
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, const base::char16* cpp_value) {
-  CHECK(query_.AddFilter(name, base::StringValue(cpp_value)));
+  CHECK(query_.AddFilter(name, base::Value(cpp_value)));
 }
 
 template<> void DownloadQueryTest::AddFilter(
@@ -164,7 +164,7 @@ template<> void DownloadQueryTest::AddFilter(
 #if defined(OS_WIN)
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, std::wstring cpp_value) {
-  CHECK(query_.AddFilter(name, base::StringValue(cpp_value)));
+  CHECK(query_.AddFilter(name, base::Value(cpp_value)));
 }
 #endif
 

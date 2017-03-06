@@ -15,7 +15,6 @@
 
 using base::DictionaryValue;
 using base::ListValue;
-using base::StringValue;
 using base::Value;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
@@ -99,7 +98,7 @@ TEST_F(PolicyConverterTest, ConvertToNullValue) {
   Schema null_schema = schema_.GetKnownProperty("null");
   ASSERT_TRUE(null_schema.valid());
 
-  EXPECT_EQ("null", Convert(new StringValue("foo"), null_schema));
+  EXPECT_EQ("null", Convert(new Value("foo"), null_schema));
 }
 
 TEST_F(PolicyConverterTest, ConvertToBoolValue) {
@@ -108,14 +107,14 @@ TEST_F(PolicyConverterTest, ConvertToBoolValue) {
 
   EXPECT_EQ("true", Convert(new Value(true), bool_schema));
   EXPECT_EQ("false", Convert(new Value(false), bool_schema));
-  EXPECT_EQ("true", Convert(new StringValue("true"), bool_schema));
-  EXPECT_EQ("false", Convert(new StringValue("false"), bool_schema));
-  EXPECT_EQ("\"narf\"", Convert(new StringValue("narf"), bool_schema));
+  EXPECT_EQ("true", Convert(new Value("true"), bool_schema));
+  EXPECT_EQ("false", Convert(new Value("false"), bool_schema));
+  EXPECT_EQ("\"narf\"", Convert(new Value("narf"), bool_schema));
   EXPECT_EQ("false", Convert(new Value(0), bool_schema));
   EXPECT_EQ("true", Convert(new Value(1), bool_schema));
   EXPECT_EQ("true", Convert(new Value(42), bool_schema));
   EXPECT_EQ("true", Convert(new Value(-1), bool_schema));
-  EXPECT_EQ("\"1\"", Convert(new StringValue("1"), bool_schema));
+  EXPECT_EQ("\"1\"", Convert(new Value("1"), bool_schema));
   EXPECT_EQ("{}", Convert(new DictionaryValue(), bool_schema));
 }
 
@@ -124,9 +123,9 @@ TEST_F(PolicyConverterTest, ConvertToIntValue) {
   ASSERT_TRUE(int_schema.valid());
 
   EXPECT_EQ("23", Convert(new Value(23), int_schema));
-  EXPECT_EQ("42", Convert(new StringValue("42"), int_schema));
-  EXPECT_EQ("-1", Convert(new StringValue("-1"), int_schema));
-  EXPECT_EQ("\"poit\"", Convert(new StringValue("poit"), int_schema));
+  EXPECT_EQ("42", Convert(new Value("42"), int_schema));
+  EXPECT_EQ("-1", Convert(new Value("-1"), int_schema));
+  EXPECT_EQ("\"poit\"", Convert(new Value("poit"), int_schema));
   EXPECT_EQ("false", Convert(new Value(false), int_schema));
 }
 
@@ -136,8 +135,8 @@ TEST_F(PolicyConverterTest, ConvertToDoubleValue) {
 
   EXPECT_EQ("3", Convert(new Value(3), double_schema));
   EXPECT_EQ("3.14", Convert(new Value(3.14), double_schema));
-  EXPECT_EQ("2.71", Convert(new StringValue("2.71"), double_schema));
-  EXPECT_EQ("\"zort\"", Convert(new StringValue("zort"), double_schema));
+  EXPECT_EQ("2.71", Convert(new Value("2.71"), double_schema));
+  EXPECT_EQ("\"zort\"", Convert(new Value("zort"), double_schema));
   EXPECT_EQ("true", Convert(new Value(true), double_schema));
 }
 
@@ -145,7 +144,7 @@ TEST_F(PolicyConverterTest, ConvertToStringValue) {
   Schema string_schema = schema_.GetKnownProperty("string");
   ASSERT_TRUE(string_schema.valid());
 
-  EXPECT_EQ("\"troz\"", Convert(new StringValue("troz"), string_schema));
+  EXPECT_EQ("\"troz\"", Convert(new Value("troz"), string_schema));
   EXPECT_EQ("4711", Convert(new Value(4711), string_schema));
 }
 
@@ -158,8 +157,8 @@ TEST_F(PolicyConverterTest, ConvertToListValue) {
   list->AppendString("bar");
   EXPECT_EQ("[\"foo\",\"bar\"]", Convert(list, list_schema));
   EXPECT_EQ("[\"baz\",\"blurp\"]",
-            Convert(new StringValue("[\"baz\", \"blurp\"]"), list_schema));
-  EXPECT_EQ("\"hurz\"", Convert(new StringValue("hurz"), list_schema));
+            Convert(new Value("[\"baz\", \"blurp\"]"), list_schema));
+  EXPECT_EQ("\"hurz\"", Convert(new Value("hurz"), list_schema));
   EXPECT_EQ("19", Convert(new Value(19), list_schema));
 }
 
@@ -180,8 +179,8 @@ TEST_F(PolicyConverterTest, ConvertToDictionaryValue) {
   dict->SetInteger("thx", 1138);
   EXPECT_EQ("{\"thx\":1138}", Convert(dict, dict_schema));
   EXPECT_EQ("{\"moose\":true}",
-            Convert(new StringValue("{\"moose\": true}"), dict_schema));
-  EXPECT_EQ("\"fnord\"", Convert(new StringValue("fnord"), dict_schema));
+            Convert(new Value("{\"moose\": true}"), dict_schema));
+  EXPECT_EQ("\"fnord\"", Convert(new Value("fnord"), dict_schema));
   EXPECT_EQ("1729", Convert(new Value(1729), dict_schema));
 }
 

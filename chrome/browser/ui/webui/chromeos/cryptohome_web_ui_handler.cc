@@ -76,7 +76,7 @@ void CryptohomeWebUIHandler::OnCryptohomeBoolProperty(
 void CryptohomeWebUIHandler::SetCryptohomeProperty(
     const std::string& destination_id,
     const base::Value& value) {
-  base::StringValue destination_id_value(destination_id);
+  base::Value destination_id_value(destination_id);
   web_ui()->CallJavascriptFunctionUnsafe("SetCryptohomeProperty",
                                          destination_id_value, value);
 }

@@ -33,8 +33,8 @@ bool ExtensionJSBrowserTest::RunJavascriptTestF(bool is_async,
   if (!load_waiter_->browser_context())
     return false;
   ConstValueVector args;
-  args.push_back(new base::StringValue(test_fixture));
-  args.push_back(new base::StringValue(test_name));
+  args.push_back(new base::Value(test_fixture));
+  args.push_back(new base::Value(test_name));
   std::vector<base::string16> scripts;
   if (!libs_loaded_) {
     BuildJavascriptLibraries(&scripts);

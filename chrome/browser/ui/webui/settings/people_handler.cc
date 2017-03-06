@@ -324,8 +324,8 @@ void PeopleHandler::DisplaySpinner() {
                              &PeopleHandler::DisplayTimeout);
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("page-status-changed"),
-                         base::StringValue(kSpinnerPageStatus));
+                         base::Value("page-status-changed"),
+                         base::Value(kSpinnerPageStatus));
 }
 
 void PeopleHandler::DisplayTimeout() {
@@ -336,8 +336,8 @@ void PeopleHandler::DisplayTimeout() {
   sync_startup_tracker_.reset();
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("page-status-changed"),
-                         base::StringValue(kTimeoutPageStatus));
+                         base::Value("page-status-changed"),
+                         base::Value(kTimeoutPageStatus));
 }
 
 void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
@@ -391,7 +391,7 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
   // dialog.
   if (!service || !service->IsEngineInitialized()) {
     CloseSyncSetup();
-    ResolveJavascriptCallback(*callback_id, base::StringValue(kDonePageStatus));
+    ResolveJavascriptCallback(*callback_id, base::Value(kDonePageStatus));
     return;
   }
 
@@ -399,8 +399,7 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
                                 configuration.data_types);
 
   // Choosing data types to sync never fails.
-  ResolveJavascriptCallback(*callback_id,
-                            base::StringValue(kConfigurePageStatus));
+  ResolveJavascriptCallback(*callback_id, base::Value(kConfigurePageStatus));
 
   ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CUSTOMIZE);
   if (!configuration.sync_everything)
@@ -422,7 +421,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   // dialog.
   if (!service || !service->IsEngineInitialized()) {
     CloseSyncSetup();
-    ResolveJavascriptCallback(*callback_id, base::StringValue(kDonePageStatus));
+    ResolveJavascriptCallback(*callback_id, base::Value(kDonePageStatus));
     return;
   }
 
@@ -473,10 +472,9 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
     // TODO(tommycli): Switch this to RejectJavascriptCallback once the
     // Sync page JavaScript has been further refactored.
     ResolveJavascriptCallback(*callback_id,
-                              base::StringValue(kPassphraseFailedPageStatus));
+                              base::Value(kPassphraseFailedPageStatus));
   } else {
-    ResolveJavascriptCallback(*callback_id,
-                              base::StringValue(kConfigurePageStatus));
+    ResolveJavascriptCallback(*callback_id, base::Value(kConfigurePageStatus));
   }
 
   if (configuration.encrypt_all)
@@ -698,8 +696,8 @@ void PeopleHandler::FocusUI() {
 void PeopleHandler::CloseUI() {
   CloseSyncSetup();
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("page-status-changed"),
-                         base::StringValue(kDonePageStatus));
+                         base::Value("page-status-changed"),
+                         base::Value(kDonePageStatus));
 }
 
 void PeopleHandler::GoogleSigninSucceeded(const std::string& /* account_id */,
@@ -888,7 +886,7 @@ void PeopleHandler::PushSyncPrefs() {
   }
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("sync-prefs-changed"), args);
+                         base::Value("sync-prefs-changed"), args);
 }
 
 LoginUIService* PeopleHandler::GetLoginUIService() const {
@@ -897,7 +895,7 @@ LoginUIService* PeopleHandler::GetLoginUIService() const {
 
 void PeopleHandler::UpdateSyncStatus() {
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("sync-status-changed"),
+                         base::Value("sync-status-changed"),
                          *GetSyncStatusDictionary());
 }
 

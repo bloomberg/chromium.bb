@@ -133,9 +133,9 @@ ValueStoreTest::ValueStoreTest()
       dict123_(new base::DictionaryValue()),
       ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
       file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {
-  val1_.reset(new base::StringValue(key1_ + "Value"));
-  val2_.reset(new base::StringValue(key2_ + "Value"));
-  val3_.reset(new base::StringValue(key3_ + "Value"));
+  val1_.reset(new base::Value(key1_ + "Value"));
+  val2_.reset(new base::Value(key2_ + "Value"));
+  val3_.reset(new base::Value(key3_ + "Value"));
 
   list1_.push_back(key1_);
   list2_.push_back(key2_);
@@ -330,7 +330,7 @@ TEST_P(ValueStoreTest, ClearWhenNotEmpty) {
 // indexing into a dictionary.
 TEST_P(ValueStoreTest, DotsInKeyNames) {
   std::string dot_key("foo.bar");
-  base::StringValue dot_value("baz.qux");
+  base::Value dot_value("baz.qux");
   std::vector<std::string> dot_list;
   dot_list.push_back(dot_key);
   base::DictionaryValue dot_dict;

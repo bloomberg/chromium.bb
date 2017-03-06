@@ -89,7 +89,7 @@
 #include "components/user_manager/user.h"
 #endif
 
-using base::StringValue;
+using base::Value;
 using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -484,7 +484,7 @@ void NetInternalsMessageHandler::RegisterMessages() {
 void NetInternalsMessageHandler::SendJavascriptCommand(
     const std::string& command,
     std::unique_ptr<base::Value> arg) {
-  std::unique_ptr<base::Value> command_value(new base::StringValue(command));
+  std::unique_ptr<base::Value> command_value(new base::Value(command));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (arg) {
     web_ui()->CallJavascriptFunctionUnsafe("g_browser.receive",
@@ -845,7 +845,7 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
   if (!user) {
     std::string error = "User not found.";
     SendJavascriptCommand("receivedONCFileParse",
-                          base::MakeUnique<base::StringValue>(error));
+                          base::MakeUnique<base::Value>(error));
     return;
   }
 
@@ -887,7 +887,7 @@ void NetInternalsMessageHandler::OnCertificatesImported(
     error += "Some certificates couldn't be imported. ";
 
   SendJavascriptCommand("receivedONCFileParse",
-                        base::MakeUnique<base::StringValue>(error));
+                        base::MakeUnique<base::Value>(error));
 }
 
 void NetInternalsMessageHandler::OnImportONCFile(
@@ -909,9 +909,8 @@ void NetInternalsMessageHandler::OnImportONCFile(
 void NetInternalsMessageHandler::OnStoreDebugLogs(const base::ListValue* list) {
   DCHECK(list);
 
-  SendJavascriptCommand(
-      "receivedStoreDebugLogs",
-      base::MakeUnique<base::StringValue>("Creating log file..."));
+  SendJavascriptCommand("receivedStoreDebugLogs",
+                        base::MakeUnique<base::Value>("Creating log file..."));
   Profile* profile = Profile::FromWebUI(web_ui());
   const DownloadPrefs* const prefs = DownloadPrefs::FromBrowserContext(profile);
   base::FilePath path = prefs->DownloadPath();
@@ -932,7 +931,7 @@ void NetInternalsMessageHandler::OnStoreDebugLogsCompleted(
   else
     status = "Failed to create log file";
   SendJavascriptCommand("receivedStoreDebugLogs",
-                        base::MakeUnique<base::StringValue>(status));
+                        base::MakeUnique<base::Value>(status));
 }
 
 void NetInternalsMessageHandler::OnSetNetworkDebugMode(
@@ -956,7 +955,7 @@ void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
                                  : "Failed to change debug mode to ";
   status += subsystem;
   SendJavascriptCommand("receivedSetNetworkDebugMode",
-                        base::MakeUnique<base::StringValue>(status));
+                        base::MakeUnique<base::Value>(status));
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -300,7 +300,7 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  base::StringValue value1("fooValue");
+  base::Value value1("fooValue");
   base::ListValue value2;
   value2.AppendString("barValue");
 
@@ -349,7 +349,7 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  base::StringValue value1("fooValue");
+  base::Value value1("fooValue");
   base::ListValue value2;
   value2.AppendString("barValue");
 
@@ -381,7 +381,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  base::StringValue value1("fooValue");
+  base::Value value1("fooValue");
   base::ListValue value2;
   value2.AppendString("barValue");
 
@@ -421,7 +421,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  base::StringValue value1("fooValue");
+  base::Value value1("fooValue");
   base::ListValue value2;
   value2.AppendString("barValue");
 
@@ -494,7 +494,7 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  base::StringValue value1("fooValue");
+  base::Value value1("fooValue");
   base::ListValue value2;
   value2.AppendString("barValue");
 
@@ -621,7 +621,7 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
-  base::StringValue value1("fooValue");
+  base::Value value1("fooValue");
   base::ListValue value2;
   value2.AppendString("barValue");
 
@@ -680,8 +680,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  base::StringValue fooValue("fooValue");
-  base::StringValue barValue("barValue");
+  base::Value fooValue("fooValue");
+  base::Value barValue("barValue");
 
   // There is a bit of a convoluted method to get storage areas that can fail;
   // hand out TestingValueStore object then toggle them failing/succeeding
@@ -869,8 +869,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  base::StringValue fooValue("fooValue");
-  base::StringValue barValue("barValue");
+  base::Value fooValue("fooValue");
+  base::Value barValue("barValue");
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
   ValueStore* bad = AddExtensionAndGetStorage("bad", type);
@@ -961,8 +961,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  base::StringValue fooValue("fooValue");
-  base::StringValue barValue("barValue");
+  base::Value fooValue("fooValue");
+  base::Value barValue("barValue");
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
   ValueStore* bad = AddExtensionAndGetStorage("bad", type);
@@ -1009,8 +1009,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  base::StringValue fooValue("fooValue");
-  base::StringValue barValue("barValue");
+  base::Value fooValue("fooValue");
+  base::Value barValue("barValue");
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
   ValueStore* bad = AddExtensionAndGetStorage("bad", type);
@@ -1102,8 +1102,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  base::StringValue fooValue("fooValue");
-  base::StringValue barValue("barValue");
+  base::Value fooValue("fooValue");
+  base::Value barValue("barValue");
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
   ValueStore* bad = AddExtensionAndGetStorage("bad", type);
@@ -1184,8 +1184,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  base::StringValue fooValue("fooValue");
-  base::StringValue barValue("barValue");
+  base::Value fooValue("fooValue");
+  base::Value barValue("barValue");
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
   ValueStore* bad = AddExtensionAndGetStorage("bad", type);
@@ -1277,7 +1277,7 @@ TEST_F(ExtensionSettingsSyncTest,
   for (size_t i = 0; i < 10000; ++i) {
     string_10k.append("a");
   }
-  base::StringValue large_value(string_10k);
+  base::Value large_value(string_10k);
 
   GetSyncableService(model_type)
       ->MergeDataAndStartSyncing(
@@ -1319,7 +1319,7 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
 
   {
     syncer::SyncDataList sync_data_list;
-    std::unique_ptr<base::Value> string_value(new base::StringValue("value"));
+    std::unique_ptr<base::Value> string_value(new base::Value("value"));
     sync_data_list.push_back(settings_sync_util::CreateData(
         "ext", "key.with.dot", *string_value, model_type));
 
@@ -1335,15 +1335,14 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
     ASSERT_TRUE(data->status().ok());
 
     base::DictionaryValue expected_data;
-    expected_data.SetWithoutPathExpansion(
-        "key.with.dot",
-        new base::StringValue("value"));
+    expected_data.SetWithoutPathExpansion("key.with.dot",
+                                          new base::Value("value"));
     EXPECT_TRUE(base::Value::Equals(&expected_data, &data->settings()));
   }
 
   // Test dots in keys going to sync.
   {
-    std::unique_ptr<base::Value> string_value(new base::StringValue("spot"));
+    std::unique_ptr<base::Value> string_value(new base::Value("spot"));
     storage->Set(DEFAULTS, "key.with.spot", *string_value);
 
     ASSERT_EQ(1u, sync_processor_->changes().size());

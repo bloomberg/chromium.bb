@@ -44,11 +44,11 @@ bool ScreenContext::SetDouble(const KeyType& key, double value) {
 }
 
 bool ScreenContext::SetString(const KeyType& key, const std::string& value) {
-  return Set(key, new base::StringValue(value));
+  return Set(key, new base::Value(value));
 }
 
 bool ScreenContext::SetString(const KeyType& key, const base::string16& value) {
-  return Set(key, new base::StringValue(value));
+  return Set(key, new base::Value(value));
 }
 
 bool ScreenContext::SetStringList(const KeyType& key, const StringList& value) {

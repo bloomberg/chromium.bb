@@ -2292,7 +2292,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   }
 
   // Verify that the app policy was set.
-  base::StringValue expected_value("policy test value one");
+  base::Value expected_value("policy test value one");
   EXPECT_TRUE(base::Value::Equals(
       &expected_value,
       policy_service->GetPolicies(ns).GetValue("string")));
@@ -2317,7 +2317,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   }
 
   // Verify that the app policy was updated.
-  base::StringValue expected_new_value("policy test value two");
+  base::Value expected_new_value("policy test value two");
   EXPECT_TRUE(base::Value::Equals(
       &expected_new_value,
       policy_service->GetPolicies(ns).GetValue("string")));

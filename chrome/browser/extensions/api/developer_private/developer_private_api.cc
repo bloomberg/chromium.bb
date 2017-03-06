@@ -979,7 +979,7 @@ void DeveloperPrivateLoadDirectoryFunction::Load() {
 
   // TODO(grv) : The unpacked installer should fire an event when complete
   // and return the extension_id.
-  SetResult(base::MakeUnique<base::StringValue>("-1"));
+  SetResult(base::MakeUnique<base::Value>("-1"));
   SendResponse(true);
 }
 
@@ -1153,8 +1153,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateChoosePathFunction::Run() {
 
 void DeveloperPrivateChoosePathFunction::FileSelected(
     const base::FilePath& path) {
-  Respond(OneArgument(
-      base::MakeUnique<base::StringValue>(path.LossyDisplayName())));
+  Respond(OneArgument(base::MakeUnique<base::Value>(path.LossyDisplayName())));
   Release();
 }
 

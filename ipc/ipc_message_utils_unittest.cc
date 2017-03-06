@@ -99,7 +99,7 @@ TEST(IPCMessageUtilsTest, ValueSize) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetWithoutPathExpansion("foo", new base::Value(42));
   value->SetWithoutPathExpansion("bar", new base::Value(3.14));
-  value->SetWithoutPathExpansion("baz", new base::StringValue("hello"));
+  value->SetWithoutPathExpansion("baz", new base::Value("hello"));
   value->SetWithoutPathExpansion("qux", base::Value::CreateNullValue());
 
   std::unique_ptr<base::DictionaryValue> nested_dict(new base::DictionaryValue);

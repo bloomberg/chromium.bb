@@ -103,7 +103,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   // The correctness of Get/Set/Remove/Clear is tested elsewhere so no need to
   // be too rigorous.
   {
-    base::StringValue bar("bar");
+    base::Value bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_TRUE(result->status().ok());
   }
@@ -133,7 +133,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
       util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   {
-    base::StringValue bar("bar");
+    base::Value bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_TRUE(result->status().ok());
   }
@@ -160,7 +160,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
       util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   {
-    base::StringValue bar("bar");
+    base::Value bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_TRUE(result->status().ok());
     EXPECT_TRUE(base::PathExists(temp_dir_.GetPath()));

@@ -279,8 +279,7 @@ Status ExecuteGetCurrentWindowHandle(Session* session,
   if (status.IsError())
     return status;
 
-  value->reset(
-      new base::StringValue(WebViewIdToWindowHandle(web_view->GetId())));
+  value->reset(new base::Value(WebViewIdToWindowHandle(web_view->GetId())));
   return Status(kOk);
 }
 
@@ -822,7 +821,7 @@ Status ExecuteUploadFile(Session* session,
   if (status.IsError())
     return Status(kUnknownError, "unable to unzip 'file'", status);
 
-  value->reset(new base::StringValue(upload.value()));
+  value->reset(new base::Value(upload.value()));
   return Status(kOk);
 }
 

@@ -157,8 +157,8 @@ void ResetSettingsHandler::OnResetProfileSettingsDone(
     std::string callback_id,
     bool send_feedback,
     reset_report::ChromeResetReport::ResetRequestOrigin request_origin) {
-  ResolveJavascriptCallback(
-      base::StringValue(callback_id), *base::Value::CreateNullValue());
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            *base::Value::CreateNullValue());
   if (send_feedback && setting_snapshot_) {
     ResettableSettingsSnapshot current_snapshot(profile_);
     int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
@@ -192,7 +192,7 @@ void ResetSettingsHandler::HandleGetReportedSettings(
 void ResetSettingsHandler::OnGetReportedSettingsDone(std::string callback_id) {
   std::unique_ptr<base::ListValue> list =
       GetReadableFeedbackForSnapshot(profile_, *setting_snapshot_);
-  ResolveJavascriptCallback(base::StringValue(callback_id), *list);
+  ResolveJavascriptCallback(base::Value(callback_id), *list);
 }
 
 void ResetSettingsHandler::OnShowResetProfileDialog(
@@ -294,7 +294,7 @@ void ResetSettingsHandler::HandleGetTriggeredResetToolName(
         IDS_TRIGGERED_RESET_PROFILE_SETTINGS_DEFAULT_TOOL_NAME);
   }
 
-  base::StringValue string_value(reset_tool_name);
+  base::Value string_value(reset_tool_name);
   ResolveJavascriptCallback(*callback_id, string_value);
 }
 

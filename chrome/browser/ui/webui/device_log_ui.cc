@@ -38,7 +38,7 @@ class DeviceLogMessageHandler : public content::WebUIMessageHandler {
 
  private:
   void GetLog(const base::ListValue* value) const {
-    base::StringValue data(device_event_log::GetAsString(
+    base::Value data(device_event_log::GetAsString(
         device_event_log::NEWEST_FIRST, "json", "",
         device_event_log::LOG_LEVEL_DEBUG, 0));
     web_ui()->CallJavascriptFunctionUnsafe("DeviceLogUI.getLogCallback", data);

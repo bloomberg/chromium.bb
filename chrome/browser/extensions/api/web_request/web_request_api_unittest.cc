@@ -68,7 +68,6 @@ namespace web_request = extensions::api::web_request;
 using base::BinaryValue;
 using base::DictionaryValue;
 using base::ListValue;
-using base::StringValue;
 using base::Time;
 using base::TimeDelta;
 using base::Value;
@@ -609,7 +608,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
       &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawFileKey,
-      base::MakeUnique<base::StringValue>(std::string()), &raw);
+      base::MakeUnique<base::Value>(std::string()), &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
       BinaryValue::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length),

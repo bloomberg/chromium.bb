@@ -48,7 +48,7 @@ std::unique_ptr<Sequence> MakeSequence(
 
 TEST(BluetoothServiceAttributeBlueZTest, BasicValue) {
   BluetoothServiceAttributeValueBlueZ value1(
-      Type::UUID, 16, base::MakeUnique<base::StringValue>(kServiceUuid));
+      Type::UUID, 16, base::MakeUnique<base::Value>(kServiceUuid));
   BluetoothServiceAttributeValueBlueZ value2 = value1;
 
   CheckUuidValue(value2, kServiceUuid);
@@ -56,7 +56,7 @@ TEST(BluetoothServiceAttributeBlueZTest, BasicValue) {
 
 TEST(BluetoothServiceAttributeBlueZTest, Sequence) {
   BluetoothServiceAttributeValueBlueZ value1(
-      Type::UUID, 16, base::MakeUnique<base::StringValue>(kServiceUuid));
+      Type::UUID, 16, base::MakeUnique<base::Value>(kServiceUuid));
   BluetoothServiceAttributeValueBlueZ value2(
       Type::INT, 4, base::MakeUnique<base::Value>(0x1337));
   BluetoothServiceAttributeValueBlueZ value3(
@@ -80,7 +80,7 @@ TEST(BluetoothServiceAttributeBlueZTest, Sequence) {
 
 TEST(BluetoothServiceAttributeBlueZTest, NestedValue) {
   BluetoothServiceAttributeValueBlueZ value1(
-      Type::UUID, 16, base::MakeUnique<base::StringValue>(kServiceUuid));
+      Type::UUID, 16, base::MakeUnique<base::Value>(kServiceUuid));
   BluetoothServiceAttributeValueBlueZ value2(
       Type::INT, 4, base::MakeUnique<base::Value>(0x1337));
   BluetoothServiceAttributeValueBlueZ value3(MakeSequence({value1, value2}));
@@ -124,7 +124,7 @@ TEST(BluetoothServiceAttributeBlueZTest, NestedValue) {
 
 TEST(BluetoothServiceAttributeBlueZTest, CopyAssignment) {
   BluetoothServiceAttributeValueBlueZ value1(
-      Type::UUID, 16, base::MakeUnique<base::StringValue>(kServiceUuid));
+      Type::UUID, 16, base::MakeUnique<base::Value>(kServiceUuid));
   BluetoothServiceAttributeValueBlueZ value2(
       Type::INT, 4, base::MakeUnique<base::Value>(0x1337));
   BluetoothServiceAttributeValueBlueZ value3(

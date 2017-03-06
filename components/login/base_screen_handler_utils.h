@@ -56,9 +56,9 @@ inline bool GetArg(const base::ListValue* args, size_t index, T* out_value) {
 base::Value LOGIN_EXPORT MakeValue(bool v);
 base::Value LOGIN_EXPORT MakeValue(int v);
 base::Value LOGIN_EXPORT MakeValue(double v);
-base::StringValue LOGIN_EXPORT MakeValue(const std::string& v);
-base::StringValue LOGIN_EXPORT MakeValue(const base::string16& v);
-base::StringValue LOGIN_EXPORT MakeValue(const AccountId& v);
+base::Value LOGIN_EXPORT MakeValue(const std::string& v);
+base::Value LOGIN_EXPORT MakeValue(const base::string16& v);
+base::Value LOGIN_EXPORT MakeValue(const AccountId& v);
 
 template <typename T>
 inline const T& MakeValue(const T& v) {

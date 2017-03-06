@@ -97,7 +97,8 @@ void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
   dict.SetBoolean("isDisabledByPolicy", DefaultBrowserIsDisabledByPolicy());
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-      base::StringValue("settings.updateDefaultBrowserState"), dict);
+                         base::Value("settings.updateDefaultBrowserState"),
+                         dict);
 }
 
 }  // namespace settings

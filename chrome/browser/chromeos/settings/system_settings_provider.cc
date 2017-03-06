@@ -18,8 +18,8 @@ SystemSettingsProvider::SystemSettingsProvider(
   system::TimezoneSettings *timezone_settings =
       system::TimezoneSettings::GetInstance();
   timezone_settings->AddObserver(this);
-  timezone_value_.reset(new base::StringValue(
-      timezone_settings->GetCurrentTimezoneID()));
+  timezone_value_.reset(
+      new base::Value(timezone_settings->GetCurrentTimezoneID()));
 }
 
 SystemSettingsProvider::~SystemSettingsProvider() {
@@ -61,8 +61,8 @@ bool SystemSettingsProvider::HandlesSetting(const std::string& path) const {
 
 void SystemSettingsProvider::TimezoneChanged(const icu::TimeZone& timezone) {
   // Fires system setting change notification.
-  timezone_value_.reset(new base::StringValue(
-      system::TimezoneSettings::GetTimezoneID(timezone)));
+  timezone_value_.reset(
+      new base::Value(system::TimezoneSettings::GetTimezoneID(timezone)));
   NotifyObservers(kSystemTimezone);
 }
 

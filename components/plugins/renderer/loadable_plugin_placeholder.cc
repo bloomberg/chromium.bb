@@ -338,7 +338,7 @@ void LoadablePluginPlaceholder::DidFinishIconRepositionForTestingCallback() {
 
   std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
-  base::StringValue value("placeholderReady");
+  base::Value value("placeholderReady");
   blink::WebSerializedScriptValue message_data =
       blink::WebSerializedScriptValue::serialize(converter->ToV8Value(
           &value, element.document().frame()->mainWorldScriptContext()));

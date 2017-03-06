@@ -1011,7 +1011,7 @@ void CertificateManagerHandler::ImportCAFileRead(const int* read_errno,
 
   // TODO(mattm): check here if root_cert is not a CA cert and show error.
 
-  base::StringValue cert_name(root_cert->subject().GetDisplayName());
+  base::Value cert_name(root_cert->subject().GetDisplayName());
   web_ui()->CallJavascriptFunctionUnsafe(
       "CertificateEditCaTrustOverlay.showImport", cert_name);
 }
@@ -1191,10 +1191,10 @@ void CertificateManagerHandler::PopulateTree(
 
 void CertificateManagerHandler::ShowError(const std::string& title,
                                           const std::string& error) const {
-  auto title_value = base::MakeUnique<base::StringValue>(title);
-  auto error_value = base::MakeUnique<base::StringValue>(error);
+  auto title_value = base::MakeUnique<base::Value>(title);
+  auto error_value = base::MakeUnique<base::Value>(error);
   auto ok_title_value =
-      base::MakeUnique<base::StringValue>(l10n_util::GetStringUTF8(IDS_OK));
+      base::MakeUnique<base::Value>(l10n_util::GetStringUTF8(IDS_OK));
   auto cancel_title_value = base::Value::CreateNullValue();
   auto ok_callback_value = base::Value::CreateNullValue();
   auto cancel_callback_value = base::Value::CreateNullValue();
@@ -1226,8 +1226,8 @@ void CertificateManagerHandler::ShowImportErrors(
     cert_error_list.Append(std::move(dict));
   }
 
-  base::StringValue title_value(title);
-  base::StringValue error_value(error);
+  base::Value title_value(title);
+  base::Value error_value(error);
   web_ui()->CallJavascriptFunctionUnsafe("CertificateImportErrorOverlay.show",
                                          title_value, error_value,
                                          cert_error_list);

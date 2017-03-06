@@ -547,7 +547,7 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
   {
     ListPrefUpdate update(profile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
-    update->AppendIfNotPresent(base::MakeUnique<base::StringValue>(origin));
+    update->AppendIfNotPresent(base::MakeUnique<base::Value>(origin));
   }
 
   // Auto-join requests should be rejected.
@@ -567,7 +567,7 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
   {
     ListPrefUpdate update(profile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
-    update->Remove(base::StringValue(origin), nullptr);
+    update->Remove(base::Value(origin), nullptr);
   }
 
   // Auto-join requests should now go through.
@@ -597,14 +597,14 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   {
     ListPrefUpdate update(profile()->GetOffTheRecordProfile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
-    update->AppendIfNotPresent(base::MakeUnique<base::StringValue>(origin));
+    update->AppendIfNotPresent(base::MakeUnique<base::Value>(origin));
   }
 
   // Setting the pref in incognito shouldn't set it for the non-incognito
   // profile.
   const base::ListValue* non_incognito_origins =
       profile()->GetPrefs()->GetList(prefs::kMediaRouterTabMirroringSources);
-  EXPECT_EQ(non_incognito_origins->Find(base::StringValue(origin)),
+  EXPECT_EQ(non_incognito_origins->Find(base::Value(origin)),
             non_incognito_origins->end());
 
   // Auto-join requests should be rejected.
@@ -624,7 +624,7 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   {
     ListPrefUpdate update(profile()->GetOffTheRecordProfile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);
-    update->Remove(base::StringValue(origin), nullptr);
+    update->Remove(base::Value(origin), nullptr);
   }
 
   // Auto-join requests should now go through.

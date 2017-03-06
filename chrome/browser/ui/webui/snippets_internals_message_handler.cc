@@ -317,7 +317,7 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
     SendString("switch-fetch-url", fetcher->fetch_url().spec());
     web_ui()->CallJavascriptFunctionUnsafe(
         "chrome.SnippetsInternals.receiveJson",
-        base::StringValue(fetcher->last_json()));
+        base::Value(fetcher->last_json()));
   }
 
   SendContentSuggestions();
@@ -326,8 +326,8 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
 void SnippetsInternalsMessageHandler::SendClassification() {
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.receiveClassification",
-      base::StringValue(content_suggestions_service_->user_classifier()
-                            ->GetUserClassDescriptionForDebugging()),
+      base::Value(content_suggestions_service_->user_classifier()
+                      ->GetUserClassDescriptionForDebugging()),
       base::Value(
           content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
               UserClassifier::Metric::NTP_OPENED)),
@@ -346,7 +346,7 @@ void SnippetsInternalsMessageHandler::
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals."
       "receiveLastRemoteSuggestionsBackgroundFetchTime",
-      base::StringValue(base::TimeFormatShortDateAndTime(time)));
+      base::Value(base::TimeFormatShortDateAndTime(time)));
 }
 
 void SnippetsInternalsMessageHandler::SendContentSuggestions() {
@@ -408,8 +408,8 @@ void SnippetsInternalsMessageHandler::SendBoolean(const std::string& name,
 
 void SnippetsInternalsMessageHandler::SendString(const std::string& name,
                                                  const std::string& value) {
-  base::StringValue string_name(name);
-  base::StringValue string_value(value);
+  base::Value string_name(name);
+  base::Value string_value(value);
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.receiveProperty", string_name, string_value);

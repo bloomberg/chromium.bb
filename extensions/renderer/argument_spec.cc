@@ -228,9 +228,9 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       if (!enum_values_.empty() && enum_values_.count(s) == 0)
         return false;
       if (out_value) {
-        // TODO(devlin): If base::StringValue ever takes a std::string&&, we
+        // TODO(devlin): If base::Value ever takes a std::string&&, we
         // could use std::move to construct.
-        *out_value = base::MakeUnique<base::StringValue>(s);
+        *out_value = base::MakeUnique<base::Value>(s);
       }
       return true;
     }

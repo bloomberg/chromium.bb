@@ -906,7 +906,7 @@ void CertificatesHandler::ImportCAFileRead(const int* read_errno,
 
   // TODO(mattm): check here if root_cert is not a CA cert and show error.
 
-  base::StringValue cert_name(root_cert->subject().GetDisplayName());
+  base::Value cert_name(root_cert->subject().GetDisplayName());
   ResolveCallback(cert_name);
 }
 
@@ -989,7 +989,7 @@ void CertificatesHandler::CertificateManagerModelReady() {
   base::Value tpm_available_value(
       certificate_manager_model_->is_tpm_available());
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("certificates-model-ready"),
+                         base::Value("certificates-model-ready"),
                          user_db_available_value, tpm_available_value);
   certificate_manager_model_->Refresh();
 }
@@ -1083,20 +1083,20 @@ void CertificatesHandler::PopulateTree(
     std::sort(nodes->begin(), nodes->end(), comparator);
 
     CallJavascriptFunction("cr.webUIListenerCallback",
-                           base::StringValue("certificates-changed"),
-                           base::StringValue(tab_name), *nodes);
+                           base::Value("certificates-changed"),
+                           base::Value(tab_name), *nodes);
   }
 }
 
 void CertificatesHandler::ResolveCallback(const base::Value& response) {
   DCHECK(!webui_callback_id_.empty());
-  ResolveJavascriptCallback(base::StringValue(webui_callback_id_), response);
+  ResolveJavascriptCallback(base::Value(webui_callback_id_), response);
   webui_callback_id_.clear();
 }
 
 void CertificatesHandler::RejectCallback(const base::Value& response) {
   DCHECK(!webui_callback_id_.empty());
-  RejectJavascriptCallback(base::StringValue(webui_callback_id_), response);
+  RejectJavascriptCallback(base::Value(webui_callback_id_), response);
   webui_callback_id_.clear();
 }
 

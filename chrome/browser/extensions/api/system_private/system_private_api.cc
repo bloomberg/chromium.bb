@@ -79,8 +79,8 @@ SystemPrivateGetIncognitoModeAvailabilityFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(
       value >= 0 &&
       value < static_cast<int>(arraysize(kIncognitoModeAvailabilityStrings)));
-  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
-      kIncognitoModeAvailabilityStrings[value])));
+  return RespondNow(OneArgument(
+      base::MakeUnique<base::Value>(kIncognitoModeAvailabilityStrings[value])));
 }
 
 ExtensionFunction::ResponseAction SystemPrivateGetUpdateStatusFunction::Run() {
@@ -145,8 +145,8 @@ ExtensionFunction::ResponseAction SystemPrivateGetUpdateStatusFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction SystemPrivateGetApiKeyFunction::Run() {
-  return RespondNow(OneArgument(
-      base::MakeUnique<base::StringValue>(google_apis::GetAPIKey())));
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::Value>(google_apis::GetAPIKey())));
 }
 
 void DispatchVolumeChangedEvent(double volume, bool is_volume_muted) {

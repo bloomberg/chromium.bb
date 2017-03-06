@@ -321,9 +321,10 @@ void ChromeAppSorting::SetAppLaunchOrdinal(
       extension_id, page_ordinal, GetAppLaunchOrdinal(extension_id));
   AddOrdinalMapping(extension_id, page_ordinal, new_app_launch_ordinal);
 
-  base::Value* new_value = new_app_launch_ordinal.IsValid() ?
-      new base::StringValue(new_app_launch_ordinal.ToInternalValue()) :
-      NULL;
+  base::Value* new_value =
+      new_app_launch_ordinal.IsValid()
+          ? new base::Value(new_app_launch_ordinal.ToInternalValue())
+          : NULL;
 
   ExtensionPrefs::Get(browser_context_)->UpdateExtensionPref(
       extension_id,
@@ -400,9 +401,10 @@ void ChromeAppSorting::SetPageOrdinal(
       extension_id, GetPageOrdinal(extension_id), app_launch_ordinal);
   AddOrdinalMapping(extension_id, new_page_ordinal, app_launch_ordinal);
 
-  base::Value* new_value = new_page_ordinal.IsValid() ?
-      new base::StringValue(new_page_ordinal.ToInternalValue()) :
-      NULL;
+  base::Value* new_value =
+      new_page_ordinal.IsValid()
+          ? new base::Value(new_page_ordinal.ToInternalValue())
+          : NULL;
 
   ExtensionPrefs::Get(browser_context_)->UpdateExtensionPref(
       extension_id,

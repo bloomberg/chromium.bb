@@ -128,12 +128,12 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
     public_key_ = builder_.GetPublicSigningKeyAsString();
 
-    expected_policy_.Set(
-        "Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-        base::MakeUnique<base::StringValue>("disabled"), nullptr);
+    expected_policy_.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                         POLICY_SOURCE_CLOUD,
+                         base::MakeUnique<base::Value>("disabled"), nullptr);
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                          POLICY_SOURCE_CLOUD,
-                         base::MakeUnique<base::StringValue>("maybe"), nullptr);
+                         base::MakeUnique<base::Value>("maybe"), nullptr);
   }
 
   void SetUp() override {
@@ -596,8 +596,8 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   PolicyBundle expected_bundle;
   expected_bundle.Get(kTestExtensionNS)
       .Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
-           base::MakeUnique<base::StringValue>("published"), nullptr);
+           POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("published"),
+           nullptr);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }
 

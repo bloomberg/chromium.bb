@@ -103,7 +103,7 @@ bool SocketPermissionData::Check(const APIPermission::CheckParam* param) const {
 }
 
 std::unique_ptr<base::Value> SocketPermissionData::ToValue() const {
-  return std::unique_ptr<base::Value>(new base::StringValue(GetAsString()));
+  return std::unique_ptr<base::Value>(new base::Value(GetAsString()));
 }
 
 bool SocketPermissionData::FromValue(const base::Value* value) {

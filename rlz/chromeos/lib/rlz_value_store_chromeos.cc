@@ -148,7 +148,7 @@ bool RlzValueStoreChromeOS::AddProductEvent(Product product,
                                             const char* event_rlz) {
   DCHECK(CalledOnValidThread());
   return AddValueToList(GetKeyName(kProductEventKey, product),
-                        base::MakeUnique<base::StringValue>(event_rlz));
+                        base::MakeUnique<base::Value>(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::ReadProductEvents(
@@ -170,7 +170,7 @@ bool RlzValueStoreChromeOS::ReadProductEvents(
 bool RlzValueStoreChromeOS::ClearProductEvent(Product product,
                                               const char* event_rlz) {
   DCHECK(CalledOnValidThread());
-  base::StringValue event_value(event_rlz);
+  base::Value event_value(event_rlz);
   return RemoveValueFromList(GetKeyName(kProductEventKey, product),
                              event_value);
 }
@@ -185,13 +185,13 @@ bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
                                              const char* event_rlz) {
   DCHECK(CalledOnValidThread());
   return AddValueToList(GetKeyName(kStatefulEventKey, product),
-                        base::MakeUnique<base::StringValue>(event_rlz));
+                        base::MakeUnique<base::Value>(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
                                             const char* event_rlz) {
   DCHECK(CalledOnValidThread());
-  base::StringValue event_value(event_rlz);
+  base::Value event_value(event_rlz);
   base::ListValue* events_list = NULL;
   return rlz_store_->GetList(GetKeyName(kStatefulEventKey, product),
                              &events_list) &&

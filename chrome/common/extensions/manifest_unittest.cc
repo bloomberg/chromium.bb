@@ -114,8 +114,7 @@ TEST_F(ManifestUnitTest, Extension) {
   std::unique_ptr<Manifest> manifest2(manifest->DeepCopy());
   EXPECT_TRUE(manifest->Equals(manifest2.get()));
   EXPECT_TRUE(manifest2->Equals(manifest.get()));
-  MutateManifest(
-      &manifest, "foo", new base::StringValue("blah"));
+  MutateManifest(&manifest, "foo", new base::Value("blah"));
   EXPECT_FALSE(manifest->Equals(manifest2.get()));
 }
 
@@ -168,8 +167,7 @@ TEST_F(ManifestUnitTest, ExtensionTypes) {
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kWebURLs, NULL);
-  MutateManifest(
-      &manifest, keys::kLaunchWebURL, new base::StringValue("foo"));
+  MutateManifest(&manifest, keys::kLaunchWebURL, new base::Value("foo"));
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kLaunchWebURL, NULL);

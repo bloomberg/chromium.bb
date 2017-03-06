@@ -368,7 +368,7 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
 void ProximityAuthWebUIHandler::OnCryptAuthClientError(
     const std::string& error_message) {
   PA_LOG(WARNING) << "CryptAuth request failed: " << error_message;
-  base::StringValue error_string(error_message);
+  base::Value error_string(error_message);
   web_ui()->CallJavascriptFunctionUnsafe("CryptAuthInterface.onError",
                                          error_string);
 }

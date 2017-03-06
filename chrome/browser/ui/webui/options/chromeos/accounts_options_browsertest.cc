@@ -44,8 +44,7 @@ class AccountsOptionsTest : public LoginManagerTest {
         stub_settings_provider_(base::MakeUnique<StubCrosSettingsProvider>()),
         stub_settings_provider_ptr_(static_cast<StubCrosSettingsProvider*>(
             stub_settings_provider_.get())) {
-    stub_settings_provider_->Set(kDeviceOwner,
-                                 base::StringValue(kTestUsers[0]));
+    stub_settings_provider_->Set(kDeviceOwner, base::Value(kTestUsers[0]));
     for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
       test_users_.push_back(AccountId::FromUserEmail(kTestUsers[i]));
     }

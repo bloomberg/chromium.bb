@@ -76,7 +76,7 @@ void KeyboardHandler::UpdateShowKeys() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kHasChromeOSDiamondKey));
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("show-keys-changed"), has_caps_lock,
+                         base::Value("show-keys-changed"), has_caps_lock,
                          has_diamond_key);
 }
 

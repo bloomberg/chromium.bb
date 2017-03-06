@@ -515,7 +515,7 @@ Status ExecuteGetElementValueOfCSSProperty(
       session, web_view, element_id, property_name, &property_value);
   if (status.IsError())
     return status;
-  value->reset(new base::StringValue(property_value));
+  value->reset(new base::Value(property_value));
   return Status(kOk);
 }
 

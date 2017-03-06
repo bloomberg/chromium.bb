@@ -198,7 +198,7 @@ void UpdateDefaultTask(PrefService* pref_service,
                                         prefs::kDefaultTasksByMimeType);
     for (std::set<std::string>::const_iterator iter = mime_types.begin();
         iter != mime_types.end(); ++iter) {
-      base::StringValue* value = new base::StringValue(task_id);
+      base::Value* value = new base::Value(task_id);
       mime_type_pref->SetWithoutPathExpansion(*iter, value);
     }
   }
@@ -208,7 +208,7 @@ void UpdateDefaultTask(PrefService* pref_service,
                                         prefs::kDefaultTasksBySuffix);
     for (std::set<std::string>::const_iterator iter = suffixes.begin();
         iter != suffixes.end(); ++iter) {
-      base::StringValue* value = new base::StringValue(task_id);
+      base::Value* value = new base::Value(task_id);
       // Suffixes are case insensitive.
       std::string lower_suffix = base::ToLowerASCII(*iter);
       mime_type_pref->SetWithoutPathExpansion(lower_suffix, value);

@@ -184,7 +184,7 @@ void SigninCreateProfileHandler::RegisterMessages() {
 void SigninCreateProfileHandler::RequestDefaultProfileIcons(
     const base::ListValue* args) {
   web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIListenerCallback", base::StringValue("profile-icons-received"),
+      "cr.webUIListenerCallback", base::Value("profile-icons-received"),
       *profiles::GetDefaultProfileAvatarIconsAndLabels());
 
   SendNewProfileDefaults();
@@ -197,8 +197,8 @@ void SigninCreateProfileHandler::SendNewProfileDefaults() {
   profile_info.SetString("name", storage.ChooseNameForNewProfile(0));
 
   web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIListenerCallback",
-      base::StringValue("profile-defaults-received"), profile_info);
+      "cr.webUIListenerCallback", base::Value("profile-defaults-received"),
+      profile_info);
 }
 
 void SigninCreateProfileHandler::RequestSignedInProfiles(
@@ -219,9 +219,9 @@ void SigninCreateProfileHandler::RequestSignedInProfiles(
 
     user_info_list.Append(std::move(user_info));
   }
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIListenerCallback", base::StringValue("signedin-users-received"),
-      user_info_list);
+  web_ui()->CallJavascriptFunctionUnsafe("cr.webUIListenerCallback",
+                                         base::Value("signedin-users-received"),
+                                         user_info_list);
 }
 
 void SigninCreateProfileHandler::OnProfileAuthInfoChanged(
@@ -439,7 +439,7 @@ void SigninCreateProfileHandler::ShowProfileCreationError(
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
   web_ui()->CallJavascriptFunctionUnsafe(
       "cr.webUIListenerCallback", GetWebUIListenerName(PROFILE_CREATION_ERROR),
-      base::StringValue(error));
+      base::Value(error));
   // The ProfileManager calls us back with a NULL profile in some cases.
   if (profile) {
     webui::DeleteProfileAtPath(profile->GetPath(),
@@ -497,16 +497,16 @@ void SigninCreateProfileHandler::OnBrowserReadyCallback(
   }
 }
 
-base::StringValue SigninCreateProfileHandler::GetWebUIListenerName(
+base::Value SigninCreateProfileHandler::GetWebUIListenerName(
     ProfileCreationStatus status) const {
   switch (status) {
     case PROFILE_CREATION_SUCCESS:
-      return base::StringValue("create-profile-success");
+      return base::Value("create-profile-success");
     case PROFILE_CREATION_ERROR:
-      return base::StringValue("create-profile-error");
+      return base::Value("create-profile-error");
   }
   NOTREACHED();
-  return base::StringValue(std::string());
+  return base::Value(std::string());
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -768,9 +768,9 @@ void SigninCreateProfileHandler::OnSupervisedUserRegistered(
 void SigninCreateProfileHandler::ShowProfileCreationWarning(
     const base::string16& warning) {
   DCHECK_EQ(SUPERVISED_PROFILE_CREATION, profile_creation_type_);
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIListenerCallback", base::StringValue("create-profile-warning"),
-      base::StringValue(warning));
+  web_ui()->CallJavascriptFunctionUnsafe("cr.webUIListenerCallback",
+                                         base::Value("create-profile-warning"),
+                                         base::Value(warning));
 }
 
 void SigninCreateProfileHandler::RecordSupervisedProfileCreationMetrics(

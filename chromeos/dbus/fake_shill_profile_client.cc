@@ -109,7 +109,7 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
     return;
   }
 
-  base::StringValue profile_path_value("");
+  base::Value profile_path_value("");
   DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()->
       SetServiceProperty(entry_path,
                          shill::kProfileProperty,
@@ -194,7 +194,7 @@ bool FakeShillProfileClient::AddOrUpdateServiceImpl(
   service_properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                     &service_profile_path);
   if (service_profile_path.empty()) {
-    base::StringValue profile_path_value(profile_path);
+    base::Value profile_path_value(profile_path);
     service_test->SetServiceProperty(service_path,
                                      shill::kProfileProperty,
                                      profile_path_value);

@@ -38,7 +38,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   registrar.Add(pref_name, obs.GetCallback());
 
   // This should fire the checks in MockPrefChangeCallback::OnPreferenceChanged.
-  const base::StringValue expected_value(new_pref_value);
+  const base::Value expected_value(new_pref_value);
   obs.Expect(pref_name, &expected_value);
   prefs.SetString(pref_name, new_pref_value);
   Mock::VerifyAndClearExpectations(&obs);
@@ -50,7 +50,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   Mock::VerifyAndClearExpectations(&obs);
 
   // Clearing the pref should cause the pref to fire.
-  const base::StringValue expected_default_value((std::string()));
+  const base::Value expected_default_value((std::string()));
   obs.Expect(pref_name, &expected_default_value);
   prefs.ClearPref(pref_name);
   Mock::VerifyAndClearExpectations(&obs);
@@ -83,12 +83,11 @@ TEST(PrefServiceTest, Observers) {
   const char pref_name[] = "homepage";
 
   TestingPrefServiceSimple prefs;
-  prefs.SetUserPref(pref_name,
-                    new base::StringValue("http://www.cnn.com"));
+  prefs.SetUserPref(pref_name, new base::Value("http://www.cnn.com"));
   prefs.registry()->RegisterStringPref(pref_name, std::string());
 
   const char new_pref_value[] = "http://www.google.com/";
-  const base::StringValue expected_new_pref_value(new_pref_value);
+  const base::Value expected_new_pref_value(new_pref_value);
   MockPrefChangeCallback obs(&prefs);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs);
@@ -104,7 +103,7 @@ TEST(PrefServiceTest, Observers) {
 
   // Now try adding a second pref observer.
   const char new_pref_value2[] = "http://www.youtube.com/";
-  const base::StringValue expected_new_pref_value2(new_pref_value2);
+  const base::Value expected_new_pref_value2(new_pref_value2);
   MockPrefChangeCallback obs2(&prefs);
   obs.Expect(pref_name, &expected_new_pref_value2);
   obs2.Expect(pref_name, &expected_new_pref_value2);
@@ -115,7 +114,7 @@ TEST(PrefServiceTest, Observers) {
   Mock::VerifyAndClearExpectations(&obs2);
 
   // Set a recommended value.
-  const base::StringValue recommended_pref_value("http://www.gmail.com/");
+  const base::Value recommended_pref_value("http://www.gmail.com/");
   obs.Expect(pref_name, &expected_new_pref_value2);
   obs2.Expect(pref_name, &expected_new_pref_value2);
   // This should fire the checks in obs and obs2 but with an unchanged value
@@ -142,8 +141,7 @@ TEST(PrefServiceTest, GetValueChangedType) {
   prefs.registry()->RegisterIntegerPref(kPrefName, kTestValue);
 
   // Check falling back to a recommended value.
-  prefs.SetUserPref(kPrefName,
-                    new base::StringValue("not an integer"));
+  prefs.SetUserPref(kPrefName, new base::Value("not an integer"));
   const PrefService::Preference* pref = prefs.FindPreference(kPrefName);
   ASSERT_TRUE(pref);
   const base::Value* value = pref->GetValue();
@@ -354,7 +352,7 @@ const char PrefServiceSetValueTest::kValue[] = "value";
 
 TEST_F(PrefServiceSetValueTest, SetStringValue) {
   const char default_string[] = "default";
-  const base::StringValue default_value(default_string);
+  const base::Value default_value(default_string);
   prefs_.registry()->RegisterStringPref(kName, default_string);
 
   PrefChangeRegistrar registrar;
@@ -370,7 +368,7 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
   prefs_.Set(kName, default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  base::StringValue new_value(kValue);
+  base::Value new_value(kValue);
   observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);

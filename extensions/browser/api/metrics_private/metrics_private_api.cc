@@ -52,8 +52,8 @@ ExtensionFunction::ResponseAction MetricsPrivateGetFieldTrialFunction::Run() {
   std::string name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
-  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
-      base::FieldTrialList::FindFullName(name))));
+  return RespondNow(OneArgument(
+      base::MakeUnique<base::Value>(base::FieldTrialList::FindFullName(name))));
 }
 
 ExtensionFunction::ResponseAction

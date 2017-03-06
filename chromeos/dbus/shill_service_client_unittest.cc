@@ -117,7 +117,7 @@ TEST_F(ShillServiceClientTest, SetProperty) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  const base::StringValue value(kValue);
+  const base::Value value(kValue);
   PrepareForMethodCall(shill::kSetPropertyFunction,
                        base::Bind(&ExpectStringAndValueArguments,
                                   shill::kPassphraseProperty,

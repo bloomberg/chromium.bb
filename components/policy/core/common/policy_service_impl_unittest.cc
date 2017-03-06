@@ -56,16 +56,16 @@ void AddTestPolicies(PolicyBundle* bundle,
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   policy_map->Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::MakeUnique<base::StringValue>(value), nullptr);
+                  base::MakeUnique<base::Value>(value), nullptr);
   policy_map->Set(kDiffLevelPolicy, level, scope, POLICY_SOURCE_PLATFORM,
-                  base::MakeUnique<base::StringValue>(value), nullptr);
+                  base::MakeUnique<base::Value>(value), nullptr);
   policy_map =
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension));
   policy_map->Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::MakeUnique<base::StringValue>(value), nullptr);
+                  base::MakeUnique<base::Value>(value), nullptr);
   policy_map->Set(kDiffLevelPolicy, level, scope, POLICY_SOURCE_PLATFORM,
-                  base::MakeUnique<base::StringValue>(value), nullptr);
+                  base::MakeUnique<base::Value>(value), nullptr);
 }
 
 // Observer class that changes the policy in the passed provider when the
@@ -267,8 +267,8 @@ TEST_F(PolicyServiceTest, NotifyObserversInMultipleNamespaces) {
   PolicyMap policy_map;
   policy_map.CopyFrom(previous_policy_map);
   policy_map.Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::StringValue>("value"), nullptr);
+                 POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("value"),
+                 nullptr);
 
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   // The initial setup includes a policy for chrome that is now changing.
@@ -308,7 +308,7 @@ TEST_F(PolicyServiceTest, NotifyObserversInMultipleNamespaces) {
       .CopyFrom(policy_map);
   policy_map.Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::StringValue>("another value"), nullptr);
+                 base::MakeUnique<base::Value>("another value"), nullptr);
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension1))
       .CopyFrom(policy_map);
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension2))
@@ -536,12 +536,12 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
   // precedence, on every namespace.
   expected.Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-               base::MakeUnique<base::StringValue>("bundle0"), nullptr);
+               base::MakeUnique<base::Value>("bundle0"), nullptr);
   // For policies with different levels and scopes, the highest priority
   // level/scope combination takes precedence, on every namespace.
   expected.Set(kDiffLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-               POLICY_SOURCE_PLATFORM,
-               base::MakeUnique<base::StringValue>("bundle2"), nullptr);
+               POLICY_SOURCE_PLATFORM, base::MakeUnique<base::Value>("bundle2"),
+               nullptr);
   EXPECT_TRUE(policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())).Equals(expected));
   EXPECT_TRUE(policy_service_->GetPolicies(
@@ -670,10 +670,10 @@ TEST_F(PolicyServiceTest, SeparateProxyPoliciesMerging) {
   // policy available.
   policy_map.Set(key::kProxyMode, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::StringValue>("pac_script"), nullptr);
+                 base::MakeUnique<base::Value>("pac_script"), nullptr);
   policy_map.Set(key::kProxyPacUrl, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>(
-                                          "http://example.com/wpad.dat"),
+                 POLICY_SOURCE_CLOUD,
+                 base::MakeUnique<base::Value>("http://example.com/wpad.dat"),
                  nullptr);
 
   // Add a value to a non-Chrome namespace.

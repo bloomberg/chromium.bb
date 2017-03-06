@@ -233,10 +233,8 @@ class NetworkPortalDetectorImplTest
 
   void SetBehindPortal(const std::string& service_path) {
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
-        dbus::ObjectPath(service_path),
-        shill::kStateProperty,
-        base::StringValue(shill::kStatePortal),
-        base::Bind(&base::DoNothing),
+        dbus::ObjectPath(service_path), shill::kStateProperty,
+        base::Value(shill::kStatePortal), base::Bind(&base::DoNothing),
         base::Bind(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }

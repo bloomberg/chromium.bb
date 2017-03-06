@@ -285,7 +285,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 }
 
 void SyncSetupHandler::ConfigureSyncDone() {
-  base::StringValue page("done");
+  base::Value page("done");
   web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
                                          page);
 
@@ -427,7 +427,7 @@ bool SyncSetupHandler::PrepareSyncSetup() {
 
 void SyncSetupHandler::DisplaySpinner() {
   configuring_sync_ = true;
-  base::StringValue page("spinner");
+  base::Value page("spinner");
   base::DictionaryValue args;
 
   const int kTimeoutSec = 30;
@@ -450,7 +450,7 @@ void SyncSetupHandler::DisplayTimeout() {
   // Do not listen to sync startup events.
   sync_startup_tracker_.reset();
 
-  base::StringValue page("timeout");
+  base::Value page("timeout");
   base::DictionaryValue args;
   web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
                                          page, args);
@@ -797,7 +797,7 @@ void SyncSetupHandler::FocusUI() {
 
 void SyncSetupHandler::CloseUI() {
   CloseSyncSetup();
-  base::StringValue page("done");
+  base::Value page("done");
   web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
                                          page);
 }
@@ -942,7 +942,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
         GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_DATA));
   }
 
-  base::StringValue page("configure");
+  base::Value page("configure");
   web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
                                          page, args);
 

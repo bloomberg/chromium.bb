@@ -287,7 +287,7 @@ std::string Action::PrintForDebug() const {
       result += " PAGE_URL=" + page_url_.spec();
   }
   if (!page_title_.empty()) {
-    base::StringValue title(page_title_);
+    base::Value title(page_title_);
     result += " PAGE_TITLE=" + Serialize(&title);
   }
   if (arg_url_.is_valid()) {

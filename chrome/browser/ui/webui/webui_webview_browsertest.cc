@@ -140,8 +140,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DisplayNone) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
-      "testDisplayNone",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      "testDisplayNone", new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCode) {
@@ -149,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCode) {
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testExecuteScriptCode",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCodeFromFile) {
@@ -157,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCodeFromFile) {
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testExecuteScriptCodeFromFile",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScript) {
@@ -165,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScript) {
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testAddContentScript",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddMultiContentScripts) {
@@ -173,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddMultiContentScripts) {
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testAddMultiContentScripts",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -183,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testAddContentScriptWithSameNameShouldOverwriteTheExistingOne",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -193,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddAndRemoveContentScripts) {
@@ -201,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddAndRemoveContentScripts) {
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testAddAndRemoveContentScripts",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
@@ -210,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testAddContentScriptsWithNewWindowAPI",
-      new base::StringValue(GetTestUrl("guest_from_opener.html").spec())));
+      new base::Value(GetTestUrl("guest_from_opener.html").spec())));
 }
 
 // https://crbug.com/665512.
@@ -221,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testContentScriptIsInjectedAfterTerminateAndReloadWebView",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 // TODO(crbug.com/662673) Flaky on CrOS trybots.
@@ -238,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testContentScriptExistsAsLongAsWebViewTagExists",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptWithCode) {
@@ -246,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptWithCode) {
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testAddContentScriptWithCode",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 
 #if defined(OS_CHROMEOS)
@@ -261,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptIncognito) {
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testAddContentScript",
-      new base::StringValue(GetTestUrl("empty.html").spec())));
+      new base::Value(GetTestUrl("empty.html").spec())));
 }
 #endif
 

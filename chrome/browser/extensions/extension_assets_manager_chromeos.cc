@@ -454,7 +454,7 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
     versions.push_back(it.key());
   }
 
-  base::StringValue user_name(profile->GetProfileUserName());
+  base::Value user_name(profile->GetProfileUserName());
   for (std::vector<std::string>::const_iterator it = versions.begin();
        it != versions.end(); it++) {
     base::DictionaryValue* version_info = NULL;

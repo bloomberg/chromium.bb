@@ -181,7 +181,7 @@ void IdleManager::SetThreshold(const std::string& extension_id, int threshold) {
 }
 
 // static
-std::unique_ptr<base::StringValue> IdleManager::CreateIdleValue(
+std::unique_ptr<base::Value> IdleManager::CreateIdleValue(
     ui::IdleState idle_state) {
   const char* description;
 
@@ -193,7 +193,7 @@ std::unique_ptr<base::StringValue> IdleManager::CreateIdleValue(
     description = keys::kStateLocked;
   }
 
-  return base::MakeUnique<base::StringValue>(description);
+  return base::MakeUnique<base::Value>(description);
 }
 
 void IdleManager::SetEventDelegateForTest(

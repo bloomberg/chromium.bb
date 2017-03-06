@@ -62,7 +62,7 @@ bool IsOwnerInTests(const std::string& user_id) {
   const base::Value* value = CrosSettings::Get()->GetPref(kDeviceOwner);
   if (!value || value->GetType() != base::Value::Type::STRING)
     return false;
-  return static_cast<const base::StringValue*>(value)->GetString() == user_id;
+  return static_cast<const base::Value*>(value)->GetString() == user_id;
 }
 
 void LoadPrivateKeyByPublicKey(

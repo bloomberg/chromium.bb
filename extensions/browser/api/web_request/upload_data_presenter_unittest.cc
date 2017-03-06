@@ -54,8 +54,7 @@ TEST(WebRequestUploadDataPresenterTest, RawData) {
   std::unique_ptr<base::BinaryValue> expected_a(
       base::BinaryValue::CreateWithCopiedBuffer(block1, block1_size));
   ASSERT_TRUE(expected_a.get() != NULL);
-  std::unique_ptr<base::StringValue> expected_b(
-      new base::StringValue(kFilename));
+  std::unique_ptr<base::Value> expected_b(new base::Value(kFilename));
   ASSERT_TRUE(expected_b.get() != NULL);
   std::unique_ptr<base::BinaryValue> expected_c(
       base::BinaryValue::CreateWithCopiedBuffer(block2, block2_size));

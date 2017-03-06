@@ -184,8 +184,7 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
   base::ListValue* type_entry_value = new base::ListValue;
   auto property_dict_value = base::MakeUnique<base::DictionaryValue>();
   property_dict_value->SetWithoutPathExpansion(
-      shill::kGeoMacAddressProperty,
-      new base::StringValue("01:23:45:67:89:AB"));
+      shill::kGeoMacAddressProperty, new base::Value("01:23:45:67:89:AB"));
   type_entry_value->Append(std::move(property_dict_value));
   type_dict_value.SetWithoutPathExpansion("wifi", type_entry_value);
 
@@ -205,7 +204,7 @@ TEST_F(ShillManagerClientTest, SetProperty) {
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
-  base::StringValue value("portal list");
+  base::Value value("portal list");
   PrepareForMethodCall(shill::kSetPropertyFunction,
                        base::Bind(ExpectStringAndValueArguments,
                                   shill::kCheckPortalListProperty,

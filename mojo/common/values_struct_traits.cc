@@ -77,7 +77,7 @@ bool UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>>::
       base::StringPiece string_value;
       if (!data.ReadStringValue(&string_value))
         return false;
-      *value_out = base::MakeUnique<base::StringValue>(string_value);
+      *value_out = base::MakeUnique<base::Value>(string_value);
       return true;
     }
     case common::mojom::ValueDataView::Tag::BINARY_VALUE: {

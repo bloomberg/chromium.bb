@@ -687,7 +687,7 @@ def _GenerateDefaultValue(value):
     return [], 'base::MakeUnique<base::Value>(%s)' %\
                     json.dumps(value)
   elif type(value) == str:
-    return [], 'base::MakeUnique<base::StringValue>("%s")' % value
+    return [], 'base::MakeUnique<base::Value>("%s")' % value
   elif type(value) == list:
     setup = ['auto default_value = base::MakeUnique<base::ListValue>();']
     for entry in value:
@@ -1174,7 +1174,7 @@ def _CreateValue(type, arg):
   elif type == 'Type::INTEGER':
     return 'DecodeIntegerValue(%s)' % arg
   elif type == 'Type::STRING':
-    return 'new base::StringValue(%s)' % arg
+    return 'new base::Value(%s)' % arg
   elif type == 'Type::LIST':
     return 'DecodeStringList(%s)' % arg
   elif type == 'Type::DICTIONARY' or type == 'TYPE_EXTERNAL':

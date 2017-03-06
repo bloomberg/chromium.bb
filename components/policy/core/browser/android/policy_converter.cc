@@ -74,7 +74,7 @@ void PolicyConverter::SetPolicyString(JNIEnv* env,
                                       const JavaRef<jstring>& value) {
   SetPolicyValue(
       ConvertJavaStringToUTF8(env, policyKey),
-      base::MakeUnique<base::StringValue>(ConvertJavaStringToUTF8(env, value)));
+      base::MakeUnique<base::Value>(ConvertJavaStringToUTF8(env, value)));
 }
 
 void PolicyConverter::SetPolicyStringArray(JNIEnv* env,

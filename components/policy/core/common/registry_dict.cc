@@ -260,8 +260,8 @@ void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
     switch (it.Type()) {
       case REG_SZ:
       case REG_EXPAND_SZ:
-        SetValue(name, std::unique_ptr<base::Value>(new base::StringValue(
-                           base::UTF16ToUTF8(it.Value()))));
+        SetValue(name, std::unique_ptr<base::Value>(
+                           new base::Value(base::UTF16ToUTF8(it.Value()))));
         continue;
       case REG_DWORD_LITTLE_ENDIAN:
       case REG_DWORD_BIG_ENDIAN:

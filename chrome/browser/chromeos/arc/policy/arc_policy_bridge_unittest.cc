@@ -186,7 +186,7 @@ TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::StringValue>(
+      base::MakeUnique<base::Value>(
           "{\"applications\":"
           "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
           "\"installType\":\"REQUIRED\","
@@ -212,7 +212,7 @@ TEST_F(ArcPolicyBridgeTest, HompageLocationTest) {
   policy_map().Set(
       policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::StringValue>("http://chromium.org"), nullptr);
+      base::MakeUnique<base::Value>("http://chromium.org"), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
@@ -333,7 +333,7 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   policy_map().Set(policy::key::kOpenNetworkConfiguration,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::StringValue>(kFakeONC), nullptr);
+                   base::MakeUnique<base::Value>(kFakeONC), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"caCerts\":"
       "[{\"X509\":\"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24"
@@ -365,7 +365,7 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::StringValue>(
+      base::MakeUnique<base::Value>(
           "{\"applications\":"
           "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
           "\"installType\":\"REQUIRED\","
@@ -377,7 +377,7 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(
       policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::StringValue>("http://chromium.org"), nullptr);
+      base::MakeUnique<base::Value>("http://chromium.org"), nullptr);
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,

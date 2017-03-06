@@ -139,7 +139,7 @@ class PreferenceValidationDelegateValues
       case Value::Type::DOUBLE:
         return std::unique_ptr<Value>(new base::Value(0.47));
       case Value::Type::STRING:
-        return std::unique_ptr<Value>(new base::StringValue("i have a spleen"));
+        return std::unique_ptr<Value>(new base::Value("i have a spleen"));
       case Value::Type::DICTIONARY: {
         std::unique_ptr<base::DictionaryValue> value(
             new base::DictionaryValue());

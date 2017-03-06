@@ -100,17 +100,17 @@ TEST(ValuesUtilTest, PopBasicTypes) {
   // Pop a string.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::StringValue(kStringValue));
+  expected_value.reset(new base::Value(kStringValue));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an empty string.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::StringValue(kEmptyStringValue));
+  expected_value.reset(new base::Value(kEmptyStringValue));
   EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an object path.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::StringValue(kObjectPathValue.value()));
+  expected_value.reset(new base::Value(kObjectPathValue.value()));
   EXPECT_TRUE(value->Equals(expected_value.get()));
 }
 
@@ -148,7 +148,7 @@ TEST(ValuesUtilTest, PopVariant) {
   // Pop a string.
   value = PopDataAsValue(&reader);
   ASSERT_TRUE(value.get() != NULL);
-  expected_value.reset(new base::StringValue(kStringValue));
+  expected_value.reset(new base::Value(kStringValue));
   EXPECT_TRUE(value->Equals(expected_value.get()));
 }
 
@@ -391,7 +391,7 @@ TEST(ValuesUtilTest, AppendBasicTypes) {
   const base::Value kBoolValue(false);
   const base::Value kIntegerValue(42);
   const base::Value kDoubleValue(4.2);
-  const base::StringValue kStringValue("string");
+  const base::Value kStringValue("string");
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
@@ -420,7 +420,7 @@ TEST(ValuesUtilTest, AppendBasicTypesAsVariant) {
   const base::Value kBoolValue(false);
   const base::Value kIntegerValue(42);
   const base::Value kDoubleValue(4.2);
-  const base::StringValue kStringValue("string");
+  const base::Value kStringValue("string");
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
@@ -449,7 +449,7 @@ TEST(ValuesUtilTest, AppendValueDataBasicTypes) {
   const base::Value kBoolValue(false);
   const base::Value kIntegerValue(42);
   const base::Value kDoubleValue(4.2);
-  const base::StringValue kStringValue("string");
+  const base::Value kStringValue("string");
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
@@ -478,7 +478,7 @@ TEST(ValuesUtilTest, AppendValueDataAsVariantBasicTypes) {
   const base::Value kBoolValue(false);
   const base::Value kIntegerValue(42);
   const base::Value kDoubleValue(4.2);
-  const base::StringValue kStringValue("string");
+  const base::Value kStringValue("string");
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());

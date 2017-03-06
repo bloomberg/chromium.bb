@@ -533,7 +533,7 @@ bool MediaRouterUI::UserSelectedTabMirroringForCurrentOrigin() const {
   const base::ListValue* origins =
       Profile::FromWebUI(web_ui())->GetPrefs()->GetList(
           prefs::kMediaRouterTabMirroringSources);
-  return origins->Find(base::StringValue(GetSerializedInitiatorOrigin())) !=
+  return origins->Find(base::Value(GetSerializedInitiatorOrigin())) !=
          origins->end();
 }
 
@@ -543,12 +543,11 @@ void MediaRouterUI::RecordCastModeSelection(MediaCastMode cast_mode) {
 
   switch (cast_mode) {
     case MediaCastMode::DEFAULT:
-      update->Remove(base::StringValue(GetSerializedInitiatorOrigin()),
-                     nullptr);
+      update->Remove(base::Value(GetSerializedInitiatorOrigin()), nullptr);
       break;
     case MediaCastMode::TAB_MIRROR:
       update->AppendIfNotPresent(
-          base::MakeUnique<base::StringValue>(GetSerializedInitiatorOrigin()));
+          base::MakeUnique<base::Value>(GetSerializedInitiatorOrigin()));
       break;
     case MediaCastMode::DESKTOP_MIRROR:
       // Desktop mirroring isn't domain-specific, so we don't record the

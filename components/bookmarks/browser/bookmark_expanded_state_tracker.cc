@@ -107,7 +107,7 @@ void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
   base::ListValue values;
   for (Nodes::const_iterator i = nodes.begin(); i != nodes.end(); ++i) {
     values.Set(values.GetSize(),
-               new base::StringValue(base::Int64ToString((*i)->id())));
+               new base::Value(base::Int64ToString((*i)->id())));
   }
 
   pref_service_->Set(prefs::kBookmarkEditorExpandedNodes, values);

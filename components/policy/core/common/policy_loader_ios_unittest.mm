@@ -256,11 +256,9 @@ TEST(PolicyProviderIOSTest, ChromePolicyOverEncodedChromePolicy) {
   PolicyMap& expectedMap =
       expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
   expectedMap.Set("shared", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_PLATFORM, new base::StringValue("right"),
-                  nullptr);
+                  POLICY_SOURCE_PLATFORM, new base::Value("right"), nullptr);
   expectedMap.Set("key2", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_PLATFORM, new base::StringValue("value2"),
-                  nullptr);
+                  POLICY_SOURCE_PLATFORM, new base::Value("value2"), nullptr);
 
   scoped_refptr<base::TestSimpleTaskRunner> taskRunner =
       new base::TestSimpleTaskRunner();

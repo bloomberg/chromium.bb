@@ -36,7 +36,6 @@
 
 using base::DictionaryValue;
 using base::ListValue;
-using base::StringValue;
 using base::Value;
 using base::WeakPtr;
 
@@ -262,7 +261,7 @@ void DidGetRegistrations(
   args.push_back(GetVersionListValue(live_versions));
   args.push_back(GetRegistrationListValue(stored_registrations));
   args.push_back(base::MakeUnique<Value>(partition_id));
-  args.push_back(base::MakeUnique<StringValue>(context_path.value()));
+  args.push_back(base::MakeUnique<Value>(context_path.value()));
   internals->web_ui()->CallJavascriptFunctionUnsafe(
       "serviceworker.onPartitionData", ConvertToRawPtrVector(args));
 }
@@ -281,14 +280,14 @@ class ServiceWorkerInternalsUI::PartitionObserver
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onRunningStateChanged", Value(partition_id_),
-        StringValue(base::Int64ToString(version_id)));
+        Value(base::Int64ToString(version_id)));
   }
   void OnVersionStateChanged(int64_t version_id,
                              ServiceWorkerVersion::Status) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onVersionStateChanged", Value(partition_id_),
-        StringValue(base::Int64ToString(version_id)));
+        Value(base::Int64ToString(version_id)));
   }
   void OnErrorReported(int64_t version_id,
                        int process_id,
@@ -297,8 +296,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
     args.push_back(base::MakeUnique<Value>(partition_id_));
-    args.push_back(
-        base::MakeUnique<StringValue>(base::Int64ToString(version_id)));
+    args.push_back(base::MakeUnique<Value>(base::Int64ToString(version_id)));
     args.push_back(base::MakeUnique<Value>(process_id));
     args.push_back(base::MakeUnique<Value>(thread_id));
     auto value = base::MakeUnique<DictionaryValue>();
@@ -317,8 +315,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
     args.push_back(base::MakeUnique<Value>(partition_id_));
-    args.push_back(
-        base::MakeUnique<StringValue>(base::Int64ToString(version_id)));
+    args.push_back(base::MakeUnique<Value>(base::Int64ToString(version_id)));
     args.push_back(base::MakeUnique<Value>(process_id));
     args.push_back(base::MakeUnique<Value>(thread_id));
     auto value = base::MakeUnique<DictionaryValue>();
@@ -335,12 +332,12 @@ class ServiceWorkerInternalsUI::PartitionObserver
                             const GURL& pattern) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe("serviceworker.onRegistrationStored",
-                                          StringValue(pattern.spec()));
+                                          Value(pattern.spec()));
   }
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override {
     web_ui_->CallJavascriptFunctionUnsafe("serviceworker.onRegistrationDeleted",
-                                          StringValue(pattern.spec()));
+                                          Value(pattern.spec()));
   }
   int partition_id() const { return partition_id_; }
 

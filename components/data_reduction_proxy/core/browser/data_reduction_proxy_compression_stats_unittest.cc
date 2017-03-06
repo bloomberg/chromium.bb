@@ -163,13 +163,13 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
 
     for (size_t i = 0; i < kNumDaysInHistory; ++i) {
       original_daily_content_length_list->Set(
-          i, new base::StringValue(base::SizeTToString(i)));
+          i, new base::Value(base::SizeTToString(i)));
     }
 
     received_daily_content_length_list->Clear();
     for (size_t i = 0; i < kNumDaysInHistory / 2; ++i) {
       received_daily_content_length_list->Set(
-          i, new base::StringValue(base::SizeTToString(i)));
+          i, new base::Value(base::SizeTToString(i)));
     }
   }
 
@@ -178,8 +178,7 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     base::ListValue* update = compression_stats_->GetList(pref);
     update->Clear();
     for (size_t i = 0; i < kNumDaysInHistory; ++i) {
-      update->Insert(
-          0, base::MakeUnique<base::StringValue>(base::Int64ToString(0)));
+      update->Insert(0, base::MakeUnique<base::Value>(base::Int64ToString(0)));
     }
   }
 
@@ -544,8 +543,8 @@ TEST_F(DataReductionProxyCompressionStatsTest,
 
 TEST_F(DataReductionProxyCompressionStatsTest, StatsRestoredOnOnRestart) {
   base::ListValue list_value;
-  list_value.Insert(
-      0, base::MakeUnique<base::StringValue>(base::Int64ToString(1234)));
+  list_value.Insert(0,
+                    base::MakeUnique<base::Value>(base::Int64ToString(1234)));
   pref_service()->Set(prefs::kDailyHttpOriginalContentLength, list_value);
 
   ResetCompressionStatsWithDelay(

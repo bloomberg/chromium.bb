@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 
   // Set "foo" to "bar" via sync.
   syncer::SyncChangeList sync_changes;
-  base::StringValue bar("bar");
+  base::Value bar("bar");
   sync_changes.push_back(settings_sync_util::CreateAdd(
       extension_id, "foo", bar, kModelType));
   SendChanges(sync_changes);
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 
   // Set "foo" to "bar" via sync.
   syncer::SyncChangeList sync_changes;
-  base::StringValue bar("bar");
+  base::Value bar("bar");
   sync_changes.push_back(settings_sync_util::CreateAdd(
       extension_id, "foo", bar, kModelType));
   SendChanges(sync_changes);

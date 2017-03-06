@@ -180,7 +180,7 @@ void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(
   bool new_kiosk_ui = EnableNewKioskUI();
   web_ui()->CallJavascriptFunctionUnsafe(
       new_kiosk_ui ? kKioskShowErrorNewAPI : kKioskShowErrorOldAPI,
-      base::StringValue(error_message));
+      base::Value(error_message));
 }
 
 void KioskAppMenuHandler::OnKioskAppsSettingsChanged() {

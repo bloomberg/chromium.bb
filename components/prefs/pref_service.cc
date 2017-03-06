@@ -401,7 +401,7 @@ void PrefService::SetDouble(const std::string& path, double value) {
 }
 
 void PrefService::SetString(const std::string& path, const std::string& value) {
-  SetUserPrefValue(path, new base::StringValue(value));
+  SetUserPrefValue(path, new base::Value(value));
 }
 
 void PrefService::SetFilePath(const std::string& path,
@@ -410,7 +410,7 @@ void PrefService::SetFilePath(const std::string& path,
 }
 
 void PrefService::SetInt64(const std::string& path, int64_t value) {
-  SetUserPrefValue(path, new base::StringValue(base::Int64ToString(value)));
+  SetUserPrefValue(path, new base::Value(base::Int64ToString(value)));
 }
 
 int64_t PrefService::GetInt64(const std::string& path) const {
@@ -431,7 +431,7 @@ int64_t PrefService::GetInt64(const std::string& path) const {
 }
 
 void PrefService::SetUint64(const std::string& path, uint64_t value) {
-  SetUserPrefValue(path, new base::StringValue(base::Uint64ToString(value)));
+  SetUserPrefValue(path, new base::Value(base::Uint64ToString(value)));
 }
 
 uint64_t PrefService::GetUint64(const std::string& path) const {

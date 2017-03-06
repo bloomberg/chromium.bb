@@ -249,7 +249,7 @@ void PrefHashFilter::FinalizeFilterOnLoad(
 
   if (did_reset) {
     pref_store_contents->Set(user_prefs::kPreferenceResetTime,
-                             new base::StringValue(base::Int64ToString(
+                             new base::Value(base::Int64ToString(
                                  base::Time::Now().ToInternalValue())));
     FilterUpdate(user_prefs::kPreferenceResetTime);
 
@@ -302,7 +302,7 @@ void PrefHashFilter::FlushToExternalStore(
             changed_path, inner_it.key(), mac);
       }
     } else {
-      const base::StringValue* value_as_string;
+      const base::Value* value_as_string;
       bool is_string = it.value().GetAsString(&value_as_string);
       DCHECK(is_string);
 

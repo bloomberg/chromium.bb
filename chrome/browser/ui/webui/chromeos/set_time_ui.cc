@@ -65,8 +65,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
 
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override {
-    base::StringValue timezone_id(
-        system::TimezoneSettings::GetTimezoneID(timezone));
+    base::Value timezone_id(system::TimezoneSettings::GetTimezoneID(timezone));
     web_ui()->CallJavascriptFunctionUnsafe("settime.TimeSetter.setTimezone",
                                            timezone_id);
   }

@@ -607,8 +607,8 @@ scoped_refptr<content::DevToolsAgentHost> InspectUI::FindTarget(
 
 void InspectUI::PopulateTargets(const std::string& source,
                                 const base::ListValue& targets) {
-  web_ui()->CallJavascriptFunctionUnsafe("populateTargets",
-                                         base::StringValue(source), targets);
+  web_ui()->CallJavascriptFunctionUnsafe("populateTargets", base::Value(source),
+                                         targets);
 }
 
 void InspectUI::PopulateAdditionalTargets(const base::ListValue& targets) {

@@ -591,7 +591,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   web_view->setMainFrame(frame);
   blink::WebFrameWidget::create(nullptr, web_view, frame);
 
-  base::StringValue html(ResourceBundle::GetSharedInstance().GetLocalizedString(
+  base::Value html(ResourceBundle::GetSharedInstance().GetLocalizedString(
       IDR_PRINT_PREVIEW_PAGE));
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);

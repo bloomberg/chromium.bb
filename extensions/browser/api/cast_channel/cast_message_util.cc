@@ -81,7 +81,7 @@ bool CastMessageToMessageInfo(const CastMessage& message_proto,
   switch (message_proto.payload_type()) {
   case CastMessage_PayloadType_STRING:
     if (message_proto.has_payload_utf8())
-      value.reset(new base::StringValue(message_proto.payload_utf8()));
+      value.reset(new base::Value(message_proto.payload_utf8()));
     break;
   case CastMessage_PayloadType_BINARY:
     if (message_proto.has_payload_binary())

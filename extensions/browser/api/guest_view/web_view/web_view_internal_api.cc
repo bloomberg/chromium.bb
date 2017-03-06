@@ -334,7 +334,7 @@ void WebViewInternalCaptureVisibleRegionFunction::OnCaptureSuccess(
     return;
   }
 
-  SetResult(base::MakeUnique<base::StringValue>(base64_result));
+  SetResult(base::MakeUnique<base::Value>(base64_result));
   SendResponse(true);
 }
 
@@ -703,8 +703,8 @@ ExtensionFunction::ResponseAction WebViewInternalGetZoomModeFunction::Run() {
       NOTREACHED();
   }
 
-  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
-      web_view_internal::ToString(zoom_mode))));
+  return RespondNow(OneArgument(
+      base::MakeUnique<base::Value>(web_view_internal::ToString(zoom_mode))));
 }
 
 WebViewInternalFindFunction::WebViewInternalFindFunction() {

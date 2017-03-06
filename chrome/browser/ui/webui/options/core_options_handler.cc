@@ -579,7 +579,7 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
         return;
       }
       GURL fixed = url_formatter::FixupURL(original, std::string());
-      temp_value.reset(new base::StringValue(fixed.spec()));
+      temp_value.reset(new base::Value(fixed.spec()));
       value = temp_value.get();
       break;
     }

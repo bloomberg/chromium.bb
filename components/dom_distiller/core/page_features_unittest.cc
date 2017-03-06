@@ -75,7 +75,7 @@ TEST(DomDistillerPageFeaturesTest, TestCalculateDerivedFeatures) {
     std::string stringified_json;
     ASSERT_TRUE(base::JSONWriter::Write(*core_features, &stringified_json));
     std::unique_ptr<base::Value> stringified_value(
-        new base::StringValue(stringified_json));
+        new base::Value(stringified_json));
     std::vector<double> derived(
         CalculateDerivedFeaturesFromJSON(stringified_value.get()));
 

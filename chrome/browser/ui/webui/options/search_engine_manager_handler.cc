@@ -296,7 +296,7 @@ void SearchEngineManagerHandler::CheckSearchEngineInfoValidity(
   validity.SetBoolean("name", edit_controller_->IsTitleValid(name));
   validity.SetBoolean("keyword", edit_controller_->IsKeywordValid(keyword));
   validity.SetBoolean("url", edit_controller_->IsURLValid(url));
-  base::StringValue indexValue(modelIndex);
+  base::Value indexValue(modelIndex);
   web_ui()->CallJavascriptFunctionUnsafe(
       "SearchEngineManager.validityCheckCallback", validity, indexValue);
 }

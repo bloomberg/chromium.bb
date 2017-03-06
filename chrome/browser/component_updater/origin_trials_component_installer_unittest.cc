@@ -115,7 +115,7 @@ class OriginTrialsComponentInstallerTest : public PlatformTest {
 TEST_F(OriginTrialsComponentInstallerTest,
        PublicKeyResetToDefaultWhenOverrideMissing) {
   local_state()->Set(prefs::kOriginTrialPublicKey,
-                     base::StringValue(kExistingPublicKey));
+                     base::Value(kExistingPublicKey));
   ASSERT_EQ(kExistingPublicKey,
             local_state()->GetString(prefs::kOriginTrialPublicKey));
 

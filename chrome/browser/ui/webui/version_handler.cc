@@ -97,8 +97,8 @@ void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,
                                     base::string16* profile_path_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::StringValue exec_path(*executable_path_data);
-  base::StringValue profile_path(*profile_path_data);
+  base::Value exec_path(*executable_path_data);
+  base::Value profile_path(*profile_path_data);
   web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnFilePaths,
                                          exec_path, profile_path);
 }
@@ -125,7 +125,7 @@ void VersionHandler::OnGotPlugins(
     }
   }
 
-  base::StringValue arg(flash_version_and_path);
+  base::Value arg(flash_version_and_path);
 
   web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnFlashVersion, arg);
 }

@@ -85,14 +85,13 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     split_items_.SetStringWithoutPathExpansion(key, value);
     settings_service_.UploadItem(
         SupervisedUserSettingsService::MakeSplitSettingKey(kSplitItemName, key),
-        std::unique_ptr<base::Value>(new base::StringValue(value)));
+        std::unique_ptr<base::Value>(new base::Value(value)));
   }
 
   void UploadAtomicItem(const std::string& value) {
-    atomic_setting_value_.reset(new base::StringValue(value));
+    atomic_setting_value_.reset(new base::Value(value));
     settings_service_.UploadItem(
-        kAtomicItemName,
-        std::unique_ptr<base::Value>(new base::StringValue(value)));
+        kAtomicItemName, std::unique_ptr<base::Value>(new base::Value(value)));
   }
 
   void VerifySyncDataItem(syncer::SyncData sync_data) {
@@ -158,7 +157,7 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
   settings_.reset();
   syncer::SyncData data =
       SupervisedUserSettingsService::CreateSyncDataForSetting(
-          kSettingsName, base::StringValue(kSettingsValue));
+          kSettingsName, base::Value(kSettingsValue));
   syncer::SyncChangeList change_list;
   change_list.push_back(
       syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD, data));
@@ -222,7 +221,7 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
     syncer::SyncDataList sync_data;
     // Adding 1 Atomic entry.
     sync_data.push_back(SupervisedUserSettingsService::CreateSyncDataForSetting(
-        kSettingsName, base::StringValue(kSettingsValue)));
+        kSettingsName, base::Value(kSettingsValue)));
     // Adding 2 SplitSettings from dictionary.
     base::DictionaryValue dict;
     dict.SetString("foo", "bar");
@@ -281,7 +280,7 @@ TEST_F(SupervisedUserSettingsServiceTest, SetLocalSetting) {
   settings_.reset();
   settings_service_.SetLocalSetting(
       kSettingsName,
-      std::unique_ptr<base::Value>(new base::StringValue(kSettingsValue)));
+      std::unique_ptr<base::Value>(new base::Value(kSettingsValue)));
   ASSERT_TRUE(settings_);
   ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
   std::string string_value;

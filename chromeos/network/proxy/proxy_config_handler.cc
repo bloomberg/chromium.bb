@@ -115,7 +115,7 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
     base::JSONWriter::Write(proxy_config.GetDictionary(), &proxy_config_str);
     shill_service_client->SetProperty(
         dbus::ObjectPath(network.path()), shill::kProxyConfigProperty,
-        base::StringValue(proxy_config_str),
+        base::Value(proxy_config_str),
         base::Bind(&NotifyNetworkStateHandler, network.path()),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
                    "SetProxyConfig.SetProperty Failed", network.path(),

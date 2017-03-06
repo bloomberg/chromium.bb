@@ -743,10 +743,8 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
       &(*attached_images)[blob_uuids->size()];
   std::unique_ptr<base::DictionaryValue> attached_image(
       new base::DictionaryValue);
-  attached_image->Set(kBlobUUIDKey, new base::StringValue(
-      current_blob->GetUUID()));
-  attached_image->Set(kTypeKey, new base::StringValue(
-      current_image->type));
+  attached_image->Set(kBlobUUIDKey, new base::Value(current_blob->GetUUID()));
+  attached_image->Set(kTypeKey, new base::Value(current_image->type));
   attached_image->Set(
       kSizeKey,
       new base::Value(base::checked_cast<int>(current_image->data.size())));

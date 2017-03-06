@@ -16,7 +16,6 @@
 
 namespace base {
 class Value;
-using StringValue = Value;
 }
 
 namespace options {
@@ -65,7 +64,7 @@ class ManageProfileHandler : public OptionsPageUIHandler,
 
   // Send all profile icons and their default names to the overlay.
   // |mode| is the dialog mode, i.e. "create" or "manage".
-  void SendProfileIconsAndNames(const base::StringValue& mode);
+  void SendProfileIconsAndNames(const base::Value& mode);
 
   // Sends an object to WebUI of the form:
   //   profileNames = {

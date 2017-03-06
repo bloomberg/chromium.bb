@@ -64,7 +64,7 @@ void JsMutationEventObserver::OnChangesApplied(
     changes_value = changes_list;
   } else {
     changes_value =
-        new base::StringValue(base::SizeTToString(changes_size) + " changes");
+        new base::Value(base::SizeTToString(changes_size) + " changes");
   }
   details.Set("changes", changes_value);
   HandleJsEvent(FROM_HERE, "onChangesApplied", JsEventDetails(&details));

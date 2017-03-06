@@ -79,7 +79,7 @@ void PointerHandler::UpdateTitle() {
   } else {
     label = has_mouse_ ? "pointerOverlayTitleMouseOnly" : "";
   }
-  base::StringValue val(label);
+  base::Value val(label);
   web_ui()->CallJavascriptFunctionUnsafe("PointerOverlay.setTitle", val);
 }
 

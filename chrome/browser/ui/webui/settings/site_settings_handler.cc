@@ -206,8 +206,8 @@ void SiteSettingsHandler::OnGetUsageInfo(
     if (entry.usage <= 0) continue;
     if (entry.host == usage_host_) {
       CallJavascriptFunction("settings.WebsiteUsagePrivateApi.returnUsageTotal",
-                             base::StringValue(entry.host),
-                             base::StringValue(ui::FormatBytes(entry.usage)),
+                             base::Value(entry.host),
+                             base::Value(ui::FormatBytes(entry.usage)),
                              base::Value(entry.type));
       return;
     }
@@ -217,7 +217,7 @@ void SiteSettingsHandler::OnGetUsageInfo(
 void SiteSettingsHandler::OnUsageInfoCleared(storage::QuotaStatusCode code) {
   if (code == storage::kQuotaStatusOk) {
     CallJavascriptFunction("settings.WebsiteUsagePrivateApi.onUsageCleared",
-                           base::StringValue(clearing_origin_));
+                           base::Value(clearing_origin_));
   }
 }
 
@@ -232,19 +232,19 @@ void SiteSettingsHandler::OnContentSettingChanged(
   if (primary_pattern.ToString().empty()) {
     CallJavascriptFunction(
         "cr.webUIListenerCallback",
-        base::StringValue("contentSettingCategoryChanged"),
-        base::StringValue(site_settings::ContentSettingsTypeToGroupName(
-            content_type)));
+        base::Value("contentSettingCategoryChanged"),
+        base::Value(
+            site_settings::ContentSettingsTypeToGroupName(content_type)));
   } else {
     CallJavascriptFunction(
         "cr.webUIListenerCallback",
-        base::StringValue("contentSettingSitePermissionChanged"),
-        base::StringValue(site_settings::ContentSettingsTypeToGroupName(
-            content_type)),
-        base::StringValue(primary_pattern.ToString()),
-        base::StringValue(
-            secondary_pattern == ContentSettingsPattern::Wildcard() ?
-            "" : secondary_pattern.ToString()));
+        base::Value("contentSettingSitePermissionChanged"),
+        base::Value(
+            site_settings::ContentSettingsTypeToGroupName(content_type)),
+        base::Value(primary_pattern.ToString()),
+        base::Value(secondary_pattern == ContentSettingsPattern::Wildcard()
+                        ? ""
+                        : secondary_pattern.ToString()));
   }
 }
 
@@ -617,7 +617,7 @@ void SiteSettingsHandler::SendIncognitoStatus(
       !(was_destroyed && profile == profile_->GetOffTheRecordProfile());
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("onIncognitoStatusChanged"),
+                         base::Value("onIncognitoStatusChanged"),
                          base::Value(incognito_enabled));
 }
 
@@ -703,7 +703,7 @@ void SiteSettingsHandler::SendZoomLevels() {
   }
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("onZoomLevelsChanged"),
+                         base::Value("onZoomLevelsChanged"),
                          zoom_levels_exceptions);
 }
 

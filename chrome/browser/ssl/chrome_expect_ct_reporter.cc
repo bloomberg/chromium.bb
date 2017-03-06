@@ -39,7 +39,7 @@ std::unique_ptr<base::ListValue> GetPEMEncodedChainAsList(
   std::vector<std::string> pem_encoded_chain;
   cert_chain->GetPEMEncodedChain(&pem_encoded_chain);
   for (const std::string& cert : pem_encoded_chain)
-    result->Append(base::MakeUnique<base::StringValue>(cert));
+    result->Append(base::MakeUnique<base::Value>(cert));
 
   return result;
 }

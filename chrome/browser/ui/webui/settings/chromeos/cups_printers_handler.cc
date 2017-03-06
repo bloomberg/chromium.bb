@@ -148,7 +148,7 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   std::unique_ptr<base::DictionaryValue> response =
       base::MakeUnique<base::DictionaryValue>();
   response->Set("printerList", printers_list);
-  ResolveJavascriptCallback(base::StringValue(callback_id), *response);
+  ResolveJavascriptCallback(base::Value(callback_id), *response);
 }
 
 void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
@@ -251,14 +251,14 @@ void CupsPrintersHandler::OnAddedPrinter(std::unique_ptr<Printer> printer,
         std::move(printer));
   }
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("on-add-cups-printer"),
-                         base::Value(success), base::StringValue(printer_name));
+                         base::Value("on-add-cups-printer"),
+                         base::Value(success), base::Value(printer_name));
 }
 
 void CupsPrintersHandler::OnAddPrinterError() {
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("on-add-cups-printer"),
-                         base::Value(false), base::StringValue(""));
+                         base::Value("on-add-cups-printer"), base::Value(false),
+                         base::Value(""));
 }
 
 void CupsPrintersHandler::HandleGetCupsPrinterManufacturers(
@@ -287,7 +287,7 @@ void CupsPrintersHandler::HandleGetCupsPrinterModels(
     base::DictionaryValue response;
     response.SetBoolean("success", true);
     response.Set("models", base::MakeUnique<base::ListValue>());
-    ResolveJavascriptCallback(base::StringValue(js_callback), response);
+    ResolveJavascriptCallback(base::Value(js_callback), response);
     return;
   }
 
@@ -328,7 +328,7 @@ void CupsPrintersHandler::ResolveManufacturersDone(
   response.SetBoolean("success",
                       result_code == chromeos::printing::PpdProvider::SUCCESS);
   response.Set("manufacturers", std::move(manufacturers_value));
-  ResolveJavascriptCallback(base::StringValue(js_callback), response);
+  ResolveJavascriptCallback(base::Value(js_callback), response);
 }
 
 void CupsPrintersHandler::ResolvePrintersDone(
@@ -343,15 +343,15 @@ void CupsPrintersHandler::ResolvePrintersDone(
   response.SetBoolean("success",
                       result_code == chromeos::printing::PpdProvider::SUCCESS);
   response.Set("models", std::move(printers_value));
-  ResolveJavascriptCallback(base::StringValue(js_callback), response);
+  ResolveJavascriptCallback(base::Value(js_callback), response);
 }
 
 void CupsPrintersHandler::FileSelected(const base::FilePath& path,
                                        int index,
                                        void* params) {
   DCHECK(!webui_callback_id_.empty());
-  ResolveJavascriptCallback(base::StringValue(webui_callback_id_),
-                            base::StringValue(path.value()));
+  ResolveJavascriptCallback(base::Value(webui_callback_id_),
+                            base::Value(path.value()));
   webui_callback_id_.clear();
 }
 
@@ -362,7 +362,7 @@ void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
   printer_discoverer_->AddObserver(this);
   if (!printer_discoverer_->StartDiscovery()) {
     CallJavascriptFunction("cr.webUIListenerCallback",
-                           base::StringValue("on-printer-discovery-failed"));
+                           base::Value("on-printer-discovery-failed"));
     printer_discoverer_->RemoveObserver(this);
   }
 }
@@ -386,13 +386,12 @@ void CupsPrintersHandler::OnPrintersFound(
   }
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("on-printer-discovered"),
-                         *printers_list);
+                         base::Value("on-printer-discovered"), *printers_list);
 }
 
 void CupsPrintersHandler::OnDiscoveryDone() {
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("on-printer-discovery-done"));
+                         base::Value("on-printer-discovery-done"));
 }
 
 }  // namespace settings

@@ -96,10 +96,9 @@ void MetricsReportingHandler::OnPrefChanged(const std::string& pref_name) {
 }
 
 void MetricsReportingHandler::SendMetricsReportingChange() {
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("metrics-reporting-change"),
-      *CreateMetricsReportingDict());
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::Value("metrics-reporting-change"),
+                         *CreateMetricsReportingDict());
 }
 
 }  // namespace settings

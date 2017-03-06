@@ -210,7 +210,7 @@ TEST_F(PrefClientStoreTest, MultipleKeyInitialization) {
   const int kValue = 42;
   base::Value pref1(kValue);
   const std::string kStringValue("look");
-  base::StringValue pref2(kStringValue);
+  base::Value pref2(kStringValue);
 
   base::DictionaryValue prefs;
   prefs.Set(key1, pref1.CreateDeepCopy());

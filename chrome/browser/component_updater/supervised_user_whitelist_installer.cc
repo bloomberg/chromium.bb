@@ -439,7 +439,7 @@ bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
   base::ListValue* clients = nullptr;
   success = whitelist_dict->GetList(kClients, &clients);
 
-  const bool removed = clients->Remove(base::StringValue(client_id), nullptr);
+  const bool removed = clients->Remove(base::Value(client_id), nullptr);
 
   if (!clients->empty())
     return removed;
@@ -549,8 +549,8 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
       clients = new base::ListValue;
       whitelist_dict->Set(kClients, clients);
     }
-    bool success = clients->AppendIfNotPresent(
-        base::MakeUnique<base::StringValue>(client_id));
+    bool success =
+        clients->AppendIfNotPresent(base::MakeUnique<base::Value>(client_id));
     DCHECK(success);
   }
 

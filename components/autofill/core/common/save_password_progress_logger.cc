@@ -18,7 +18,6 @@
 using base::checked_cast;
 using base::Value;
 using base::DictionaryValue;
-using base::StringValue;
 
 namespace autofill {
 
@@ -94,7 +93,7 @@ void SavePasswordProgressLogger::LogHTMLForm(
 void SavePasswordProgressLogger::LogURL(
     SavePasswordProgressLogger::StringID label,
     const GURL& url) {
-  LogValue(label, StringValue(ScrubURL(url)));
+  LogValue(label, Value(ScrubURL(url)));
 }
 
 void SavePasswordProgressLogger::LogBoolean(
@@ -117,7 +116,7 @@ void SavePasswordProgressLogger::LogNumber(
 
 void SavePasswordProgressLogger::LogMessage(
     SavePasswordProgressLogger::StringID message) {
-  LogValue(STRING_MESSAGE, StringValue(GetStringFromID(message)));
+  LogValue(STRING_MESSAGE, Value(GetStringFromID(message)));
 }
 
 // static

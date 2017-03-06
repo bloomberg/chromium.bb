@@ -886,7 +886,7 @@ bool FileManagerPrivateInternalComputeChecksumFunction::RunAsync() {
 void FileManagerPrivateInternalComputeChecksumFunction::Respond(
     const std::string& hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SetResult(base::MakeUnique<base::StringValue>(hash));
+  SetResult(base::MakeUnique<base::Value>(hash));
   SendResponse(true);
 }
 

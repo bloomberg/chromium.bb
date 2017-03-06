@@ -163,7 +163,7 @@ class TrackedPreferencesMigrationTest : public testing::Test {
     }
     DCHECK(store);
 
-    base::StringValue string_value(value);
+    base::Value string_value(value);
     DictionaryHashStoreContents contents(store);
     pref_hash_store->BeginTransaction(&contents)->StoreHash(key, &string_value);
   }

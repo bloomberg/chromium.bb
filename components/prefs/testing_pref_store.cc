@@ -124,8 +124,7 @@ void TestingPrefStore::ReportValueChanged(const std::string& key,
 
 void TestingPrefStore::SetString(const std::string& key,
                                  const std::string& value) {
-  SetValue(key, base::MakeUnique<base::StringValue>(value),
-           DEFAULT_PREF_WRITE_FLAGS);
+  SetValue(key, base::MakeUnique<base::Value>(value), DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void TestingPrefStore::SetInteger(const std::string& key, int value) {

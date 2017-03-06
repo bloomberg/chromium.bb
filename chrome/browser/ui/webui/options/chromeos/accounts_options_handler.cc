@@ -42,7 +42,7 @@ bool WhitelistUser(OwnerSettingsServiceChromeOS* service,
   if (CrosSettings::Get()->FindEmailInList(kAccountsPrefUsers, username, NULL))
     return false;
   if (service) {
-    base::StringValue username_value(username);
+    base::Value username_value(username);
     service->AppendToList(kAccountsPrefUsers, username_value);
   }
   return true;
@@ -127,7 +127,7 @@ void AccountsOptionsHandler::HandleUnwhitelistUser(
 
   ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::DELETE_PROFILE_SETTINGS);
 
-  base::StringValue canonical_email(gaia::CanonicalizeEmail(email));
+  base::Value canonical_email(gaia::CanonicalizeEmail(email));
   if (OwnerSettingsServiceChromeOS* service =
           OwnerSettingsServiceChromeOS::FromWebUI(web_ui())) {
     service->RemoveFromList(kAccountsPrefUsers, canonical_email);
@@ -168,8 +168,8 @@ void AccountsOptionsHandler::HandleUpdateWhitelist(
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetUsers();
   for (const auto* user : users) {
-    new_list->AppendIfNotPresent(base::MakeUnique<base::StringValue>(
-        user->GetAccountId().GetUserEmail()));
+    new_list->AppendIfNotPresent(
+        base::MakeUnique<base::Value>(user->GetAccountId().GetUserEmail()));
   }
 
   if (OwnerSettingsServiceChromeOS* service =

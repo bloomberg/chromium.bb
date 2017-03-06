@@ -205,7 +205,7 @@ void WebcamPrivateOpenSerialWebcamFunction::OnOpenWebcam(
     const std::string& webcam_id,
     bool success) {
   if (success) {
-    SetResult(base::MakeUnique<base::StringValue>(webcam_id));
+    SetResult(base::MakeUnique<base::Value>(webcam_id));
     SendResponse(true);
   } else {
     SetError(kOpenSerialWebcamError);

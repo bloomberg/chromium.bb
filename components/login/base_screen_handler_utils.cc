@@ -84,16 +84,16 @@ base::Value MakeValue(double v) {
   return base::Value(v);
 }
 
-base::StringValue MakeValue(const std::string& v) {
-  return base::StringValue(v);
+base::Value MakeValue(const std::string& v) {
+  return base::Value(v);
 }
 
-base::StringValue MakeValue(const base::string16& v) {
-  return base::StringValue(v);
+base::Value MakeValue(const base::string16& v) {
+  return base::Value(v);
 }
 
-base::StringValue MakeValue(const AccountId& v) {
-  return base::StringValue(v.Serialize());
+base::Value MakeValue(const AccountId& v) {
+  return base::Value(v.Serialize());
 }
 
 ParsedValueContainer<AccountId>::ParsedValueContainer() {

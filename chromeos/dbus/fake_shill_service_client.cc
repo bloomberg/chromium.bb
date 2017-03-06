@@ -190,7 +190,7 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
   service_properties->SetStringWithoutPathExpansion(shill::kErrorProperty, "");
 
   // Set Associating.
-  base::StringValue associating_value(shill::kStateAssociation);
+  base::Value associating_value(shill::kStateAssociation);
   SetServiceProperty(service_path.value(), shill::kStateProperty,
                      associating_value);
 
@@ -213,7 +213,7 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
     return;
   }
   // Set Idle after a delay
-  base::StringValue idle_value(shill::kStateIdle);
+  base::Value idle_value(shill::kStateIdle);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&FakeShillServiceClient::SetProperty,
                             weak_ptr_factory_.GetWeakPtr(), service_path,
@@ -240,9 +240,8 @@ void FakeShillServiceClient::ActivateCellularModem(
     LOG(ERROR) << "Service not found: " << service_path.value();
     error_callback.Run("Error.InvalidService", "Invalid Service");
   }
-  SetServiceProperty(service_path.value(),
-                     shill::kActivationStateProperty,
-                     base::StringValue(shill::kActivationStateActivating));
+  SetServiceProperty(service_path.value(), shill::kActivationStateProperty,
+                     base::Value(shill::kActivationStateActivating));
   // Set Activated after a delay
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -323,9 +322,8 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
   }
 
   if (!ipconfig_path.empty()) {
-    properties->SetWithoutPathExpansion(
-        shill::kIPConfigProperty,
-        new base::StringValue(ipconfig_path));
+    properties->SetWithoutPathExpansion(shill::kIPConfigProperty,
+                                        new base::Value(ipconfig_path));
   }
 
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
@@ -571,20 +569,17 @@ void FakeShillServiceClient::SetOtherServicesOffline(
     properties->GetString(shill::kTypeProperty, &type);
     if (type != service_type)
       continue;
-    properties->SetWithoutPathExpansion(
-        shill::kStateProperty,
-        new base::StringValue(shill::kStateIdle));
+    properties->SetWithoutPathExpansion(shill::kStateProperty,
+                                        new base::Value(shill::kStateIdle));
   }
 }
 
 void FakeShillServiceClient::SetCellularActivated(
     const dbus::ObjectPath& service_path,
     const ErrorCallback& error_callback) {
-  SetProperty(service_path,
-              shill::kActivationStateProperty,
-              base::StringValue(shill::kActivationStateActivated),
-              base::Bind(&base::DoNothing),
-              error_callback);
+  SetProperty(service_path, shill::kActivationStateProperty,
+              base::Value(shill::kActivationStateActivated),
+              base::Bind(&base::DoNothing), error_callback);
   SetProperty(service_path, shill::kConnectableProperty, base::Value(true),
               base::Bind(&base::DoNothing), error_callback);
 }
@@ -612,20 +607,20 @@ void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {
   if (passphrase == "failure") {
     // Simulate a password failure.
     SetServiceProperty(service_path, shill::kErrorProperty,
-                       base::StringValue(shill::kErrorBadPassphrase));
+                       base::Value(shill::kErrorBadPassphrase));
     SetServiceProperty(service_path, shill::kStateProperty,
-                       base::StringValue(shill::kStateFailure));
+                       base::Value(shill::kStateFailure));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(
             base::IgnoreResult(&FakeShillServiceClient::SetServiceProperty),
             weak_ptr_factory_.GetWeakPtr(), service_path, shill::kErrorProperty,
-            base::StringValue(shill::kErrorBadPassphrase)));
+            base::Value(shill::kErrorBadPassphrase)));
   } else {
     // Set Online.
     VLOG(1) << "Setting state to Online " << service_path;
     SetServiceProperty(service_path, shill::kStateProperty,
-                       base::StringValue(shill::kStateOnline));
+                       base::Value(shill::kStateOnline));
   }
 }
 

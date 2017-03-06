@@ -131,8 +131,8 @@ PushMessagingAppIdentifier PushMessagingAppIdentifier::FindByServiceWorker(
     Profile* profile,
     const GURL& origin,
     int64_t service_worker_registration_id) {
-  const base::StringValue pref_value =
-      base::StringValue(MakePrefValue(origin, service_worker_registration_id));
+  const base::Value pref_value =
+      base::Value(MakePrefValue(origin, service_worker_registration_id));
 
   const base::DictionaryValue* map =
       profile->GetPrefs()->GetDictionary(prefs::kPushMessagingAppIdentifierMap);

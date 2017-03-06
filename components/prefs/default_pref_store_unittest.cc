@@ -6,7 +6,6 @@
 #include "components/prefs/default_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::StringValue;
 using base::Value;
 
 namespace {
@@ -54,17 +53,17 @@ TEST(DefaultPrefStoreTest, NotifyPrefValueChanged) {
 
   // Setting a default value shouldn't send a change notification.
   pref_store->SetDefaultValue(kPrefKey,
-                              std::unique_ptr<Value>(new StringValue("foo")));
+                              std::unique_ptr<Value>(new Value("foo")));
   EXPECT_EQ(0, observer.change_count());
 
   // Replacing the default value should send a change notification...
-  pref_store->ReplaceDefaultValue(
-      kPrefKey, std::unique_ptr<Value>(new StringValue("bar")));
+  pref_store->ReplaceDefaultValue(kPrefKey,
+                                  std::unique_ptr<Value>(new Value("bar")));
   EXPECT_EQ(1, observer.change_count());
 
   // But only if the value actually changed.
-  pref_store->ReplaceDefaultValue(
-      kPrefKey, std::unique_ptr<Value>(new StringValue("bar")));
+  pref_store->ReplaceDefaultValue(kPrefKey,
+                                  std::unique_ptr<Value>(new Value("bar")));
   EXPECT_EQ(1, observer.change_count());
 }
 

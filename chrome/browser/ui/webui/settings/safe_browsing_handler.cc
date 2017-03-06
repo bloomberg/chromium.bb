@@ -64,9 +64,9 @@ void SafeBrowsingHandler::OnPrefChanged(const std::string& pref_name) {
          pref_name == prefs::kSafeBrowsingScoutReportingEnabled);
 
   base::Value is_enabled(safe_browsing::IsExtendedReportingEnabled(*prefs_));
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("safe-browsing-extended-reporting-change"), is_enabled);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::Value("safe-browsing-extended-reporting-change"),
+                         is_enabled);
 }
 
 }  // namespace settings

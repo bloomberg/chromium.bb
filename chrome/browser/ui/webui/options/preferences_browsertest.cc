@@ -260,7 +260,7 @@ void PreferencesBrowserTest::VerifyPref(
   ASSERT_TRUE(pref->GetAsDictionary(&dict));
   VerifyKeyValue(*dict, "value", *value);
   if (!controlledBy.empty())
-    VerifyKeyValue(*dict, "controlledBy", base::StringValue(controlledBy));
+    VerifyKeyValue(*dict, "controlledBy", base::Value(controlledBy));
   else
     EXPECT_FALSE(dict->HasKey("controlledBy"));
 
@@ -689,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSDeviceFetchPrefs) {
 
   // String pref.
   pref_names_.push_back(chromeos::kReleaseChannel);
-  default_values_.push_back(base::MakeUnique<base::StringValue>(""));
+  default_values_.push_back(base::MakeUnique<base::Value>(""));
 
   // List pref.
   pref_names_.push_back(chromeos::kAccountsPrefUsers);
@@ -712,9 +712,9 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest,
   // Non-privileged string pref.
   pref_names_.push_back(chromeos::kSystemTimezone);
   default_values_.push_back(
-      base::MakeUnique<base::StringValue>("America/Los_Angeles"));
+      base::MakeUnique<base::Value>("America/Los_Angeles"));
   non_default_values_.push_back(
-      base::MakeUnique<base::StringValue>("America/New_York"));
+      base::MakeUnique<base::Value>("America/New_York"));
   decorated_non_default_values.push_back(
       non_default_values_.back()->CreateDeepCopy());
 
@@ -764,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(ManagedPreferencesBrowserTest,
   // String pref.
   pref_names_.push_back(chromeos::kReleaseChannel);
   non_default_values_.push_back(
-      base::MakeUnique<base::StringValue>("stable-channel"));
+      base::MakeUnique<base::Value>("stable-channel"));
   decorated_non_default_values.push_back(
       non_default_values_.back()->CreateDeepCopy());
 
@@ -811,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(ManagedPreferencesBrowserTest,
   // Non-privileged string pref.
   pref_names_.push_back(chromeos::kSystemTimezone);
   non_default_values_.push_back(
-      base::MakeUnique<base::StringValue>("America/New_York"));
+      base::MakeUnique<base::Value>("America/New_York"));
   decorated_non_default_values.push_back(
       non_default_values_.back()->CreateDeepCopy());
 
@@ -872,9 +872,8 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
                              shill::kTypeEthernet,
                              shill::kStateOnline,
                              true /* add_to_visible */ );
-    service_test->SetServiceProperty("stub_ethernet",
-                                     shill::kProfileProperty,
-                                     base::StringValue(kUserProfilePath));
+    service_test->SetServiceProperty("stub_ethernet", shill::kProfileProperty,
+                                     base::Value(kUserProfilePath));
     profile_test->AddService(kUserProfilePath, "stub_wifi2");
   }
 
@@ -897,7 +896,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
     policy::PolicyMap map;
     map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY, scope,
             policy::POLICY_SOURCE_CLOUD,
-            base::MakeUnique<base::StringValue>(onc_policy), nullptr);
+            base::MakeUnique<base::Value>(onc_policy), nullptr);
     policy_provider_.UpdateChromePolicy(map);
 
     content::RunAllPendingInMessageLoop();
@@ -960,8 +959,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSInitializeProxy) {
 
   // String pref.
   pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxySingleHttp);
-  non_default_values_.push_back(
-      base::MakeUnique<base::StringValue>("127.0.0.1"));
+  non_default_values_.push_back(base::MakeUnique<base::Value>("127.0.0.1"));
 
   // List pref.
   pref_names_.push_back(chromeos::proxy_cros_settings_parser::kProxyIgnoreList);
@@ -1036,8 +1034,8 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, DeviceONCPolicy) {
 
 IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, UserProxyPolicy) {
   policy_names_.push_back(policy::key::kProxyMode);
-  default_values_.push_back(base::MakeUnique<base::StringValue>(
-      ProxyPrefs::kAutoDetectProxyModeName));
+  default_values_.push_back(
+      base::MakeUnique<base::Value>(ProxyPrefs::kAutoDetectProxyModeName));
   SetUserPolicies(policy_names_, default_values_,
                   policy::POLICY_LEVEL_MANDATORY);
   content::RunAllPendingInMessageLoop();
@@ -1065,7 +1063,7 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSSetProxy) {
   SetProxyPref(chromeos::proxy_cros_settings_parser::kProxySingleHttpPort,
                base::Value(123));
   SetProxyPref(chromeos::proxy_cros_settings_parser::kProxySingleHttp,
-               base::StringValue("www.adomain.xy"));
+               base::Value("www.adomain.xy"));
 
   VerifyCurrentProxyServer("www.adomain.xy:123",
                            onc::ONC_SOURCE_NONE);
@@ -1082,13 +1080,13 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSProxyDefaultPorts) {
 
   // Set hosts but no ports.
   SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyHttpUrl,
-               base::StringValue("a.com"));
+               base::Value("a.com"));
   SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyHttpsUrl,
-               base::StringValue("4.3.2.1"));
+               base::Value("4.3.2.1"));
   SetProxyPref(chromeos::proxy_cros_settings_parser::kProxyFtpUrl,
-               base::StringValue("c.com"));
+               base::Value("c.com"));
   SetProxyPref(chromeos::proxy_cros_settings_parser::kProxySocks,
-               base::StringValue("d.com"));
+               base::Value("d.com"));
 
   // Verify default ports.
   VerifyCurrentProxyServer(

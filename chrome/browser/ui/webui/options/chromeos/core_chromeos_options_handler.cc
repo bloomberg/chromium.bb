@@ -254,7 +254,7 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
   if (proxy_cros_settings_parser::IsProxyPref(pref_name)) {
     proxy_cros_settings_parser::SetProxyPrefValue(
         network_guid_, pref_name, value, GetUiProxyConfigService());
-    base::StringValue proxy_type(pref_name);
+    base::Value proxy_type(pref_name);
     web_ui()->CallJavascriptFunctionUnsafe(
         "options.internet.DetailsInternetPage.updateProxySettings", proxy_type);
     ProcessUserMetric(value, metric);

@@ -353,7 +353,7 @@ class OncMaskValues : public Mapper {
       bool* found_unknown_field,
       bool* error) override {
     if (FieldIsCredential(object_signature, field_name)) {
-      return std::unique_ptr<base::Value>(new base::StringValue(mask_));
+      return std::unique_ptr<base::Value>(new base::Value(mask_));
     } else {
       return Mapper::MapField(field_name, object_signature, onc_value,
                               found_unknown_field, error);
@@ -790,8 +790,8 @@ bool IsRecommendedValue(const base::DictionaryValue* onc,
 
   const base::ListValue* recommended_keys = nullptr;
   return (onc->GetList(recommended_property_key, &recommended_keys) &&
-          recommended_keys->Find(base::StringValue(property_basename)) !=
-          recommended_keys->end());
+          recommended_keys->Find(base::Value(property_basename)) !=
+              recommended_keys->end());
 }
 
 namespace {

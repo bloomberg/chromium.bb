@@ -97,8 +97,7 @@ ExtensionFunction::ResponseAction TestSendMessageFunction::Run() {
   // finish the function.
   if (!listener_will_respond || response_.get()) {
     if (!response_) {
-      response_ =
-          OneArgument(base::MakeUnique<base::StringValue>(std::string()));
+      response_ = OneArgument(base::MakeUnique<base::Value>(std::string()));
     }
     return RespondNow(std::move(response_));
   }
@@ -111,7 +110,7 @@ TestSendMessageFunction::~TestSendMessageFunction() {}
 
 void TestSendMessageFunction::Reply(const std::string& message) {
   DCHECK(!response_);
-  response_ = OneArgument(base::MakeUnique<base::StringValue>(message));
+  response_ = OneArgument(base::MakeUnique<base::Value>(message));
   if (waiting_)
     Respond(std::move(response_));
 }
@@ -155,7 +154,7 @@ ExtensionFunction::ResponseAction TestWaitForRoundTripFunction::Run() {
   std::unique_ptr<WaitForRoundTrip::Params> params(
       WaitForRoundTrip::Params::Create(*args_));
   return RespondNow(
-      OneArgument(base::MakeUnique<base::StringValue>(params->message)));
+      OneArgument(base::MakeUnique<base::Value>(params->message)));
 }
 
 }  // namespace extensions

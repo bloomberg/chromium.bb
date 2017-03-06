@@ -1524,7 +1524,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
     return;
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_GET_FILE_ICON);
-  SetResult(base::MakeUnique<base::StringValue>(url));
+  SetResult(base::MakeUnique<base::Value>(url));
   SendResponse(true);
 }
 

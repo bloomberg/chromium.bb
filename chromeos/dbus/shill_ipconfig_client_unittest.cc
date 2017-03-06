@@ -106,7 +106,7 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
   // Create the expected value.
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(shill::kAddressProperty,
-                                new base::StringValue(kAddress));
+                                new base::Value(kAddress));
   value.SetWithoutPathExpansion(shill::kMtuProperty, new base::Value(kMtu));
 
   // Set expectations.
@@ -127,7 +127,7 @@ TEST_F(ShillIPConfigClientTest, SetProperty) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  base::StringValue value(kAddress);
+  base::Value value(kAddress);
   PrepareForMethodCall(shill::kSetPropertyFunction,
                        base::Bind(&ExpectStringAndValueArguments,
                                   shill::kAddressProperty,

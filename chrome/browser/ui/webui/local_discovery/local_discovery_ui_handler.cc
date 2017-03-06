@@ -350,7 +350,7 @@ void LocalDiscoveryUIHandler::DeviceChanged(
 
   base::DictionaryValue info;
 
-  base::StringValue service_key(kKeyPrefixMDns + name);
+  base::Value service_key(kKeyPrefixMDns + name);
 
   if (description.id.empty()) {
     info.SetString(kDictionaryKeyServiceName, name);
@@ -372,7 +372,7 @@ void LocalDiscoveryUIHandler::DeviceChanged(
 void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
   device_descriptions_.erase(name);
   std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
-  base::StringValue name_value(kKeyPrefixMDns + name);
+  base::Value name_value(kKeyPrefixMDns + name);
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "local_discovery.onUnregisteredDeviceUpdate", name_value, *null_value);
@@ -600,7 +600,7 @@ void LocalDiscoveryUIHandler::SetupCloudPrintConnectorSection() {
         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
         base::UTF8ToUTF16(email));
   }
-  base::StringValue label(label_str);
+  base::Value label(label_str);
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "local_discovery.setupCloudPrintConnectorSection", disabled, label,

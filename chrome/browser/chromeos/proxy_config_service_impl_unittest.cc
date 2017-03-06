@@ -350,10 +350,11 @@ class ProxyConfigServiceImplTest : public testing::Test {
         NetworkHandler::Get()->network_state_handler();
     const NetworkState* network = network_state_handler->DefaultNetwork();
     ASSERT_TRUE(network);
-    DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()->
-        SetServiceProperty(network->path(),
-                           shill::kProxyConfigProperty,
-                           base::StringValue(proxy_config));
+    DBusThreadManager::Get()
+        ->GetShillServiceClient()
+        ->GetTestInterface()
+        ->SetServiceProperty(network->path(), shill::kProxyConfigProperty,
+                             base::Value(proxy_config));
   }
 
   // Synchronously gets the latest proxy config.

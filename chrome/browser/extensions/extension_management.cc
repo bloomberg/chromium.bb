@@ -273,7 +273,7 @@ void ExtensionManagement::Refresh() {
   default_settings_.reset(new internal::IndividualSettings());
 
   // Parse default settings.
-  const base::StringValue wildcard("*");
+  const base::Value wildcard("*");
   if (denied_list_pref &&
       denied_list_pref->Find(wildcard) != denied_list_pref->end()) {
     default_settings_->installation_mode = INSTALLATION_BLOCKED;

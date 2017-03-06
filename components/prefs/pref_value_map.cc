@@ -103,7 +103,7 @@ bool PrefValueMap::GetString(const std::string& key,
 
 void PrefValueMap::SetString(const std::string& key,
                              const std::string& value) {
-  SetValue(key, base::MakeUnique<base::StringValue>(value));
+  SetValue(key, base::MakeUnique<base::Value>(value));
 }
 
 bool PrefValueMap::GetInteger(const std::string& key, int* value) const {

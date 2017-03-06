@@ -241,7 +241,7 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
   UMA_HISTOGRAM_BOOLEAN(
       "History.ClearBrowsingData.ShownHistoryNoticeAfterClearing", show_notice);
 
-  ResolveJavascriptCallback(base::StringValue(webui_callback_id),
+  ResolveJavascriptCallback(base::Value(webui_callback_id),
                             base::Value(show_notice));
   task_observer_.reset();
 }
@@ -272,7 +272,7 @@ void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {
 
 void ClearBrowsingDataHandler::UpdateSyncState() {
   CallJavascriptFunction(
-      "cr.webUIListenerCallback", base::StringValue("update-footer"),
+      "cr.webUIListenerCallback", base::Value("update-footer"),
       base::Value(sync_service_ && sync_service_->IsSyncActive()),
       base::Value(show_history_footer_));
 }
@@ -326,9 +326,9 @@ void ClearBrowsingDataHandler::AddCounter(
 void ClearBrowsingDataHandler::UpdateCounterText(
     std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
   CallJavascriptFunction(
-      "cr.webUIListenerCallback", base::StringValue("update-counter-text"),
-      base::StringValue(result->source()->GetPrefName()),
-      base::StringValue(GetChromeCounterTextFromResult(result.get())));
+      "cr.webUIListenerCallback", base::Value("update-counter-text"),
+      base::Value(result->source()->GetPrefName()),
+      base::Value(GetChromeCounterTextFromResult(result.get())));
 }
 
 }  // namespace settings

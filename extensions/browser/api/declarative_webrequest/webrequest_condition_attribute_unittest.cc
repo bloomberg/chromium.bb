@@ -27,7 +27,6 @@
 
 using base::DictionaryValue;
 using base::ListValue;
-using base::StringValue;
 using base::Value;
 
 namespace extensions {
@@ -49,7 +48,7 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
 
   std::string error;
   scoped_refptr<const WebRequestConditionAttribute> result;
-  base::StringValue string_value("main_frame");
+  base::Value string_value("main_frame");
   base::ListValue resource_types;
   resource_types.AppendString("main_frame");
 

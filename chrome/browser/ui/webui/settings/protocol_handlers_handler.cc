@@ -128,10 +128,9 @@ void ProtocolHandlersHandler::UpdateHandlerList() {
   std::unique_ptr<base::ListValue> ignored_handlers(new base::ListValue());
   GetIgnoredHandlers(ignored_handlers.get());
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("setProtocolHandlers"),
-                         handlers);
+                         base::Value("setProtocolHandlers"), handlers);
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("setIgnoredProtocolHandlers"),
+                         base::Value("setIgnoredProtocolHandlers"),
                          *ignored_handlers);
 }
 
@@ -150,7 +149,7 @@ void ProtocolHandlersHandler::HandleObserveProtocolHandlersEnabledState(
 
 void ProtocolHandlersHandler::SendHandlersEnabledValue() {
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("setHandlersEnabled"),
+                         base::Value("setHandlersEnabled"),
                          base::Value(GetProtocolHandlerRegistry()->enabled()));
 }
 

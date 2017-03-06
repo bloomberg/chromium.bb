@@ -166,21 +166,21 @@ void LanguageOptionsHandlerCommon::OnHunspellDictionaryDownloadBegin(
     const std::string& language) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.LanguageOptions.onDictionaryDownloadBegin",
-      base::StringValue(language));
+      base::Value(language));
 }
 
 void LanguageOptionsHandlerCommon::OnHunspellDictionaryDownloadSuccess(
     const std::string& language) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.LanguageOptions.onDictionaryDownloadSuccess",
-      base::StringValue(language));
+      base::Value(language));
 }
 
 void LanguageOptionsHandlerCommon::OnHunspellDictionaryDownloadFailure(
     const std::string& language) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.LanguageOptions.onDictionaryDownloadFailure",
-      base::StringValue(language));
+      base::Value(language));
 }
 
 base::DictionaryValue* LanguageOptionsHandlerCommon::GetUILanguageCodeSet() {
@@ -232,7 +232,7 @@ void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
   content::RecordComputedAction(action);
   SetApplicationLocale(language_code);
-  base::StringValue language_value(language_code);
+  base::Value language_value(language_code);
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.LanguageOptions.uiLanguageSaved", language_value);
 }

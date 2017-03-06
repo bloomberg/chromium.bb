@@ -376,23 +376,18 @@ bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
         response.device_state_retrieval_response();
     {
       DictionaryPrefUpdate dict(local_state_, prefs::kServerBackedDeviceState);
-      UpdateDict(dict.Get(),
-                 kDeviceStateManagementDomain,
+      UpdateDict(dict.Get(), kDeviceStateManagementDomain,
                  state_response.has_management_domain(),
-                 new base::StringValue(state_response.management_domain()));
+                 new base::Value(state_response.management_domain()));
 
       std::string restore_mode =
           ConvertRestoreMode(state_response.restore_mode());
-      UpdateDict(dict.Get(),
-                 kDeviceStateRestoreMode,
-                 !restore_mode.empty(),
-                 new base::StringValue(restore_mode));
+      UpdateDict(dict.Get(), kDeviceStateRestoreMode, !restore_mode.empty(),
+                 new base::Value(restore_mode));
 
-      UpdateDict(dict.Get(),
-                 kDeviceStateDisabledMessage,
+      UpdateDict(dict.Get(), kDeviceStateDisabledMessage,
                  state_response.has_disabled_state(),
-                 new base::StringValue(
-                     state_response.disabled_state().message()));
+                 new base::Value(state_response.disabled_state().message()));
 
       // Logging as "WARNING" to make sure it's preserved in the logs.
       LOG(WARNING) << "Restore mode: " << restore_mode;

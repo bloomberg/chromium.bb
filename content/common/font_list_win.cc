@@ -46,8 +46,8 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
   std::set<base::string16>::iterator iter;
   for (iter = font_names.begin(); iter != font_names.end(); ++iter) {
     base::ListValue* font_item = new base::ListValue();
-    font_item->Append(new base::StringValue(*iter));
-    font_item->Append(new base::StringValue(*iter));
+    font_item->Append(new base::Value(*iter));
+    font_item->Append(new base::Value(*iter));
     font_list->Append(font_item);
   }
   return font_list;

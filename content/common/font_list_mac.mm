@@ -34,8 +34,8 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
     base::ListValue* font_item = new base::ListValue();
     base::string16 family = base::SysNSStringToUTF16(family_name);
     base::string16 loc_family = base::SysNSStringToUTF16(localized_family_name);
-    font_item->Append(new base::StringValue(family));
-    font_item->Append(new base::StringValue(loc_family));
+    font_item->Append(new base::Value(family));
+    font_item->Append(new base::Value(loc_family));
     font_list->Append(font_item);
   }
 

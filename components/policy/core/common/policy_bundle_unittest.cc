@@ -34,7 +34,7 @@ void AddTestPolicies(PolicyMap* policy) {
   policy->Set("mandatory-user", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(123), nullptr);
   policy->Set("mandatory-machine", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-              POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("omg"),
+              POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("omg"),
               nullptr);
   policy->Set("recommended-user", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),

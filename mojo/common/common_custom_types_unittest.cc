@@ -290,7 +290,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
   EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
 
-  input = base::MakeUnique<base::StringValue>("test string");
+  input = base::MakeUnique<base::Value>("test string");
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
   EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
 

@@ -41,7 +41,7 @@ base::DictionaryValue* WriteTransactionInfo::ToValue(
   if (mutations_size <= max_mutations_size) {
     mutations_value = EntryKernelMutationMapToValue(mutations.Get());
   } else {
-    mutations_value = base::MakeUnique<base::StringValue>(
+    mutations_value = base::MakeUnique<base::Value>(
         base::SizeTToString(mutations_size) + " mutations");
   }
   dict->Set("mutations", std::move(mutations_value));

@@ -422,7 +422,7 @@ void AppCacheInternalsUI::OnAllAppCacheInfoReady(
     incognito_path_prefix = "Incognito ";
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnAllAppCacheInfoReady,
-      base::StringValue(incognito_path_prefix + partition_path.AsUTF8Unsafe()),
+      base::Value(incognito_path_prefix + partition_path.AsUTF8Unsafe()),
       *GetListValueFromAppCacheInfoCollection(collection.get()));
 }
 
@@ -432,8 +432,8 @@ void AppCacheInternalsUI::OnAppCacheInfoDeleted(
     bool deleted) {
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnAppCacheInfoDeleted,
-      base::StringValue(partition_path.AsUTF8Unsafe()),
-      base::StringValue(manifest_url), base::Value(deleted));
+      base::Value(partition_path.AsUTF8Unsafe()), base::Value(manifest_url),
+      base::Value(deleted));
 }
 
 void AppCacheInternalsUI::OnAppCacheDetailsReady(
@@ -442,13 +442,13 @@ void AppCacheInternalsUI::OnAppCacheDetailsReady(
     std::unique_ptr<AppCacheResourceInfoVector> resource_info_vector) {
   if (resource_info_vector) {
     web_ui()->CallJavascriptFunctionUnsafe(
-        kFunctionOnAppCacheDetailsReady, base::StringValue(manifest_url),
-        base::StringValue(partition_path.AsUTF8Unsafe()),
+        kFunctionOnAppCacheDetailsReady, base::Value(manifest_url),
+        base::Value(partition_path.AsUTF8Unsafe()),
         *GetListValueForAppCacheResourceInfoVector(resource_info_vector.get()));
   } else {
     web_ui()->CallJavascriptFunctionUnsafe(
-        kFunctionOnAppCacheDetailsReady, base::StringValue(manifest_url),
-        base::StringValue(partition_path.AsUTF8Unsafe()));
+        kFunctionOnAppCacheDetailsReady, base::Value(manifest_url),
+        base::Value(partition_path.AsUTF8Unsafe()));
   }
 }
 
@@ -487,7 +487,7 @@ void AppCacheInternalsUI::OnFileDetailsReady(
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnFileDetailsReady,
       *GetDictionaryValueForResponseEnquiry(response_enquiry),
-      base::StringValue(headers), base::StringValue(hex_dump));
+      base::Value(headers), base::Value(hex_dump));
 }
 
 void AppCacheInternalsUI::OnFileDetailsFailed(

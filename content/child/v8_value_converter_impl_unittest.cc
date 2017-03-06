@@ -418,7 +418,7 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
 
   converter.SetRegExpAllowed(true);
   TestWeirdType(converter, regex, base::Value::Type::STRING,
-                std::unique_ptr<base::Value>(new base::StringValue("/./")));
+                std::unique_ptr<base::Value>(new base::Value("/./")));
 }
 
 TEST_F(V8ValueConverterImplTest, Prototype) {
@@ -1021,7 +1021,7 @@ class V8ValueConverterOverridingStrategyForTesting
 
  private:
   static std::unique_ptr<base::Value> NewReferenceValue() {
-    return base::MakeUnique<base::StringValue>("strategy");
+    return base::MakeUnique<base::Value>("strategy");
   }
   std::unique_ptr<base::Value> reference_value_;
 };

@@ -84,9 +84,9 @@ namespace {
 //    ToValue() doesn't have to return base::DictionaryValue though. It might
 //    be more appropriate to serialize GreenProto into a string instead:
 //
-//    std::unique_ptr<base::StringValue> ToValue(
+//    std::unique_ptr<base::Value> ToValue(
 //        const sync_pb::GreenProto& proto) const {
-//      return base::MakeUnique<base::StringValue>(proto.content());
+//      return base::MakeUnique<base::Value>(proto.content());
 //    }
 //
 class ToValueVisitor {
@@ -218,7 +218,7 @@ class ToValueVisitor {
   std::unique_ptr<base::Value> ToValue(
       const sync_pb::UniquePosition& proto) const {
     UniquePosition pos = UniquePosition::FromProto(proto);
-    return base::MakeUnique<base::StringValue>(pos.ToDebugString());
+    return base::MakeUnique<base::Value>(pos.ToDebugString());
   }
 
  private:
@@ -233,29 +233,29 @@ class ToValueVisitor {
   static std::unique_ptr<base::Value> BytesToValue(const std::string& bytes) {
     std::string bytes_base64;
     base::Base64Encode(bytes, &bytes_base64);
-    return base::MakeUnique<base::StringValue>(bytes_base64);
+    return base::MakeUnique<base::Value>(bytes_base64);
   }
 
   template <class E>
   static std::unique_ptr<base::Value> EnumToValue(E value) {
-    return base::MakeUnique<base::StringValue>(ProtoEnumToString(value));
+    return base::MakeUnique<base::Value>(ProtoEnumToString(value));
   }
 
   std::unique_ptr<base::Value> ToValue(const std::string& value) const {
-    return base::MakeUnique<base::StringValue>(value);
+    return base::MakeUnique<base::Value>(value);
   }
 
   std::unique_ptr<base::Value> ToValue(int64_t value) const {
-    return base::MakeUnique<base::StringValue>(base::Int64ToString(value));
+    return base::MakeUnique<base::Value>(base::Int64ToString(value));
   }
   std::unique_ptr<base::Value> ToValue(uint64_t value) const {
-    return base::MakeUnique<base::StringValue>(base::Int64ToString(value));
+    return base::MakeUnique<base::Value>(base::Int64ToString(value));
   }
   std::unique_ptr<base::Value> ToValue(uint32_t value) const {
-    return base::MakeUnique<base::StringValue>(base::Int64ToString(value));
+    return base::MakeUnique<base::Value>(base::Int64ToString(value));
   }
   std::unique_ptr<base::Value> ToValue(int32_t value) const {
-    return base::MakeUnique<base::StringValue>(base::Int64ToString(value));
+    return base::MakeUnique<base::Value>(base::Int64ToString(value));
   }
 
   std::unique_ptr<base::Value> ToValue(bool value) const {

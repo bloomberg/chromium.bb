@@ -107,24 +107,22 @@ class NetworkCertMigratorTest : public testing::Test {
 
     // Ensure that the service appears as 'configured', i.e. is associated to a
     // Shill profile.
-    service_test_->SetServiceProperty(
-        network_id, shill::kProfileProperty, base::StringValue(kProfile));
+    service_test_->SetServiceProperty(network_id, shill::kProfileProperty,
+                                      base::Value(kProfile));
   }
 
   void SetupNetworkWithEapCertId(bool wifi, const std::string& cert_id) {
     std::string type = wifi ? shill::kTypeWifi: shill::kTypeEthernetEap;
     std::string name = wifi ? kWifiStub : kEthernetEapStub;
     AddService(name, type, shill::kStateOnline);
-    service_test_->SetServiceProperty(
-        name, shill::kEapCertIdProperty, base::StringValue(cert_id));
-    service_test_->SetServiceProperty(
-        name, shill::kEapKeyIdProperty, base::StringValue(cert_id));
+    service_test_->SetServiceProperty(name, shill::kEapCertIdProperty,
+                                      base::Value(cert_id));
+    service_test_->SetServiceProperty(name, shill::kEapKeyIdProperty,
+                                      base::Value(cert_id));
 
     if (wifi) {
-      service_test_->SetServiceProperty(
-          name,
-          shill::kSecurityClassProperty,
-          base::StringValue(shill::kSecurity8021x));
+      service_test_->SetServiceProperty(name, shill::kSecurityClassProperty,
+                                        base::Value(shill::kSecurity8021x));
     }
   }
 

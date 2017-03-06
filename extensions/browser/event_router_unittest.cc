@@ -31,7 +31,7 @@
 
 using base::DictionaryValue;
 using base::ListValue;
-using base::StringValue;
+using base::Value;
 
 namespace extensions {
 
@@ -124,7 +124,7 @@ std::unique_ptr<DictionaryValue> CreateHostSuffixFilter(
   std::unique_ptr<ListValue> filter_list(new ListValue());
   std::unique_ptr<DictionaryValue> filter_dict(new DictionaryValue());
 
-  filter_dict->Set("hostSuffix", base::MakeUnique<StringValue>(suffix));
+  filter_dict->Set("hostSuffix", base::MakeUnique<Value>(suffix));
   filter_list->Append(std::move(filter_dict));
   filter->Set("url", std::move(filter_list));
 

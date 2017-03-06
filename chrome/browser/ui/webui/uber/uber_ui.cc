@@ -133,8 +133,8 @@ void UpdateHistoryNavigation(content::WebUI* web_ui) {
                        chrome::kChromeUIHistoryHost);
   web_ui->CallJavascriptFunctionUnsafe(
       "uber_frame.setNavigationOverride",
-      base::StringValue(chrome::kChromeUIHistoryHost),
-      base::StringValue(overrides_history ? "yes" : "no"));
+      base::Value(chrome::kChromeUIHistoryHost),
+      base::Value(overrides_history ? "yes" : "no"));
 }
 
 }  // namespace

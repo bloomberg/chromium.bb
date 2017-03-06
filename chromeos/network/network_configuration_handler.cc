@@ -365,7 +365,7 @@ void NetworkConfigurationHandler::SetNetworkProfile(
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG(USER) << "SetNetworkProfile: " << service_path << ": "
                 << profile_path;
-  base::StringValue profile_path_value(profile_path);
+  base::Value profile_path_value(profile_path);
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(service_path), shill::kProfileProperty,
       profile_path_value,

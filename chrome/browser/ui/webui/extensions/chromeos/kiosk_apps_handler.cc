@@ -369,7 +369,7 @@ void KioskAppsHandler::UpdateApp(const std::string& app_id) {
 }
 
 void KioskAppsHandler::ShowError(const std::string& app_id) {
-  base::StringValue app_id_value(app_id);
+  base::Value app_id_value(app_id);
   web_ui()->CallJavascriptFunctionUnsafe(
       "extensions.KioskAppsOverlay.showError", app_id_value);
 

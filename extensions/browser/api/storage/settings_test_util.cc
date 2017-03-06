@@ -23,7 +23,7 @@ std::unique_ptr<base::Value> CreateKilobyte() {
   for (int i = 0; i < 1024; ++i) {
     kilobyte_string += "a";
   }
-  return std::unique_ptr<base::Value>(new base::StringValue(kilobyte_string));
+  return std::unique_ptr<base::Value>(new base::Value(kilobyte_string));
 }
 
 // Creates a megabyte of data.

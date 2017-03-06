@@ -245,7 +245,7 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
       // Setting app.background.page = "background.html" is sufficient to make
       // the extension type TYPE_PLATFORM_APP.
       manifest.Set(extensions::manifest_keys::kPlatformAppBackgroundPage,
-                   new base::StringValue("background.html"));
+                   new base::Value("background.html"));
     }
 
     std::string error;

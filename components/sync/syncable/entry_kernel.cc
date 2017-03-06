@@ -121,15 +121,15 @@ void SetEncryptableProtoValues(const EntryKernel& kernel,
 
 // Helper functions for SetFieldValues().
 
-base::StringValue* Int64ToValue(int64_t i) {
-  return new base::StringValue(base::Int64ToString(i));
+base::Value* Int64ToValue(int64_t i) {
+  return new base::Value(base::Int64ToString(i));
 }
 
-base::StringValue* TimeToValue(const base::Time& t) {
-  return new base::StringValue(GetTimeDebugString(t));
+base::Value* TimeToValue(const base::Time& t) {
+  return new base::Value(GetTimeDebugString(t));
 }
 
-base::StringValue* IdToValue(const Id& id) {
+base::Value* IdToValue(const Id& id) {
   return id.ToValue();
 }
 
@@ -137,17 +137,16 @@ base::Value* BooleanToValue(bool bool_val) {
   return new base::Value(bool_val);
 }
 
-base::StringValue* StringToValue(const std::string& str) {
-  return new base::StringValue(str);
+base::Value* StringToValue(const std::string& str) {
+  return new base::Value(str);
 }
 
-base::StringValue* UniquePositionToValue(const UniquePosition& pos) {
-  return new base::StringValue(pos.ToDebugString());
+base::Value* UniquePositionToValue(const UniquePosition& pos) {
+  return new base::Value(pos.ToDebugString());
 }
 
-base::StringValue* AttachmentMetadataToValue(
-    const sync_pb::AttachmentMetadata& a) {
-  return new base::StringValue(a.SerializeAsString());
+base::Value* AttachmentMetadataToValue(const sync_pb::AttachmentMetadata& a) {
+  return new base::Value(a.SerializeAsString());
 }
 
 }  // namespace

@@ -41,10 +41,10 @@ TEST_F(NetworkPropertyUIDataTest, PropertyInit) {
 TEST_F(NetworkPropertyUIDataTest, ParseOncProperty) {
   base::DictionaryValue onc;
 
-  base::StringValue val_a("a");
-  base::StringValue val_b("b");
-  base::StringValue val_a_a("a_a");
-  base::StringValue val_a_b("a_b");
+  base::Value val_a("a");
+  base::Value val_b("b");
+  base::Value val_a_a("a_a");
+  base::Value val_a_b("a_b");
 
   onc.Set("a", val_a.DeepCopy());
   onc.Set("b", val_b.DeepCopy());

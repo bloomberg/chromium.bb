@@ -158,7 +158,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
 
   base::string16 GetProfileCreationErrorMessageLocal() const;
 
-  base::StringValue GetWebUIListenerName(ProfileCreationStatus status) const;
+  base::Value GetWebUIListenerName(ProfileCreationStatus status) const;
 
   // Used to allow canceling a profile creation (particularly a supervised-user
   // registration) in progress. Set when profile creation is begun, and

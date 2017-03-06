@@ -33,7 +33,7 @@ class EventFilterUnittest : public testing::Test {
  protected:
   std::unique_ptr<base::Value> HostSuffixDict(const std::string& host_suffix) {
     std::unique_ptr<base::DictionaryValue> dict(new DictionaryValue());
-    dict->Set("hostSuffix", new base::StringValue(host_suffix));
+    dict->Set("hostSuffix", new base::Value(host_suffix));
     return std::unique_ptr<base::Value>(dict.release());
   }
 

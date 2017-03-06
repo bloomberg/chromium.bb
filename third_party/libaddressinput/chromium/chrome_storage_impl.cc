@@ -26,7 +26,7 @@ void ChromeStorageImpl::Put(const std::string& key, std::string* data) {
   DCHECK(data);
   std::unique_ptr<std::string> owned_data(data);
   backing_store_->SetValue(
-      key, base::MakeUnique<base::StringValue>(std::move(*owned_data)),
+      key, base::MakeUnique<base::Value>(std::move(*owned_data)),
       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 

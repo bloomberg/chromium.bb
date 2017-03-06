@@ -172,8 +172,8 @@ class ClientCertResolverTest : public testing::Test,
                                         true /* visible */);
     // Set an arbitrary cert id, so that we can check afterwards whether we
     // cleared the property or not.
-    service_test_->SetServiceProperty(
-        kWifiStub, shill::kEapCertIdProperty, base::StringValue("invalid id"));
+    service_test_->SetServiceProperty(kWifiStub, shill::kEapCertIdProperty,
+                                      base::Value("invalid id"));
     profile_test_->AddService(kUserProfilePath, kWifiStub);
 
     DBusThreadManager::Get()
@@ -260,7 +260,7 @@ class ClientCertResolverTest : public testing::Test,
 
   void SetWifiState(const std::string& state) {
     ASSERT_TRUE(service_test_->SetServiceProperty(
-        kWifiStub, shill::kStateProperty, base::StringValue(state)));
+        kWifiStub, shill::kStateProperty, base::Value(state)));
   }
 
   void GetServiceProperty(const std::string& prop_name,

@@ -57,7 +57,7 @@ Status ExecuteGetAlertText(Session* session,
       web_view->GetJavaScriptDialogManager()->GetDialogMessage(&message);
   if (status.IsError())
     return status;
-  value->reset(new base::StringValue(message));
+  value->reset(new base::Value(message));
   return Status(kOk);
 }
 

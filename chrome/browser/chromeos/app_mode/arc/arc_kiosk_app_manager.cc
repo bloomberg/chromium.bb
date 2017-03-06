@@ -47,7 +47,7 @@ void ScheduleDelayedCryptohomeRemoval(const cryptohome::Identification& id) {
 void CancelDelayedCryptohomeRemoval(const cryptohome::Identification& id) {
   PrefService* const local_state = g_browser_process->local_state();
   ListPrefUpdate list_update(local_state, kArcKioskUsersToRemove);
-  list_update->Remove(base::StringValue(id.id()), nullptr);
+  list_update->Remove(base::Value(id.id()), nullptr);
   local_state->CommitPendingWrite();
 }
 

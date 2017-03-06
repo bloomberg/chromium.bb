@@ -1395,19 +1395,17 @@ class DeviceStatusCollectorNetworkInterfacesTest
       test_device_client->AddDevice(dev.device_path, dev.type,
                                     dev.object_path);
       if (*dev.mac_address) {
-        test_device_client->SetDeviceProperty(
-            dev.device_path, shill::kAddressProperty,
-            base::StringValue(dev.mac_address));
+        test_device_client->SetDeviceProperty(dev.device_path,
+                                              shill::kAddressProperty,
+                                              base::Value(dev.mac_address));
       }
       if (*dev.meid) {
         test_device_client->SetDeviceProperty(
-            dev.device_path, shill::kMeidProperty,
-            base::StringValue(dev.meid));
+            dev.device_path, shill::kMeidProperty, base::Value(dev.meid));
       }
       if (*dev.imei) {
         test_device_client->SetDeviceProperty(
-            dev.device_path, shill::kImeiProperty,
-            base::StringValue(dev.imei));
+            dev.device_path, shill::kImeiProperty, base::Value(dev.imei));
       }
     }
 
@@ -1431,13 +1429,13 @@ class DeviceStatusCollectorNetworkInterfacesTest
       service_client->SetServiceProperty(
           fake_network.name, shill::kSignalStrengthProperty,
           base::Value(fake_network.signal_strength));
-      service_client->SetServiceProperty(
-          fake_network.name, shill::kDeviceProperty,
-          base::StringValue(fake_network.device_path));
+      service_client->SetServiceProperty(fake_network.name,
+                                         shill::kDeviceProperty,
+                                         base::Value(fake_network.device_path));
       // Set the profile so this shows up as a configured network.
-      service_client->SetServiceProperty(
-          fake_network.name, shill::kProfileProperty,
-          base::StringValue(fake_network.name));
+      service_client->SetServiceProperty(fake_network.name,
+                                         shill::kProfileProperty,
+                                         base::Value(fake_network.name));
       if (strlen(fake_network.address) > 0) {
         // Set the IP config.
         base::DictionaryValue ip_config_properties;
@@ -1450,9 +1448,9 @@ class DeviceStatusCollectorNetworkInterfacesTest
             GetTestInterface();
         const std::string kIPConfigPath = "test_ip_config";
         ip_config_test->AddIPConfig(kIPConfigPath, ip_config_properties);
-        service_client->SetServiceProperty(
-            fake_network.name, shill::kIPConfigProperty,
-            base::StringValue(kIPConfigPath));
+        service_client->SetServiceProperty(fake_network.name,
+                                           shill::kIPConfigProperty,
+                                           base::Value(kIPConfigPath));
       }
     }
 
@@ -1470,7 +1468,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
         base::Value(kUnconfiguredNetwork.signal_strength));
     service_client->SetServiceProperty(
         kUnconfiguredNetwork.name, shill::kDeviceProperty,
-        base::StringValue(kUnconfiguredNetwork.device_path));
+        base::Value(kUnconfiguredNetwork.device_path));
 
     // Flush out pending state updates.
     base::RunLoop().RunUntilIdle();

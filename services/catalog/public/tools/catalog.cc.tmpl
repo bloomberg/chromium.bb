@@ -39,7 +39,7 @@ base::MakeUnique<base::Value>({{source}})
 {%-   elif source|is_bool -%}
 base::MakeUnique<base::Value>({{source|lower}})
 {%-   elif source|is_string or source|is_unicode -%}
-base::MakeUnique<base::StringValue>("{{source|make_ascii}}")
+base::MakeUnique<base::Value>("{{source|make_ascii}}")
 {%-   else %}
 {{raise("Unknown value type: %s" % source, source)}}
 {%-   endif %}

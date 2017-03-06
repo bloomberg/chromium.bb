@@ -225,7 +225,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     chromeos::system::StatisticsProvider* provider =
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid);
-    return new base::StringValue(hwid);
+    return new base::Value(hwid);
   }
 
   if (property_name == kPropertyCustomizationID) {
@@ -234,7 +234,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(chromeos::system::kCustomizationIdKey,
                                   &customization_id);
-    return new base::StringValue(customization_id);
+    return new base::Value(customization_id);
   }
 
   if (property_name == kPropertyHomeProvider) {
@@ -244,16 +244,15 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     std::string home_provider_id;
     if (cellular_device)
       home_provider_id = cellular_device->home_provider_id();
-    return new base::StringValue(home_provider_id);
+    return new base::Value(home_provider_id);
   }
 
   if (property_name == kPropertyInitialLocale) {
-    return new base::StringValue(
-        chromeos::StartupUtils::GetInitialLocale());
+    return new base::Value(chromeos::StartupUtils::GetInitialLocale());
   }
 
   if (property_name == kPropertyBoard) {
-    return new base::StringValue(base::SysInfo::GetLsbReleaseBoard());
+    return new base::Value(base::SysInfo::GetLsbReleaseBoard());
   }
 
   if (property_name == kPropertyOwner) {
@@ -263,31 +262,31 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
 
   if (property_name == kPropertySessionType) {
     if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
-      return new base::StringValue(kSessionTypeKiosk);
+      return new base::Value(kSessionTypeKiosk);
     if (ExtensionsBrowserClient::Get()->IsLoggedInAsPublicAccount())
-      return new base::StringValue(kSessionTypePublicSession);
-    return new base::StringValue(kSessionTypeNormal);
+      return new base::Value(kSessionTypePublicSession);
+    return new base::Value(kSessionTypeNormal);
   }
 
   if (property_name == kPropertyPlayStoreStatus) {
     if (arc::IsArcAllowedForProfile(Profile::FromBrowserContext(context_)))
-      return new base::StringValue(kPlayStoreStatusEnabled);
+      return new base::Value(kPlayStoreStatusEnabled);
     if (arc::IsArcAvailable())
-      return new base::StringValue(kPlayStoreStatusAvailable);
-    return new base::StringValue(kPlayStoreStatusNotAvailable);
+      return new base::Value(kPlayStoreStatusAvailable);
+    return new base::Value(kPlayStoreStatusNotAvailable);
   }
 
   if (property_name == kPropertyManagedDeviceStatus) {
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     if (connector->IsEnterpriseManaged()) {
-      return new base::StringValue(kManagedDeviceStatusManaged);
+      return new base::Value(kManagedDeviceStatusManaged);
     }
-    return new base::StringValue(kManagedDeviceStatusNotManaged);
+    return new base::Value(kManagedDeviceStatusNotManaged);
   }
 
   if (property_name == kPropertyClientId) {
-    return new base::StringValue(GetClientId());
+    return new base::Value(GetClientId());
   }
 
   if (property_name == kPropertyTimezone) {
@@ -325,7 +324,7 @@ ExtensionFunction::ResponseAction ChromeosInfoPrivateSetFunction::Run() {
     std::string param_value;
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &param_value));
     chromeos::CrosSettings::Get()->Set(chromeos::kSystemTimezone,
-                                       base::StringValue(param_value));
+                                       base::Value(param_value));
   } else {
     const char* pref_name = GetBoolPrefNameForApiProperty(param_name.c_str());
     if (pref_name) {

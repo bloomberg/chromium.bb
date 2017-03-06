@@ -304,7 +304,7 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
         false);  // is_incognito_enabled.
     extension_prefs_value_map->SetExtensionPref(id, proxy_config::prefs::kProxy,
                                                 kExtensionPrefsScopeRegular,
-                                                new base::StringValue(id));
+                                                new base::Value(id));
 
     if (ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(id))
       return testing::AssertionSuccess();
@@ -915,9 +915,8 @@ void SetInstallTime(const std::string& extension_id,
                     const base::Time& time,
                     ExtensionPrefs* prefs) {
   std::string time_str = base::Int64ToString(time.ToInternalValue());
-  prefs->UpdateExtensionPref(extension_id,
-                             "install_time",
-                             new base::StringValue(time_str));
+  prefs->UpdateExtensionPref(extension_id, "install_time",
+                             new base::Value(time_str));
 }
 
 // The feature this is meant to test is only implemented on Windows and Mac.

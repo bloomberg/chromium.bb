@@ -167,8 +167,7 @@ void StorageHandler::OnGetSizeStat(int64_t* total_size,
   size_stat.SetInteger("spaceState", storage_space_state);
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("storage-size-stat-changed"),
-                         size_stat);
+                         base::Value("storage-size-stat-changed"), size_stat);
 }
 
 void StorageHandler::UpdateDownloadsSize() {
@@ -190,8 +189,8 @@ void StorageHandler::UpdateDownloadsSize() {
 void StorageHandler::OnGetDownloadsSize(int64_t size) {
   updating_downloads_size_ = false;
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("storage-downloads-size-changed"),
-                         base::StringValue(ui::FormatBytes(size)));
+                         base::Value("storage-downloads-size-changed"),
+                         base::Value(ui::FormatBytes(size)));
 }
 
 void StorageHandler::UpdateDriveCacheSize() {
@@ -205,7 +204,7 @@ void StorageHandler::UpdateDriveCacheSize() {
 
   // Shows the item "Offline cache" and start calculating size.
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("storage-drive-enabled-changed"),
+                         base::Value("storage-drive-enabled-changed"),
                          base::Value(true));
   updating_drive_cache_size_ = true;
   file_system->CalculateCacheSize(
@@ -215,8 +214,8 @@ void StorageHandler::UpdateDriveCacheSize() {
 void StorageHandler::OnGetDriveCacheSize(int64_t size) {
   updating_drive_cache_size_ = false;
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("storage-drive-cache-size-changed"),
-                         base::StringValue(ui::FormatBytes(size)),
+                         base::Value("storage-drive-cache-size-changed"),
+                         base::Value(ui::FormatBytes(size)),
                          base::Value(size > 0));
 }
 
@@ -285,10 +284,9 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
           IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
     }
     updating_browsing_data_size_ = false;
-    CallJavascriptFunction(
-        "cr.webUIListenerCallback",
-        base::StringValue("storage-browsing-data-size-changed"),
-        base::StringValue(size_string));
+    CallJavascriptFunction("cr.webUIListenerCallback",
+                           base::Value("storage-browsing-data-size-changed"),
+                           base::Value(size_string));
   }
 }
 
@@ -313,10 +311,9 @@ void StorageHandler::UpdateOtherUsersSize() {
   // We should show "0 B" if there is no other user.
   if (other_users_.empty()) {
     updating_other_users_size_ = false;
-    CallJavascriptFunction(
-        "cr.webUIListenerCallback",
-        base::StringValue("storage-other-users-size-changed"),
-        base::StringValue(ui::FormatBytes(0)));
+    CallJavascriptFunction("cr.webUIListenerCallback",
+                           base::Value("storage-other-users-size-changed"),
+                           base::Value(ui::FormatBytes(0)));
   }
 }
 
@@ -333,10 +330,9 @@ void StorageHandler::OnGetOtherUserSize(bool success, int64_t size) {
           IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
     }
     updating_other_users_size_ = false;
-    CallJavascriptFunction(
-        "cr.webUIListenerCallback",
-        base::StringValue("storage-other-users-size-changed"),
-        base::StringValue(size_string));
+    CallJavascriptFunction("cr.webUIListenerCallback",
+                           base::Value("storage-other-users-size-changed"),
+                           base::Value(size_string));
   }
 }
 
@@ -353,7 +349,7 @@ void StorageHandler::UpdateAndroidSize() {
 
   // Shows the item "Android apps and cache" and start calculating size.
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("storage-android-enabled-changed"),
+                         base::Value("storage-android-enabled-changed"),
                          base::Value(true));
   bool success = arc::ArcStorageManager::Get()->GetApplicationsSize(
       base::Bind(&StorageHandler::OnGetAndroidSize,
@@ -376,8 +372,8 @@ void StorageHandler::OnGetAndroidSize(bool succeeded,
   }
   updating_android_size_ = false;
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("storage-android-size-changed"),
-                         base::StringValue(size_string));
+                         base::Value("storage-android-size-changed"),
+                         base::Value(size_string));
 }
 
 void StorageHandler::OnClearDriveCacheDone(bool success) {

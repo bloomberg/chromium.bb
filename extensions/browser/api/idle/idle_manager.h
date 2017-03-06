@@ -23,7 +23,6 @@
 
 namespace base {
 class Value;
-using StringValue = Value;
 }  // namespace base
 
 namespace content {
@@ -92,8 +91,7 @@ class IdleManager : public ExtensionRegistryObserver,
 
   void QueryState(int threshold, const QueryStateCallback& notify);
   void SetThreshold(const std::string& extension_id, int threshold);
-  static std::unique_ptr<base::StringValue> CreateIdleValue(
-      ui::IdleState idle_state);
+  static std::unique_ptr<base::Value> CreateIdleValue(ui::IdleState idle_state);
 
   // Override default event class. Callee assumes ownership. Used for testing.
   void SetEventDelegateForTest(std::unique_ptr<EventDelegate> event_delegate);

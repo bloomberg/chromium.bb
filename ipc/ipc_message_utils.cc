@@ -96,7 +96,7 @@ void GetValueSize(base::PickleSizer* sizer,
       sizer->AddDouble();
       break;
     case base::Value::Type::STRING: {
-      const base::StringValue* result;
+      const base::Value* result;
       value->GetAsString(&result);
       if (value->GetAsString(&result)) {
         DCHECK(result);
@@ -289,7 +289,7 @@ bool ReadValue(const base::Pickle* m,
       std::string val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = new base::StringValue(val);
+      *value = new base::Value(val);
       break;
     }
     case base::Value::Type::BINARY: {

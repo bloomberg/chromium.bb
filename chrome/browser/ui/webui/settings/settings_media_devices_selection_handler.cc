@@ -137,13 +137,11 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
   if (!devices.empty() && default_id.empty())
     default_id = devices[0].id;
 
-  base::StringValue default_value(default_id);
-  base::StringValue type_value(device_type);
+  base::Value default_value(default_id);
+  base::Value type_value(device_type);
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("updateDevicesMenu"),
-                         type_value,
-                         device_list,
-                         default_value);
+                         base::Value("updateDevicesMenu"), type_value,
+                         device_list, default_value);
 }
 
 std::string MediaDevicesSelectionHandler::GetDeviceDisplayName(

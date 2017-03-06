@@ -1180,7 +1180,7 @@ void SupervisedUserService::OnExtensionInstalled(
     std::string key = SupervisedUserSettingsService::MakeSplitSettingKey(
         supervised_users::kApprovedExtensions, id);
     std::unique_ptr<base::Value> version_value(
-        new base::StringValue(version.GetString()));
+        new base::Value(version.GetString()));
     GetSettingsService()->UpdateSetting(key, std::move(version_value));
   }
   // Upon extension update, the approved version may (or may not) match the

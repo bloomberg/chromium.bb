@@ -18,8 +18,8 @@ ostream& operator<<(ostream& out, const Id& id) {
   return out;
 }
 
-base::StringValue* Id::ToValue() const {
-  return new base::StringValue(s_);
+base::Value* Id::ToValue() const {
+  return new base::Value(s_);
 }
 
 string Id::GetServerId() const {

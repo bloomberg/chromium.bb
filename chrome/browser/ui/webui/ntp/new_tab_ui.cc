@@ -89,9 +89,10 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
 NewTabUI::~NewTabUI() {}
 
 void NewTabUI::OnShowBookmarkBarChanged() {
-  base::StringValue attached(
-      GetProfile()->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar) ?
-          "true" : "false");
+  base::Value attached(
+      GetProfile()->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar)
+          ? "true"
+          : "false");
   web_ui()->CallJavascriptFunctionUnsafe("ntp.setBookmarkBarAttached",
                                          attached);
 }

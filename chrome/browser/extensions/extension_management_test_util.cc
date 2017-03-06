@@ -233,8 +233,7 @@ void ExtensionManagementPrefUpdaterBase::AddStringToList(
     list_value = new base::ListValue();
     pref_->Set(path, list_value);
   }
-  CHECK(
-      list_value->AppendIfNotPresent(base::MakeUnique<base::StringValue>(str)));
+  CHECK(list_value->AppendIfNotPresent(base::MakeUnique<base::Value>(str)));
 }
 
 void ExtensionManagementPrefUpdaterBase::RemoveStringFromList(
@@ -242,7 +241,7 @@ void ExtensionManagementPrefUpdaterBase::RemoveStringFromList(
     const std::string& str) {
   base::ListValue* list_value = nullptr;
   if (pref_->GetList(path, &list_value))
-    CHECK(list_value->Remove(base::StringValue(str), nullptr));
+    CHECK(list_value->Remove(base::Value(str), nullptr));
 }
 
 // ExtensionManagementPolicyUpdater --------------------------------------------

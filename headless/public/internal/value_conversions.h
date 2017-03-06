@@ -47,7 +47,7 @@ std::unique_ptr<base::Value> ToValueImpl(bool value, T*) {
 
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(const std::string& value, T*) {
-  return base::MakeUnique<base::StringValue>(value);
+  return base::MakeUnique<base::Value>(value);
 }
 
 template <typename T>

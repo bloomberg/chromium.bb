@@ -305,7 +305,7 @@ bool WebUILoginView::AcceleratorPressed(
 
   content::WebUI* web_ui = GetWebUI();
   if (web_ui) {
-    base::StringValue accel_name(entry->second);
+    base::Value accel_name(entry->second);
     web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                          accel_name);
   }

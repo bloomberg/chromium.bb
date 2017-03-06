@@ -175,7 +175,7 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
   const int execution_time = 0;
 
   base::ListValue value_as_list;
-  value_as_list.Set(0, new base::StringValue(kFileSystemId));
+  value_as_list.Set(0, new base::Value(kFileSystemId));
   value_as_list.Set(1, new base::Value(kRequestId));
   value_as_list.Set(
       2, base::BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));

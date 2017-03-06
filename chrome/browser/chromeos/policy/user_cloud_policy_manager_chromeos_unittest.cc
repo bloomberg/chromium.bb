@@ -140,7 +140,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     GetExpectedDefaultPolicy(&policy_map_);
     policy_map_.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::StringValue>("http://chromium.org"),
+                    base::MakeUnique<base::Value>("http://chromium.org"),
                     nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);

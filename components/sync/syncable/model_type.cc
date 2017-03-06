@@ -553,16 +553,16 @@ int ModelTypeToHistogramInt(ModelType model_type) {
   return 0;
 }
 
-base::StringValue* ModelTypeToValue(ModelType model_type) {
+base::Value* ModelTypeToValue(ModelType model_type) {
   if (model_type >= FIRST_REAL_MODEL_TYPE) {
-    return new base::StringValue(ModelTypeToString(model_type));
+    return new base::Value(ModelTypeToString(model_type));
   } else if (model_type == TOP_LEVEL_FOLDER) {
-    return new base::StringValue("Top-level folder");
+    return new base::Value("Top-level folder");
   } else if (model_type == UNSPECIFIED) {
-    return new base::StringValue("Unspecified");
+    return new base::Value("Unspecified");
   }
   NOTREACHED();
-  return new base::StringValue(std::string());
+  return new base::Value(std::string());
 }
 
 ModelType ModelTypeFromValue(const base::Value& value) {

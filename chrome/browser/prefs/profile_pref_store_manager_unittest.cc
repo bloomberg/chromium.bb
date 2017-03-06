@@ -198,14 +198,13 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     pref_store->AddObserver(&registry_verifier_);
     PersistentPrefStore::PrefReadError error = pref_store->ReadPrefs();
     EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE, error);
-    pref_store->SetValue(kTrackedAtomic,
-                         base::MakeUnique<base::StringValue>(kFoobar),
+    pref_store->SetValue(kTrackedAtomic, base::MakeUnique<base::Value>(kFoobar),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->SetValue(kProtectedAtomic,
-                         base::MakeUnique<base::StringValue>(kHelloWorld),
+                         base::MakeUnique<base::Value>(kHelloWorld),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->SetValue(kUnprotectedPref,
-                         base::MakeUnique<base::StringValue>(kFoobar),
+                         base::MakeUnique<base::Value>(kFoobar),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->RemoveObserver(&registry_verifier_);
     pref_store->CommitPendingWrite();
@@ -321,8 +320,8 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectValues) {
 
 TEST_F(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
   auto master_prefs = base::MakeUnique<base::DictionaryValue>();
-  master_prefs->Set(kTrackedAtomic, new base::StringValue(kFoobar));
-  master_prefs->Set(kProtectedAtomic, new base::StringValue(kHelloWorld));
+  master_prefs->Set(kTrackedAtomic, new base::Value(kFoobar));
+  master_prefs->Set(kProtectedAtomic, new base::Value(kHelloWorld));
   EXPECT_TRUE(
       manager_->InitializePrefsFromMasterPrefs(std::move(master_prefs)));
 
@@ -483,7 +482,7 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   // Trigger the logic that migrates it back to the unprotected preferences
   // file.
   pref_store_->SetValue(kProtectedAtomic,
-                        base::WrapUnique(new base::StringValue(kGoodbyeWorld)),
+                        base::WrapUnique(new base::Value(kGoodbyeWorld)),
                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   LoadExistingPrefs();
   ExpectStringValueEquals(kProtectedAtomic, kGoodbyeWorld);

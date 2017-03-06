@@ -87,7 +87,7 @@ std::unique_ptr<BluetoothServiceAttributeValueBlueZ> ReadAttributeValue(
       std::string str;
       if (!struct_reader->PopVariantOfString(&str))
         return nullptr;
-      value = base::MakeUnique<base::StringValue>(str);
+      value = base::MakeUnique<base::Value>(str);
       break;
     }
     case bluez::BluetoothServiceAttributeValueBlueZ::BOOL: {

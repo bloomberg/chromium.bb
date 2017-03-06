@@ -457,7 +457,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   EXPECT_EQ("media_router.ui.onCreateRouteResponseReceived",
             call_data.function_name());
   const base::Value* arg1 = call_data.arg1();
-  const base::StringValue* sink_id_value = nullptr;
+  const base::Value* sink_id_value = nullptr;
   ASSERT_TRUE(arg1->GetAsString(&sink_id_value));
   EXPECT_EQ(sink_id, sink_id_value->GetString());
 
@@ -512,7 +512,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest,
   EXPECT_EQ("media_router.ui.onCreateRouteResponseReceived",
             call_data.function_name());
   const base::Value* arg1 = call_data.arg1();
-  const base::StringValue* sink_id_value = nullptr;
+  const base::Value* sink_id_value = nullptr;
   ASSERT_TRUE(arg1->GetAsString(&sink_id_value));
   EXPECT_EQ(sink_id, sink_id_value->GetString());
 

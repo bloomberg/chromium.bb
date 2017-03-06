@@ -386,8 +386,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
 
   if (val->IsString()) {
     v8::String::Utf8Value utf8(val);
-    return base::MakeUnique<base::StringValue>(
-        std::string(*utf8, utf8.length()));
+    return base::MakeUnique<base::Value>(std::string(*utf8, utf8.length()));
   }
 
   if (val->IsUndefined()) {
@@ -413,7 +412,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
     if (!reg_exp_allowed_)
       // JSON.stringify converts to an object.
       return FromV8Object(val.As<v8::Object>(), state, isolate);
-    return base::MakeUnique<base::StringValue>(*v8::String::Utf8Value(val));
+    return base::MakeUnique<base::Value>(*v8::String::Utf8Value(val));
   }
 
   // v8::Value doesn't have a ToArray() method for some reason.

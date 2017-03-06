@@ -66,8 +66,7 @@ void SetInteger(RegistryDict* dict,
 void SetString(RegistryDict* dict,
                const std::string& name,
                const std::string&  value) {
-  dict->SetValue(name,
-                 base::WrapUnique<base::Value>(new base::StringValue(value)));
+  dict->SetValue(name, base::WrapUnique<base::Value>(new base::Value(value)));
 }
 
 TEST(PRegParserTest, TestParseFile) {

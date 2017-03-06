@@ -856,7 +856,7 @@ class LocalePolicyTest : public PolicyTest {
     PolicyMap policies;
     policies.Set(key::kApplicationLocaleValue, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::StringValue>("fr"), nullptr);
+                 base::MakeUnique<base::Value>("fr"), nullptr);
     provider_.UpdateChromePolicy(policies);
     // The "en-US" ResourceBundle is always loaded before this step for tests,
     // but in this test we want the browser to load the bundle as it
@@ -995,13 +995,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
                base::MakeUnique<base::Value>(true), nullptr);
   policies.Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::StringValue>(kKeyword), nullptr);
+               base::MakeUnique<base::Value>(kKeyword), nullptr);
   policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::StringValue>(kSearchURL), nullptr);
+               base::MakeUnique<base::Value>(kSearchURL), nullptr);
   policies.Set(key::kDefaultSearchProviderInstantURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::StringValue>(kInstantURL), nullptr);
+               base::MakeUnique<base::Value>(kInstantURL), nullptr);
   std::unique_ptr<base::ListValue> alternate_urls(new base::ListValue);
   alternate_urls->AppendString(kAlternateURL0);
   alternate_urls->AppendString(kAlternateURL1);
@@ -1010,18 +1010,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
                std::move(alternate_urls), nullptr);
   policies.Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::StringValue>(kSearchTermsReplacementKey),
+               base::MakeUnique<base::Value>(kSearchTermsReplacementKey),
                nullptr);
   policies.Set(key::kDefaultSearchProviderImageURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::StringValue>(kImageURL), nullptr);
+               base::MakeUnique<base::Value>(kImageURL), nullptr);
   policies.Set(key::kDefaultSearchProviderImageURLPostParams,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::StringValue>(kImageURLPostParams),
-               nullptr);
+               base::MakeUnique<base::Value>(kImageURLPostParams), nullptr);
   policies.Set(key::kDefaultSearchProviderNewTabURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::StringValue>(kNewTabURL), nullptr);
+               base::MakeUnique<base::Value>(kNewTabURL), nullptr);
   UpdateProviderPolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
@@ -1452,11 +1451,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   base::ScopedTempDir forced_dir;
   ASSERT_TRUE(forced_dir.CreateUniqueTempDir());
   PolicyMap policies;
-  policies.Set(
-      key::kDownloadDirectory, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::StringValue>(forced_dir.GetPath().value()),
-      nullptr);
+  policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::Value>(forced_dir.GetPath().value()),
+               nullptr);
   UpdateProviderPolicy(policies);
   DownloadAndVerifyFile(browser(), forced_dir.GetPath(), file);
   // Verify that the first download location wasn't affected.
@@ -2077,7 +2075,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   PolicyMap policies;
   policies.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::StringValue>(chrome::kChromeUICreditsURL),
+               base::MakeUnique<base::Value>(chrome::kChromeUICreditsURL),
                nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
@@ -2469,7 +2467,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   CheckURLIsBlocked(browser(), file_path2.c_str());
 
   // Replace the URLblacklist with disabling the file scheme.
-  blacklist.Remove(base::StringValue("file://*"), NULL);
+  blacklist.Remove(base::Value("file://*"), NULL);
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
@@ -2477,8 +2475,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
 
   PrefService* prefs = browser()->profile()->GetPrefs();
   const base::ListValue* list_url = prefs->GetList(policy_prefs::kUrlBlacklist);
-  EXPECT_EQ(list_url->Find(base::StringValue("file://*")),
-            list_url->end());
+  EXPECT_EQ(list_url->Find(base::Value("file://*")), list_url->end());
 
   base::ListValue disabledscheme;
   disabledscheme.AppendString("file");
@@ -2488,8 +2485,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   FlushBlacklistPolicy();
 
   list_url = prefs->GetList(policy_prefs::kUrlBlacklist);
-  EXPECT_NE(list_url->Find(base::StringValue("file://*")),
-            list_url->end());
+  EXPECT_NE(list_url->Find(base::Value("file://*")), list_url->end());
 
   // Whitelist one folder and blacklist an another just inside.
   base::ListValue whitelist;
@@ -3079,8 +3075,7 @@ class PolicyStatisticsCollectorTest : public PolicyTest {
                  base::MakeUnique<base::Value>(false), nullptr);
     policies.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::StringValue>("http://chromium.org"),
-                 nullptr);
+                 base::MakeUnique<base::Value>("http://chromium.org"), nullptr);
     provider_.UpdateChromePolicy(policies);
   }
 };
@@ -3691,7 +3686,7 @@ class WebRtcUdpPortRangePolicyTest : public PolicyTest {
     if (enable) {
       policies.Set(key::kWebRtcUdpPortRange, POLICY_LEVEL_MANDATORY,
                    POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::StringValue>(kTestWebRtcUdpPortRange),
+                   base::MakeUnique<base::Value>(kTestWebRtcUdpPortRange),
                    nullptr);
     }
     provider_.UpdateChromePolicy(policies);
@@ -4013,7 +4008,7 @@ class PolicyVariationsServiceTest : public PolicyTest {
     PolicyMap policies;
     policies.Set(key::kVariationsRestrictParameter, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::StringValue>("restricted"), nullptr);
+                 base::MakeUnique<base::Value>("restricted"), nullptr);
     provider_.UpdateChromePolicy(policies);
   }
 };

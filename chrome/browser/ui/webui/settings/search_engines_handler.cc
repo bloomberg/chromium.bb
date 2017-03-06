@@ -195,11 +195,11 @@ SearchEnginesHandler::GetSearchEnginesList() {
 void SearchEnginesHandler::OnModelChanged() {
   AllowJavascript();
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("search-engines-changed"),
+                         base::Value("search-engines-changed"),
                          *GetSearchEnginesList());
   // Google Now availability may have changed.
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("google-now-availability-changed"),
+                         base::Value("google-now-availability-changed"),
                          base::Value(IsGoogleNowAvailable(profile_)));
 }
 
@@ -518,7 +518,7 @@ void SearchEnginesHandler::HotwordInfoComplete(
     ResolveJavascriptCallback(*callback_id, status);
   } else {
     CallJavascriptFunction("cr.webUIListenerCallback",
-                           base::StringValue("hotword-info-update"), status);
+                           base::Value("hotword-info-update"), status);
   }
 }
 

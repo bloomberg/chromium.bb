@@ -20,40 +20,39 @@ namespace {
 
 TEST(ValueStoreChangeTest, NullOldValue) {
   ValueStoreChange change("key", nullptr,
-                          base::MakeUnique<base::StringValue>("value"));
+                          base::MakeUnique<base::Value>("value"));
 
   EXPECT_EQ("key", change.key());
   EXPECT_EQ(NULL, change.old_value());
   {
-    base::StringValue expected("value");
+    base::Value expected("value");
     EXPECT_TRUE(change.new_value()->Equals(&expected));
   }
 }
 
 TEST(ValueStoreChangeTest, NullNewValue) {
-  ValueStoreChange change("key", base::MakeUnique<base::StringValue>("value"),
+  ValueStoreChange change("key", base::MakeUnique<base::Value>("value"),
                           nullptr);
 
   EXPECT_EQ("key", change.key());
   {
-    base::StringValue expected("value");
+    base::Value expected("value");
     EXPECT_TRUE(change.old_value()->Equals(&expected));
   }
   EXPECT_EQ(NULL, change.new_value());
 }
 
 TEST(ValueStoreChangeTest, NonNullValues) {
-  ValueStoreChange change("key",
-                          base::MakeUnique<base::StringValue>("old_value"),
-                          base::MakeUnique<base::StringValue>("new_value"));
+  ValueStoreChange change("key", base::MakeUnique<base::Value>("old_value"),
+                          base::MakeUnique<base::Value>("new_value"));
 
   EXPECT_EQ("key", change.key());
   {
-    base::StringValue expected("old_value");
+    base::Value expected("old_value");
     EXPECT_TRUE(change.old_value()->Equals(&expected));
   }
   {
-    base::StringValue expected("new_value");
+    base::Value expected("new_value");
     EXPECT_TRUE(change.new_value()->Equals(&expected));
   }
 }

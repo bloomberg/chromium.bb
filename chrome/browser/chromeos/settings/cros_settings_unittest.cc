@@ -133,7 +133,7 @@ TEST_F(CrosSettingsTest, SetWhitelist) {
 TEST_F(CrosSettingsTest, SetWhitelistWithListOps) {
   std::unique_ptr<base::ListValue> whitelist =
       base::MakeUnique<base::ListValue>();
-  base::StringValue hacky_user("h@xxor");
+  base::Value hacky_user("h@xxor");
   whitelist->Append(hacky_user.CreateDeepCopy());
   AddExpectation(kAccountsPrefAllowNewUser,
                  base::MakeUnique<base::Value>(false));
@@ -146,8 +146,8 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps) {
 
 TEST_F(CrosSettingsTest, SetWhitelistWithListOps2) {
   base::ListValue whitelist;
-  base::StringValue hacky_user("h@xxor");
-  base::StringValue lamy_user("l@mer");
+  base::Value hacky_user("h@xxor");
+  base::Value lamy_user("l@mer");
   whitelist.Append(hacky_user.CreateDeepCopy());
   std::unique_ptr<base::ListValue> expected_list = whitelist.CreateDeepCopy();
   whitelist.Append(lamy_user.CreateDeepCopy());

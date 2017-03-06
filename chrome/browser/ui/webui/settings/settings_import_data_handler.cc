@@ -94,8 +94,8 @@ void ImportDataHandler::StartImport(
     importer_host_->set_observer(NULL);
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("import-data-status-changed"),
-                         base::StringValue(kImportStatusInProgress));
+                         base::Value("import-data-status-changed"),
+                         base::Value(kImportStatusInProgress));
   import_did_succeed_ = false;
 
   importer_host_ = new ExternalProcessImporterHost();
@@ -185,7 +185,7 @@ void ImportDataHandler::SendBrowserProfileData(const std::string& callback_id) {
     browser_profiles.Append(std::move(browser_profile));
   }
 
-  ResolveJavascriptCallback(base::StringValue(callback_id), browser_profiles);
+  ResolveJavascriptCallback(base::Value(callback_id), browser_profiles);
 }
 
 void ImportDataHandler::ImportStarted() {
@@ -212,10 +212,9 @@ void ImportDataHandler::ImportEnded() {
   importer_host_ = NULL;
 
   CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("import-data-status-changed"),
-      base::StringValue(import_did_succeed_ ? kImportStatusSucceeded
-                                            : kImportStatusFailed));
+      "cr.webUIListenerCallback", base::Value("import-data-status-changed"),
+      base::Value(import_did_succeed_ ? kImportStatusSucceeded
+                                      : kImportStatusFailed));
 }
 
 void ImportDataHandler::FileSelected(const base::FilePath& path,

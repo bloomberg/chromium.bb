@@ -16,7 +16,6 @@
 
 namespace base {
 class Value;
-using StringValue = Value;
 }
 
 namespace chromeos {
@@ -39,7 +38,7 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   // CrosSettingsProvider implementation.
   void DoSet(const std::string& path, const base::Value& in_value) override;
 
-  std::unique_ptr<base::StringValue> timezone_value_;
+  std::unique_ptr<base::Value> timezone_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemSettingsProvider);
 };

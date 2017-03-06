@@ -230,8 +230,7 @@ void CreateProfileHandler::ShowProfileCreationError(
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
   profile_path_being_created_.clear();
   web_ui()->CallJavascriptFunctionUnsafe(
-      GetJavascriptMethodName(PROFILE_CREATION_ERROR),
-      base::StringValue(error));
+      GetJavascriptMethodName(PROFILE_CREATION_ERROR), base::Value(error));
   // The ProfileManager calls us back with a NULL profile in some cases.
   if (profile) {
     webui::DeleteProfileAtPath(profile->GetPath(),
@@ -434,7 +433,7 @@ void CreateProfileHandler::ShowProfileCreationWarning(
     const base::string16& warning) {
   DCHECK_EQ(SUPERVISED_PROFILE_CREATION, profile_creation_type_);
   web_ui()->CallJavascriptFunctionUnsafe(
-      "BrowserOptions.showCreateProfileWarning", base::StringValue(warning));
+      "BrowserOptions.showCreateProfileWarning", base::Value(warning));
 }
 
 void CreateProfileHandler::RecordSupervisedProfileCreationMetrics(

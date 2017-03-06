@@ -86,8 +86,7 @@ void StartupPagesHandler::OnModelChanged() {
   }
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("update-startup-pages"),
-                         startup_pages);
+                         base::Value("update-startup-pages"), startup_pages);
 }
 
 void StartupPagesHandler::OnItemsChanged(int start, int length) {

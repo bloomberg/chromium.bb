@@ -102,7 +102,7 @@ class SharedOptionsTest : public LoginManagerTest {
             stub_settings_provider_.get())),
         test_owner_account_id_(AccountId::FromUserEmail(kTestOwner)),
         test_non_owner_account_id_(AccountId::FromUserEmail(kTestNonOwner)) {
-    stub_settings_provider_->Set(kDeviceOwner, base::StringValue(kTestOwner));
+    stub_settings_provider_->Set(kDeviceOwner, base::Value(kTestOwner));
   }
 
   ~SharedOptionsTest() override {}

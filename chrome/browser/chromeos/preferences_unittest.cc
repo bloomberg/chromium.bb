@@ -372,13 +372,12 @@ TEST_F(InputMethodPreferencesTest, TestOobeAndSync) {
   // Create some values to come from the server.
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguagesSyncable, base::StringValue("ru,fi")));
+      prefs::kLanguagePreferredLanguagesSyncable, base::Value("ru,fi")));
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreloadEnginesSyncable,
-      base::StringValue("xkb:se::swe")));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguageEnabledExtensionImesSyncable,
-      base::StringValue(kIdentityIMEID)));
+      prefs::kLanguagePreloadEnginesSyncable, base::Value("xkb:se::swe")));
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
+                         base::Value(kIdentityIMEID)));
 
   // Sync for the first time.
   syncer::SyncableService* sync =
@@ -413,23 +412,17 @@ TEST_F(InputMethodPreferencesTest, TestOobeAndSync) {
   // Update the global values from the server again.
   syncer::SyncChangeList change_list;
   change_list.push_back(syncer::SyncChange(
-      FROM_HERE,
-      syncer::SyncChange::ACTION_UPDATE,
-      CreatePrefSyncData(
-          prefs::kLanguagePreferredLanguagesSyncable,
-          base::StringValue("de"))));
+      FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+      CreatePrefSyncData(prefs::kLanguagePreferredLanguagesSyncable,
+                         base::Value("de"))));
   change_list.push_back(syncer::SyncChange(
-      FROM_HERE,
-      syncer::SyncChange::ACTION_UPDATE,
-      CreatePrefSyncData(
-          prefs::kLanguagePreloadEnginesSyncable,
-          base::StringValue(ToInputMethodIds("xkb:de::ger")))));
+      FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+      CreatePrefSyncData(prefs::kLanguagePreloadEnginesSyncable,
+                         base::Value(ToInputMethodIds("xkb:de::ger")))));
   change_list.push_back(syncer::SyncChange(
-      FROM_HERE,
-      syncer::SyncChange::ACTION_UPDATE,
-      CreatePrefSyncData(
-          prefs::kLanguageEnabledExtensionImesSyncable,
-          base::StringValue(kToUpperIMEID))));
+      FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
+                         base::Value(kToUpperIMEID))));
   sync->ProcessSyncChanges(FROM_HERE, change_list);
   content::RunAllBlockingPoolTasksUntilIdle();
 
@@ -465,12 +458,12 @@ TEST_F(InputMethodPreferencesTest, TestLogIn) {
   // Create some values to come from the server.
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguages, base::StringValue("ru,fi")));
+      prefs::kLanguagePreferredLanguages, base::Value("ru,fi")));
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguagePreloadEngines,
+                         base::Value(ToInputMethodIds("xkb:ru::rus"))));
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreloadEngines,
-      base::StringValue(ToInputMethodIds("xkb:ru::rus"))));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguageEnabledExtensionImes, base::StringValue(kIdentityIMEID)));
+      prefs::kLanguageEnabledExtensionImes, base::Value(kIdentityIMEID)));
 
   // Sync.
   syncer::SyncableService* sync =
@@ -505,13 +498,13 @@ TEST_F(InputMethodPreferencesTest, TestLogInLegacy) {
   // Sync. Since this is an existing profile, the local values shouldn't change.
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguagesSyncable, base::StringValue("ru,fi")));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreloadEnginesSyncable,
-      base::StringValue(ToInputMethodIds("xkb:ru::rus"))));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguageEnabledExtensionImesSyncable,
-      base::StringValue(kToUpperIMEID)));
+      prefs::kLanguagePreferredLanguagesSyncable, base::Value("ru,fi")));
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguagePreloadEnginesSyncable,
+                         base::Value(ToInputMethodIds("xkb:ru::rus"))));
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
+                         base::Value(kToUpperIMEID)));
 
   syncer::SyncableService* sync =
       pref_service_->GetSyncableService(
@@ -559,16 +552,16 @@ TEST_F(InputMethodPreferencesTest, MergeStressTest) {
 
   // Create some tricky values to come from the server.
   syncer::SyncDataList sync_data_list;
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguagesSyncable,
-      base::StringValue("ar,fi,es,de,ar")));
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguagePreferredLanguagesSyncable,
+                         base::Value("ar,fi,es,de,ar")));
   sync_data_list.push_back(CreatePrefSyncData(
       prefs::kLanguagePreloadEnginesSyncable,
-      base::StringValue(
+      base::Value(
           "nacl_mozc_us,xkb:ru::rus,xkb:ru::rus,xkb:es::spa,xkb:es::spa")));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguageEnabledExtensionImesSyncable,
-      base::StringValue(std::string())));
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
+                         base::Value(std::string())));
 
   // Sync for the first time.
   syncer::SyncableService* sync =
@@ -612,15 +605,14 @@ TEST_F(InputMethodPreferencesTest, MergeInvalidValues) {
       "_comp_ime_nothisisnotactuallyanextensionidxkb:es::spa," +
       ToInputMethodIds("xkb:jp::jpn"));
   syncer::SyncDataList sync_data_list;
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguagePreferredLanguagesSyncable,
+                         base::Value("klingon,en-US")));
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguagesSyncable,
-      base::StringValue("klingon,en-US")));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreloadEnginesSyncable,
-      base::StringValue(preload_engines)));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguageEnabledExtensionImesSyncable,
-      base::StringValue(kUnknownIMEID)));
+      prefs::kLanguagePreloadEnginesSyncable, base::Value(preload_engines)));
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
+                         base::Value(kUnknownIMEID)));
 
   // Sync for the first time.
   syncer::SyncableService* sync =
@@ -655,14 +647,12 @@ TEST_F(InputMethodPreferencesTest, MergeAfterSyncing) {
       "xkb:ru::rus,xkb:xy::xyz," + ToInputMethodIds("xkb:jp::jpn"));
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguagesSyncable,
-      base::StringValue("en-US")));
+      prefs::kLanguagePreferredLanguagesSyncable, base::Value("en-US")));
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreloadEnginesSyncable,
-      base::StringValue(preload_engines)));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguageEnabledExtensionImesSyncable,
-      base::StringValue(kUnknownIMEID)));
+      prefs::kLanguagePreloadEnginesSyncable, base::Value(preload_engines)));
+  sync_data_list.push_back(
+      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
+                         base::Value(kUnknownIMEID)));
 
   // Sync for the first time.
   syncer::SyncableService* sync =

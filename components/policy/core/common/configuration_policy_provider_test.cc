@@ -253,7 +253,7 @@ TEST_P(ConfigurationPolicyProviderTest, Empty) {
 
 TEST_P(ConfigurationPolicyProviderTest, StringValue) {
   const char kTestString[] = "string_value";
-  base::StringValue expected_value(kTestString);
+  base::Value expected_value(kTestString);
   CheckValue(test_keys::kKeyString,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringPolicy,
@@ -284,8 +284,8 @@ TEST_P(ConfigurationPolicyProviderTest, IntegerValue) {
 
 TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
   base::ListValue expected_value;
-  expected_value.Set(0U, new base::StringValue("first"));
-  expected_value.Set(1U, new base::StringValue("second"));
+  expected_value.Set(0U, new base::Value("first"));
+  expected_value.Set(1U, new base::Value("second"));
   CheckValue(test_keys::kKeyStringList,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringListPolicy,
@@ -302,8 +302,8 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   expected_value.SetString("string", "omg");
 
   base::ListValue* list = new base::ListValue();
-  list->Set(0U, new base::StringValue("first"));
-  list->Set(1U, new base::StringValue("second"));
+  list->Set(0U, new base::Value("first"));
+  list->Set(1U, new base::Value("second"));
   expected_value.Set("array", list);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -352,7 +352,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(test_keys::kKeyString, test_harness_->policy_level(),
            test_harness_->policy_scope(), test_harness_->policy_source(),
-           base::MakeUnique<base::StringValue>("value"), nullptr);
+           base::MakeUnique<base::Value>("value"), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
 }
@@ -393,7 +393,7 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   // help detecting memory leaks in the code paths that detect invalid input.
   policy_3rdparty.Set("invalid-domain.component", policy_dict.DeepCopy());
   policy_3rdparty.Set("extensions.cccccccccccccccccccccccccccccccc",
-                      new base::StringValue("invalid-value"));
+                      new base::Value("invalid-value"));
   test_harness_->Install3rdPartyPolicy(&policy_3rdparty);
 
   provider_->RefreshPolicies();

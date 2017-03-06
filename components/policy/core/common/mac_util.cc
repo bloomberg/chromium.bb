@@ -71,7 +71,7 @@ std::unique_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
 
   if (CFStringRef string = CFCast<CFStringRef>(property)) {
     return std::unique_ptr<base::Value>(
-        new base::StringValue(base::SysCFStringRefToUTF8(string)));
+        new base::Value(base::SysCFStringRefToUTF8(string)));
   }
 
   if (CFDictionaryRef dict = CFCast<CFDictionaryRef>(property)) {

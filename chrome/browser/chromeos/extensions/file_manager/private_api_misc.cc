@@ -365,7 +365,7 @@ void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
     DCHECK(access_token == auth_service_->access_token());
     if (logger)
       logger->Log(logging::LOG_INFO, "CWS OAuth token fetch succeeded.");
-    SetResult(base::MakeUnique<base::StringValue>(access_token));
+    SetResult(base::MakeUnique<base::Value>(access_token));
     SendResponse(true);
   } else {
     if (logger) {
@@ -466,7 +466,7 @@ bool FileManagerPrivateInternalGetMimeTypeFunction::RunAsync() {
 
 void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
     const std::string& mimeType) {
-  SetResult(base::MakeUnique<base::StringValue>(mimeType));
+  SetResult(base::MakeUnique<base::Value>(mimeType));
   SendResponse(true);
 }
 

@@ -180,10 +180,8 @@ void WakeOnWifiManager::HandleWakeOnWifiFeatureUpdated() {
   DCHECK(!feature_string.empty());
 
   NetworkHandler::Get()->network_device_handler()->SetDeviceProperty(
-      device->path(),
-      shill::kWakeOnWiFiFeaturesEnabledProperty,
-      base::StringValue(feature_string),
-      base::Bind(&base::DoNothing),
+      device->path(), shill::kWakeOnWiFiFeaturesEnabledProperty,
+      base::Value(feature_string), base::Bind(&base::DoNothing),
       network_handler::ErrorCallback());
 
   bool wake_on_packet_enabled = IsWakeOnPacketEnabled(current_feature_);

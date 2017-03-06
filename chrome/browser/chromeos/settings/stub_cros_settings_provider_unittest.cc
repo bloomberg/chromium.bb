@@ -73,7 +73,7 @@ TEST_F(StubCrosSettingsProviderTest, Defaults) {
 
 TEST_F(StubCrosSettingsProviderTest, Set) {
   // Setting value and reading it afterwards returns the same value.
-  base::StringValue owner_value("me@owner");
+  base::Value owner_value("me@owner");
   provider_->Set(kDeviceOwner, owner_value);
   AssertPref(kDeviceOwner, &owner_value);
   ExpectObservers(kDeviceOwner, 1);
@@ -81,7 +81,7 @@ TEST_F(StubCrosSettingsProviderTest, Set) {
 
 TEST_F(StubCrosSettingsProviderTest, SetMissing) {
   // Setting is missing initially but is added by |Set|.
-  base::StringValue pref_value("testing");
+  base::Value pref_value("testing");
   ASSERT_FALSE(provider_->Get(kReleaseChannel));
   provider_->Set(kReleaseChannel, pref_value);
   AssertPref(kReleaseChannel, &pref_value);

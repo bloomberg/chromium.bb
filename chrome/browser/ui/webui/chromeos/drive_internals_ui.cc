@@ -811,7 +811,7 @@ void DriveInternalsWebUIHandler::OnGetResourceEntryByPath(
 
   if (error == drive::FILE_ERROR_OK) {
     DCHECK(entry.get());
-    const base::StringValue value(FormatEntry(path, *entry) + "\n");
+    const base::Value value(FormatEntry(path, *entry) + "\n");
     web_ui()->CallJavascriptFunctionUnsafe("updateFileSystemContents", value);
   }
 }
@@ -846,7 +846,7 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     // There may be pending ReadDirectoryByPath() calls, but we can update
     // the page with what we have now. This results in progressive
     // updates, which is good for a large file system.
-    const base::StringValue value(file_system_as_text);
+    const base::Value value(file_system_as_text);
     web_ui()->CallJavascriptFunctionUnsafe("updateFileSystemContents", value);
   }
 }

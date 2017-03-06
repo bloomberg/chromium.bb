@@ -52,7 +52,7 @@ void BirthOnThreadSnapshotToValue(const BirthOnThreadSnapshot& birth,
   dictionary->Set(prefix + "_location", location_value.release());
 
   dictionary->Set(prefix + "_thread",
-                  new base::StringValue(birth.sanitized_thread_name));
+                  new base::Value(birth.sanitized_thread_name));
 }
 
 // Re-serializes the |death_data| into |dictionary|.

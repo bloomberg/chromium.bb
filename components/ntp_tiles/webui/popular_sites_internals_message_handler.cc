@@ -114,12 +114,12 @@ void PopularSitesInternalsMessageHandler::SendOverrides() {
   std::string version =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideVersion);
   web_ui_->CallJavascriptFunction(
-      "chrome.popular_sites_internals.receiveOverrides", base::StringValue(url),
-      base::StringValue(country), base::StringValue(version));
+      "chrome.popular_sites_internals.receiveOverrides", base::Value(url),
+      base::Value(country), base::Value(version));
 }
 
 void PopularSitesInternalsMessageHandler::SendDownloadResult(bool success) {
-  base::StringValue result(success ? "Success" : "Fail");
+  base::Value result(success ? "Success" : "Fail");
   web_ui_->CallJavascriptFunction(
       "chrome.popular_sites_internals.receiveDownloadResult", result);
 }
@@ -142,7 +142,7 @@ void PopularSitesInternalsMessageHandler::SendSites() {
 
 void PopularSitesInternalsMessageHandler::SendJson(const std::string& json) {
   web_ui_->CallJavascriptFunction("chrome.popular_sites_internals.receiveJson",
-                                  base::StringValue(json));
+                                  base::Value(json));
 }
 
 void PopularSitesInternalsMessageHandler::OnPopularSitesAvailable(

@@ -170,11 +170,11 @@ void NetworkStateHelper::GetConnectedWifiNetwork(std::string* out_onc_spec) {
   std::unique_ptr<base::DictionaryValue> copied_onc(
       new base::DictionaryValue());
   copied_onc->Set(onc::toplevel_config::kType,
-                  new base::StringValue(onc::network_type::kWiFi));
+                  new base::Value(onc::network_type::kWiFi));
   copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kHexSSID),
-                  new base::StringValue(hex_ssid));
+                  new base::Value(hex_ssid));
   copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kSecurity),
-                  new base::StringValue(security));
+                  new base::Value(security));
   base::JSONWriter::Write(*copied_onc.get(), out_onc_spec);
 }
 

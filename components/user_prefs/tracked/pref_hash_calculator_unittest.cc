@@ -14,8 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(PrefHashCalculatorTest, TestCurrentAlgorithm) {
-  base::StringValue string_value_1("string value 1");
-  base::StringValue string_value_2("string value 2");
+  base::Value string_value_1("string value 1");
+  base::Value string_value_2("string value 2");
   base::DictionaryValue dictionary_value_1;
   dictionary_value_1.SetInteger("int value", 1);
   dictionary_value_1.Set("nested empty map", new base::DictionaryValue);
@@ -81,7 +81,7 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   std::unique_ptr<base::Value> int_value(new base::Value(1234567890));
   std::unique_ptr<base::Value> double_value(new base::Value(123.0987654321));
   std::unique_ptr<base::Value> string_value(
-      new base::StringValue("testing with special chars:\n<>{}:^^@#$\\/"));
+      new base::Value("testing with special chars:\n<>{}:^^@#$\\/"));
 
   // For legacy reasons, we have to support pruning of empty lists/dictionaries
   // and nested empty ists/dicts in the hash generation algorithm.
@@ -97,10 +97,10 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   // A dictionary with an empty dictionary, an empty list, and nested empty
   // dictionaries/lists in it.
   std::unique_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue);
-  dict_value->Set("a", new base::StringValue("foo"));
+  dict_value->Set("a", new base::Value("foo"));
   dict_value->Set("d", new base::ListValue);
   dict_value->Set("b", new base::DictionaryValue);
-  dict_value->Set("c", new base::StringValue("baz"));
+  dict_value->Set("c", new base::Value("baz"));
   dict_value->Set("e", nested_empty_dict.release());
   dict_value->Set("f", nested_empty_list.release());
 
@@ -186,8 +186,7 @@ TEST(PrefHashCalculatorTest, TestCompatibilityWithLegacyDeviceId) {
   static const char kLegacyDeviceId[] = "test_device_id1";
 
   // As in PrefHashCalculatorTest.CatchHashChanges.
-  const base::StringValue string_value(
-      "testing with special chars:\n<>{}:^^@#$\\/");
+  const base::Value string_value("testing with special chars:\n<>{}:^^@#$\\/");
   static const char kExpectedValue[] =
       "05ACCBD3B05C45C36CD06190F63EC577112311929D8380E26E5F13182EB68318";
 

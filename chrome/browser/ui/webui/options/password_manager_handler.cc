@@ -247,7 +247,7 @@ void PasswordManagerHandler::ShowPassword(
   // Call back the front end to reveal the password.
   web_ui()->CallJavascriptFunctionUnsafe("PasswordManager.showPassword",
                                          base::Value(static_cast<int>(index)),
-                                         base::StringValue(password_value));
+                                         base::Value(password_value));
 }
 
 void PasswordManagerHandler::HandleUpdatePasswordLists(

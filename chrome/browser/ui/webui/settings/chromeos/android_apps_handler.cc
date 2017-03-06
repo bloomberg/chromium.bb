@@ -82,7 +82,7 @@ void AndroidAppsHandler::SendAndroidAppsInfo() {
   AllowJavascript();
   std::unique_ptr<base::DictionaryValue> info = BuildAndroidAppsInfo();
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("android-apps-info-update"), *info);
+                         base::Value("android-apps-info-update"), *info);
 }
 
 void AndroidAppsHandler::ShowAndroidAppsSettings(const base::ListValue* args) {

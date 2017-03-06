@@ -202,7 +202,7 @@ void WebRtcLogsDOMHandler::UpdateUI() {
     upload_list.Append(std::move(upload));
   }
 
-  base::StringValue version(version_info::GetVersionNumber());
+  base::Value version(version_info::GetVersionNumber());
 
   web_ui()->CallJavascriptFunctionUnsafe("updateWebRtcLogsList", upload_list,
                                          version);

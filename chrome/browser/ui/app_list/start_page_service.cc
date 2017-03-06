@@ -676,8 +676,7 @@ void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
     if (contents_ && contents_->GetWebUI()) {
       contents_->GetWebUI()->CallJavascriptFunctionUnsafe(
           "appList.startPage.onAppListDoodleUpdated", *doodle_json,
-          base::StringValue(
-              UIThreadSearchTermsData(profile_).GoogleBaseURLValue()));
+          base::Value(UIThreadSearchTermsData(profile_).GoogleBaseURLValue()));
     }
   }
 

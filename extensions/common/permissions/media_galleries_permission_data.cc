@@ -24,7 +24,7 @@ bool MediaGalleriesPermissionData::Check(
 }
 
 std::unique_ptr<base::Value> MediaGalleriesPermissionData::ToValue() const {
-  return std::unique_ptr<base::Value>(new base::StringValue(permission_));
+  return std::unique_ptr<base::Value>(new base::Value(permission_));
 }
 
 bool MediaGalleriesPermissionData::FromValue(const base::Value* value) {

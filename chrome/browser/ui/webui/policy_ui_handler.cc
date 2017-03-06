@@ -173,13 +173,13 @@ void ExtractDomainFromUsername(base::DictionaryValue* dict) {
 }
 
 // Utility function that returns a JSON serialization of the given |dict|.
-std::unique_ptr<base::StringValue> DictionaryToJSONString(
+std::unique_ptr<base::Value> DictionaryToJSONString(
     const base::DictionaryValue& dict) {
   std::string json_string;
   base::JSONWriter::WriteWithOptions(dict,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_string);
-  return base::MakeUnique<base::StringValue>(json_string);
+  return base::MakeUnique<base::Value>(json_string);
 }
 
 // Returns a copy of |value| with some values converted to a representation that

@@ -126,8 +126,8 @@ bool WebUIBrowserTest::RunJavascriptTestF(bool is_async,
                                           const std::string& test_fixture,
                                           const std::string& test_name) {
   ConstValueVector args;
-  args.push_back(new base::StringValue(test_fixture));
-  args.push_back(new base::StringValue(test_name));
+  args.push_back(new base::Value(test_fixture));
+  args.push_back(new base::Value(test_name));
 
   if (is_async)
     return RunJavascriptAsyncTest("RUN_TEST_F", args);
@@ -207,8 +207,8 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
     RenderViewHost* preload_host) {
   ASSERT_FALSE(libraries_preloaded_);
   ConstValueVector args;
-  args.push_back(new base::StringValue(preload_test_fixture));
-  args.push_back(new base::StringValue(preload_test_name));
+  args.push_back(new base::Value(preload_test_fixture));
+  args.push_back(new base::Value(preload_test_name));
   RunJavascriptUsingHandler(
       "preloadJavascriptLibraries", args, false, false, preload_host);
   libraries_preloaded_ = true;

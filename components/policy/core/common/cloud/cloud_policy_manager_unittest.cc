@@ -88,9 +88,9 @@ void TestHarness::InstallEmptyPolicy() {}
 
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
-  store_.policy_map_.Set(
-      policy_name, policy_level(), policy_scope(), POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::StringValue>(policy_value), nullptr);
+  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
+                         POLICY_SOURCE_CLOUD,
+                         base::MakeUnique<base::Value>(policy_value), nullptr);
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
@@ -174,8 +174,8 @@ class CloudPolicyManagerTest : public testing::Test {
   void SetUp() override {
     // Set up a policy map for testing.
     policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::StringValue>("value"), nullptr);
+                    POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("value"),
+                    nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
 

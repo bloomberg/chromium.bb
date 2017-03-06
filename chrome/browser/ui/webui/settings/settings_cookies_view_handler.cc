@@ -108,8 +108,7 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   args.SetInteger(kStart, start);
   args.Set(kChildren, std::move(children));
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("onTreeItemAdded"),
-                         args);
+                         base::Value("onTreeItemAdded"), args);
 }
 
 void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
@@ -130,8 +129,7 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
   args.SetInteger(kStart, start);
   args.SetInteger(kCount, count);
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("onTreeItemRemoved"),
-                         args);
+                         base::Value("onTreeItemRemoved"), args);
 }
 
 void CookiesViewHandler::TreeModelBeginBatch(CookiesTreeModel* model) {
@@ -199,7 +197,7 @@ void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
       cookies_tree_model_->GetRoot(), base::UTF8ToUTF16(site));
 
   if (!node) {
-    RejectJavascriptCallback(base::StringValue(callback_id_),
+    RejectJavascriptCallback(base::Value(callback_id_),
                              *base::Value::CreateNullValue());
     callback_id_.clear();
     return;
@@ -262,7 +260,7 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
     args.SetString(kId, model_util_->GetTreeNodeId(parent));
   args.Set(kChildren, std::move(children));
 
-  ResolveJavascriptCallback(base::StringValue(callback_id_), args);
+  ResolveJavascriptCallback(base::Value(callback_id_), args);
   callback_id_.clear();
 }
 
@@ -282,7 +280,7 @@ void CookiesViewHandler::SendCookieDetails(const CookieTreeNode* parent) {
     args.SetString(kId, model_util_->GetTreeNodeId(parent));
   args.Set(kChildren, std::move(children));
 
-  ResolveJavascriptCallback(base::StringValue(callback_id_), args);
+  ResolveJavascriptCallback(base::Value(callback_id_), args);
   callback_id_.clear();
 }
 

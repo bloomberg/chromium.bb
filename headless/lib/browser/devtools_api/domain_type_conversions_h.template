@@ -40,7 +40,7 @@ std::unique_ptr<base::Value> ToValueImpl(const {{namespace}}::{{type.id}}& value
   switch (value) {
     {% for literal in type.enum %}
     case {{namespace}}::{{type.id}}::{{literal | sanitize_literal | dash_to_camelcase | camelcase_to_hacker_style | upper }}:
-      return base::WrapUnique(new base::StringValue("{{literal}}"));
+      return base::WrapUnique(new base::Value("{{literal}}"));
     {% endfor %}
   };
   NOTREACHED();

@@ -200,8 +200,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   void RegisterUser(const std::string& user_id) {
     ListPrefUpdate users_pref(g_browser_process->local_state(),
                               "LoggedInUsers");
-    users_pref->AppendIfNotPresent(
-        base::MakeUnique<base::StringValue>(user_id));
+    users_pref->AppendIfNotPresent(base::MakeUnique<base::Value>(user_id));
   }
 
   // ExistingUserController private member accessors.

@@ -28,8 +28,8 @@ std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
 
   DCHECK(int{fingerprints_list.size()} <= kMaxAllowedFingerprints);
   for (auto& fingerprint_name: fingerprints_list) {
-    std::unique_ptr<base::StringValue> str =
-        base::MakeUnique<base::StringValue>(fingerprint_name);
+    std::unique_ptr<base::Value> str =
+        base::MakeUnique<base::Value>(fingerprint_name);
     fingerprints->Append(std::move(str));
   }
 
@@ -102,7 +102,7 @@ void FingerprintHandler::HandleGetFingerprintsList(
 
   std::unique_ptr<base::DictionaryValue> fingerprint_info =
       GetFingerprintsInfo(fingerprints_list_);
-  ResolveJavascriptCallback(base::StringValue(callback_id), *fingerprint_info);
+  ResolveJavascriptCallback(base::Value(callback_id), *fingerprint_info);
 }
 
 void FingerprintHandler::HandleGetNumFingerprints(const base::ListValue* args) {
@@ -112,7 +112,7 @@ void FingerprintHandler::HandleGetNumFingerprints(const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
-  ResolveJavascriptCallback(base::StringValue(callback_id),
+  ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(int{fingerprints_list_.size()}));
 }
 
@@ -133,8 +133,8 @@ void FingerprintHandler::HandleGetEnrollmentLabel(const base::ListValue* args) {
   CHECK(args->GetInteger(1, &index));
 
   DCHECK(index < int{fingerprints_list_.size()});
-  ResolveJavascriptCallback(base::StringValue(callback_id),
-                            base::StringValue(fingerprints_list_[index]));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(fingerprints_list_[index]));
 }
 
 void FingerprintHandler::HandleRemoveEnrollment(const base::ListValue* args) {
@@ -149,7 +149,7 @@ void FingerprintHandler::HandleRemoveEnrollment(const base::ListValue* args) {
   DCHECK(index < int{fingerprints_list_.size()});
   bool deleteSucessful = true;
   fingerprints_list_.erase(fingerprints_list_.begin() + index);
-  ResolveJavascriptCallback(base::StringValue(callback_id),
+  ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(deleteSucessful));
 }
 

@@ -144,8 +144,7 @@ void ChangePictureHandler::SendDefaultImages() {
     image_urls.Append(std::move(image_data));
   }
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("default-images-changed"),
-                         image_urls);
+                         base::Value("default-images-changed"), image_urls);
 }
 
 void ChangePictureHandler::HandleChooseFile(const base::ListValue* args) {
@@ -230,10 +229,10 @@ void ChangePictureHandler::SendSelectedImage() {
       if (previous_image_index_ >=
           default_user_image::kFirstDefaultImageIndex) {
         // User has image from the current set of default images.
-        base::StringValue image_url(
+        base::Value image_url(
             default_user_image::GetDefaultImageUrl(previous_image_index_));
         CallJavascriptFunction("cr.webUIListenerCallback",
-                               base::StringValue("selected-image-changed"),
+                               base::Value("selected-image-changed"),
                                image_url);
       } else {
         // User has an old default image, so present it in the same manner as a
@@ -247,10 +246,10 @@ void ChangePictureHandler::SendSelectedImage() {
 
 void ChangePictureHandler::SendProfileImage(const gfx::ImageSkia& image,
                                             bool should_select) {
-  base::StringValue data_url(webui::GetBitmapDataUrl(*image.bitmap()));
+  base::Value data_url(webui::GetBitmapDataUrl(*image.bitmap()));
   base::Value select(should_select);
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("profile-image-changed"), data_url,
+                         base::Value("profile-image-changed"), data_url,
                          select);
 }
 
@@ -268,9 +267,9 @@ void ChangePictureHandler::UpdateProfileImage() {
 
 void ChangePictureHandler::SendOldImage(const std::string& image_url) {
   previous_image_url_ = image_url;
-  base::StringValue url(image_url);
+  base::Value url(image_url);
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("old-image-changed"), url);
+                         base::Value("old-image-changed"), url);
 }
 
 void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
@@ -368,7 +367,7 @@ void ChangePictureHandler::SetImageFromCamera(const gfx::ImageSkia& photo) {
 
 void ChangePictureHandler::SetCameraPresent(bool present) {
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("camera-presence-changed"),
+                         base::Value("camera-presence-changed"),
                          base::Value(present));
 }
 

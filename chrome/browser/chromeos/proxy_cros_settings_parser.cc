@@ -17,9 +17,9 @@ namespace chromeos {
 namespace {
 
 base::Value* CreateServerHostValue(const UIProxyConfig::ManualProxy& proxy) {
-  return proxy.server.is_valid() ?
-         new base::StringValue(proxy.server.host_port_pair().host()) :
-         NULL;
+  return proxy.server.is_valid()
+             ? new base::Value(proxy.server.host_port_pair().host())
+             : NULL;
 }
 
 base::Value* CreateServerPortValue(const UIProxyConfig::ManualProxy& proxy) {
@@ -292,7 +292,7 @@ bool GetProxyPrefValue(const std::string& network_guid,
     // Only show pacurl for pac-script mode.
     if (config.mode == UIProxyConfig::MODE_PAC_SCRIPT &&
         config.automatic_proxy.pac_url.is_valid()) {
-      data = new base::StringValue(config.automatic_proxy.pac_url.spec());
+      data = new base::Value(config.automatic_proxy.pac_url.spec());
     }
   } else if (path == kProxySingleHttp) {
     data = CreateServerHostValue(config.single_proxy);
@@ -357,7 +357,7 @@ bool GetProxyPrefValue(const std::string& network_guid,
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
   base::DictionaryValue* dict = new base::DictionaryValue;
   if (!data)
-    data = new base::StringValue("");
+    data = new base::Value("");
   dict->Set("value", data);
   if (path == kProxyType) {
     if (!controlled_by.empty())

@@ -106,10 +106,10 @@ ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
 
   PolicyMap& policy = expected_bundle_.Get(kTestPolicyNS);
   policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::StringValue>("disabled"), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("disabled"),
+             nullptr);
   policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("maybe"),
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("maybe"),
              nullptr);
 }
 

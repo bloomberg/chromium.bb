@@ -607,11 +607,9 @@ void ExtensionStorageMonitor::SetNextStorageThreshold(
     const std::string& extension_id,
     int64_t next_threshold) {
   extension_prefs_->UpdateExtensionPref(
-      extension_id,
-      kPrefNextStorageThreshold,
-      next_threshold > 0
-          ? new base::StringValue(base::Int64ToString(next_threshold))
-          : NULL);
+      extension_id, kPrefNextStorageThreshold,
+      next_threshold > 0 ? new base::Value(base::Int64ToString(next_threshold))
+                         : NULL);
 }
 
 int64_t ExtensionStorageMonitor::GetNextStorageThresholdFromPrefs(

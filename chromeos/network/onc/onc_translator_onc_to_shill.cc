@@ -31,12 +31,11 @@ namespace onc {
 
 namespace {
 
-std::unique_ptr<base::StringValue> ConvertValueToString(
-    const base::Value& value) {
+std::unique_ptr<base::Value> ConvertValueToString(const base::Value& value) {
   std::string str;
   if (!value.GetAsString(&str))
     base::JSONWriter::Write(value, &str);
-  return base::MakeUnique<base::StringValue>(str);
+  return base::MakeUnique<base::Value>(str);
 }
 
 // This class is responsible to translate the local fields of the given

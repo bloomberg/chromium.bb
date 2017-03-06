@@ -380,7 +380,7 @@ void KeyboardOverlayHandler::GetInputMethodId(const base::ListValue* args) {
       chromeos::input_method::InputMethodManager::Get();
   const chromeos::input_method::InputMethodDescriptor& descriptor =
       manager->GetActiveIMEState()->GetCurrentInputMethod();
-  base::StringValue param(descriptor.id());
+  base::Value param(descriptor.id());
   web_ui()->CallJavascriptFunctionUnsafe("initKeyboardOverlayId", param);
 }
 

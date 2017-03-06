@@ -121,10 +121,9 @@ bool SessionLengthLimiterTest::GetSessionUserActivitySeenPref() {
 
 void SessionLengthLimiterTest::SetSessionStartTimePref(
     const base::TimeTicks& session_start_time) {
-  local_state_.SetUserPref(
-      prefs::kSessionStartTime,
-      new base::StringValue(
-          base::Int64ToString(session_start_time.ToInternalValue())));
+  local_state_.SetUserPref(prefs::kSessionStartTime,
+                           new base::Value(base::Int64ToString(
+                               session_start_time.ToInternalValue())));
 }
 
 void SessionLengthLimiterTest::ClearSessionStartTimePref() {

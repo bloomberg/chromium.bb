@@ -191,7 +191,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   // Helper routine to check value of the LoginScreenDomainAutoComplete policy.
   void VerifyDomainAutoComplete(
-      const base::StringValue* const ptr_to_expected_value) {
+      const base::Value* const ptr_to_expected_value) {
     EXPECT_TRUE(base::Value::Equals(
         provider_->Get(kAccountsPrefLoginScreenDomainAutoComplete),
         ptr_to_expected_value));
@@ -241,7 +241,7 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   // Sets should succeed though and be readable from the cache.
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*this, SettingChanged(kReleaseChannel)).Times(1);
-  base::StringValue new_value("stable-channel");
+  base::Value new_value("stable-channel");
   provider_->Set(kReleaseChannel, new_value);
   Mock::VerifyAndClearExpectations(this);
 
@@ -316,9 +316,9 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
 
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
 
-  base::StringValue value1("beta");
+  base::Value value1("beta");
   provider_->Set(kReleaseChannel, value1);
-  base::StringValue value2("dev");
+  base::Value value2("dev");
   provider_->Set(kReleaseChannel, value2);
 
   // Let the changes propagate through the system.
@@ -425,7 +425,7 @@ TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
   const base::Value expected_disabled_value(true);
   EXPECT_TRUE(base::Value::Equals(provider_->Get(kDeviceDisabled),
                                   &expected_disabled_value));
-  const base::StringValue expected_disabled_message_value(kDisabledMessage);
+  const base::Value expected_disabled_message_value(kDisabledMessage);
   EXPECT_TRUE(base::Value::Equals(provider_->Get(kDeviceDisabledMessage),
                                   &expected_disabled_message_value));
 
@@ -477,7 +477,7 @@ TEST_F(DeviceSettingsProviderTest, DecodeDomainAutoComplete) {
 
   // Check some meaningful value. Policy should be set.
   const std::string domain = "domain.test";
-  const base::StringValue domain_value(domain);
+  const base::Value domain_value(domain);
   SetDomainAutoComplete(domain);
   VerifyDomainAutoComplete(&domain_value);
 }

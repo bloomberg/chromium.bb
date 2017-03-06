@@ -83,7 +83,7 @@ bool FindInListValue(const std::string& needle, const base::Value* haystack) {
   const base::ListValue* list;
   if (!haystack->GetAsList(&list))
     return false;
-  return list->end() != list->Find(base::StringValue(needle));
+  return list->end() != list->Find(base::Value(needle));
 }
 
 }  // namespace
@@ -144,14 +144,14 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
 };
 
 TEST_F(OwnerSettingsServiceChromeOSTest, SingleSetTest) {
-  TestSingleSet(service_, kReleaseChannel, base::StringValue("dev-channel"));
-  TestSingleSet(service_, kReleaseChannel, base::StringValue("beta-channel"));
-  TestSingleSet(service_, kReleaseChannel, base::StringValue("stable-channel"));
+  TestSingleSet(service_, kReleaseChannel, base::Value("dev-channel"));
+  TestSingleSet(service_, kReleaseChannel, base::Value("beta-channel"));
+  TestSingleSet(service_, kReleaseChannel, base::Value("stable-channel"));
 }
 
 TEST_F(OwnerSettingsServiceChromeOSTest, MultipleSetTest) {
   base::Value allow_guest(false);
-  base::StringValue release_channel("stable-channel");
+  base::Value release_channel("stable-channel");
   base::Value show_user_names(true);
 
   PrefsChecker checker(service_, provider_.get());
@@ -172,7 +172,7 @@ TEST_F(OwnerSettingsServiceChromeOSTest, FailedSetRequest) {
 
   // Check that DeviceSettingsProvider's cache is updated.
   PrefsChecker checker(service_, provider_.get());
-  checker.Set(kReleaseChannel, base::StringValue("stable-channel"));
+  checker.Set(kReleaseChannel, base::Value("stable-channel"));
   FlushDeviceSettings();
   checker.Wait();
 
@@ -186,7 +186,7 @@ TEST_F(OwnerSettingsServiceChromeOSTest, ForceWhitelist) {
   EXPECT_FALSE(FindInListValue(device_policy_.policy_data().username(),
                                provider_->Get(kAccountsPrefUsers)));
   // Force a settings write.
-  TestSingleSet(service_, kReleaseChannel, base::StringValue("dev-channel"));
+  TestSingleSet(service_, kReleaseChannel, base::Value("dev-channel"));
   EXPECT_TRUE(FindInListValue(device_policy_.policy_data().username(),
                               provider_->Get(kAccountsPrefUsers)));
 }

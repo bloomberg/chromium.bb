@@ -191,9 +191,9 @@ void CrashesDOMHandler::UpdateUI() {
   base::Value enabled(crash_reporting_enabled);
   base::Value dynamic_backend(system_crash_reporter);
   base::Value manual_uploads(support_manual_uploads);
-  base::StringValue version(version_info::GetVersionNumber());
-  base::StringValue os_string(base::SysInfo::OperatingSystemName() + " " +
-                              base::SysInfo::OperatingSystemVersion());
+  base::Value version(version_info::GetVersionNumber());
+  base::Value os_string(base::SysInfo::OperatingSystemName() + " " +
+                        base::SysInfo::OperatingSystemVersion());
 
   std::vector<const base::Value*> args;
   args.push_back(&enabled);

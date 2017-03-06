@@ -112,7 +112,7 @@ class MobileActivatorTest : public testing::Test {
       : cellular_network_(string(kTestServicePath)),
         mobile_activator_(&cellular_network_) {
     cellular_network_.PropertyChanged(shill::kTypeProperty,
-                                      base::StringValue(shill::kTypeCellular));
+                                      base::Value(shill::kTypeCellular));
   }
   ~MobileActivatorTest() override {}
 

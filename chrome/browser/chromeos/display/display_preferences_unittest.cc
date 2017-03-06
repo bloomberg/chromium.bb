@@ -1078,7 +1078,7 @@ TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
   StoreDisplayPropertyForList(
       list, "primary-id",
-      base::MakeUnique<base::StringValue>(base::Int64ToString(id1)));
+      base::MakeUnique<base::Value>(base::Int64ToString(id1)));
   LoadDisplayPreferences(false);
 
   // Should not restore to unified unless unified desktop is enabled.

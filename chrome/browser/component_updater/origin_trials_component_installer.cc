@@ -87,7 +87,7 @@ void OriginTrialsComponentInstallerTraits::ComponentReady(
   std::string override_public_key;
   if (manifest->GetString(kManifestPublicKeyPath, &override_public_key)) {
     local_state->Set(prefs::kOriginTrialPublicKey,
-                     base::StringValue(override_public_key));
+                     base::Value(override_public_key));
   } else {
     local_state->ClearPref(prefs::kOriginTrialPublicKey);
   }

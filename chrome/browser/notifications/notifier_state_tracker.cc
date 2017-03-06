@@ -123,12 +123,12 @@ void NotifierStateTracker::SetNotifierEnabled(
 
   bool add_new_item = false;
   const char* pref_name = NULL;
-  std::unique_ptr<base::StringValue> id;
+  std::unique_ptr<base::Value> id;
   switch (notifier_id.type) {
     case NotifierId::APPLICATION:
       pref_name = prefs::kMessageCenterDisabledExtensionIds;
       add_new_item = !enabled;
-      id.reset(new base::StringValue(notifier_id.id));
+      id.reset(new base::Value(notifier_id.id));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       FirePermissionLevelChangedEvent(notifier_id, enabled);
 #endif
@@ -137,7 +137,7 @@ void NotifierStateTracker::SetNotifierEnabled(
 #if defined(OS_CHROMEOS)
       pref_name = prefs::kMessageCenterDisabledSystemComponentIds;
       add_new_item = !enabled;
-      id.reset(new base::StringValue(notifier_id.id));
+      id.reset(new base::Value(notifier_id.id));
 #else
       return;
 #endif

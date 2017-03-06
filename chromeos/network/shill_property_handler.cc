@@ -202,7 +202,7 @@ void ShillPropertyHandler::SetProhibitedTechnologies(
   // Send updated prohibited technology list to shill.
   const std::string prohibited_list =
       base::JoinString(prohibited_technologies, ",");
-  base::StringValue value(prohibited_list);
+  base::Value value(prohibited_list);
   shill_manager_->SetProperty(
       "ProhibitedTechnologies", value, base::Bind(&base::DoNothing),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
@@ -212,7 +212,7 @@ void ShillPropertyHandler::SetProhibitedTechnologies(
 
 void ShillPropertyHandler::SetCheckPortalList(
     const std::string& check_portal_list) {
-  base::StringValue value(check_portal_list);
+  base::Value value(check_portal_list);
   shill_manager_->SetProperty(
       shill::kCheckPortalListProperty, value, base::Bind(&base::DoNothing),
       base::Bind(&network_handler::ShillErrorCallbackFunction,

@@ -802,7 +802,7 @@ void ChromeUserManagerImpl::SupervisedUserLoggedIn(
   // Add the user to the front of the user list.
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsers);
   prefs_users_update->Insert(
-      0, base::MakeUnique<base::StringValue>(account_id.GetUserEmail()));
+      0, base::MakeUnique<base::Value>(account_id.GetUserEmail()));
   users_.insert(users_.begin(), active_user_);
 
   // Now that user is in the list, save display name.
@@ -1260,20 +1260,20 @@ void ChromeUserManagerImpl::SetUserAffiliation(
 bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
   const base::ListValue& reporting_users =
       *(GetLocalState()->GetList(kReportingUsers));
-  base::StringValue user_id_value(FullyCanonicalize(user_id));
+  base::Value user_id_value(FullyCanonicalize(user_id));
   return !(reporting_users.Find(user_id_value) == reporting_users.end());
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
   users_update->AppendIfNotPresent(
-      base::MakeUnique<base::StringValue>(account_id.GetUserEmail()));
+      base::MakeUnique<base::Value>(account_id.GetUserEmail()));
 }
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), kReportingUsers);
   users_update->Remove(
-      base::StringValue(FullyCanonicalize(account_id.GetUserEmail())), NULL);
+      base::Value(FullyCanonicalize(account_id.GetUserEmail())), NULL);
 }
 
 void ChromeUserManagerImpl::UpdateLoginState(

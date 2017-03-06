@@ -45,7 +45,7 @@ void TrackedDictionary::SetBoolean(const std::string& path, bool new_value) {
 
 void TrackedDictionary::SetString(const std::string& path,
                                   const std::string& new_value) {
-  Set(path, base::MakeUnique<base::StringValue>(new_value));
+  Set(path, base::MakeUnique<base::Value>(new_value));
 }
 
 }  // namespace test_runner

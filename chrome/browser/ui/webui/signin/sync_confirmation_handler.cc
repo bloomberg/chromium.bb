@@ -86,7 +86,7 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
     // Use the placeholder avatar icon until the account picture URL is fetched.
     picture_url_to_load = profiles::GetPlaceholderAvatarIconUrl();
   }
-  base::StringValue picture_url_value(picture_url_to_load);
+  base::Value picture_url_value(picture_url_to_load);
   web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.setUserImageURL",
                                          picture_url_value);
 }

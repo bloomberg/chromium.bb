@@ -16,7 +16,7 @@
 
 using base::DictionaryValue;
 using base::ListValue;
-using base::StringValue;
+using base::Value;
 
 namespace extensions {
 
@@ -54,7 +54,7 @@ class EventListenerMapTest : public testing::Test {
     std::unique_ptr<ListValue> filter_list(new ListValue);
     std::unique_ptr<DictionaryValue> filter_dict(new DictionaryValue);
 
-    filter_dict->Set("hostSuffix", new StringValue(suffix));
+    filter_dict->Set("hostSuffix", new Value(suffix));
 
     filter_list->Append(std::move(filter_dict));
     filter->Set("url", filter_list.release());

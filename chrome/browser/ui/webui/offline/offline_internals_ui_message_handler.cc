@@ -115,17 +115,16 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests(
 void OfflineInternalsUIMessageHandler::HandleDeletedPagesCallback(
     std::string callback_id,
     offline_pages::DeletePageResult result) {
-  ResolveJavascriptCallback(
-      base::StringValue(callback_id),
-      base::StringValue(GetStringFromDeletePageResult(result)));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(GetStringFromDeletePageResult(result)));
 }
 
 void OfflineInternalsUIMessageHandler::HandleDeletedRequestsCallback(
     std::string callback_id,
     const offline_pages::MultipleItemStatuses& results) {
   ResolveJavascriptCallback(
-      base::StringValue(callback_id),
-      base::StringValue(GetStringFromDeleteRequestResults(results)));
+      base::Value(callback_id),
+      base::Value(GetStringFromDeleteRequestResults(results)));
 }
 
 void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
@@ -146,7 +145,7 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
     offline_page->SetInteger("accessCount", page.access_count);
     offline_page->SetString("originalUrl", page.original_url.spec());
   }
-  ResolveJavascriptCallback(base::StringValue(callback_id), results);
+  ResolveJavascriptCallback(base::Value(callback_id), results);
 }
 
 void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
@@ -171,7 +170,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
                                    request->original_url().spec());
     }
   }
-  ResolveJavascriptCallback(base::StringValue(callback_id), save_page_requests);
+  ResolveJavascriptCallback(base::Value(callback_id), save_page_requests);
 }
 
 void OfflineInternalsUIMessageHandler::HandleGetRequestQueue(
@@ -186,7 +185,7 @@ void OfflineInternalsUIMessageHandler::HandleGetRequestQueue(
         weak_ptr_factory_.GetWeakPtr(), callback_id));
   } else {
     base::ListValue results;
-    ResolveJavascriptCallback(base::StringValue(callback_id), results);
+    ResolveJavascriptCallback(base::Value(callback_id), results);
   }
 }
 
@@ -202,7 +201,7 @@ void OfflineInternalsUIMessageHandler::HandleGetStoredPages(
                    weak_ptr_factory_.GetWeakPtr(), callback_id));
   } else {
     base::ListValue results;
-    ResolveJavascriptCallback(base::StringValue(callback_id), results);
+    ResolveJavascriptCallback(base::Value(callback_id), results);
   }
 }
 
@@ -221,8 +220,8 @@ void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
 
   ResolveJavascriptCallback(
       *callback_id,
-      base::StringValue(net::NetworkChangeNotifier::IsOffline() ? "Offline"
-                                                                : "Online"));
+      base::Value(net::NetworkChangeNotifier::IsOffline() ? "Offline"
+                                                          : "Online"));
 }
 
 void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(

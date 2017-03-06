@@ -159,7 +159,7 @@ void SettingsOverridesAPI::OnExtensionLoaded(
         ExtensionPrefs::Get(profile_)->GetInstallParam(extension->id());
     if (settings->homepage) {
       SetPref(extension->id(), prefs::kHomePage,
-              base::MakeUnique<base::StringValue>(SubstituteInstallParam(
+              base::MakeUnique<base::Value>(SubstituteInstallParam(
                   settings->homepage->spec(), install_parameter)));
       SetPref(extension->id(), prefs::kHomePageIsNewTabPage,
               base::MakeUnique<base::Value>(false));

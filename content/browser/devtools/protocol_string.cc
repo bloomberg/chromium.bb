@@ -93,7 +93,7 @@ std::unique_ptr<base::Value> toBaseValue(
   if (value->type() == protocol::Value::TypeString) {
     std::string inner;
     value->asString(&inner);
-    return base::WrapUnique(new base::StringValue(inner));
+    return base::WrapUnique(new base::Value(inner));
   }
   if (value->type() == protocol::Value::TypeArray) {
     protocol::ListValue* list = protocol::ListValue::cast(value);

@@ -169,7 +169,7 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
                 base::MakeUnique<base::Value>(1000), nullptr);
   expected->Set(key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                base::MakeUnique<base::StringValue>(homepage), nullptr);
+                base::MakeUnique<base::Value>(homepage), nullptr);
 }
 
 }  // namespace

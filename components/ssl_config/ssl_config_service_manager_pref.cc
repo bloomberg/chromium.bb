@@ -197,7 +197,7 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   if (base::FeatureList::IsEnabled(kTLS13Feature)) {
     local_state->SetDefaultPrefValue(
         ssl_config::prefs::kSSLVersionMax,
-        new base::StringValue(switches::kSSLVersionTLSv13));
+        new base::Value(switches::kSSLVersionTLSv13));
   }
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =

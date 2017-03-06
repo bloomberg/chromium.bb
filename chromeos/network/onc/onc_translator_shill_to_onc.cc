@@ -33,7 +33,7 @@ std::unique_ptr<base::Value> ConvertStringToValue(const std::string& str,
                                                   base::Value::Type type) {
   std::unique_ptr<base::Value> value;
   if (type == base::Value::Type::STRING) {
-    value.reset(new base::StringValue(str));
+    value.reset(new base::Value(str));
   } else {
     value = base::JSONReader::Read(str);
   }

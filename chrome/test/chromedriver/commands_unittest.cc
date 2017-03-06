@@ -71,8 +71,8 @@ void ExecuteStubGetSession(int* count,
   std::unique_ptr<base::DictionaryValue> capabilities(
       new base::DictionaryValue());
 
-  capabilities->Set("capability1", new base::StringValue("test1"));
-  capabilities->Set("capability2", new base::StringValue("test2"));
+  capabilities->Set("capability1", new base::Value("test1"));
+  capabilities->Set("capability2", new base::Value("test2"));
 
   callback.Run(Status(kOk), std::move(capabilities), session_id, false);
 }

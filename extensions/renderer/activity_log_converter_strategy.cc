@@ -40,11 +40,11 @@ std::unique_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
 
   if (try_catch.HasCaught()) {
     return std::unique_ptr<base::Value>(
-        new base::StringValue("[JS Execution Exception]"));
+        new base::Value("[JS Execution Exception]"));
   }
 
   return std::unique_ptr<base::Value>(
-      new base::StringValue(std::string(*v8::String::Utf8Value(name))));
+      new base::Value(std::string(*v8::String::Utf8Value(name))));
 }
 
 }  // namespace

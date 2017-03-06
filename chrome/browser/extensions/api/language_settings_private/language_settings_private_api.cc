@@ -440,7 +440,7 @@ LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
   return RespondNow(OneArgument(
-      base::MakeUnique<base::StringValue>(TranslateService::GetTargetLanguage(
+      base::MakeUnique<base::Value>(TranslateService::GetTargetLanguage(
           chrome_details_.GetProfile()->GetPrefs()))));
 }
 

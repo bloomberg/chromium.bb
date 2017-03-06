@@ -81,7 +81,7 @@ CloudPrintPrivateGetHostNameFunction::~CloudPrintPrivateGetHostNameFunction() {
 }
 
 bool CloudPrintPrivateGetHostNameFunction::RunAsync() {
-  SetResult(base::MakeUnique<base::StringValue>(
+  SetResult(base::MakeUnique<base::Value>(
       CloudPrintTestsDelegate::Get()
           ? CloudPrintTestsDelegate::Get()->GetHostName()
           : net::GetHostName()));
@@ -129,7 +129,7 @@ CloudPrintPrivateGetClientIdFunction::~CloudPrintPrivateGetClientIdFunction() {
 }
 
 bool CloudPrintPrivateGetClientIdFunction::RunAsync() {
-  SetResult(base::MakeUnique<base::StringValue>(
+  SetResult(base::MakeUnique<base::Value>(
       CloudPrintTestsDelegate::Get()
           ? CloudPrintTestsDelegate::Get()->GetClientId()
           : google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT)));

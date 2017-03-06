@@ -379,8 +379,8 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
   if (!app_page_names || !app_page_names->GetSize()) {
     ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
     base::ListValue* list = update.Get();
-    list->Set(0, new base::StringValue(
-        l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME)));
+    list->Set(0, new base::Value(
+                     l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME)));
     dictionary->Set("appPageNames",
                     static_cast<base::ListValue*>(list->DeepCopy()));
   } else {
@@ -691,7 +691,7 @@ void AppLauncherHandler::HandleSaveAppPageName(const base::ListValue* args) {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
   base::ListValue* list = update.Get();
-  list->Set(static_cast<size_t>(page_index), new base::StringValue(name));
+  list->Set(static_cast<size_t>(page_index), new base::Value(name));
 }
 
 void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
@@ -781,7 +781,7 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
   if (highlight_app_id_.empty())
     return;
 
-  base::StringValue app_id(highlight_app_id_);
+  base::Value app_id(highlight_app_id_);
   web_ui()->CallJavascriptFunctionUnsafe("ntp.setAppToBeHighlighted", app_id);
   highlight_app_id_.clear();
 }
@@ -829,7 +829,7 @@ void AppLauncherHandler::ExtensionEnableFlowFinished() {
   // If we don't launch the app asynchronously, then the app's disabled
   // icon disappears but isn't replaced by the enabled icon, making a poor
   // visual experience.
-  base::StringValue app_id(extension_id_prompting_);
+  base::Value app_id(extension_id_prompting_);
   web_ui()->CallJavascriptFunctionUnsafe("ntp.launchAppAfterEnable", app_id);
 
   extension_enable_flow_.reset();

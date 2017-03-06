@@ -1352,7 +1352,7 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
       const DevToolsToggleAction::RevealParams* params =
           action.params();
       CHECK(params);
-      base::StringValue url_value(params->url);
+      base::Value url_value(params->url);
       base::Value line_value(static_cast<int>(params->line_number));
       base::Value column_value(static_cast<int>(params->column_number));
       bindings_->CallClientFunction("DevToolsAPI.revealSourceLine",

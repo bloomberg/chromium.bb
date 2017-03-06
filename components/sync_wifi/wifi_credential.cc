@@ -55,17 +55,17 @@ std::unique_ptr<base::DictionaryValue> WifiCredential::ToOncProperties() const {
   std::unique_ptr<base::DictionaryValue> onc_properties(
       new base::DictionaryValue());
   onc_properties->Set(onc::toplevel_config::kType,
-                      new base::StringValue(onc::network_type::kWiFi));
+                      new base::Value(onc::network_type::kWiFi));
   // TODO(quiche): Switch to the HexSSID property, once ONC fully supports it.
   // crbug.com/432546.
   onc_properties->Set(onc::network_config::WifiProperty(onc::wifi::kSSID),
-                      new base::StringValue(ssid_utf8));
+                      new base::Value(ssid_utf8));
   onc_properties->Set(onc::network_config::WifiProperty(onc::wifi::kSecurity),
-                      new base::StringValue(onc_security));
+                      new base::Value(onc_security));
   if (WifiSecurityClassSupportsPassphrases(security_class())) {
     onc_properties->Set(
         onc::network_config::WifiProperty(onc::wifi::kPassphrase),
-        new base::StringValue(passphrase()));
+        new base::Value(passphrase()));
   }
   return onc_properties;
 }

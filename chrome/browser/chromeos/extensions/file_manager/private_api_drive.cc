@@ -941,7 +941,7 @@ bool FileManagerPrivateRequestAccessTokenFunction::RunAsync() {
 
   if (!drive_service) {
     // DriveService is not available.
-    SetResult(base::MakeUnique<base::StringValue>(std::string()));
+    SetResult(base::MakeUnique<base::Value>(std::string()));
     SendResponse(true);
     return true;
   }
@@ -961,7 +961,7 @@ bool FileManagerPrivateRequestAccessTokenFunction::RunAsync() {
 void FileManagerPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
     google_apis::DriveApiErrorCode code,
     const std::string& access_token) {
-  SetResult(base::MakeUnique<base::StringValue>(access_token));
+  SetResult(base::MakeUnique<base::Value>(access_token));
   SendResponse(true);
 }
 
@@ -1000,7 +1000,7 @@ void FileManagerPrivateInternalGetShareUrlFunction::OnGetShareUrl(
     return;
   }
 
-  SetResult(base::MakeUnique<base::StringValue>(share_url.spec()));
+  SetResult(base::MakeUnique<base::Value>(share_url.spec()));
   SendResponse(true);
 }
 
@@ -1078,7 +1078,7 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsync() {
     // |file_system| is NULL if Drive is disabled or not mounted.
     SetError("Drive is disabled or not mounted.");
     // Intentionally returns a blank.
-    SetResult(base::MakeUnique<base::StringValue>(std::string()));
+    SetResult(base::MakeUnique<base::Value>(std::string()));
     return false;
   }
 
@@ -1087,7 +1087,7 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsync() {
   if (!drive::util::IsUnderDriveMountPoint(path)) {
     SetError("The given file is not in Drive.");
     // Intentionally returns a blank.
-    SetResult(base::MakeUnique<base::StringValue>(std::string()));
+    SetResult(base::MakeUnique<base::Value>(std::string()));
     return false;
   }
   base::FilePath file_path = drive::util::ExtractDrivePath(path);
@@ -1108,7 +1108,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGetResourceEntry(
   if (error != drive::FILE_ERROR_OK) {
     SetError("Download Url for this item is not available.");
     // Intentionally returns a blank.
-    SetResult(base::MakeUnique<base::StringValue>(std::string()));
+    SetResult(base::MakeUnique<base::Value>(std::string()));
     SendResponse(false);
     return;
   }
@@ -1143,14 +1143,14 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched(
   if (code != google_apis::HTTP_SUCCESS) {
     SetError("Not able to fetch the token.");
     // Intentionally returns a blank.
-    SetResult(base::MakeUnique<base::StringValue>(std::string()));
+    SetResult(base::MakeUnique<base::Value>(std::string()));
     SendResponse(false);
     return;
   }
 
   const std::string url =
       download_url_.Resolve("?alt=media&access_token=" + access_token).spec();
-  SetResult(base::MakeUnique<base::StringValue>(url));
+  SetResult(base::MakeUnique<base::Value>(url));
 
   SendResponse(true);
 }

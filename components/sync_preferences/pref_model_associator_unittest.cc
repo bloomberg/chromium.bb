@@ -117,8 +117,7 @@ TEST_F(ListPreferenceMergeTest, NotListOrDictionary) {
   pref_service_->SetString(kStringPrefName, local_url0_);
   const PrefService::Preference* pref =
       pref_service_->FindPreference(kStringPrefName);
-  std::unique_ptr<base::Value> server_value(
-      new base::StringValue(server_url0_));
+  std::unique_ptr<base::Value> server_value(new base::Value(server_url0_));
   std::unique_ptr<base::Value> merged_value(pref_sync_service_->MergePreference(
       pref->name(), *pref->GetValue(), *server_value));
   EXPECT_TRUE(merged_value->Equals(server_value.get()));

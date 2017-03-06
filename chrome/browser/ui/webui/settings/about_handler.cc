@@ -496,7 +496,7 @@ void AboutHandler::HandleGetVersionInfo(const base::ListValue* args) {
 void AboutHandler::OnGetVersionInfoReady(
     std::string callback_id,
     std::unique_ptr<base::DictionaryValue> version_info) {
-  ResolveJavascriptCallback(base::StringValue(callback_id), *version_info);
+  ResolveJavascriptCallback(base::Value(callback_id), *version_info);
 }
 
 void AboutHandler::HandleGetRegulatoryInfo(const base::ListValue* args) {
@@ -540,7 +540,7 @@ void AboutHandler::OnGetTargetChannel(std::string callback_id,
   channel_info->SetBoolean("canChangeChannel",
                            CanChangeChannel(Profile::FromWebUI(web_ui())));
 
-  ResolveJavascriptCallback(base::StringValue(callback_id), *channel_info);
+  ResolveJavascriptCallback(base::Value(callback_id), *channel_info);
 }
 
 void AboutHandler::HandleRequestUpdate(const base::ListValue* args) {
@@ -584,7 +584,7 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
 #endif  // defined(OS_CHROMEOS)
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("update-status-changed"), *event);
+                         base::Value("update-status-changed"), *event);
 }
 
 #if defined(OS_MACOSX)
@@ -612,8 +612,7 @@ void AboutHandler::SetPromotionState(VersionUpdater::PromotionState state) {
     promo_state.SetString("text", text);
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("promotion-state-changed"),
-                         promo_state);
+                         base::Value("promotion-state-changed"), promo_state);
 }
 #endif  // defined(OS_MACOSX)
 
@@ -622,7 +621,7 @@ void AboutHandler::OnRegulatoryLabelDirFound(
     std::string callback_id,
     const base::FilePath& label_dir_path) {
   if (label_dir_path.empty()) {
-    ResolveJavascriptCallback(base::StringValue(callback_id),
+    ResolveJavascriptCallback(base::Value(callback_id),
                               *base::Value::CreateNullValue());
     return;
   }
@@ -650,7 +649,7 @@ void AboutHandler::OnRegulatoryLabelTextRead(
       std::string("chrome://") + chrome::kChromeOSAssetHost + "/" + image_path;
   regulatory_info->SetString("url", url);
 
-  ResolveJavascriptCallback(base::StringValue(callback_id), *regulatory_info);
+  ResolveJavascriptCallback(base::Value(callback_id), *regulatory_info);
 }
 #endif  // defined(OS_CHROMEOS)
 

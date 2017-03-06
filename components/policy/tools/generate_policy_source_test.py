@@ -26,7 +26,7 @@ class CppGenerationTest(unittest.TestCase):
     # Strings
     stmts, expr = generate_policy_source._GenerateDefaultValue('foo')
     self.assertListEqual([], stmts)
-    self.assertEqual('base::MakeUnique<base::StringValue>("foo")', expr)
+    self.assertEqual('base::MakeUnique<base::Value>("foo")', expr)
 
     # Empty list
     stmts, expr = generate_policy_source._GenerateDefaultValue([])
@@ -39,7 +39,7 @@ class CppGenerationTest(unittest.TestCase):
     self.assertListEqual([
         'auto default_value = base::MakeUnique<base::ListValue>();',
         'default_value->Append(base::MakeUnique<base::Value>(1));',
-        'default_value->Append(base::MakeUnique<base::StringValue>("2"));'
+        'default_value->Append(base::MakeUnique<base::Value>("2"));'
       ], stmts)
     self.assertEqual('std::move(default_value)', expr)
 

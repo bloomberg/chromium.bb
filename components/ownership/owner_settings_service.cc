@@ -137,7 +137,7 @@ bool OwnerSettingsService::SetDouble(const std::string& setting, double value) {
 bool OwnerSettingsService::SetString(const std::string& setting,
                                      const std::string& value) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::StringValue in_value(value);
+  base::Value in_value(value);
   return Set(setting, in_value);
 }
 
