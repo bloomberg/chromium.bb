@@ -81,7 +81,8 @@ void ChromotingTestDriverEnvironmentTest::SetUp() {
 }
 
 bool ChromotingTestDriverEnvironmentTest::RefreshHostList() {
-  return environment_object_->RefreshHostList();
+  return environment_object_->RefreshHostList() &&
+         environment_object_->FindHostInHostList();
 }
 
 HostInfo ChromotingTestDriverEnvironmentTest::CreateFakeHostInfo() {
@@ -113,9 +114,8 @@ TEST_F(ChromotingTestDriverEnvironmentTest, InitializeObjectWithAuthCode) {
             kFakeAccessTokenFetcherAccessTokenValue);
   EXPECT_EQ(environment_object_->host_list().size(), 0u);
 
-  // Now Retrieve the host list.
-  EXPECT_TRUE(environment_object_->WaitForHostOnline(kFakeHostJidValue,
-                                                     kFakeHostNameValue));
+  // Now retrieve the host list.
+  EXPECT_TRUE(environment_object_->WaitForHostOnline());
 
   // Should only have one host in the list.
   EXPECT_EQ(environment_object_->host_list().size(), kExpectedHostListSize);
@@ -152,9 +152,8 @@ TEST_F(ChromotingTestDriverEnvironmentTest, InitializeObjectWithRefreshToken) {
             kFakeAccessTokenFetcherAccessTokenValue);
   EXPECT_EQ(environment_object_->host_list().size(), 0u);
 
-  // Now Retrieve the host list.
-  EXPECT_TRUE(environment_object_->WaitForHostOnline(kFakeHostJidValue,
-                                                     kFakeHostNameValue));
+  // Now retrieve the host list.
+  EXPECT_TRUE(environment_object_->WaitForHostOnline());
 
   // Should only have one host in the list.
   EXPECT_EQ(environment_object_->host_list().size(), kExpectedHostListSize);
@@ -262,7 +261,7 @@ TEST_F(ChromotingTestDriverEnvironmentTest, RefreshHostList_HostOffline) {
 
   environment_object_->SetHostNameForTest(kFakeHostNameValue);
   environment_object_->SetHostJidForTest(kFakeHostJidValue);
-  EXPECT_FALSE(RefreshHostList());
+  EXPECT_TRUE(RefreshHostList());
   EXPECT_FALSE(environment_object_->host_info().IsReadyForConnection());
 }
 
