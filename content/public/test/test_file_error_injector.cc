@@ -30,14 +30,16 @@ namespace {
 // A class that performs file operations and injects errors.
 class DownloadFileWithError: public DownloadFileImpl {
  public:
-  DownloadFileWithError(std::unique_ptr<DownloadSaveInfo> save_info,
-                        const base::FilePath& default_download_directory,
-                        std::unique_ptr<ByteStreamReader> byte_stream,
-                        const net::NetLogWithSource& net_log,
-                        base::WeakPtr<DownloadDestinationObserver> observer,
-                        const TestFileErrorInjector::FileErrorInfo& error_info,
-                        const base::Closure& ctor_callback,
-                        const base::Closure& dtor_callback);
+  DownloadFileWithError(
+      std::unique_ptr<DownloadSaveInfo> save_info,
+      const base::FilePath& default_download_directory,
+      std::unique_ptr<ByteStreamReader> byte_stream,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+      const net::NetLogWithSource& net_log,
+      base::WeakPtr<DownloadDestinationObserver> observer,
+      const TestFileErrorInjector::FileErrorInfo& error_info,
+      const base::Closure& ctor_callback,
+      const base::Closure& dtor_callback);
 
   ~DownloadFileWithError() override;
 
@@ -104,6 +106,7 @@ DownloadFileWithError::DownloadFileWithError(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> byte_stream,
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
@@ -112,6 +115,7 @@ DownloadFileWithError::DownloadFileWithError(
     : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
                        std::move(byte_stream),
+                       received_slices,
                        net_log,
                        false, /* is_sparse_file */
                        observer),
@@ -261,6 +265,7 @@ class DownloadFileWithErrorFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> byte_stream,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
@@ -291,11 +296,13 @@ DownloadFile* DownloadFileWithErrorFactory::CreateFile(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> byte_stream,
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   return new DownloadFileWithError(std::move(save_info),
                                    default_download_directory,
                                    std::move(byte_stream),
+                                   received_slices,
                                    net_log,
                                    observer,
                                    injected_error_,

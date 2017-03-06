@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -24,6 +25,7 @@
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/rate_estimator.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
 #include "net/log/net_log_with_source.h"
 
@@ -41,12 +43,14 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Note that the DownloadFileImpl automatically reads from the passed in
   // stream, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
-  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
-                   const base::FilePath& default_downloads_directory,
-                   std::unique_ptr<ByteStreamReader> stream_reader,
-                   const net::NetLogWithSource& net_log,
-                   bool is_sparse_file,
-                   base::WeakPtr<DownloadDestinationObserver> observer);
+  DownloadFileImpl(
+      std::unique_ptr<DownloadSaveInfo> save_info,
+      const base::FilePath& default_downloads_directory,
+      std::unique_ptr<ByteStreamReader> stream_reader,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+      const net::NetLogWithSource& net_log,
+      bool is_sparse_file,
+      base::WeakPtr<DownloadDestinationObserver> observer);
 
   ~DownloadFileImpl() override;
 
@@ -219,6 +223,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   base::TimeDelta disk_writes_time_;
   base::TimeTicks download_start_;
   RateEstimator rate_estimator_;
+
+  std::vector<DownloadItem::ReceivedSlice> received_slices_;
 
   base::WeakPtr<DownloadDestinationObserver> observer_;
   base::WeakPtrFactory<DownloadFileImpl> weak_factory_;

@@ -110,15 +110,18 @@ enum DownloadFileRenameMethodType { RENAME_AND_UNIQUIFY, RENAME_AND_ANNOTATE };
 // retries renames failed due to ACCESS_DENIED.
 class TestDownloadFileImpl : public DownloadFileImpl {
  public:
-  TestDownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
-                       const base::FilePath& default_downloads_directory,
-                       std::unique_ptr<ByteStreamReader> stream,
-                       const net::NetLogWithSource& net_log,
-                       bool is_sparse_file,
-                       base::WeakPtr<DownloadDestinationObserver> observer)
+  TestDownloadFileImpl(
+      std::unique_ptr<DownloadSaveInfo> save_info,
+      const base::FilePath& default_downloads_directory,
+      std::unique_ptr<ByteStreamReader> stream,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+      const net::NetLogWithSource& net_log,
+      bool is_sparse_file,
+      base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
+                         received_slices,
                          net_log,
                          is_sparse_file,
                          observer) {}
@@ -210,6 +213,7 @@ class DownloadFileTest : public testing::Test {
     download_file_.reset(new TestDownloadFileImpl(
         std::move(save_info), base::FilePath(),
         std::unique_ptr<ByteStreamReader>(input_stream_),
+        std::vector<DownloadItem::ReceivedSlice>(),
         net::NetLogWithSource(), is_sparse_file,
         observer_factory_.GetWeakPtr()));
 

@@ -59,6 +59,7 @@ DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream_reader,
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& download_item_net_log,
     bool is_sparse_file,
     base::WeakPtr<DownloadDestinationObserver> observer)
@@ -70,6 +71,7 @@ DownloadFileImpl::DownloadFileImpl(
       default_download_directory_(default_download_directory),
       is_sparse_file_(is_sparse_file),
       bytes_seen_(0),
+      received_slices_(received_slices),
       observer_(observer),
       weak_factory_(this) {
   source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
@@ -411,12 +413,13 @@ int64_t DownloadFileImpl::TotalBytesReceived() const {
 }
 
 void DownloadFileImpl::SendUpdate() {
-  // TODO(xingliu): Update slice info to observer to update history db.
+  // TODO(qinmin): For each active stream, add the slice it has written so
+  // far along with received_slices_.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadDestinationObserver::DestinationUpdate, observer_,
                  TotalBytesReceived(), rate_estimator_.GetCountPerSecond(),
-                 std::vector<DownloadItem::ReceivedSlice>()));
+                 received_slices_));
 }
 
 void DownloadFileImpl::WillWriteToDisk(size_t data_len) {

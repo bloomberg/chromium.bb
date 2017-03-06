@@ -371,7 +371,8 @@ void DownloadManagerImpl::StartDownloadWithId(
     DCHECK(stream.get());
     download_file.reset(file_factory_->CreateFile(
         std::move(info->save_info), default_download_directory,
-        std::move(stream), download->GetNetLogWithSource(),
+        std::move(stream), download->GetReceivedSlices(),
+        download->GetNetLogWithSource(),
         download->DestinationObserverAsWeakPtr()));
   }
   // It is important to leave info->save_info intact in the case of an interrupt
