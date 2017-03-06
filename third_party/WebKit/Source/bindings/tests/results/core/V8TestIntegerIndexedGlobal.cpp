@@ -68,7 +68,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestIntegerIndexedGlobal", "length");
 
   // Prepare the value to be set.
-  unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint64_t cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 

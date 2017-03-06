@@ -98,7 +98,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
 
   V8StringResource<> stringArg;
   bool defaultUndefinedOptionalBooleanArg;
-  int defaultUndefinedOptionalLongArg;
+  int32_t defaultUndefinedOptionalLongArg;
   V8StringResource<> defaultUndefinedOptionalStringArg;
   V8StringResource<> defaultNullStringOptionalstringArg;
   V8StringResource<> optionalStringArg;

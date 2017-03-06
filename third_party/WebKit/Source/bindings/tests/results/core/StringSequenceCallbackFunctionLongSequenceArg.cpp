@@ -40,7 +40,7 @@ DEFINE_TRACE_WRAPPERS(StringSequenceCallbackFunctionLongSequenceArg) {
   visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
-bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* scriptWrappable, const Vector<int>& arg, Vector<String>& returnValue) {
+bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* scriptWrappable, const Vector<int32_t>& arg, Vector<String>& returnValue) {
   if (!m_scriptState->contextIsValid())
     return false;
 

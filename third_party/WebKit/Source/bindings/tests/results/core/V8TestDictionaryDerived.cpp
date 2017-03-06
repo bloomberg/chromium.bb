@@ -73,7 +73,7 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
     exceptionState.throwTypeError("required member requiredLongMember is undefined.");
     return;
   } else {
-    int requiredLongMember = toInt32(isolate, requiredLongMemberValue, NormalConversion, exceptionState);
+    int32_t requiredLongMember = toInt32(isolate, requiredLongMemberValue, NormalConversion, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setRequiredLongMember(requiredLongMember);

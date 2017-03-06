@@ -82,7 +82,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  unsigned argument;
+  uint16_t argument;
   argument = toUInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;

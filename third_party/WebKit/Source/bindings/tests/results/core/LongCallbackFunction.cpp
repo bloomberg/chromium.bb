@@ -40,7 +40,7 @@ DEFINE_TRACE_WRAPPERS(LongCallbackFunction) {
   visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
-bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue) {
+bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue) {
   if (!m_scriptState->contextIsValid())
     return false;
 
@@ -69,7 +69,7 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int num1, int 
   exceptionCatcher.SetVerbose(true);
 
   if (V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisValue, 2, argv, m_scriptState->isolate()).ToLocal(&v8ReturnValue)) {
-    int cppValue = toInt32(m_scriptState->isolate(), v8ReturnValue, NormalConversion, exceptionState);
+    int32_t cppValue = toInt32(m_scriptState->isolate(), v8ReturnValue, NormalConversion, exceptionState);
         if (exceptionState.hadException())
           return false;
     returnValue = cppValue;

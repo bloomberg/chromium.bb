@@ -40,18 +40,18 @@ TestInterfaceOrLong TestInterfaceOrLong::fromTestInterface(TestInterfaceImplemen
   return container;
 }
 
-int TestInterfaceOrLong::getAsLong() const {
+int32_t TestInterfaceOrLong::getAsLong() const {
   DCHECK(isLong());
   return m_long;
 }
 
-void TestInterfaceOrLong::setLong(int value) {
+void TestInterfaceOrLong::setLong(int32_t value) {
   DCHECK(isNull());
   m_long = value;
   m_type = SpecificTypeLong;
 }
 
-TestInterfaceOrLong TestInterfaceOrLong::fromLong(int value) {
+TestInterfaceOrLong TestInterfaceOrLong::fromLong(int32_t value) {
   TestInterfaceOrLong container;
   container.setLong(value);
   return container;
@@ -79,7 +79,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
   }
 
   if (v8Value->IsNumber()) {
-    int cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
+    int32_t cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setLong(cppValue);
@@ -87,7 +87,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
   }
 
   {
-    int cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
+    int32_t cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
       return;
     impl.setLong(cppValue);

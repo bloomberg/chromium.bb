@@ -72,7 +72,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestTypedefs", "uLongLongAttribute");
 
   // Prepare the value to be set.
-  unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  uint64_t cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -110,7 +110,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
 
   TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-  Vector<int> arrayOfLongsArg;
+  Vector<int32_t> arrayOfLongsArg;
   int numArgsPassed = info.Length();
   while (numArgsPassed > 0) {
     if (!info[numArgsPassed - 1]->IsUndefined())
@@ -121,7 +121,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
     impl->voidMethodArrayOfLongsArg();
     return;
   }
-  arrayOfLongsArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
+  arrayOfLongsArg = toImplArray<Vector<int32_t>>(info[0], 1, info.GetIsolate(), exceptionState);
   if (exceptionState.hadException())
     return;
 

@@ -207,7 +207,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "alwaysExposedAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -229,7 +229,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "workerExposedAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -251,7 +251,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "windowExposedAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 

@@ -89,7 +89,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceOriginTrialEnabled", "conditionalLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 

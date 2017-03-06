@@ -170,11 +170,11 @@ void TestDictionary::setInternalDictionarySequenceMember(const HeapVector<Intern
 bool TestDictionary::hasLongMember() const {
   return m_hasLongMember;
 }
-int TestDictionary::longMember() const {
+int32_t TestDictionary::longMember() const {
   DCHECK(m_hasLongMember);
   return m_longMember;
 }
-void TestDictionary::setLongMember(int value) {
+void TestDictionary::setLongMember(int32_t value) {
   m_longMember = value;
   m_hasLongMember = true;
 }

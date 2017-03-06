@@ -268,7 +268,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "conditionalLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -370,7 +370,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "alwaysExposedAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -392,7 +392,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "workerExposedAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -414,7 +414,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "windowExposedAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -803,7 +803,7 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -818,7 +818,7 @@ static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialStaticLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -842,7 +842,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialCallWithExecutionContextLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -900,7 +900,7 @@ static void partialSecureContextLongAttributeAttributeSetter(v8::Local<v8::Value
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -922,7 +922,7 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial2LongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -937,7 +937,7 @@ static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial2StaticLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -1275,7 +1275,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag1Method(const v8::Func
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-  int longArg;
+  int32_t longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
@@ -1552,7 +1552,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     return;
   }
 
-  int longArg;
+  int32_t longArg;
   longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;

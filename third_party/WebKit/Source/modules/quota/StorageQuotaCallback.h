@@ -40,7 +40,7 @@ class StorageQuotaCallback
  public:
   virtual ~StorageQuotaCallback() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
-  virtual void handleEvent(unsigned long long grantedQuotaInBytes) = 0;
+  virtual void handleEvent(uint64_t grantedQuotaInBytes) = 0;
 };
 
 }  // namespace

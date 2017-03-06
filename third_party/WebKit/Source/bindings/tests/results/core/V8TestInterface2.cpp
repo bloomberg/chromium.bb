@@ -67,7 +67,7 @@ static void legacyCallerMethod(const v8::FunctionCallbackInfo<v8::Value>& info) 
     return;
   }
 
-  unsigned index;
+  uint32_t index;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
@@ -85,7 +85,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  unsigned index;
+  uint32_t index;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
@@ -107,7 +107,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  unsigned index;
+  uint32_t index;
   TestInterfaceEmpty* value;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
@@ -137,7 +137,7 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  unsigned index;
+  uint32_t index;
   index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;

@@ -32,7 +32,7 @@ class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
-  bool call(ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue);
+  bool call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
     return m_callback.newLocal(isolate);

@@ -44,11 +44,11 @@ void TestDictionaryDerivedImplementedAs::setDerivedStringMemberWithDefault(Strin
 bool TestDictionaryDerivedImplementedAs::hasRequiredLongMember() const {
   return m_hasRequiredLongMember;
 }
-int TestDictionaryDerivedImplementedAs::requiredLongMember() const {
+int32_t TestDictionaryDerivedImplementedAs::requiredLongMember() const {
   DCHECK(m_hasRequiredLongMember);
   return m_requiredLongMember;
 }
-void TestDictionaryDerivedImplementedAs::setRequiredLongMember(int value) {
+void TestDictionaryDerivedImplementedAs::setRequiredLongMember(int32_t value) {
   m_requiredLongMember = value;
   m_hasRequiredLongMember = true;
 }

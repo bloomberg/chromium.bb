@@ -92,8 +92,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   void setInternalDictionarySequenceMember(const HeapVector<InternalDictionary>&);
 
   bool hasLongMember() const;
-  int longMember() const;
-  void setLongMember(int);
+  int32_t longMember() const;
+  void setLongMember(int32_t);
 
   bool hasObjectMember() const;
   ScriptValue objectMember() const;
@@ -202,7 +202,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool m_hasInternalDictionarySequenceMember = false;
   HeapVector<InternalDictionary> m_internalDictionarySequenceMember;
   bool m_hasLongMember = false;
-  int m_longMember;
+  int32_t m_longMember;
   ScriptValue m_objectMember;
   ScriptValue m_objectOrNullMember;
   DoubleOrString m_otherDoubleOrStringMember;

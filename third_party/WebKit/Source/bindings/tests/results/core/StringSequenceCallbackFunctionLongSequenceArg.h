@@ -32,7 +32,7 @@ class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public G
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
-  bool call(ScriptWrappable* scriptWrappable, const Vector<int>& arg, Vector<String>& returnValue);
+  bool call(ScriptWrappable* scriptWrappable, const Vector<int32_t>& arg, Vector<String>& returnValue);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
     return m_callback.newLocal(isolate);

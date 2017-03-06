@@ -77,7 +77,7 @@ static void longAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "longAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -99,7 +99,7 @@ static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "doNotCheckSecurityLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -129,7 +129,7 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8:
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "doNotCheckSecurityOnSetterLongAttribute");
 
   // Prepare the value to be set.
-  int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+  int32_t cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
   if (exceptionState.hadException())
     return;
 

@@ -103,7 +103,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor2");
 
   TestInterfaceEmpty* testInterfaceEmptyArg;
-  int longArg;
+  int32_t longArg;
   V8StringResource<> defaultUndefinedOptionalStringArg;
   V8StringResource<> defaultNullStringOptionalStringArg;
   Dictionary defaultUndefinedOptionalDictionaryArg;

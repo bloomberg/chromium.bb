@@ -34,9 +34,9 @@ class CORE_EXPORT TestInterfaceOrLong final {
   static TestInterfaceOrLong fromTestInterface(TestInterfaceImplementation*);
 
   bool isLong() const { return m_type == SpecificTypeLong; }
-  int getAsLong() const;
-  void setLong(int);
-  static TestInterfaceOrLong fromLong(int);
+  int32_t getAsLong() const;
+  void setLong(int32_t);
+  static TestInterfaceOrLong fromLong(int32_t);
 
   TestInterfaceOrLong(const TestInterfaceOrLong&);
   ~TestInterfaceOrLong();
@@ -52,7 +52,7 @@ class CORE_EXPORT TestInterfaceOrLong final {
   SpecificTypes m_type;
 
   Member<TestInterfaceImplementation> m_testInterface;
-  int m_long;
+  int32_t m_long;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
 };

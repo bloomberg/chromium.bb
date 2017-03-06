@@ -96,20 +96,17 @@ IdlType.is_wrapper_type = property(
 CPP_TYPE_SAME_AS_IDL_TYPE = set([
     'double',
     'float',
-    'long long',
-    'unsigned long long',
 ])
-CPP_INT_TYPES = set([
-    'byte',
-    'long',
-    'short',
-])
-CPP_UNSIGNED_TYPES = set([
-    'octet',
-    'unsigned int',
-    'unsigned long',
-    'unsigned short',
-])
+CPP_INTEGER_CONVERSION_RULES = {
+    'byte': 'int8_t',
+    'octet': 'uint8_t',
+    'short': 'int16_t',
+    'unsigned short': 'uint16_t',
+    'long': 'int32_t',
+    'unsigned long': 'uint32_t',
+    'long long': 'int64_t',
+    'unsigned long long': 'uint64_t',
+}
 CPP_SPECIAL_CONVERSION_RULES = {
     'Date': 'double',
     'Dictionary': 'Dictionary',
@@ -174,10 +171,8 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
 
     if base_idl_type in CPP_TYPE_SAME_AS_IDL_TYPE:
         return base_idl_type
-    if base_idl_type in CPP_INT_TYPES:
-        return 'int'
-    if base_idl_type in CPP_UNSIGNED_TYPES:
-        return 'unsigned'
+    if base_idl_type in CPP_INTEGER_CONVERSION_RULES:
+        return CPP_INTEGER_CONVERSION_RULES[base_idl_type]
     if base_idl_type in CPP_SPECIAL_CONVERSION_RULES:
         return CPP_SPECIAL_CONVERSION_RULES[base_idl_type]
 
@@ -758,10 +753,8 @@ def v8_conversion_type(idl_type, extended_attributes):
     # Simple types
     base_idl_type = idl_type.base_type
     # Basic types, without additional includes
-    if base_idl_type in CPP_INT_TYPES:
-        return 'int'
-    if base_idl_type in CPP_UNSIGNED_TYPES:
-        return 'unsigned'
+    if base_idl_type in CPP_INTEGER_CONVERSION_RULES:
+        return CPP_INTEGER_CONVERSION_RULES[base_idl_type]
     if idl_type.is_string_type:
         if idl_type.is_nullable:
             return 'StringOrNull'
@@ -784,13 +777,20 @@ IdlTypeBase.v8_conversion_type = v8_conversion_type
 
 V8_SET_RETURN_VALUE = {
     'boolean': 'v8SetReturnValueBool(info, {cpp_value})',
-    'int': 'v8SetReturnValueInt(info, {cpp_value})',
-    'unsigned': 'v8SetReturnValueUnsigned(info, {cpp_value})',
     'DOMString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     'ByteString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     'USVString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     'StringOrNull': 'v8SetReturnValueStringOrNull(info, {cpp_value}, info.GetIsolate())',
     'void': '',
+    # All the int types below are converted to (u)int32_t in the v8SetReturnValue{Int,Unsigned}() calls.
+    # The 64-bit int types have already been converted to double when V8_SET_RETURN_VALUE is used, so they are not
+    # listed here.
+    'int8_t': 'v8SetReturnValueInt(info, {cpp_value})',
+    'int16_t': 'v8SetReturnValueInt(info, {cpp_value})',
+    'int32_t': 'v8SetReturnValueInt(info, {cpp_value})',
+    'uint8_t': 'v8SetReturnValueUnsigned(info, {cpp_value})',
+    'uint16_t': 'v8SetReturnValueUnsigned(info, {cpp_value})',
+    'uint32_t': 'v8SetReturnValueUnsigned(info, {cpp_value})',
     # No special v8SetReturnValue* function (set value directly)
     'float': 'v8SetReturnValue(info, {cpp_value})',
     'unrestricted float': 'v8SetReturnValue(info, {cpp_value})',
@@ -883,8 +883,15 @@ CPP_VALUE_TO_V8_VALUE = {
     'ByteString': 'v8String({isolate}, {cpp_value})',
     'USVString': 'v8String({isolate}, {cpp_value})',
     'boolean': 'v8Boolean({cpp_value}, {isolate})',
-    'int': 'v8::Integer::New({isolate}, {cpp_value})',
-    'unsigned': 'v8::Integer::NewFromUnsigned({isolate}, {cpp_value})',
+    # All the int types below are converted to (u)int32_t in the v8::Integer::New*() calls.
+    # The 64-bit int types have already been converted to double when CPP_VALUE_TO_V8_VALUE is used, so they are not
+    # listed here.
+    'int8_t': 'v8::Integer::New({isolate}, {cpp_value})',
+    'int16_t': 'v8::Integer::New({isolate}, {cpp_value})',
+    'int32_t': 'v8::Integer::New({isolate}, {cpp_value})',
+    'uint8_t': 'v8::Integer::NewFromUnsigned({isolate}, {cpp_value})',
+    'uint16_t': 'v8::Integer::NewFromUnsigned({isolate}, {cpp_value})',
+    'uint32_t': 'v8::Integer::NewFromUnsigned({isolate}, {cpp_value})',
     'float': 'v8::Number::New({isolate}, {cpp_value})',
     'unrestricted float': 'v8::Number::New({isolate}, {cpp_value})',
     'double': 'v8::Number::New({isolate}, {cpp_value})',
@@ -936,7 +943,7 @@ def literal_cpp_value(idl_type, idl_literal):
     if idl_type.base_type in ('any', 'object') and idl_literal.is_null:
         return 'ScriptValue()'
     literal_value = str(idl_literal)
-    if idl_type.base_type in CPP_UNSIGNED_TYPES:
+    if idl_type.base_type in ('octet', 'unsigned short', 'unsigned long'):
         return literal_value + 'u'
     return literal_value
 

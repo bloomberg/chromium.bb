@@ -38,8 +38,8 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
   void setDerivedStringMemberWithDefault(String);
 
   bool hasRequiredLongMember() const;
-  int requiredLongMember() const;
-  void setRequiredLongMember(int);
+  int32_t requiredLongMember() const;
+  void setRequiredLongMember(int32_t);
 
   bool hasStringOrDoubleSequenceMember() const;
   const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const;
@@ -52,7 +52,7 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
   String m_derivedStringMember;
   String m_derivedStringMemberWithDefault;
   bool m_hasRequiredLongMember = false;
-  int m_requiredLongMember;
+  int32_t m_requiredLongMember;
   bool m_hasStringOrDoubleSequenceMember = false;
   HeapVector<StringOrDouble> m_stringOrDoubleSequenceMember;
 
