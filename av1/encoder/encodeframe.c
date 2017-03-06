@@ -1038,6 +1038,16 @@ static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
+static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
+                          const TX_MODE tx_mode) {
+  if (xd->lossless[mbmi->segment_id]) {
+    mbmi->tx_size = TX_4X4;
+  } else if (tx_mode != TX_MODE_SELECT) {
+    mbmi->tx_size =
+        tx_size_from_tx_mode(mbmi->sb_type, tx_mode, is_inter_block(mbmi));
+  }
+}
+
 static void update_state(const AV1_COMP *const cpi, ThreadData *td,
                          PICK_MODE_CONTEXT *ctx, int mi_row, int mi_col,
                          BLOCK_SIZE bsize, RUN_TYPE dry_run) {
@@ -1104,12 +1114,14 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
       const uint8_t *const map =
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
       mi_addr->mbmi.segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
+      reset_tx_size(xd, &mi_addr->mbmi, cm->tx_mode);
     }
     // Else for cyclic refresh mode update the segment map, set the segment id
     // and then update the quantizer.
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
       av1_cyclic_refresh_update_segment(cpi, &xd->mi[0]->mbmi, mi_row, mi_col,
                                         bsize, ctx->rate, ctx->dist, x->skip);
+      reset_tx_size(xd, &mi_addr->mbmi, cm->tx_mode);
     }
   }
 
