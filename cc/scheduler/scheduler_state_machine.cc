@@ -693,9 +693,11 @@ void SchedulerStateMachine::WillSendBeginMainFrame() {
 }
 
 void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
-  DCHECK(!has_pending_tree_ ||
-         (settings_.main_frame_before_activation_enabled &&
-          commit_has_no_updates));
+  bool can_have_pending_tree =
+      commit_has_no_updates &&
+      (settings_.main_frame_before_activation_enabled ||
+       current_pending_tree_is_impl_side_);
+  DCHECK(!has_pending_tree_ || can_have_pending_tree);
   commit_count_++;
   last_commit_had_no_updates_ = commit_has_no_updates;
   begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
@@ -703,7 +705,7 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
   if (commit_has_no_updates) {
     // Pending tree might still exist from prior commit.
     if (has_pending_tree_) {
-      DCHECK(settings_.main_frame_before_activation_enabled);
+      DCHECK(can_have_pending_tree);
       last_begin_frame_sequence_number_pending_tree_was_fresh_ =
           last_begin_frame_sequence_number_begin_main_frame_sent_;
     } else {

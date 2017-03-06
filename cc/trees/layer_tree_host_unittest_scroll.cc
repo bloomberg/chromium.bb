@@ -2079,12 +2079,11 @@ class LayerTreeHostScrollTestPropertyTreeUpdate
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestPropertyTreeUpdate);
 
-// Disabled due to flakes/crashes, see https://crbug.com/697652.
-class DISABLED_LayerTreeHostScrollTestImplSideInvalidation
+class LayerTreeHostScrollTestImplSideInvalidation
     : public LayerTreeHostScrollTest {
   void BeginTest() override {
     layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
-        base::Bind(&DISABLED_LayerTreeHostScrollTestImplSideInvalidation::
+        base::Bind(&LayerTreeHostScrollTestImplSideInvalidation::
                        DidScrollOuterViewport,
                    base::Unretained(this)));
     PostSetNeedsCommitToMainThread();
@@ -2096,10 +2095,9 @@ class DISABLED_LayerTreeHostScrollTestImplSideInvalidation
     {
       CompletionEvent completion;
       task_runner_provider()->ImplThreadTaskRunner()->PostTask(
-          FROM_HERE,
-          base::Bind(&DISABLED_LayerTreeHostScrollTestImplSideInvalidation::
-                         WaitForInvalidationOnImplThread,
-                     base::Unretained(this), &completion));
+          FROM_HERE, base::Bind(&LayerTreeHostScrollTestImplSideInvalidation::
+                                    WaitForInvalidationOnImplThread,
+                                base::Unretained(this), &completion));
       completion.Wait();
     }
 
@@ -2171,18 +2169,11 @@ class DISABLED_LayerTreeHostScrollTestImplSideInvalidation
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                      CommitEarlyOutReason reason) override {
-    // The aborted main frame is bound to come after the fourth activation,
-    // since the activation should occur synchronously after the impl-side
-    // invalidation, and the main thread is released after this activation. It
-    // should leave the scroll offset unchanged.
-    EXPECT_EQ(reason, CommitEarlyOutReason::FINISHED_NO_UPDATES);
-    EXPECT_EQ(num_of_activations_, 4);
-    EXPECT_EQ(num_of_main_frames_, 3);
-    EXPECT_EQ(host_impl->active_tree()
-                  ->OuterViewportScrollLayer()
-                  ->CurrentScrollOffset(),
-              outer_viewport_offsets_[2]);
-    EndTest();
+    EXPECT_EQ(CommitEarlyOutReason::FINISHED_NO_UPDATES, reason);
+    EXPECT_EQ(3, num_of_main_frames_);
+    EXPECT_EQ(outer_viewport_offsets_[2], host_impl->active_tree()
+                                              ->OuterViewportScrollLayer()
+                                              ->CurrentScrollOffset());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
@@ -2199,11 +2190,10 @@ class DISABLED_LayerTreeHostScrollTestImplSideInvalidation
         // The second activation is from an impl-side pending tree so the source
         // frame number on the active tree remains unchanged, and the scroll
         // offset on the active tree should also remain unchanged.
-        EXPECT_EQ(host_impl->active_tree()->source_frame_number(), 0);
-        EXPECT_EQ(host_impl->active_tree()
-                      ->OuterViewportScrollLayer()
-                      ->CurrentScrollOffset(),
-                  outer_viewport_offsets_[1]);
+        EXPECT_EQ(0, host_impl->active_tree()->source_frame_number());
+        EXPECT_EQ(outer_viewport_offsets_[1], host_impl->active_tree()
+                                                  ->OuterViewportScrollLayer()
+                                                  ->CurrentScrollOffset());
         break;
       case 3:
         // The third activation is from a commit. The scroll offset on the
@@ -2217,21 +2207,25 @@ class DISABLED_LayerTreeHostScrollTestImplSideInvalidation
       case 4:
         // The fourth activation is from an impl-side pending tree, which should
         // leave the scroll offset unchanged.
-        EXPECT_EQ(host_impl->active_tree()->source_frame_number(), 1);
-        EXPECT_EQ(host_impl->active_tree()
-                      ->OuterViewportScrollLayer()
-                      ->CurrentScrollOffset(),
-                  outer_viewport_offsets_[2]);
+        EXPECT_EQ(1, host_impl->active_tree()->source_frame_number());
+        EXPECT_EQ(outer_viewport_offsets_[2], host_impl->active_tree()
+                                                  ->OuterViewportScrollLayer()
+                                                  ->CurrentScrollOffset());
         break;
       default:
         NOTREACHED();
     }
   }
 
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    if (++num_of_draws_ == 4)
+      EndTest();
+  }
+
   void AfterTest() override {
-    EXPECT_EQ(num_of_activations_, 4);
-    EXPECT_EQ(num_of_deltas_, 2);
-    EXPECT_EQ(num_of_main_frames_, 3);
+    EXPECT_EQ(4, num_of_activations_);
+    EXPECT_EQ(2, num_of_deltas_);
+    EXPECT_EQ(3, num_of_main_frames_);
   }
 
   const gfx::ScrollOffset outer_viewport_offsets_[3] = {
@@ -2240,6 +2234,7 @@ class DISABLED_LayerTreeHostScrollTestImplSideInvalidation
 
   // Impl thread.
   int num_of_activations_ = 0;
+  int num_of_draws_ = 0;
   int num_of_main_frames_ = 0;
   bool invalidated_on_impl_thread_ = false;
   CompletionEvent* impl_side_invalidation_event_ = nullptr;
@@ -2248,7 +2243,7 @@ class DISABLED_LayerTreeHostScrollTestImplSideInvalidation
   int num_of_deltas_ = 0;
 };
 
-MULTI_THREAD_TEST_F(DISABLED_LayerTreeHostScrollTestImplSideInvalidation);
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplSideInvalidation);
 
 }  // namespace
 }  // namespace cc
