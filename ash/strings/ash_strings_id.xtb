@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">Mode kaca pembesar</translation>
 <translation id="1153356358378277386">Perangkat dihubungkan</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
+<translation id="1247372569136754018">Mikrofon (internal)</translation>
 <translation id="1252999807265626933">Mengisi daya dari <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
@@ -33,6 +34,7 @@
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengelola tugas telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik otomatis</translation>
+<translation id="1942830294380034169">Tombol luapan</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965">Hentikan casting <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
@@ -92,16 +94,19 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> resolusi diubah menjadi <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Aktifkan Wi-Fi</translation>
 <translation id="3712407551474845318">Tangkap wilayah</translation>
+<translation id="371370241367527062">Mikrofon depan</translation>
 <translation id="3742055079367172538">Tangkapan layar telah diambil</translation>
 <translation id="3775358506042162758">Anda hanya dapat memiliki paling banyak tiga akun dalam fitur masuk multipel.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Kunci</translation>
+<translation id="3798670284305777884">Speaker (internal)</translation>
 <translation id="3799026279081545374">Mungkin Anda memiliki pengisi daya yang tidak bagus. Apabila Anda tinggal di AS, hubungi 866-628-1371 untuk mendapatkan bantuan dan pengganti. Apabila Anda tinggal di Inggris, hubungi 0800-026-0613. Apabila Anda tinggal di Irlandia, hubungi 1-800-832-664. Apabila Anda tinggal di Kanada, hubungi 866-628-1372. Apabila Anda tinggal di Australia, hubungi 1-800-067-460.</translation>
 <translation id="3846575436967432996">Tidak tersedia informasi jaringan</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="3893630138897523026">ChromeVox (masukan lisan)</translation>
 <translation id="3899995891769452915">Masukan suara</translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
+<translation id="394485226368336402">Setelan audio</translation>
 <translation id="3967919079500697218">Kemampuan untuk membuat tangkapan layar telah dinonaktifkan oleh administrator Anda.</translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
@@ -132,14 +137,17 @@
 <translation id="5170568018924773124">Tampilkan dalam folder</translation>
 <translation id="5222676887888702881">Keluar</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
+<translation id="5313326810920013265">Setelan bluetooth</translation>
 <translation id="532063867737390965">Setelan jaringan ini dinonaktifkan oleh administrator.</translation>
 <translation id="5331975486040154427">Perangkat USB-C (port belakang sebelah kiri)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Semua pengguna yang tersedia telah ditambahkan ke sesi ini.</translation>
 <translation id="5507786745520522457">Siapkan data seluler</translation>
+<translation id="553675580533261935">Keluar dari sesi</translation>
 <translation id="5548285847212963613">Ekstensi "<ph name="EXTENSION_NAME" />" dapat membantu menyambungkan ke jaringan ini.</translation>
 <translation id="5571066253365925590">Bluetooth diaktifkan</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5648021990716966815">Colokan mikrofon</translation>
 <translation id="5777841717266010279">Berhenti membagikan layar?</translation>
 <translation id="57838592816432529">Bisukan</translation>
 <translation id="5895138241574237353">Mulai Ulang</translation>
@@ -197,6 +205,7 @@ Tekan Ctrl+Alt+Z untuk menonaktifkan.</translation>
 <translation id="7129360219436193655">Mode penunjuk laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="7348093485538360975">Keyboard di layar</translation>
 <translation id="735745346212279324">VPN terputus</translation>
 <translation id="742594950370306541">Kamera sedang digunakan.</translation>

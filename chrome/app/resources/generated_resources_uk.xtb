@@ -477,6 +477,7 @@
 <translation id="1603914832182249871">(Анонімний перегляд)</translation>
 <translation id="1607220950420093847">Можливо, ваш обліковий запис видалено чи вимкнено. Вийдіть.</translation>
 <translation id="1608626060424371292">Вилучити цього користувача</translation>
+<translation id="1609170755653088773">Синхронізуйте цей пароль з iPhone</translation>
 <translation id="1609862759711084604">Попередній користувач</translation>
 <translation id="1611649489706141841">уперед</translation>
 <translation id="1611704746353331382">Експортувати закладки у файл HTML...</translation>
@@ -1286,7 +1287,9 @@
 <translation id="2691385045260836588">Модель</translation>
 <translation id="2694026874607847549">1 файл cookie</translation>
 <translation id="2695749433451188613">Протокол друку через Інтернет (HTTPS)</translation>
+<translation id="2696407800995565614">Експериментальна оптимізація відображення WebVR</translation>
 <translation id="2702540957532124911">Клавіатура:</translation>
+<translation id="270358213449696159">Умови ОС Google Chrome</translation>
 <translation id="2704142793323512908">Також видалити всі дані з цього пристрою.</translation>
 <translation id="2704184184447774363">Підписування документа Microsoft</translation>
 <translation id="270516211545221798">Швидкість сенсорної панелі</translation>
@@ -1601,9 +1604,11 @@
 <translation id="3061650404498811439">Увімкнути доступ до смайлів, рукописного та голосового введення в меню IME.</translation>
 <translation id="3063844757726132584">Відкривайте всі свої додатки з цієї зручної панелі запуску. Грайте в ігри, спілкуйтеся у відеочатах, слухайте музику, редагуйте документи та завантажуйте інші додатки.</translation>
 <translation id="3064388234319122767">Транслітерація (zdravo → здраво)</translation>
+<translation id="3064410671692449875">Недостатньо даних</translation>
 <translation id="3065041951436100775">Відповідь "Вкладка закрилась".</translation>
 <translation id="3065140616557457172">Введіть пошуковий запит або URL-адресу – усе працює чудово.</translation>
 <translation id="3067198360141518313">Запустити цей плагін</translation>
+<translation id="3072913143777711302">Показувати дату останнього використання кредитної картки в автозаповненні.</translation>
 <translation id="307519606911195071">Увімкнути додаткові спеціальні можливості на сторінці налаштувань.</translation>
 <translation id="3075874217500066906">Щоб почати виконання Powerwash, потрібно перезавантажити пристрій. Після цього вам буде запропоновано підтвердити виконання Powerwash.</translation>
 <translation id="3076677906922146425">Дозволити всім додавати користувачів у Chrome</translation>
@@ -2179,6 +2184,7 @@
 <translation id="3809280248639369696">Інопланетянин</translation>
 <translation id="3810973564298564668">Змінити</translation>
 <translation id="3811494700605067549">Вибрано 1 файл</translation>
+<translation id="381202950560906753">Додати ще</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> і <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">Недійсний сертифікат</translation>
 <translation id="3813296892522778813">Якщо не вдається знайти потрібний вміст, перейдіть на сторінку <ph name="BEGIN_LINK_CHROMIUM" />довідки Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
@@ -2345,6 +2351,8 @@
 <translation id="4037463823853863991">Увімкнути доступність переходу між вкладками для Android.</translation>
 <translation id="4037889604535939429">Змінити користувача</translation>
 <translation id="40400351611212369">Помилка активації мережі</translation>
+<translation id="4042197455689555997">Показувати дату останнього використання кредитної картки в автозаповненні (якщо цю функцію ввімкнено).</translation>
+<translation id="4042264909745389898">Умови ОС Google Chrome</translation>
 <translation id="4044612648082411741">Введіть пароль сертифіката</translation>
 <translation id="404493185430269859">Пошукова система за умовчанням</translation>
 <translation id="4047112090469382184">Наскільки це безпечно</translation>
@@ -2426,6 +2434,7 @@
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 вкладка}one{# вкладка}few{# вкладки}many{# вкладок}other{# вкладки}}</translation>
 <translation id="4154664944169082762">Відбитки</translation>
 <translation id="4157869833395312646">Серверне шифрування Microsoft</translation>
+<translation id="4158481537962718545">WebRTC Echo Canceller 3.</translation>
 <translation id="4158739975813877944">Відкрити список відтворення</translation>
 <translation id="4159681666905192102"><ph name="CUSTODIAN_EMAIL" /> і <ph name="SECOND_CUSTODIAN_EMAIL" /> керують цим обліковим записом для дітей.</translation>
 <translation id="4163560723127662357">Невідома клавіатура</translation>
@@ -2692,6 +2701,7 @@
 <translation id="4565377596337484307">Сховати пароль</translation>
 <translation id="456664934433279154">Указує, чи використовувати вікна додатка Chrome для перегляду інструментів.</translation>
 <translation id="4567772783389002344">Додати слово</translation>
+<translation id="4568213207643490790">На цьому пристрої не можна входити в облікові записи Google.</translation>
 <translation id="4572659312570518089">Автентифікацію скасовано під час під’єднання до "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Файл <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Інші...</translation>
@@ -2974,6 +2984,7 @@
 <translation id="4941627891654116707">Розмір шрифту</translation>
 <translation id="4942394808693235155">Завантажити й установити оновлення (якщо є)</translation>
 <translation id="494286511941020793">Довідка про конфігурацію проксі-сервера</translation>
+<translation id="494660967831069720">Часткові дані</translation>
 <translation id="4950138595962845479">Параметри...</translation>
 <translation id="4953808748584563296">Стандартний оранжевий аватар</translation>
 <translation id="4956847150856741762">1</translation>
@@ -3500,6 +3511,7 @@
 <translation id="5627618611556177958">WebUSB</translation>
 <translation id="562935524653278697">Адміністратор вимкнув синхронізацію закладок, історії, паролів та інших налаштувань.</translation>
 <translation id="5629683404653063367">Підтримка дотику для лупи</translation>
+<translation id="563371367637259496">Мобільна</translation>
 <translation id="563535393368633106">Запитувати дозволу, перш ніж надавати доступ (рекомендується)</translation>
 <translation id="5636996382092289526">Щоб користуватися цією мережею (<ph name="NETWORK_ID" />), можливо, спершу потрібно буде <ph name="LINK_START" />перейти на сторінку входу мережі<ph name="LINK_END" />, яка автоматично відкриється за декілька секунд. Якщо цього не станеться, мережею користуватися не можна.</translation>
 <translation id="5637357908912398026">Примусове зберігання паролів</translation>
@@ -3615,6 +3627,7 @@
 <translation id="5801568494490449797">Налаштування</translation>
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="580571955903695899">Переупорядкувати за назвою</translation>
+<translation id="5806765737719055152">Вмикає новий експериментальний сервер із USB для Windows.</translation>
 <translation id="580961539202306967">Запитувати, якщо сайт хоче надсилати мені push-повідомлення (рекомендовано)</translation>
 <translation id="5814126672212206791">Тип з’єднання</translation>
 <translation id="5815645614496570556">Адреса каталогу X.400</translation>
@@ -3798,6 +3811,7 @@
 <translation id="6059232451013891645">Папка:</translation>
 <translation id="6059652578941944813">Ієрархія сертифіката</translation>
 <translation id="6059925163896151826">Пристрої USB</translation>
+<translation id="6062354413525093285">Увімкнути новий сервер із USB</translation>
 <translation id="6064217302520318294">Блокування екрана</translation>
 <translation id="6065289257230303064">Атрибути каталогу суб'єкта сертифіката</translation>
 <translation id="6067080187494608396">Повільні анімації інтерфейсу</translation>
@@ -4390,6 +4404,7 @@
 <translation id="6868924482674768124">Сервіс інтерфейсу Mojo (mus).</translation>
 <translation id="6869402422344886127">Прапорець поставлено</translation>
 <translation id="6870130893560916279">Українська розкладка</translation>
+<translation id="6870154062190524055">Експериментальна версія WebRTC Echo Canceller (AEC3).</translation>
 <translation id="6870888490422746447">Виберіть додаток:</translation>
 <translation id="6871644448911473373">Відповідач OCSP: <ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">Схоже, це стаття</translation>
@@ -5853,6 +5868,7 @@
 <translation id="8903921497873541725">Збільшити масштаб</translation>
 <translation id="8904976895050290827">Синхронізація Chrome</translation>
 <translation id="8908902564709148335">Застереження. Ви ввімкнули на цьому комп’ютері параметр "Потрібні дії зі сценаріями", який обмежує можливості цього розширення. На інших пристроях цей параметр може не підтримуватись або бути вимкненим. На таких пристроях це розширення також має перелічені нижче дозволи.</translation>
+<translation id="8909047803536336595">Немає інших пошукових систем</translation>
 <translation id="8909142433586818204">Вмикає показ кнопки "ЗАВАНТАЖИТИ СТОРІНКУ ПІЗНІШЕ" на сторінках із повідомленням про помилку.</translation>
 <translation id="8910146161325739742">Як показувати екран</translation>
 <translation id="8910222113987937043">Зміни в закладках, історії, паролях та інших налаштуваннях більше не синхронізуватимуться з вашим обліковим записом Google. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="BEGIN_LINK" />Інформаційній панелі Google<ph name="END_LINK" />.</translation>
@@ -5868,6 +5884,7 @@
 <translation id="8925458182817574960">&amp;Налаштування</translation>
 <translation id="8926389886865778422">Не запитувати знову</translation>
 <translation id="8926518602592448999">Вимкнути розширення в режимі розробника</translation>
+<translation id="892706138619340876">Скинуто деякі налаштування</translation>
 <translation id="8931394284949551895">Нові пристрої</translation>
 <translation id="8932730422557198035">Використовувати API Android Midi</translation>
 <translation id="8933960630081805351">&amp;Показати в програмі Finder</translation>
@@ -5955,6 +5972,7 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">Вимкнути звук на вкладках</translation>
 <translation id="9040421302519041149">Доступ до цієї мережі захищено.</translation>
+<translation id="9041556417913389119">Якщо ввімкнути цю опцію, буде активовано експериментальну оптимізацію шляху відображення WebVR.</translation>
 <translation id="9041603713188951722">Показувати налаштування у вікні</translation>
 <translation id="9042893549633094279">Конфіденційність і безпека</translation>
 <translation id="904451693890288097">Введіть ключ для пристрою "<ph name="DEVICE_NAME" />":</translation>

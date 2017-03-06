@@ -1347,7 +1347,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2782688068604007519">Iframes de proceso insuficiente</translation>
 <translation id="2783298271312924866">Descargado</translation>
 <translation id="2783321960289401138">Crear acceso directo...</translation>
-<translation id="2783661497142353826">Administrar aplicaciones del kiosco</translation>
+<translation id="2783661497142353826">Administrar aplicaciones de kiosco</translation>
 <translation id="2784407158394623927">Activando el servicio de datos móviles</translation>
 <translation id="2784556410206159845">Para mantener protegido tu <ph name="DEVICE_TYPE" />, Smart Lock para Chromebook necesita que el teléfono tenga configurada una pantalla de bloqueo.</translation>
 <translation id="2785530881066938471">No se ha podido cargar el archivo "<ph name="RELATIVE_PATH" />" para el script de contenido. No está codificado con UTF-8.</translation>
@@ -4072,7 +4072,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> configurará actualizaciones automáticas para todos los usuarios de este ordenador.</translation>
 <translation id="6433870913154270462">Información de la imagen</translation>
 <translation id="6434309073475700221">Rechazar</translation>
-<translation id="6435285122322546452">Administrar aplicaciones de kiosk...</translation>
+<translation id="6435285122322546452">Administrar aplicaciones de kiosco...</translation>
 <translation id="6436164536244065364">Ver en Web Store</translation>
 <translation id="6437213622978068772">Volver a cargar (Ctrl+R)</translation>
 <translation id="6438234780621650381">Restablecer configuración</translation>

@@ -477,6 +477,7 @@
 <translation id="1603914832182249871">(Modo anônimo)</translation>
 <translation id="1607220950420093847">Sua conta pode ter sido excluída ou desativada. Você terá que sair do Google.</translation>
 <translation id="1608626060424371292">Remover este usuário</translation>
+<translation id="1609170755653088773">Sincronize esta senha com seu iPhone</translation>
 <translation id="1609862759711084604">Usuário anterior</translation>
 <translation id="1611649489706141841">avançar</translation>
 <translation id="1611704746353331382">Exportar favoritos para arquivo HTML...</translation>
@@ -1286,7 +1287,9 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2691385045260836588">Modelo</translation>
 <translation id="2694026874607847549">Um cookie</translation>
 <translation id="2695749433451188613">Protocolo de impressão via Internet (HTTPS)</translation>
+<translation id="2696407800995565614">Otimizações de renderização experimentais de WebVR</translation>
 <translation id="2702540957532124911">Teclado:</translation>
+<translation id="270358213449696159">Conteúdo dos Termos do Google Chrome OS</translation>
 <translation id="2704142793323512908">Remova também deste dispositivo os dados já existentes.</translation>
 <translation id="2704184184447774363">Assinatura de documentos da Microsoft</translation>
 <translation id="270516211545221798">Velocidade do touchpad</translation>
@@ -1601,9 +1604,11 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3061650404498811439">Ativa o acesso a emoticons, pesquisa escrita e entrada de texto por voz a partir do menu IME de permissão</translation>
 <translation id="3063844757726132584">Acesse todos os seus apps nesta útil tela de início. Jogue, bata papo por vídeo, ouça músicas, edite documentos ou faça o download de mais apps.</translation>
 <translation id="3064388234319122767">Transliteração (zdravo → здраво)</translation>
+<translation id="3064410671692449875">Dados insuficientes</translation>
 <translation id="3065041951436100775">Feedback para guia desativada.</translation>
 <translation id="3065140616557457172">Digite para pesquisar ou insira um URL para navegar - o que você preferir.</translation>
 <translation id="3067198360141518313">Executar este plug-in</translation>
+<translation id="3072913143777711302">Exibir data do último uso do cartão de crédito no preenchimento automático.</translation>
 <translation id="307519606911195071">Permite recursos de acessibilidade adicionais na página de configurações.</translation>
 <translation id="3075874217500066906">É necessária uma reinicialização para iniciar o processo Powerwash. Após a reinicialização, solicitaremos que você confirme que deseja continuar.</translation>
 <translation id="3076677906922146425">Deixar qualquer um adicionar uma pessoa ao Chrome</translation>
@@ -2179,6 +2184,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3809280248639369696">Lunar</translation>
 <translation id="3810973564298564668">Gerenciar</translation>
 <translation id="3811494700605067549">1 arquivo selecionado</translation>
+<translation id="381202950560906753">Adicionar outra</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> e <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">Certificado inválido</translation>
 <translation id="3813296892522778813">Se você não encontrar o que está procurando, acesse a <ph name="BEGIN_LINK_CHROMIUM" />Ajuda do Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
@@ -2345,6 +2351,8 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4037463823853863991">Ativar alternador da guia de acessibilidade para Android.</translation>
 <translation id="4037889604535939429">Editar pessoa</translation>
 <translation id="40400351611212369">Erro de ativação de rede</translation>
+<translation id="4042197455689555997">Se esta sinalização for ativada, a data do último uso de um cartão de crédito será exibida no preenchimento automático.</translation>
+<translation id="4042264909745389898">Termos do Google Chrome OS</translation>
 <translation id="4044612648082411741">Digite a senha do certificado</translation>
 <translation id="404493185430269859">Mecanismo de pesquisa padrão</translation>
 <translation id="4047112090469382184">É seguro?</translation>
@@ -2426,6 +2434,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 guia}one{# guias}other{# guias}}</translation>
 <translation id="4154664944169082762">Assinaturas digitais</translation>
 <translation id="4157869833395312646">Criptografia de entrada para servidor da Microsoft </translation>
+<translation id="4158481537962718545">WebRTC Echo Canceller 3.</translation>
 <translation id="4158739975813877944">Abrir lista de reprodução</translation>
 <translation id="4159681666905192102">Esta é uma conta para crianças gerenciada por <ph name="CUSTODIAN_EMAIL" /> e <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Teclado desconhecido</translation>
@@ -2691,6 +2700,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4565377596337484307">Ocultar senha</translation>
 <translation id="456664934433279154">Controla o uso de janelas de apps do Chrome com visualizações do kit de ferramentas.</translation>
 <translation id="4567772783389002344">Adicionar palavra</translation>
+<translation id="4568213207643490790">Contas do Google não são permitidas neste dispositivo.</translation>
 <translation id="4572659312570518089">Autenticação cancelada durante a conexão com "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Arquivo <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mais...</translation>
@@ -2971,6 +2981,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4941627891654116707">Tamanho da fonte</translation>
 <translation id="4942394808693235155">Verificar e aplicar atualizações</translation>
 <translation id="494286511941020793">Ajuda da configuração de proxy</translation>
+<translation id="494660967831069720">Dados parciais</translation>
 <translation id="4950138595962845479">Opções...</translation>
 <translation id="4953808748584563296">Avatar laranja padrão</translation>
 <translation id="4956847150856741762">1</translation>
@@ -3498,6 +3509,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
 <translation id="562935524653278697">Seu administrador desativou a sincronização dos seus favoritos, histórico, senhas e outras configurações.</translation>
 <translation id="5629683404653063367">Compatibilidade de toque para a lupa</translation>
+<translation id="563371367637259496">Celular</translation>
 <translation id="563535393368633106">Perguntar antes de acessar (recomendado)</translation>
 <translation id="5636996382092289526">Para usar <ph name="NETWORK_ID" />, talvez seja necessário primeiro <ph name="LINK_START" />visitar a página de login da rede<ph name="LINK_END" />, que abrirá automaticamente em alguns segundos. Se isso não acontecer, significa que a rede não pode ser usada.</translation>
 <translation id="5637357908912398026">Salvamento forçado de senhas</translation>
@@ -3613,6 +3625,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5801568494490449797">Preferências</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
+<translation id="5806765737719055152">Ativa o novo back-end USB experimental para Windows.</translation>
 <translation id="580961539202306967">Perguntar quando um site quiser me enviar mensagens push (recomendado)</translation>
 <translation id="5814126672212206791">Tipo de conexão</translation>
 <translation id="5815645614496570556">Endereço X.400</translation>
@@ -3796,6 +3809,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6059232451013891645">Pasta:</translation>
 <translation id="6059652578941944813">Hierarquia de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
+<translation id="6062354413525093285">Ativa o novo back-end USB</translation>
 <translation id="6064217302520318294">Bloqueio de tela</translation>
 <translation id="6065289257230303064">Atributos do diretório do requerente do certificado</translation>
 <translation id="6067080187494608396">Animações de IU lentas</translation>
@@ -4389,6 +4403,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="6868924482674768124">Serviço Mojo UI (mus, na sigla em inglês).</translation>
 <translation id="6869402422344886127">Caixa de seleção marcada</translation>
 <translation id="6870130893560916279">Teclado ucraniano</translation>
+<translation id="6870154062190524055">WebRTC echo canceller experimental (AEC3).</translation>
 <translation id="6870888490422746447">Escolha um app para compartilhar:</translation>
 <translation id="6871644448911473373">Respondente OCSP: <ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">Parece ser um artigo</translation>
@@ -5853,6 +5868,7 @@ Notificações posteriores, janelas e caixas de diálogo podem ser divididas ent
 <translation id="8903921497873541725">Aumentar zoom</translation>
 <translation id="8904976895050290827">Sincronização do Google Chrome</translation>
 <translation id="8908902564709148335">Atenção: você ativou a sinalização scripts-exigem-ação neste computador, o que limita as capacidades desta extensão. No entanto, outros dispositivos podem não suportar essa sinalização ou a ativação dela. Nesses dispositivos, esta extensão também pode:</translation>
+<translation id="8909047803536336595">Nenhum outro mecanismo de pesquisa encontrado</translation>
 <translation id="8909142433586818204">Ativa a exibição do botão "FAZER O DOWNLOAD DA PÁGINA MAIS TARDE" em páginas de erro.</translation>
 <translation id="8910146161325739742">Compartilhar sua tela</translation>
 <translation id="8910222113987937043">As alterações feitas nos seus favoritos, histórico, senhas e outras configurações não serão mais sincronizadas com sua Conta do Google. No entanto, os dados já existentes permanecerão armazenados na sua conta e será possível gerenciá-los no <ph name="BEGIN_LINK" />Painel do Google<ph name="END_LINK" />.</translation>
@@ -5868,6 +5884,7 @@ Notificações posteriores, janelas e caixas de diálogo podem ser divididas ent
 <translation id="8925458182817574960">&amp;Configurações</translation>
 <translation id="8926389886865778422">Não perguntar novamente</translation>
 <translation id="8926518602592448999">Desativar extensões no modo de desenvolvedor</translation>
+<translation id="892706138619340876">Algumas configurações foram redefinidas</translation>
 <translation id="8931394284949551895">Novos dispositivos</translation>
 <translation id="8932730422557198035">Usar a API Android Midi</translation>
 <translation id="8933960630081805351">&amp;Mostrar no Finder</translation>
@@ -5955,6 +5972,7 @@ Notificações posteriores, janelas e caixas de diálogo podem ser divididas ent
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">Desativar som das guias</translation>
 <translation id="9040421302519041149">O acesso a esta rede é protegido.</translation>
+<translation id="9041556417913389119">A ativação desta opção permite otimizações experimentais de caminho de renderização para WebVR.</translation>
 <translation id="9041603713188951722">Mostrar configurações em uma janela</translation>
 <translation id="9042893549633094279">Privacidade e segurança</translation>
 <translation id="904451693890288097">Insira a chave de acesso para "<ph name="DEVICE_NAME" />":</translation>

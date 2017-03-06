@@ -478,6 +478,7 @@
 <translation id="1603914832182249871">(التصفح المتخفي)</translation>
 <translation id="1607220950420093847">تم حذف حسابك أو تعطيله. الرجاء الخروج.</translation>
 <translation id="1608626060424371292">إزالة هذا المستخدم</translation>
+<translation id="1609170755653088773">‏مزامنة كلمة المرور هذه على جهاز iPhone</translation>
 <translation id="1609862759711084604">المستخدم السابق</translation>
 <translation id="1611649489706141841">للأمام</translation>
 <translation id="1611704746353331382">‏تصدير الإشارات المرجعية إلى ملف HTML...</translation>
@@ -1286,7 +1287,9 @@
 <translation id="2691385045260836588">الطراز</translation>
 <translation id="2694026874607847549">ملف تعريف ارتباط واحد</translation>
 <translation id="2695749433451188613">‏بروتوكول الطباعة عبر الإنترنت (HTTPS)</translation>
+<translation id="2696407800995565614">‏تمكين تحسينات عرض WebVR التجريبية</translation>
 <translation id="2702540957532124911">لوحة المفاتيح:</translation>
+<translation id="270358213449696159">‏محتويات بنود نظام التشغيل Google Chrome</translation>
 <translation id="2704142793323512908">إزالة البيانات الحالية أيضًا من هذا الجهاز.</translation>
 <translation id="2704184184447774363">‏توقيع المستند لـ Microsoft</translation>
 <translation id="270516211545221798">سرعة لوحة اللمس</translation>
@@ -1601,9 +1604,11 @@
 <translation id="3061650404498811439">‏يمكنك تمكين الوصول إلى الرموز التعبيرية والكتابة اليدوية ونموذج الإدخال الصوتي في قائمة تمكين محرِّر أسلوب الإدخال (IME).</translation>
 <translation id="3063844757726132584">يمكنك الدخول إلى جميع تطبيقاتك من هذا المشغِّل المفيد. كما يمكنك تشغيل الألعاب ودردشة الفيديو والاستماع إلى الموسيقى وتعديل المستندات والحصول على مزيد من التطبيقات.</translation>
 <translation id="3064388234319122767">‏التحويل الصوتي (ذدرافو ← здраво)</translation>
+<translation id="3064410671692449875">بيانات غير كافية</translation>
 <translation id="3065041951436100775">التعليقات المرتبطة بعلامة التبويب المعطلة.</translation>
 <translation id="3065140616557457172">‏يمكنك طباعة كلمة أو عبارة للبحث  في الويب أو إدخال عنوان URL للتجوال بين صفحات الويب. الخيار لك.</translation>
 <translation id="3067198360141518313">تشغيل هذا المكون الإضافي</translation>
+<translation id="3072913143777711302">عرض تاريخ آخر استخدام لبطاقة ائتمان في الملء التلقائي.</translation>
 <translation id="307519606911195071">تمكين ميزات إمكانية الوصول الإضافية في صفحة الإعدادات.</translation>
 <translation id="3075874217500066906">يجب إعادة التشغيل لبدء عملية المحو الكامل. بعد إعادة التشغيل سيُطلب منك تأكيد أنك تريد المتابعة.</translation>
 <translation id="3076677906922146425">‏السماح لأي شخص بإضافة أحد الأشخاص إلى Chrome</translation>
@@ -2177,6 +2182,7 @@
 <translation id="3809280248639369696">شعاع القمر</translation>
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="3811494700605067549">تم تحديد ملف واحد</translation>
+<translation id="381202950560906753">إضافة بصمة إصبع أخرى</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> و<ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">شهادة سيئة</translation>
 <translation id="3813296892522778813">‏يمكنك الانتقال إلى <ph name="BEGIN_LINK_CHROMIUM" />مساعدة Google Chrome<ph name="END_LINK_CHROMIUM" /> إذا لم تتمكن من العثور عما تبحث عنه</translation>
@@ -2340,6 +2346,8 @@
 <translation id="4037463823853863991">‏تمكين محوّل علامة تبويب إمكانية الدخول لجهاز Android.</translation>
 <translation id="4037889604535939429">تعديل الشخص</translation>
 <translation id="40400351611212369">خطأ تنشيط الشبكة</translation>
+<translation id="4042197455689555997">في حالة التمكين، يمكنك عرض تاريخ آخر استخدام لبطاقة ائتمان في الملء التلقائي.</translation>
+<translation id="4042264909745389898">‏بنود نظام التشغيل Google Chrome</translation>
 <translation id="4044612648082411741">إدخال كلمة المرور للشهادة</translation>
 <translation id="404493185430269859">محرك البحث الافتراضي</translation>
 <translation id="4047112090469382184">كم هذا آمن</translation>
@@ -2421,6 +2429,7 @@
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{علامة تبويب واحدة}zero{# من علامات التبويب}two{علامتا تبويب (#)}few{# علامات تبويب}many{# علامة تبويب}other{# من علامات التبويب}}</translation>
 <translation id="4154664944169082762">بصمات الأصابع</translation>
 <translation id="4157869833395312646">‏تشفير عن طريق بوابة خادم Microsoft</translation>
+<translation id="4158481537962718545">WebRTC Echo Canceller 3.</translation>
 <translation id="4158739975813877944">فتح قائمة التشغيل</translation>
 <translation id="4159681666905192102">هذا هو حساب للأطفال يتم إدارته من قبل <ph name="CUSTODIAN_EMAIL" /> و<ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">لوحة مفاتيح غير معروفة</translation>
@@ -2687,6 +2696,7 @@
 <translation id="4565377596337484307">حجب كلمة المرور</translation>
 <translation id="456664934433279154">‏يتحكم فيما إذا كان ينبغي استخدام نوافذ تطبيقات Chrome القائمة على Toolkit-Views أم لا.</translation>
 <translation id="4567772783389002344">إضافة كلمة</translation>
+<translation id="4568213207643490790">‏عذرًا، غير مسموح بتسجيل دخول حسابات Google على هذا الجهاز.</translation>
 <translation id="4572659312570518089">تم إلغاء المصادقة أثناء الاتصال بالجهاز "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">ملف <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">المزيد...</translation>
@@ -2969,6 +2979,7 @@
 <translation id="4941627891654116707">حجم الخط</translation>
 <translation id="4942394808693235155">تحقق من وجود التحديثات وتطبيقها</translation>
 <translation id="494286511941020793">مساعدة تهيئة الخادم الوكيل</translation>
+<translation id="494660967831069720">بيانات جزئية</translation>
 <translation id="4950138595962845479">خيارات...</translation>
 <translation id="4953808748584563296">الصورة الرمزية الافتراضية البرتقالية</translation>
 <translation id="4956847150856741762">1</translation>
@@ -3494,6 +3505,7 @@
 <translation id="5627618611556177958">WebUSB</translation>
 <translation id="562935524653278697">لقد عطّل مشرفك مزامنة الإشارات المرجعية والسجل وكلمات المرور والإعدادات الأخرى.</translation>
 <translation id="5629683404653063367">لمس دعم مكبر الشاشة</translation>
+<translation id="563371367637259496">الجوّال</translation>
 <translation id="563535393368633106">اسأل قبل الدخول (موصى به)</translation>
 <translation id="5636996382092289526">لاستخدام <ph name="NETWORK_ID" /> ربما تحتاج أولاً إلى <ph name="LINK_START" />الانتقال إلى صفحة تسجيل الدخول إلى الشبكة<ph name="LINK_END" />، والتي سيتم فتحها تلقائيًا خلال بضع ثوانٍ. إذا لم يحدث ذلك، فلن يمكن استخدام الشبكة.</translation>
 <translation id="5637357908912398026">الحفظ الإجباري لكلمات المرور</translation>
@@ -3609,6 +3621,7 @@
 <translation id="5801568494490449797">التفضيلات</translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="580571955903695899">إعادة الترتيب بحسب العنوان</translation>
+<translation id="5806765737719055152">‏تعمل على تمكين الواجهة الخلفية التجريبية الجديدة لـ USB لنظام التشغيل Windows.</translation>
 <translation id="580961539202306967">اسألني عندما يحاول موقع أن يرسل لي رسائل دفع (يُوصى به)</translation>
 <translation id="5814126672212206791">نوع الاتصال</translation>
 <translation id="5815645614496570556">‏عنوان X.400</translation>
@@ -3792,6 +3805,7 @@
 <translation id="6059232451013891645">المجلد:</translation>
 <translation id="6059652578941944813">التسلسل الهرمي للشهادة</translation>
 <translation id="6059925163896151826">‏أجهزة USB</translation>
+<translation id="6062354413525093285">‏تمكين الواجهة الخلفية الجديدة لـ USB</translation>
 <translation id="6064217302520318294">قفل الشاشة</translation>
 <translation id="6065289257230303064">سمات دليل صاحب الشهادة</translation>
 <translation id="6067080187494608396">الصور المتحركة البطيئة في واجهة المستخدم</translation>
@@ -4384,6 +4398,7 @@
 <translation id="6868924482674768124">‏خدمة واجهة مستخدم Mojo‏ (mus).</translation>
 <translation id="6869402422344886127">مربّع اختيار محدد</translation>
 <translation id="6870130893560916279">لوحة المفاتيح الأوكرانية</translation>
+<translation id="6870154062190524055">‏WebRTC Echo Canceller التجريبي (AEC3).</translation>
 <translation id="6870888490422746447">اختيار تطبيق للمشاركة في:</translation>
 <translation id="6871644448911473373">‏مستجيب OCSP: <ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">تبدو كمقالة.</translation>
@@ -5849,6 +5864,7 @@
 <translation id="8903921497873541725">تكبير</translation>
 <translation id="8904976895050290827">‏مزامنة Chrome</translation>
 <translation id="8908902564709148335">تحذير: لقد مكّنت علامة النصوص البرمجي تتطلب إجراء على هذا الكمبيوتر، مما يحد من قدرة هذه الإضافة. ولكن قد لا تدعم الأجهزة الأخرى هذه العلامة أو لا يتم تمكينها عليها. على هذه الأجهزة، يمكن لهذه الإضافة أيضًا:</translation>
+<translation id="8909047803536336595">لم يتم العثور على أي محركات بحث أخرى</translation>
 <translation id="8909142433586818204">يُمكّن عرض زر "تنزيل الصفحة لاحقًا" في صفحات الخطأ.</translation>
 <translation id="8910146161325739742">مشاركة الشاشة</translation>
 <translation id="8910222113987937043">‏لن تتم مزامنة التغييرات التي تطرأ على الإشارات المرجعية والسجل وكلمات المرور والإعدادات الأخرى مع حسابك في Google بعد الآن. ومع ذلك، ستظل بياناتك الحالية مخزنة في حسابك على Google ويمكن إدارتها في <ph name="BEGIN_LINK" />لوحة تحكم Google<ph name="END_LINK" />.</translation>
@@ -5864,6 +5880,7 @@
 <translation id="8925458182817574960">&amp;الإعدادات</translation>
 <translation id="8926389886865778422">عدم السؤال مرة أخرى</translation>
 <translation id="8926518602592448999">تعطيل إضافات وضع مطور البرامج</translation>
+<translation id="892706138619340876">تمت إعادة تعيين بعض الإعدادات</translation>
 <translation id="8931394284949551895">الأجهزة الجديدة</translation>
 <translation id="8932730422557198035">‏استخدام واجهة برمجة تطبيقات Android Midi</translation>
 <translation id="8933960630081805351">إ&amp;ظهار في الباحث</translation>
@@ -5951,6 +5968,7 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">تجاهل علامات التبويب</translation>
 <translation id="9040421302519041149">الدخول إلى هذه الشبكة محمي.</translation>
+<translation id="9041556417913389119">‏يؤدي تمكين هذا الخيار إلى تنشيط تحسينات مسار العرض التجريبي لـ WebVR.</translation>
 <translation id="9041603713188951722">عرض الإعدادات في نافذة</translation>
 <translation id="9042893549633094279">الخصوصية والأمان</translation>
 <translation id="904451693890288097">الرجاء إدخال مفتاح المرور لـ "<ph name="DEVICE_NAME" />":</translation>

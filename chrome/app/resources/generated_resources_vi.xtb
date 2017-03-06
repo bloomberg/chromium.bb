@@ -478,6 +478,7 @@
 <translation id="1603914832182249871">(Ẩn danh)</translation>
 <translation id="1607220950420093847">Tài khoản của bạn có thể đã bị xóa hoặc vô hiệu hóa. Vui lòng đăng xuất.</translation>
 <translation id="1608626060424371292">Xóa người dùng này</translation>
+<translation id="1609170755653088773">Đồng bộ hóa mật khẩu này với iPhone của bạn</translation>
 <translation id="1609862759711084604">Người dùng trước đây</translation>
 <translation id="1611649489706141841">chuyển tiếp</translation>
 <translation id="1611704746353331382">Xuất dấu trang sang tệp HTML...</translation>
@@ -1288,7 +1289,9 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2691385045260836588">Kiểu</translation>
 <translation id="2694026874607847549">1 cookie</translation>
 <translation id="2695749433451188613">Giao thức in qua Internet (HTTPS)</translation>
+<translation id="2696407800995565614">Tối ưu hóa hiển thị thử nghiệm WebVR</translation>
 <translation id="2702540957532124911">Bàn phím:</translation>
+<translation id="270358213449696159">Nội dung Điều khoản của Google Chrome OS</translation>
 <translation id="2704142793323512908">Đồng thời, xóa dữ liệu hiện có của bạn khỏi thiết bị này.</translation>
 <translation id="2704184184447774363">Ký Tài liệu của Microsoft</translation>
 <translation id="270516211545221798">Tốc độ bàn di chuột</translation>
@@ -1603,9 +1606,11 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3061650404498811439">Cho phép truy cập vào biểu tượng cảm xúc, chữ viết tay và menu IME chọn tham gia biểu mẫu nhập bằng giọng nói.</translation>
 <translation id="3063844757726132584">Truy cập tất cả ứng dụng của bạn từ trình chạy tiện dụng này. Chơi trò chơi, trò chuyện video, nghe nhạc, chỉnh sửa tài liệu hoặc tải thêm ứng dụng.</translation>
 <translation id="3064388234319122767">Chuyển ngữ (zdravo → здраво)</translation>
+<translation id="3064410671692449875">Không đủ dữ liệu</translation>
 <translation id="3065041951436100775">Phản hồi tab bị lỗi.</translation>
 <translation id="3065140616557457172">Nhập để tìm kiếm hoặc nhập URL để điều hướng - mọi thứ chỉ hoạt động.</translation>
 <translation id="3067198360141518313">Chạy plugin này</translation>
+<translation id="3072913143777711302">Hiển thị ngày cuối cùng sử dụng thẻ tín dụng trong tự động điền.</translation>
 <translation id="307519606911195071">Bật các tính năng khác về trợ năng trong trang Cài đặt.</translation>
 <translation id="3075874217500066906">Bạn cần khởi động lại để bắt đầu quy trình Powerwash. Sau khi khởi động lại, bạn sẽ được yêu cầu xác nhận rằng bạn muốn tiếp tục.</translation>
 <translation id="3076677906922146425">Cho phép mọi người thêm người vào Chrome</translation>
@@ -2181,6 +2186,7 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3809280248639369696">Ánh trăng</translation>
 <translation id="3810973564298564668">Quản lý</translation>
 <translation id="3811494700605067549">Đã chọn 1 tệp</translation>
+<translation id="381202950560906753">Thêm vân tay khác</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> và <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">Chứng chỉ không hợp lệ</translation>
 <translation id="3813296892522778813">Hãy truy cập <ph name="BEGIN_LINK_CHROMIUM" />Trợ giúp Google Chrome<ph name="END_LINK_CHROMIUM" /> nếu bạn không tìm thấy nội dung mình đang tìm kiếm</translation>
@@ -2347,6 +2353,8 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4037463823853863991">Bật trình chuyển đổi tab khả năng truy cập cho Anroid.</translation>
 <translation id="4037889604535939429">Chỉnh sửa người</translation>
 <translation id="40400351611212369">Lỗi kích hoạt mạng</translation>
+<translation id="4042197455689555997">Nếu đã bật, hãy hiển thị ngày cuối cùng sử dụng thẻ tín dụng trong tự động điền.</translation>
+<translation id="4042264909745389898">Điều khoản của Google Chrome OS</translation>
 <translation id="4044612648082411741">Nhập mật khẩu chứng chỉ của bạn</translation>
 <translation id="404493185430269859">Công cụ tìm kiếm mặc định</translation>
 <translation id="4047112090469382184">Tính năng này an toàn như thế nào</translation>
@@ -2428,6 +2436,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tab}}</translation>
 <translation id="4154664944169082762">Dấu vân tay</translation>
 <translation id="4157869833395312646">Mã hóa Cổng Máy chủ của Microsoft</translation>
+<translation id="4158481537962718545">Trình hủy tiếng vang WebRTC 3.</translation>
 <translation id="4158739975813877944">Mở danh sách phát</translation>
 <translation id="4159681666905192102">Đây là tài khoản cho trẻ em do <ph name="CUSTODIAN_EMAIL" /> và <ph name="SECOND_CUSTODIAN_EMAIL" /> quản lý.</translation>
 <translation id="4163560723127662357">Bàn phím không xác định</translation>
@@ -2694,6 +2703,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4565377596337484307">Ẩn mật khẩu</translation>
 <translation id="456664934433279154">Kiểm soát xem có sử dụng cửa sổ Ứng dụng Chrome dựa trên Chế độ xem bộ công cụ hay không.</translation>
 <translation id="4567772783389002344">Thêm từ</translation>
+<translation id="4568213207643490790">Rất tiếc, không được phép đăng nhập tài khoản Google trên thiết bị này.</translation>
 <translation id="4572659312570518089">Đã hủy xác thực trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
@@ -2976,6 +2986,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4941627891654116707">Cỡ chữ</translation>
 <translation id="4942394808693235155">Kiểm tra và áp dụng bản cập nhật</translation>
 <translation id="494286511941020793">Trợ giúp Cấu hình Proxy</translation>
+<translation id="494660967831069720">Một phần dữ liệu</translation>
 <translation id="4950138595962845479">Tùy chọn...</translation>
 <translation id="4953808748584563296">Hình đại diện màu cam mặc định</translation>
 <translation id="4956847150856741762">1</translation>
@@ -3502,6 +3513,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
 <translation id="562935524653278697">Quản trị viên của bạn đã tắt đồng bộ hóa dấu trang, lịch sử, mật khẩu và các cài đặt khác của bạn.</translation>
 <translation id="5629683404653063367">Hỗ trợ cảm ứng cho kính lúp</translation>
+<translation id="563371367637259496">Di động</translation>
 <translation id="563535393368633106">Hỏi trước khi truy cập (được đề xuất)</translation>
 <translation id="5636996382092289526">Để sử dụng <ph name="NETWORK_ID" />, trước hết bạn cần <ph name="LINK_START" />truy cập vào trang đăng nhập của mạng<ph name="LINK_END" />. Trang này thường tự động mở sau vài giây. Nếu trang này không mở thì không thể sử dụng mạng này.</translation>
 <translation id="5637357908912398026">Buộc lưu mật khẩu</translation>
@@ -3617,6 +3629,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5801568494490449797">Tùy chọn</translation>
 <translation id="5804241973901381774">Giấy phép</translation>
 <translation id="580571955903695899">Sắp xếp lại theo Tiêu đề</translation>
+<translation id="5806765737719055152">Bật chương trình phụ trợ USB thử nghiệm mới cho Windows.</translation>
 <translation id="580961539202306967">Hỏi tôi khi một trang web muốn gửi thông báo đẩy cho tôi (nên chọn)</translation>
 <translation id="5814126672212206791">Loại kết nối</translation>
 <translation id="5815645614496570556">Địa chỉ X.400</translation>
@@ -3800,6 +3813,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="6059232451013891645">Thư mục:</translation>
 <translation id="6059652578941944813">Hệ thống cấp bậc của Chứng chỉ</translation>
 <translation id="6059925163896151826">Thiết bị USB</translation>
+<translation id="6062354413525093285">Bật chương trình phụ trợ USB mới</translation>
 <translation id="6064217302520318294">Khóa màn hình</translation>
 <translation id="6065289257230303064">Các Thuộc tính Thư mục Đối tượng Chứng chỉ</translation>
 <translation id="6067080187494608396">Hoạt ảnh chậm trong giao diện người dùng</translation>
@@ -4392,6 +4406,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="6868924482674768124">Dịch vụ giao diện người dùng Mojo (mus).</translation>
 <translation id="6869402422344886127">Đã chọn hộp kiểm</translation>
 <translation id="6870130893560916279">Bàn phím tiếng Ukraina</translation>
+<translation id="6870154062190524055">Trình hủy tiếng vang WebRTC thử nghiệm (AEC3).</translation>
 <translation id="6870888490422746447">Chọn một ứng dụng để chia sẻ:</translation>
 <translation id="6871644448911473373">Phản hồi OCSP: <ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">Có vẻ là một bài viết</translation>
@@ -5856,6 +5871,7 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="8903921497873541725">Phóng to</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8908902564709148335">Cảnh báo: Bạn đã bật cờ --scripts-require-action trên máy tính này, điều này hạn chế khả năng của tiện ích này. Tuy nhiên, các thiết bị khác có thể không hỗ trợ cờ này hoặc đã bật cờ này. Trên các thiết bị này, tiện ích này cũng có thể:</translation>
+<translation id="8909047803536336595">Không tìm thấy công cụ tìm kiếm nào khác</translation>
 <translation id="8909142433586818204">Bật tính năng hiển thị nút "TẢI TRANG XUỐNG SAU" trong trang lỗi.</translation>
 <translation id="8910146161325739742">Chia sẻ màn hình của bạn</translation>
 <translation id="8910222113987937043">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ không được đồng bộ hóa với Tài khoản Google của bạn nữa. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong Tài khoản Google và có thể được quản lý trên <ph name="BEGIN_LINK" />Trang tổng quan Google<ph name="END_LINK" />.</translation>
@@ -5871,6 +5887,7 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="8925458182817574960">&amp;Cài đặt</translation>
 <translation id="8926389886865778422">Đừng hỏi lại</translation>
 <translation id="8926518602592448999">Vô hiệu hóa tiện ích chế độ nhà phát triển</translation>
+<translation id="892706138619340876">Đã đặt lại một số cài đặt</translation>
 <translation id="8931394284949551895">Thiết bị mới</translation>
 <translation id="8932730422557198035">Sử dụng API Android Midi</translation>
 <translation id="8933960630081805351">&amp;Hiển thị trong Trình tìm kiếm</translation>
@@ -5958,6 +5975,7 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">Tắt tiếng tab</translation>
 <translation id="9040421302519041149">Quyền truy cập vào mạng này được bảo vệ.</translation>
+<translation id="9041556417913389119">Bật tùy chọn này sẽ kích hoạt tối ưu hóa đường dẫn hiển thị thử nghiệm cho WebVR.</translation>
 <translation id="9041603713188951722">Hiển thị cài đặt trong một cửa sổ</translation>
 <translation id="9042893549633094279">Quyền riêng tư và bảo mật</translation>
 <translation id="904451693890288097">Vui lòng nhập mã cho "<ph name="DEVICE_NAME" />":</translation>

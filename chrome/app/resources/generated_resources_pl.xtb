@@ -477,6 +477,7 @@
 <translation id="1603914832182249871">(Incognito)</translation>
 <translation id="1607220950420093847">Twoje konto mogło zostać usunięte lub wyłączone. Wyloguj się.</translation>
 <translation id="1608626060424371292">Usuń tego użytkownika</translation>
+<translation id="1609170755653088773">Zsynchronizuj to hasło ze swoim iPhonem</translation>
 <translation id="1609862759711084604">Poprzedni użytkownik</translation>
 <translation id="1611649489706141841">do przodu</translation>
 <translation id="1611704746353331382">Eksportuj zakładki do pliku HTML</translation>
@@ -1286,7 +1287,9 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2694026874607847549">Pliki cookie (1)</translation>
 <translation id="2695749433451188613">Internet Printing Protocol (HTTPS)</translation>
+<translation id="2696407800995565614">Eksperymentalne optymalizacje renderowania WebVR</translation>
 <translation id="2702540957532124911">Klawiatura:</translation>
+<translation id="270358213449696159">Treść Warunków korzystania z systemu operacyjnego Google Chrome</translation>
 <translation id="2704142793323512908">Usuń też swoje dane z tego urządzenia.</translation>
 <translation id="2704184184447774363">Podpisywanie dokumentów firmy Microsoft</translation>
 <translation id="270516211545221798">Szybkość touchpada</translation>
@@ -1601,9 +1604,11 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3061650404498811439">Włącz dostęp do emotikonów, pisma odręcznego i rozpoznawania mowy w menu IME.</translation>
 <translation id="3063844757726132584">Otwieraj wszystkie aplikacje w praktycznym programie uruchamiającym. Graj w gry, rozmawiaj ze znajomymi na czacie wideo, słuchaj muzyki, edytuj dokumenty i pobieraj kolejne aplikacje.</translation>
 <translation id="3064388234319122767">Transliteracja (zdravo → здраво)</translation>
+<translation id="3064410671692449875">Niewystarczające dane</translation>
 <translation id="3065041951436100775">Informacje o zakończeniu działania karty.</translation>
 <translation id="3065140616557457172">Wpisz zapytanie lub wprowadź adres URL – wszystko po prostu działa.</translation>
 <translation id="3067198360141518313">Uruchom wtyczkę</translation>
+<translation id="3072913143777711302">Wyświetl datę ostatniego użycia karty kredytowej w autouzupełnianiu.</translation>
 <translation id="307519606911195071">Włącz dodatkowe ułatwienia dostępu na stronie Ustawienia.</translation>
 <translation id="3075874217500066906">Aby rozpocząć procedurę Powerwash, musisz ponownie uruchomić urządzenie. Po ponownym uruchomieniu poprosimy Cię o potwierdzenie, że chcesz kontynuować.</translation>
 <translation id="3076677906922146425">Zezwalaj każdemu na dodawanie osób do Chrome</translation>
@@ -2179,6 +2184,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3809280248639369696">Księżycowy promień</translation>
 <translation id="3810973564298564668">Zarządzaj</translation>
 <translation id="3811494700605067549">1 wybrany plik</translation>
+<translation id="381202950560906753">Dodaj kolejny</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> i <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">Zły certyfikat</translation>
 <translation id="3813296892522778813">Jeśli nie możesz znaleźć potrzebnych informacji, otwórz <ph name="BEGIN_LINK_CHROMIUM" />pomoc dotyczącą Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
@@ -2345,6 +2351,8 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="4037463823853863991">Włącz przełącznik karty ułatwień dostępu w Androidzie.</translation>
 <translation id="4037889604535939429">Edytuj dane osoby</translation>
 <translation id="40400351611212369">Błąd aktywacji sieci</translation>
+<translation id="4042197455689555997">Jeśli jest włączona, wyświetla datę ostatniego użycia karty kredytowej w autouzupełnianiu.</translation>
+<translation id="4042264909745389898">Warunki korzystania z systemu operacyjnego Google Chrome</translation>
 <translation id="4044612648082411741">Podaj hasło certyfikatu</translation>
 <translation id="404493185430269859">Domyślna wyszukiwarka</translation>
 <translation id="4047112090469382184">Jak bezpieczna jest ta funkcja</translation>
@@ -2426,6 +2434,7 @@ Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 karta}few{# karty}many{# kart}other{# karty}}</translation>
 <translation id="4154664944169082762">Odciski cyfrowe</translation>
 <translation id="4157869833395312646">Kryptografia Server Gated Cryptography firmy Microsoft</translation>
+<translation id="4158481537962718545">Reduktor echa WebRTC 3.</translation>
 <translation id="4158739975813877944">Otwórz listę odtwarzania</translation>
 <translation id="4159681666905192102">To jest konto dla dzieci, którym zarządzają <ph name="CUSTODIAN_EMAIL" /> i <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Nieznana klawiatura</translation>
@@ -2692,6 +2701,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4565377596337484307">Ukryj hasło</translation>
 <translation id="456664934433279154">Określa, czy okna aplikacji w Chrome mają korzystać z biblioteki Toolkit-views.</translation>
 <translation id="4567772783389002344">Dodaj słowo</translation>
+<translation id="4568213207643490790">Konta Google nie są dozwolone na tym urządzeniu.</translation>
 <translation id="4572659312570518089">Podczas łączenia się z urządzeniem „<ph name="DEVICE_NAME" />” zostało anulowane uwierzytelnianie.</translation>
 <translation id="4572815280350369984">Plik <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Więcej</translation>
@@ -2971,6 +2981,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4941627891654116707">Rozmiar czcionki</translation>
 <translation id="4942394808693235155">Sprawdź i zastosuj aktualizacje</translation>
 <translation id="494286511941020793">Konfiguracja serwera proxy – pomoc</translation>
+<translation id="494660967831069720">Częściowe dane</translation>
 <translation id="4950138595962845479">Opcje</translation>
 <translation id="4953808748584563296">Domyślny pomarańczowy awatar</translation>
 <translation id="4956847150856741762">1</translation>
@@ -3498,6 +3509,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
 <translation id="562935524653278697">Synchronizację zakładek, historii, haseł i innych ustawień wyłączył administrator.</translation>
 <translation id="5629683404653063367">Obsługa dotykowa lupy</translation>
+<translation id="563371367637259496">Telefony komórkowe</translation>
 <translation id="563535393368633106">Pytaj przed uzyskaniem dostępu (zalecane)</translation>
 <translation id="5636996382092289526">Skorzystanie z <ph name="NETWORK_ID" /> może wymagać <ph name="LINK_START" />wejścia na stronę logowania się do sieci<ph name="LINK_END" />, która otworzy się automatycznie za kilka sekund. Jeśli tak się nie stanie, nie będzie można użyć tej sieci.</translation>
 <translation id="5637357908912398026">Wymuszone zapisywanie haseł</translation>
@@ -3613,6 +3625,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5801568494490449797">Ustawienia</translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="580571955903695899">Uporządkuj według tytułu</translation>
+<translation id="5806765737719055152">Włącza nowe eksperymentalne zaplecze USB dla systemu Windows.</translation>
 <translation id="580961539202306967">Pytaj mnie, gdy strona chce wysyłać mi wiadomości push (zalecane)</translation>
 <translation id="5814126672212206791">Typ połączenia</translation>
 <translation id="5815645614496570556">Adres X.400</translation>
@@ -3796,6 +3809,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6059232451013891645">Folder:</translation>
 <translation id="6059652578941944813">Hierarchia certyfikatów</translation>
 <translation id="6059925163896151826">Urządzenia USB</translation>
+<translation id="6062354413525093285">Włącz nowe zaplecze USB</translation>
 <translation id="6064217302520318294">Blokada ekranu</translation>
 <translation id="6065289257230303064">Atrybuty katalogu podmiotu certyfikatu</translation>
 <translation id="6067080187494608396">Wolne animacje UI</translation>
@@ -4387,6 +4401,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="6868924482674768124">Usługa Mojo UI (mus).</translation>
 <translation id="6869402422344886127">Zaznaczone pole wyboru</translation>
 <translation id="6870130893560916279">Klawiatura ukraińska</translation>
+<translation id="6870154062190524055">Eksperymentalny reduktor echa WebRTC (AEC3).</translation>
 <translation id="6870888490422746447">Wybierz aplikację docelową udostępniania:</translation>
 <translation id="6871644448911473373">Obiekt odpowiadający protokołu OCSP: <ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">Strona wygląda na artykuł</translation>
@@ -5843,6 +5858,7 @@ Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpita
 <translation id="8903921497873541725">Powiększ</translation>
 <translation id="8904976895050290827">Synchronizacja Chrome</translation>
 <translation id="8908902564709148335">Ostrzeżenie: na komputerze została włączona flaga --scripts-require-action, która ogranicza możliwości tego rozszerzenia. Na innych urządzeniach może ona jednak nie być obsługiwana lub włączona. Na tych urządzeniach rozszerzenie może też:</translation>
+<translation id="8909047803536336595">Nie znaleziono innych wyszukiwarek</translation>
 <translation id="8909142433586818204">Włącza wyświetlanie przycisku „POBIERZ STRONĘ PÓŹNIEJ” na stronach błędów.</translation>
 <translation id="8910146161325739742">Udostępnianie ekranu</translation>
 <translation id="8910222113987937043">Twoje zakładki, historia, hasła i inne ustawienia nie będą już synchronizowane z kontem Google. Wcześniejsze dane pozostaną zapisane na koncie Google. Możesz nimi zarządzać w <ph name="BEGIN_LINK" />Panelu Google<ph name="END_LINK" />.</translation>
@@ -5858,6 +5874,7 @@ Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpita
 <translation id="8925458182817574960">&amp;Ustawienia</translation>
 <translation id="8926389886865778422">Nie pytaj ponownie</translation>
 <translation id="8926518602592448999">Wyłącz rozszerzenia trybu programisty</translation>
+<translation id="892706138619340876">Niektóre ustawienia zostały zresetowane</translation>
 <translation id="8931394284949551895">Nowe urządzenia</translation>
 <translation id="8932730422557198035">Używaj Android Midi API</translation>
 <translation id="8933960630081805351">&amp;Pokaż w Finderze</translation>
@@ -5945,6 +5962,7 @@ Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpita
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">Wycisz karty</translation>
 <translation id="9040421302519041149">Dostęp do tej sieci jest chroniony.</translation>
+<translation id="9041556417913389119">Włączenie tej opcji uaktywnia eksperymentalne optymalizacje ścieżki renderowania dla WebVR.</translation>
 <translation id="9041603713188951722">Pokaż ustawienia w oknie</translation>
 <translation id="9042893549633094279">Prywatność i bezpieczeństwo</translation>
 <translation id="904451693890288097">Wpisz klucz urządzenia „<ph name="DEVICE_NAME" />”:</translation>

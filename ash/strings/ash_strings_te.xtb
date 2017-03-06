@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">భూతద్దం మోడ్</translation>
 <translation id="1153356358378277386">జత చేసిన పరికరాలు</translation>
 <translation id="1195412055398077112">ఓవర్‌స్కాన్</translation>
+<translation id="1247372569136754018">మైక్రోఫోన్ (అంతర్గతం)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> నుండి ఛార్జ్ అవుతోంది</translation>
 <translation id="1270290102613614947">స్క్రీన్‌పై కనిపించే కీబోర్డ్ నిలిపివేయబడింది</translation>
 <translation id="1272079795634619415">ఆపు</translation>
@@ -33,6 +34,7 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు దర్పణం చేస్తోంది</translation>
 <translation id="1919743966458266018">విధి నిర్వాహికిని తెరిచే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
+<translation id="1942830294380034169">నిండిపోయిన బటన్</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" />కి <ph name="TAB_NAME" />ని ప్రసారం చేయడాన్ని ఆపివేయి</translation>
@@ -92,16 +94,19 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> రిజల్యూషన్ <ph name="RESOLUTION" />కి మార్చబడింది</translation>
 <translation id="370649949373421643">Wi-fiని ప్రారంభించు</translation>
 <translation id="3712407551474845318">ప్రాంతాన్ని సంగ్రహించు</translation>
+<translation id="371370241367527062">ముందువైపు మైక్రోఫోన్</translation>
 <translation id="3742055079367172538">స్క్రీన్‌షాట్ తీసినప్పుడు</translation>
 <translation id="3775358506042162758">మీరు బహుళ సైన్-ఇన్‌లో గరిష్టంగా మూడు ఖాతాలను మాత్రమే కలిగి ఉండవచ్చు.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">లాక్ చేయి</translation>
+<translation id="3798670284305777884">స్పీకర్ (అంతర్గతం)</translation>
 <translation id="3799026279081545374">మీరు పని చేయని ఛార్జర్‌ను కలిగి ఉండవచ్చు. మీరు USలో నివసిస్తుంటే, దయచేసి సహాయం పొందడానికి మరియు భర్తీ అభ్యర్థించడానికి 866-628-1371కి కాల్ చేయండి. మీరు UKలో నివసిస్తుంటే, దయచేసి 0800-026-0613కి కాల్ చేయండి. మీరు ఐర్లాండ్‌లో నివసిస్తుంటే, దయచేసి 1-800-832-664కి కాల్ చేయండి. మీరు కెనడాలో నివసిస్తుంటే, దయచేసి 866-628-1372కి కాల్ చేయండి. మీరు ఆస్ట్రేలియాలో నివసిస్తుంటే, దయచేసి 1-800-067-460కి కాల్ చేయండి.</translation>
 <translation id="3846575436967432996">నెట్‌వర్క్ సమాచారం అందుబాటులో లేదు</translation>
 <translation id="3891340733213178823">సైన్ అవుట్ చేయడానికి Ctrl+Shift+Qని రెండుసార్లు నొక్కండి.</translation>
 <translation id="3893630138897523026">ChromeVox (చదవబడే అభిప్రాయం)</translation>
 <translation id="3899995891769452915">వాయిస్ ఇన్‌పుట్</translation>
 <translation id="3901991538546252627"><ph name="NAME" />కి కనెక్ట్ చేస్తోంది</translation>
+<translation id="394485226368336402">ఆడియో సెట్టింగ్‌‍లు</translation>
 <translation id="3967919079500697218">మీ నిర్వాహకులు స్క్రీన్‌షాట్‌లను తీయగల సామర్థ్యాన్ని నిలిపివేసారు.</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="3995138139523574647">USB-C పరికరం (కుడివైపు వెనుక పోర్ట్)</translation>
@@ -132,14 +137,17 @@
 <translation id="5170568018924773124">ఫోల్డర్‌లో చూపించు</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="523505283826916779">ప్రాప్యత సెట్టింగ్‌లు</translation>
+<translation id="5313326810920013265">బ్లూటూత్ సెట్టింగ్‌లు</translation>
 <translation id="532063867737390965">ఈ నెట్‌వర్క్ సెట్టింగ్‌ను నిర్వాహకుడు నిలిపివేసారు.</translation>
 <translation id="5331975486040154427">USB-C పరికరం (ఎడమవైపు వెనుక పోర్ట్)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">అందుబాటులో ఉన్న వినియోగదారులందరూ ఇప్పటికే ఈ సెషన్‌కు జోడించబడ్డారు.</translation>
 <translation id="5507786745520522457">మొబైల్ డేటాను సెటప్ చేయండి</translation>
+<translation id="553675580533261935">సెషన్ నుండి నిష్క్రమిస్తోంది</translation>
 <translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" పొడిగింపు ఈ నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో సహాయపడగలదు.</translation>
 <translation id="5571066253365925590">Bluetooth ప్రారంభించబడింది</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5648021990716966815">మైక్ జాక్</translation>
 <translation id="5777841717266010279">స్క్రీన్ భాగస్వామ్యాన్ని ఆపివేయాలా?</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
@@ -197,6 +205,7 @@
 <translation id="7129360219436193655">లేజర్ పాయింటర్ మోడ్</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
+<translation id="7256634071279256947">వెనుకవైపు మైక్రోఫోన్</translation>
 <translation id="7348093485538360975">ఆన్-స్క్రీన్ కీబోర్డ్</translation>
 <translation id="735745346212279324">VPN డిస్‌కనెక్ట్ చేయబడింది</translation>
 <translation id="742594950370306541">కెమెరా ఉపయోగంలో ఉంది.</translation>

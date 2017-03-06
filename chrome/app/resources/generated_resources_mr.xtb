@@ -476,6 +476,7 @@
 <translation id="1603914832182249871">(गुप्त)</translation>
 <translation id="1607220950420093847">आपले खाते हटविले किंवा अक्षम केले गेले असावे. कृपया साइन आउट करा.</translation>
 <translation id="1608626060424371292">हा वापरकर्ता काढा</translation>
+<translation id="1609170755653088773">आपल्या iPhone वर हा संकेतशब्द संकालित करा</translation>
 <translation id="1609862759711084604">मागील वापरकर्ता</translation>
 <translation id="1611649489706141841">अग्रेषित करा</translation>
 <translation id="1611704746353331382">HTML फायलीमध्‍ये बुकमार्क निर्यात करा...</translation>
@@ -1285,7 +1286,9 @@
 <translation id="2691385045260836588">मॉडेल</translation>
 <translation id="2694026874607847549">1  कुकी</translation>
 <translation id="2695749433451188613">इंटरनेट मुद्रण प्रोटोकॉल (HTTPS)</translation>
+<translation id="2696407800995565614">WebVR प्रायोगिक प्रस्तुत करणारे ऑप्टिमायझेशन</translation>
 <translation id="2702540957532124911">कीबोर्ड:</translation>
+<translation id="270358213449696159">Google Chrome OS अटी सामग्री</translation>
 <translation id="2704142793323512908">या डिव्हाइस मधून आपला विद्यमान डेटा देखील हटवा.</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">टचपॅड गती</translation>
@@ -1596,9 +1599,11 @@
 <translation id="3061650404498811439">निवडण्यायोग्य IME मेनूवरून इमोजी, हस्ताक्षर आणि व्हॉइस इनपुट फॉर्म मध्ये प्रवेश सक्षम करा.</translation>
 <translation id="3063844757726132584">या सोयीस्कर लाँचर मधून आपल्या सर्व अॅप्समध्ये प्रवेश करा. Play गेम्स, व्हिडिओ चॅट, संगीत ऐका, दस्तऐवज संपादित करा किंवा आणखी अॅप्स मिळवा.</translation>
 <translation id="3064388234319122767">लिप्यंतरण (zdravo → здраво)</translation>
+<translation id="3064410671692449875">अपुरा डेटा</translation>
 <translation id="3065041951436100775">टॅबने नष्ट केलेला अभिप्राय</translation>
 <translation id="3065140616557457172">शोधण्यासाठी टाइप करा किंवा नॅव्हिगेट करण्यासाठी URL प्रविष्ट करा – काहीही चालेल.</translation>
 <translation id="3067198360141518313">हे प्लगइन चालवा</translation>
+<translation id="3072913143777711302">क्रेडिट कार्ड अखेरचे वापरल्याची तारीख स्वयं-भरण मध्‍ये प्रदर्शित करा.</translation>
 <translation id="307519606911195071">सेटिंग्ज पृष्ठामध्ये अतिरिक्त प्रवेशक्षमता वैशिष्ट्ये सक्षम करा.</translation>
 <translation id="3075874217500066906">Powerwash प्रक्रिया सुरु करण्‍यासाठी रीस्‍टार्ट आवश्‍यक आहे. रीस्‍टार्ट केल्‍यानंतर आपण पुढे सुरु ठेवू इच्‍छिता याची पुष्‍टी करण्‍यासाठी आपल्‍याला विचारले जाईल.</translation>
 <translation id="3076677906922146425">कोणालाही Chrome मध्ये एक व्यक्ती जोडू द्या</translation>
@@ -2173,6 +2178,7 @@
 <translation id="3809280248639369696">चंद्रकिरण</translation>
 <translation id="3810973564298564668">व्यवस्थापित करा</translation>
 <translation id="3811494700605067549">1 फाईल निवडली</translation>
+<translation id="381202950560906753">दुसरे जोडा</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> आणि <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">खराब प्रमाणपत्र</translation>
 <translation id="3813296892522778813">आपण जे शोधत आहात ते आपल्याला सापडले नसेल तर <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome मदत<ph name="END_LINK_CHROMIUM" /> वर जा</translation>
@@ -2339,6 +2345,8 @@
 <translation id="4037463823853863991">Android साठी प्रवेशयोग्यता टॅब स्विचर सक्षम करा.</translation>
 <translation id="4037889604535939429">व्यक्ती संपादित करा</translation>
 <translation id="40400351611212369">नेटवर्क सक्रियण त्रुटी</translation>
+<translation id="4042197455689555997">सक्षम केलेले असल्यास, क्रेडिट कार्ड अखेरचे वापरल्याची तारीख स्वयं-भरण मध्‍ये प्रदर्शित करा.</translation>
+<translation id="4042264909745389898">Google Chrome OS अटी</translation>
 <translation id="4044612648082411741">आपला प्रमाणपत्र संकेतशब्द प्रविष्ट करा</translation>
 <translation id="404493185430269859">डीफॉल्ट शोध इंजिन</translation>
 <translation id="4047112090469382184">हे कसे सुरक्षित आहे</translation>
@@ -2419,6 +2427,7 @@
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 टॅब}one{# टॅब}other{# टॅब}}</translation>
 <translation id="4154664944169082762">बोटाचा ठसा</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
+<translation id="4158481537962718545">WebRTC Echo Canceller 3.</translation>
 <translation id="4158739975813877944">प्लेलिस्ट उघडा</translation>
 <translation id="4159681666905192102">हे मुलांसाठी असलेले खाते <ph name="CUSTODIAN_EMAIL" /> आणि <ph name="SECOND_CUSTODIAN_EMAIL" /> द्वारे व्‍यवस्‍थापित केले.</translation>
 <translation id="4163560723127662357">अज्ञात कीबोर्ड</translation>
@@ -2685,6 +2694,7 @@
 <translation id="4565377596337484307">संकेतशब्द लपवा</translation>
 <translation id="456664934433279154">टूलकिट-दृश्ये अाधारित Chrome अ‍ॅप विंडो वापरावे किंवा नाही ते नियंत्रित करते.</translation>
 <translation id="4567772783389002344">शब्द जोडा</translation>
+<translation id="4568213207643490790">क्षमस्व, Google खात्यांना या डिव्हाइसवर अनुमती नाही.</translation>
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" शी कनेक्ट करताना प्रमाणीकरण रद्द झाले.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फाइल</translation>
 <translation id="457386861538956877">अधिक...</translation>
@@ -2966,6 +2976,7 @@
 <translation id="4941627891654116707">फॉन्ट आकार</translation>
 <translation id="4942394808693235155">अद्यतने तपासा आणि लागू करा</translation>
 <translation id="494286511941020793">प्रॉक्सी कॉन्फिगरेशन मदत</translation>
+<translation id="494660967831069720">आंशिक डेटा</translation>
 <translation id="4950138595962845479">पर्याय...</translation>
 <translation id="4953808748584563296">डीफॉल्ट नारिंगी अवतार</translation>
 <translation id="4956847150856741762">1</translation>
@@ -3492,6 +3503,7 @@
 <translation id="5627618611556177958">WebUSB</translation>
 <translation id="562935524653278697">आपल्या प्रशासकाने आपले बुकमार्क, इतिहास, संंकेतशब्द आणि अन्य सेटिंग्ज संकालित करणे अक्षम केले आहे.</translation>
 <translation id="5629683404653063367">स्क्रीन विशालक साठी स्पर्श सहाय्य</translation>
+<translation id="563371367637259496">मोबाइल</translation>
 <translation id="563535393368633106">प्रवेश करण्यापूर्वी विचारा (शिफारस केलेले)</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> वापरण्यासाठी आपल्याला प्रथम <ph name="LINK_START" />नेटवर्कच्या साइन-इन पृष्‍ठावर भेट देणे<ph name="LINK_END" /> आवश्यक आहे, जे काही सेकंदांमध्ये स्वयंचलितपणे उघडेल. तसे न झाल्यास, नेटवर्क वापरणे शक्य नाही.</translation>
 <translation id="5637357908912398026">संकेतशब्द सक्तीने जतन-करणे</translation>
@@ -3607,6 +3619,7 @@
 <translation id="5801568494490449797">प्राधान्ये</translation>
 <translation id="5804241973901381774">परवानग्या</translation>
 <translation id="580571955903695899">शीर्षकानुसार पुन्हा क्रमवारी लावा</translation>
+<translation id="5806765737719055152">Windows साठी नवीन प्रायोगिक USB बॅकएंड सक्षम करते.</translation>
 <translation id="580961539202306967">जेव्हा एक साइट मला पुश संदेश पाठवू इच्छिते तेव्हा मला विचारा (शिफारस केलेले)</translation>
 <translation id="5814126672212206791">कनेक्शन प्रकार</translation>
 <translation id="5815645614496570556">X.400 पत्ता</translation>
@@ -3790,6 +3803,7 @@
 <translation id="6059232451013891645">फोल्डर:</translation>
 <translation id="6059652578941944813">प्रमाणपत्र पदानुक्रम</translation>
 <translation id="6059925163896151826">USB डिव्हाइसेस</translation>
+<translation id="6062354413525093285">नवीन USB बॅकएंड सक्षम करा</translation>
 <translation id="6064217302520318294">स्क्रीन लॉक</translation>
 <translation id="6065289257230303064">प्रमाणपत्र विषय निर्देशिका विशेषता</translation>
 <translation id="6067080187494608396">धीमे UI अॅनिमेशन</translation>
@@ -4382,6 +4396,7 @@
 <translation id="6868924482674768124">Mojo UI Service (mus).</translation>
 <translation id="6869402422344886127">चेक बॉक्स तपासले</translation>
 <translation id="6870130893560916279">यूक्रेनियन कीबोर्ड</translation>
+<translation id="6870154062190524055">प्रायोगिक WebRTC echo canceller (AEC3).</translation>
 <translation id="6870888490422746447">यासह सामायिक करण्‍यासाठी एक अॅप निवडा:</translation>
 <translation id="6871644448911473373">OCSP प्रतिसादकर्ता: <ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">एक लेख असल्याचे दिसते</translation>
@@ -5844,6 +5859,7 @@
 <translation id="8903921497873541725">झूम वाढवा</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8908902564709148335">चेतावणी: आपण या संगणकावर --स्क्रिप्‍ट-आवश्‍यक-क्रिया ध्वज सक्षम केला आहे, जो या विस्‍ताराच्या क्षमता मर्यादित करतो. तथापि, अन्य डिव्‍हाइसेस कदाचित या ध्वजास समर्थन देत नाही किंवा त्यांच्यावर तो सक्षम केलेला नसेल. या डिव्‍हाइसेसवर, हा विस्तार हे देखील करू शकतो:</translation>
+<translation id="8909047803536336595">अन्य कोणतीही शोध इंजिने सापडली नाहीत</translation>
 <translation id="8909142433586818204">त्रुटी पृष्ठांंमध्ये "पृष्ठ नंतर डाउनलोड करा" बटण दर्शवणे सक्षम करते.</translation>
 <translation id="8910146161325739742">आपली स्क्रीन शेअर करा</translation>
 <translation id="8910222113987937043">आपल्या बुकमार्क, इतिहास आणि अन्य सेटिंग्जसाठी बदल यापुढे आपल्या Google खात्यासह संकालित केले जाणार नाहीत. तथापि, आपला विद्यमान डेटा आपल्या Google खात्यामध्ये संग्रहित केलेला असेल आणि <ph name="BEGIN_LINK" />Google डॅशबोर्ड<ph name="END_LINK" /> वर व्यवस्थापित केला जाऊ शकतो.</translation>
@@ -5859,6 +5875,7 @@
 <translation id="8925458182817574960">&amp;सेटिंग्ज</translation>
 <translation id="8926389886865778422">पुन्हा विचारू नका</translation>
 <translation id="8926518602592448999">विकासक मोड विस्तार अक्षम करा</translation>
+<translation id="892706138619340876">काही सेटिंग्ज रीसेट केल्या</translation>
 <translation id="8931394284949551895">नवीन डिव्हाइसेस</translation>
 <translation id="8932730422557198035">Android Midi API वापरा</translation>
 <translation id="8933960630081805351">फाइंडर मध्ये &amp;दर्शवा</translation>
@@ -5946,6 +5963,7 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">टॅब निःशब्द करा</translation>
 <translation id="9040421302519041149">या नेटवर्कवरील प्रवेश संरक्षित केला आहे.</translation>
+<translation id="9041556417913389119">हा पर्याय सक्षम करण्यामुळे WebVR साठी प्रायोगिक प्रस्तुत करणारे पथ ऑप्टिमायझेशन सक्षम होते.</translation>
 <translation id="9041603713188951722">विंडोमध्ये सेटिंग्ज दर्शवा</translation>
 <translation id="9042893549633094279">गोपनीयता आणि सुरक्षा</translation>
 <translation id="904451693890288097">कृपया यासाठी पासकी प्रविष्‍ट करा "<ph name="DEVICE_NAME" />":</translation>

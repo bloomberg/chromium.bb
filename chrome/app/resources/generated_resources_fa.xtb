@@ -475,6 +475,7 @@
 <translation id="1603914832182249871">(ناشناس)</translation>
 <translation id="1607220950420093847">حساب شما ممکن است حذف یا غیر فعال شده باشد. لطفاً از سیستم خارج شوید.</translation>
 <translation id="1608626060424371292">حذف این کاربر</translation>
+<translation id="1609170755653088773">‏همگام‌سازی گذرواژه با iPhone</translation>
 <translation id="1609862759711084604">کاربر قبلی</translation>
 <translation id="1611649489706141841">هدایت</translation>
 <translation id="1611704746353331382">‏صادر کردن نشانک‌ها به فایل HTML...</translation>
@@ -1284,7 +1285,9 @@
 <translation id="2691385045260836588">مدل</translation>
 <translation id="2694026874607847549">1 کوکی</translation>
 <translation id="2695749433451188613">‏پروتکل چاپ اینترنتی (HTTPS)</translation>
+<translation id="2696407800995565614">‏بهینه‌سازی پردازش آزمایشی WebVR</translation>
 <translation id="2702540957532124911">صفحه‌کلید:</translation>
+<translation id="270358213449696159">‏محتوای شرایط سیستم‌عامل Google Chrome</translation>
 <translation id="2704142793323512908">همچنین داده‌های موجودتان را در این دستگاه پاک کنید.</translation>
 <translation id="2704184184447774363">‏امضای مدرک Microsoft</translation>
 <translation id="270516211545221798">سرعت صفحه لمسی</translation>
@@ -1599,9 +1602,11 @@
 <translation id="3061650404498811439">‏فعال کردن دسترسی به صورتک‌ها، ورودی دست‌نویس و گفتاری از منوی شرکت کردن در IME.</translation>
 <translation id="3063844757726132584">از این راه‌انداز راحت به تمام برنامه‌هایتان دسترسی داشته باشید. بازی کنید، گپ ویدئویی بزنید، به موسیقی گوش دهید، اسناد را ویرایش کنید یا برنامه‌های بیشتری دریافت کنید.</translation>
 <translation id="3064388234319122767">‏نویسه‌گردانی (zdravo ← ‏здраво)</translation>
+<translation id="3064410671692449875">داده ناکافی</translation>
 <translation id="3065041951436100775">بازخورد بسته شدن برگه.</translation>
 <translation id="3065140616557457172">‏برای جستجو تایپ کنید یا URL را برای پیمایش وارد کنید - همه چیز آماده است.</translation>
 <translation id="3067198360141518313">اجرای این افزایه</translation>
+<translation id="3072913143777711302">تاریخ آخرین استفاده از کارت اعتباری در تکمیل خودکار نمایش داده شود.</translation>
 <translation id="307519606911195071">قابلیت‌های دسترس‌پذیری بیشتری را در صفحه «تنظیمات» فعال کنید.</translation>
 <translation id="3075874217500066906">‏برای شروع فرآیند Powerwash، به یک راه‌اندازی مجدد نیاز دارید. پس از راه‌اندازی مجدد، از شما خواسته می‌شود تأیید کنید که می‌خواهید ادامه دهید.</translation>
 <translation id="3076677906922146425">‏اجازه به همه برای افزودن شخصی به Chrome</translation>
@@ -2177,6 +2182,7 @@
 <translation id="3809280248639369696">فضایی</translation>
 <translation id="3810973564298564668">مدیریت</translation>
 <translation id="3811494700605067549">۱ فایل انتخاب شد</translation>
+<translation id="381202950560906753">افزودن دستگاه دیگر</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> و <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">گواهی نادرست</translation>
 <translation id="3813296892522778813">‏اگر نمی‌توانید چیزی را که می‌خواهید پیدا کنید،‌ به <ph name="BEGIN_LINK_CHROMIUM" />راهنمای Google Chrome‏<ph name="END_LINK_CHROMIUM" /> بروید</translation>
@@ -2343,6 +2349,8 @@
 <translation id="4037463823853863991">‏فعال کردن تعویض‌گر برگه قابلیت دسترسی برای Android.</translation>
 <translation id="4037889604535939429">ویرایش شخص</translation>
 <translation id="40400351611212369">خطا در فعال‌سازی شبکه</translation>
+<translation id="4042197455689555997">درصورت فعال‌سازی، تاریخ آخرین استفاده از کارت اعتباری در تکمیل خودکار نمایش داده شود.</translation>
+<translation id="4042264909745389898">‏شرایط سیستم‌عامل Google Chrome</translation>
 <translation id="4044612648082411741">گذرواژه گواهی‌تان را وارد کنید</translation>
 <translation id="404493185430269859">موتور جستجوی پیش‌‌فرض</translation>
 <translation id="4047112090469382184">ایمنی آن به چه صورت است</translation>
@@ -2424,6 +2432,7 @@
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{‏۱ برگه}one{‏# برگه}other{‏# برگه}}</translation>
 <translation id="4154664944169082762">اثر انگشت</translation>
 <translation id="4157869833395312646">‏رمزنگاری انتقال یافته از دروازه سرور Microsoft</translation>
+<translation id="4158481537962718545">WebRTC Echo Canceller 3.</translation>
 <translation id="4158739975813877944">باز کردن فهرست پخش</translation>
 <translation id="4159681666905192102">این یک حساب مخصوص بچه‌ها است که توسط <ph name="CUSTODIAN_EMAIL" /> و <ph name="SECOND_CUSTODIAN_EMAIL" /> مدیریت می‌شود.</translation>
 <translation id="4163560723127662357">صفحه‌کلید ناشناس</translation>
@@ -2690,6 +2699,7 @@
 <translation id="4565377596337484307">عدم نمایش گذرواژه</translation>
 <translation id="456664934433279154">‏کنترل می‌کند که از پنجره‌های Chrome App مبتنی بر Toolkit-Views استفاده شود یا نه.</translation>
 <translation id="4567772783389002344">افزودن واژه</translation>
+<translation id="4568213207643490790">‏متأسفیم، حساب‌های Google در این دستگاه مجاز نیستند.</translation>
 <translation id="4572659312570518089">هنگام اتصال به «<ph name="DEVICE_NAME" />» راستی‌آزمایی لغو شد.</translation>
 <translation id="4572815280350369984">فایل <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">بیشتر...</translation>
@@ -2970,6 +2980,7 @@
 <translation id="4941627891654116707">اندازه قلم</translation>
 <translation id="4942394808693235155">به‌روزرسانی‌ها را بررسی کرده و آن‌ها را اعمال کنید</translation>
 <translation id="494286511941020793">راهنمای پیکربندی پراکسی</translation>
+<translation id="494660967831069720">داده‌های جزئی</translation>
 <translation id="4950138595962845479">گزینه‌ها...</translation>
 <translation id="4953808748584563296">چهره‌نمای پیش‌فرض نارنجی</translation>
 <translation id="4956847150856741762">۱</translation>
@@ -3497,6 +3508,7 @@
 <translation id="5627618611556177958">WebUSB</translation>
 <translation id="562935524653278697">سرپرست شما همگام‌سازی نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان را غیرفعال کرده است.</translation>
 <translation id="5629683404653063367">پشتیبانی از لمس برای درشت‌نمایی صفحه</translation>
+<translation id="563371367637259496">دستگاه همراه</translation>
 <translation id="563535393368633106">قبل از دسترسی سؤال شود (توصیه می‌شود)</translation>
 <translation id="5636996382092289526">برای استفاده از <ph name="NETWORK_ID" /> ابتدا باید به <ph name="LINK_START" />صفحه ورود به سیستم شبکه بروید<ph name="LINK_END" />، که تا چند ثانیه دیگر به‌طور خودکار باز می‌شود. اگر این اتفاق نیافتد، نمی‌توان از شبکه استفاده کرد.</translation>
 <translation id="5637357908912398026">ذخیره‌سازی اجباری گذرواژه‌ها</translation>
@@ -3612,6 +3624,7 @@
 <translation id="5801568494490449797">موارد برگزیده</translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="580571955903695899">ترتیب مجدد براساس عنوان</translation>
+<translation id="5806765737719055152">‏قسمت انتهایی USB آزمایشی جدید را برای Windows فعال می‌کند.</translation>
 <translation id="580961539202306967">وقتی سایتی می‌خواهد پیام‌های فشاری برایم ارسال کند، از من سؤال شود (توصیه می‌شود)</translation>
 <translation id="5814126672212206791">نوع اتصال</translation>
 <translation id="5815645614496570556">‏آدرس X.400</translation>
@@ -3795,6 +3808,7 @@
 <translation id="6059232451013891645">پوشه:</translation>
 <translation id="6059652578941944813">سلسه مراتب گواهی</translation>
 <translation id="6059925163896151826">‏دستگاه‌های USB</translation>
+<translation id="6062354413525093285">‏قسمت انتهایی USB جدید فعال شود</translation>
 <translation id="6064217302520318294">قفل صفحه</translation>
 <translation id="6065289257230303064">ویژگی‌های دایرکتوری موضوع گواهی</translation>
 <translation id="6067080187494608396">پویانمایی‌های رابط کاربری آهسته</translation>
@@ -4386,6 +4400,7 @@
 <translation id="6868924482674768124">‏سرویس رابط کاربری Mojo (‏mus).</translation>
 <translation id="6869402422344886127">کادر انتخاب علامت زده شده</translation>
 <translation id="6870130893560916279">صفحه‌کلید اوکراینی</translation>
+<translation id="6870154062190524055">Experimental WebRTC echo canceller (AEC3).</translation>
 <translation id="6870888490422746447">انتخاب برنامه‌ای برای اشتراک‌گذاری در:</translation>
 <translation id="6871644448911473373">‏پاسخگوی OCSP: <ph name="LOCATION" /></translation>
 <translation id="6871906683378132336">ظاهراً یک مقاله است</translation>
@@ -5850,6 +5865,7 @@
 <translation id="8903921497873541725">بزرگ‌نمایی</translation>
 <translation id="8904976895050290827">‏همگام‌سازی Chrome</translation>
 <translation id="8908902564709148335">هشدار: پرچم --اسکریپت-نیاز-به-اقدام-دارد را در این رایانه فعال کرده‌اید که قابلیت‌های این برنامه افزودنی را محدود می‌کند. با وجود این، شاید سایر دستگاه‌ها از این پرچم پشتیبانی نکنند یا آن را فعال کرده باشند. در این دستگاه‌ها، این برنامه افزودنی می‌تواند این موارد را نیز انجام دهد:</translation>
+<translation id="8909047803536336595">موتور جستجوهای دیگری پیدا نشد</translation>
 <translation id="8909142433586818204">نمایش دکمه «بارگیری صفحه در زمانی دیگر» را در صفحه‌های خطا فعال می‌کند.</translation>
 <translation id="8910146161325739742">اشتراک‌گذاری صفحه</translation>
 <translation id="8910222113987937043">‏تغییرات ایجادشده در نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات شما با حساب Google شما دیگر همگام‌سازی نخواهد شد. بااین‌وجود داده‌های قبلاً ذخیره‌شده در حساب Google شما در آنجا می‌مانند و در <ph name="BEGIN_LINK" />داشبورد Google<ph name="END_LINK" /> می‌توانید آن‌ها را مدیریت کنید.</translation>
@@ -5865,6 +5881,7 @@
 <translation id="8925458182817574960">&amp;تنظیمات</translation>
 <translation id="8926389886865778422">دوباره سؤال نشود</translation>
 <translation id="8926518602592448999">غیرفعال کردن افزونه‌های حالت برنامه‌نویس</translation>
+<translation id="892706138619340876">برخی تنظیمات بازنشانی شدند</translation>
 <translation id="8931394284949551895">دستگاه‌های جدید</translation>
 <translation id="8932730422557198035">‏استفاده از Android Midi API</translation>
 <translation id="8933960630081805351">‏&amp;نمایش در Finder</translation>
@@ -5952,6 +5969,7 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">بی‌صدا کردن برگه‌ها</translation>
 <translation id="9040421302519041149">دسترسی به این شبکه محافظت می‌شود.</translation>
+<translation id="9041556417913389119">‏با فعال کردن این گزینه، بهینه‌سازی مسیر پردازش آزمایشی برای WebVR فعال می‌شود.</translation>
 <translation id="9041603713188951722">نمایش تنظیمات در یک پنجره</translation>
 <translation id="9042893549633094279">حریم خصوصی و امنیت</translation>
 <translation id="904451693890288097">لطفاً کلیدواژه را برای "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
