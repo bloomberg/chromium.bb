@@ -5620,7 +5620,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {
 // of the server address. Also tests that the billing address relationship was
 // transferred to the converted address.
 TEST_F(PersonalDataManagerTest,
-       ConvertWalletAddressesToLocalProfiles_NewProfile) {
+       ConvertWalletAddressesAndUpdateWalletCards_NewProfile) {
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -5682,7 +5682,7 @@ TEST_F(PersonalDataManagerTest,
   ///////////////////////////////////////////////////////////////////////
   // Tested method.
   ///////////////////////////////////////////////////////////////////////
-  personal_data_->ConvertWalletAddressesToLocalProfiles();
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
 
   ///////////////////////////////////////////////////////////////////////
   // Validation.
@@ -5727,7 +5727,7 @@ TEST_F(PersonalDataManagerTest,
 // profile if they are considered equivalent. Also tests that the billing
 // address relationship was transferred to the converted address.
 TEST_F(PersonalDataManagerTest,
-       ConvertWalletAddressesToLocalProfiles_MergedProfile) {
+       ConvertWalletAddressesAndUpdateWalletCards_MergedProfile) {
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -5789,7 +5789,7 @@ TEST_F(PersonalDataManagerTest,
   ///////////////////////////////////////////////////////////////////////
   // Tested method.
   ///////////////////////////////////////////////////////////////////////
-  personal_data_->ConvertWalletAddressesToLocalProfiles();
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
 
   ///////////////////////////////////////////////////////////////////////
   // Validation.
@@ -5832,7 +5832,7 @@ TEST_F(PersonalDataManagerTest,
 // Tests that a Wallet address that has already converted does not get converted
 // a second time.
 TEST_F(PersonalDataManagerTest,
-       ConvertWalletAddressesToLocalProfiles_AlreadyConverted) {
+       ConvertWalletAddressesAndUpdateWalletCards_AlreadyConverted) {
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -5863,7 +5863,7 @@ TEST_F(PersonalDataManagerTest,
   ///////////////////////////////////////////////////////////////////////
   // Tested method.
   ///////////////////////////////////////////////////////////////////////
-  personal_data_->ConvertWalletAddressesToLocalProfiles();
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
 
   ///////////////////////////////////////////////////////////////////////
   // Validation.
@@ -5885,8 +5885,9 @@ TEST_F(PersonalDataManagerTest,
 // Tests that when the user has multiple similar Wallet addresses, they get
 // merged into a single local profile, and that the billing address relationship
 // is merged too.
-TEST_F(PersonalDataManagerTest,
-       ConvertWalletAddressesToLocalProfiles_MultipleSimilarWalletAddresses) {
+TEST_F(
+    PersonalDataManagerTest,
+    ConvertWalletAddressesAndUpdateWalletCards_MultipleSimilarWalletAddresses) {
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -5960,7 +5961,7 @@ TEST_F(PersonalDataManagerTest,
   ///////////////////////////////////////////////////////////////////////
   // Tested method.
   ///////////////////////////////////////////////////////////////////////
-  personal_data_->ConvertWalletAddressesToLocalProfiles();
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
 
   ///////////////////////////////////////////////////////////////////////
   // Validation.
@@ -6002,6 +6003,120 @@ TEST_F(PersonalDataManagerTest,
   // converted profile.
   EXPECT_EQ(profiles[0]->guid(),
             personal_data_->GetCreditCards()[0]->billing_address_id());
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[1]->billing_address_id());
+}
+
+// Tests a new server card's billing address is updated propely even if the
+// address was already converted in the past.
+TEST_F(
+    PersonalDataManagerTest,
+    ConvertWalletAddressesAndUpdateWalletCards_NewCard_AddressAlreadyConverted) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  // Go through the conversion process for a server address and card. Then add
+  // a new server card that refers to the already converted server address as
+  // its billing address.
+  EnableWalletCardImport();
+  base::HistogramTester histogram_tester;
+  const std::string kServerAddressId("server_address1");
+
+  // Add a server profile.
+  std::vector<AutofillProfile> GetServerProfiles;
+  GetServerProfiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
+  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "", "Fox",
+                       "1212 Center", "Bld. 5", "Orlando", "FL", "", "US", "");
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().set_use_count(100);
+  autofill_table_->SetServerProfiles(GetServerProfiles);
+
+  // Add a server card that have the server address as billing address.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card1"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1111" /* Visa */, "01", "2999");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().set_billing_address_id(kServerAddressId);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is setup correctly.
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+  EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  // Run the conversion.
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // The Wallet address should have been converted to a new local profile.
+  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+
+  // The conversion should be recorded in the Wallet address.
+  EXPECT_TRUE(personal_data_->GetServerProfiles().back()->has_converted());
+
+  // Make sure that the billing address id of the card now point to the
+  // converted profile.
+  std::vector<AutofillProfile*> profiles =
+      personal_data_->GetProfilesToSuggest();
+  ASSERT_EQ(1U, profiles.size());
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[0]->billing_address_id());
+
+  // Add a new server card that has the same billing address as the old one.
+  server_cards.push_back(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card2"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1112" /* Visa */, "01", "2888");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().set_billing_address_id(kServerAddressId);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is setup correctly.
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+
+  ///////////////////////////////////////////////////////////////////////
+  // Tested method.
+  ///////////////////////////////////////////////////////////////////////
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
+
+  ///////////////////////////////////////////////////////////////////////
+  // Validation.
+  ///////////////////////////////////////////////////////////////////////
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // The conversion should still be recorded in the Wallet address.
+  EXPECT_TRUE(personal_data_->GetServerProfiles().back()->has_converted());
+
+  // Get the profiles, sorted by frecency to have a deterministic order.
+  profiles = personal_data_->GetProfilesToSuggest();
+
+  // Make sure that there is still only one profile.
+  ASSERT_EQ(1U, profiles.size());
+
+  // Make sure that the billing address id of the first server card still refers
+  // to the converted address.
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[0]->billing_address_id());
+  // Make sure that the billing address id of the new server card still refers
+  // to the converted address.
   EXPECT_EQ(profiles[0]->guid(),
             personal_data_->GetCreditCards()[1]->billing_address_id());
 }

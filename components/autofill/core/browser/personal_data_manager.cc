@@ -55,6 +55,9 @@ using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::GetStreetAddressLinesAsSingleLine;
 using ::i18n::addressinput::STREET_ADDRESS;
 
+// The length of a local profile GUID.
+const int LOCAL_GUID_LENGTH = 36;
+
 template<typename T>
 class FormGroupMatchesByGUIDFunctor {
  public:
@@ -1250,10 +1253,11 @@ void PersonalDataManager::NotifyPersonalDataChanged() {
   for (PersonalDataManagerObserver& observer : observers_)
     observer.OnPersonalDataChanged();
 
-  // If new data was synced, try to convert new server profiles.
+  // If new data was synced, try to convert new server profiles and update
+  // server cards.
   if (has_synced_new_data_) {
     has_synced_new_data_ = false;
-    ConvertWalletAddressesToLocalProfiles();
+    ConvertWalletAddressesAndUpdateWalletCards();
   }
 }
 
@@ -1854,7 +1858,7 @@ void PersonalDataManager::UpdateCardsBillingAddressReference(
   }
 }
 
-void PersonalDataManager::ConvertWalletAddressesToLocalProfiles() {
+void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
   // Copy the local profiles into a vector<AutofillProfile>. Theses are the
   // existing profiles. Get them sorted in decreasing order of frecency, so the
   // "best" profiles are checked first. Put the verified profiles last so the
@@ -1865,22 +1869,54 @@ void PersonalDataManager::ConvertWalletAddressesToLocalProfiles() {
     local_profiles.push_back(*existing_profile);
   }
 
+  // Since we are already iterating on all the server profiles to convert Wallet
+  // addresses and we will need to access them by guid later to update the
+  // Wallet cards, create a map here.
+  std::unordered_map<std::string, AutofillProfile*> server_id_profiles_map;
+
   // Create the map used to update credit card's billing addresses after the
   // convertion/merge.
   std::unordered_map<std::string, std::string> guids_merge_map;
 
+  bool has_converted_addresses = ConvertWalletAddressesToLocalProfiles(
+      &local_profiles, &server_id_profiles_map, &guids_merge_map);
+  bool should_update_cards = UpdateWalletCardsAlreadyConvertedBillingAddresses(
+      &local_profiles, &server_id_profiles_map, &guids_merge_map);
+
+  if (has_converted_addresses) {
+    // Save the local profiles to the DB.
+    SetProfiles(&local_profiles);
+  }
+
+  if (should_update_cards || has_converted_addresses) {
+    // Update the credit cards billing address relationship.
+    UpdateCardsBillingAddressReference(guids_merge_map);
+
+    // Force a reload of the profiles and cards.
+    Refresh();
+  }
+}
+
+bool PersonalDataManager::ConvertWalletAddressesToLocalProfiles(
+    std::vector<AutofillProfile>* local_profiles,
+    std::unordered_map<std::string, AutofillProfile*>* server_id_profiles_map,
+    std::unordered_map<std::string, std::string>* guids_merge_map) {
   bool has_converted_addresses = false;
   for (std::unique_ptr<AutofillProfile>& wallet_address : server_profiles_) {
+    // Add the profile to the map.
+    server_id_profiles_map->insert(
+        std::make_pair(wallet_address->server_id(), wallet_address.get()));
+
     // If the address has not been converted yet, convert it.
     if (!wallet_address->has_converted()) {
       // Try to merge the server address into a similar local profile, or create
       // a new local profile if no similar profile is found.
       std::string address_guid =
-          MergeServerAddressesIntoProfiles(*wallet_address, &local_profiles);
+          MergeServerAddressesIntoProfiles(*wallet_address, local_profiles);
 
       // Update the map to transfer the billing address relationship from the
       // server address to the converted/merged local profile.
-      guids_merge_map.insert(std::pair<std::string, std::string>(
+      guids_merge_map->insert(std::pair<std::string, std::string>(
           wallet_address->server_id(), address_guid));
 
       // Update the wallet addresses metadata to record the conversion.
@@ -1891,16 +1927,54 @@ void PersonalDataManager::ConvertWalletAddressesToLocalProfiles() {
     }
   }
 
-  if (has_converted_addresses) {
-    // Save the local profiles to the DB.
-    SetProfiles(&local_profiles);
+  return has_converted_addresses;
+}
 
-    // Update the credit cards billing address relationship.
-    UpdateCardsBillingAddressReference(guids_merge_map);
+bool PersonalDataManager::UpdateWalletCardsAlreadyConvertedBillingAddresses(
+    std::vector<AutofillProfile>* local_profiles,
+    std::unordered_map<std::string, AutofillProfile*>* server_id_profiles_map,
+    std::unordered_map<std::string, std::string>* guids_merge_map) {
+  // Look for server cards that still refer to server addresses but for which
+  // there is no mapping. This can happen if it's a new card for which the
+  // billing address has already been converted. This should be a no-op for most
+  // situations. Otherwise, it should affect only one Wallet card, sinces users
+  // do not add a lot of credit cards.
+  AutofillProfileComparator comparator(app_locale_);
+  bool should_update_cards = false;
+  for (std::unique_ptr<CreditCard>& wallet_card : server_credit_cards_) {
+    std::string billing_address_id = wallet_card->billing_address_id();
 
-    // Force a reload of the profiles and cards.
-    Refresh();
+    // If billing address refers to a server id and that id is not a key in the
+    // guids_merge_map, it means that the card is new but the address was
+    // already converted. Look for the matching converted profile.
+    if (!billing_address_id.empty() &&
+        billing_address_id.length() != LOCAL_GUID_LENGTH &&
+        guids_merge_map->find(billing_address_id) == guids_merge_map->end()) {
+      // Get the profile.
+      auto it = server_id_profiles_map->find(billing_address_id);
+      DCHECK(it != server_id_profiles_map->end());
+      if (it != server_id_profiles_map->end()) {
+        AutofillProfile* billing_address = it->second;
+
+        // Look for a matching local profile (DO NOT MERGE).
+        bool matching_profile_found = false;
+        for (auto& local_profile : *local_profiles) {
+          if (!matching_profile_found &&
+              comparator.AreMergeable(*billing_address, local_profile)) {
+            matching_profile_found = true;
+
+            // The Wallet address matches this local profile. Add this to the
+            // merge mapping.
+            guids_merge_map->insert(std::pair<std::string, std::string>(
+                billing_address_id, local_profile.guid()));
+            should_update_cards = true;
+          }
+        }
+      }
+    }
   }
+
+  return should_update_cards;
 }
 
 // TODO(crbug.com/687975): Reuse MergeProfiles in this function.

@@ -322,16 +322,21 @@ class PersonalDataManager : public KeyedService,
                            ApplyDedupingRoutine_OncePerVersion);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ApplyDedupingRoutine_MultipleDedupes);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ConvertWalletAddressesToLocalProfiles_NewProfile);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ConvertWalletAddressesToLocalProfiles_MergedProfile);
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
-      ConvertWalletAddressesToLocalProfiles_AlreadyConverted);
+      ConvertWalletAddressesAndUpdateWalletCards_NewProfile);
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
-      ConvertWalletAddressesToLocalProfiles_MultipleSimilarWalletAddresses);
+      ConvertWalletAddressesAndUpdateWalletCards_MergedProfile);
+  FRIEND_TEST_ALL_PREFIXES(
+      PersonalDataManagerTest,
+      ConvertWalletAddressesAndUpdateWalletCards_NewCard_AddressAlreadyConverted);
+  FRIEND_TEST_ALL_PREFIXES(
+      PersonalDataManagerTest,
+      ConvertWalletAddressesAndUpdateWalletCards_AlreadyConverted);
+  FRIEND_TEST_ALL_PREFIXES(
+      PersonalDataManagerTest,
+      ConvertWalletAddressesAndUpdateWalletCards_MultipleSimilarWalletAddresses);
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -518,10 +523,31 @@ class PersonalDataManager : public KeyedService,
   void UpdateCardsBillingAddressReference(
       const std::unordered_map<std::string, std::string>& guids_merge_map);
 
-  // Converts the wallet addresses to local autofill profiles. This should be
+  // Converts the Wallet addresses to local autofill profiles. This should be
   // called after all the syncable data has been processed (local cards and
-  // profiles, wallet data and metadata).
-  void ConvertWalletAddressesToLocalProfiles();
+  // profiles, Wallet data and metadata). Also updates Wallet cards' billing
+  // address id to point to the local profiles.
+  void ConvertWalletAddressesAndUpdateWalletCards();
+
+  // Converts the Wallet addresses into local profiles either by merging with an
+  // existing |local_profiles| of by adding a new one. Populates the
+  // |server_id_profiles_map| to be used when updating cards where the address
+  // was already converted. Also populates the |guids_merge_map| to keep the
+  // link between the Wallet address and the equivalent local profile (from
+  // merge or creation).
+  bool ConvertWalletAddressesToLocalProfiles(
+      std::vector<AutofillProfile>* local_profiles,
+      std::unordered_map<std::string, AutofillProfile*>* server_id_profiles_map,
+      std::unordered_map<std::string, std::string>* guids_merge_map);
+
+  // Goes through the Wallet cards to find cards where the billing address is a
+  // Wallet address which was already converted in a previous pass. Looks for a
+  // matching local profile and updates the |guids_merge_map| to make the card
+  // refert to it.
+  bool UpdateWalletCardsAlreadyConvertedBillingAddresses(
+      std::vector<AutofillProfile>* local_profiles,
+      std::unordered_map<std::string, AutofillProfile*>* server_id_profiles_map,
+      std::unordered_map<std::string, std::string>* guids_merge_map);
 
   // Tries to merge the |server_address| into the |existing_profiles| if
   // possible. Adds it to the list if no match is found. The existing profiles
