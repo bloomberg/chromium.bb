@@ -3419,7 +3419,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   BOOL returnTypeIsString = [returnType isEqual:NSStringPboardType];
   const content::TextInputManager::TextSelection* selection =
       renderWidgetHostView_->GetTextSelection();
-  BOOL hasText = !selection || selection->selected_text().empty();
+  BOOL hasText = selection && !selection->selected_text().empty();
   BOOL takesText =
       renderWidgetHostView_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
 
