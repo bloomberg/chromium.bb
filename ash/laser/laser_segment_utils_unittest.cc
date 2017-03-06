@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <math.h>
+#include <cmath>
 
 #include "ash/laser/laser_segment_utils.h"
 #include "ash/test/ash_test_base.h"
@@ -60,9 +60,9 @@ void CheckUndefinedNormalLine(const gfx::PointF& start_point,
   ComputeNormalLineVariables(start_point, end_point, &calculated_slope,
                              &calculated_start_y_intercept,
                              &calculated_end_y_intercept);
-  EXPECT_TRUE(isnan(calculated_slope));
-  EXPECT_TRUE(isnan(calculated_start_y_intercept));
-  EXPECT_TRUE(isnan(calculated_end_y_intercept));
+  EXPECT_TRUE(std::isnan(calculated_slope));
+  EXPECT_TRUE(std::isnan(calculated_start_y_intercept));
+  EXPECT_TRUE(std::isnan(calculated_end_y_intercept));
 }
 
 // Helper function to check that the projections from the given line variables
