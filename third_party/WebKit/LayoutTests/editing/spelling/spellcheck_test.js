@@ -275,52 +275,21 @@ class MarkerSerializer {
   }
 }
 
+/**
+ * @param {!Document} document
+ * @return {boolean}
+ */
+function hasPendingSpellCheckRequest(document) {
+  return internals.lastSpellCheckRequestSequence(document) !==
+      internals.lastSpellCheckProcessedSequence(document);
+}
+
 /** @type {string} */
 const kTitle = 'title';
 /** @type {string} */
 const kCallback = 'callback';
 /** @type {string} */
 const kIsSpellcheckTest = 'isSpellcheckTest';
-
-/**
- * @param {!Test} testObject
- * @param {!Sample} sample
- * @param {string} expectedText
- * @param {number} remainingRetry
- * @param {number} retryInterval
- */
-function verifyMarkers(
-    testObject, sample, expectedText, remainingRetry, retryInterval) {
-  assert_not_equals(
-      window.internals, undefined,
-      'window.internals is required for running automated spellcheck tests.');
-
-  /** @type {!MarkerSerializer} */
-  const serializer = new MarkerSerializer({
-    spelling: '#',
-    grammar: '~'});
-
-  try {
-    assert_equals(serializer.serialize(sample.document), expectedText);
-    testObject.done();
-  } catch (error) {
-    if (remainingRetry <= 0)
-      throw error;
-
-    // Force invoking idle time spellchecker in case it has not been run yet.
-    if (window.testRunner)
-      window.testRunner.runIdleTasks(() => {});
-
-    // TODO(xiaochengh): We should make SpellCheckRequester::didCheck trigger
-    // something in JavaScript (e.g., a |Promise|), so that we can actively
-    // know the completion of spellchecking instead of passively waiting for
-    // markers to appear or disappear.
-    testObject.step_timeout(
-        () => verifyMarkers(testObject, sample, expectedText,
-                            remainingRetry - 1, retryInterval),
-        retryInterval);
-  }
-}
 
 // Spellchecker gets triggered not only by text and selection change, but also
 // by focus change. For example, misspelling markers in <INPUT> disappear when
@@ -334,6 +303,9 @@ function verifyMarkers(
 var spellcheckTestRunning = false;
 /** @type {!Array<!Object>} */
 const testQueue = [];
+
+/** @type {?Function} */
+let verificationForCurrentTest = null;
 
 /**
  * @param {!Test} testObject
@@ -359,25 +331,48 @@ function invokeSpellcheckTest(testObject, input, tester, expectedText) {
       assert_unreached(`Invalid tester: ${tester}`);
     }
 
-    /** @type {number} */
-    const kMaxRetry = 10;
-    /** @type {number} */
-    const kRetryInterval = 50;
+    assert_not_equals(
+        window.testRunner, undefined,
+        'window.testRunner is required for automated spellcheck tests.');
+    assert_not_equals(
+        window.internals, undefined,
+        'window.internals is required for automated spellcheck tests.');
 
-    // TODO(xiaochengh): We should make SpellCheckRequester::didCheck trigger
-    // something in JavaScript (e.g., a |Promise|), so that we can actively know
-    // the completion of spellchecking instead of passively waiting for markers
-    // to appear or disappear.
-    testObject.step_timeout(
-        () => verifyMarkers(testObject, sample, expectedText,
-                            kMaxRetry, kRetryInterval),
-        kRetryInterval);
+    assert_equals(
+        verificationForCurrentTest, null,
+        'Internal error: previous test not verified yet');
+
+    verificationForCurrentTest = () => {
+      if (hasPendingSpellCheckRequest(sample.document))
+        return;
+
+      testObject.step(() => {
+        /** @type {!MarkerSerializer} */
+        const serializer = new MarkerSerializer({
+          spelling: '#',
+          grammar: '~'});
+
+        assert_equals(serializer.serialize(sample.document), expectedText);
+        testObject.done();
+      });
+    };
+
+    if (internals.idleTimeSpellCheckerState !== undefined &&
+        internals.idleTimeSpellCheckerState(sample.document) === 'HotModeRequested') {
+        internals.runIdleTimeSpellChecker(sample.document);
+    }
+
+    // For a test that does not create new spell check request, a synchronous
+    // verification finishes everything.
+    verificationForCurrentTest();
   });
 }
 
 add_result_callback(testObj => {
     if (!testObj.properties[kIsSpellcheckTest])
       return;
+
+    verificationForCurrentTest = null;
 
     /** @type {boolean} */
     var shouldRemoveSample = false;
@@ -432,9 +427,6 @@ function getTestArguments(passedArgs) {
  * @param {Object=} opt_args
  */
 function spellcheckTest(input, tester, expectedText, opt_args) {
-  if (window.testRunner)
-    window.testRunner.setMockSpellCheckerEnabled(true);
-
   /** @type {!Object} */
   const args = getTestArguments(opt_args);
   /** @type {!Test}  */
@@ -448,6 +440,14 @@ function spellcheckTest(input, tester, expectedText, opt_args) {
   }
 
   invokeSpellcheckTest(testObject, input, tester, expectedText);
+}
+
+if (window.testRunner) {
+  window.testRunner.setMockSpellCheckerEnabled(true);
+  window.testRunner.setSpellCheckResolvedCallback(() => {
+    if (verificationForCurrentTest)
+      verificationForCurrentTest();
+  });
 }
 
 // Export symbols

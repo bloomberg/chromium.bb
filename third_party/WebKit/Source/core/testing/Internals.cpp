@@ -70,6 +70,7 @@
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
+#include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -1492,6 +1493,44 @@ int Internals::lastSpellCheckProcessedSequence(Document* document,
   }
 
   return requester->lastProcessedSequence();
+}
+
+String Internals::idleTimeSpellCheckerState(Document* document,
+                                            ExceptionState& exceptionState) {
+  static const char* const texts[] = {
+#define V(state) #state,
+      FOR_EACH_IDLE_SPELL_CHECK_CALLBACK_STATE(V)
+#undef V
+  };
+
+  if (!document || !document->frame()) {
+    exceptionState.throwDOMException(
+        InvalidAccessError,
+        "No frame can be obtained from the provided document.");
+    return String();
+  }
+
+  IdleSpellCheckCallback::State state =
+      document->frame()->spellChecker().idleSpellCheckCallback().state();
+  const auto& it = std::begin(texts) + static_cast<size_t>(state);
+  DCHECK_GE(it, std::begin(texts)) << "Unknown state value";
+  DCHECK_LT(it, std::end(texts)) << "Unknown state value";
+  return *it;
+}
+
+void Internals::runIdleTimeSpellChecker(Document* document,
+                                        ExceptionState& exceptionState) {
+  if (!document || !document->frame()) {
+    exceptionState.throwDOMException(
+        InvalidAccessError,
+        "No frame can be obtained from the provided document.");
+    return;
+  }
+
+  document->frame()
+      ->spellChecker()
+      .idleSpellCheckCallback()
+      .forceInvocationForTesting();
 }
 
 Vector<AtomicString> Internals::userPreferredLanguages() const {

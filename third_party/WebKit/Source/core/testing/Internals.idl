@@ -139,6 +139,8 @@
 
     [RaisesException] long lastSpellCheckRequestSequence(Document document);
     [RaisesException] long lastSpellCheckProcessedSequence(Document document);
+    [RuntimeEnabled=IdleTimeSpellChecking, RaisesException] DOMString idleTimeSpellCheckerState(Document document);
+    [RuntimeEnabled=IdleTimeSpellChecking, RaisesException] void runIdleTimeSpellChecker(Document document);
 
     sequence<DOMString> userPreferredLanguages();
     void setUserPreferredLanguages(sequence<DOMString> languages);

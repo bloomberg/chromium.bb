@@ -252,6 +252,8 @@ class Internals final : public GarbageCollected<Internals>,
 
   int lastSpellCheckRequestSequence(Document*, ExceptionState&);
   int lastSpellCheckProcessedSequence(Document*, ExceptionState&);
+  String idleTimeSpellCheckerState(Document*, ExceptionState&);
+  void runIdleTimeSpellChecker(Document*, ExceptionState&);
 
   Vector<AtomicString> userPreferredLanguages() const;
   void setUserPreferredLanguages(const Vector<String>&);

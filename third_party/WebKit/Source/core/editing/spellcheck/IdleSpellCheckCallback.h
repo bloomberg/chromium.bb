@@ -14,6 +14,14 @@ namespace blink {
 class LocalFrame;
 class SpellCheckRequester;
 
+#define FOR_EACH_IDLE_SPELL_CHECK_CALLBACK_STATE(V) \
+  V(Inactive)                                       \
+  V(HotModeRequested)                               \
+  V(InHotModeInvocation)                            \
+  V(ColdModeTimerStarted)                           \
+  V(ColdModeRequested)                              \
+  V(InColdModeInvocation)
+
 // Main class for the implementation of idle time spell checker.
 class CORE_EXPORT IdleSpellCheckCallback final
     : public IdleRequestCallback,
@@ -26,12 +34,9 @@ class CORE_EXPORT IdleSpellCheckCallback final
   ~IdleSpellCheckCallback() override;
 
   enum class State {
-    kInactive,
-    kHotModeRequested,
-    kInHotModeInvocation,
-    kColdModeTimerStarted,
-    kColdModeRequested,
-    kInColdModeInvocation
+#define V(state) k##state,
+    FOR_EACH_IDLE_SPELL_CHECK_CALLBACK_STATE(V)
+#undef V
   };
 
   State state() const { return m_state; }
