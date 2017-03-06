@@ -145,6 +145,9 @@ Polymer({
       // when navigating away. The selector element doesn't fire its upward
       // data binding unless its selected item has changed.
       this.selectedItem_ = this.$.selector.selectedItem;
+      // Focus the container by default so that the arrow keys work (and since
+      // we use the focus highlight to show which picture is selected).
+      this.$.container.focus();
     } else {
       // Ensure we deactivate the camera when we navigate away.
       this.selectedItem_ = null;
