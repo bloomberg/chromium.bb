@@ -331,7 +331,7 @@ const AtomicString& MediaStream::interfaceName() const {
   return EventTargetNames::MediaStream;
 }
 
-void MediaStream::addRemoteTrack(MediaStreamComponent* component) {
+void MediaStream::addTrackByComponent(MediaStreamComponent* component) {
   DCHECK(component);
   if (!getExecutionContext())
     return;
@@ -358,7 +358,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component) {
   }
 }
 
-void MediaStream::removeRemoteTrack(MediaStreamComponent* component) {
+void MediaStream::removeTrackByComponent(MediaStreamComponent* component) {
   DCHECK(component);
   if (!getExecutionContext())
     return;

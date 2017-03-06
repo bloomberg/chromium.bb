@@ -61,7 +61,7 @@ void HtmlVideoElementCapturerSource::GetCurrentSupportedFormats(
     int max_requested_height,
     double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
-  DVLOG(3) << __func__ << "{ max_requested_height = " << max_requested_height
+  DVLOG(2) << __func__ << "{ max_requested_height = " << max_requested_height
            << "}) { max_requested_width = " << max_requested_width
            << "}) { max_requested_frame_rate = " << max_requested_frame_rate
            << "})";
@@ -83,7 +83,7 @@ void HtmlVideoElementCapturerSource::StartCapture(
     const media::VideoCaptureParams& params,
     const VideoCaptureDeliverFrameCB& new_frame_callback,
     const RunningCallback& running_callback) {
-  DVLOG(3) << __func__ << " requested "
+  DVLOG(2) << __func__ << " requested "
            << media::VideoCaptureFormat::ToString(params.requested_format);
   DCHECK(params.requested_format.IsValid());
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -115,7 +115,7 @@ void HtmlVideoElementCapturerSource::StartCapture(
 }
 
 void HtmlVideoElementCapturerSource::StopCapture() {
-  DVLOG(3) << __func__;
+  DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   running_callback_.Reset();
   new_frame_callback_.Reset();

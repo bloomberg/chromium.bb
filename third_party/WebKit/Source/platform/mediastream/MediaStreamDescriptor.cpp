@@ -87,14 +87,14 @@ void MediaStreamDescriptor::removeComponent(MediaStreamComponent* component) {
 
 void MediaStreamDescriptor::addRemoteTrack(MediaStreamComponent* component) {
   if (m_client)
-    m_client->addRemoteTrack(component);
+    m_client->addTrackByComponent(component);
   else
     addComponent(component);
 }
 
 void MediaStreamDescriptor::removeRemoteTrack(MediaStreamComponent* component) {
   if (m_client)
-    m_client->removeRemoteTrack(component);
+    m_client->removeTrackByComponent(component);
   else
     removeComponent(component);
 }

@@ -3,7 +3,8 @@
 <script src=../../resources/testharnessreport.js></script>
 <script>
 
-// Run captureStream() on different videos, and assert data is flowing.
+// Run captureStream() on different videos, and assert the mediastream is
+// ended when the source HTMLMediaElement finishes
 
 var makeAsyncTest = function(filename) {
   async_test(function(test) {
@@ -14,14 +15,12 @@ var makeAsyncTest = function(filename) {
 
     var stream = video.captureStream();
 
-    // onactive event is marked for deprecation (https://crbug.com/649328)
-    stream.onactive = this.step_func_done(function() {
-      var recorder = new MediaRecorder(stream);
-        recorder.ondataavailable = test.step_func_done(function(event) {
-            assert_true(event.data.size > 0, 'Recorded data size should be > 0');
-      });
-      recorder.start(0);
+    stream.onremovetrack = this.step_func_done(function() {
+      assert_true(video.ended, 'video must be ended');
+      assert_equals(stream.getTracks().length, 0, 'stream must have no tracks');
+      assert_false(stream.active, 'stream must be inactive');
     });
+
  }), "<video>.captureStream() and assert data flows.";
 };
 

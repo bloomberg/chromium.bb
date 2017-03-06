@@ -47,8 +47,8 @@ class PLATFORM_EXPORT MediaStreamDescriptorClient
   virtual ~MediaStreamDescriptorClient() {}
 
   virtual void streamEnded() = 0;
-  virtual void addRemoteTrack(MediaStreamComponent*) = 0;
-  virtual void removeRemoteTrack(MediaStreamComponent*) = 0;
+  virtual void addTrackByComponent(MediaStreamComponent*) = 0;
+  virtual void removeTrackByComponent(MediaStreamComponent*) = 0;
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 

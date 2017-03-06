@@ -5,34 +5,29 @@
 
 // Run captureStream() on <video>/<audio>s and inspect the generated Stream.
 
-test(function() {
-  var video = document.createElement('video');
-  assert_throws("NotSupportedError", function () { video.captureStream() },
-                "captureStream() cannot be created out of a source-less <video>" );
-}, 'check that captureStream() raises an exception on a <video> with no source.');
-
-test(function() {
-  var audio = document.createElement('audio');
-  assert_throws("NotSupportedError", function () { audio.captureStream() },
-                "captureStream() cannot be created out of a source-less <audio>" );
-}, 'check that captureStream() raises an exception on an <audio> with no source.');
-
-var makeAsyncTest = function(filename) {
+var makeAsyncTest = function(filename, numTracks) {
   async_test(function() {
     var video = document.createElement('video');
     video.src = "../../http/tests/media/resources/media-source/webm/" + filename;
     video.onerror = this.unreached_func("<video> error");
+    video.play();
 
-    video.onloadstart = this.step_func_done(function() {
-      var stream = video.captureStream();
-      assert_not_equals(stream, null, "error generating stream");
+    var stream = video.captureStream();
+    assert_not_equals(stream, null, "error generating stream");
+
+    // onactive event is marked for deprecation (https://crbug.com/649328)
+    stream.onactive = this.step_func_done(function() {
+      // The stream got a (number of) MediaStreamTracks added.
+      assert_equals(stream.getVideoTracks().length, numTracks['vid'], 'video');
+      assert_equals(stream.getAudioTracks().length, numTracks['aud'], 'audio');
     });
   }), "<video>.captureStream()";
 };
 
-generate_tests(makeAsyncTest,
-               [[ "video-only", "test-v-128k-320x240-24fps-8kfr.webm"],
-                [ "audio-only", "test-a-128k-44100Hz-1ch.webm"],
-                [ "video+audio", "test.webm"]]);
+generate_tests(makeAsyncTest, [
+  [ "video-only", "test-v-128k-320x240-24fps-8kfr.webm", {vid : 1, aud : 0} ],
+  [ "audio-only", "test-a-128k-44100Hz-1ch.webm", {vid : 0, aud : 1} ],
+  [ "video+audio", "test.webm", {vid : 1, aud : 1} ]
+]);
 
 </script>
