@@ -475,7 +475,7 @@ void JpegDecodeAcceleratorTest::TestDecode(size_t num_concurrent_decoders) {
 }
 
 TEST_F(JpegDecodeAcceleratorTest, SimpleDecode) {
-  for (const auto& image : g_env->image_data_user_) {
+  for (auto* image : g_env->image_data_user_) {
     test_image_files_.push_back(image);
     expected_status_.push_back(CS_DECODE_PASS);
   }
@@ -483,7 +483,7 @@ TEST_F(JpegDecodeAcceleratorTest, SimpleDecode) {
 }
 
 TEST_F(JpegDecodeAcceleratorTest, MultipleDecoders) {
-  for (const auto& image : g_env->image_data_user_) {
+  for (auto* image : g_env->image_data_user_) {
     test_image_files_.push_back(image);
     expected_status_.push_back(CS_DECODE_PASS);
   }
