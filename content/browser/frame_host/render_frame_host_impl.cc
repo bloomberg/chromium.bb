@@ -1011,11 +1011,12 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
 
-  // It is possible that while a new RenderFrameHost was committed, the
-  // RenderFrame corresponding to this host sent an IPC message to create a
-  // frame and it is delivered after this host is swapped out.
-  // Ignore such messages, as we know this RenderFrameHost is going away.
-  if (!is_active() || frame_tree_node_->current_frame_host() != this)
+  // The RenderFrame corresponding to this host sent an IPC message to create a
+  // child, but by the time we get here, it's possible for the host to have been
+  // swapped out, or for its process to have disconnected (maybe due to browser
+  // shutdown). Ignore such messages.
+  if (!is_active() || frame_tree_node_->current_frame_host() != this ||
+      !render_frame_created_)
     return;
 
   frame_tree_->AddFrame(
