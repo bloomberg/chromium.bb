@@ -81,19 +81,6 @@ void installConditionalFeaturesOnWindow(const ScriptState* scriptState) {
                              v8::Local<v8::Function>());
 }
 
-bool isFeatureEnabledInFrame(WebFeaturePolicyFeature feature,
-                             const Frame* frame) {
-  DCHECK(frame);
-  WebFeaturePolicy* featurePolicy =
-      frame->securityContext()->getFeaturePolicy();
-  // The policy should always be initialized before checking it to ensure we
-  // properly inherit the parent policy.
-  DCHECK(featurePolicy);
-
-  // Otherwise, check policy.
-  return featurePolicy->IsFeatureEnabled(feature);
-}
-
 void registerInstallConditionalFeaturesForCore() {
   s_oldInstallConditionalFeaturesFunction =
       setInstallConditionalFeaturesFunction(&installConditionalFeaturesCore);
