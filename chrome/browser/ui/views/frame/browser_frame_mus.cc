@@ -16,6 +16,10 @@
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/window_style.mojom.h"
+#endif
+
 BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::DesktopNativeWidgetAura(browser_frame),
@@ -26,6 +30,7 @@ BrowserFrameMus::~BrowserFrameMus() {}
 
 views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
   views::Widget::InitParams params;
+  params.name = "BrowserFrame";
   params.native_widget = this;
   params.bounds = gfx::Rect(10, 10, 640, 480);
   params.delegate = browser_view_;
@@ -37,6 +42,11 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
       mojo::ConvertTo<std::vector<uint8_t>>(true);
   properties[ui::mojom::WindowManager::kAppID_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(chrome_app_id);
+#if defined(OS_CHROMEOS)
+  properties[ash::mojom::kAshWindowStyle_InitProperty] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int32_t>(ash::mojom::WindowStyle::BROWSER));
+#endif
   std::unique_ptr<views::DesktopWindowTreeHostMus> desktop_window_tree_host =
       base::MakeUnique<views::DesktopWindowTreeHostMus>(browser_frame_, this,
                                                         &properties);

@@ -14,8 +14,12 @@ namespace mus {
 CustomFrameViewMus::CustomFrameViewMus(
     views::Widget* widget,
     ImmersiveFullscreenControllerDelegate* immersive_delegate,
-    bool enable_immersive)
-    : CustomFrameViewAsh(widget, immersive_delegate, enable_immersive) {}
+    bool enable_immersive,
+    mojom::WindowStyle window_style)
+    : CustomFrameViewAsh(widget,
+                         immersive_delegate,
+                         enable_immersive,
+                         window_style) {}
 
 CustomFrameViewMus::~CustomFrameViewMus() {}
 

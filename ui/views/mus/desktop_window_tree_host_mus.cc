@@ -276,9 +276,16 @@ bool DesktopWindowTreeHostMus::ShouldSendClientAreaToServer() const {
 
 void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {
-  // Needed so we don't render over the non-client area the window manager
-  // renders to.
-  content_window->layer()->SetFillsBoundsOpaquely(false);
+  // |TYPE_WINDOW| and |TYPE_PANEL| are forced to transparent as otherwise the
+  // window is opaque and the client decorations drawn by the window manager
+  // would not be seen.
+  const bool transparent =
+      params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW ||
+      params.type == Widget::InitParams::TYPE_WINDOW ||
+      params.type == Widget::InitParams::TYPE_PANEL;
+  content_window->SetTransparent(transparent);
+  window()->SetTransparent(transparent);
+
   if (!params.bounds.IsEmpty())
     SetBoundsInDIP(params.bounds);
 
@@ -305,6 +312,9 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
+  window()->SetName(params.name);
+  desktop_native_widget_aura_->content_window()->SetName(
+      "DesktopNativeWidgetAura - content window");
   if (params.parent && params.parent->GetHost()) {
     parent_ = static_cast<DesktopWindowTreeHostMus*>(params.parent->GetHost());
     parent_->children_.insert(this);

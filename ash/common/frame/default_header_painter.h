@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/frame/header_painter.h"
+#include "ash/public/interfaces/window_style.mojom.h"
 #include "base/compiler_specific.h"  // override
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -31,7 +32,8 @@ class FrameCaptionButtonContainerView;
 class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
                                         public gfx::AnimationDelegate {
  public:
-  DefaultHeaderPainter();
+  explicit DefaultHeaderPainter(
+      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
   ~DefaultHeaderPainter() override;
 
   // DefaultHeaderPainter does not take ownership of any of the parameters.
@@ -95,6 +97,7 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // Returns whether the frame uses custom frame coloring.
   bool UsesCustomFrameColors() const;
 
+  const mojom::WindowStyle window_style_;
   views::Widget* frame_;
   views::View* view_;
   views::View* left_header_view_;  // May be NULL.

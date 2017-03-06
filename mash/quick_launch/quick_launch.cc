@@ -20,6 +20,8 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/tracing/public/cpp/provider.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -199,6 +201,7 @@ void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       new QuickLaunchUI(this, context()->connector(), std::move(catalog)),
       nullptr, gfx::Rect(10, 640, 0, 0));
+  window->GetNativeWindow()->GetHost()->window()->SetName("QuickLaunch");
   window->Show();
   windows_.push_back(window);
 }

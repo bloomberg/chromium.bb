@@ -17,6 +17,8 @@ component("ash_public_cpp") {
     "shell_window_ids.h",
     "window_properties.cc",
     "window_properties.h",
+    "window_style.cc",
+    "window_style.h",
   ]
 
   defines = [ "ASH_PUBLIC_IMPLEMENTATION" ]

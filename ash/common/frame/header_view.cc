@@ -15,9 +15,10 @@
 
 namespace ash {
 
-HeaderView::HeaderView(views::Widget* target_widget)
+HeaderView::HeaderView(views::Widget* target_widget,
+                       mojom::WindowStyle window_style)
     : target_widget_(target_widget),
-      header_painter_(new DefaultHeaderPainter),
+      header_painter_(base::MakeUnique<DefaultHeaderPainter>(window_style)),
       avatar_icon_(nullptr),
       caption_button_container_(nullptr),
       fullscreen_visible_fraction_(0) {

@@ -77,13 +77,14 @@ namespace ash {
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultHeaderPainter, public:
 
-DefaultHeaderPainter::DefaultHeaderPainter()
-    : frame_(NULL),
-      view_(NULL),
-      left_header_view_(NULL),
+DefaultHeaderPainter::DefaultHeaderPainter(mojom::WindowStyle window_style)
+    : window_style_(window_style),
+      frame_(nullptr),
+      view_(nullptr),
+      left_header_view_(nullptr),
       active_frame_color_(kDefaultFrameColor),
       inactive_frame_color_(kDefaultFrameColor),
-      caption_button_container_(NULL),
+      caption_button_container_(nullptr),
       painted_height_(0),
       mode_(MODE_INACTIVE),
       initial_paint_(true),
@@ -156,6 +157,16 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
 }
 
 void DefaultHeaderPainter::LayoutHeader() {
+  // TODO(sky): this needs to reset images as well.
+  if (window_style_ == mojom::WindowStyle::BROWSER) {
+    const bool use_maximized_size =
+        frame_->IsMaximized() || frame_->IsFullscreen();
+    const gfx::Size button_size(GetAshLayoutSize(
+        use_maximized_size ? AshLayoutSize::BROWSER_MAXIMIZED_CAPTION_BUTTON
+                           : AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON));
+    caption_button_container_->SetButtonSize(button_size);
+  }
+
   caption_button_container_->SetUseLightImages(ShouldUseLightImages());
   UpdateSizeButtonImages();
   caption_button_container_->Layout();

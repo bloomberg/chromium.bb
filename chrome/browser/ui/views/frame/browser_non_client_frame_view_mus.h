@@ -98,6 +98,9 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   // the packaged app header style.
   void PaintContentEdge(gfx::Canvas* canvas);
 
+  // Returns the height for the header (non-client frame area).
+  int GetHeaderHeight() const;
+
   // TODO(sky): Figure out how to support WebAppLeftHeaderView.
 
   // For popups, the window icon.

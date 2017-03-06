@@ -27,6 +27,7 @@ mojom("interfaces_internal") {
     "volume.mojom",
     "vpn_list.mojom",
     "wallpaper.mojom",
+    "window_style.mojom",
   ]
 
   public_deps = [

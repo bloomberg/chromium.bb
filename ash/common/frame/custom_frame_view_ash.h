@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/window_style.mojom.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -43,7 +45,8 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   explicit CustomFrameViewAsh(
       views::Widget* frame,
       ImmersiveFullscreenControllerDelegate* immersive_delegate = nullptr,
-      bool enable_immersive = true);
+      bool enable_immersive = true,
+      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
   ~CustomFrameViewAsh() override;
 
   // Inits |immersive_fullscreen_controller| so that the controller reveals
@@ -56,6 +59,10 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
+
+  // Sets the height of the header. If |height| has no value (the default), the
+  // preferred height is used.
+  void SetHeaderHeight(base::Optional<int> height);
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -103,6 +110,8 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
 
   // View which contains the title and window controls.
   HeaderView* header_view_;
+
+  OverlayView* overlay_view_;
 
   ImmersiveFullscreenControllerDelegate* immersive_delegate_;
 

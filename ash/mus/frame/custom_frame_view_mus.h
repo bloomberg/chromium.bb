@@ -15,7 +15,8 @@ class CustomFrameViewMus : public CustomFrameViewAsh {
  public:
   CustomFrameViewMus(views::Widget* widget,
                      ImmersiveFullscreenControllerDelegate* immersive_delegate,
-                     bool enable_immersive);
+                     bool enable_immersive,
+                     mojom::WindowStyle window_style);
   ~CustomFrameViewMus() override;
 
   // CustomFrameViewAsh:

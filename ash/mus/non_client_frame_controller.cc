@@ -172,7 +172,8 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
   WmNativeWidgetAura(views::internal::NativeWidgetDelegate* delegate,
                      aura::WindowManagerClient* window_manager_client,
                      bool remove_standard_frame,
-                     bool enable_immersive)
+                     bool enable_immersive,
+                     mojom::WindowStyle window_style)
       // The NativeWidget is mirroring the real Widget created in client code.
       // |is_parallel_widget_in_window_manager| is used to indicate this
       : views::NativeWidgetAura(
@@ -180,8 +181,14 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
             true /* is_parallel_widget_in_window_manager */),
         remove_standard_frame_(remove_standard_frame),
         enable_immersive_(enable_immersive),
+        window_style_(window_style),
         window_manager_client_(window_manager_client) {}
   ~WmNativeWidgetAura() override {}
+
+  void SetHeaderHeight(int height) {
+    if (custom_frame_view_)
+      custom_frame_view_->SetHeaderHeight({height});
+  }
 
   // views::NativeWidgetAura:
   views::NonClientFrameView* CreateNonClientFrameView() override {
@@ -198,19 +205,28 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     immersive_delegate_ =
         base::MakeUnique<ImmersiveFullscreenControllerDelegateMus>(GetWidget(),
                                                                    window);
-    return new CustomFrameViewMus(GetWidget(), immersive_delegate_.get(),
-                                  enable_immersive_);
+
+    // See description for details on ownership.
+    custom_frame_view_ =
+        new CustomFrameViewMus(GetWidget(), immersive_delegate_.get(),
+                               enable_immersive_, window_style_);
+    return custom_frame_view_;
   }
 
  private:
   const bool remove_standard_frame_;
   const bool enable_immersive_;
+  const mojom::WindowStyle window_style_;
 
   std::unique_ptr<MoveEventHandler> move_event_handler_;
 
   aura::WindowManagerClient* window_manager_client_;
 
   std::unique_ptr<ImmersiveFullscreenControllerDelegateMus> immersive_delegate_;
+
+  // Not used for panels or if |remove_standard_frame_| is true. This is owned
+  // by the Widget's view hierarchy (e.g. it's a child of Widget's root View).
+  CustomFrameViewMus* custom_frame_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetAura);
 };
@@ -275,9 +291,11 @@ NonClientFrameController::NonClientFrameController(
   // (mus) window can have focus.
   params.delegate = this;
   params.bounds = bounds;
+  // The title area leaves notches in the corners, requring translucent windows.
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   WmNativeWidgetAura* native_widget = new WmNativeWidgetAura(
       widget_, window_manager_client_, ShouldRemoveStandardFrame(*properties),
-      ShouldEnableImmersive(*properties));
+      ShouldEnableImmersive(*properties), GetWindowStyle(*properties));
   window_ = native_widget->GetNativeView();
   window_->SetProperty(aura::client::kTopLevelWindowInWM, true);
   window_->SetProperty(kNonClientFrameControllerKey, this);
@@ -314,10 +332,6 @@ NonClientFrameController* NonClientFrameController::Get(aura::Window* window) {
 
 // static
 gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
-  // TODO(sky): figure out a better way to get this rather than hard coding.
-  // This value comes from the header (see DefaultHeaderPainter::LayoutHeader,
-  // which uses the preferred height of the CaptionButtonContainer, which uses
-  // the height of the close button).
   return gfx::Insets(
       GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(), 0,
       0, 0);
@@ -325,7 +339,6 @@ gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
 
 // static
 int NonClientFrameController::GetMaxTitleBarButtonWidth() {
-  // TODO(sky): same comment as for GetPreferredClientAreaInsets().
   return GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).width() *
          3;
 }
@@ -335,6 +348,8 @@ void NonClientFrameController::SetClientArea(
     const std::vector<gfx::Rect>& additional_client_areas) {
   client_area_insets_ = insets;
   additional_client_areas_ = additional_client_areas;
+  static_cast<WmNativeWidgetAura*>(widget_->native_widget())
+      ->SetHeaderHeight(insets.top());
 }
 
 NonClientFrameController::~NonClientFrameController() {

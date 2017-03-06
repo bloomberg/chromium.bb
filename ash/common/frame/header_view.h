@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
+#include "ash/public/interfaces/window_style.mojom.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -35,7 +36,9 @@ class ASH_EXPORT HeaderView : public views::View,
   // placed in. For example, in immersive fullscreen this view may be painted in
   // a widget that slides in and out on top of the main app or browser window.
   // However, clicking a caption button should act on the target widget.
-  explicit HeaderView(views::Widget* target_widget);
+  explicit HeaderView(
+      views::Widget* target_widget,
+      mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
   ~HeaderView() override;
 
   void set_is_immersive_delegate(bool value) { is_immersive_delegate_ = value; }

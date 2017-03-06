@@ -124,6 +124,8 @@ class CustomFrameViewAsh::OverlayView : public views::View,
   explicit OverlayView(HeaderView* header_view);
   ~OverlayView() override;
 
+  void SetHeaderHeight(base::Optional<int> height);
+
   // views::View:
   void Layout() override;
 
@@ -133,6 +135,8 @@ class CustomFrameViewAsh::OverlayView : public views::View,
                          const gfx::Rect& rect) const override;
 
   HeaderView* header_view_;
+
+  base::Optional<int> header_height_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayView);
 };
@@ -146,6 +150,15 @@ CustomFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
 
 CustomFrameViewAsh::OverlayView::~OverlayView() {}
 
+void CustomFrameViewAsh::OverlayView::SetHeaderHeight(
+    base::Optional<int> height) {
+  if (header_height_ == height)
+    return;
+
+  header_height_ = height;
+  Layout();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh::OverlayView, views::View overrides:
 
@@ -154,11 +167,14 @@ void CustomFrameViewAsh::OverlayView::Layout() {
   // GetPreferredOnScreenHeight().
   header_view_->Layout();
 
-  int onscreen_height = header_view_->GetPreferredOnScreenHeight();
+  int onscreen_height = header_height_
+                            ? *header_height_
+                            : header_view_->GetPreferredOnScreenHeight();
   if (onscreen_height == 0) {
     header_view_->SetVisible(false);
   } else {
-    int height = header_view_->GetPreferredHeight();
+    const int height =
+        header_height_ ? *header_height_ : header_view_->GetPreferredHeight();
     header_view_->SetBounds(0, onscreen_height - height, width(), height);
     header_view_->SetVisible(true);
   }
@@ -185,16 +201,18 @@ const char CustomFrameViewAsh::kViewClassName[] = "CustomFrameViewAsh";
 CustomFrameViewAsh::CustomFrameViewAsh(
     views::Widget* frame,
     ImmersiveFullscreenControllerDelegate* immersive_delegate,
-    bool enable_immersive)
+    bool enable_immersive,
+    mojom::WindowStyle window_style)
     : frame_(frame),
-      header_view_(new HeaderView(frame)),
+      header_view_(new HeaderView(frame, window_style)),
+      overlay_view_(new OverlayView(header_view_)),
       immersive_delegate_(immersive_delegate ? immersive_delegate
                                              : header_view_) {
   WmWindow* frame_window = WmWindow::Get(frame->GetNativeWindow());
   frame_window->InstallResizeHandleWindowTargeter(nullptr);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
-  frame->non_client_view()->SetOverlayView(new OverlayView(header_view_));
+  frame->non_client_view()->SetOverlayView(overlay_view_);
   frame_window->aura_window()->SetProperty(
       aura::client::kTopViewColor, header_view_->GetInactiveFrameColor());
 
@@ -222,6 +240,10 @@ void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
   WmWindow* frame_window = WmWindow::Get(frame_->GetNativeWindow());
   frame_window->aura_window()->SetProperty(
       aura::client::kTopViewColor, header_view_->GetInactiveFrameColor());
+}
+
+void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
+  overlay_view_->SetHeaderHeight(height);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
