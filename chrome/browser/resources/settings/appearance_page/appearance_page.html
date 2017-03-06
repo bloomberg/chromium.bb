@@ -104,11 +104,13 @@
               hidden="[[!pageVisibility.homeButton]]">
             <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
               <controlled-radio-button class="list-item" name="true"
-                  pref="[[prefs.homepage_is_newtabpage]]" ignore-extensions>
+                  pref="[[prefs.homepage_is_newtabpage]]"
+                  no-extension-indicator>
                 $i18n{homePageNtp}
               </controlled-radio-button>
               <controlled-radio-button class="list-item" name="false"
-                  pref="[[prefs.homepage_is_newtabpage]]" ignore-extensions>
+                  pref="[[prefs.homepage_is_newtabpage]]"
+                  no-extension-indicator>
                 $i18n{other}
                 <!-- TODO(dbeam): this can show double indicators when both
                      homepage and whether to use the NTP as the homepage are
@@ -116,7 +118,7 @@
                 <settings-input no-label-float pref="{{prefs.homepage}}"
                     label="$i18n{exampleDotCom}"
                     can-tab="[[!prefs.homepage_is_newtabpage.value]]"
-                    stop-keyboard-event-propagation ignore-extensions>
+                    stop-keyboard-event-propagation no-extension-indicator>
                 </settings-input>
               </controlled-radio-button>
               <template is="dom-if" if="[[prefs.homepage.extensionId]]">

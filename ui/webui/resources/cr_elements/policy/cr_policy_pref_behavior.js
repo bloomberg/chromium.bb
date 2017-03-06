@@ -15,7 +15,7 @@ var CrPolicyPrefBehavior = {
      * avoid showing an (extra) indicator here.
      * @public
      */
-    ignoreExtensions: Boolean,
+    noExtensionIndicator: Boolean,
   },
 
   /**
@@ -24,11 +24,6 @@ var CrPolicyPrefBehavior = {
    * @return {boolean} True if |this.pref| is controlled by an enforced policy.
    */
   isPrefEnforced: function() {
-    if (this.ignoreExtensions &&
-        this.pref.controlledBy ==
-            chrome.settingsPrivate.ControlledBy.EXTENSION) {
-      return false;
-    }
     return this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
@@ -36,6 +31,11 @@ var CrPolicyPrefBehavior = {
    * @return {boolean} True if |this.pref| has a recommended or enforced policy.
    */
   hasPrefPolicyIndicator: function() {
+    if (this.noExtensionIndicator &&
+        this.pref.controlledBy ==
+            chrome.settingsPrivate.ControlledBy.EXTENSION) {
+      return false;
+    }
     return this.isPrefEnforced() ||
         this.pref.enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED;
   },
