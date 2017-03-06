@@ -280,7 +280,7 @@ StackFrame* StackwalkerMIPS::GetCallerFrame(const CallStack* stack,
   // If the new stack pointer is at a lower address than the old, then
   // that's clearly incorrect. Treat this as end-of-stack to enforce
   // progress and avoid infinite loops.
-  if (new_frame->context.iregs[MD_CONTEXT_MIPS_REG_SP] <=
+  if (new_frame->context.iregs[MD_CONTEXT_MIPS_REG_SP] <
       last_frame->context.iregs[MD_CONTEXT_MIPS_REG_SP]) {
     return NULL;
   }
