@@ -4,9 +4,6 @@
 # https://crbug.com/551000: PlzNavigate: DevTools support
 crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
-#  Console error messages are wrongly ordered.
-crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/inspector/console-resource-errors.html [ Failure ]
 
 # Flipped order between diStartProvisionalLoad & willSendRequest
 crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]
@@ -17,10 +14,8 @@ crbug.com/625765 virtual/mojo-loading/http/tests/loading/redirect-methods.html [
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.
 crbug.com/555418 http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
-crbug.com/555418 http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
 crbug.com/555418 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
 crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
-crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
 crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
 
 # Missing console warning about usage of legacy protocol.
@@ -31,8 +26,15 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/location-pro
 
 # https://crbug.com/695072: Preserve SourceLocation information.
 # This results in a missing line number in console error messages.
-Bug(695072) http/tests/security/location-href-clears-username-password.html [ Failure ]
-Bug(695072) virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
+# Fixed by https://codereview.chromium.org/2720763002/
+crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
+crbug.com/555418 http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
+crbug.com/695072 http/tests/security/location-href-clears-username-password.html [ Failure ]
+crbug.com/695072 http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/console-resource-errors.html [ Failure ]
+crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
+crbug.com/695072 virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
+crbug.com/695072 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure ]
 
 # These tests are flaky.
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Crash ]
