@@ -112,13 +112,13 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event) {
 
   // We can only stay within the form's children if the form hasn't been demoted
   // to a leaf because of malformed HTML.
-  HTMLInputElement* inputElement = findNextFocusableRadioButtonInGroup(
-      toHTMLInputElement(&element()), forward);
+  HTMLInputElement* inputElement =
+      findNextFocusableRadioButtonInGroup(&element(), forward);
   if (!inputElement) {
     // Traverse in reverse direction till last or first radio button
     forward = !(forward);
-    HTMLInputElement* nextInputElement = findNextFocusableRadioButtonInGroup(
-        toHTMLInputElement(&element()), forward);
+    HTMLInputElement* nextInputElement =
+        findNextFocusableRadioButtonInGroup(&element(), forward);
     while (nextInputElement) {
       inputElement = nextInputElement;
       nextInputElement =
