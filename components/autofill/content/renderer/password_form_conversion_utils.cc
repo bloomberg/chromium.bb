@@ -680,10 +680,11 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
   SyntheticForm synthetic_form;
   PopulateSyntheticFormFromWebForm(web_form, &synthetic_form);
 
-  WebFormElementToFormData(web_form, blink::WebFormControlElement(),
-                           field_value_and_properties_map,
-                           form_util::EXTRACT_NONE, &password_form->form_data,
-                           NULL /* FormFieldData */);
+  if (!WebFormElementToFormData(
+          web_form, blink::WebFormControlElement(),
+          field_value_and_properties_map, form_util::EXTRACT_NONE,
+          &password_form->form_data, NULL /* FormFieldData */))
+    return std::unique_ptr<PasswordForm>();
 
   if (!GetPasswordForm(synthetic_form, password_form.get(),
                        field_value_and_properties_map, form_predictions))
@@ -705,10 +706,12 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     return std::unique_ptr<PasswordForm>();
 
   std::unique_ptr<PasswordForm> password_form(new PasswordForm());
-  UnownedPasswordFormElementsAndFieldSetsToFormData(
-      synthetic_form.fieldsets, synthetic_form.control_elements, nullptr,
-      frame.document(), field_value_and_properties_map, form_util::EXTRACT_NONE,
-      &password_form->form_data, nullptr /* FormFieldData */);
+  if (!UnownedPasswordFormElementsAndFieldSetsToFormData(
+          synthetic_form.fieldsets, synthetic_form.control_elements, nullptr,
+          frame.document(), field_value_and_properties_map,
+          form_util::EXTRACT_NONE, &password_form->form_data,
+          nullptr /* FormFieldData */))
+    return std::unique_ptr<PasswordForm>();
   if (!GetPasswordForm(synthetic_form, password_form.get(),
                        field_value_and_properties_map, form_predictions))
     return std::unique_ptr<PasswordForm>();

@@ -1470,4 +1470,13 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   EXPECT_FALSE(password_form->does_look_like_signup_form);
 }
 
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, TooManyFieldsToParseForm) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  for (size_t i = 0; i < form_util::kMaxParseableFields + 1; ++i)
+    builder.AddTextField("id", "value", "autocomplete");
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(builder.ProduceHTML(), nullptr, false);
+  EXPECT_FALSE(password_form);
+}
+
 }  // namespace autofill
