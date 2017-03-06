@@ -1766,7 +1766,7 @@
     Images
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT" desc="Label for the javascript site settings.">
-    Javascript
+    JavaScript
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH" desc="Label for the Flash site settings.">
     Flash
