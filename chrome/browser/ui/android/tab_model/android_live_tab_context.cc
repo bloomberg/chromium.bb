@@ -84,6 +84,7 @@ sessions::LiveTab* AndroidLiveTabContext::AddRestoredTab(
 
   // Create new tab.
   tab_model_->CreateTab(nullptr, web_contents, -1);
+  web_contents->GetController().LoadIfNecessary();
   return sessions::ContentLiveTab::GetForWebContents(web_contents);
 }
 

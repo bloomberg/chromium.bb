@@ -32,10 +32,6 @@ class SESSIONS_EXPORT LiveTab {
   // implementation returns null.
   virtual std::unique_ptr<PlatformSpecificTabData> GetPlatformSpecificTabData();
 
-  // Loads the current page if necessary (where "necessary" is defined on a
-  // platform-specific basis).
-  virtual void LoadIfNecessary() = 0;
-
   // Returns the user agent override, if any.
   virtual const std::string& GetUserAgentOverride() const = 0;
 };

@@ -42,6 +42,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/tab_loader.h"
+#endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)
+
 // Class used to run a message loop waiting for the TabRestoreService to finish
 // loading. Does nothing if the TabRestoreService was already loaded.
 class WaitForLoadObserver : public sessions::TabRestoreServiceObserver {
@@ -638,15 +642,16 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   EXPECT_EQ(initial_tab_count + 2, browser->tab_strip_model()->count());
   load_stop_observer.Wait();
 
+  EXPECT_EQ(initial_tab_count + 1, browser->tab_strip_model()->active_index());
   content::WebContents* restored_tab =
-      browser->tab_strip_model()->GetWebContentsAt(initial_tab_count);
-  EnsureTabFinishedRestoring(restored_tab);
-  EXPECT_EQ(url1_, restored_tab->GetURL());
-
-  restored_tab =
       browser->tab_strip_model()->GetWebContentsAt(initial_tab_count + 1);
   EnsureTabFinishedRestoring(restored_tab);
   EXPECT_EQ(url2_, restored_tab->GetURL());
+
+  restored_tab =
+      browser->tab_strip_model()->GetWebContentsAt(initial_tab_count);
+  EnsureTabFinishedRestoring(restored_tab);
+  EXPECT_EQ(url1_, restored_tab->GetURL());
 }
 
 // Restore tab with special URL chrome://credits/ and make sure the page loads
@@ -759,3 +764,54 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   Browser* browser = GetBrowser(0);
   EXPECT_EQ(4, browser->tab_strip_model()->count());
 }
+
+// TabLoader (used here) is available only when browser is built
+// with ENABLE_SESSION_SERVICE.
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       TabsFromRestoredWindowsAreLoadedGradually) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+  Browser* browser2 = GetBrowser(1);
+
+  // Add tabs and close browser.
+  const int tabs_count = 4;
+  AddSomeTabs(browser2, tabs_count - browser2->tab_strip_model()->count());
+  EXPECT_EQ(tabs_count, browser2->tab_strip_model()->count());
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  chrome::CloseWindow(browser2);
+  observer.Wait();
+
+  // Limit the number of restored tabs that are loaded.
+  TabLoader::SetMaxLoadedTabCountForTest(2);
+
+  // Restore recently closed window.
+  content::WindowedNotificationObserver open_window_observer(
+      chrome::NOTIFICATION_BROWSER_OPENED,
+      content::NotificationService::AllSources());
+  chrome::OpenWindowWithRestoredTabs(browser()->profile());
+  open_window_observer.Wait();
+  browser2 = GetBrowser(1);
+
+  EXPECT_EQ(tabs_count, browser2->tab_strip_model()->count());
+  EXPECT_EQ(tabs_count - 1, browser2->tab_strip_model()->active_index());
+  // These two tabs should be loaded by TabLoader.
+  EnsureTabFinishedRestoring(
+      browser2->tab_strip_model()->GetWebContentsAt(tabs_count - 1));
+  EnsureTabFinishedRestoring(browser2->tab_strip_model()->GetWebContentsAt(0));
+
+  // The following isn't necessary but just to be sure there is no any async
+  // task that could have an impact on the expectations below.
+  content::RunAllPendingInMessageLoop();
+
+  // These tabs shouldn't want to be loaded.
+  for (int tab_idx = 1; tab_idx < tabs_count - 1; ++tab_idx) {
+    auto* contents = browser2->tab_strip_model()->GetWebContentsAt(tab_idx);
+    EXPECT_FALSE(contents->IsLoading());
+    EXPECT_TRUE(contents->GetController().NeedsReload());
+  }
+}
+#endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)

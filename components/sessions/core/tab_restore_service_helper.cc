@@ -209,7 +209,6 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
               tab.from_last_session, tab.platform_data.get(),
               tab.user_agent_override);
           if (restored_tab) {
-            restored_tab->LoadIfNecessary();
             client_->OnTabRestored(
                 tab.navigations.at(tab.current_navigation_index).virtual_url());
             live_tabs.push_back(restored_tab);
@@ -482,7 +481,6 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
         disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB, tab.pinned,
         tab.from_last_session, tab.platform_data.get(),
         tab.user_agent_override);
-    restored_tab->LoadIfNecessary();
   }
   client_->OnTabRestored(
       tab.navigations.at(tab.current_navigation_index).virtual_url());

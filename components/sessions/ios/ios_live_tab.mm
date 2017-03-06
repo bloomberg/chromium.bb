@@ -54,10 +54,6 @@ int IOSLiveTab::GetEntryCount() {
   return navigation_manager()->GetItemCount();
 }
 
-void IOSLiveTab::LoadIfNecessary() {
-  navigation_manager()->LoadIfNecessary();
-}
-
 const std::string& IOSLiveTab::GetUserAgentOverride() const {
   // Dynamic user agent overrides are not supported on iOS.
   return user_agent_override_;

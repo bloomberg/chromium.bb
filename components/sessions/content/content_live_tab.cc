@@ -62,10 +62,6 @@ ContentLiveTab::GetPlatformSpecificTabData() {
       web_contents());
 }
 
-void ContentLiveTab::LoadIfNecessary() {
-  navigation_controller().LoadIfNecessary();
-}
-
 const std::string& ContentLiveTab::GetUserAgentOverride() const {
   return web_contents()->GetUserAgentOverride();
 }

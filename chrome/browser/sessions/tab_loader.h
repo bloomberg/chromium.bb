@@ -63,6 +63,8 @@ class TabLoader : public content::NotificationObserver,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabLoaderTest, OnMemoryStateChange);
+  FRIEND_TEST_ALL_PREFIXES(TabRestoreTest,
+                           TabsFromRestoredWindowsAreLoadedGradually);
 
   friend class base::RefCounted<TabLoader>;
 
@@ -123,6 +125,11 @@ class TabLoader : public content::NotificationObserver,
   // Stops loading tabs to purge memory by stopping to load any more tabs.
   void StopLoadingTabs();
 
+  // Limit the number of loaded tabs.
+  // Value of 0 restores default behavior. In test mode command line flags and
+  // free memory size are not taken into account.
+  static void SetMaxLoadedTabCountForTest(size_t value);
+
   std::unique_ptr<TabLoaderDelegate> delegate_;
 
   // Listens for system under memory pressure notifications and stops loading
@@ -143,6 +150,10 @@ class TabLoader : public content::NotificationObserver,
 
   // The tabs we need to load.
   TabsToLoad tabs_to_load_;
+
+  // The number of tabs started to load.
+  // (This value never decreases.)
+  size_t started_to_load_count_;
 
   base::OneShotTimer force_load_timer_;
 

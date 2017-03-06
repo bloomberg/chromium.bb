@@ -15,6 +15,10 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/session_storage_namespace.h"
 
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/tab_loader.h"
+#endif
+
 using content::NavigationController;
 using content::SessionStorageNamespace;
 using content::WebContents;
@@ -73,6 +77,24 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
   WebContents* web_contents = chrome::AddRestoredTab(
       browser_, navigations, tab_index, selected_navigation, extension_app_id,
       select, pin, from_last_session, storage_namespace, user_agent_override);
+
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  // The focused tab will be loaded by Browser, and TabLoader will load the
+  // rest.
+  if (!select) {
+    // Regression check: make sure that the tab hasn't started to load
+    // immediately.
+    DCHECK(web_contents->GetController().NeedsReload());
+    DCHECK(!web_contents->IsLoading());
+  }
+  std::vector<TabLoader::RestoredTab> restored_tabs;
+  restored_tabs.emplace_back(web_contents, select, !extension_app_id.empty(),
+                             pin);
+  TabLoader::RestoreTabs(restored_tabs, base::TimeTicks::Now());
+#else   // BUILDFLAG(ENABLE_SESSION_SERVICE)
+  // Load the tab manually if there is no TabLoader.
+  web_contents->GetController().LoadIfNecessary();
+#endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)
 
   return sessions::ContentLiveTab::GetForWebContents(web_contents);
 }
