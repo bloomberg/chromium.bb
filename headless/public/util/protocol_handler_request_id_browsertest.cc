@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
@@ -168,11 +170,24 @@ class ProtocolHandlerRequestIdCorrelationTest
       public page::Observer {
  public:
   void RunDevTooledTest() override {
+    if (content::IsBrowserSideNavigationEnabled()) {
+      // TODO: get this working with PlzNavigate.
+      // See discussion on https://codereview.chromium.org/2695923010/
+      FinishAsynchronousTest();
+      return;
+    }
+
     EXPECT_TRUE(embedded_test_server()->Start());
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
+
+    base::RunLoop run_loop;
     devtools_client_->GetNetwork()->AddObserver(this);
-    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+
     devtools_client_->GetPage()->Navigate("http://foo.com/index.html");
   }
 
