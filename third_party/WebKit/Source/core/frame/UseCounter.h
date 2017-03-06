@@ -1476,6 +1476,7 @@ class CORE_EXPORT UseCounter {
     ScrollByKeyboardSpacebarKey = 1846,
     ScrollByTouch = 1847,
     ScrollByWheel = 1848,
+    ScheduledActionIgnored = 1849,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

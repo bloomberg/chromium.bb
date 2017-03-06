@@ -997,6 +997,9 @@ CORE_EXPORT v8::Isolate* toIsolate(LocalFrame*);
 CORE_EXPORT DOMWindow* toDOMWindow(v8::Isolate*, v8::Local<v8::Value>);
 DOMWindow* toDOMWindow(v8::Local<v8::Context>);
 LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
+// Returns the last entered context, or the context of the currently running
+// microtask if no entered context is higher up on the stack.
+LocalDOMWindow* enteredOrMicrotaskDOMWindow(v8::Isolate*);
 CORE_EXPORT LocalDOMWindow* currentDOMWindow(v8::Isolate*);
 CORE_EXPORT ExecutionContext* toExecutionContext(v8::Local<v8::Context>);
 CORE_EXPORT void registerToExecutionContextForModules(

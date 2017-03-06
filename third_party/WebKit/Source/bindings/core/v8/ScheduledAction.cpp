@@ -40,6 +40,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -52,9 +53,13 @@ ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
                                          const Vector<ScriptValue>& arguments) {
   ASSERT(handler.isFunction());
   if (!scriptState->world().isWorkerWorld()) {
-    DCHECK(BindingSecurity::shouldAllowAccessToFrame(
-        enteredDOMWindow(scriptState->isolate()), toDocument(target)->frame(),
-        BindingSecurity::ErrorReportOption::DoNotReport));
+    if (!BindingSecurity::shouldAllowAccessToFrame(
+            enteredOrMicrotaskDOMWindow(scriptState->isolate()),
+            toDocument(target)->frame(),
+            BindingSecurity::ErrorReportOption::DoNotReport)) {
+      UseCounter::count(target, UseCounter::ScheduledActionIgnored);
+      return new ScheduledAction(scriptState);
+    }
   }
   return new ScheduledAction(scriptState, handler, arguments);
 }
@@ -63,9 +68,13 @@ ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
                                          ExecutionContext* target,
                                          const String& handler) {
   if (!scriptState->world().isWorkerWorld()) {
-    DCHECK(BindingSecurity::shouldAllowAccessToFrame(
-        enteredDOMWindow(scriptState->isolate()), toDocument(target)->frame(),
-        BindingSecurity::ErrorReportOption::DoNotReport));
+    if (!BindingSecurity::shouldAllowAccessToFrame(
+            enteredOrMicrotaskDOMWindow(scriptState->isolate()),
+            toDocument(target)->frame(),
+            BindingSecurity::ErrorReportOption::DoNotReport)) {
+      UseCounter::count(target, UseCounter::ScheduledActionIgnored);
+      return new ScheduledAction(scriptState);
+    }
   }
   return new ScheduledAction(scriptState, handler);
 }
@@ -123,6 +132,11 @@ ScheduledAction::ScheduledAction(ScriptState* scriptState, const String& code)
     : m_scriptState(scriptState),
       m_info(scriptState->isolate()),
       m_code(code, KURL()) {}
+
+ScheduledAction::ScheduledAction(ScriptState* scriptState)
+    : m_scriptState(scriptState),
+      m_info(scriptState->isolate()),
+      m_code(String(), KURL()) {}
 
 void ScheduledAction::execute(LocalFrame* frame) {
   if (!m_scriptState->contextIsValid()) {

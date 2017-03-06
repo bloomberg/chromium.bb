@@ -71,6 +71,9 @@ class ScheduledAction final
                   const Vector<ScriptValue>& arguments);
   ScheduledAction(ScriptState*, const String& handler);
 
+  // Creates an empty ScheduledAction.
+  explicit ScheduledAction(ScriptState*);
+
   void execute(LocalFrame*);
   void execute(WorkerGlobalScope*);
   void createLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles);
