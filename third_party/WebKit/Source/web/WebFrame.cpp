@@ -15,6 +15,7 @@
 #include "core/page/Page.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/heap/Handle.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebSandboxFlags.h"
@@ -99,6 +100,10 @@ bool WebFrame::swap(WebFrame* frame) {
         toHTMLFrameOwnerElement(owner)->setWidget(localFrame.view());
     } else {
       localFrame.page()->setMainFrame(&localFrame);
+      // This trace event is needed to detect the main frame of the
+      // renderer in telemetry metrics. See crbug.com/692112#c11.
+      TRACE_EVENT_INSTANT1("loading", "markAsMainFrame",
+                           TRACE_EVENT_SCOPE_THREAD, "frame", &localFrame);
     }
   } else {
     toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name,
