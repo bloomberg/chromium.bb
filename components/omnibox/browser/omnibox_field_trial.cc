@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/omnibox/browser/features.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/search/search.h"
@@ -67,6 +66,15 @@ const base::Feature kSearchProviderWarmUpOnFocus{
 const base::Feature kSearchProviderContextAllowHttpsUrls{
     "OmniboixSearchProviderContextAllowHttpsUrls",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used for the Zero Suggest Redirect to Chrome Field Trial.
+const base::Feature kZeroSuggestRedirectToChrome{
+    "ZeroSuggestRedirectToChrome", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to swap the title and URL when providing zero suggest
+// suggestions.
+const base::Feature kZeroSuggestSwapTitleAndUrl{
+    "ZeroSuggestSwapTitleAndUrl", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox
 
@@ -557,7 +565,7 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
     const AutocompleteInput& input) {
   // First, check if we should emphasize titles for zero suggest suggestions.
   if (input.from_omnibox_focus() &&
-      base::FeatureList::IsEnabled(features::kZeroSuggestSwapTitleAndUrl)) {
+      base::FeatureList::IsEnabled(omnibox::kZeroSuggestSwapTitleAndUrl)) {
     return EMPHASIZE_WHEN_NONEMPTY;
   }
   // Look up the parameter named kEmphasizeTitlesRule + ":" + input.type(),
@@ -625,20 +633,20 @@ int OmniboxFieldTrial::GetPhysicalWebAfterTypingBaseRelevance() {
 
 // static
 bool OmniboxFieldTrial::InZeroSuggestRedirectToChromeFieldTrial() {
-  return base::FeatureList::IsEnabled(features::kZeroSuggestRedirectToChrome);
+  return base::FeatureList::IsEnabled(omnibox::kZeroSuggestRedirectToChrome);
 }
 
 // static
 std::string OmniboxFieldTrial::ZeroSuggestRedirectToChromeServerAddress() {
   return base::GetFieldTrialParamValueByFeature(
-      features::kZeroSuggestRedirectToChrome,
+      omnibox::kZeroSuggestRedirectToChrome,
       kZeroSuggestRedirectToChromeServerAddressParam);
 }
 
 // static
 std::string OmniboxFieldTrial::ZeroSuggestRedirectToChromeAdditionalFields() {
   return base::GetFieldTrialParamValueByFeature(
-      features::kZeroSuggestRedirectToChrome,
+      omnibox::kZeroSuggestRedirectToChrome,
       kZeroSuggestRedirectToChromeAdditionalFieldsParam);
 }
 

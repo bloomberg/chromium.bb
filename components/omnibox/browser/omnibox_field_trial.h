@@ -29,6 +29,8 @@ extern const base::Feature kOmniboxEntitySuggestions;
 extern const base::Feature kEnableClipboardProvider;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kSearchProviderContextAllowHttpsUrls;
+extern const base::Feature kZeroSuggestRedirectToChrome;
+extern const base::Feature kZeroSuggestSwapTitleAndUrl;
 }
 
 // The set of parameters customizing the HUP scoring.

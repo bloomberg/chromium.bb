@@ -53,8 +53,6 @@ static_library("browser") {
     "builtin_provider.h",
     "clipboard_url_provider.cc",
     "clipboard_url_provider.h",
-    "features.cc",
-    "features.h",
     "history_provider.cc",
     "history_provider.h",
     "history_quick_provider.cc",

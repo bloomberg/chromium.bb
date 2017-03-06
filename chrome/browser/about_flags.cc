@@ -50,7 +50,6 @@
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "components/omnibox/browser/features.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -2309,7 +2308,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-zero-suggest-redirect-to-chrome",
      IDS_FLAGS_ENABLE_ZERO_SUGGEST_REDIRECT_TO_CHROME_NAME,
      IDS_FLAGS_ENABLE_ZERO_SUGGEST_REDIRECT_TO_CHROME_DESCRIPTION, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kZeroSuggestRedirectToChrome)},
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestRedirectToChrome)},
     {"new-omnibox-answer-types", IDS_FLAGS_NEW_OMNIBOX_ANSWER_TYPES_NAME,
      IDS_FLAGS_NEW_OMNIBOX_ANSWER_TYPES_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kNewOmniboxAnswerTypes)},
