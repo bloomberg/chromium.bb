@@ -462,7 +462,7 @@ void PaintLayerCompositor::updateIfNeeded() {
   }
 
   // Inform the inspector that the layer tree has changed.
-  if (m_layoutView.frame()->isMainFrame())
+  if (isMainFrame())
     probe::layerTreeDidChange(m_layoutView.frame());
 }
 
@@ -723,7 +723,7 @@ std::unique_ptr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(
   // root.
   GraphicsLayer* rootLayer = m_rootContentLayer.get();
   if (flags & LayerTreeIncludesRootLayer) {
-    if (m_layoutView.frame()->isMainFrame()) {
+    if (isMainFrame()) {
       while (rootLayer->parent())
         rootLayer = rootLayer->parent();
     } else {
@@ -1046,11 +1046,8 @@ void PaintLayerCompositor::updateOverflowControlsLayers() {
   // Main frame scrollbars should always be stuck to the sides of the screen (in
   // overscroll and in pinch-zoom), so make the parent for the scrollbars be the
   // viewport container layer.
-  if (m_layoutView.frame()->isMainFrame()) {
-    VisualViewport& visualViewport =
-        m_layoutView.frameView()->page()->frameHost().visualViewport();
-    controlsParent = visualViewport.containerLayer();
-  }
+  if (isMainFrame())
+    controlsParent = visualViewport().containerLayer();
 
   if (requiresHorizontalScrollbarLayer()) {
     if (!m_layerForHorizontalScrollbar) {
@@ -1118,6 +1115,9 @@ void PaintLayerCompositor::ensureRootLayer() {
                                           : RootLayerAttachedViaEnclosingFrame;
   if (expectedAttachment == m_rootLayerAttachment)
     return;
+
+  if (isMainFrame())
+    visualViewport().createLayerTree();
 
   if (!m_rootContentLayer) {
     m_rootContentLayer = GraphicsLayer::create(this);
@@ -1328,6 +1328,14 @@ Page* PaintLayerCompositor::page() const {
 
 DocumentLifecycle& PaintLayerCompositor::lifecycle() const {
   return m_layoutView.document().lifecycle();
+}
+
+bool PaintLayerCompositor::isMainFrame() const {
+  return m_layoutView.frame()->isMainFrame();
+}
+
+VisualViewport& PaintLayerCompositor::visualViewport() const {
+  return m_layoutView.frameView()->page()->frameHost().visualViewport();
 }
 
 String PaintLayerCompositor::debugName(

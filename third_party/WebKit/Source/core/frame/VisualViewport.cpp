@@ -319,30 +319,57 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta,
   return true;
 }
 
-// Modifies the top of the graphics layer tree to add layers needed to support
-// the inner/outer viewport fixed-position model for pinch zoom. When finished,
-// the tree will look like this (with * denoting added layers):
-//
-// *rootTransformLayer
-//  +- *innerViewportContainerLayer (fixed pos container)
-//     +- *overscrollElasticityLayer
-//     |   +- *pageScaleLayer
-//     |       +- *innerViewportScrollLayer
-//     |           +-- overflowControlsHostLayer (root layer)
-//     |               | [ owned by PaintLayerCompositor ]
-//     |               +-- outerViewportContainerLayer (fixed pos container)
-//     |               |     [frame container layer in PaintLayerCompositor]
-//     |               |   +-- outerViewportScrollLayer
-//     |               |       | [frame scroll layer in PaintLayerCompositor]
-//     |               |       +-- content layers ...
-//     +- *PageOverlay for InspectorOverlay
-//     +- *PageOverlay for ColorOverlay
-//     +- horizontalScrollbarLayer [ owned by PaintLayerCompositor ]
-//     +- verticalScrollbarLayer [ owned by PaintLayerCompositor ]
-//     +- scroll corner (non-overlay only) [ owned by PaintLayerCompositor ]
-//
-void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot) {
-  TRACE_EVENT1("blink", "VisualViewport::attachToLayerTree",
+void VisualViewport::createLayerTree() {
+  if (m_innerViewportScrollLayer)
+    return;
+
+  DCHECK(!m_overlayScrollbarHorizontal && !m_overlayScrollbarVertical &&
+         !m_overscrollElasticityLayer && !m_pageScaleLayer &&
+         !m_innerViewportContainerLayer);
+
+  // FIXME: The root transform layer should only be created on demand.
+  m_rootTransformLayer = GraphicsLayer::create(this);
+  m_innerViewportContainerLayer = GraphicsLayer::create(this);
+  m_overscrollElasticityLayer = GraphicsLayer::create(this);
+  m_pageScaleLayer = GraphicsLayer::create(this);
+  m_innerViewportScrollLayer = GraphicsLayer::create(this);
+  m_overlayScrollbarHorizontal = GraphicsLayer::create(this);
+  m_overlayScrollbarVertical = GraphicsLayer::create(this);
+
+  ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
+  DCHECK(coordinator);
+  coordinator->setLayerIsContainerForFixedPositionLayers(
+      m_innerViewportScrollLayer.get(), true);
+
+  // Set masks to bounds so the compositor doesn't clobber a manually
+  // set inner viewport container layer size.
+  m_innerViewportContainerLayer->setMasksToBounds(
+      frameHost().page().settings().getMainFrameClipsContent());
+  m_innerViewportContainerLayer->setSize(FloatSize(m_size));
+
+  m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
+      m_innerViewportContainerLayer->platformLayer());
+  m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
+  if (mainFrame()) {
+    if (Document* document = mainFrame()->document()) {
+      m_innerViewportScrollLayer->setElementId(createCompositorElementId(
+          DOMNodeIds::idForNode(document), CompositorSubElementId::Viewport));
+    }
+  }
+
+  m_rootTransformLayer->addChild(m_innerViewportContainerLayer.get());
+  m_innerViewportContainerLayer->addChild(m_overscrollElasticityLayer.get());
+  m_overscrollElasticityLayer->addChild(m_pageScaleLayer.get());
+  m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
+
+  // Ensure this class is set as the scroll layer's ScrollableArea.
+  coordinator->scrollableAreaScrollLayerDidChange(this);
+
+  initializeScrollbars();
+}
+
+void VisualViewport::attachLayerTree(GraphicsLayer* currentLayerTreeRoot) {
+  TRACE_EVENT1("blink", "VisualViewport::attachLayerTree",
                "currentLayerTreeRoot", (bool)currentLayerTreeRoot);
   if (!currentLayerTreeRoot) {
     if (m_innerViewportScrollLayer)
@@ -354,53 +381,7 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot) {
       currentLayerTreeRoot->parent() == m_innerViewportScrollLayer.get())
     return;
 
-  if (!m_innerViewportScrollLayer) {
-    ASSERT(!m_overlayScrollbarHorizontal && !m_overlayScrollbarVertical &&
-           !m_overscrollElasticityLayer && !m_pageScaleLayer &&
-           !m_innerViewportContainerLayer);
-
-    // FIXME: The root transform layer should only be created on demand.
-    m_rootTransformLayer = GraphicsLayer::create(this);
-    m_innerViewportContainerLayer = GraphicsLayer::create(this);
-    m_overscrollElasticityLayer = GraphicsLayer::create(this);
-    m_pageScaleLayer = GraphicsLayer::create(this);
-    m_innerViewportScrollLayer = GraphicsLayer::create(this);
-    m_overlayScrollbarHorizontal = GraphicsLayer::create(this);
-    m_overlayScrollbarVertical = GraphicsLayer::create(this);
-
-    ScrollingCoordinator* coordinator =
-        frameHost().page().scrollingCoordinator();
-    ASSERT(coordinator);
-    coordinator->setLayerIsContainerForFixedPositionLayers(
-        m_innerViewportScrollLayer.get(), true);
-
-    // Set masks to bounds so the compositor doesn't clobber a manually
-    // set inner viewport container layer size.
-    m_innerViewportContainerLayer->setMasksToBounds(
-        frameHost().page().settings().getMainFrameClipsContent());
-    m_innerViewportContainerLayer->setSize(FloatSize(m_size));
-
-    m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
-        m_innerViewportContainerLayer->platformLayer());
-    m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
-    if (mainFrame()) {
-      if (Document* document = mainFrame()->document()) {
-        m_innerViewportScrollLayer->setElementId(createCompositorElementId(
-            DOMNodeIds::idForNode(document), CompositorSubElementId::Viewport));
-      }
-    }
-
-    m_rootTransformLayer->addChild(m_innerViewportContainerLayer.get());
-    m_innerViewportContainerLayer->addChild(m_overscrollElasticityLayer.get());
-    m_overscrollElasticityLayer->addChild(m_pageScaleLayer.get());
-    m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
-
-    // Ensure this class is set as the scroll layer's ScrollableArea.
-    coordinator->scrollableAreaScrollLayerDidChange(this);
-
-    initializeScrollbars();
-  }
-
+  DCHECK(m_innerViewportScrollLayer);
   m_innerViewportScrollLayer->removeAllChildren();
   m_innerViewportScrollLayer->addChild(currentLayerTreeRoot);
 }

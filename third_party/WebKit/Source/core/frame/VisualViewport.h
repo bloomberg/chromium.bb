@@ -62,6 +62,25 @@ class LocalFrame;
 // mechanisms. Its contents is the page's main FrameView, which corresponds to
 // the outer viewport. The inner viewport is always contained in the outer
 // viewport and can pan within it.
+//
+// When attached, the tree will look like this:
+//
+// VV::m_rootTransformLayer
+//  +- VV::m_innerViewportContainerLayer
+//     +- VV::m_overscrollElasticityLayer
+//     |   +- VV::m_pageScaleLayer
+//     |       +- VV::m_innerViewportScrollLayer
+//     |           +-- PLC::m_overflowControlsHostLayer
+//     |               +-- PLC::m_containerLayer (fixed pos container)
+//     |                   +-- PLC::m_scrollLayer
+//     |                       +-- PLC::m_rootContentLayer
+//     |                           +-- LayoutView CompositedLayerMapping layers
+//     +- PageOverlay for InspectorOverlay
+//     +- PageOverlay for ColorOverlay
+//     +- PLC::m_layerForHorizontalScrollbar
+//     +- PLC::m_layerForVerticalScrollbar
+//     +- PLC::m_layerForScrollCorner (non-overlay only)
+//
 class CORE_EXPORT VisualViewport final
     : public GarbageCollectedFinalized<VisualViewport>,
       public GraphicsLayerClient,
@@ -76,7 +95,8 @@ class CORE_EXPORT VisualViewport final
 
   DECLARE_VIRTUAL_TRACE();
 
-  void attachToLayerTree(GraphicsLayer*);
+  void createLayerTree();
+  void attachLayerTree(GraphicsLayer*);
 
   GraphicsLayer* rootGraphicsLayer() { return m_rootTransformLayer.get(); }
   GraphicsLayer* containerLayer() {

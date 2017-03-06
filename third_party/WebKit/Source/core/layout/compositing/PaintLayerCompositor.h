@@ -43,6 +43,7 @@ class Page;
 class LayoutPart;
 class Scrollbar;
 class ScrollingCoordinator;
+class VisualViewport;
 
 enum CompositingUpdateType {
   CompositingUpdateNone,
@@ -243,6 +244,9 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // vertical scrollbar graphics layers, returning the associated Scrollbar
   // instance if any, else nullptr.
   Scrollbar* graphicsLayerToScrollbar(const GraphicsLayer*) const;
+
+  bool isMainFrame() const;
+  VisualViewport& visualViewport() const;
 
   LayoutView& m_layoutView;
   std::unique_ptr<GraphicsLayer> m_rootContentLayer;

@@ -3844,7 +3844,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* graphicsLayer) {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   VisualViewport& visualViewport = page()->frameHost().visualViewport();
-  visualViewport.attachToLayerTree(graphicsLayer);
+  visualViewport.attachLayerTree(graphicsLayer);
   if (graphicsLayer) {
     m_rootGraphicsLayer = visualViewport.rootGraphicsLayer();
     m_visualViewportContainerLayer = visualViewport.containerLayer();
