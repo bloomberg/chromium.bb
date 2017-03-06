@@ -2,7 +2,6 @@
 <script src="../resources/runner.js"></script>
 <div id="sample"></div>
 <script>
-const kCount = 10;
 const kElements = 10000;
 
 const metaElements = (() => {
@@ -13,21 +12,25 @@ const metaElements = (() => {
 })();
 const sample = document.getElementById('sample');
 sample.innerHTML =   [
-  '<div hiddent>', ...metaElements, '</div>',
-  '<h1 id="target">first line of renderered text</h1>',
-  '<div hiddent>', ...metaElements, '</div>',
+  '<h1 id="before">first line of renderered text</h1>',
+  '<div hidden>', ...metaElements, '</div>',
+  '<h1 id="target">second line of renderered text</h1>',
+  '<div hidden>', ...metaElements, '</div>',
+  '<h1 id="after">third line of renderered text</h1>',
 ].join('');
 
 const selection = window.getSelection();
-const target = document.getElementById('target');
 
-PerfTestRunner.measureRunsPerSecond({
+PerfTestRunner.measureTime({
   description: 'Measures performance of move-up through non-renderered elements',
+  setup: () => {
+    selection.removeAllRanges();
+    const target = document.getElementById('target');
+    selection.collapse(target.firstChild, 5);
+    selection.extend(target.firstChild, 10);
+  },
   run: () => {
-    selection.collapse(target, 0);
-    selection.extend(target, target.childNodes.length);
-    for (let counter = 0; counter < kCount; ++counter)
-      selection.modify('move', 'backward', 'line');
-    },
+    selection.modify('extend', 'backward', 'line');
+  },
 });
 </script>
