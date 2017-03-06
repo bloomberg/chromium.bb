@@ -35,7 +35,8 @@ import unittest
 
 # pylint: disable=invalid-name
 # Camel-case names are used here to match the style of the TestCase methods.
-
+# TODO(qyearsley): Change these names to use lowercase-only, for consistency
+# with other unit test helper methods.
 
 class TestLogStream(object):
     """Represents a file-like object for unit-testing logging.
@@ -193,7 +194,6 @@ class LogTesting(object):
 
 
 class LoggingTestCase(unittest.TestCase):
-
     """Supports end-to-end unit-testing of log messages.
 
     This class needs to inherit from unittest.TestCase.  Otherwise, the
@@ -215,6 +215,9 @@ class LoggingTestCase(unittest.TestCase):
 
     def setUp(self):
         self._log = LogTesting.setUp(self)
+
+    def set_logging_level(self, logging_level):
+        self._log = LogTesting.setUp(self, logging_level=logging_level)
 
     def tearDown(self):
         self._log.tearDown()

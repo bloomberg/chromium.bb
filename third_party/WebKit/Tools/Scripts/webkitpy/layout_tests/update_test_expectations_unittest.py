@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.log_testing import LoggingTestCase, LogTesting
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.port.test import LAYOUT_TEST_DIR
@@ -723,9 +723,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         that have builders, then it can be removed, even if there are extra
         configurations with no existing builders.
         """
-        # Set the logging level used for assertLog to allow us to check all messages,
-        # even messages with a "debug" severity level.
-        self._log = LogTesting.setUp(self, logging_level=logging.DEBUG)
+        # Set the logging level used for assertLog to allow us to check
+        # messages with a "debug" severity level.
+        self.set_logging_level(logging.DEBUG)
 
         test_expectations_before = """
             # There are no builders that match this configuration at all.

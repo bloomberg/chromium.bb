@@ -4,7 +4,7 @@
 
 import logging
 
-from webkitpy.common.system.log_testing import LoggingTestCase, LogTesting
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.port import test
 from webkitpy.layout_tests.servers.wptserve import WPTServe
@@ -42,7 +42,7 @@ class TestWPTServe(LoggingTestCase):
 
     def test_start_with_unkillable_zombie_process(self):
         # Allow asserting about debug logs.
-        self._log = LogTesting.setUp(self, logging_level=logging.DEBUG)
+        self.set_logging_level(logging.DEBUG)
 
         host = MockHost()
         test_port = test.TestPort(host)
