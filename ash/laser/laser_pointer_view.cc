@@ -46,8 +46,8 @@ const int kPointInitialOpacity = 200;
 const int kPointFinalOpacity = 10;
 const SkColor kPointColor = SkColorSetRGB(255, 0, 0);
 
-float DistanceBetweenPoints(const gfx::Point& point1,
-                            const gfx::Point& point2) {
+float DistanceBetweenPoints(const gfx::PointF& point1,
+                            const gfx::PointF& point2) {
   return (point1 - point2).Length();
 }
 
@@ -245,7 +245,7 @@ void LaserPointerView::Stop() {
   OnPointsUpdated();
 }
 
-void LaserPointerView::AddNewPoint(const gfx::Point& new_point) {
+void LaserPointerView::AddNewPoint(const gfx::PointF& new_point) {
   buffer_damage_rect_.Union(GetBoundingBox());
   laser_points_.AddPoint(new_point);
   buffer_damage_rect_.Union(GetBoundingBox());

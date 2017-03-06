@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <limits>
 
+#include "ui/gfx/geometry/rect_conversions.h"
+
 namespace ash {
 
 LaserPointerPoints::LaserPointerPoints(base::TimeDelta life_duration)
@@ -14,7 +16,7 @@ LaserPointerPoints::LaserPointerPoints(base::TimeDelta life_duration)
 
 LaserPointerPoints::~LaserPointerPoints() {}
 
-void LaserPointerPoints::AddPoint(const gfx::Point& point) {
+void LaserPointerPoints::AddPoint(const gfx::PointF& point) {
   MoveForwardToTime(base::Time::Now());
 
   LaserPoint new_point;
@@ -50,13 +52,13 @@ gfx::Rect LaserPointerPoints::GetBoundingBox() {
   if (IsEmpty())
     return gfx::Rect();
 
-  gfx::Point min_point = GetOldest().location;
-  gfx::Point max_point = GetOldest().location;
+  gfx::PointF min_point = GetOldest().location;
+  gfx::PointF max_point = GetOldest().location;
   for (const LaserPoint& point : points_) {
     min_point.SetToMin(point.location);
     max_point.SetToMax(point.location);
   }
-  return gfx::BoundingRect(min_point, max_point);
+  return gfx::ToEnclosingRect(gfx::BoundingRect(min_point, max_point));
 }
 
 LaserPointerPoints::LaserPoint LaserPointerPoints::GetOldest() const {

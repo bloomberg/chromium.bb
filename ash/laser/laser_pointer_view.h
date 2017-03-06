@@ -27,7 +27,7 @@ class Window;
 
 namespace gfx {
 class GpuMemoryBuffer;
-class Point;
+class PointF;
 }
 
 namespace views {
@@ -47,7 +47,7 @@ class LaserPointerView : public views::View,
   LaserPointerView(base::TimeDelta life_duration, aura::Window* root_window);
   ~LaserPointerView() override;
 
-  void AddNewPoint(const gfx::Point& new_point);
+  void AddNewPoint(const gfx::PointF& new_point);
   void UpdateTime();
   void Stop();
 

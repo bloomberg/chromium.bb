@@ -33,10 +33,10 @@ class LaserPointerPointsTest : public test::AshTestBase {
 TEST_F(LaserPointerPointsTest, LaserPointerInternalCollection) {
   EXPECT_TRUE(points_.IsEmpty());
   EXPECT_EQ(gfx::Rect(), points_.GetBoundingBox());
-  const gfx::Point left(1, 1);
-  const gfx::Point bottom(1, 9);
-  const gfx::Point top_right(30, 0);
-  const gfx::Point last(2, 2);
+  const gfx::PointF left(1, 1);
+  const gfx::PointF bottom(1, 9);
+  const gfx::PointF top_right(30, 0);
+  const gfx::PointF last(2, 2);
   points_.AddPoint(left);
   EXPECT_EQ(gfx::Rect(1, 1, 0, 0), points_.GetBoundingBox());
 
@@ -63,7 +63,7 @@ TEST_F(LaserPointerPointsTest, LaserPointerInternalCollection) {
   EXPECT_EQ(last, points_.GetNewest().location);
 
   // Add a new point which will expand the bounding box.
-  gfx::Point new_left_bottom(0, 40);
+  gfx::PointF new_left_bottom(0, 40);
   points_.AddPoint(new_left_bottom);
   EXPECT_EQ(5, points_.GetNumberOfPoints());
   EXPECT_EQ(gfx::Rect(new_left_bottom.x(), top_right.y(),

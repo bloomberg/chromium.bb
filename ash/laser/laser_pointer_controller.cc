@@ -72,20 +72,20 @@ void LaserPointerController::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED &&
       !palette_utils::PaletteContainsPointInScreen(event_location)) {
     DestroyLaserPointerView();
-    UpdateLaserPointerView(current_window, event_location, event);
+    UpdateLaserPointerView(current_window, event->root_location_f(), event);
   }
 
   // Do not update laser if it is in the process of fading away.
   if (event->type() == ui::ET_TOUCH_MOVED && laser_pointer_view_ &&
       !is_fading_away_) {
-    UpdateLaserPointerView(current_window, event_location, event);
+    UpdateLaserPointerView(current_window, event->root_location_f(), event);
     RestartTimer();
   }
 
   if (event->type() == ui::ET_TOUCH_RELEASED && laser_pointer_view_ &&
       !is_fading_away_) {
     is_fading_away_ = true;
-    UpdateLaserPointerView(current_window, event_location, event);
+    UpdateLaserPointerView(current_window, event->root_location_f(), event);
     RestartTimer();
   }
 }
@@ -108,7 +108,7 @@ void LaserPointerController::SwitchTargetRootWindowIfNeeded(
 
 void LaserPointerController::UpdateLaserPointerView(
     aura::Window* current_window,
-    const gfx::Point& event_location,
+    const gfx::PointF& event_location,
     ui::Event* event) {
   SwitchTargetRootWindowIfNeeded(current_window);
   current_stylus_location_ = event_location;

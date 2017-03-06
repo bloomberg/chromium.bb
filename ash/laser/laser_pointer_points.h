@@ -11,7 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -23,7 +23,7 @@ class ASH_EXPORT LaserPointerPoints {
  public:
   // Struct to describe each point.
   struct LaserPoint {
-    gfx::Point location;
+    gfx::PointF location;
     // age is a value between [0,1] where 0 means the point was just added and 1
     // means that the point is just about to be removed.
     float age = 0.0f;
@@ -35,7 +35,7 @@ class ASH_EXPORT LaserPointerPoints {
   ~LaserPointerPoints();
 
   // Adds a point. Automatically clears points that are too old.
-  void AddPoint(const gfx::Point& point);
+  void AddPoint(const gfx::PointF& point);
   // Updates the collection latest time. Automatically clears points that are
   // too old.
   void MoveForwardToTime(const base::Time& latest_time);
