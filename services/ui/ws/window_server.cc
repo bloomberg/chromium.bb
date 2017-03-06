@@ -346,12 +346,15 @@ void WindowServer::WindowManagerCreatedTopLevelWindow(
                                              change.client_change_id, window);
 }
 
-void WindowServer::ProcessWindowBoundsChanged(const ServerWindow* window,
-                                              const gfx::Rect& old_bounds,
-                                              const gfx::Rect& new_bounds) {
+void WindowServer::ProcessWindowBoundsChanged(
+    const ServerWindow* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   for (auto& pair : tree_map_) {
     pair.second->ProcessWindowBoundsChanged(window, old_bounds, new_bounds,
-                                            IsOperationSource(pair.first));
+                                            IsOperationSource(pair.first),
+                                            local_surface_id);
   }
 }
 
@@ -686,7 +689,8 @@ void WindowServer::OnWindowBoundsChanged(ServerWindow* window,
   if (in_destructor_)
     return;
 
-  ProcessWindowBoundsChanged(window, old_bounds, new_bounds);
+  ProcessWindowBoundsChanged(window, old_bounds, new_bounds,
+                             window->current_local_surface_id());
   if (!window->parent())
     return;
 

@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 
 namespace ui {
 namespace ws {
@@ -49,6 +50,7 @@ class WindowManagerDisplayRoot {
   // the root ServerWindow of the Display.
   std::unique_ptr<ServerWindow> root_;
   WindowManagerState* window_manager_state_ = nullptr;
+  cc::LocalSurfaceIdAllocator allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerDisplayRoot);
 };

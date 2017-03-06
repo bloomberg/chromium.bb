@@ -548,14 +548,17 @@ void WindowTree::ClientJankinessChanged(WindowTree* tree) {
   }
 }
 
-void WindowTree::ProcessWindowBoundsChanged(const ServerWindow* window,
-                                            const gfx::Rect& old_bounds,
-                                            const gfx::Rect& new_bounds,
-                                            bool originated_change) {
+void WindowTree::ProcessWindowBoundsChanged(
+    const ServerWindow* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    bool originated_change,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   ClientWindowId client_window_id;
   if (originated_change || !IsWindowKnown(window, &client_window_id))
     return;
-  client()->OnWindowBoundsChanged(client_window_id.id, old_bounds, new_bounds);
+  client()->OnWindowBoundsChanged(client_window_id.id, old_bounds, new_bounds,
+                                  local_surface_id);
 }
 
 void WindowTree::ProcessClientAreaChanged(
@@ -1336,9 +1339,11 @@ void WindowTree::StopPointerWatcher() {
   pointer_watcher_want_moves_ = false;
 }
 
-void WindowTree::SetWindowBounds(uint32_t change_id,
-                                 Id window_id,
-                                 const gfx::Rect& bounds) {
+void WindowTree::SetWindowBounds(
+    uint32_t change_id,
+    Id window_id,
+    const gfx::Rect& bounds,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   if (window && ShouldRouteToWindowManager(window)) {
     const uint32_t wm_change_id =
@@ -1362,7 +1367,7 @@ void WindowTree::SetWindowBounds(uint32_t change_id,
   bool success = window && access_policy_->CanSetWindowBounds(window);
   if (success) {
     Operation op(this, window_server_, OperationType::SET_WINDOW_BOUNDS);
-    window->SetBounds(bounds);
+    window->SetBounds(bounds, local_surface_id);
   }
   client()->OnChangeCompleted(change_id, success);
 }
@@ -1974,7 +1979,8 @@ void WindowTree::WmResponse(uint32_t change_id, bool response) {
     if (!response && window) {
       // Our move loop didn't succeed, which means that we must restore the
       // original bounds of the window.
-      window->SetBounds(window_server_->GetCurrentMoveLoopRevertBounds());
+      window->SetBounds(window_server_->GetCurrentMoveLoopRevertBounds(),
+                        base::nullopt);
     }
 
     window_server_->EndMoveLoop();

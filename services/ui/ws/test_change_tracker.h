@@ -77,6 +77,7 @@ struct Change {
   Id window_id3;
   gfx::Rect bounds;
   gfx::Rect bounds2;
+  base::Optional<cc::LocalSurfaceId> local_surface_id;
   int32_t event_action;
   bool matches_pointer_watcher;
   std::string embed_url;
@@ -144,9 +145,11 @@ class TestChangeTracker {
   void OnCaptureChanged(Id new_capture_window_id, Id old_capture_window_id);
   void OnTransientWindowAdded(Id window_id, Id transient_window_id);
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id);
-  void OnWindowBoundsChanged(Id window_id,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds);
+  void OnWindowBoundsChanged(
+      Id window_id,
+      const gfx::Rect& old_bounds,
+      const gfx::Rect& new_bounds,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,
                                 Id new_parent_id,

@@ -60,9 +60,12 @@ std::string ChangeToDescription(const Change& change,
 
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
       return base::StringPrintf(
-          "BoundsChanged window=%s old_bounds=%s new_bounds=%s",
+          "BoundsChanged window=%s old_bounds=%s new_bounds=%s "
+          "local_surface_id=%s",
           WindowIdToString(change.window_id).c_str(),
-          change.bounds.ToString().c_str(), change.bounds2.ToString().c_str());
+          change.bounds.ToString().c_str(), change.bounds2.ToString().c_str(),
+          change.local_surface_id ? change.local_surface_id->ToString().c_str()
+                                  : "(none)");
 
     case CHANGE_TYPE_NODE_HIERARCHY_CHANGED:
       return base::StringPrintf(
@@ -249,14 +252,17 @@ void TestChangeTracker::OnEmbeddedAppDisconnected(Id window_id) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnWindowBoundsChanged(Id window_id,
-                                              const gfx::Rect& old_bounds,
-                                              const gfx::Rect& new_bounds) {
+void TestChangeTracker::OnWindowBoundsChanged(
+    Id window_id,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   Change change;
   change.type = CHANGE_TYPE_NODE_BOUNDS_CHANGED;
   change.window_id = window_id;
   change.bounds = old_bounds;
   change.bounds2 = new_bounds;
+  change.local_surface_id = local_surface_id;
   AddChange(change);
 }
 

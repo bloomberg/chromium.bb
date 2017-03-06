@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -302,15 +303,18 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                          bool drawn) override {
     tracker()->OnTopLevelCreated(change_id, std::move(data), drawn);
   }
-  void OnWindowBoundsChanged(Id window_id,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override {
+  void OnWindowBoundsChanged(
+      Id window_id,
+      const gfx::Rect& old_bounds,
+      const gfx::Rect& new_bounds,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
     // The bounds of the root may change during startup on Android at random
     // times. As this doesn't matter, and shouldn't impact test exepctations,
     // it is ignored.
     if (window_id == root_window_id_ && !track_root_bounds_changes_)
       return;
-    tracker()->OnWindowBoundsChanged(window_id, old_bounds, new_bounds);
+    tracker()->OnWindowBoundsChanged(window_id, old_bounds, new_bounds,
+                                     local_surface_id);
   }
   void OnClientAreaChanged(
       uint32_t window_id,
@@ -1321,17 +1325,21 @@ TEST_F(WindowTreeClientTest, SetWindowBounds) {
 
   wt_client2_->set_track_root_bounds_changes(true);
 
-  wt1()->SetWindowBounds(10, window_1_1, gfx::Rect(0, 0, 100, 100));
+  cc::LocalSurfaceIdAllocator allocator;
+  cc::LocalSurfaceId local_surface_id = allocator.GenerateId();
+  wt1()->SetWindowBounds(10, window_1_1, gfx::Rect(0, 0, 100, 100),
+                         local_surface_id);
   ASSERT_TRUE(wt_client1()->WaitForChangeCompleted(10));
 
   wt_client2_->WaitForChangeCount(1);
   EXPECT_EQ("BoundsChanged window=" + IdToString(window_1_1) +
-                " old_bounds=0,0 0x0 new_bounds=0,0 100x100",
+                " old_bounds=0,0 0x0 new_bounds=0,0 100x100 local_surface_id=" +
+                local_surface_id.ToString(),
             SingleChangeToDescription(*changes2()));
 
   // Should not be possible to change the bounds of a window created by another
   // client.
-  wt2()->SetWindowBounds(11, window_1_1, gfx::Rect(0, 0, 0, 0));
+  wt2()->SetWindowBounds(11, window_1_1, gfx::Rect(0, 0, 0, 0), base::nullopt);
   ASSERT_FALSE(wt_client2()->WaitForChangeCompleted(11));
 }
 
@@ -2068,12 +2076,14 @@ TEST_F(WindowTreeClientTest, Ids) {
   changes1()->clear();
 
   // Change the bounds of window_2_101 and make sure server gets it.
-  wt2()->SetWindowBounds(11, window_2_101, gfx::Rect(1, 2, 3, 4));
+  wt2()->SetWindowBounds(11, window_2_101, gfx::Rect(1, 2, 3, 4),
+                         base::nullopt);
   ASSERT_TRUE(wt_client2()->WaitForChangeCompleted(11));
   wt_client1()->WaitForChangeCount(1);
-  EXPECT_EQ("BoundsChanged window=" + IdToString(window_2_101_in_ws1) +
-                " old_bounds=0,0 0x0 new_bounds=1,2 3x4",
-            SingleChangeToDescription(*changes1()));
+  EXPECT_EQ(
+      "BoundsChanged window=" + IdToString(window_2_101_in_ws1) +
+          " old_bounds=0,0 0x0 new_bounds=1,2 3x4 local_surface_id=(none)",
+      SingleChangeToDescription(*changes1()));
   changes2()->clear();
 
   // Remove 2_101 from wm, client1 should see the change.

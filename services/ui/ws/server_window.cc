@@ -172,13 +172,16 @@ void ServerWindow::StackChildAtTop(ServerWindow* child) {
   child->Reorder(children_.back(), mojom::OrderDirection::ABOVE);
 }
 
-void ServerWindow::SetBounds(const gfx::Rect& bounds) {
-  if (bounds_ == bounds)
+void ServerWindow::SetBounds(
+    const gfx::Rect& bounds,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+  if (bounds_ == bounds && current_local_surface_id_ == local_surface_id)
     return;
 
-  // TODO(fsamuel): figure out how will this work with CompositorFrames.
-
   const gfx::Rect old_bounds = bounds_;
+
+  current_local_surface_id_ = local_surface_id;
+
   bounds_ = bounds;
   for (auto& observer : observers_)
     observer.OnWindowBoundsChanged(this, old_bounds, bounds);

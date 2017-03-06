@@ -276,7 +276,8 @@ TEST_F(WindowTreeClientWmTest, SetBoundsFailedWithPendingChange) {
   // Simulate the server responding with a bounds change.
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 101, 102));
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(root_window()), original_bounds, server_changed_bounds);
+      server_id(root_window()), original_bounds, server_changed_bounds,
+      base::nullopt);
 
   // This shouldn't trigger the bounds changing yet.
   EXPECT_EQ(new_bounds, root_window()->bounds());
@@ -288,8 +289,9 @@ TEST_F(WindowTreeClientWmTest, SetBoundsFailedWithPendingChange) {
   EXPECT_EQ(server_changed_bounds, root_window()->bounds());
 
   // Simulate server changing back to original bounds. Should take immediately.
-  window_tree_client()->OnWindowBoundsChanged(
-      server_id(root_window()), server_changed_bounds, original_bounds);
+  window_tree_client()->OnWindowBoundsChanged(server_id(root_window()),
+                                              server_changed_bounds,
+                                              original_bounds, base::nullopt);
   EXPECT_EQ(original_bounds, root_window()->bounds());
 }
 
@@ -1858,7 +1860,8 @@ TEST_F(WindowTreeClientWmTestHighDPI, SetBounds) {
   // in pixels.
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 200, 200));
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(root_window()), original_bounds, server_changed_bounds);
+      server_id(root_window()), original_bounds, server_changed_bounds,
+      base::nullopt);
   EXPECT_EQ(new_bounds, root_window()->bounds());
 }
 

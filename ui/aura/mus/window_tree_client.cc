@@ -588,7 +588,9 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
     const gfx::Rect& new_bounds) {
   const uint32_t change_id = ScheduleInFlightChange(
       base::MakeUnique<InFlightBoundsChange>(this, window, old_bounds));
-  tree_->SetWindowBounds(change_id, window->server_id(), new_bounds);
+  // TODO(fsamuel): Allocate a new LocalSurfaceId on size change.
+  tree_->SetWindowBounds(change_id, window->server_id(), new_bounds,
+                         base::nullopt);
 }
 
 void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
@@ -960,9 +962,11 @@ void WindowTreeClient::OnTopLevelCreated(uint32_t change_id,
   DCHECK_EQ(0u, data->parent_id);
 }
 
-void WindowTreeClient::OnWindowBoundsChanged(Id window_id,
-                                             const gfx::Rect& old_bounds,
-                                             const gfx::Rect& new_bounds) {
+void WindowTreeClient::OnWindowBoundsChanged(
+    Id window_id,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;

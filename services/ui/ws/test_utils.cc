@@ -312,11 +312,13 @@ void TestWindowTreeClient::OnTopLevelCreated(uint32_t change_id,
   tracker_.OnTopLevelCreated(change_id, std::move(data), drawn);
 }
 
-void TestWindowTreeClient::OnWindowBoundsChanged(uint32_t window,
-                                                 const gfx::Rect& old_bounds,
-                                                 const gfx::Rect& new_bounds) {
+void TestWindowTreeClient::OnWindowBoundsChanged(
+    uint32_t window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   tracker_.OnWindowBoundsChanged(window, std::move(old_bounds),
-                                 std::move(new_bounds));
+                                 std::move(new_bounds), local_surface_id);
 }
 
 void TestWindowTreeClient::OnClientAreaChanged(
@@ -537,7 +539,7 @@ ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
   EXPECT_TRUE(wm_tree->NewWindow(embed_window_id, ServerWindow::Properties()));
   EXPECT_TRUE(wm_tree->SetWindowVisibility(embed_window_id, true));
   EXPECT_TRUE(wm_tree->AddWindow(FirstRootId(wm_tree), embed_window_id));
-  display_->root_window()->SetBounds(root_window_bounds);
+  display_->root_window()->SetBounds(root_window_bounds, base::nullopt);
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request(&client);
   ws_test_helper_.window_server_delegate()->last_client()->Bind(
@@ -552,7 +554,7 @@ ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
   EXPECT_NE(tree1, wm_tree);
   WindowTreeTestApi(tree1).set_user_id(wm_tree->user_id());
 
-  embed_window->SetBounds(window_bounds);
+  embed_window->SetBounds(window_bounds, base::nullopt);
 
   return embed_window;
 }
@@ -575,7 +577,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
   tree1->GetDisplay(embed_window)->AddActivationParent(embed_window);
 
   child1->SetVisible(true);
-  child1->SetBounds(window_bounds);
+  child1->SetBounds(window_bounds, base::nullopt);
 
   TestWindowTreeClient* embed_client =
       ws_test_helper_.window_server_delegate()->last_client();

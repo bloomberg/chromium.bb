@@ -211,10 +211,12 @@ class WindowTree : public mojom::WindowTree,
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
   // necessary.
-  void ProcessWindowBoundsChanged(const ServerWindow* window,
-                                  const gfx::Rect& old_bounds,
-                                  const gfx::Rect& new_bounds,
-                                  bool originated_change);
+  void ProcessWindowBoundsChanged(
+      const ServerWindow* window,
+      const gfx::Rect& old_bounds,
+      const gfx::Rect& new_bounds,
+      bool originated_change,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
   void ProcessClientAreaChanged(
       const ServerWindow* window,
       const gfx::Insets& new_client_area,
@@ -402,9 +404,11 @@ class WindowTree : public mojom::WindowTree,
   void ReleaseCapture(uint32_t change_id, Id window_id) override;
   void StartPointerWatcher(bool want_moves) override;
   void StopPointerWatcher() override;
-  void SetWindowBounds(uint32_t change_id,
-                       Id window_id,
-                       const gfx::Rect& bounds) override;
+  void SetWindowBounds(
+      uint32_t change_id,
+      Id window_id,
+      const gfx::Rect& bounds,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void SetWindowVisibility(uint32_t change_id,
                            Id window_id,
                            bool visible) override;

@@ -167,9 +167,11 @@ class WindowServer : public ServerWindowDelegate,
 
   // These functions trivially delegate to all WindowTrees, which in
   // term notify their clients.
-  void ProcessWindowBoundsChanged(const ServerWindow* window,
-                                  const gfx::Rect& old_bounds,
-                                  const gfx::Rect& new_bounds);
+  void ProcessWindowBoundsChanged(
+      const ServerWindow* window,
+      const gfx::Rect& old_bounds,
+      const gfx::Rect& new_bounds,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
   void ProcessClientAreaChanged(
       const ServerWindow* window,
       const gfx::Insets& new_client_area,

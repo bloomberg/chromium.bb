@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_info.mojom";
 import "cc/ipc/mojo_compositor_frame_sink.mojom";
 import "services/ui/public/interfaces/cursor.mojom";
@@ -100,8 +101,10 @@ interface WindowTree {
   // Stops the pointer watcher for all events.
   StopPointerWatcher();
 
-  // Sets the specified bounds of the specified window.
-  SetWindowBounds(uint32 change_id, uint32 window_id, gfx.mojom.Rect bounds);
+  // Sets the specified bounds of the specified window. The window will paint
+  // the frame in the provided |local_frame_id|, if any.
+  SetWindowBounds(uint32 change_id, uint32 window_id, gfx.mojom.Rect bounds,
+                  cc.mojom.LocalSurfaceId? local_surface_id);
 
   // Sets the client area of the specified window. The client area is specified
   // by way of insets. Everything outside of the insets, and not in
@@ -344,10 +347,12 @@ interface WindowTreeClient {
                     int64 display_id,
                     bool parent_drawn);
 
-  // Invoked when a window's bounds have changed.
+  // Invoked when a window's bounds have changed. Only the client embedded in
+  // |window| gets a non_empty |local_surface_id|.
   OnWindowBoundsChanged(uint32 window,
                         gfx.mojom.Rect old_bounds,
-                        gfx.mojom.Rect new_bounds);
+                        gfx.mojom.Rect new_bounds,
+                        cc.mojom.LocalSurfaceId? local_surface_id);
 
   OnClientAreaChanged(uint32 window_id,
                       gfx.mojom.Insets new_client_area,

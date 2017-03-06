@@ -114,7 +114,8 @@ void RendererWindowTreeClient::OnTopLevelCreated(uint32_t change_id,
 void RendererWindowTreeClient::OnWindowBoundsChanged(
     ui::Id window_id,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {}
+    const gfx::Rect& new_bounds,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {}
 
 void RendererWindowTreeClient::OnClientAreaChanged(
     uint32_t window_id,

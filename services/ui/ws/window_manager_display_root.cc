@@ -31,7 +31,8 @@ WindowManagerDisplayRoot::WindowManagerDisplayRoot(Display* display)
   // Our root is always a child of the Display's root. Do this
   // before the WindowTree has been created so that the client doesn't get
   // notified of the add, bounds change and visibility change.
-  root_->SetBounds(gfx::Rect(display->root_window()->bounds().size()));
+  root_->SetBounds(gfx::Rect(display->root_window()->bounds().size()),
+                   allocator_.GenerateId());
   root_->SetVisible(true);
   display->root_window()->Add(root_.get());
 }

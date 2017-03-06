@@ -20,17 +20,17 @@ TEST(WindowFinderTest, FindDeepestVisibleWindow) {
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
-  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
   ServerWindow child1(&window_delegate, WindowId(1, 3));
   root.Add(&child1);
   child1.SetVisible(true);
-  child1.SetBounds(gfx::Rect(10, 10, 20, 20));
+  child1.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
 
   ServerWindow child2(&window_delegate, WindowId(1, 4));
   root.Add(&child2);
   child2.SetVisible(true);
-  child2.SetBounds(gfx::Rect(15, 15, 20, 20));
+  child2.SetBounds(gfx::Rect(15, 15, 20, 20), base::nullopt);
 
   EXPECT_EQ(
       &child2,
@@ -56,12 +56,12 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowNonClientArea) {
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
-  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
   ServerWindow child1(&window_delegate, WindowId(1, 3));
   root.Add(&child1);
   child1.SetVisible(true);
-  child1.SetBounds(gfx::Rect(10, 10, 20, 20));
+  child1.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
 
   DeepestWindow result =
       FindDeepestVisibleWindowForEvents(&root, gfx::Point(13, 14));
@@ -102,12 +102,12 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
-  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
   ServerWindow child_with_mask(&window_delegate, WindowId(1, 4));
   root.Add(&child_with_mask);
   child_with_mask.SetVisible(true);
-  child_with_mask.SetBounds(gfx::Rect(10, 10, 20, 20));
+  child_with_mask.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
   child_with_mask.SetHitTestMask(gfx::Rect(2, 2, 16, 16));
 
   // Test a point inside the window but outside the mask.
@@ -126,20 +126,20 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowOverNonTarget) {
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
-  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
   // Create two windows, |child1| and |child2|. The two overlap but |child2| is
   // not a valid event target.
   ServerWindow child1(&window_delegate, WindowId(1, 3));
   root.Add(&child1);
   child1.SetVisible(true);
-  child1.SetBounds(gfx::Rect(10, 10, 20, 20));
+  child1.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
 
   ServerWindow child2(&window_delegate, WindowId(1, 4));
   root.Add(&child2);
   child2.set_event_targeting_policy(mojom::EventTargetingPolicy::NONE);
   child2.SetVisible(true);
-  child2.SetBounds(gfx::Rect(15, 15, 20, 20));
+  child2.SetBounds(gfx::Rect(15, 15, 20, 20), base::nullopt);
 
   // 16, 16 is over |child2| and |child1|, but as |child2| isn't a valid event
   // target |child1| should be picked.
@@ -153,7 +153,7 @@ TEST(WindowFinderTest, NonClientPreferredOverChild) {
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
-  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
   // Create two windows, |child| and |child_child|; |child| is a child of the
   // root and |child_child| and child of |child|. All share the same size with
@@ -161,13 +161,13 @@ TEST(WindowFinderTest, NonClientPreferredOverChild) {
   ServerWindow child(&window_delegate, WindowId(1, 3));
   root.Add(&child);
   child.SetVisible(true);
-  child.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
   child.SetClientArea(gfx::Insets(2, 3, 4, 5), std::vector<gfx::Rect>());
 
   ServerWindow child_child(&window_delegate, WindowId(1, 4));
   child.Add(&child_child);
   child_child.SetVisible(true);
-  child_child.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child_child.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
   // |child| was should be returned as the event is over the non-client area.
   EXPECT_EQ(&child,

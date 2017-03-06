@@ -74,9 +74,11 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
                          ui::mojom::WindowDataPtr data,
                          int64_t display_id,
                          bool drawn) override;
-  void OnWindowBoundsChanged(ui::Id window_id,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+  void OnWindowBoundsChanged(
+      ui::Id window_id,
+      const gfx::Rect& old_bounds,
+      const gfx::Rect& new_bounds,
+      const base::Optional<cc::LocalSurfaceId>& local_frame_id) override;
   void OnClientAreaChanged(
       uint32_t window_id,
       const gfx::Insets& new_client_area,

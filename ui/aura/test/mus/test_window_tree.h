@@ -116,9 +116,11 @@ class TestWindowTree : public ui::mojom::WindowTree {
       const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void DeleteWindow(uint32_t change_id, uint32_t window_id) override;
-  void SetWindowBounds(uint32_t change_id,
-                       uint32_t window_id,
-                       const gfx::Rect& bounds) override;
+  void SetWindowBounds(
+      uint32_t change_id,
+      uint32_t window_id,
+      const gfx::Rect& bounds,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void SetClientArea(uint32_t window_id,
                      const gfx::Insets& insets,
                      const base::Optional<std::vector<gfx::Rect>>&
