@@ -1271,17 +1271,15 @@ copy("cronet_package_copy") {
 
 action("cronet_combine_proguard_flags") {
   script = "//components/cronet/tools/generate_proguard_file.py"
+  sources = [
+    "//base/android/proguard/chromium_code.flags",
+    "//components/cronet/android/cronet_impl_native_proguard.cfg",
+  ]
   outputs = [
     "$target_gen_dir/cronet_impl_native_proguard.cfg",
   ]
-  args = [
-    "--output-file",
-    rebase_path("$target_gen_dir/cronet_impl_native_proguard.cfg",
-                root_build_dir),
-    rebase_path("//components/cronet/android/cronet_impl_native_proguard.cfg",
-                root_build_dir),
-    rebase_path("//base/android/proguard/chromium_code.flags", root_build_dir),
-  ]
+  args = [ "--output-file" ] + rebase_path(outputs, root_build_dir) +
+         rebase_path(sources, root_build_dir)
 }
 
 copy("cronet_package_copy_native_lib") {
