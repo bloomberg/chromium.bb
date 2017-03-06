@@ -258,14 +258,4 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(MediaStreamUIProxyTest, CheckAccess) {
-  proxy_->CheckAccess(url::Origin(GURL("http://origin/")),
-                      MEDIA_DEVICE_AUDIO_CAPTURE, 0, 0,
-                      base::Bind(&MockResponseCallback::OnCheckResponse,
-                                 base::Unretained(&response_callback_)));
-  EXPECT_CALL(delegate_, CheckMediaAccessPermission(_, _));
-  EXPECT_CALL(response_callback_, OnCheckResponse(_));
-  base::RunLoop().RunUntilIdle();
-}
-
 }  // namespace content
