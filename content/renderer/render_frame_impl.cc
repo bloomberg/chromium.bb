@@ -4205,9 +4205,10 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
   // initialize itself with a `nullptr` initiator so that this can be a simple
   // `isNull()` check. https://crbug.com/625969
+  WebDocument frame_document = frame->document();
   if (request.requestorOrigin().isUnique() &&
-      !frame->document().getSecurityOrigin().isUnique()) {
-    request.setRequestorOrigin(frame->document().getSecurityOrigin());
+      !frame_document.getSecurityOrigin().isUnique()) {
+    request.setRequestorOrigin(frame_document.getSecurityOrigin());
   }
 
   WebDataSource* provisional_data_source = frame->provisionalDataSource();
@@ -4320,7 +4321,7 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
   extra_data->set_frame_origin(
-      url::Origin(frame->document().getSecurityOrigin()));
+      url::Origin(frame_document.getSecurityOrigin()));
   extra_data->set_parent_is_main_frame(parent && !parent->parent());
   extra_data->set_parent_render_frame_id(parent_routing_id);
   extra_data->set_allow_download(
@@ -4336,7 +4337,7 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
       is_prefetch &&
       WebURLRequestToResourceType(request) != RESOURCE_TYPE_MAIN_FRAME);
   extra_data->set_initiated_in_secure_context(
-      frame->document().isSecureContext());
+      frame_document.isSecureContext());
 
   // Renderer process transfers apply only to navigational requests.
   bool is_navigational_request =
@@ -4858,20 +4859,21 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.socket_address.set_port(response.remotePort());
   params.was_within_same_page = navigation_state->WasWithinSamePage();
 
+  WebDocument frame_document = frame->document();
   // Set the origin of the frame.  This will be replicated to the corresponding
   // RenderFrameProxies in other processes.
-  params.origin = frame->document().getSecurityOrigin();
+  WebSecurityOrigin frame_origin = frame_document.getSecurityOrigin();
+  params.origin = frame_origin;
 
   params.insecure_request_policy = frame->getInsecureRequestPolicy();
 
   params.has_potentially_trustworthy_unique_origin =
-      frame->document().getSecurityOrigin().isUnique() &&
-      frame->document().getSecurityOrigin().isPotentiallyTrustworthy();
+      frame_origin.isUnique() && frame_origin.isPotentiallyTrustworthy();
 
   // Set the URL to be displayed in the browser UI to the user.
   params.url = GetLoadingUrl();
-  if (GURL(frame->document().baseURL()) != params.url)
-    params.base_url = frame->document().baseURL();
+  if (GURL(frame_document.baseURL()) != params.url)
+    params.base_url = frame_document.baseURL();
 
   GetRedirectChain(ds, &params.redirects);
   params.should_update_history =
