@@ -1553,7 +1553,8 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   xd->mi[0]->mbmi.overlappable_neighbors[1] = 0;
 
   if (xd->up_available) {
-    for (i = 0; i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col); i += mi_step) {
+    const int ilimit = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
+    for (i = 0; i < ilimit; i += mi_step) {
       int mi_row_offset = -1;
       int mi_col_offset = i;
       MODE_INFO *above_mi =
@@ -1572,7 +1573,8 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
   if (xd->left_available) {
-    for (i = 0; i < AOMMIN(xd->n8_h, cm->mi_rows - mi_row); i += mi_step) {
+    const int ilimit = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
+    for (i = 0; i < ilimit; i += mi_step) {
       int mi_row_offset = i;
       int mi_col_offset = -1;
       MODE_INFO *left_mi =
@@ -1713,12 +1715,13 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int i, j, mi_step, ref;
+  const int ilimit = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
   int mb_to_right_edge_base = xd->mb_to_right_edge;
 
   if (mi_row <= tile->mi_row_start) return;
 
   xd->mb_to_bottom_edge += xd->n8_h * 32;
-  for (i = 0; i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col); i += mi_step) {
+  for (i = 0; i < ilimit; i += mi_step) {
     int mi_row_offset = -1;
     int mi_col_offset = i;
     int mi_x, mi_y, bw, bh;
@@ -1834,12 +1837,13 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int i, j, mi_step, ref;
+  const int ilimit = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
   int mb_to_bottom_edge_base = xd->mb_to_bottom_edge;
 
   if (mi_col == 0 || (mi_col - 1 < tile->mi_col_start)) return;
 
   xd->mb_to_right_edge += xd->n8_w * 32;
-  for (i = 0; i < AOMMIN(xd->n8_h, cm->mi_rows - mi_row); i += mi_step) {
+  for (i = 0; i < ilimit; i += mi_step) {
     int mi_row_offset = i;
     int mi_col_offset = -1;
     int mi_x, mi_y, bw, bh;
@@ -2002,6 +2006,7 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int i, j, mi_step, ref;
+  const int ilimit = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
   int mb_to_right_edge_base = xd->mb_to_right_edge;
 
   if (mi_row + xd->n8_h >= tile->mi_row_end ||
@@ -2010,7 +2015,7 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   assert(bsize >= BLOCK_8X8);
 
   xd->mb_to_top_edge -= xd->n8_h * 32;
-  for (i = 0; i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col); i += mi_step) {
+  for (i = 0; i < ilimit; i += mi_step) {
     int mi_row_offset = xd->n8_h;
     int mi_col_offset = i;
     int mi_x, mi_y, bw, bh;
@@ -2127,6 +2132,7 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int i, j, mi_step, ref;
+  const int ilimit = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
   int mb_to_bottom_edge_base = xd->mb_to_bottom_edge;
 
   if (mi_col + xd->n8_w >= tile->mi_col_end ||
@@ -2134,7 +2140,7 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     return;
 
   xd->mb_to_left_edge -= xd->n8_w * 32;
-  for (i = 0; i < AOMMIN(xd->n8_h, cm->mi_rows - mi_row); i += mi_step) {
+  for (i = 0; i < ilimit; i += mi_step) {
     int mi_row_offset = i;
     int mi_col_offset = xd->n8_w;
     int mi_x, mi_y, bw, bh;
