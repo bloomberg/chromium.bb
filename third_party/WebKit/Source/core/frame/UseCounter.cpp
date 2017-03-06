@@ -1101,7 +1101,7 @@ UseCounter::UseCounter(Context context)
       m_disableReporting(false),
       m_context(context),
       m_featuresRecorded(NumberOfFeatures),
-      m_CSSRecorded(lastUnresolvedCSSProperty + 1) {}
+      m_CSSRecorded(numCSSPropertyIDs) {}
 
 void UseCounter::muteForInspector() {
   m_muteCount++;
@@ -1308,8 +1308,7 @@ static EnumerationHistogram& featureObserverHistogram() {
 }
 
 UseCounter::LegacyCounter::LegacyCounter()
-    : m_featureBits(NumberOfFeatures),
-      m_CSSBits(lastUnresolvedCSSProperty + 1) {}
+    : m_featureBits(NumberOfFeatures), m_CSSBits(numCSSPropertyIDs) {}
 
 UseCounter::LegacyCounter::~LegacyCounter() {
   // PageDestruction was intended to be used as a scale, but it's broken (due to
@@ -1343,7 +1342,7 @@ void UseCounter::LegacyCounter::updateMeasurements() {
       EnumerationHistogram, cssPropertiesHistogram,
       ("WebCore.FeatureObserver.CSSProperties", kMaximumCSSSampleId));
   bool needsPagesMeasuredUpdate = false;
-  for (size_t i = firstCSSProperty; i <= lastUnresolvedCSSProperty; ++i) {
+  for (size_t i = firstCSSProperty; i < numCSSPropertyIDs; ++i) {
     if (m_CSSBits.quickGet(i)) {
       int cssSampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(
           static_cast<CSSPropertyID>(i));

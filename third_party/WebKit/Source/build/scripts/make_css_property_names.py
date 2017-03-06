@@ -37,6 +37,7 @@ const int firstCSSProperty = %(first_property_id)s;
 const int numCSSProperties = %(properties_count)s;
 const int lastCSSProperty = %(last_property_id)d;
 const int lastUnresolvedCSSProperty = %(last_unresolved_property_id)d;
+const int numCSSPropertyIDs = lastUnresolvedCSSProperty + 1;
 const size_t maxCSSPropertyNameLength = %(max_name_length)d;
 
 const char* getPropertyName(CSSPropertyID);

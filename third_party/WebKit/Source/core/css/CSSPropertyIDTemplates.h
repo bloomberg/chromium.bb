@@ -19,11 +19,10 @@ struct HashTraits<blink::CSSPropertyID>
     : GenericHashTraits<blink::CSSPropertyID> {
   static const bool emptyValueIsZero = true;
   static void constructDeletedValue(blink::CSSPropertyID& slot, bool) {
-    slot =
-        static_cast<blink::CSSPropertyID>(blink::lastUnresolvedCSSProperty + 1);
+    slot = static_cast<blink::CSSPropertyID>(blink::numCSSPropertyIDs);
   }
   static bool isDeletedValue(blink::CSSPropertyID value) {
-    return value == (blink::lastUnresolvedCSSProperty + 1);
+    return value == blink::numCSSPropertyIDs;
   }
 };
 }  // namespace WTF

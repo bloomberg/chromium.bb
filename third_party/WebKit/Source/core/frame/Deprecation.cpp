@@ -72,7 +72,7 @@ String replacedWillBeRemoved(const char* feature,
 namespace blink {
 
 Deprecation::Deprecation() : m_muteCount(0) {
-  m_cssPropertyDeprecationBits.ensureSize(lastUnresolvedCSSProperty + 1);
+  m_cssPropertyDeprecationBits.ensureSize(numCSSPropertyIDs);
 }
 
 Deprecation::~Deprecation() {}
