@@ -33,7 +33,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1303671224831497365">Inga Bluetooth-enheter hittades</translation>
 <translation id="1326317727527857210">Logga in i Chrome om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="1332501820983677155">Kortkommandon för funktioner i Google Chrome</translation>
-<translation id="13410144310025252">Visa dem i Chrome</translation>
 <translation id="1369915414381695676">Webbplatsen <ph name="SITE_NAME" /> har lagts till</translation>
 <translation id="1373696734384179344">Det finns inte tillräckligt med minne för att hämta det valda innehållet.</translation>
 <translation id="1376578503827013741">Beräknar …</translation>
@@ -88,6 +87,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="194341124344773587">Aktivera behörighet för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
 <translation id="1944384637046898011">Kryptera alla med Google-lösenordet från <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Styr hur Google anpassar Sök och andra Google-tjänster utifrån webbhistoriken.</translation>
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1984937141057606926">Tillåts, men inte från tredje part</translation>
@@ -104,7 +104,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="2126426811489709554">Drivs av Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> har stängts</translation>
-<translation id="2138201775715568214">Söker efter Physical Web-sidor i närheten</translation>
 <translation id="2139186145475833000">Lägg till på startskärmen</translation>
 <translation id="2146738493024040262">Öppna snabbappen</translation>
 <translation id="2148716181193084225">Idag</translation>
@@ -117,11 +116,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="2323763861024343754">Webbplatslagring</translation>
-<translation id="2331464965008647960">Enheter i närheten sänder webbsidor via Bluetooth. Chrome söker efter sidor och visar dem när du startar enheten. Sidorna skickas via en tjänst från Google för att förbättra kvaliteten på sidresultaten.
-
-Du kan styra Physical Web i inställningarna för Chrome
-
-<ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Installerar …</translation>
 <translation id="2346253980530904022">Googles servrar optimerar sidor du besöker, med undantag för HTTPS och inkognitoläge.</translation>
 <translation id="2349710944427398404">Total data som används av Chrome, inklusive konton, bokmärken och sparade inställningar</translation>
@@ -237,7 +231,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3662546969139119822">Det finns ingen historik här</translation>
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
 <translation id="3714981814255182093">Öppna sökfältet</translation>
-<translation id="3716158070938632480">Det finns webbsidor i närheten</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3739899004075612870">Bokmärket har lagts till i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB används av övriga appar</translation>
@@ -410,7 +403,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5517095782334947753">Du har bokmärken, historik, lösenord och andra inställningar från <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5527082711130173040">Chrome behöver tillgång till platsinformation för att kunna söka efter enheter. <ph name="BEGIN_LINK1" />Uppdatera behörigheter<ph name="END_LINK1" />. Platsåtkomst är dessutom <ph name="BEGIN_LINK2" />inaktiverat för enheten<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Stäng inkognitoflikar</translation>
-<translation id="554327794654007401">Den fysiska webben</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE" /> efter denna bild</translation>
@@ -562,7 +554,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7057058088140140610">Kreditkort och adresser som används med Google Payments</translation>
 <translation id="7062545763355031412">Godkänn och byt konto</translation>
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
-<translation id="7094922512924405309">Inga Physical Web-sidor hittades i närheten</translation>
 <translation id="7128222689758636196">Tillåt för den nuvarande sökmotorn</translation>
 <translation id="7138678301420049075">Övrigt</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
@@ -635,6 +626,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
 <translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>
+<translation id="8004582292198964060">Webbläsare</translation>
 <translation id="8007176423574883786">Inaktiverad för den här enheten</translation>
 <translation id="8008818777654712271">Viss information om systemet och innehåll på sidan skickas automatiskt till Google i syfte att identifiera skadliga appar och webbplatser.</translation>
 <translation id="8015452622527143194">Återställ allt på sidan till standardstorlek</translation>
@@ -716,7 +708,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8909135823018751308">Dela …</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
-<translation id="8931159598799892500">Chrome + Physical Web</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Öppna i ett annat fönster</translation>
 <translation id="8951232171465285730">Du har sparat <ph name="MEGABYTES" /> MB med Chrome</translation>
@@ -741,7 +732,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9139068048179869749">Fråga innan webbplatser tillåts att skicka aviseringar (rekommenderas)</translation>
-<translation id="917685106653909562">Physical Web-sidor i närheten</translation>
 <translation id="9187199695613236444">Mobilanpassad vy</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9206873250291191720">A</translation>
@@ -758,4 +748,5 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="981121421437150478">Offline</translation>
 <translation id="982182592107339124">Åtgärden raderar data för alla webbplatser, inklusive:</translation>
 <translation id="983192555821071799">Stäng alla flikar</translation>
+<translation id="987264212798334818">Allmänt</translation>
 </translationbundle>

@@ -33,7 +33,6 @@
 <translation id="1303671224831497365">Пристрої Bluetooth не знайдено</translation>
 <translation id="1326317727527857210">Щоб мати доступ до вкладок з інших пристроїв, увійдіть в обліковий запис Chrome.</translation>
 <translation id="1332501820983677155">Комбінації клавіш для функцій Google Chrome</translation>
-<translation id="13410144310025252">Перегляньте їх у Chrome</translation>
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> додано</translation>
 <translation id="1373696734384179344">Недостатньо пам’яті, щоб завантажити вибраний вміст.</translation>
 <translation id="1376578503827013741">Обчислення…</translation>
@@ -88,6 +87,7 @@
 <translation id="194341124344773587">Увімкніть дозвіл для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Зберігання паролів</translation>
 <translation id="1944384637046898011">Зашифрувати всі дані за допомогою пароля Google із <ph name="TIME" />.</translation>
+<translation id="1946005195648379376">Укажіть, як Google має використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук та інші служби Google.</translation>
 <translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
 <translation id="1974060860693918893">Розширені</translation>
 <translation id="1984937141057606926">Заборонено лише сторонні файли cookie</translation>
@@ -104,7 +104,6 @@
 <translation id="2100273922101894616">Автоматичний вхід</translation>
 <translation id="2126426811489709554">Технології Chrome</translation>
 <translation id="213279576345780926">Вкладку "<ph name="TAB_TITLE" />" закрито</translation>
-<translation id="2138201775715568214">Пошук веб-сторінок у сервісі "Інтернет навколо нас"</translation>
 <translation id="2139186145475833000">Додати на головний екран</translation>
 <translation id="2146738493024040262">Відкрити додаток із миттєвим запуском</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
@@ -117,11 +116,6 @@
 <translation id="2315043854645842844">Операційна система не підтримує сертифікат, вибраний на стороні клієнта.</translation>
 <translation id="2321958826496381788">Перетягуйте повзунок, доки розмір тексту не стане зручним для читання. Якщо двічі торкнутись абзацу, розмір тексту має стати принаймні таким, як цей.</translation>
 <translation id="2323763861024343754">Дані сайтів</translation>
-<translation id="2331464965008647960">Пристрої поруч транслюють веб-сторінки через Bluetooth. Chrome шукатиме та показуватиме сторінки, коли ви активуєте пристрій. Google оброблятиме ці сторінки, щоб покращити якість результатів.
-
-Ви можете керувати сервісом Інтернет навколо нас у налаштуваннях Chrome.
-
-<ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Встановлення…</translation>
 <translation id="2346253980530904022">Сервери Google оптимізують сторінки, які ви відвідуєте (за винятком сторінок із протоколом HTTPS і сторінок, які ви переглядаєте в анонімному режимі).</translation>
 <translation id="2349710944427398404">Усі дані, які використовує Chrome, зокрема облікові записи, закладки та збережені налаштування</translation>
@@ -237,7 +231,6 @@
 <translation id="3662546969139119822">Немає історії</translation>
 <translation id="3672452749423051839">Пропозиції у випадку помилок навігації</translation>
 <translation id="3714981814255182093">Відкрити рядок пошуку</translation>
-<translation id="3716158070938632480">Поруч є веб-сторінки</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3739899004075612870">Створено закладку в продукті <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Мб використовується іншими додатками</translation>
@@ -410,7 +403,6 @@
 <translation id="5517095782334947753">У вас є закладки, історія, паролі й інші налаштування з облікового запису <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5527082711130173040">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. <ph name="BEGIN_LINK1" />Оновити дозволи<ph name="END_LINK1" />. Доступ до геоданих також <ph name="BEGIN_LINK2" />вимкнено на цьому пристрої<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Закрити анонімні вкладки</translation>
-<translation id="554327794654007401">Інтернет навколо нас</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5565871407246142825">Кредитні картки</translation>
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
@@ -562,7 +554,6 @@
 <translation id="7057058088140140610">Кредитні картки й адреси, додані в Google Payments</translation>
 <translation id="7062545763355031412">Прийняти та перейти в інший обліковий запис</translation>
 <translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
-<translation id="7094922512924405309">Немає сторінок із сервісу "Інтернет навколо нас"</translation>
 <translation id="7128222689758636196">Дозволити поточній пошуковій системі</translation>
 <translation id="7138678301420049075">Інше</translation>
 <translation id="7180611975245234373">Оновити</translation>
@@ -635,6 +626,7 @@
 <translation id="7987073022710626672">Умови використання Google Chrome</translation>
 <translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
 <translation id="7999064672810608036">Видалити всі локальні дані, зокрема файли cookie, і скинути всі дозволи для цього веб-сайту?</translation>
+<translation id="8004582292198964060">Переглядач</translation>
 <translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
 <translation id="8008818777654712271">Автоматично надсилати в Google деяку інформацію про систему та вміст сторінок, щоб допомогти виявляти небезпечні додатки й сайти.</translation>
 <translation id="8015452622527143194">Відновити розміри всіх елементів за умовчанням</translation>
@@ -716,7 +708,6 @@
 <translation id="8909135823018751308">Надіслати…</translation>
 <translation id="8912362522468806198">Обліковий запис Google</translation>
 <translation id="8920114477895755567">Очікування даних батьків.</translation>
-<translation id="8931159598799892500">Chrome + Інтернет навколо нас</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Відкрити в іншому вікні</translation>
 <translation id="8951232171465285730">Chrome заощадив <ph name="MEGABYTES" /> Мб</translation>
@@ -741,7 +732,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
 <translation id="9139068048179869749">Запитувати, перш ніж дозволити сайтам надсилати сповіщення (рекомендується)</translation>
-<translation id="917685106653909562">Сторінки поблизу в сервісі "Інтернет навколо нас"</translation>
 <translation id="9187199695613236444">Режим для мобільних телефонів</translation>
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9206873250291191720">A</translation>
@@ -758,4 +748,5 @@
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="982182592107339124">Буде видалено дані всіх сайтів, зокрема:</translation>
 <translation id="983192555821071799">Закрити всі вкладки</translation>
+<translation id="987264212798334818">Загальне</translation>
 </translationbundle>

@@ -356,6 +356,7 @@
 <translation id="425582637250725228">Tekemiäsi muutoksia ei välttämättä tallenneta.</translation>
 <translation id="4258748452823770588">Virheellinen allekirjoitus</translation>
 <translation id="4269787794583293679">(Ei käyttäjänimeä)</translation>
+<translation id="4275830172053184480">Käynnistä laite uudelleen</translation>
 <translation id="4280429058323657511">, vanhentumispäivä <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Googlen selaussuoja <ph name="BEGIN_LINK" />löysi äskettäin haitallisia ohjelmia<ph name="END_LINK" /> sivustolta <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4300246636397505754">Ylätason ehdotukset</translation>
@@ -556,6 +557,7 @@
 <translation id="6443118737398455446">Virheellinen viimeinen voimassaolopäivä</translation>
 <translation id="6446608382365791566">Lisää tietoja</translation>
 <translation id="6451458296329894277">Vahvista lomakkeen uudelleenlähetys</translation>
+<translation id="6456339708790392414">Maksu</translation>
 <translation id="6458467102616083041">Ohitettu, koska oletushaku on poistettu käytöstä käytännön mukaan.</translation>
 <translation id="6462969404041126431">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />. Sen suojausvarmenne on ehkä peruutettu. Tämä voi johtua määritysvirheestä tai hyökkäyksestä, jonka tavoitteena on verkkoyhteytesi sieppaaminen. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="647261751007945333">Laitekäytännöt</translation>
@@ -691,6 +693,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7755287808199759310">Vanhempasi voi kumota eston puolestasi.</translation>
 <translation id="7758069387465995638">Palomuuri tai virustorjuntaohjelmisto on saattanut estää yhteyden.</translation>
 <translation id="7761701407923456692">Palvelimen varmenne ei vastaa URL-osoitetta.</translation>
+<translation id="7764225426217299476">Lisää osoite</translation>
 <translation id="777702478322588152">Prefektuuri</translation>
 <translation id="7791543448312431591">Lisää</translation>
 <translation id="7793809570500803535">Osoitteessa <ph name="SITE" /> oleva sivu saattaa olla väliaikaisesti pois käytöstä, tai se on voitu siirtää pysyvästi uuteen osoitteeseen.</translation>
@@ -795,6 +798,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8932102934695377596">Kellosi jätättää</translation>
 <translation id="8954894007019320973">(jatkuu)</translation>
 <translation id="8971063699422889582">Palvelimen varmenne on vanhentunut.</translation>
+<translation id="8986494364107987395">Lähetä Googlelle käyttötilastoja ja virheraportteja automaattisesti</translation>
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Sivusto sisältää haitallisia ohjelmia</translation>

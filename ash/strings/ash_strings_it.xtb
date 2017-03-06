@@ -28,8 +28,6 @@
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
-<translation id="1812696562331527143">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3a parte<ph name="END_LINK" />).
-Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
@@ -60,6 +58,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
 <translation id="2857608528410806398">Inserisci qui il corpo della notifica della funzione di sblocco rapido. Inserisci qui il corpo della notifica della funzione di sblocco rapido. Inserisci qui il corpo della notifica della funzione di sblocco rapido. Inserisci qui il corpo della notifica della funzione di sblocco rapido. Inserisci qui il corpo della notifica della funzione di sblocco rapido.</translation>
+<translation id="2865888419503095837">Informazioni di rete</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2942516765047364088">Posizione shelf</translation>
 <translation id="2946119680249604491">Aggiungi connessione</translation>
@@ -68,8 +67,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> è una sessione pubblica gestita da <ph name="DOMAIN" /></translation>
 <translation id="3009178788565917040">Uscita</translation>
 <translation id="3019353588588144572">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING" /></translation>
-<translation id="3050422059534974565">La funzione BLOC MAIUSC è attiva.
-Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3077734595579995578">maiusc</translation>
 <translation id="3087734570205094154">In basso</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -77,6 +74,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="315116470104423982">Dati mobili</translation>
 <translation id="3157169093162779309">Attiva blocco rotazione</translation>
+<translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="3335772982573114336">Nuova nota</translation>
 <translation id="3364721542077212959">Strumenti per stilo</translation>
@@ -144,8 +142,6 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
 <translation id="57838592816432529">Disattiva audio</translation>
-<translation id="5825747213122829519">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID" />.
-Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="5901316534475909376">MAIUSC+ESC</translation>
 <translation id="5927132638760172455">Trasmissione a un ricevitore sconosciuto</translation>
@@ -201,8 +197,6 @@ Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="7129360219436193655">Modalità puntatore laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">La funzione BLOC MAIUSC è attiva.
-Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="7348093485538360975">Tastiera sullo schermo</translation>
 <translation id="735745346212279324">VPN scollegata</translation>
 <translation id="742594950370306541">La videocamera è in uso.</translation>
@@ -221,12 +215,14 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="7893838033650689677">Attiva Wi-Fi</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="7957227661277029961">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso. Utilizza un caricabatterie originale.</translation>
+<translation id="7977927628060636163">Ricerca di reti mobili...</translation>
 <translation id="7982789257301363584">Rete</translation>
 <translation id="8000066093800657092">Nessuna rete</translation>
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
 <translation id="8077816382010018681">Inserisci qui il titolo della notifica della funzione di sblocco rapido</translation>
 <translation id="8098591350844501178">Interrompi la trasmissione dello schermo su <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Connesso a <ph name="NAME" /></translation>
+<translation id="813913629614996137">Inizializzazione...</translation>
 <translation id="8142699993796781067">Rete privata</translation>
 <translation id="8180896103888046100">Interrompi la trasmissione su ricevitore sconosciuto</translation>
 <translation id="8185286464235484130">Comunicaci la tua opinione sul nostro lavoro rispondendo ad alcune domande.</translation>

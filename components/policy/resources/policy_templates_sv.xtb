@@ -1059,9 +1059,6 @@
 
           Om ingen inställning görs eller om Falskt anges kan användaren föra över filer till Google Drive.</translation>
 <translation id="3915395663995367577">Webbadress till en PAC-proxyfil</translation>
-<translation id="3926940573869375969">Konfigurerar vilka tangentbordslayouter som är tillåtna på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />.
-
-      Om en lista med identifierare för inmatningsmetoder har angetts för principen blir de angivna inmatningsmetoderna tillgängliga på inloggningsskärmen. Den inmatningsmetod som anges först blir standardvärde. När fokus ligger på ett användarfält på inloggningsskärmen blir användarens äldsta inmatningsmetod tillgänglig förutom de inmatningsmetoder som angetts i principen. Om principen inte har ställts in styrs valet av inmatningsmetoder av vilken språkkod som används för inloggningsskärmen. Ogiltiga värden som inte identifierar någon inmatningsmetod ignoreras.</translation>
 <translation id="3939893074578116847">Skicka nätverkspaket för övervakning av onlinestatusen till hanteringsservern, så att
       den kan identifiera om enheten är offline.
 
@@ -2085,11 +2082,6 @@
 <translation id="7027785306666625591">Konfigurera energihantering i <ph name="PRODUCT_OS_NAME" />.
 
       Med dessa policyer kan du konfigurera hur <ph name="PRODUCT_OS_NAME" /> ska fungera när användaren är inaktiv under en viss tid.</translation>
-<translation id="703078280527762319">Varning! Principen för den högsta TLS-versionen tas bort helt från <ph name="PRODUCT_NAME" /> kring version 66 (runt februari 2018).
-
-      Om denna princip inte konfigureras används den högsta standardversionen (TLSv1.3) av <ph name="PRODUCT_NAME" />.
-
-      I annat fall kan den anges till värdena tls1.2 eller tls1.3. När ett värde har angetts används inte versioner av SSL/TLS som är tidigare än den angivna versionen av <ph name="PRODUCT_NAME" />. Ett värde som inte känns igen ignoreras.</translation>
 <translation id="7040229947030068419">Exempelvärde:</translation>
 <translation id="7049373494483449255">Policyn gör att <ph name="PRODUCT_NAME" /> kan skicka dokument till <ph name="CLOUD_PRINT_NAME" /> för utskrift. Obs! Detta påverkar bara stöd för <ph name="CLOUD_PRINT_NAME" /> i <ph name="PRODUCT_NAME" />. Det förhindrar inte att användarna skickar utskriftsjobb på webbplatser.
 

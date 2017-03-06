@@ -355,6 +355,7 @@
 <translation id="425582637250725228">Направените от вас промени може да не се запазят.</translation>
 <translation id="4258748452823770588">Невалиден подпис</translation>
 <translation id="4269787794583293679">(Няма потребителско име)</translation>
+<translation id="4275830172053184480">Рестартиране на устройството ви</translation>
 <translation id="4280429058323657511">, изтича: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />намери опасни програми<ph name="END_LINK" /> на <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">Основни предложения</translation>
@@ -555,6 +556,7 @@
 <translation id="6443118737398455446">Датата на валидност е недействителна</translation>
 <translation id="6446608382365791566">Добавяне на още информация</translation>
 <translation id="6451458296329894277">Потвърдете повторното изпращане на формуляра</translation>
+<translation id="6456339708790392414">Вашето плащане</translation>
 <translation id="6458467102616083041">Бе пренебрегнато, защото основното търсене е деактивирано от правило.</translation>
 <translation id="6462969404041126431">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Възможно е сертификатът му за сигурност да е анулиран. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от извършител на атака. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Правила за устройството</translation>
@@ -690,6 +692,7 @@
 <translation id="7755287808199759310">Родителят ви може да го отблокира за вас</translation>
 <translation id="7758069387465995638">Възможно е връзката да е блокирана от защитна стена или антивирусен софтуер.</translation>
 <translation id="7761701407923456692">Сертификатът на сървъра не съответства на URL адреса.</translation>
+<translation id="7764225426217299476">Добавяне на адрес</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="7793809570500803535">До уеб страницата на адрес <ph name="SITE" /> може временно да няма достъп или да е преместена за постоянно на нов уеб адрес.</translation>
@@ -793,6 +796,7 @@
 <translation id="8932102934695377596">Часовникът ви е назад</translation>
 <translation id="8954894007019320973">(Прод.)</translation>
 <translation id="8971063699422889582">Сертификатът на сървъра е с изтекла валидност.</translation>
+<translation id="8986494364107987395">Автоматично изпращане до Google на статистически данни за използването на Chrome и сигнали за сривове</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">На хоризонта се задава сайт с опасни програми</translation>

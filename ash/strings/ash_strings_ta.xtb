@@ -28,8 +28,6 @@
 <translation id="164969095109328410">Chrome சாதனம்</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> மணி நேரம்</translation>
 <translation id="1747827819627189109">ஆன்ஸ்க்ரீன் விசைப்பலகை இயக்கப்பட்டது</translation>
-<translation id="1812696562331527143">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />மூன்றாம் தரப்பு<ph name="END_LINK" />) க்கு மாற்றப்பட்டது.
-மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
 <translation id="1850504506766569011">வைஃபை முடக்கத்தில் உள்ளது.</translation>
 <translation id="1864454756846565995">USB-C சாதனம் (பின்பக்கப் போர்ட்)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ஐப் பிரதிபலிக்கிறது</translation>
@@ -60,6 +58,7 @@
 <translation id="2825619548187458965">அடுக்கு</translation>
 <translation id="2844169650293029770">USB-C சாதனம் (இடது பக்கம் முன்னே இருக்கும் போர்ட்)</translation>
 <translation id="2857608528410806398">QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே. QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே. QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே. QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே. QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே.</translation>
+<translation id="2865888419503095837">நெட்வொர்க் தகவல்</translation>
 <translation id="2872961005593481000">நிறுத்து</translation>
 <translation id="2942516765047364088">அடுக்கின் நிலை</translation>
 <translation id="2946119680249604491">இணைப்பைச் சேர்</translation>
@@ -68,8 +67,6 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ஆனது <ph name="DOMAIN" /> ஆல் நிர்வகிக்கப்படும் பொது அமர்வாகும்</translation>
 <translation id="3009178788565917040">வெளியீடு</translation>
 <translation id="3019353588588144572"><ph name="TIME_REMAINING" /> இல் பேட்டரி முழுவதும் சார்ஜ் ஆகிவிடும்</translation>
-<translation id="3050422059534974565">CAPS LOCK இயக்கத்தில் உள்ளது.
-ரத்துசெய்ய Search அல்லது Shift ஐ அழுத்தவும்.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">கீழே</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (புளூடூத்)</translation>
@@ -77,6 +74,7 @@
 <translation id="3147142846278915599">துவக்கி (பயன்பாடுகளை ஒத்திசைக்கிறது...)</translation>
 <translation id="315116470104423982">மொபைல் தரவு</translation>
 <translation id="3157169093162779309">சுழற்றல் பூட்டை இயக்கு</translation>
+<translation id="3236488194889173876">மொபைல் நெட்வொர்க் இல்லை</translation>
 <translation id="3294437725009624529">விருந்தினர்</translation>
 <translation id="3335772982573114336">புதிய குறிப்பு</translation>
 <translation id="3364721542077212959">ஸ்டைலஸ் கருவிகள்</translation>
@@ -144,8 +142,6 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5777841717266010279">திரைப் பகிர்வதை நிறுத்தவா?</translation>
 <translation id="57838592816432529">ஒலியடக்கு</translation>
-<translation id="5825747213122829519">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID" /> க்கு மாற்றப்பட்டது.
-மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
 <translation id="5895138241574237353">மறுதொடக்கம்</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">தெரியாத ரிசீவருக்கு அனுப்புகிறது</translation>
@@ -201,8 +197,6 @@
 <translation id="7129360219436193655">லேசர் பாயின்டர் பயன்முறை</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
-<translation id="7209101170223508707">CAPS LOCK இயக்கத்தில் உள்ளது.
-ரத்துசெய்ய Alt+Search அல்லது Shift ஐ அழுத்தவும்.</translation>
 <translation id="7348093485538360975">ஆன்-ஸ்கிரீன் விசைப்பலகை</translation>
 <translation id="735745346212279324">VPN துண்டிக்கப்பட்டது</translation>
 <translation id="742594950370306541">கேமரா பயன்பாட்டில் உள்ளது.</translation>
@@ -221,12 +215,14 @@
 <translation id="7893838033650689677">வைஃபையை இயக்கு</translation>
 <translation id="7904094684485781019">இந்தக் கணக்கிற்கான நிர்வாகி பல உள்நுழைவுகளை அனுமதிக்கவில்லை.</translation>
 <translation id="7957227661277029961">உங்கள் <ph name="DEVICE_TYPE" /> இயக்கப்பட்டிருக்கும் போது அதில் சார்ஜ் ஏறாது. அதனுடன் வாங்கிய முறையான சார்ஜரைப் பயன்படுத்திப் பார்க்கவும்.</translation>
+<translation id="7977927628060636163">மொபைல் நெட்வொர்க்குகளைத் தேடுகிறது...</translation>
 <translation id="7982789257301363584">நெட்வொர்க்</translation>
 <translation id="8000066093800657092">நெட்வொர்க் இல்லை</translation>
 <translation id="8054466585765276473">பேட்டரி நேரத்தைக் கணக்கிடுகிறது.</translation>
 <translation id="8077816382010018681">QU அம்சத்தின் அறிவிப்புத் தலைப்பு இங்கே</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />க்குத் திரையை அனுப்புவதை நிறுத்து</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> உடன் இணைக்கப்பட்டது</translation>
+<translation id="813913629614996137">துவக்குகிறது...</translation>
 <translation id="8142699993796781067">தனிப்பட்ட நெட்வொர்க்</translation>
 <translation id="8180896103888046100">தெரியாத ரிசீவருக்கு அனுப்புவதை நிறுத்து</translation>
 <translation id="8185286464235484130">சில கேள்விகளுக்குப் பதிலளிப்பதன் மூலம் நாங்கள் எவ்வாறு செயல்படுகிறோம் என்பதை எங்களுக்குத் தெரிவிக்கவும்.</translation>

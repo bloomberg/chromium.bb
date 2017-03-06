@@ -1042,9 +1042,6 @@
 
           Kung hindi nakatakda o nakatakda sa False, makakapaglipat ang mga user ng mga file sa Google Drive.</translation>
 <translation id="3915395663995367577">URL sa proxy na .pac file</translation>
-<translation id="3926940573869375969">Kino-configure kung aling mga layout ng keyboard ang pinapayagan sa screen sa pag-sign in ng <ph name="PRODUCT_OS_NAME" />.
-
-      Kung nakatakda ang patakarang ito sa isang listahan ng mga identifier ng pamamaraan ng pag-input, magiging available ang mga ibinigay na pamamaraan ng pag-input sa screen sa pag-sign in. Ang unang pamamaraan ng pag-input ay paunang mapipili. Habang nakatuon ang isang user pod sa screen sa pag-sign in, ang pinakamadalang na ginagamit na pamamaraan ng pag-input ng user ay magiging available bilang karagdagan sa mga pamamaraan ng pag-input na ibinigay ng patakarang ito.  Kung hindi nakatakda ang patakarang ito, kukunin ang mga pamamaraan ng pag-input sa screen sa pag-sign in mula sa lokal kung saan ipinapakita ang screen sa pag-sign in.  Babalewalain ang mga value na hindi wastong mga identifier ng pamamaraan ng pag-input.</translation>
 <translation id="3939893074578116847">Magpadala ng mga network packet sa server sa pamamahala upang masubaybayan ang online status, upang mabigyang-daan ang
       server na tukuyin kung offline ang device.
 
@@ -2064,11 +2061,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7027785306666625591">I-configure ang pamamahala ng power sa <ph name="PRODUCT_OS_NAME" />.
 
       Nagbibigay-daan sa iyo ang mga patakarang ito na i-configure ang gawi ng <ph name="PRODUCT_OS_NAME" /> kapag ang user ay nananatiling idle sa ilang sandali.</translation>
-<translation id="703078280527762319">Babala: Ganap nang aalisin ang patakaran sa max na bersyon ng TLS mula sa <ph name="PRODUCT_NAME" /> hanggang sa bersyon 66 (bandang Pebrero 2018).
-
-      Kung hindi na-configure ang patakarang ito, gagamit ang <ph name="PRODUCT_NAME" /> ng default na maximum na bersyon na TLSv1.3.
-
-      Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1.2" o "tls1.3". Kapag nakatakda, hindi gagamit ng mga bersyon ng SSL/TLS ang <ph name="PRODUCT_NAME" /> na mas bago kaysa sa tinukoy na bersyon. Babalewalain ang hindi kilalang value.</translation>
 <translation id="7040229947030068419">Halimbawang halaga:</translation>
 <translation id="7049373494483449255">Binibigyang-daan ang <ph name="PRODUCT_NAME" /> na magsumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /> para sa pag-print.  TANDAAN: Naaapektuhan lamang nito ang suporta ng <ph name="CLOUD_PRINT_NAME" /> sa <ph name="PRODUCT_NAME" />.  Hindi nito pinipigilan ang mga user sa pagsusumite ng mga gawain sa pag-print sa mga web site.
 

@@ -33,7 +33,6 @@
 <translation id="1303671224831497365">Няма намерени устройства с Bluetooth</translation>
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
 <translation id="1332501820983677155">Комбинации за функции на Google Chrome</translation>
-<translation id="13410144310025252">Прегледайте ги в Chrome</translation>
 <translation id="1369915414381695676">Сайтът <ph name="SITE_NAME" /> е добавен</translation>
 <translation id="1373696734384179344">Недостатъчно памет за изтегляне на избраното съдържание.</translation>
 <translation id="1376578503827013741">Изчислява се…</translation>
@@ -88,6 +87,7 @@
 <translation id="194341124344773587">Включете разрешението за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Запазени пароли</translation>
 <translation id="1944384637046898011">Шифроване на всичко с паролата за Google от <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето и други услуги на Google.</translation>
 <translation id="1966710179511230534">Моля, актуализирайте данните си за вход.</translation>
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="1984937141057606926">Разрешено, но не и за трети страни</translation>
@@ -104,7 +104,6 @@
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="2126426811489709554">Предоставено от Chrome</translation>
 <translation id="213279576345780926">Затворихте „<ph name="TAB_TITLE" />“</translation>
-<translation id="2138201775715568214">Търсят се намиращи се в близост страници във Физическата мрежа</translation>
 <translation id="2139186145475833000">Добавяне към началния екран</translation>
 <translation id="2146738493024040262">Отваряне на мигновеното приложение</translation>
 <translation id="2148716181193084225">Днес</translation>
@@ -117,11 +116,6 @@
 <translation id="2315043854645842844">Избраният сертификат от страната на клиента не се поддържа от операционната система.</translation>
 <translation id="2321958826496381788">Преместете плъзгача, докато можете да четете удобно това. Текстът трябва да изглежда поне толкова голям след двукратно докосване на абзац.</translation>
 <translation id="2323763861024343754">Данни от сайтове</translation>
-<translation id="2331464965008647960">Устройствата близо до вас излъчват уеб страници през Bluetooth. Chrome ще сканира за страници и ще ги показва, когато устройството ви излезе от спящ режим. Те ще преминават през услуга на Google с цел подобряване на качеството на съответните резултати.
-
-Можете да управлявате Физическата мрежа от настройките на Chrome.
-
-<ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Инсталира се…</translation>
 <translation id="2346253980530904022">Сървърите на Google ще оптимизират посещаваните от вас страници с изключение на тези през HTTPS и в режим „инкогнито“.</translation>
 <translation id="2349710944427398404">Общо място в хранилището, което се използва от Chrome, включително за профили, отметки и запазени настройки</translation>
@@ -237,7 +231,6 @@
 <translation id="3662546969139119822">Тук няма история</translation>
 <translation id="3672452749423051839">Предложения в случай на грешки при сърфиране</translation>
 <translation id="3714981814255182093">Отваряне на лентата за търсене</translation>
-<translation id="3716158070938632480">В близост има уеб страници</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3739899004075612870">Отметката бе запазена в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Други приложения: <ph name="MEGABYTES" /> МБ</translation>
@@ -410,7 +403,6 @@
 <translation id="5517095782334947753">Имате отметки, история, пароли и други настройки от <ph name="FROM_ACCOUNT" /></translation>
 <translation id="5527082711130173040">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK1" />Актуализирайте разрешенията<ph name="END_LINK1" />. Също така услугите за местоположение са <ph name="BEGIN_LINK2" />изключени за това устройство<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Раздели „инкогнито“: Затв.</translation>
-<translation id="554327794654007401">Физическата мрежа</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5565871407246142825">Кредитни карти</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
@@ -562,7 +554,6 @@
 <translation id="7057058088140140610">Кредитни карти и адреси посредством Google Payments</translation>
 <translation id="7062545763355031412">Приемане и превключване на профилите</translation>
 <translation id="7063006564040364415">Не можа да се установи връзка със синхронизиращия сървър.</translation>
-<translation id="7094922512924405309">Няма намиращи се в близост страници във Физическата мрежа</translation>
 <translation id="7128222689758636196">Разрешаване за текущата търсеща машина</translation>
 <translation id="7138678301420049075">Друго</translation>
 <translation id="7180611975245234373">Опресняване</translation>
@@ -635,6 +626,7 @@
 <translation id="7987073022710626672">Общи условия на Chrome</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
 <translation id="7999064672810608036">Наистина ли искате да изчистите всички локални данни, включително „бисквитките“, и да нулирате всички разрешения за този уебсайт?</translation>
+<translation id="8004582292198964060">Браузър</translation>
 <translation id="8007176423574883786">Изключено за това устройство</translation>
 <translation id="8008818777654712271">Автоматично изпращане до Google на системна информация и част от съдържанието на страниците с цел по-лесно откриване на опасни приложения и сайтове</translation>
 <translation id="8015452622527143194">Стандартен размер на всички елементи на страницата</translation>
@@ -716,7 +708,6 @@
 <translation id="8909135823018751308">Споделяне…</translation>
 <translation id="8912362522468806198">Профил в Google</translation>
 <translation id="8920114477895755567">Изчакват се подробности за родителите.</translation>
-<translation id="8931159598799892500">Chrome + Физическа мрежа</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Отваряне в другия прозорец</translation>
 <translation id="8951232171465285730">Chrome ви спести <ph name="MEGABYTES" /> МБ</translation>
@@ -741,7 +732,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="9139068048179869749">Извеждане на запитване, преди да се разреши на сайтовете да изпращат известия (препоръчително)</translation>
-<translation id="917685106653909562">Намиращи се в близост страници във Физическата мрежа</translation>
 <translation id="9187199695613236444">Изглед, удобен за мобилни устройства</translation>
 <translation id="9188680907066685419">Излизане от управляван профил</translation>
 <translation id="9206873250291191720">А</translation>
@@ -758,4 +748,5 @@
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="982182592107339124">Това действие ще изчисти данните за всички сайтове, включително:</translation>
 <translation id="983192555821071799">Затваряне на всички раздели</translation>
+<translation id="987264212798334818">Общи</translation>
 </translationbundle>

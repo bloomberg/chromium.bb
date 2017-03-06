@@ -28,8 +28,6 @@
 <translation id="164969095109328410">Chrome-enhet</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
-<translation id="1812696562331527143">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredjepart<ph name="END_LINK" />).
-Trykk på Shift + Alt for å bytte.</translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
@@ -60,6 +58,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="2825619548187458965">Hylle</translation>
 <translation id="2844169650293029770">USB-C-enhet (porten foran på venstre side)</translation>
 <translation id="2857608528410806398">Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her.</translation>
+<translation id="2865888419503095837">Nettverksinformasjon</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2942516765047364088">Hylleposisjon</translation>
 <translation id="2946119680249604491">Legg til forbindelse</translation>
@@ -68,8 +67,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> er en offentlig økt administrert av <ph name="DOMAIN" /></translation>
 <translation id="3009178788565917040">Utdata</translation>
 <translation id="3019353588588144572">Tid som gjenstår til batteriet er fulladet – <ph name="TIME_REMAINING" /></translation>
-<translation id="3050422059534974565">Caps Lock er på.
-Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bunn</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -77,6 +74,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="3147142846278915599">Appoversikt (synkroniserer apper ...)</translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3157169093162779309">Slå på rotasjonslås</translation>
+<translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
 <translation id="3294437725009624529">Gjest</translation>
 <translation id="3335772982573114336">Nytt notat</translation>
 <translation id="3364721542077212959">Pekepennverktøy</translation>
@@ -145,8 +143,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> <ph name="DATE" /></translation>
 <translation id="5777841717266010279">Vil du stoppe skjermdelingen?</translation>
 <translation id="57838592816432529">Kutt lyden</translation>
-<translation id="5825747213122829519">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID" />.
-Trykk på Shift + Alt for å bytte.</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Caster til en ukjent mottaker</translation>
@@ -201,8 +197,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="7129360219436193655">Laserpekermodus</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Caps Lock er på.
-Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>
 <translation id="735745346212279324">VPN frakoblet</translation>
 <translation id="742594950370306541">Kameraet er i bruk.</translation>
@@ -221,12 +215,14 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="7893838033650689677">Slå på Wi-Fi</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7957227661277029961">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på. Du bør vurdere å bruke den offisielle laderen.</translation>
+<translation id="7977927628060636163">Søker etter mobilnettverk …</translation>
 <translation id="7982789257301363584">Nettverk</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8077816382010018681">Tittelen for varselet for hurtigopplåsing-funksjonen skal være her.</translation>
 <translation id="8098591350844501178">Slutt å caste skjermen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME" /></translation>
+<translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>
 <translation id="8180896103888046100">Slutt å caste til en ukjent mottaker</translation>
 <translation id="8185286464235484130">Svar på noen spørsmål for å fortelle oss hva du synes om oss.</translation>

@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">1. ред за адресу</translation>
 <translation id="1545749641540134597">Скенирајте QR кôд</translation>
 <translation id="1580783302095112590">Имејл је послата.</translation>
-<translation id="1634828734222219955">Укупно</translation>
 <translation id="1646446875146297738">Омогућавање опције „Не прати“ значи да ће захтев бити укључен уз саобраћај прегледања. Све последице зависе од тога да ли веб-сајт одговара на захтев и како се захтев тумачи.
 
 На пример, неки веб-сајтови могу да одговарају на овај захтев тако што ће вам приказивати огласе који нису засновани на другим веб-сајтовима које сте посетили. Многи веб-сајтови ће и даље прикупљати и користити податке прегледања, на пример, да би побољшали безбедност, пружали садржај, услуге, огласе и препоруке и да би генерисали статистику извештавања. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@
 <translation id="1809939268435598390">Избриши директоријум</translation>
 <translation id="1813414402673211292">Брисање података прегледања</translation>
 <translation id="1820259098641718022">Додато је на листу за читање</translation>
-<translation id="1826516787628120939">Провера</translation>
-<translation id="1842969606798536927">Плаћање</translation>
 <translation id="1876721852596493031">Шаљи подат. о кориш.</translation>
 <translation id="1886928167269928266">Одувек</translation>
 <translation id="1894451531427596130">Контролишите како ово функционише у <ph name="BEGIN_LINK" />Подешавањима<ph name="END_LINK" /></translation>
@@ -62,7 +59,6 @@
 <translation id="1952728750904661634">Пријавите се помоћу налога којим се управља</translation>
 <translation id="1974060860693918893">Напредне опције</translation>
 <translation id="1989112275319619282">Прегледај</translation>
-<translation id="2054511809411770085">QR кôд или бар-код</translation>
 <translation id="2068952045031577364">Претходна недеља</translation>
 <translation id="2079545284768500474">Опозови</translation>
 <translation id="209018056901015185">Захтевај сајт за рачунар</translation>
@@ -192,7 +188,6 @@
 <translation id="4875622588773761625">Желите ли да <ph name="PASSWORD_MANAGER_BRAND" /> ажурира лозинку за овај сајт?</translation>
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4904877109095351937">Означи као прочитано</translation>
-<translation id="4923459931733593730">Плаћање</translation>
 <translation id="4930268273022498155">Избришите постојеће податке. Можете да их вратите ако се вратите на <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Жао нам је, дошло је до проблема при дељењу ставке.</translation>
 <translation id="4979397965658815378">Пријавите се помоћу Google налога да бисте имали обележиваче, лозинке, историју и друга подешавања на свим уређајима</translation>
@@ -208,7 +203,6 @@
 <translation id="5186185447130319458">Приватно</translation>
 <translation id="5190835502935405962">Трака са обележивачима</translation>
 <translation id="5197255632782567636">Интернет</translation>
-<translation id="5198972191746488848">Додај картицу…</translation>
 <translation id="5228579091201413441">Омогући синхронизацију</translation>
 <translation id="5244474230056479698">Синхронизује се са <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Прикажи</translation>
@@ -251,7 +245,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Више</translation>
 <translation id="605721222689873409">ГГ</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Додирните да бисте отказали.</translation>
 <translation id="60851516108411750">Листа за читање је доступна офлајн. Да бисте додали страницу на листу за читање, додирните <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Онлајн</translation>
@@ -284,7 +277,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6418346271604475326">Припрема PDF датотеке</translation>
 <translation id="6445051938772793705">Земља</translation>
 <translation id="6445981559479772097">Порука је послата.</translation>
-<translation id="6456339708790392414">Плаћање</translation>
 <translation id="6456425917241817154">Лозинку генерише Chrome</translation>
 <translation id="6464071786529933911">Отвори у новој картици без архивирања</translation>
 <translation id="6482629121755362506">Број избрисаних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -343,7 +335,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7765158879357617694">Премести</translation>
 <translation id="7769602470925380267">Прихватам, одјави ме</translation>
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
-<translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, хвала</translation>
 <translation id="7851858861565204677">Други уређаји</translation>
 <translation id="7859704718976024901">Историја прегледања</translation>
@@ -384,7 +375,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8654802032646794042">Откажи</translation>
 <translation id="8668210798914567634">Ова страница је сачувана на Листи за читање.</translation>
 <translation id="8680787084697685621">Детаљи за пријављивање на налог су застарели.</translation>
-<translation id="8699098509676302392">Додај адресу...</translation>
 <translation id="8721297211384281569">Мени Алатке</translation>
 <translation id="8725066075913043281">Пробајте поново</translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -404,11 +394,9 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="9055772144595778347">Пријављивање није успело</translation>
 <translation id="9065203028668620118">Измени</translation>
 <translation id="9079935439869366234">Означи све као непрочитано</translation>
-<translation id="9080712759204168376">Резиме поруџбине</translation>
 <translation id="9083392325882095631">1 ставка</translation>
 <translation id="9100610230175265781">Потребна је приступна фраза</translation>
 <translation id="9148126808321036104">Пријави ме поново</translation>
-<translation id="9154194610265714752">Ажурирано</translation>
 <translation id="9157836665414082580">Спречи дијалоге</translation>
 <translation id="9188680907066685419">Одјавите се са налога којим се управља</translation>
 <translation id="9203116392574189331">Handoff</translation>

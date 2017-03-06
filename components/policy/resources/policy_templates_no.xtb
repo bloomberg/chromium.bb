@@ -1027,9 +1027,6 @@
 
           Hvis den ikke er spesifisert eller har verdien false (usann), kan brukere overføre filer til Google Disk.</translation>
 <translation id="3915395663995367577">Nettadresse til en .pac-fil for proxy-tjener</translation>
-<translation id="3926940573869375969">Konfigurerer hvilke tastaturoppsett som tillates på påloggingsskjermen for <ph name="PRODUCT_OS_NAME" />.
-
-      Hvis denne regelen er angitt til en liste med identifikatorer for inndatametoder, er de angitte inndatametodene tilgjengelige på påloggingsskjermen. Den første angitte inndatametoden blir forhåndsvalgt. Når brukerkapselen er fokusert på påloggingsskjermen, blir den inndatametoden det er lengst siden brukeren brukte, tilgjengelig – i tillegg til inndatametodene som spesifiseres av denne regelen. Hvis denne regelen ikke er spesifisert, blir inndatametodene på påloggingsskjermen avledet fra lokaliteten påloggingsskjermen vises med. Verdier som ikke er gyldige identifikatorer for inndatametoder, blir ignorert.</translation>
 <translation id="3939893074578116847">Send nettverkspakker til administreringstjeneren for å overvåke nettstatusen, slik at
       tjeneren kan oppdage om enheten er uten nett.
 
@@ -2032,11 +2029,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7027785306666625591">Konfigurer strømstyring i <ph name="PRODUCT_OS_NAME" />.
 
       Disse innstillingene lar deg konfigurere hvordan <ph name="PRODUCT_OS_NAME" /> oppfører seg når brukeren er inaktiv i en periode.</translation>
-<translation id="703078280527762319">Advarsel: Regelen for høyeste TLS-versjon blir fullstendig fjernet fra <ph name="PRODUCT_NAME" /> omkring versjon 66 (rundt februar 2018).
-
-      Hvis denne regelen ikke konfigureres, bruker <ph name="PRODUCT_NAME" /> TLSv1.3 som standard for maksimumsversjon.
-
-      Ellers kan den angis som en av de følgende verdiene: «tls1.2» eller «tls1.3». Når den er angitt, kommer ikke <ph name="PRODUCT_NAME" /> til å bruke høyere SSL/TLS-versjoner enn den spesifiserte versjonen. Ukjente verdier blir ignorert.</translation>
 <translation id="7040229947030068419">Eksempelverdi:</translation>
 <translation id="7049373494483449255">Gjør at <ph name="PRODUCT_NAME" /> kan sende dokumenter til <ph name="CLOUD_PRINT_NAME" /> for utskrift.  MERK: Dette påvirker bare støtte av <ph name="CLOUD_PRINT_NAME" /> i <ph name="PRODUCT_NAME" />. Det hindrer ikke brukeren i å sende utskriftsjobber på nettsteder.
 

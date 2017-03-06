@@ -351,6 +351,7 @@
 <translation id="425582637250725228">Je možné, že provedené změny nebudou uloženy.</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
 <translation id="4269787794583293679">(Žádné uživatelské jméno)</translation>
+<translation id="4275830172053184480">Restartovat zařízení</translation>
 <translation id="4280429058323657511">s platností do <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Bezpečné prohlížení Google na webu <ph name="SITE" /> nedávno <ph name="BEGIN_LINK" />nalezlo škodlivé programy<ph name="END_LINK" />. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4300246636397505754">Návrhy rodičů</translation>
@@ -550,6 +551,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6443118737398455446">Neplatné datum vypršení platnosti.</translation>
 <translation id="6446608382365791566">Přidání dalších informací</translation>
 <translation id="6451458296329894277">Potvrdit nové odeslání formuláře</translation>
+<translation id="6456339708790392414">Vaše platba</translation>
 <translation id="6458467102616083041">Ignorováno, protože výchozí vyhledávání je zakázáno zásadou.</translation>
 <translation id="6462969404041126431">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Je možné, že jeho bezpečnostní certifikát byl zrušen. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="647261751007945333">Zásady zařízení</translation>
@@ -685,6 +687,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7755287808199759310">Rodič ti jej může odblokovat.</translation>
 <translation id="7758069387465995638">Připojení mohlo být zablokováno firewallem nebo antivirovým softwarem.</translation>
 <translation id="7761701407923456692">Certifikát serveru neodpovídá adrese URL.</translation>
+<translation id="7764225426217299476">Přidat adresu</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Přidat</translation>
 <translation id="7793809570500803535">Webové stránky na adrese <ph name="SITE" /> jsou možná dočasně nedostupné nebo mohly být přemístěny na novou webovou adresu.</translation>
@@ -789,6 +792,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8932102934695377596">Vaše hodiny se zpožďují</translation>
 <translation id="8954894007019320973">(pokračování)</translation>
 <translation id="8971063699422889582">Platnost certifikátu serveru vypršela.</translation>
+<translation id="8986494364107987395">Automaticky posílat společnosti Google statistiky používání a zprávy o selhání</translation>
 <translation id="8987927404178983737">Měsíc</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Web, na který se chystáte přejít, obsahuje škodlivé programy</translation>

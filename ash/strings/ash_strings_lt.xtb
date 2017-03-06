@@ -28,8 +28,6 @@
 <translation id="164969095109328410">„Chrome“ įrenginys</translation>
 <translation id="1677472565718498478">Liko <ph name="TIME" /></translation>
 <translation id="1747827819627189109">Ekrano klaviatūra įgalinta</translation>
-<translation id="1812696562331527143">Įvesties metodas pakeistas į <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />trečioji šalis<ph name="END_LINK" />).
-        Jei norite perjungti, paspauskite „Shift“ + „Alt“.</translation>
 <translation id="1850504506766569011">„Wi-Fi“ ryšys išjungtas.</translation>
 <translation id="1864454756846565995">USB-C įrenginys (prievadas gale)</translation>
 <translation id="1882897271359938046">Dubliuojama <ph name="DISPLAY_NAME" /></translation>
@@ -60,6 +58,7 @@
 <translation id="2825619548187458965">Lentyna</translation>
 <translation id="2844169650293029770">USB-C įrenginys (prievadas kairėje, priekinėje dalyje)</translation>
 <translation id="2857608528410806398">SA funkcijos pranešimo turinys turi būti nurodytas čia. SA funkcijos pranešimo turinys turi būti nurodytas čia. SA funkcijos pranešimo turinys turi būti nurodytas čia. SA funkcijos pranešimo turinys turi būti nurodytas čia. SA funkcijos pranešimo turinys turi būti nurodytas čia.</translation>
+<translation id="2865888419503095837">Tinklo informacija</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="2942516765047364088">Lentynos pozicija</translation>
 <translation id="2946119680249604491">Pridėti ryšį</translation>
@@ -68,8 +67,6 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> yra vieša sesija, valdoma <ph name="DOMAIN" /></translation>
 <translation id="3009178788565917040">Išvestis</translation>
 <translation id="3019353588588144572">Laikas, likęs iki akumuliatoriaus įkrovimo: <ph name="TIME_REMAINING" /></translation>
-<translation id="3050422059534974565">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS įjungtas.
-Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Apačia</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> („Bluetooth“)</translation>
@@ -77,6 +74,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="315116470104423982">Duomenys mobiliesiems</translation>
 <translation id="3157169093162779309">Įgalinti pasukimo užrakinimą</translation>
+<translation id="3236488194889173876">Nėra jokių pasiekiamų mobiliojo ryšio tinklų</translation>
 <translation id="3294437725009624529">Svečias</translation>
 <translation id="3335772982573114336">Naujas užrašas</translation>
 <translation id="3364721542077212959">Rašiklio įrankiai</translation>
@@ -144,8 +142,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="5597451508971090205"><ph name="DATE" />, <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5777841717266010279">Nutraukti ekrano bendrinimą?</translation>
 <translation id="57838592816432529">Nutildyti</translation>
-<translation id="5825747213122829519">Įvesties metodas pakeistas į <ph name="INPUT_METHOD_ID" />.
-        Jei norite perjungti, paspauskite „Shift“ + „Alt“.</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
 <translation id="5901316534475909376">„Shift“ + „Esc“</translation>
 <translation id="5927132638760172455">Perduodama į nežinomą imtuvą</translation>
@@ -201,8 +197,6 @@ Jei norite išjungti, paspauskite „Ctrl“ + „Alt“ + Z.</translation>
 <translation id="7129360219436193655">Lazerinio žymeklio režimas</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS" /> bus grąžinta sena skyra</translation>
-<translation id="7209101170223508707">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS įjungtas.
-Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“ + antrojo lygio klavišas.</translation>
 <translation id="7348093485538360975">Ekraninė klaviatūra</translation>
 <translation id="735745346212279324">VPN atjungtas</translation>
 <translation id="742594950370306541">Kamera naudojama.</translation>
@@ -221,12 +215,14 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="7893838033650689677">Įjungti „Wi-Fi“</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
 <translation id="7957227661277029961">„<ph name="DEVICE_TYPE" />“ gali nebūti kraunamas, kai yra įjungtas. Turėtumėte naudoti oficialų kroviklį.</translation>
+<translation id="7977927628060636163">Ieškoma mobiliojo ryšio tinklų...</translation>
 <translation id="7982789257301363584">Tinklas</translation>
 <translation id="8000066093800657092">Tinklo nėra</translation>
 <translation id="8054466585765276473">Apskaičiuojamas laikas, likęs iki akumuliatoriaus išsikrovimo.</translation>
 <translation id="8077816382010018681">SA funkcijos pranešimo pavadinimas</translation>
 <translation id="8098591350844501178">Sustabdyti ekrano perdavimą į: <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Prisijungta prie „<ph name="NAME" />“</translation>
+<translation id="813913629614996137">Inicijuojama...</translation>
 <translation id="8142699993796781067">Privatus tinklas</translation>
 <translation id="8180896103888046100">Sustabdyti perdavimą į nežinomą imtuvą</translation>
 <translation id="8185286464235484130">Pateikite atsiliepimų atsakydami į kelis klausimus.</translation>

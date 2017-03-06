@@ -355,6 +355,7 @@
 <translation id="425582637250725228">आपण केलेले बदल कदाचित जतन केले जाणार नाहीत.</translation>
 <translation id="4258748452823770588">खराब स्वाक्षरी</translation>
 <translation id="4269787794583293679">(वापरकर्तानाव नाही)</translation>
+<translation id="4275830172053184480">आपला डिव्हाइस रीस्टार्ट करा</translation>
 <translation id="4280429058323657511">, कालबाह्यता <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Google सुरक्षित ब्राउझिंगला <ph name="SITE" /> वर <ph name="BEGIN_LINK" />हानिकारक प्रोग्राम आढळले<ph name="END_LINK" /> <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">पालक सूचना</translation>
@@ -556,6 +557,7 @@
 <translation id="6443118737398455446">अवैध कालबाह्यता तारीख</translation>
 <translation id="6446608382365791566">अधिक माहिती जोडा</translation>
 <translation id="6451458296329894277">फॉर्म रीसबमिशनची पुष्टी करा</translation>
+<translation id="6456339708790392414">आपले देयक</translation>
 <translation id="6458467102616083041">धोरणानुसार डीफॉल्ट शोध अक्षम केल्याने दुर्लक्ष करण्‍यात आले.</translation>
 <translation id="6462969404041126431">हा सर्व्हर <ph name="DOMAIN" /> हे असल्याचे सिद्ध करू शकला नाही; याचे सुरक्षा प्रमाणपत्र निरस्त केले असावे. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">डिव्हाइस धोरणे</translation>
@@ -691,6 +693,7 @@
 <translation id="7755287808199759310">आपले पालक आपल्यासाठी ती अनावरोधित करू शकतात</translation>
 <translation id="7758069387465995638">फायरवॉल किंवा अँटीव्हायरस सॉफ्टवेअरने कदाचित कनेक्शन अवरोधित केले असावे.</translation>
 <translation id="7761701407923456692">सर्व्हरचे प्रमाणपत्र URL शी जुळत नाही.</translation>
+<translation id="7764225426217299476">पत्ता जोडा</translation>
 <translation id="777702478322588152">परफेक्चुअर</translation>
 <translation id="7791543448312431591">जोडा</translation>
 <translation id="7793809570500803535"><ph name="SITE" />येथील वेबपृष्ठ कदाचित तात्पुरते बंद आहे किंवा ते कदाचित नवीन वेब पत्त्यावर कायमचे हलवले आहे.</translation>
@@ -794,6 +797,7 @@
 <translation id="8932102934695377596">आपले घड्याळ मागे आहे</translation>
 <translation id="8954894007019320973">(सुरू)</translation>
 <translation id="8971063699422889582">सर्व्हरचे प्रमाणपत्र कालबाह्य झाले आहे.</translation>
+<translation id="8986494364107987395">Google ला वापर आकडेवारी आणि क्रॅश अहवाल स्वयंचलितपणे पाठवा</translation>
 <translation id="8987927404178983737">महिना</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">पुढे असणार्‍या साइटमध्ये हानिकारक प्रोग्राम आहेत</translation>

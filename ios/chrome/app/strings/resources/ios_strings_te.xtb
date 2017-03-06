@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">చిరునామా 1</translation>
 <translation id="1545749641540134597">QR కోడ్‌ని స్కాన్ చేయండి</translation>
 <translation id="1580783302095112590">మెయిల్ పంపబడింది.</translation>
-<translation id="1634828734222219955">మొత్తం</translation>
 <translation id="1646446875146297738">‘ట్రాక్ చేయవద్దు’ ప్రారంభించడం వలన మీ బ్రౌజింగ్ ట్రాఫిక్‌తో ఒక అభ్యర్థన చేర్చబడుతుంది. ప్రభావం ఏదైనా అభ్యర్థనకు వెబ్‌సైట్ ప్రతిస్పందించిందా లేదా మరియు అభ్యర్థన ఎలా వ్యాఖ్యానించబడింది అనేవాటిపై ఆధారపడి ఉంటుంది.
 
 ఉదాహరణకు, కొన్ని వెబ్‌సైట్‌లు ఈ అభ్యర్థనకు ప్రతిస్పందనగా మీరు సందర్శించిన ఇతర వెబ్‌సైట్‌లపై ఆధారపడని ప్రకటనలను మీకు చూపుతాయి. అనేక వెబ్‌సైట్‌లు అప్పటికీ మీ బ్రౌజింగ్ డేటాను సేకరించి ఉపయోగిస్తాయి - ఉదాహరణకు భద్రతను మెరుగుపరిచే, వారి వెబ్‌సైట్‌ల్లో కంటెంట్, సేవలు, ప్రకటనలు మరియు సిఫార్సులను అందించే మరియు నివేదన గణాంకాలను రూపొందించే ఉద్దేశంతో ఆ డేటాను ఉపయోగిస్తాయి. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@
 <translation id="1809939268435598390">ఫోల్డర్‌ను తొలగించు</translation>
 <translation id="1813414402673211292">బ్రౌజింగ్‌డేటాను క్లియర్ చెయ్యి</translation>
 <translation id="1820259098641718022">పఠన జాబితాకు జోడించబడింది</translation>
-<translation id="1826516787628120939">తనిఖీ చేస్తోంది</translation>
-<translation id="1842969606798536927">చెల్లింపు</translation>
 <translation id="1876721852596493031">వినియోగ డేటాను పంపు</translation>
 <translation id="1886928167269928266">ప్రారంభ సమయం</translation>
 <translation id="1894451531427596130"><ph name="BEGIN_LINK" />సెట్టింగ్‌ల<ph name="END_LINK" />లో ఇది పని చేసే విధానాన్ని నియంత్రించండి</translation>
@@ -62,7 +59,6 @@
 <translation id="1952728750904661634">నిర్వహిత ఖాతాతో సైన్ ఇన్ చేయండి</translation>
 <translation id="1974060860693918893">ఆధునిక</translation>
 <translation id="1989112275319619282">బ్రౌజ్ చేయి</translation>
-<translation id="2054511809411770085">QR కోడ్ లేదా బార్ కోడ్</translation>
 <translation id="2068952045031577364">గత వారం</translation>
 <translation id="2079545284768500474">చర్య రద్దు</translation>
 <translation id="209018056901015185">డెస్క్‌టాప్ సైట్‌ను అభ్యర్థించు</translation>
@@ -192,7 +188,6 @@
 <translation id="4875622588773761625">మీరు ఈ సైట్ కోసం <ph name="PASSWORD_MANAGER_BRAND" /> మీ పాస్‌వర్డ్‌ను నవీకరించాలని కోరుకుంటున్నారా?</translation>
 <translation id="4881695831933465202">తెరువు</translation>
 <translation id="4904877109095351937">చదివినట్లు గుర్తు పెట్టు</translation>
-<translation id="4923459931733593730">చెల్లింపు</translation>
 <translation id="4930268273022498155">ఇప్పటికే ఉన్న డేటాను తొలగించండి. మీరు <ph name="USER_EMAIL1" />కి తిరిగి వెళ్లడం ద్వారా దాన్ని తిరిగి పొందవచ్చు.</translation>
 <translation id="4941089862236492464">క్షమించండి, మీ అంశాన్ని భాగస్వామ్యం చేయడంలో సమస్య ఉంది.</translation>
 <translation id="4979397965658815378">మీ బుక్‌మార్క్‌లు, పాస్‌వర్డ్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను మీ అన్ని పరికరాల్లో పొందడానికి మీ Google ఖాతాతో సైన్ ఇన్ చేయండి</translation>
@@ -208,7 +203,6 @@
 <translation id="5186185447130319458">ప్రైవేట్</translation>
 <translation id="5190835502935405962">బుక్‌మార్క్‌ల బార్</translation>
 <translation id="5197255632782567636">ఇంటర్నెట్</translation>
-<translation id="5198972191746488848">కార్డ్‌ని జోడించు...</translation>
 <translation id="5228579091201413441">సమకాలీకరణను ప్రారంభించండి</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" />కి సమకాలీకరిస్తోంది</translation>
 <translation id="5300589172476337783">చూపించు</translation>
@@ -251,7 +245,6 @@
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6042308850641462728">మరింత</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">రద్దు చేయడానికి నొక్కండి.</translation>
 <translation id="60851516108411750">మీ పఠన జాబితా ఆఫ్‌లైన్‌లో అందుబాటులో ఉంది. మీ పఠన జాబితాకు పేజీని జోడించడానికి, <ph name="SHARE_OPENING_ICON" />నొక్కండి.</translation>
 <translation id="6122191549521593678">ఆన్‌లైన్</translation>
@@ -284,7 +277,6 @@
 <translation id="6418346271604475326">PDF సిద్ధపరు.</translation>
 <translation id="6445051938772793705">దేశం</translation>
 <translation id="6445981559479772097">సందేశం పంపబడింది.</translation>
-<translation id="6456339708790392414">మీ చెల్లింపు</translation>
 <translation id="6456425917241817154">Chrome రూపొందించిన పాస్‌వర్డ్</translation>
 <translation id="6464071786529933911">కొత్త అజ్ఞాత ట్యాబ్‌లో తెరువు</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> అంశాలు తొలగించబడ్డాయి</translation>
@@ -343,7 +335,6 @@
 <translation id="7765158879357617694">తరలించు</translation>
 <translation id="7769602470925380267">అంగీకరిస్తున్నాను, సైన్ అవుట్ చేయి</translation>
 <translation id="7772032839648071052">పాస్‌ఫ్రేజ్‌ని నిర్ధారించండి</translation>
-<translation id="7791543448312431591">జోడించు</translation>
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
 <translation id="7851858861565204677">ఇతర పరికరాలు</translation>
 <translation id="7859704718976024901">బ్రౌజింగ్ చరిత్ర</translation>
@@ -384,7 +375,6 @@
 <translation id="8654802032646794042">రద్దు చేయి</translation>
 <translation id="8668210798914567634">ఈ పేజీ మీ పఠన జాబితాకు సేవ్ చేయబడింది.</translation>
 <translation id="8680787084697685621">ఖాతా సైన్-ఇన్ వివరాల గడువు తేదీ ముగిసింది.</translation>
-<translation id="8699098509676302392">చిరునామాను జోడించు...</translation>
 <translation id="8721297211384281569">సాధనాల మెను</translation>
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8730621377337864115">పూర్తయింది</translation>
@@ -404,11 +394,9 @@
 <translation id="9055772144595778347">సైన్ ఇన్ చేయలేరు</translation>
 <translation id="9065203028668620118">సవరించు</translation>
 <translation id="9079935439869366234">అన్నీ చదవనట్లు గుర్తు పెట్టు</translation>
-<translation id="9080712759204168376">ఆర్డర్ సారాంశం</translation>
 <translation id="9083392325882095631">1 అంశం</translation>
 <translation id="9100610230175265781">రహస్య పదబంధం అవసరం</translation>
 <translation id="9148126808321036104">మళ్ళీ సైన్ ఇన్ చెయ్యండి</translation>
-<translation id="9154194610265714752">నవీకరించబడింది</translation>
 <translation id="9157836665414082580">డైలాగ్‌లను కుదించు</translation>
 <translation id="9188680907066685419">నిర్వహిత ఖాతా నుండి సైన్ అవుట్ చేయండి</translation>
 <translation id="9203116392574189331">హ్యాండ్ఆఫ్</translation>

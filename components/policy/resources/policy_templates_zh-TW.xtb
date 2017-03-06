@@ -998,9 +998,6 @@
 
           如果您設為 False 或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
-<translation id="3926940573869375969">設定 <ph name="PRODUCT_OS_NAME" /> 登入畫面可使用的鍵盤配置。
-
-      如果將這項政策設為輸入法識別碼清單，登入畫面即可顯示指定的輸入法。系統會預先選取第一個指定的輸入法。在特定使用者視窗的登入畫面中，除了這項政策指定的輸入法之外，還會提供使用者最近用過的輸入法。  如果未設定這項政策，系統會根據登入畫面顯示的語言代碼提供登入畫面的輸入法。  如果值不是有效的輸入法識別碼，則會遭到忽略。</translation>
 <translation id="3939893074578116847">將監控線上狀態所需的網路封包傳送到管理伺服器，
       讓伺服器偵測裝置是否處於離線狀態。
 
@@ -1941,11 +1938,6 @@
 <translation id="7027785306666625591">設定 <ph name="PRODUCT_OS_NAME" /> 的電源管理。
 
       這些政策可讓您設定當使用者閒置一段時間後，要讓 <ph name="PRODUCT_OS_NAME" /> 採取的動作。</translation>
-<translation id="703078280527762319">警告：我們將自 <ph name="PRODUCT_NAME" /> 66 版 (2018 年 2 月左右推出) 起完全停止支援 TLS 最高版本政策。
-
-      如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最高版本 (TLSv1.3)。
-
-      這項政策可使用的設定值包括：「tls1.2」或「tls1.3」。設定時，<ph name="PRODUCT_NAME" /> 不會使用高於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
 <translation id="7040229947030068419">範例值：</translation>
 <translation id="7049373494483449255">啟用「<ph name="PRODUCT_NAME" />」將文件提交至「<ph name="CLOUD_PRINT_NAME" />」列印。注意：這只會影響可支援「<ph name="PRODUCT_NAME" />」的「<ph name="CLOUD_PRINT_NAME" />」，但無法禁止使用者提交至網站上的列印工作。如果啟用或尚未設定這項設定，使用者可以從「<ph name="PRODUCT_NAME" />」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME" />」進行列印。如果停用這項設定，使用者則無法從「<ph name="PRODUCT_NAME" />」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME" />」進行列印。</translation>
 <translation id="7053678646221257043">如果啟用的話，這項政策會強迫系統從目前預設的瀏覽器匯入書籤，並且會影響匯入對話方塊。如果停用的話，系統不會匯入任何書籤。如果未設定的話，系統會自動匯入書籤，或詢問使用者是否要匯入書籤。</translation>

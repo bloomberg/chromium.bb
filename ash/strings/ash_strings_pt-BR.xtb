@@ -28,8 +28,6 @@
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1747827819627189109">Teclado na tela ativado</translation>
-<translation id="1812696562331527143">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terceiros<ph name="END_LINK" />). 
-Pressione Shift + Alt para alternar.</translation>
 <translation id="1850504506766569011">O Wi-Fi está desligado.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME" /></translation>
@@ -60,6 +58,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
 <translation id="2857608528410806398">O corpo da notificação do recurso QU fica aqui. O corpo da notificação do recurso QU fica aqui. O corpo da notificação do recurso QU fica aqui. O corpo da notificação do recurso QU fica aqui.</translation>
+<translation id="2865888419503095837">Informações de rede</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2942516765047364088">Posição da estante</translation>
 <translation id="2946119680249604491">Adicionar conexão</translation>
@@ -68,7 +67,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> é uma sessão pública gerenciada por <ph name="DOMAIN" /></translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3019353588588144572">O tempo restante até que a bateria esteja totalmente carregada é de <ph name="TIME_REMAINING" /></translation>
-<translation id="3050422059534974565">A tecla CAPS LOCK está ativada. Pressione Pesquisar ou Shift para cancelar.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -76,6 +74,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3147142846278915599">Tela de início (sincronizando aplicativos...)</translation>
 <translation id="315116470104423982">Dados do celular</translation>
 <translation id="3157169093162779309">Ativar bloqueio de rotação</translation>
+<translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3294437725009624529">Visitante</translation>
 <translation id="3335772982573114336">Nova nota</translation>
 <translation id="3364721542077212959">Ferramentas da stylus</translation>
@@ -143,8 +142,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5777841717266010279">Interromper compartilhamento de tela?</translation>
 <translation id="57838592816432529">Desativar som</translation>
-<translation id="5825747213122829519">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID" />.
-Pressione Shift + Alt para alternar.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Transmitindo para um destinatário desconhecido</translation>
@@ -201,7 +198,6 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="7129360219436193655">Modo de caneta laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">A tecla CAPS LOCK está ativada. Pressione Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="7348093485538360975">Teclado virtual</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="742594950370306541">A câmera está em uso.</translation>
@@ -220,12 +216,14 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="7893838033650689677">Ativar Wi-Fi</translation>
 <translation id="7904094684485781019">O administrador desta conta bloqueou o login múltiplo.</translation>
 <translation id="7957227661277029961">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado. Tente usar o carregador original.</translation>
+<translation id="7977927628060636163">Pesquisando redes móveis…</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8054466585765276473">Calculando duração da bateria.</translation>
 <translation id="8077816382010018681">Título da notificação do recurso QU aqui</translation>
 <translation id="8098591350844501178">Parar de transmitir tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME" /></translation>
+<translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8180896103888046100">Parar de transmitir para um destinatário desconhecido</translation>
 <translation id="8185286464235484130">Responda a algumas perguntas para que possamos saber como estamos nos saindo.</translation>

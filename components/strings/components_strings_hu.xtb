@@ -353,6 +353,7 @@
 <translation id="425582637250725228">Előfordulhat, hogy módosításait nem menti a rendszer.</translation>
 <translation id="4258748452823770588">Rossz aláírás</translation>
 <translation id="4269787794583293679">(Nincs felhasználónév)</translation>
+<translation id="4275830172053184480">Indítsa újra az eszközt</translation>
 <translation id="4280429058323657511">, lejár: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">A Google Biztonságos Böngészés funkciója nemrég <ph name="BEGIN_LINK" />ártalmas programokat talált<ph name="END_LINK" /> a(z) <ph name="SITE" /> webhelyen. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">Szülői javaslatok</translation>
@@ -553,6 +554,7 @@
 <translation id="6443118737398455446">Érvénytelen lejárati dátum</translation>
 <translation id="6446608382365791566">További adatok hozzáadása</translation>
 <translation id="6451458296329894277">Képernyő újraküldésének megerősítése</translation>
+<translation id="6456339708790392414">Fizetés</translation>
 <translation id="6458467102616083041">A rendszer figyelmen kívül hagyja, mivel az alapértelmezett keresést házirend tiltja le.</translation>
 <translation id="6462969404041126431">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát visszavonhatták. Ennek oka lehet konfigurációs hiba, vagy hogy támadó térítette el az Ön kapcsolódását. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Eszközházirendek</translation>
@@ -688,6 +690,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7755287808199759310">A letiltást a szülő oldhatja fel</translation>
 <translation id="7758069387465995638">Előfordulhat, hogy a tűzfal vagy a vírusirtó szoftver tiltotta le a kapcsolatot.</translation>
 <translation id="7761701407923456692">A szerver tanúsítványa nem egyezik az URL-lel</translation>
+<translation id="7764225426217299476">Cím hozzáadása</translation>
 <translation id="777702478322588152">Prefektúra</translation>
 <translation id="7791543448312431591">Hozzáadás</translation>
 <translation id="7793809570500803535">Lehetséges, hogy a(z) <ph name="SITE" /> webhelyen található oldal ideiglenesen nem érhető el, vagy véglegesen új címre költözött.</translation>
@@ -792,6 +795,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8932102934695377596">Késik az órája</translation>
 <translation id="8954894007019320973">(Folyt.)</translation>
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>
+<translation id="8986494364107987395">Használati statisztikák és hibajelentések automatikus küldése a Google-nak</translation>
 <translation id="8987927404178983737">hónap</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">A felkeresni kívánt webhely ártalmas programokat tartalmaz</translation>

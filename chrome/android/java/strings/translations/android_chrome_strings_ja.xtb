@@ -33,7 +33,6 @@
 <translation id="1303671224831497365">Bluetooth デバイスが見つかりませんでした</translation>
 <translation id="1326317727527857210">他の端末と同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="1332501820983677155">Google Chrome 機能のショートカット</translation>
-<translation id="13410144310025252">Chrome でページを表示</translation>
 <translation id="1369915414381695676">サイト <ph name="SITE_NAME" /> を追加しました</translation>
 <translation id="1373696734384179344">選択したコンテンツをダウンロードするにはメモリが不足しています。</translation>
 <translation id="1376578503827013741">計算中...</translation>
@@ -88,6 +87,7 @@
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="1943432128510653496">パスワードの保存</translation>
 <translation id="1944384637046898011"><ph name="TIME" />時点の Google パスワードですべてのデータを暗号化する</translation>
+<translation id="1946005195648379376">Google が閲覧履歴をどのような方法で使用し、検索やその他の Google サービスをカスタマイズするかを設定します。</translation>
 <translation id="1966710179511230534">ログイン情報を更新してください。</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1984937141057606926">サードパーティを除いて許可する</translation>
@@ -104,7 +104,6 @@
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> を閉じました</translation>
-<translation id="2138201775715568214">近くのフィジカル ウェブページを探しています</translation>
 <translation id="2139186145475833000">ホーム画面に追加</translation>
 <translation id="2146738493024040262">プレビュー アプリを開く</translation>
 <translation id="2148716181193084225">今日</translation>
@@ -117,11 +116,6 @@
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
 <translation id="2323763861024343754">サイトのストレージ</translation>
-<translation id="2331464965008647960">近くの端末から Bluetooth を介してウェブページが送信されています。お使いの端末がアクティブになると、Chrome でこうしたページをスキャンして表示します。スキャンしたページは Google サービスに送られ、ページ結果の品質向上に使用されます。
-
-フィジカル ウェブの管理は Chrome の設定で行うことができます。
-
-<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">インストール中...</translation>
 <translation id="2346253980530904022">アクセスするページを Google のサーバーで最適化します（HTTPS とシークレット モードを除く）</translation>
 <translation id="2349710944427398404">Chrome が使用するデータ全体（アカウント、ブックマーク、保存済みの設定など）</translation>
@@ -237,7 +231,6 @@
 <translation id="3662546969139119822">履歴はありません</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
 <translation id="3714981814255182093">検索バーを開く</translation>
-<translation id="3716158070938632480">ウェブページが近くにあります</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB を他のアプリで使用中</translation>
@@ -410,7 +403,6 @@
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" /> のブックマーク、履歴、パスワードとその他の設定を使用できます。</translation>
 <translation id="5527082711130173040">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。<ph name="BEGIN_LINK1" />権限を更新<ph name="END_LINK1" />してください。また、現在地情報へのアクセスが<ph name="BEGIN_LINK2" />この端末でオフになっています<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
-<translation id="554327794654007401">フィジカル ウェブ</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5565871407246142825">クレジットカード</translation>
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
@@ -562,7 +554,6 @@
 <translation id="7057058088140140610">Google ペイメントのクレジット カードと住所</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
-<translation id="7094922512924405309">近くにフィジカル ウェブページは見つかりませんでした</translation>
 <translation id="7128222689758636196">現在の検索エンジンを許可する</translation>
 <translation id="7138678301420049075">その他</translation>
 <translation id="7180611975245234373">更新</translation>
@@ -635,6 +626,7 @@
 <translation id="7987073022710626672">Chrome 利用規約</translation>
 <translation id="7998918019931843664">閉じたタブを開く</translation>
 <translation id="7999064672810608036">すべてのローカルデータ（Cookie を含む）を消去して、このウェブサイトに指定したすべての許可をリセットしてもよろしいですか？</translation>
+<translation id="8004582292198964060">ブラウザ</translation>
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="8008818777654712271">危険なアプリやサイトの検出に役立てるために一部のシステム情報やページのコンテンツを Google に自動送信する</translation>
 <translation id="8015452622527143194">ページ上のすべての要素をデフォルトのサイズに戻す</translation>
@@ -716,7 +708,6 @@
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>
-<translation id="8931159598799892500">Chrome + フィジカル ウェブ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">別のウィンドウで開く</translation>
 <translation id="8951232171465285730">Chrome で <ph name="MEGABYTES" /> MB の容量を節約しました</translation>
@@ -741,7 +732,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />（<ph name="ITEM_ID" />）</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>
-<translation id="917685106653909562">近くのフィジカル ウェブページ</translation>
 <translation id="9187199695613236444">モバイル向け表示</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9206873250291191720">A</translation>
@@ -758,4 +748,5 @@
 <translation id="981121421437150478">オフライン</translation>
 <translation id="982182592107339124">この操作を行うと、次を含むすべてのサイトのデータが削除されます。</translation>
 <translation id="983192555821071799">すべてのタブを閉じる</translation>
+<translation id="987264212798334818">全般</translation>
 </translationbundle>

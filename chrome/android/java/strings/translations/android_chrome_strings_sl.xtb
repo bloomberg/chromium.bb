@@ -33,7 +33,6 @@
 <translation id="1303671224831497365">Najdena ni bila nobena naprava Bluetooth</translation>
 <translation id="1326317727527857210">Če želite dostopati do zavihkov v drugih napravah, se prijavite v Chrome.</translation>
 <translation id="1332501820983677155">Bližnjice za funkcije Google Chroma</translation>
-<translation id="13410144310025252">Ogled v Chromu</translation>
 <translation id="1369915414381695676">Spletno mesto <ph name="SITE_NAME" /> je bilo dodano</translation>
 <translation id="1373696734384179344">Za prenos izbrane vsebine ni dovolj pomnilnika.</translation>
 <translation id="1376578503827013741">Računanje …</translation>
@@ -88,6 +87,7 @@
 <translation id="194341124344773587">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenje za Chrome.</translation>
 <translation id="1943432128510653496">Shranjevanje gesel</translation>
 <translation id="1944384637046898011">Šifriranje vsega z geslom za Google Račun z dne <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Nadzirajte, kako Google na podlagi vaše zgodovine brskanja prilagaja Iskanje Google in druge Googlove storitve.</translation>
 <translation id="1966710179511230534">Posodobite podrobnosti prijave.</translation>
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="1984937141057606926">Dovoljeno, razen za druga spletna mesta</translation>
@@ -104,7 +104,6 @@
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="2126426811489709554">Uporablja tehnologijo Chrome</translation>
 <translation id="213279576345780926">Zaprt zavihek: <ph name="TAB_TITLE" /></translation>
-<translation id="2138201775715568214">Iskanje strani za Fizični splet v bližini</translation>
 <translation id="2139186145475833000">Dodajanje na začetni zaslon</translation>
 <translation id="2146738493024040262">Odpri aplikacijo brez nameščanja</translation>
 <translation id="2148716181193084225">Danes</translation>
@@ -117,11 +116,6 @@
 <translation id="2315043854645842844">Operacijski sistem ne podpira izbire potrdila pri odjemalcu.</translation>
 <translation id="2321958826496381788">Drsnik povlecite do želene velikosti pisave. Besedilo naj bo po dvakratnem dotiku odstavka videti vsaj tolikšno.</translation>
 <translation id="2323763861024343754">Shranjeni podatki splet. mesta</translation>
-<translation id="2331464965008647960">Naprave v vaši bližini oddajajo spletne strani prek Bluetootha. Chrome bo iskal strani in jih prikazal, ko preklopite napravo iz stanja pripravljenosti. Te strani bo zaradi izboljšanja kakovosti rezultatov za strani obdelala Googlova storitev.
-
-Fizični splet lahko nadzirate v Chromovih nastavitvah.
-
-<ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Nameščanje ...</translation>
 <translation id="2346253980530904022">Googlovi strežniki bodo optimizirali strani, ki jih obiščete, razen strani s protokolom HTTPS in strani, obiskanih v načinu brez beleženja zgodovine.</translation>
 <translation id="2349710944427398404">Skupna količina podatkov, ki jih uporablja Chrome, vključno z računi, zaznamki in shranjenimi nastavitvami.</translation>
@@ -237,7 +231,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="3662546969139119822">Tu ni zgodovine</translation>
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
 <translation id="3714981814255182093">Odpiranje vrstice za iskanje</translation>
-<translation id="3716158070938632480">Spletne strani so v bližini</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
 <translation id="3739899004075612870">Dodano med zaznamke v izdelku <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB drugih aplikacij</translation>
@@ -410,7 +403,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5517095782334947753">Iz računa <ph name="FROM_ACCOUNT" /> imate zaznamke, zgodovino, gesla in druge nastavitve.</translation>
 <translation id="5527082711130173040">Chrome za iskanje naprav potrebuje dostop do lokacije. <ph name="BEGIN_LINK1" />Posodobite dovoljenja<ph name="END_LINK1" />. Dostop do lokacije je prav tako <ph name="BEGIN_LINK2" />izklopljen za to napravo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Zapri zavih. brez bel. zgo.</translation>
-<translation id="554327794654007401">Fizični splet</translation>
 <translation id="5556459405103347317">Ponovno naloži</translation>
 <translation id="5565871407246142825">Kreditne kartice</translation>
 <translation id="5578795271662203820">Za iskanje te slike uporabi <ph name="SEARCH_ENGINE" /></translation>
@@ -562,7 +554,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7057058088140140610">Kreditne kartice in naslovi s storitvijo Google Payments</translation>
 <translation id="7062545763355031412">Sprejmi in preklopi račun</translation>
 <translation id="7063006564040364415">Povezave s strežnikom za sinhronizacijo ni bilo mogoče vzpostaviti.</translation>
-<translation id="7094922512924405309">Ni strani za Fizični splet v bližini</translation>
 <translation id="7128222689758636196">Dovoli trenutni iskalnik</translation>
 <translation id="7138678301420049075">Drugo</translation>
 <translation id="7180611975245234373">Osveži</translation>
@@ -635,6 +626,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="7987073022710626672">Pogoji storitve za Chrome</translation>
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
 <translation id="7999064672810608036">Ali želite res izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>
+<translation id="8004582292198964060">Brskalnik</translation>
 <translation id="8007176423574883786">Izklopljeno za to napravo</translation>
 <translation id="8008818777654712271">Samodejno pošlji nekatere informacije o sistemu in vsebino strani Googlu zaradi hitrejšega zaznavanja nevarnih aplikacij in spletnih mest</translation>
 <translation id="8015452622527143194">Vrnitev vsebine strani na privzeto velikost</translation>
@@ -716,7 +708,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8909135823018751308">Skupna raba …</translation>
 <translation id="8912362522468806198">Google Račun</translation>
 <translation id="8920114477895755567">Čakanje na podrobnosti o staršu.</translation>
-<translation id="8931159598799892500">Chrome in Fizični splet</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Odpri v drugem oknu</translation>
 <translation id="8951232171465285730">S Chromom ste prihranili <ph name="MEGABYTES" /> MB</translation>
@@ -741,7 +732,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9139068048179869749">Poziv, preden se spletnim mestom dovoli pošiljanje obvestil (priporočeno)</translation>
-<translation id="917685106653909562">Strani za Fizični splet v bližini</translation>
 <translation id="9187199695613236444">Pogled, prilagojen za mobilne naprave</translation>
 <translation id="9188680907066685419">Odjava iz upravljanega računa</translation>
 <translation id="9206873250291191720">A</translation>
@@ -758,4 +748,5 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="981121421437150478">Brez povezave</translation>
 <translation id="982182592107339124">S tem bodo izbrisani podatki za vsa spletna mesta, vključno s temi:</translation>
 <translation id="983192555821071799">Zapri vse zavihke</translation>
+<translation id="987264212798334818">Splošno</translation>
 </translationbundle>

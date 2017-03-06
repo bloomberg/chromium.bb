@@ -1054,9 +1054,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If not set or set to False, then users will be able to transfer files to Google Drive.</translation>
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
-<translation id="3926940573869375969">Configures which keyboard layouts are allowed on the <ph name="PRODUCT_OS_NAME" /> sign-in screen.
-
-      If this policy is set to a list of input method identifiers, the given input methods will be available on the sign-in screen. The first given input method will be pre-selected. While a user pod is focused on the sign-in screen, the user's least recently used input method will be available in addition to the input methods given by this policy.  If this policy is not set, the input methods on the sign-in screen will be derived from the locale in which the sign-in screen is displayed.  Values which are not valid input method identifiers will be ignored.</translation>
 <translation id="3939893074578116847">Send network packets to the management server to monitor online status, to allow
       the server to detect if the device is offline.
 
@@ -2076,11 +2073,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7027785306666625591">Configure power management in <ph name="PRODUCT_OS_NAME" />.
 
       These policies let you configure how <ph name="PRODUCT_OS_NAME" /> behaves when the user remains idle for some amount of time.</translation>
-<translation id="703078280527762319">Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME" /> around version 66 (around February 2018).
-
-      If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default maximum version which is TLSv1.3.
-
-      Otherwise it may be set to one of the following values: "tls1.2" or "tls1.3". When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="7040229947030068419">Sample value</translation>
 <translation id="7049373494483449255">Enables <ph name="PRODUCT_NAME" /> to submit documents to <ph name="CLOUD_PRINT_NAME" /> for printing.  NOTE: This only affects <ph name="CLOUD_PRINT_NAME" /> support in <ph name="PRODUCT_NAME" />.  It does not prevent users from submitting print jobs on websites.
 

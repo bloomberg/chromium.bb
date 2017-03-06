@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">Address 1</translation>
 <translation id="1545749641540134597">I-scan ang QR Code</translation>
 <translation id="1580783302095112590">Naipadala na ang mail.</translation>
-<translation id="1634828734222219955">Kabuuan</translation>
 <translation id="1646446875146297738">Ang pag-enable sa ‘Huwag Subaybayan’ ay nangangahulugan na may isasamang kahilingan sa iyong trapiko sa pagba-browse. Ang anumang epekto ay nakadepende kung tumutugon man ang website sa kahilingan, at kung paano nabibigyan ng kahulugan ang kahilingan.
 
 Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan ng pagpapakita sa iyo ng mga ad na hindi nakabatay sa iba pang mga website na iyong binisita. Maraming website ang mangongolekta at gagamit pa rin ng iyong data sa pagba-browse - halimbawa, upang mapaigting ang seguridad, upang makapagbigay ng nilalaman, mga serbisyo, ad at rekomendasyon sa kanilang mga website, at upang makabuo ng mga istatistika sa pag-uulat. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="1809939268435598390">I-delete ang Folder</translation>
 <translation id="1813414402673211292">I-clear Data sa Pag-browse</translation>
 <translation id="1820259098641718022">Idinagdag sa Listahan ng Mga Babasahin</translation>
-<translation id="1826516787628120939">Sinusuri</translation>
-<translation id="1842969606798536927">Magbayad</translation>
 <translation id="1876721852596493031">Magpadala ng Data</translation>
 <translation id="1886928167269928266">Mula sa Umpisa</translation>
 <translation id="1894451531427596130">Kontrolin kung paano ito gumagana sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" /></translation>
@@ -62,7 +59,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="1952728750904661634">Mag-sign in gamit ang isang pinamamahalaang account</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1989112275319619282">Mag-browse</translation>
-<translation id="2054511809411770085">QR Code o barcode</translation>
 <translation id="2068952045031577364">Nakalipas na Linggo</translation>
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="209018056901015185">Hilingin ang Site sa Desktop</translation>
@@ -192,7 +188,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 <translation id="4875622588773761625">Gusto mo bang i-update ng <ph name="PASSWORD_MANAGER_BRAND" /> ang iyong password para sa site na ito?</translation>
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="4904877109095351937">Markahan Bilang Nabasa Na</translation>
-<translation id="4923459931733593730">Pagbabayad</translation>
 <translation id="4930268273022498155">I-delete ang kasalukuyang data. Mababawi mo ito sa pamamagitan ng paglipat pabalik sa <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Paumanhin, nagkaroon ng problema sa pagbabahagi ng item mo.</translation>
 <translation id="4979397965658815378">Mag-sign in gamit ang iyong Google Account upang makuha ang iyong mga bookmark, password, history at iba pang mga setting sa lahat ng iyong device</translation>
@@ -208,7 +203,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 <translation id="5186185447130319458">Pribado</translation>
 <translation id="5190835502935405962">Bar ng Mga Bookmark</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5198972191746488848">Magdagdag ng Card...</translation>
 <translation id="5228579091201413441">I-enable ang pag-sync</translation>
 <translation id="5244474230056479698">Sini-sync sa <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Ipakita</translation>
@@ -251,7 +245,6 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6040143037577758943">Isara</translation>
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Pindutin upang kanselahin.</translation>
 <translation id="60851516108411750">Available offline ang iyong listahan ng babasahin. Upang magdagdag ng page sa iyong listahan ng babasahin, i-tap ang<ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -284,7 +277,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6418346271604475326">Ihinahanda ang PDF</translation>
 <translation id="6445051938772793705">Bansa</translation>
 <translation id="6445981559479772097">Napadala na ang mensahe.</translation>
-<translation id="6456339708790392414">Iyong Pagbabayad</translation>
 <translation id="6456425917241817154">Binuo ng Chrome ang Password</translation>
 <translation id="6464071786529933911">Buksan sa Bagong Tab na Incognito</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang na-delete</translation>
@@ -343,7 +335,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7765158879357617694">Ilipat</translation>
 <translation id="7769602470925380267">Tanggapin at mag-sign out</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
-<translation id="7791543448312431591">Magdagdag</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7851858861565204677">Iba pang mga device</translation>
 <translation id="7859704718976024901">History ng Pagba-browse</translation>
@@ -384,7 +375,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8654802032646794042">Kanselahin</translation>
 <translation id="8668210798914567634">Na-save na ang page na ito sa iyong Listahan ng Babasahin.</translation>
 <translation id="8680787084697685621">Wala sa panahon ang mga detalye sa pag-sign-in sa account.</translation>
-<translation id="8699098509676302392">Magdagdag ng Address...</translation>
 <translation id="8721297211384281569">Menu ng Mga Tool</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8730621377337864115">Tapos na</translation>
@@ -404,11 +394,9 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="9055772144595778347">Di Makapag-sign In</translation>
 <translation id="9065203028668620118">I-edit</translation>
 <translation id="9079935439869366234">Markahan ang Lahat bilang Hindi pa Nababasa</translation>
-<translation id="9080712759204168376">Buod ng Order</translation>
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Kinakailangan ang passphrase</translation>
 <translation id="9148126808321036104">Muling mag-sign in</translation>
-<translation id="9154194610265714752">Na-update</translation>
 <translation id="9157836665414082580">Pigilan ang Mga Dialog</translation>
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9203116392574189331">Handoff</translation>

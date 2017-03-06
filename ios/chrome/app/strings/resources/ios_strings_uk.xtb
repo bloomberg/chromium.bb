@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">Адреса 1</translation>
 <translation id="1545749641540134597">Сканувати QR-код</translation>
 <translation id="1580783302095112590">Лист надіслано.</translation>
-<translation id="1634828734222219955">Усього</translation>
 <translation id="1646446875146297738">Якщо ввімкнути параметр "Не відстежувати", запит додається в трафік веб-перегляду. Результат залежить від того, чи реагує веб-сайт на цей запит і як тлумачиться запит.
 
 Наприклад, деякі веб-сайти можуть реагувати на такий запит, показуючи вам рекламу, не пов’язану з іншими веб-сайтами, які ви відвідали. Багато веб-сайтів будуть і надалі збирати й використовувати ваші дані веб-перегляду, наприклад, щоб покращувати систему безпеки, пропонувати вміст, служби, рекламу та рекомендації, а також генерувати статистику для звітів. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@
 <translation id="1809939268435598390">Видалити папку</translation>
 <translation id="1813414402673211292">Очистити дані переглядача</translation>
 <translation id="1820259098641718022">Додано в список читання</translation>
-<translation id="1826516787628120939">Перевірка</translation>
-<translation id="1842969606798536927">Оплатити</translation>
 <translation id="1876721852596493031">Надсилати статистику</translation>
 <translation id="1886928167269928266">Весь період</translation>
 <translation id="1894451531427596130">Керуйте цими параметрами в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" /></translation>
@@ -62,7 +59,6 @@
 <translation id="1952728750904661634">Увійти в керований обліковий запис</translation>
 <translation id="1974060860693918893">Розширені</translation>
 <translation id="1989112275319619282">Переглянути</translation>
-<translation id="2054511809411770085">QR-код або штрих-код</translation>
 <translation id="2068952045031577364">Останній тиждень</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="209018056901015185">Повна версія сайту</translation>
@@ -192,7 +188,6 @@
 <translation id="4875622588773761625">Оновити пароль для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4904877109095351937">Позначити як прочитані</translation>
-<translation id="4923459931733593730">Оплата</translation>
 <translation id="4930268273022498155">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Під час спроби поділитися елементом виникла проблема.</translation>
 <translation id="4979397965658815378">Увійдіть в обліковий запис Google, щоб мати доступ до закладок, паролів, історії й інших налаштувань на всіх своїх пристроях</translation>
@@ -208,7 +203,6 @@
 <translation id="5186185447130319458">Конфіденційно</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5197255632782567636">Інтернет</translation>
-<translation id="5198972191746488848">Додати картку…</translation>
 <translation id="5228579091201413441">Увімкнути синхронізацію</translation>
 <translation id="5244474230056479698">Синхронізація з обліковим записом <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Показати</translation>
@@ -251,7 +245,6 @@
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="605721222689873409">РР</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Торкніться, щоб скасувати.</translation>
 <translation id="60851516108411750">Ваш список читання доступний у режимі офлайн. Щоб додати до нього сторінку, торкніться опції <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Онлайн</translation>
@@ -284,7 +277,6 @@
 <translation id="6418346271604475326">Підготовка PDF</translation>
 <translation id="6445051938772793705">Країна</translation>
 <translation id="6445981559479772097">Повідомлення надіслано.</translation>
-<translation id="6456339708790392414">Ваш платіж</translation>
 <translation id="6456425917241817154">Пароль, згенерований Chrome</translation>
 <translation id="6464071786529933911">Відкрити в анонімній вкладці</translation>
 <translation id="6482629121755362506">Видалено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -343,7 +335,6 @@
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7769602470925380267">Прийняти та вийти</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
-<translation id="7791543448312431591">Додати</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7851858861565204677">Інші пристрої</translation>
 <translation id="7859704718976024901">Історія веб-перегляду</translation>
@@ -384,7 +375,6 @@
 <translation id="8654802032646794042">Скасувати</translation>
 <translation id="8668210798914567634">Цю сторінку збережено в списку читання.</translation>
 <translation id="8680787084697685621">Дані для входу в обліковий запис застаріли.</translation>
-<translation id="8699098509676302392">Додати адресу…</translation>
 <translation id="8721297211384281569">Меню інструментів</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -404,11 +394,9 @@
 <translation id="9055772144595778347">Не вдається ввійти</translation>
 <translation id="9065203028668620118">Редагувати</translation>
 <translation id="9079935439869366234">Позначити всі як непрочитані</translation>
-<translation id="9080712759204168376">Підсумок замовлення</translation>
 <translation id="9083392325882095631">1 закладка</translation>
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9148126808321036104">Увійти знову</translation>
-<translation id="9154194610265714752">Оновлено</translation>
 <translation id="9157836665414082580">Заблокувати діалогові вікна</translation>
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9203116392574189331">Handoff</translation>

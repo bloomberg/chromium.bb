@@ -999,7 +999,6 @@ Jeśli je wyłączysz albo nie podasz wartości, stosowanie filtra SafeSearch w 
 
           Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, użytkownicy mogą przesyłać pliki na Dysk Google.</translation>
 <translation id="3915395663995367577">Adres URL pliku PAC serwera proxy</translation>
-<translation id="3926940573869375969">Umożliwia wybranie układów klawiatury dozwolonych na ekranie logowania systemu <ph name="PRODUCT_OS_NAME" />. Jeśli ta zasada ma ustawioną jako wartość listę identyfikatorów metod wprowadzania, te metody wprowadzania będą dostępne na ekranie logowania. Wstępnie wybrana będzie pierwsza z nich. Gdy na ekranie logowania wybrany będzie profil danego użytkownika, oprócz metod wprowadzania ustawionych w tej zasadzie dostępna będzie metoda ostatnio używana przez tego użytkownika. Gdy zasada nie będzie skonfigurowana, metody wprowadzania na ekranie logowania będą odpowiadać ustawieniom regionalnym stosowanym do wyświetlania tego ekranu. Wartości, które nie są prawidłowymi identyfikatorami metod wprowadzania, zostaną zignorowane.</translation>
 <translation id="3939893074578116847">Wysyłaj pakiety sieciowe do serwera zarządzania w celu monitorowania stanu online,
       by serwer mógł sprawdzić, czy urządzenie jest offline.
 
@@ -1928,11 +1927,6 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="7027785306666625591">Konfiguruje zarządzanie energią w <ph name="PRODUCT_OS_NAME" />.
 
       Te zasady umożliwiają określenie, jak <ph name="PRODUCT_OS_NAME" /> ma się zachować, gdy użytkownik przez pewien czas nie wykona żadnej czynności.</translation>
-<translation id="703078280527762319">Ostrzeżenie: zasada najwyższej wersji TLS zostanie w całości usunięta z <ph name="PRODUCT_NAME" /> prawdopodobnie w wersji 66 (mniej więcej w lutym 2018 r.).
-
-      Jeśli nie skonfigurujesz tej zasady, <ph name="PRODUCT_NAME" /> będzie korzystać z domyślnej najwyższej wersji TLS, czyli 1.3.
-
-      W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1.2” lub „tls1.3”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS wyższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
 <translation id="7040229947030068419">Przykładowa wartość:</translation>
 <translation id="7049373494483449255">Pozwala <ph name="PRODUCT_NAME" /> przesyłać dokumenty do <ph name="CLOUD_PRINT_NAME" /> w celu wydrukowania. UWAGA: to ustawienie wpływa tylko na obsługę <ph name="CLOUD_PRINT_NAME" /> w <ph name="PRODUCT_NAME" />. Nie uniemożliwia użytkownikom drukowania za pośrednictwem innych witryn. W przypadku włączenia lub nieskonfigurowania tego ustawienia, użytkownicy będą mogli drukować w <ph name="CLOUD_PRINT_NAME" /> z okna drukowania w <ph name="PRODUCT_NAME" />. Jeśli to ustawienie zostanie wyłączone, użytkownicy nie będą mogli drukować za pomocą <ph name="CLOUD_PRINT_NAME" /> w oknie drukowania przeglądarki <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Po włączeniu tej zasady wymuszany jest import zakładek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zakładki nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zakładki mają zostać zaimportowane lub operacja ta zostanie wykonana automatycznie.</translation>

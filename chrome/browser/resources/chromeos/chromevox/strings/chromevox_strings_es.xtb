@@ -5,7 +5,7 @@
 <translation id="1012173283529841972">Elemento de lista</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">Ampliada.</translation>
-<translation id="1025074108959230262">Modo permanente inhabilitado</translation>
+<translation id="1025074108959230262">Modo persistente inhabilitado</translation>
 <translation id="1031961866430398710">y</translation>
 <translation id="1038795173450935438">Para desplazarte hacia adelante por los elementos de una página, pulsa la tecla de búsqueda+flecha hacia la derecha, o bien la tecla de búsqueda+flecha hacia la izquierda para desplazarte hacia atrás. Para ir a la siguiente línea, pulsa la tecla de búsqueda+flecha hacia abajo. Para ir a la línea anterior, utiliza la tecla de búsqueda+flecha hacia arriba. Si llegas a un elemento en el que quieras hacer clic, pulsa la tecla de búsqueda+barra espaciadora.</translation>
 <translation id="1044777062731150180">No hay encabezados</translation>
@@ -467,7 +467,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5291783959063340370">Objeto</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, pestaña</translation>
 <translation id="5310788376443009632">eliminada:</translation>
-<translation id="5320727453979144100">Modo permanente habilitado</translation>
+<translation id="5320727453979144100">Modo persistente habilitado</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, cuadro de texto</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, enlace</translation>
@@ -854,6 +854,6 @@ Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="948171205378458592">Habla más lento</translation>
 <translation id="955917170449423694">Se ha cambiado a la versión clásica de ChromeVox</translation>
 <translation id="962913030769097253">Siguiente encabezado de nivel 1</translation>
-<translation id="973955474346881951">Habilita o inhabilita el modo de recarga automática</translation>
+<translation id="973955474346881951">Habilita o inhabilita el modo persistente</translation>
 <translation id="976849232629612000">No hay elementos.</translation>
 </translationbundle>

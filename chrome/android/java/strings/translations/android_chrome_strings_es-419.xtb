@@ -33,7 +33,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1303671224831497365">No se encontraron dispositivos Bluetooth</translation>
 <translation id="1326317727527857210">Accede a Chrome para obtener las pestañas de tus otros dispositivos.</translation>
 <translation id="1332501820983677155">Accesos directos a las funciones de Google Chrome</translation>
-<translation id="13410144310025252">Ver en Chrome</translation>
 <translation id="1369915414381695676">Se agregó el sitio <ph name="SITE_NAME" />.</translation>
 <translation id="1373696734384179344">Memoria insuficiente para descargar el contenido seleccionado</translation>
 <translation id="1376578503827013741">Calculando…</translation>
@@ -88,6 +87,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="194341124344773587">Activa el permiso para Chrome en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="1944384637046898011">Encriptar todo con la contraseña de Google a partir del <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda y otros servicios de Google.</translation>
 <translation id="1966710179511230534">Actualiza los datos de acceso.</translation>
 <translation id="1974060860693918893">Avanzada</translation>
 <translation id="1984937141057606926">Permitidas, salvo de terceros</translation>
@@ -104,7 +104,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2100273922101894616">Acceso automático</translation>
 <translation id="2126426811489709554">Con tecnología de Chrome</translation>
 <translation id="213279576345780926">Pestaña <ph name="TAB_TITLE" /> cerrada</translation>
-<translation id="2138201775715568214">Buscando páginas web físicas cercanas</translation>
 <translation id="2139186145475833000">Agregar a la pantalla principal</translation>
 <translation id="2146738493024040262">Abrir app instantánea</translation>
 <translation id="2148716181193084225">Hoy</translation>
@@ -117,11 +116,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados del lado del cliente.</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer esto cómodamente. El texto debería verse, al menos, de este tamaño al tocar dos veces un párrafo.</translation>
 <translation id="2323763861024343754">Almacenamiento del sitio</translation>
-<translation id="2331464965008647960">Los dispositivos cercanos están transmitiendo páginas web a través de Bluetooth. Chrome buscará páginas y las mostrará cuando actives tu dispositivo. Estas páginas pasarán por un servicio de Google que mejorará la calidad de los resultados.
-
-Puedes controlar la Web física desde la configuración de Chrome.
-
-<ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Instalando…</translation>
 <translation id="2346253980530904022">Los servidores de Google optimizarán las páginas que visites, excepto las que usen el protocolo HTTPS y las que visites en el modo de navegación de incógnito.</translation>
 <translation id="2349710944427398404">Cantidad total de datos que usa Chrome, lo que incluye las cuentas, favoritos y opciones de configuración guardadas</translation>
@@ -237,7 +231,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3662546969139119822">Aquí no hay elementos en el historial</translation>
 <translation id="3672452749423051839">Sugerencias relacionadas con errores de navegación</translation>
 <translation id="3714981814255182093">Abrir la barra de búsqueda</translation>
-<translation id="3716158070938632480">Páginas web cercanas</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3739899004075612870">Agregado a favoritos en <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Otras apps: <ph name="MEGABYTES" /> megabytes</translation>
@@ -410,7 +403,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5517095782334947753">Tienes favoritos, historial, contraseñas y otras opciones de configuración de <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5527082711130173040">Chrome debe acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualiza los permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Cerrar pest. de incógnito</translation>
-<translation id="554327794654007401">La Web física</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
@@ -562,7 +554,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7057058088140140610">Tarjetas de crédito y direcciones que utilizan Google Payments</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
-<translation id="7094922512924405309">No se encontró ninguna página web física cercana</translation>
 <translation id="7128222689758636196">Habilitar el motor de búsqueda actual</translation>
 <translation id="7138678301420049075">Otros</translation>
 <translation id="7180611975245234373">Actualizar</translation>
@@ -635,6 +626,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="7987073022710626672">Condiciones del servicio de Chrome</translation>
 <translation id="7998918019931843664">Volver a abrir la pestaña cerrada</translation>
 <translation id="7999064672810608036">¿Quieres eliminar todos los datos locales de este sitio web, incluidas las cookies, y restablecer todos los permisos?</translation>
+<translation id="8004582292198964060">Navegador</translation>
 <translation id="8007176423574883786">Desactivado para este dispositivo</translation>
 <translation id="8008818777654712271">Envía automáticamente contenido de la página e información del sistema a Google para ayudar a detectar apps y sitios peligrosos</translation>
 <translation id="8015452622527143194">Restablecer tamaño de los elementos de la página</translation>
@@ -716,7 +708,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">Cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando los detalles parentales</translation>
-<translation id="8931159598799892500">Chrome + Web física</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="8951232171465285730">Chrome te permitió ahorrar <ph name="MEGABYTES" /> megabytes</translation>
@@ -741,7 +732,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Preguntar antes de permitir que los sitios envíen notificaciones (recomendado)</translation>
-<translation id="917685106653909562">Páginas web físicas cercanas</translation>
 <translation id="9187199695613236444">Vista optimizada para celulares</translation>
 <translation id="9188680907066685419">Salir de la cuenta administrada</translation>
 <translation id="9206873250291191720">A</translation>
@@ -758,4 +748,5 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="981121421437150478">Sin conexión</translation>
 <translation id="982182592107339124">Esta acción borrará los datos de todos los sitios, entre los que se incluyen:</translation>
 <translation id="983192555821071799">Cerrar todas las pestañas</translation>
+<translation id="987264212798334818">General</translation>
 </translationbundle>

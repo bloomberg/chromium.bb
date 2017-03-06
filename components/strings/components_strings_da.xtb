@@ -33,7 +33,7 @@
 <translation id="1227224963052638717">Ukendt politik.</translation>
 <translation id="1227633850867390598">Skjul værdi</translation>
 <translation id="1228893227497259893">Forkert enheds-id</translation>
-<translation id="1232569758102978740">Ikke-navngivet</translation>
+<translation id="1232569758102978740">Unavngivet</translation>
 <translation id="1264126396475825575">Der blev registreret en nedbrudsrapport <ph name="CRASH_TIME" /> (endnu ikke uploadet eller ignoreret)</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
@@ -355,6 +355,7 @@
 <translation id="425582637250725228">Ændringer, du har foretaget, gemmes muligvis ikke.</translation>
 <translation id="4258748452823770588">Forkert signatur</translation>
 <translation id="4269787794583293679">(Intet brugernavn)</translation>
+<translation id="4275830172053184480">Genstart din enhed</translation>
 <translation id="4280429058323657511">udløber <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Google Beskyttet browsing har for nylig <ph name="BEGIN_LINK" />fundet skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">Forslag fra forældre</translation>
@@ -555,6 +556,7 @@
 <translation id="6443118737398455446">Udløbsdatoen er ugyldig</translation>
 <translation id="6446608382365791566">Tilføj flere oplysninger</translation>
 <translation id="6451458296329894277">Bekræft genindsendelse af formular</translation>
+<translation id="6456339708790392414">Din betaling</translation>
 <translation id="6458467102616083041">Ignoreret, fordi standardsøgning er deaktiveret af politikken.</translation>
 <translation id="6462969404041126431">Denne server kunne ikke bevise, at den tilhører <ph name="DOMAIN" />, da sikkerhedscertifikatet muligvis er blevet tilbagekaldt. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Enhedspolitikker</translation>
@@ -690,6 +692,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7755287808199759310">Din forælder kan fjerne blokeringen for dig</translation>
 <translation id="7758069387465995638">Firewall- eller antivirussoftware kan have blokeret forbindelsen.</translation>
 <translation id="7761701407923456692">Serverens certifikat passer ikke til webadressen.</translation>
+<translation id="7764225426217299476">Tilføj adresse</translation>
 <translation id="777702478322588152">Præfektur</translation>
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="7793809570500803535">Websitet på <ph name="SITE" /> kan være midlertidigt nede, eller også er den permanent flyttet til en ny webadresse.</translation>
@@ -794,6 +797,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8932102934695377596">Dit ur er bagud</translation>
 <translation id="8954894007019320973">(Forts.)</translation>
 <translation id="8971063699422889582">Serverens certifikat er udløbet.</translation>
+<translation id="8986494364107987395">Send automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
 <translation id="8987927404178983737">Måned</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Det website, du er på vej til, indeholder skadelige programmer</translation>

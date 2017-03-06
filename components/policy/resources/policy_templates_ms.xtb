@@ -1054,9 +1054,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
           Jika tidak ditetapkan atau ditetapkan kepada Palsu, maka pengguna akan dapat memindahkan fail ke Google Drive.</translation>
 <translation id="3915395663995367577">URL untuk fail .pac proksi</translation>
-<translation id="3926940573869375969">Mengkonfigurasi reka letak papan kekunci yang dibenarkan pada skrin log masuk <ph name="PRODUCT_OS_NAME" />.
-
-      Jika dasar ini ditetapkan kepada senarai pengecam kaedah masukan, kaedah masukan yang diberikan akan tersedia pada skrin log masuk. Kaedah masukan pertama yang diberikan akan dipilih dahulu. Walaupun pod pengguna difokus pada skrin log masuk, kaedah masukan terbaharu pengguna yang paling kurang digunakan akan tersedia sebagai tambahan pada kaedah masukan yang diberikan oleh dasar ini.  Jika dasar ini tidak ditetapkan, kaedah masukan pada skrin log masuk akan diperoleh daripada tempat peristiwa skrin log masuk dipaparkan.  Nilai daripada pengecam kaedah masukan yang tidak sah akan diabaikan.</translation>
 <translation id="3939893074578116847">Hantar bingkisan rangkaian ke pelayan pengurusan untuk memantau status dalam talian, untuk membenarkan
       pelayan mengesan jika peranti berada di luar talian.
 
@@ -2077,11 +2074,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       
       Dasar ini membolehkan anda mengkonfigurasi gelagat <ph name="PRODUCT_OS_NAME" /> apabila pengguna kekal melahu selama sejumlah masa tertentu.</translation>
-<translation id="703078280527762319">Amaran: Dasar versi TLS maksimum akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> sekitar versi 66 (sekitar Februari 2018).
-
-      Jika dasar ini tidak dikonfigurasikan, maka <ph name="PRODUCT_NAME" /> akan menggunakan versi maksimum lalai iaitu TLSv1.3.
-
-      Jika tidak, dasar ini mungkin ditetapkan kepada satu daripada nilai berikut: "tls1.2" atau "tls1.3". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih tinggi daripada versi yang dinyatakan. Nilai yang tidak dicam akan diabaikan.</translation>
 <translation id="7040229947030068419">Nilai contoh:</translation>
 <translation id="7049373494483449255">Membolehkan <ph name="PRODUCT_NAME" /> menyerahkan dokumen kepada <ph name="CLOUD_PRINT_NAME" /> untuk cetakan.  NOTA: Ini hanya memberikan kesan terhadap sokongan <ph name="CLOUD_PRINT_NAME" /> dalam <ph name="PRODUCT_NAME" />.  Ia tidak menghalang pengguna daripada menyerahkan tugas cetakan di tapak web.
 

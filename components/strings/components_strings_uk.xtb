@@ -355,6 +355,7 @@
 <translation id="425582637250725228">Внесені зміни, можливо, не буде збережено.</translation>
 <translation id="4258748452823770588">Недійсний підпис</translation>
 <translation id="4269787794583293679">(Немає імені користувача)</translation>
+<translation id="4275830172053184480">Перезапустіть пристрій</translation>
 <translation id="4280429058323657511">, дійсна до <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK" />виявила шкідливі програми<ph name="END_LINK" /> на сайті <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">Поради для батьків</translation>
@@ -555,6 +556,7 @@
 <translation id="6443118737398455446">Недійсна дата завершення терміну дії</translation>
 <translation id="6446608382365791566">Додати більше інформації</translation>
 <translation id="6451458296329894277">Підтвердити повторне надсилання форми</translation>
+<translation id="6456339708790392414">Ваш платіж</translation>
 <translation id="6458467102616083041">Ігнорується, оскільки пошук за умовчанням вимкнено правилом.</translation>
 <translation id="6462969404041126431">Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Можливо, його сертифікат безпеки відкликано. Імовірні причини: сервер налаштовано неправильно або хтось намагається перехопити ваше з’єднання. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Правила пристрою</translation>
@@ -690,6 +692,7 @@
 <translation id="7755287808199759310">Хтось із батьків може розблокувати його</translation>
 <translation id="7758069387465995638">Можливо, брандмауер або антивірусна програма заблокували з’єднання.</translation>
 <translation id="7761701407923456692">Сертифікат сервера не відповідає URL-адресі.</translation>
+<translation id="7764225426217299476">Додати адресу</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="7793809570500803535">Веб-сторінка на сайті <ph name="SITE" /> може бути тимчасово недоступна або її назавжди переміщено за новою веб-адресою.</translation>
@@ -794,6 +797,7 @@
 <translation id="8932102934695377596">Ваш годинник запізнюється</translation>
 <translation id="8954894007019320973">(Продовж.)</translation>
 <translation id="8971063699422889582">Термін дії сертифіката сервера завершився.</translation>
+<translation id="8986494364107987395">Автоматично надсилати статистику використання та звіти про аварійне завершення роботи в Google</translation>
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Сайт містить шкідливі програми</translation>

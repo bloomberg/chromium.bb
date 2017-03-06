@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">വിലാസം 1</translation>
 <translation id="1545749641540134597">QR കോഡ് സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="1580783302095112590">മെയിൽ അയച്ചു.</translation>
-<translation id="1634828734222219955">മൊത്തം</translation>
 <translation id="1646446875146297738">നിങ്ങളുടെ ബ്രൗസിംഗ് ട്രാഫിക്കിൽ ഒരു അഭ്യർത്ഥന ഉൾപ്പെടുത്തുമെന്നാണ് "ട്രാക്ക് ചെയ്യരുത്" പ്രവർത്തനക്ഷമമാക്കുന്നതിലൂടെ അർത്ഥമാക്കുന്നത്. ഒരു വെബ്‌സൈറ്റ്, അഭ്യർത്ഥനയിന്മേൽ പ്രതികരിക്കുന്നോ എന്നതിനേയും അഭ്യർത്ഥന വ്യാഖ്യാനിക്കുന്നതെങ്ങനെ എന്നതിനേയും ആശ്രയിച്ചുള്ളതായിരിക്കും ഏതൊരു ഇഫക്റ്റും.
 
 ഉദാഹരണത്തിന്, ചില വെബ്‌സൈറ്റുകൾ നിങ്ങൾ സന്ദർശിച്ച മറ്റ് വെബ്‌സൈറ്റുകളെ അടിസ്ഥാനമാക്കിയുള്ളതല്ലാത്ത പരസ്യങ്ങൾ കാണിച്ച് ഈ അഭ്യർത്ഥനയോട് പ്രതികരിക്കാം. നിരവധി വെബ്‌സൈറ്റുകൾ തുടർന്നും നിങ്ങളുടെ ബ്രൗസിംഗ് ഡാറ്റ ശേഖരിക്കുകയും ഉപയോഗിക്കുകയും ചെയ്യും - ഉദാഹരണത്തിന് സുരക്ഷ മെച്ചപ്പെടുത്തുന്നതിനും അവരുടെ വെബ്‌സൈറ്റുകളിൽ ഉള്ളടക്കവും സേവനങ്ങളും പരസ്യങ്ങളും നൽകുന്നതിനും റിപ്പോർട്ടിംഗ് സ്ഥിതിവിവരക്കണക്കുകൾ സൃഷ്‌ടിക്കുന്നതിനും. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@
 <translation id="1809939268435598390">ഫോൾഡർ ഇല്ലാതാക്കുക</translation>
 <translation id="1813414402673211292">ബ്രൌസിംഗ് ഡാറ്റാ മായ്ക്കുക...</translation>
 <translation id="1820259098641718022">വായനാ ലിസ്റ്റിൽ ചേർത്തു</translation>
-<translation id="1826516787628120939">പരിശോധിക്കുന്നു</translation>
-<translation id="1842969606798536927">പണമടയ്‌ക്കുക</translation>
 <translation id="1876721852596493031">ഉപയോഗ ഡാറ്റ അയയ്ക്കൂ</translation>
 <translation id="1886928167269928266">തുടക്കം മുതൽ</translation>
 <translation id="1894451531427596130">ഇത് പ്രവർത്തിക്കുന്ന രീതി <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> നിയന്ത്രിക്കുക</translation>
@@ -62,7 +59,6 @@
 <translation id="1952728750904661634">മാനേജുചെയ്‌ത അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="1974060860693918893">നൂതനം</translation>
 <translation id="1989112275319619282">ബ്രൗസുചെയ്യുക</translation>
-<translation id="2054511809411770085">QR കോഡ് അല്ലെങ്കിൽ ബാർകോഡ്</translation>
 <translation id="2068952045031577364">കഴിഞ്ഞ ആഴ്‌ചയിലെ</translation>
 <translation id="2079545284768500474">പഴയപടിയാക്കുക</translation>
 <translation id="209018056901015185">ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ് അഭ്യർത്ഥിക്കുക</translation>
@@ -192,7 +188,6 @@
 <translation id="4875622588773761625">ഈ സൈറ്റിനായി നിങ്ങളുടെ പാസ്‌വേഡ് <ph name="PASSWORD_MANAGER_BRAND" /> അപ്‌ഡേറ്റുചെയ്യണോ?</translation>
 <translation id="4881695831933465202">തുറക്കുക</translation>
 <translation id="4904877109095351937">വായിച്ചതായി അടയാളപ്പെടുത്തുക</translation>
-<translation id="4923459931733593730">പേയ്‌മെന്റ് രീതി</translation>
 <translation id="4930268273022498155">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക. <ph name="USER_EMAIL1" /> എന്നതിലേക്ക് വീണ്ടും മാറുന്നതിലൂടെ നിങ്ങൾക്ക് ഇത് വീണ്ടെടുക്കാം.</translation>
 <translation id="4941089862236492464">ക്ഷമിക്കണം, നിങ്ങളുടെ ഇനം പങ്കിടുന്നതിൽ ഒരു പ്രശ്‌നമുണ്ടായിരുന്നു.</translation>
 <translation id="4979397965658815378">എല്ലാ ഉപകരണങ്ങളിലും നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ, പാസ്‌വേഡുകൾ, ചരിത്രം, മറ്റ് ക്രമീകരണം എന്നിവ ലഭിക്കാൻ Google അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
@@ -208,7 +203,6 @@
 <translation id="5186185447130319458">സ്വകാര്യം</translation>
 <translation id="5190835502935405962">ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ ബാര്‍‌</translation>
 <translation id="5197255632782567636">ഇന്‍റര്‍നെറ്റ്</translation>
-<translation id="5198972191746488848">കാർഡ് ചേർക്കുക...</translation>
 <translation id="5228579091201413441">സമന്വയം പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> ഇമെയിലിലേക്ക് സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="5300589172476337783">കാണിക്കുക</translation>
@@ -251,7 +245,6 @@
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6042308850641462728">കൂടുതൽ</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">റദ്ദാക്കുന്നതിന് ടാപ്പുചെയ്യുക.</translation>
 <translation id="60851516108411750">നിങ്ങളുടെ വായന ലിസ്‌റ്റ് ഓഫ്‌ലൈനിൽ ലഭ്യമാണ്. വായന ലിസ്‌റ്റിൽ ഒരു പേജ് ചേർക്കാൻ,<ph name="SHARE_OPENING_ICON" /> ടാപ്പുചെയ്യുക.</translation>
 <translation id="6122191549521593678">ഓൺലൈൻ</translation>
@@ -284,7 +277,6 @@
 <translation id="6418346271604475326">PDF തയ്യാറാക്കുന്നു</translation>
 <translation id="6445051938772793705">രാജ്യം</translation>
 <translation id="6445981559479772097">സന്ദേശം അയച്ചു.</translation>
-<translation id="6456339708790392414">നിങ്ങളുടെ പേയ്മെന്റ്</translation>
 <translation id="6456425917241817154">Chrome സൃഷ്‌ടിച്ച പാസ്‌വേഡ്</translation>
 <translation id="6464071786529933911">പുതിയ ആൾമാറാട്ട ടാബിൽ തുറക്കുക</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ഇനങ്ങൾ ഇല്ലാതാക്കി</translation>
@@ -343,7 +335,6 @@
 <translation id="7765158879357617694">നീക്കുക</translation>
 <translation id="7769602470925380267">അംഗീകരിച്ചശേഷം, സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
-<translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
 <translation id="7851858861565204677">മറ്റ് ഉപകരണങ്ങൾ</translation>
 <translation id="7859704718976024901">ബ്രൗസിംഗ് ചരിത്രം</translation>
@@ -384,7 +375,6 @@
 <translation id="8654802032646794042">റദ്ദാക്കുക</translation>
 <translation id="8668210798914567634">ഈ പേജ് നിങ്ങളുടെ വായന ലിസ്‌റ്റിൽ സംരക്ഷിച്ചു</translation>
 <translation id="8680787084697685621">അക്കൗണ്ട് പ്രവേശന വിവരങ്ങള്‍ കാലഹരണപ്പെട്ടതാണ്.</translation>
-<translation id="8699098509676302392">വിലാസം ചേർക്കുക...</translation>
 <translation id="8721297211384281569">ഉപകരണ മെനു</translation>
 <translation id="8725066075913043281">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="8730621377337864115">പൂർത്തിയാക്കി</translation>
@@ -404,11 +394,9 @@
 <translation id="9055772144595778347">സൈൻ ഇൻ ചെയ്യാൻ കഴിയില്ല</translation>
 <translation id="9065203028668620118">എഡിറ്റുചെയ്യുക</translation>
 <translation id="9079935439869366234">എല്ലാം വായിക്കാത്തതായി അടയാളപ്പെടുത്തുക</translation>
-<translation id="9080712759204168376">ഓർഡർ സംഗ്രഹം</translation>
 <translation id="9083392325882095631">ഒരു ഇനം</translation>
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9148126808321036104">വീണ്ടും പ്രവേശിക്കുക</translation>
-<translation id="9154194610265714752">അപ്‌ഡേറ്റുചെയ്‌തു</translation>
 <translation id="9157836665414082580">ഡയലോഗുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="9188680907066685419">മാനേജുചെയ്‌ത അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="9203116392574189331">ഹാൻഡ്ഓഫ്</translation>

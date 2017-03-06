@@ -33,7 +33,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1303671224831497365">No Bluetooth devices found</translation>
 <translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1332501820983677155">Google Chrome feature shortcuts</translation>
-<translation id="13410144310025252">View them in Chrome</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
 <translation id="1373696734384179344">Insufficient memory to download the selected content.</translation>
 <translation id="1376578503827013741">Computing…</translation>
@@ -88,6 +87,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="194341124344773587">Turn on permission for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Save passwords</translation>
 <translation id="1944384637046898011">Encrypt all with Google password as of <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Control how Google uses your browsing history to personalise Search and other Google services.</translation>
 <translation id="1966710179511230534">Please update your sign-in details.</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1984937141057606926">Allowed, except third-party</translation>
@@ -104,7 +104,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="213279576345780926">Closed <ph name="TAB_TITLE" /></translation>
-<translation id="2138201775715568214">Looking for nearby Physical Web pages</translation>
 <translation id="2139186145475833000">Add to Home screen</translation>
 <translation id="2146738493024040262">Open Instant App</translation>
 <translation id="2148716181193084225">Today</translation>
@@ -117,11 +116,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
 <translation id="2323763861024343754">Site storage</translation>
-<translation id="2331464965008647960">Devices near to you are broadcasting web pages over Bluetooth. Chrome will scan for pages and display them when you wake up your device. These pages will go through a Google service to improve the quality of page results.
-
-You can control the Physical Web in Chrome Settings.
-
-<ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Installing…</translation>
 <translation id="2346253980530904022">Google servers will optimise the pages that you visit, except for HTTPS and Incognito.</translation>
 <translation id="2349710944427398404">Total data used by Chrome, including accounts, bookmarks and saved settings</translation>
@@ -237,7 +231,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3662546969139119822">No history here</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
 <translation id="3714981814255182093">Open the Find Bar</translation>
-<translation id="3716158070938632480">Web pages are nearby</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3739899004075612870">Bookmarked in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB other apps</translation>
@@ -410,7 +403,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5517095782334947753">You have bookmarks, history, passwords and other settings from <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5527082711130173040">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK1" />Update permissions<ph name="END_LINK1" />. Location access is also <ph name="BEGIN_LINK2" />turned off for this device<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Close incognito tabs</translation>
-<translation id="554327794654007401">The Physical Web</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5565871407246142825">Credit cards</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
@@ -562,7 +554,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7057058088140140610">Credit cards and addresses using Google Payments</translation>
 <translation id="7062545763355031412">Accept and switch accounts</translation>
 <translation id="7063006564040364415">Could not connect to the sync server.</translation>
-<translation id="7094922512924405309">No nearby Physical Web pages found</translation>
 <translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7138678301420049075">Other</translation>
 <translation id="7180611975245234373">Refresh</translation>
@@ -635,6 +626,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7987073022710626672">Chrome Terms of Service</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>
+<translation id="8004582292198964060">Browser</translation>
 <translation id="8007176423574883786">Turned off for this device</translation>
 <translation id="8008818777654712271">Automatically send some system information and page content to Google to help detect dangerous apps and sites</translation>
 <translation id="8015452622527143194">Return everything on the page to default size</translation>
@@ -714,7 +706,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>
-<translation id="8931159598799892500">Chrome + Physical Web</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Open in other window</translation>
 <translation id="8951232171465285730">Chrome has saved you <ph name="MEGABYTES" /> MB</translation>
@@ -739,7 +730,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>
-<translation id="917685106653909562">Physical Web pages nearby</translation>
 <translation id="9187199695613236444">Mobile-friendly view</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9206873250291191720">A</translation>
@@ -756,4 +746,5 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="981121421437150478">Offline</translation>
 <translation id="982182592107339124">This will clear data for all sites, including:</translation>
 <translation id="983192555821071799">Close all tabs</translation>
+<translation id="987264212798334818">General</translation>
 </translationbundle>

@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">العنوان 1</translation>
 <translation id="1545749641540134597">فحص رمز الاستجابة السريعة</translation>
 <translation id="1580783302095112590">تم إرسال البريد.</translation>
-<translation id="1634828734222219955">الإجمالي</translation>
 <translation id="1646446875146297738">إن تمكين "عدم التتبع" يعني تضمين طلب في حركة بيانات التصفح. ويعتمد أي تأثير يحدث على ما إذا كان موقع الويب سيستجيب للطلب، وكيفية تفسيره للطلب.
 
 على سبيل المثال، قد تستجيب بعض مواقع الويب لهذا الطلب عبر عرض إعلانات لا تستند إلى مواقع ويب أخرى زرتها. ولكن ستظل العديد من مواقع الويب تجمع بيانات تصفحك وتستخدمها - على سبيل المثال، لتحسين الأمان وتقديم محتوى وخدمات وإعلانات واقتراحات على مواقع الويب ولإعداد تقارير الإحصاءات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@
 <translation id="1809939268435598390">حذف مجلد</translation>
 <translation id="1813414402673211292">محو بيانات التصفح</translation>
 <translation id="1820259098641718022">تمت الإضافة إلى قائمة القراءة</translation>
-<translation id="1826516787628120939">حساب شيكات</translation>
-<translation id="1842969606798536927">الدفع</translation>
 <translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
 <translation id="1886928167269928266">بدايةَ الوقت</translation>
 <translation id="1894451531427596130">التحكم في كيفية عمل هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" /></translation>
@@ -62,7 +59,6 @@
 <translation id="1952728750904661634">تسجيل الدخول باستخدام حساب مُدار</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1989112275319619282">تصفّح</translation>
-<translation id="2054511809411770085">رمز الاستجابة السريعة أو الرمز الشريطي</translation>
 <translation id="2068952045031577364">الأسبوع الماضي</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="209018056901015185">طلب موقع سطح المكتب</translation>
@@ -192,7 +188,6 @@
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
-<translation id="4923459931733593730">الدفع</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
 <translation id="4979397965658815378">‏سجّل الدخول إلى حسابك في Google لمزامنة الإشارات المرجعية وكلمات المرور والسجل والإعدادات الأخرى واستخدامها على جميع أجهزتك</translation>
@@ -208,7 +203,6 @@
 <translation id="5186185447130319458">خاص</translation>
 <translation id="5190835502935405962">شريط الإشارات</translation>
 <translation id="5197255632782567636">الإنترنت</translation>
-<translation id="5198972191746488848">جارٍ إضافة بطاقة...</translation>
 <translation id="5228579091201413441">تمكين المزامنة</translation>
 <translation id="5244474230056479698">المزامنة مع <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">عرض</translation>
@@ -251,7 +245,6 @@
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="605721222689873409">العام</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">انقر للإلغاء.</translation>
 <translation id="60851516108411750">قائمة القراءة متاحة بلا اتصال بالإنترنت. لإضافة صفحة إلى قائمة القراءة، انقر على <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">متصل</translation>
@@ -284,7 +277,6 @@
 <translation id="6418346271604475326">‏جارٍ إعداد PDF</translation>
 <translation id="6445051938772793705">البلد</translation>
 <translation id="6445981559479772097">تم إرسال الرسالة.</translation>
-<translation id="6456339708790392414">دفعتك</translation>
 <translation id="6456425917241817154">‏تم إنشاء كلمة المرور من قبل Chrome</translation>
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
@@ -343,7 +335,6 @@
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
-<translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7859704718976024901">سجل التصفح</translation>
@@ -384,7 +375,6 @@
 <translation id="8654802032646794042">إلغاء</translation>
 <translation id="8668210798914567634">تم حفظ هذه الصفحة في قائمة القراءة.</translation>
 <translation id="8680787084697685621">تفاصيل تسجيل الدخول إلى الحساب قديمة.</translation>
-<translation id="8699098509676302392">جارٍ إضافة عنوان...</translation>
 <translation id="8721297211384281569">قائمة الأدوات</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8730621377337864115">تم</translation>
@@ -404,11 +394,9 @@
 <translation id="9055772144595778347">تعذر تسجيل الدخول</translation>
 <translation id="9065203028668620118">تحرير</translation>
 <translation id="9079935439869366234">وضع علامة كغير مقروءة على الكل</translation>
-<translation id="9080712759204168376">ملخص الطلبات</translation>
 <translation id="9083392325882095631">عنصر واحد</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
-<translation id="9154194610265714752">تم التحديث</translation>
 <translation id="9157836665414082580">إيقاف مربعات الحوار</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9203116392574189331">Handoff</translation>

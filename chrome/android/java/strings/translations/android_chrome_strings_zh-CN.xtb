@@ -33,7 +33,6 @@
 <translation id="1303671224831497365">未找到任何蓝牙设备</translation>
 <translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
 <translation id="1332501820983677155">Google Chrome 功能快捷键</translation>
-<translation id="13410144310025252">您可以在 Chrome 中浏览这些网页</translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
 <translation id="1376578503827013741">正在计算…</translation>
@@ -88,6 +87,7 @@
 <translation id="194341124344773587">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这项权限。</translation>
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="1944384637046898011">自 <ph name="TIME" />起，使用 Google 密码加密所有数据</translation>
+<translation id="1946005195648379376">控制 Google 如何使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置。</translation>
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="1974060860693918893">高级</translation>
 <translation id="1984937141057606926">允许（第三方除外）</translation>
@@ -104,7 +104,6 @@
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2126426811489709554">由 Chrome 提供支持</translation>
 <translation id="213279576345780926">已关闭<ph name="TAB_TITLE" /></translation>
-<translation id="2138201775715568214">正在查找附近的“实物网”网页</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
 <translation id="2146738493024040262">打开免安装应用</translation>
 <translation id="2148716181193084225">今天</translation>
@@ -117,11 +116,6 @@
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="2323763861024343754">网站存储数据</translation>
-<translation id="2331464965008647960">附近有设备在通过蓝牙播报网页。当您唤醒自己的设备时，Chrome 将会搜索并显示这些网页。这些网页将经由 Google 服务进行处理，以让网页搜索结果的品质更理想。
-
-您可以在 Chrome 设置部分中控制实物网。
-
-<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">正在安装…</translation>
 <translation id="2346253980530904022">Google 服务器将优化您访问的网页（HTTPS 网页以及在隐身模式下访问的网页除外）。</translation>
 <translation id="2349710944427398404">Chrome 所使用的数据总量，包括帐号、书签和已保存的设置</translation>
@@ -237,7 +231,6 @@
 <translation id="3662546969139119822">此处没有任何历史记录</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
 <translation id="3714981814255182093">打开查找栏</translation>
-<translation id="3716158070938632480">附近有设备在播报网页</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中添加书签</translation>
 <translation id="3744111309925758534">其他应用已占用的空间：<ph name="MEGABYTES" /> MB</translation>
@@ -410,7 +403,6 @@
 <translation id="5517095782334947753">您有来自 <ph name="FROM_ACCOUNT" /> 的书签、历史记录、密码及其他设置。</translation>
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
-<translation id="554327794654007401">实物网</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE" />中搜索此图片</translation>
@@ -562,7 +554,6 @@
 <translation id="7057058088140140610">使用 Google Payments 存储的信用卡和地址信息</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
-<translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
 <translation id="7128222689758636196">适用于当前的搜索引擎</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7180611975245234373">刷新</translation>
@@ -635,6 +626,7 @@
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
+<translation id="8004582292198964060">浏览器</translation>
 <translation id="8007176423574883786">已对此设备停用</translation>
 <translation id="8008818777654712271">自动向 Google 发送某些系统信息和网页内容，以帮助检测危险应用和网站</translation>
 <translation id="8015452622527143194">将网页上的所有内容恢复到默认大小</translation>
@@ -716,7 +708,6 @@
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帐号</translation>
 <translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>
-<translation id="8931159598799892500">Chrome + 实物网</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">在其他窗口中打开</translation>
 <translation id="8951232171465285730">Chrome 已为您保存的数据量：<ph name="MEGABYTES" /> MB</translation>
@@ -741,7 +732,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9139068048179869749">在允许网站发送通知前先询问（推荐）</translation>
-<translation id="917685106653909562">附近的“实物网”网页</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9206873250291191720">A</translation>
@@ -758,4 +748,5 @@
 <translation id="981121421437150478">离线</translation>
 <translation id="982182592107339124">这会清除所有网站的数据，包括：</translation>
 <translation id="983192555821071799">关闭所有标签页</translation>
+<translation id="987264212798334818">常规</translation>
 </translationbundle>

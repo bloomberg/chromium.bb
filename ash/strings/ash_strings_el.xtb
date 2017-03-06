@@ -28,8 +28,6 @@
 <translation id="164969095109328410">Συσκευή Chrome</translation>
 <translation id="1677472565718498478">Απομένουν <ph name="TIME" /></translation>
 <translation id="1747827819627189109">Το πληκτρολόγιο οθόνης είναι ενεργοποιημένο</translation>
-<translation id="1812696562331527143">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />τρίτου μέρους<ph name="END_LINK" />).
-Πατήστε Shift + Alt για εναλλαγή.</translation>
 <translation id="1850504506766569011">Το Wi-Fi έχει απενεργοποιηθεί.</translation>
 <translation id="1864454756846565995">Συσκευή USB-C (πίσω θύρα)</translation>
 <translation id="1882897271359938046">Κατοπτρισμός σε <ph name="DISPLAY_NAME" /></translation>
@@ -60,6 +58,7 @@
 <translation id="2825619548187458965">Ράφι</translation>
 <translation id="2844169650293029770">Συσκευή USB-C (αριστερή μπροστινή θύρα)</translation>
 <translation id="2857608528410806398">Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος. Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος. Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος. Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος. Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος.</translation>
+<translation id="2865888419503095837">Πληροφορίες δικτύου</translation>
 <translation id="2872961005593481000">Τερματισμός λειτουργίας</translation>
 <translation id="2942516765047364088">Θέση ραφιού</translation>
 <translation id="2946119680249604491">Προσθήκη σύνδεσης</translation>
@@ -68,8 +67,6 @@
 <translation id="2999742336789313416">Το <ph name="DISPLAY_NAME" /> είναι μια δημόσια περίοδος σύνδεσης που διαχειρίζεται το <ph name="DOMAIN" /></translation>
 <translation id="3009178788565917040">Έξοδος</translation>
 <translation id="3019353588588144572">Χρόνος που απομένει μέχρι να φορτιστεί πλήρως η μπαταρία, <ph name="TIME_REMAINING" /></translation>
-<translation id="3050422059534974565">Το πλήκτρο CAPS LOCK έχει ενεργοποιηθεί.
-Πατήστε Search ή Shift για ακύρωση.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Κάτω</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -77,6 +74,7 @@
 <translation id="3147142846278915599">Εφαρμογή εκκίνησης (συγχρονισμός εφαρμογών…)</translation>
 <translation id="315116470104423982">Δεδομένα κινητής τηλεφωνίας</translation>
 <translation id="3157169093162779309">Ενεργοποίηση κλειδώματος περιστροφής</translation>
+<translation id="3236488194889173876">Δεν υπάρχουν διαθέσιμα δίκτυα κινητής τηλεφωνίας</translation>
 <translation id="3294437725009624529">Επισκέπτης</translation>
 <translation id="3335772982573114336">Νέα σημείωση</translation>
 <translation id="3364721542077212959">Εργαλεία γραφίδας</translation>
@@ -144,8 +142,6 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5777841717266010279">Να διακοπεί η κοινή χρήση οθόνης;</translation>
 <translation id="57838592816432529">Σίγαση</translation>
-<translation id="5825747213122829519">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID" />.
-Πατήστε Shift + Alt για εναλλαγή.</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Μετάδοση σε έναν άγνωστο δέκτη</translation>
@@ -201,8 +197,6 @@
 <translation id="7129360219436193655">Λειτουργία δείκτη λέιζερ</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Επαναφορά στην προηγούμενη ανάλυση σε <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Το πλήκτρο CAPS LOCK έχει ενεργοποιηθεί.
-Πατήστε Alt+Search ή Shift για ακύρωση.</translation>
 <translation id="7348093485538360975">Πληκτρολόγιο οθόνης</translation>
 <translation id="735745346212279324">Το VPN αποσυνδέθηκε</translation>
 <translation id="742594950370306541">Η κάμερα δεν χρησιμοποιείται.</translation>
@@ -221,12 +215,14 @@
 <translation id="7893838033650689677">Ενεργοποίηση Wi-Fi</translation>
 <translation id="7904094684485781019">Ο διαχειριστής αυτού του λογαριασμού δεν έχει επιτρέψει τις πολλαπλές συνδέσεις.</translation>
 <translation id="7957227661277029961">Δεν είναι δυνατή η φόρτιση της συσκευής <ph name="DEVICE_TYPE" /> ενώ είναι ενεργοποιημένη. Χρησιμοποιήστε τον επίσημο φορτιστή.</translation>
+<translation id="7977927628060636163">Αναζήτηση για δίκτυα κινητής τηλεφωνίας…</translation>
 <translation id="7982789257301363584">Δίκτυο</translation>
 <translation id="8000066093800657092">Κανένα δίκτυο</translation>
 <translation id="8054466585765276473">Υπολογισμός χρόνου μπαταρίας που απομένει.</translation>
 <translation id="8077816382010018681">Εδώ εμφανίζεται ο τίτλος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος</translation>
 <translation id="8098591350844501178">Διακοπή μετάδοσης οθόνης σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Έγινε σύνδεση με το δίκτυο <ph name="NAME" /></translation>
+<translation id="813913629614996137">Εκκίνηση…</translation>
 <translation id="8142699993796781067">Ιδιωτικό δίκτυο</translation>
 <translation id="8180896103888046100">Διακοπή μετάδοσης σε άγνωστο δέκτη</translation>
 <translation id="8185286464235484130">Πείτε μας πώς τα πηγαίνουμε απαντώντας σε ορισμένες ερωτήσεις.</translation>

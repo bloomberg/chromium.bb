@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">Dirección 1</translation>
 <translation id="1545749641540134597">Escanear código QR</translation>
 <translation id="1580783302095112590">Correo enviado</translation>
-<translation id="1634828734222219955">Total</translation>
 <translation id="1646446875146297738">Si habilitas la opción "No realizar seguimiento", se incluirá una solicitud con el tráfico de navegación. Los efectos dependerán de si algún sitio web responde a dicha solicitud y de cómo se interpreta.
 
 Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la publicación de anuncios que no se basan en los sitios web que visitaste. Muchos sitios web continuarán recopilando y usando tus datos de navegación para, por ejemplo, mejorar la seguridad, generar estadísticas para informes y ofrecer contenido, servicios, anuncios y recomendaciones. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="1809939268435598390">Eliminar carpeta</translation>
 <translation id="1813414402673211292">Eliminar datos de navegación</translation>
 <translation id="1820259098641718022">Se agregó a la lista de lectura</translation>
-<translation id="1826516787628120939">Comprobando</translation>
-<translation id="1842969606798536927">Pagar</translation>
 <translation id="1876721852596493031">Enviar datos de uso</translation>
 <translation id="1886928167269928266">Principio</translation>
 <translation id="1894451531427596130">Controlar el funcionamiento en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" /></translation>
@@ -62,7 +59,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="1952728750904661634">Acceder con una cuenta administrada</translation>
 <translation id="1974060860693918893">Avanzada</translation>
 <translation id="1989112275319619282">Navegar</translation>
-<translation id="2054511809411770085">Código QR o código de barras</translation>
 <translation id="2068952045031577364">La semana pasada</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="209018056901015185">Versión para escritorio</translation>
@@ -192,7 +188,6 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4904877109095351937">Marcar como leídas</translation>
-<translation id="4923459931733593730">Pago</translation>
 <translation id="4930268273022498155">Borra los datos existentes. Para recuperarlos, cambia de nuevo a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Se produjo un error al compartir tu elemento.</translation>
 <translation id="4979397965658815378">Accede con tu cuenta de Google para obtener tus favoritos, contraseñas, historial y otras opciones de configuración en todos tus dispositivos</translation>
@@ -208,7 +203,6 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="5186185447130319458">Privado</translation>
 <translation id="5190835502935405962">Barra de favoritos</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5198972191746488848">Agregar tarjeta…</translation>
 <translation id="5228579091201413441">Habilitar sincronización</translation>
 <translation id="5244474230056479698">Sincronizando con <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Mostrar</translation>
@@ -251,7 +245,6 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6042308850641462728">Más</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Toca para cancelar.</translation>
 <translation id="60851516108411750">Tu lista de lectura está disponible sin conexión. Para agregar una página a tu lista de lectura, presiona <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">En línea</translation>
@@ -284,7 +277,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6418346271604475326">Preparando PDF</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensaje enviado</translation>
-<translation id="6456339708790392414">Tu pago</translation>
 <translation id="6456425917241817154">Generada por Chrome</translation>
 <translation id="6464071786529933911">Abrir en una pestaña de incógnito nueva</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
@@ -343,7 +335,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceptar y salir</translation>
 <translation id="7772032839648071052">Confirmar frase de contraseña</translation>
-<translation id="7791543448312431591">Agregar</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
@@ -384,7 +375,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8654802032646794042">Cancelar</translation>
 <translation id="8668210798914567634">Esta página se guardó en tu lista de lectura.</translation>
 <translation id="8680787084697685621">Los datos de inicio de cuenta están desactualizados</translation>
-<translation id="8699098509676302392">Agregar dirección…</translation>
 <translation id="8721297211384281569">Menú "Herramientas"</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8730621377337864115">Listo</translation>
@@ -404,11 +394,9 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="9055772144595778347">Error al acceder</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9079935439869366234">Marcar todas como no leídas</translation>
-<translation id="9080712759204168376">Resumen del pedido</translation>
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9148126808321036104">Accede nuevamente</translation>
-<translation id="9154194610265714752">Actualizado</translation>
 <translation id="9157836665414082580">Suprimir diálogos</translation>
 <translation id="9188680907066685419">Salir de la cuenta administrada</translation>
 <translation id="9203116392574189331">Handoff</translation>

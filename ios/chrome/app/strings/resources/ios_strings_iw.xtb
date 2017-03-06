@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">כתובת, שורה 1</translation>
 <translation id="1545749641540134597">‏סרוק קוד QR</translation>
 <translation id="1580783302095112590">הדואר נשלח.</translation>
-<translation id="1634828734222219955">סך הכל</translation>
 <translation id="1646446875146297738">המשמעות של הפעלת 'ללא מעקב' היא שהבקשה תיכלל בתנועת הגלישה שלך. התוצאה בפועל תלויה בתגובה של האתר לבקשה ובפרשנות שהוא מייחס לה, אם בכלל. 
 
 לדוגמה, אתרים מסוימים עשויים להגיב לבקשה זו על ידי הצגת מודעות שאינן מבוססות על אתרים אחרים שבהם ביקרת. אתרים רבים עדיין יאספו את נתוני הגלישה שלך וישתמשו בהם - לדוגמה, על מנת לשפר את האבטחה, לספק תוכן, שירותים, מודעות והמלצות באתרים שלהם וכדי ליצור נתונים סטטיסטיים לדיווח. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@
 <translation id="1809939268435598390">מחק תיקיה</translation>
 <translation id="1813414402673211292">נקה נתוני גלישה</translation>
 <translation id="1820259098641718022">נוסף לרשימת הקריאה</translation>
-<translation id="1826516787628120939">מתבצעת בדיקה</translation>
-<translation id="1842969606798536927">שלם</translation>
 <translation id="1876721852596493031">שלח נתוני שימוש</translation>
 <translation id="1886928167269928266">משחר ההיסטוריה</translation>
 <translation id="1894451531427596130">קבע <ph name="BEGIN_LINK" />בהגדרות<ph name="END_LINK" /> כיצד זה יעבוד</translation>
@@ -62,7 +59,6 @@
 <translation id="1952728750904661634">כניסה עם חשבון מנוהל</translation>
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1989112275319619282">דפדף</translation>
-<translation id="2054511809411770085">‏קוד QR או ברקוד</translation>
 <translation id="2068952045031577364">מהשבוע האחרון</translation>
 <translation id="2079545284768500474">בטל פעולה</translation>
 <translation id="209018056901015185">טען גירסת מחשב שולחני</translation>
@@ -192,7 +188,6 @@
 <translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4904877109095351937">סמן כ'נקרא'</translation>
-<translation id="4923459931733593730">תשלום</translation>
 <translation id="4930268273022498155">מחק נתונים קיימים. כדי לאחזר אותם, חזור אל <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">מצטערים, אירעה בעיה בשיתוף הפריט שלך.</translation>
 <translation id="4979397965658815378">‏היכנס באמצעות חשבון Google כדי לקבל גישה אל הסימניות, הסיסמאות, ההיסטוריה והגדרות נוספות בכל המכשירים שלך.</translation>
@@ -208,7 +203,6 @@
 <translation id="5186185447130319458">פרטי</translation>
 <translation id="5190835502935405962">סרגל הסימניות</translation>
 <translation id="5197255632782567636">אינטרנט</translation>
-<translation id="5198972191746488848">הוסף כרטיס...</translation>
 <translation id="5228579091201413441">הפעל סנכרון</translation>
 <translation id="5244474230056479698">מסנכרן ל-<ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">הצג</translation>
@@ -251,7 +245,6 @@
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">הקש כדי לבטל.</translation>
 <translation id="60851516108411750">אתה יכול לגשת לרשימת הקריאה שלך במצב לא מקוון. כדי להוסיף דף אל רשימת הקריאה, הקש על <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">מקוון</translation>
@@ -284,7 +277,6 @@
 <translation id="6418346271604475326">‏מכין PDF</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6445981559479772097">ההודעה נשלחה.</translation>
-<translation id="6456339708790392414">התשלום שלך</translation>
 <translation id="6456425917241817154">‏סיסמה שנוצרה על ידי Chrome</translation>
 <translation id="6464071786529933911">פתח בכרטיסיית גלישה בסתר חדשה</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
@@ -343,7 +335,6 @@
 <translation id="7765158879357617694">העבר</translation>
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
-<translation id="7791543448312431591">הוסף</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7859704718976024901">היסטוריית הגלישה</translation>
@@ -384,7 +375,6 @@
 <translation id="8654802032646794042">ביטול</translation>
 <translation id="8668210798914567634">דף זה נשמר ברשימת הקריאה שלך.</translation>
 <translation id="8680787084697685621">פרטי הכניסה לחשבון אינם מעודכנים.</translation>
-<translation id="8699098509676302392">הוסף כתובת...</translation>
 <translation id="8721297211384281569">התפריט 'כלים'</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>
@@ -404,11 +394,9 @@
 <translation id="9055772144595778347">לא מצליח להיכנס</translation>
 <translation id="9065203028668620118">ערוך</translation>
 <translation id="9079935439869366234">סמן את הכול כ'לא נקרא'</translation>
-<translation id="9080712759204168376">סיכום הזמנה</translation>
 <translation id="9083392325882095631">פריט אחד</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
-<translation id="9154194610265714752">עודכן</translation>
 <translation id="9157836665414082580">הסתר תיבות דו-שיח</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9203116392574189331">Handoff</translation>

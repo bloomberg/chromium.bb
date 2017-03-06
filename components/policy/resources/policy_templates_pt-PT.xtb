@@ -1001,9 +1001,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Se não estiver definida ou estiver definida como falsa, os utilizadores poderão transferir ficheiros para o Google Drive.</translation>
 <translation id="3915395663995367577">URL para um ficheiro .pac de proxy</translation>
-<translation id="3926940573869375969">Configura os esquemas de teclado que são permitidos no ecrã de início de sessão do <ph name="PRODUCT_OS_NAME" />.
-
-      Se esta política estiver definida como uma lista de identificadores de métodos de introdução, os métodos de introdução fornecidos são disponibilizados no ecrã de início de sessão. O primeiro método de introdução fornecido é pré-selecionado. Enquanto um agrupamento de utilizadores está centrado no ecrã de início de sessão, o método de introdução utilizado menos recentemente é disponibilizado, para além dos métodos de introdução fornecidos por esta política. Se esta política não estiver definida, os métodos de introdução no ecrã de início de sessão são derivados do local no qual o ecrã de início de sessão é apresentado. Os valores que não são identificadores de métodos de introdução válidos são ignorados.</translation>
 <translation id="3939893074578116847">Envie pacotes de rede para o servidor de gestão para monitorizar o estado online, de modo a permitir
       que o servidor detete se o dispositivo está offline.
 
@@ -1951,11 +1948,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7027785306666625591">Configurar a gestão de energia em <ph name="PRODUCT_OS_NAME" />.
 
       Estas políticas permitem-lhe configurar o comportamento do <ph name="PRODUCT_OS_NAME" /> quando o utilizador permanece inativo durante algum tempo.</translation>
-<translation id="703078280527762319">Aviso: a política da versão TLS máxima será totalmente removida do <ph name="PRODUCT_NAME" /> perto da versão 66 (por volta de fevereiro de 2018).
-
-      Se esta política não estiver configurada, o <ph name="PRODUCT_NAME" /> utiliza a versão máxima predefinida, neste caso, TLSv1.3.
-
-      Caso contrário, pode ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando estiver definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS superiores à versão especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="7040229947030068419">Valor do exemplo:</translation>
 <translation id="7049373494483449255">Permite que o <ph name="PRODUCT_NAME" /> envie documentos para o <ph name="CLOUD_PRINT_NAME" /> para impressão. NOTA: isto apenas afeta o suporte do <ph name="CLOUD_PRINT_NAME" /> no <ph name="PRODUCT_NAME" />. Não impede que os utilizadores enviem tarefas de impressão a partir de Web sites. Se esta definição estiver ativada ou não estiver configurada, os utilizadores poderão imprimir para o <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />. Se esta definição estiver desativada, os utilizadores não poderão imprimir para o <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Se esta política estiver ativada, força a importação de marcadores a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, não serão importados quaisquer marcadores. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-los ou a importação poderá ocorrer automaticamente.</translation>

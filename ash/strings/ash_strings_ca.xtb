@@ -28,8 +28,6 @@
 <translation id="164969095109328410">Dispositiu Chrome</translation>
 <translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
-<translation id="1812696562331527143">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />tercers<ph name="END_LINK" />).
-Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
@@ -60,6 +58,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2825619548187458965">Prestatge</translation>
 <translation id="2844169650293029770">Dispositiu USB-C (port frontal esquerre)</translation>
 <translation id="2857608528410806398">El cos de la notificació per a la funció Desbloqueig ràpid va aquí. El cos de la notificació per a la funció Desbloqueig ràpid va aquí. El cos de la notificació per a la funció Desbloqueig ràpid va aquí. El cos de la notificació per a la funció Desbloqueig ràpid va aquí. El cos de la notificació per a la funció Desbloqueig ràpid va aquí.</translation>
+<translation id="2865888419503095837">Informació de la xarxa</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2942516765047364088">Posició del prestatge</translation>
 <translation id="2946119680249604491">Afegeix una connexió</translation>
@@ -68,8 +67,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> és una sessió pública gestionada per <ph name="DOMAIN" />.</translation>
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING" /></translation>
-<translation id="3050422059534974565">Bloq Maj està activat.
-Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -77,6 +74,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3147142846278915599">Launcher (s'estan sincronitzant les aplicacions...)</translation>
 <translation id="315116470104423982">Dades mòbils</translation>
 <translation id="3157169093162779309">Activeu el bloqueig de la rotació</translation>
+<translation id="3236488194889173876">No hi ha cap xarxa de telefonia mòbil disponible</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="3335772982573114336">Nota nova</translation>
 <translation id="3364721542077212959">Eines del llapis òptic</translation>
@@ -144,8 +142,6 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5777841717266010279">Voleu deixar de compartir la pantalla?</translation>
 <translation id="57838592816432529">Silencia</translation>
-<translation id="5825747213122829519">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID" />.
-Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="5901316534475909376">Maj + Esc</translation>
 <translation id="5927132638760172455">S'està emetent a un receptor desconegut</translation>
@@ -201,8 +197,6 @@ Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
 <translation id="7129360219436193655">Mode de punter làser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Bloq Maj està activat.
-Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>
 <translation id="735745346212279324">VPN desconnectada</translation>
 <translation id="742594950370306541">La càmera s'està utilitzant.</translation>
@@ -221,12 +215,14 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="7893838033650689677">Activa la Wi-Fi</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="7957227661277029961">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès. Us recomanem que utilitzeu el carregador oficial.</translation>
+<translation id="7977927628060636163">S'estan cercant xarxes de telefonia mòbil…</translation>
 <translation id="7982789257301363584">Xarxa</translation>
 <translation id="8000066093800657092">No hi ha xarxa</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8077816382010018681">El títol de la notificació per a la funció Desbloqueig ràpid va aquí</translation>
 <translation id="8098591350844501178">Deixa d'emetre la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME" /></translation>
+<translation id="813913629614996137">S'està inicialitzant…</translation>
 <translation id="8142699993796781067">Xarxa privada</translation>
 <translation id="8180896103888046100">Deixa d'emetre a un receptor desconegut</translation>
 <translation id="8185286464235484130">Respon a algunes preguntes per dir-nos si ho estem fent bé.</translation>

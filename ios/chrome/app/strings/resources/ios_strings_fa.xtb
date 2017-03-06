@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">آدرس ۱</translation>
 <translation id="1545749641540134597">‏اسکن کد QR</translation>
 <translation id="1580783302095112590">نامه ارسال شد.</translation>
-<translation id="1634828734222219955">مجموع</translation>
 <translation id="1646446875146297738">فعال کردن «ردیابی نشود» بدین معناست که درخواستی در ترافیک مرور شما لحاظ خواهد شد. هر گونه تأثیر به این بستگی دارد که وب‌سایت به درخواست پاسخ می‌دهد یا نه و درخواست چگونه تفسیر می‌شود.
 
 به عنوان مثال، ممکن است برخی از وب‌سایت‌ها با نشان دادن آگهی‌هایی که براساس وب‌سایت‌های دیگری که بازدید کرده‌اید، نیستند به این درخواست پاسخ دهند. بسیاری از وب‌سایت‌ها همچنان داده‌های مرور شما را جمع‌آوری و استفاده خواهند کرد - به عنوان مثال برای بهبود ایمنی، برای ارائه محتوا، سرویس‌ها، آگهی‌ها و توصیه‌های مربوط به وب‌سایت‌هایشان و برای تولید گزارش‌های آماری.
@@ -53,8 +52,6 @@
 <translation id="1809939268435598390">حذف پوشه</translation>
 <translation id="1813414402673211292">پاک کردن داده‌های مرور</translation>
 <translation id="1820259098641718022">به فهرست خواندن اضافه شد</translation>
-<translation id="1826516787628120939">در حال بررسی</translation>
-<translation id="1842969606798536927">پرداخت</translation>
 <translation id="1876721852596493031">ارسال داده استفاده</translation>
 <translation id="1886928167269928266">از ابتدا</translation>
 <translation id="1894451531427596130">کنترل نحوه عملکرد آن در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /></translation>
@@ -63,7 +60,6 @@
 <translation id="1952728750904661634">ورود به سیستم با حساب مدیریت‌شده</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="1989112275319619282">مشاهده محتوای موجود در فروشگاه ما</translation>
-<translation id="2054511809411770085">‏کد QR یا بارکد</translation>
 <translation id="2068952045031577364">هفته گذشته</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="209018056901015185">درخواست سایت دسک‌تاپ</translation>
@@ -193,7 +189,6 @@
 <translation id="4875622588773761625">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای این سایت به‌روزرسانی کند؟</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4904877109095351937">علامت‌گذاری به‌عنوان خوانده‌شده</translation>
-<translation id="4923459931733593730">پرداخت</translation>
 <translation id="4930268273022498155">حذف داده‌های موجود. می‌توانید با جابه‌جایی به <ph name="USER_EMAIL1" /> آن را بازیابی کنید.</translation>
 <translation id="4941089862236492464">متأسفیم! مشكلی در اشتراک‌گذاری مورد شما وجود داشت.</translation>
 <translation id="4979397965658815378">‏برای دریافت نشانک‌ها، گذرواژه‌ها، سابقه و تنظیمات دیگر در همه دستگاه‌هایتان، به سیستم حساب Google خود وارد شوید</translation>
@@ -209,7 +204,6 @@
 <translation id="5186185447130319458">خصوصی</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="5197255632782567636">اینترنت</translation>
-<translation id="5198972191746488848">افزودن کارت…</translation>
 <translation id="5228579091201413441">فعال کردن همگام‌سازی</translation>
 <translation id="5244474230056479698">درحال همگام‌سازی در <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">نمایش</translation>
@@ -252,7 +246,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="605721222689873409">سال</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">برای لغو ضربه بزنید.</translation>
 <translation id="60851516108411750">فهرست خواندن شما در حالت آفلاین دردسترس است. برای افزودن صفحه‌ای به فهرست خواندنتان، روی <ph name="SHARE_OPENING_ICON" /> ضربه بزنید.</translation>
 <translation id="6122191549521593678">آنلاین</translation>
@@ -285,7 +278,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6418346271604475326">‏آماده‌سازی PDF</translation>
 <translation id="6445051938772793705">کشور</translation>
 <translation id="6445981559479772097">پیام ارسال شد.</translation>
-<translation id="6456339708790392414">پرداخت شما</translation>
 <translation id="6456425917241817154">‏گذرواژه ایجادشده توسط Chrome</translation>
 <translation id="6464071786529933911">در برگه ناشناس جدید</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد حذف شد</translation>
@@ -344,7 +336,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7769602470925380267">پذیرش و خروج از سیستم</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
-<translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7851858861565204677">دستگاه‌های دیگر</translation>
 <translation id="7859704718976024901">سابقه مرور</translation>
@@ -385,7 +376,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8654802032646794042">لغو</translation>
 <translation id="8668210798914567634">این صفحه در «فهرست خواندن» شما ذخیره شده است.</translation>
 <translation id="8680787084697685621">جزئیات ورود به سیستم حساب قدیمی است.</translation>
-<translation id="8699098509676302392">افزودن نشانی…</translation>
 <translation id="8721297211384281569">منوی ابزارها</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>
@@ -405,11 +395,9 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="9055772144595778347">امکان ورود به سیستم وجود ندارد</translation>
 <translation id="9065203028668620118">ویرایش</translation>
 <translation id="9079935439869366234">علامت‌گذاری همه موارد به‌‌عنوان خوانده‌شده</translation>
-<translation id="9080712759204168376">خلاصه سفارش</translation>
 <translation id="9083392325882095631">۱ مورد</translation>
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9148126808321036104">ورود مجدد به سیستم</translation>
-<translation id="9154194610265714752">به‌روزرسانی ‌شد</translation>
 <translation id="9157836665414082580">توقف نمایش کادرهای گفتگو</translation>
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
 <translation id="9203116392574189331">Handoff</translation>

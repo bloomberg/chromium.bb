@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">První řádek adresy</translation>
 <translation id="1545749641540134597">Naskenovat QR kód</translation>
 <translation id="1580783302095112590">E-mail byl odeslán.</translation>
-<translation id="1634828734222219955">Celkem</translation>
 <translation id="1646446875146297738">Nastavení „Do Not Track“ (Nesledovat) znamená, že k vašemu provozu při prohlížení bude přidán speciální požadavek. Efekt tohoto požadavku však závisí na tom, zda na něj webové stránky reagují a jak jej interpretují.
 
 Některé webové stránky na tento požadavek mohou reagovat například tím, že při zobrazování reklam nebudou používat informace o tom, které jiné weby jste navštívili. Mnohé weby budou vaše údaje o prohlížení nadále sbírat a používat – např. za účelem zlepšení zabezpečení, poskytování obsahu, služeb, reklam a doporučení na svých webových stránkách a generování přehledových statistik. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="1809939268435598390">Smazat složku</translation>
 <translation id="1813414402673211292">Smazat údaje o prohlížení</translation>
 <translation id="1820259098641718022">Přidáno do seznamu četby</translation>
-<translation id="1826516787628120939">Probíhá kontrola</translation>
-<translation id="1842969606798536927">Zaplatit</translation>
 <translation id="1876721852596493031">Odesílat data o využití</translation>
 <translation id="1886928167269928266">Od počátku věků</translation>
 <translation id="1894451531427596130">Tuto funkci můžete ovládat v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
@@ -62,7 +59,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="1952728750904661634">Přihlášení pomocí spravovaného účtu</translation>
 <translation id="1974060860693918893">Rozšířená nastavení</translation>
 <translation id="1989112275319619282">Procházet</translation>
-<translation id="2054511809411770085">QR kód nebo čárový kód</translation>
 <translation id="2068952045031577364">Z uplynulého týdne</translation>
 <translation id="2079545284768500474" />
 <translation id="209018056901015185">Verze webu pro PC</translation>
@@ -192,7 +188,6 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="4875622588773761625">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala vaše heslo pro tento web?</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4904877109095351937">Označit jako přečtené</translation>
-<translation id="4923459931733593730">Platba</translation>
 <translation id="4930268273022498155">Smazat existující data. Můžete je znovu načíst tím, že přepnete zpět na účet <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Litujeme, ale při sdílení položky došlo k potížím.</translation>
 <translation id="4979397965658815378">Přihlaste se pomocí účtu Google a získejte záložky, hesla, historii a další nastavení do všech svých zařízení.</translation>
@@ -208,7 +203,6 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="5186185447130319458">Soukromé</translation>
 <translation id="5190835502935405962">Lišta záložek</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5198972191746488848">Přidat kartu...</translation>
 <translation id="5228579091201413441">Aktivace synchronizace</translation>
 <translation id="5244474230056479698">Údaje se synchronizují do účtu <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Zobrazit</translation>
@@ -251,7 +245,6 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="6042308850641462728">Více</translation>
 <translation id="605721222689873409">RR</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Stahování zrušíte klepnutím.</translation>
 <translation id="60851516108411750">Seznam obsahu k přečtení je k dispozici offline. Chcete-li na něj přidat stránku, klepněte na <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -284,7 +277,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="6418346271604475326">Příprava souboru PDF</translation>
 <translation id="6445051938772793705">Země</translation>
 <translation id="6445981559479772097">Zpráva odeslána</translation>
-<translation id="6456339708790392414">Vaše platba</translation>
 <translation id="6456425917241817154">Heslo vygenerované Chromem</translation>
 <translation id="6464071786529933911">Otevřít v nové anonymní kartě</translation>
 <translation id="6482629121755362506">Počet smazaných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -343,7 +335,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7769602470925380267">Přijmout a odhlásit se</translation>
 <translation id="7772032839648071052">Potvrďte heslovou frázi</translation>
-<translation id="7791543448312431591">Přidat</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7851858861565204677">Jiná zařízení</translation>
 <translation id="7859704718976024901">Historie procházení</translation>
@@ -384,7 +375,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="8654802032646794042">Zrušit</translation>
 <translation id="8668210798914567634">Tato stránka byla uložena do seznamu četby.</translation>
 <translation id="8680787084697685621">Přihlašovací údaje k účtu jsou zastaralé.</translation>
-<translation id="8699098509676302392">Přidat adresu...</translation>
 <translation id="8721297211384281569">Nabídka Nástroje</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8730621377337864115">Hotovo</translation>
@@ -404,11 +394,9 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="9055772144595778347">Přihlášení se nezdařilo</translation>
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="9079935439869366234">Označit vše jako nepřečtené</translation>
-<translation id="9080712759204168376">Přehled objednávky</translation>
 <translation id="9083392325882095631">1 položka</translation>
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9148126808321036104">Znovu přihlásit</translation>
-<translation id="9154194610265714752">Aktualizováno</translation>
 <translation id="9157836665414082580">Potlačit dialogová okna</translation>
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9203116392574189331">Handoff</translation>

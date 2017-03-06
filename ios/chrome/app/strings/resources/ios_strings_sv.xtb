@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">Adressrad 1</translation>
 <translation id="1545749641540134597">Skanna QR-kod</translation>
 <translation id="1580783302095112590">E-post skickades.</translation>
-<translation id="1634828734222219955">Totalt</translation>
 <translation id="1646446875146297738">Om du aktiverar Do Not Track innebär det att en begäran skickas med webbtrafiken. Vad som händer sedan beror på om webbplatserna svarar på din begäran och hur begäran tolkas.
 
 En del webbplatser kan till exempel svara genom att visa annonser som inte baseras på webbplatser du har besökt tidigare. Många webbplatser fortsätter att samla in och använda din webbinformation, till exempel för att förbättra säkerheten, för att erbjuda innehåll, tjänster, annonser och rekommendationer på sina webbplatser och för att generera statistik för rapporteringsändamål. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="1809939268435598390">Ta bort mapp</translation>
 <translation id="1813414402673211292">Rensa webbinformation</translation>
 <translation id="1820259098641718022">Har lagts till i läslistan</translation>
-<translation id="1826516787628120939">Kontrollerar</translation>
-<translation id="1842969606798536927">Betala</translation>
 <translation id="1876721852596493031">Skicka statistik</translation>
 <translation id="1886928167269928266">Tidens början</translation>
 <translation id="1894451531427596130">Styr hur det fungerar i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
@@ -62,7 +59,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="1952728750904661634">Logga in med ett hanterat konto</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1989112275319619282">Bläddra</translation>
-<translation id="2054511809411770085">QR-kod eller streckkod</translation>
 <translation id="2068952045031577364">Senaste veckan</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="209018056901015185">Använd skrivbordsversion</translation>
@@ -192,7 +188,6 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="4875622588773761625">Vill du att lösenordet för den här webbplatsen ska uppdateras med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4904877109095351937">Markera som läst</translation>
-<translation id="4923459931733593730">Betalning</translation>
 <translation id="4930268273022498155">Radera befintlig data. Om du byter tillbaka till <ph name="USER_EMAIL1" /> finns den kvar där.</translation>
 <translation id="4941089862236492464">Det gick inte att dela objektet.</translation>
 <translation id="4979397965658815378">Logga in med ditt Google-konto så att du kan använda bokmärken, lösenord, historik med mera på alla dina enheter</translation>
@@ -208,7 +203,6 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5198972191746488848">Lägg till kort …</translation>
 <translation id="5228579091201413441">Aktivera synkronisering</translation>
 <translation id="5244474230056479698">Synkroniseras med <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Visa</translation>
@@ -251,7 +245,6 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="605721222689873409">ÅÅ</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Avbryt genom att trycka här.</translation>
 <translation id="60851516108411750">Läslistan är tillgänglig offline. Om du vill lägga till en sida i läslistan trycker du på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -284,7 +277,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6418346271604475326">Förbereder PDF</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">SMS skickat.</translation>
-<translation id="6456339708790392414">Din betalning</translation>
 <translation id="6456425917241817154">Lösenord från Chrome</translation>
 <translation id="6464071786529933911">Öppna i ny inkognitoflik</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt har tagits bort</translation>
@@ -343,7 +335,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7765158879357617694">Flytta</translation>
 <translation id="7769602470925380267">Godkänn och logga ut</translation>
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
-<translation id="7791543448312431591">Lägg till</translation>
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7851858861565204677">Andra enheter</translation>
 <translation id="7859704718976024901">Webbhistorik</translation>
@@ -384,7 +375,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="8654802032646794042">Avbryt</translation>
 <translation id="8668210798914567634">Den här sidan har sparats i läslistan.</translation>
 <translation id="8680787084697685621">Inloggningsuppgifterna för kontot är inte aktuella.</translation>
-<translation id="8699098509676302392">Lägg till adress …</translation>
 <translation id="8721297211384281569">Verktyg</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8730621377337864115">Klart</translation>
@@ -404,11 +394,9 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="9055772144595778347">Kan inte logga in</translation>
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="9079935439869366234">Markera alla som olästa</translation>
-<translation id="9080712759204168376">Sammanfattning av beställningen</translation>
 <translation id="9083392325882095631">1 objekt</translation>
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9148126808321036104">Logga in igen</translation>
-<translation id="9154194610265714752">Uppdaterat</translation>
 <translation id="9157836665414082580">Visa inte dialogrutor</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

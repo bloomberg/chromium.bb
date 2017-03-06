@@ -997,9 +997,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha nincs beállítva, vagy ha az értéke hamis, akkor a felhasználók átvihetnek fájlokat a Google Drive-ra.</translation>
 <translation id="3915395663995367577">URL egy proxy .pac fájlhoz</translation>
-<translation id="3926940573869375969">Beállítja a(z) <ph name="PRODUCT_OS_NAME" /> bejelentkezési képernyőjén engedélyezett billentyűkiosztásokat.
-
-      Ha a házirend a bevitelimódszer-azonosítók listájára van állítva, a megadott beviteli módszerek hozzáférhetők lesznek a bejelentkezési képernyőn. A rendszer előre kiválasztja az elsőként megadott beviteli módszert. Míg a felhasználói sorba rendezés a bejelentkezési képernyőre koncentrál, a felhasználó legrégebben használt beviteli módszere hozzáférhető lesz a házirend által megadott beviteli módszerek mellett. Ha a házirend nincs beállítva, a bejelentkezési képernyő beviteli módszerei a bejelentkezési képernyő nyelv- és országkódja szerint lesznek beállítva. Az érvénytelen bevitelimódszer-azonosítói értékeket a rendszer figyelmen kívül hagyja.</translation>
 <translation id="3939893074578116847">Hálózati csomagok küldése a kezelőszervernek az online állapot ellenőrzése céljából;
       ezáltal a szerver észleli, ha az eszköz offline állapotban van.
 
@@ -1946,11 +1943,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7027785306666625591">Az energiagazdálkodás beállítása a <ph name="PRODUCT_OS_NAME" /> rendszerben.
 
       Ezekkel a házirendekkel beállíthatja, hogy a <ph name="PRODUCT_OS_NAME" /> hogyan reagáljon, ha a felhasználó egy adott ideig tétlen marad.</translation>
-<translation id="703078280527762319">Figyelmeztetés: A legmagasabb TLS-verziójú házirendet teljes egészében eltávolítjuk a(z) <ph name="PRODUCT_NAME" /> 66-os verziójának érkezésekor (2018. február környékén).
-
-      Ha a házirend nincs beállítva, akkor a(z) <ph name="PRODUCT_NAME" /> az alapértelmezés szerinti legnagyobb verziót használja majd, amely a TLSv1.3.
-
-      Ellenkező esetben előfordulhat, hogy a következő értékek egyike lesz beállítva: „tls1.2” vagy „tls1.3”. Ha beállítja a házirendet, a(z) <ph name="PRODUCT_NAME" /> nem használ majd a megadottnál magasabb verziószámú SSL/TLS-verziót. Az ismeretlen értékeket a rendszer figyelmen kívül hagyja.</translation>
 <translation id="7040229947030068419">Példaérték:</translation>
 <translation id="7049373494483449255">Engedélyezi, hogy a(z) <ph name="PRODUCT_NAME" /> dokumentumokat küldjön nyomtatásra a(z) <ph name="CLOUD_PRINT_NAME" /> programnak. MEGJEGYZÉS: Ez csak a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatásnak a(z) <ph name="PRODUCT_NAME" /> programban történő támogatását érinti. Nem akadályozza meg a felhasználókat abban, hogy webhelyekről küldjenek nyomtatási feladatokat. Ha a beállítás le van tiltva vagy konfigurálatlanul marad, akkor a felhasználók a <ph name="PRODUCT_NAME" /> nyomtatási párbeszédpanelból nyomtathatnak a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatásban. Ha a beállítás le van tiltva, akkor a felhasználók nem nyomtathatnak a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatásban a(z) <ph name="PRODUCT_NAME" /> nyomtatási párbeszédpanelről</translation>
 <translation id="7053678646221257043">Ez a házirend engedélyezése esetén kikényszeríti a könyvjelzők importálását a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Letiltása esetén a könyvjelzők importálása nem történik meg. Ha nincs konfigurálva, akkor az alapértelmezett viselkedés marad használatban. Ha nincs beállítva, akkor a rendszer a felhasználótól kérdezheti meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>

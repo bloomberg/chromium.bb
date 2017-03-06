@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">Adreça 1</translation>
 <translation id="1545749641540134597">Escaneja el codi QR</translation>
 <translation id="1580783302095112590">Correu enviat.</translation>
-<translation id="1634828734222219955">Total</translation>
 <translation id="1646446875146297738">En activar l'opció de no seguiment, s'inclourà una sol·licitud amb el trànsit de navegació. Que tingui efecte o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta la sol·licitud. 
 
 Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web us mostrin anuncis que no estan basats en altres llocs web que heu visitat. Molts llocs web continuaran recopilant i utilitzant les vostres dades de navegació per, per exemple, millorar la seguretat, proporcionar contingut, serveis, anuncis i recomanacions sobre els seus llocs web i generar estadístiques d'informes. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="1809939268435598390">Suprimeix la carpeta</translation>
 <translation id="1813414402673211292">Esborra dades navegació</translation>
 <translation id="1820259098641718022">S'ha afegit a la llista de lectura</translation>
-<translation id="1826516787628120939">S'està comprovant</translation>
-<translation id="1842969606798536927">Pagament</translation>
 <translation id="1876721852596493031">Envia les dades d'ús</translation>
 <translation id="1886928167269928266">Des de l'inici</translation>
 <translation id="1894451531427596130">Controleu-ne el funcionament a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" /></translation>
@@ -62,7 +59,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="1952728750904661634">Inicieu la sessió amb un compte gestionat</translation>
 <translation id="1974060860693918893">Configuració avançada</translation>
 <translation id="1989112275319619282">Examina</translation>
-<translation id="2054511809411770085">Codi QR o de barres</translation>
 <translation id="2068952045031577364">La darrera setmana</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="209018056901015185">Mostra com a ordinador</translation>
@@ -192,7 +188,6 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="4875622588773761625">Voleu que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la vostra contrasenya per a aquest lloc?</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4904877109095351937">Marca com a llegit</translation>
-<translation id="4923459931733593730">Pagament</translation>
 <translation id="4930268273022498155">Suprimeix les dades existents. Per recuperar-les, torna a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">S'ha produït un problema en compartir el vostre element.</translation>
 <translation id="4979397965658815378">Inicieu la sessió amb el compte de Google per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
@@ -208,7 +203,6 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5198972191746488848">Afegeix una targeta…</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
 <translation id="5244474230056479698">S'està sincronitzant amb <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Mostra</translation>
@@ -251,7 +245,6 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6042308850641462728">Més</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Toca per cancel·lar.</translation>
 <translation id="60851516108411750">La llista de lectura està disponible sense connexió. Per afegir-hi una pàgina, toca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">En línia</translation>
@@ -284,7 +277,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6418346271604475326">Preparant el PDF</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Missatge enviat.</translation>
-<translation id="6456339708790392414">El teu pagament</translation>
 <translation id="6456425917241817154">Contrasenya generada per Chrome</translation>
 <translation id="6464071786529933911">Obre en una pestanya d'incògnit</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements suprimits</translation>
@@ -343,7 +335,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7765158879357617694">Desplaça</translation>
 <translation id="7769602470925380267">Accepta i tanca la sessió</translation>
 <translation id="7772032839648071052">Confirmeu la frase de contrasenya</translation>
-<translation id="7791543448312431591">Afegeix</translation>
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7851858861565204677">Altres dispositius</translation>
 <translation id="7859704718976024901">Historial de navegació</translation>
@@ -384,7 +375,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8654802032646794042">Cancel·la</translation>
 <translation id="8668210798914567634">Aquesta pàgina s'ha desat a la teva llista de lectura.</translation>
 <translation id="8680787084697685621">Les dades d'inici de sessió del compte no estan actualitzades.</translation>
-<translation id="8699098509676302392">Afegeix una adreça…</translation>
 <translation id="8721297211384281569">Menú Eines</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8730621377337864115">Fet</translation>
@@ -404,11 +394,9 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="9055772144595778347">No es pot iniciar la sessió</translation>
 <translation id="9065203028668620118">Edita</translation>
 <translation id="9079935439869366234">Marca-ho tot com a no llegit</translation>
-<translation id="9080712759204168376">Resum de la comanda</translation>
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="9148126808321036104">Torneu a iniciar la sessió</translation>
-<translation id="9154194610265714752">S'ha actualitzat.</translation>
 <translation id="9157836665414082580">Suprimeix quadres de diàleg</translation>
 <translation id="9188680907066685419">Tanqueu la sessió del compte gestionat</translation>
 <translation id="9203116392574189331">Handoff</translation>

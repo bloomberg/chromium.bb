@@ -352,6 +352,7 @@
 <translation id="425582637250725228">系统可能不会保存您所做的更改。</translation>
 <translation id="4258748452823770588">签名无效</translation>
 <translation id="4269787794583293679">（无用户名）</translation>
+<translation id="4275830172053184480">重启您的设备</translation>
 <translation id="4280429058323657511">，到期日期：<ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Google 安全浏览功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />发现有害程序<ph name="END_LINK" />。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="4300246636397505754">家长建议</translation>
@@ -551,6 +552,7 @@
 <translation id="6443118737398455446">过期日期无效</translation>
 <translation id="6446608382365791566">添加更多信息</translation>
 <translation id="6451458296329894277">确认重新提交表单</translation>
+<translation id="6456339708790392414">您的付款</translation>
 <translation id="6458467102616083041">由于默认搜索被政策停用，政策值已被忽略。</translation>
 <translation id="6462969404041126431">此服务器无法证明其所在网域是 <ph name="DOMAIN" />；服务器的安全证书可能遭到撤消。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="647261751007945333">设备政策</translation>
@@ -686,6 +688,7 @@
 <translation id="7755287808199759310">您的父亲/母亲可为您取消屏蔽此网站</translation>
 <translation id="7758069387465995638">防火墙或防病毒软件可能已阻止您连接到网络。</translation>
 <translation id="7761701407923456692">服务器的证书与网址不相符。</translation>
+<translation id="7764225426217299476">添加地址</translation>
 <translation id="777702478322588152">县</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="7793809570500803535">网址为 <ph name="SITE" /> 的网页可能暂时无法连接或已永久性地移动到了新网址。</translation>
@@ -790,6 +793,7 @@
 <translation id="8932102934695377596">您的时钟慢了</translation>
 <translation id="8954894007019320973">（续）</translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
+<translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">您要访问的网站包含有害程序</translation>

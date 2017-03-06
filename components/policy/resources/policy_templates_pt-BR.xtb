@@ -992,9 +992,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
          Se não está definida como "false", os usuários podem transferir arquivos para o Google Drive.</translation>
 <translation id="3915395663995367577">URL de um arquivo proxy .pac</translation>
-<translation id="3926940573869375969">Configura quais layouts de teclado são permitidos na tela de login do <ph name="PRODUCT_OS_NAME" />.
-
-      Se esta política for configurada como uma lista de identificadores de método de entrada, os métodos de entrada definidos ficarão disponíveis na tela de login. O primeiro método de entrada definido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o método de entrada menos usado recentemente do usuário ficará disponível juntamente com os métodos de entrada determinados por esta política.  Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade na qual a tela de login é exibida.  Os valores que não são identificadores de métodos de entrada válidos serão ignorados.</translation>
 <translation id="3939893074578116847">Enviar pacotes de rede ao servidor de gerenciamento para monitorar o status on-line, a fim de permitir
       que o servidor detecte se o dispositivo está off-line.
 
@@ -1926,11 +1923,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7027785306666625591">Configura o gerenciamento de energia no <ph name="PRODUCT_OS_NAME" />.
 
       Essas políticas permitem configurar a forma como o <ph name="PRODUCT_OS_NAME" /> se comporta quando o usuário permanece inativo por um período de tempo específico.</translation>
-<translation id="703078280527762319">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 66 (aproximadamente em fevereiro de 2018).
-
-      Se essa política não for configurada, o <ph name="PRODUCT_NAME" /> usará uma versão máxima padrão, que é TLSv1.3.
-
-      Caso contrário, ela poderá ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS maiores que a versão especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="7040229947030068419">Exemplo de valor:</translation>
 <translation id="7049373494483449255">Permite que <ph name="PRODUCT_NAME" /> envie documentos a <ph name="CLOUD_PRINT_NAME" /> para impressão. OBSERVAÇÃO: isto só afeta o suporte do <ph name="CLOUD_PRINT_NAME" /> no <ph name="PRODUCT_NAME" />. Isto não impede que usuários enviem trabalhos de impressão em websites. Se esta configuração for ativada ou não configurada, os usuários podem imprimir no <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />. Se esta configuração for desativada, os usuários não poderão imprimir no <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Se ativada, esta política força a importação dos favoritos a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum favorito é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou a importação pode ocorrer automaticamente.</translation>

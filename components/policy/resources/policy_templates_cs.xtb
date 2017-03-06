@@ -1002,9 +1002,6 @@ Pokud je toto nastavení ponecháno nenakonfigurované, nebudou ohledně přijat
 
           Pokud má tato zásada hodnotu False nebo není nastavena, uživatelé budou moci přenášet soubory na Disk Google.</translation>
 <translation id="3915395663995367577">Adresa URL souboru PAC proxy serveru</translation>
-<translation id="3926940573869375969">Konfiguruje, která rozložení klávesnic jsou povolena na přihlašovací obrazovce systému <ph name="PRODUCT_OS_NAME" />.
-
-      Je-li tato zásada nastavena na seznam metod zadávání, budou na přihlašovací obrazovce k dispozici příslušné metody zadávání. První metoda zadávání bude předvybrána. Když je na přihlašovací obrazovce zakliknut profil konkrétního uživatele, bude kromě metod zadávání definovaných touto zásadou k dispozici také metoda zadávání, kterou uživatel naposledy použil. Pokud tato zásada není nastavena, metody zadávání na přihlašovací obrazovce budou vycházet z jazyka, ve kterém se zobrazuje přihlašovací obrazovka. Hodnoty, které nejsou platnými identifikátory metod zadávání budou ignorovány.</translation>
 <translation id="3939893074578116847">Odesílá na server správy síťové pakety ke sledování stavu online, což serveru umožňuje zjistit, zda zařízení není offline.
 
       Je-li tato zásada nastavena na hodnotu True, budou se odesílat sledovací síťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
@@ -1973,11 +1970,6 @@ Přečtěte si také o zásadě RemoteAccessHostClientDomain.</translation>
 <translation id="7027785306666625591">Konfiguruje správu napájení v systému <ph name="PRODUCT_OS_NAME" />.
 
       Tato zásada umožňuje konfigurovat chování systému <ph name="PRODUCT_OS_NAME" /> po určité době nečinnosti uživatele.</translation>
-<translation id="703078280527762319">Upozornění: Přibližně od verze 66 (cca v únoru 2018) bude zásada maximální verze TLS z prohlížeče <ph name="PRODUCT_NAME" /> zcela odebrána.
-
-      Pokud tato zásada není nakonfigurována, bude <ph name="PRODUCT_NAME" /> používat výchozí maximální verzi, což je TLS verze 1.3.
-
-      Zásadu lze nastavit na jednu z následujících hodnot: tls1.2 nebo tls1.3. Když je nastavena, <ph name="PRODUCT_NAME" /> nebude používat verze SSL/TLS vyšší, než je zadaná verze. Nerozpoznané hodnoty budou ignorovány.</translation>
 <translation id="7040229947030068419">Ukázková hodnota:</translation>
 <translation id="7049373494483449255">Aktivuje v aplikaci <ph name="PRODUCT_NAME" /> odesílání dokumentů k tisku do služby <ph name="CLOUD_PRINT_NAME" />. POZNÁMKA: Zásada ovlivní pouze podporu služby <ph name="CLOUD_PRINT_NAME" /> v aplikaci <ph name="PRODUCT_NAME" />. Nezabraňuje uživatelům v odesílání tiskových úloh na webových stránkách.
 

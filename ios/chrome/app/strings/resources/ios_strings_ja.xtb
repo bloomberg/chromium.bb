@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">住所1行目</translation>
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
 <translation id="1580783302095112590">メールを送信しました。</translation>
-<translation id="1634828734222219955">合計</translation>
 <translation id="1646446875146297738">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがそのリクエストに応じるかどうか、およびそのリクエストがどのように解釈されるかによって異なります。
 
 たとえば、一部のウェブサイトでは、その閲覧者のウェブサイト アクセス履歴を基にした広告表示を行わない、という対応をしています。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。たとえば、セキュリティの強化、コンテンツ、サービス、広告、ウェブサイトのおすすめ情報の提供、レポート統計情報の作成などにこれらのデータが利用されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@
 <translation id="1809939268435598390">フォルダーを削除</translation>
 <translation id="1813414402673211292">閲覧履歴の消去</translation>
 <translation id="1820259098641718022">リーディング リストに追加しました</translation>
-<translation id="1826516787628120939">確認中</translation>
-<translation id="1842969606798536927">お支払い</translation>
 <translation id="1876721852596493031">使用状況データ送信</translation>
 <translation id="1886928167269928266">始めから</translation>
 <translation id="1894451531427596130">[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] でこの動作を管理します</translation>
@@ -62,7 +59,6 @@
 <translation id="1952728750904661634">管理対象アカウントでログインする</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1989112275319619282">閲覧</translation>
-<translation id="2054511809411770085">QR コードまたはバーコード</translation>
 <translation id="2068952045031577364">過去 1 週間</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
@@ -192,7 +188,6 @@
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> でこのサイトのパスワードを更新しますか？</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4904877109095351937">既読にする</translation>
-<translation id="4923459931733593730">お支払い</translation>
 <translation id="4930268273022498155">既存のデータを削除します。<ph name="USER_EMAIL1" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="4941089862236492464">アイテムの共有中に問題が発生しました。</translation>
 <translation id="4979397965658815378">Google アカウントでログインすると、どの端末からでも同じブックマーク、パスワード、履歴などの設定を利用できるようになります。</translation>
@@ -208,7 +203,6 @@
 <translation id="5186185447130319458">プライベート接続</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="5197255632782567636">インターネット</translation>
-<translation id="5198972191746488848">カードを追加...</translation>
 <translation id="5228579091201413441">同期を有効にする</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> に同期しています</translation>
 <translation id="5300589172476337783">表示</translation>
@@ -251,7 +245,6 @@
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6042308850641462728">詳細表示</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">タップしてキャンセルします。</translation>
 <translation id="60851516108411750">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> をタップします。</translation>
 <translation id="6122191549521593678">オンライン</translation>
@@ -284,7 +277,6 @@
 <translation id="6418346271604475326">PDF を準備しています</translation>
 <translation id="6445051938772793705">国</translation>
 <translation id="6445981559479772097">メッセージ送信完了。</translation>
-<translation id="6456339708790392414">お支払い</translation>
 <translation id="6456425917241817154">自動生成パスワード</translation>
 <translation id="6464071786529933911">新しいシークレット タブで開く</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を削除しました</translation>
@@ -343,7 +335,6 @@
 <translation id="7765158879357617694">移動</translation>
 <translation id="7769602470925380267">同意してログアウトする</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
-<translation id="7791543448312431591">追加</translation>
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7851858861565204677">その他のデバイス</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
@@ -384,7 +375,6 @@
 <translation id="8654802032646794042">キャンセル</translation>
 <translation id="8668210798914567634">このページはリーディング リストに保存されています。</translation>
 <translation id="8680787084697685621">アカウントのログイン情報が古くなっています。</translation>
-<translation id="8699098509676302392">住所を追加...</translation>
 <translation id="8721297211384281569">ツールメニュー</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>
@@ -404,11 +394,9 @@
 <translation id="9055772144595778347">ログインできない</translation>
 <translation id="9065203028668620118">編集</translation>
 <translation id="9079935439869366234">すべて未読にする</translation>
-<translation id="9080712759204168376">ご注文の概要</translation>
 <translation id="9083392325882095631">1個のアイテム</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
-<translation id="9154194610265714752">更新完了</translation>
 <translation id="9157836665414082580">ダイアログを表示しない</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9203116392574189331">Handoff</translation>

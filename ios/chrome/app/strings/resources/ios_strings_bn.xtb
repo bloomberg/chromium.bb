@@ -36,7 +36,6 @@
 <translation id="1540800554400757039">ঠিকানা ১</translation>
 <translation id="1545749641540134597">QR কোড স্ক্যান করুন</translation>
 <translation id="1580783302095112590">মেল পাঠানো হয়েছে৷</translation>
-<translation id="1634828734222219955">মোট</translation>
 <translation id="1646446875146297738">‘ট্র্যাক করবেন না’ সক্ষম করার মানে হল যে আপনার ব্রাউজিং ট্রাফিকের সাথে একটি অনুরোধ অন্তর্ভুক্ত করা হবে৷ একটি ওয়েবসাইট অনুরোধটিতে সাড়া দেবে কিনা এবং কিভাবে অনুরোধটিকে ব্যাখ্যা করে তার উপর যেকোনো ফল নির্ভর করে৷
 
 উদাহরণস্বরূপ, কিছু কিছু ওয়েবসাইট আপনার পরিদর্শন করা অন্যান্য ওয়েবসাইটগুলির উপর ভিত্তি না করে বিজ্ঞাপনগুলি দেখানোর মাধ্যমে এই অনুরোধটিতে প্রতিক্রিয়া জানাতে পারে৷ এমনও অনেক ওয়েবসাইট রয়েছে যা তা সত্বেও আপনার ব্রাউজিং ডেটা সংগ্রহ এবং ব্যবহার করবে - উদাহরণস্বরূপ, তাদের ওয়েবসাইটগুলির নিরাপত্তা ব্যবস্থার উন্নতি ঘটাতে, সামগ্রী, পরিষেবা, বিজ্ঞাপন এবং প্রস্তাবগুলি সরবরাহ করতে এবং প্রতিবেদনের পরিসংখ্যান তৈরি করতে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
@@ -52,8 +51,6 @@
 <translation id="1809939268435598390">ফোল্ডার মুছুন</translation>
 <translation id="1813414402673211292">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="1820259098641718022">পড়ার তালিকায় যোগ করা হয়েছে</translation>
-<translation id="1826516787628120939">চেক করা হচ্ছে</translation>
-<translation id="1842969606798536927">অর্থ প্রদান করুন</translation>
 <translation id="1876721852596493031">ব্যবহারের ডেটা পাঠান</translation>
 <translation id="1886928167269928266">শুরুর সময়</translation>
 <translation id="1894451531427596130">এটি কিভাবে কাজ করে তা <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> থেকে নিয়ন্ত্রণ করুন</translation>
@@ -62,7 +59,6 @@
 <translation id="1952728750904661634">পরিচালিত অ্যাকাউন্ট দিয়ে প্রবেশ করুন</translation>
 <translation id="1974060860693918893">উন্নত</translation>
 <translation id="1989112275319619282">ব্রাউজ করুন</translation>
-<translation id="2054511809411770085">QR কোড বা বারকোড</translation>
 <translation id="2068952045031577364">গত সপ্তাহ</translation>
 <translation id="2079545284768500474">পূর্বাবস্থায় ফিরুন</translation>
 <translation id="209018056901015185">ডেস্কটপ সাইট অনুরোধ করুন</translation>
@@ -192,7 +188,6 @@
 <translation id="4875622588773761625">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড আপডেট করুক?</translation>
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4904877109095351937">পঠিত হিসেবে চিহ্নিত করুন</translation>
-<translation id="4923459931733593730">অর্থপ্রদান</translation>
 <translation id="4930268273022498155">বিদ্যমান ডেটা মুছুন। আপনি <ph name="USER_EMAIL1" /> এ ফিরে গিয়ে এটি পুনরুদ্ধার করতে পারেন।</translation>
 <translation id="4941089862236492464">দুঃখিত, আপনার জিনিস শেয়ার করার সময় একটা সমস্যা ছিল।</translation>
 <translation id="4979397965658815378">আপনার সকল ডিভাইসে আপনার বুকমার্ক, পাসওয়ার্ড, ইতিহাস এবং অন্যান্য সেটিংস পেতে আপনার Google অ্যাকাউন্টে প্রবেশ করুন</translation>
@@ -208,7 +203,6 @@
 <translation id="5186185447130319458">ব্যক্তিগত</translation>
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
 <translation id="5197255632782567636">ইন্টারনেট</translation>
-<translation id="5198972191746488848">কার্ড যোগ করুন...</translation>
 <translation id="5228579091201413441">সিঙ্ক সক্ষম করুন</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> এ সিঙ্ক হচ্ছে</translation>
 <translation id="5300589172476337783">দেখান</translation>
@@ -252,7 +246,6 @@
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6042308850641462728">আরো</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">বাতিল করতে আলতো চাপুন৷</translation>
 <translation id="60851516108411750">আপনার পড়ার তালিকা অফলাইনে উপলব্ধ। আপনার পড়ার তালিকায় কোনো পৃষ্ঠা যোগ করতে <ph name="SHARE_OPENING_ICON" /> আলতো চাপুন।</translation>
 <translation id="6122191549521593678">অনলাইন</translation>
@@ -285,7 +278,6 @@
 <translation id="6418346271604475326">PDF প্রস্তুত হচ্ছে</translation>
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="6445981559479772097">বার্তা পাঠানো হয়েছে৷</translation>
-<translation id="6456339708790392414">আপনার অর্থপ্রদান</translation>
 <translation id="6456425917241817154">Chrome দ্বারা সৃষ্ট পাসওয়ার্ড</translation>
 <translation id="6464071786529933911">নতুন ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম মোছা হয়েছে</translation>
@@ -344,7 +336,6 @@
 <translation id="7765158879357617694">সরান</translation>
 <translation id="7769602470925380267">স্বীকার করে প্রস্থান করুন</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
-<translation id="7791543448312431591">যুক্ত করুন</translation>
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7851858861565204677">অন্যান্য ডিভাইস</translation>
 <translation id="7859704718976024901">ব্রাউজিং ইতিহাস</translation>
@@ -385,7 +376,6 @@
 <translation id="8654802032646794042">বাতিল করুন</translation>
 <translation id="8668210798914567634">এই পৃষ্ঠাটি আপনার পড়ার তালিকায় সংরক্ষণ করা হয়েছে।</translation>
 <translation id="8680787084697685621">অ্যাকাউন্ট সাইন-ইন বিশদ তারিখ সীমার বাইরে৷</translation>
-<translation id="8699098509676302392">ঠিকানা যোগ করুন...</translation>
 <translation id="8721297211384281569">সরঞ্জাম মেনু</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8730621377337864115">সম্পন্ন হয়েছে</translation>
@@ -405,11 +395,9 @@
 <translation id="9055772144595778347">প্রবেশ করা যাচ্ছে না</translation>
 <translation id="9065203028668620118">সম্পাদনা</translation>
 <translation id="9079935439869366234">সমস্ত অপঠিত হিসেবে চিহ্নিত করুন</translation>
-<translation id="9080712759204168376">অর্ডারের সারসংক্ষেপ</translation>
 <translation id="9083392325882095631">১টি আইটেম</translation>
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
-<translation id="9154194610265714752">আপডেট রয়েছে</translation>
 <translation id="9157836665414082580">ডায়ালগ রুদ্ধ করুন</translation>
 <translation id="9188680907066685419">পরিচালিত অ্যাকাউন্ট থেকে প্রস্থান করুন</translation>
 <translation id="9203116392574189331">Handoff</translation>

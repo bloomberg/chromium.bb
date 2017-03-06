@@ -355,6 +355,7 @@
 <translation id="425582637250725228">Wprowadzone zmiany mogą nie zostać zapisane.</translation>
 <translation id="4258748452823770588">Nieprawidłowy podpis</translation>
 <translation id="4269787794583293679">(Brak nazwy użytkownika)</translation>
+<translation id="4275830172053184480">Zrestartuj urządzenie</translation>
 <translation id="4280429058323657511">, ważna do: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Bezpieczne przeglądanie Google ostatnio <ph name="BEGIN_LINK" />wykryło szkodliwe programy<ph name="END_LINK" /> na <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">Propozycje rodziców</translation>
@@ -555,6 +556,7 @@
 <translation id="6443118737398455446">Data ważności jest nieprawidłowa</translation>
 <translation id="6446608382365791566">Dodaj więcej informacji</translation>
 <translation id="6451458296329894277">Potwierdź ponowne przesłanie formularza</translation>
+<translation id="6456339708790392414">Twoja płatność</translation>
 <translation id="6458467102616083041">Ignorowana, ponieważ wyszukiwarka domyślna jest wyłączona przez zasadę.</translation>
 <translation id="6462969404041126431">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat mógł zostać unieważniony. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Zasady dotyczące urządzeń</translation>
@@ -690,6 +692,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="7755287808199759310">Może ją dla Ciebie odblokować Twój rodzic</translation>
 <translation id="7758069387465995638">Połączenie mogło zostać zablokowane przez zaporę sieciową lub program antywirusowy.</translation>
 <translation id="7761701407923456692">Certyfikat serwera jest niezgodny z adresem URL.</translation>
+<translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="7793809570500803535">Strona <ph name="SITE" /> może być tymczasowo niedostępna lub została na stałe przeniesiona pod nowy adres internetowy.</translation>
@@ -793,6 +796,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8932102934695377596">Twój zegar się spóźnia</translation>
 <translation id="8954894007019320973">(cd.)</translation>
 <translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>
+<translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="8987927404178983737">Miesiąc</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Na następnej stronie znajdują się szkodliwe programy</translation>

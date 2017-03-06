@@ -1042,9 +1042,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           Isipowekwa au ikiwekwa kuwa Sivyo, basi watumiaji wataweza kuhamisha faili kwenye Hifadhi ya Google.</translation>
 <translation id="3915395663995367577">URL hadi proksi ya faili ya .pac</translation>
-<translation id="3926940573869375969">Huweka mipangilio ya miundo ya kibodi inayoruhusiwa kwenye skrini ya kuingia katika kifaa cha <ph name="PRODUCT_OS_NAME" />.
-
-      Sera hii ikiweka kuwa orodha ya vitambulishi vya mbinu ya kuingiza data, mbinu husika za kuingiza data zitapatikana kwenye skrini ya kuingia katika kifaa. Mbinu ya kwanza ya kuingiza data itachaguliwa. Wakati podi ya mtumiaji inapolenga skrini ya kuingia katika kifaa, mbinu ya kuingiza data ya mtumiaji iliyotumiwa mara chache zaidi hivi majuzi itapatikana kando na mbinu za kuingiza data zilizotolewa na sera hiii.  Sera hii isipowekwa, mbinu za kuingiza data zilizo kwenye skrini ya kuingia katika kifaa zitatolewa kwenye lugha ambayo imetumiwa kuonyesha skrini ya kuingia katika kifaa.  Thamani ambazo si vitambulisho sahihi vya mbinu za kuingiza data zitapuuzwa.</translation>
 <translation id="3939893074578116847">Tuma vifurushi vya mtandao kwenye seva ya udhibiti ili kufuatilia hali ya mtandaoni, ili kuruhusu
       seva igundue kama kifaa kiko nje ya mtandao.
 
@@ -2044,11 +2041,6 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
 <translation id="7027785306666625591">Sanidi udhibiti wa nishati katika <ph name="PRODUCT_OS_NAME" />.
 
       Sera hizi zinakuwezesha kusanidi jinsi <ph name="PRODUCT_OS_NAME" /> hufanya kazi mtumiaji anapokuwa hana shughuli kwa muda fulani.</translation>
-<translation id="703078280527762319">Onyo: Sera ya kiwango cha juu cha toleo la TLS itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> takriban matoleo 66 (katika mwezi wa Februari 2018 hivi).
-
-      Ikiwa sera hii haijawekwa, basi <ph name="PRODUCT_NAME" /> itatumia toleo la kiwango cha juu chaguo-msingi ambacho ni TLSv1.3.
-
-      La sivyo, huenda ikawekwa kwenye mojawapo ya thamani zifuatazo: "tls1.2" au "tls1.3". Ikiwekwa, <ph name="PRODUCT_NAME" /> haitatumia matoleo ya SSL/TLS ambayo ni makubwa zaidi ya toleo lililobainishwa. Thamani isiyotambuliwa itapuuzwa.</translation>
 <translation id="7040229947030068419">Thamani ya mfano:</translation>
 <translation id="7049373494483449255">Inawezesha <ph name="PRODUCT_NAME" /> kuwasilisha nyaraka kwenye <ph name="CLOUD_PRINT_NAME" /> ili kuchapishwa.  KUMBUKA: Hii inaathiri tu msaada wa <ph name="CLOUD_PRINT_NAME" /> katika <ph name="PRODUCT_NAME" />.  Haizuii watumiaji kuwasilisha kazi zilizochapishwa kwenye tovuti.
 

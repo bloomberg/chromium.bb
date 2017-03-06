@@ -355,6 +355,7 @@
 <translation id="425582637250725228">Spremembe, ki ste jih naredili, morda niso shranjene.</translation>
 <translation id="4258748452823770588">Napačen podpis</translation>
 <translation id="4269787794583293679">(Ni uporabniškega imena)</translation>
+<translation id="4275830172053184480">Znova zaženite napravo.</translation>
 <translation id="4280429058323657511">, datum poteka veljavnosti: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Googlova funkcija varnega brskanja je na spletnem mestu <ph name="SITE" /> nedavno <ph name="BEGIN_LINK" />odkrila škodljive programe<ph name="END_LINK" />. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">Predlogi staršev</translation>
@@ -555,6 +556,7 @@
 <translation id="6443118737398455446">Datum poteka ni veljaven</translation>
 <translation id="6446608382365791566">Dodajanje več podatkov</translation>
 <translation id="6451458296329894277">Potrdite ponovno pošiljanje obrazca</translation>
+<translation id="6456339708790392414">Plačilo</translation>
 <translation id="6458467102616083041">Prezrto, ker je pravilnik onemogočil privzeto iskanje.</translation>
 <translation id="6462969404041126431">Temu strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda preklicano. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Pravilniki za naprave</translation>
@@ -690,6 +692,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7755287808199759310">Starš ga lahko odblokira</translation>
 <translation id="7758069387465995638">Povezavo je morda blokiral požarni zid ali protivirusni program.</translation>
 <translation id="7761701407923456692">Potrdilo strežnika se ne ujema z URL-jem.</translation>
+<translation id="7764225426217299476">Dodaj naslov</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="7793809570500803535">Spletna stran na <ph name="SITE" /> morda začasno ne deluje ali pa je trajno premaknjena na nov spletni naslov.</translation>
@@ -793,6 +796,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8932102934695377596">Ura zaostaja</translation>
 <translation id="8954894007019320973">(Nadalj.)</translation>
 <translation id="8971063699422889582">Potrdilo strežnika je poteklo.</translation>
+<translation id="8986494364107987395">Samodejno pošlji statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Pozor: Spletno mesto vsebuje škodljive programe.</translation>

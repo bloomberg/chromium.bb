@@ -1055,9 +1055,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
 Če ta možnost ni nastavljena ali je nastavljena na »False«, bodo uporabniki lahko prenesli datoteke v Google Drive.</translation>
 <translation id="3915395663995367577">URL za datoteko .pac v proxyju</translation>
-<translation id="3926940573869375969">Konfigurira, katere postavitve tipkovnice so dovoljene na zaslonu za prijavo brskalnika <ph name="PRODUCT_OS_NAME" />.
-
-      Če je ta pravilnik nastavljen na seznam identifikatorjev načinov vnosa, so dani načini vnosa na voljo na zaslonu za prijavo. Prvi dani način vnosa je vnaprej izbran. Medtem ko je sklop za uporabnika osredotočen na zaslon za prijavo, je poleg načinov vnosa, ki jih zagotavlja ta pravilnik, na voljo tudi način vnosa, ki ga je uporabnik uporabljal pred največ časa. Če ta pravilnik ni nastavljen, se načini vnosa na zaslonu za prijavo izpeljejo iz jezika, v katerem je prikazan zaslon za prijavo. Vrednosti, ki niso veljavni identifikatorji načinov vnosa, bodo prezrte.</translation>
 <translation id="3939893074578116847">Pošiljanje omrežnih paketov v strežnik za upravljanje zaradi spremljanja stanja povezave, tako da lahko
       strežnik zazna, ali ima naprava povezavo.
 
@@ -2081,11 +2078,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7027785306666625591">Konfigurira upravljanje porabe za <ph name="PRODUCT_OS_NAME" />.
 
       S temi pravilniki lahko nastavite, kaj naj <ph name="PRODUCT_OS_NAME" /> izvede, ko je uporabnik nedejaven nekaj časa.</translation>
-<translation id="703078280527762319">Opozorilo: pravilnik za najvišjo različico protokola TLS bo v celoti odstranjen iz izdelka <ph name="PRODUCT_NAME" /> okoli različice 66 (okoli februarja 2018).
-
-      Če ta pravilnik ni konfiguriran, <ph name="PRODUCT_NAME" /> uporabljata privzeto najvišjo različico, ki je TLSv1.3.
-
-      Sicer bo nastavljen na eno od teh vrednosti: »tls1.2« ali »tls1.3«. Če je nastavljen, izdelek <ph name="PRODUCT_NAME" /> ne bo uporabljal različic protokolov SSL/TLS, višjih od navedene različice. Neprepoznane vrednosti bodo prezrte.</translation>
 <translation id="7040229947030068419">Vzorčna vrednost:</translation>
 <translation id="7049373494483449255">Omogoča programu <ph name="PRODUCT_NAME" /> pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME" /> za tiskanje. OPOMBA: To vpliva le na podporo storitve <ph name="CLOUD_PRINT_NAME" /> v programu <ph name="PRODUCT_NAME" />. Uporabnikom ne preprečuje pošiljanja tiskalniških poslov na spletna mesta.
 

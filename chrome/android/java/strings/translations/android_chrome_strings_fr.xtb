@@ -33,7 +33,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1303671224831497365">Aucun appareil Bluetooth détecté</translation>
 <translation id="1326317727527857210">Connectez-vous à Chrome pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="1332501820983677155">Raccourcis liés aux fonctionnalités de Google Chrome</translation>
-<translation id="13410144310025252">Affichez-les dans Chrome.</translation>
 <translation id="1369915414381695676">Site "<ph name="SITE_NAME" />" ajouté</translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
 <translation id="1376578503827013741">Calcul…</translation>
@@ -88,6 +87,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="194341124344773587">Activer l'autorisation pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1944384637046898011">Tout chiffrer avec le mot de passe Google à compter du <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche et d'autres services Google.</translation>
 <translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1984937141057606926">Autorisés, sauf cookies tiers</translation>
@@ -104,7 +104,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2100273922101894616">Connexion automatique</translation>
 <translation id="2126426811489709554">Proposé par Chrome</translation>
 <translation id="213279576345780926">L'onglet "<ph name="TAB_TITLE" />" a été fermé.</translation>
-<translation id="2138201775715568214">Recherche de pages Web physique à proximité</translation>
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
 <translation id="2146738493024040262">Ouvrir l'appli instantanée</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
@@ -117,11 +116,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2315043854645842844">La sélection de certificat côté client n'est pas compatible avec le système d'exploitation.</translation>
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
 <translation id="2323763861024343754">Données de site stockées</translation>
-<translation id="2331464965008647960">Des appareils à proximité diffusent des pages Web via le Bluetooth. Chrome va rechercher les pages à proximité et les affichera lorsque vous réactiverez votre l'appareil. Ces pages seront analysées par un service Google pour améliorer la qualité des résultats.
-
-Vous pouvez contrôler les paramètres du Web physique dans les paramètres de Chrome.
-
-<ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Installation…</translation>
 <translation id="2346253980530904022">Les serveurs Google optimisent les pages que vous consultez, à l'exception des pages HTTPS et en mode navigation privée.</translation>
 <translation id="2349710944427398404">Espace de stockage utilisé pour l'ensemble des données Chrome, y compris les comptes, favoris et paramètres enregistrés</translation>
@@ -237,7 +231,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3662546969139119822">Aucun historique ici</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
 <translation id="3714981814255182093">Ouvrir la barre de recherche</translation>
-<translation id="3716158070938632480">Pages Web à proximité</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3739899004075612870">Favori ajouté dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Mo par d'autres applis</translation>
@@ -410,7 +403,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5517095782334947753">Vous disposez des favoris, de l'historique, des mots de passe et d'autres paramètres du compte <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5527082711130173040">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK1" />Modifiez les autorisations.<ph name="END_LINK1" /> De plus, l'accès aux données de localisation est <ph name="BEGIN_LINK2" />désactivé pour cet appareil<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Fermer onglets navig. privée</translation>
-<translation id="554327794654007401">Web physique</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5565871407246142825">Cartes de paiement</translation>
 <translation id="5578795271662203820">Rechercher l'image sur <ph name="SEARCH_ENGINE" /></translation>
@@ -562,7 +554,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7057058088140140610">Cartes de paiement et adresses utilisant Google Payments</translation>
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7063006564040364415">Impossible de se connecter au serveur de synchronisation.</translation>
-<translation id="7094922512924405309">Aucune page Web physique n'a été trouvée.</translation>
 <translation id="7128222689758636196">Autoriser l'accès pour le moteur de recherche actuel</translation>
 <translation id="7138678301420049075">Autre</translation>
 <translation id="7180611975245234373">Actualiser</translation>
@@ -635,6 +626,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="7987073022710626672">Conditions d'utilisation de Chrome</translation>
 <translation id="7998918019931843664">Rouvrir un onglet fermé</translation>
 <translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales, y compris les cookies, et réinitialiser toutes les autorisations pour ce site Web ?</translation>
+<translation id="8004582292198964060">Navigateur</translation>
 <translation id="8007176423574883786">Désactivée pour cet appareil</translation>
 <translation id="8008818777654712271">Envoyer automatiquement des informations système et du contenu de page à Google afin de faciliter la détection d'applications et de sites dangereux</translation>
 <translation id="8015452622527143194">Rétablir taille par défaut des éléments de la page</translation>
@@ -716,7 +708,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8909135823018751308">Partager…</translation>
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8920114477895755567">En attente des coordonnées des parents…</translation>
-<translation id="8931159598799892500">Chrome et le Web physique</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Ouvrir dans une autre fenêtre</translation>
 <translation id="8951232171465285730">Chrome vous a permis de gagner <ph name="MEGABYTES" /> Mo</translation>
@@ -741,7 +732,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9139068048179869749">Demander avant d'autoriser des sites à envoyer des notifications (recommandé)</translation>
-<translation id="917685106653909562">Pages Web physique à proximité</translation>
 <translation id="9187199695613236444">Affichage adapté au mobile</translation>
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9206873250291191720">A</translation>
@@ -758,4 +748,5 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="981121421437150478">Hors connexion</translation>
 <translation id="982182592107339124">Cette opération entraînera la suppression des informations concernant tous les sites, y compris :</translation>
 <translation id="983192555821071799">Fermer tous les onglets</translation>
+<translation id="987264212798334818">Général</translation>
 </translationbundle>

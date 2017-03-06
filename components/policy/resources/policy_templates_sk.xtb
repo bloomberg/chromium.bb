@@ -1030,9 +1030,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Ak toto pravidlo nie je nastavené alebo ak je nastavené na hodnotu False, používatelia budú môcť prenášať súbory na Disk Google.</translation>
 <translation id="3915395663995367577">Webová adresa súboru PAC servera proxy</translation>
-<translation id="3926940573869375969">Konfiguruje, ktoré rozloženia klávesníc sú povolené na prihlasovacej obrazovke systému <ph name="PRODUCT_OS_NAME" />.
-
-      Ak je pravidlo nastavené na zoznam metód vstupu, budú na prihlasovacej obrazovke k dispozícii príslušné metódy vstupu. Vopred vybratá bude prvá uvedená metóda vstupu. Keď je na prihlasovacej obrazovke zameraná sekcia konkrétneho používateľa, bude okrem metód vstupu definovaných týmto pravidlom k dispozícii tiež metóda vstupu, ktorú používateľ naposledy použil. Ak toto pravidlo nie je nastavené, metódy vstupu na prihlasovacej obrazovke budú vychádzať z jazyka, v ktorom sa zobrazuje prihlasovacia obrazovka. Hodnoty, ktoré nie sú platnými identifikátormi metód vstupu, sa budú ignorovať.</translation>
 <translation id="3939893074578116847">Odosielanie sieťových paketov na správcovský server s cieľom sledovania online stavu, ktoré umožní
        serveru zistiť, či je zariadenie v režime offline.
 
@@ -2053,11 +2050,6 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7027785306666625591">Konfiguruje správu napájania v systéme <ph name="PRODUCT_OS_NAME" />.
 
       Tieto pravidlá vám umožňujú nakonfigurovať, ako sa systém <ph name="PRODUCT_OS_NAME" /> správa po určitej dobe nečinnosti používateľa.</translation>
-<translation id="703078280527762319">Upozornenie: Približne od verzie 66 (cca vo februári 2018) bude pravidlo maximálnej verzie TLS z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránené.
-
-      Ak toto pravidlo nie je nakonfigurované, použije prehliadač <ph name="PRODUCT_NAME" /> predvolenú maximálnu verziu (TLSv1.3).
-
-      V opačnom prípade ho môžete nastaviť na jednu z nasledujúcich hodnôt: „tls1.2“ alebo „tls1.3“. Ak túto hodnotu nastavíte, prehliadač <ph name="PRODUCT_NAME" /> nepoužije protokol SSL alebo TLS vo vyššej ako zadanej verzii. Nerozpoznaná hodnota sa bude ignorovať.</translation>
 <translation id="7040229947030068419">Vzorová hodnota:</translation>
 <translation id="7049373494483449255">Povoľuje prehliadaču <ph name="PRODUCT_NAME" /> odosielať dokumenty na tlač do služby <ph name="CLOUD_PRINT_NAME" />. Poznámka: Toto pravidlo sa týka len podpory služby <ph name="CLOUD_PRINT_NAME" /> v prehliadači <ph name="PRODUCT_NAME" />. To však používateľom nebráni v tom, aby odosielali tlačové úlohy na webových stránkach.
 

@@ -1054,9 +1054,6 @@
 
           Jei nenustatyta arba nustatyta kaip „false“, naudotojai galės perkelti failus į „Google“ diską.</translation>
 <translation id="3915395663995367577">URL, siejantis su tarpinio serverio .pac failu</translation>
-<translation id="3926940573869375969">Konfigūruojama, kokie klaviatūros išdėstymai leidžiami „<ph name="PRODUCT_OS_NAME" />“ prisijungimo ekrane.
-
-      Jei ši politika nustatyta į įvesties metodo identifikatorių sąrašą, pateikti įvesties metodai bus pasiekiami prisijungimo ekrane. Pirmas pateiktas įvesties metodas bus pasirinktas iš anksto.  Kai naudotojas yra prisijungimo ekrane, be pagal šią politiką pasiekiamų metodų bus pasiekiamas ir seniausiai naudotas įvesties metodas. Jei ši politika nenustatyta, įvesties metodai prisijungimo ekrane bus gauti iš lokalės, kuria pateikiamas prisijungimo ekranas.  Bus nepaisoma verčių, kurios nėra galiojantys įvesties metodo identifikatoriai.</translation>
 <translation id="3939893074578116847">Siunčiami tinklo paketai į valdymo serverį, siekiant stebėti prisijungimo būseną, kad
       serveryje būtų aptikta, ar įrenginys prijungtas prie interneto.
 
@@ -2077,11 +2074,6 @@
 <translation id="7027785306666625591">Konfigūruoti energijos valdymą „<ph name="PRODUCT_OS_NAME" />“.
 
       Pagal šią politiką leidžiama konfigūruoti, kokius veiksmus atlieka „<ph name="PRODUCT_OS_NAME" />“, kai naudotojas tam tikrą laiką neatlieka jokių veiksmų.</translation>
-<translation id="703078280527762319">Įspėjimas: maks. TLS versijos politika bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ maždaug tada, kai bus pristatyta 66 versija (maždaug 2018 m. vasario mėn.).
-
-      Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudoja numatytosios maksimalios 1.3 versijos TLS.
-
-      Priešingu atveju gali būti nustatyta viena iš nurodytų verčių: „tls1.2“ arba „tls1.3“. Nustačius „<ph name="PRODUCT_NAME" />“ nenaudos naujesnių SSL / TLS versijų nei nurodyta versija. Neatpažįstamos vertės nebus paisoma.</translation>
 <translation id="7040229947030068419">Vertės pavyzdys:</translation>
 <translation id="7049373494483449255">Įgalinama „<ph name="PRODUCT_NAME" />“ pateikti dokumentus „<ph name="CLOUD_PRINT_NAME" />“, kad būtų spausdinami. PASTABA: tai turi įtakos tik palaikant „<ph name="CLOUD_PRINT_NAME" />“ „<ph name="PRODUCT_NAME" />“. Dėl to nėra draudžiama naudotojams pateikti spausdinimo darbų svetainėse.
 

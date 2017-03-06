@@ -1048,9 +1048,6 @@ Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, drošā mek
 
           Ja šis iestatījums nav iestatīts vai ir iestatīta vērtība Nepatiesa, lietotāji varēs pārsūtīt failus uz Google disku.</translation>
 <translation id="3915395663995367577">URL uz starpniekservera .pac failu</translation>
-<translation id="3926940573869375969">Tiek konfigurēts, kuri tastatūras izkārtojumi ir atļauti <ph name="PRODUCT_OS_NAME" /> pierakstīšanās ekrānā.
-
-      Ja šai politikai ir iestatīts saraksts ar ievades metožu identifikatoriem, norādītās ievades metodes būs pieejamas pierakstīšanās ekrānā. Pirmā norādītā ievades metode tiks priekšatlasīta. Kamēr lietotāja ierīce ir fokusēta uz pierakstīšanās ekrānu, papildus šajā politikā norādītajām metodēm būs pieejama lietotāja pēdējā izmantotā ievades metode. Ja šī politika nav iestatīta, pierakstīšanās ekrānā ievades metodes tiks izgūtas no lokalizācijas, kurā tiek rādīts pierakstīšanās ekrāns. Vērtības, kas nav derīgi ievades metožu identifikatori, tiks ignorētas.</translation>
 <translation id="3939893074578116847">Pārvaldības serverim tiek nosūtītas tīkla paketes tiešsaistes statusa pārraudzībai, lai
       serverī varētu noteikt, vai ierīce ir bezsaistē.
 
@@ -2034,11 +2031,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="7027785306666625591">Konfigurēt jaudas pārvaldību operētājsistēmā <ph name="PRODUCT_OS_NAME" />.
 
       Šīs politikas ļauj konfigurēt operētājsistēmas <ph name="PRODUCT_OS_NAME" /> darbību, ja lietotājs noteiktā laika periodā neveic nekādas darbības.</translation>
-<translation id="703078280527762319">Brīdinājums! Sākot ar <ph name="PRODUCT_NAME" /> versiju 66, maksimālā TLS versijas politika tiks pilnībā noņemta (pēc aptuveni 2018. gada februāra).
-
-      Ja šī politika nav konfigurēta, <ph name="PRODUCT_NAME" /> izmantos noklusējuma maksimālo versiju, t.i., TLSv1.3.
-
-      Pretējā gadījumā tai var tikt iestatīta viena no šīm vērtībām: “tls1.2” vai “tls1.3”. Kad attiecīgā politikas vērtība tiks iestatīta, <ph name="PRODUCT_NAME" /> neizmantos tādas SSL/TLS versijas, kuras ir jaunākas par norādīto versiju. Neatpazīta vērtība tiks ignorēta.</translation>
 <translation id="7040229947030068419">Vērtības piemērs:</translation>
 <translation id="7049373494483449255">Iespējo dokumentu iesniegšanu no <ph name="PRODUCT_NAME" /> pakalpojumā <ph name="CLOUD_PRINT_NAME" />. Piezīme: šis iestatījums ietekmē tikai <ph name="CLOUD_PRINT_NAME" /> atbalstu pakalpojumā <ph name="PRODUCT_NAME" />. Tas nenovērš iespēju lietotājiem iesniegt drukas darbus no vietnēm.
 

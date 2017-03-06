@@ -1046,9 +1046,6 @@
 
           설정하지 않거나 False로 설정하면 파일을 Google 드라이브에 전송할 수 있습니다.</translation>
 <translation id="3915395663995367577">proxy .pac 파일에 대한 URL</translation>
-<translation id="3926940573869375969"><ph name="PRODUCT_OS_NAME" /> 로그인 화면에서 허용되는 키보드 레이아웃을 구성합니다.
-
-      이 정책이 입력 방법 식별자 목록으로 설정되는 경우 주어진 입력 방법을 로그인 화면에서 사용할 수 있습니다. 첫 번째로 주어진 입력 수단이 사전 선택됩니다. 로그인 화면에서는 사용자 포드가 활성화되는데 이때 이 정책에서 주어진 입력 수단과 더불어 사용자가 가장 최근에 사용한 입력 수단을 사용할 수 있습니다. 이 정책이 설정되지 않은 경우 로그인 화면의 입력 수단은 로그인 화면이 표시되는 언어에서 가져옵니다. 유효한 입력 수단 식별자가 아닌 값은 무시됩니다.</translation>
 <translation id="3939893074578116847">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송하여
       기기가 오프라인일 때 서버에서 감지할 수 있도록 합니다.
 
@@ -2069,11 +2066,6 @@
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" />에서 전원 관리를 설정합니다.
 
       이 정책으로 사용자가 일정 시간 동안 유휴 상태일 때 <ph name="PRODUCT_OS_NAME" />에서 수행할 동작을 설정할 수 있습니다.</translation>
-<translation id="703078280527762319">경고: 최대 TLS 버전 정책이 <ph name="PRODUCT_NAME" /> 버전 66쯤에서 완전히 삭제됩니다(2018년 2월경).
-
-      이 정책을 구성하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최대 버전인 TLSv1.3이 사용됩니다.
-
-      정책을 구성하는 경우 'tls1.2'나 'tls1.3' 중 하나로 설정될 수 있습니다. 설정되면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 높은 SSL/TLS 버전이 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
 <translation id="7040229947030068419">예시:</translation>
 <translation id="7049373494483449255">문서를 <ph name="CLOUD_PRINT_NAME" />에 제출하여 인쇄하기 위해 <ph name="PRODUCT_NAME" />을(를) 사용하도록 설정합니다. 참고: 이 설정은 <ph name="PRODUCT_NAME" />의 <ph name="CLOUD_PRINT_NAME" /> 지원에만 영향을 미치며, 사용자는 웹사이트에서 인쇄 작업을 제출할 수 있습니다.
 

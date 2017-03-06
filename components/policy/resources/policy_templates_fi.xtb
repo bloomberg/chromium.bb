@@ -998,9 +998,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos arvoa ei ole asetettu tai se on epätosi, käyttäjät voivat siirtää tiedostoja Google Driveen.</translation>
 <translation id="3915395663995367577">Välityspalvelimen .pac-tiedoston URL-osoite</translation>
-<translation id="3926940573869375969">Määrittää näppäimistöasettelut, joita <ph name="PRODUCT_OS_NAME" /> voi käyttää kirjautumisnäytöllä.
-
-      Jos käytännön arvo on lista syöttötapatunnuksia, nämä syöttötavat ovat käytettävissä kirjautumisnäytöllä. Ensimmäinen annettu syöttötapa on valittuna ennalta. Kun kohdistus on käyttäjän tiedoissa kirjautumisnäytöllä, käyttäjän viimeksi käyttämä syöttötapa on käytettävissä tämän käytännön määrittämien syöttötapojen lisäksi. Jos käytäntöä ei ole määritetty, kirjautumisnäytön syöttötavat päätellään sen kieli- ja maa-asetuksesta. Jos arvo ei ole kelvollinen syöttötapatunnus, se ohitetaan.</translation>
 <translation id="3939893074578116847">Lähetä hallintapalvelimelle verkkopaketteja verkkotilan valvontaa varten,
       jotta palvelin voi havaita laitteen siirtymisen offline-tilaan.
 
@@ -1943,11 +1940,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7027785306666625591">Määritä tuotteen <ph name="PRODUCT_OS_NAME" /> virranhallinta.
 
       Näillä käytännöillä voit määrittää, miten <ph name="PRODUCT_OS_NAME" /> toimii, kun laite on käyttämättömänä tietyn aikaa.</translation>
-<translation id="703078280527762319">Varoitus <ph name="PRODUCT_NAME" /> ei enää tue uusimman TLS-version käytäntöä versiosta 66 (arviolta helmikuusta 2018) eteenpäin.
-
-      Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena versiota TLSv1.3.
-
-      Muussa tapauksessa sen arvo voi olla tls1.2 tai tls1.3. Kun käytäntö on määritetty, <ph name="PRODUCT_NAME" /> ei käytä annettua versiota uudempaa SSL/TLS-versiota. Tunnistamattomat arvot ohitetaan.</translation>
 <translation id="7040229947030068419">Esimerkkiarvo:</translation>
 <translation id="7049373494483449255">Antaa tuotteen <ph name="PRODUCT_NAME" /> lähettää asiakirjoja palveluun <ph name="CLOUD_PRINT_NAME" /> tulostettavaksi. HUOM: Tämä koskee vain <ph name="CLOUD_PRINT_NAME" />-tukea tuotteessa <ph name="PRODUCT_NAME" />. Määritys ei estä käyttäjiä lähettämästä tulostustöitä verkkosivustoista. Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voivat tulostaa palveluun <ph name="CLOUD_PRINT_NAME" /> tuotteen <ph name="PRODUCT_NAME" /> tulostusikkunasta. Jos asetus on pois käytöstä, käyttäjät eivät voi tulostaa palveluun <ph name="CLOUD_PRINT_NAME" /> tuotteen <ph name="PRODUCT_NAME" /> tulostusikkunasta.</translation>
 <translation id="7053678646221257043">Tämä käytäntö pakottaa kirjanmerkkien tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, kirjanmerkkejä ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda kirjanmerkit, tai kirjanmerkit voidaan tuoda automaattisesti.</translation>

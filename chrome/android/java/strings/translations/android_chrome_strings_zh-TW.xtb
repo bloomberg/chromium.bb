@@ -33,7 +33,6 @@
 <translation id="1303671224831497365">找不到藍牙裝置</translation>
 <translation id="1326317727527857210">如要存取您在其他裝置上開啟的分頁，請登入 Chrome。</translation>
 <translation id="1332501820983677155">Google Chrome 功能快速鍵</translation>
-<translation id="13410144310025252">您可以使用 Chrome 瀏覽這些網址</translation>
 <translation id="1369915414381695676">已新增 <ph name="SITE_NAME" /> 網站</translation>
 <translation id="1373696734384179344">記憶體不足，無法下載您選取的這項內容。</translation>
 <translation id="1376578503827013741">計算中…</translation>
@@ -88,6 +87,7 @@
 <translation id="194341124344773587">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這項權限。</translation>
 <translation id="1943432128510653496">儲存密碼</translation>
 <translation id="1944384637046898011">使用截至 <ph name="TIME" />前設定的 Google 密碼為所有資料加密</translation>
+<translation id="1946005195648379376">控制 Google 如何使用您的瀏覽紀錄，為您提供個人化的搜尋服務和其他各項 Google 服務。</translation>
 <translation id="1966710179511230534">請更新您的登入詳細資料。</translation>
 <translation id="1974060860693918893">進階</translation>
 <translation id="1984937141057606926">允許 (第三方網站除外)</translation>
@@ -104,7 +104,6 @@
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="2126426811489709554">技術提供：Chrome</translation>
 <translation id="213279576345780926">已關閉的「<ph name="TAB_TITLE" />」</translation>
-<translation id="2138201775715568214">正在尋找附近的實體化網路網頁</translation>
 <translation id="2139186145475833000">加到主畫面</translation>
 <translation id="2146738493024040262">開啟免安裝應用程式</translation>
 <translation id="2148716181193084225">今天</translation>
@@ -117,11 +116,6 @@
 <translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
 <translation id="2321958826496381788">拖曳滑桿，將文字調整到您可以舒適閱讀的大小。當您輕觸兩下文字段落，文字至少應呈現這樣的大小。</translation>
 <translation id="2323763861024343754">網站儲存資料量</translation>
-<translation id="2331464965008647960">您附近的裝置正在透過藍牙播送網頁。Chrome 會在您的裝置結束休眠狀態時掃描並顯示這些網頁。這些網頁經由 Google 服務處理過後，可讓網頁搜尋結果的品質更臻完善。
-
-您可以在 Chrome 設定中控管「實體化網路」設定。
-
-<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">安裝中…</translation>
 <translation id="2346253980530904022">Google 伺服器會針對您造訪的網頁進行最佳化處理 (HTTPS 網頁和無痕式網頁除外)。</translation>
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和儲存的設定</translation>
@@ -237,7 +231,6 @@
 <translation id="3662546969139119822">這裡沒有任何紀錄</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
-<translation id="3716158070938632480">附近有裝置在播送網頁</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3739899004075612870">已加入 <ph name="PRODUCT_NAME" /> 書籤</translation>
 <translation id="3744111309925758534">其他應用程式佔 <ph name="MEGABYTES" /> MB</translation>
@@ -410,7 +403,6 @@
 <translation id="5517095782334947753">你有來自 <ph name="FROM_ACCOUNT" /> 的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="5527082711130173040">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK1" />更新權限<ph name="END_LINK1" />。此外，<ph name="BEGIN_LINK2" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">關閉無痕式分頁</translation>
-<translation id="554327794654007401">實體化網路</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
@@ -562,7 +554,6 @@
 <translation id="7057058088140140610">使用 Google Payments 儲存的信用卡和地址資訊。</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
 <translation id="7063006564040364415">無法連線至同步處理伺服器。</translation>
-<translation id="7094922512924405309">找不到附近的實體化網路網頁</translation>
 <translation id="7128222689758636196">對目前的搜尋引擎開放</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7180611975245234373">重新整理</translation>
@@ -635,6 +626,7 @@
 <translation id="7987073022710626672">Chrome 服務條款</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
 <translation id="7999064672810608036">您確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
+<translation id="8004582292198964060">瀏覽器</translation>
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="8008818777654712271">自動傳送部分系統資訊和網頁內容給 Google，協助偵測危險的應用程式和網站。</translation>
 <translation id="8015452622527143194">將網頁上的所有內容都回復為預設大小</translation>
@@ -716,7 +708,6 @@
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8920114477895755567">尚未取得家長詳細資料。</translation>
-<translation id="8931159598799892500">Chrome 和實體化網路</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">在其他視窗中開啟</translation>
 <translation id="8951232171465285730">Chrome 為你節省了 <ph name="MEGABYTES" /> MB</translation>
@@ -741,7 +732,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9139068048179869749">允許網站傳送通知前，必須先詢問您 (建議)</translation>
-<translation id="917685106653909562">附近的實體化網路網頁</translation>
 <translation id="9187199695613236444">適合透過行動裝置瀏覽的檢視模式</translation>
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9206873250291191720">A</translation>
@@ -758,4 +748,5 @@
 <translation id="981121421437150478">離線</translation>
 <translation id="982182592107339124">這會清除所有網站的資料，包括：</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>
+<translation id="987264212798334818">一般</translation>
 </translationbundle>

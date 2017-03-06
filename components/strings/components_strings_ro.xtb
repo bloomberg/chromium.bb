@@ -355,6 +355,7 @@
 <translation id="425582637250725228">Este posibil ca modificările să nu se salveze.</translation>
 <translation id="4258748452823770588">Semnătură greșită</translation>
 <translation id="4269787794583293679">(Niciun nume de utilizator)</translation>
+<translation id="4275830172053184480">Reporniți gadgetul</translation>
 <translation id="4280429058323657511">data expirării: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4295944351946828969">Recent, Navigarea sigură Google <ph name="BEGIN_LINK" />a găsit programe rău-intenționate<ph name="END_LINK" /> pe <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">Sugestii parentale</translation>
@@ -555,6 +556,7 @@
 <translation id="6443118737398455446">Dată de expirare nevalidă</translation>
 <translation id="6446608382365791566">Adaugă mai multe informații</translation>
 <translation id="6451458296329894277">Confirmă retrimiterea formularului</translation>
+<translation id="6456339708790392414">Plata</translation>
 <translation id="6458467102616083041">Valoare ignorată, deoarece politica a dezactivat căutarea prestabilită.</translation>
 <translation id="6462969404041126431">Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Este posibil ca certificatul său de securitate să fi fost revocat. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Politici privind dispozitivele</translation>
@@ -690,6 +692,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7755287808199759310">Părintele tău îl poate debloca pentru tine</translation>
 <translation id="7758069387465995638">Este posibil ca firewallul sau software-ul antivirus să fi blocat conexiunea.</translation>
 <translation id="7761701407923456692">Certificatul serverului nu se potrivește cu adresa URL.</translation>
+<translation id="7764225426217299476">Adaugă o adresă</translation>
 <translation id="777702478322588152">Prefectură</translation>
 <translation id="7791543448312431591">Adaugă</translation>
 <translation id="7793809570500803535">Pagina web de la <ph name="SITE" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
@@ -794,6 +797,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8932102934695377596">Ora este setată în trecut</translation>
 <translation id="8954894007019320973">(Continuare)</translation>
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
+<translation id="8986494364107987395">Trimite automat la Google statistici de utilizare și rapoarte de blocare</translation>
 <translation id="8987927404178983737">Lună</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Site-ul pe care urmează să îl accesezi conține programe dăunătoare</translation>
