@@ -71,6 +71,7 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
   thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
   CHECK(gpu_thread_.StartWithOptions(thread_options));
+  gpu_thread_task_runner_ = gpu_thread_.task_runner();
 
   // TODO(sad): We do not need the IO thread once gpu has a separate process. It
   // should be possible to use |main_task_runner_| for doing IO tasks.
@@ -85,11 +86,12 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
 
   // Start the compositor thread.
   compositor_thread_.Start();
+  compositor_thread_task_runner_ = compositor_thread_.task_runner();
 }
 
 GpuMain::~GpuMain() {
   // Unretained() is OK here since the thread/task runner is owned by |this|.
-  compositor_thread_.task_runner()->PostTask(
+  compositor_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GpuMain::TearDownOnCompositorThread, base::Unretained(this)));
 
@@ -98,7 +100,7 @@ GpuMain::~GpuMain() {
   // thread to avoid deadlock.
   compositor_thread_.Stop();
 
-  gpu_thread_.task_runner()->PostTask(
+  gpu_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GpuMain::TearDownOnGpuThread, base::Unretained(this)));
   gpu_thread_.Stop();
@@ -108,10 +110,10 @@ GpuMain::~GpuMain() {
 void GpuMain::OnStart() {
   // |this| will outlive the gpu thread and so it's safe to use
   // base::Unretained here.
-  gpu_thread_.task_runner()->PostTask(
+  gpu_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GpuMain::InitOnGpuThread, base::Unretained(this),
-                 io_thread_.task_runner(), compositor_thread_.task_runner()));
+                 io_thread_.task_runner(), compositor_thread_task_runner_));
 }
 
 void GpuMain::CreateGpuService(mojom::GpuServiceRequest request,
@@ -119,7 +121,7 @@ void GpuMain::CreateGpuService(mojom::GpuServiceRequest request,
                                const gpu::GpuPreferences& preferences) {
   // |this| will outlive the gpu thread and so it's safe to use
   // base::Unretained here.
-  gpu_thread_.task_runner()->PostTask(
+  gpu_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GpuMain::CreateGpuServiceOnGpuThread, base::Unretained(this),
                  base::Passed(std::move(request)),
@@ -163,7 +165,7 @@ void GpuMain::CreateDisplayCompositorInternal(
     cc::mojom::DisplayCompositorClientPtrInfo client_info) {
   DCHECK(!gpu_command_service_);
   gpu_command_service_ = new gpu::GpuInProcessThreadService(
-      gpu_thread_.task_runner(), gpu_service_->sync_point_manager(),
+      gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group());
 
   // |gpu_memory_buffer_factory_| is null in tests.
@@ -174,19 +176,19 @@ void GpuMain::CreateDisplayCompositorInternal(
   mojom::GpuServicePtr gpu_service;
   mojom::GpuServiceRequest gpu_service_request(&gpu_service);
 
-  if (gpu_thread_.task_runner()->BelongsToCurrentThread()) {
+  if (gpu_thread_task_runner_->BelongsToCurrentThread()) {
     // If the DisplayCompositor creation was delayed because GpuService
     // had not been created yet, then this is called, in gpu thread, right after
     // GpuService is created.
     BindGpuInternalOnGpuThread(std::move(gpu_service_request));
   } else {
-    gpu_thread_.task_runner()->PostTask(
+    gpu_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&GpuMain::BindGpuInternalOnGpuThread, base::Unretained(this),
                    base::Passed(std::move(gpu_service_request))));
   }
 
-  compositor_thread_.task_runner()->PostTask(
+  compositor_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GpuMain::CreateDisplayCompositorOnCompositorThread,
                             base::Unretained(this), image_factory,
                             base::Passed(gpu_service.PassInterface()),
