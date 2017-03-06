@@ -262,7 +262,7 @@ table_files = \
 	nl-BE-g0.utb \
 	nl_BE.tbl \
 	nl-chardefs.uti \
-	nl-g0.utb \
+	nl-g0.uti \
 	nl-NL-g0.utb \
 	nl_NL.tbl \
 	nl.tbl \
