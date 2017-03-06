@@ -41,8 +41,6 @@ PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
 }
 
 #if CONFIG_COEF_INTERLEAVE
-// TODO(Fangwen): Make CONFIG_COEF_INTERLEAVE work with
-// CONFIG_PALETTE_THROUGHPUT
 void av1_foreach_transformed_block_interleave(
     const MACROBLOCKD *const xd, BLOCK_SIZE bsize,
     foreach_transformed_block_visitor visit, void *arg) {

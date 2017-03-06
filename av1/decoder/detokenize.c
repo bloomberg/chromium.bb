@@ -433,9 +433,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif  // !CONFIG_PVQ
 
 #if CONFIG_PALETTE
-#if CONFIG_PALETTE_THROUGHPUT
 void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
-                               TX_SIZE tx_size, int row, int col,
                                aom_reader *r) {
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
@@ -448,72 +446,32 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
       plane ? av1_default_palette_uv_color_index_prob
             : av1_default_palette_y_color_index_prob;
   int plane_block_width, plane_block_height, rows, cols;
-
-  const int bsize = txsize_to_bsize[tx_size];
-  const int tx_block_width = 1 << tx_size_wide_log2[0];
-  const int tx_block_height = 1 << tx_size_high_log2[0];
   av1_get_block_dimensions(mbmi->sb_type, plane, xd, &plane_block_width,
                            &plane_block_height, &rows, &cols);
-  const int block_width =
-      AOMMIN(cols - col * tx_block_width, block_size_wide[bsize]);
-  const int block_height =
-      AOMMIN(rows - row * tx_block_height, block_size_high[bsize]);
   assert(plane == 0 || plane == 1);
 
-  // run wavefront on the palette map index decoding per transform block
-  for (i = ((row == 0 && col == 0) ? 1 : 0); i < block_width + block_height - 1;
-       ++i) {
-    for (j = AOMMIN(i, block_width - 1); j >= AOMMAX(0, i - block_height + 1);
-         --j) {
+#if CONFIG_PALETTE_THROUGHPUT
+  // Run wavefront on the palette map index decoding.
+  for (i = 1; i < rows + cols - 1; ++i) {
+    for (j = AOMMIN(i, cols - 1); j >= AOMMAX(0, i - rows + 1); --j) {
       const int color_ctx = av1_get_palette_color_index_context(
-          color_map, plane_block_width, row * tx_block_height + (i - j),
-          col * tx_block_width + j, n, color_order, NULL);
+          color_map, plane_block_width, (i - j), j, n, color_order, NULL);
       const int color_idx =
           aom_read_tree(r, av1_palette_color_index_tree[n - 2],
                         prob[n - 2][color_ctx], ACCT_STR);
       assert(color_idx >= 0 && color_idx < n);
-      color_map[(row * tx_block_height + i - j) * plane_block_width +
-                col * tx_block_width + j] = color_order[color_idx];
+      color_map[(i - j) * plane_block_width + j] = color_order[color_idx];
     }
   }
   // Copy last column to extra columns.
-  if (block_width < block_size_wide[bsize]) {
-    for (i = 0; i < block_height; ++i) {
-      memset(color_map + (row * tx_block_height + i) * plane_block_width +
-                 col * tx_block_width + block_width,
-             color_map[(row * tx_block_height + i) * plane_block_width +
-                       col * tx_block_width + block_width - 1],
-             (block_size_wide[bsize] - block_width));
+  if (cols < plane_block_width) {
+    for (i = 0; i < plane_block_height; ++i) {
+      memset(color_map + i * plane_block_width + cols,
+             color_map[i * plane_block_width + cols - 1],
+             (plane_block_width - cols));
     }
   }
-  // Copy last row to extra rows.
-  if (block_height < block_size_high[bsize]) {
-    for (i = block_height; i < block_size_high[bsize]; ++i) {
-      memcpy(color_map + (row * tx_block_height + i) * plane_block_width,
-             color_map +
-                 (row * tx_block_height + block_height - 1) * plane_block_width,
-             block_size_wide[bsize]);
-    }
-  }
-}
 #else
-void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
-                               aom_reader *r) {
-  const MODE_INFO *const mi = xd->mi[0];
-  const MB_MODE_INFO *const mbmi = &mi->mbmi;
-  uint8_t color_order[PALETTE_MAX_SIZE];
-  const int n = mbmi->palette_mode_info.palette_size[plane];
-  int i, j;
-  uint8_t *const color_map = xd->plane[plane].color_index_map;
-  const aom_prob(
-      *const prob)[PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] =
-      plane ? av1_default_palette_uv_color_index_prob
-            : av1_default_palette_y_color_index_prob;
-  int plane_block_width, plane_block_height, rows, cols;
-  av1_get_block_dimensions(mbmi->sb_type, plane, xd, &plane_block_width,
-                           &plane_block_height, &rows, &cols);
-  assert(plane == 0 || plane == 1);
-
   for (i = 0; i < rows; ++i) {
     for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
       const int color_ctx = av1_get_palette_color_index_context(
@@ -528,13 +486,13 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
            color_map[i * plane_block_width + cols - 1],
            (plane_block_width - cols));  // Copy last column to extra columns.
   }
+#endif  // CONFIG_PALETTE_THROUGHPUT
   // Copy last row to extra rows.
   for (i = rows; i < plane_block_height; ++i) {
     memcpy(color_map + i * plane_block_width,
            color_map + (rows - 1) * plane_block_width, plane_block_width);
   }
 }
-#endif  // CONFIG_PALETTE_THROUGHPUT
 #endif  // CONFIG_PALETTE
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX

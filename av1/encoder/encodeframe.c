@@ -5680,11 +5680,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
           mbmi->palette_mode_info.palette_first_color_idx[plane] =
               xd->plane[plane].color_index_map[0];
-// TODO(huisu): this increases the use of token buffer. Needs stretch
-// test to verify.
-#if !CONFIG_PALETTE_THROUGHPUT
+          // TODO(huisu): this increases the use of token buffer. Needs stretch
+          // test to verify.
           av1_tokenize_palette_sb(cpi, td, plane, t, dry_run, bsize, rate);
-#endif
         }
       }
     }

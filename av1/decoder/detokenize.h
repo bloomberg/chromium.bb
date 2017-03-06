@@ -25,13 +25,7 @@ extern "C" {
 #endif
 
 #if CONFIG_PALETTE
-#if CONFIG_PALETTE_THROUGHPUT
-void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
-                               TX_SIZE tx_size, int row, int col,
-                               aom_reader *r);
-#else
 void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane, aom_reader *r);
-#endif  // CONFIG_PALETTE_THROUGHPUT
 #endif  // CONFIG_PALETTE
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX
