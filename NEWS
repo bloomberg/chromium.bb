@@ -36,7 +36,10 @@ complete.
 The YAML framework has been extended and is much more useful now. You
 can test multiple tables within one YAML file, you can define test
 tables directly inline and you can test multiple tables using the same
-test data. Refer to the documentation for the details
+test data. Refer to the documentation for the details.
+
+If really not wanted the YAML tests can be disabled by specifying
+~configure --without-yaml~.
 ** Bug fixes
 - Fixes implicit declaration of 'pattern_check' thanks to  Reiner Dolp
 - Fix a stackoverflow crash on applications with smaller stack size.
@@ -88,6 +91,10 @@ test data. Refer to the documentation for the details
   thanks to Victor Montalvao.
 - New Chinese Braille table for use in the mainland of China thanks to
   Kaifang Bao of RejoinTech.
+- The Black Circle character is commonly used for displaying password
+  characters. The absence of its definition leads to users not being
+  able to know how many characters were typed in such fields. This has
+  been improved for many tables thanks to Victor Montalvao.
 ** License changes
 - DocArch has agreed to relicense their tables, so we have 8 more
   tables under the LGPLv2.1+.
