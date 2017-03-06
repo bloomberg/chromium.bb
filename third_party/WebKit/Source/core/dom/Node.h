@@ -421,8 +421,10 @@ class CORE_EXPORT Node : public EventTarget {
   void setNeedsStyleRecalc(StyleChangeType, const StyleChangeReasonForTracing&);
   void clearNeedsStyleRecalc();
 
-  bool needsReattachLayoutTree() { return getFlag(NeedsReattachLayoutTree); }
-  bool childNeedsReattachLayoutTree() {
+  bool needsReattachLayoutTree() const {
+    return getFlag(NeedsReattachLayoutTree);
+  }
+  bool childNeedsReattachLayoutTree() const {
     return getFlag(ChildNeedsReattachLayoutTree);
   }
 
