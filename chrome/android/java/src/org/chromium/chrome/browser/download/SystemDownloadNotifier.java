@@ -299,7 +299,9 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
                 assert false;
         }
 
-        if (mBoundService != null) mBoundService.hideSummaryNotificationIfNecessary();
+        // Don't need to expose the notification id to ignore.  Cancel will automatically call this
+        // method as well and pass it in.
+        if (mBoundService != null) mBoundService.hideSummaryNotificationIfNecessary(null);
         if (autoRelease) unbindServiceIfNeeded();
     }
 }

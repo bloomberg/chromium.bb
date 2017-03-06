@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.app.Notification;
 import android.content.Context;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 
 import java.util.ArrayList;
@@ -27,16 +28,34 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    public void stopForeground() {}
+    public void stopForegroundInternal(boolean killNotification) {
+        if (!BuildInfo.isAtLeastO()) return;
+        if (killNotification) mNotificationIds.clear();
+    }
 
     @Override
-    public void startForeground() {}
+    public void startForegroundInternal() {}
 
     @Override
     public void cancelOffTheRecordDownloads() {
         super.cancelOffTheRecordDownloads();
         mPaused = true;
     }
+
+    @Override
+    boolean hasDownloadNotifications(Integer notificationIdToIgnore) {
+        if (!BuildInfo.isAtLeastO()) return false;
+        // Cancelling notifications here is synchronous, so we don't really have to worry about
+        // {@code notificationIdToIgnore}, but address it properly anyway.
+        if (mNotificationIds.size() == 1 && notificationIdToIgnore != null) {
+            return !mNotificationIds.contains(notificationIdToIgnore);
+        }
+
+        return !mNotificationIds.isEmpty();
+    }
+
+    @Override
+    void cancelSummaryNotification() {}
 
     @Override
     void updateNotification(int id, Notification notification) {
