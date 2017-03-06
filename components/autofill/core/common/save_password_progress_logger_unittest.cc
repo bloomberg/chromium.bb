@@ -63,11 +63,11 @@ TEST(SavePasswordProgressLoggerTest, LogPasswordFormElementID) {
   TestLogger logger;
   PasswordForm form;
   const std::string kHTMLInside("Username <script> element");
-  const std::string kHTMLInsideExpected("Username  script  element");
+  const std::string kHTMLInsideExpected("Username__script__element");
   const std::string kIPAddressInside("y128.0.0.1Y");
-  const std::string kIPAddressInsideExpected("y128 0 0 1Y");
+  const std::string kIPAddressInsideExpected("y128_0_0_1Y");
   const std::string kSpecialCharsInside("X@#a$%B&*c()D;:e+!x");
-  const std::string kSpecialCharsInsideExpected("X  a  B  c  D  e  x");
+  const std::string kSpecialCharsInsideExpected("X__a__B__c__D__e__x");
   form.username_element = UTF8ToUTF16(kHTMLInside);
   form.password_element = UTF8ToUTF16(kIPAddressInside);
   form.new_password_element = UTF8ToUTF16(kSpecialCharsInside);

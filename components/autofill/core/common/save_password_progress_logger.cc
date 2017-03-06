@@ -144,7 +144,7 @@ std::string SavePasswordProgressLogger::ScrubElementID(
 // static
 std::string SavePasswordProgressLogger::ScrubElementID(std::string element_id) {
   std::replace_if(element_id.begin(), element_id.end(), IsUnwantedInElementID,
-                  ' ');
+                  '_');
   return element_id;
 }
 
