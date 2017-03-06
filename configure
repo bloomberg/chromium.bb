@@ -332,7 +332,6 @@ CONFIG_LIST="
     codec_srcs
     debug_libs
 
-    dequant_tokens
     runtime_cpu_detect
     postproc
     av1_postproc
@@ -397,7 +396,6 @@ CMDLINE_SELECT="
     codec_srcs
     debug_libs
 
-    dequant_tokens
     postproc
     av1_postproc
     multithread
@@ -720,9 +718,6 @@ process_toolchain() {
 
     # ccache only really works on gcc toolchains
     enabled gcc || soft_disable ccache
-    if enabled mips; then
-        enable_feature dequant_tokens
-    fi
 
     # Enable the postbuild target if building for visual studio.
     case "$tgt_cc" in
