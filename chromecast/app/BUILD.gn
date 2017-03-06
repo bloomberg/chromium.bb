@@ -106,8 +106,12 @@ grit("chromecast_settings") {
   source = "//chromecast/app/resources/chromecast_settings.grd"
   resource_ids = "//chromecast/app/resources/resource_ids"
 
-  # TODO(thakis): Consider removing this in favor of the default directory.
+  # TODO(thakis): Consider removing output_dir in favor of the default
+  # directory, then it becomes possible to qualify includes of
+  # grit/chromecast_settings.h and DEPS files work better too.
+  # https://crbug.com/697090
   output_dir = "$root_gen_dir/chromecast_strings"
+  use_qualified_include = false
 
   outputs = [
     "grit/chromecast_settings.h",
