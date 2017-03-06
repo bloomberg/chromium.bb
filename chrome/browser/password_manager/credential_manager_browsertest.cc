@@ -118,16 +118,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
                        StoreSavesPSLMatchedCredential) {
-  // Setup HTTPS server serving files from standard test directory.
-  static constexpr base::FilePath::CharType kDocRoot[] =
-      FILE_PATH_LITERAL("chrome/test/data");
-  net::EmbeddedTestServer https_test_server(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-  ASSERT_TRUE(https_test_server.Start());
-
   // Setup mock certificate for all origins.
-  auto cert = https_test_server.GetCertificate();
+  auto cert = https_test_server().GetCertificate();
   net::CertVerifyResult verify_result;
   verify_result.cert_status = 0;
   verify_result.is_issued_by_known_root = true;
@@ -144,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
               .get());
 
   // The call to |GetURL| is needed to get the correct port.
-  GURL psl_url = https_test_server.GetURL("psl.example.com", "/");
+  GURL psl_url = https_test_server().GetURL("psl.example.com", "/");
 
   autofill::PasswordForm signin_form;
   signin_form.signon_realm = psl_url.spec();
@@ -153,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   signin_form.origin = psl_url;
   password_store->AddLogin(signin_form);
 
-  NavigateToURL(https_test_server, "www.example.com",
+  NavigateToURL(https_test_server(), "www.example.com",
                 "/password/password_form.html");
 
   // Call the API to trigger |get| and |store| and redirect.
@@ -187,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   // There should be an entry for both psl.example.com and www.example.com.
   password_manager::TestPasswordStore::PasswordMap passwords =
       password_store->stored_passwords();
-  GURL www_url = https_test_server.GetURL("www.example.com", "/");
+  GURL www_url = https_test_server().GetURL("www.example.com", "/");
   EXPECT_EQ(2U, passwords.size());
   EXPECT_TRUE(base::ContainsKey(passwords, psl_url.spec()));
   EXPECT_TRUE(base::ContainsKey(passwords, www_url.spec()));

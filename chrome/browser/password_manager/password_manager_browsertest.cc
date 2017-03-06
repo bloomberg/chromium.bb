@@ -52,7 +52,6 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -1386,19 +1385,13 @@ IN_PROC_BROWSER_TEST_F(
       ::switches::kAllowRunningInsecureContent);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kIgnoreCertificateErrors);
-  const base::FilePath::CharType kDocRoot[] =
-      FILE_PATH_LITERAL("chrome/test/data");
-  net::EmbeddedTestServer https_test_server(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-  ASSERT_TRUE(https_test_server.Start());
 
   // This test case cannot inject the scripts via content::ExecuteScript() in
   // files served through HTTPS. Therefore the scripts are made part of the HTML
   // site and executed on load.
   std::string path =
       "/password/separate_login_form_with_onload_submit_script.html";
-  GURL https_url(https_test_server.GetURL(path));
+  GURL https_url(https_test_server().GetURL(path));
   ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
 
   NavigationObserver observer(WebContents());
@@ -1421,15 +1414,9 @@ IN_PROC_BROWSER_TEST_F(
       ::switches::kAllowRunningInsecureContent);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kIgnoreCertificateErrors);
-  const base::FilePath::CharType kDocRoot[] =
-      FILE_PATH_LITERAL("chrome/test/data");
-  net::EmbeddedTestServer https_test_server(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-  ASSERT_TRUE(https_test_server.Start());
 
   std::string path = "/password/password_form.html";
-  GURL https_url(https_test_server.GetURL(path));
+  GURL https_url(https_test_server().GetURL(path));
   ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
 
   NavigationObserver form_observer(WebContents());
@@ -1490,14 +1477,8 @@ IN_PROC_BROWSER_TEST_F(
 // Tests that after HTTP -> HTTPS migration the credential is autofilled.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        HttpMigratedCredentialAutofilled) {
-  net::EmbeddedTestServer https_test_server(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.ServeFilesFromSourceDirectory(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_test_server.Start());
-
   // Add an http credential to the password store.
-  GURL https_origin = https_test_server.base_url();
+  GURL https_origin = https_test_server().base_url();
   ASSERT_TRUE(https_origin.SchemeIs(url::kHttpsScheme));
   GURL::Replacements rep;
   rep.SetSchemeStr(url::kHttpScheme);
@@ -1518,7 +1499,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   NavigationObserver form_observer(WebContents());
   ui_test_utils::NavigateToURL(
-      browser(), https_test_server.GetURL("/password/password_form.html"));
+      browser(), https_test_server().GetURL("/password/password_form.html"));
   form_observer.Wait();
   WaitForPasswordStore();
 

@@ -12,6 +12,7 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -138,8 +139,10 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
   // Accessors
   content::WebContents* WebContents();
   content::RenderViewHost* RenderViewHost();
+  net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
 
  private:
+  net::EmbeddedTestServer https_test_server_;
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTestBase);
 };
 

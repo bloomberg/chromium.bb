@@ -115,8 +115,8 @@ void BubbleObserver::AcceptUpdatePrompt(
   EXPECT_FALSE(IsShowingUpdatePrompt());
 }
 
-PasswordManagerBrowserTestBase::PasswordManagerBrowserTestBase() {
-}
+PasswordManagerBrowserTestBase::PasswordManagerBrowserTestBase()
+    : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 PasswordManagerBrowserTestBase::~PasswordManagerBrowserTestBase() {
 }
 
@@ -131,6 +131,12 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
       password_manager::BuildPasswordStore<
           content::BrowserContext, password_manager::TestPasswordStore>);
   ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Setup HTTPS server serving files from standard test directory.
+  static constexpr base::FilePath::CharType kDocRoot[] =
+      FILE_PATH_LITERAL("chrome/test/data");
+  https_test_server().ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server().Start());
 }
 
 void PasswordManagerBrowserTestBase::TearDownOnMainThread() {
