@@ -100,6 +100,7 @@ test("components_unittests") {
     "//components/memory_pressure:unit_tests",
     "//components/metrics:unit_tests",
     "//components/mime_util:unit_tests",
+    "//components/navigation_metrics:unit_tests",
     "//components/net_log:unit_tests",
     "//components/network_session_configurator:unit_tests",
     "//components/network_time:unit_tests",
