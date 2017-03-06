@@ -63,6 +63,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   }
 
   void idChanged(const AtomicString& oldId, const AtomicString& newId);
+  void detachAllClients(const AtomicString& toId);
 
   void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
 
@@ -94,10 +95,15 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   bool m_isInLayout;
 
  private:
+  friend class SVGTreeScopeResources;
+  // The m_registered flag is updated by SVGTreeScopeResources, and indicates
+  // that this resource is the one that is resident in the id->resource map.
+  void setRegistered(bool registered) { m_registered = registered; }
+  bool isRegistered() const { return m_registered; }
+
   friend class SVGResourcesCache;
   void addClient(LayoutObject*);
   void removeClient(LayoutObject*);
-  void detachAllClients();
 
   // Track global (markAllClientsForInvalidation) invals to avoid redundant
   // crawls.

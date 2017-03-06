@@ -29,7 +29,10 @@ class SVGTreeScopeResources
   ~SVGTreeScopeResources();
 
   void updateResource(const AtomicString& id, LayoutSVGResourceContainer*);
-  void removeResource(const AtomicString& id);
+  void updateResource(const AtomicString& oldId,
+                      const AtomicString& newId,
+                      LayoutSVGResourceContainer*);
+  void removeResource(const AtomicString& id, LayoutSVGResourceContainer*);
   LayoutSVGResourceContainer* resourceById(const AtomicString& id) const;
 
   // Pending resources are such which are referenced by any object in the SVG
@@ -46,10 +49,16 @@ class SVGTreeScopeResources
   void clearHasPendingResourcesIfPossible(Element&);
 
   using SVGPendingElements = HeapHashSet<Member<Element>>;
+  using ResourceMap = HashMap<AtomicString, LayoutSVGResourceContainer*>;
 
-  HashMap<AtomicString, LayoutSVGResourceContainer*> m_resources;
+  void registerResource(const AtomicString& id, LayoutSVGResourceContainer*);
+  void unregisterResource(ResourceMap::iterator);
+  void notifyPendingClients(const AtomicString& id);
+
+  ResourceMap m_resources;
   // Resources that are pending.
   HeapHashMap<AtomicString, Member<SVGPendingElements>> m_pendingResources;
+  Member<TreeScope> m_treeScope;
 };
 
 }  // namespace blink

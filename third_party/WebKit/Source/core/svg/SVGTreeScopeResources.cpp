@@ -13,7 +13,8 @@
 
 namespace blink {
 
-SVGTreeScopeResources::SVGTreeScopeResources(TreeScope* treeScope) {
+SVGTreeScopeResources::SVGTreeScopeResources(TreeScope* treeScope)
+    : m_treeScope(treeScope) {
   // Whenever an object of SVGTreeScopeResources is created, to keep the code
   // behave as before,
   // the document should also have an instance of SVGDocumentExtensions created.
@@ -23,41 +24,97 @@ SVGTreeScopeResources::SVGTreeScopeResources(TreeScope* treeScope) {
 
 SVGTreeScopeResources::~SVGTreeScopeResources() = default;
 
+static LayoutSVGResourceContainer* lookupResource(TreeScope& treeScope,
+                                                  const AtomicString& id) {
+  Element* element = treeScope.getElementById(id);
+  if (!element)
+    return nullptr;
+  LayoutObject* layoutObject = element->layoutObject();
+  if (!layoutObject || !layoutObject->isSVGResourceContainer())
+    return nullptr;
+  return toLayoutSVGResourceContainer(layoutObject);
+}
+
 void SVGTreeScopeResources::updateResource(
     const AtomicString& id,
     LayoutSVGResourceContainer* resource) {
   DCHECK(resource);
-  if (id.isEmpty())
+  if (resource->isRegistered() || id.isEmpty())
     return;
-  // Replaces resource if already present, to handle potential id changes.
-  m_resources.set(id, resource);
-
-  SVGPendingElements* pendingElements = m_pendingResources.take(id);
-  if (!pendingElements)
-    return;
-  // Update cached resources of pending clients.
-  for (Element* clientElement : *pendingElements) {
-    DCHECK(clientElement->hasPendingResources());
-    clearHasPendingResourcesIfPossible(*clientElement);
-
-    LayoutObject* layoutObject = clientElement->layoutObject();
-    if (!layoutObject)
-      continue;
-    DCHECK(layoutObject->isSVG());
-
-    StyleDifference diff;
-    diff.setNeedsFullLayout();
-    SVGResourcesCache::clientStyleChanged(layoutObject, diff,
-                                          layoutObject->styleRef());
-    layoutObject->setNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::SvgResourceInvalidated);
+  // Lookup the current resource. (Could differ from what's in the map if an
+  // element was just added/removed.)
+  LayoutSVGResourceContainer* currentResource =
+      lookupResource(*m_treeScope, id);
+  // Lookup the currently registered resource.
+  auto it = m_resources.find(id);
+  if (it != m_resources.end()) {
+    // Is the local map up-to-date already?
+    if (it->value == currentResource)
+      return;
+    unregisterResource(it);
   }
+  if (currentResource)
+    registerResource(id, currentResource);
 }
 
-void SVGTreeScopeResources::removeResource(const AtomicString& id) {
-  if (id.isEmpty())
+void SVGTreeScopeResources::updateResource(
+    const AtomicString& oldId,
+    const AtomicString& newId,
+    LayoutSVGResourceContainer* resource) {
+  removeResource(oldId, resource);
+  updateResource(newId, resource);
+}
+
+void SVGTreeScopeResources::removeResource(
+    const AtomicString& id,
+    LayoutSVGResourceContainer* resource) {
+  DCHECK(resource);
+  if (!resource->isRegistered() || id.isEmpty())
     return;
-  m_resources.erase(id);
+  auto it = m_resources.find(id);
+  // If this is not the currently registered resource for this id, then do
+  // nothing.
+  if (it == m_resources.end() || it->value != resource)
+    return;
+  unregisterResource(it);
+  // If the layout tree is being torn down, then don't attempt to update the
+  // map, since that layout object is likely to be stale already.
+  if (resource->documentBeingDestroyed())
+    return;
+  // Another resource could now be current. Perform a lookup and potentially
+  // update the map.
+  LayoutSVGResourceContainer* currentResource =
+      lookupResource(*m_treeScope, id);
+  if (!currentResource)
+    return;
+  // Since this is a removal, don't allow re-adding the resource.
+  if (currentResource == resource)
+    return;
+  registerResource(id, currentResource);
+}
+
+void SVGTreeScopeResources::registerResource(
+    const AtomicString& id,
+    LayoutSVGResourceContainer* resource) {
+  DCHECK(!id.isEmpty());
+  DCHECK(resource);
+  DCHECK(!resource->isRegistered());
+
+  m_resources.set(id, resource);
+  resource->setRegistered(true);
+
+  notifyPendingClients(id);
+}
+
+void SVGTreeScopeResources::unregisterResource(ResourceMap::iterator it) {
+  LayoutSVGResourceContainer* resource = it->value;
+  DCHECK(resource);
+  DCHECK(resource->isRegistered());
+
+  resource->detachAllClients(it->key);
+
+  resource->setRegistered(false);
+  m_resources.remove(it);
 }
 
 LayoutSVGResourceContainer* SVGTreeScopeResources::resourceById(
@@ -125,6 +182,30 @@ void SVGTreeScopeResources::removeElementFromPendingResources(
   clearHasPendingResourcesIfPossible(element);
 }
 
+void SVGTreeScopeResources::notifyPendingClients(const AtomicString& id) {
+  DCHECK(!id.isEmpty());
+  SVGPendingElements* pendingElements = m_pendingResources.take(id);
+  if (!pendingElements)
+    return;
+  // Update cached resources of pending clients.
+  for (Element* clientElement : *pendingElements) {
+    DCHECK(clientElement->hasPendingResources());
+    clearHasPendingResourcesIfPossible(*clientElement);
+
+    LayoutObject* layoutObject = clientElement->layoutObject();
+    if (!layoutObject)
+      continue;
+    DCHECK(layoutObject->isSVG());
+
+    StyleDifference diff;
+    diff.setNeedsFullLayout();
+    SVGResourcesCache::clientStyleChanged(layoutObject, diff,
+                                          layoutObject->styleRef());
+    layoutObject->setNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::SvgResourceInvalidated);
+  }
+}
+
 void SVGTreeScopeResources::notifyResourceAvailable(const AtomicString& id) {
   if (id.isEmpty())
     return;
@@ -152,5 +233,6 @@ void SVGTreeScopeResources::notifyResourceAvailable(const AtomicString& id) {
 
 DEFINE_TRACE(SVGTreeScopeResources) {
   visitor->trace(m_pendingResources);
+  visitor->trace(m_treeScope);
 }
 }
