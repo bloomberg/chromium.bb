@@ -33,6 +33,7 @@ namespace blink {
 
 class DeviceAcceleration;
 class DeviceMotionData;
+class DeviceMotionEventInit;
 class DeviceRotationRate;
 
 class DeviceMotionEvent final : public Event {
@@ -41,6 +42,10 @@ class DeviceMotionEvent final : public Event {
  public:
   ~DeviceMotionEvent() override;
   static DeviceMotionEvent* create() { return new DeviceMotionEvent; }
+  static DeviceMotionEvent* create(const AtomicString& eventType,
+                                   const DeviceMotionEventInit& initializer) {
+    return new DeviceMotionEvent(eventType, initializer);
+  }
   static DeviceMotionEvent* create(const AtomicString& eventType,
                                    DeviceMotionData* deviceMotionData) {
     return new DeviceMotionEvent(eventType, deviceMotionData);
@@ -66,6 +71,7 @@ class DeviceMotionEvent final : public Event {
 
  private:
   DeviceMotionEvent();
+  DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit&);
   DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
 
   Member<DeviceMotionData> m_deviceMotionData;

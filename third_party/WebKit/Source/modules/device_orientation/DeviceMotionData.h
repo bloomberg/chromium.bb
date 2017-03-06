@@ -30,6 +30,9 @@
 
 namespace blink {
 
+class DeviceAccelerationInit;
+class DeviceMotionEventInit;
+class DeviceRotationRateInit;
 class WebDeviceMotionData;
 
 class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
@@ -43,6 +46,7 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
                                 double y,
                                 bool canProvideZ,
                                 double z);
+    static Acceleration* create(const DeviceAccelerationInit&);
     DEFINE_INLINE_TRACE() {}
 
     bool canProvideX() const { return m_canProvideX; }
@@ -79,6 +83,7 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
                                 double beta,
                                 bool canProvideGamma,
                                 double gamma);
+    static RotationRate* create(const DeviceRotationRateInit&);
     DEFINE_INLINE_TRACE() {}
 
     bool canProvideAlpha() const { return m_canProvideAlpha; }
@@ -112,6 +117,7 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
                                   RotationRate*,
                                   bool canProvideInterval,
                                   double interval);
+  static DeviceMotionData* create(const DeviceMotionEventInit&);
   static DeviceMotionData* create(const WebDeviceMotionData&);
   DECLARE_TRACE();
 

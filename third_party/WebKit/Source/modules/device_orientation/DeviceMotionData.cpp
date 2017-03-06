@@ -24,6 +24,10 @@
  */
 
 #include "modules/device_orientation/DeviceMotionData.h"
+
+#include "modules/device_orientation/DeviceAccelerationInit.h"
+#include "modules/device_orientation/DeviceMotionEventInit.h"
+#include "modules/device_orientation/DeviceRotationRateInit.h"
 #include "public/platform/modules/device_orientation/WebDeviceMotionData.h"
 
 namespace blink {
@@ -37,6 +41,13 @@ DeviceMotionData::Acceleration* DeviceMotionData::Acceleration::create(
     double z) {
   return new DeviceMotionData::Acceleration(canProvideX, x, canProvideY, y,
                                             canProvideZ, z);
+}
+
+DeviceMotionData::Acceleration* DeviceMotionData::Acceleration::create(
+    const DeviceAccelerationInit& init) {
+  return new DeviceMotionData::Acceleration(
+      init.hasX(), init.hasX() ? init.x() : 0, init.hasY(),
+      init.hasY() ? init.y() : 0, init.hasZ(), init.hasZ() ? init.z() : 0);
 }
 
 DeviceMotionData::Acceleration::Acceleration(bool canProvideX,
@@ -65,6 +76,14 @@ DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::create(
       canProvideAlpha, alpha, canProvideBeta, beta, canProvideGamma, gamma);
 }
 
+DeviceMotionData::RotationRate* DeviceMotionData::RotationRate::create(
+    const DeviceRotationRateInit& init) {
+  return new DeviceMotionData::RotationRate(
+      init.hasAlpha(), init.hasAlpha() ? init.alpha() : 0, init.hasBeta(),
+      init.hasBeta() ? init.beta() : 0, init.hasGamma(),
+      init.hasGamma() ? init.gamma() : 0);
+}
+
 DeviceMotionData::RotationRate::RotationRate(bool canProvideAlpha,
                                              double alpha,
                                              bool canProvideBeta,
@@ -90,6 +109,21 @@ DeviceMotionData* DeviceMotionData::create(
     double interval) {
   return new DeviceMotionData(acceleration, accelerationIncludingGravity,
                               rotationRate, canProvideInterval, interval);
+}
+
+DeviceMotionData* DeviceMotionData::create(const DeviceMotionEventInit& init) {
+  return DeviceMotionData::create(
+      init.hasAcceleration()
+          ? DeviceMotionData::Acceleration::create(init.acceleration())
+          : nullptr,
+      init.hasAccelerationIncludingGravity()
+          ? DeviceMotionData::Acceleration::create(
+                init.accelerationIncludingGravity())
+          : nullptr,
+      init.hasRotationRate()
+          ? DeviceMotionData::RotationRate::create(init.rotationRate())
+          : nullptr,
+      init.hasInterval(), init.hasInterval() ? init.interval() : 0);
 }
 
 DeviceMotionData* DeviceMotionData::create(const WebDeviceMotionData& data) {

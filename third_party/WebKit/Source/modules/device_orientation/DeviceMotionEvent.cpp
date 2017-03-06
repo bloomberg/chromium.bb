@@ -27,6 +27,7 @@
 
 #include "modules/device_orientation/DeviceAcceleration.h"
 #include "modules/device_orientation/DeviceMotionData.h"
+#include "modules/device_orientation/DeviceMotionEventInit.h"
 #include "modules/device_orientation/DeviceRotationRate.h"
 
 namespace blink {
@@ -35,6 +36,11 @@ DeviceMotionEvent::~DeviceMotionEvent() {}
 
 DeviceMotionEvent::DeviceMotionEvent()
     : m_deviceMotionData(DeviceMotionData::create()) {}
+
+DeviceMotionEvent::DeviceMotionEvent(const AtomicString& eventType,
+                                     const DeviceMotionEventInit& initializer)
+    : Event(eventType, initializer),
+      m_deviceMotionData(DeviceMotionData::create(initializer)) {}
 
 DeviceMotionEvent::DeviceMotionEvent(const AtomicString& eventType,
                                      DeviceMotionData* deviceMotionData)

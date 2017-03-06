@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
+// https://www.w3.org/TR/2016/CR-orientation-event-20160818/#devicemotion
 
-// TODO(foolip): DeviceMotionEvent should have a constructor.
+[Constructor(DOMString type, optional DeviceMotionEventInit eventInitDict)]
 interface DeviceMotionEvent : Event {
     readonly attribute DeviceAcceleration? acceleration;
     readonly attribute DeviceAcceleration? accelerationIncludingGravity;
