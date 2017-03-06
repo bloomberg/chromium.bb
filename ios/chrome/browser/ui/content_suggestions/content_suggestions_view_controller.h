@@ -30,6 +30,9 @@
 @property(nonatomic, weak) id<ContentSuggestionsCommands>
     suggestionCommandHandler;
 
+// Removes the entry at |indexPath|, from the collection and its model.
+- (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_VIEW_CONTROLLER_H_

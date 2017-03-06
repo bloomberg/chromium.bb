@@ -21,7 +21,8 @@ class GURL;
 - (void)openURL:(const GURL&)URL;
 // Displays a context menu for opening the |articleItem|.
 - (void)displayContextMenuForArticle:(ContentSuggestionsArticleItem*)articleItem
-                             atPoint:(CGPoint)touchLocation;
+                             atPoint:(CGPoint)touchLocation
+                         atIndexPath:(NSIndexPath*)indexPath;
 
 @end
 

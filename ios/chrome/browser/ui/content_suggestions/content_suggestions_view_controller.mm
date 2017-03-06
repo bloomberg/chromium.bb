@@ -41,6 +41,8 @@ const NSTimeInterval kAnimationDuration = 0.35;
 @synthesize suggestionCommandHandler = _suggestionCommandHandler;
 @synthesize collectionUpdater = _collectionUpdater;
 
+#pragma mark - Public
+
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
                    dataSource:(id<ContentSuggestionsDataSource>)dataSource {
   self = [super initWithStyle:style];
@@ -49,6 +51,20 @@ const NSTimeInterval kAnimationDuration = 0.35;
         initWithDataSource:dataSource];
   }
   return self;
+}
+
+- (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath {
+  if (!indexPath || ![self.collectionViewModel hasItemAtIndexPath:indexPath]) {
+    return;
+  }
+
+  [self.collectionView performBatchUpdates:^{
+    [self collectionView:self.collectionView
+        willDeleteItemsAtIndexPaths:@[ indexPath ]];
+
+    [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
+  }
+                                completion:nil];
 }
 
 #pragma mark - UIViewController
@@ -197,8 +213,10 @@ const NSTimeInterval kAnimationDuration = 0.35;
   ContentSuggestionsArticleItem* articleItem =
       base::mac::ObjCCastStrict<ContentSuggestionsArticleItem>(touchedItem);
 
-  [self.suggestionCommandHandler displayContextMenuForArticle:articleItem
-                                                      atPoint:touchLocation];
+  [self.suggestionCommandHandler
+      displayContextMenuForArticle:articleItem
+                           atPoint:touchLocation
+                       atIndexPath:touchedItemIndexPath];
 }
 
 @end

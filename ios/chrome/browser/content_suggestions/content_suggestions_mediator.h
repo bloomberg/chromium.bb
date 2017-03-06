@@ -14,6 +14,8 @@ namespace ntp_snippets {
 class ContentSuggestionsService;
 }
 
+@class ContentSuggestionIdentifier;
+
 // Mediator for ContentSuggestions. Makes the interface between a
 // ntp_snippets::ContentSuggestionsService and the Objective-C services using
 // its data.
@@ -24,6 +26,10 @@ class ContentSuggestionsService;
     (ntp_snippets::ContentSuggestionsService*)contentService
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
+
+// Dismisses the suggestion from the content suggestions service. It doesn't
+// change the UI.
+- (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier;
 
 @end
 

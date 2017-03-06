@@ -133,6 +133,8 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 @synthesize dataSink = _dataSink;
 @synthesize sectionInformationByCategory = _sectionInformationByCategory;
 
+#pragma mark - Public
+
 - (instancetype)initWithContentService:
     (ntp_snippets::ContentSuggestionsService*)contentService {
   self = [super init];
@@ -143,6 +145,16 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
     _sectionInformationByCategory = [[NSMutableDictionary alloc] init];
   }
   return self;
+}
+
+- (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
+  ContentSuggestionsCategoryWrapper* categoryWrapper =
+      [self categoryWrapperForSectionInfo:suggestionIdentifier.sectionInfo];
+  ntp_snippets::ContentSuggestion::ID suggestion_id =
+      ntp_snippets::ContentSuggestion::ID([categoryWrapper category],
+                                          suggestionIdentifier.IDInSection);
+
+  self.contentService->DismissSuggestion(suggestion_id);
 }
 
 #pragma mark - ContentSuggestionsDataSource
