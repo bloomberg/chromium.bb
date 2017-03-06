@@ -34,45 +34,16 @@ TEST(ContentSuggestionsArticleItemTest, CellIsConfiguredWithoutImage) {
   ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
   ASSERT_EQ([ContentSuggestionsArticleCell class], [cell class]);
   ASSERT_EQ(url, item.articleURL);
-  ASSERT_EQ(nil, item.image);
+  ASSERT_NE(nil, item.image);
 
   // Action.
   [item configureCell:cell];
 
   // Tests.
-  EXPECT_EQ(nil, cell.imageView.image);
+  EXPECT_EQ(item.image, cell.imageView.image);
   EXPECT_EQ(title, cell.titleLabel.text);
   EXPECT_EQ(subtitle, cell.subtitleLabel.text);
   EXPECT_OCMOCK_VERIFY(delegateMock);
-}
-
-// Tests that configureCell: set all the fields of the cell with an image and
-// does not call the delegate.
-TEST(ContentSuggestionsArticleItemTest, CellIsConfiguredWithImage) {
-  // Setup.
-  NSString* title = @"testTitle";
-  NSString* subtitle = @"testSubtitle";
-  UIImage* image = [[UIImage alloc] init];
-  GURL url = GURL("http://chromium.org");
-  id delegateMock =
-      OCMStrictProtocolMock(@protocol(ContentSuggestionsArticleItemDelegate));
-  ContentSuggestionsArticleItem* item =
-      [[ContentSuggestionsArticleItem alloc] initWithType:0
-                                                    title:title
-                                                 subtitle:subtitle
-                                                 delegate:delegateMock
-                                                      url:url];
-  item.image = image;
-  ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
-
-  // Action.
-  [item configureCell:cell];
-
-  // Tests.
-  EXPECT_EQ(image, cell.imageView.image);
-  EXPECT_EQ(title, cell.titleLabel.text);
-  EXPECT_EQ(subtitle, cell.subtitleLabel.text);
-  EXPECT_EQ(image, cell.imageView.image);
 }
 
 // Tests that configureCell: does not call the delegate if it fetched the image
@@ -93,7 +64,7 @@ TEST(ContentSuggestionsArticleItemTest, DontFetchImageIsImageIsBeingFetched) {
 
   OCMExpect([niceDelegateMock loadImageForArticleItem:item]);
   ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
-  ASSERT_EQ(nil, item.image);
+  ASSERT_NE(nil, item.image);
   [item configureCell:cell];
   ASSERT_OCMOCK_VERIFY(niceDelegateMock);
 
@@ -105,7 +76,7 @@ TEST(ContentSuggestionsArticleItemTest, DontFetchImageIsImageIsBeingFetched) {
   [item configureCell:cell];
 
   // Tests.
-  EXPECT_EQ(nil, cell.imageView.image);
+  EXPECT_EQ(item.image, cell.imageView.image);
   EXPECT_EQ(title, cell.titleLabel.text);
   EXPECT_EQ(subtitle, cell.subtitleLabel.text);
 }

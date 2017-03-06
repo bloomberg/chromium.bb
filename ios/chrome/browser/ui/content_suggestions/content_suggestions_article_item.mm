@@ -56,22 +56,37 @@ const CGFloat kStandardSpacing = 8;
     _subtitle = [subtitle copy];
     _articleURL = url;
     _delegate = delegate;
+    _image = [self emptyImageBackground];
   }
   return self;
 }
 
 - (void)configureCell:(ContentSuggestionsArticleCell*)cell {
   [super configureCell:cell];
-  if (!self.image && !self.imageFetched) {
+  if (!self.imageFetched) {
     self.imageFetched = YES;
-    // Fetch the image. During the fetch the cell's image should still be set to
-    // nil.
+    // Fetch the image. During the fetch the cell's image should still be set.
     [self.delegate loadImageForArticleItem:self];
   }
   cell.titleLabel.text = self.title;
   cell.subtitleLabel.text = self.subtitle;
   cell.imageView.image = self.image;
   [cell setPublisherName:self.publisher date:self.publishDate];
+}
+
+#pragma mark - Private
+
+- (UIImage*)emptyImageBackground {
+  // TODO(crbug.com/698171): Remove this function once we have real background
+  // image.
+  UIColor* color = [UIColor lightGrayColor];
+  CGRect rect = CGRectMake(0, 0, 1, 1);
+  UIGraphicsBeginImageContext(rect.size);
+  [color setFill];
+  UIRectFill(rect);
+  UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+  return image;
 }
 
 @end
@@ -156,9 +171,9 @@ const CGFloat kStandardSpacing = 8;
   CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
 
   self.titleLabel.preferredMaxLayoutWidth =
-      parentWidth - self.imageView.bounds.size.width - 3 * kStandardSpacing;
+      parentWidth - kImageSize - 3 * kStandardSpacing;
   self.subtitleLabel.preferredMaxLayoutWidth =
-      parentWidth - self.imageView.bounds.size.width - 3 * kStandardSpacing;
+      parentWidth - kImageSize - 3 * kStandardSpacing;
 
   // Re-layout with the new preferred width to allow the label to adjust its
   // height.
