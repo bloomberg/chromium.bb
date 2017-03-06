@@ -383,34 +383,24 @@ void HTMLTextAreaElement::setValue(const String& value,
 }
 
 void HTMLTextAreaElement::setNonDirtyValue(const String& value) {
-  setValueCommon(value, DispatchNoEvent, SetSeletion);
+  setValueCommon(value, DispatchNoEvent);
   m_isDirty = false;
 }
 
 void HTMLTextAreaElement::setValueCommon(const String& newValue,
-                                         TextFieldEventBehavior eventBehavior,
-                                         SetValueCommonOption setValueOption) {
+                                         TextFieldEventBehavior eventBehavior) {
   // Code elsewhere normalizes line endings added by the user via the keyboard
   // or pasting.  We normalize line endings coming from JavaScript here.
   String normalizedValue = newValue.isNull() ? "" : newValue;
   normalizedValue.replace("\r\n", "\n");
   normalizedValue.replace('\r', '\n');
 
-  // Return early because we don't want to trigger other side effects
-  // when the value isn't changing.
-  // FIXME: Simple early return doesn't match the Firefox ever.
-  // Remove these lines.
-  if (normalizedValue == value()) {
-    if (setValueOption == SetSeletion) {
-      setNeedsValidityCheck();
-      if (isFinishedParsingChildren()) {
-        // Set the caret to the end of the text value except for initialize.
-        unsigned endOfString = m_value.length();
-        setSelectionRange(endOfString, endOfString);
-      }
-    }
+  // Return early because we don't want to trigger other side effects when the
+  // value isn't changing. This is interoperable though the specification
+  // doesn't define so.
+  // https://github.com/whatwg/html/issues/2412
+  if (normalizedValue == value())
     return;
-  }
 
   m_value = normalizedValue;
   setInnerEditorValue(m_value);
@@ -642,7 +632,7 @@ void HTMLTextAreaElement::copyNonAttributePropertiesFromElement(
     const Element& source) {
   const HTMLTextAreaElement& sourceElement =
       static_cast<const HTMLTextAreaElement&>(source);
-  setValueCommon(sourceElement.value(), DispatchNoEvent, SetSeletion);
+  setValueCommon(sourceElement.value(), DispatchNoEvent);
   m_isDirty = sourceElement.m_isDirty;
   TextControlElement::copyNonAttributePropertiesFromElement(source);
 }

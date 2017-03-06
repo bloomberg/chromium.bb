@@ -37,8 +37,8 @@ PASS ta.selectionEnd is 9
 PASS ta.selectionStart is 12
 PASS ta.selectionEnd is 12
 - append a empty text node
-PASS ta.selectionStart is 12
-PASS ta.selectionEnd is 12
+PASS ta.selectionStart is 2
+PASS ta.selectionEnd is 3
 PASS successfullyParsed is true
 
 TEST COMPLETE

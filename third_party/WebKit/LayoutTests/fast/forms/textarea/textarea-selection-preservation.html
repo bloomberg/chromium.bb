@@ -68,8 +68,8 @@
     debug("- append a empty text node");
     ta.setSelectionRange(2, 3);
     ta.appendChild(document.createTextNode(''));
-    shouldBe('ta.selectionStart', '12');
-    shouldBe('ta.selectionEnd', '12');
+    shouldBe('ta.selectionStart', '2');
+    shouldBe('ta.selectionEnd', '3');
 </script>
 </body>
 </html>
