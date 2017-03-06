@@ -52,7 +52,7 @@ class PaymentRequestWebContentsManager
  private:
   explicit PaymentRequestWebContentsManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PaymentRequestWebContentsManager>;
-  friend class PaymentRequestInteractiveTestBase;
+  friend class PaymentRequestBrowserTestBase;
 
   // Owns all the PaymentRequest for this WebContents. Since the
   // PaymentRequestWebContentsManager's lifetime is tied to the WebContents,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_INTERACTIVE_UITEST_BASE_H_
-#define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_INTERACTIVE_UITEST_BASE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_
+#define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_
 
 #include <vector>
 
@@ -58,15 +58,15 @@ class PersonalDataLoadedObserverMock
 
 // Base class for any interactive PaymentRequest test that will need to open
 // the UI and interact with it.
-class PaymentRequestInteractiveTestBase
+class PaymentRequestBrowserTestBase
     : public InProcessBrowserTest,
       public PaymentRequestDialogView::ObserverForTest,
       public views::WidgetObserver {
  protected:
   // Test will open a browser window to |test_file_path| (relative to
   // chrome/test/data/payments).
-  explicit PaymentRequestInteractiveTestBase(const std::string& test_file_path);
-  ~PaymentRequestInteractiveTestBase() override;
+  explicit PaymentRequestBrowserTestBase(const std::string& test_file_path);
+  ~PaymentRequestBrowserTestBase() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
@@ -199,9 +199,9 @@ class PaymentRequestInteractiveTestBase
   // Weak, owned by the PaymentRequest object.
   TestChromePaymentRequestDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestInteractiveTestBase);
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestBrowserTestBase);
 };
 
 }  // namespace payments
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_INTERACTIVE_UITEST_BASE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_

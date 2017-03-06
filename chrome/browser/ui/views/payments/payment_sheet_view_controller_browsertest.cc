@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
-#include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -16,10 +16,10 @@ namespace payments {
 // A simple PaymentRequest which simply requests 'visa' or 'mastercard' and
 // nothing else.
 class PaymentSheetViewControllerNoShippingTest
-    : public PaymentRequestInteractiveTestBase {
+    : public PaymentRequestBrowserTestBase {
  protected:
   PaymentSheetViewControllerNoShippingTest()
-      : PaymentRequestInteractiveTestBase(
+      : PaymentRequestBrowserTestBase(
             "/payment_request_no_shipping_test.html") {}
 
  private:
@@ -70,10 +70,10 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 
 // Accepts 'visa' cards and requests the full contact details.
 class PaymentSheetViewControllerContactDetailsTest
-    : public PaymentRequestInteractiveTestBase {
+    : public PaymentRequestBrowserTestBase {
  protected:
   PaymentSheetViewControllerContactDetailsTest()
-      : PaymentRequestInteractiveTestBase(
+      : PaymentRequestBrowserTestBase(
             "/payment_request_contact_details_and_free_shipping_test.html") {}
 
  private:

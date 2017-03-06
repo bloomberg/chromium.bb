@@ -7,8 +7,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
-#include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -28,10 +28,10 @@ const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
 }  // namespace
 
 class PaymentRequestCreditCardEditorTest
-    : public PaymentRequestInteractiveTestBase {
+    : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestCreditCardEditorTest()
-      : PaymentRequestInteractiveTestBase(
+      : PaymentRequestBrowserTestBase(
             "/payment_request_no_shipping_test.html") {}
 
   PersonalDataLoadedObserverMock personal_data_observer_;
@@ -297,11 +297,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {
 }
 
 class PaymentRequestCreditCardBasicCardTest
-    : public PaymentRequestInteractiveTestBase {
+    : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestCreditCardBasicCardTest()
-      : PaymentRequestInteractiveTestBase(
-            "/payment_request_basic_card_test.html") {}
+      : PaymentRequestBrowserTestBase("/payment_request_basic_card_test.html") {
+  }
 
   void InvokePaymentRequestWithJs(const std::string& js) {
     ResetEventObserver(DialogEvent::DIALOG_OPENED);

@@ -10,7 +10,7 @@
 #include "ui/views/animation/bounds_animator_observer.h"
 
 namespace payments {
-class PaymentRequestInteractiveTestBase;
+class PaymentRequestBrowserTestBase;
 }  // namespace payments
 
 // This view represents a stack of views that slide in over one another from
@@ -47,7 +47,7 @@ class ViewStack : public views::BoundsAnimatorObserver,
   FRIEND_TEST_ALL_PREFIXES(ViewStackTest, TestPushStateAddsViewToChildren);
   FRIEND_TEST_ALL_PREFIXES(ViewStackTest, TestLayoutUpdatesAnimations);
   friend class ViewStackTest;
-  friend class payments::PaymentRequestInteractiveTestBase;
+  friend class payments::PaymentRequestBrowserTestBase;
 
   // Returns the top state of the stack, used in tests.
   views::View* top() { return stack_.back().get(); }

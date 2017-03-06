@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
-#include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request.h"
@@ -11,11 +11,10 @@
 
 namespace payments {
 
-class PaymentMethodViewControllerTest
-    : public PaymentRequestInteractiveTestBase {
+class PaymentMethodViewControllerTest : public PaymentRequestBrowserTestBase {
  protected:
   PaymentMethodViewControllerTest()
-      : PaymentRequestInteractiveTestBase(
+      : PaymentRequestBrowserTestBase(
             "/payment_request_no_shipping_test.html") {}
 
  private:

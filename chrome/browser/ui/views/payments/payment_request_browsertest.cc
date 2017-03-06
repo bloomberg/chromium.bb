@@ -7,8 +7,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
-#include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
@@ -18,10 +18,10 @@
 namespace payments {
 
 class PaymentRequestWebContentsManagerTest
-    : public PaymentRequestInteractiveTestBase {
+    : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestWebContentsManagerTest()
-      : PaymentRequestInteractiveTestBase(
+      : PaymentRequestBrowserTestBase(
             "/payment_request_multiple_requests.html") {}
 
  private:
@@ -35,10 +35,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestWebContentsManagerTest, MultipleRequests) {
   EXPECT_EQ(5U, payment_requests.size());
 }
 
-class PaymentRequestNoShippingTest : public PaymentRequestInteractiveTestBase {
+class PaymentRequestNoShippingTest : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestNoShippingTest()
-      : PaymentRequestInteractiveTestBase(
+      : PaymentRequestBrowserTestBase(
             "/payment_request_no_shipping_test.html") {}
 
  private:
@@ -93,10 +93,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndReload) {
   WaitForObservedEvent();
 }
 
-class PaymentRequestAbortTest : public PaymentRequestInteractiveTestBase {
+class PaymentRequestAbortTest : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestAbortTest()
-      : PaymentRequestInteractiveTestBase("/payment_request_abort_test.html") {}
+      : PaymentRequestBrowserTestBase("/payment_request_abort_test.html") {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestAbortTest);
