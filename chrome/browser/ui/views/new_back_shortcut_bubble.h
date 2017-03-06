@@ -27,9 +27,8 @@ class Widget;
 
 // NewBackShortcutBubble shows a short-lived notification along the top of the
 // screen when the user presses the old Back/Forward shortcut, telling them how
-// to use the new shortcut. This will only be available for a few milestones to
-// let users adapt.
-// TODO(mgiuca): Remove this in M54 (https://crbug.com/610039).
+// to use the new shortcut. This notification only shows up the first few times
+// the user presses the old shortcut.
 class NewBackShortcutBubble : public gfx::AnimationDelegate {
  public:
   explicit NewBackShortcutBubble(ExclusiveAccessBubbleViewsContext* context);
