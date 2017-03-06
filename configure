@@ -333,7 +333,6 @@ CONFIG_LIST="
     debug_libs
 
     dequant_tokens
-    dc_recon
     runtime_cpu_detect
     postproc
     av1_postproc
@@ -399,7 +398,6 @@ CMDLINE_SELECT="
     debug_libs
 
     dequant_tokens
-    dc_recon
     postproc
     av1_postproc
     multithread
@@ -724,7 +722,6 @@ process_toolchain() {
     enabled gcc || soft_disable ccache
     if enabled mips; then
         enable_feature dequant_tokens
-        enable_feature dc_recon
     fi
 
     # Enable the postbuild target if building for visual studio.
