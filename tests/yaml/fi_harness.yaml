@@ -94,8 +94,8 @@ tests:
   - # Unknown characters.
     # Not covered by the official specification document, but
     # conventionally replaced with an asterisk.
-    - გ
-    - ⠔
+    - გ ●
+    - ⠔ ⠔
 
   - # Emphasis only at the beginning of a word
     - valtionpäämies
