@@ -271,7 +271,7 @@ name in the NEWS entry. This is usefull for projects like NVDA.
 
 ** Set the version number
 Update the version number in NEWS (with version, date, and release
-type), ChangeLog and configure.ac.
+type), ChangeLog, configure.ac and windows/include/config.h.
 
 Don't forget to update the libtool versioning info in configure.ac,
 i.e. LIBLOUIS_REVISION and possibly LIBLOUIS_CURRENT and LIBLOUIS_AGE.
