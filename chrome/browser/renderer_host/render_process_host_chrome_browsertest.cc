@@ -525,21 +525,21 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 class WindowDestroyer : public content::WebContentsObserver {
  public:
   WindowDestroyer(content::WebContents* web_contents, TabStripModel* model)
-      : content::WebContentsObserver(web_contents), tab_strip_model_(model) {}
+      : content::WebContentsObserver(web_contents),
+        tab_strip_model_(model),
+        browser_closed_observer_(chrome::NOTIFICATION_BROWSER_CLOSED,
+                                 content::NotificationService::AllSources()) {}
+
+  // Wait for the browser window to be destroyed.
+  void Wait() { browser_closed_observer_.Wait(); }
 
   void RenderProcessGone(base::TerminationStatus status) override {
-    // Wait for the window to be destroyed, which will ensure all other
-    // RenderViewHost objects are deleted before we return and proceed with
-    // the next iteration of notifications.
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
     tab_strip_model_->CloseAllTabs();
-    observer.Wait();
   }
 
  private:
   TabStripModel* tab_strip_model_;
+  content::WindowedNotificationObserver browser_closed_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowDestroyer);
 };
@@ -572,16 +572,12 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   // Create an object that will close the window on a process crash.
   WindowDestroyer destroyer(wc1, browser()->tab_strip_model());
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-
   // Kill the renderer process, simulating a crash. This should the ProcessDied
   // method to be called. Alternatively, RenderProcessHost::OnChannelError can
   // be called to directly force a call to ProcessDied.
   wc1->GetRenderProcessHost()->Shutdown(-1, true);
 
-  observer.Wait();
+  destroyer.Wait();
 }
 
 // Sets up the browser in order to start the tests with two tabs open: one
