@@ -108,6 +108,25 @@ else
 fi
 AM_CONDITIONAL([HAVE_MAKEINFO_5], [test x$have_makeinfo_5 = xtrue])
 
+# Check if the user wants to enable yaml tests
+AC_ARG_WITH([yaml],
+  [AS_HELP_STRING([--with-yaml], [enable YAML-based tests @<:@default=yes@:>@])],
+  [with_yaml=$withval],
+  [])
+
+if test "x$with_yaml" == xno; then
+  AC_DEFINE([WITHOUT_YAML],[1],[Disable YAML tests])
+fi
+
+# if libyaml is missing warn or die depending on --with-yaml
+if test x$ac_cv_lib_yaml_yaml_parser_initialize != xyes; then
+  case "$with_yaml" in
+  yes) AC_MSG_ERROR([--with-yaml was given, but libyaml was not found]);;
+  no) ;;
+  *) AC_MSG_WARN([libyaml was not found. YAML tests will be skipped]);;
+  esac
+fi
+
 # Check if we have Python installed
 AM_PATH_PYTHON([2.6],, [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])
