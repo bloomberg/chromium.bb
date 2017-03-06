@@ -13,7 +13,6 @@
 #include "ui/display/manager/managed_display_info.h"
 
 namespace gfx {
-class Point;
 class Rect;
 class Size;
 }
@@ -61,12 +60,6 @@ DISPLAY_MANAGER_EXPORT bool ComputeBoundary(
     const Display& secondary_display,
     gfx::Rect* primary_edge_in_screen,
     gfx::Rect* secondary_edge_in_screen);
-
-// Returns the index in the displays whose bounds contains |point_in_screen|.
-// Returns -1 if no such display exist.
-DISPLAY_MANAGER_EXPORT int FindDisplayIndexContainingPoint(
-    const std::vector<Display>& displays,
-    const gfx::Point& point_in_screen);
 
 // Sorts id list using |CompareDisplayIds| below.
 DISPLAY_MANAGER_EXPORT void SortDisplayIdList(DisplayIdList* list);

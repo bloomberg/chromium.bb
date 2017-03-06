@@ -266,15 +266,6 @@ bool ComputeBoundary(const Display& a_display,
   return true;
 }
 
-int FindDisplayIndexContainingPoint(const std::vector<Display>& displays,
-                                    const gfx::Point& point_in_screen) {
-  auto iter = std::find_if(displays.begin(), displays.end(),
-                           [point_in_screen](const Display& display) {
-                             return display.bounds().Contains(point_in_screen);
-                           });
-  return iter == displays.end() ? -1 : (iter - displays.begin());
-}
-
 DisplayIdList CreateDisplayIdList(const Displays& list) {
   return GenerateDisplayIdList(
       list.begin(), list.end(),

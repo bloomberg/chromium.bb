@@ -17,7 +17,8 @@ class Rect;
 namespace display {
 class Display;
 
-// Returns the display in |displays| closest to |point|.
+// Returns the display containing |point|. If no displays contain |point|, then
+// this returns the display closest to |point|.
 DISPLAY_EXPORT const Display* FindDisplayNearestPoint(
     const std::vector<Display>& displays,
     const gfx::Point& point);
@@ -27,6 +28,13 @@ DISPLAY_EXPORT const Display* FindDisplayNearestPoint(
 DISPLAY_EXPORT const Display* FindDisplayWithBiggestIntersection(
     const std::vector<Display>& displays,
     const gfx::Rect& rect);
+
+// Returns an iterator into |displays| of the Display whose bounds contains
+// |point_in_screen|, or displays.end() if no Displays contains
+// |point_in_screen|.
+DISPLAY_EXPORT std::vector<Display>::const_iterator FindDisplayContainingPoint(
+    const std::vector<Display>& displays,
+    const gfx::Point& point_in_screen);
 
 }  // namespace display
 

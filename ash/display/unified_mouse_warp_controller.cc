@@ -15,6 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
+#include "ui/display/display_finder.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
@@ -43,12 +44,11 @@ aura::WindowTreeHost* FindMirroringWindowTreeHostFromScreenPoint(
       Shell::GetInstance()
           ->display_manager()
           ->software_mirroring_display_list();
-  int index = display::FindDisplayIndexContainingPoint(mirroring_display_list,
-                                                       point_in_screen);
-  if (index < 0)
+  auto iter = display::FindDisplayContainingPoint(mirroring_display_list,
+                                                  point_in_screen);
+  if (iter == mirroring_display_list.end())
     return nullptr;
-  return GetMirroringAshWindowTreeHostForDisplayId(
-             mirroring_display_list[index].id())
+  return GetMirroringAshWindowTreeHostForDisplayId(iter->id())
       ->AsWindowTreeHost();
 }
 #endif
@@ -82,14 +82,12 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
           Shell::GetInstance()
               ->display_manager()
               ->software_mirroring_display_list();
-      int index = display::FindDisplayIndexContainingPoint(
-          mirroring_display_list, point_in_unified_host);
-      if (index >= 0) {
-        const display::Display& new_display = mirroring_display_list[index];
-        if (current_cursor_display_id_ != new_display.id()) {
-          cursor_client->SetDisplay(new_display);
-          current_cursor_display_id_ = display::kInvalidDisplayId;
-        }
+      auto iter = display::FindDisplayContainingPoint(mirroring_display_list,
+                                                      point_in_unified_host);
+      if (iter != mirroring_display_list.end() &&
+          current_cursor_display_id_ != iter->id()) {
+        cursor_client->SetDisplay(*iter);
+        current_cursor_display_id_ = display::kInvalidDisplayId;
       }
     }
   }

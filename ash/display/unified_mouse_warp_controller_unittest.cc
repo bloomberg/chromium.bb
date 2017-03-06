@@ -13,8 +13,8 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
+#include "ui/display/display_finder.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -88,13 +88,12 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
     // Convert screen to the host.
     root->GetHost()->ConvertDIPToPixels(&new_location_in_unified_host);
 
-    int new_index = display::FindDisplayIndexContainingPoint(
+    auto iter = display::FindDisplayContainingPoint(
         display_manager()->software_mirroring_display_list(),
         new_location_in_unified_host);
-    if (new_index < 0)
+    if (iter == display_manager()->software_mirroring_display_list().end())
       return false;
-    return orig_mirroring_display_id !=
-           display_manager()->software_mirroring_display_list()[new_index].id();
+    return orig_mirroring_display_id != iter->id();
   }
 
   MouseCursorEventFilter* event_filter() {

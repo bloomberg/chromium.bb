@@ -58,6 +58,9 @@ const std::vector<Display>& ScreenBase::GetAllDisplays() const {
 }
 
 Display ScreenBase::GetDisplayMatching(const gfx::Rect& match_rect) const {
+  if (match_rect.IsEmpty())
+    return GetDisplayNearestPoint(match_rect.origin());
+
   const Display* match =
       FindDisplayWithBiggestIntersection(display_list_.displays(), match_rect);
   return match ? *match : GetPrimaryDisplay();

@@ -4,6 +4,7 @@
 
 #include "ui/display/display_finder.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/logging.h"
@@ -13,9 +14,15 @@
 
 namespace display {
 
-const Display* FindDisplayNearestPoint(const std::vector<Display>& displays,
+using Displays = std::vector<Display>;
+
+const Display* FindDisplayNearestPoint(const Displays& displays,
                                        const gfx::Point& point) {
   DCHECK(!displays.empty());
+  auto iter = FindDisplayContainingPoint(displays, point);
+  if (iter != displays.end())
+    return &(*iter);
+
   int min_distance = std::numeric_limits<int>::max();
   const Display* nearest_display = nullptr;
   for (const auto& display : displays) {
@@ -30,9 +37,8 @@ const Display* FindDisplayNearestPoint(const std::vector<Display>& displays,
   return nearest_display;
 }
 
-const Display* FindDisplayWithBiggestIntersection(
-    const std::vector<Display>& displays,
-    const gfx::Rect& rect) {
+const Display* FindDisplayWithBiggestIntersection(const Displays& displays,
+                                                  const gfx::Rect& rect) {
   DCHECK(!displays.empty());
   int max_area = 0;
   const Display* matching = nullptr;
@@ -45,6 +51,15 @@ const Display* FindDisplayWithBiggestIntersection(
     }
   }
   return matching;
+}
+
+Displays::const_iterator FindDisplayContainingPoint(
+    const Displays& displays,
+    const gfx::Point& point_in_screen) {
+  return std::find_if(displays.begin(), displays.end(),
+                      [point_in_screen](const Display& display) {
+                        return display.bounds().Contains(point_in_screen);
+                      });
 }
 
 }  // namespace display
