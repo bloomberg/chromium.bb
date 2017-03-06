@@ -19,6 +19,8 @@ namespace message_center {
 // content of the notification.
 class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
  public:
+  static const char kViewClassName[];
+
   CustomNotificationView(MessageCenterController* controller,
                          const Notification& notification);
   ~CustomNotificationView() override;
@@ -36,6 +38,7 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
   void UpdateControlButtonsVisibility() override;
 
   // Overridden from views::View:
+  const char* GetClassName() const override;
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
   bool HasFocus() const override;

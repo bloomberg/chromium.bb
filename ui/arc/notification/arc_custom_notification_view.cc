@@ -496,12 +496,18 @@ void ArcCustomNotificationView::OnMouseExited(const ui::MouseEvent&) {
 }
 
 void ArcCustomNotificationView::OnFocus() {
+  CHECK_EQ(message_center::CustomNotificationView::kViewClassName,
+           parent()->GetClassName());
+
   NativeViewHost::OnFocus();
   static_cast<message_center::CustomNotificationView*>(parent())
       ->OnContentFocused();
 }
 
 void ArcCustomNotificationView::OnBlur() {
+  CHECK_EQ(message_center::CustomNotificationView::kViewClassName,
+           parent()->GetClassName());
+
   NativeViewHost::OnBlur();
   static_cast<message_center::CustomNotificationView*>(parent())
       ->OnContentBlured();
@@ -525,7 +531,10 @@ views::FocusTraversable* ArcCustomNotificationView::GetFocusTraversable() {
 void ArcCustomNotificationView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
   if (item_ && !item_->pinned() && sender == close_button_) {
-    item_->CloseFromCloseButton();
+    CHECK_EQ(message_center::CustomNotificationView::kViewClassName,
+             parent()->GetClassName());
+    static_cast<message_center::CustomNotificationView*>(parent())
+        ->OnCloseButtonPressed();
   }
   if (item_ && settings_button_ && sender == settings_button_) {
     item_->OpenSettings();

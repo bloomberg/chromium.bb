@@ -212,6 +212,10 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
+void MessageView::OnCloseButtonPressed() {
+  controller_->RemoveNotification(notification_id_, true);  // By user.
+}
+
 void MessageView::OnSlideOut() {
   controller_->RemoveNotification(notification_id_, true);  // By user.
 }

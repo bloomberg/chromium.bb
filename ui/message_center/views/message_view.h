@@ -55,6 +55,8 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView {
   virtual bool IsPinned() const = 0;
   virtual void UpdateControlButtonsVisibility() = 0;
 
+  void OnCloseButtonPressed();
+
   // Overridden from views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

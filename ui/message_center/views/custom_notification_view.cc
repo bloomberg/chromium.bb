@@ -19,6 +19,9 @@
 
 namespace message_center {
 
+// static
+const char CustomNotificationView::kViewClassName[] = "CustomNotificationView";
+
 CustomNotificationView::CustomNotificationView(
     MessageCenterController* controller,
     const Notification& notification)
@@ -76,6 +79,10 @@ bool CustomNotificationView::IsPinned() const {
   if (!contents_view_delegate_)
     return false;
   return contents_view_delegate_->IsPinned();
+}
+
+const char* CustomNotificationView::GetClassName() const {
+  return kViewClassName;
 }
 
 void CustomNotificationView::UpdateControlButtonsVisibility() {

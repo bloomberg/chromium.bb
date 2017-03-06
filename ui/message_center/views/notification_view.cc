@@ -375,7 +375,7 @@ void NotificationView::ButtonPressed(views::Button* sender,
   if (close_button_ && sender == close_button_.get()) {
     // Warning: This causes the NotificationView itself to be deleted, so don't
     // do anything afterwards.
-    controller()->RemoveNotification(id, true /* by_user */);
+    OnCloseButtonPressed();
     return;
   }
 

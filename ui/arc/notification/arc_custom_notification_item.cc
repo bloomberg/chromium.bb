@@ -25,7 +25,9 @@ constexpr char kNotifierId[] = "ARC_NOTIFICATION";
 class ArcNotificationDelegate : public message_center::NotificationDelegate {
  public:
   explicit ArcNotificationDelegate(ArcCustomNotificationItem* item)
-      : item_(item) {}
+      : item_(item) {
+    DCHECK(item_);
+  }
 
   std::unique_ptr<message_center::CustomContent> CreateCustomContent()
       override {
@@ -34,6 +36,8 @@ class ArcNotificationDelegate : public message_center::NotificationDelegate {
     return base::MakeUnique<message_center::CustomContent>(
         std::move(view), std::move(content_view_delegate));
   }
+
+  void Close(bool by_user) override { item_->Close(by_user); }
 
  private:
   // The destructor is private since this class is ref-counted.
@@ -107,13 +111,6 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
     observer.OnItemUpdated();
 
   AddToMessageCenter();
-}
-
-void ArcCustomNotificationItem::CloseFromCloseButton() {
-  // Needs to manually remove notification from MessageCenter because
-  // the floating close button is not part of MessageCenter.
-  message_center()->RemoveNotification(notification_id(), true);
-  Close(true);
 }
 
 void ArcCustomNotificationItem::AddObserver(Observer* observer) {
