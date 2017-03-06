@@ -32,6 +32,8 @@ WebViewTestProxyBase::WebViewTestProxyBase()
 
 WebViewTestProxyBase::~WebViewTestProxyBase() {
   test_interfaces_->WindowClosed(this);
+  if (test_interfaces_->GetDelegate() == delegate_)
+    test_interfaces_->SetDelegate(nullptr);
 }
 
 void WebViewTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {

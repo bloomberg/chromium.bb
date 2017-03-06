@@ -160,7 +160,7 @@ MockWebSpeechRecognizer::MockWebSpeechRecognizer()
       weak_factory_(this) {}
 
 MockWebSpeechRecognizer::~MockWebSpeechRecognizer() {
-  ClearTaskQueue();
+  SetDelegate(nullptr);
 }
 
 bool MockWebSpeechRecognizer::Task::isNewContextTask() const {
@@ -169,6 +169,9 @@ bool MockWebSpeechRecognizer::Task::isNewContextTask() const {
 
 void MockWebSpeechRecognizer::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
+  // No delegate to forward to, clear out pending tasks.
+  if (!delegate_)
+    ClearTaskQueue();
 }
 
 void MockWebSpeechRecognizer::SetClientContext(
