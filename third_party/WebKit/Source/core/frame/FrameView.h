@@ -442,7 +442,7 @@ class CORE_EXPORT FrameView final
   bool isScrollCornerVisible() const override;
   bool userInputScrollable(ScrollbarOrientation) const override;
   bool shouldPlaceVerticalScrollbarOnLeft() const override;
-  FrameViewBase* getWidget() override;
+  FrameViewBase* getFrameViewBase() override;
   CompositorAnimationHost* compositorAnimationHost() const override;
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
   LayoutBox* layoutBox() const override;
@@ -646,14 +646,16 @@ class CORE_EXPORT FrameView final
   bool scrollbarCornerPresent() const;
   IntRect scrollCornerRect() const override;
 
-  IntRect convertFromScrollbarToContainingWidget(const Scrollbar&,
-                                                 const IntRect&) const override;
-  IntRect convertFromContainingWidgetToScrollbar(const Scrollbar&,
-                                                 const IntRect&) const override;
-  IntPoint convertFromScrollbarToContainingWidget(
+  IntRect convertFromScrollbarToContainingFrameViewBase(
+      const Scrollbar&,
+      const IntRect&) const override;
+  IntRect convertFromContainingFrameViewBaseToScrollbar(
+      const Scrollbar&,
+      const IntRect&) const override;
+  IntPoint convertFromScrollbarToContainingFrameViewBase(
       const Scrollbar&,
       const IntPoint&) const override;
-  IntPoint convertFromContainingWidgetToScrollbar(
+  IntPoint convertFromContainingFrameViewBaseToScrollbar(
       const Scrollbar&,
       const IntPoint&) const override;
 

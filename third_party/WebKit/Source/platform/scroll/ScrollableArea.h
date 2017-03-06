@@ -184,25 +184,25 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   // Convert points and rects between the scrollbar and its containing
   // FrameViewBase. The client needs to implement these in order to be aware of
   // layout effects like CSS transforms.
-  virtual IntRect convertFromScrollbarToContainingWidget(
+  virtual IntRect convertFromScrollbarToContainingFrameViewBase(
       const Scrollbar& scrollbar,
       const IntRect& scrollbarRect) const {
     return scrollbar.FrameViewBase::convertToContainingFrameViewBase(
         scrollbarRect);
   }
-  virtual IntRect convertFromContainingWidgetToScrollbar(
+  virtual IntRect convertFromContainingFrameViewBaseToScrollbar(
       const Scrollbar& scrollbar,
       const IntRect& parentRect) const {
     return scrollbar.FrameViewBase::convertFromContainingFrameViewBase(
         parentRect);
   }
-  virtual IntPoint convertFromScrollbarToContainingWidget(
+  virtual IntPoint convertFromScrollbarToContainingFrameViewBase(
       const Scrollbar& scrollbar,
       const IntPoint& scrollbarPoint) const {
     return scrollbar.FrameViewBase::convertToContainingFrameViewBase(
         scrollbarPoint);
   }
-  virtual IntPoint convertFromContainingWidgetToScrollbar(
+  virtual IntPoint convertFromContainingFrameViewBaseToScrollbar(
       const Scrollbar& scrollbar,
       const IntPoint& parentPoint) const {
     return scrollbar.FrameViewBase::convertFromContainingFrameViewBase(
@@ -340,7 +340,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
       OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const;
 
   // Returns the widget associated with this ScrollableArea.
-  virtual FrameViewBase* getWidget() { return nullptr; }
+  virtual FrameViewBase* getFrameViewBase() { return nullptr; }
 
   virtual LayoutBox* layoutBox() const { return nullptr; }
 

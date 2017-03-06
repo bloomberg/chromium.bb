@@ -681,7 +681,7 @@ LocalFrame* VisualViewport::mainFrame() const {
              : 0;
 }
 
-FrameViewBase* VisualViewport::getWidget() {
+FrameViewBase* VisualViewport::getFrameViewBase() {
   return mainFrame()->view();
 }
 

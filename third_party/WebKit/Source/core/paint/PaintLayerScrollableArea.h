@@ -260,14 +260,16 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool isActive() const override;
   bool isScrollCornerVisible() const override;
   IntRect scrollCornerRect() const override;
-  IntRect convertFromScrollbarToContainingWidget(const Scrollbar&,
-                                                 const IntRect&) const override;
-  IntRect convertFromContainingWidgetToScrollbar(const Scrollbar&,
-                                                 const IntRect&) const override;
-  IntPoint convertFromScrollbarToContainingWidget(
+  IntRect convertFromScrollbarToContainingFrameViewBase(
+      const Scrollbar&,
+      const IntRect&) const override;
+  IntRect convertFromContainingFrameViewBaseToScrollbar(
+      const Scrollbar&,
+      const IntRect&) const override;
+  IntPoint convertFromScrollbarToContainingFrameViewBase(
       const Scrollbar&,
       const IntPoint&) const override;
-  IntPoint convertFromContainingWidgetToScrollbar(
+  IntPoint convertFromContainingFrameViewBaseToScrollbar(
       const Scrollbar&,
       const IntPoint&) const override;
   int scrollSize(ScrollbarOrientation) const override;
@@ -421,7 +423,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
   IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
-  FrameViewBase* getWidget() override;
+  FrameViewBase* getFrameViewBase() override;
   bool shouldPerformScrollAnchoring() const override;
   ScrollAnchor* scrollAnchor() override { return &m_scrollAnchor; }
   bool isPaintLayerScrollableArea() const override { return true; }

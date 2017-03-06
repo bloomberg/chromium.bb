@@ -314,7 +314,7 @@ IntRect PaintLayerScrollableArea::scrollCornerRect() const {
   return IntRect();
 }
 
-IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(
+IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingFrameViewBase(
     const Scrollbar& scrollbar,
     const IntRect& scrollbarRect) const {
   LayoutView* view = box().view();
@@ -327,7 +327,7 @@ IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(
   return view->frameView()->convertFromLayoutItem(LayoutBoxItem(&box()), rect);
 }
 
-IntRect PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(
+IntRect PaintLayerScrollableArea::convertFromContainingFrameViewBaseToScrollbar(
     const Scrollbar& scrollbar,
     const IntRect& parentRect) const {
   LayoutView* view = box().view();
@@ -340,7 +340,8 @@ IntRect PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(
   return rect;
 }
 
-IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(
+IntPoint
+PaintLayerScrollableArea::convertFromScrollbarToContainingFrameViewBase(
     const Scrollbar& scrollbar,
     const IntPoint& scrollbarPoint) const {
   LayoutView* view = box().view();
@@ -352,7 +353,8 @@ IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(
   return view->frameView()->convertFromLayoutItem(LayoutBoxItem(&box()), point);
 }
 
-IntPoint PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(
+IntPoint
+PaintLayerScrollableArea::convertFromContainingFrameViewBaseToScrollbar(
     const Scrollbar& scrollbar,
     const IntPoint& parentPoint) const {
   LayoutView* view = box().view();
@@ -1900,7 +1902,7 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const {
              controller.globalRootScroller()) == this;
 }
 
-FrameViewBase* PaintLayerScrollableArea::getWidget() {
+FrameViewBase* PaintLayerScrollableArea::getFrameViewBase() {
   return box().frame()->view();
 }
 

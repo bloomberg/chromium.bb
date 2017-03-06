@@ -486,7 +486,7 @@ void ScrollableArea::layerForScrollingDidChange(
 
 bool ScrollableArea::scheduleAnimation() {
   if (HostWindow* window = getHostWindow()) {
-    window->scheduleAnimation(getWidget());
+    window->scheduleAnimation(getFrameViewBase());
     return true;
   }
   return false;

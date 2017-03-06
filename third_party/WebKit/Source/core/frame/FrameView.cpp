@@ -4478,7 +4478,7 @@ bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const {
   return false;
 }
 
-FrameViewBase* FrameView::getWidget() {
+FrameViewBase* FrameView::getFrameViewBase() {
   return this;
 }
 
@@ -4594,7 +4594,7 @@ bool FrameView::scrollbarCornerPresent() const {
          (verticalScrollbar() && height() - verticalScrollbar()->height() > 0);
 }
 
-IntRect FrameView::convertFromScrollbarToContainingWidget(
+IntRect FrameView::convertFromScrollbarToContainingFrameViewBase(
     const Scrollbar& scrollbar,
     const IntRect& localRect) const {
   // Scrollbars won't be transformed within us
@@ -4603,7 +4603,7 @@ IntRect FrameView::convertFromScrollbarToContainingWidget(
   return newRect;
 }
 
-IntRect FrameView::convertFromContainingWidgetToScrollbar(
+IntRect FrameView::convertFromContainingFrameViewBaseToScrollbar(
     const Scrollbar& scrollbar,
     const IntRect& parentRect) const {
   IntRect newRect = parentRect;
@@ -4613,7 +4613,7 @@ IntRect FrameView::convertFromContainingWidgetToScrollbar(
 }
 
 // FIXME: test these on windows
-IntPoint FrameView::convertFromScrollbarToContainingWidget(
+IntPoint FrameView::convertFromScrollbarToContainingFrameViewBase(
     const Scrollbar& scrollbar,
     const IntPoint& localPoint) const {
   // Scrollbars won't be transformed within us
@@ -4622,7 +4622,7 @@ IntPoint FrameView::convertFromScrollbarToContainingWidget(
   return newPoint;
 }
 
-IntPoint FrameView::convertFromContainingWidgetToScrollbar(
+IntPoint FrameView::convertFromContainingFrameViewBaseToScrollbar(
     const Scrollbar& scrollbar,
     const IntPoint& parentPoint) const {
   IntPoint newPoint = parentPoint;
