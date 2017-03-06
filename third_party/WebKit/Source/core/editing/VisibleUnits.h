@@ -161,8 +161,15 @@ CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition&,
 CORE_EXPORT VisiblePositionInFlatTree
 startOfWord(const VisiblePositionInFlatTree&,
             EWordSide = RightWordIfOnBoundary);
+// TODO(yoichio): Replace |endOfWord| to |endOfWordPosition| because returned
+// Position should be canonicalized with |nextBoundary()| by TextItetator.
+CORE_EXPORT Position endOfWordPosition(const VisiblePosition&,
+                                       EWordSide = RightWordIfOnBoundary);
 CORE_EXPORT VisiblePosition endOfWord(const VisiblePosition&,
                                       EWordSide = RightWordIfOnBoundary);
+CORE_EXPORT PositionInFlatTree
+endOfWordPosition(const VisiblePositionInFlatTree&,
+                  EWordSide = RightWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
 endOfWord(const VisiblePositionInFlatTree&, EWordSide = RightWordIfOnBoundary);
 VisiblePosition previousWordPosition(const VisiblePosition&);

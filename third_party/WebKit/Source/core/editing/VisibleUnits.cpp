@@ -1089,33 +1089,43 @@ static unsigned endWordBoundary(
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> endOfWordAlgorithm(
+static PositionTemplate<Strategy> endOfWordAlgorithm(
     const VisiblePositionTemplate<Strategy>& c,
     EWordSide side) {
   DCHECK(c.isValid()) << c;
   VisiblePositionTemplate<Strategy> p = c;
   if (side == LeftWordIfOnBoundary) {
     if (isStartOfParagraph(c))
-      return c;
+      return c.deepEquivalent();
 
     p = previousPositionOf(c);
     if (p.isNull())
-      return c;
+      return c.deepEquivalent();
   } else if (isEndOfParagraph(c)) {
-    return c;
+    return c.deepEquivalent();
   }
 
-  return createVisiblePosition(nextBoundary(p, endWordBoundary),
+  return nextBoundary(p, endWordBoundary);
+}
+
+Position endOfWordPosition(const VisiblePosition& position, EWordSide side) {
+  return endOfWordAlgorithm<EditingStrategy>(position, side);
+}
+
+VisiblePosition endOfWord(const VisiblePosition& position, EWordSide side) {
+  return createVisiblePosition(endOfWordPosition(position, side),
                                VP_UPSTREAM_IF_POSSIBLE);
 }
 
-VisiblePosition endOfWord(const VisiblePosition& c, EWordSide side) {
-  return endOfWordAlgorithm<EditingStrategy>(c, side);
+PositionInFlatTree endOfWordPosition(const VisiblePositionInFlatTree& position,
+                                     EWordSide side) {
+  return endOfWordAlgorithm<EditingInFlatTreeStrategy>(position, side);
 }
 
-VisiblePositionInFlatTree endOfWord(const VisiblePositionInFlatTree& c,
+VisiblePositionInFlatTree endOfWord(const VisiblePositionInFlatTree& position,
                                     EWordSide side) {
-  return endOfWordAlgorithm<EditingInFlatTreeStrategy>(c, side);
+  return createVisiblePosition(endOfWordPosition(position, side),
+                               VP_UPSTREAM_IF_POSSIBLE);
 }
 
 static unsigned previousWordPositionBoundary(
