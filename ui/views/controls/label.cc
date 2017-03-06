@@ -467,10 +467,9 @@ void Label::PaintText(gfx::Canvas* canvas) {
         SkColorGetA(view->background()->get_color()) == SK_AlphaOPAQUE)
       break;
 
-    if (view->layer()) {
-      DCHECK(view->layer()->fills_bounds_opaquely())
-          << " Ancestor view has a non-opaque layer: " << view->GetClassName()
-          << " with ID " << view->id();
+    if (view->layer() && view->layer()->fills_bounds_opaquely()) {
+      DLOG(WARNING) << "Ancestor view has a non-opaque layer: "
+                    << view->GetClassName() << " with ID " << view->id();
       break;
     }
   }

@@ -256,11 +256,7 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
 
   visible_fraction_ = 0;
   browser_view_->top_container()->SetPaintToLayer();
-  // In mash the window manager (ash) also renders to the non-client area. In
-  // order to see the decorations drawn by ash the layer needs to be marked as
-  // not filling bounds opaquely.
-  if (ash_util::IsRunningInMash())
-    browser_view_->top_container()->layer()->SetFillsBoundsOpaquely(false);
+  browser_view_->top_container()->layer()->SetFillsBoundsOpaquely(false);
   LayoutBrowserRootView();
   CreateMashRevealWidget();
   for (Observer& observer : observers_)
