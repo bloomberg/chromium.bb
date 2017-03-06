@@ -1589,6 +1589,22 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     ],
     'asan_args': ['--is-asan'],
   },
+  'webgl_conformance_gl_passthrough': {
+    'tester_configs': [
+      {
+        # Run this on the FYI waterfall and optional tryservers.
+        'predicate': Predicates.FYI_AND_OPTIONAL,
+        'os_types': ['linux'],
+      }
+    ],
+    'target_name': 'webgl_conformance',
+    'extra_browser_args': [
+      '--use-gl=angle',
+      '--use-angle=gl',
+      '--use-passthrough-cmd-decoder',
+    ],
+    'asan_args': ['--is-asan'],
+  },
   'webgl2_conformance_tests': {
     'tester_configs': [
       {
