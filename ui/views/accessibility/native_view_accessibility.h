@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_H_
 #define UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -40,13 +42,11 @@ class VIEWS_EXPORT NativeViewAccessibility
     : public ui::AXPlatformNodeDelegate,
       public WidgetObserver {
  public:
-  static NativeViewAccessibility* Create(View* view);
+  static std::unique_ptr<NativeViewAccessibility> Create(View* view);
+
+  ~NativeViewAccessibility() override;
 
   gfx::NativeViewAccessible GetNativeObject();
-
-  // Call Destroy rather than deleting this, because the subclass may
-  // use reference counting.
-  virtual void Destroy();
 
   void NotifyAccessibilityEvent(ui::AXEvent event_type);
 
@@ -73,8 +73,7 @@ class VIEWS_EXPORT NativeViewAccessibility
   void SetParentWidget(Widget* parent_widget);
 
  protected:
-  NativeViewAccessibility(View* view);
-  ~NativeViewAccessibility() override;
+  explicit NativeViewAccessibility(View* view);
 
   // Weak. Owns this.
   View* view_;

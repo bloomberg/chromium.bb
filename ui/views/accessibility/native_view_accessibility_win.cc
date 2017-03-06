@@ -6,9 +6,11 @@
 
 #include <oleacc.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
@@ -28,16 +30,15 @@
 namespace views {
 
 // static
-NativeViewAccessibility* NativeViewAccessibility::Create(View* view) {
-  return new NativeViewAccessibilityWin(view);
+std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
+    View* view) {
+  return base::MakeUnique<NativeViewAccessibilityWin>(view);
 }
 
 NativeViewAccessibilityWin::NativeViewAccessibilityWin(View* view)
-    : NativeViewAccessibility(view) {
-}
+    : NativeViewAccessibility(view) {}
 
-NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {
-}
+NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {}
 
 gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
   IAccessible* parent = NativeViewAccessibility::GetParent();

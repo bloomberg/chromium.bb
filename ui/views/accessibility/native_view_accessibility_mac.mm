@@ -4,14 +4,18 @@
 
 #include "ui/views/accessibility/native_view_accessibility_mac.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
 // static
-NativeViewAccessibility* NativeViewAccessibility::Create(View* view) {
-  return new NativeViewAccessibilityMac(view);
+std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
+    View* view) {
+  return base::MakeUnique<NativeViewAccessibilityMac>(view);
 }
 
 NativeViewAccessibilityMac::NativeViewAccessibilityMac(View* view)

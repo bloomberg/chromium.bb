@@ -158,33 +158,33 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
 
   // Check the a11y information for each tab.
   for (int i = 0; i < kNumTabs; ++i) {
-    NativeViewAccessibility* nva = NativeViewAccessibility::Create(GetTabAt(i));
-    ui::AXNodeData data = nva->GetData();
+    ui::AXNodeData data =
+        NativeViewAccessibility::Create(GetTabAt(i))->GetData();
     SCOPED_TRACE(testing::Message() << "Tab at index: " << i);
     EXPECT_EQ(ui::AX_ROLE_TAB, data.role);
     EXPECT_EQ(DefaultTabTitle(), data.GetString16Attribute(ui::AX_ATTR_NAME));
     EXPECT_TRUE(data.HasStateFlag(ui::AX_STATE_SELECTABLE));
     EXPECT_EQ(i == 0, data.HasStateFlag(ui::AX_STATE_SELECTED));
-    nva->Destroy();
   }
 
   ui::AXActionData action;
   action.action = ui::AX_ACTION_SET_SELECTION;
   // Select the first tab.
-  NativeViewAccessibility* nva = NativeViewAccessibility::Create(GetTabAt(0));
-  nva->AccessibilityPerformAction(action);
+
+  NativeViewAccessibility::Create(GetTabAt(0))
+      ->AccessibilityPerformAction(action);
   EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
-  nva->Destroy();
 
   // Select the second tab.
-  nva = NativeViewAccessibility::Create(GetTabAt(1));
+  std::unique_ptr<NativeViewAccessibility> nva =
+      NativeViewAccessibility::Create(GetTabAt(1));
   nva->AccessibilityPerformAction(action);
   EXPECT_EQ(1, tabbed_pane_->GetSelectedTabIndex());
   // Select the second tab again.
   nva->AccessibilityPerformAction(action);
   EXPECT_EQ(1, tabbed_pane_->GetSelectedTabIndex());
-  nva->Destroy();
 
+  nva.reset();
   widget->CloseNow();
 }
 

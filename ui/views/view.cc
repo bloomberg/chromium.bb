@@ -145,8 +145,7 @@ View::View()
       previous_focusable_view_(NULL),
       focus_behavior_(FocusBehavior::NEVER),
       context_menu_controller_(NULL),
-      drag_controller_(NULL),
-      native_view_accessibility_(NULL) {
+      drag_controller_(NULL) {
   SetTargetHandler(this);
 }
 
@@ -164,11 +163,6 @@ View::~View() {
         delete child;
     }
   }
-
-  // Release ownership of the native accessibility object, but it's
-  // reference-counted on some platforms, so it may not be deleted right away.
-  if (native_view_accessibility_)
-    native_view_accessibility_->Destroy();
 }
 
 // Tree operations -------------------------------------------------------------
@@ -1427,7 +1421,7 @@ gfx::NativeViewAccessible View::GetNativeViewAccessible() {
     native_view_accessibility_ = NativeViewAccessibility::Create(this);
   if (native_view_accessibility_)
     return native_view_accessibility_->GetNativeObject();
-  return NULL;
+  return nullptr;
 }
 
 void View::NotifyAccessibilityEvent(

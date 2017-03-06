@@ -5,9 +5,11 @@
 #include "ui/views/accessibility/native_view_accessibility_auralinux.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -150,9 +152,10 @@ class AuraLinuxApplication
 }  // namespace
 
 // static
-NativeViewAccessibility* NativeViewAccessibility::Create(View* view) {
+std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
+    View* view) {
   AuraLinuxApplication::GetInstance()->RegisterWidget(view->GetWidget());
-  return new NativeViewAccessibilityAuraLinux(view);
+  return base::MakeUnique<NativeViewAccessibilityAuraLinux>(view);
 }
 
 NativeViewAccessibilityAuraLinux::NativeViewAccessibilityAuraLinux(View* view)

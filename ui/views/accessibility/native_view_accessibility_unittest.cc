@@ -58,19 +58,15 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
   void TearDown() override {
     if (!widget_->IsClosed())
       widget_->Close();
-    button_accessibility_->Destroy();
-    button_accessibility_ = NULL;
-    label_accessibility_->Destroy();
-    label_accessibility_ = NULL;
     ViewsTestBase::TearDown();
   }
 
  protected:
   views::Widget* widget_;
   TestButton* button_;
-  NativeViewAccessibility* button_accessibility_;
+  std::unique_ptr<NativeViewAccessibility> button_accessibility_;
   Label* label_;
-  NativeViewAccessibility* label_accessibility_;
+  std::unique_ptr<NativeViewAccessibility> label_accessibility_;
 };
 
 TEST_F(NativeViewAccessibilityTest, RoleShouldMatch) {

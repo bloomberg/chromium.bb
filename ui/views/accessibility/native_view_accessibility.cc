@@ -4,6 +4,7 @@
 
 #include "ui/views/accessibility/native_view_accessibility.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
@@ -15,8 +16,11 @@ namespace views {
 
 #if !defined(PLATFORM_HAS_NATIVE_VIEW_ACCESSIBILITY_IMPL)
 // static
-NativeViewAccessibility* NativeViewAccessibility::Create(View* view) {
-  return new NativeViewAccessibility(view);
+std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
+    View* view) {
+  // Use WrapUnique over MakeUnique to invoke the protected constructor.
+  return base::WrapUnique<NativeViewAccessibility>(
+      new NativeViewAccessibility(view));
 }
 #endif  // !defined(PLATFORM_HAS_NATIVE_VIEW_ACCESSIBILITY_IMPL)
 
@@ -36,10 +40,6 @@ NativeViewAccessibility::~NativeViewAccessibility() {
 
 gfx::NativeViewAccessible NativeViewAccessibility::GetNativeObject() {
   return ax_node_ ? ax_node_->GetNativeViewAccessible() : nullptr;
-}
-
-void NativeViewAccessibility::Destroy() {
-  delete this;
 }
 
 void NativeViewAccessibility::NotifyAccessibilityEvent(ui::AXEvent event_type) {

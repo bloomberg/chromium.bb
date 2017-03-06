@@ -1634,9 +1634,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accessibility -------------------------------------------------------------
 
-  // Belongs to this view, but it's reference-counted on some platforms
-  // so we can't use a scoped_ptr. It's dereferenced in the destructor.
-  NativeViewAccessibility* native_view_accessibility_;
+  // The accessibility element used to represent this View.
+  std::unique_ptr<NativeViewAccessibility> native_view_accessibility_;
 
   // Observers -------------------------------------------------------------
 
