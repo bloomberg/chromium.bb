@@ -903,7 +903,7 @@ class CORE_EXPORT Element : public ContainerNode {
                                              const AtomicString&,
                                              AttributeModificationReason);
 
-  bool pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle,
+  void pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle,
                                  ComputedStyle* newStyle);
 
   void cancelFocusAppearanceUpdate();

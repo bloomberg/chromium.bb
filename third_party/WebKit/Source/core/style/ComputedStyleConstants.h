@@ -81,11 +81,9 @@ enum PseudoId {
   AfterLastInternalPseudoId,
   FirstPublicPseudoId = PseudoIdFirstLine,
   FirstInternalPseudoId = PseudoIdScrollbarThumb,
-  PublicPseudoIdMask =
-      ((1 << FirstInternalPseudoId) - 1) & ~((1 << FirstPublicPseudoId) - 1),
-  ElementPseudoIdMask = (1 << (PseudoIdBefore - 1)) |
-                        (1 << (PseudoIdAfter - 1)) |
-                        (1 << (PseudoIdBackdrop - 1))
+  ElementPseudoIdMask = (1 << (PseudoIdBefore - FirstPublicPseudoId)) |
+                        (1 << (PseudoIdAfter - FirstPublicPseudoId)) |
+                        (1 << (PseudoIdBackdrop - FirstPublicPseudoId))
 };
 
 enum ColumnFill { ColumnFillBalance, ColumnFillAuto };

@@ -3790,19 +3790,20 @@ inline bool ComputedStyle::setTextOrientation(TextOrientation textOrientation) {
 }
 
 inline bool ComputedStyle::hasAnyPublicPseudoStyles() const {
-  return PublicPseudoIdMask & m_nonInheritedData.m_pseudoBits;
+  return m_nonInheritedData.m_pseudoBits;
 }
 
 inline bool ComputedStyle::hasPseudoStyle(PseudoId pseudo) const {
-  ASSERT(pseudo > PseudoIdNone);
-  ASSERT(pseudo < FirstInternalPseudoId);
-  return (1 << (pseudo - 1)) & m_nonInheritedData.m_pseudoBits;
+  DCHECK(pseudo >= FirstPublicPseudoId);
+  DCHECK(pseudo < FirstInternalPseudoId);
+  return (1 << (pseudo - FirstPublicPseudoId)) &
+         m_nonInheritedData.m_pseudoBits;
 }
 
 inline void ComputedStyle::setHasPseudoStyle(PseudoId pseudo) {
-  ASSERT(pseudo > PseudoIdNone);
-  ASSERT(pseudo < FirstInternalPseudoId);
-  m_nonInheritedData.m_pseudoBits |= 1 << (pseudo - 1);
+  DCHECK(pseudo >= FirstPublicPseudoId);
+  DCHECK(pseudo < FirstInternalPseudoId);
+  m_nonInheritedData.m_pseudoBits |= 1 << (pseudo - FirstPublicPseudoId);
 }
 
 inline bool ComputedStyle::hasPseudoElementStyle() const {

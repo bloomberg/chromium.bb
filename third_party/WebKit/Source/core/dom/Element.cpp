@@ -1808,30 +1808,32 @@ void Element::detachLayoutTree(const AttachContext& context) {
   DCHECK(needsAttach());
 }
 
-bool Element::pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle,
+void Element::pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle,
                                         ComputedStyle* newStyle) {
+  // TODO(rune@opera.com): This method does not take into account pseudo style
+  // which is only present for the newStyle. Also the first-line part should
+  // probably be moved to where we handle visual invalidation diff for setStyle.
+  // setHasPseudoStyle() calls are probably unnecessary.
   DCHECK_EQ(currentStyle, computedStyle());
   DCHECK(layoutObject());
 
   if (!currentStyle)
-    return false;
+    return;
 
   const PseudoStyleCache* pseudoStyleCache = currentStyle->cachedPseudoStyles();
   if (!pseudoStyleCache)
-    return false;
+    return;
 
   size_t cacheSize = pseudoStyleCache->size();
   for (size_t i = 0; i < cacheSize; ++i) {
     RefPtr<ComputedStyle> newPseudoStyle;
     RefPtr<ComputedStyle> oldPseudoStyle = pseudoStyleCache->at(i);
     PseudoId pseudoId = oldPseudoStyle->styleType();
-    if (pseudoId == PseudoIdFirstLine || pseudoId == PseudoIdFirstLineInherited)
-      newPseudoStyle = layoutObject()->uncachedFirstLineStyle(newStyle);
-    else
-      newPseudoStyle = layoutObject()->getUncachedPseudoStyle(
-          PseudoStyleRequest(pseudoId), newStyle, newStyle);
+    if (pseudoId != PseudoIdFirstLine && pseudoId != PseudoIdFirstLineInherited)
+      continue;
+    newPseudoStyle = layoutObject()->uncachedFirstLineStyle(newStyle);
     if (!newPseudoStyle)
-      return true;
+      continue;
     if (*oldPseudoStyle != *newPseudoStyle ||
         oldPseudoStyle->font().loadingCustomFonts() !=
             newPseudoStyle->font().loadingCustomFonts()) {
@@ -1839,13 +1841,12 @@ bool Element::pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle,
         newStyle->setHasPseudoStyle(pseudoId);
       newStyle->addCachedPseudoStyle(newPseudoStyle);
       if (pseudoId == PseudoIdFirstLine ||
-          pseudoId == PseudoIdFirstLineInherited)
+          pseudoId == PseudoIdFirstLineInherited) {
         layoutObject()->firstLineStyleDidChange(*oldPseudoStyle,
                                                 *newPseudoStyle);
-      return true;
+      }
     }
   }
-  return false;
 }
 
 PassRefPtr<ComputedStyle> Element::styleForLayoutObject() {
@@ -2034,8 +2035,8 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change,
     updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
   if (LayoutObject* layoutObject = this->layoutObject()) {
-    if (localChange != NoChange ||
-        pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get())) {
+    if (localChange != NoChange) {
+      pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get());
       layoutObject->setStyle(newStyle.get());
     } else {
       // Although no change occurred, we use the new style so that the cousin
