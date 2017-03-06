@@ -103,19 +103,19 @@ class WTF_EXPORT BitVector {
   void clearAll();
 
   bool quickGet(size_t bit) const {
-    SECURITY_DCHECK(bit < size());
+    SECURITY_CHECK(bit < size());
     return !!(bits()[bit / bitsInPointer()] &
               (static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1))));
   }
 
   void quickSet(size_t bit) {
-    SECURITY_DCHECK(bit < size());
+    SECURITY_CHECK(bit < size());
     bits()[bit / bitsInPointer()] |=
         (static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1)));
   }
 
   void quickClear(size_t bit) {
-    SECURITY_DCHECK(bit < size());
+    SECURITY_CHECK(bit < size());
     bits()[bit / bitsInPointer()] &=
         ~(static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1)));
   }
