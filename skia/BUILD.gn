@@ -390,7 +390,7 @@ component("skia") {
     deps += [
       "//third_party/android_tools:cpu_features",
       "//third_party/expat",
-      "//third_party/freetype-android:freetype",
+      "//third_party/freetype",
     ]
   }
 

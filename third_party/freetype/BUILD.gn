@@ -65,8 +65,8 @@ component("freetype") {
     "DARWIN_NO_CARBON",
 
     # Long directory name to avoid accidentally using wrong headers.
-    "FT_CONFIG_MODULES_H=<freetype-android-config/ftmodule.h>",
-    "FT_CONFIG_OPTIONS_H=<freetype-android-config/ftoption.h>",
+    "FT_CONFIG_MODULES_H=<freetype-custom-config/ftmodule.h>",
+    "FT_CONFIG_OPTIONS_H=<freetype-custom-config/ftoption.h>",
   ]
 
   public_configs = [ ":freetype_config" ]
@@ -74,7 +74,7 @@ component("freetype") {
   configs += [
     "//build/config/compiler:no_chromium_code",
     ":freetype-warnings",
-    ":freetype-visibility"
+    ":freetype-visibility",
   ]
 
   deps = [

@@ -90,9 +90,9 @@ vars = {
   # and whatever else without interference from each other.
   'nacl_revision': 'c948e9b82582e695d16ee6696a484f82239a86d7',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling freetype-android
+  # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_android_revision': '66725768cdf758cfb3f9abf03cbf5e5a77f42088',
+  'freetype_revision': '66725768cdf758cfb3f9abf03cbf5e5a77f42088',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
@@ -413,8 +413,8 @@ deps_os = {
     'src/third_party/cros_system_api':
       Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + 'c08ae470458b06cf23c1907817490d2fc917ac29',
 
-    'src/third_party/freetype-android/src':
-      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_android_revision'),
+    'src/third_party/freetype/src':
+      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
 
     # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
     'src/third_party/chromite':
@@ -479,8 +479,8 @@ deps_os = {
     'src/third_party/findbugs':
       Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '57f05238d3ac77ea0a194813d3065dd780c6e566',
 
-    'src/third_party/freetype-android/src':
-      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_android_revision'),
+    'src/third_party/freetype/src':
+      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
 
     'src/third_party/elfutils/src':
       Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
