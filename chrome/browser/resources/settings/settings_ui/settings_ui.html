@@ -37,6 +37,10 @@
         overflow: hidden;  /* Prevent double scroll bar bugs. */
       }
 
+      .drawer-header {
+        outline: none;
+      }
+
       paper-header-panel {
         flex: 1;
       }
@@ -81,7 +85,7 @@
         show-menu>
     </cr-toolbar>
     <dialog id="drawer" is="cr-drawer">
-      <div class="drawer-header">$i18n{settings}</div>
+      <div class="drawer-header" tabindex="-1">$i18n{settings}</div>
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
           <settings-menu page-visibility="[[pageVisibility_]]"
