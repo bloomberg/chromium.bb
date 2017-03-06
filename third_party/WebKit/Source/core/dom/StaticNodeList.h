@@ -29,6 +29,7 @@
 #ifndef StaticNodeList_h
 #define StaticNodeList_h
 
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/NodeList.h"
 #include "wtf/Vector.h"
 
@@ -49,9 +50,14 @@ class StaticNodeTypeList final : public NodeList {
   NodeType* item(unsigned index) const override;
 
   DECLARE_VIRTUAL_TRACE();
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    for (unsigned i = 0; i < length(); i++)
+      visitor->traceWrappers(m_nodes[i]);
+    NodeList::traceWrappers(visitor);
+  }
 
  private:
-  HeapVector<Member<NodeType>> m_nodes;
+  HeapVector<TraceWrapperMember<NodeType>> m_nodes;
 };
 
 using StaticNodeList = StaticNodeTypeList<Node>;
@@ -60,7 +66,7 @@ template <typename NodeType>
 StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::adopt(
     HeapVector<Member<NodeType>>& nodes) {
   StaticNodeTypeList<NodeType>* nodeList = new StaticNodeTypeList<NodeType>;
-  nodeList->m_nodes.swap(nodes);
+  swap(nodeList->m_nodes, nodes, nodeList);
   return nodeList;
 }
 

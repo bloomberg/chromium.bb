@@ -47,9 +47,9 @@ class ChildListRecord : public MutationRecord {
                   StaticNodeList* removed,
                   Node* previousSibling,
                   Node* nextSibling)
-      : m_target(target),
-        m_addedNodes(added),
-        m_removedNodes(removed),
+      : m_target(this, target),
+        m_addedNodes(this, added),
+        m_removedNodes(this, removed),
         m_previousSibling(previousSibling),
         m_nextSibling(nextSibling) {}
 
@@ -62,6 +62,13 @@ class ChildListRecord : public MutationRecord {
     MutationRecord::trace(visitor);
   }
 
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(m_target);
+    visitor->traceWrappers(m_addedNodes);
+    visitor->traceWrappers(m_removedNodes);
+    MutationRecord::traceWrappers(visitor);
+  }
+
  private:
   const AtomicString& type() override;
   Node* target() override { return m_target.get(); }
@@ -70,9 +77,9 @@ class ChildListRecord : public MutationRecord {
   Node* previousSibling() override { return m_previousSibling.get(); }
   Node* nextSibling() override { return m_nextSibling.get(); }
 
-  Member<Node> m_target;
-  Member<StaticNodeList> m_addedNodes;
-  Member<StaticNodeList> m_removedNodes;
+  TraceWrapperMember<Node> m_target;
+  TraceWrapperMember<StaticNodeList> m_addedNodes;
+  TraceWrapperMember<StaticNodeList> m_removedNodes;
   Member<Node> m_previousSibling;
   Member<Node> m_nextSibling;
 };
@@ -80,13 +87,23 @@ class ChildListRecord : public MutationRecord {
 class RecordWithEmptyNodeLists : public MutationRecord {
  public:
   RecordWithEmptyNodeLists(Node* target, const String& oldValue)
-      : m_target(target), m_oldValue(oldValue) {}
+      : m_target(this, target),
+        m_oldValue(oldValue),
+        m_addedNodes(this, nullptr),
+        m_removedNodes(this, nullptr) {}
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_target);
     visitor->trace(m_addedNodes);
     visitor->trace(m_removedNodes);
     MutationRecord::trace(visitor);
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(m_target);
+    visitor->traceWrappers(m_addedNodes);
+    visitor->traceWrappers(m_removedNodes);
+    MutationRecord::traceWrappers(visitor);
   }
 
  private:
@@ -106,10 +123,10 @@ class RecordWithEmptyNodeLists : public MutationRecord {
     return nodeList.get();
   }
 
-  Member<Node> m_target;
+  TraceWrapperMember<Node> m_target;
   String m_oldValue;
-  Member<StaticNodeList> m_addedNodes;
-  Member<StaticNodeList> m_removedNodes;
+  TraceWrapperMember<StaticNodeList> m_addedNodes;
+  TraceWrapperMember<StaticNodeList> m_removedNodes;
 };
 
 class AttributesRecord : public RecordWithEmptyNodeLists {
@@ -143,11 +160,17 @@ class CharacterDataRecord : public RecordWithEmptyNodeLists {
 
 class MutationRecordWithNullOldValue : public MutationRecord {
  public:
-  MutationRecordWithNullOldValue(MutationRecord* record) : m_record(record) {}
+  MutationRecordWithNullOldValue(MutationRecord* record)
+      : m_record(this, record) {}
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_record);
     MutationRecord::trace(visitor);
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(m_record);
+    MutationRecord::traceWrappers(visitor);
   }
 
  private:
@@ -166,7 +189,7 @@ class MutationRecordWithNullOldValue : public MutationRecord {
 
   String oldValue() override { return String(); }
 
-  Member<MutationRecord> m_record;
+  TraceWrapperMember<MutationRecord> m_record;
 };
 
 const AtomicString& ChildListRecord::type() {

@@ -33,7 +33,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -61,8 +63,10 @@ using MutationRecordVector = HeapVector<Member<MutationRecord>>;
 
 class CORE_EXPORT MutationObserver final
     : public GarbageCollectedFinalized<MutationObserver>,
+      public ActiveScriptWrappable<MutationObserver>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(MutationObserver);
 
  public:
   enum MutationType {
@@ -98,9 +102,14 @@ class CORE_EXPORT MutationObserver final
 
   HeapHashSet<Member<Node>> getObservedNodes() const;
 
+  bool hasPendingActivity() const override { return !m_records.isEmpty(); }
+  ExecutionContext* getExecutionContext() const;
+
   // Eagerly finalized as destructor accesses heap object members.
   EAGERLY_FINALIZE();
   DECLARE_TRACE();
+
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   struct ObserverLessThan;
@@ -110,8 +119,8 @@ class CORE_EXPORT MutationObserver final
   bool shouldBeSuspended() const;
   void cancelInspectorAsyncTasks();
 
-  Member<MutationCallback> m_callback;
-  MutationRecordVector m_records;
+  TraceWrapperMember<MutationCallback> m_callback;
+  HeapVector<TraceWrapperMember<MutationRecord>> m_records;
   MutationObserverRegistrationSet m_registrations;
   unsigned m_priority;
 

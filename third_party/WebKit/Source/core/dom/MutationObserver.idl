@@ -32,6 +32,7 @@
 
 [
     CustomConstructor(MutationCallback callback),
+    ActiveScriptWrappable,
     DependentLifetime,
 ] interface MutationObserver {
     [RaisesException] void observe(Node target, optional MutationObserverInit options);

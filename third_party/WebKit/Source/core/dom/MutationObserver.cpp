@@ -58,7 +58,7 @@ MutationObserver* MutationObserver::create(MutationCallback* callback) {
 }
 
 MutationObserver::MutationObserver(MutationCallback* callback)
-    : m_callback(callback), m_priority(s_observerPriority++) {}
+    : m_callback(this, callback), m_priority(s_observerPriority++) {}
 
 MutationObserver::~MutationObserver() {
   cancelInspectorAsyncTasks();
@@ -137,7 +137,7 @@ void MutationObserver::observe(Node* node,
 MutationRecordVector MutationObserver::takeRecords() {
   MutationRecordVector records;
   cancelInspectorAsyncTasks();
-  records.swap(m_records);
+  swap(m_records, records, this);
   return records;
 }
 
@@ -216,7 +216,7 @@ static void activateObserver(MutationObserver* observer) {
 
 void MutationObserver::enqueueMutationRecord(MutationRecord* mutation) {
   DCHECK(isMainThread());
-  m_records.push_back(mutation);
+  m_records.push_back(TraceWrapperMember<MutationRecord>(this, mutation));
   activateObserver(this);
   probe::asyncTaskScheduled(m_callback->getExecutionContext(), mutation->type(),
                             mutation);
@@ -262,7 +262,7 @@ void MutationObserver::deliver() {
     return;
 
   MutationRecordVector records;
-  records.swap(m_records);
+  swap(m_records, records, this);
 
   // Report the first (earliest) stack as the async cause.
   probe::AsyncTask asyncTask(m_callback->getExecutionContext(),
@@ -310,10 +310,21 @@ void MutationObserver::deliverMutations() {
     slot->dispatchSlotChangeEvent();
 }
 
+ExecutionContext* MutationObserver::getExecutionContext() const {
+  return m_callback->getExecutionContext();
+}
+
 DEFINE_TRACE(MutationObserver) {
   visitor->trace(m_callback);
   visitor->trace(m_records);
   visitor->trace(m_registrations);
+  visitor->trace(m_callback);
+}
+
+DEFINE_TRACE_WRAPPERS(MutationObserver) {
+  visitor->traceWrappers(m_callback);
+  for (auto record : m_records)
+    visitor->traceWrappers(record);
 }
 
 }  // namespace blink

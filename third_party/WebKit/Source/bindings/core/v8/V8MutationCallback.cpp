@@ -39,10 +39,10 @@ namespace blink {
 V8MutationCallback::V8MutationCallback(v8::Local<v8::Function> callback,
                                        v8::Local<v8::Object> owner,
                                        ScriptState* scriptState)
-    : m_callback(scriptState->isolate(), callback), m_scriptState(scriptState) {
+    : m_callback(scriptState->isolate(), this, callback),
+      m_scriptState(scriptState) {
   V8PrivateProperty::getMutationObserverCallback(scriptState->isolate())
       .set(scriptState->context(), owner, callback);
-  m_callback.setPhantom();
 }
 
 V8MutationCallback::~V8MutationCallback() {}
@@ -83,6 +83,11 @@ void V8MutationCallback::call(
 
 DEFINE_TRACE(V8MutationCallback) {
   MutationCallback::trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(V8MutationCallback) {
+  visitor->traceWrappers(m_callback.cast<v8::Value>());
+  MutationCallback::traceWrappers(visitor);
 }
 
 }  // namespace blink

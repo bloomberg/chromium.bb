@@ -40,7 +40,8 @@ class ExecutionContext;
 class MutationRecord;
 class MutationObserver;
 
-class MutationCallback : public GarbageCollectedFinalized<MutationCallback> {
+class MutationCallback : public GarbageCollectedFinalized<MutationCallback>,
+                         public TraceWrapperBase {
  public:
   virtual ~MutationCallback() {}
 

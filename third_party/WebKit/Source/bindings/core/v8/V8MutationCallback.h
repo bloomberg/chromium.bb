@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/dom/MutationCallback.h"
 #include "v8/include/v8.h"
 #include "wtf/RefPtr.h"
@@ -53,13 +54,14 @@ class V8MutationCallback final : public MutationCallback {
   }
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   V8MutationCallback(v8::Local<v8::Function>,
                      v8::Local<v8::Object>,
                      ScriptState*);
 
-  ScopedPersistent<v8::Function> m_callback;
+  TraceWrapperV8Reference<v8::Function> m_callback;
   RefPtr<ScriptState> m_scriptState;
 };
 
