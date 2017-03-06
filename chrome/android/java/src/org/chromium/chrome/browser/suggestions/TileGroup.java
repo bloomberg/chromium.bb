@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -240,34 +241,32 @@ public class TileGroup implements MostVisitedSites.Observer {
     /**
      * Renders tile views in the given {@link TileGridLayout}, reusing existing tile views where
      * possible because view inflation and icon loading are slow.
-     * @param tileGridLayout The layout to render the tile views into.
+     * @param parent The layout to render the tile views into.
      * @param trackLoadTasks Whether to track load tasks.
      * @param condensed Whether to use a condensed layout.
      */
-    public void renderTileViews(
-            TileGridLayout tileGridLayout, boolean trackLoadTasks, boolean condensed) {
+    public void renderTileViews(ViewGroup parent, boolean trackLoadTasks, boolean condensed) {
         // Map the old tile views by url so they can be reused later.
         Map<String, TileView> oldTileViews = new HashMap<>();
-        int childCount = tileGridLayout.getChildCount();
+        int childCount = parent.getChildCount();
         for (int i = 0; i < childCount; i++) {
-            TileView tileView = (TileView) tileGridLayout.getChildAt(i);
+            TileView tileView = (TileView) parent.getChildAt(i);
             oldTileViews.put(tileView.getUrl(), tileView);
         }
 
         // Remove all views from the layout because even if they are reused later they'll have to be
         // added back in the correct order.
-        tileGridLayout.removeAllViews();
+        parent.removeAllViews();
 
         for (Tile tile : mTiles) {
             TileView tileView = oldTileViews.get(tile.getUrl());
             if (tileView == null) {
-                tileView = buildTileView(
-                        tile, tileGridLayout, trackLoadTasks, mTitleLinesCount, condensed);
+                tileView = buildTileView(tile, parent, trackLoadTasks, condensed);
             } else {
                 tileView.updateIfDataChanged(tile);
             }
 
-            tileGridLayout.addView(tileView);
+            parent.addView(tileView);
         }
     }
 
@@ -284,15 +283,15 @@ public class TileGroup implements MostVisitedSites.Observer {
      * @param tile The tile that holds the data to populate the new tile view.
      * @param parentView The parent of the new tile view.
      * @param trackLoadTask Whether to track a load task.
-     * @param titleLines The number of text lines to use for each tile title.
      * @param condensed Whether to use a condensed layout.
      * @return The new tile view.
      */
-    private TileView buildTileView(Tile tile, ViewGroup parentView, boolean trackLoadTask,
-            int titleLines, boolean condensed) {
+    @VisibleForTesting
+    TileView buildTileView(
+            Tile tile, ViewGroup parentView, boolean trackLoadTask, boolean condensed) {
         TileView tileView = (TileView) LayoutInflater.from(parentView.getContext())
                                     .inflate(R.layout.tile_view, parentView, false);
-        tileView.initialize(tile, titleLines, condensed);
+        tileView.initialize(tile, mTitleLinesCount, condensed);
 
         // Note: It is important that the callbacks below don't keep a reference to the tile or
         // modify them as there is no guarantee that the same tile would be used to update the view.
