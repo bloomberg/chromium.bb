@@ -87,6 +87,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
     ACTIVATE_BY_PRIORITY = 0,
     ACTIVATE_BY_USER,
     ACTIVATE_BY_RESTORE_PREVIOUS_STATE,
+    ACTIVATE_BY_CAMERA
   };
 
   // Sets the global instance. Must be called before any calls to Get().
@@ -260,6 +261,16 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void SetActiveHDMIOutoutRediscoveringIfNecessary(bool force_rediscovering);
 
   const AudioDevice* GetDeviceFromId(uint64_t device_id) const;
+
+  // Returns true the device has dual internal microphones(front and rear).
+  bool HasDualInternalMic() const;
+
+  // Returns true if |device| is front or rear microphone.
+  bool IsFrontOrRearMic(const AudioDevice& device) const;
+
+  // Switches to either front or rear microphone depending on the
+  // the use case. It should be called from a user initiated action.
+  void SwitchToFrontOrRearMic();
 
  protected:
   explicit CrasAudioHandler(
@@ -439,6 +450,27 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // to the top priority device.
   void SwitchToPreviousActiveDeviceIfAvailable(bool is_input);
 
+  // Activates the internal mic attached with the camera specified by
+  // |camera_facing|.
+  void ActivateMicForCamera(media::VideoFacingMode camera_facing);
+
+  // Activates the front or rear mic that is consistent with the active camera.
+  // Note: This should only be called for the dural camera/mic use case.
+  void ActivateInternalMicForActiveCamera();
+
+  // Returns the microphone for the camera with |camera_facing|.
+  const AudioDevice* GetMicForCamera(media::VideoFacingMode camera_facing);
+
+  // Returns the device matched with |type|. Assuming there is only one device
+  // matched the |type|, if there is more than one matched devices, it will
+  // return the first one found.
+  const AudioDevice* GetDeviceByType(AudioDeviceType type);
+
+  bool IsCameraOn() const;
+
+  // Returns true if there are any external devices.
+  bool HasExternalDevice(bool is_input) const;
+
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::ObserverList<AudioObserver> observers_;
 
@@ -482,6 +514,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool initializing_audio_state_ = false;
   int init_volume_;
   uint64_t init_node_id_;
+
+  bool front_camera_on_ = false;
+  bool rear_camera_on_ = false;
 
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
 

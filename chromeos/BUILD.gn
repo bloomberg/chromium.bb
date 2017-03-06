@@ -171,6 +171,7 @@ test("chromeos_unittests") {
     "//crypto:test_support",
     "//dbus:test_support",
     "//google_apis",
+    "//media/base:video_facing",
     "//net",
     "//net:test_support",
     "//testing/gmock",

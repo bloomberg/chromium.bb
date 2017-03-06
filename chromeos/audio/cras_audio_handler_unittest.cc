@@ -21,6 +21,7 @@
 #include "chromeos/dbus/audio_node.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
+#include "media/base/video_facing.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -36,6 +37,8 @@ const uint64_t kUSBHeadphoneId1 = 10007;
 const uint64_t kUSBHeadphoneId2 = 10008;
 const uint64_t kMicJackId = 10009;
 const uint64_t kKeyboardMicId = 10010;
+const uint64_t kFrontMicId = 10011;
+const uint64_t kRearMicId = 10012;
 const uint64_t kOtherTypeOutputId = 90001;
 const uint64_t kOtherTypeInputId = 90002;
 const uint64_t kUSBJabraSpeakerOutputId1 = 90003;
@@ -70,6 +73,12 @@ const AudioNodeInfo kUSBMic[] = {
 const AudioNodeInfo kKeyboardMic[] = {{true, kKeyboardMicId,
                                        "Fake Keyboard Mic", "KEYBOARD_MIC",
                                        "Keyboard Mic"}};
+
+const AudioNodeInfo kFrontMic[] = {
+    {true, kFrontMicId, "Fake Front Mic", "FRONT_MIC", "Front Mic"}};
+
+const AudioNodeInfo kRearMic[] = {
+    {true, kRearMicId, "Fake Rear Mic", "REAR_MIC", "Rear Mic"}};
 
 const AudioNodeInfo kOtherTypeOutput[] = {{false, kOtherTypeOutputId,
                                            "Output Device", "SOME_OTHER_TYPE",
@@ -211,6 +220,32 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+class FakeVideoCaptureManager {
+ public:
+  FakeVideoCaptureManager() {}
+  virtual ~FakeVideoCaptureManager() {}
+
+  void AddObserver(media::VideoCaptureObserver* observer) {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveAllObservers() { observers_.Clear(); }
+
+  void NotifyVideoCaptureStarted(media::VideoFacingMode facing) {
+    for (auto& observer : observers_)
+      observer.OnVideoCaptureStarted(facing);
+  }
+
+  void NotifyVideoCaptureStopped(media::VideoFacingMode facing) {
+    for (auto& observer : observers_)
+      observer.OnVideoCaptureStopped(facing);
+  }
+
+ private:
+  base::ObserverList<media::VideoCaptureObserver> observers_;
+  DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureManager);
+};
+
 }  // namespace
 
 // Test param is the version of stabel device id used by audio node.
@@ -219,11 +254,15 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   CrasAudioHandlerTest() {}
   ~CrasAudioHandlerTest() override {}
 
-  void SetUp() override {}
+  void SetUp() override {
+    video_capture_manager_.reset(new FakeVideoCaptureManager);
+  }
 
   void TearDown() override {
     cras_audio_handler_->RemoveAudioObserver(test_observer_.get());
     test_observer_.reset();
+    video_capture_manager_->RemoveAllObservers();
+    video_capture_manager_.reset();
     CrasAudioHandler::Shutdown();
     audio_pref_handler_ = nullptr;
     DBusThreadManager::Shutdown();
@@ -257,6 +296,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     cras_audio_handler_ = CrasAudioHandler::Get();
     test_observer_.reset(new TestObserver);
     cras_audio_handler_->AddAudioObserver(test_observer_.get());
+    video_capture_manager_->AddObserver(cras_audio_handler_);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -348,12 +388,33 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     base::RunLoop().RunUntilIdle();
   }
 
+  void StartFrontFacingCamera() {
+    video_capture_manager_->NotifyVideoCaptureStarted(
+        media::MEDIA_VIDEO_FACING_USER);
+  }
+
+  void StopFrontFacingCamera() {
+    video_capture_manager_->NotifyVideoCaptureStopped(
+        media::MEDIA_VIDEO_FACING_USER);
+  }
+
+  void StartRearFacingCamera() {
+    video_capture_manager_->NotifyVideoCaptureStarted(
+        media::MEDIA_VIDEO_FACING_ENVIRONMENT);
+  }
+
+  void StopRearFacingCamera() {
+    video_capture_manager_->NotifyVideoCaptureStopped(
+        media::MEDIA_VIDEO_FACING_ENVIRONMENT);
+  }
+
  protected:
   base::MessageLoopForUI message_loop_;
   CrasAudioHandler* cras_audio_handler_ = nullptr;         // Not owned.
   FakeCrasAudioClient* fake_cras_audio_client_ = nullptr;  // Not owned.
   std::unique_ptr<TestObserver> test_observer_;
   scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
+  std::unique_ptr<FakeVideoCaptureManager> video_capture_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrasAudioHandlerTest);
@@ -3678,6 +3739,193 @@ TEST_P(CrasAudioHandlerTest, HDMIOutputUnplugDuringSuspension) {
   EXPECT_FALSE(cras_audio_handler_->IsOutputMuted());
   EXPECT_EQ(1, test_observer_->output_mute_changed_count());
   EXPECT_TRUE(test_observer_->output_mute_by_system());
+}
+
+TEST_P(CrasAudioHandlerTest, FrontCameraStartStop) {
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kFrontMic, kRearMic});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the front mic has been selected as the active input.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_TRUE(cras_audio_handler_->HasDualInternalMic());
+
+  // Start the front facing camera.
+  StartFrontFacingCamera();
+  // Verify the front mic has been selected as the active input.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Stop the front facing camera.
+  StopFrontFacingCamera();
+  // Verify the front mic has been selected as the active input.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+}
+
+TEST_P(CrasAudioHandlerTest, RearCameraStartStop) {
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kFrontMic, kRearMic});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the front mic has been selected as the active input.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_TRUE(cras_audio_handler_->HasDualInternalMic());
+
+  // Start the rear facing camera.
+  StartRearFacingCamera();
+  // Verify the active input is switched to the rear mic.
+  EXPECT_EQ(kRearMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Stop the rear facing camera.
+  StopRearFacingCamera();
+  // Verify the active input is switched back to front mic.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+}
+
+TEST_P(CrasAudioHandlerTest, SwitchFrontRearCamera) {
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kFrontMic, kRearMic});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the front mic has been selected as the active input.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_TRUE(cras_audio_handler_->HasDualInternalMic());
+
+  // Start the front facing camera.
+  StartFrontFacingCamera();
+  // Verify the front mic has been selected as the active input.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Simulates the camera app switching from front camera to rear camera.
+  StopFrontFacingCamera();
+  StartRearFacingCamera();
+
+  // Verify the rear mic has been selected as the active input.
+  EXPECT_EQ(kRearMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+}
+
+TEST_P(CrasAudioHandlerTest, StartFrontCameraWithActiveExternalInput) {
+  AudioNodeList audio_nodes =
+      GenerateAudioNodeList({kFrontMic, kRearMic, kMicJack});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the mic Jack has been selected as the active input.
+  EXPECT_EQ(kMicJackId, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_TRUE(cras_audio_handler_->HasDualInternalMic());
+
+  // Start the front facing camera.
+  StartFrontFacingCamera();
+  // Verify the mic Jack has been selected as the active input.
+  EXPECT_EQ(kMicJackId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Stop the front facing camera.
+  StopFrontFacingCamera();
+  // Verify the mic Jack remains as the active input.
+  EXPECT_EQ(kMicJackId, cras_audio_handler_->GetPrimaryActiveInputNode());
+}
+
+TEST_P(CrasAudioHandlerTest, StartFrontCameraWithInactiveExternalInput) {
+  AudioNodeList audio_nodes =
+      GenerateAudioNodeList({kFrontMic, kRearMic, kMicJack});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the mic Jack has been selected as the active input.
+  EXPECT_EQ(kMicJackId, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_TRUE(cras_audio_handler_->HasDualInternalMic());
+
+  // Change the active input to internal mic.
+  cras_audio_handler_->SwitchToFrontOrRearMic();
+  // Verify the active input has been switched to front mic.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Start the front facing camera.
+  StartFrontFacingCamera();
+  // Verify the front mic has been selected as the active input.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Stop the front facing camera.
+  StopFrontFacingCamera();
+  // Verify the active input remains as front mic.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+}
+
+TEST_P(CrasAudioHandlerTest, StartFrontCameraWithoutDualMic) {
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kInternalMic});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the mic Jack has been selected as the active input.
+  EXPECT_EQ(kInternalMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_FALSE(cras_audio_handler_->HasDualInternalMic());
+
+  // Start the front facing camera.
+  StartFrontFacingCamera();
+  // Verify the internal mic has been selected as the active input.
+  EXPECT_EQ(kInternalMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Stop the front facing camera.
+  StopFrontFacingCamera();
+  // Verify the active input remains as interanl mic.
+  EXPECT_EQ(kInternalMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+}
+
+TEST_P(CrasAudioHandlerTest, FrontRearCameraBothOn) {
+  AudioNodeList audio_nodes = GenerateAudioNodeList({kFrontMic, kRearMic});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the front mic has been selected as the active input.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_TRUE(cras_audio_handler_->HasDualInternalMic());
+
+  // Start the rear facing camera.
+  StartRearFacingCamera();
+  // Verify the rear mic has been selected as the active input.
+  EXPECT_EQ(kRearMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Start front camera without stopping the front camera.
+  StartFrontFacingCamera();
+  // Verify the active microphone does not change.
+  EXPECT_EQ(kRearMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Stop the front mic.
+  StopFrontFacingCamera();
+  // Verity the active mic does not change when there is still camera on.
+  EXPECT_EQ(kRearMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Stop the rear mic.
+  StopRearFacingCamera();
+  // Verify the actice mic changes to front mic after both cameras stop.
+  EXPECT_EQ(kFrontMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
 }
 
 }  // namespace chromeos

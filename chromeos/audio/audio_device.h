@@ -63,6 +63,8 @@ struct CHROMEOS_EXPORT AudioDevice {
             type == AUDIO_TYPE_LINEOUT);
   }
 
+  bool IsExternalDevice() const;
+
   bool is_input = false;
 
   // Id of this audio device. The legacy |id| is assigned to be unique everytime

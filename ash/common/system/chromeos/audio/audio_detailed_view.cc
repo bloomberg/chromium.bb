@@ -135,16 +135,40 @@ void AudioDetailedView::UpdateAudioDevices() {
   output_devices_.clear();
   input_devices_.clear();
   chromeos::AudioDeviceList devices;
-  CrasAudioHandler::Get()->GetAudioDevices(&devices);
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+  audio_handler->GetAudioDevices(&devices);
+  bool has_dual_internal_mic = audio_handler->HasDualInternalMic();
+  bool is_front_or_rear_mic_active = false;
   for (size_t i = 0; i < devices.size(); ++i) {
     // Don't display keyboard mic or aokr type.
     if (!devices[i].is_for_simple_usage())
       continue;
-    if (devices[i].is_input)
+    if (devices[i].is_input) {
+      // Do not expose the internal front and rear mic to UI.
+      if (has_dual_internal_mic &&
+          audio_handler->IsFrontOrRearMic(devices[i])) {
+        if (devices[i].active)
+          is_front_or_rear_mic_active = true;
+        continue;
+      }
       input_devices_.push_back(devices[i]);
-    else
+    } else {
       output_devices_.push_back(devices[i]);
+    }
   }
+
+  // Expose the dual internal mics as one device (internal mic) to user.
+  if (has_dual_internal_mic) {
+    // Create stub internal mic entry for UI rendering, which representing
+    // both internal front and rear mics.
+    chromeos::AudioDevice internal_mic;
+    internal_mic.is_input = true;
+    internal_mic.stable_device_id_version = 2;
+    internal_mic.type = chromeos::AUDIO_TYPE_INTERNAL_MIC;
+    internal_mic.active = is_front_or_rear_mic_active;
+    input_devices_.push_back(internal_mic);
+  }
+
   UpdateScrollableList();
 }
 
@@ -190,8 +214,14 @@ void AudioDetailedView::HandleViewClicked(views::View* view) {
   if (iter == device_map_.end())
     return;
   chromeos::AudioDevice device = iter->second;
-  CrasAudioHandler::Get()->SwitchToDevice(device, true,
-                                          CrasAudioHandler::ACTIVATE_BY_USER);
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+  if (device.type == chromeos::AUDIO_TYPE_INTERNAL_MIC &&
+      audio_handler->HasDualInternalMic()) {
+    audio_handler->SwitchToFrontOrRearMic();
+  } else {
+    audio_handler->SwitchToDevice(device, true,
+                                  CrasAudioHandler::ACTIVATE_BY_USER);
+  }
 }
 
 }  // namespace tray

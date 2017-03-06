@@ -186,4 +186,16 @@ std::string AudioDevice::ToString() const {
   return result;
 }
 
+bool AudioDevice::IsExternalDevice() const {
+  if (!is_for_simple_usage())
+    return false;
+
+  if (is_input) {
+    return (type != AUDIO_TYPE_INTERNAL_MIC && type != AUDIO_TYPE_FRONT_MIC &&
+            type != AUDIO_TYPE_REAR_MIC);
+  } else {
+    return (type != AUDIO_TYPE_INTERNAL_SPEAKER);
+  }
+}
+
 }  // namespace chromeos

@@ -342,6 +342,7 @@ target(link_target_type, "base") {
 source_set("video_facing") {
   visibility = [
     "//chromeos",
+    "//chromeos:chromeos_unittests",
     "//content/browser",
     "//content/public/common:common_sources",
     "//media/base",
