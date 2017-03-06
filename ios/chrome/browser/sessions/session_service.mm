@@ -215,6 +215,8 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
                        forClassName:@"SessionController"];
   [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
                        forClassName:@"CRWSessionController"];
+  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
+                       forClassName:@"CRWNavigationManagerStorage"];
   [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
                        forClassName:@"SessionEntry"];
   [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
