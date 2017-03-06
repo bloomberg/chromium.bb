@@ -39,15 +39,15 @@
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<ios_web_view::WebViewWebStatePolicyDecider>
       _webStatePolicyDecider;
-  CGFloat _loadProgress;
+  double _estimatedProgress;
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<ios_web_view::WebViewJavaScriptDialogPresenter>
       _javaScriptDialogPresenter;
 }
 
-// Redefine the property as readwrite to define -setLoadProgress:, which can be
-// used to send KVO notification.
-@property(nonatomic, readwrite) CGFloat loadProgress;
+// Redefine the property as readwrite to define -setEstimatedProgress:, which
+// can be used to send KVO notification.
+@property(nonatomic, readwrite) double estimatedProgress;
 
 @end
 
@@ -55,7 +55,7 @@
 
 @synthesize navigationDelegate = _navigationDelegate;
 @synthesize translationDelegate = _translationDelegate;
-@synthesize loadProgress = _loadProgress;
+@synthesize estimatedProgress = _estimatedProgress;
 @synthesize UIDelegate = _UIDelegate;
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -63,6 +63,7 @@
   self = [super initWithFrame:frame];
   if (self) {
     _configuration = [configuration copy];
+    _estimatedProgress = 0.0;
 
     web::WebState::CreateParams webStateCreateParams(
         [configuration.websiteDataStore browserState]);
@@ -196,7 +197,7 @@
 
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress {
-  self.loadProgress = progress;
+  self.estimatedProgress = progress;
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {

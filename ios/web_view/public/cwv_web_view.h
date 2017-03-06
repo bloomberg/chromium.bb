@@ -45,9 +45,12 @@
 // The current page title.
 @property(nonatomic, readonly) NSString* pageTitle;
 
-// The current load progress, as a fraction between 0 and 1.  This value is
-// undefined if the web view is not currently loading.
-@property(nonatomic, readonly) CGFloat loadProgress;
+// Page loading progress from 0.0 to 1.0. KVO compliant.
+//
+// It is 0.0 initially before the first navigation starts. After a navigation
+// completes, it remains at 1.0 until a new navigation starts, at which point it
+// is reset to 0.0.
+@property(nonatomic, readonly) double estimatedProgress;
 
 // |configuration| must not be null
 - (instancetype)initWithFrame:(CGRect)frame
