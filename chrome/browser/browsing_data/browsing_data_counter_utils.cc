@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/media_licenses_counter.h"
@@ -25,6 +26,10 @@
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#endif
+
 bool AreCountersEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClearBrowsingDataCounters)) {
@@ -38,6 +43,16 @@ bool AreCountersEnabled() {
 
   // Enabled by default.
   return true;
+}
+
+bool IsSiteDataCounterEnabled() {
+#if defined(OS_ANDROID)
+  // Only use the site data counter for the new CBD ui.
+  return base::FeatureList::IsEnabled(chrome::android::kTabsInCBD);
+#else
+  // Don't use the counter on other platforms that don't yet have the new ui.
+  return false;
+#endif
 }
 
 // A helper function to display the size of cache in units of MB or higher.
@@ -80,6 +95,17 @@ base::string16 GetChromeCounterTextFromResult(
                        IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE, formatted_size);
     }
     return l10n_util::GetStringUTF16(IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
+  }
+
+  if (pref_name == browsing_data::prefs::kDeleteCookies) {
+    // Site data counter.
+    DCHECK(IsSiteDataCounterEnabled());
+    browsing_data::BrowsingDataCounter::ResultInt origins =
+        static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
+            result)
+            ->Value();
+    return l10n_util::GetPluralStringFUTF16(IDS_DEL_COOKIES_COUNTER_ADVANCED,
+                                            origins);
   }
 
   if (pref_name == browsing_data::prefs::kDeleteMediaLicenses) {

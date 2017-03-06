@@ -12,6 +12,9 @@
 // Whether the browsing data counters experiment is enabled.
 bool AreCountersEnabled();
 
+// Whether the site data counter is enabled.
+bool IsSiteDataCounterEnabled();
+
 // Constructs the text to be displayed by a counter from the given |result|.
 base::string16 GetChromeCounterTextFromResult(
     const browsing_data::BrowsingDataCounter::Result* result);

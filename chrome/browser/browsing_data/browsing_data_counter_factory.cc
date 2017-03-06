@@ -11,6 +11,7 @@
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/downloads_counter.h"
 #include "chrome/browser/browsing_data/media_licenses_counter.h"
+#include "chrome/browser/browsing_data/site_data_counter.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -57,8 +58,14 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
   }
 
   if (pref_name == browsing_data::prefs::kDeleteCache ||
-      pref_name == browsing_data::prefs::kDeleteCacheBasic)
+      pref_name == browsing_data::prefs::kDeleteCacheBasic) {
     return base::MakeUnique<CacheCounter>(profile);
+  }
+
+  if (pref_name == browsing_data::prefs::kDeleteCookies &&
+      IsSiteDataCounterEnabled()) {
+    return base::MakeUnique<SiteDataCounter>(profile);
+  }
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {
     return base::MakeUnique<browsing_data::PasswordsCounter>(

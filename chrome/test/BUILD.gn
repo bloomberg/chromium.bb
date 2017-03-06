@@ -3125,6 +3125,7 @@ test("unit_tests") {
     "../browser/browsing_data/browsing_data_service_worker_helper_unittest.cc",
     "../browser/browsing_data/chrome_browsing_data_remover_delegate_unittest.cc",
     "../browser/browsing_data/cookies_tree_model_unittest.cc",
+    "../browser/browsing_data/site_data_counting_helper_unittest.cc",
     "../browser/browsing_data/site_data_size_collector_unittest.cc",
     "../browser/budget_service/budget_database_unittest.cc",
     "../browser/budget_service/budget_manager_unittest.cc",
