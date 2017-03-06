@@ -810,14 +810,14 @@ typedef unsigned (*BoundarySearchFunction)(const UChar*,
                                            bool& needMoreContext);
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> previousBoundary(
+static PositionTemplate<Strategy> previousBoundary(
     const VisiblePositionTemplate<Strategy>& c,
     BoundarySearchFunction searchFunction) {
   DCHECK(c.isValid()) << c;
   const PositionTemplate<Strategy> pos = c.deepEquivalent();
   Node* boundary = parentEditingBoundary(pos);
   if (!boundary)
-    return VisiblePositionTemplate<Strategy>();
+    return PositionTemplate<Strategy>();
 
   const PositionTemplate<Strategy> start =
       PositionTemplate<Strategy>::editingPositionOf(boundary, 0)
@@ -888,14 +888,13 @@ static VisiblePositionTemplate<Strategy> previousBoundary(
   }
 
   if (!next)
-    return createVisiblePosition(it.atEnd() ? it.startPosition() : pos);
+    return it.atEnd() ? it.startPosition() : pos;
 
   Node* node = it.startContainer();
   int boundaryOffset = remainingLength + next;
   if (node->isTextNode() && boundaryOffset <= node->maxCharacterOffset()) {
     // The next variable contains a usable index into a text node
-    return createVisiblePosition(
-        PositionTemplate<Strategy>(node, boundaryOffset));
+    return PositionTemplate<Strategy>(node, boundaryOffset);
   }
 
   // Use the character iterator to translate the next value into a DOM
@@ -903,7 +902,7 @@ static VisiblePositionTemplate<Strategy> previousBoundary(
   BackwardsCharacterIteratorAlgorithm<Strategy> charIt(start, end);
   charIt.advance(string.size() - suffixLength - next);
   // TODO(yosin) charIt can get out of shadow host.
-  return createVisiblePosition(charIt.endPosition());
+  return charIt.endPosition();
 }
 
 template <typename Strategy>
@@ -1060,7 +1059,7 @@ static VisiblePositionTemplate<Strategy> startOfWordAlgorithm(
     if (p.isNull())
       return c;
   }
-  return previousBoundary(p, startWordBoundary);
+  return createVisiblePosition(previousBoundary(p, startWordBoundary));
 }
 
 VisiblePosition startOfWord(const VisiblePosition& c, EWordSide side) {
@@ -1136,7 +1135,8 @@ static unsigned previousWordPositionBoundary(
 
 VisiblePosition previousWordPosition(const VisiblePosition& c) {
   DCHECK(c.isValid()) << c;
-  VisiblePosition prev = previousBoundary(c, previousWordPositionBoundary);
+  VisiblePosition prev =
+      createVisiblePosition(previousBoundary(c, previousWordPositionBoundary));
   return honorEditingBoundaryAtOrBefore(prev, c.deepEquivalent());
 }
 
@@ -1675,7 +1675,7 @@ template <typename Strategy>
 static VisiblePositionTemplate<Strategy> startOfSentenceAlgorithm(
     const VisiblePositionTemplate<Strategy>& c) {
   DCHECK(c.isValid()) << c;
-  return previousBoundary(c, startSentenceBoundary);
+  return createVisiblePosition(previousBoundary(c, startSentenceBoundary));
 }
 
 VisiblePosition startOfSentence(const VisiblePosition& c) {
@@ -1728,7 +1728,8 @@ static unsigned previousSentencePositionBoundary(
 
 VisiblePosition previousSentencePosition(const VisiblePosition& c) {
   DCHECK(c.isValid()) << c;
-  VisiblePosition prev = previousBoundary(c, previousSentencePositionBoundary);
+  VisiblePosition prev = createVisiblePosition(
+      previousBoundary(c, previousSentencePositionBoundary));
   return honorEditingBoundaryAtOrBefore(prev, c.deepEquivalent());
 }
 
