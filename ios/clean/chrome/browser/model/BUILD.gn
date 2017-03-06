@@ -1,0 +1,32 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("model") {
+  sources = [
+    "browser.h",
+    "browser.mm",
+    "browser_list.h",
+    "browser_list.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/browser_state",
+    "//ios/shared/chrome/browser/tabs",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "browser_list_unittest.mm",
+  ]
+  deps = [
+    ":model",
+    "//base",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
