@@ -191,6 +191,12 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   bool m_preventPropagation = false;
   bool m_resultDirty = true;
 
+  // Transactions should be aborted after event dispatch if an exception was
+  // not caught. This is cleared before dispatch, set by a call to
+  // uncaughtExceptionInEventHandler() during dispatch, and checked afterwards
+  // to abort if necessary.
+  bool m_didThrowInEventHandler = false;
+
   // Pointer back to the WebIDBCallbacks that holds a persistent reference to
   // this object.
   WebIDBCallbacks* m_webCallbacks = nullptr;
