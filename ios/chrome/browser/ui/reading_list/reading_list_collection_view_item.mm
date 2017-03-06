@@ -24,6 +24,9 @@ NSString* kFailureImageString = @"distillation_fail";
 
 // Distillation indicator constants.
 const CGFloat kDistillationIndicatorSize = 18;
+
+// Margin for the elements displayed in the cell.
+const CGFloat kMargin = 16;
 }  // namespace
 
 #pragma mark - ReadingListCell Private interface
@@ -191,37 +194,45 @@ const CGFloat kDistillationIndicatorSize = 18;
     _textLabel = [[UILabel alloc] init];
     _textLabel.font = [fontLoader mediumFontOfSize:16];
     _textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
     _detailTextLabel = [[UILabel alloc] init];
     _detailTextLabel.font = [fontLoader mediumFontOfSize:14];
     _detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
+    _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
     _faviconView = [[FaviconViewNew alloc] init];
     CGFloat fontSize = floorf(faviconSize / 2);
     [_faviconView setFont:[fontLoader regularFontOfSize:fontSize]];
+    _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
 
     _downloadIndicator = [[UIImageView alloc] init];
     [_downloadIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_faviconView addSubview:_downloadIndicator];
 
-    UIStackView* labelsStack = [[UIStackView alloc]
-        initWithArrangedSubviews:@[ _textLabel, _detailTextLabel ]];
-    labelsStack.axis = UILayoutConstraintAxisVertical;
+    [self.contentView addSubview:_textLabel];
+    [self.contentView addSubview:_detailTextLabel];
+    [self.contentView addSubview:_faviconView];
 
-    UIStackView* stackView = [[UIStackView alloc]
-        initWithArrangedSubviews:@[ _faviconView, labelsStack ]];
-    [self.contentView addSubview:stackView];
-    stackView.layoutMarginsRelativeArrangement = YES;
-    stackView.layoutMargins = UIEdgeInsetsMake(16, 16, 16, 16);
-    stackView.alignment = UIStackViewAlignmentCenter;
-    stackView.spacing = 16;
+    ApplyVisualConstraintsWithMetrics(
+        @[
+          @"V:|-(margin)-[title][text]-(margin)-|",
+          @"H:|-(margin)-[favicon]-(margin)-[title]-(>=margin)-|",
+          @"H:[favicon]-(margin)-[text]-(>=margin)-|"
+        ],
+        @{
+          @"title" : _textLabel,
+          @"text" : _detailTextLabel,
+          @"favicon" : _faviconView
+        },
+        @{ @"margin" : @(kMargin) });
 
-    stackView.translatesAutoresizingMaskIntoConstraints = NO;
-    AddSameSizeConstraint(self.contentView, stackView);
     [NSLayoutConstraint activateConstraints:@[
       // Favicons are always the same size.
       [_faviconView.widthAnchor constraintEqualToConstant:faviconSize],
       [_faviconView.heightAnchor constraintEqualToConstant:faviconSize],
+      [_faviconView.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
       // Place the download indicator in the bottom right corner of the favicon.
       [[_downloadIndicator centerXAnchor]
           constraintEqualToAnchor:_faviconView.trailingAnchor],
