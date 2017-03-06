@@ -5479,7 +5479,7 @@ getLastTableList ()
 }
 
 /* Return the emphasis classes declared in tableList. */
-char const**
+char const **EXPORT_CALL
 lou_getEmphClasses(const char* tableList)
 {
   const char *names[MAX_EMPH_CLASSES + 1];
