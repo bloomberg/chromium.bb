@@ -532,6 +532,16 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
         NetworkHandler::Get()->network_state_handler()->DefaultNetwork() !=
         nullptr);
   }
+
+  if (list_type_ != LIST_TYPE_VPN) {
+    bool scanning =
+        NetworkHandler::Get()->network_state_handler()->GetScanningByType(
+            NetworkTypePattern::WiFi());
+    ShowProgress(-1, scanning);
+    info_button_md_->SetTooltipText(l10n_util::GetStringUTF16(
+        scanning ? IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE
+                 : IDS_ASH_STATUS_TRAY_NETWORK_INFO));
+  }
 }
 
 bool NetworkStateListDetailedView::OrderChild(views::View* view, int index) {
