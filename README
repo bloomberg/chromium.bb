@@ -56,6 +56,10 @@ translations). For more details see the liblouis documentation.
 If you wish to have man pages for the programs you might want to
 install `help2man` before running configure.
 
+If you want to run the test suite with `make check` you should install
+`libyaml` as that will enable extensive tests on the tables. If you
+want to skip those tests you can do so by running `configure --without-yaml`.
+
 # Participating
 
 You can contribute to Liblouis in several different ways:

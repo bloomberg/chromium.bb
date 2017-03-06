@@ -24,6 +24,9 @@ these tools installed to (re)build. Optionally (if you want to
 generate man pages) you'll also need help2man. All of these programs
 are available from ftp://ftp.gnu.org/gnu.
 
+If you want to run the YAML based test suite you will have to install
+~libyaml~.
+
 On Mac OS, the programs can be optained with Homebrew (http://brew.sh):
 
   brew install automake libtool pkg-config texinfo

@@ -564,8 +564,6 @@ read_tests(yaml_parser_t *parser, char **tables, int direction, int hyphenation)
   }
 }
 
-#endif // HAVE_LIBYAML
-
 char ** defaultTableResolver(const char *tableList, const char *base);
 
 /*
@@ -579,6 +577,8 @@ customTableResolver(const char *tableList, const char *base) {
     return dummy_table;
   return defaultTableResolver(tableList, base);
 }
+
+#endif // HAVE_LIBYAML
 
 int
 main(int argc, char *argv[]) {
@@ -615,11 +615,18 @@ main(int argc, char *argv[]) {
     exit (EXIT_FAILURE);
   }
 
+#ifdef WITHOUT_YAML
+  fprintf(stderr, "Skipping tests for %s as yaml was disabled in configure with --without-yaml\n", argv[1]);
+  return EXIT_SKIPPED;
+#else
 #ifndef HAVE_LIBYAML
   fprintf(stderr, "Skipping tests for %s as libyaml was not found\n", argv[1]);
   return EXIT_SKIPPED;
+#endif // not HAVE_LIBYAML
+#endif // WITHOUT_YAML
 
-#else
+#ifndef WITHOUT_YAML
+#ifdef HAVE_LIBYAML
 
   FILE *file;
   yaml_parser_t parser;
@@ -763,6 +770,7 @@ main(int argc, char *argv[]) {
 
   return errors ? 1 : 0;
 
-#endif // not HAVE_LIBYAML
+#endif // HAVE_LIBYAML
+#endif // not WITHOUT_YAML
 }
 
