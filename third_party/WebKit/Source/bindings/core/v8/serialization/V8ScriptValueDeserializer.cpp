@@ -54,7 +54,7 @@ size_t readVersionEnvelope(SerializedScriptValue* serializedScriptValue,
   unsigned shift = 0;
   bool hasAnotherByte;
   do {
-    if (i > length)
+    if (i >= length)
       return 0;
     uint8_t byte = rawData[i];
     if (LIKELY(shift < 32)) {
