@@ -55,8 +55,7 @@
 /flac
 /flatbuffers/src
 /fontconfig/src
-/freetype-android/src
-/freetype2/src
+/freetype/src
 /gestures/gestures
 /gles2_conform
 /glslang/src
