@@ -10,6 +10,7 @@
 ##
 include(FindGit)
 include(FindPerl)
+include(FindThreads)
 
 # Generate the user config settings. This must occur before include of
 # aom_config_defaults.cmake (because it turns every config variable into a cache

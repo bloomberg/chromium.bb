@@ -285,6 +285,13 @@ if (CONFIG_UNIT_TESTS)
   setup_aom_test_targets()
 endif ()
 
+if (HAVE_PTHREAD_H AND CONFIG_MULTITHREAD)
+  find_package(Threads)
+  foreach (app_target ${AOM_APP_TARGETS})
+    target_link_libraries(${app_target} PUBLIC Threads::Threads)
+  endforeach ()
+endif ()
+
 if (XCODE)
   if (CONFIG_LIBYUV OR CONFIG_WEBM_IO)
     # The Xcode generator does not obey LINKER_LANGUAGE. Because of the issue
