@@ -25,6 +25,11 @@ namespace settings {
 
 namespace {
 
+#if defined(OS_CHROMEOS)
+constexpr char fake_id[] = "fake_id";
+constexpr char fake_email[] = "fake_id@gmail.com";
+#endif
+
 class TestProfileInfoHandler : public ProfileInfoHandler {
  public:
   explicit TestProfileInfoHandler(Profile* profile)
@@ -39,17 +44,18 @@ class ProfileInfoHandlerTest : public testing::Test {
  public:
   ProfileInfoHandlerTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
-#if defined(OS_CHROMEOS)
-        user_manager_enabler_(new chromeos::FakeChromeUserManager),
-#endif
-        profile_(nullptr) {
-  }
+        profile_(nullptr) {}
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
 
 #if defined(OS_CHROMEOS)
-    profile_ = profile_manager_.CreateTestingProfile("fake_id@gmail.com");
+    chromeos::FakeChromeUserManager* fake_user_manager =
+        new chromeos::FakeChromeUserManager;
+    user_manager_enabler_.reset(
+        new chromeos::ScopedUserManagerEnabler(fake_user_manager));
+    profile_ = profile_manager_.CreateTestingProfile(fake_email);
+    fake_user_manager->AddUser(AccountId::FromUserEmail(fake_email));
 #else
     profile_ = profile_manager_.CreateTestingProfile("Profile 1");
 #endif
@@ -68,7 +74,7 @@ class ProfileInfoHandlerTest : public testing::Test {
     ASSERT_TRUE(response->GetString("iconUrl", &icon_url));
 
 #if defined(OS_CHROMEOS)
-    EXPECT_EQ("fake_id@gmail.com", name);
+    EXPECT_EQ(fake_id, name);
     EXPECT_FALSE(icon_url.empty());
 #else
     EXPECT_EQ("Profile 1", name);
@@ -86,7 +92,7 @@ class ProfileInfoHandlerTest : public testing::Test {
   content::TestWebUI web_ui_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 #endif
 
   Profile* profile_;
