@@ -266,10 +266,9 @@ class WebNotificationLabel : public WebNotificationItem {
 
     base::string16 str = base::FormatNumber(notification_count);
     if (small_icons_exist) {
-      if (!base::i18n::IsRTL())
-        str = base::ASCIIToUTF16("+") + str;
-      else
-        str = str + base::ASCIIToUTF16("+");
+      str = base::ASCIIToUTF16("+") + str;
+      if (base::i18n::IsRTL())
+        base::i18n::WrapStringWithRTLFormatting(&str);
     }
 
     view_->SetText(str);
