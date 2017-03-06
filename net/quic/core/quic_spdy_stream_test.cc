@@ -17,8 +17,8 @@
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
 using std::string;
@@ -752,9 +752,11 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutFin) {
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(/*fin=*/false,
                               headers.uncompressed_header_bytes(), headers);
+  stream_->ConsumeHeaderList();
 
   // Receive trailing headers with FIN deliberately set to false.
   SpdyHeaderBlock trailers_block;
+  trailers_block["foo"] = "bar";
   auto trailers = AsHeaderList(trailers_block);
 
   EXPECT_CALL(*connection_,
@@ -774,6 +776,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterHeadersWithFin) {
 
   // Receive trailing headers after FIN already received.
   SpdyHeaderBlock trailers_block;
+  trailers_block["foo"] = "bar";
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA, _, _))
       .Times(1);
@@ -794,10 +797,11 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterBodyWithFin) {
 
   // Receive trailing headers after FIN already received.
   SpdyHeaderBlock trailers_block;
+  trailers_block["foo"] = "bar";
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA, _, _))
       .Times(1);
-  ProcessHeaders(false, trailers_block);
+  ProcessHeaders(true, trailers_block);
 }
 
 TEST_P(QuicSpdyStreamTest, ClosingStreamWithNoTrailers) {
