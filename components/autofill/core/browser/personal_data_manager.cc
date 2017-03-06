@@ -880,7 +880,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // trial group or SIZE_MAX if no limit is defined.
   std::string limit_str = variations::GetVariationParamValue(
       kFrecencyFieldTrialName, kFrecencyFieldTrialLimitParam);
-  size_t limit;
+  size_t limit = SIZE_MAX;
+  // Reassign SIZE_MAX to |limit| is needed after calling base::StringToSizeT,
+  // as this method can modify |limit| even if it returns false.
   if (!base::StringToSizeT(limit_str, &limit))
     limit = SIZE_MAX;
 
