@@ -12,7 +12,7 @@ you might want to build:
 * [Android](android_build_instructions.md)
 * [Cast](old_cast_build_instructions.md)
 * [Chrome OS](old_chromeos_build_instructions.md)
-* [iOS](ios_build_instructions.md)
+* [iOS](ios/build_instructions.md)
 * [Linux](linux_build_instructions.md)
 * [Mac](mac_build_instructions.md)
 * [Windows](windows_build_instructions.md)
