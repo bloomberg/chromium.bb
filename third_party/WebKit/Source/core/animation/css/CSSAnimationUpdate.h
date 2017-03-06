@@ -106,8 +106,10 @@ class CSSAnimationUpdate final {
     m_newTransitions = update.newTransitions();
     m_activeInterpolationsForAnimations =
         update.activeInterpolationsForAnimations();
-    m_activeInterpolationsForTransitions =
-        update.activeInterpolationsForTransitions();
+    m_activeInterpolationsForCustomTransitions =
+        update.activeInterpolationsForCustomTransitions();
+    m_activeInterpolationsForStandardTransitions =
+        update.activeInterpolationsForStandardTransitions();
     m_cancelledAnimationIndices = update.cancelledAnimationIndices();
     m_animationIndicesWithPauseToggled =
         update.animationIndicesWithPauseToggled();
@@ -121,7 +123,8 @@ class CSSAnimationUpdate final {
     m_animationsWithUpdates.clear();
     m_newTransitions.clear();
     m_activeInterpolationsForAnimations.clear();
-    m_activeInterpolationsForTransitions.clear();
+    m_activeInterpolationsForCustomTransitions.clear();
+    m_activeInterpolationsForStandardTransitions.clear();
     m_cancelledAnimationIndices.clear();
     m_animationIndicesWithPauseToggled.clear();
     m_cancelledTransitions.clear();
@@ -234,15 +237,24 @@ class CSSAnimationUpdate final {
   void adoptActiveInterpolationsForAnimations(ActiveInterpolationsMap& newMap) {
     newMap.swap(m_activeInterpolationsForAnimations);
   }
-  void adoptActiveInterpolationsForTransitions(
+  void adoptActiveInterpolationsForCustomTransitions(
       ActiveInterpolationsMap& newMap) {
-    newMap.swap(m_activeInterpolationsForTransitions);
+    newMap.swap(m_activeInterpolationsForCustomTransitions);
+  }
+  void adoptActiveInterpolationsForStandardTransitions(
+      ActiveInterpolationsMap& newMap) {
+    newMap.swap(m_activeInterpolationsForStandardTransitions);
   }
   const ActiveInterpolationsMap& activeInterpolationsForAnimations() const {
     return m_activeInterpolationsForAnimations;
   }
-  const ActiveInterpolationsMap& activeInterpolationsForTransitions() const {
-    return m_activeInterpolationsForTransitions;
+  const ActiveInterpolationsMap& activeInterpolationsForCustomTransitions()
+      const {
+    return m_activeInterpolationsForCustomTransitions;
+  }
+  const ActiveInterpolationsMap& activeInterpolationsForStandardTransitions()
+      const {
+    return m_activeInterpolationsForStandardTransitions;
   }
   ActiveInterpolationsMap& activeInterpolationsForAnimations() {
     return m_activeInterpolationsForAnimations;
@@ -256,7 +268,8 @@ class CSSAnimationUpdate final {
            m_cancelledTransitions.isEmpty() &&
            m_finishedTransitions.isEmpty() &&
            m_activeInterpolationsForAnimations.isEmpty() &&
-           m_activeInterpolationsForTransitions.isEmpty() &&
+           m_activeInterpolationsForCustomTransitions.isEmpty() &&
+           m_activeInterpolationsForStandardTransitions.isEmpty() &&
            m_updatedCompositorKeyframes.isEmpty();
   }
 
@@ -285,7 +298,8 @@ class CSSAnimationUpdate final {
   HashSet<PropertyHandle> m_finishedTransitions;
 
   ActiveInterpolationsMap m_activeInterpolationsForAnimations;
-  ActiveInterpolationsMap m_activeInterpolationsForTransitions;
+  ActiveInterpolationsMap m_activeInterpolationsForCustomTransitions;
+  ActiveInterpolationsMap m_activeInterpolationsForStandardTransitions;
 
   friend class PendingAnimationUpdate;
 };

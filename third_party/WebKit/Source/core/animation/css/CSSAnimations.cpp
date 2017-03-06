@@ -955,7 +955,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
     for (const auto& entry : update.activeInterpolationsForAnimations())
       activeInterpolationsForTransitions.erase(entry.key);
   }
-  update.adoptActiveInterpolationsForTransitions(
+  update.adoptActiveInterpolationsForStandardTransitions(
       activeInterpolationsForTransitions);
 }
 

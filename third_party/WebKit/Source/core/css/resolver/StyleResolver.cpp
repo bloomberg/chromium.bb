@@ -1130,20 +1130,20 @@ bool StyleResolver::applyAnimatedStandardProperties(
 
   const ActiveInterpolationsMap& activeInterpolationsMapForAnimations =
       state.animationUpdate().activeInterpolationsForAnimations();
-  const ActiveInterpolationsMap& activeInterpolationsMapForTransitions =
-      state.animationUpdate().activeInterpolationsForTransitions();
+  const ActiveInterpolationsMap& activeInterpolationsMapForStandardTransitions =
+      state.animationUpdate().activeInterpolationsForStandardTransitions();
   // TODO(crbug.com/644148): Apply animations on custom properties.
   applyAnimatedProperties<HighPropertyPriority>(
       state, activeInterpolationsMapForAnimations);
   applyAnimatedProperties<HighPropertyPriority>(
-      state, activeInterpolationsMapForTransitions);
+      state, activeInterpolationsMapForStandardTransitions);
 
   updateFont(state);
 
   applyAnimatedProperties<LowPropertyPriority>(
       state, activeInterpolationsMapForAnimations);
   applyAnimatedProperties<LowPropertyPriority>(
-      state, activeInterpolationsMapForTransitions);
+      state, activeInterpolationsMapForStandardTransitions);
 
   // Start loading resources used by animations.
   loadPendingResources(state);
