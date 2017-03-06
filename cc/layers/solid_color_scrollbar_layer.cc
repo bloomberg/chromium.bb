@@ -39,7 +39,7 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayerInputs::
                                    int track_start,
                                    bool is_left_side_vertical_scrollbar,
                                    int scroll_layer_id)
-    : scroll_layer_id(Layer::INVALID_ID),
+    : scroll_layer_id(scroll_layer_id),
       orientation(orientation),
       thumb_thickness(thumb_thickness),
       track_start(track_start),
