@@ -4,7 +4,12 @@
 
 #include "cc/paint/paint_canvas.h"
 
+#include "base/memory/ptr_util.h"
+#include "cc/paint/paint_record.h"
+#include "cc/paint/paint_recorder.h"
+#include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkMetaData.h"
+#include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 #if defined(OS_MACOSX)
 namespace {
@@ -14,25 +19,20 @@ const char kIsPreviewMetafileKey[] = "CrIsPreviewMetafile";
 
 namespace cc {
 
-PaintCanvasPassThrough::PaintCanvasPassThrough(SkCanvas* canvas)
-    : SkNWayCanvas(canvas->getBaseLayerSize().width(),
-                   canvas->getBaseLayerSize().height()) {
-  SkIRect raster_bounds;
-  canvas->getDeviceClipBounds(&raster_bounds);
-  clipRect(SkRect::MakeFromIRect(raster_bounds));
-  setMatrix(canvas->getTotalMatrix());
-  addCanvas(canvas);
-}
+PaintCanvas::PaintCanvas(SkCanvas* canvas) : canvas_(canvas) {}
 
-PaintCanvasPassThrough::PaintCanvasPassThrough(int width, int height)
-    : SkNWayCanvas(width, height) {}
+PaintCanvas::PaintCanvas(const SkBitmap& bitmap)
+    : canvas_(new SkCanvas(bitmap)), owned_(canvas_) {}
 
-PaintCanvasPassThrough::~PaintCanvasPassThrough() = default;
+PaintCanvas::PaintCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props)
+    : canvas_(new SkCanvas(bitmap, props)), owned_(canvas_) {}
+
+PaintCanvas::~PaintCanvas() = default;
 
 bool ToPixmap(PaintCanvas* canvas, SkPixmap* output) {
   SkImageInfo info;
   size_t row_bytes;
-  void* pixels = canvas->accessTopLayerPixels(&info, &row_bytes);
+  void* pixels = canvas->canvas_->accessTopLayerPixels(&info, &row_bytes);
   if (!pixels) {
     output->reset();
     return false;
@@ -56,5 +56,23 @@ bool IsPreviewMetafile(PaintCanvas* canvas) {
   return value;
 }
 #endif
+
+void PaintCanvasAnnotateRectWithURL(PaintCanvas* canvas,
+                                    const SkRect& rect,
+                                    SkData* data) {
+  SkAnnotateRectWithURL(canvas->canvas_, rect, data);
+}
+
+void PaintCanvasAnnotateNamedDestination(PaintCanvas* canvas,
+                                         const SkPoint& point,
+                                         SkData* data) {
+  SkAnnotateNamedDestination(canvas->canvas_, point, data);
+}
+
+void PaintCanvasAnnotateLinkToDestination(PaintCanvas* canvas,
+                                          const SkRect& rect,
+                                          SkData* data) {
+  SkAnnotateLinkToDestination(canvas->canvas_, rect, data);
+}
 
 }  // namespace cc

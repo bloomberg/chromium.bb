@@ -674,9 +674,9 @@ TEST_F(SkCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
       GrContext::Create(kOpenGL_GrBackend,
                         reinterpret_cast<GrBackendContext>(glInterface.get())));
 
-  sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRenderTarget(
-      grContext.get(), SkBudgeted::kYes, imInfo);
-  cc::PaintCanvas* canvas = surface->getCanvas();
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRenderTarget(grContext.get(), SkBudgeted::kYes, imInfo);
+  cc::PaintCanvas canvas(surface->getCanvas());
 
   TestGLES2Interface gles2;
   Context3D context_3d(&gles2, grContext.get());
@@ -696,7 +696,7 @@ TEST_F(SkCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
 
   gfx::RectF visible_rect(visible_size.width(), visible_size.height());
   cc::PaintFlags flags;
-  renderer_.Paint(video_frame, canvas, visible_rect, flags, VIDEO_ROTATION_0,
+  renderer_.Paint(video_frame, &canvas, visible_rect, flags, VIDEO_ROTATION_0,
                   context_3d);
 
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().width());

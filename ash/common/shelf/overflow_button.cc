@@ -100,7 +100,7 @@ std::unique_ptr<views::InkDropMask> OverflowButton::CreateInkDropMask() const {
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
   cc::PaintFlags flags;
-  flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  flags.setAntiAlias(true);
   flags.setColor(background_color_);
   canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius, flags);
 }

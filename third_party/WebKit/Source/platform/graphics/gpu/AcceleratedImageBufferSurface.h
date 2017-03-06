@@ -53,9 +53,7 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
                                 SkColorType = kN32_SkColorType);
   ~AcceleratedImageBufferSurface() override {}
 
-  PaintCanvas* canvas() override {
-    return m_surface ? m_surface->getCanvas() : nullptr;
-  }
+  PaintCanvas* canvas() override { return m_canvas.get(); }
   bool isValid() const override;
   bool isAccelerated() const override { return true; }
   sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
@@ -63,7 +61,8 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
 
  private:
   unsigned m_contextId;
-  sk_sp<PaintSurface> m_surface;  // Uses m_contextProvider.
+  sk_sp<SkSurface> m_surface;  // Uses m_contextProvider.
+  std::unique_ptr<PaintCanvas> m_canvas;
 };
 
 }  // namespace blink

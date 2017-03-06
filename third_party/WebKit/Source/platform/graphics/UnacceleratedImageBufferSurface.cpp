@@ -31,6 +31,7 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -47,24 +48,25 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
   SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType,
                                        alphaType, colorSpace);
   SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-  m_surface = PaintSurface::MakeRaster(
-      info, Opaque == opacityMode ? 0 : &disableLCDProps);
+  m_surface =
+      SkSurface::MakeRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps);
+
+  if (!m_surface)
+    return;
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
-  if (m_surface)
-    m_surface->getCanvas()->save();
+  m_canvas = WTF::wrapUnique(new PaintCanvas(m_surface->getCanvas()));
+  m_canvas->save();
 
-  if (initializationMode == InitializeImagePixels) {
-    if (m_surface)
-      clear();
-  }
+  if (initializationMode == InitializeImagePixels)
+    clear();
 }
 
 UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() {}
 
 PaintCanvas* UnacceleratedImageBufferSurface::canvas() {
-  return m_surface->getCanvas();
+  return m_canvas.get();
 }
 
 bool UnacceleratedImageBufferSurface::isValid() const {

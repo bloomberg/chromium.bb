@@ -475,7 +475,7 @@ static void PrintDocument(blink::WebFrame* frame, SkDocument* doc) {
   int page_count = frame->printBegin(params);
   for (int i = 0; i < page_count; ++i) {
     SkCanvas* sk_canvas = doc->beginPage(kPageWidth, kPageHeight);
-    cc::PaintCanvasPassThrough canvas(sk_canvas);
+    cc::PaintCanvas canvas(sk_canvas);
     cc::PaintCanvasAutoRestore auto_restore(&canvas, true);
     canvas.translate(kMarginLeft, kMarginTop);
 

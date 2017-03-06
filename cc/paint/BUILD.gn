@@ -11,17 +11,25 @@ cc_component("paint") {
     "paint_canvas.h",
     "paint_export.h",
     "paint_flags.h",
+    "paint_record.cc",
     "paint_record.h",
+    "paint_recorder.cc",
     "paint_recorder.h",
     "paint_shader.h",
+    "paint_surface.cc",
     "paint_surface.h",
   ]
 
   defines = [ "CC_PAINT_IMPLEMENTATION=1" ]
 
   # cc/paint is intended to be a separate component from cc that can be
-  # included in Blink.  This component should never include //base.
+  # included in Blink.  This component should never publicly include
+  # anything that Blink core wouldn't include (e.g. base).
   public_deps = [
     "//skia",
+  ]
+
+  deps = [
+    "//base",
   ]
 }
