@@ -57,6 +57,25 @@ const char* MemoryConditionToString(MemoryCondition condition) {
   return "N/A";
 }
 
+MemoryState CalculateMemoryStateForProcess(MemoryCondition condition,
+                                           bool is_visible) {
+  // The current heuristics for state calculation:
+  // - Foregrounded(visible) processes: THROTTLED when condition is CRITICAL,
+  //   otherwise NORMAL.
+  // - Backgrounded(invisible) processes: THROTTLED when condition is
+  //   WARNING/CRITICAL, otherwise NORMAL.
+  switch (condition) {
+    case MemoryCondition::NORMAL:
+      return MemoryState::NORMAL;
+    case MemoryCondition::WARNING:
+      return is_visible ? MemoryState::NORMAL : MemoryState::THROTTLED;
+    case MemoryCondition::CRITICAL:
+      return MemoryState::THROTTLED;
+  }
+  NOTREACHED();
+  return MemoryState::NORMAL;
+}
+
 }  // namespace
 
 // The implementation of MemoryCoordinatorHandle. See memory_coordinator.mojom
@@ -237,25 +256,8 @@ void MemoryCoordinatorImpl::Observe(int type,
   RenderProcessHost* process = render_widget_host->GetProcess();
   if (!process)
     return;
-  auto iter = children().find(process->GetID());
-  if (iter == children().end())
-    return;
-
-  iter->second.is_visible = *Details<bool>(details).ptr();
-  // The current heuristics for state calculation:
-  // - Foregrounded renderers: THROTTLED when condition is CRITICAL, otherwise
-  //   NORMAL.
-  // - Backgrounded renderers: THROTTLED when condition is WARNING/CRITICAL,
-  //   otherwise NORMAL.
-  MemoryState new_state = MemoryState::NORMAL;
-  MemoryCondition condition = GetMemoryCondition();
-  if (condition == MemoryCondition::WARNING) {
-    new_state =
-        iter->second.is_visible ? MemoryState::NORMAL : MemoryState::THROTTLED;
-  } else if (condition == MemoryCondition::CRITICAL) {
-    new_state = MemoryState::THROTTLED;
-  }
-  SetChildMemoryState(iter->first, new_state);
+  bool is_visible = *Details<bool>(details).ptr();
+  OnChildVisibilityChanged(process->GetID(), is_visible);
 }
 
 MemoryState MemoryCoordinatorImpl::GetStateForProcess(
@@ -357,13 +359,28 @@ bool MemoryCoordinatorImpl::CanSuspendRenderer(int render_process_id) {
 }
 
 void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
-  // Populate an initial state of a newly created process, assuming it's
-  // foregrounded.
-  // TODO(bashi): Don't assume the process is foregrounded. It can be added
-  // as a background process.
-  auto new_state = GetMemoryCondition() == MemoryCondition::CRITICAL
-                       ? MemoryState::THROTTLED
-                       : MemoryState::NORMAL;
+  RenderProcessHost* render_process_host =
+      GetRenderProcessHost(render_process_id);
+  if (!render_process_host)
+    return;
+
+  // Populate an initial state of a newly created process.
+  // TODO(bashi): IsProcessBackgrounded() may return true even when tabs in the
+  // renderer process are invisible (e.g. restoring tabs all at once).
+  // Figure out a better way to set visibility.
+  OnChildVisibilityChanged(render_process_id,
+                           !render_process_host->IsProcessBackgrounded());
+}
+
+void MemoryCoordinatorImpl::OnChildVisibilityChanged(int render_process_id,
+                                                     bool is_visible) {
+  auto iter = children().find(render_process_id);
+  if (iter == children().end())
+    return;
+
+  iter->second.is_visible = is_visible;
+  MemoryState new_state =
+      CalculateMemoryStateForProcess(GetMemoryCondition(), is_visible);
   SetChildMemoryState(render_process_id, new_state);
 }
 

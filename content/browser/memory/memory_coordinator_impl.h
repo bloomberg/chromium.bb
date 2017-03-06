@@ -160,6 +160,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorWithServiceWorkerTest,
                            CannotSuspendRendererWithServiceWorker);
 #endif
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnChildVisibilityChanged);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextCondition);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, UpdateCondition);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, SetMemoryStateForTesting);
@@ -170,6 +171,9 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
 
   // Called when ChildMemoryCoordinator calls AddChild().
   void OnChildAdded(int render_process_id);
+
+  // Called when visibility of a child process is changed.
+  void OnChildVisibilityChanged(int render_process_id, bool is_visible);
 
   // Called by SetChildMemoryState() to determine a child memory state based on
   // the current status of the child process.

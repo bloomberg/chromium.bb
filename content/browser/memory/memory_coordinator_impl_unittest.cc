@@ -303,6 +303,38 @@ TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
   render_process_host->DecrementSharedWorkerRefCount();
 }
 
+TEST_F(MemoryCoordinatorImplTest, OnChildVisibilityChanged) {
+  auto* child = coordinator_->CreateChildMemoryCoordinator(1);
+
+  coordinator_->memory_condition_ = MemoryCondition::NORMAL;
+  coordinator_->OnChildVisibilityChanged(1, true);
+  RunUntilIdle();
+  EXPECT_EQ(mojom::MemoryState::NORMAL, child->state());
+  coordinator_->OnChildVisibilityChanged(1, false);
+  RunUntilIdle();
+#if defined(OS_ANDROID)
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, child->state());
+#else
+  EXPECT_EQ(mojom::MemoryState::NORMAL, child->state());
+#endif
+
+  coordinator_->memory_condition_ = MemoryCondition::WARNING;
+  coordinator_->OnChildVisibilityChanged(1, true);
+  RunUntilIdle();
+  EXPECT_EQ(mojom::MemoryState::NORMAL, child->state());
+  coordinator_->OnChildVisibilityChanged(1, false);
+  RunUntilIdle();
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, child->state());
+
+  coordinator_->memory_condition_ = MemoryCondition::CRITICAL;
+  coordinator_->OnChildVisibilityChanged(1, true);
+  RunUntilIdle();
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, child->state());
+  coordinator_->OnChildVisibilityChanged(1, false);
+  RunUntilIdle();
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, child->state());
+}
+
 TEST_F(MemoryCoordinatorImplTest, CalculateNextCondition) {
   auto* condition_observer = coordinator_->condition_observer_.get();
   condition_observer->expected_renderer_size_ = 10;
