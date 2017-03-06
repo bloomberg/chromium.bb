@@ -15,6 +15,7 @@ android_library("java") {
   deps = [
     "//base:base_java",
     "//net/android:net_java",
+    "//third_party/android_tools:android_support_annotations_java",
     google_play_services_library,
   ]
 

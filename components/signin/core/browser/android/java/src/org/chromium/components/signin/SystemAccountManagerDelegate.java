@@ -113,31 +113,35 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public void hasFeatures(Account account, String[] features, final Callback<Boolean> callback) {
+    public boolean hasFeatures(Account account, String[] features) {
         if (!hasGetAccountsPermission()) {
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onResult(false);
-                }
-            });
-            return;
+            return false;
         }
-        mAccountManager.hasFeatures(account, features, new AccountManagerCallback<Boolean>() {
+        try {
+            return mAccountManager.hasFeatures(account, features, null, null).getResult();
+        } catch (AuthenticatorException | IOException e) {
+            Log.e(TAG, "Error while checking features: ", e);
+        } catch (OperationCanceledException e) {
+            Log.e(TAG, "Checking features was cancelled. This should not happen.");
+        }
+        return false;
+    }
+
+    @Override
+    public void hasFeatures(
+            final Account account, final String[] features, final Callback<Boolean> callback) {
+        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             @Override
-            public void run(AccountManagerFuture<Boolean> future) {
-                assert future.isDone();
-                boolean hasFeatures = false;
-                try {
-                    hasFeatures = future.getResult();
-                } catch (AuthenticatorException | IOException e) {
-                    Log.e(TAG, "Error while checking features: ", e);
-                } catch (OperationCanceledException e) {
-                    Log.e(TAG, "Checking features was cancelled. This should not happen.");
-                }
-                callback.onResult(hasFeatures);
+            public Boolean doInBackground(Void... params) {
+                return hasFeatures(account, features);
             }
-        }, null /* handler */);
+
+            @Override
+            public void onPostExecute(Boolean value) {
+                callback.onResult(value);
+            }
+        };
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

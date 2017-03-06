@@ -179,21 +179,26 @@ public class MockAccountManager implements AccountManagerDelegate {
     }
 
     @Override
-    public void hasFeatures(
-            Account account, final String[] features, final Callback<Boolean> callback) {
+    public boolean hasFeatures(Account account, String[] features) {
         final AccountHolder accountHolder = getAccountHolder(account);
-        accountHolder.addFeaturesCallback(new Runnable() {
+        Set<String> accountFeatures = accountHolder.getFeatures();
+        boolean hasAllFeatures = true;
+        for (String feature : features) {
+            if (!accountFeatures.contains(feature)) {
+                Log.d(TAG, accountFeatures + " does not contain " + feature);
+                hasAllFeatures = false;
+            }
+        }
+        return hasAllFeatures;
+    }
+
+    @Override
+    public void hasFeatures(
+            final Account account, final String[] features, final Callback<Boolean> callback) {
+        ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Set<String> accountFeatures = accountHolder.getFeatures();
-                boolean hasAllFeatures = true;
-                for (String feature : features) {
-                    if (!accountFeatures.contains(feature)) {
-                        Log.d(TAG, accountFeatures + " does not contain " + feature);
-                        hasAllFeatures = false;
-                    }
-                }
-                callback.onResult(hasAllFeatures);
+                callback.onResult(hasFeatures(account, features));
             }
         });
     }
