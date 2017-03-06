@@ -133,14 +133,6 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
 // Gets the channel name for the current Chrome process.
 std::wstring GetChromeChannelName();
 
-// Returns the registry path where the browser crash dumps metrics need to be
-// written to.
-// TODO(ananta)
-// http://crbug.com/604923
-// Unify this with the version in
-// chrome\common\metrics_constants_util_win.cc
-std::wstring GetBrowserCrashDumpAttemptsRegistryPath();
-
 // Returns true if the |source| string matches the |pattern|. The pattern
 // may contain wildcards like '?', which matches one character or a '*'
 // which matches 0 or more characters.

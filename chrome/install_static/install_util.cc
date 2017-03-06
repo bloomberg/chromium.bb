@@ -61,9 +61,6 @@ constexpr wchar_t kRegValueAp[] = L"ap";
 constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
-constexpr wchar_t kBrowserCrashDumpMetricsSubKey[] =
-    L"\\BrowserCrashDumpAttempts";
-
 void Trace(const wchar_t* format_string, ...) {
   static const int kMaxLogBufferSize = 1024;
   static wchar_t buffer[kMaxLogBufferSize] = {};
@@ -527,10 +524,6 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
 
 std::wstring GetChromeChannelName() {
   return InstallDetails::Get().channel();
-}
-
-std::wstring GetBrowserCrashDumpAttemptsRegistryPath() {
-  return GetChromeInstallRegistryPath().append(kBrowserCrashDumpMetricsSubKey);
 }
 
 bool MatchPattern(const std::wstring& source, const std::wstring& pattern) {

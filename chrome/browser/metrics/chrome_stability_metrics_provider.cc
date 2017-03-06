@@ -25,11 +25,6 @@
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
 #endif
 
-#if defined(OS_WIN)
-#include <windows.h>  // Needed for STATUS_* codes
-#include "chrome/common/metrics_constants_util_win.h"
-#endif
-
 ChromeStabilityMetricsProvider::ChromeStabilityMetricsProvider(
     PrefService* local_state)
     : helper_(local_state) {
