@@ -57,6 +57,12 @@ class APIEventHandler {
   size_t GetNumEventListenersForTesting(const std::string& event_name,
                                         v8::Local<v8::Context> context);
 
+  // Invalidates listeners for the given |context|. It's a shame we have to
+  // have this separately (as opposed to hooking into e.g. a PerContextData
+  // destructor), but we need to do this before the context is fully removed
+  // (because the associated extension ScriptContext needs to be valid).
+  void InvalidateContext(v8::Local<v8::Context> context);
+
  private:
   // Method to run a given v8::Function. Curried in for testing.
   binding::RunJSFunction call_js_;

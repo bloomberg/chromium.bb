@@ -84,6 +84,9 @@ class APIBindingsSystem {
   void RegisterCustomType(const std::string& type_name,
                           const CustomTypeHandler& function);
 
+  // Handles any cleanup necessary before releasing the given |context|.
+  void WillReleaseContext(v8::Local<v8::Context> context);
+
   APIRequestHandler* request_handler() { return &request_handler_; }
   APIEventHandler* event_handler() { return &event_handler_; }
   APITypeReferenceMap* type_reference_map() { return &type_reference_map_; }

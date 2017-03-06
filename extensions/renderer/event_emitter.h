@@ -40,7 +40,11 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   void Fire(v8::Local<v8::Context> context,
             std::vector<v8::Local<v8::Value>>* args);
 
-  Listeners* listeners() { return &listeners_; }
+  // Removes all listeners and marks this object as invalid so that no more
+  // are added.
+  void Invalidate();
+
+  const Listeners* listeners() const { return &listeners_; }
 
  private:
   // Bound methods for the Event JS object.
@@ -49,6 +53,10 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   bool HasListener(v8::Local<v8::Function> function);
   bool HasListeners();
   void Dispatch(gin::Arguments* arguments);
+
+  // Whether or not this object is still valid; false upon context release.
+  // When invalid, no listeners can be added or removed.
+  bool valid_ = true;
 
   Listeners listeners_;
 

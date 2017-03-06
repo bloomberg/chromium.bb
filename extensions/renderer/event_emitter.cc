@@ -52,7 +52,19 @@ void EventEmitter::Fire(v8::Local<v8::Context> context,
   }
 }
 
+void EventEmitter::Invalidate() {
+  valid_ = false;
+  listeners_.clear();
+}
+
 void EventEmitter::AddListener(gin::Arguments* arguments) {
+  // If script from another context maintains a reference to this object, it's
+  // possible that functions can be called after this object's owning context
+  // is torn down and released by blink. We don't support this behavior, but
+  // we need to make sure nothing crashes, so early out of methods.
+  if (!valid_)
+    return;
+
   v8::Local<v8::Function> listener;
   // TODO(devlin): For some reason, we don't throw an error when someone calls
   // add/removeListener with no argument. We probably should. For now, keep
@@ -78,6 +90,10 @@ void EventEmitter::AddListener(gin::Arguments* arguments) {
 }
 
 void EventEmitter::RemoveListener(gin::Arguments* arguments) {
+  // See comment in AddListener().
+  if (!valid_)
+    return;
+
   v8::Local<v8::Function> listener;
   // See comment in AddListener().
   if (!arguments->GetNext(&listener))
@@ -107,6 +123,9 @@ bool EventEmitter::HasListeners() {
 }
 
 void EventEmitter::Dispatch(gin::Arguments* arguments) {
+  if (!valid_)
+    return;
+
   if (listeners_.empty())
     return;
   v8::HandleScope handle_scope(arguments->isolate());

@@ -129,6 +129,8 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
         gin::Converter<bool>::FromV8(isolate(), result, &has_listeners));
     EXPECT_FALSE(has_listeners);
   }
+
+  handler.InvalidateContext(context);
 }
 
 // Tests listening for and firing different events.
@@ -227,6 +229,8 @@ TEST_F(APIEventHandlerTest, FiringEvents) {
   EXPECT_EQ(2, get_fired_count("alphaCount1"));
   EXPECT_EQ(2, get_fired_count("alphaCount2"));
   EXPECT_EQ(1, get_fired_count("betaCount"));
+
+  handler.InvalidateContext(context);
 }
 
 // Tests firing events with arguments.
@@ -264,6 +268,8 @@ TEST_F(APIEventHandlerTest, EventArguments) {
   EXPECT_EQ(
       ReplaceSingleQuotes(kArguments),
       GetStringPropertyFromObject(context->Global(), context, "eventArgs"));
+
+  handler.InvalidateContext(context);
 }
 
 // Test dispatching events to multiple contexts.
@@ -349,6 +355,9 @@ TEST_F(APIEventHandlerTest, MultipleContexts) {
               GetStringPropertyFromObject(context_b->Global(), context_b,
                                           "eventArgs"));
   }
+
+  handler.InvalidateContext(context_a);
+  handler.InvalidateContext(context_b);
 }
 
 TEST_F(APIEventHandlerTest, DifferentCallingMethods) {
@@ -404,6 +413,8 @@ TEST_F(APIEventHandlerTest, DifferentCallingMethods) {
                 context, 1, args);
   }
   EXPECT_EQ(2u, handler.GetNumEventListenersForTesting(kEventName, context));
+
+  handler.InvalidateContext(context);
 }
 
 TEST_F(APIEventHandlerTest, TestDispatchFromJs) {
@@ -444,6 +455,8 @@ TEST_F(APIEventHandlerTest, TestDispatchFromJs) {
   EXPECT_EQ("[42,\"foo\",{\"bar\":\"baz\"}]",
             GetStringPropertyFromObject(
                 context->Global(), context, "eventArgs"));
+
+  handler.InvalidateContext(context);
 }
 
 // Test listeners that remove themselves in their handling of the event.
@@ -500,6 +513,7 @@ TEST_F(APIEventHandlerTest, RemovingListenersWhileHandlingEvent) {
   handler.FireEventInContext(kEventName, context, base::ListValue());
   EXPECT_EQ(0u, handler.GetNumEventListenersForTesting(kEventName, context));
 
+  handler.InvalidateContext(context);
   // TODO(devlin): Another possible test: register listener a and listener b,
   // where a removes b and b removes a. Theoretically, only one should be
   // notified. Investigate what we currently do in JS-style bindings.
@@ -584,6 +598,8 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
   EXPECT_EQ("[42]", GetStringPropertyFromObject(context->Global(), context,
                                                 "eventArgs"));
   EXPECT_TRUE(did_throw);
+
+  handler.InvalidateContext(context);
 }
 
 // Tests being notified as listeners are added or removed from events.
@@ -706,6 +722,26 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
   }
   EXPECT_EQ(1u,
             handler.GetNumEventListenersForTesting(kEventName1, context_b));
+
+  // When the contexts are invalidated, we should receive listener removed
+  // notifications.
+  EXPECT_CALL(
+      change_handler,
+      Run(kEventName1, binding::EventListenersChanged::NO_LISTENERS, context_a))
+      .Times(1);
+  EXPECT_CALL(
+      change_handler,
+      Run(kEventName2, binding::EventListenersChanged::NO_LISTENERS, context_a))
+      .Times(1);
+  handler.InvalidateContext(context_a);
+  ::testing::Mock::VerifyAndClearExpectations(&change_handler);
+
+  EXPECT_CALL(
+      change_handler,
+      Run(kEventName1, binding::EventListenersChanged::NO_LISTENERS, context_b))
+      .Times(1);
+  handler.InvalidateContext(context_b);
+  ::testing::Mock::VerifyAndClearExpectations(&change_handler);
 }
 
 // Test registering an argument massager for a given event.
@@ -755,6 +791,8 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagers) {
   EXPECT_EQ(
       "[\"primary\",\"secondary\"]",
       GetStringPropertyFromObject(context->Global(), context, "eventArgs"));
+
+  handler.InvalidateContext(context);
 }
 
 // Test registering an argument massager for a given event and dispatching
@@ -821,6 +859,8 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersAsyncDispatch) {
   EXPECT_EQ(
       "[\"primary\",\"secondary\"]",
       GetStringPropertyFromObject(context->Global(), context, "eventArgs"));
+
+  handler.InvalidateContext(context);
 }
 
 // Test registering an argument massager and never dispatching.
@@ -858,6 +898,8 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersNeverDispatch) {
   // Nothing should blow up. (We tested in the previous test that the event
   // isn't notified without calling dispatch, so all there is to test here is
   // that we don't crash.)
+
+  handler.InvalidateContext(context);
 }
 
 }  // namespace extensions

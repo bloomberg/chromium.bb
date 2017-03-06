@@ -368,7 +368,10 @@ void NativeExtensionBindingsSystem::DidCreateScriptContext(
 }
 
 void NativeExtensionBindingsSystem::WillReleaseScriptContext(
-    ScriptContext* context) {}
+    ScriptContext* context) {
+  v8::HandleScope handle_scope(context->isolate());
+  api_system_.WillReleaseContext(context->v8_context());
+}
 
 void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     ScriptContext* context) {

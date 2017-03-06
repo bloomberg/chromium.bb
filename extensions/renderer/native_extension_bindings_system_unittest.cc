@@ -99,8 +99,12 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   }
 
   void TearDown() override {
-    for (auto* context : raw_script_contexts_)
+    event_change_handler_.reset();
+
+    for (auto* context : raw_script_contexts_) {
+      bindings_system_->WillReleaseScriptContext(context);
       script_context_set_->Remove(context);
+    }
     base::RunLoop().RunUntilIdle();
     script_context_set_.reset();
     bindings_system_.reset();
@@ -139,6 +143,20 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     script_context_set_->AddForTesting(std::move(script_context));
     bindings_system_->DidCreateScriptContext(raw_script_context);
     return raw_script_context;
+  }
+
+  void DisposeMainScriptContext() {
+    v8::Local<v8::Context> context = ContextLocal();
+    auto iter =
+        std::find_if(raw_script_contexts_.begin(), raw_script_contexts_.end(),
+                     [context](ScriptContext* script_context) {
+                       return script_context->v8_context() == context;
+                     });
+    ASSERT_TRUE(iter != raw_script_contexts_.end());
+    bindings_system_->WillReleaseScriptContext(*iter);
+    DisposeContext();
+    script_context_set_->Remove(*iter);
+    raw_script_contexts_.erase(iter);
   }
 
   void RegisterExtension(const ExtensionId& id) { extension_ids_.insert(id); }
@@ -361,7 +379,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   ASSERT_FALSE(first_idle_object.IsEmpty());
   EXPECT_TRUE(first_idle_object->IsObject());
 
-  DisposeContext();
+  DisposeMainScriptContext();
 
   // Check an API that was instantiated....
   v8::Local<v8::Value> second_idle_object =

@@ -28,18 +28,10 @@ const char kExtensionAPIEventPerContextKey[] = "extension_api_events";
 struct APIEventPerContextData : public base::SupportsUserData::Data {
   APIEventPerContextData(v8::Isolate* isolate) : isolate(isolate) {}
   ~APIEventPerContextData() override {
-    v8::HandleScope scope(isolate);
-    // We explicitly clear the event data map here to remove all references to
-    // v8 objects. This helps us avoid cycles in v8 where an event listener
-    // could hold a reference to the event, which in turn holds the reference
-    // to the listener.
-    for (const auto& pair : emitters) {
-      EventEmitter* emitter = nullptr;
-      gin::Converter<EventEmitter*>::FromV8(
-          isolate, pair.second.Get(isolate), &emitter);
-      CHECK(emitter);
-      emitter->listeners()->clear();
-    }
+    DCHECK(emitters.empty())
+        << "|emitters| should have been cleared by InvalidateContext()";
+    DCHECK(massagers.empty())
+        << "|massagers| should have been cleared by InvalidateContext()";
   }
 
   // The associated v8::Isolate. Since this object is cleaned up at context
@@ -196,6 +188,39 @@ void APIEventHandler::RegisterArgumentMassager(
   APIEventPerContextData* data = GetContextData(context, true);
   DCHECK(data->massagers.find(event_name) == data->massagers.end());
   data->massagers[event_name].Reset(context->GetIsolate(), massager);
+}
+
+void APIEventHandler::InvalidateContext(v8::Local<v8::Context> context) {
+  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
+  DCHECK(per_context_data);
+  APIEventPerContextData* data = static_cast<APIEventPerContextData*>(
+      per_context_data->GetUserData(kExtensionAPIEventPerContextKey));
+  if (!data)
+    return;
+
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::HandleScope scope(isolate);
+  // This loop *shouldn't* allow any self-modification (i.e., no listeners
+  // should be added or removed as a result of the iteration). If that changes,
+  // we'll need to cache the listeners elsewhere before iterating.
+  for (const auto& pair : data->emitters) {
+    EventEmitter* emitter = nullptr;
+    gin::Converter<EventEmitter*>::FromV8(isolate, pair.second.Get(isolate),
+                                          &emitter);
+    CHECK(emitter);
+    emitter->Invalidate();
+    // When the context is shut down, all listeners are removed.
+    listeners_changed_.Run(
+        pair.first, binding::EventListenersChanged::NO_LISTENERS, context);
+  }
+
+  data->emitters.clear();
+  data->massagers.clear();
+
+  // InvalidateContext() is called shortly (and, theoretically, synchronously)
+  // before the PerContextData is deleted. We have a check that guarantees that
+  // no new EventEmitters are created after the PerContextData is deleted, so
+  // no new emitters should be created after this point.
 }
 
 size_t APIEventHandler::GetNumEventListenersForTesting(

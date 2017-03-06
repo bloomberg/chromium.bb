@@ -122,6 +122,10 @@ class APIBindingsSystemTestBase : public APIBindingTest {
   }
 
   void TearDown() override {
+    {
+      v8::HandleScope handle_scope(isolate());
+      bindings_system_->WillReleaseContext(ContextLocal());
+    }
     bindings_system_.reset();
     APIBindingTest::TearDown();
   }
