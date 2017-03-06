@@ -87,12 +87,20 @@ class CastPage(page.Page):
     return route
 
   def ExecuteAsyncJavaScript(self, action_runner, script, verify_func,
-                             error_message, timeout=5):
+                             error_message, timeout=5, retry=1):
     """Executes async javascript function and waits until it finishes."""
-
-    action_runner.ExecuteJavaScript(script)
-    self._WaitForResult(action_runner, verify_func, error_message,
-                        timeout=timeout)
+    exception = None
+    for _ in xrange(retry):
+      try:
+        action_runner.ExecuteJavaScript(script)
+        self._WaitForResult(
+            action_runner, verify_func, error_message, timeout=timeout)
+        exception = None
+        break
+      except RuntimeError as e:
+        exception = e
+    if exception:
+      raise exception
 
   def WaitUntilDialogLoaded(self, action_runner, tab):
     """Waits until dialog is fully loaded."""
@@ -118,13 +126,13 @@ class CastPage(page.Page):
            time.time() - start_time < timeout):
       action_runner.Wait(1)
     if not verify_func():
-      raise page.page_test.Failure(error_message)
+      raise RuntimeError(error_message)
 
   def _GetDeviceName(self):
     """Gets device name from environment variable RECEIVER_NAME."""
 
     if 'RECEIVER_IP' not in os.environ or not os.environ.get('RECEIVER_IP'):
-      raise page.page_test.Failure(
+      raise RuntimeError(
           'Your test machine is not set up correctly, '
           'RECEIVER_IP enviroment variable is missing.')
     return utils.GetDeviceName(os.environ.get('RECEIVER_IP'))
