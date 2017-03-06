@@ -102,7 +102,6 @@ crbug.com/451577 [ Win10 ] inspector/extensions/extensions-sidebar.html [ Slow ]
 crbug.com/451577 [ Mac ] inspector/layers/layer-canvas-log.html [ Slow ]
 crbug.com/451577 [ Mac ] inspector/network/network-domain-filter.html [ Slow ]
 
-crbug.com/474121 editing/deleting/password-delete-performance.html [ Slow ]
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Slow ]
 
 # Most inspector tests are slow in Debug.
