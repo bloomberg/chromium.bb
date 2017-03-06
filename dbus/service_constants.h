@@ -61,6 +61,7 @@ const char kImageLoaderServiceName[] = "org.chromium.ImageLoader";
 const char kImageLoaderServicePath[] = "/org/chromium/ImageLoader";
 // Methods
 const char kRegisterComponent[] = "RegisterComponent";
+const char kLoadComponent[] = "LoadComponent";
 const char kGetComponentVersion[] = "GetComponentVersion";
 // Constants
 const char kBadResult[] = "";
