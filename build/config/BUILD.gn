@@ -392,7 +392,6 @@ config("precompiled_headers") {
       # precompiled configurations.
       cflags_c = [ "/wd4206" ]
     } else if (is_mac) {
-      precompiled_header = "build/precompile.h"
       precompiled_source = "//build/precompile.h"
     }
   }
