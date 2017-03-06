@@ -5,7 +5,6 @@
 #include "web/WebRemoteFrameImpl.h"
 
 #include "bindings/core/v8/RemoteWindowProxy.h"
-#include "bindings/core/v8/V8Window.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
@@ -28,7 +27,6 @@
 #include "web/RemoteFrameOwner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/debug/Alias.h"
 
 namespace blink {
 
@@ -218,23 +216,9 @@ v8::Local<v8::Context> WebRemoteFrameImpl::mainWorldScriptContext() const {
 
 v8::Local<v8::Context> WebRemoteFrameImpl::deprecatedMainWorldScriptContext()
     const {
-  v8::Local<v8::Context> context =
-      static_cast<RemoteWindowProxy*>(
-          frame()->windowProxy(DOMWrapperWorld::mainWorld()))
-          ->contextIfInitialized();
-
-  DOMWindow* window = frame()->domWindow();
-  // Prevent this local from getting optimized out, and hopefully, the heap
-  // contents captured into minidumps.
-  WTF::debug::alias(&window);
-
-  v8::Local<v8::Object> globalProxy = context->Global();
-  CHECK(!globalProxy.IsEmpty());
-  CHECK(V8Window::hasInstance(globalProxy, v8::Isolate::GetCurrent()));
-  CHECK(window);
-  CHECK_EQ(window, V8Window::toImpl(globalProxy));
-
-  return context;
+  return static_cast<RemoteWindowProxy*>(
+             frame()->windowProxy(DOMWrapperWorld::mainWorld()))
+      ->contextIfInitialized();
 }
 
 void WebRemoteFrameImpl::reload(WebFrameLoadType) {

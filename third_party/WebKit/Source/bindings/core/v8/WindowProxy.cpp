@@ -33,11 +33,9 @@
 #include <utility>
 
 #include "bindings/core/v8/V8DOMWrapper.h"
-#include "bindings/core/v8/V8Window.h"
 #include "core/frame/Frame.h"
 #include "v8/include/v8.h"
 #include "wtf/Assertions.h"
-#include "wtf/debug/Alias.h"
 
 namespace blink {
 
@@ -132,40 +130,11 @@ void WindowProxy::setGlobal(v8::Local<v8::Object> global) {
 // If there are JS code holds a closure to the old inner window,
 // it won't be able to reach the outer window via its global object.
 void WindowProxy::initializeIfNeeded() {
-  v8::HandleScope handleScope(m_isolate);
-  Lifecycle oldLifecycle = m_lifecycle;
-  DOMWindow* window = m_frame->domWindow();
-  bool isLocal = window->isLocalDOMWindow();
-  // Prevent these locals from getting optimized out, and hopefully, the heap
-  // contents captured into minidumps.
-  WTF::debug::alias(&oldLifecycle);
-  WTF::debug::alias(&window);
-  WTF::debug::alias(&isLocal);
-
   // TODO(haraken): It is wrong to re-initialize an already detached window
   // proxy. This must be 'if(m_lifecycle == Lifecycle::ContextUninitialized)'.
   if (m_lifecycle != Lifecycle::ContextInitialized) {
     initialize();
-    // Note: this set of CHECKs is intentionally duplicated below to distinguish
-    // between initializing the global with null internal fields or returning a
-    // global that claims to be initialized but has null internal fields.
-    v8::Local<v8::Object> globalProxy = m_globalProxy.newLocal(m_isolate);
-    CHECK(!globalProxy.IsEmpty());
-    CHECK(V8Window::hasInstance(globalProxy, m_isolate));
-    CHECK(window);
-    CHECK_EQ(window, V8Window::toImpl(globalProxy));
-  } else {
-    v8::Local<v8::Object> globalProxy = m_globalProxy.newLocal(m_isolate);
-    CHECK(!globalProxy.IsEmpty());
-    CHECK(V8Window::hasInstance(globalProxy, m_isolate));
-    CHECK(window);
-    CHECK_EQ(window, V8Window::toImpl(globalProxy));
   }
-
-  // Sanity check: WindowProxy's frame's window should still be the same
-  DOMWindow* window2 = m_frame->domWindow();
-  WTF::debug::alias(&window2);
-  CHECK_EQ(window, window2);
 }
 
 }  // namespace blink
