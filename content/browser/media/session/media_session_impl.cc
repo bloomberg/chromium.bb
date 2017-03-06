@@ -646,7 +646,7 @@ void MediaSessionImpl::DidReceiveAction(
   // https://crbug.com/596516.
   if (blink::mojom::MediaSessionAction::PAUSE == action) {
     RenderFrameHost* rfh_of_routed_service =
-        routed_service_->GetRenderFrameHost();
+        routed_service_ ? routed_service_->GetRenderFrameHost() : nullptr;
     for (const auto& player : normal_players_) {
       if (player.observer->GetRenderFrameHost() != rfh_of_routed_service)
         player.observer->OnSuspend(player.player_id);

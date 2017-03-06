@@ -402,4 +402,16 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   run_loop.Run();
 }
 
+TEST_F(MediaSessionImplServiceRoutingTest,
+       TestReceivingPauseActionWhenNoServiceRouted) {
+  CreateServiceForFrame(main_frame_);
+  CreateServiceForFrame(sub_frame_);
+
+  EXPECT_EQ(nullptr, ComputeServiceForRouting());
+
+  // This should not crash.
+  MediaSessionImpl::Get(contents())
+      ->DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE);
+}
+
 }  // namespace content
