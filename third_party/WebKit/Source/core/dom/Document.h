@@ -445,9 +445,7 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   bool canExecuteScripts(ReasonForCallingCanExecuteScripts) override;
-  bool isRenderingReady() const {
-    return haveImportsLoaded() && haveRenderBlockingStylesheetsLoaded();
-  }
+  bool isRenderingReady() const;
   bool isScriptExecutionReady() const {
     return haveImportsLoaded() && haveScriptBlockingStylesheetsLoaded();
   }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/dom/ClientRect.h"
 #include "core/dom/Document.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -378,6 +379,45 @@ TEST_F(DocumentLoadingRenderingTest,
   // Finish the load, painting should stay enabled.
   mainResource.finish();
   EXPECT_TRUE(document().isRenderingReady());
+}
+
+TEST_F(DocumentLoadingRenderingTest,
+       returnBoundingClientRectCorrectlyWhileLoadingImport) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  SimRequest importResource("https://example.com/import.css", "text/css");
+
+  loadURL("https://example.com/test.html");
+
+  webView().resize(WebSize(800, 600));
+
+  mainResource.start();
+
+  mainResource.write(
+      "<html><body>"
+      "  <div id='test' style='font-size: 16px'>test</div>"
+      "  <script>"
+      "    var link = document.createElement('link');"
+      "    link.rel = 'import';"
+      "    link.href = 'import.css';"
+      "    document.head.appendChild(link);"
+      "  </script>");
+  importResource.start();
+
+  // Import loader isn't finish, shoudn't paint.
+  EXPECT_FALSE(document().isRenderingReady());
+
+  // If ignoringPendingStylesheets==true, element should get non-empty rect.
+  Element* element = document().getElementById("test");
+  ClientRect* rect = element->getBoundingClientRect();
+  EXPECT_TRUE(rect->width() > 0.f);
+  EXPECT_TRUE(rect->height() > 0.f);
+
+  // After reset ignoringPendingStylesheets, we should block rendering again.
+  EXPECT_FALSE(document().isRenderingReady());
+
+  importResource.write("div { color: red; }");
+  importResource.finish();
+  mainResource.finish();
 }
 
 }  // namespace blink

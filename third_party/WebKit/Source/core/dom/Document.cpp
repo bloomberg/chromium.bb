@@ -5645,6 +5645,11 @@ bool Document::canExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
   return true;
 }
 
+bool Document::isRenderingReady() const {
+  return m_styleEngine->ignoringPendingStylesheets() ||
+         (haveImportsLoaded() && haveRenderBlockingStylesheetsLoaded());
+}
+
 bool Document::allowInlineEventHandler(Node* node,
                                        EventListener* listener,
                                        const String& contextURL,
