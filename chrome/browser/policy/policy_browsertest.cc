@@ -64,6 +64,7 @@
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -3123,10 +3124,38 @@ class MediaStreamDevicesControllerBrowserTest
     : public PolicyTest,
       public testing::WithParamInterface<bool> {
  public:
+  // TODO(raymes): When crbug.com/606138 is finished and the
+  // PermissionRequestManager is used to show all prompts on Android/Desktop
+  // we should remove PermissionPromptDelegate and just use
+  // MockPermissionPromptFactory instead. The APIs are the same.
+  class TestPermissionPromptDelegate
+      : public MediaStreamDevicesController::PermissionPromptDelegate {
+   public:
+    void ShowPrompt(
+        bool user_gesture,
+        content::WebContents* web_contents,
+        std::unique_ptr<MediaStreamDevicesController> controller) override {
+      if (response_type_ == PermissionRequestManager::ACCEPT_ALL)
+        controller->PermissionGranted();
+      else if (response_type_ == PermissionRequestManager::DENY_ALL)
+        controller->PermissionDenied();
+    }
+
+    void set_response_type(
+        PermissionRequestManager::AutoResponseType response_type) {
+      response_type_ = response_type;
+    }
+
+   private:
+    PermissionRequestManager::AutoResponseType response_type_ =
+        PermissionRequestManager::NONE;
+  };
+
   MediaStreamDevicesControllerBrowserTest()
       : request_url_allowed_via_whitelist_(false),
         request_url_("https://www.example.com/foo") {
     policy_value_ = GetParam();
+    prompt_delegate_.set_response_type(PermissionRequestManager::ACCEPT_ALL);
   }
   virtual ~MediaStreamDevicesControllerBrowserTest() {}
 
@@ -3179,12 +3208,11 @@ class MediaStreamDevicesControllerBrowserTest
         content::MEDIA_NO_SERVICE, false);
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
-    MediaStreamDevicesController controller(
+    MediaStreamDevicesController::RequestPermissionsWithDelegate(
         browser()->tab_strip_model()->GetActiveWebContents(), request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
-                   base::Unretained(this)));
-    if (controller.IsAskingForAudio())
-      controller.PermissionGranted();
+                   base::Unretained(this)),
+        &prompt_delegate_);
 
     base::MessageLoop::current()->QuitWhenIdle();
   }
@@ -3196,16 +3224,16 @@ class MediaStreamDevicesControllerBrowserTest
         content::MEDIA_DEVICE_VIDEO_CAPTURE, false);
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
-    MediaStreamDevicesController controller(
+    MediaStreamDevicesController::RequestPermissionsWithDelegate(
         browser()->tab_strip_model()->GetActiveWebContents(), request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
-                   base::Unretained(this)));
-    if (controller.IsAskingForVideo())
-      controller.PermissionGranted();
+                   base::Unretained(this)),
+        &prompt_delegate_);
 
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
+  TestPermissionPromptDelegate prompt_delegate_;
   bool policy_value_;
   bool request_url_allowed_via_whitelist_;
   GURL request_url_;

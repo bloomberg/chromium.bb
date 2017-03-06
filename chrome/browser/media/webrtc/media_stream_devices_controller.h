@@ -69,6 +69,23 @@ class MediaStreamDevicesController : public PermissionRequest {
   friend class MediaStreamDevicesControllerTest;
   friend class policy::MediaStreamDevicesControllerBrowserTest;
 
+  // Delegate showing permission prompts.
+  class PermissionPromptDelegate {
+   public:
+    virtual void ShowPrompt(
+        bool user_gesture,
+        content::WebContents* web_contents,
+        std::unique_ptr<MediaStreamDevicesController> controller) = 0;
+  };
+
+  class PermissionPromptDelegateImpl;
+
+  static void RequestPermissionsWithDelegate(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback,
+      PermissionPromptDelegate* delegate);
+
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback);
@@ -138,6 +155,8 @@ class MediaStreamDevicesController : public PermissionRequest {
   // The callback that needs to be Run to notify WebRTC of whether access to
   // audio/video devices was granted or not.
   content::MediaResponseCallback callback_;
+
+  std::unique_ptr<PermissionPromptDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };

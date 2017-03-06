@@ -175,54 +175,42 @@ class MediaPermissionRequestLogger : content::WebContentsObserver {
 
 }  // namespace
 
+// Implementation of PermissionPromptDelegate which actually shows a permission
+// prompt.
+class MediaStreamDevicesController::PermissionPromptDelegateImpl
+    : public MediaStreamDevicesController::PermissionPromptDelegate {
+ public:
+  void ShowPrompt(
+      bool user_gesture,
+      content::WebContents* web_contents,
+      std::unique_ptr<MediaStreamDevicesController> controller) override {
+#if defined(OS_ANDROID)
+    PermissionUmaUtil::RecordPermissionPromptShown(
+        controller->GetPermissionRequestType(),
+        PermissionUtil::GetGestureType(user_gesture));
+    if (PermissionDialogDelegate::ShouldShowDialog(user_gesture)) {
+      PermissionDialogDelegate::CreateMediaStreamDialog(
+          web_contents, user_gesture, std::move(controller));
+    } else {
+      MediaStreamInfoBarDelegateAndroid::Create(web_contents, user_gesture,
+                                                std::move(controller));
+    }
+#else
+    PermissionRequestManager* permission_request_manager =
+        PermissionRequestManager::FromWebContents(web_contents);
+    if (permission_request_manager)
+      permission_request_manager->AddRequest(controller.release());
+#endif
+  }
+};
+
 // static
 void MediaStreamDevicesController::RequestPermissions(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  std::unique_ptr<MediaStreamDevicesController> controller(
-      new MediaStreamDevicesController(web_contents, request, callback));
-  if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo()) {
-#if defined(OS_ANDROID)
-    // If either audio or video was previously allowed and Chrome no longer has
-    // the necessary permissions, show a infobar to attempt to address this
-    // mismatch.
-    std::vector<ContentSettingsType> content_settings_types;
-    if (controller->IsAllowedForAudio())
-      content_settings_types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-
-    if (controller->IsAllowedForVideo()) {
-      content_settings_types.push_back(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-    }
-    if (!content_settings_types.empty() &&
-        PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
-            web_contents, content_settings_types)) {
-      PermissionUpdateInfoBarDelegate::Create(
-          web_contents, content_settings_types,
-          base::Bind(&OnPermissionConflictResolved, base::Passed(&controller)));
-    }
-#endif
-    return;
-  }
-
-#if defined(OS_ANDROID)
-  PermissionUmaUtil::RecordPermissionPromptShown(
-      controller->GetPermissionRequestType(),
-      PermissionUtil::GetGestureType(request.user_gesture));
-  if (PermissionDialogDelegate::ShouldShowDialog(request.user_gesture)) {
-    PermissionDialogDelegate::CreateMediaStreamDialog(
-        web_contents, request.user_gesture, std::move(controller));
-  } else {
-    MediaStreamInfoBarDelegateAndroid::Create(
-        web_contents, request.user_gesture, std::move(controller));
-  }
-#else
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
-  if (permission_request_manager)
-    permission_request_manager->AddRequest(controller.release());
-#endif
+  PermissionPromptDelegateImpl delegate;
+  RequestPermissionsWithDelegate(web_contents, request, callback, &delegate);
 }
 
 // static
@@ -334,6 +322,42 @@ void MediaStreamDevicesController::RequestFinished() {
 PermissionRequestType MediaStreamDevicesController::GetPermissionRequestType()
     const {
   return PermissionRequestType::MEDIA_STREAM;
+}
+
+// static
+void MediaStreamDevicesController::RequestPermissionsWithDelegate(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback,
+    PermissionPromptDelegate* delegate) {
+  std::unique_ptr<MediaStreamDevicesController> controller(
+      new MediaStreamDevicesController(web_contents, request, callback));
+  if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo()) {
+#if defined(OS_ANDROID)
+    // If either audio or video was previously allowed and Chrome no longer has
+    // the necessary permissions, show a infobar to attempt to address this
+    // mismatch.
+    std::vector<ContentSettingsType> content_settings_types;
+    if (controller->IsAllowedForAudio())
+      content_settings_types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+
+    if (controller->IsAllowedForVideo()) {
+      content_settings_types.push_back(
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+    }
+    if (!content_settings_types.empty() &&
+        PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
+            web_contents, content_settings_types)) {
+      PermissionUpdateInfoBarDelegate::Create(
+          web_contents, content_settings_types,
+          base::Bind(&OnPermissionConflictResolved, base::Passed(&controller)));
+    }
+#endif
+    return;
+  }
+
+  delegate->ShowPrompt(request.user_gesture, web_contents,
+                       std::move(controller));
 }
 
 MediaStreamDevicesController::MediaStreamDevicesController(
