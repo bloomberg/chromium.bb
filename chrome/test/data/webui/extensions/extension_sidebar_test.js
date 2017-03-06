@@ -55,7 +55,9 @@ cr.define('extension_sidebar_tests', function() {
       });
 
       setup(function() {
-        sidebar = document.querySelector('extensions-manager').sidebar;
+        var manager = document.querySelector('extensions-manager');
+        manager.$.drawer.openDrawer();
+        sidebar = manager.sidebar;
         mockDelegate = new MockDelegate();
         sidebar.setDelegate(mockDelegate);
         sidebar.setListDelegate(mockDelegate);

@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -63,10 +64,17 @@
           page-name="$i18n{toolbarTitle}"
           search-prompt="$i18n{search}"
           clear-label="$i18n{clearSearch}"
-          on-search-changed="onFilterChanged_">
+          on-search-changed="onFilterChanged_"
+          on-cr-toolbar-menu-tap="onMenuButtonTap_"
+          show-menu>
       </cr-toolbar>
-      <extensions-sidebar in-dev-mode="[[inDevMode]]">
-      </extensions-sidebar>
+      <dialog id="drawer" is="cr-drawer">
+        <div class="drawer-header">$i18n{toolbarTitle}</div>
+        <div class="drawer-content">
+          <extensions-sidebar in-dev-mode="[[inDevMode]]">
+          </extensions-sidebar>
+        </div>
+      </dialog>
       <neon-animated-pages id="pages" selected="0">
         <extensions-item-list id="items-list" items="[[extensions]]"
             delegate="[[itemDelegate]]" in-dev-mode="[[inDevMode]]"

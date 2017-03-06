@@ -145,6 +145,10 @@ cr.define('extensions', function() {
       this.filter = /** @type {string} */ (event.detail);
     },
 
+    onMenuButtonTap_: function() {
+      this.$.drawer.toggle();
+    },
+
     /**
      * @param {chrome.developerPrivate.ExtensionType} type The type of item.
      * @return {string} The ID of the list that the item belongs in.
@@ -273,6 +277,7 @@ cr.define('extensions', function() {
      * @param {Page} toPage
      */
     changePage: function(toPage) {
+      this.$.drawer.closeDrawer();
       var fromPage = this.$.pages.selected;
       if (fromPage == toPage)
         return;

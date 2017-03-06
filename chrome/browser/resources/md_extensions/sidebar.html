@@ -1,8 +1,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -12,13 +11,10 @@
   <template>
     <style>
       :host {
-        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
         white-space: nowrap;
-      }
-
-      #section-menu,
-      .section-item {
-        -webkit-margin-start: 20px;
       }
 
       #section-menu {
@@ -33,20 +29,19 @@
       }
 
       #more-extensions {
+        -webkit-padding-end: 16px;
+        align-items: center;
         display: flex;
+        justify-content: space-between;
         text-decoration: none;
       }
 
-      paper-item {
+      .section-item {
+        -webkit-padding-start: 24px;
         color: #5A5A5A;
         cursor: pointer;
-        font-size: 88%;
-        padding: 0;
-      }
-
-      .section-menu-item iron-icon,
-      .section-item iron-icon {
-        -webkit-margin-end: 15px;
+        font-size: 13px;
+        height: 48px;
       }
 
       #developer-mode-checkbox {
@@ -64,32 +59,30 @@
 
       #devtools-controls {
         border-top: 1px solid grey;
+        flex-grow: 1;
+      }
+
+      button[is='paper-icon-button-light'].open-in-new {
+        background-image: url(chrome://resources/images/open_in_new.svg);
+        background-size: contain;
+        height: 15px;
+        width: 15px;
       }
     </style>
     <paper-menu id="section-menu" selected="0">
-      <paper-item class="section-menu-item" id="sections-extensions"
+      <paper-item class="section-item" id="sections-extensions"
           on-tap="onExtensionsTap_">
-        <iron-icon icon="extension"></iron-icon>
         <span>$i18n{sidebarExtensions}</span>
       </paper-item>
-      <paper-item class="section-menu-item" id="sections-apps"
+      <paper-item class="section-item" id="sections-apps"
           on-tap="onAppsTap_">
-        <iron-icon icon="apps"></iron-icon>
         <span>$i18n{sidebarApps}</span>
       </paper-item>
-      <paper-item class="section-menu-item" id="sections-shortcuts"
+      <paper-item class="section-item" id="sections-shortcuts"
           on-tap="onKeyboardShortcutsTap_">
-        <iron-icon icon="hardware:keyboard"></iron-icon>
         <span>$i18n{keyboardShortcuts}</span>
       </paper-item>
     </paper-menu>
-    <a class="section-item" id="more-extensions" target="_blank"
-        href="$i18n{getMoreExtensionsUrl}">
-      <paper-item>
-        <iron-icon icon="extensions-icons:store"></iron-icon>
-        <span>$i18n{getMoreExtensions}</span>
-      </paper-item>
-    </a>
     <div id="devtools-controls">
       <paper-item class="section-item" id="developer-mode">
         <span>$i18n{developerMode}</span>
@@ -112,6 +105,11 @@
         </paper-item>
       </template>
     </div>
+    <a class="section-item" id="more-extensions" target="_blank"
+        href="$i18n{getMoreExtensionsUrl}">
+      <span>$i18n{getMoreExtensions}</span>
+      <button class="open-in-new" is="paper-icon-button-light"></button>
+    </a>
   </template>
   <script src="chrome://extensions/sidebar.js"></script>
 </dom-module>

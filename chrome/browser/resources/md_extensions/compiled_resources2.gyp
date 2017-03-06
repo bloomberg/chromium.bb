@@ -115,6 +115,7 @@
     {
       'target_name': 'manager',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_drawer/compiled_resources2.gyp:cr_drawer',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
