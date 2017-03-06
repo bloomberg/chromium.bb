@@ -27,13 +27,9 @@ class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
   MockWebRtcInternalsProxy() : loop_(nullptr) {}
   explicit MockWebRtcInternalsProxy(base::RunLoop* loop) : loop_(loop) {}
 
-  const std::string& command() const {
-    return command_;
-  }
+  const std::string& command() const { return command_; }
 
-  base::Value* value() {
-    return value_.get();
-  }
+  base::Value* value() { return value_.get(); }
 
  private:
   void OnUpdate(const char* command, const base::Value* value) override {
@@ -116,15 +112,74 @@ TEST_F(WebRtcInternalsTest, AddRemoveObserver) {
 
   webrtc_internals.RemoveObserver(&observer);
   // The observer should not get notified of this activity.
-  webrtc_internals.OnAddPeerConnection(
-      0, 3, 4, kUrl, kRtcConfiguration, kContraints);
+  webrtc_internals.OnAddPeerConnection(0, 3, 4, kUrl, kRtcConfiguration,
+                                       kContraints);
 
-  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-      loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(5));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, loop.QuitClosure());
   loop.Run();
 
   EXPECT_EQ("", observer.command());
+
+  webrtc_internals.OnRemovePeerConnection(3, 4);
+}
+
+TEST_F(WebRtcInternalsTest, EnsureNoLogWhenNoObserver) {
+  base::RunLoop loop;
+  WebRTCInternalsForTest webrtc_internals;
+  webrtc_internals.OnAddPeerConnection(0, 3, 4, kUrl, kRtcConfiguration,
+                                       kContraints);
+  webrtc_internals.OnUpdatePeerConnection(3, 4, "update_type", "update_value");
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, loop.QuitClosure());
+  loop.Run();
+
+  // Make sure we don't have a log entry since there was no observer.
+  MockWebRtcInternalsProxy observer;
+  webrtc_internals.UpdateObserver(&observer);
+  EXPECT_EQ("updateAllPeerConnections", observer.command());
+
+  base::ListValue* list = nullptr;
+  ASSERT_TRUE(observer.value()->GetAsList(&list));
+  EXPECT_EQ(1U, list->GetSize());
+  base::DictionaryValue* dict = nullptr;
+  ASSERT_TRUE((*list->begin())->GetAsDictionary(&dict));
+  base::ListValue* log = nullptr;
+  ASSERT_FALSE(dict->GetList("log", &log));
+
+  webrtc_internals.OnRemovePeerConnection(3, 4);
+}
+
+TEST_F(WebRtcInternalsTest, EnsureLogIsRemovedWhenObserverIsRemoved) {
+  base::RunLoop loop;
+  WebRTCInternalsForTest webrtc_internals;
+  MockWebRtcInternalsProxy observer;
+  webrtc_internals.AddObserver(&observer);
+  webrtc_internals.OnAddPeerConnection(0, 3, 4, kUrl, kRtcConfiguration,
+                                       kContraints);
+  webrtc_internals.OnUpdatePeerConnection(3, 4, "update_type", "update_value");
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, loop.QuitClosure());
+  loop.Run();
+
+  // Make sure we have a log entry since there was an observer.
+  webrtc_internals.UpdateObserver(&observer);
+  EXPECT_EQ("updateAllPeerConnections", observer.command());
+
+  base::ListValue* list = nullptr;
+  ASSERT_TRUE(observer.value()->GetAsList(&list));
+  EXPECT_EQ(1U, list->GetSize());
+  base::DictionaryValue* dict = nullptr;
+  ASSERT_TRUE((*list->begin())->GetAsDictionary(&dict));
+  base::ListValue* log = nullptr;
+  ASSERT_TRUE(dict->GetList("log", &log));
+
+  // Make sure we the log entry was removed when the last observer was removed.
+  webrtc_internals.RemoveObserver(&observer);
+  webrtc_internals.UpdateObserver(&observer);
+  EXPECT_EQ("updateAllPeerConnections", observer.command());
+
+  ASSERT_TRUE(observer.value()->GetAsList(&list));
+  EXPECT_EQ(1U, list->GetSize());
+  ASSERT_TRUE((*list->begin())->GetAsDictionary(&dict));
+  ASSERT_FALSE(dict->GetList("log", &log));
 
   webrtc_internals.OnRemovePeerConnection(3, 4);
 }
@@ -134,8 +189,8 @@ TEST_F(WebRtcInternalsTest, SendAddPeerConnectionUpdate) {
   MockWebRtcInternalsProxy observer(&loop);
   WebRTCInternalsForTest webrtc_internals;
   webrtc_internals.AddObserver(&observer);
-  webrtc_internals.OnAddPeerConnection(
-      0, 1, 2, kUrl, kRtcConfiguration, kContraints);
+  webrtc_internals.OnAddPeerConnection(0, 1, 2, kUrl, kRtcConfiguration,
+                                       kContraints);
 
   loop.Run();
 
@@ -159,8 +214,8 @@ TEST_F(WebRtcInternalsTest, SendRemovePeerConnectionUpdate) {
   MockWebRtcInternalsProxy observer(&loop);
   WebRTCInternalsForTest webrtc_internals;
   webrtc_internals.AddObserver(&observer);
-  webrtc_internals.OnAddPeerConnection(
-      0, 1, 2, kUrl, kRtcConfiguration, kContraints);
+  webrtc_internals.OnAddPeerConnection(0, 1, 2, kUrl, kRtcConfiguration,
+                                       kContraints);
   webrtc_internals.OnRemovePeerConnection(1, 2);
 
   loop.Run();
@@ -181,13 +236,12 @@ TEST_F(WebRtcInternalsTest, SendUpdatePeerConnectionUpdate) {
   MockWebRtcInternalsProxy observer(&loop);
   WebRTCInternalsForTest webrtc_internals;
   webrtc_internals.AddObserver(&observer);
-  webrtc_internals.OnAddPeerConnection(
-      0, 1, 2, kUrl, kRtcConfiguration, kContraints);
+  webrtc_internals.OnAddPeerConnection(0, 1, 2, kUrl, kRtcConfiguration,
+                                       kContraints);
 
   const std::string update_type = "fakeType";
   const std::string update_value = "fakeValue";
-  webrtc_internals.OnUpdatePeerConnection(
-      1, 2, update_type, update_value);
+  webrtc_internals.OnUpdatePeerConnection(1, 2, update_type, update_value);
 
   loop.Run();
 
@@ -221,14 +275,14 @@ TEST_F(WebRtcInternalsTest, AddGetUserMedia) {
   const int pid = 2;
   const std::string audio_constraint = "aaa";
   const std::string video_constraint = "vvv";
-  webrtc_internals.OnGetUserMedia(
-      rid, pid, kUrl, true, true, audio_constraint, video_constraint);
+  webrtc_internals.OnGetUserMedia(rid, pid, kUrl, true, true, audio_constraint,
+                                  video_constraint);
 
   loop.Run();
 
   ASSERT_EQ("addGetUserMedia", observer.command());
-  VerifyGetUserMediaData(
-      observer.value(), rid, pid, kUrl, audio_constraint, video_constraint);
+  VerifyGetUserMediaData(observer.value(), rid, pid, kUrl, audio_constraint,
+                         video_constraint);
 
   webrtc_internals.RemoveObserver(&observer);
 }
@@ -239,8 +293,8 @@ TEST_F(WebRtcInternalsTest, SendAllUpdateWithGetUserMedia) {
   const std::string audio_constraint = "aaa";
   const std::string video_constraint = "vvv";
   WebRTCInternalsForTest webrtc_internals;
-  webrtc_internals.OnGetUserMedia(
-      rid, pid, kUrl, true, true, audio_constraint, video_constraint);
+  webrtc_internals.OnGetUserMedia(rid, pid, kUrl, true, true, audio_constraint,
+                                  video_constraint);
 
   MockWebRtcInternalsProxy observer;
   // Add one observer after "getUserMedia".
@@ -248,8 +302,8 @@ TEST_F(WebRtcInternalsTest, SendAllUpdateWithGetUserMedia) {
   webrtc_internals.UpdateObserver(&observer);
 
   EXPECT_EQ("addGetUserMedia", observer.command());
-  VerifyGetUserMediaData(
-      observer.value(), rid, pid, kUrl, audio_constraint, video_constraint);
+  VerifyGetUserMediaData(observer.value(), rid, pid, kUrl, audio_constraint,
+                         video_constraint);
 
   webrtc_internals.RemoveObserver(&observer);
 }
@@ -261,13 +315,12 @@ TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
 
   WebRTCInternalsForTest webrtc_internals;
 
-  webrtc_internals.OnAddPeerConnection(
-      rid, pid, lid, kUrl, kRtcConfiguration, kContraints);
-  webrtc_internals.OnUpdatePeerConnection(
-      pid, lid, update_type, update_value);
-
   MockWebRtcInternalsProxy observer;
   webrtc_internals.AddObserver(&observer);
+
+  webrtc_internals.OnAddPeerConnection(rid, pid, lid, kUrl, kRtcConfiguration,
+                                       kContraints);
+  webrtc_internals.OnUpdatePeerConnection(pid, lid, update_type, update_value);
 
   webrtc_internals.UpdateObserver(&observer);
 
@@ -289,7 +342,7 @@ TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   VerifyString(dict, "constraints", kContraints);
 
   base::ListValue* log = NULL;
-  EXPECT_TRUE(dict->GetList("log", &log));
+  ASSERT_TRUE(dict->GetList("log", &log));
   EXPECT_EQ(1U, log->GetSize());
 
   EXPECT_TRUE((*log->begin())->GetAsDictionary(&dict));
@@ -306,8 +359,8 @@ TEST_F(WebRtcInternalsTest, OnAddStats) {
   MockWebRtcInternalsProxy observer(&loop);
   WebRTCInternalsForTest webrtc_internals;
   webrtc_internals.AddObserver(&observer);
-  webrtc_internals.OnAddPeerConnection(
-      rid, pid, lid, kUrl, kRtcConfiguration, kContraints);
+  webrtc_internals.OnAddPeerConnection(rid, pid, lid, kUrl, kRtcConfiguration,
+                                       kContraints);
 
   base::ListValue list;
   list.AppendString("xxx");
@@ -344,8 +397,8 @@ TEST_F(WebRtcInternalsTest, AudioDebugRecordingsFileSelectionCanceled) {
 
 TEST_F(WebRtcInternalsTest, PowerSaveBlock) {
   int kRenderProcessId = 1;
-  int pid = 1;
-  int lid[] = {1, 2, 3};
+  const int pid = 1;
+  const int lid[] = {1, 2, 3};
 
   WebRTCInternalsForTest webrtc_internals;
 

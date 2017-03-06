@@ -175,6 +175,10 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // notifications.
   void ProcessPendingUpdates();
 
+  base::DictionaryValue* FindRecord(base::ProcessId pid,
+                                    int lid,
+                                    size_t* index = nullptr);
+
   base::ObserverList<WebRTCInternalsUIObserver> observers_;
 
   // |peer_connection_data_| is a list containing all the PeerConnection

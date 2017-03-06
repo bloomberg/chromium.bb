@@ -35,18 +35,24 @@ namespace content {
 
 namespace {
 
-static base::LazyInstance<WebRTCInternals>::Leaky g_webrtc_internals =
+base::LazyInstance<WebRTCInternals>::Leaky g_webrtc_internals =
     LAZY_INSTANCE_INITIALIZER;
 
 // Makes sure that |dict| has a ListValue under path "log".
-static base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
+base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
   base::ListValue* log = NULL;
   if (!dict->GetList("log", &log)) {
     log = new base::ListValue();
-    if (log)
-      dict->Set("log", log);
+    dict->Set("log", log);
   }
   return log;
+}
+
+// Removes the log entry associated with a given record.
+void FreeLogList(base::Value* value) {
+  DCHECK(value->IsType(base::Value::Type::DICTIONARY));
+  auto* dict = static_cast<base::DictionaryValue*>(value);
+  dict->Remove("log", nullptr);
 }
 
 }  // namespace
@@ -123,6 +129,9 @@ void WebRTCInternals::OnAddPeerConnection(int render_process_id,
                                           const string& constraints) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // TODO(tommi): Consider changing this design so that webrtc-internals has
+  // minimal impact if chrome://webrtc-internals isn't open.
+
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("rid", render_process_id);
   dict->SetInteger("pid", static_cast<int>(pid));
@@ -148,28 +157,19 @@ void WebRTCInternals::OnAddPeerConnection(int render_process_id,
 
 void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (size_t i = 0; i < peer_connection_data_.GetSize(); ++i) {
-    base::DictionaryValue* dict = NULL;
-    peer_connection_data_.GetDictionary(i, &dict);
 
-    int this_pid = 0;
-    int this_lid = 0;
-    dict->GetInteger("pid", &this_pid);
-    dict->GetInteger("lid", &this_lid);
-
-    if (this_pid != static_cast<int>(pid) || this_lid != lid)
-      continue;
-
+  size_t index;
+  base::DictionaryValue* dict = FindRecord(pid, lid, &index);
+  if (dict) {
     MaybeClosePeerConnection(dict);
-    peer_connection_data_.Remove(i, NULL);
+    peer_connection_data_.Remove(index, NULL);
+  }
 
-    if (observers_.might_have_observers()) {
-      std::unique_ptr<base::DictionaryValue> id(new base::DictionaryValue());
-      id->SetInteger("pid", static_cast<int>(pid));
-      id->SetInteger("lid", lid);
-      SendUpdate("removePeerConnection", std::move(id));
-    }
-    break;
+  if (observers_.might_have_observers()) {
+    std::unique_ptr<base::DictionaryValue> id(new base::DictionaryValue());
+    id->SetInteger("pid", static_cast<int>(pid));
+    id->SetInteger("lid", lid);
+    SendUpdate("removePeerConnection", std::move(id));
   }
 }
 
@@ -177,49 +177,34 @@ void WebRTCInternals::OnUpdatePeerConnection(
     ProcessId pid, int lid, const string& type, const string& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  for (size_t i = 0; i < peer_connection_data_.GetSize(); ++i) {
-    base::DictionaryValue* record = NULL;
-    peer_connection_data_.GetDictionary(i, &record);
-
-    int this_pid = 0, this_lid = 0;
-    record->GetInteger("pid", &this_pid);
-    record->GetInteger("lid", &this_lid);
-
-    if (this_pid != static_cast<int>(pid) || this_lid != lid)
-      continue;
-
-    if (type == "stop") {
-      MaybeClosePeerConnection(record);
-    }
-
-    // Append the update to the end of the log.
-    base::ListValue* log = EnsureLogList(record);
-    if (!log)
-      return;
-
-    std::unique_ptr<base::DictionaryValue> log_entry(
-        new base::DictionaryValue());
-
-    double epoch_time = base::Time::Now().ToJsTime();
-    string time = base::DoubleToString(epoch_time);
-    log_entry->SetString("time", time);
-    log_entry->SetString("type", type);
-    log_entry->SetString("value", value);
-
-    if (observers_.might_have_observers()) {
-      std::unique_ptr<base::DictionaryValue> update(
-          new base::DictionaryValue());
-      update->SetInteger("pid", static_cast<int>(pid));
-      update->SetInteger("lid", lid);
-      update->MergeDictionary(log_entry.get());
-
-      SendUpdate("updatePeerConnection", std::move(update));
-    }
-
-    log->Append(std::move(log_entry));
-
+  base::DictionaryValue* record = FindRecord(pid, lid);
+  if (!record)
     return;
-  }
+
+  if (type == "stop")
+    MaybeClosePeerConnection(record);
+
+  // Don't update entries if there aren't any observers.
+  if (!observers_.might_have_observers())
+    return;
+
+  std::unique_ptr<base::DictionaryValue> log_entry(new base::DictionaryValue());
+
+  double epoch_time = base::Time::Now().ToJsTime();
+  string time = base::DoubleToString(epoch_time);
+  log_entry->SetString("time", time);
+  log_entry->SetString("type", type);
+  log_entry->SetString("value", value);
+
+  std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue());
+  update->SetInteger("pid", static_cast<int>(pid));
+  update->SetInteger("lid", lid);
+  update->MergeDictionary(log_entry.get());
+
+  SendUpdate("updatePeerConnection", std::move(update));
+
+  // Append the update to the end of the log.
+  EnsureLogList(record)->Append(std::move(log_entry));
 }
 
 void WebRTCInternals::OnAddStats(base::ProcessId pid, int lid,
@@ -274,14 +259,17 @@ void WebRTCInternals::AddObserver(WebRTCInternalsUIObserver* observer) {
 void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
+  if (observers_.might_have_observers())
+    return;
 
   // Disables event log and audio debug recordings if enabled and the last
   // webrtc-internals page is going away.
-  if (!observers_.might_have_observers()) {
-    if (audio_debug_recordings_)
-      DisableAudioDebugRecordings();
-    DisableEventLogRecordings();
-  }
+  DisableAudioDebugRecordings();
+  DisableEventLogRecordings();
+
+  // TODO(tommi): Consider removing all the peer_connection_data_.
+  for (auto& dictionary : peer_connection_data_)
+    FreeLogList(dictionary.get());
 }
 
 void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
@@ -320,6 +308,9 @@ void WebRTCInternals::EnableAudioDebugRecordings(
 void WebRTCInternals::DisableAudioDebugRecordings() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_WEBRTC)
+  if (!audio_debug_recordings_)
+    return;
+
   audio_debug_recordings_ = false;
 
   // Tear down the dialog since the user has unchecked the audio debug
@@ -577,4 +568,26 @@ void WebRTCInternals::ProcessPendingUpdates() {
   }
 }
 
+base::DictionaryValue* WebRTCInternals::FindRecord(
+    ProcessId pid,
+    int lid,
+    size_t* index /*= nullptr*/) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::DictionaryValue* record = nullptr;
+  for (size_t i = 0; i < peer_connection_data_.GetSize(); ++i) {
+    peer_connection_data_.GetDictionary(i, &record);
+
+    int this_pid = 0, this_lid = 0;
+    record->GetInteger("pid", &this_pid);
+    record->GetInteger("lid", &this_lid);
+
+    if (this_pid == static_cast<int>(pid) && this_lid == lid) {
+      if (index)
+        *index = i;
+      return record;
+    }
+  }
+  return nullptr;
+}
 }  // namespace content
