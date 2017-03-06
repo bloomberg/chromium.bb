@@ -286,9 +286,9 @@ bool CSSCrossfadeValue::hasFailedOrCanceledSubresources() const {
 }
 
 bool CSSCrossfadeValue::equals(const CSSCrossfadeValue& other) const {
-  return compareCSSValuePtr(m_fromValue, other.m_fromValue) &&
-         compareCSSValuePtr(m_toValue, other.m_toValue) &&
-         compareCSSValuePtr(m_percentageValue, other.m_percentageValue);
+  return dataEquivalent(m_fromValue, other.m_fromValue) &&
+         dataEquivalent(m_toValue, other.m_toValue) &&
+         dataEquivalent(m_percentageValue, other.m_percentageValue);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSCrossfadeValue) {

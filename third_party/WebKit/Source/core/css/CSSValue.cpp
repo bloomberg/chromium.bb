@@ -141,7 +141,7 @@ inline static bool compareCSSValues(const CSSValue& first,
       static_cast<const ChildClassType&>(second));
 }
 
-bool CSSValue::equals(const CSSValue& other) const {
+bool CSSValue::operator==(const CSSValue& other) const {
   if (m_classType == other.m_classType) {
     switch (getClassType()) {
       case BasicShapeCircleClass:

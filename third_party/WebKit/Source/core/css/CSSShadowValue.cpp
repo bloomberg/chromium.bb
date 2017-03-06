@@ -76,11 +76,10 @@ String CSSShadowValue::customCSSText() const {
 }
 
 bool CSSShadowValue::equals(const CSSShadowValue& other) const {
-  return compareCSSValuePtr(color, other.color) &&
-         compareCSSValuePtr(x, other.x) && compareCSSValuePtr(y, other.y) &&
-         compareCSSValuePtr(blur, other.blur) &&
-         compareCSSValuePtr(spread, other.spread) &&
-         compareCSSValuePtr(style, other.style);
+  return dataEquivalent(color, other.color) && dataEquivalent(x, other.x) &&
+         dataEquivalent(y, other.y) && dataEquivalent(blur, other.blur) &&
+         dataEquivalent(spread, other.spread) &&
+         dataEquivalent(style, other.style);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSShadowValue) {

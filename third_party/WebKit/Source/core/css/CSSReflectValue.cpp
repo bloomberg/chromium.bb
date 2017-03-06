@@ -39,8 +39,8 @@ String CSSReflectValue::customCSSText() const {
 
 bool CSSReflectValue::equals(const CSSReflectValue& other) const {
   return m_direction == other.m_direction &&
-         compareCSSValuePtr(m_offset, other.m_offset) &&
-         compareCSSValuePtr(m_mask, other.m_mask);
+         dataEquivalent(m_offset, other.m_offset) &&
+         dataEquivalent(m_mask, other.m_mask);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSReflectValue) {

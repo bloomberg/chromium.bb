@@ -64,8 +64,8 @@ struct CSSGradientColorStop {
   Member<CSSValue> m_color;
   bool m_colorIsDerivedFromElement;
   bool operator==(const CSSGradientColorStop& other) const {
-    return compareCSSValuePtr(m_color, other.m_color) &&
-           compareCSSValuePtr(m_position, other.m_position);
+    return dataEquivalent(m_color, other.m_color) &&
+           dataEquivalent(m_position, other.m_position);
   }
   bool isHint() const {
     ASSERT(m_color || m_position);

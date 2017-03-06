@@ -49,10 +49,10 @@ class CORE_EXPORT CSSQuadValue : public CSSValue {
   String customCSSText() const;
 
   bool equals(const CSSQuadValue& other) const {
-    return compareCSSValuePtr(m_top, other.m_top) &&
-           compareCSSValuePtr(m_right, other.m_right) &&
-           compareCSSValuePtr(m_left, other.m_left) &&
-           compareCSSValuePtr(m_bottom, other.m_bottom);
+    return dataEquivalent(m_top, other.m_top) &&
+           dataEquivalent(m_right, other.m_right) &&
+           dataEquivalent(m_left, other.m_left) &&
+           dataEquivalent(m_bottom, other.m_bottom);
   }
 
   DECLARE_TRACE_AFTER_DISPATCH();

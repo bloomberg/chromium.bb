@@ -311,7 +311,7 @@ bool HTMLAttributeEquivalent::valueIsPresentInStyle(
   const CSSValue* value = attributeValueAsCSSValue(element);
   const CSSValue* styleValue = style->getPropertyCSSValue(m_propertyID);
 
-  return compareCSSValuePtr(value, styleValue);
+  return dataEquivalent(value, styleValue);
 }
 
 void HTMLAttributeEquivalent::addToStyle(Element* element,

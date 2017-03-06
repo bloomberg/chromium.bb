@@ -53,7 +53,7 @@ StylePropertySerializer::StylePropertySetForSerializer::
         continue;
       if (static_cast<unsigned>(m_allIndex) >= i)
         continue;
-      if (property.value().equals(allProperty.value()) &&
+      if (property.value() == allProperty.value() &&
           property.isImportant() == allProperty.isImportant())
         continue;
       m_needToExpandAll = true;
@@ -366,7 +366,7 @@ String StylePropertySerializer::commonShorthandChecks(
       longhands[0]->isPendingSubstitutionValue()) {
     bool success = true;
     for (int i = 1; i < longhandCount; i++) {
-      if (!longhands[i]->equals(*longhands[0])) {
+      if (!dataEquivalent(longhands[i], longhands[0])) {
         // This should just return emptyString but some shorthands currently
         // allow 'initial' for their longhands.
         success = false;
@@ -663,9 +663,9 @@ String StylePropertySerializer::get4Values(
       m_propertySet.propertyAt(bottomValueIndex);
   PropertyValueForSerializer left = m_propertySet.propertyAt(leftValueIndex);
 
-  bool showLeft = !right.value()->equals(*left.value());
-  bool showBottom = !top.value()->equals(*bottom.value()) || showLeft;
-  bool showRight = !top.value()->equals(*right.value()) || showBottom;
+  bool showLeft = !dataEquivalent(right.value(), left.value());
+  bool showBottom = !dataEquivalent(top.value(), bottom.value()) || showLeft;
+  bool showRight = !dataEquivalent(top.value(), right.value()) || showBottom;
 
   StringBuilder result;
   result.append(top.value()->cssText());

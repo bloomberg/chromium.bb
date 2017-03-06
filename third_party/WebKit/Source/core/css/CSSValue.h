@@ -22,6 +22,7 @@
 #define CSSValue_h
 
 #include "core/CoreExport.h"
+#include "core/style/DataEquivalency.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
@@ -151,7 +152,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool mayContainUrl() const;
   void reResolveUrl(const Document&) const;
 
-  bool equals(const CSSValue&) const;
+  bool operator==(const CSSValue&) const;
 
   void finalizeGarbageCollectedObject();
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {}
@@ -261,48 +262,16 @@ inline bool compareCSSValueVector(
     const HeapVector<Member<CSSValueType>, inlineCapacity>& firstVector,
     const HeapVector<Member<CSSValueType>, inlineCapacity>& secondVector) {
   size_t size = firstVector.size();
-  if (size != secondVector.size())
-    return false;
-
-  for (size_t i = 0; i < size; i++) {
-    const Member<CSSValueType>& firstPtr = firstVector[i];
-    const Member<CSSValueType>& secondPtr = secondVector[i];
-    if (firstPtr == secondPtr ||
-        (firstPtr && secondPtr && firstPtr->equals(*secondPtr)))
-      continue;
+  if (size != secondVector.size()) {
     return false;
   }
+
+  for (size_t i = 0; i < size; i++) {
+    if (!dataEquivalent(firstVector[i], secondVector[i])) {
+      return false;
+    }
+  }
   return true;
-}
-
-template <typename CSSValueType>
-inline bool compareCSSValuePtr(const RefPtr<CSSValueType>& first,
-                               const RefPtr<CSSValueType>& second) {
-  if (first == second)
-    return true;
-  if (!first || !second)
-    return false;
-  return first->equals(*second);
-}
-
-template <typename CSSValueType>
-inline bool compareCSSValuePtr(const CSSValueType* first,
-                               const CSSValueType* second) {
-  if (first == second)
-    return true;
-  if (!first || !second)
-    return false;
-  return first->equals(*second);
-}
-
-template <typename CSSValueType>
-inline bool compareCSSValuePtr(const Member<CSSValueType>& first,
-                               const Member<CSSValueType>& second) {
-  if (first == second)
-    return true;
-  if (!first || !second)
-    return false;
-  return first->equals(*second);
 }
 
 #define DEFINE_CSS_VALUE_TYPE_CASTS(thisType, predicate)         \

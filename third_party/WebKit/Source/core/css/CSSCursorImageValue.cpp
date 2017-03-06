@@ -54,7 +54,7 @@ bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const {
   return (m_hotSpotSpecified
               ? other.m_hotSpotSpecified && m_hotSpot == other.m_hotSpot
               : !other.m_hotSpotSpecified) &&
-         compareCSSValuePtr(m_imageValue, other.m_imageValue);
+         dataEquivalent(m_imageValue, other.m_imageValue);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSCursorImageValue) {

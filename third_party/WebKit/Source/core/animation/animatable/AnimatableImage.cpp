@@ -60,7 +60,7 @@ PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(
 }
 
 bool AnimatableImage::equalTo(const AnimatableValue* value) const {
-  return m_value->equals(*toAnimatableImage(value)->m_value.get());
+  return dataEquivalent(m_value, toAnimatableImage(value)->m_value);
 }
 
 }  // namespace blink

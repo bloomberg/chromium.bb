@@ -50,8 +50,8 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
 
   bool equals(const CSSValuePair& other) const {
     ASSERT(m_identicalValuesPolicy == other.m_identicalValuesPolicy);
-    return compareCSSValuePtr(m_first, other.m_first) &&
-           compareCSSValuePtr(m_second, other.m_second);
+    return dataEquivalent(m_first, other.m_first) &&
+           dataEquivalent(m_second, other.m_second);
   }
 
   DECLARE_TRACE_AFTER_DISPATCH();

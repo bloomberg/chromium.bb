@@ -499,7 +499,7 @@ bool StylePropertySet::propertyMatches(CSSPropertyID propertyID,
   int foundPropertyIndex = findPropertyIndex(propertyID);
   if (foundPropertyIndex == -1)
     return false;
-  return propertyAt(foundPropertyIndex).value().equals(propertyValue);
+  return propertyAt(foundPropertyIndex).value() == propertyValue;
 }
 
 void MutableStylePropertySet::removeEquivalentProperties(

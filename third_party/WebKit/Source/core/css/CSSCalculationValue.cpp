@@ -143,7 +143,7 @@ String CSSCalcValue::customCSSText() const {
 }
 
 bool CSSCalcValue::equals(const CSSCalcValue& other) const {
-  return compareCSSValuePtr(m_expression, other.m_expression);
+  return dataEquivalent(m_expression, other.m_expression);
 }
 
 double CSSCalcValue::clampToPermittedRange(double value) const {
@@ -243,11 +243,11 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
     m_value->accumulateLengthArray(lengthArray, multiplier);
   }
 
-  bool equals(const CSSCalcExpressionNode& other) const override {
+  bool operator==(const CSSCalcExpressionNode& other) const override {
     if (getType() != other.getType())
       return false;
 
-    return compareCSSValuePtr(
+    return dataEquivalent(
         m_value, static_cast<const CSSCalcPrimitiveValue&>(other).m_value);
   }
 
@@ -556,14 +556,14 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
                         m_rightSide->customCSSText(), m_operator);
   }
 
-  bool equals(const CSSCalcExpressionNode& exp) const override {
+  bool operator==(const CSSCalcExpressionNode& exp) const override {
     if (getType() != exp.getType())
       return false;
 
     const CSSCalcBinaryOperation& other =
         static_cast<const CSSCalcBinaryOperation&>(exp);
-    return compareCSSValuePtr(m_leftSide, other.m_leftSide) &&
-           compareCSSValuePtr(m_rightSide, other.m_rightSide) &&
+    return dataEquivalent(m_leftSide, other.m_leftSide) &&
+           dataEquivalent(m_rightSide, other.m_rightSide) &&
            m_operator == other.m_operator;
   }
 

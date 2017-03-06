@@ -464,7 +464,7 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(
     }
   }
   const CSSValue* value = getPropertyCSSValue(propertyID);
-  return value && propertyValue && value->equals(*propertyValue);
+  return dataEquivalent(value, propertyValue);
 }
 
 MutableStylePropertySet* CSSComputedStyleDeclaration::copyProperties() const {

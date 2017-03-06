@@ -892,34 +892,32 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(
 bool CSSLinearGradientValue::equals(const CSSLinearGradientValue& other) const {
   if (m_gradientType == CSSDeprecatedLinearGradient)
     return other.m_gradientType == m_gradientType &&
-           compareCSSValuePtr(m_firstX, other.m_firstX) &&
-           compareCSSValuePtr(m_firstY, other.m_firstY) &&
-           compareCSSValuePtr(m_secondX, other.m_secondX) &&
-           compareCSSValuePtr(m_secondY, other.m_secondY) &&
+           dataEquivalent(m_firstX, other.m_firstX) &&
+           dataEquivalent(m_firstY, other.m_firstY) &&
+           dataEquivalent(m_secondX, other.m_secondX) &&
+           dataEquivalent(m_secondY, other.m_secondY) &&
            m_stops == other.m_stops;
 
   if (m_repeating != other.m_repeating)
     return false;
 
   if (m_angle)
-    return compareCSSValuePtr(m_angle, other.m_angle) &&
-           m_stops == other.m_stops;
+    return dataEquivalent(m_angle, other.m_angle) && m_stops == other.m_stops;
 
   if (other.m_angle)
     return false;
 
   bool equalXandY = false;
-  if (m_firstX && m_firstY)
-    equalXandY = compareCSSValuePtr(m_firstX, other.m_firstX) &&
-                 compareCSSValuePtr(m_firstY, other.m_firstY);
-  else if (m_firstX)
-    equalXandY =
-        compareCSSValuePtr(m_firstX, other.m_firstX) && !other.m_firstY;
-  else if (m_firstY)
-    equalXandY =
-        compareCSSValuePtr(m_firstY, other.m_firstY) && !other.m_firstX;
-  else
+  if (m_firstX && m_firstY) {
+    equalXandY = dataEquivalent(m_firstX, other.m_firstX) &&
+                 dataEquivalent(m_firstY, other.m_firstY);
+  } else if (m_firstX) {
+    equalXandY = dataEquivalent(m_firstX, other.m_firstX) && !other.m_firstY;
+  } else if (m_firstY) {
+    equalXandY = dataEquivalent(m_firstY, other.m_firstY) && !other.m_firstX;
+  } else {
     equalXandY = !other.m_firstX && !other.m_firstY;
+  }
 
   return equalXandY && m_stops == other.m_stops;
 }
@@ -1263,29 +1261,28 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(
 bool CSSRadialGradientValue::equals(const CSSRadialGradientValue& other) const {
   if (m_gradientType == CSSDeprecatedRadialGradient)
     return other.m_gradientType == m_gradientType &&
-           compareCSSValuePtr(m_firstX, other.m_firstX) &&
-           compareCSSValuePtr(m_firstY, other.m_firstY) &&
-           compareCSSValuePtr(m_secondX, other.m_secondX) &&
-           compareCSSValuePtr(m_secondY, other.m_secondY) &&
-           compareCSSValuePtr(m_firstRadius, other.m_firstRadius) &&
-           compareCSSValuePtr(m_secondRadius, other.m_secondRadius) &&
+           dataEquivalent(m_firstX, other.m_firstX) &&
+           dataEquivalent(m_firstY, other.m_firstY) &&
+           dataEquivalent(m_secondX, other.m_secondX) &&
+           dataEquivalent(m_secondY, other.m_secondY) &&
+           dataEquivalent(m_firstRadius, other.m_firstRadius) &&
+           dataEquivalent(m_secondRadius, other.m_secondRadius) &&
            m_stops == other.m_stops;
 
   if (m_repeating != other.m_repeating)
     return false;
 
   bool equalXandY = false;
-  if (m_firstX && m_firstY)
-    equalXandY = compareCSSValuePtr(m_firstX, other.m_firstX) &&
-                 compareCSSValuePtr(m_firstY, other.m_firstY);
-  else if (m_firstX)
-    equalXandY =
-        compareCSSValuePtr(m_firstX, other.m_firstX) && !other.m_firstY;
-  else if (m_firstY)
-    equalXandY =
-        compareCSSValuePtr(m_firstY, other.m_firstY) && !other.m_firstX;
-  else
+  if (m_firstX && m_firstY) {
+    equalXandY = dataEquivalent(m_firstX, other.m_firstX) &&
+                 dataEquivalent(m_firstY, other.m_firstY);
+  } else if (m_firstX) {
+    equalXandY = dataEquivalent(m_firstX, other.m_firstX) && !other.m_firstY;
+  } else if (m_firstY) {
+    equalXandY = dataEquivalent(m_firstY, other.m_firstY) && !other.m_firstX;
+  } else {
     equalXandY = !other.m_firstX && !other.m_firstY;
+  }
 
   if (!equalXandY)
     return false;
@@ -1294,16 +1291,16 @@ bool CSSRadialGradientValue::equals(const CSSRadialGradientValue& other) const {
   bool equalSizingBehavior = true;
   bool equalHorizontalAndVerticalSize = true;
 
-  if (m_shape)
-    equalShape = compareCSSValuePtr(m_shape, other.m_shape);
-  else if (m_sizingBehavior)
+  if (m_shape) {
+    equalShape = dataEquivalent(m_shape, other.m_shape);
+  } else if (m_sizingBehavior) {
     equalSizingBehavior =
-        compareCSSValuePtr(m_sizingBehavior, other.m_sizingBehavior);
-  else if (m_endHorizontalSize && m_endVerticalSize)
+        dataEquivalent(m_sizingBehavior, other.m_sizingBehavior);
+  } else if (m_endHorizontalSize && m_endVerticalSize) {
     equalHorizontalAndVerticalSize =
-        compareCSSValuePtr(m_endHorizontalSize, other.m_endHorizontalSize) &&
-        compareCSSValuePtr(m_endVerticalSize, other.m_endVerticalSize);
-  else {
+        dataEquivalent(m_endHorizontalSize, other.m_endHorizontalSize) &&
+        dataEquivalent(m_endVerticalSize, other.m_endVerticalSize);
+  } else {
     equalShape = !other.m_shape;
     equalSizingBehavior = !other.m_sizingBehavior;
     equalHorizontalAndVerticalSize =

@@ -1341,7 +1341,7 @@ static CSSValueList* valuesForBorderRadiusCorner(LengthSize radius,
 static const CSSValue& valueForBorderRadiusCorner(LengthSize radius,
                                                   const ComputedStyle& style) {
   CSSValueList& list = *valuesForBorderRadiusCorner(radius, style);
-  if (list.item(0).equals(list.item(1)))
+  if (list.item(0) == list.item(1))
     return list.item(0);
   return list;
 }
@@ -1582,9 +1582,9 @@ static CSSValueList* valuesForSidesShorthand(
   if (!topValue || !rightValue || !bottomValue || !leftValue)
     return nullptr;
 
-  bool showLeft = !compareCSSValuePtr(rightValue, leftValue);
-  bool showBottom = !compareCSSValuePtr(topValue, bottomValue) || showLeft;
-  bool showRight = !compareCSSValuePtr(topValue, rightValue) || showBottom;
+  bool showLeft = !dataEquivalent(rightValue, leftValue);
+  bool showBottom = !dataEquivalent(topValue, bottomValue) || showLeft;
+  bool showRight = !dataEquivalent(topValue, rightValue) || showBottom;
 
   list->append(*topValue);
   if (showRight)
@@ -1850,8 +1850,10 @@ CSSValue* ComputedStyleCSSValueMapping::valueForFont(
   // this serialization.
   CSSValue* ligaturesValue = valueForFontVariantLigatures(style);
   CSSValue* numericValue = valueForFontVariantNumeric(style);
-  if (!ligaturesValue->equals(*CSSIdentifierValue::create(CSSValueNormal)) ||
-      !numericValue->equals(*CSSIdentifierValue::create(CSSValueNormal)))
+  if (!dataEquivalent<CSSValue>(ligaturesValue,
+                                CSSIdentifierValue::create(CSSValueNormal)) ||
+      !dataEquivalent<CSSValue>(numericValue,
+                                CSSIdentifierValue::create(CSSValueNormal)))
     return nullptr;
 
   CSSIdentifierValue* capsValue = valueForFontVariantCaps(style);
@@ -3258,9 +3260,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
                                           CSSPropertyBorderBottom,
                                           CSSPropertyBorderLeft};
       for (size_t i = 0; i < WTF_ARRAY_LENGTH(properties); ++i) {
-        if (!compareCSSValuePtr<CSSValue>(
-                value, get(properties[i], style, layoutObject, styledNode,
-                           allowVisitedStyle)))
+        if (!dataEquivalent(value, get(properties[i], style, layoutObject,
+                                       styledNode, allowVisitedStyle)))
           return nullptr;
       }
       return value;

@@ -78,7 +78,7 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
                                           PixelsAndPercent&,
                                           float multiplier = 1) const = 0;
   virtual String customCSSText() const = 0;
-  virtual bool equals(const CSSCalcExpressionNode& other) const {
+  virtual bool operator==(const CSSCalcExpressionNode& other) const {
     return m_category == other.m_category && m_isInteger == other.m_isInteger;
   }
   virtual Type getType() const = 0;

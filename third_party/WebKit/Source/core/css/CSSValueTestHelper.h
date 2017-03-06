@@ -55,10 +55,6 @@ char (&IsNullLiteralHelper(const blink::CSSValue&))[2];
 
 namespace blink {
 
-inline bool operator==(const CSSValue& a, const CSSValue& b) {
-  return a.equals(b);
-}
-
 inline void PrintTo(const CSSValue& cssValue,
                     ::std::ostream* os,
                     const char* typeName = "CSSValue") {

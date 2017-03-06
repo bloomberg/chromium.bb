@@ -49,7 +49,7 @@ class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
         CSSVariableResolver::resolveVariableReferences(
             environment.state(), m_property, *m_variableReference,
             omitAnimationTainted);
-    return m_resolvedValue->equals(*resolvedValue);
+    return dataEquivalent(m_resolvedValue.get(), resolvedValue);
   }
 
   CSSPropertyID m_property;
@@ -87,13 +87,7 @@ class InheritedCustomPropertyChecker
     if (!inheritedValue) {
       inheritedValue = m_initialValue.get();
     }
-    if (inheritedValue == m_inheritedValue.get()) {
-      return true;
-    }
-    if (!inheritedValue || !m_inheritedValue) {
-      return false;
-    }
-    return m_inheritedValue->equals(*inheritedValue);
+    return dataEquivalent(m_inheritedValue.get(), inheritedValue);
   }
 
   const AtomicString& m_name;

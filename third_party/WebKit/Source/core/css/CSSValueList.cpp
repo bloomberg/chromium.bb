@@ -47,7 +47,7 @@ bool CSSValueList::removeAll(const CSSValue& val) {
   bool found = false;
   for (int index = m_values.size() - 1; index >= 0; --index) {
     Member<const CSSValue>& value = m_values.at(index);
-    if (value && value->equals(val)) {
+    if (value && *value == val) {
       m_values.remove(index);
       found = true;
     }
@@ -59,8 +59,9 @@ bool CSSValueList::removeAll(const CSSValue& val) {
 bool CSSValueList::hasValue(const CSSValue& val) const {
   for (size_t index = 0; index < m_values.size(); index++) {
     const Member<const CSSValue>& value = m_values.at(index);
-    if (value && value->equals(val))
+    if (value && *value == val) {
       return true;
+    }
   }
   return false;
 }

@@ -75,13 +75,12 @@ DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableUnknown, isUnknown());
 
 inline bool AnimatableUnknown::equalTo(const AnimatableValue* value) const {
   const AnimatableUnknown* unknown = toAnimatableUnknown(value);
-  return m_value == unknown->m_value || m_value->equals(*unknown->m_value);
+  return dataEquivalent(m_value, unknown->m_value);
 }
 
 inline bool AnimatableUnknown::usesDefaultInterpolationWith(
     const AnimatableValue* value) const {
-  const AnimatableUnknown& unknown = toAnimatableUnknown(*value);
-  return !m_value->equals(*unknown.m_value);
+  return !equalTo(value);
 }
 
 }  // namespace blink

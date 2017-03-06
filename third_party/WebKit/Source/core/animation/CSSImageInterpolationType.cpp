@@ -25,7 +25,8 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
 
   bool isSingle() const { return m_isSingle; }
   bool equals(const CSSImageNonInterpolableValue& other) const {
-    return m_start->equals(*other.m_start) && m_end->equals(*other.m_end);
+    return dataEquivalent(m_start, other.m_start) &&
+           dataEquivalent(m_end, other.m_end);
   }
 
   static PassRefPtr<CSSImageNonInterpolableValue> merge(
