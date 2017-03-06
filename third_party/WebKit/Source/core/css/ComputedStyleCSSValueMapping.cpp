@@ -2316,6 +2316,13 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return CSSIdentifierValue::create(style.display());
     case CSSPropertyEmptyCells:
       return CSSIdentifierValue::create(style.emptyCells());
+    case CSSPropertyPlaceContent: {
+      // TODO (jfernandez): The spec states that we should return the specified
+      // value.
+      return valuesForShorthandProperty(placeContentShorthand(), style,
+                                        layoutObject, styledNode,
+                                        allowVisitedStyle);
+    }
     case CSSPropertyAlignContent:
       return valueForContentPositionAndDistributionWithOverflowAlignment(
           style.alignContent(), CSSValueStretch);

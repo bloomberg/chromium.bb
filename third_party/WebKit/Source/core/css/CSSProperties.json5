@@ -2681,6 +2681,11 @@
       runtime_flag: "CSSGridLayout",
     },
     {
+      name: "place-content",
+      longhands: "align-content;justify-content",
+      runtime_flag: "CSSGridLayout",
+    },
+    {
       name: "grid-area",
       longhands: "grid-row-start;grid-column-start;grid-row-end;grid-column-end",
       runtime_flag: "CSSGridLayout",

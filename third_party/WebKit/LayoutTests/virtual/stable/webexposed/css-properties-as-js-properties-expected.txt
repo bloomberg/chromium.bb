@@ -226,6 +226,7 @@ paintOrder
 parentRule
 perspective
 perspectiveOrigin
+placeContent
 pointerEvents
 position
 quotes

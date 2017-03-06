@@ -454,6 +454,8 @@ String StylePropertySerializer::getPropertyValue(
       return getShorthandValue(gridAreaShorthand(), " / ");
     case CSSPropertyGridGap:
       return getShorthandValue(gridGapShorthand());
+    case CSSPropertyPlaceContent:
+      return placeContentPropertyValue();
     case CSSPropertyFont:
       return fontValue();
     case CSSPropertyFontVariant:
@@ -846,6 +848,13 @@ String StylePropertySerializer::getCommonValue(
       return String();
   }
   return res;
+}
+
+String StylePropertySerializer::placeContentPropertyValue() const {
+  String value = getCommonValue(placeContentShorthand());
+  if (value.isNull() || value.isEmpty())
+    return getShorthandValue(placeContentShorthand());
+  return value;
 }
 
 String StylePropertySerializer::borderPropertyValue() const {
