@@ -38,9 +38,9 @@
   newConnection.exportedInterface =
       [NSXPCInterface interfaceWithProtocol:@protocol(NotificationDelivery)];
   [newConnection.exportedInterface
-         setClasses:[NSSet setWithObjects:[NSDictionary class], [NSImage class],
-                                          [NSNumber class], [NSString class],
-                                          nil]
+         setClasses:[NSSet setWithObjects:[NSData class], [NSDictionary class],
+                                          [NSImage class], [NSNumber class],
+                                          [NSString class], nil]
         forSelector:@selector(deliverNotification:)
       argumentIndex:0
             ofReply:NO];

@@ -6,7 +6,9 @@
 
 #import <AppKit/AppKit.h>
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 
 namespace {
@@ -68,8 +70,14 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
 }
 
 - (void)setIcon:(NSImage*)icon {
-  if (icon)
-    [notificationData_ setObject:icon forKey:kNotificationImage];
+  if (icon) {
+    if ([icon conformsToProtocol:@protocol(NSSecureCoding)]) {
+      [notificationData_ setObject:icon forKey:kNotificationImage];
+    } else {  // NSImage only conforms to NSSecureCoding from 10.10 onwards.
+      [notificationData_ setObject:[icon TIFFRepresentation]
+                            forKey:kNotificationImage];
+    }
+  }
 }
 
 - (void)setButtons:(NSString*)primaryButton
@@ -125,8 +133,14 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
   // Icon
   if ([notificationData_ objectForKey:kNotificationImage]) {
     if ([toast respondsToSelector:@selector(_identityImage)]) {
-      NSImage* image = [notificationData_ objectForKey:kNotificationImage];
-      [toast setValue:image forKey:@"_identityImage"];
+      if ([[NSImage class] conformsToProtocol:@protocol(NSSecureCoding)]) {
+        NSImage* image = [notificationData_ objectForKey:kNotificationImage];
+        [toast setValue:image forKey:@"_identityImage"];
+      } else {  // NSImage only conforms to NSSecureCoding from 10.10 onwards.
+        base::scoped_nsobject<NSImage> image([[NSImage alloc]
+            initWithData:[notificationData_ objectForKey:kNotificationImage]]);
+        [toast setValue:image forKey:@"_identityImage"];
+      }
       [toast setValue:@NO forKey:@"_identityImageHasBorder"];
     }
   }
