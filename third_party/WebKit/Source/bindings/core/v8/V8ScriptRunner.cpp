@@ -540,12 +540,11 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(
     }
     v8::MicrotasksScope microtasksScope(isolate,
                                         v8::MicrotasksScope::kRunMicrotasks);
-    probe::willExecuteScript(context);
+    probe::ExecuteScript probe(context);
     ThreadDebugger::willExecuteScript(isolate,
                                       script->GetUnboundScript()->GetId());
     result = script->Run(isolate->GetCurrentContext());
     ThreadDebugger::didExecuteScript(isolate);
-    probe::didExecuteScript(context);
   }
 
   CHECK(!isolate->IsDead());
@@ -659,13 +658,12 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
   CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
-  probe::willCallFunction(context);
+  probe::CallFunction probe(context, function);
   ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   CHECK(!isolate->IsDead());
   ThreadDebugger::didExecuteScript(isolate);
-  probe::didCallFunction(context, function);
   if (!depth)
     TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
   return result;

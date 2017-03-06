@@ -137,12 +137,6 @@ class XMLHttpRequest;
     [DOMDebugger]
     void didFireWebGLErrorOrWarning(Element*, const String& message);
 
-    [Performance]
-    void willUpdateLayout(Document*);
-
-    [Page, Performance]
-    void didUpdateLayout(LocalFrame*);
-
     [Page]
     void didResizeMainFrame(LocalFrame*);
 
@@ -318,9 +312,6 @@ class XMLHttpRequest;
     [Log]
     void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
 
-    [Page, Performance]
-    RecalculateStyle(Document*);
-
     [Page]
     void willRunJavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType);
 
@@ -328,19 +319,25 @@ class XMLHttpRequest;
     void didRunJavaScriptDialog(LocalFrame* frame, bool result);
 
     [Performance]
-    void willExecuteScript([Keep] ExecutionContext*);
-
-    [Performance]
-    void didExecuteScript(ExecutionContext*);
-
-    [Performance]
-    void willCallFunction([Keep] ExecutionContext*);
-
-    [Performance]
-    void didCallFunction([Keep] ExecutionContext*, v8::Local<v8::Function>);
-
-    [Performance]
     void documentWriteFetchScript([Keep] Document*);
+
+    [Page]
+    void didChangeViewport(LocalFrame* document);
+
+    [Page, Performance]
+    RecalculateStyle(Document* document);
+
+    [Page, Performance]
+    UpdateLayout(Document*);
+
+    [Performance]
+    ExecuteScript([Keep] ExecutionContext* context);
+
+    [Performance]
+    CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function);
+
+    [Performance]
+    UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomicName, bool recurring);
 }
 
 interface InspectorOverrides {

@@ -60,6 +60,7 @@ namespace blink {
 ${extra_definitions}
 
 namespace probe {
+
 $methods
 
 } // namespace probe
@@ -67,7 +68,7 @@ $methods
 """)
 
 template_scoped_decl = string.Template("""
-class CORE_EXPORT ${name} {
+class CORE_EXPORT ${name} : public ProbeBase {
     STACK_ALLOCATED()
 public:
     explicit $name($param_list);
@@ -416,7 +417,7 @@ def generate_param_name(param_type):
 
 
 def generate_member_decl(param):
-    if param.is_ptr:
+    if param.is_ptr and "char" not in param.type:
         return "    Member<%s> %s;" % (param.type[:-1], param.name)
     else:
         return "    %s %s;" % (param.type, param.name)

@@ -284,7 +284,7 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
   if (!valuesChanged)
     return false;
 
-  probe::didUpdateLayout(mainFrame());
+  probe::didChangeViewport(mainFrame());
   mainFrame()->loader().saveScrollState();
 
   clampToBoundaries();

@@ -44,6 +44,7 @@ namespace blink {
 
 namespace probe {
 class RecalculateStyle;
+class UpdateLayout;
 }
 
 class Resource;
@@ -157,8 +158,10 @@ class CORE_EXPORT InspectorPageAgent final
   void frameClearedScheduledNavigation(LocalFrame*);
   void willRunJavaScriptDialog(const String& message, ChromeClient::DialogType);
   void didRunJavaScriptDialog(bool result);
-  void didUpdateLayout();
   void didResizeMainFrame();
+  void didChangeViewport();
+  void will(const probe::UpdateLayout&);
+  void did(const probe::UpdateLayout&);
   void will(const probe::RecalculateStyle&);
   void did(const probe::RecalculateStyle&);
   void windowCreated(LocalFrame*);
@@ -193,6 +196,8 @@ class CORE_EXPORT InspectorPageAgent final
                           const String& textEncodingName,
                           bool withBase64Encode,
                           String* result);
+
+  void pageLayoutInvalidated(bool resized);
 
   std::unique_ptr<protocol::Page::Frame> buildObjectForFrame(LocalFrame*);
   std::unique_ptr<protocol::Page::FrameResourceTree> buildObjectForFrameTree(

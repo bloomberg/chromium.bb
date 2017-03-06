@@ -7,7 +7,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/IdleRequestCallback.h"
 #include "core/dom/IdleRequestOptions.h"
-#include "core/frame/PerformanceMonitor.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -170,8 +170,8 @@ void ScriptedIdleTaskController::runCallback(
       ("WebCore.ScriptedIdleTaskController.IdleCallbackDeadline", 0, 50, 50));
   idleCallbackDeadlineHistogram.count(allottedTimeMillis);
 
-  PerformanceMonitor::HandlerCall handlerCall(getExecutionContext(),
-                                              "requestIdleCallback", true);
+  probe::UserCallback probe(getExecutionContext(), "requestIdleCallback",
+                            AtomicString(), true);
   TRACE_EVENT1(
       "devtools.timeline", "FireIdleCallback", "data",
       InspectorIdleCallbackFireEvent::data(

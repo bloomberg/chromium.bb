@@ -46,6 +46,19 @@ class WorkerGlobalScope;
 
 namespace probe {
 
+class CORE_EXPORT ProbeBase {
+  STACK_ALLOCATED()
+
+ public:
+  double captureStartTime() const;
+  double captureEndTime() const;
+  double duration() const;
+
+ private:
+  mutable double m_startTime = 0;
+  mutable double m_endTime = 0;
+};
+
 class CORE_EXPORT NativeBreakpoint {
   STACK_ALLOCATED();
 

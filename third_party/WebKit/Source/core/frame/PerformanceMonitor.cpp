@@ -14,52 +14,11 @@
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLDocumentParser.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
-
-PerformanceMonitor::HandlerCall::HandlerCall(ExecutionContext* context,
-                                             bool recurring)
-    : m_performanceMonitor(PerformanceMonitor::instrumentingMonitor(context)) {
-  if (!m_performanceMonitor)
-    return;
-  Violation violation = recurring ? kRecurringHandler : kHandler;
-  if (!m_performanceMonitor->m_thresholds[violation]) {
-    m_performanceMonitor = nullptr;
-    return;
-  }
-  if (!m_performanceMonitor->m_handlerDepth)
-    m_performanceMonitor->m_handlerType = violation;
-  ++m_performanceMonitor->m_handlerDepth;
-}
-
-PerformanceMonitor::HandlerCall::HandlerCall(ExecutionContext* context,
-                                             const char* name,
-                                             bool recurring)
-    : HandlerCall(context, recurring) {
-  if (m_performanceMonitor && m_performanceMonitor->m_handlerDepth == 1)
-    m_performanceMonitor->m_handlerName = name;
-}
-
-PerformanceMonitor::HandlerCall::HandlerCall(ExecutionContext* context,
-                                             const AtomicString& name,
-                                             bool recurring)
-    : HandlerCall(context, recurring) {
-  if (m_performanceMonitor && m_performanceMonitor->m_handlerDepth == 1)
-    m_performanceMonitor->m_handlerAtomicName = name;
-}
-
-PerformanceMonitor::HandlerCall::~HandlerCall() {
-  if (!m_performanceMonitor)
-    return;
-  --m_performanceMonitor->m_handlerDepth;
-  if (!m_performanceMonitor->m_handlerDepth) {
-    m_performanceMonitor->m_handlerType = PerformanceMonitor::kAfterLast;
-    m_performanceMonitor->m_handlerName = nullptr;
-    m_performanceMonitor->m_handlerAtomicName = AtomicString();
-  }
-}
 
 // static
 double PerformanceMonitor::threshold(ExecutionContext* context,
@@ -178,70 +137,86 @@ void PerformanceMonitor::didExecuteScript() {
   --m_scriptDepth;
 }
 
-void PerformanceMonitor::willCallFunction(ExecutionContext* context) {
-  willExecuteScript(context);
-  if (!m_enabled)
-    return;
-  if (m_scriptDepth == 1 && m_thresholds[m_handlerType])
-    m_scriptStartTime = WTF::monotonicallyIncreasingTime();
+void PerformanceMonitor::will(const probe::RecalculateStyle& probe) {
+  if (m_enabled && m_thresholds[kLongLayout] && m_scriptDepth)
+    probe.captureStartTime();
 }
 
-void PerformanceMonitor::didCallFunction(ExecutionContext* context,
-                                         v8::Local<v8::Function> function) {
-  didExecuteScript();
-  if (!m_enabled)
-    return;
-  if (m_scriptDepth)
-    return;
-  if (m_handlerType == kAfterLast)
-    return;
-  double threshold = m_thresholds[m_handlerType];
-  if (!threshold)
-    return;
-
-  double time = WTF::monotonicallyIncreasingTime() - m_scriptStartTime;
-  if (time < threshold)
-    return;
-  String name = m_handlerName ? m_handlerName : m_handlerAtomicName;
-  String text = String::format("'%s' handler took %ldms", name.utf8().data(),
-                               lround(time * 1000));
-  innerReportGenericViolation(context, m_handlerType, text, time,
-                              SourceLocation::fromFunction(function));
+void PerformanceMonitor::did(const probe::RecalculateStyle& probe) {
+  if (m_enabled && m_scriptDepth && m_thresholds[kLongLayout])
+    m_perTaskStyleAndLayoutTime += probe.duration();
 }
 
-void PerformanceMonitor::willUpdateLayout() {
+void PerformanceMonitor::will(const probe::UpdateLayout& probe) {
+  ++m_layoutDepth;
+  if (!m_enabled)
+    return;
+  if (m_layoutDepth > 1 || !m_scriptDepth || !m_thresholds[kLongLayout])
+    return;
+
+  probe.captureStartTime();
+}
+
+void PerformanceMonitor::did(const probe::UpdateLayout& probe) {
+  --m_layoutDepth;
   if (!m_enabled)
     return;
   if (m_thresholds[kLongLayout] && m_scriptDepth && !m_layoutDepth)
-    m_layoutStartTime = WTF::monotonicallyIncreasingTime();
-  ++m_layoutDepth;
+    m_perTaskStyleAndLayoutTime += probe.duration();
 }
 
-void PerformanceMonitor::didUpdateLayout() {
-  if (!m_enabled)
-    return;
-  --m_layoutDepth;
-  if (m_thresholds[kLongLayout] && m_scriptDepth && !m_layoutDepth) {
-    m_perTaskStyleAndLayoutTime +=
-        WTF::monotonicallyIncreasingTime() - m_layoutStartTime;
-  }
+void PerformanceMonitor::will(const probe::ExecuteScript& probe) {
+  willExecuteScript(probe.context);
 }
 
-void PerformanceMonitor::will(const probe::RecalculateStyle&) {
-  if (!m_enabled)
-    return;
-
-  if (m_thresholds[kLongLayout] && m_scriptDepth)
-    m_styleStartTime = WTF::monotonicallyIncreasingTime();
+void PerformanceMonitor::did(const probe::ExecuteScript& probe) {
+  didExecuteScript();
 }
 
-void PerformanceMonitor::did(const probe::RecalculateStyle&) {
-  if (!m_enabled)
+void PerformanceMonitor::will(const probe::CallFunction& probe) {
+  willExecuteScript(probe.context);
+  if (m_userCallback)
+    probe.captureStartTime();
+}
+
+void PerformanceMonitor::did(const probe::CallFunction& probe) {
+  didExecuteScript();
+  if (!m_enabled || !m_userCallback)
     return;
-  if (m_thresholds[kLongLayout] && m_scriptDepth) {
-    m_perTaskStyleAndLayoutTime +=
-        WTF::monotonicallyIncreasingTime() - m_styleStartTime;
-  }
+
+  // Working around Oilpan - probes are STACK_ALLOCATED.
+  const probe::UserCallback* userCallback =
+      static_cast<const probe::UserCallback*>(m_userCallback);
+  Violation handlerType =
+      userCallback->recurring ? kRecurringHandler : kHandler;
+  double threshold = m_thresholds[handlerType];
+  double duration = probe.duration();
+  if (!threshold || duration < threshold)
+    return;
+
+  String name = userCallback->name ? String(userCallback->name)
+                                   : String(userCallback->atomicName);
+  String text = String::format("'%s' handler took %ldms", name.utf8().data(),
+                               lround(duration * 1000));
+  innerReportGenericViolation(probe.context, handlerType, text, duration,
+                              SourceLocation::fromFunction(probe.function));
+}
+
+void PerformanceMonitor::will(const probe::UserCallback& probe) {
+  ++m_userCallbackDepth;
+
+  if (!m_enabled || m_userCallbackDepth != 1 ||
+      !m_thresholds[probe.recurring ? kRecurringHandler : kHandler])
+    return;
+
+  DCHECK(!m_userCallback);
+  m_userCallback = &probe;
+}
+
+void PerformanceMonitor::did(const probe::UserCallback& probe) {
+  --m_userCallbackDepth;
+  if (!m_userCallbackDepth)
+    m_userCallback = nullptr;
 }
 
 void PerformanceMonitor::documentWriteFetchScript(Document* document) {
@@ -260,14 +235,12 @@ void PerformanceMonitor::willProcessTask(scheduler::TaskQueue*,
 
   if (!m_enabled)
     return;
+
+  // Reset everything for regular and nested tasks.
   m_scriptDepth = 0;
-  m_scriptStartTime = 0;
-  m_layoutStartTime = 0;
   m_layoutDepth = 0;
-  m_styleStartTime = 0;
   m_perTaskStyleAndLayoutTime = 0;
-  m_handlerType = Violation::kAfterLast;
-  m_handlerDepth = 0;
+  m_userCallback = nullptr;
 }
 
 void PerformanceMonitor::didProcessTask(scheduler::TaskQueue*,

@@ -1177,7 +1177,7 @@ void FrameView::layout() {
   Document* document = m_frame->document();
   TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData",
                      InspectorLayoutEvent::beginData(this));
-  probe::willUpdateLayout(document);
+  probe::UpdateLayout probe(document);
 
   performPreLayoutTasks();
 
@@ -1320,7 +1320,7 @@ void FrameView::layout() {
   // Remove or update this code. crbug.com/460596
   TRACE_EVENT_END1("devtools.timeline", "Layout", "endData",
                    InspectorLayoutEvent::endData(rootForThisLayout));
-  probe::didUpdateLayout(m_frame.get());
+  probe::didChangeViewport(m_frame.get());
 
   m_nestedLayoutCount--;
   if (m_nestedLayoutCount)
@@ -1768,14 +1768,14 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta) {
 
   if (!m_viewportConstrainedObjects ||
       m_viewportConstrainedObjects->isEmpty()) {
-    probe::didUpdateLayout(m_frame.get());
+    probe::didChangeViewport(m_frame.get());
     return true;
   }
 
   if (!invalidateViewportConstrainedObjects())
     return false;
 
-  probe::didUpdateLayout(m_frame.get());
+  probe::didChangeViewport(m_frame.get());
   return true;
 }
 

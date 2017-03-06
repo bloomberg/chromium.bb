@@ -5,7 +5,6 @@
 #include "core/dom/FrameRequestCallbackCollection.h"
 
 #include "core/dom/FrameRequestCallback.h"
-#include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 
@@ -72,8 +71,8 @@ void FrameRequestCallbackCollection::executeCallbacks(
           InspectorAnimationFrameEvent::data(m_context, callback->m_id));
       probe::AsyncTask asyncTask(m_context, callback,
                                  "requestAnimationFrame.callback");
-      PerformanceMonitor::HandlerCall handlerCall(
-          m_context, "requestAnimationFrame", true);
+      probe::UserCallback probe(m_context, "requestAnimationFrame",
+                                AtomicString(), true);
       if (callback->m_useLegacyTimeBase)
         callback->handleEvent(highResNowMsLegacy);
       else

@@ -52,6 +52,23 @@ namespace blink {
 
 namespace probe {
 
+double ProbeBase::captureStartTime() const {
+  if (!m_startTime)
+    m_startTime = monotonicallyIncreasingTime();
+  return m_startTime;
+}
+
+double ProbeBase::captureEndTime() const {
+  if (!m_endTime)
+    m_endTime = monotonicallyIncreasingTime();
+  return m_endTime;
+}
+
+double ProbeBase::duration() const {
+  DCHECK(m_startTime);
+  return captureEndTime() - m_startTime;
+}
+
 AsyncTask::AsyncTask(ExecutionContext* context, void* task)
     : AsyncTask(context, task, true) {}
 

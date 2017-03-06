@@ -15,7 +15,11 @@
 namespace blink {
 
 namespace probe {
+class CallFunction;
+class ExecuteScript;
 class RecalculateStyle;
+class UpdateLayout;
+class UserCallback;
 }
 
 class DOMWindow;
@@ -47,18 +51,6 @@ class CORE_EXPORT PerformanceMonitor final
     kAfterLast
   };
 
-  class CORE_EXPORT HandlerCall {
-    STACK_ALLOCATED();
-   public:
-    HandlerCall(ExecutionContext*, bool recurring);
-    HandlerCall(ExecutionContext*, const char* name, bool recurring);
-    HandlerCall(ExecutionContext*, const AtomicString& name, bool recurring);
-    ~HandlerCall();
-
-   private:
-    Member<PerformanceMonitor> m_performanceMonitor;
-  };
-
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual void reportLongTask(double startTime,
@@ -81,14 +73,21 @@ class CORE_EXPORT PerformanceMonitor final
   static double threshold(ExecutionContext*, Violation);
 
   // Instrumenting methods.
-  void willExecuteScript(ExecutionContext*);
-  void didExecuteScript();
-  void willCallFunction(ExecutionContext*);
-  void didCallFunction(ExecutionContext*, v8::Local<v8::Function>);
-  void willUpdateLayout();
-  void didUpdateLayout();
   void will(const probe::RecalculateStyle&);
   void did(const probe::RecalculateStyle&);
+
+  void will(const probe::UpdateLayout&);
+  void did(const probe::UpdateLayout&);
+
+  void will(const probe::ExecuteScript&);
+  void did(const probe::ExecuteScript&);
+
+  void will(const probe::CallFunction&);
+  void did(const probe::CallFunction&);
+
+  void will(const probe::UserCallback&);
+  void did(const probe::UserCallback&);
+
   void documentWriteFetchScript(Document*);
 
   // Direct API for core.
@@ -121,23 +120,19 @@ class CORE_EXPORT PerformanceMonitor final
   void didProcessTask(scheduler::TaskQueue*,
                       double startTime,
                       double endTime) override;
+  void willExecuteScript(ExecutionContext*);
+  void didExecuteScript();
 
   std::pair<String, DOMWindow*> sanitizedAttribution(
       const HeapHashSet<Member<Frame>>& frameContexts,
       Frame* observerFrame);
 
   bool m_enabled = false;
-  double m_scriptStartTime = 0;
-  double m_layoutStartTime = 0;
-  double m_styleStartTime = 0;
   double m_perTaskStyleAndLayoutTime = 0;
   unsigned m_scriptDepth = 0;
   unsigned m_layoutDepth = 0;
-  unsigned m_handlerDepth = 0;
-  Violation m_handlerType = Violation::kAfterLast;
-
-  const char* m_handlerName = nullptr;
-  AtomicString m_handlerAtomicName;
+  unsigned m_userCallbackDepth = 0;
+  const void* m_userCallback;
 
   double m_thresholds[kAfterLast];
 
