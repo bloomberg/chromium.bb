@@ -44,8 +44,8 @@ enum Fill {
   CONTENT = 4,
 };
 
-struct ReversibleTransform {
-  ReversibleTransform();
+struct Transform {
+  Transform();
 
   void MakeIdentity();
   void Rotate(gvr::Quatf quat);
@@ -54,23 +54,32 @@ struct ReversibleTransform {
   void Scale(float sx, float sy, float sz);
 
   gvr::Mat4f to_world;
-  gvr::Mat4f from_world;
-
-  // This object-to-world orientation quaternion is technically
-  // redundant, but it's easy to track it here for use as needed.
-  // TODO(klausw): use this instead of MatrixVectorRotation()?
-  // Would need quat * vector implementation.
-  gvr::Quatf orientation = {0.0f, 0.0f, 0.0f, 1.0f};
 };
 
-struct WorldObject {
-  ReversibleTransform transform;
-};
+class WorldRectangle {
+ public:
+  const gvr::Mat4f& TransformMatrix() const;
+  void SetTransform(const Transform& transform);
 
-struct WorldRectangle : public WorldObject {
   gvr::Vec3f GetCenter() const;
   gvr::Vec3f GetNormal() const;
-  float GetRayDistance(gvr::Vec3f rayOrigin, gvr::Vec3f rayVector) const;
+
+  // Computes the distance from |ray_origin| to this rectangles's plane, along
+  // |ray_vector|. Returns true and populates |distance| if the calculation is
+  // possible, and false if the ray is parallel to the plane.
+  bool GetRayDistance(const gvr::Vec3f& ray_origin,
+                      const gvr::Vec3f& ray_vector,
+                      float* distance) const;
+
+  // Projects a 3D world point onto the X and Y axes of the transformed
+  // rectangle, returning 2D coordinates relative to the un-transformed unit
+  // rectangle. This allows beam intersection points to be mapped to sprite
+  // pixel coordinates. Points that fall onto the rectangle will generate X and
+  // Y values on the interval [-0.5, 0.5].
+  gvr::Vec2f GetUnitRectangleCoordinates(const gvr::Vec3f& world_point);
+
+ private:
+  Transform transform_;
 };
 
 struct ContentRectangle : public WorldRectangle {

@@ -46,26 +46,6 @@ void TranslateM(gvr::Mat4f& tmat, gvr::Mat4f& mat, float x, float y, float z) {
   tmat.m[2][3] += z;
 }
 
-// Right multiply a translation matrix.
-void TranslateMRight(gvr::Mat4f& tmat,
-                     gvr::Mat4f& mat,
-                     float x,
-                     float y,
-                     float z) {
-  if (&tmat != &mat) {
-    for (int i = 0; i < 4; ++i) {
-      for (int j = 0; j < 3; ++j) {
-        tmat.m[i][j] = mat.m[i][j];
-      }
-    }
-  }
-
-  for (int i = 0; i < 4; i++) {
-    tmat.m[i][3] =
-        mat.m[i][0] * x + mat.m[i][1] * y + mat.m[i][2] * z + mat.m[i][3];
-  }
-}
-
 // Left multiply a scale matrix.
 void ScaleM(gvr::Mat4f& tmat,
             const gvr::Mat4f& mat,
@@ -85,65 +65,6 @@ void ScaleM(gvr::Mat4f& tmat,
     tmat.m[1][j] *= y;
     tmat.m[2][j] *= z;
   }
-}
-
-// Right multiply a scale matrix.
-void ScaleMRight(gvr::Mat4f& tmat,
-                 const gvr::Mat4f& mat,
-                 float x,
-                 float y,
-                 float z) {
-  if (&tmat != &mat) {
-    for (int i = 0; i < 4; ++i) {
-      for (int j = 0; j < 3; ++j) {
-        tmat.m[i][j] = mat.m[i][j];
-      }
-    }
-  }
-  // Multiply columns, don't change translation components.
-  for (int i = 0; i < 3; ++i) {
-    tmat.m[i][0] *= x;
-    tmat.m[i][1] *= y;
-    tmat.m[i][2] *= z;
-  }
-}
-
-gvr::Mat4f MatrixTranspose(const gvr::Mat4f& mat) {
-  gvr::Mat4f result;
-  for (int i = 0; i < 4; ++i) {
-    for (int k = 0; k < 4; ++k) {
-      result.m[i][k] = mat.m[k][i];
-    }
-  }
-  return result;
-}
-
-std::array<float, 4> MatrixVectorMul(const gvr::Mat4f& matrix,
-                                     const std::array<float, 4>& vec) {
-  std::array<float, 4> result;
-  for (int i = 0; i < 4; ++i) {
-    result[i] = 0;
-    for (int k = 0; k < 4; ++k) {
-      result[i] += matrix.m[i][k] * vec[k];
-    }
-  }
-  return result;
-}
-
-std::array<float, 3> MatrixVectorMul(const gvr::Mat4f& matrix,
-                                     const std::array<float, 3>& vec) {
-  // Use homogeneous coordinates for the multiplication.
-  std::array<float, 4> vec_h = {{vec[0], vec[1], vec[2], 1.0f}};
-  std::array<float, 4> result;
-  for (int i = 0; i < 4; ++i) {
-    result[i] = 0;
-    for (int k = 0; k < 4; ++k) {
-      result[i] += matrix.m[i][k] * vec_h[k];
-    }
-  }
-  // Convert back from homogeneous coordinates.
-  float rw = 1.0f / result[3];
-  return {{rw * result[0], rw * result[1], rw * result[2]}};
 }
 
 gvr::Vec3f MatrixVectorMul(const gvr::Mat4f& m, const gvr::Vec3f& v) {
@@ -222,6 +143,10 @@ gvr::Vec3f GetTranslation(const gvr::Mat4f& matrix) {
 
 float VectorLength(const gvr::Vec3f& vec) {
   return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+}
+
+gvr::Vec3f VectorSubtract(const gvr::Vec3f& a, const gvr::Vec3f& b) {
+  return {a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
 float NormalizeVector(gvr::Vec3f& vec) {

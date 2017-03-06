@@ -14,77 +14,90 @@ namespace vr_shell {
 
 namespace {
 
-float GetRayPlaneIntersection(gvr::Vec3f ray_origin,
-                              gvr::Vec3f ray_vector,
-                              gvr::Vec3f plane_origin,
-                              gvr::Vec3f plane_normal) {
+bool GetRayPlaneDistance(const gvr::Vec3f& ray_origin,
+                         const gvr::Vec3f& ray_vector,
+                         const gvr::Vec3f& plane_origin,
+                         const gvr::Vec3f& plane_normal,
+                         float* distance) {
   float denom = vr_shell::VectorDot(ray_vector, plane_normal);
   if (denom == 0) {
-    // TODO(mthiesse): Line could be contained in the plane, do we care?
-    return -std::numeric_limits<float>::infinity();
+    return false;
   }
   gvr::Vec3f rel;
   rel.x = ray_origin.x - plane_origin.x;
   rel.y = ray_origin.y - plane_origin.y;
   rel.z = ray_origin.z - plane_origin.z;
-
-  return -vr_shell::VectorDot(plane_normal, rel) / denom;
+  *distance = -vr_shell::VectorDot(plane_normal, rel) / denom;
+  return true;
 }
 
 }  // namespace
 
-ReversibleTransform::ReversibleTransform() {
+Transform::Transform() {
   MakeIdentity();
 }
 
-void ReversibleTransform::MakeIdentity() {
+void Transform::MakeIdentity() {
   SetIdentityM(to_world);
-  SetIdentityM(from_world);
-  orientation.qx = orientation.qy = orientation.qz = 0.0f;
-  orientation.qw = 1.0f;
 }
 
-void ReversibleTransform::Rotate(gvr::Quatf quat) {
-  orientation = QuatMultiply(quat, orientation);
-
+void Transform::Rotate(gvr::Quatf quat) {
   // TODO(klausw): use specialized rotation code? Constructing the matrix
   // via axis-angle quaternion is inefficient.
   gvr::Mat4f forward = QuatToMatrix(quat);
   to_world = MatrixMul(forward, to_world);
-  gvr::Mat4f reverse = MatrixTranspose(forward);
-  from_world = MatrixMul(from_world, reverse);
 }
 
-void ReversibleTransform::Rotate(float ax, float ay, float az, float rad) {
-  // TODO(klausw): use specialized rotation code? Constructing the matrix
-  // via axis-angle quaternion is inefficient.
+void Transform::Rotate(float ax, float ay, float az, float rad) {
   Rotate(QuatFromAxisAngle({ax, ay, az}, rad));
 }
 
-void ReversibleTransform::Translate(float tx, float ty, float tz) {
+void Transform::Translate(float tx, float ty, float tz) {
   TranslateM(to_world, to_world, tx, ty, tz);
-  TranslateMRight(from_world, from_world, -tx, -ty, -tz);
 }
 
-void ReversibleTransform::Scale(float sx, float sy, float sz) {
+void Transform::Scale(float sx, float sy, float sz) {
   ScaleM(to_world, to_world, sx, sy, sz);
-  ScaleMRight(from_world, from_world, 1.0f / sx, 1.0f / sy, 1.0f / sz);
+}
+
+const gvr::Mat4f& WorldRectangle::TransformMatrix() const {
+  return transform_.to_world;
+}
+
+void WorldRectangle::SetTransform(const Transform& transform) {
+  transform_ = transform;
 }
 
 gvr::Vec3f WorldRectangle::GetCenter() const {
   const gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
-  return MatrixVectorMul(transform.to_world, kOrigin);
+  return MatrixVectorMul(transform_.to_world, kOrigin);
+}
+
+gvr::Vec2f WorldRectangle::GetUnitRectangleCoordinates(
+    const gvr::Vec3f& world_point) {
+  const gvr::Mat4f& transform = transform_.to_world;
+  gvr::Vec3f origin = MatrixVectorMul(transform, gvr::Vec3f({0, 0, 0}));
+  gvr::Vec3f xAxis = MatrixVectorMul(transform, gvr::Vec3f({1, 0, 0}));
+  gvr::Vec3f yAxis = MatrixVectorMul(transform, gvr::Vec3f({0, 1, 0}));
+  xAxis = VectorSubtract(xAxis, origin);
+  yAxis = VectorSubtract(yAxis, origin);
+  gvr::Vec3f point = VectorSubtract(world_point, origin);
+
+  float x = VectorDot(point, xAxis) / VectorDot(xAxis, xAxis);
+  float y = VectorDot(point, yAxis) / VectorDot(yAxis, yAxis);
+  return {x, y};
 }
 
 gvr::Vec3f WorldRectangle::GetNormal() const {
   const gvr::Vec3f kNormalOrig = {0.0f, 0.0f, -1.0f};
-  return MatrixVectorRotate(transform.to_world, kNormalOrig);
+  return MatrixVectorRotate(transform_.to_world, kNormalOrig);
 }
 
-float WorldRectangle::GetRayDistance(gvr::Vec3f ray_origin,
-                                     gvr::Vec3f ray_vector) const {
-  return GetRayPlaneIntersection(ray_origin, ray_vector, GetCenter(),
-                                 GetNormal());
+bool WorldRectangle::GetRayDistance(const gvr::Vec3f& ray_origin,
+                                    const gvr::Vec3f& ray_vector,
+                                    float* distance) const {
+  return GetRayPlaneDistance(ray_origin, ray_vector, GetCenter(), GetNormal(),
+                             distance);
 }
 
 ContentRectangle::ContentRectangle() = default;

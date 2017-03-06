@@ -40,9 +40,6 @@ static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 static constexpr float kZNear = 0.1f;
 static constexpr float kZFar = 1000.0f;
 
-// Screen angle in degrees. 0 = vertical, positive = top closer.
-static constexpr float kDesktopScreenTiltDefault = 0;
-
 static constexpr float kReticleWidth = 0.025f;
 static constexpr float kReticleHeight = 0.025f;
 
@@ -488,50 +485,56 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   // Determine which UI element (if any) intersects the line between the eyes
   // and the controller target position.
   float closest_element_distance = VectorLength(target_point_);
-  int pixel_x = 0;
-  int pixel_y = 0;
   target_element_ = nullptr;
+  float target_x;
+  float target_y;
 
   for (const auto& plane : scene_->GetUiElements()) {
     if (!plane->IsHitTestable())
       continue;
 
-    float distance_to_plane = plane->GetRayDistance(kOrigin, eye_to_target);
+    float distance_to_plane;
+    if (!plane->GetRayDistance(kOrigin, eye_to_target, &distance_to_plane))
+      continue;
+
+    if (distance_to_plane < 0 || distance_to_plane >= closest_element_distance)
+      continue;
+
     gvr::Vec3f plane_intersection_point =
         GetRayPoint(kOrigin, eye_to_target, distance_to_plane);
+    gvr::Vec2f unit_xy_point =
+        plane->GetUnitRectangleCoordinates(plane_intersection_point);
 
-    gvr::Vec3f rect_2d_point =
-        MatrixVectorMul(plane->transform.from_world, plane_intersection_point);
-    if (distance_to_plane < 0 ||
-        distance_to_plane >= closest_element_distance) {
-      continue;
-    }
-
-    float x = rect_2d_point.x + 0.5f;
-    float y = 0.5f - rect_2d_point.y;
-    bool is_inside = x >= 0.0f && x < 1.0f && y >= 0.0f && y < 1.0f;
-    if (!is_inside)
+    float x = 0.5f + unit_xy_point.x;
+    float y = 0.5f - unit_xy_point.y;
+    if (x < 0.0f || x >= 1.0f || y < 0.0f || y >= 1.0f)
       continue;
 
     closest_element_distance = distance_to_plane;
-    Rectf pixel_rect;
-    if (plane->fill == Fill::CONTENT) {
-      pixel_rect = {0, 0, content_tex_css_width_, content_tex_css_height_};
-    } else {
-      pixel_rect = {plane->copy_rect.x, plane->copy_rect.y,
-                    plane->copy_rect.width, plane->copy_rect.height};
-    }
-    pixel_x = pixel_rect.width * x + pixel_rect.x;
-    pixel_y = pixel_rect.height * y + pixel_rect.y;
-
     target_point_ = plane_intersection_point;
     target_element_ = plane.get();
+    target_x = x;
+    target_y = y;
   }
 
   // Treat UI elements, which do not show web content, as NONE input
   // targets since they cannot make use of the input anyway.
   InputTarget input_target = InputTarget::NONE;
+  int pixel_x = 0;
+  int pixel_y = 0;
+
   if (target_element_ != nullptr) {
+    Rectf pixel_rect;
+    if (target_element_->fill == Fill::CONTENT) {
+      pixel_rect = {0, 0, content_tex_css_width_, content_tex_css_height_};
+    } else {
+      pixel_rect = {target_element_->copy_rect.x, target_element_->copy_rect.y,
+                    target_element_->copy_rect.width,
+                    target_element_->copy_rect.height};
+    }
+    pixel_x = pixel_rect.x + pixel_rect.width * target_x;
+    pixel_y = pixel_rect.y + pixel_rect.height * target_y;
+
     switch (target_element_->fill) {
       case Fill::CONTENT:
         input_target = InputTarget::CONTENT;
@@ -540,7 +543,6 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
         input_target = InputTarget::UI;
         break;
       default:
-        input_target = InputTarget::NONE;
         break;
     }
   }
@@ -708,8 +710,7 @@ void VrShellGl::DrawFrame() {
   }
 
   // Update the render position of all UI elements (including desktop).
-  const float screen_tilt = kDesktopScreenTiltDefault * M_PI / 180.0f;
-  scene_->UpdateTransforms(screen_tilt, TimeInMicroseconds());
+  scene_->UpdateTransforms(TimeInMicroseconds());
 
   UpdateController(GetForwardVector(head_pose));
 
@@ -834,8 +835,7 @@ void VrShellGl::DrawElements(
     const gvr::Mat4f& view_matrix,
     const std::vector<const ContentRectangle*>& elements) {
   for (const auto* rect : elements) {
-    gvr::Mat4f transform =
-        MatrixMul(view_proj_matrix, rect->transform.to_world);
+    gvr::Mat4f transform = MatrixMul(view_proj_matrix, rect->TransformMatrix());
 
     switch (rect->fill) {
       case Fill::SPRITE: {
@@ -890,7 +890,7 @@ std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(
 
   for (const auto* element : elements) {
     // Distance is the abs(z) value in view space.
-    gvr::Vec3f element_position = GetTranslation(element->transform.to_world);
+    gvr::Vec3f element_position = GetTranslation(element->TransformMatrix());
     float distance =
         std::fabs(MatrixVectorMul(view_matrix, element_position).z);
     zOrderedElementPairs.push_back(std::make_pair(distance, element));

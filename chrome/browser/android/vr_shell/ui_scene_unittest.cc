@@ -125,18 +125,11 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   const gvr::Vec3f point({1, 0, 0});
 
   // Check resulting transform with no screen tilt.
-  scene.UpdateTransforms(0, 0);
-  auto new_origin = MatrixVectorMul(child->transform.to_world, origin);
-  auto new_point = MatrixVectorMul(child->transform.to_world, point);
+  scene.UpdateTransforms(0);
+  auto new_origin = MatrixVectorMul(child->TransformMatrix(), origin);
+  auto new_point = MatrixVectorMul(child->TransformMatrix(), point);
   EXPECT_VEC3F_NEAR(gvr::Vec3f({6, 10, 0}), new_origin);
   EXPECT_VEC3F_NEAR(gvr::Vec3f({0, 10, 0}), new_point);
-
-  // Check with screen tilt (use 90 degrees for simplicity).
-  scene.UpdateTransforms(M_PI / 2, 0);
-  new_origin = MatrixVectorMul(child->transform.to_world, origin);
-  new_point = MatrixVectorMul(child->transform.to_world, point);
-  EXPECT_VEC3F_NEAR(gvr::Vec3f({6, 0, 10}), new_origin);
-  EXPECT_VEC3F_NEAR(gvr::Vec3f({0, 0, 10}), new_point);
 }
 
 TEST(UiScene, Opacity) {
@@ -154,7 +147,7 @@ TEST(UiScene, Opacity) {
   element->opacity = 0.5;
   scene.AddUiElement(element);
 
-  scene.UpdateTransforms(0, 0);
+  scene.UpdateTransforms(0);
   EXPECT_EQ(scene.GetUiElementById(0)->computed_opacity, 0.5f);
   EXPECT_EQ(scene.GetUiElementById(1)->computed_opacity, 0.25f);
 }
@@ -186,7 +179,7 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   element->y_anchoring = GetParam().y_anchoring;
   scene.AddUiElement(element);
 
-  scene.UpdateTransforms(0, 0);
+  scene.UpdateTransforms(0);
   const ContentRectangle* child = scene.GetUiElementById(1);
   EXPECT_NEAR(child->GetCenter().x, GetParam().expected_x, TOLERANCE);
   EXPECT_NEAR(child->GetCenter().y, GetParam().expected_y, TOLERANCE);

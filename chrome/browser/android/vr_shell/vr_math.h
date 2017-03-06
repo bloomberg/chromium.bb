@@ -42,28 +42,11 @@ typedef struct Colorf {
 } Colorf;
 
 void SetIdentityM(gvr::Mat4f& mat);
-
 void TranslateM(gvr::Mat4f& tmat, gvr::Mat4f& mat, float x, float y, float z);
-void TranslateMRight(gvr::Mat4f& tmat,
-                     gvr::Mat4f& mat,
-                     float x,
-                     float y,
-                     float z);
-
 void ScaleM(gvr::Mat4f& tmat, const gvr::Mat4f& mat, float x, float y, float z);
-void ScaleMRight(gvr::Mat4f& tmat,
-                 const gvr::Mat4f& mat,
-                 float x,
-                 float y,
-                 float z);
 
 // Util functions that are copied from the treasure_hunt NDK demo in
 // third_party/gvr-andoir-sdk/ folder.
-gvr::Mat4f MatrixTranspose(const gvr::Mat4f& mat);
-std::array<float, 4> MatrixVectorMul(const gvr::Mat4f& matrix,
-                                     const std::array<float, 4>& vec);
-std::array<float, 3> MatrixVectorMul(const gvr::Mat4f& matrix,
-                                     const std::array<float, 3>& vec);
 gvr::Vec3f MatrixVectorMul(const gvr::Mat4f& m, const gvr::Vec3f& v);
 gvr::Vec3f MatrixVectorRotate(const gvr::Mat4f& m, const gvr::Vec3f& v);
 gvr::Mat4f MatrixMul(const gvr::Mat4f& matrix1, const gvr::Mat4f& matrix2);
@@ -76,16 +59,14 @@ gvr::Vec3f GetForwardVector(const gvr::Mat4f& matrix);
 
 gvr::Vec3f GetTranslation(const gvr::Mat4f& matrix);
 
-gvr::Quatf QuatMultiply(const gvr::Quatf& a, const gvr::Quatf& b);
-
 gvr::Mat4f QuatToMatrix(const gvr::Quatf& quat);
 
 float VectorLength(const gvr::Vec3f& vec);
+gvr::Vec3f VectorSubtract(const gvr::Vec3f& a, const gvr::Vec3f& b);
+float VectorDot(const gvr::Vec3f& a, const gvr::Vec3f& b);
 
 // Normalize a vector, and return its original length.
 float NormalizeVector(gvr::Vec3f& vec);
-
-float VectorDot(const gvr::Vec3f& a, const gvr::Vec3f& b);
 
 void NormalizeQuat(gvr::Quatf& quat);
 

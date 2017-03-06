@@ -143,7 +143,7 @@ std::unique_ptr<easing::Easing> ParseEasing(const base::DictionaryValue& dict) {
 void ApplyAnchoring(const ContentRectangle& parent,
                     XAnchoring x_anchoring,
                     YAnchoring y_anchoring,
-                    ReversibleTransform* transform) {
+                    Transform* transform) {
   // To anchor a child, use the parent's size to find its edge.
   float x_offset;
   switch (x_anchoring) {
@@ -330,18 +330,19 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
   }
 }
 
-void UiScene::UpdateTransforms(float screen_tilt, int64_t time_in_micro) {
+void UiScene::UpdateTransforms(int64_t time_in_micro) {
   // Process all animations before calculating object transforms.
   for (auto& element : ui_elements_) {
     element->Animate(time_in_micro);
   }
   for (auto& element : ui_elements_) {
-    element->transform.MakeIdentity();
-    element->transform.Scale(element->size.x, element->size.y, element->size.z);
+    Transform transform;
+    transform.MakeIdentity();
+    transform.Scale(element->size.x, element->size.y, element->size.z);
     element->computed_opacity = 1.0f;
-    ApplyRecursiveTransforms(*element.get(), &element->transform,
+    ApplyRecursiveTransforms(*element.get(), &transform,
                              &element->computed_opacity);
-    element->transform.Rotate(1.0f, 0.0f, 0.0f, screen_tilt);
+    element->SetTransform(transform);
   }
 }
 
@@ -372,7 +373,7 @@ UiScene::UiScene() = default;
 UiScene::~UiScene() = default;
 
 void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
-                                       ReversibleTransform* transform,
+                                       Transform* transform,
                                        float* opacity) {
   transform->Scale(element.scale.x, element.scale.y, element.scale.z);
   transform->Rotate(element.rotation.x, element.rotation.y, element.rotation.z,
