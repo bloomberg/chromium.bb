@@ -3314,11 +3314,6 @@ void RenderFrameImpl::willSendSubmitEvent(const blink::WebFormElement& form) {
 }
 
 void RenderFrameImpl::willSubmitForm(const blink::WebFormElement& form) {
-  // With PlzNavigate-enabled, this will be called before a DataSource has been
-  // set-up.
-  // TODO(clamy): make sure the internal state is properly updated at some
-  // point in the navigation.
-  if (!IsBrowserSideNavigationEnabled() && !!frame_->provisionalDataSource()) {
     DocumentState* document_state =
         DocumentState::FromDataSource(frame_->provisionalDataSource());
     NavigationStateImpl* navigation_state =
@@ -3336,7 +3331,6 @@ void RenderFrameImpl::willSubmitForm(const blink::WebFormElement& form) {
     internal_data->set_searchable_form_url(web_searchable_form_data.url());
     internal_data->set_searchable_form_encoding(
         web_searchable_form_data.encoding().utf8());
-  }
 
   for (auto& observer : observers_)
     observer.WillSubmitForm(form);
@@ -5237,9 +5231,21 @@ void RenderFrameImpl::OnFailedNavigation(
 
   // For renderer initiated navigations, we send out a didFailProvisionalLoad()
   // notification.
-  if (request_params.nav_entry_id == 0)
-    didFailProvisionalLoad(frame_, error, blink::WebStandardCommit);
-  LoadNavigationErrorPage(failed_request, error, replace, history_entry.get());
+  bool had_provisional_data_source = frame_->provisionalDataSource();
+  if (request_params.nav_entry_id == 0) {
+    didFailProvisionalLoad(
+        frame_, error,
+        replace ? blink::WebHistoryInertCommit : blink::WebStandardCommit);
+  }
+
+  // If we didn't call didFailProvisionalLoad or there wasn't a
+  // provisionalDataSource(), LoadNavigationErrorPage wasn't called, so do it
+  // now.
+  if (request_params.nav_entry_id != 0 || !had_provisional_data_source) {
+    LoadNavigationErrorPage(failed_request, error, replace,
+                            history_entry.get());
+  }
+
   browser_side_navigation_pending_ = false;
 }
 
@@ -5324,7 +5330,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
                 GetWebURLRequestHeaders(info.urlRequest), referrer,
                 info.defaultPolicy, info.replacesCurrentHistoryItem, true);
         // Suppress the load in Blink but mark the frame as loading.
-        return blink::WebNavigationPolicyHandledByClient;
+        return blink::WebNavigationPolicyHandledByClientForInitialHistory;
       } else {
         // Client redirects during an initial history load should attempt to
         // cancel the history navigation.  They will create a provisional

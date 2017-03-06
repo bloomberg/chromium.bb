@@ -42,6 +42,7 @@ enum WebNavigationPolicy {
   WebNavigationPolicyNewWindow,
   WebNavigationPolicyNewPopup,
   WebNavigationPolicyHandledByClient,
+  WebNavigationPolicyHandledByClientForInitialHistory,
 };
 
 }  // namespace blink

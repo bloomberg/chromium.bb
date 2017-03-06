@@ -496,7 +496,8 @@ void NavigationScheduler::schedule(ScheduledNavigation* redirect) {
   // location change. Let the JS have its way.
   // FIXME: This check seems out of place.
   if (!m_frame->loader().stateMachine()->committedFirstRealDocumentLoad() &&
-      m_frame->loader().provisionalDocumentLoader()) {
+      m_frame->loader().provisionalDocumentLoader() &&
+      m_frame->loader().provisionalDocumentLoader()->didStart()) {
     m_frame->loader().stopAllLoaders();
     if (!m_frame->host())
       return;

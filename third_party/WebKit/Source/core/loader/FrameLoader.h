@@ -202,23 +202,23 @@ class CORE_EXPORT FrameLoader final {
 
   void restoreScrollPositionAndViewState();
 
-  bool shouldContinueForNavigationPolicy(const ResourceRequest&,
-                                         const SubstituteData&,
-                                         DocumentLoader*,
-                                         ContentSecurityPolicyDisposition,
-                                         NavigationType,
-                                         NavigationPolicy,
-                                         FrameLoadType,
-                                         bool isClientRedirect,
-                                         HTMLFormElement*);
+  // The navigation should only be continued immediately in this frame if this
+  // returns NavigationPolicyCurrentTab.
+  NavigationPolicy shouldContinueForNavigationPolicy(
+      const ResourceRequest&,
+      const SubstituteData&,
+      DocumentLoader*,
+      ContentSecurityPolicyDisposition,
+      NavigationType,
+      NavigationPolicy,
+      FrameLoadType,
+      bool isClientRedirect,
+      HTMLFormElement*);
 
-  // PlzNavigate: Navigations handled by the client are treated as
-  // provisional navigations.
-  bool hasProvisionalNavigation() const {
-    return provisionalDocumentLoader() || m_isNavigationHandledByClient;
-  }
-
-  void clearNavigationHandledByClient();
+  // Note: When a PlzNavigtate navigation is handled by the client, we will
+  // have created a dummy provisional DocumentLoader, so this will return true
+  // while the client handles the navigation.
+  bool hasProvisionalNavigation() const { return provisionalDocumentLoader(); }
 
   DECLARE_TRACE();
 
@@ -238,10 +238,10 @@ class CORE_EXPORT FrameLoader final {
                                        const KURL&);
   void processFragment(const KURL&, FrameLoadType, LoadStartType);
 
-  bool checkLoadCanStart(FrameLoadRequest&,
-                         FrameLoadType,
-                         NavigationPolicy,
-                         NavigationType);
+  NavigationPolicy checkLoadCanStart(FrameLoadRequest&,
+                                     FrameLoadType,
+                                     NavigationPolicy,
+                                     NavigationType);
   void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 
   enum class HistoryNavigationType { DifferentDocument, Fragment, HistoryApi };
@@ -270,8 +270,6 @@ class CORE_EXPORT FrameLoader final {
                                        const FrameLoadRequest&,
                                        FrameLoadType,
                                        NavigationType);
-
-  void setNavigationHandledByClient();
 
   Member<LocalFrame> m_frame;
   AtomicString m_requiredCSP;
@@ -333,7 +331,6 @@ class CORE_EXPORT FrameLoader final {
 
   bool m_dispatchingDidClearWindowObjectInMainWorld;
   bool m_protectProvisionalLoader;
-  bool m_isNavigationHandledByClient;
 };
 
 }  // namespace blink

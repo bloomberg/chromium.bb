@@ -365,10 +365,10 @@ bool DocumentLoader::redirectReceived(
     m_fetcher->stopFetching();
     return false;
   }
-  if (!frameLoader().shouldContinueForNavigationPolicy(
+  if (frameLoader().shouldContinueForNavigationPolicy(
           m_request, SubstituteData(), this, CheckContentSecurityPolicy,
           m_navigationType, NavigationPolicyCurrentTab, m_loadType,
-          isClientRedirect(), nullptr)) {
+          isClientRedirect(), nullptr) != NavigationPolicyCurrentTab) {
     m_fetcher->stopFetching();
     return false;
   }

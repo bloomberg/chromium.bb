@@ -49,13 +49,15 @@
         i.src = src;
         document.body.appendChild(i);
 
-        i.contentWindow.location = new_src + "?csp=" + i.csp;
-        window.addEventListener('message', t.step_func(e => {
-          if (e.source != i.contentWindow || new_src != e.data['src'])
-              return;
-          assert_equals("script-src 'unsafe-inline'", e.data['embedding_csp']);
-          t.done();
-        }));
+        i.onload = function() {
+          i.contentWindow.location = new_src + "?csp=" + i.csp;
+          window.addEventListener('message', t.step_func(e => {
+            if (e.source != i.contentWindow || new_src != e.data['src'])
+                return;
+            assert_equals("script-src 'unsafe-inline'", e.data['embedding_csp']);
+            t.done();
+          }));
+        }
       }, "Set Embedding-CSP Header on change of window's location.");
 
       async_test(t => {

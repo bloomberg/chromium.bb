@@ -134,6 +134,12 @@ class CORE_EXPORT DocumentLoader
     return m_state >= Committed && !m_dataReceived;
   }
 
+  // Without PlzNavigate, this is only false for a narrow window during
+  // navigation start. For PlzNavigate, a navigation sent to the browser will
+  // leave a dummy DocumentLoader in the NotStarted state until the navigation
+  // is actually handled in the renderer.
+  bool didStart() const { return m_state != NotStarted; }
+
   void setSentDidFinishLoad() { m_state = SentDidFinishLoad; }
   bool sentDidFinishLoad() const { return m_state == SentDidFinishLoad; }
 

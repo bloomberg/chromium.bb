@@ -44,6 +44,7 @@ enum NavigationPolicy {
   NavigationPolicyNewWindow,
   NavigationPolicyNewPopup,
   NavigationPolicyHandledByClient,
+  NavigationPolicyHandledByClientForInitialHistory,
 };
 
 CORE_EXPORT bool navigationPolicyFromMouseEvent(unsigned short button,

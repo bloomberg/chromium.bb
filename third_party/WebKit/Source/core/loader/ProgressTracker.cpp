@@ -104,11 +104,12 @@ LocalFrameClient* ProgressTracker::localFrameClient() const {
 }
 
 void ProgressTracker::progressStarted(FrameLoadType type) {
-  if (!m_frame->isLoading())
-    localFrameClient()->didStartLoading(NavigationToDifferentDocument);
   reset();
   m_progressValue = initialProgressValue;
-  m_frame->setIsLoading(true);
+  if (!m_frame->isLoading()) {
+    localFrameClient()->didStartLoading(NavigationToDifferentDocument);
+    m_frame->setIsLoading(true);
+  }
   probe::frameStartedLoading(m_frame, type);
 }
 
