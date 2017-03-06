@@ -370,46 +370,53 @@ bool WebContentsImpl::ColorChooserInfo::Matches(
 }
 
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
-WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode()
-    : outer_web_contents_(nullptr),
+WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
+    WebContentsImpl* current_web_contents)
+    : current_web_contents_(current_web_contents),
+      outer_web_contents_(nullptr),
       outer_contents_frame_tree_node_id_(
           FrameTreeNode::kFrameTreeNodeInvalidId),
-      focused_web_contents_(nullptr) {}
+      focused_web_contents_(current_web_contents) {}
 
 WebContentsImpl::WebContentsTreeNode::~WebContentsTreeNode() {
-  // Remove child pointer from our parent.
-  if (outer_web_contents_) {
-    ChildrenSet& child_ptrs_in_parent =
-        outer_web_contents_->node_->inner_web_contents_tree_nodes_;
-    ChildrenSet::iterator iter = child_ptrs_in_parent.find(this);
-    DCHECK(iter != child_ptrs_in_parent.end());
-    child_ptrs_in_parent.erase(iter);
-  }
+  if (outer_web_contents_)
+    outer_web_contents_->node_.DetachInnerWebContents(current_web_contents_);
 
   // Remove parent pointers from our children.
   // TODO(lazyboy): We should destroy the children WebContentses too. If the
   // children do not manage their own lifetime, then we would leak their
   // WebContentses.
-  for (WebContentsTreeNode* child : inner_web_contents_tree_nodes_)
-    child->outer_web_contents_ = nullptr;
+  for (WebContentsImpl* child_contents : inner_web_contents_) {
+    child_contents->node_.outer_web_contents_ = nullptr;
+    child_contents->node_.outer_contents_frame_tree_node_id_ =
+        FrameTreeNode::kFrameTreeNodeInvalidId;
+  }
 }
 
 void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
     WebContentsImpl* outer_web_contents,
     RenderFrameHostImpl* outer_contents_frame) {
-  DCHECK(!focused_web_contents_) << "Should not attach a root node.";
+  focused_web_contents_ = nullptr;
   outer_web_contents_ = outer_web_contents;
   outer_contents_frame_tree_node_id_ =
       outer_contents_frame->frame_tree_node()->frame_tree_node_id();
 
-  if (!outer_web_contents_->node_) {
-    // This will only be reached when creating a new WebContents tree.
-    // Initialize the root of this tree and set it as focused.
-    outer_web_contents_->node_.reset(new WebContentsTreeNode());
-    outer_web_contents_->node_->SetFocusedWebContents(outer_web_contents_);
-  }
+  outer_web_contents_->node_.AttachInnerWebContents(current_web_contents_);
+}
 
-  outer_web_contents_->node_->inner_web_contents_tree_nodes_.insert(this);
+void WebContentsImpl::WebContentsTreeNode::AttachInnerWebContents(
+    WebContentsImpl* inner_web_contents) {
+  inner_web_contents_.push_back(inner_web_contents);
+}
+
+void WebContentsImpl::WebContentsTreeNode::DetachInnerWebContents(
+    WebContentsImpl* inner_web_contents) {
+  DCHECK(std::find(inner_web_contents_.begin(), inner_web_contents_.end(),
+                   inner_web_contents) != inner_web_contents_.end());
+  inner_web_contents_.erase(
+      std::remove(inner_web_contents_.begin(), inner_web_contents_.end(),
+                  inner_web_contents),
+      inner_web_contents_.end());
 }
 
 void WebContentsImpl::WebContentsTreeNode::SetFocusedWebContents(
@@ -431,6 +438,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
                   this,
                   this,
                   this),
+      node_(this),
       is_load_to_different_document_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
@@ -1437,8 +1445,7 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
     CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
 
   // Create a link to our outer WebContents.
-  node_.reset(new WebContentsTreeNode());
-  node_->ConnectToOuterWebContents(
+  node_.ConnectToOuterWebContents(
       static_cast<WebContentsImpl*>(outer_web_contents),
       static_cast<RenderFrameHostImpl*>(outer_contents_frame));
 
@@ -4313,8 +4320,8 @@ void WebContentsImpl::RemoveBrowserPluginEmbedder() {
 }
 
 WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
-  if (GuestMode::IsCrossProcessFrameGuest(this) && node_)
-    return node_->outer_web_contents();
+  if (GuestMode::IsCrossProcessFrameGuest(this))
+    return node_.outer_web_contents();
 
   if (browser_plugin_guest_)
     return browser_plugin_guest_->embedder_web_contents();
@@ -4323,18 +4330,7 @@ WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
 }
 
 WebContentsImpl* WebContentsImpl::GetFocusedWebContents() {
-  // There is no inner or outer web contents.
-  if (!node_ && !GetBrowserPluginGuest())
-    return this;
-
-  // We may need to create a node_ on the outermost contents in the
-  // BrowserPlugin case.
-  WebContentsImpl* outermost = GetOutermostWebContents();
-  if (!outermost->node_) {
-    outermost->node_.reset(new WebContentsTreeNode());
-    outermost->node_->SetFocusedWebContents(outermost);
-  }
-  return outermost->node_->focused_web_contents();
+  return GetOutermostWebContents()->node_.focused_web_contents();
 }
 
 bool WebContentsImpl::ContainsOrIsFocusedWebContents() {
@@ -4759,7 +4755,7 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
     GetRenderManager()->GetProxyToOuterDelegate()->SetFocusedFrame();
 
   GetMainFrame()->GetRenderWidgetHost()->SetPageFocus(true);
-  GetOutermostWebContents()->node_->SetFocusedWebContents(this);
+  GetOutermostWebContents()->node_.SetFocusedWebContents(this);
 }
 
 void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
@@ -5167,10 +5163,7 @@ bool WebContentsImpl::IsHidden() {
 }
 
 int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
-  if (node_ && node_->outer_web_contents())
-    return node_->outer_contents_frame_tree_node_id();
-
-  return FrameTreeNode::kFrameTreeNodeInvalidId;
+  return node_.outer_contents_frame_tree_node_id();
 }
 
 RenderWidgetHostImpl* WebContentsImpl::GetFullscreenRenderWidgetHost() const {

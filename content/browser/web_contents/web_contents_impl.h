@@ -859,15 +859,13 @@ class CONTENT_EXPORT WebContentsImpl
   // corresponding FrameTreeNode.
   struct WebContentsTreeNode {
    public:
-    WebContentsTreeNode();
+    explicit WebContentsTreeNode(WebContentsImpl* current_web_contents);
     ~WebContentsTreeNode();
-
-    typedef std::set<WebContentsTreeNode*> ChildrenSet;
 
     void ConnectToOuterWebContents(WebContentsImpl* outer_web_contents,
                                    RenderFrameHostImpl* outer_contents_frame);
 
-    WebContentsImpl* outer_web_contents() { return outer_web_contents_; }
+    WebContentsImpl* outer_web_contents() const { return outer_web_contents_; }
     int outer_contents_frame_tree_node_id() const {
       return outer_contents_frame_tree_node_id_;
     }
@@ -876,12 +874,23 @@ class CONTENT_EXPORT WebContentsImpl
     void SetFocusedWebContents(WebContentsImpl* web_contents);
 
    private:
-    // The outer WebContents.
+    void AttachInnerWebContents(WebContentsImpl* inner_web_contents);
+    void DetachInnerWebContents(WebContentsImpl* inner_web_contents);
+
+    // The WebContents that owns this WebContentsTreeNode.
+    WebContentsImpl* const current_web_contents_;
+
+    // The outer WebContents of |current_web_contents_|, or nullptr if
+    // |current_web_contents_| is the outermost WebContents.
     WebContentsImpl* outer_web_contents_;
-    // The ID of the FrameTreeNode in outer WebContents that is hosting us.
+
+    // The ID of the FrameTreeNode in the |outer_web_contents_| that hosts
+    // |current_web_contents_| as an inner WebContents.
     int outer_contents_frame_tree_node_id_;
+
     // List of inner WebContents that we host.
-    ChildrenSet inner_web_contents_tree_nodes_;
+    std::vector<WebContentsImpl*> inner_web_contents_;
+
     // Only the root node should have this set. This indicates the WebContents
     // whose frame tree has the focused frame. The WebContents tree could be
     // arbitrarily deep.
@@ -1232,9 +1241,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Manages the frame tree of the page and process swaps in each node.
   FrameTree frame_tree_;
 
-  // If this WebContents is part of a "tree of WebContents", then this contains
-  // information about the structure.
-  std::unique_ptr<WebContentsTreeNode> node_;
+  // Contains information about the WebContents tree structure.
+  WebContentsTreeNode node_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
