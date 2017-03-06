@@ -6,6 +6,8 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -192,6 +194,8 @@ void V8UnitTest::SetUp() {
   console->Set(v8::String::NewFromUtf8(isolate, "error"), error_function);
 
   context_.Reset(isolate, v8::Context::New(isolate, NULL, global));
+
+  loop_ = base::MakeUnique<base::MessageLoop>();
 }
 
 void V8UnitTest::SetGlobalStringVar(const std::string& var_name,
