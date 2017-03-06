@@ -86,6 +86,8 @@ ParsedFeaturePolicyDeclaration::~ParsedFeaturePolicyDeclaration() {}
 
 FeaturePolicy::Whitelist::Whitelist() : matches_all_origins_(false) {}
 
+FeaturePolicy::Whitelist::Whitelist(const Whitelist& rhs) = default;
+
 FeaturePolicy::Whitelist::~Whitelist() = default;
 
 void FeaturePolicy::Whitelist::Add(const url::Origin& origin) {
@@ -97,6 +99,12 @@ void FeaturePolicy::Whitelist::AddAll() {
 }
 
 bool FeaturePolicy::Whitelist::Contains(const url::Origin& origin) const {
+  // This does not handle the case where origin is an opaque origin, which is
+  // also supposed to exist in the whitelist. (The identical opaque origins
+  // should match in that case)
+  // TODO(iclelland): Fix that, possibly by having another flag for
+  // 'matches_self', which will explicitly match the policy's origin.
+  // https://crbug.com/690520
   if (matches_all_origins_)
     return true;
   for (const auto& targetOrigin : origins_) {
@@ -109,10 +117,29 @@ bool FeaturePolicy::Whitelist::Contains(const url::Origin& origin) const {
 // static
 std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
     const FeaturePolicy* parent_policy,
-    const ParsedFeaturePolicyHeader* container_policy,
+    const ParsedFeaturePolicyHeader& container_policy,
     const url::Origin& origin) {
   return CreateFromParentPolicy(parent_policy, container_policy, origin,
                                 GetDefaultFeatureList());
+}
+
+// static
+std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromPolicyWithOrigin(
+    const FeaturePolicy& policy,
+    const url::Origin& origin) {
+  std::unique_ptr<FeaturePolicy> new_policy =
+      base::WrapUnique(new FeaturePolicy(origin, policy.feature_list_));
+  new_policy->inherited_policies_ = policy.inherited_policies_;
+  for (const auto& feature : policy.whitelists_) {
+    new_policy->whitelists_[feature.first] =
+        base::WrapUnique(new Whitelist(*feature.second));
+  }
+  return new_policy;
+}
+
+bool FeaturePolicy::IsFeatureEnabled(
+    blink::WebFeaturePolicyFeature feature) const {
+  return IsFeatureEnabledForOrigin(feature, origin_);
 }
 
 bool FeaturePolicy::IsFeatureEnabledForOrigin(
@@ -132,14 +159,12 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
   }
   if (feature_definition->default_policy ==
       FeaturePolicy::FeatureDefault::EnableForSelf) {
-    return origin_.IsSameOriginWith(origin);
+    // TODO(iclelland): Remove the pointer equality check once it is possible to
+    // compare opaque origins successfully against themselves.
+    // https://crbug.com/690520
+    return (&origin_ == &origin) || origin_.IsSameOriginWith(origin);
   }
   return false;
-}
-
-bool FeaturePolicy::IsFeatureEnabled(
-    blink::WebFeaturePolicyFeature feature) const {
-  return IsFeatureEnabledForOrigin(feature, origin_);
 }
 
 void FeaturePolicy::SetHeaderPolicy(
@@ -167,7 +192,7 @@ FeaturePolicy::~FeaturePolicy() {}
 // static
 std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
     const FeaturePolicy* parent_policy,
-    const ParsedFeaturePolicyHeader* container_policy,
+    const ParsedFeaturePolicyHeader& container_policy,
     const url::Origin& origin,
     const FeaturePolicy::FeatureList& features) {
   std::unique_ptr<FeaturePolicy> new_policy =
@@ -179,19 +204,18 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
     } else {
       new_policy->inherited_policies_[feature.first] = false;
     }
-    if (container_policy)
+    if (!container_policy.empty())
       new_policy->AddContainerPolicy(container_policy, parent_policy);
   }
   return new_policy;
 }
 
 void FeaturePolicy::AddContainerPolicy(
-    const ParsedFeaturePolicyHeader* container_policy,
+    const ParsedFeaturePolicyHeader& container_policy,
     const FeaturePolicy* parent_policy) {
-  DCHECK(container_policy);
   DCHECK(parent_policy);
   for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
-       *container_policy) {
+       container_policy) {
     // If a feature is enabled in the parent frame, and the parent chooses to
     // delegate it to the child frame, using the iframe attribute, then the
     // feature should be enabled in the child frame.

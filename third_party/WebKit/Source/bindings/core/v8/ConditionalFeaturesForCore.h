@@ -6,12 +6,12 @@
 #define ConditionalFeaturesForCore_h
 
 #include "core/CoreExport.h"
-#include "platform/feature_policy/FeaturePolicy.h"
+#include "public/platform/WebFeaturePolicy.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-class LocalFrame;
+class Frame;
 class ScriptState;
 
 // Installs all of the conditionally enabled V8 bindings on the Window object.
@@ -20,8 +20,9 @@ class ScriptState;
 // when the V8 context is reused (i.e., after navigation)
 CORE_EXPORT void installConditionalFeaturesOnWindow(const ScriptState*);
 
-CORE_EXPORT bool isFeatureEnabledInFrame(const FeaturePolicy::Feature&,
-                                         const LocalFrame*);
+// Tests whether the feature-policy controlled feature is enabled by policy in
+// the given frame.
+CORE_EXPORT bool isFeatureEnabledInFrame(WebFeaturePolicyFeature, const Frame*);
 
 CORE_EXPORT void registerInstallConditionalFeaturesForCore();
 

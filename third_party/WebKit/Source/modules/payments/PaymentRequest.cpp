@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <utility>
-#include "bindings/core/v8/ConditionalFeatures.h"
+#include "bindings/core/v8/ConditionalFeaturesForCore.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -598,8 +598,7 @@ bool allowedToUsePaymentRequest(const Frame* frame) {
 
   // 1. If FP, by itself, enables paymentrequest in this document, then
   // paymentrequest is allowed.
-  if (frame->securityContext()->getFeaturePolicy()->isFeatureEnabled(
-          kPaymentFeature)) {
+  if (isFeatureEnabledInFrame(WebFeaturePolicyFeature::Payment, frame)) {
     return true;
   }
 

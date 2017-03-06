@@ -29,6 +29,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -46,6 +47,7 @@ DEFINE_TRACE(SecurityContext) {
 void SecurityContext::setSecurityOrigin(
     PassRefPtr<SecurityOrigin> securityOrigin) {
   m_securityOrigin = securityOrigin;
+  updateFeaturePolicyOrigin();
 }
 
 void SecurityContext::setContentSecurityPolicy(
@@ -99,15 +101,23 @@ void SecurityContext::enforceSuborigin(const Suborigin& suborigin) {
   didUpdateSecurityOrigin();
 }
 
-void SecurityContext::setFeaturePolicyFromHeader(
+void SecurityContext::initializeFeaturePolicy(
     const WebParsedFeaturePolicyHeader& parsedHeader,
-    FeaturePolicy* parentFeaturePolicy) {
+    const WebFeaturePolicy* parentFeaturePolicy) {
   DCHECK(!m_featurePolicy);
   // TODO(iclelland): Use the frame owner properties here to pass the frame
   // policy, if it exists.
-  m_featurePolicy = FeaturePolicy::createFromParentPolicy(
-      parentFeaturePolicy, nullptr, m_securityOrigin);
-  m_featurePolicy->setHeaderPolicy(parsedHeader);
+  WebParsedFeaturePolicyHeader containerPolicy;
+  WebSecurityOrigin origin = WebSecurityOrigin(m_securityOrigin);
+  m_featurePolicy.reset(Platform::current()->createFeaturePolicy(
+      parentFeaturePolicy, containerPolicy, parsedHeader, origin));
+}
+
+void SecurityContext::updateFeaturePolicyOrigin() {
+  if (!m_featurePolicy)
+    return;
+  m_featurePolicy.reset(Platform::current()->duplicateFeaturePolicyWithOrigin(
+      *m_featurePolicy, WebSecurityOrigin(m_securityOrigin)));
 }
 
 }  // namespace blink

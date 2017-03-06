@@ -1207,7 +1207,6 @@ source_set("unit_tests") {
     "fileapi/FileListTest.cpp",
     "fileapi/FileTest.cpp",
     "frame/DOMTimerTest.cpp",
-    "frame/FeaturePolicyInFrameTest.cpp",
     "frame/FrameViewTest.cpp",
     "frame/HistoryTest.cpp",
     "frame/ImageBitmapTest.cpp",

@@ -29,7 +29,7 @@
 
 #include "core/dom/Fullscreen.h"
 
-#include "bindings/core/v8/ConditionalFeatures.h"
+#include "bindings/core/v8/ConditionalFeaturesForCore.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
@@ -86,8 +86,7 @@ bool allowedToUseFullscreen(const Frame* frame) {
 
   // 1. If FP, by itself, enables fullscreen in this document, then fullscreen
   // is allowed.
-  if (frame->securityContext()->getFeaturePolicy()->isFeatureEnabled(
-          kFullscreenFeature)) {
+  if (isFeatureEnabledInFrame(WebFeaturePolicyFeature::Fullscreen, frame)) {
     return true;
   }
 

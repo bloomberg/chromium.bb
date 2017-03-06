@@ -54,13 +54,14 @@ class FeaturePolicyTest : public ::testing::Test {
   std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
       const FeaturePolicy* parent,
       const url::Origin& origin) {
-    return FeaturePolicy::CreateFromParentPolicy(parent, nullptr, origin,
-                                                 feature_list_);
+    ParsedFeaturePolicyHeader empty_container_policy;
+    return FeaturePolicy::CreateFromParentPolicy(parent, empty_container_policy,
+                                                 origin, feature_list_);
   }
 
   std::unique_ptr<FeaturePolicy> CreateFromParentWithFramePolicy(
       const FeaturePolicy* parent,
-      const ParsedFeaturePolicyHeader* frame_policy,
+      const ParsedFeaturePolicyHeader& frame_policy,
       const url::Origin& origin) {
     return FeaturePolicy::CreateFromParentPolicy(parent, frame_policy, origin,
                                                  feature_list_);
@@ -671,7 +672,7 @@ TEST_F(FeaturePolicyTest, TestSimpleFramePolicy) {
   ParsedFeaturePolicyHeader frame_policy = {
       {{"default-self", false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy, origin_b_);
   EXPECT_TRUE(
       policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
   EXPECT_FALSE(
@@ -706,7 +707,7 @@ TEST_F(FeaturePolicyTest, TestAllOriginFramePolicy) {
   ParsedFeaturePolicyHeader frame_policy = {
       {{"default-self", true, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy, origin_b_);
   EXPECT_TRUE(
       policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
   EXPECT_FALSE(
@@ -752,13 +753,13 @@ TEST_F(FeaturePolicyTest, TestFramePolicyCanBeFurtherDelegated) {
   ParsedFeaturePolicyHeader frame_policy1 = {
       {{"default-self", false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
   ParsedFeaturePolicyHeader frame_policy2 = {
       {{"default-self", false, {origin_c_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
-      CreateFromParentWithFramePolicy(policy2.get(), &frame_policy2, origin_c_);
+      CreateFromParentWithFramePolicy(policy2.get(), frame_policy2, origin_c_);
   std::unique_ptr<FeaturePolicy> policy4 =
-      CreateFromParentWithFramePolicy(policy2.get(), nullptr, origin_c_);
+      CreateFromParentPolicy(policy2.get(), origin_c_);
   EXPECT_FALSE(
       policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
   EXPECT_FALSE(
@@ -797,11 +798,11 @@ TEST_F(FeaturePolicyTest, TestDefaultOnCanBeDisabledByFramePolicy) {
   ParsedFeaturePolicyHeader frame_policy1 = {
       {{"default-on", false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_a_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
   ParsedFeaturePolicyHeader frame_policy2 = {
       {{"default-on", false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy2, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
   EXPECT_TRUE(policy1->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_a_));
   EXPECT_TRUE(policy1->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_b_));
   EXPECT_TRUE(policy1->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_c_));
@@ -844,11 +845,11 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeEnabledByChildFrame) {
   ParsedFeaturePolicyHeader frame_policy1 = {
       {{"default-off", false, {origin_a_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_a_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
   ParsedFeaturePolicyHeader frame_policy2 = {
       {{"default-off", false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy2, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
   EXPECT_TRUE(
       policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
   EXPECT_FALSE(
@@ -895,12 +896,12 @@ TEST_F(FeaturePolicyTest, TestDefaultOffCanBeEnabledByChildFrame) {
   ParsedFeaturePolicyHeader frame_policy1 = {
       {{"default-off", false, {origin_a_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_a_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
   policy2->SetHeaderPolicy({{{"default-off", false, {origin_a_}}}});
   ParsedFeaturePolicyHeader frame_policy2 = {
       {{"default-off", false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy2, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
   policy3->SetHeaderPolicy({{{"default-off", false, {origin_b_}}}});
   EXPECT_TRUE(
       policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
@@ -949,11 +950,11 @@ TEST_F(FeaturePolicyTest, TestFramePolicyModifiesHeaderPolicy) {
   ParsedFeaturePolicyHeader frame_policy1 = {
       {{"default-self", false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
   ParsedFeaturePolicyHeader frame_policy2 = {
       {{"default-self", false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy2, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
   policy3->SetHeaderPolicy({{{"default-self", false, {origin_b_}}}});
   EXPECT_FALSE(
       policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
@@ -991,15 +992,15 @@ TEST_F(FeaturePolicyTest, TestCombineFrameAndHeaderPolicies) {
   ParsedFeaturePolicyHeader frame_policy1 = {
       {{"default-self", false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
-      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_b_);
+      CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
   policy2->SetHeaderPolicy(
       {{{"default-self", true, std::vector<url::Origin>()}}});
   ParsedFeaturePolicyHeader frame_policy2 = {
       {{"default-self", false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
-      CreateFromParentWithFramePolicy(policy2.get(), &frame_policy2, origin_c_);
+      CreateFromParentWithFramePolicy(policy2.get(), frame_policy2, origin_c_);
   std::unique_ptr<FeaturePolicy> policy4 =
-      CreateFromParentWithFramePolicy(policy2.get(), nullptr, origin_c_);
+      CreateFromParentPolicy(policy2.get(), origin_c_);
   EXPECT_TRUE(
       policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
   EXPECT_TRUE(

@@ -16,6 +16,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/web/WebDocument.h"
@@ -447,13 +448,13 @@ void WebRemoteFrameImpl::setReplicatedName(const WebString& name,
 void WebRemoteFrameImpl::setReplicatedFeaturePolicyHeader(
     const WebParsedFeaturePolicyHeader& parsedHeader) const {
   if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
-    FeaturePolicy* parentFeaturePolicy = nullptr;
+    WebFeaturePolicy* parentFeaturePolicy = nullptr;
     if (parent()) {
       Frame* parentFrame = frame()->client()->parent();
       parentFeaturePolicy = parentFrame->securityContext()->getFeaturePolicy();
     }
-    frame()->securityContext()->setFeaturePolicyFromHeader(parsedHeader,
-                                                           parentFeaturePolicy);
+    frame()->securityContext()->initializeFeaturePolicy(parsedHeader,
+                                                        parentFeaturePolicy);
   }
 }
 

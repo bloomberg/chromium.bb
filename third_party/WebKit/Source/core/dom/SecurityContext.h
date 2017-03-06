@@ -29,7 +29,6 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
-#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebAddressSpace.h"
@@ -93,13 +92,10 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
   void enforceSuborigin(const Suborigin&);
 
-  FeaturePolicy* getFeaturePolicy() const { return m_featurePolicy.get(); }
-  void setFeaturePolicyForTesting(std::unique_ptr<FeaturePolicy> newPolicy) {
-    m_featurePolicy = std::move(newPolicy);
-  }
-  void setFeaturePolicyFromHeader(
-      const WebParsedFeaturePolicyHeader& parsedHeader,
-      FeaturePolicy* parentFeaturePolicy);
+  WebFeaturePolicy* getFeaturePolicy() const { return m_featurePolicy.get(); }
+  void initializeFeaturePolicy(const WebParsedFeaturePolicyHeader& parsedHeader,
+                               const WebFeaturePolicy* parentFeaturePolicy);
+  void updateFeaturePolicyOrigin();
 
  protected:
   SecurityContext();
@@ -112,7 +108,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
  private:
   RefPtr<SecurityOrigin> m_securityOrigin;
   Member<ContentSecurityPolicy> m_contentSecurityPolicy;
-  std::unique_ptr<FeaturePolicy> m_featurePolicy;
+  std::unique_ptr<WebFeaturePolicy> m_featurePolicy;
 
   SandboxFlags m_sandboxFlags;
 

@@ -3349,8 +3349,10 @@ void RenderFrameHostImpl::ResetFeaturePolicy() {
   RenderFrameHostImpl* parent_frame_host = GetParent();
   const FeaturePolicy* parent_policy =
       parent_frame_host ? parent_frame_host->get_feature_policy() : nullptr;
+  // TODO(iclelland): Get the frame owner properties here to reset properly.
+  ParsedFeaturePolicyHeader container_policy;
   feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-      parent_policy, nullptr, last_committed_origin_);
+      parent_policy, container_policy, last_committed_origin_);
 }
 
 void RenderFrameHostImpl::Create(

@@ -584,7 +584,7 @@ void FrameLoader::didBeginDocument() {
         m_frame->document(),
         m_documentLoader->response().httpHeaderField(HTTPNames::Origin_Trial));
     if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
-      FeaturePolicy* parentFeaturePolicy =
+      WebFeaturePolicy* parentFeaturePolicy =
           (isLoadingMainFrame() ? nullptr
                                 : m_frame->client()
                                       ->parent()
@@ -598,8 +598,8 @@ void FrameLoader::didBeginDocument() {
           FeaturePolicy::parseFeaturePolicy(
               featurePolicyHeader,
               m_frame->securityContext()->getSecurityOrigin(), &messages);
-      m_frame->securityContext()->setFeaturePolicyFromHeader(
-          parsedHeader, parentFeaturePolicy);
+      m_frame->securityContext()->initializeFeaturePolicy(parsedHeader,
+                                                          parentFeaturePolicy);
       for (auto& message : messages) {
         m_frame->document()->addConsoleMessage(ConsoleMessage::create(
             OtherMessageSource, ErrorMessageLevel,

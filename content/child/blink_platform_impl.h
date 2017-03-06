@@ -121,6 +121,15 @@ class CONTENT_EXPORT BlinkPlatformImpl
   // destructed.
   void SetCompositorThread(blink::scheduler::WebThreadBase* compositor_thread);
 
+  blink::WebFeaturePolicy* createFeaturePolicy(
+      const blink::WebFeaturePolicy* parentPolicy,
+      const blink::WebParsedFeaturePolicyHeader& containerPolicy,
+      const blink::WebParsedFeaturePolicyHeader& policyHeader,
+      const blink::WebSecurityOrigin& origin) override;
+  blink::WebFeaturePolicy* duplicateFeaturePolicyWithOrigin(
+      const blink::WebFeaturePolicy& policy,
+      const blink::WebSecurityOrigin& new_origin) override;
+
  private:
   void InternalInit();
   void WaitUntilWebThreadTLSUpdate(blink::scheduler::WebThreadBase* thread);

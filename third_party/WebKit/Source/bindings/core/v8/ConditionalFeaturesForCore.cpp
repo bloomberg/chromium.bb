@@ -11,7 +11,7 @@
 #include "bindings/core/v8/V8Navigator.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
+#include "core/frame/Frame.h"
 #include "core/origin_trials/OriginTrials.h"
 
 namespace blink {
@@ -81,22 +81,17 @@ void installConditionalFeaturesOnWindow(const ScriptState* scriptState) {
                              v8::Local<v8::Function>());
 }
 
-bool isFeatureEnabledInFrame(const FeaturePolicy::Feature& feature,
-                             const LocalFrame* frame) {
-  // If there is no frame, or if feature policy is disabled, use defaults.
-  bool enabledByDefault =
-      (feature.defaultPolicy == FeaturePolicy::FeatureDefault::EnableForAll ||
-       (feature.defaultPolicy == FeaturePolicy::FeatureDefault::EnableForSelf &&
-        !frame->isCrossOriginSubframe()));
-  if (!RuntimeEnabledFeatures::featurePolicyEnabled() || !frame)
-    return enabledByDefault;
-  FeaturePolicy* featurePolicy = frame->securityContext()->getFeaturePolicy();
+bool isFeatureEnabledInFrame(WebFeaturePolicyFeature feature,
+                             const Frame* frame) {
+  DCHECK(frame);
+  WebFeaturePolicy* featurePolicy =
+      frame->securityContext()->getFeaturePolicy();
   // The policy should always be initialized before checking it to ensure we
   // properly inherit the parent policy.
   DCHECK(featurePolicy);
 
   // Otherwise, check policy.
-  return featurePolicy->isFeatureEnabled(feature);
+  return featurePolicy->IsFeatureEnabled(feature);
 }
 
 void registerInstallConditionalFeaturesForCore() {
