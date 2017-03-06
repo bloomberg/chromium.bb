@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
@@ -361,6 +363,15 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
   profile()->ForceIncognito(false);
+}
+
+TEST_F(ChromePasswordManagerClientTest, SavingDependsOnAutomation) {
+  // Test that saving passwords UI is disabled for automated tests.
+  ChromePasswordManagerClient* client = GetClient();
+  EXPECT_TRUE(client->IsSavingAndFillingEnabledForCurrentPage());
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAutomation);
+  EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
 }
 
 TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL_Empty) {

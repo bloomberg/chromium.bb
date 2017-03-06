@@ -208,6 +208,12 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
 
 bool ChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
     const {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAutomation)) {
+    // Disable the password saving UI for automated tests. It obscures the
+    // page, and there is no API to access (or dismiss) UI bubbles/infobars.
+    return false;
+  }
   // TODO(melandory): remove saving_and_filling_passwords_enabled_ check from
   // here once we decide to switch to new settings behavior for everyone.
   return *saving_and_filling_passwords_enabled_ && !IsOffTheRecord() &&
