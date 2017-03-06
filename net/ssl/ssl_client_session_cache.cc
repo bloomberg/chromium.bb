@@ -106,8 +106,11 @@ void SSLClientSessionCache::SetClockForTesting(
 }
 
 bool SSLClientSessionCache::IsExpired(SSL_SESSION* session, time_t now) {
-  return now < SSL_SESSION_get_time(session) ||
-         now >=
+  if (now < 0)
+    return true;
+  uint64_t now_u64 = static_cast<uint64_t>(now);
+  return now_u64 < SSL_SESSION_get_time(session) ||
+         now_u64 >=
              SSL_SESSION_get_time(session) + SSL_SESSION_get_timeout(session);
 }
 
