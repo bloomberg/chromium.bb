@@ -180,7 +180,13 @@ class TestLoFiUIService : public LoFiUIService {
 class DataReductionProxyNetworkDelegateTest : public testing::Test {
  public:
   DataReductionProxyNetworkDelegateTest()
-      : context_(true), context_storage_(&context_) {}
+      : context_(true),
+        context_storage_(&context_),
+        ssl_socket_data_provider_(net::ASYNC, net::OK) {
+    ssl_socket_data_provider_.next_proto = net::kProtoHTTP11;
+    ssl_socket_data_provider_.cert = net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "unittest.selfsigned.der");
+  }
 
   void Init(bool use_secure_proxy, bool enable_brotli_globally) {
     net::ProxyServer proxy_server =
@@ -213,9 +219,83 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
     context_.set_enable_brotli(enable_brotli_globally);
+    context_.set_network_quality_estimator(&test_network_quality_estimator_);
     context_.Init();
 
     test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
+  }
+
+  // Build the sockets by adding appropriate mock data for
+  // |effective_connection_types.size()| number of requests. Data for
+  // chrome-Proxy-ect header is added to the mock data if |expect_ect_header|
+  // is true. |reads_list|, |mock_writes| and |writes_list| should be empty, and
+  // are owned by the caller.
+  void BuildSocket(const std::string& response_headers,
+                   const std::string& response_body,
+                   bool expect_ect_header,
+                   const std::vector<net::EffectiveConnectionType>&
+                       effective_connection_types,
+                   std::vector<net::MockRead>* reads_list,
+                   std::vector<std::string>* mock_writes,
+                   std::vector<net::MockWrite>* writes_list) {
+    EXPECT_LT(0u, effective_connection_types.size());
+    EXPECT_TRUE(reads_list->empty());
+    EXPECT_TRUE(mock_writes->empty());
+    EXPECT_TRUE(writes_list->empty());
+
+    for (size_t i = 0; i < effective_connection_types.size(); ++i) {
+      reads_list->push_back(net::MockRead(response_headers.c_str()));
+      reads_list->push_back(net::MockRead(response_body.c_str()));
+    }
+    reads_list->push_back(net::MockRead(net::SYNCHRONOUS, net::OK));
+
+    std::string prefix = std::string("GET ")
+                             .append(kTestURL)
+                             .append(" HTTP/1.1\r\n")
+                             .append("Host: ")
+                             .append(GURL(kTestURL).host())
+                             .append(
+                                 "\r\n"
+                                 "Proxy-Connection: keep-alive\r\n"
+                                 "User-Agent:\r\n"
+                                 "Accept-Encoding: gzip, deflate\r\n"
+                                 "Accept-Language: en-us,fr\r\n");
+
+    if (io_data()->test_request_options()->GetHeaderValueForTesting().empty()) {
+      // Force regeneration of Chrome-Proxy header.
+      io_data()->test_request_options()->SetSecureSession("123");
+    }
+
+    EXPECT_FALSE(
+        io_data()->test_request_options()->GetHeaderValueForTesting().empty());
+
+    std::string suffix =
+        std::string("Chrome-Proxy: ") +
+        io_data()->test_request_options()->GetHeaderValueForTesting() +
+        std::string("\r\n\r\n");
+
+    mock_socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider_);
+
+    for (net::EffectiveConnectionType effective_connection_type :
+         effective_connection_types) {
+      std::string ect_header;
+      if (expect_ect_header) {
+        ect_header = "chrome-proxy-ect: " +
+                     std::string(net::GetNameForEffectiveConnectionType(
+                         effective_connection_type)) +
+                     "\r\n";
+      }
+
+      std::string mock_write = prefix + ect_header + suffix;
+      mock_writes->push_back(mock_write);
+      writes_list->push_back(net::MockWrite(mock_writes->back().c_str()));
+    }
+
+    EXPECT_FALSE(socket_);
+    socket_ = base::MakeUnique<net::StaticSocketDataProvider>(
+        reads_list->data(), reads_list->size(), writes_list->data(),
+        writes_list->size());
+    mock_socket_factory_.AddSocketDataProvider(socket_.get());
   }
 
   static void VerifyHeaders(bool expected_data_reduction_proxy_used,
@@ -285,16 +365,12 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                                       bool expect_cached,
                                       bool expect_brotli) {
     GURL url(kTestURL);
-    net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
 
     int response_body_size = 140;
     const std::string response_body(
         base::checked_cast<size_t>(response_body_size), ' ');
 
-    ssl_socket_data_provider.next_proto = net::kProtoHTTP11;
-    ssl_socket_data_provider.cert = net::ImportCertFromFile(
-        net::GetTestCertsDirectory(), "unittest.selfsigned.der");
-    mock_socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);
+    mock_socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider_);
 
     net::MockRead reads[] = {net::MockRead(response_headers.c_str()),
                              net::MockRead(response_body.c_str()),
@@ -386,6 +462,53 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     }
   }
 
+  // Fetches a request while the effective connection type is set to
+  // |effective_connection_type|. Verifies that the request headers include the
+  // chrome-proxy-ect header only if |expect_ect_header| is true. The response
+  // must be served from the cache if |expect_cached| is true.
+  void FetchURLRequestAndVerifyECTHeader(
+      net::EffectiveConnectionType effective_connection_type,
+      bool expect_ect_header,
+      bool expect_cached) {
+    EXPECT_EQ(expect_ect_header, params::IsAddChromeProxyECTHeaderEnabled());
+
+    test_network_quality_estimator()->set_effective_connection_type(
+        effective_connection_type);
+
+    net::TestDelegate delegate;
+    std::unique_ptr<net::URLRequest> request =
+        context_.CreateRequest(GURL(kTestURL), net::IDLE, &delegate);
+
+    request->Start();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(140, request->received_response_content_length());
+    EXPECT_EQ(expect_cached, request->was_cached());
+    EXPECT_EQ(expect_cached, request->GetTotalSentBytes() == 0);
+    EXPECT_EQ(expect_cached, request->GetTotalReceivedBytes() == 0);
+
+    net::HttpRequestHeaders sent_request_headers;
+    EXPECT_NE(expect_cached,
+              request->GetFullRequestHeaders(&sent_request_headers));
+
+    if (expect_cached) {
+      // Request headers are missing. Return since there is nothing left to
+      // check.
+      return;
+    }
+
+    // Verify that chrome-proxy-ect header is present in the request headers
+    // only if |expect_ect_header| is true.
+    std::string ect_value;
+    EXPECT_EQ(expect_ect_header, sent_request_headers.GetHeader(
+                                     chrome_proxy_ect_header(), &ect_value));
+
+    if (!expect_ect_header)
+      return;
+    EXPECT_EQ(net::GetNameForEffectiveConnectionType(effective_connection_type),
+              ect_value);
+  }
+
   void DelegateStageDone(int result) {}
 
   void NotifyNetworkDelegate(net::URLRequest* request,
@@ -430,6 +553,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
   TestLoFiDecider* lofi_decider() const { return lofi_decider_; }
 
+  net::TestNetworkQualityEstimator* test_network_quality_estimator() {
+    return &test_network_quality_estimator_;
+  }
+
  private:
   base::MessageLoopForIO message_loop_;
   net::MockClientSocketFactory mock_socket_factory_;
@@ -440,6 +567,11 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   TestLoFiDecider* lofi_decider_;
   TestLoFiUIService* lofi_ui_service_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
+  net::TestNetworkQualityEstimator test_network_quality_estimator_;
+
+  net::SSLSocketDataProvider ssl_socket_data_provider_;
+
+  std::unique_ptr<net::StaticSocketDataProvider> socket_;
 };
 
 TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
@@ -655,10 +787,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
     net::HttpRequestHeaders headers;
     net::ProxyRetryInfoMap proxy_retry_info;
 
-    net::TestNetworkQualityEstimator test_network_quality_estimator;
-    test_network_quality_estimator.set_effective_connection_type(
+    test_network_quality_estimator()->set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
-    context()->set_network_quality_estimator(&test_network_quality_estimator);
 
     std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
         GURL(kTestURL), net::RequestPriority::IDLE, nullptr);
@@ -744,10 +874,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   net::HttpRequestHeaders headers;
   net::ProxyRetryInfoMap proxy_retry_info;
 
-  net::TestNetworkQualityEstimator test_network_quality_estimator;
-  test_network_quality_estimator.set_effective_connection_type(
+  test_network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
-  context()->set_network_quality_estimator(&test_network_quality_estimator);
 
   std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
       GURL(kTestURL), net::RequestPriority::IDLE, nullptr);
@@ -1073,6 +1201,131 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
 
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, true);
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, true, true);
+}
+
+// Test that effective connection type is correctly added to the request
+// headers when it is enabled using field trial. The server is varying on the
+// effective connection type (ECT).
+TEST_F(DataReductionProxyNetworkDelegateTest, ECTHeaderEnabledWithVary) {
+  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(
+      "DataReductionProxyAddChromeProxyECTHeader", "Enabled");
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Cache-Control: max-age=1200\r\n"
+      "Vary: chrome-proxy-ect\r\n"
+      "x-original-content-length: 200\r\n\r\n";
+
+  int response_body_size = 140;
+  std::string response_body(base::checked_cast<size_t>(response_body_size),
+                            ' ');
+
+  std::vector<net::MockRead> reads_list;
+  std::vector<std::string> mock_writes;
+  std::vector<net::MockWrite> writes_list;
+
+  std::vector<net::EffectiveConnectionType> effective_connection_types;
+  effective_connection_types.push_back(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  effective_connection_types.push_back(net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  BuildSocket(response_headers, response_body, true, effective_connection_types,
+              &reads_list, &mock_writes, &writes_list);
+
+  // Add 2 socket providers since 2 requests in this test are fetched from the
+  // network.
+  FetchURLRequestAndVerifyECTHeader(effective_connection_types[0], true, false);
+
+  // When the ECT is set to the same value, fetching the same resource should
+  // result in a cache hit.
+  FetchURLRequestAndVerifyECTHeader(effective_connection_types[0], true, true);
+
+  // When the ECT is set to a different value, the response should not be
+  // served from the cache.
+  FetchURLRequestAndVerifyECTHeader(effective_connection_types[1], true, false);
+}
+
+// Test that effective connection type is correctly added to the request
+// headers when it is enabled using field trial. The server is not varying on
+// the effective connection type (ECT).
+TEST_F(DataReductionProxyNetworkDelegateTest, ECTHeaderEnabledWithoutVary) {
+  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(
+      "DataReductionProxyAddChromeProxyECTHeader", "Enabled");
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Cache-Control: max-age=1200\r\n"
+      "x-original-content-length: 200\r\n\r\n";
+
+  int response_body_size = 140;
+  std::string response_body(base::checked_cast<size_t>(response_body_size),
+                            ' ');
+
+  std::vector<net::MockRead> reads_list;
+  std::vector<std::string> mock_writes;
+  std::vector<net::MockWrite> writes_list;
+
+  std::vector<net::EffectiveConnectionType> effective_connection_types;
+  effective_connection_types.push_back(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  effective_connection_types.push_back(net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  BuildSocket(response_headers, response_body, true, effective_connection_types,
+              &reads_list, &mock_writes, &writes_list);
+
+  // Add 1 socket provider since 1 request in this test is fetched from the
+  // network.
+  FetchURLRequestAndVerifyECTHeader(effective_connection_types[0], true, false);
+
+  // When the ECT is set to the same value, fetching the same resource should
+  // result in a cache hit.
+  FetchURLRequestAndVerifyECTHeader(effective_connection_types[0], true, true);
+
+  // When the ECT is set to a different value, the response should still be
+  // served from the cache.
+  FetchURLRequestAndVerifyECTHeader(effective_connection_types[1], true, true);
+}
+
+// Test that effective connection type is not added to the request headers when
+// the field trial is not enabled.
+TEST_F(DataReductionProxyNetworkDelegateTest, ECTHeaderNotEnabled) {
+  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Cache-Control: max-age=1200\r\n"
+      "Vary: chrome-proxy-ect\r\n"
+      "x-original-content-length: 200\r\n\r\n";
+
+  int response_body_size = 140;
+  std::string response_body(base::checked_cast<size_t>(response_body_size),
+                            ' ');
+
+  std::vector<net::MockRead> reads_list;
+  std::vector<std::string> mock_writes;
+  std::vector<net::MockWrite> writes_list;
+
+  std::vector<net::EffectiveConnectionType> effective_connection_types;
+  effective_connection_types.push_back(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  BuildSocket(response_headers, response_body, false,
+              effective_connection_types, &reads_list, &mock_writes,
+              &writes_list);
+
+  // Add 1 socket provider since 1 request in this test is fetched from the
+  // network.
+  FetchURLRequestAndVerifyECTHeader(effective_connection_types[0], false,
+                                    false);
 }
 
 }  // namespace

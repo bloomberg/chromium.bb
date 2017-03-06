@@ -260,6 +260,12 @@ bool IsBrotliAcceptEncodingEnabled() {
                            kDisabled, base::CompareCase::SENSITIVE);
 }
 
+bool IsAddChromeProxyECTHeaderEnabled() {
+  return base::StartsWith(base::FieldTrialList::FindFullName(
+                              "DataReductionProxyAddChromeProxyECTHeader"),
+                          kEnabled, base::CompareCase::SENSITIVE);
+}
+
 bool IsConfigClientEnabled() {
   // Config client is enabled by default. It can be disabled only if Chromium
   // belongs to a field trial group whose name starts with "Disabled".

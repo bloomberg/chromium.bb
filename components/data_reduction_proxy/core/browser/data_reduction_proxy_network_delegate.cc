@@ -19,12 +19,14 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_use_group.h"
 #include "components/data_reduction_proxy/core/browser/data_use_group_provider.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_server.h"
@@ -194,6 +196,8 @@ void DataReductionProxyNetworkDelegate::OnBeforeStartTransactionInternal(
         ->MaybeSetAcceptTransformHeader(
             *request, data_reduction_proxy_config_->lofi_off(), headers);
   }
+
+  MaybeAddChromeProxyECTHeader(headers, *request);
 }
 
 void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
@@ -241,6 +245,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
       // Chrome-Proxy-Accept-Transform header.
       lofi_decider->RemoveAcceptTransformHeader(headers);
     }
+    RemoveChromeProxyECTHeader(headers);
     return;
   }
 
@@ -496,6 +501,49 @@ void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(
   header_value += kBrotli;
   request_headers->SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
                              header_value);
+}
+
+void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(
+    net::HttpRequestHeaders* request_headers,
+    const net::URLRequest& request) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // This method should be called only when the resolved proxy was a data
+  // saver proxy.
+  DCHECK(request.url().is_valid());
+  DCHECK(!request.url().SchemeIsCryptographic());
+  DCHECK(request.url().SchemeIsHTTPOrHTTPS());
+
+  if (!params::IsAddChromeProxyECTHeaderEnabled())
+    return;
+
+  DCHECK(!request_headers->HasHeader(chrome_proxy_ect_header()));
+
+  if (!request.context()->network_quality_estimator())
+    return;
+
+  net::EffectiveConnectionType ect = request.context()
+                                         ->network_quality_estimator()
+                                         ->GetEffectiveConnectionType();
+  if (ect <= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE)
+    return;
+
+  static_assert(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE + 1 ==
+                    net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+                "ECT enum value is not handled.");
+  static_assert(net::EFFECTIVE_CONNECTION_TYPE_4G + 1 ==
+                    net::EFFECTIVE_CONNECTION_TYPE_LAST,
+                "ECT enum value is not handled.");
+
+  request_headers->SetHeader(chrome_proxy_ect_header(),
+                             net::GetNameForEffectiveConnectionType(ect));
+}
+
+void DataReductionProxyNetworkDelegate::RemoveChromeProxyECTHeader(
+    net::HttpRequestHeaders* request_headers) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  request_headers->RemoveHeader(chrome_proxy_ect_header());
 }
 
 }  // namespace data_reduction_proxy

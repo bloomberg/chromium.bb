@@ -157,6 +157,17 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       net::HttpRequestHeaders* request_headers,
       const net::URLRequest& request) const;
 
+  // May add chrome-proxy-ect header to |request_headers| if adding of
+  // chrome-proxy-ect is enabled via field trial and a valid estimate of
+  // network quality is available. This method should be called only when the
+  // resolved proxy for |request| is a data saver proxy.
+  void MaybeAddChromeProxyECTHeader(net::HttpRequestHeaders* request_headers,
+                                    const net::URLRequest& request) const;
+
+  // Removes the chrome-proxy-ect header from |request_headers|.
+  void RemoveChromeProxyECTHeader(
+      net::HttpRequestHeaders* request_headers) const;
+
   // All raw Data Reduction Proxy pointers must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;
 

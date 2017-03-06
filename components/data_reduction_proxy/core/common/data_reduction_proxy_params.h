@@ -130,6 +130,10 @@ bool IsZeroRttQuicEnabled();
 // Returns true if Brotli should be added to the accept-encoding header.
 bool IsBrotliAcceptEncodingEnabled();
 
+// Returns true if the effective connection type should be added to the data
+// saver requests using chrome-proxy-ect header.
+bool IsAddChromeProxyECTHeaderEnabled();
+
 // Returns true if the Data Reduction Proxy config client should be used.
 bool IsConfigClientEnabled();
 
