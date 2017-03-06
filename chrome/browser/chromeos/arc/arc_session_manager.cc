@@ -298,9 +298,10 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     // * When ARC is managed and all OptIn preferences are managed too, because
     //   the whole OptIn flow should happen as seamless as possible for the
     //   user.
-    const bool suppress_play_store_app = IsArcOptInVerificationDisabled() ||
-                                         IsArcKioskMode() ||
-                                         AreArcAllOptInPreferencesManaged();
+    const bool suppress_play_store_app =
+        IsArcOptInVerificationDisabled() || IsArcKioskMode() ||
+        (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
+         AreArcAllOptInPreferencesManagedForProfile(profile_));
     if (!suppress_play_store_app) {
       playstore_launcher_.reset(
           new ArcAppLauncher(profile_, kPlayStoreAppId, true));
@@ -577,8 +578,10 @@ void ArcSessionManager::RequestEnableImpl() {
   // Skip to show UI asking users to set up ARC OptIn preferences, if all of
   // them are managed by the admin policy. Note that the ToS agreement is anyway
   // not shown in the case of the managed ARC.
-  if (AreArcAllOptInPreferencesManaged())
+  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
+      AreArcAllOptInPreferencesManagedForProfile(profile_)) {
     prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  }
 
   // If it is marked that sign in has been successfully done, then directly
   // start ARC.
@@ -702,14 +705,6 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
       support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE)
     support_host_->ShowArcLoading();
   StartArcAndroidManagementCheck();
-}
-
-bool ArcSessionManager::AreArcAllOptInPreferencesManaged() const {
-  return IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
-         profile_->GetPrefs()->IsManagedPreference(
-             prefs::kArcBackupRestoreEnabled) &&
-         profile_->GetPrefs()->IsManagedPreference(
-             prefs::kArcLocationServiceEnabled);
 }
 
 void ArcSessionManager::StartArcAndroidManagementCheck() {

@@ -230,10 +230,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void StartTermsOfServiceNegotiation();
   void OnTermsOfServiceNegotiated(bool accepted);
 
-  // Returns whether ARC is managed and all ARC related OptIn preferences are
-  // managed too.
-  bool AreArcAllOptInPreferencesManaged() const;
-
   void SetState(State state);
   void ShutdownSession();
   void OnAndroidManagementPassed();

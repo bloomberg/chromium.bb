@@ -329,5 +329,35 @@ TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile_Managed) {
   EXPECT_FALSE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
 }
 
+// Test the AreArcAllOptInPreferencesManagedForProfile() function.
+TEST_F(ChromeArcUtilTest, AreArcAllOptInPreferencesManagedForProfile) {
+  // OptIn prefs are unset, the function returns false.
+  EXPECT_FALSE(AreArcAllOptInPreferencesManagedForProfile(profile()));
+
+  // OptIn prefs are set to unmanaged values, and the function returns false.
+  profile()->GetPrefs()->SetBoolean(prefs::kArcBackupRestoreEnabled, false);
+  profile()->GetPrefs()->SetBoolean(prefs::kArcLocationServiceEnabled, false);
+  EXPECT_FALSE(AreArcAllOptInPreferencesManagedForProfile(profile()));
+
+  // Backup-restore pref is managed, while location-service is not, and the
+  // function returns false.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, new base::Value(false));
+  EXPECT_FALSE(AreArcAllOptInPreferencesManagedForProfile(profile()));
+
+  // Location-service pref is managed, while backup-restore is not, and the
+  // function returns false.
+  profile()->GetTestingPrefService()->RemoveManagedPref(
+      prefs::kArcBackupRestoreEnabled);
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, new base::Value(false));
+  EXPECT_FALSE(AreArcAllOptInPreferencesManagedForProfile(profile()));
+
+  // Both OptIn prefs are set to managed values, and the function returns true.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, new base::Value(false));
+  EXPECT_TRUE(AreArcAllOptInPreferencesManagedForProfile(profile()));
+}
+
 }  // namespace util
 }  // namespace arc

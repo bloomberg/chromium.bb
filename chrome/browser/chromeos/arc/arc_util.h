@@ -57,6 +57,10 @@ bool IsArcPlayStoreEnabledPreferenceManagedForProfile(const Profile* profile);
 // Google Play Store, then ARC can run without opt-in.
 void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled);
 
+// Returns whether all ARC related OptIn preferences (i.e.
+// ArcBackupRestoreEnabled and ArcLocationServiceEnabled) are managed.
+bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_UTIL_H_

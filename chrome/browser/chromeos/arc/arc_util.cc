@@ -121,4 +121,11 @@ void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
   profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, enabled);
 }
 
+bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile) {
+  return profile->GetPrefs()->IsManagedPreference(
+             prefs::kArcBackupRestoreEnabled) &&
+         profile->GetPrefs()->IsManagedPreference(
+             prefs::kArcLocationServiceEnabled);
+}
+
 }  // namespace arc
