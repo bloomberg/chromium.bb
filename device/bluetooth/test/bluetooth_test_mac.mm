@@ -467,6 +467,7 @@ void BluetoothTestMac::SimulateGattCharacteristicRemoved(
   MockCBCharacteristic* characteristic_mock =
       ObjCCast<MockCBCharacteristic>(cb_characteristic);
   [service_mock removeCharacteristicMock:characteristic_mock];
+  [peripheral_mock didModifyServices:@[]];
   [peripheral_mock mockDidDiscoverEvents];
 }
 
@@ -487,6 +488,22 @@ void BluetoothTestMac::ExpectedNotifyValue(
   }
 }
 
+void BluetoothTestMac::SimulateDidDiscoverServices(
+    BluetoothDevice* device,
+    const std::vector<std::string>& uuids) {
+  BluetoothLowEnergyDeviceMac* device_mac =
+      static_cast<BluetoothLowEnergyDeviceMac*>(device);
+  CBPeripheral* peripheral = device_mac->GetPeripheral();
+  MockCBPeripheral* peripheral_mock = ObjCCast<MockCBPeripheral>(peripheral);
+  scoped_nsobject<NSMutableArray> services([[NSMutableArray alloc] init]);
+  for (auto uuid : uuids) {
+    CBUUID* cb_service_uuid = [CBUUID UUIDWithString:@(uuid.c_str())];
+    [services addObject:cb_service_uuid];
+  }
+  [peripheral_mock addServices:services];
+  [peripheral_mock mockDidDiscoverServices];
+}
+
 void BluetoothTestMac::OnFakeBluetoothDeviceConnectGattCalled() {
   gatt_connection_attempts_++;
 }
@@ -497,6 +514,10 @@ void BluetoothTestMac::OnFakeBluetoothGattDisconnect() {
 
 void BluetoothTestMac::OnFakeBluetoothServiceDiscovery() {
   gatt_discovery_attempts_++;
+}
+
+void BluetoothTestMac::OnFakeBluetoothCharacteristicDiscovery() {
+  gatt_characteristic_discovery_attempts_++;
 }
 
 void BluetoothTest::OnFakeBluetoothCharacteristicReadValue() {

@@ -107,6 +107,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   friend class BluetoothTestMac;
   friend class BluetoothRemoteGattServiceMac;
 
+  // Calls the macOS to discover primary services.
+  void DiscoverPrimaryServices();
+
   // Sends notification if this device is ready with all services discovered.
   void SendNotificationIfDiscoveryComplete();
 
@@ -139,6 +142,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // A local address for the device created by hashing the peripheral
   // identifier.
   std::string hash_address_;
+
+  // Increases each time -[CBPeripheral discoverServices:] is called, and
+  // decreases each time DidDiscoverPrimaryServices() is called. Once the
+  // value is set to 0, characteristics and properties are discovered.
+  int discovery_pending_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyDeviceMac);
 };

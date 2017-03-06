@@ -83,11 +83,13 @@ using base::scoped_nsobject;
   if (_bluetoothTestMac) {
     _bluetoothTestMac->OnFakeBluetoothServiceDiscovery();
   }
-  [_delegate peripheral:self.peripheral didDiscoverServices:nil];
 }
 
 - (void)discoverCharacteristics:(NSArray*)characteristics
                      forService:(CBService*)service {
+  if (_bluetoothTestMac) {
+    _bluetoothTestMac->OnFakeBluetoothCharacteristicDiscovery();
+  }
 }
 
 - (void)discoverDescriptorsForCharacteristic:(CBCharacteristic*)characteristic {
@@ -139,8 +141,12 @@ using base::scoped_nsobject;
   [self didModifyServices:@[ serviceToRemove ]];
 }
 
-- (void)mockDidDiscoverEvents {
+- (void)mockDidDiscoverServices {
   [_delegate peripheral:self.peripheral didDiscoverServices:nil];
+}
+
+- (void)mockDidDiscoverEvents {
+  [self mockDidDiscoverServices];
   // BluetoothLowEnergyDeviceMac is expected to call
   // -[CBPeripheral discoverCharacteristics:forService:] for each services,
   // so -[<CBPeripheralDelegate peripheral:didDiscoverCharacteristicsForService:

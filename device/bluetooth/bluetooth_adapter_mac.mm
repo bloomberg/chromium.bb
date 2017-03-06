@@ -650,7 +650,7 @@ void BluetoothAdapterMac::DidConnectPeripheral(CBPeripheral* peripheral) {
     return;
   }
   device_mac->DidConnectGatt();
-  [device_mac->GetPeripheral() discoverServices:nil];
+  device_mac->DiscoverPrimaryServices();
 }
 
 void BluetoothAdapterMac::DidFailToConnectPeripheral(CBPeripheral* peripheral,

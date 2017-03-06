@@ -25,7 +25,8 @@ BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
     BluetoothAdapterMac* adapter,
     CBPeripheral* peripheral)
     : BluetoothDeviceMac(adapter),
-      peripheral_(peripheral, base::scoped_policy::RETAIN) {
+      peripheral_(peripheral, base::scoped_policy::RETAIN),
+      discovery_pending_count_(0) {
   DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
   DCHECK(peripheral_.get());
   peripheral_delegate_.reset([[BluetoothLowEnergyPeripheralDelegate alloc]
@@ -184,6 +185,16 @@ void BluetoothLowEnergyDeviceMac::DisconnectGatt() {
 }
 
 void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
+  --discovery_pending_count_;
+  if (discovery_pending_count_ < 0) {
+    // This should never happens, just in case it happens with a device,
+    // discovery_pending_count_ is set back to 0.
+    VLOG(1) << GetName()->c_str()
+            << ": BluetoothLowEnergyDeviceMac::discovery_pending_count_ "
+            << discovery_pending_count_;
+    discovery_pending_count_ = 0;
+    return;
+  }
   if (error) {
     // TODO(http://crbug.com/609320): Need to pass the error.
     // TODO(http://crbug.com/609844): Decide what to do if discover failed
@@ -193,7 +204,8 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
             << ": " << error.code << ")";
     return;
   }
-  VLOG(1) << "DidDiscoverPrimaryServices.";
+  VLOG(1) << "DidDiscoverPrimaryServices, pending count: "
+          << discovery_pending_count_;
 
   if (!IsGattConnected()) {
     // Don't create services if the device disconnected.
@@ -212,11 +224,14 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
       adapter_->NotifyGattServiceAdded(gatt_service);
     }
   }
-  for (auto it = gatt_services_.begin(); it != gatt_services_.end(); ++it) {
-    device::BluetoothRemoteGattService* gatt_service = it->second.get();
-    device::BluetoothRemoteGattServiceMac* gatt_service_mac =
-        static_cast<BluetoothRemoteGattServiceMac*>(gatt_service);
-    gatt_service_mac->DiscoverCharacteristics();
+  if (discovery_pending_count_ == 0) {
+    for (auto it = gatt_services_.begin(); it != gatt_services_.end(); ++it) {
+      device::BluetoothRemoteGattService* gatt_service = it->second.get();
+      device::BluetoothRemoteGattServiceMac* gatt_service_mac =
+          static_cast<BluetoothRemoteGattServiceMac*>(gatt_service);
+      gatt_service_mac->DiscoverCharacteristics();
+    }
+    SendNotificationIfDiscoveryComplete();
   }
 }
 
@@ -261,7 +276,7 @@ void BluetoothLowEnergyDeviceMac::DidModifyServices(
   device_uuids_.ClearServiceUUIDs();
   SetGattServicesDiscoveryComplete(false);
   adapter_->NotifyDeviceChanged(this);
-  [GetPeripheral() discoverServices:nil];
+  DiscoverPrimaryServices();
 }
 
 void BluetoothLowEnergyDeviceMac::DidUpdateValue(
@@ -337,12 +352,19 @@ std::string BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(
   return BluetoothDevice::CanonicalizeAddress(hash);
 }
 
+void BluetoothLowEnergyDeviceMac::DiscoverPrimaryServices() {
+  VLOG(1) << "DidDiscoverDescriptors pending count" << discovery_pending_count_;
+  ++discovery_pending_count_;
+  [GetPeripheral() discoverServices:nil];
+}
+
 void BluetoothLowEnergyDeviceMac::SendNotificationIfDiscoveryComplete() {
   // Notify when all services have been discovered.
   bool discovery_complete =
+      discovery_pending_count_ == 0 &&
       std::find_if_not(
-          gatt_services_.begin(), gatt_services_.end(),
-          [](GattServiceMap::value_type& pair) {
+          gatt_services_.begin(),
+          gatt_services_.end(), [](GattServiceMap::value_type & pair) {
             BluetoothRemoteGattService* gatt_service = pair.second.get();
             return static_cast<BluetoothRemoteGattServiceMac*>(gatt_service)
                 ->IsDiscoveryComplete();

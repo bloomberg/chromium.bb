@@ -395,6 +395,95 @@ TEST_F(BluetoothTest, GetUUIDs_Connection) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
+#if defined(OS_MACOSX)
+// Tests that receiving 2 notifications in a row from macOS that services has
+// changed is handled correctly. Each notification should generate a notfication
+// that the gatt device has changed, and each notification should ask to macOS
+// to scan for services. Only after the second service scan is received, the
+// device changed notification should be sent and the characteristic discovery
+// procedure should be started.
+// Android: This test doesn't apply to Android because there is no services
+// changed event that could arrive during a discovery procedure.
+TEST_F(BluetoothTest, TwoPendingServiceDiscoveryRequests) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
+
+  observer.Reset();
+  SimulateGattServicesChanged(device);
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
+
+  // Fist system call to
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
+  observer.Reset();
+  SimulateDidDiscoverServices(device, {kTestUUIDHeartRate});
+  EXPECT_EQ(0, observer.device_changed_count());
+  EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(gatt_characteristic_discovery_attempts_, 0);
+
+  // Second system call to
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
+  SimulateGattServicesDiscovered(
+      device, std::vector<std::string>({kTestUUIDImmediateAlert}));
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+  // Characteristics are discovered once for each service.
+  EXPECT_EQ(gatt_characteristic_discovery_attempts_, 2);
+
+  EXPECT_EQ(2u, device->GetGattServices().size());
+}
+
+// Simulate an unexpected call to -[id<CBPeripheralDelegate>
+// peripheral:didDiscoverServices:]. This should not happen, but if it does
+// (buggy device?), a discovery cycle should be done.
+TEST_F(BluetoothTest, ExtraDidDiscoverServicesCall) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
+
+  // Legitimate system call to
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
+  observer.Reset();
+  SimulateGattServicesDiscovered(
+      device, std::vector<std::string>({kTestUUIDHeartRate}));
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(gatt_characteristic_discovery_attempts_, 1);
+  EXPECT_EQ(1u, device->GetGattServices().size());
+
+  // Unexpected system call to
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
+  SimulateDidDiscoverServices(device, {kTestUUIDImmediateAlert});
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+
+  EXPECT_EQ(1u, device->GetGattServices().size());
+}
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests Advertisement Data is updated correctly when we start discovery
 // during a connection.

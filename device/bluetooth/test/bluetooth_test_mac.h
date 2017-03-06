@@ -88,12 +88,19 @@ class BluetoothTestMac : public BluetoothTestBase {
   void ExpectedChangeNotifyValueAttempts(int attempts) override;
   void ExpectedNotifyValue(NotifyValueState expected_value_state) override;
 
+  // macOS is the only platform for which we need to discover each set of
+  // attributes individually so we need a method to simulate discovering each
+  // set of attributes.
+  void SimulateDidDiscoverServices(BluetoothDevice* device,
+                                   const std::vector<std::string>& uuids);
+
   // Callback for the bluetooth central manager mock.
   void OnFakeBluetoothDeviceConnectGattCalled();
   void OnFakeBluetoothGattDisconnect();
 
   // Callback for the bluetooth peripheral mock.
   void OnFakeBluetoothServiceDiscovery();
+  void OnFakeBluetoothCharacteristicDiscovery();
   void OnFakeBluetoothCharacteristicReadValue();
   void OnFakeBluetoothCharacteristicWriteValue(std::vector<uint8_t> value);
   void OnFakeBluetoothGattSetCharacteristicNotification(bool notify_value);
@@ -124,6 +131,7 @@ class BluetoothTestMac : public BluetoothTestBase {
 
   // Value set by -[CBPeripheral setNotifyValue:forCharacteristic:] call.
   bool last_notify_value_ = false;
+  int gatt_characteristic_discovery_attempts_ = 0;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).
