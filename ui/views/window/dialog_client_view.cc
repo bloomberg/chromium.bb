@@ -15,6 +15,7 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -40,26 +41,34 @@ bool ShouldShow(View* view) {
   return view && view->visible();
 }
 
-// Do the layout for a button.
-void LayoutButton(LabelButton* button,
-                  gfx::Rect* row_bounds,
-                  int button_height) {
-  if (!button)
-    return;
-
-  const gfx::Size size = button->GetPreferredSize();
-  row_bounds->set_width(row_bounds->width() - size.width());
-  DCHECK_LE(button_height, row_bounds->height());
-  button->SetBounds(
-      row_bounds->right(),
-      row_bounds->y() + (row_bounds->height() - button_height) / 2,
-      size.width(), button_height);
-  const int spacing =
-      ViewsDelegate::GetInstance()->GetDialogRelatedButtonHorizontalSpacing();
-  row_bounds->set_width(row_bounds->width() - spacing);
+// Returns the bounding box required to contain |size1| and |size2|, placed one
+// atop the other.
+gfx::Size GetBoundingSizeForVerticalStack(const gfx::Size& size1,
+                                          const gfx::Size& size2) {
+  return gfx::Size(std::max(size1.width(), size2.width()),
+                   size1.height() + size2.height());
 }
 
 }  // namespace
+
+// Simple container to bubble child view changes up the view hierarchy.
+class DialogClientView::ButtonRowContainer : public View {
+ public:
+  explicit ButtonRowContainer(DialogClientView* owner) : owner_(owner) {}
+
+  // View:
+  void ChildPreferredSizeChanged(View* child) override {
+    owner_->ChildPreferredSizeChanged(child);
+  }
+  void ChildVisibilityChanged(View* child) override {
+    owner_->ChildVisibilityChanged(child);
+  }
+
+ private:
+  DialogClientView* const owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ButtonRowContainer);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // DialogClientView, public:
@@ -71,10 +80,11 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
   // Doing this now ensures this accelerator will have lower priority than
   // one set by the contents view.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  button_row_container_ = new ButtonRowContainer(this);
+  AddChildView(button_row_container_);
 }
 
-DialogClientView::~DialogClientView() {
-}
+DialogClientView::~DialogClientView() {}
 
 void DialogClientView::AcceptWindow() {
   // Only notify the delegate once. See |delegate_allowed_close_|'s comment.
@@ -93,8 +103,8 @@ void DialogClientView::CancelWindow() {
 }
 
 void DialogClientView::UpdateDialogButtons() {
-  SetupViews();
-  SetupFocusChain();
+  SetupLayout();
+  InvalidateLayout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,90 +130,41 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 // DialogClientView, View overrides:
 
 gfx::Size DialogClientView::GetPreferredSize() const {
-  // Initialize the size to fit the buttons and extra view row.
-  gfx::Size size(
-      (ok_button_ ? ok_button_->GetPreferredSize().width() : 0) +
-          (cancel_button_ ? cancel_button_->GetPreferredSize().width() : 0) +
-          (cancel_button_ && ok_button_
-               ? ViewsDelegate::GetInstance()
-                     ->GetDialogRelatedButtonHorizontalSpacing()
-               : 0) +
-          (ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().width()
-                                   : 0) +
-          GetExtraViewSpacing(),
-      0);
+  return GetBoundingSizeForVerticalStack(
+      ClientView::GetPreferredSize(),
+      button_row_container_->GetPreferredSize());
+}
 
-  int buttons_height = GetButtonsAndExtraViewRowHeight();
-  if (buttons_height != 0) {
-    size.Enlarge(0, buttons_height);
-    // Inset the buttons and extra view.
-    const gfx::Insets insets = GetButtonRowInsets();
-    size.Enlarge(insets.width(), insets.height());
-  }
+gfx::Size DialogClientView::GetMinimumSize() const {
+  return GetBoundingSizeForVerticalStack(
+      ClientView::GetMinimumSize(), button_row_container_->GetMinimumSize());
+}
 
-  // Increase the size as needed to fit the contents view.
-  // NOTE: The contents view is not inset on the top or side client view edges.
-  gfx::Size contents_size = contents_view()->GetPreferredSize();
-  size.Enlarge(0, contents_size.height());
-  size.set_width(std::max(size.width(), contents_size.width()));
+gfx::Size DialogClientView::GetMaximumSize() const {
+  constexpr int kUnconstrained = 0;
+  DCHECK(gfx::Size(kUnconstrained, kUnconstrained) ==
+         button_row_container_->GetMaximumSize());
+  gfx::Size max_size = ClientView::GetMaximumSize();
 
-  size.SetToMax(minimum_size_);
+  // If the height is constrained, add the button row height. Leave the width as
+  // it is (be it constrained or unconstrained).
+  if (max_size.height() != kUnconstrained)
+    max_size.Enlarge(0, button_row_container_->GetPreferredSize().height());
 
-  return size;
+  // Note not all constraints can be met. E.g. it's possible here for
+  // GetMinimumSize().width() to be larger than max_size.width() since the
+  // former includes the button row width, but the latter does not. It is up to
+  // the DialogDelegate to ensure its maximum size is reasonable for the buttons
+  // it wants, or leave it unconstrained.
+  return max_size;
 }
 
 void DialogClientView::Layout() {
-  gfx::Rect bounds = GetContentsBounds();
-
-  // Layout the row containing the buttons and the extra view.
-  if (has_dialog_buttons() || ShouldShow(extra_view_)) {
-    gfx::Insets button_row_insets = GetButtonRowInsets();
-    // Don't apply the top inset here because it's supposed to go above the
-    // buttons, not at the top of the dialog.
-    bounds.Inset(button_row_insets.left(), 0, button_row_insets.right(),
-                 button_row_insets.bottom());
-    const int height = GetButtonsAndExtraViewRowHeight();
-    gfx::Rect row_bounds(bounds.x(), bounds.bottom() - height,
-                         bounds.width(), height);
-    // If the |extra_view_| is a also button, then the |button_height| is the
-    // maximum height of the three buttons, otherwise it is the maximum height
-    // of the ok and cancel buttons.
-    const int button_height =
-        CustomButton::AsCustomButton(extra_view_) ? height : GetButtonHeight();
-    if (kIsOkButtonOnLeftSide) {
-      LayoutButton(cancel_button_, &row_bounds, button_height);
-      LayoutButton(ok_button_, &row_bounds, button_height);
-    } else {
-      LayoutButton(ok_button_, &row_bounds, button_height);
-      LayoutButton(cancel_button_, &row_bounds, button_height);
-    }
-    if (extra_view_) {
-      int custom_padding = 0;
-      if (has_dialog_buttons() &&
-          GetDialogDelegate()->GetExtraViewPadding(&custom_padding)) {
-        // The padding between buttons applied in LayoutButton() will already
-        // have accounted for some of the distance here.
-        custom_padding -= ViewsDelegate::GetInstance()
-                              ->GetDialogRelatedButtonHorizontalSpacing();
-        row_bounds.set_width(row_bounds.width() - custom_padding);
-      }
-      row_bounds.set_width(std::min(row_bounds.width(),
-                                    extra_view_->GetPreferredSize().width()));
-      extra_view_->SetBoundsRect(row_bounds);
-    }
-
-    if (height > 0) {
-      // Inset to the top of the buttons, plus their top padding, in order to
-      // exclude that area from the content view's bounds.
-      bounds.Inset(0, 0, 0, height + button_row_insets.top());
-    }
-  }
-
-  // Layout the contents view to the top and side edges of the contents bounds.
-  // NOTE: The local insets do not apply to the contents view sides or top.
-  const gfx::Rect contents_bounds = GetContentsBounds();
-  contents_view()->SetBounds(contents_bounds.x(), contents_bounds.y(),
-      contents_bounds.width(), bounds.bottom() - contents_bounds.y());
+  button_row_container_->SetSize(
+      gfx::Size(width(), button_row_container_->GetHeightForWidth(width())));
+  button_row_container_->SetY(height() - button_row_container_->height());
+  if (contents_view())
+    contents_view()->SetSize(gfx::Size(width(), button_row_container_->y()));
 }
 
 bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -217,23 +178,31 @@ void DialogClientView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   View* const child = details.child;
 
-  // Dialogs must add children to contents_view(), not client_view().
-  if (details.is_add && details.parent == this) {
-    DCHECK(child == contents_view() || child == ok_button_ ||
-           child == cancel_button_ || child == extra_view_);
+  ClientView::ViewHierarchyChanged(details);
+
+  if (details.is_add) {
+    if (child == this)
+      UpdateDialogButtons();
+    return;
   }
 
-  ClientView::ViewHierarchyChanged(details);
-  if (details.is_add && child == this) {
-    UpdateDialogButtons();
-  } else if (!details.is_add) {
-    if (child == ok_button_)
-      ok_button_ = nullptr;
-    else if (child == cancel_button_)
-      cancel_button_ = nullptr;
-    else if (child == extra_view_)
-      extra_view_ = nullptr;
-  }
+  if (details.parent != button_row_container_)
+    return;
+
+  // SetupViews() removes all children, managing data members itself.
+  if (preserve_button_row_data_members_)
+    return;
+
+  // Otherwise, this should only happen during teardown. Ensure there are no
+  // references to deleted Views.
+  button_row_container_->SetLayoutManager(nullptr);
+
+  if (child == ok_button_)
+    ok_button_ = nullptr;
+  else if (child == cancel_button_)
+    cancel_button_ = nullptr;
+  else if (child == extra_view_)
+    extra_view_ = nullptr;
 }
 
 void DialogClientView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -276,91 +245,56 @@ void DialogClientView::ChildPreferredSizeChanged(View* child) {
 }
 
 void DialogClientView::ChildVisibilityChanged(View* child) {
+  // Showing or hiding |extra_view_| can alter which columns have linked sizes.
+  if (child == extra_view_)
+    UpdateDialogButtons();
   ChildPreferredSizeChanged(child);
 }
 
-LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
-  const base::string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
-  LabelButton* button = nullptr;
-
-  const bool is_default =
-      GetDialogDelegate()->GetDefaultDialogButton() == type &&
-      (type != ui::DIALOG_BUTTON_CANCEL ||
-       PlatformStyle::kDialogDefaultButtonCanBeCancel);
-
-  // The default button is always blue in Harmony.
-  if (is_default && (ui::MaterialDesignController::IsSecondaryUiMaterial() ||
-                     GetDialogDelegate()->ShouldDefaultButtonBeBlue())) {
-    button = MdTextButton::CreateSecondaryUiBlueButton(this, title);
-  } else {
-    button = MdTextButton::CreateSecondaryUiButton(this, title);
+void DialogClientView::UpdateDialogButton(LabelButton** member,
+                                          ui::DialogButton type) {
+  DialogDelegate* const delegate = GetDialogDelegate();
+  if (!(delegate->GetDialogButtons() & type)) {
+    delete *member;
+    *member = nullptr;
+    return;
   }
 
-  const int minimum_width =
-      ViewsDelegate::GetInstance()->GetDialogButtonMinimumWidth();
-  button->SetMinSize(gfx::Size(minimum_width, 0));
+  if (!*member) {
+    // In theory, this should only need to assign a newly constructed Button to
+    // |*member|. DialogDelegate::UpdateButton(), and any overrides of that,
+    // should be responsible for the rest. TODO(tapted): When there is only
+    // MdTextButton, make it so. Note that some overrides may not always update
+    // the title (they should). See http://crbug.com/697303 .
+    const base::string16 title = delegate->GetDialogButtonLabel(type);
+    LabelButton* button = nullptr;
 
-  button->SetGroup(kButtonGroup);
-  return button;
-}
+    const bool is_default = delegate->GetDefaultDialogButton() == type &&
+                            (type != ui::DIALOG_BUTTON_CANCEL ||
+                             PlatformStyle::kDialogDefaultButtonCanBeCancel);
 
-int DialogClientView::GetButtonHeight() const {
-  return std::max(
-      ok_button_ ? ok_button_->GetPreferredSize().height() : 0,
-      cancel_button_ ? cancel_button_->GetPreferredSize().height() : 0);
-}
+    // The default button is always blue in Harmony.
+    if (is_default && (ui::MaterialDesignController::IsSecondaryUiMaterial() ||
+                       delegate->ShouldDefaultButtonBeBlue())) {
+      button = MdTextButton::CreateSecondaryUiBlueButton(this, title);
+    } else {
+      button = MdTextButton::CreateSecondaryUiButton(this, title);
+    }
 
-int DialogClientView::GetExtraViewHeight() const {
-  return ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().height() : 0;
-}
+    const int minimum_width =
+        ViewsDelegate::GetInstance()->GetDialogButtonMinimumWidth();
+    button->SetMinSize(gfx::Size(minimum_width, 0));
 
-int DialogClientView::GetButtonsAndExtraViewRowHeight() const {
-  return std::max(GetExtraViewHeight(), GetButtonHeight());
-}
+    button->SetGroup(kButtonGroup);
 
-gfx::Insets DialogClientView::GetButtonRowInsets() const {
-  if (GetButtonsAndExtraViewRowHeight() == 0)
-    return gfx::Insets();
-
-  // Some subclasses of DialogClientView, in order to do their own layout, set
-  // button_row_insets_ to gfx::Insets(). To avoid breaking behavior of those
-  // dialogs, supplying 0 for the top inset of the row falls back to
-  // ViewsDelegate::GetRelatedControlVerticalSpacing.
-  // TODO(bsep): The top inset should never be 0 when harmony is enabled.
-  const int top = button_row_insets_.top() == 0
-                      ? ViewsDelegate::GetInstance()
-                            ->GetDialogRelatedControlVerticalSpacing()
-                      : button_row_insets_.top();
-  return gfx::Insets(top, button_row_insets_.left(),
-                     button_row_insets_.bottom(), button_row_insets_.right());
-}
-
-void DialogClientView::SetupFocusChain() {
-  // Create a vector of child views in the order of intended focus.
-  std::vector<View*> child_views;
-  child_views.push_back(contents_view());
-  child_views.push_back(extra_view_);
-  if (kIsOkButtonOnLeftSide) {
-    child_views.push_back(ok_button_);
-    child_views.push_back(cancel_button_);
-  } else {
-    child_views.push_back(cancel_button_);
-    child_views.push_back(ok_button_);
+    *member = button;
   }
 
-  // Remove all null views from the vector.
-  child_views.erase(
-      std::remove(child_views.begin(), child_views.end(), nullptr),
-      child_views.end());
-
-  // Setup focus by reordering views. It is not safe to use SetNextFocusableView
-  // since child views may be added externally to this view.
-  for (size_t i = 0; i < child_views.size(); i++)
-    ReorderChildView(child_views[i], i);
+  delegate->UpdateButton(*member, type);
 }
 
 int DialogClientView::GetExtraViewSpacing() const {
-  if (!ShouldShow(extra_view_) || !has_dialog_buttons())
+  if (!ShouldShow(extra_view_) || !(ok_button_ || cancel_button_))
     return 0;
 
   int extra_view_padding = 0;
@@ -371,41 +305,120 @@ int DialogClientView::GetExtraViewSpacing() const {
       ->GetDialogRelatedButtonHorizontalSpacing();
 }
 
+std::array<View*, DialogClientView::kNumButtons>
+DialogClientView::GetButtonRowViews() {
+  View* first = ShouldShow(extra_view_) ? extra_view_ : nullptr;
+  View* second = cancel_button_;
+  View* third = ok_button_;
+  if (kIsOkButtonOnLeftSide)
+    std::swap(second, third);
+  return {{first, second, third}};
+}
+
+void DialogClientView::SetupLayout() {
+  GridLayout* layout = new GridLayout(button_row_container_);
+  layout->set_minimum_size(minimum_size_);
+
+  // Clobber any existing LayoutManager since it has weak references to child
+  // Views which may be removed by SetupViews().
+  button_row_container_->SetLayoutManager(layout);
+  SetupViews();
+  const std::array<View*, kNumButtons> views = GetButtonRowViews();
+
+  // Visibility changes on |extra_view_| must be observed to re-Layout. However,
+  // when hidden it's not included in the button row (it can't influence layout)
+  // and it can't be added to |button_row_container_| (GridLayout complains).
+  // So add it, hidden, to |this| so it can be observed.
+  if (extra_view_ && !views[0])
+    AddChildView(extra_view_);
+
+  if (std::count(views.begin(), views.end(), nullptr) == kNumButtons)
+    return;
+
+  gfx::Insets insets = button_row_insets_;
+  // Support dialogs that clear |button_row_insets_| to do their own layout.
+  // They expect GetDialogRelatedControlVerticalSpacing() in this case.
+  // TODO(tapted): Remove this under Harmony.
+  if (insets.top() == 0) {
+    const int top =
+        ViewsDelegate::GetInstance()->GetDialogRelatedControlVerticalSpacing();
+    insets.Set(top, insets.left(), insets.bottom(), insets.right());
+  }
+
+  // The |resize_percent| constants. There's only one stretchy column (padding
+  // to the left of ok/cancel buttons).
+  constexpr float kFixed = 0.f;
+  constexpr float kStretchy = 1.f;
+
+  // Button row is [ extra <pad+stretchy> second <pad> third ]. Ensure the <pad>
+  // column is zero width if there isn't a button on either side.
+  // GetExtraViewSpacing() handles <pad+stretchy>.
+  const int button_spacing =
+      (ok_button_ && cancel_button_)
+          ? ViewsDelegate::GetInstance()
+                ->GetDialogRelatedButtonHorizontalSpacing()
+          : 0;
+
+  constexpr int kButtonRowId = 0;
+  ColumnSet* column_set = layout->AddColumnSet(kButtonRowId);
+
+  // Rather than giving |button_row_container_| a Border, incorporate the insets
+  // into the layout. This simplifies min/max size calculations.
+  column_set->AddPaddingColumn(kFixed, insets.left());
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kFixed,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(kStretchy, GetExtraViewSpacing());
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kFixed,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(kFixed, button_spacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kFixed,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(kFixed, insets.right());
+
+  // Track which columns to link sizes under MD.
+  constexpr int kViewToColumnIndex[] = {1, 3, 5};
+  int link[] = {-1, -1, -1};
+  size_t link_index = 0;
+
+  layout->StartRowWithPadding(kFixed, kButtonRowId, kFixed, insets.top());
+  for (size_t view_index = 0; view_index < kNumButtons; ++view_index) {
+    if (views[view_index]) {
+      layout->AddView(views[view_index]);
+      link[link_index++] = kViewToColumnIndex[view_index];
+    } else {
+      layout->SkipColumns(1);
+    }
+  }
+
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // Only link the extra view column if it is a button.
+    if (views[0] && !CustomButton::AsCustomButton(views[0]))
+      column_set->LinkColumnSizes(link[1], link[2], -1);
+    else
+      column_set->LinkColumnSizes(link[0], link[1], link[2], -1);
+  }
+  layout->AddPaddingRow(kFixed, insets.bottom());
+}
+
 void DialogClientView::SetupViews() {
-  const int buttons = GetDialogDelegate()->GetDialogButtons();
-
-  if (buttons & ui::DIALOG_BUTTON_OK) {
-    if (!ok_button_) {
-      ok_button_ = CreateDialogButton(ui::DIALOG_BUTTON_OK);
-      AddChildView(ok_button_);
-    }
-
-    GetDialogDelegate()->UpdateButton(ok_button_, ui::DIALOG_BUTTON_OK);
-  } else if (ok_button_) {
-    delete ok_button_;
-    ok_button_ = nullptr;
+  {
+    base::AutoReset<bool> auto_reset(&preserve_button_row_data_members_, true);
+    button_row_container_->RemoveAllChildViews(false /* delete children */);
+    // If SetupLayout() "stored" a hidden |extra_view_| in |this|, ensure it can
+    // be re-added to the layout when becoming visible.
+    if (extra_view_)
+      RemoveChildView(extra_view_);
   }
 
-  if (buttons & ui::DIALOG_BUTTON_CANCEL) {
-    if (!cancel_button_) {
-      cancel_button_ = CreateDialogButton(ui::DIALOG_BUTTON_CANCEL);
-      AddChildView(cancel_button_);
-    }
-
-    GetDialogDelegate()->UpdateButton(cancel_button_, ui::DIALOG_BUTTON_CANCEL);
-  } else if (cancel_button_) {
-    delete cancel_button_;
-    cancel_button_ = nullptr;
-  }
+  UpdateDialogButton(&ok_button_, ui::DIALOG_BUTTON_OK);
+  UpdateDialogButton(&cancel_button_, ui::DIALOG_BUTTON_CANCEL);
 
   if (extra_view_)
     return;
 
   extra_view_ = GetDialogDelegate()->CreateExtraView();
-  if (extra_view_) {
+  if (extra_view_)
     extra_view_->SetGroup(kButtonGroup);
-    AddChildView(extra_view_);
-  }
 }
 
 }  // namespace views

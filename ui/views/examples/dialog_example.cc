@@ -245,6 +245,10 @@ void DialogExample::ResizeDialog() {
   // Q: Do we need NonClientFrameView::GetWindowBoundsForClientBounds() here?
   // A: When DialogCientView properly feeds back sizes, we do not.
   widget->SetBoundsConstrained(preferred_bounds);
+
+  // For user-resizable dialogs, ensure the window manager enforces any new
+  // minimum size.
+  widget->OnSizeConstraintsChanged();
 }
 
 void DialogExample::ButtonPressed(Button* sender, const ui::Event& event) {

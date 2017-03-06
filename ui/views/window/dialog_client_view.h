@@ -51,6 +51,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // View implementation:
   gfx::Size GetPreferredSize() const override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
+
   void Layout() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void ViewHierarchyChanged(
@@ -67,7 +70,11 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void set_minimum_size(const gfx::Size& size) { minimum_size_ = size; }
 
  private:
-  bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
+  enum {
+    // The number of buttons that DialogClientView can support.
+    kNumButtons = 3
+  };
+  class ButtonRowContainer;
 
   // Returns the DialogDelegate for the window.
   DialogDelegate* GetDialogDelegate() const;
@@ -76,34 +83,25 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void ChildPreferredSizeChanged(View* child) override;
   void ChildVisibilityChanged(View* child) override;
 
-  // Create a dialog button of the appropriate type.
-  LabelButton* CreateDialogButton(ui::DialogButton type);
-
-  // Update |button|'s text and enabled state according to the delegate's state.
-  void UpdateButton(LabelButton* button, ui::DialogButton type);
-
-  // Returns the height of the buttons.
-  int GetButtonHeight() const;
-
-  // Returns the height of the extra view.
-  int GetExtraViewHeight() const;
-
-  // Returns the height of the row containing the buttons and the extra view.
-  int GetButtonsAndExtraViewRowHeight() const;
-
-  // Returns the insets for the buttons and extra view, including the vertical
-  // padding between them and the contents view.
-  gfx::Insets GetButtonRowInsets() const;
-
-  // Sets up the focus chain for the child views. This is required since the
-  // delegate may choose to add/remove views at any time.
-  void SetupFocusChain();
+  // Creates, deletes, or updates the appearance of the button of type |type|
+  // (which must be pointed to by |member|).  Which action is chosen is based on
+  // whether DialogDelegate::GetDialogButtons() includes |type|, and whether
+  // |member| points to a button that already exists.
+  void UpdateDialogButton(LabelButton** member, ui::DialogButton type);
 
   // Returns the spacing between the extra view and the ok/cancel buttons. 0 if
   // no extra view. Otherwise uses GetExtraViewPadding() or the default padding.
   int GetExtraViewSpacing() const;
 
+  // Returns Views in the button row, as they should appear in the layout. If
+  // a View should not appear, it will be null.
+  std::array<View*, kNumButtons> GetButtonRowViews();
+
+  // Installs and configures the LayoutManager for |button_row_container_|.
+  void SetupLayout();
+
   // Creates or deletes any buttons that are required. Updates data members.
+  // After calling this, no button row Views will be in the view hierarchy.
   void SetupViews();
 
   // How much to inset the button row.
@@ -120,11 +118,17 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // The extra view shown in the row of buttons; may be NULL.
   View* extra_view_ = nullptr;
 
+  // Container view for the button row.
+  ButtonRowContainer* button_row_container_ = nullptr;
+
   // True if we've notified the delegate the window is closing and the delegate
   // allowed the close. In some situations it's possible to get two closes (see
   // http://crbug.com/71940). This is used to avoid notifying the delegate
   // twice, which can have bad consequences.
   bool delegate_allowed_close_ = false;
+
+  // When true, prevents ViewHierarchyChanged() from clearing out data members.
+  bool preserve_button_row_data_members_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };
