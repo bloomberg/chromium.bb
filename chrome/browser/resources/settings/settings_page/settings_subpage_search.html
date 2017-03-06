@@ -24,7 +24,18 @@
         --paper-input-suffix: {
           /* Required to align the icon in |clearSearch| vertically. */
           line-height: 0;
-        }
+        };
+
+        /**
+         * Kind of suck to have to hardcode these, but its necessary to
+         * make sure the conditional clear-icon will fit within input's height.
+         */
+        --paper-input-container-input: {
+          line-height: 24px;
+        };
+        --paper-input-container-label: {
+          line-height: 24px;
+        };
       }
 
       paper-icon-button {
@@ -37,11 +48,13 @@
       #searchIcon {
         height: 16px;
         padding: 4px;
+        vertical-align: middle;
         width: 16px;
       }
 
       paper-input-container {
         display: inline-block;
+        vertical-align: middle;
         width: 160px;  /* Special width for search input. */
       }
 
