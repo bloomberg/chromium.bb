@@ -20,7 +20,11 @@ const int kPointLifeDurationMs = 200;
 // When no move events are being received we add a new point every
 // |kAddStationaryPointsDelayMs| so that points older than
 // |kPointLifeDurationMs| can get removed.
-const int kAddStationaryPointsDelayMs = 5;
+// Note: Using a delay less than the screen refresh interval will not
+// provide a visual benefit but instead just waste time performing
+// unnecessary updates. 16ms is the refresh interval on most devices.
+// TODO(reveman): Use real VSYNC interval instead of a hard-coded delay.
+const int kAddStationaryPointsDelayMs = 16;
 
 }  // namespace
 
@@ -128,8 +132,7 @@ void LaserPointerController::DestroyLaserPointerView() {
 
 void LaserPointerController::RestartTimer() {
   stationary_timer_repeat_count_ = 0;
-  if (!stationary_timer_->IsRunning())
-    stationary_timer_->Reset();
+  stationary_timer_->Reset();
 }
 
 void LaserPointerController::AddStationaryPoint() {
