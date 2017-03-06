@@ -750,6 +750,7 @@ static void pack_palette_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
   *tp = p;
 }
 #endif  // CONFIG_PALETTE
+
 #if !CONFIG_PVQ
 #if CONFIG_SUPERTX
 static void update_supertx_probs(AV1_COMMON *cm, int probwt, aom_writer *w) {
@@ -960,11 +961,101 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   *tp = p;
 }
 #endif
+#else   // !CONFIG_PVQ
+static PVQ_INFO *get_pvq_block(PVQ_QUEUE *pvq_q) {
+  PVQ_INFO *pvq;
+
+  assert(pvq_q->curr_pos <= pvq_q->last_pos);
+  assert(pvq_q->curr_pos < pvq_q->buf_len);
+
+  pvq = pvq_q->buf + pvq_q->curr_pos;
+  ++pvq_q->curr_pos;
+
+  return pvq;
+}
+
+static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
+                            MACROBLOCKD *const xd, int plane, BLOCK_SIZE bsize,
+                            const TX_SIZE tx_size) {
+  PVQ_INFO *pvq;
+  int idx, idy;
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  od_adapt_ctx *adapt;
+  int max_blocks_wide;
+  int max_blocks_high;
+  int step = (1 << tx_size);
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
+
+  adapt = &x->daala_enc.state.adapt;
+
+  max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+  max_blocks_high = max_block_high(xd, plane_bsize, plane);
+
+  for (idy = 0; idy < max_blocks_high; idy += step) {
+    for (idx = 0; idx < max_blocks_wide; idx += step) {
+      const int is_keyframe = 0;
+      const int encode_flip = 0;
+      const int flip = 0;
+      const int nodesync = 1;
+      int i;
+      const int has_dc_skip = 1;
+      int *exg = &adapt->pvq.pvq_exg[plane][tx_size][0];
+      int *ext = adapt->pvq.pvq_ext + tx_size * PVQ_MAX_PARTITIONS;
+      generic_encoder *model = adapt->pvq.pvq_param_model;
+
+      pvq = get_pvq_block(x->pvq_q);
+
+      // encode block skip info
+      aom_encode_cdf_adapt(w, pvq->ac_dc_coded,
+                           adapt->skip_cdf[2 * tx_size + (plane != 0)], 4,
+                           adapt->skip_increment);
+
+      // AC coeffs coded?
+      if (pvq->ac_dc_coded & AC_CODED) {
+        assert(pvq->bs == tx_size);
+        for (i = 0; i < pvq->nb_bands; i++) {
+          if (i == 0 ||
+              (!pvq->skip_rest && !(pvq->skip_dir & (1 << ((i - 1) % 3))))) {
+            pvq_encode_partition(
+                w, pvq->qg[i], pvq->theta[i], pvq->max_theta[i],
+                pvq->y + pvq->off[i], pvq->size[i], pvq->k[i], model, adapt,
+                exg + i, ext + i, nodesync,
+                (plane != 0) * OD_TXSIZES * PVQ_MAX_PARTITIONS +
+                    pvq->bs * PVQ_MAX_PARTITIONS + i,
+                is_keyframe, i == 0 && (i < pvq->nb_bands - 1), pvq->skip_rest,
+                encode_flip, flip);
+          }
+          if (i == 0 && !pvq->skip_rest && pvq->bs > 0) {
+            aom_encode_cdf_adapt(
+                w, pvq->skip_dir,
+                &adapt->pvq
+                     .pvq_skip_dir_cdf[(plane != 0) + 2 * (pvq->bs - 1)][0],
+                7, adapt->pvq.pvq_skip_dir_increment);
+          }
+        }
+      }
+      // Encode residue of DC coeff, if exist.
+      if (!has_dc_skip || (pvq->ac_dc_coded & DC_CODED)) {
+        generic_encode(w, &adapt->model_dc[plane],
+                       abs(pvq->dq_dc_residue) - has_dc_skip, -1,
+                       &adapt->ex_dc[plane][pvq->bs][0], 2);
+      }
+      if ((pvq->ac_dc_coded & DC_CODED)) {
+        aom_write_bit(w, pvq->dq_dc_residue < 0);
+      }
+    }
+  }  // for (idy = 0;
+}
 #endif  // !CONFIG_PVG
-#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE && !CONFIG_PVQ
+
+#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
 static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
-                            const TOKENEXTRA *const tok_end, MACROBLOCKD *xd,
-                            MB_MODE_INFO *mbmi, int plane,
+                            const TOKENEXTRA *const tok_end,
+#if CONFIG_PVQ
+                            MACROBLOCK *const x,
+#endif
+                            MACROBLOCKD *xd, MB_MODE_INFO *mbmi, int plane,
                             BLOCK_SIZE plane_bsize, aom_bit_depth_t bit_depth,
                             int block, int blk_row, int blk_col,
                             TX_SIZE tx_size, TOKEN_STATS *token_stats) {
@@ -985,7 +1076,11 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   if (tx_size == plane_tx_size) {
     TOKEN_STATS tmp_token_stats;
     init_token_stats(&tmp_token_stats);
+#if !CONFIG_PVQ
     pack_mb_tokens(w, tp, tok_end, bit_depth, tx_size, &tmp_token_stats);
+#else
+    pack_pvq_tokens(w, x, xd, plane, bsize, tx_size);
+#endif
 #if CONFIG_RD_DEBUG
     token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
     token_stats->cost += tmp_token_stats.cost;
@@ -1004,8 +1099,12 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
       if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
-      pack_txb_tokens(w, tp, tok_end, xd, mbmi, plane, plane_bsize, bit_depth,
-                      block, offsetr, offsetc, sub_txs, token_stats);
+      pack_txb_tokens(w, tp, tok_end,
+#if CONFIG_PVQ
+                      x,
+#endif
+                      xd, mbmi, plane, plane_bsize, bit_depth, block, offsetr,
+                      offsetc, sub_txs, token_stats);
       block += step;
     }
   }
@@ -1949,20 +2048,6 @@ static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
 }
 #endif
 
-#if CONFIG_PVQ
-PVQ_INFO *get_pvq_block(PVQ_QUEUE *pvq_q) {
-  PVQ_INFO *pvq;
-
-  assert(pvq_q->curr_pos <= pvq_q->last_pos);
-  assert(pvq_q->curr_pos < pvq_q->buf_len);
-
-  pvq = pvq_q->buf + pvq_q->curr_pos;
-  ++pvq_q->curr_pos;
-
-  return pvq;
-}
-#endif
-
 static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
                          aom_writer *w,
 #if CONFIG_SUPERTX
@@ -2046,9 +2131,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   int plane;
   int bh, bw;
 #if CONFIG_PVQ
-  MB_MODE_INFO *mbmi;
-  BLOCK_SIZE bsize;
-  od_adapt_ctx *adapt;
+  MACROBLOCK *const x = &cpi->td.mb;
   (void)tok;
   (void)tok_end;
 #endif
@@ -2066,11 +2149,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                  cm->dependent_horz_tiles);
 #else
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
-#endif
-#if CONFIG_PVQ
-  mbmi = &m->mbmi;
-  bsize = mbmi->sb_type;
-  adapt = &cpi->td.mb.daala_enc.state.adapt;
 #endif
 
 #if CONFIG_PALETTE
@@ -2093,7 +2171,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     }
 #endif  // CONFIG_PALETTE
 
-#if !CONFIG_PVQ
 #if CONFIG_COEF_INTERLEAVE
   if (!m->mbmi.skip) {
     const struct macroblockd_plane *const pd_y = &xd->plane[0];
@@ -2171,7 +2248,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   }
 #else  // CONFIG_COEF_INTERLEAVE
   if (!m->mbmi.skip) {
+#if !CONFIG_PVQ
     assert(*tok < tok_end);
+#endif
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       MB_MODE_INFO *mbmi = &m->mbmi;
 
@@ -2210,9 +2289,12 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         const int bkh = tx_size_high_unit[max_tx_size];
         for (row = 0; row < num_4x4_h; row += bkh) {
           for (col = 0; col < num_4x4_w; col += bkw) {
-            pack_txb_tokens(w, tok, tok_end, xd, mbmi, plane, plane_bsize,
-                            cm->bit_depth, block, row, col, max_tx_size,
-                            &token_stats);
+            pack_txb_tokens(w, tok, tok_end,
+#if CONFIG_PVQ
+                            x,
+#endif
+                            xd, mbmi, plane, plane_bsize, cm->bit_depth, block,
+                            row, col, max_tx_size, &token_stats);
             block += step;
           }
         }
@@ -2251,7 +2333,11 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                                   num_palette_indexes);
             }
 #endif  // CONFIG_PALETTE && CONFIG_PALETTE_THROUGHPUT
+#if !CONFIG_PVQ
             pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx, &token_stats);
+#else
+            pack_pvq_tokens(w, x, xd, plane, bsize, tx);
+#endif
           }
         }
       }
@@ -2298,8 +2384,13 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         }
       }
 #else
+#if !CONFIG_PVQ
       init_token_stats(&token_stats);
       pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx, &token_stats);
+#else
+      (void)token_stats;
+      pack_pvq_tokens(w, x, xd, plane, mbmi->sb_type, tx);
+#endif
 #endif  // CONFIG_PALETTE && CONFIG_PALETTE_THROUGHPUT
 #if CONFIG_RD_DEBUG
       if (is_inter_block(mbmi) && mbmi->sb_type >= BLOCK_8X8 &&
@@ -2312,89 +2403,13 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_RD_DEBUG
 #endif  // CONFIG_VAR_TX
 
+#if !CONFIG_PVQ
       assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
       (*tok)++;
+#endif
     }
   }
 #endif  // CONFIG_COEF_INTERLEAVE
-#else   // !CONFIG_PVQ
-  // PVQ writes its tokens (i.e. symbols) here.
-  if (!m->mbmi.skip) {
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-      PVQ_INFO *pvq;
-      TX_SIZE tx_size = get_tx_size(plane, xd);
-      int idx, idy;
-      const struct macroblockd_plane *const pd = &xd->plane[plane];
-      int max_blocks_wide;
-      int max_blocks_high;
-      int step = (1 << tx_size);
-      const BLOCK_SIZE plane_bsize =
-          get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
-
-      max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-      max_blocks_high = max_block_high(xd, plane_bsize, plane);
-
-      // TODO(yushin) Try to use av1_foreach_transformed_block_in_plane().
-      // Logic like the mb_to_right_edge/mb_to_bottom_edge stuff should
-      // really be centralized in one place.
-
-      for (idy = 0; idy < max_blocks_high; idy += step) {
-        for (idx = 0; idx < max_blocks_wide; idx += step) {
-          const int is_keyframe = 0;
-          const int encode_flip = 0;
-          const int flip = 0;
-          const int nodesync = 1;
-          int i;
-          const int has_dc_skip = 1;
-          int *exg = &adapt->pvq.pvq_exg[plane][tx_size][0];
-          int *ext = adapt->pvq.pvq_ext + tx_size * PVQ_MAX_PARTITIONS;
-          generic_encoder *model = adapt->pvq.pvq_param_model;
-
-          pvq = get_pvq_block(cpi->td.mb.pvq_q);
-
-          // encode block skip info
-          aom_encode_cdf_adapt(w, pvq->ac_dc_coded,
-                               adapt->skip_cdf[2 * tx_size + (plane != 0)], 4,
-                               adapt->skip_increment);
-
-          // AC coeffs coded?
-          if (pvq->ac_dc_coded & AC_CODED) {
-            assert(pvq->bs == tx_size);
-            for (i = 0; i < pvq->nb_bands; i++) {
-              if (i == 0 || (!pvq->skip_rest &&
-                             !(pvq->skip_dir & (1 << ((i - 1) % 3))))) {
-                pvq_encode_partition(
-                    w, pvq->qg[i], pvq->theta[i], pvq->max_theta[i],
-                    pvq->y + pvq->off[i], pvq->size[i], pvq->k[i], model, adapt,
-                    exg + i, ext + i, nodesync,
-                    (plane != 0) * OD_TXSIZES * PVQ_MAX_PARTITIONS +
-                        pvq->bs * PVQ_MAX_PARTITIONS + i,
-                    is_keyframe, i == 0 && (i < pvq->nb_bands - 1),
-                    pvq->skip_rest, encode_flip, flip);
-              }
-              if (i == 0 && !pvq->skip_rest && pvq->bs > 0) {
-                aom_encode_cdf_adapt(
-                    w, pvq->skip_dir,
-                    &adapt->pvq
-                         .pvq_skip_dir_cdf[(plane != 0) + 2 * (pvq->bs - 1)][0],
-                    7, adapt->pvq.pvq_skip_dir_increment);
-              }
-            }
-          }
-          // Encode residue of DC coeff, if exist.
-          if (!has_dc_skip || (pvq->ac_dc_coded & DC_CODED)) {
-            generic_encode(w, &adapt->model_dc[plane],
-                           abs(pvq->dq_dc_residue) - has_dc_skip, -1,
-                           &adapt->ex_dc[plane][pvq->bs][0], 2);
-          }
-          if ((pvq->ac_dc_coded & DC_CODED)) {
-            aom_write_bit(w, pvq->dq_dc_residue < 0);
-          }
-        }
-      }  // for (idy = 0;
-    }    // for (plane =
-  }      // if (!m->mbmi.skip)
-#endif  // !CONFIG_PVQ
 }
 
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC
