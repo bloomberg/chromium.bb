@@ -27,8 +27,6 @@
 #include "extensions/browser/event_router.h"
 #include "url/gurl.h"
 
-struct RetargetingDetails;
-
 namespace extensions {
 
 // Tab contents observer that forwards navigation events to the event router.
@@ -69,7 +67,8 @@ class WebNavigationTabObserver
                            const content::Referrer& referrer,
                            WindowOpenDisposition disposition,
                            ui::PageTransition transition,
-                           bool started_from_context_menu) override;
+                           bool started_from_context_menu,
+                           bool renderer_initiated) override;
   void WebContentsDestroyed() override;
 
   // This method dispatches the already created onBeforeNavigate event.
@@ -119,6 +118,17 @@ class WebNavigationEventRouter : public TabStripModelObserver,
   explicit WebNavigationEventRouter(Profile* profile);
   ~WebNavigationEventRouter() override;
 
+  // Router level handler for the creation of WebContents. Stores information
+  // about the newly created WebContents. This information is later used when
+  // the WebContents for the tab is added to the tabstrip and we receive the
+  // TAB_ADDED notification.
+  void RecordNewWebContents(content::WebContents* source_web_contents,
+                            int source_render_process_id,
+                            int source_render_frame_id,
+                            GURL target_url,
+                            content::WebContents* target_web_contents,
+                            bool not_yet_in_tabstrip);
+
  private:
   // Used to cache the information about newly created WebContents objects.
   struct PendingWebContents{
@@ -148,11 +158,6 @@ class WebNavigationEventRouter : public TabStripModelObserver,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // Handler for the NOTIFICATION_RETARGETING event. The method takes the
-  // details of such an event and stores them for the later
-  // NOTIFICATION_TAB_ADDED event.
-  void Retargeting(const RetargetingDetails* details);
 
   // Handler for the NOTIFICATION_TAB_ADDED event. The method takes the details
   // of such an event and creates a JSON formated extension event from it.
@@ -209,6 +214,7 @@ class WebNavigationAPI : public BrowserContextKeyedAPI,
 
  private:
   friend class BrowserContextKeyedAPIFactory<WebNavigationAPI>;
+  friend class WebNavigationTabObserver;
 
   content::BrowserContext* browser_context_;
 
@@ -216,6 +222,7 @@ class WebNavigationAPI : public BrowserContextKeyedAPI,
   static const char* service_name() {
     return "WebNavigationAPI";
   }
+  static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
   // Created lazily upon OnListenerAdded.

@@ -2138,6 +2138,19 @@ void WebContentsImpl::CreateNewWindow(
         params.frame_name, params.target_url, new_contents);
   }
 
+  RenderFrameHost* source_render_frame_host =
+      RenderFrameHost::FromID(render_process_id, params.opener_render_frame_id);
+
+  if (source_render_frame_host) {
+    for (auto& observer : observers_) {
+      observer.DidOpenRequestedURL(new_contents, source_render_frame_host,
+                                   params.target_url, params.referrer,
+                                   params.disposition, ui::PAGE_TRANSITION_LINK,
+                                   false,  // started_from_context_menu
+                                   true);  // renderer_initiated
+    }
+  }
+
   if (params.opener_suppressed) {
     // When the opener is suppressed, the original renderer cannot access the
     // new window.  As a result, we need to show and navigate the window here.
@@ -2609,7 +2622,7 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
       observer.DidOpenRequestedURL(new_contents, source_render_frame_host,
                                    params.url, params.referrer,
                                    params.disposition, params.transition,
-                                   params.started_from_context_menu);
+                                   params.started_from_context_menu, false);
     }
   }
 

@@ -244,7 +244,8 @@ void WebContentsObserverSanityChecker::DidOpenRequestedURL(
     const Referrer& referrer,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
-    bool started_from_context_menu) {
+    bool started_from_context_menu,
+    bool renderer_initiated) {
   AssertRenderFrameExists(source_render_frame_host);
 }
 

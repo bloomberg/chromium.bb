@@ -128,7 +128,8 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
 // Test class to help create SafeBrowsingNavigationObservers for each
 // WebContents before they are actually installed through AttachTabHelper.
 class TestNavigationObserverManager
-    : public SafeBrowsingNavigationObserverManager {
+    : public SafeBrowsingNavigationObserverManager,
+      public content::NotificationObserver {
  public:
   TestNavigationObserverManager() : SafeBrowsingNavigationObserverManager() {
     registrar_.Add(this, chrome::NOTIFICATION_TAB_ADDED,
@@ -145,8 +146,6 @@ class TestNavigationObserverManager
       observer_list_.push_back(
           new SafeBrowsingNavigationObserver(dest_content, this));
       DCHECK(observer_list_.back());
-    } else if (type == chrome::NOTIFICATION_RETARGETING) {
-      RecordRetargeting(details);
     }
   }
 
@@ -155,6 +154,8 @@ class TestNavigationObserverManager
 
  private:
   std::vector<SafeBrowsingNavigationObserver*> observer_list_;
+
+  content::NotificationRegistrar registrar_;
 };
 
 class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
@@ -582,11 +583,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         true,         // has_committed
                         false,        // has_server_redirect
                         nav_list->Get(0));
-  // The next NavigationEvent was obtained from NOIFICATION_RETARGETING.
-  // TODO(jialiul): After https://crbug.com/651895 is fixed, we'll no longer
-  // listen to NOTIFICATION_RETARGETING, hence only one NavigationEvent will
-  // be observed with the true initator URL. This applies to other new tab
-  // download, and target blank download test cases too.
+  // The next NavigationEvent opens a new tab.
   VerifyNavigationEvent(initial_url,   // source_url
                         initial_url,   // source_main_frame_url
                         download_url,  // original_request_url
@@ -721,9 +718,6 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         true,         // has_committed
                         false,        // has_server_redirect
                         nav_list->Get(0));
-  // TODO(jialiul): After https://crbug.com/651895 is fixed, we'll no longer
-  // listen to NOTIFICATION_RETARGETING, hence only two NavigationEvents will
-  // be observed with the true initator URL.
   VerifyNavigationEvent(initial_url,   // source_url
                         initial_url,   // source_main_frame_url
                         redirect_url,  // original_request_url

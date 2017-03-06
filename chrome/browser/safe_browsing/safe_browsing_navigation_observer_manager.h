@@ -9,8 +9,6 @@
 #include "base/feature_list.h"
 #include "base/supports_user_data.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #include "url/gurl.h"
@@ -94,13 +92,8 @@ struct NavigationEventList {
 // Manager class for SafeBrowsingNavigationObserver, which is in charge of
 // cleaning up stale navigation events, and identifying landing page/landing
 // referrer for a specific download.
-// TODO(jialiul): For now, SafeBrowsingNavigationObserverManager also listens to
-// NOTIFICATION_RETARGETING as a way to detect cross frame/tab navigation.
-// Remove base class content::NotificationObserver when
-// WebContentsObserver::DidOpenRequestedURL() covers all retargeting cases.
 class SafeBrowsingNavigationObserverManager
-    : public content::NotificationObserver,
-      public base::RefCountedThreadSafe<SafeBrowsingNavigationObserverManager> {
+    : public base::RefCountedThreadSafe<SafeBrowsingNavigationObserverManager> {
  public:
   static const base::Feature kDownloadAttribution;
 
@@ -189,6 +182,15 @@ class SafeBrowsingNavigationObserverManager
       int user_gesture_count_limit,
       ReferrerChain* out_referrer_chain);
 
+  // Record the creation of a new WebContents by |source_web_contents|. This is
+  // used to detect cross-frame and cross-tab navigations.
+  void RecordNewWebContents(content::WebContents* source_web_contents,
+                            int source_render_process_id,
+                            int source_render_frame_id,
+                            GURL target_url,
+                            content::WebContents* target_web_contents,
+                            bool not_yet_in_tabstrip);
+
  private:
   friend class base::RefCountedThreadSafe<
       SafeBrowsingNavigationObserverManager>;
@@ -206,14 +208,7 @@ class SafeBrowsingNavigationObserverManager
   typedef std::unordered_map<std::string, std::vector<ResolvedIPAddress>>
       HostToIpMap;
 
-  ~SafeBrowsingNavigationObserverManager() override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  void RecordRetargeting(const content::NotificationDetails& details);
+  virtual ~SafeBrowsingNavigationObserverManager();
 
   NavigationEventList* navigation_event_list() {
     return &navigation_event_list_;
@@ -270,8 +265,6 @@ class SafeBrowsingNavigationObserverManager
   // vector of ResolvedIPAddresss. This map is used to fill in ip_address field
   // in URLChainEntry in ClientDownloadRequest.
   HostToIpMap host_to_ip_map_;
-
-  content::NotificationRegistrar registrar_;
 
   base::OneShotTimer cleanup_timer_;
 

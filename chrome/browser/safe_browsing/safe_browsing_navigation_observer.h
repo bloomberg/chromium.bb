@@ -98,6 +98,14 @@ class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
       const content::ResourceRequestDetails& details) override;
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
   void WebContentsDestroyed() override;
+  void DidOpenRequestedURL(content::WebContents* new_contents,
+                           content::RenderFrameHost* source_render_frame_host,
+                           const GURL& url,
+                           const content::Referrer& referrer,
+                           WindowOpenDisposition disposition,
+                           ui::PageTransition transition,
+                           bool started_from_context_menu,
+                           bool renderer_initiated) override;
 
   // Map keyed on NavigationHandle* to keep track of all the ongoing navigation
   // events. NavigationHandle pointers are owned by RenderFrameHost. Since a

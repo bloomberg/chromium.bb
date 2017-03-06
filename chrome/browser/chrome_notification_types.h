@@ -83,12 +83,6 @@ enum NotificationType {
   // traversal. The source is the browser, there are no details.
   NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
 
-  // A new tab is created from an existing tab to serve as a target of a
-  // navigation that is about to happen. The source will be a Source<Profile>
-  // corresponding to the profile in which the new tab will live.  Details in
-  // the form of a RetargetingDetails object are provided.
-  NOTIFICATION_RETARGETING,
-
   // Application-wide ----------------------------------------------------------
 
   // This message is sent when the application is terminating (the last

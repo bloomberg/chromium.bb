@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/api/web_navigation.h"
@@ -76,9 +75,6 @@ WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
     : profile_(profile), browser_tab_strip_tracker_(this, this, nullptr) {
   CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
-                 chrome::NOTIFICATION_RETARGETING,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
                  chrome::NOTIFICATION_TAB_ADDED,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
@@ -121,14 +117,6 @@ void WebNavigationEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_RETARGETING: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (profile->GetOriginalProfile() == profile_) {
-        Retargeting(
-            content::Details<const RetargetingDetails>(details).ptr());
-      }
-      break;
-    }
 
     case chrome::NOTIFICATION_TAB_ADDED:
       TabAdded(content::Details<content::WebContents>(details).ptr());
@@ -143,40 +131,40 @@ void WebNavigationEventRouter::Observe(
   }
 }
 
-void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
-  if (details->source_render_frame_id == 0)
+void WebNavigationEventRouter::RecordNewWebContents(
+    content::WebContents* source_web_contents,
+    int source_render_process_id,
+    int source_render_frame_id,
+    GURL target_url,
+    content::WebContents* target_web_contents,
+    bool not_yet_in_tabstrip) {
+  if (source_render_frame_id == 0)
     return;
   WebNavigationTabObserver* tab_observer =
-      WebNavigationTabObserver::Get(details->source_web_contents);
+      WebNavigationTabObserver::Get(source_web_contents);
   if (!tab_observer) {
     // If you hit this DCHECK(), please add reproduction steps to
     // http://crbug.com/109464.
-    DCHECK(GetViewType(details->source_web_contents) != VIEW_TYPE_TAB_CONTENTS);
+    DCHECK(GetViewType(source_web_contents) != VIEW_TYPE_TAB_CONTENTS);
     return;
   }
   const FrameNavigationState& frame_navigation_state =
       tab_observer->frame_navigation_state();
 
   content::RenderFrameHost* frame_host = content::RenderFrameHost::FromID(
-      details->source_render_process_id, details->source_render_frame_id);
+      source_render_process_id, source_render_frame_id);
   if (!frame_navigation_state.CanSendEvents(frame_host))
     return;
 
   // If the WebContents isn't yet inserted into a tab strip, we need to delay
   // the extension event until the WebContents is fully initialized.
-  if (details->not_yet_in_tabstrip) {
-    pending_web_contents_[details->target_web_contents] =
-        PendingWebContents(details->source_web_contents,
-                           frame_host,
-                           details->target_web_contents,
-                           details->target_url);
+  if (not_yet_in_tabstrip) {
+    pending_web_contents_[target_web_contents] = PendingWebContents(
+        source_web_contents, frame_host, target_web_contents, target_url);
   } else {
     helpers::DispatchOnCreatedNavigationTarget(
-        details->source_web_contents,
-        details->target_web_contents->GetBrowserContext(),
-        frame_host,
-        details->target_web_contents,
-        details->target_url);
+        source_web_contents, target_web_contents->GetBrowserContext(),
+        frame_host, target_web_contents, target_url);
   }
 }
 
@@ -384,7 +372,8 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
     const content::Referrer& referrer,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
-    bool started_from_context_menu) {
+    bool started_from_context_menu,
+    bool renderer_initiated) {
   if (!navigation_state_.CanSendEvents(source_render_frame_host))
     return;
 
@@ -398,11 +387,16 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
       disposition != WindowOpenDisposition::OFF_THE_RECORD)
     return;
 
-  helpers::DispatchOnCreatedNavigationTarget(web_contents(),
-                                             new_contents->GetBrowserContext(),
-                                             source_render_frame_host,
-                                             new_contents,
-                                             url);
+  WebNavigationAPI* api = WebNavigationAPI::GetFactoryInstance()->Get(
+      web_contents()->GetBrowserContext());
+  WebNavigationEventRouter* router = api->web_navigation_event_router_.get();
+  if (!router)
+    return;
+
+  router->RecordNewWebContents(web_contents(),
+                               source_render_frame_host->GetProcess()->GetID(),
+                               source_render_frame_host->GetRoutingID(), url,
+                               new_contents, renderer_initiated);
 }
 
 void WebNavigationTabObserver::WebContentsDestroyed() {
