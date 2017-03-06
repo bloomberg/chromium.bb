@@ -99,7 +99,7 @@ void BluetoothDiscoverySession::SetDiscoveryFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  discovery_filter_.reset(discovery_filter.release());
+  discovery_filter_ = std::move(discovery_filter);
   // BluetoothDiscoverySession::SetDiscoveryFilter is only used from a private
   // extension API, so we don't bother histogramming its failures.
   adapter_->SetDiscoveryFilter(

@@ -1459,7 +1459,7 @@ void BluetoothAdapterBlueZ::SetDiscoveryFilter(
     return;
   }
 
-  current_filter_.reset(discovery_filter.release());
+  current_filter_ = std::move(discovery_filter);
 
   bluez::BluetoothAdapterClient::DiscoveryFilter dbus_discovery_filter;
 
