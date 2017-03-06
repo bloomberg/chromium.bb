@@ -53,6 +53,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DisableHistogramsRule;
+import org.chromium.chrome.browser.Features;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo.SigninObserver;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -80,9 +81,13 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features(@Features.Register(value = ChromeFeatureList.NTP_CONDENSED_LAYOUT, enabled = false))
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
+
+    @Rule
+    public Features.Processor mFeatureProcessor = new Features.Processor();
 
     @CategoryInt
     private static final int TEST_CATEGORY = 42;
@@ -195,8 +200,6 @@ public class NewTabPageAdapterTest {
         // Set empty variation params for the test.
         CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
 
-        ChromeFeatureList.setTestEnabledFeatures(Collections.<String>emptySet());
-
         // Initialise the sign in state. We will be signed in by default in the tests.
         assertFalse(ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed());
         SigninManager.setInstanceForTesting(mMockSigninManager);
@@ -217,7 +220,6 @@ public class NewTabPageAdapterTest {
     @After
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
-        ChromeFeatureList.setTestEnabledFeatures(null);
         SigninManager.setInstanceForTesting(null);
         ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(false);
     }

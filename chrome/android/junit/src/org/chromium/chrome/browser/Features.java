@@ -11,54 +11,65 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Annotation used to set Feature flags during JUnit tests. To have an effect, the associated
  * {@link Processor} rule needs to be registered on the test class.
+ *
+ * Use {@link Features.Register} to specify the features to register and whether they should be
+ * enabled.
  *
  * Sample code:
  *
  * <pre>
  * public class Test {
  *    &#64;Rule
- *    public EnableFeatures.Processor processor = new EnableFeatures.Processor();
+ *    public Features.Processor processor = new Features.Processor();
  *
- *    &#64;EnableFeatures(ChromeFeatureList.NTP_SNIPPETS_OFFLINE_BADGE)
+ *    &#64;Features(&#64;Features.Register(ChromeFeatureList.NTP_SNIPPETS_OFFLINE_BADGE))
  *    public void testFoo() { ... }
  * }
  * </pre>
+ * // TODO(dgn): Use repeatable annotations (Requires Java 8 / Android N SDK)
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface EnableFeatures {
+public @interface Features {
+    Register[] value();
 
-    String[] value();
+    @interface Register {
+        String value();
+        boolean enabled() default true;
+    }
 
     /**
-     * Add this rule to tests to activate the {@link EnableFeatures} annotations and choose flags
+     * Add this rule to tests to activate the {@link Features} annotations and choose flags
      * to enable, or get rid of exceptions when the production code tries to check for enabled
      * features.
      */
-    public static class Processor extends AnnotationProcessor<EnableFeatures> {
+    class Processor extends AnnotationProcessor<Features> {
         public Processor() {
-            super(EnableFeatures.class);
+            super(Features.class);
         }
 
         @Override
         protected void before() throws Throwable {
-            Set<String> enabledFeatures = new HashSet<>();
-            String[] values = getAnnotation().value();
-            enabledFeatures.addAll(Arrays.asList(values));
-            ChromeFeatureList.setTestEnabledFeatures(enabledFeatures);
+            Map<String, Boolean> registeredFeatures = new HashMap<>();
+            Register[] values = getAnnotation().value();
+
+            for (Register featureState : values) {
+                registeredFeatures.put(featureState.value(), featureState.enabled());
+            }
+
+            ChromeFeatureList.setTestFeatures(registeredFeatures);
         }
 
         @Override
         protected void after() {
-            ChromeFeatureList.setTestEnabledFeatures(null);
+            ChromeFeatureList.setTestFeatures(null);
         }
     }
-}
+    }

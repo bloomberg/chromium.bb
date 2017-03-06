@@ -41,7 +41,7 @@ public final class CardsVariationParameters {
     private CardsVariationParameters() {}
 
     // TODO(jkrcal): Do a proper general fix in VariationsAssociatedData in the spirit of
-    // @EnableFeatures and ChromeFeatureList.
+    // @Features and ChromeFeatureList.
     /**
      * Sets the parameter values to use in JUnit tests, since native calls are not available there.
      */

@@ -48,7 +48,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowResources;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.EnableFeatures;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.Features;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NTPTileSource;
@@ -62,14 +63,14 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @Config(manifest = Config.NONE,
         shadows = {TileGroupTest.TileShadowResources.class,
                 TileGroupTest.ShadowLayoutInflater.class})
-@EnableFeatures({})
+@Features(@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME))
 public class TileGroupTest {
     private static final int MAX_TILES_TO_FETCH = 4;
     private static final int TILE_TITLE_LINES = 1;
     private static final String[] URLS = {"https://www.google.com", "https://tellmedadjokes.com"};
 
     @Rule
-    public EnableFeatures.Processor mEnableFeatureProcessor = new EnableFeatures.Processor();
+    public Features.Processor mFeaturesProcessor = new Features.Processor();
 
     @Mock
     private TileGroup.Observer mTileGroupObserver;
