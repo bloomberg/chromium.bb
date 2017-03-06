@@ -63,7 +63,7 @@ void BluetoothRemoteGATTServer::ConnectCallback(
     return;
 
   if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
-    m_device->bluetooth()->addToConnectedDevicesMap(device()->id(), device());
+    m_device->bluetooth()->addToConnectedDevicesMap(m_device->id(), m_device);
     setConnected(true);
     resolver->resolve(this);
   } else {
@@ -77,7 +77,7 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState) {
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
   service->RemoteServerConnect(
-      device()->id(), convertToBaseCallback(WTF::bind(
+      m_device->id(), convertToBaseCallback(WTF::bind(
                           &BluetoothRemoteGATTServer::ConnectCallback,
                           wrapPersistent(this), wrapPersistent(resolver))));
 
@@ -87,10 +87,10 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState) {
 void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState) {
   if (!m_connected)
     return;
-  device()->cleanupDisconnectedDeviceAndFireEvent();
-  m_device->bluetooth()->removeFromConnectedDevicesMap(device()->id());
+  m_device->cleanupDisconnectedDeviceAndFireEvent();
+  m_device->bluetooth()->removeFromConnectedDevicesMap(m_device->id());
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
-  service->RemoteServerDisconnect(device()->id());
+  service->RemoteServerDisconnect(m_device->id());
 }
 
 // Callback that allows us to resolve the promise with a single service or
@@ -119,7 +119,7 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
       DCHECK_EQ(1u, services->size());
       resolver->resolve(m_device->getOrCreateRemoteGATTService(
           std::move(services.value()[0]), true /* isPrimary */,
-          device()->id()));
+          m_device->id()));
       return;
     }
 
@@ -128,7 +128,7 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
 
     for (auto& service : services.value()) {
       gattServices.push_back(m_device->getOrCreateRemoteGATTService(
-          std::move(service), true /* isPrimary */, device()->id()));
+          std::move(service), true /* isPrimary */, m_device->id()));
     }
     resolver->resolve(gattServices);
   } else {
@@ -180,7 +180,7 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServicesImpl(
     ScriptState* scriptState,
     mojom::blink::WebBluetoothGATTQueryQuantity quantity,
     String servicesUUID) {
-  if (!connected()) {
+  if (!m_connected) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(NetworkError, kGATTServerNotConnected));
@@ -192,7 +192,7 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServicesImpl(
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
   service->RemoteServerGetPrimaryServices(
-      device()->id(), quantity, servicesUUID,
+      m_device->id(), quantity, servicesUUID,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTServer::GetPrimaryServicesCallback,
                     wrapPersistent(this), servicesUUID, quantity,

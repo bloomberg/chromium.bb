@@ -76,9 +76,6 @@ class BluetoothRemoteGattCharacteristicBlueZ
  private:
   friend class BluetoothRemoteGattServiceBlueZ;
 
-  using PendingStartNotifyCall =
-      std::pair<NotifySessionCallback, ErrorCallback>;
-
   BluetoothRemoteGattCharacteristicBlueZ(
       BluetoothRemoteGattServiceBlueZ* service,
       const dbus::ObjectPath& object_path);

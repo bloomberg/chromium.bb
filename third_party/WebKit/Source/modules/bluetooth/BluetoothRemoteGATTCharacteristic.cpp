@@ -380,7 +380,7 @@ void BluetoothRemoteGATTCharacteristic::GetDescriptorsCallback(
     return;
 
   // If the device is disconnected, reject.
-  if (!service()->device()->gatt()->RemoveFromActiveAlgorithms(resolver)) {
+  if (!m_service->device()->gatt()->RemoveFromActiveAlgorithms(resolver)) {
     resolver->reject(BluetoothError::createDOMException(
         blink::mojom::WebBluetoothResult::GATT_SERVER_DISCONNECTED));
     return;
@@ -392,7 +392,7 @@ void BluetoothRemoteGATTCharacteristic::GetDescriptorsCallback(
     if (quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
       DCHECK_EQ(1u, descriptors->size());
       resolver->resolve(
-          service()->device()->getOrCreateBluetoothRemoteGATTDescriptor(
+          m_service->device()->getOrCreateBluetoothRemoteGATTDescriptor(
               std::move(descriptors.value()[0]), this));
       return;
     }
@@ -401,7 +401,7 @@ void BluetoothRemoteGATTCharacteristic::GetDescriptorsCallback(
     gattDescriptors.reserveInitialCapacity(descriptors->size());
     for (auto& descriptor : descriptors.value()) {
       gattDescriptors.push_back(
-          service()->device()->getOrCreateBluetoothRemoteGATTDescriptor(
+          m_service->device()->getOrCreateBluetoothRemoteGATTDescriptor(
               std::move(descriptor), this));
     }
     resolver->resolve(gattDescriptors);
