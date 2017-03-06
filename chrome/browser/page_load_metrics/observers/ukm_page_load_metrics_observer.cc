@@ -11,7 +11,7 @@
 namespace internal {
 
 const char kUkmPageLoadEventName[] = "PageLoad";
-const char kUkmParseStartName[] = "ParseTiming.ParseStart";
+const char kUkmParseStartName[] = "ParseTiming.NavigationToParseStart";
 const char kUkmDomContentLoadedName[] =
     "DocumentTiming.NavigationToDOMContentLoadedEventFired";
 const char kUkmLoadEventName[] = "DocumentTiming.NavigationToLoadEventFired";
