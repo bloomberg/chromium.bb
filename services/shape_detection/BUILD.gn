@@ -12,6 +12,7 @@ source_set("lib") {
     "face_detection_provider_impl.h",
     "shape_detection_service.cc",
     "shape_detection_service.h",
+    "text_detection_impl.h",
   ]
 
   if (is_mac) {
@@ -22,12 +23,15 @@ source_set("lib") {
       "detection_utils_mac.mm",
       "face_detection_impl_mac.h",
       "face_detection_impl_mac.mm",
+      "text_detection_impl_mac.h",
+      "text_detection_impl_mac.mm",
     ]
     libs = [ "QuartzCore.framework" ]
   } else {
     sources += [
       "barcode_detection_impl.cc",
       "face_detection_provider_impl.cc",
+      "text_detection_impl.cc",
     ]
   }
 
@@ -57,6 +61,7 @@ source_set("tests") {
     sources += [
       "barcode_detection_impl_mac_unittest.mm",
       "face_detection_impl_mac_unittest.mm",
+      "text_detection_impl_mac_unittest.mm",
     ]
 
     libs = [

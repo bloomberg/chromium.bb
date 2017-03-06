@@ -9,6 +9,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/shape_detection/barcode_detection_impl.h"
 #include "services/shape_detection/face_detection_provider_impl.h"
+#include "services/shape_detection/text_detection_impl.h"
 
 namespace shape_detection {
 
@@ -45,6 +46,7 @@ bool ShapeDetectionService::OnConnect(
       base::Bind(&OnConnectionLost, base::Passed(&connection_ref)));
   registry->AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
   registry->AddInterface(base::Bind(&FaceDetectionProviderImpl::Create));
+  registry->AddInterface(base::Bind(&TextDetectionImpl::Create));
   return true;
 }
 

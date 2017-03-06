@@ -5,7 +5,8 @@
     "service_manager:connector": {
       "provides": {
         "face_detection": [ "shape_detection::mojom::FaceDetectionProvider" ],
-        "barcode_detection": [ "shape_detection::mojom::BarcodeDetection" ]
+        "barcode_detection": [ "shape_detection::mojom::BarcodeDetection" ],
+        "text_detection": [ "shape_detection::mojom::TextDetection" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]
