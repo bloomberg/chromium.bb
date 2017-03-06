@@ -73,6 +73,7 @@ LayerTreeImpl::LayerTreeImpl(
       max_page_scale_factor_(0),
       device_scale_factor_(1.f),
       painted_device_scale_factor_(1.f),
+      content_source_id_(0),
       elastic_overscroll_(elastic_overscroll),
       layers_(new OwnedLayerImplList),
       viewport_size_invalid_(false),
@@ -486,6 +487,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
   target_tree->SetDeviceColorSpace(device_color_space_);
   target_tree->elastic_overscroll()->PushPendingToActive();
+
+  target_tree->set_content_source_id(content_source_id());
 
   target_tree->pending_page_scale_animation_ =
       std::move(pending_page_scale_animation_);

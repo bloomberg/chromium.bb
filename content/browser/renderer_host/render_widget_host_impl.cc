@@ -294,6 +294,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       last_event_type_(blink::WebInputEvent::Undefined),
       new_content_rendering_delay_(
           base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
+      current_content_source_id_(0),
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
@@ -985,7 +986,9 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   RendererIsResponsive();
 }
 
-void RenderWidgetHostImpl::StartNewContentRenderingTimeout() {
+void RenderWidgetHostImpl::StartNewContentRenderingTimeout(
+    uint32_t next_source_id) {
+  current_content_source_id_ = next_source_id;
   // It is possible for a compositor frame to arrive before the browser is
   // notified about the page being committed, in which case no timer is
   // necessary.
@@ -1829,7 +1832,13 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   if (touch_emulator_)
     touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
-  if (view_) {
+  // Ignore this frame if its content has already been unloaded. Source ID
+  // is always zero for an OOPIF because we are only concerned with displaying
+  // stale graphics on top-level frames. We accept frames that have a source ID
+  // greater than |current_content_source_id_| because in some cases the first
+  // compositor frame can arrive before the navigation commit message that
+  // updates that value.
+  if (view_ && frame.metadata.content_source_id >= current_content_source_id_) {
     view_->OnSwapCompositorFrame(compositor_frame_sink_id, std::move(frame));
     view_->DidReceiveRendererFrame();
   } else {
