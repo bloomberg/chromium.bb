@@ -30,5 +30,20 @@ void CastResourceDispatcherHostDelegate::RequestComplete(
   CastBrowserProcess::GetInstance()->connectivity_checker()->Check();
 }
 
+void CastResourceDispatcherHostDelegate::RequestComplete(
+    net::URLRequest* url_request) {
+  if (url_request->status().status() == net::URLRequestStatus::FAILED) {
+    metrics::CastMetricsHelper* metrics_helper =
+        metrics::CastMetricsHelper::GetInstance();
+    metrics_helper->RecordApplicationEventWithValue(
+        "Cast.Platform.ResourceRequestError",
+        url_request->status().error());
+    LOG(ERROR) << "Failed to load resource " << url_request->url()
+               << "; status:" << url_request->status().status() << ", error:"
+               << net::ErrorToShortString(url_request->status().error());
+    CastBrowserProcess::GetInstance()->connectivity_checker()->Check();
+  }
+}
+
 }  // namespace shell
 }  // namespace chromecast

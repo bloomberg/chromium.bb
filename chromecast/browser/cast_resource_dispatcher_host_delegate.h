@@ -18,6 +18,8 @@ class CastResourceDispatcherHostDelegate
 
   // content::ResourceDispatcherHostDelegate implementation:
   void RequestComplete(net::URLRequest* url_request, int net_error) override;
+  // TODO(seantopping): Deprecate this once the above method becomes used.
+  void RequestComplete(net::URLRequest* url_request) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastResourceDispatcherHostDelegate);
