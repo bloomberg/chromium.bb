@@ -325,19 +325,6 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection,
   setSelection(newSelection.asSelection(), options);
 }
 
-void FrameSelection::setSelection(
-    const VisibleSelectionInFlatTree& newSelection,
-    HandleVisibility handleVisibility,
-    SetSelectionOptions options,
-    CursorAlignOnScroll align,
-    TextGranularity granularity) {
-  setSelection(
-      SelectionInFlatTree::Builder(newSelection.asSelection())
-          .setIsHandleVisible(handleVisibility == HandleVisibility::Visible)
-          .build(),
-      options, align, granularity);
-}
-
 void FrameSelection::nodeChildrenWillBeRemoved(ContainerNode& container) {
   if (!container.inActiveDocument())
     return;
