@@ -50,13 +50,19 @@ std::unique_ptr<TrialToken> TrialToken::From(
     blink::WebOriginTrialTokenStatus* out_status) {
   DCHECK(out_status);
   std::string token_payload;
-  *out_status = Extract(token_text, public_key, &token_payload);
+  std::string token_signature;
+  *out_status =
+      Extract(token_text, public_key, &token_payload, &token_signature);
   if (*out_status != blink::WebOriginTrialTokenStatus::Success) {
     return nullptr;
   }
   std::unique_ptr<TrialToken> token = Parse(token_payload);
-  *out_status = token ? blink::WebOriginTrialTokenStatus::Success
-                      : blink::WebOriginTrialTokenStatus::Malformed;
+  if (token) {
+    token->signature_ = token_signature;
+    *out_status = blink::WebOriginTrialTokenStatus::Success;
+  } else {
+    *out_status = blink::WebOriginTrialTokenStatus::Malformed;
+  }
   return token;
 }
 
@@ -78,7 +84,8 @@ blink::WebOriginTrialTokenStatus TrialToken::IsValid(
 blink::WebOriginTrialTokenStatus TrialToken::Extract(
     const std::string& token_text,
     base::StringPiece public_key,
-    std::string* out_token_payload) {
+    std::string* out_token_payload,
+    std::string* out_token_signature) {
   if (token_text.empty()) {
     return blink::WebOriginTrialTokenStatus::Malformed;
   }
@@ -129,8 +136,9 @@ blink::WebOriginTrialTokenStatus TrialToken::Extract(
     return blink::WebOriginTrialTokenStatus::InvalidSignature;
   }
 
-  // Return just the payload, as a new string.
+  // Return the payload and signature, as new strings.
   *out_token_payload = token_contents.substr(kPayloadOffset, payload_length);
+  *out_token_signature = signature.as_string();
   return blink::WebOriginTrialTokenStatus::Success;
 }
 

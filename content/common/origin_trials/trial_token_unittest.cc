@@ -64,6 +64,13 @@ const char* kSampleToken =
     "7FO5L22sNvkZZnacLvmfNwsAAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
     "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
     "IjogMTQ1ODc2NjI3N30=";
+const uint8_t kSampleTokenSignature[] = {
+    0x9f, 0x90, 0xfd, 0x09, 0xb4, 0x10, 0xb6, 0x9d, 0x66, 0xa9, 0x7e,
+    0x76, 0x51, 0x06, 0x4b, 0x09, 0xc0, 0x56, 0xc1, 0x59, 0x2a, 0x00,
+    0x84, 0xb5, 0x46, 0x60, 0xf2, 0x27, 0x50, 0x0b, 0x7b, 0x9e, 0x92,
+    0x42, 0x1e, 0x49, 0x92, 0x18, 0xd6, 0xd7, 0xed, 0xa1, 0x87, 0x6b,
+    0xc2, 0x1a, 0xa3, 0xec, 0x53, 0xb9, 0x2f, 0x6d, 0xac, 0x36, 0xf9,
+    0x19, 0x66, 0x76, 0x9c, 0x2e, 0xf9, 0x9f, 0x37, 0x0b};
 
 // This is a good subdomain trial token, signed with the above test private key.
 // Generate this token with the command (in tools/origin_trials):
@@ -74,6 +81,13 @@ const char* kSampleSubdomainToken =
     "FjpbmQG+VCPk1NrldVXZng4AAABoeyJvcmlnaW4iOiAiaHR0cHM6Ly9leGFtcGxl"
     "LmNvbTo0NDMiLCAiaXNTdWJkb21haW4iOiB0cnVlLCAiZmVhdHVyZSI6ICJGcm9i"
     "dWxhdGUiLCAiZXhwaXJ5IjogMTQ1ODc2NjI3N30=";
+const uint8_t kSampleSubdomainTokenSignature[] = {
+    0xeb, 0xbe, 0x8f, 0xd9, 0xd7, 0x01, 0x0a, 0x32, 0xe7, 0xeb, 0x74,
+    0xd0, 0xc8, 0x96, 0x6a, 0x46, 0x70, 0x14, 0x4c, 0x5c, 0x74, 0xd0,
+    0xbc, 0x10, 0xd9, 0x11, 0x74, 0xad, 0x60, 0x2f, 0x83, 0x8c, 0x14,
+    0x74, 0xb4, 0x01, 0xb6, 0x42, 0xb1, 0xcb, 0x25, 0x0d, 0x37, 0x0f,
+    0xd5, 0xf8, 0xcd, 0x16, 0x3a, 0x5b, 0x99, 0x01, 0xbe, 0x54, 0x23,
+    0xe4, 0xd4, 0xda, 0xe5, 0x75, 0x55, 0xd9, 0x9e, 0x0e};
 
 // This is a good trial token, explicitly not a subdomain, signed with the above
 // test private key. Generate this token with the command:
@@ -84,6 +98,13 @@ const char* kSampleNonSubdomainToken =
     "lvH52Winvy39tHbsU2gJJQYAAABveyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
     "eGFtcGxlLmNvbTo0NDMiLCAiaXNTdWJkb21haW4iOiBmYWxzZSwgImZlYXR1cmUi"
     "OiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6IDE0NTg3NjYyNzd9";
+const uint8_t kSampleNonSubdomainTokenSignature[] = {
+    0xb7, 0x83, 0xf7, 0xbf, 0x43, 0xee, 0xd3, 0xb4, 0x96, 0xe4, 0x99,
+    0x4e, 0xbd, 0x7e, 0xff, 0xe2, 0x7a, 0x13, 0x44, 0x92, 0x8f, 0xf1,
+    0x84, 0x53, 0x22, 0xca, 0xe3, 0x5a, 0x35, 0x85, 0x71, 0x73, 0x5f,
+    0x0d, 0x51, 0xed, 0x9d, 0x61, 0x08, 0x31, 0xec, 0xd2, 0x05, 0xd6,
+    0x55, 0x2b, 0xb5, 0x96, 0xf1, 0xf9, 0xd9, 0x68, 0xa7, 0xbf, 0x2d,
+    0xfd, 0xb4, 0x76, 0xec, 0x53, 0x68, 0x09, 0x25, 0x06};
 
 const char* kExpectedFeatureName = "Frobulate";
 const char* kExpectedOrigin = "https://valid.example.com";
@@ -198,6 +219,15 @@ class TrialTokenTest : public testing::TestWithParam<const char*> {
         expected_expiry_(base::Time::FromDoubleT(kExpectedExpiry)),
         valid_timestamp_(base::Time::FromDoubleT(kValidTimestamp)),
         invalid_timestamp_(base::Time::FromDoubleT(kInvalidTimestamp)),
+        expected_signature_(
+            std::string(reinterpret_cast<const char*>(kSampleTokenSignature),
+                        arraysize(kSampleTokenSignature))),
+        expected_subdomain_signature_(std::string(
+            reinterpret_cast<const char*>(kSampleSubdomainTokenSignature),
+            arraysize(kSampleSubdomainTokenSignature))),
+        expected_nonsubdomain_signature_(std::string(
+            reinterpret_cast<const char*>(kSampleNonSubdomainTokenSignature),
+            arraysize(kSampleNonSubdomainTokenSignature))),
         correct_public_key_(
             base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
                               arraysize(kTestPublicKey))),
@@ -208,15 +238,18 @@ class TrialTokenTest : public testing::TestWithParam<const char*> {
  protected:
   blink::WebOriginTrialTokenStatus Extract(const std::string& token_text,
                                            base::StringPiece public_key,
-                                           std::string* token_payload) {
-    return TrialToken::Extract(token_text, public_key, token_payload);
+                                           std::string* token_payload,
+                                           std::string* token_signature) {
+    return TrialToken::Extract(token_text, public_key, token_payload,
+                               token_signature);
   }
 
   blink::WebOriginTrialTokenStatus ExtractIgnorePayload(
       const std::string& token_text,
       base::StringPiece public_key) {
     std::string token_payload;
-    return Extract(token_text, public_key, &token_payload);
+    std::string token_signature;
+    return Extract(token_text, public_key, &token_payload, &token_signature);
   }
 
   std::unique_ptr<TrialToken> Parse(const std::string& token_payload) {
@@ -251,6 +284,10 @@ class TrialTokenTest : public testing::TestWithParam<const char*> {
   const base::Time valid_timestamp_;
   const base::Time invalid_timestamp_;
 
+  std::string expected_signature_;
+  std::string expected_subdomain_signature_;
+  std::string expected_nonsubdomain_signature_;
+
  private:
   base::StringPiece correct_public_key_;
   base::StringPiece incorrect_public_key_;
@@ -264,26 +301,34 @@ class TrialTokenTest : public testing::TestWithParam<const char*> {
 // token.
 TEST_F(TrialTokenTest, ValidateValidSignature) {
   std::string token_payload;
-  blink::WebOriginTrialTokenStatus status =
-      Extract(kSampleToken, correct_public_key(), &token_payload);
+  std::string token_signature;
+  blink::WebOriginTrialTokenStatus status = Extract(
+      kSampleToken, correct_public_key(), &token_payload, &token_signature);
   ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
   EXPECT_STREQ(kSampleTokenJSON, token_payload.c_str());
+  EXPECT_EQ(expected_signature_, token_signature);
 }
 
 TEST_F(TrialTokenTest, ValidateSubdomainValidSignature) {
   std::string token_payload;
+  std::string token_signature;
   blink::WebOriginTrialTokenStatus status =
-      Extract(kSampleSubdomainToken, correct_public_key(), &token_payload);
+      Extract(kSampleSubdomainToken, correct_public_key(), &token_payload,
+              &token_signature);
   ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
   EXPECT_STREQ(kSampleSubdomainTokenJSON, token_payload.c_str());
+  EXPECT_EQ(expected_subdomain_signature_, token_signature);
 }
 
 TEST_F(TrialTokenTest, ValidateNonSubdomainValidSignature) {
   std::string token_payload;
+  std::string token_signature;
   blink::WebOriginTrialTokenStatus status =
-      Extract(kSampleNonSubdomainToken, correct_public_key(), &token_payload);
+      Extract(kSampleNonSubdomainToken, correct_public_key(), &token_payload,
+              &token_signature);
   ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
   EXPECT_STREQ(kSampleNonSubdomainTokenJSON, token_payload.c_str());
+  EXPECT_EQ(expected_nonsubdomain_signature_, token_signature);
 }
 
 TEST_F(TrialTokenTest, ValidateInvalidSignature) {
@@ -430,13 +475,15 @@ TEST_F(TrialTokenTest, SubdomainTokenIsValid) {
             token->IsValid(expected_origin_, invalid_timestamp_));
 }
 
-// Test overall extraction, to ensure output status matches returned token
+// Test overall extraction, to ensure output status matches returned token, and
+// signature is provided.
 TEST_F(TrialTokenTest, ExtractValidToken) {
   blink::WebOriginTrialTokenStatus status;
   std::unique_ptr<TrialToken> token =
       TrialToken::From(kSampleToken, correct_public_key(), &status);
   EXPECT_TRUE(token);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
+  EXPECT_EQ(expected_signature_, token->signature());
 }
 
 TEST_F(TrialTokenTest, ExtractInvalidSignature) {

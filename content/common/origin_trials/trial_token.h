@@ -60,6 +60,7 @@ class CONTENT_EXPORT TrialToken {
   bool match_subdomains() const { return match_subdomains_; }
   std::string feature_name() { return feature_name_; }
   base::Time expiry_time() { return expiry_time_; }
+  std::string signature() { return signature_; }
 
  protected:
   // Tests can access the Parse method directly to validate it, and so are
@@ -69,14 +70,16 @@ class CONTENT_EXPORT TrialToken {
   friend class TrialTokenTest;
   friend int ::LLVMFuzzerTestOneInput(const uint8_t*, size_t);
 
-  // If the string represents a properly signed and well-formed token, the token
-  // payload is returned in the |out_token_payload| parameter and success is
-  // returned. Otherwise,the return code indicates what was wrong with the
-  // string, and |out_token_payload| is unchanged.
+  // If the string represents a properly signed and well-formed token, success
+  // is returned, with the token payload and signature returned in the
+  // |out_token_payload| and |out_token_signature| parameters, respectively.
+  // Otherwise,the return code indicates what was wrong with the string, and
+  // |out_token_payload| and |out_token_signature| are unchanged.
   static blink::WebOriginTrialTokenStatus Extract(
       const std::string& token_text,
       base::StringPiece public_key,
-      std::string* out_token_payload);
+      std::string* out_token_payload,
+      std::string* out_token_signature);
 
   // Returns a token object if the string represents a well-formed JSON token
   // payload, or nullptr otherwise.
@@ -107,6 +110,9 @@ class CONTENT_EXPORT TrialToken {
 
   // The time until which this token should be considered valid.
   base::Time expiry_time_;
+
+  // The signature identifying the fully signed contents of the token.
+  std::string signature_;
 };
 
 }  // namespace content

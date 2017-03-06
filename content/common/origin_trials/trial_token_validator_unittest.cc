@@ -60,6 +60,13 @@ const char kSampleToken[] =
     "O4fM3Sa+MEd+5JcIgSZafw8AAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
     "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
     "IjogMjAwMDAwMDAwMH0=";
+const uint8_t kSampleTokenSignature[] = {
+    0xe4, 0x7f, 0xd6, 0x68, 0x3e, 0xff, 0x0e, 0x51, 0x38, 0xb3, 0x79,
+    0xe0, 0xe9, 0x36, 0xd2, 0xb0, 0x29, 0x2b, 0x7a, 0x29, 0x81, 0x1e,
+    0xd3, 0xab, 0xd6, 0x5f, 0xce, 0x10, 0x13, 0x42, 0x69, 0xc2, 0x6b,
+    0xe0, 0x6d, 0x3c, 0x0d, 0x51, 0x47, 0x0e, 0x0d, 0x8a, 0x07, 0xf7,
+    0xdf, 0xaa, 0xfe, 0x3b, 0x87, 0xcc, 0xdd, 0x26, 0xbe, 0x30, 0x47,
+    0x7e, 0xe4, 0x97, 0x08, 0x81, 0x26, 0x5a, 0x7f, 0x0f};
 
 // The token should be valid for this origin and for this feature.
 const char kAppropriateOrigin[] = "https://valid.example.com";
@@ -85,6 +92,13 @@ const char kExpiredToken[] =
     "RrOtlAwa0gPqqn+A8GTD3AQAAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
     "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
     "IjogMTAwMDAwMDAwMH0=";
+const uint8_t kExpiredTokenSignature[] = {
+    0x61, 0xcf, 0x50, 0x85, 0xcc, 0x69, 0x77, 0xbd, 0x8d, 0x65, 0xbc,
+    0x90, 0x97, 0x83, 0x15, 0x7a, 0x25, 0x56, 0x34, 0xfd, 0xde, 0x9e,
+    0x17, 0x32, 0x72, 0xb8, 0xfa, 0x33, 0x18, 0x77, 0x6a, 0x63, 0xaa,
+    0xd1, 0x5c, 0x60, 0x1d, 0x5b, 0x52, 0x67, 0x43, 0xf0, 0xfb, 0xa7,
+    0x40, 0xa3, 0x3e, 0x46, 0xb3, 0xad, 0x94, 0x0c, 0x1a, 0xd2, 0x03,
+    0xea, 0xaa, 0x7f, 0x80, 0xf0, 0x64, 0xc3, 0xdc, 0x04};
 
 const char kUnparsableToken[] = "abcde";
 
@@ -119,10 +133,19 @@ class TestOriginTrialPolicy : public OriginTrialPolicy {
   void DisableFeature(const std::string& feature) {
     disabled_features_.insert(feature);
   }
+  void DisableToken(const std::string& token) {
+    disabled_tokens_.insert(token);
+  }
+
+ protected:
+  bool IsTokenDisabled(base::StringPiece token_signature) const override {
+    return disabled_tokens_.count(token_signature.as_string()) > 0;
+  }
 
  private:
   const uint8_t* key_ = nullptr;
   std::set<std::string> disabled_features_;
+  std::set<std::string> disabled_tokens_;
 };
 
 class TestContentClient : public ContentClient {
@@ -138,6 +161,9 @@ class TestContentClient : public ContentClient {
   void DisableFeature(const std::string& feature) {
     origin_trial_policy_.DisableFeature(feature);
   }
+  void DisableToken(const std::string& token_signature) {
+    origin_trial_policy_.DisableToken(token_signature);
+  }
 
  private:
   TestOriginTrialPolicy origin_trial_policy_;
@@ -151,6 +177,12 @@ class TrialTokenValidatorTest : public testing::Test {
       : appropriate_origin_(GURL(kAppropriateOrigin)),
         inappropriate_origin_(GURL(kInappropriateOrigin)),
         insecure_origin_(GURL(kInsecureOrigin)),
+        valid_token_signature_(
+            std::string(reinterpret_cast<const char*>(kSampleTokenSignature),
+                        arraysize(kSampleTokenSignature))),
+        expired_token_signature_(
+            std::string(reinterpret_cast<const char*>(kExpiredTokenSignature),
+                        arraysize(kExpiredTokenSignature))),
         response_headers_(new net::HttpResponseHeaders("")) {
     SetPublicKey(kTestPublicKey);
     SetContentClient(&test_content_client_);
@@ -175,9 +207,16 @@ class TrialTokenValidatorTest : public testing::Test {
     test_content_client_.DisableFeature(feature);
   }
 
+  void DisableToken(const std::string& token_signature) {
+    test_content_client_.DisableToken(token_signature);
+  }
+
   const url::Origin appropriate_origin_;
   const url::Origin inappropriate_origin_;
   const url::Origin insecure_origin_;
+
+  std::string valid_token_signature_;
+  std::string expired_token_signature_;
 
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
@@ -254,6 +293,22 @@ TEST_F(TrialTokenValidatorTest, MAYBE_ValidatorRespectsDisabledFeatures) {
   EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token's feature; it should no longer be valid
   DisableFeature(kAppropriateFeatureName);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::FeatureDisabled,
+            TrialTokenValidator::ValidateToken(kSampleToken,
+                                               appropriate_origin_, &feature));
+}
+
+TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledTokens) {
+  std::string feature;
+  // Disable an irrelevant token; token should still validate
+  DisableToken(expired_token_signature_);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+            TrialTokenValidator::ValidateToken(kSampleToken,
+                                               appropriate_origin_, &feature));
+  EXPECT_EQ(kAppropriateFeatureName, feature);
+  // Disable the token; it should no longer be valid
+  DisableToken(valid_token_signature_);
+  // TODO(chasej): Add a new status for disabled tokens
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::FeatureDisabled,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
