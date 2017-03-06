@@ -657,8 +657,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
       }
       if (session())
         protocol::TargetHandler::FromSession(session())->UpdateServiceWorkers();
-    } else if (pending_ &&
-               pending_->host() == navigation_handle->GetRenderFrameHost()) {
+    } else if (pending_ && pending_->host()->GetFrameTreeNodeId() ==
+                               navigation_handle->GetFrameTreeNodeId()) {
       DiscardPending();
     }
     DCHECK(CheckConsistency());
