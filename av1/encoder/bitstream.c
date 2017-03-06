@@ -4061,6 +4061,13 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_TILE_GROUPS
   write_uncompressed_header(cpi, wb);
 
+#if CONFIG_EXT_REFS
+  if (cm->show_existing_frame) {
+    total_size = aom_wb_bytes_written(wb);
+    return (uint32_t)total_size;
+  }
+#endif  // CONFIG_EXT_REFS
+
   // Write the tile length code
   tile_size_bytes_wb = *wb;
   aom_wb_write_literal(wb, 3, 2);
