@@ -1,18 +1,28 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.1.0 (2017-03-06)
+An influx of new contributors have made sure that liblouis continues
+to improve. Back translation has seen major improvements, there are
+some additional modes to help screen readers, for many tables meta
+data has been added, the Python bindings are more robust, Windows
+support has been improved, the YAML test suite has been generalized
+and as usual new and improved braille tables have been included. On
+the licensing front we managed to get almost all tables re-licensed to
+LGPLv2.1+.
+
 ** New features
 *** Meta data
-Most of the translation tables now contain metadata. This makes them
+Most of the translation tables now contain meta data. This makes them
 discoverable. Programs can use the lou_findTable function to find a
 table based on a query.
+
 *** noUndefinedDots mode
 Add a noUndefinedDots mode to disable the output of dot numbers when
 back-translating undefined patterns. Thanks to James Teh.
 
-When backtranslating input from a braille keyboard cell by cell, it is
+When back translating input from a braille keyboard cell by cell, it is
 desirable to output characters as soon as they are produced.
-Similarly, when backtranslating contracted braille, it is desirable to
+Similarly, when back translating contracted braille, it is desirable to
 provide a "guess" to the user of the characters they typed. To achieve
 this, liblouis needs to have the ability to produce no text when
 indicators (which don't produce a character by themselves) are not
@@ -32,6 +42,7 @@ the end of a word will not take effect. This is intended to be used
 when translating input typed on a braille keyboard to provide a rough
 idea to the user of the characters they are typing before the word is
 complete.
+
 *** YAML test framework
 The YAML framework has been extended and is much more useful now. You
 can test multiple tables within one YAML file, you can define test
@@ -40,6 +51,7 @@ test data. Refer to the documentation for the details.
 
 If really not wanted the YAML tests can be disabled by specifying
 ~configure --without-yaml~.
+
 ** Bug fixes
 - Fixes implicit declaration of 'pattern_check' thanks to  Reiner Dolp
 - Fix a stackoverflow crash on applications with smaller stack size.
@@ -49,21 +61,23 @@ If really not wanted the YAML tests can be disabled by specifying
   compiled with a different character size than Python. Thanks to Matt
   Wenn.
 - Massive bug fixes in multipass rules. Dave Mielke has done a
-  tremendeous job improving the multipass machinery also in the
+  tremendous job improving the multipass machinery also in the
   context of back-translation. Where needed nofor/noback has been
   added to the multipass rules.
+
 ** Other changes
-- Improvements to the emacs mode for editing liblouis tables thanks to
+- Improvements to the Emacs mode for editing liblouis tables thanks to
   Christian Egli
 - Documenting lou_charSize thanks to Reiner Dolp
 - Support for relative table paths in the tests. This will make sure
   you always know which table a test actually uses.
 - Infrastructure to build windows binaries in a Docker container,
   thanks to Bert Frees
+
 ** Braille table improvements
 - UEB improvements, thanks to Mike Gray
   - Fixed apostrophe and back translation
-  - Added rules for unicode apostrophe handling
+  - Added rules for Unicode apostrophe handling
   - Improvements to UEB and Nemeth math
 - Complete overhaul of Lithuanian 8-dots table, thanks to Rimas
   Kudelis
@@ -71,7 +85,7 @@ If really not wanted the YAML tests can be disabled by specifying
 - Improvements to Italian 8 dots computer braille, thanks to Simone
   Dal Maso.
 - New table ~unicode-braille.utb~ that helps to back translate braille
-  input to unicode braille output, thanks to Leonard de Ruijter.
+  input to Unicode braille output, thanks to Leonard de Ruijter.
 - Improvements to the Chinese braille table thanks to Coscell Kao.
 - New Turkish braille table for grade 1 that should replace the
   old ~tr.ctb~ table, thanks to Arend Arends.
@@ -80,7 +94,7 @@ If really not wanted the YAML tests can be disabled by specifying
 - New table for the International Phonetic Alphabet thanks to Ludovic
   Oger
 - Fixes for the French 6 and 8 dots tables thanks to Michel Such. Some
-  errors have been fixed and many unicode characters have been added.
+  errors have been fixed and many Unicode characters have been added.
 - Add an extended 8-dot computer braille table for U.S. English thanks
   to Davy Kager. The table is tailored for use on Windows (CP-1252)
   and uses dot patterns from Windows screen readers, but should be
@@ -95,8 +109,9 @@ If really not wanted the YAML tests can be disabled by specifying
   characters. The absence of its definition leads to users not being
   able to know how many characters were typed in such fields. This has
   been improved for many tables thanks to Victor Montalvao.
+
 ** License changes
-- DocArch has agreed to relicense their tables, so we have 8 more
+- DocArch has agreed to re-license their tables, so we have 8 more
   tables under the LGPLv2.1+.
 
 ** Backwards incompatible changes
