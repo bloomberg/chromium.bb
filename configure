@@ -53,7 +53,6 @@ Advanced options:
   ${toggle_static}                static library support
   ${toggle_small}                 favor smaller size over speed
   ${toggle_postproc_visualizer}   macro block / block level visualizers
-  ${toggle_multi_res_encoding}    enable multiple-resolution encoding
   ${toggle_temporal_denoising}    enable temporal denoising and disable the spatial denoiser
   ${toggle_av1_temporal_denoising}
                                   enable av1 temporal denoising
@@ -358,7 +357,6 @@ CONFIG_LIST="
     inspection
     decode_perf_tests
     encode_perf_tests
-    multi_res_encoding
     temporal_denoising
     av1_temporal_denoising
     coefficient_range_checking
@@ -418,7 +416,6 @@ CMDLINE_SELECT="
     inspection
     decode_perf_tests
     encode_perf_tests
-    multi_res_encoding
     temporal_denoising
     av1_temporal_denoising
     coefficient_range_checking
