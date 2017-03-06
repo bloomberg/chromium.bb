@@ -2,6 +2,7 @@
 <title>FontFaceSet.ready attribute</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<div style="font-family: ahem">A</div>
 <script>
 
 promise_test(function(t) {
@@ -35,5 +36,17 @@ promise_test(function(t) {
                           'FontFaceSet.status after FontFaceSet.ready is resolved');
         });
 }, 'FontFaceSet.ready attribute');
+
+promise_test(function(t) {
+    var face = new FontFace('ahem', 'url(../../resources/Ahem.ttf)');
+
+    return document.fonts.ready
+        .then(function(fonts) {
+            document.fonts.add(face);
+            return document.fonts.ready;
+        }).then(function(fonts) {
+            assert_equals(face.status, 'loaded');
+        });
+}, 'FontFaceSet.ready should be resolved after layout operations which may cause font loads.');
 
 </script>
