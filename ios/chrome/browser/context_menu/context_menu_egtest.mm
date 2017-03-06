@@ -56,12 +56,6 @@ id<GREYMatcher> OpenImageInNewTabButton() {
       IDS_IOS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
 }
 
-// Matcher for the open link in new tab button in the context menu.
-// TODO(crbug.com/638674): Clean up code duplication.
-id<GREYMatcher> OpenLinkInNewTabButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-}
-
 // Waits for the context menu item to disappear. TODO(crbug.com/682871): Remove
 // this once EarlGrey is synchronized with context menu.
 void WaitForContextMenuItemDisappeared(id<GREYMatcher> contextMenuItemButton) {
@@ -180,7 +174,8 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   [ChromeEarlGrey loadURL:initialURL];
   chrome_test_util::AssertMainTabCount(1U);
 
-  LongPressElementAndTapOnButton(kDestinationLinkID, OpenLinkInNewTabButton());
+  LongPressElementAndTapOnButton(kDestinationLinkID,
+                                 chrome_test_util::OpenLinkInNewTabMenuItem());
 
   SelectTabAtIndexInCurrentMode(1U);
 
@@ -222,7 +217,8 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
                                           kDestinationLinkID)]
       assertWithMatcher:grey_notNil()];
 
-  LongPressElementAndTapOnButton(kDestinationLinkID, OpenLinkInNewTabButton());
+  LongPressElementAndTapOnButton(kDestinationLinkID,
+                                 chrome_test_util::OpenLinkInNewTabMenuItem());
 
   // Earl Grey cannot preperly synchronize some animations, so adding a
   // WaitUntilCondition to wait for the new tab opening animation to finish

@@ -227,4 +227,8 @@ id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
                     nil);
 }
 
+id<GREYMatcher> OpenLinkInNewTabMenuItem() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+}
+
 }  // namespace chrome_test_util

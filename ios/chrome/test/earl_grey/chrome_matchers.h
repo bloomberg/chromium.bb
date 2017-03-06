@@ -84,6 +84,10 @@ id<GREYMatcher> ShowTabsButton();
 id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
                                          BOOL isOn);
 
+// Matcher for the Open in New Tab option in the context menu when long pressing
+// a link.
+id<GREYMatcher> OpenLinkInNewTabMenuItem();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

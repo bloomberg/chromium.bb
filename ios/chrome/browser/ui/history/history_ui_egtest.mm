@@ -42,6 +42,7 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::OpenLinkInNewTabMenuItem;
 using chrome_test_util::WebViewContainingText;
 
 namespace {
@@ -114,10 +115,6 @@ id<GREYMatcher> CancelButton() {
 id<GREYMatcher> OpenClearBrowsingDataButton() {
   return ButtonWithAccessibilityLabelId(
       IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
-}
-// Matcher for the Open in New Tab option in the context menu.
-id<GREYMatcher> OpenInNewTabButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
 }
 // Matcher for the Open in New Incognito Tab option in the context menu.
 id<GREYMatcher> OpenInNewIncognitoTabButton() {
@@ -430,7 +427,7 @@ void MockSignIn() {
 
   // Select "Open in New Tab" and confirm that new tab is opened with selected
   // URL.
-  [[EarlGrey selectElementWithMatcher:OpenInNewTabButton()]
+  [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabMenuItem()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           _URL1.GetContent())]

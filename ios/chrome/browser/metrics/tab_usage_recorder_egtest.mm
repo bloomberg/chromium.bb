@@ -179,16 +179,14 @@ void SwitchToNormalMode() {
     // Leave the tab switcher.
     CloseTabSwitcher();
   } else {
-    [[EarlGrey selectElementWithMatcher:
-                   chrome_test_util::ButtonWithAccessibilityLabelId(
-                       IDS_IOS_TOOLBAR_SHOW_TABS)] performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+        performAction:grey_tap()];
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::ButtonWithAccessibilityLabelId(
                        IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB)]
         performAction:grey_swipeSlowInDirection(kGREYDirectionRight)];
-    [[EarlGrey selectElementWithMatcher:
-                   chrome_test_util::ButtonWithAccessibilityLabelId(
-                       IDS_IOS_TOOLBAR_SHOW_TABS)] performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+        performAction:grey_tap()];
   }
   ConditionBlock condition = ^bool {
     return !chrome_test_util::IsIncognitoMode();
@@ -235,9 +233,7 @@ void OpenSettingsMenuUnsynced() {
 // iPhone).
 void SelectTabUsingUI(NSString* title) {
   if (IsCompact()) {
-    WaitAndTap(chrome_test_util::ButtonWithAccessibilityLabelId(
-                   IDS_IOS_TOOLBAR_SHOW_TABS),
-               @"Tab switcher");
+    WaitAndTap(chrome_test_util::ShowTabsButton(), @"Tab switcher");
   }
   WaitAndTap(grey_text(title),
              [NSString stringWithFormat:@"tab with title %@", title]);
@@ -860,8 +856,7 @@ void SelectTabUsingUI(NSString* title) {
       performAction:grey_longPress()];
 
   [[EarlGrey
-      selectElementWithMatcher:grey_text(l10n_util::GetNSString(
-                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB))]
+      selectElementWithMatcher:chrome_test_util::OpenLinkInNewTabMenuItem()]
       performAction:grey_tap()];
   chrome_test_util::AssertMainTabCount(numberOfTabs + 1);
 

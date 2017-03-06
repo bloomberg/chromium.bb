@@ -288,12 +288,10 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no hidden toolbar in tablet)");
   }
 
-  NSString* tabSwitcherLabel =
-      l10n_util::GetNSString(IDS_IOS_TOOLBAR_SHOW_TABS);
   NSString* toolsMenuLabel = l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS);
 
   // Check that the toolbar's tab switcher and tools menu buttons are visible.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(tabSwitcherLabel)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(toolsMenuLabel)]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -306,7 +304,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
   AssertNTPScrolledToTop(YES);
 
   // Check that tab switcher and tools menu buttons are not on screen.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(tabSwitcherLabel)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_notVisible()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(toolsMenuLabel)]
       assertWithMatcher:grey_notVisible()];
