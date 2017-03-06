@@ -1192,9 +1192,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     @Override
     public void cancelDownload(
-            String downloadGuid, boolean isOffTheRecord, boolean isNotificationDismissed) {
-        nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord,
-                isNotificationDismissed);
+            String downloadGuid, boolean isOffTheRecord) {
+        nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
         removeDownloadProgress(downloadGuid);
         recordDownloadFinishedUMA(DOWNLOAD_STATUS_CANCELLED, downloadGuid, 0);
     }
@@ -1812,8 +1811,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private native void nativeResumeDownload(
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
     private native void nativeCancelDownload(
-            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord,
-            boolean isNotificationDismissed);
+            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
     private native void nativePauseDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord);
     private native void nativeRemoveDownload(long nativeDownloadManagerService, String downloadGuid,

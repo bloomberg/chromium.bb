@@ -10,10 +10,8 @@ public interface DownloadServiceDelegate {
      * Called to cancel a download.
      * @param downloadGuid GUID of the download.
      * @param isOffTheRecord Whether the download is off the record.
-     * @param isNotificationDismissed Whether cancel is caused by dismissing the notification.
      */
-    void cancelDownload(String downloadGuid, boolean isOffTheRecord,
-            boolean isNotificationDismissed);
+    void cancelDownload(String downloadGuid, boolean isOffTheRecord);
 
     /**
      * Called to pause a download.

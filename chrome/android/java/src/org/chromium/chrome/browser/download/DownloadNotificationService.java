@@ -361,7 +361,7 @@ public class DownloadNotificationService extends Service {
             notifyDownloadCanceled(entry.downloadGuid);
             if (cancelActualDownload) {
                 DownloadServiceDelegate delegate = getServiceDelegate(entry.itemType);
-                delegate.cancelDownload(entry.downloadGuid, entry.isOffTheRecord, false);
+                delegate.cancelDownload(entry.downloadGuid, entry.isOffTheRecord);
                 delegate.destroyServiceDelegate();
             }
             for (Observer observer : mObservers) observer.onDownloadCanceled(entry.downloadGuid);
@@ -718,10 +718,6 @@ public class DownloadNotificationService extends Service {
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, entry.notificationId));
 
-        Intent dismissIntent = new Intent(cancelIntent);
-        dismissIntent.putExtra(EXTRA_NOTIFICATION_DISMISSED, true);
-        builder.setDeleteIntent(buildPendingIntent(dismissIntent, entry.notificationId));
-
         updateNotification(entry.notificationId, builder.build(), downloadGuid,
                 entry.isOfflinePage(),
                 new DownloadSharedPreferenceEntry(entry.notificationId, entry.isOffTheRecord,
@@ -933,6 +929,11 @@ public class DownloadNotificationService extends Service {
             return;
         } else if (ACTION_DOWNLOAD_OPEN.equals(intent.getAction())) {
             // TODO(fgorski): Do we even need to do anything special here, before we launch Chrome?
+        } else if (ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())
+                && IntentUtils.safeGetBooleanExtra(intent, EXTRA_NOTIFICATION_DISMISSED, false)) {
+            // User canceled a download by dismissing its notification from earlier versions, ignore
+            // it. TODO(qinmin): remove this else-if block after M60.
+            return;
         }
 
         BrowserParts parts = new EmptyBrowserParts() {
@@ -956,8 +957,7 @@ public class DownloadNotificationService extends Service {
                         // don't need to restart the browser process. http://crbug.com/579643.
                         cancelNotification(entry.notificationId, entry.downloadGuid);
                         downloadServiceDelegate.cancelDownload(entry.downloadGuid,
-                                entry.isOffTheRecord, IntentUtils.safeGetBooleanExtra(
-                                        intent, EXTRA_NOTIFICATION_DISMISSED, false));
+                                entry.isOffTheRecord);
                         for (Observer observer : mObservers) {
                             observer.onDownloadCanceled(entry.downloadGuid);
                         }
@@ -1019,7 +1019,7 @@ public class DownloadNotificationService extends Service {
 
         // Pass information directly to the DownloadManagerService.
         if (TextUtils.equals(action, ACTION_DOWNLOAD_CANCEL)) {
-            getServiceDelegate(itemType).cancelDownload(downloadGuid, isOffTheRecord, false);
+            getServiceDelegate(itemType).cancelDownload(downloadGuid, isOffTheRecord);
         } else if (TextUtils.equals(action, ACTION_DOWNLOAD_PAUSE)) {
             getServiceDelegate(itemType).pauseDownload(downloadGuid, isOffTheRecord);
         } else if (TextUtils.equals(action, ACTION_DOWNLOAD_RESUME)) {

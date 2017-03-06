@@ -126,8 +126,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
     }
 
     @Override
-    public void cancelDownload(String downloadGuid, boolean isOffTheRecord,
-            boolean isNotificationDismissed) {
+    public void cancelDownload(String downloadGuid, boolean isOffTheRecord) {
         cancelDownload(downloadGuid);
     }
 

@@ -259,13 +259,10 @@ void DownloadManagerService::CancelDownload(
     JNIEnv* env,
     jobject obj,
     const JavaParamRef<jstring>& jdownload_guid,
-    bool is_off_the_record,
-    bool is_notification_dismissed) {
+    bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
   DownloadController::RecordDownloadCancelReason(
-      is_notification_dismissed ?
-          DownloadController::CANCEL_REASON_NOTIFICATION_DISMISSED :
-          DownloadController::CANCEL_REASON_ACTION_BUTTON);
+      DownloadController::CANCEL_REASON_ACTION_BUTTON);
   if (is_history_query_complete_ || is_off_the_record)
     CancelDownloadInternal(download_guid, is_off_the_record);
   else
