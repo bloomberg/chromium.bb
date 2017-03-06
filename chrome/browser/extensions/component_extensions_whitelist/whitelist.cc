@@ -83,9 +83,6 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     case IDR_CRYPTOTOKEN_MANIFEST:
     case IDR_FEEDBACK_MANIFEST:
     case IDR_GAIA_AUTH_MANIFEST:
-#if defined(ENABLE_GOOGLE_NOW)
-    case IDR_GOOGLE_NOW_MANIFEST:
-#endif
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     case IDR_HANGOUT_SERVICES_MANIFEST:
 #endif

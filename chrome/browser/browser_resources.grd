@@ -421,9 +421,6 @@
       </if>
       <include name="IDR_PROFILER_HTML" file="resources\profiler\profiler.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_PROFILER_JS" file="resources\profiler\profiler.js" flattenhtml="true" type="BINDATA" compress="gzip" />
-      <if expr="enable_google_now">
-        <include name="IDR_GOOGLE_NOW_MANIFEST" file="resources\google_now\manifest.json" type="BINDATA" />
-      </if>
       <include name="IDR_SITE_ENGAGEMENT_HTML" file="resources\engagement\site_engagement.html" flattenhtml="true" type="BINDATA" compress="gzip" />
       <include name="IDR_SITE_ENGAGEMENT_JS" file="resources\engagement\site_engagement.js" flattenhtml="true" type="BINDATA" compress="gzip" />
       <include name="IDR_SITE_ENGAGEMENT_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\engagement\site_engagement.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
