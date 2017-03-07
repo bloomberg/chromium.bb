@@ -15,10 +15,6 @@
 <dom-module id="settings-reset-profile-dialog">
   <template>
     <style include="settings-shared action-link">
-      .footer a {
-        vertical-align: middle;
-      }
-
       paper-spinner {
         margin: 0 8px;
       }
@@ -48,10 +44,8 @@
         </paper-button>
       </div>
       <div class="footer border-top-divider">
-        <paper-checkbox id="sendSettings"
-            checked>$i18n{resetPageFeedback}</paper-checkbox>
-        <a is="action-link"
-            on-tap="onShowReportedSettingsTap_">$i18n{viewReportedSettings}</a>
+        <paper-checkbox id="sendSettings" checked>
+          $i18nRaw{resetPageFeedback}</paper-checkbox>
       </div>
     </dialog>
   </template>

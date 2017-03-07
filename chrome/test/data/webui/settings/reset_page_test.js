@@ -99,12 +99,17 @@ cr.define('settings_reset_page', function() {
         var dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
 
+        var checkbox = dialog.$$('.footer paper-checkbox');
+        assertTrue(checkbox.checked);
         var showReportedSettingsLink = dialog.$$('.footer a');
         assertTrue(!!showReportedSettingsLink);
         MockInteractions.tap(showReportedSettingsLink);
 
         return resetPageBrowserProxy.whenCalled('showReportedSettings').then(
             function() {
+              // Ensure that the checkbox was not toggled as a result of
+              // clicking the link.
+              assertTrue(checkbox.checked);
               assertFalse(dialog.$.reset.disabled);
               assertFalse(dialog.$.resetSpinner.active);
               MockInteractions.tap(dialog.$.reset);

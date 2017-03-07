@@ -716,7 +716,6 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
     {"triggeredResetPageTitle", IDS_TRIGGERED_RESET_PROFILE_SETTINGS_TITLE},
     {"resetPageCommit", IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON},
     {"resetPageFeedback", IDS_SETTINGS_RESET_PROFILE_FEEDBACK},
-    {"viewReportedSettings", IDS_SETTINGS_RESET_VIEW_REPORTED_SETTINGS},
 #if defined(OS_CHROMEOS)
     {"powerwashTitle", IDS_OPTIONS_FACTORY_RESET},
     {"powerwashDialogTitle", IDS_OPTIONS_FACTORY_RESET_HEADING},

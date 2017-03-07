@@ -106,6 +106,6 @@
 
   <!-- Reset Page -->
   <message name="IDS_SETTINGS_RESET_PROFILE_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
-    Help make Chromium better by reporting the current settings.
+    Help make Chromium better by reporting the <ph name="BEGIN_LINK">&lt;a is="action-link" target="_blank"&gt;</ph>current settings<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
 </grit-part>

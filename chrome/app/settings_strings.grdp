@@ -1632,9 +1632,6 @@
   <message name="IDS_SETTINGS_RESET" desc="Name of the settings page where settings may be reset.">
     Reset
   </message>
-  <message name="IDS_SETTINGS_RESET_VIEW_REPORTED_SETTINGS" desc="Label of a link that when clicked displays the settings that will be reported to Google for analysis.">
-    View report
-  </message>
   <message name="IDS_SETTINGS_RESET_AUTOMATED_DIALOG_TITLE" desc="The title of the dialog informing the user that automated resetting of some settings occurred.">
     Some settings were reset
   </message>

@@ -75,6 +75,13 @@ Polymer({
     this.addEventListener('cancel', function() {
       this.browserProxy_.onHideResetProfileDialog();
     }.bind(this));
+
+    this.$$('paper-checkbox a').addEventListener(
+        'tap', this.onShowReportedSettingsTap_.bind(this));
+    // Prevent toggling of the checkbox when hitting the "Enter" key on the
+    // link.
+    this.$$('paper-checkbox a').addEventListener(
+        'keydown', function(e) { e.stopPropagation(); });
   },
 
   /** @private */
@@ -123,9 +130,11 @@ Polymer({
 
   /**
    * Displays the settings that will be reported in a new tab.
+   * @param {!Event} e
    * @private
    */
-  onShowReportedSettingsTap_: function() {
+  onShowReportedSettingsTap_: function(e) {
     this.browserProxy_.showReportedSettings();
+    e.stopPropagation();
   },
 });
