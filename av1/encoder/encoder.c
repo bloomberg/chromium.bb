@@ -751,9 +751,6 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
   } else {
     cpi->extra_rstbuf = NULL;
   }
-  for (int i = 0; i < MAX_MB_PLANE; ++i)
-    av1_alloc_restoration_struct(cm, &cpi->rst_search[i], cm->width,
-                                 cm->height);
 #endif  // CONFIG_LOOP_RESTORATION
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,
@@ -3912,6 +3909,17 @@ static void init_motion_estimation(AV1_COMP *cpi) {
   }
 }
 
+#if CONFIG_LOOP_RESTORATION
+static void set_restoration_tilesize(int width, int height,
+                                     RestorationInfo *rst) {
+  (void)width;
+  (void)height;
+  rst[0].restoration_tilesize = (RESTORATION_TILESIZE_MAX >> 1);
+  rst[1].restoration_tilesize = rst[0].restoration_tilesize;
+  rst[2].restoration_tilesize = rst[0].restoration_tilesize;
+}
+#endif  // CONFIG_LOOP_RESTORATION
+
 static void set_frame_size(AV1_COMP *cpi) {
   int ref_frame;
   AV1_COMMON *const cm = &cpi->common;
@@ -3968,11 +3976,20 @@ static void set_frame_size(AV1_COMP *cpi) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
 
+#if CONFIG_LOOP_RESTORATION
+  set_restoration_tilesize(cm->width, cm->height, cm->rst_info);
+  for (int i = 0; i < MAX_MB_PLANE; ++i)
+    cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
+  av1_alloc_restoration_buffers(cm);
+  for (int i = 0; i < MAX_MB_PLANE; ++i) {
+    cpi->rst_search[i].restoration_tilesize =
+        cm->rst_info[i].restoration_tilesize;
+    av1_alloc_restoration_struct(cm, &cpi->rst_search[i], cm->width,
+                                 cm->height);
+  }
+#endif  // CONFIG_LOOP_RESTORATION
   alloc_util_frame_buffers(cpi);
   init_motion_estimation(cpi);
-#if CONFIG_LOOP_RESTORATION
-  av1_alloc_restoration_buffers(cm);
-#endif  // CONFIG_LOOP_RESTORATION
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     RefBuffer *const ref_buf = &cm->frame_refs[ref_frame - LAST_FRAME];

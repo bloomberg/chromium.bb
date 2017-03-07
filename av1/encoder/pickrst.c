@@ -138,8 +138,9 @@ static int64_t try_restoration_tile(const YV12_BUFFER_CONFIG *src,
     width = src->uv_crop_width;
     height = src->uv_crop_height;
   }
-  ntiles = av1_get_rest_ntiles(width, height, &tile_width, &tile_height,
-                               &nhtiles, &nvtiles);
+  ntiles = av1_get_rest_ntiles(
+      width, height, cm->rst_info[components_pattern > 1].restoration_tilesize,
+      &tile_width, &tile_height, &nhtiles, &nvtiles);
   (void)ntiles;
 
   av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, components_pattern,
@@ -344,8 +345,9 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
   // Allocate for the src buffer at high precision
-  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
-                                         &tile_height, &nhtiles, &nvtiles);
+  const int ntiles = av1_get_rest_ntiles(
+      cm->width, cm->height, cm->rst_info[0].restoration_tilesize, &tile_width,
+      &tile_height, &nhtiles, &nvtiles);
   rsi->frame_restoration_type = RESTORE_SGRPROJ;
 
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
@@ -557,8 +559,9 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   RestorationInfo *rsi = &cpi->rst_search[0];
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
-  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
-                                         &tile_height, &nhtiles, &nvtiles);
+  const int ntiles = av1_get_rest_ntiles(
+      cm->width, cm->height, cm->rst_info[0].restoration_tilesize, &tile_width,
+      &tile_height, &nhtiles, &nvtiles);
 
   rsi->frame_restoration_type = RESTORE_DOMAINTXFMRF;
 
@@ -964,8 +967,9 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   double score;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
-  const int ntiles = av1_get_rest_ntiles(width, height, &tile_width,
-                                         &tile_height, &nhtiles, &nvtiles);
+  const int ntiles =
+      av1_get_rest_ntiles(width, height, cm->rst_info[1].restoration_tilesize,
+                          &tile_width, &tile_height, &nhtiles, &nvtiles);
   assert(width == dgd->uv_crop_width);
   assert(height == dgd->uv_crop_height);
 
@@ -1101,8 +1105,9 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   double score;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
-  const int ntiles = av1_get_rest_ntiles(width, height, &tile_width,
-                                         &tile_height, &nhtiles, &nvtiles);
+  const int ntiles =
+      av1_get_rest_ntiles(width, height, cm->rst_info[0].restoration_tilesize,
+                          &tile_width, &tile_height, &nhtiles, &nvtiles);
   assert(width == dgd->y_crop_width);
   assert(height == dgd->y_crop_height);
   assert(width == src->y_crop_width);
@@ -1214,8 +1219,9 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
-  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
-                                         &tile_height, &nhtiles, &nvtiles);
+  const int ntiles = av1_get_rest_ntiles(
+      cm->width, cm->height, cm->rst_info[0].restoration_tilesize, &tile_width,
+      &tile_height, &nhtiles, &nvtiles);
   (void)info;
   (void)dst_frame;
   (void)partial_frame;
@@ -1246,8 +1252,9 @@ static double search_switchable_restoration(
   MACROBLOCK *x = &cpi->td.mb;
   double cost_switchable = 0;
   int r, bits, tile_idx;
-  const int ntiles =
-      av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
+  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height,
+                                         cm->rst_info[0].restoration_tilesize,
+                                         NULL, NULL, NULL, NULL);
   (void)partial_frame;
 
   rsi->frame_restoration_type = RESTORE_SWITCHABLE;
@@ -1285,8 +1292,9 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   double best_cost_restore;
   RestorationType r, best_restore;
 
-  const int ntiles =
-      av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
+  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height,
+                                         cm->rst_info[0].restoration_tilesize,
+                                         NULL, NULL, NULL, NULL);
 
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++) {
     tile_cost[r] = (double *)aom_malloc(sizeof(*tile_cost[0]) * ntiles);

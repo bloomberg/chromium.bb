@@ -88,6 +88,7 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
 }
 
 #if CONFIG_LOOP_RESTORATION
+// Assumes cm->rst_info[p].restoration_tilesize is already initialized
 void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   int p;
   av1_alloc_restoration_struct(cm, &cm->rst_info[0], cm->width, cm->height);

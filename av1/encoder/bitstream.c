@@ -3402,6 +3402,19 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       default: assert(0);
     }
   }
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    rsi = &cm->rst_info[0];
+    if (rsi->restoration_tilesize == RESTORATION_TILESIZE_MAX) {
+      aom_wb_write_bit(wb, 0);
+    }
+    aom_wb_write_bit(wb, rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX);
+    if (rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX) {
+      aom_wb_write_bit(
+          wb, rsi->restoration_tilesize != (RESTORATION_TILESIZE_MAX >> 1));
+    }
+  }
 }
 
 static void write_wiener_filter(WienerInfo *wiener_info, aom_writer *wb) {
@@ -3436,12 +3449,13 @@ static void write_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
 
 static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   int i, p;
-  const int ntiles =
-      av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
-  const int ntiles_uv =
-      av1_get_rest_ntiles(ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
-                          ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
-                          NULL, NULL, NULL, NULL);
+  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height,
+                                         cm->rst_info[0].restoration_tilesize,
+                                         NULL, NULL, NULL, NULL);
+  const int ntiles_uv = av1_get_rest_ntiles(
+      ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
+      ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
+      cm->rst_info[1].restoration_tilesize, NULL, NULL, NULL, NULL);
   RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {

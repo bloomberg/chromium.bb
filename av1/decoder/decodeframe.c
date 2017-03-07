@@ -2560,6 +2560,21 @@ static void decode_restoration_mode(AV1_COMMON *cm,
     cm->rst_info[p].frame_restoration_type =
         aom_rb_read_bit(rb) ? RESTORE_WIENER : RESTORE_NONE;
   }
+
+  cm->rst_info[0].restoration_tilesize = RESTORATION_TILESIZE_MAX;
+  cm->rst_info[1].restoration_tilesize = RESTORATION_TILESIZE_MAX;
+  cm->rst_info[2].restoration_tilesize = RESTORATION_TILESIZE_MAX;
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    rsi = &cm->rst_info[0];
+    rsi->restoration_tilesize >>= aom_rb_read_bit(rb);
+    if (rsi->restoration_tilesize != RESTORATION_TILESIZE_MAX) {
+      rsi->restoration_tilesize >>= aom_rb_read_bit(rb);
+    }
+    cm->rst_info[1].restoration_tilesize = cm->rst_info[0].restoration_tilesize;
+    cm->rst_info[2].restoration_tilesize = cm->rst_info[0].restoration_tilesize;
+  }
 }
 
 static void read_wiener_filter(WienerInfo *wiener_info, aom_reader *rb) {
@@ -2610,12 +2625,13 @@ static void read_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
 
 static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
   int i, p;
-  const int ntiles =
-      av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
-  const int ntiles_uv =
-      av1_get_rest_ntiles(ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
-                          ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
-                          NULL, NULL, NULL, NULL);
+  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height,
+                                         cm->rst_info[0].restoration_tilesize,
+                                         NULL, NULL, NULL, NULL);
+  const int ntiles_uv = av1_get_rest_ntiles(
+      ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
+      ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
+      cm->rst_info[1].restoration_tilesize, NULL, NULL, NULL, NULL);
   RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
@@ -4376,7 +4392,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   setup_clpf(pbi, rb);
 #endif
 #if CONFIG_LOOP_RESTORATION
-  av1_alloc_restoration_buffers(cm);
   decode_restoration_mode(cm, rb);
 #endif  // CONFIG_LOOP_RESTORATION
   setup_quantization(cm, rb);
@@ -4579,7 +4594,12 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                        "Failed to allocate bool decoder 0");
 
 #if CONFIG_LOOP_RESTORATION
-  decode_restoration(cm, &r);
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    av1_alloc_restoration_buffers(cm);
+    decode_restoration(cm, &r);
+  }
 #endif
 
 #if !CONFIG_EC_ADAPT

@@ -24,10 +24,9 @@ extern "C" {
 #define CLIP(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 #define RINT(x) ((x) < 0 ? (int)((x)-0.5) : (int)((x) + 0.5))
 
-#define RESTORATION_TILESIZE_SML 128
-#define RESTORATION_TILESIZE_BIG 256
+#define RESTORATION_TILESIZE_MAX 256
 #define RESTORATION_TILEPELS_MAX \
-  (RESTORATION_TILESIZE_BIG * RESTORATION_TILESIZE_BIG * 9 / 4)
+  (RESTORATION_TILESIZE_MAX * RESTORATION_TILESIZE_MAX * 9 / 4)
 
 #if USE_DOMAINTXFMRF
 #define DOMAINTXFMRF_PARAMS_BITS 6
@@ -56,7 +55,7 @@ extern "C" {
 // 2 for the restored versions of the frame and
 // 2 for each restoration operation
 #define SGRPROJ_OUTBUF_SIZE \
-  ((RESTORATION_TILESIZE_BIG * 3 / 2) * (RESTORATION_TILESIZE_BIG * 3 / 2 + 16))
+  ((RESTORATION_TILESIZE_MAX * 3 / 2) * (RESTORATION_TILESIZE_MAX * 3 / 2 + 16))
 #define SGRPROJ_TMPBUF_SIZE                         \
   (RESTORATION_TILEPELS_MAX * 2 * sizeof(int32_t) + \
    SGRPROJ_OUTBUF_SIZE * 2 * sizeof(int32_t))
@@ -160,6 +159,7 @@ typedef struct { int sigma_r; } DomaintxfmrfInfo;
 #endif  // USE_DOMAINTXFMRF
 
 typedef struct {
+  int restoration_tilesize;
   RestorationType frame_restoration_type;
   RestorationType *restoration_type;
   // Wiener filter
@@ -181,19 +181,11 @@ typedef struct {
   int32_t *tmpbuf;
 } RestorationInternal;
 
-static INLINE int get_rest_tilesize(int width, int height) {
-  if (width * height <= 352 * 288)
-    return RESTORATION_TILESIZE_SML;
-  else
-    return RESTORATION_TILESIZE_BIG;
-}
-
-static INLINE int av1_get_rest_ntiles(int width, int height, int *tile_width,
-                                      int *tile_height, int *nhtiles,
-                                      int *nvtiles) {
+static INLINE int av1_get_rest_ntiles(int width, int height, int tilesize,
+                                      int *tile_width, int *tile_height,
+                                      int *nhtiles, int *nvtiles) {
   int nhtiles_, nvtiles_;
   int tile_width_, tile_height_;
-  int tilesize = get_rest_tilesize(width, height);
   tile_width_ = (tilesize < 0) ? width : AOMMIN(tilesize, width);
   tile_height_ = (tilesize < 0) ? height : AOMMIN(tilesize, height);
   nhtiles_ = (width + (tile_width_ >> 1)) / tile_width_;

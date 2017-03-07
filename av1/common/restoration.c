@@ -58,8 +58,8 @@ typedef void (*restore_func_highbd_type)(uint8_t *data8, int width, int height,
 
 int av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rst_info,
                                  int width, int height) {
-  const int ntiles = av1_get_rest_ntiles(width, height, NULL, NULL, NULL, NULL);
-  rst_info->frame_restoration_type = RESTORE_NONE;
+  const int ntiles = av1_get_rest_ntiles(
+      width, height, rst_info->restoration_tilesize, NULL, NULL, NULL, NULL);
   aom_free(rst_info->restoration_type);
   CHECK_MEM_ERROR(cm, rst_info->restoration_type,
                   (RestorationType *)aom_malloc(
@@ -1444,9 +1444,9 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   if ((components_pattern >> AOM_PLANE_Y) & 1) {
     if (rsi[0].frame_restoration_type != RESTORE_NONE) {
       cm->rst_internal.ntiles = av1_get_rest_ntiles(
-          cm->width, cm->height, &cm->rst_internal.tile_width,
-          &cm->rst_internal.tile_height, &cm->rst_internal.nhtiles,
-          &cm->rst_internal.nvtiles);
+          cm->width, cm->height, cm->rst_info[AOM_PLANE_Y].restoration_tilesize,
+          &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
+          &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[0];
       restore_func =
           restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
@@ -1473,6 +1473,7 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       cm->rst_internal.ntiles = av1_get_rest_ntiles(
           ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
           ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
+          cm->rst_info[AOM_PLANE_U].restoration_tilesize,
           &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[AOM_PLANE_U];
@@ -1501,6 +1502,7 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       cm->rst_internal.ntiles = av1_get_rest_ntiles(
           ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
           ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
+          cm->rst_info[AOM_PLANE_V].restoration_tilesize,
           &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[AOM_PLANE_V];
