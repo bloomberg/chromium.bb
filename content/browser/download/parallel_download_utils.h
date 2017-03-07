@@ -12,10 +12,9 @@
 
 namespace content {
 
-// Find the first gap in an array of received slices and return it as the next
-// slice to download. If not found, return a slice that is to the end of all
-// slices. |received_slices| must be ordered by offsets.
-CONTENT_EXPORT DownloadItem::ReceivedSlice FindNextSliceToDownload(
+// Given an array of slices that are received, returns an array of slices to
+// download. |received_slices| must be ordered by offsets.
+CONTENT_EXPORT std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
     const std::vector<DownloadItem::ReceivedSlice>& received_slices);
 
 }  //  namespace content

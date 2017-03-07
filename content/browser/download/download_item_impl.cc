@@ -1967,9 +1967,10 @@ void DownloadItemImpl::ResumeInterruptedDownload(
                                 storage_partition->GetURLRequestContext()));
   download_params->set_file_path(GetFullPath());
   if (received_slices_.size() > 0) {
-    ReceivedSlice next_slice = FindNextSliceToDownload(received_slices_);
-    download_params->set_offset(next_slice.offset);
-    download_params->set_length(next_slice.received_bytes);
+    std::vector<DownloadItem::ReceivedSlice> slices_to_download
+        = FindSlicesToDownload(received_slices_);
+    download_params->set_offset(slices_to_download[0].offset);
+    download_params->set_length(slices_to_download[0].received_bytes);
   } else {
     download_params->set_offset(GetReceivedBytes());
   }

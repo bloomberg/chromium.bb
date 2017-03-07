@@ -5,6 +5,8 @@
 #include "content/browser/download/parallel_download_job.h"
 
 #include "base/memory/ptr_util.h"
+#include "content/browser/download/download_create_info.h"
+#include "content/browser/download/parallel_download_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -21,11 +23,20 @@ const int kParallelRequestCount = 2;
 
 ParallelDownloadJob::ParallelDownloadJob(
     DownloadItemImpl* download_item,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle)
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+    const DownloadCreateInfo& create_info)
     : DownloadJobImpl(download_item, std::move(request_handle)),
-      request_num_(kParallelRequestCount) {}
+      request_num_(kParallelRequestCount),
+      initial_request_offset_(create_info.save_info->offset),
+      initial_request_length_(create_info.save_info->length) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
+
+void ParallelDownloadJob::Start() {
+  DownloadJobImpl::Start();
+
+  BuildParallelRequests();
+}
 
 void ParallelDownloadJob::Cancel(bool user_cancel) {
   DownloadJobImpl::Cancel(user_cancel);
@@ -68,6 +79,31 @@ void ParallelDownloadJob::ForkRequestsForNewDownload(int64_t bytes_received,
                          : slice_size;
     CreateRequest(current_offset, length);
     current_offset += slice_size;
+  }
+}
+
+void ParallelDownloadJob::BuildParallelRequests() {
+  // Calculate the slices to download and fork parallel requests.
+  std::vector<DownloadItem::ReceivedSlice> slices_to_download =
+      FindSlicesToDownload(download_item_->GetReceivedSlices());
+  // The initial request has already been sent, it should cover the first slice.
+  DCHECK_GE(slices_to_download[0].offset, initial_request_offset_);
+  DCHECK(initial_request_length_ == DownloadSaveInfo::kLengthFullContent ||
+         initial_request_offset_ + initial_request_length_ >=
+             slices_to_download[0].offset +
+             slices_to_download[0].received_bytes);
+  if (slices_to_download.size() >= kParallelRequestCount) {
+    // The size of |slices_to_download| should be no larger than
+    // |kParallelRequestCount| unless |kParallelRequestCount| is changed after
+    // a download is interrupted. This could happen if we use finch to config
+    // the number of parallel requests.
+    // TODO(qinmin): Get the next |kParallelRequestCount - 1| slices and fork
+    // new requests. For the remaining slices, they will be handled once some
+    // of the workers finish their job.
+  } else {
+    // TODO(qinmin): Check the size of the last slice. If it is huge, we can
+    // split it into N pieces and pass the last N-1 pirces to different workers.
+    // Otherwise, just fork |slices_to_download.size()| number of workers.
   }
 }
 

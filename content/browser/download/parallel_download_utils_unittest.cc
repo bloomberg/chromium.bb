@@ -9,34 +9,50 @@
 
 namespace content {
 
-TEST(ParallelDownloadUtilsTest, FindNextSliceToDownload) {
-  std::vector<DownloadItem::ReceivedSlice> slices;
-  DownloadItem::ReceivedSlice slice = FindNextSliceToDownload(slices);
-  EXPECT_EQ(0, slice.offset);
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent, slice.received_bytes);
+TEST(ParallelDownloadUtilsTest, FindSlicesToDownload) {
+  std::vector<DownloadItem::ReceivedSlice> downloaded_slices;
+  std::vector<DownloadItem::ReceivedSlice> slices_to_download =
+      FindSlicesToDownload(downloaded_slices);
+  EXPECT_EQ(1u, slices_to_download.size());
+  EXPECT_EQ(0, slices_to_download[0].offset);
+  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+            slices_to_download[0].received_bytes);
 
-  slices.emplace_back(0, 500);
-  slice = FindNextSliceToDownload(slices);
-  EXPECT_EQ(500, slice.offset);
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent, slice.received_bytes);
+  downloaded_slices.emplace_back(0, 500);
+  slices_to_download = FindSlicesToDownload(downloaded_slices);
+  EXPECT_EQ(1u, slices_to_download.size());
+  EXPECT_EQ(500, slices_to_download[0].offset);
+  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+            slices_to_download[0].received_bytes);
 
   // Create a gap between slices.
-  slices.emplace_back(1000, 500);
-  slice = FindNextSliceToDownload(slices);
-  EXPECT_EQ(500, slice.offset);
-  EXPECT_EQ(500, slice.received_bytes);
+  downloaded_slices.emplace_back(1000, 500);
+  slices_to_download = FindSlicesToDownload(downloaded_slices);
+  EXPECT_EQ(2u, slices_to_download.size());
+  EXPECT_EQ(500, slices_to_download[0].offset);
+  EXPECT_EQ(500, slices_to_download[0].received_bytes);
+  EXPECT_EQ(1500, slices_to_download[1].offset);
+  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+            slices_to_download[1].received_bytes);
 
   // Fill the gap.
-  slices.emplace(slices.begin() + 1, slice);
-  slice = FindNextSliceToDownload(slices);
-  EXPECT_EQ(1500, slice.offset);
-  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent, slice.received_bytes);
+  downloaded_slices.emplace(
+      downloaded_slices.begin() + 1, slices_to_download[0]);
+  slices_to_download = FindSlicesToDownload(downloaded_slices);
+  EXPECT_EQ(1u, slices_to_download.size());
+  EXPECT_EQ(1500, slices_to_download[0].offset);
+  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+            slices_to_download[0].received_bytes);
 
   // Create a new gap at the beginning.
-  slices.erase(slices.begin());
-  slice = FindNextSliceToDownload(slices);
-  EXPECT_EQ(0, slice.offset);
-  EXPECT_EQ(500, slice.received_bytes);
+  downloaded_slices.erase(downloaded_slices.begin());
+  slices_to_download = FindSlicesToDownload(downloaded_slices);
+  EXPECT_EQ(2u, slices_to_download.size());
+  EXPECT_EQ(0, slices_to_download[0].offset);
+  EXPECT_EQ(500, slices_to_download[0].received_bytes);
+  EXPECT_EQ(1500, slices_to_download[1].offset);
+  EXPECT_EQ(DownloadSaveInfo::kLengthFullContent,
+            slices_to_download[1].received_bytes);
 }
 
 }  // namespace content

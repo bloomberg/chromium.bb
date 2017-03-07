@@ -48,7 +48,8 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
   // Build parallel download job.
   if (ShouldUseParallelDownload(create_info)) {
     return base::MakeUnique<ParallelDownloadJob>(download_item,
-                                                 std::move(req_handle));
+                                                 std::move(req_handle),
+                                                 create_info);
   }
 
   // An ordinary download job.

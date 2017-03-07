@@ -22,10 +22,12 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl {
  public:
   ParallelDownloadJob(
       DownloadItemImpl* download_item,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle);
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      const DownloadCreateInfo& create_info);
   ~ParallelDownloadJob() override;
 
   // DownloadUrlJob implementation.
+  void Start() override;
   void Cancel(bool user_cancel) override;
   void Pause() override;
   void Resume(bool resume_request) override;
@@ -41,12 +43,21 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl {
   // the last connection may take additional bytes.
   void ForkRequestsForNewDownload(int64_t bytes_received, int64_t total_bytes);
 
+  // Build parallel requests to download the remaining slices.
+  // TODO(qinmin): remove ForkRequestsForNewDownload() and move the logic into
+  // this function.
+  void BuildParallelRequests();
+
   // Create one range request, virtual for testing.
   virtual void CreateRequest(int64_t offset, int64_t length);
 
   // Number of concurrent requests for a new download, include the original
   // request.
   int request_num_;
+
+  // Information about the initial request when download is started.
+  int64_t initial_request_offset_;
+  int64_t initial_request_length_;
 
   // Subsequent tasks to send range requests.
   WorkerList workers_;

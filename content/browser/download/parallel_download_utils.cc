@@ -8,34 +8,35 @@
 
 namespace content {
 
-DownloadItem::ReceivedSlice FindNextSliceToDownload(
+std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
     const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
-  if (received_slices.empty())
-    return DownloadItem::ReceivedSlice(0, DownloadSaveInfo::kLengthFullContent);
+  std::vector<DownloadItem::ReceivedSlice> result;
+  if (received_slices.empty()) {
+    result.emplace_back(0, DownloadSaveInfo::kLengthFullContent);
+    return result;
+  }
 
   std::vector<DownloadItem::ReceivedSlice>::const_iterator iter =
       received_slices.begin();
   DCHECK_GE(iter->offset, 0);
   if (iter->offset != 0)
-    return DownloadItem::ReceivedSlice(0, iter->offset);
+    result.emplace_back(0, iter->offset);
 
-  int64_t offset = 0;
-  int64_t remaining_bytes = DownloadSaveInfo::kLengthFullContent;
-  while (iter != received_slices.end()) {
-    offset = iter->offset + iter->received_bytes;
+  while (true) {
+    int64_t offset = iter->offset + iter->received_bytes;
     std::vector<DownloadItem::ReceivedSlice>::const_iterator next =
         std::next(iter);
-    if (next == received_slices.end())
-      break;
-
-    DCHECK_GE(next->offset, offset);
-    if (next->offset > offset) {
-      remaining_bytes = next->offset - offset;
+    if (next == received_slices.end()) {
+      result.emplace_back(offset, DownloadSaveInfo::kLengthFullContent);
       break;
     }
+
+    DCHECK_GE(next->offset, offset);
+    if (next->offset > offset)
+      result.emplace_back(offset, next->offset - offset);
     iter = next;
   }
-  return DownloadItem::ReceivedSlice(offset, remaining_bytes);
+  return result;
 }
 
 }  // namespace content

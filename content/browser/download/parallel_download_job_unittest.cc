@@ -36,8 +36,10 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
  public:
   ParallelDownloadJobForTest(
       DownloadItemImpl* download_item,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle)
-      : ParallelDownloadJob(download_item, std::move(request_handle)) {}
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      const DownloadCreateInfo& create_info)
+      : ParallelDownloadJob(
+          download_item, std::move(request_handle), create_info) {}
 
   void CreateRequest(int64_t offset, int64_t length) override {
     fake_tasks_.push_back(std::pair<int64_t, int64_t>(offset, length));
@@ -56,7 +58,8 @@ class ParallelDownloadJobTest : public testing::Test {
     download_item_ =
         base::MakeUnique<NiceMock<MockDownloadItemImpl>>(item_delegate_.get());
     job_ = base::MakeUnique<ParallelDownloadJobForTest>(
-        download_item_.get(), base::MakeUnique<MockDownloadRequestHandle>());
+        download_item_.get(), base::MakeUnique<MockDownloadRequestHandle>(),
+        DownloadCreateInfo());
   }
 
   void CreateNewDownloadRequests(int64_t total_bytes,
