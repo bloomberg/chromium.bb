@@ -144,11 +144,6 @@ interface WindowManager {
 
   // End long lived properties. ------------------------------------------------
 
-  // Shadow style for the window. Type: mojom::ShadowStyle.
-  // TODO(sky): this is currently unused, either wire up or nuke:
-  // http://crbug.com/671714.
-  const string kShadowStyle_Property = "prop:shadow-style";
-
   // Called immediately when the WindowManager is obtained.
   OnConnect(uint16 client_id);
 
