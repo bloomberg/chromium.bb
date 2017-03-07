@@ -72,10 +72,9 @@ const CGFloat kNewTabOverlap = 8.0;
 const CGFloat kMaxTabWidth = 265.0;
 const CGFloat kMaxTabWidthForCompactLayout = 225.0;
 
-// Toggle button dimensions.
-const CGFloat kModeToggleButtonWidth = 36.0;
-const CGFloat kTabSwitcherToggleButtonWidth = 46.0;
-const CGFloat kModeToggleButtonBackgroundWidth = 62.0;
+// Tab Switcher button dimensions.
+const CGFloat kTabSwitcherButtonWidth = 46.0;
+const CGFloat kTabSwitcherButtonBackgroundWidth = 62.0;
 
 const CGFloat kNewTabRightPadding = 4.0;
 const CGFloat kMinTabWidth = 200.0;
@@ -123,12 +122,11 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   UIView* _view;
   TabStripView* _tabStripView;
   UIButton* _buttonNewTab;
-  // TODO(crbug.com/687132): Remove toggle button.
-  UIButton* _modeToggleButton;         // weak, nil if not visible.
-  UIButton* _tabSwitcherToggleButton;  // weak, nil if not visible.
+  base::scoped_nsobject<UIButton> _tabSwitcherButton;
 
-  // Background view of the toggle button. Only visible while in compact layout.
-  base::scoped_nsobject<UIImageView> _toggleButtonBackgroundView;
+  // Background view of the tab switcher button. Only visible while in compact
+  // layout.
+  base::scoped_nsobject<UIImageView> _tabSwitcherButtonBackgroundView;
 
   TabStrip::Style _style;
   base::WeakNSProtocol<id<FullScreenControllerDelegate>> _fullscreenDelegate;
@@ -186,20 +184,11 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   // as the new model index of the dragged tab when it is dropped.
   NSUInteger _placeholderGapModelIndex;
 
-  // If YES, display the mode toggle switch at the left side of the strip. Can
-  // be set after creation.
-  BOOL _hasModeToggleSwitch;
-
-  // If YES, display the tab switcher toggle switch at the left side of the
-  // strip. Can be set after creation.
-  BOOL _hasTabSwitcherToggleSwitch;
-
   base::mac::ObjCPropertyReleaser _propertyReleaser_TabStripController;
 }
 
 @property(nonatomic, readonly, retain) TabStripView* tabStripView;
 @property(nonatomic, readonly, retain) UIButton* buttonNewTab;
-@property(nonatomic, readonly, assign) UIButton* tabSwitcherToggleButton;
 
 // Initializes the tab array based on the the entries in the TabModel.  Creates
 // one TabView per Tab and adds it to the tabstrip.  A later call to
@@ -209,20 +198,6 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 // Initializes the tab array to have only one empty tab, for the case (used
 // during startup) when there is not a tab model available.
 - (void)initializeTabArrayWithNoModel;
-
-// Add and remove the mode toggle icon and adjusts the size of the scroll view
-// accordingly. Assumes incognito style has already been checked.
-- (void)installModeToggleButton;
-- (void)removeModeToggleButton;
-
-// Add and remove the tab switcher toggle icon and adjusts the size of the
-// scroll view accordingly. The tab switcher toggle button is replacing the
-// incognito mode toggle button.
-// TODO:(jbbegue) crbug/477676 Remove reference to the incognito toggle button
-// once we know for sure that it will be replaced by the tab switcher toggle
-// button.
-- (void)installTabSwitcherToggleButton;
-- (void)removeTabSwitcherToggleButton;
 
 // Returns an autoreleased TabView object with no content.
 - (TabView*)emptyTabView;
@@ -285,7 +260,6 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 // Returns the horizontal visible tab strip width used to compute the tab width
 // and the tabs and new tab button in regular layout mode.
-// Takes into account whether or not the mode toggle button is showing.
 - (CGFloat)tabStripVisibleSpace;
 
 // Shift all of the tab strip subviews by an amount equal to the content offset
@@ -338,19 +312,15 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 // Update the frame of the tab strip view (scrollview) frame, content inset and
 // toggle buttons states depending on the current layout mode.
-- (void)updateScrollViewFrameForToggleButton;
+- (void)updateScrollViewFrameForTabSwitcherButton;
 
 @end
 
 @implementation TabStripController
 
 @synthesize buttonNewTab = _buttonNewTab;
-@synthesize hasModeToggleSwitch = _hasModeToggleSwitch;
-@synthesize hasTabSwitcherToggleSwitch = _hasTabSwitcherToggleSwitch;
 @synthesize highlightsSelectedTab = _highlightsSelectedTab;
-@synthesize modeToggleButton = _modeToggleButton;
 @synthesize tabStripView = _tabStripView;
-@synthesize tabSwitcherToggleButton = _tabSwitcherToggleButton;
 @synthesize view = _view;
 
 - (instancetype)initWithTabModel:(TabModel*)tabModel
@@ -363,8 +333,6 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     _tabModel.reset([tabModel retain]);
     [_tabModel addObserver:self];
     _style = style;
-    _hasModeToggleSwitch = NO;
-    _hasTabSwitcherToggleSwitch = NO;
 
     // |self.view| setup.
     CGRect tabStripFrame = [UIApplication sharedApplication].keyWindow.bounds;
@@ -437,6 +405,8 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
             forControlEvents:UIControlEventTouchUpInside];
     [_tabStripView addSubview:_buttonNewTab];
 
+    [self installTabSwitcherButton];
+
     // Add tab buttons to tab strip.
     if (_tabModel)
       [self initializeTabArrayFromTabModel];
@@ -491,30 +461,6 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   [_tabStripView addSubview:view];
   [view setSelected:YES];
   return;
-}
-
-- (void)setHasModeToggleSwitch:(BOOL)hasModeToggleSwitch {
-  if (_hasModeToggleSwitch && !hasModeToggleSwitch)
-    [self removeModeToggleButton];
-  if (!_hasModeToggleSwitch && hasModeToggleSwitch)
-    [self installModeToggleButton];
-  if (_hasModeToggleSwitch != hasModeToggleSwitch) {
-    _hasModeToggleSwitch = hasModeToggleSwitch;
-    [self updateContentSizeAndRepositionViews];
-    [self setNeedsLayoutWithAnimation];
-  }
-}
-
-- (void)setHasTabSwitcherToggleSwitch:(BOOL)hasTabSwitcherToggleSwitch {
-  if (_hasTabSwitcherToggleSwitch && !hasTabSwitcherToggleSwitch)
-    [self removeTabSwitcherToggleButton];
-  if (!_hasTabSwitcherToggleSwitch && hasTabSwitcherToggleSwitch)
-    [self installTabSwitcherToggleButton];
-  if (_hasTabSwitcherToggleSwitch != hasTabSwitcherToggleSwitch) {
-    _hasTabSwitcherToggleSwitch = hasTabSwitcherToggleSwitch;
-    [self updateContentSizeAndRepositionViews];
-    [self setNeedsLayoutWithAnimation];
-  }
 }
 
 - (TabView*)emptyTabView {
@@ -630,9 +576,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 - (void)recordUserMetrics:(id)sender {
   if (sender == _buttonNewTab)
     base::RecordAction(UserMetricsAction("MobileTabStripNewTab"));
-  else if (sender == _modeToggleButton)
-    base::RecordAction(UserMetricsAction("MobileTabStripSwitchMode"));
-  else if (sender == _tabSwitcherToggleButton)
+  else if (sender == _tabSwitcherButton.get())
     base::RecordAction(UserMetricsAction("MobileTabSwitcherOpen"));
   else
     LOG(WARNING) << "Trying to record metrics for unknown sender "
@@ -1067,120 +1011,52 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 #pragma mark -
 #pragma mark Views and Layout
 
-- (void)installModeToggleButton {
-  // Add the mode toggle button view.
-  DCHECK(!_modeToggleButton);
-  UIImage* toggleIcon = nil;
-  int toggleIdsAccessibilityLabel;
-  NSString* toggleEnglishUiAutomationName;
-  if (_style == TabStrip::kStyleDark) {
-    toggleIcon = [UIImage imageNamed:@"tabstrip_switch"];
-    toggleIdsAccessibilityLabel = IDS_IOS_SWITCH_BROWSER_MODE_ENTER_INCOGNITO;
-    toggleEnglishUiAutomationName = @"Enter Incognito* Mode";
-  } else {
-    toggleIcon = [UIImage imageNamed:@"tabstrip_incognito_switch"];
-    toggleIdsAccessibilityLabel = IDS_IOS_SWITCH_BROWSER_MODE_LEAVE_INCOGNITO;
-    toggleEnglishUiAutomationName = @"Leave Incognito* Mode";
-  }
-  const CGFloat tabStripHeight = _view.frame.size.height;
-  CGRect buttonFrame =
-      CGRectMake(CGRectGetMaxX(_view.frame) - kModeToggleButtonWidth, 0.0,
-                 kModeToggleButtonWidth, tabStripHeight);
-  _modeToggleButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  _modeToggleButton.frame = buttonFrame;
-  [_modeToggleButton setImageEdgeInsets:UIEdgeInsetsMake(7, 5, 7, 5)];
-  _modeToggleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-  _modeToggleButton.backgroundColor = [UIColor clearColor];
-  [_modeToggleButton setImage:toggleIcon forState:UIControlStateNormal];
-  // Set target/action to bubble up with command id as tag.
-  [_modeToggleButton addTarget:nil
-                        action:@selector(chromeExecuteCommand:)
-              forControlEvents:UIControlEventTouchUpInside];
-  [_modeToggleButton addTarget:self
-                        action:@selector(recordUserMetrics:)
-              forControlEvents:UIControlEventTouchUpInside];
-
-  SetA11yLabelAndUiAutomationName(_modeToggleButton,
-                                  toggleIdsAccessibilityLabel,
-                                  toggleEnglishUiAutomationName);
-  [_view addSubview:_modeToggleButton];
-  // Shrink the scroll view.
-  [self updateScrollViewFrameForToggleButton];
-}
-
-- (void)removeModeToggleButton {
-  // Remove the button view.
-  DCHECK(_modeToggleButton);
-  [_modeToggleButton removeFromSuperview];
-  _modeToggleButton = nil;
-  // Extend the scroll view.
-  [self updateScrollViewFrameForToggleButton];
-}
-
 - (CGFloat)tabStripVisibleSpace {
   CGFloat availableSpace = CGRectGetWidth([_tabStripView bounds]) -
                            CGRectGetWidth([_buttonNewTab frame]) +
-                           kNewTabOverlap;
-  if (IsCompactTablet()) {
-    if ([self hasModeToggleSwitch])
-      availableSpace -= kNewTabRightPadding + kModeToggleButtonWidth;
-    else
-      availableSpace -= kNewTabRightPadding;
-  } else {
-    if (![self hasModeToggleSwitch])
-      availableSpace -= kNewTabRightPadding;
-  }
+                           kNewTabOverlap - kNewTabRightPadding -
+                           kTabSwitcherButtonWidth;
   return availableSpace;
 }
 
-- (void)installTabSwitcherToggleButton {
-  // Add the mode toggle button view.
-  DCHECK(!_tabSwitcherToggleButton);
-  UIImage* tabSwitcherToggleIcon =
+- (void)installTabSwitcherButton {
+  DCHECK(!_tabSwitcherButton);
+  UIImage* tabSwitcherButtonIcon =
       [UIImage imageNamed:@"tabswitcher_tab_switcher_button"];
-  tabSwitcherToggleIcon = [tabSwitcherToggleIcon
+  tabSwitcherButtonIcon = [tabSwitcherButtonIcon
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  int tabSwitcherToggleIdsAccessibilityLabel =
+  int tabSwitcherButtonIdsAccessibilityLabel =
       IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER;
-  NSString* tabSwitcherToggleEnglishUiAutomationName = @"Enter Tab Switcher";
+  NSString* tabSwitcherButtonEnglishUiAutomationName = @"Enter Tab Switcher";
   const CGFloat tabStripHeight = _view.frame.size.height;
   CGRect buttonFrame =
-      CGRectMake(CGRectGetMaxX(_view.frame) - kTabSwitcherToggleButtonWidth,
-                 0.0, kTabSwitcherToggleButtonWidth, tabStripHeight);
-  _tabSwitcherToggleButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  [_tabSwitcherToggleButton setTintColor:[UIColor whiteColor]];
-  _tabSwitcherToggleButton.frame = buttonFrame;
-  [_tabSwitcherToggleButton setContentMode:UIViewContentModeCenter];
-  _tabSwitcherToggleButton.autoresizingMask =
-      UIViewAutoresizingFlexibleLeftMargin;
-  _tabSwitcherToggleButton.backgroundColor = [UIColor clearColor];
-  _tabSwitcherToggleButton.exclusiveTouch = YES;
-  [_tabSwitcherToggleButton setImage:tabSwitcherToggleIcon
-                            forState:UIControlStateNormal];
+      CGRectMake(CGRectGetMaxX(_view.frame) - kTabSwitcherButtonWidth, 0.0,
+                 kTabSwitcherButtonWidth, tabStripHeight);
+  _tabSwitcherButton.reset(
+      [[UIButton buttonWithType:UIButtonTypeCustom] retain]);
+  [_tabSwitcherButton setTintColor:[UIColor whiteColor]];
+  [_tabSwitcherButton setFrame:buttonFrame];
+  [_tabSwitcherButton setContentMode:UIViewContentModeCenter];
+  [_tabSwitcherButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
+  [_tabSwitcherButton setBackgroundColor:[UIColor clearColor]];
+  [_tabSwitcherButton setExclusiveTouch:YES];
+  [_tabSwitcherButton setImage:tabSwitcherButtonIcon
+                      forState:UIControlStateNormal];
   // Set target/action to bubble up with command id as tag.
-  [_tabSwitcherToggleButton addTarget:nil
-                               action:@selector(chromeExecuteCommand:)
-                     forControlEvents:UIControlEventTouchUpInside];
-  [_tabSwitcherToggleButton setTag:IDC_TOGGLE_TAB_SWITCHER];
-  [_tabSwitcherToggleButton addTarget:self
-                               action:@selector(recordUserMetrics:)
-                     forControlEvents:UIControlEventTouchUpInside];
+  [_tabSwitcherButton addTarget:nil
+                         action:@selector(chromeExecuteCommand:)
+               forControlEvents:UIControlEventTouchUpInside];
+  [_tabSwitcherButton setTag:IDC_TOGGLE_TAB_SWITCHER];
+  [_tabSwitcherButton addTarget:self
+                         action:@selector(recordUserMetrics:)
+               forControlEvents:UIControlEventTouchUpInside];
 
-  SetA11yLabelAndUiAutomationName(_tabSwitcherToggleButton,
-                                  tabSwitcherToggleIdsAccessibilityLabel,
-                                  tabSwitcherToggleEnglishUiAutomationName);
-  [_view addSubview:_tabSwitcherToggleButton];
+  SetA11yLabelAndUiAutomationName(_tabSwitcherButton,
+                                  tabSwitcherButtonIdsAccessibilityLabel,
+                                  tabSwitcherButtonEnglishUiAutomationName);
+  [_view addSubview:_tabSwitcherButton];
   // Shrink the scroll view.
-  [self updateScrollViewFrameForToggleButton];
-}
-
-- (void)removeTabSwitcherToggleButton {
-  // Remove the button view.
-  DCHECK(_tabSwitcherToggleButton);
-  [_tabSwitcherToggleButton removeFromSuperview];
-  _tabSwitcherToggleButton = nil;
-  // Extend the scroll view.
-  [self updateScrollViewFrameForToggleButton];
+  [self updateScrollViewFrameForTabSwitcherButton];
 }
 
 - (void)shiftTabStripSubviews:(CGPoint)oldContentOffset {
@@ -1346,46 +1222,32 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   }
 }
 
-- (void)updateScrollViewFrameForToggleButton {
+- (void)updateScrollViewFrameForTabSwitcherButton {
   CGRect tabFrame = _tabStripView.frame;
   tabFrame.size.width = _view.bounds.size.width;
   if (!IsCompactTablet()) {
-    if (_modeToggleButton)
-      tabFrame.size.width -= kModeToggleButtonWidth;
-    if (_tabSwitcherToggleButton)
-      tabFrame.size.width -= kTabSwitcherToggleButtonWidth;
+    tabFrame.size.width -= kTabSwitcherButtonWidth;
     _tabStripView.contentInset = UIEdgeInsetsZero;
-    [_toggleButtonBackgroundView setHidden:YES];
+    [_tabSwitcherButtonBackgroundView setHidden:YES];
   } else {
-    if (!_toggleButtonBackgroundView) {
-      _toggleButtonBackgroundView.reset([[UIImageView alloc] init]);
+    if (!_tabSwitcherButtonBackgroundView) {
+      _tabSwitcherButtonBackgroundView.reset([[UIImageView alloc] init]);
       const CGFloat tabStripHeight = _view.frame.size.height;
       const CGRect backgroundViewFrame = CGRectMake(
-          CGRectGetMaxX(_view.frame) - kModeToggleButtonBackgroundWidth, 0.0,
-          kModeToggleButtonBackgroundWidth, tabStripHeight);
-      [_toggleButtonBackgroundView setFrame:backgroundViewFrame];
-      [_toggleButtonBackgroundView
+          CGRectGetMaxX(_view.frame) - kTabSwitcherButtonBackgroundWidth, 0.0,
+          kTabSwitcherButtonBackgroundWidth, tabStripHeight);
+      [_tabSwitcherButtonBackgroundView setFrame:backgroundViewFrame];
+      [_tabSwitcherButtonBackgroundView
           setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
-      UIImage* backgroundToggleImage =
+      UIImage* backgroundTabSwitcherImage =
           [UIImage imageNamed:@"tabstrip_toggle_button_gradient"];
-      [_toggleButtonBackgroundView setImage:backgroundToggleImage];
-      [_view addSubview:_toggleButtonBackgroundView];
+      [_tabSwitcherButtonBackgroundView setImage:backgroundTabSwitcherImage];
+      [_view addSubview:_tabSwitcherButtonBackgroundView];
     }
-    const BOOL hasModeToggleButton =
-        _modeToggleButton || _tabSwitcherToggleButton;
-    [_toggleButtonBackgroundView setHidden:!hasModeToggleButton];
-    if (!hasModeToggleButton)
-      _tabStripView.contentInset = UIEdgeInsetsZero;
-    if (_modeToggleButton) {
-      _tabStripView.contentInset =
-          UIEdgeInsetsMake(0, 0, 0, kModeToggleButtonWidth);
-      [_view bringSubviewToFront:_modeToggleButton];
-    }
-    if (_tabSwitcherToggleButton) {
-      _tabStripView.contentInset =
-          UIEdgeInsetsMake(0, 0, 0, kTabSwitcherToggleButtonWidth);
-      [_view bringSubviewToFront:_tabSwitcherToggleButton];
-    }
+    [_tabSwitcherButtonBackgroundView setHidden:NO];
+    _tabStripView.contentInset =
+        UIEdgeInsetsMake(0, 0, 0, kTabSwitcherButtonWidth);
+    [_view bringSubviewToFront:_tabSwitcherButton];
   }
   [_tabStripView setFrame:tabFrame];
 }
@@ -1672,7 +1534,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [self updateScrollViewFrameForToggleButton];
+  [self updateScrollViewFrameForTabSwitcherButton];
   [self updateContentSizeAndRepositionViews];
   NSUInteger selectedModelIndex = [_tabModel indexOfTab:[_tabModel currentTab]];
   if (selectedModelIndex != NSNotFound) {

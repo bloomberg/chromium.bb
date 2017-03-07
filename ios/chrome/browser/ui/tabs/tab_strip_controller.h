@@ -34,16 +34,7 @@ extern NSString* const kTabStripDragEnded;
 
 @property(nonatomic, assign) BOOL highlightsSelectedTab;
 @property(nonatomic, readonly, retain) UIView* view;
-// YES if the tab strip will display the mode toggle switch. May be set to the
-// same value repeatedly with no layout penalty.
-@property(nonatomic, assign) BOOL hasModeToggleSwitch;
 
-// YES if the tab strip will display the tab switcher toggle switch. May be set
-// to the same value repeatedly with no layout penalty.
-@property(nonatomic, assign) BOOL hasTabSwitcherToggleSwitch;
-
-// May be nil if there is no mode toggle button.
-@property(nonatomic, readonly, assign) UIButton* modeToggleButton;
 // Used to check if the tabstrip is visible before starting an animation.
 @property(nonatomic, assign) id<FullScreenControllerDelegate>
     fullscreenDelegate;

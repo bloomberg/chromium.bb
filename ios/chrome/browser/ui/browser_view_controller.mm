@@ -1730,7 +1730,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     _tabStripController.reset(
         [_dependencyFactory newTabStripControllerWithTabModel:_model]);
     _tabStripController.get().fullscreenDelegate = self;
-    [_tabStripController setHasTabSwitcherToggleSwitch:YES];
   }
 
   // Create infobar container.

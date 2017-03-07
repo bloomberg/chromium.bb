@@ -1257,12 +1257,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SUGGESTIONS_DONE" desc="Label of the navigation bar button to close the view.">
         Done
       </message>
-      <message name="IDS_IOS_SWITCH_BROWSER_MODE_ENTER_INCOGNITO" desc="The accessibility label of the switch browser mode button to enter the Incognito mode [iOS only]">
-        Enter Incognito Mode
-      </message>
-      <message name="IDS_IOS_SWITCH_BROWSER_MODE_LEAVE_INCOGNITO" desc="The accessibility label of the switch browser mode button to leave the Incognito mode [iOS only]">
-        Leave Incognito Mode
-      </message>
       <message name="IDS_IOS_SYNC_AUTHENTICATION_ERROR_ALERT_VIEW_TITLE" desc="The title of the alert view displaying authentication errors. [Length: 20em] [iOS only]">
         Error
       </message>
