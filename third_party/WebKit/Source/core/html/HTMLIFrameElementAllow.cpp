@@ -32,8 +32,7 @@ HTMLIFrameElementAllow::parseAllowedFeatureNames(
 
   // Collects a list of valid feature names.
   for (size_t i = 0; i < tokens.size(); ++i) {
-    WebFeaturePolicyFeature feature =
-        FeaturePolicy::getWebFeaturePolicyFeature(tokens[i]);
+    WebFeaturePolicyFeature feature = getWebFeaturePolicyFeature(tokens[i]);
     if (feature == WebFeaturePolicyFeature::NotFound) {
       tokenErrors.append(tokenErrors.isEmpty() ? "'" : ", '");
       tokenErrors.append(tokens[i]);
@@ -60,7 +59,7 @@ HTMLIFrameElementAllow::parseAllowedFeatureNames(
 
 bool HTMLIFrameElementAllow::validateTokenValue(const AtomicString& tokenValue,
                                                 ExceptionState&) const {
-  return FeaturePolicy::getWebFeaturePolicyFeature(tokenValue.getString()) !=
+  return getWebFeaturePolicyFeature(tokenValue.getString()) !=
          WebFeaturePolicyFeature::NotFound;
 }
 

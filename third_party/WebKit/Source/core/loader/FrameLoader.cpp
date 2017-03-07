@@ -593,10 +593,9 @@ void FrameLoader::didBeginDocument() {
           m_documentLoader->response().httpHeaderField(
               HTTPNames::Feature_Policy);
       Vector<String> messages;
-      const WebParsedFeaturePolicyHeader& parsedHeader =
-          FeaturePolicy::parseFeaturePolicy(
-              featurePolicyHeader,
-              m_frame->securityContext()->getSecurityOrigin(), &messages);
+      const WebParsedFeaturePolicyHeader& parsedHeader = parseFeaturePolicy(
+          featurePolicyHeader, m_frame->securityContext()->getSecurityOrigin(),
+          &messages);
       m_frame->securityContext()->initializeFeaturePolicy(parsedHeader,
                                                           parentFeaturePolicy);
       for (auto& message : messages) {
