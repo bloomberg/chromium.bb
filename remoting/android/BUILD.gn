@@ -64,49 +64,21 @@ shared_library("remoting_client_jni") {
   assert_no_deps = [ "//third_party/ffmpeg:*" ]
 }
 
-action("credits") {
-  credits_html_file = "$target_gen_dir/credits.html"
-  script = "//tools/licenses.py"
-  depfile = "$target_gen_dir/$target_name.d"
-  credits_template = "//remoting/credits/credits.tmpl"
-  credits_entry_template = "//remoting/credits/credits_entry.tmpl"
-  inputs = [
-    credits_template,
-    credits_entry_template,
-  ]
-  outputs = [
-    credits_html_file,
-  ]
-  args = [
-    "credits",
-    rebase_path(credits_html_file, root_build_dir),
-    "--file-template",
-    rebase_path(credits_template, root_build_dir),
-    "--entry-template",
-    rebase_path(credits_entry_template, root_build_dir),
-    "--depfile",
-    rebase_path(depfile, root_build_dir),
-    "--gn-target",
-    "//remoting/android:remoting_apk",
-    "--gn-out-dir",
-    rebase_path(root_build_dir),
-  ]
-}
-
 _raw_resources_base_dir = "$target_gen_dir/remoting_android_raw_resources/res"
 copy("remoting_android_raw_resources") {
-  _credits_html = get_label_info("//remoting/android:credits",
+  _credits_html = get_label_info("//remoting/webapp:credits",
                                  "target_gen_dir") + "/credits.html"
   sources = [
-    "//remoting/credits/credits_css.css",
-    "//remoting/credits/credits_js.js",
+    "//remoting/webapp/base/html/credits_css.css",
+    "//remoting/webapp/base/html/main.css",
+    "//remoting/webapp/base/js/credits_js.js",
     _credits_html,
   ]
   outputs = [
     "$_raw_resources_base_dir/raw/{{source_file_part}}",
   ]
   deps = [
-    ":credits",
+    "//remoting/webapp:credits",
   ]
 }
 
