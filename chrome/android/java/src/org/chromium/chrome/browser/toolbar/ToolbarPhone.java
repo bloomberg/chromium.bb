@@ -28,6 +28,7 @@ import android.os.SystemClock;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.util.Property;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -1465,6 +1466,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         updateProgressBarVisibility();
         updateVisualsForToolbarState();
+        updateTabSwitcherButtonRipple();
     }
 
     private void updateProgressBarVisibility() {
@@ -1525,6 +1527,22 @@ public class ToolbarPhone extends ToolbarLayout
         if (SysUtils.isLowEndDevice()) finishAnimations();
 
         postInvalidateOnAnimation();
+    }
+
+    /**
+     * Enables or disables the tab switcher ripple depending on whether we are in or out of the tab
+     * switcher mode.
+     */
+    private void updateTabSwitcherButtonRipple() {
+        if (mTabSwitcherState == ENTERING_TAB_SWITCHER) {
+            mToggleTabStackButton.setBackgroundColor(
+                    ApiCompatibilityUtils.getColor(getResources(), android.R.color.transparent));
+        } else {
+            TypedValue outValue = new TypedValue();
+            // the linked style here will have to be changed if it is updated in the XML.
+            getContext().getTheme().resolveAttribute(R.style.ToolbarButton, outValue, true);
+            mToggleTabStackButton.setBackgroundResource(outValue.resourceId);
+        }
     }
 
     @Override
