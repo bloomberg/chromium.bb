@@ -7,13 +7,12 @@
 <textarea id="target" style="width: 200px; height: 200px;"></textarea>
 <script>
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+  window.testRunner.waitUntilDone();
 onload = function() {
-    requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-            target.style.width = "400px";
-            testRunner.notifyDone();
-        });
-    });
+  requestAnimationFrame(function() {
+    target.style.width = "400px";
+    if (window.testRunner)
+      window.testRunner.notifyDone();
+  });
 }
 </script>
