@@ -641,6 +641,12 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
+        <!-- Service for Broadcasting a Physical Web URL -->
+        <service
+            android:name="org.chromium.chrome.browser.physicalweb.PhysicalWebBroadcastService"
+            android:exported="false">
+        </service>
+
         <!-- Providers for chrome data. -->
         <provider android:name="org.chromium.chrome.browser.provider.ChromeBrowserProvider"
             android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.content.Intent;
 import android.os.Build;
 
 import org.chromium.chrome.browser.ChromeActivity;
@@ -15,9 +16,20 @@ import org.chromium.chrome.browser.share.ShareActivity;
 public class PhysicalWebShareActivity extends ShareActivity {
     @Override
     protected void handleShareAction(ChromeActivity triggeringActivity) {
-        // TODO(iankc): implement this.
+        String url = triggeringActivity.getActivityTab().getUrl();
+
+        Intent intent = new Intent(this, PhysicalWebBroadcastService.class);
+        intent.putExtra(PhysicalWebBroadcastService.DISPLAY_URL_KEY, url);
+        startService(intent);
     }
 
+    /**
+     * Returns whether we should show this sharing option in the share sheet.
+     * Pre-conditions for Physical Web Sharing to be enabled:
+     *      Device is Marshmallow or above.
+     *      Device has sharing feature enabled.
+     * @return {@code true} if the feature should be enabled.
+     */
     public static boolean featureIsAvailable() {
         return PhysicalWeb.sharingIsEnabled() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
