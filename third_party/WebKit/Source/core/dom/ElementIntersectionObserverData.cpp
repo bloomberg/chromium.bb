@@ -51,6 +51,8 @@ void ElementIntersectionObserverData::activateValidIntersectionObservers(
         .ensureIntersectionObserverController()
         .addTrackedObserver(*observer);
   }
+  for (auto& observation : m_intersectionObservations)
+    observation.value->updateShouldReportRootBoundsAfterDomChange();
 }
 
 void ElementIntersectionObserverData::deactivateAllIntersectionObservers(

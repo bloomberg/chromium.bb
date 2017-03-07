@@ -13,18 +13,21 @@ namespace blink {
 class Element;
 class IntersectionObserver;
 
+// IntersectionObservation represents the result of calling
+// IntersectionObserver::observe(target) for some target element; it tracks the
+// intersection between a single target element and the IntersectionObserver's
+// root.  It is an implementation-internal class without any exposed interface.
 class IntersectionObservation final
     : public GarbageCollected<IntersectionObservation> {
  public:
-  IntersectionObservation(IntersectionObserver&,
-                          Element&,
-                          bool shouldReportRootBounds);
+  IntersectionObservation(IntersectionObserver&, Element&);
 
   IntersectionObserver* observer() const { return m_observer.get(); }
   Element* target() const { return m_target; }
   unsigned lastThresholdIndex() const { return m_lastThresholdIndex; }
   void computeIntersectionObservations(DOMHighResTimeStamp);
   void disconnect();
+  void updateShouldReportRootBoundsAfterDomChange();
 
   DECLARE_TRACE();
 
@@ -34,7 +37,7 @@ class IntersectionObservation final
   Member<IntersectionObserver> m_observer;
   WeakMember<Element> m_target;
 
-  const unsigned m_shouldReportRootBounds : 1;
+  unsigned m_shouldReportRootBounds : 1;
 
   unsigned m_lastThresholdIndex : 30;
   static const unsigned kMaxThresholdIndex = (unsigned)0x40000000;

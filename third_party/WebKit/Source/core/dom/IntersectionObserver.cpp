@@ -242,19 +242,8 @@ void IntersectionObserver::observe(Element* target,
   if (target->ensureIntersectionObserverData().getObservationFor(*this))
     return;
 
-  bool shouldReportRootBounds = true;
-  if (rootIsImplicit()) {
-    Frame* rootFrame = targetFrame->tree().top();
-    DCHECK(rootFrame);
-    if (rootFrame != targetFrame) {
-      shouldReportRootBounds =
-          targetFrame->securityContext()->getSecurityOrigin()->canAccess(
-              rootFrame->securityContext()->getSecurityOrigin());
-    }
-  }
-
   IntersectionObservation* observation =
-      new IntersectionObservation(*this, *target, shouldReportRootBounds);
+      new IntersectionObservation(*this, *target);
   target->ensureIntersectionObserverData().addObservation(*observation);
   m_observations.insert(observation);
   if (FrameView* frameView = targetFrame->view())

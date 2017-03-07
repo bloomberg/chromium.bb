@@ -6,20 +6,21 @@
 
 #include "core/dom/ElementRareData.h"
 #include "core/dom/IntersectionObserver.h"
+#include "core/frame/LocalFrame.h"
 #include "core/layout/IntersectionGeometry.h"
 
 namespace blink {
 
 IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
-                                                 Element& target,
-                                                 bool shouldReportRootBounds)
+                                                 Element& target)
     : m_observer(observer),
       m_target(&target),
-      m_shouldReportRootBounds(shouldReportRootBounds),
       // Note that the spec says the initial value of m_lastThresholdIndex
       // should be -1, but since m_lastThresholdIndex is unsigned, we use a
       // different sentinel value.
-      m_lastThresholdIndex(kMaxThresholdIndex - 1) {}
+      m_lastThresholdIndex(kMaxThresholdIndex - 1) {
+  updateShouldReportRootBoundsAfterDomChange();
+}
 
 void IntersectionObservation::computeIntersectionObservations(
     DOMHighResTimeStamp timestamp) {
@@ -87,6 +88,26 @@ void IntersectionObservation::disconnect() {
   if (m_target)
     target()->ensureIntersectionObserverData().removeObservation(*observer());
   m_observer.clear();
+}
+
+void IntersectionObservation::updateShouldReportRootBoundsAfterDomChange() {
+  if (!observer()->rootIsImplicit()) {
+    m_shouldReportRootBounds = true;
+    return;
+  }
+  m_shouldReportRootBounds = false;
+  LocalFrame* targetFrame = target()->document().frame();
+  if (!targetFrame)
+    return;
+  Frame* rootFrame = targetFrame->tree().top();
+  DCHECK(rootFrame);
+  if (rootFrame == targetFrame) {
+    m_shouldReportRootBounds = true;
+  } else {
+    m_shouldReportRootBounds =
+        targetFrame->securityContext()->getSecurityOrigin()->canAccess(
+            rootFrame->securityContext()->getSecurityOrigin());
+  }
 }
 
 DEFINE_TRACE(IntersectionObservation) {
