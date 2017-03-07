@@ -40,6 +40,7 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/V8InspectorString.h"
 
 namespace {
@@ -683,6 +684,34 @@ void InspectorDOMDebuggerAgent::scriptExecutionBlockedByCSP(
     return;
   eventData->setString("directiveText", directiveText);
   pauseOnNativeEventIfNeeded(std::move(eventData), true);
+}
+
+void InspectorDOMDebuggerAgent::will(const probe::ExecuteScript& probe) {
+  allowNativeBreakpoint("scriptFirstStatement", nullptr, false);
+}
+
+void InspectorDOMDebuggerAgent::did(const probe::ExecuteScript& probe) {
+  cancelNativeBreakpoint();
+}
+
+void InspectorDOMDebuggerAgent::will(const probe::UserCallback& probe) {
+  String name = probe.name ? String(probe.name) : probe.atomicName;
+  if (probe.eventTarget) {
+    Node* node = probe.eventTarget->toNode();
+    String targetName =
+        node ? node->nodeName() : probe.eventTarget->interfaceName();
+    allowNativeBreakpoint(name, &targetName, false);
+    return;
+  }
+  allowNativeBreakpoint(name + ".callback", nullptr, false);
+}
+
+void InspectorDOMDebuggerAgent::did(const probe::UserCallback& probe) {
+  cancelNativeBreakpoint();
+}
+
+void InspectorDOMDebuggerAgent::breakableLocation(const char* name) {
+  allowNativeBreakpoint(name, nullptr, true);
 }
 
 Response InspectorDOMDebuggerAgent::setXHRBreakpoint(const String& url) {

@@ -116,14 +116,14 @@ function test()
 
         function testTimerFiredBreakpoint(next)
         {
-            pane._setBreakpoint("instrumentation:timerFired");
+            pane._setBreakpoint("instrumentation:setTimeout.callback");
             InspectorTest.waitUntilPaused(paused);
             InspectorTest.evaluateInPage("setTimeout(timerFired, 10)");
 
             function paused(callFrames)
             {
                 InspectorTest.captureStackTrace(callFrames);
-                pane._removeBreakpoint("instrumentation:timerFired");
+                pane._removeBreakpoint("instrumentation:setTimeout.callback");
                 InspectorTest.resumeExecution(next);
             }
         },

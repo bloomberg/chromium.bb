@@ -59,31 +59,17 @@ class CORE_EXPORT ProbeBase {
   mutable double m_endTime = 0;
 };
 
-class CORE_EXPORT NativeBreakpoint {
-  STACK_ALLOCATED();
-
- public:
-  NativeBreakpoint(ExecutionContext*, const char* name);
-  NativeBreakpoint(ExecutionContext*, EventTarget*, Event*);
-  ~NativeBreakpoint();
-
- private:
-  Member<InstrumentingAgents> m_instrumentingAgents;
-};
-
 class CORE_EXPORT AsyncTask {
   STACK_ALLOCATED();
 
  public:
   AsyncTask(ExecutionContext*, void* task);
   AsyncTask(ExecutionContext*, void* task, bool enabled);
-  AsyncTask(ExecutionContext*, void* task, const char* breakpointName);
   ~AsyncTask();
 
  private:
   ThreadDebugger* m_debugger;
   void* m_task;
-  NativeBreakpoint m_breakpoint;
 };
 
 // Called from generated instrumentation code.
@@ -123,8 +109,6 @@ inline InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget) {
              ? instrumentingAgentsFor(eventTarget->getExecutionContext())
              : nullptr;
 }
-
-CORE_EXPORT void breakIfNeeded(ExecutionContext*, const char* name);
 
 CORE_EXPORT void asyncTaskScheduled(ExecutionContext*,
                                     const String& name,

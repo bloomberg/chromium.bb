@@ -126,9 +126,6 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
   TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
                InspectorEvaluateScriptEvent::data(
                    frame(), source.url().getString(), source.startPosition()));
-  probe::NativeBreakpoint nativeBreakpoint(frame()->document(),
-                                           "scriptFirstStatement");
-
   v8::Local<v8::Value> result;
   {
     V8CacheOptions v8CacheOptions =

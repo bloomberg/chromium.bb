@@ -324,20 +324,23 @@ class XMLHttpRequest;
     [Page]
     void didChangeViewport(LocalFrame* document);
 
+    [DOMDebugger]
+    void breakableLocation(ExecutionContext* context, const char* name);
+
     [Page, Performance]
     RecalculateStyle(Document* document);
 
     [Page, Performance]
     UpdateLayout(Document*);
 
-    [Performance]
+    [Performance, DOMDebugger]
     ExecuteScript([Keep] ExecutionContext* context);
 
     [Performance]
     CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function);
 
-    [Performance]
-    UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomicName, bool recurring);
+    [Performance, DOMDebugger]
+    UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomicName, bool recurring, EventTarget* eventTarget = nullptr);
 }
 
 interface InspectorOverrides {

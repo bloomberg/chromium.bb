@@ -703,8 +703,7 @@ bool EventTarget::fireEventListeners(Event* event,
     event->setHandlingPassive(eventPassiveMode(registeredListener));
     bool passiveForced = registeredListener.passiveForcedForDocumentTarget();
 
-    probe::NativeBreakpoint nativeBreakpoint(context, this, event);
-    probe::UserCallback probe(context, "", event->type(), false);
+    probe::UserCallback probe(context, nullptr, event->type(), false, this);
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
     // event listeners, even though that violates some versions of the DOM spec.

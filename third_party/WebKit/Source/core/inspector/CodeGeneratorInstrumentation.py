@@ -269,7 +269,7 @@ class Method:
         return self.return_type == ""
 
     def generate_header(self, header_lines):
-        param_list = ", ".join(map(Parameter.to_str_class, self.params))
+        param_list = ", ".join(map(Parameter.to_str_class_and_value, self.params))
         if self.is_scoped():
             member_list = "\n".join(map(generate_member_decl, self.params))
             header_lines.append(template_scoped_decl.substitute(
@@ -400,6 +400,11 @@ class Parameter:
 
     def to_str_class_and_name(self):
         return "%s %s" % (self.type, self.name)
+
+    def to_str_class_and_value(self):
+        if self.default_value:
+            return "%s = %s" % (self.to_str_class(), self.default_value)
+        return self.to_str_class()
 
     def to_str_class(self):
         return self.type

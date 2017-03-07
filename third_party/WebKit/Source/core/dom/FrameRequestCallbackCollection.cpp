@@ -69,8 +69,7 @@ void FrameRequestCallbackCollection::executeCallbacks(
       TRACE_EVENT1(
           "devtools.timeline", "FireAnimationFrame", "data",
           InspectorAnimationFrameEvent::data(m_context, callback->m_id));
-      probe::AsyncTask asyncTask(m_context, callback,
-                                 "requestAnimationFrame.callback");
+      probe::AsyncTask asyncTask(m_context, callback);
       probe::UserCallback probe(m_context, "requestAnimationFrame",
                                 AtomicString(), true);
       if (callback->m_useLegacyTimeBase)

@@ -378,7 +378,7 @@ void DOMWindow::close(ExecutionContext* context) {
   if (!frame()->shouldClose())
     return;
 
-  probe::breakIfNeeded(context, "DOMWindow.close");
+  probe::breakableLocation(context, "DOMWindow.close");
 
   page->closeSoon();
 

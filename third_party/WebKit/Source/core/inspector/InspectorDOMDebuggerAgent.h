@@ -47,6 +47,11 @@ class Element;
 class InspectorDOMAgent;
 class Node;
 
+namespace probe {
+class ExecuteScript;
+class UserCallback;
+}
+
 namespace protocol {
 class DictionaryValue;
 }
@@ -96,11 +101,12 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   void didFireWebGLError(const String& errorName);
   void didFireWebGLWarning();
   void didFireWebGLErrorOrWarning(const String& message);
-  void allowNativeBreakpoint(const String& breakpointName,
-                             const String* targetName,
-                             bool sync);
-  void cancelNativeBreakpoint();
   void scriptExecutionBlockedByCSP(const String& directiveText);
+  void will(const probe::ExecuteScript&);
+  void did(const probe::ExecuteScript&);
+  void will(const probe::UserCallback&);
+  void did(const probe::UserCallback&);
+  void breakableLocation(const char* name);
 
   Response disable() override;
   void restore() override;
@@ -112,6 +118,10 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
                                           int depth,
                                           bool pierce,
                                           V8EventListenerInfoList* listeners);
+  void allowNativeBreakpoint(const String& breakpointName,
+                             const String* targetName,
+                             bool sync);
+  void cancelNativeBreakpoint();
   void pauseOnNativeEventIfNeeded(
       std::unique_ptr<protocol::DictionaryValue> eventData,
       bool synchronous);

@@ -2857,7 +2857,7 @@ String Element::outerHTML() const {
 }
 
 void Element::setInnerHTML(const String& html, ExceptionState& exceptionState) {
-  probe::breakIfNeeded(&document(), "Element.setInnerHTML");
+  probe::breakableLocation(&document(), "Element.setInnerHTML");
   if (DocumentFragment* fragment = createFragmentForInnerOuterHTML(
           html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
     ContainerNode* container = this;

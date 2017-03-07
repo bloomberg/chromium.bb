@@ -145,7 +145,7 @@ void DOMTimer::fired() {
   probe::UserCallback probe(context,
                             repeatInterval() ? "setInterval" : "setTimeout",
                             AtomicString(), true);
-  probe::AsyncTask asyncTask(context, this, "timerFired");
+  probe::AsyncTask asyncTask(context, this);
 
   // Simple case for non-one-shot timers.
   if (isActive()) {
