@@ -10,9 +10,9 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <map>
 #include <memory>
 #include <queue>
+#include <unordered_map>
 #include <vector>
 
 #include "base/logging.h"
@@ -254,7 +254,7 @@ class ColorBox {
   // Returns the average color of this box, weighted by its popularity in
   // |color_counts|.
   WeightedColor GetWeightedAverageColor(
-      const std::map<SkColor, int>& color_counts) const {
+      const std::unordered_map<SkColor, int>& color_counts) const {
     uint64_t sum_r = 0;
     uint64_t sum_g = 0;
     uint64_t sum_b = 0;
@@ -366,8 +366,14 @@ SkColor CalculateProminentColor(const SkBitmap& bitmap,
 
   SkAutoLockPixels auto_lock(bitmap);
   const uint32_t* pixels = static_cast<uint32_t*>(bitmap.getPixels());
-  int pixel_count = bitmap.width() * bitmap.height();
-  std::map<SkColor, int> color_counts;
+  const int pixel_count = bitmap.width() * bitmap.height();
+
+  // We don't know exactly how many distinct colors there will be, so just
+  // reserve enough space to keep the maximum number of table resizes low.
+  // In our testing set, 2/3 of wallpapers have <200k unique colors and 1/4
+  // have <100k. Thus 200k is picked as a number that usually amounts to zero
+  // resizes but usually doesn't waste a lot of space.
+  std::unordered_map<SkColor, int> color_counts(200000);
 
   // First extract all colors into counts.
   for (int i = 0; i < pixel_count; ++i) {
