@@ -349,21 +349,7 @@ const NetworkState* NetworkStateHandler::GetNetworkStateFromServicePath(
 const NetworkState* NetworkStateHandler::GetNetworkStateFromGuid(
     const std::string& guid) const {
   DCHECK(!guid.empty());
-
-  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
-    const NetworkState* network = (*iter)->AsNetworkState();
-    if (network->guid() == guid)
-      return network;
-  }
-
-  for (auto iter = tether_network_list_.begin();
-       iter != tether_network_list_.end(); ++iter) {
-    const NetworkState* network = (*iter)->AsNetworkState();
-    if (network->guid() == guid)
-      return network;
-  }
-
-  return nullptr;
+  return GetModifiableNetworkStateFromGuid(guid);
 }
 
 void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
@@ -371,13 +357,10 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
   DCHECK(!guid.empty());
 
   // If the network already exists, do nothing.
-  for (auto iter = tether_network_list_.begin();
-       iter != tether_network_list_.end(); ++iter) {
-    if (iter->get()->AsNetworkState()->guid() == guid) {
-      NET_LOG(ERROR) << "AddTetherNetworkState: " << name
-                     << " called with existing guid:" << guid;
-      return;
-    }
+  if (GetNetworkStateFromGuid(guid)) {
+    NET_LOG(ERROR) << "AddTetherNetworkState: " << name
+                   << " called with existing guid:" << guid;
+    return;
   }
 
   std::unique_ptr<NetworkState> tether_network_state =
@@ -422,14 +405,21 @@ void NetworkStateHandler::SetTetherNetworkStateConnected(
 void NetworkStateHandler::SetTetherNetworkStateConnectionState(
     const std::string& guid,
     const std::string& connection_state) {
-  for (auto iter = tether_network_list_.begin();
-       iter != tether_network_list_.end(); ++iter) {
-    if (iter->get()->AsNetworkState()->guid() == guid) {
-      iter->get()->AsNetworkState()->set_connection_state(connection_state);
-      NotifyNetworkListChanged();
-      return;
-    }
+  NetworkState* tether_network = GetModifiableNetworkStateFromGuid(guid);
+  if (!tether_network) {
+    NET_LOG(ERROR) << "SetTetherNetworkStateConnectionState: Tether network "
+                   << "not found: " << guid;
+    return;
   }
+
+  if (!NetworkTypePattern::Tether().MatchesType(tether_network->type())) {
+    NET_LOG(ERROR) << "SetTetherNetworkStateConnectionState: network "
+                   << "is not a Tether network: " << guid;
+    return;
+  }
+
+  tether_network->set_connection_state(connection_state);
+  NotifyNetworkListChanged();
 }
 
 void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
@@ -978,6 +968,24 @@ NetworkState* NetworkStateHandler::GetModifiableNetworkState(
   if (!managed)
     return nullptr;
   return managed->AsNetworkState();
+}
+
+NetworkState* NetworkStateHandler::GetModifiableNetworkStateFromGuid(
+    const std::string& guid) const {
+  for (auto iter = tether_network_list_.begin();
+       iter != tether_network_list_.end(); ++iter) {
+    NetworkState* tether_network = (*iter)->AsNetworkState();
+    if (tether_network->guid() == guid)
+      return tether_network;
+  }
+
+  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
+    NetworkState* network = (*iter)->AsNetworkState();
+    if (network->guid() == guid)
+      return network;
+  }
+
+  return nullptr;
 }
 
 ManagedState* NetworkStateHandler::GetModifiableManagedState(

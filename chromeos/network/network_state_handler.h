@@ -395,6 +395,8 @@ class CHROMEOS_EXPORT NetworkStateHandler
   DeviceState* GetModifiableDeviceState(const std::string& device_path) const;
   NetworkState* GetModifiableNetworkState(
       const std::string& service_path) const;
+  NetworkState* GetModifiableNetworkStateFromGuid(
+      const std::string& guid) const;
   ManagedState* GetModifiableManagedState(const ManagedStateList* managed_list,
                                           const std::string& path) const;
 
