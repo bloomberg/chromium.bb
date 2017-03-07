@@ -175,7 +175,7 @@ Value::Value(std::vector<char>&& in_blob) : type_(Type::BINARY) {
 Value& Value::operator=(const Value& that) {
   if (this != &that) {
     if (type_ == that.type_) {
-      InternalCopyAssignFrom(that);
+      InternalCopyAssignFromSameType(that);
     } else {
       InternalCleanup();
       InternalCopyConstructFrom(that);
@@ -188,7 +188,7 @@ Value& Value::operator=(const Value& that) {
 Value& Value::operator=(Value&& that) {
   if (this != &that) {
     if (type_ == that.type_) {
-      InternalMoveAssignFrom(std::move(that));
+      InternalMoveAssignFromSameType(std::move(that));
     } else {
       InternalCleanup();
       InternalMoveConstructFrom(std::move(that));
@@ -532,8 +532,8 @@ void Value::InternalMoveConstructFrom(Value&& that) {
   }
 }
 
-void Value::InternalCopyAssignFrom(const Value& that) {
-  type_ = that.type_;
+void Value::InternalCopyAssignFromSameType(const Value& that) {
+  CHECK_EQ(type_, that.type_);
 
   switch (type_) {
     case Type::NONE:
@@ -562,8 +562,8 @@ void Value::InternalCopyAssignFrom(const Value& that) {
   }
 }
 
-void Value::InternalMoveAssignFrom(Value&& that) {
-  type_ = that.type_;
+void Value::InternalMoveAssignFromSameType(Value&& that) {
+  CHECK_EQ(type_, that.type_);
 
   switch (type_) {
     case Type::NONE:
@@ -1036,6 +1036,7 @@ std::unique_ptr<DictionaryValue> DictionaryValue::DeepCopyWithoutEmptyChildren()
 }
 
 void DictionaryValue::MergeDictionary(const DictionaryValue* dictionary) {
+  CHECK(dictionary->is_dict());
   for (DictionaryValue::Iterator it(*dictionary); !it.IsAtEnd(); it.Advance()) {
     const Value* merge_value = &it.value();
     // Check whether we have to merge dictionaries.
@@ -1054,6 +1055,7 @@ void DictionaryValue::MergeDictionary(const DictionaryValue* dictionary) {
 }
 
 void DictionaryValue::Swap(DictionaryValue* other) {
+  CHECK(other->is_dict());
   dict_ptr_->swap(*(other->dict_ptr_));
 }
 
@@ -1328,6 +1330,7 @@ ListValue::const_iterator ListValue::Find(const Value& value) const {
 }
 
 void ListValue::Swap(ListValue* other) {
+  CHECK(other->is_list());
   list_->swap(*(other->list_));
 }
 
