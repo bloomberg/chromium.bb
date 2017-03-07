@@ -31,7 +31,6 @@ import android.util.Pair;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -139,6 +138,15 @@ public class DownloadNotificationService extends Service {
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
 
     /**
+     * @return Whether or not this service should be made a foreground service if there are active
+     * downloads.
+     */
+    @VisibleForTesting
+    static boolean useForegroundService() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+    }
+
+    /**
      * Start this service with a summary {@link Notification}.  This will start the service in the
      * foreground.
      * @param context The context used to build the notification and to start the service.
@@ -148,7 +156,7 @@ public class DownloadNotificationService extends Service {
         Intent intent = source != null ? new Intent(source) : new Intent();
         intent.setComponent(new ComponentName(context, DownloadNotificationService.class));
 
-        if (BuildInfo.isAtLeastO()) {
+        if (useForegroundService()) {
             Notification notification = buildSummaryNotification(context);
 
             AppHooks.get().startServiceWithNotification(
@@ -173,7 +181,7 @@ public class DownloadNotificationService extends Service {
     @TargetApi(Build.VERSION_CODES.M)
     private static Pair<Boolean, Integer> getSummaryIcon(Context context, int removedNotificationId,
             Pair<Integer, Notification> addedNotification) {
-        if (!BuildInfo.isAtLeastO()) return new Pair<Boolean, Integer>(false, -1);
+        if (!useForegroundService()) return new Pair<Boolean, Integer>(false, -1);
         boolean progress = false;
         boolean paused = false;
         boolean pending = false;
@@ -403,7 +411,7 @@ public class DownloadNotificationService extends Service {
     @VisibleForTesting
     @TargetApi(Build.VERSION_CODES.N)
     void stopForegroundInternal(boolean killNotification) {
-        if (!BuildInfo.isAtLeastO()) return;
+        if (!useForegroundService()) return;
         stopForeground(killNotification ? STOP_FOREGROUND_REMOVE : STOP_FOREGROUND_DETACH);
     }
 
@@ -413,7 +421,7 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     void startForegroundInternal() {
-        if (!BuildInfo.isAtLeastO()) return;
+        if (!useForegroundService()) return;
         Notification notification = buildSummaryNotification(getApplicationContext());
         startForeground(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY, notification);
     }
@@ -508,7 +516,7 @@ public class DownloadNotificationService extends Service {
     @VisibleForTesting
     @TargetApi(Build.VERSION_CODES.M)
     boolean hasDownloadNotifications(Integer notificationIdToIgnore) {
-        if (!BuildInfo.isAtLeastO()) return false;
+        if (!useForegroundService()) return false;
 
         StatusBarNotification[] notifications = mNotificationManager.getActiveNotifications();
         for (StatusBarNotification notification : notifications) {
@@ -530,7 +538,7 @@ public class DownloadNotificationService extends Service {
     @VisibleForTesting
     @TargetApi(Build.VERSION_CODES.M)
     StatusBarNotification getSummaryNotification() {
-        if (!BuildInfo.isAtLeastO()) return null;
+        if (!useForegroundService()) return null;
 
         StatusBarNotification[] notifications = mNotificationManager.getActiveNotifications();
         for (StatusBarNotification notification : notifications) {
@@ -555,7 +563,7 @@ public class DownloadNotificationService extends Service {
     @VisibleForTesting
     void updateSummaryIcon(
             int removedNotificationId, Pair<Integer, Notification> addedNotification) {
-        if (!BuildInfo.isAtLeastO()) return;
+        if (!useForegroundService()) return;
 
         Pair<Boolean, Integer> icon =
                 getSummaryIcon(mContext, removedNotificationId, addedNotification);
@@ -589,7 +597,7 @@ public class DownloadNotificationService extends Service {
      */
     @TargetApi(Build.VERSION_CODES.M)
     boolean hideSummaryNotificationIfNecessary(Integer notificationIdToIgnore) {
-        if (!BuildInfo.isAtLeastO()) return false;
+        if (!useForegroundService()) return false;
         if (mDownloadsInProgress.size() > 0) return false;
 
         if (hasDownloadNotifications(notificationIdToIgnore)) return false;

@@ -8,7 +8,6 @@ import android.app.Notification;
 import android.content.Context;
 import android.util.Pair;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public class MockDownloadNotificationService extends DownloadNotificationService
 
     @Override
     public void stopForegroundInternal(boolean killNotification) {
-        if (!BuildInfo.isAtLeastO()) return;
+        if (!useForegroundService()) return;
         if (killNotification) mNotificationIds.clear();
     }
 
@@ -45,7 +44,7 @@ public class MockDownloadNotificationService extends DownloadNotificationService
 
     @Override
     boolean hasDownloadNotifications(Integer notificationIdToIgnore) {
-        if (!BuildInfo.isAtLeastO()) return false;
+        if (!useForegroundService()) return false;
         // Cancelling notifications here is synchronous, so we don't really have to worry about
         // {@code notificationIdToIgnore}, but address it properly anyway.
         if (mNotificationIds.size() == 1 && notificationIdToIgnore != null) {
