@@ -29,6 +29,8 @@ var DropdownMenuOptionList;
 Polymer({
   is: 'settings-dropdown-menu',
 
+  behaviors: [CrPolicyPrefBehavior, PrefControlBehavior],
+
   properties: {
     /**
      * List of options for the drop-down menu.
@@ -56,10 +58,6 @@ Polymer({
       readOnly: true,
     },
   },
-
-  behaviors: [
-    PrefControlBehavior,
-  ],
 
   observers: [
     'updateSelected_(menuOptions, pref.value)',
@@ -125,7 +123,7 @@ Polymer({
    * @private
    */
   shouldDisableMenu_: function() {
-    return this.disabled || this.menuOptions === null ||
-        this.menuOptions.length == 0;
+    return this.disabled || this.isPrefEnforced() ||
+        this.menuOptions === null || this.menuOptions.length == 0;
   },
 });
