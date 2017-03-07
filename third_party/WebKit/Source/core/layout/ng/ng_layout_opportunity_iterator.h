@@ -6,7 +6,6 @@
 #define NGLayoutOpportunityIterator_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Optional.h"
@@ -14,12 +13,11 @@
 
 namespace blink {
 
+class NGConstraintSpace;
 typedef NGLogicalRect NGLayoutOpportunity;
 typedef Vector<NGLayoutOpportunity> NGLayoutOpportunities;
 
 class CORE_EXPORT NGLayoutOpportunityIterator final {
-  STACK_ALLOCATED();
-
  public:
   // Default constructor.
   //

@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 
+#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
 #include "wtf/NonCopyingSort.h"
 

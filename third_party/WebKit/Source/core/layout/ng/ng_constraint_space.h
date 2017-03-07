@@ -11,6 +11,7 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
@@ -21,7 +22,6 @@
 namespace blink {
 
 class LayoutBox;
-class NGBoxFragment;
 
 enum NGFragmentationType {
   kFragmentNone,
@@ -108,16 +108,13 @@ class CORE_EXPORT NGConstraintSpace final
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const;
 
+  NGLayoutOpportunityIterator* LayoutOpportunityIterator();
+
   // Return true if this contraint space participates in a fragmentation
   // context.
   bool HasBlockFragmentation() const {
     return BlockFragmentationType() != kFragmentNone;
   }
-
-  // Modifies constraint space to account for a placed fragment. Depending on
-  // the shape of the fragment this will either modify the inline or block
-  // size, or add an exclusion.
-  void Subtract(const NGBoxFragment*);
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
 
@@ -184,6 +181,7 @@ class CORE_EXPORT NGConstraintSpace final
   NGLogicalOffset bfc_offset_;
   const std::shared_ptr<NGExclusions> exclusions_;
   WTF::Optional<LayoutUnit> clearance_offset_;
+  std::unique_ptr<NGLayoutOpportunityIterator> layout_opp_iter_;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

@@ -49,7 +49,8 @@ NGConstraintSpace::NGConstraintSpace(
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
       exclusions_(exclusions),
-      clearance_offset_(clearance_offset) {}
+      clearance_offset_(clearance_offset),
+      layout_opp_iter_(nullptr) {}
 
 RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
@@ -126,14 +127,20 @@ RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
 
 void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) {
   exclusions_->Add(exclusion);
+  // Invalidate the Layout Opportunity Iterator.
+  layout_opp_iter_.reset();
 }
 
 NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
   return static_cast<NGFragmentationType>(block_direction_fragmentation_type_);
 }
 
-void NGConstraintSpace::Subtract(const NGBoxFragment*) {
-  // TODO(layout-ng): Implement.
+NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunityIterator() {
+  if (!layout_opp_iter_) {
+    layout_opp_iter_ =
+        WTF::makeUnique<NGLayoutOpportunityIterator>(this, this->bfc_offset_);
+  }
+  return layout_opp_iter_.get();
 }
 
 String NGConstraintSpace::ToString() const {
