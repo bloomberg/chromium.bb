@@ -4,6 +4,12 @@
 <script src="../assert_selection.js"></script>
 <script src="spellcheck_test.js"></script>
 <script>
+function runIdleTimeSpellCheckerIfNeeded(document) {
+  if (!window.internals || !internals.idleTimeSpellCheckerState)
+    return;
+  internals.runIdleTimeSpellChecker(document);
+}
+
 spellcheck_test(
     '<div><textarea id="destination"></textarea></div><div id="move-target"></div>',
     document => {
@@ -11,6 +17,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         destination.remove();
       },
     '<div></div><div id="move-target"></div>',
@@ -23,6 +30,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         document.getElementById('move-target').appendChild(destination);
       },
     '<div></div><div id="move-target"><textarea id="destination">#zz# #zz# #zz#</textarea></div>',
@@ -35,6 +43,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         destination.value = 'zzz';
       },
     '<div><textarea id="destination">zzz</textarea></div><div id="move-target"></div>',
@@ -47,6 +56,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         destination.remove();
       },
     '<div></div><div id="move-target"></div>',
@@ -59,6 +69,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         document.getElementById('move-target').appendChild(destination);
       },
     // No marker because focus is lost after moving.
@@ -72,6 +83,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         destination.value = 'zzz';
       },
     '<div><input id="destination" value="zzz"></div><div id="move-target"></div>',
@@ -84,6 +96,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         destination.remove();
       },
     '<div></div><div id="move-target"></div>',
@@ -96,6 +109,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         document.getElementById('move-target').appendChild(destination);
       },
     // No marker because checking range stays in the original <div> after moving.
@@ -109,6 +123,7 @@ spellcheck_test(
         const destination = document.getElementById('destination');
         destination.focus();
         document.execCommand('paste');
+        runIdleTimeSpellCheckerIfNeeded(document);
         destination.innerHTML = 'zzz';
       },
     '<div><div contenteditable id="destination">zzz</div></div><div id="move-target"></div>',

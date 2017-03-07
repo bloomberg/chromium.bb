@@ -5,6 +5,12 @@
 <script src="spellcheck_test.js"></script>
 
 <script>
+function runIdleTimeSpellCheckerIfNeeded(document) {
+  if (!window.internals || !internals.idleTimeSpellCheckerState)
+    return;
+  internals.runIdleTimeSpellChecker(document);
+}
+
 function pasteToAllChildren(text, container) {
   const document = container.ownerDocument;
   const selection = document.getSelection();
@@ -31,6 +37,7 @@ spellcheck_test(
   document => {
     const container = document.getElementById('container');
     pasteToAllChildren('foo bar', container);
+    runIdleTimeSpellCheckerIfNeeded(document);
     pasteToAllChildren('zz apple orange', container);
   },
   [
@@ -53,8 +60,10 @@ spellcheck_test(
     const textarea2 = document.getElementById('textarea2');
     textarea1.focus();
     document.execCommand('insertText', false, 'foo.');
+    runIdleTimeSpellCheckerIfNeeded(document);
     textarea2.focus();
     document.execCommand('insertText', false, 'baz.');
+    runIdleTimeSpellCheckerIfNeeded(document);
     textarea1.focus();
     document.execCommand('insertText', false, 'zz.');
   },
