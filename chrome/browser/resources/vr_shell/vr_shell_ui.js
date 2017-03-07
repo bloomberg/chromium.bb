@@ -151,7 +151,7 @@ var vrShellUi = (function() {
       element.setTranslation(
           this.translationX, this.translationY, this.translationZ);
 
-      this.uiElementId = ui.addElement(element);
+      this.id = ui.addElement(element);
       this.domElement = domElement;
     }
   };
@@ -171,14 +171,14 @@ var vrShellUi = (function() {
       this.buttonElement = new DomUiElement(domId);
       let update = new api.UiElementUpdate();
       update.setParentId(this.backingElementId);
-      ui.updateElement(this.buttonElement.uiElementId, update);
+      ui.updateElement(this.buttonElement.id, update);
 
       this.captionElement = new DomUiElement(captionId);
       update = new api.UiElementUpdate();
-      update.setParentId(this.buttonElement.uiElementId);
+      update.setParentId(this.buttonElement.id);
       update.setTranslation(0, -this.captionElement.sizeY / 2, 0);
       update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
-      ui.updateElement(this.captionElement.uiElementId, update);
+      ui.updateElement(this.captionElement.id, update);
 
       this.button.addEventListener('mouseenter', this.onMouseEnter.bind(this));
       this.button.addEventListener('mouseleave', this.onMouseLeave.bind(this));
@@ -194,18 +194,17 @@ var vrShellUi = (function() {
     setVisible(visible) {
       let update = new api.UiElementUpdate();
       update.setVisible(visible);
-      ui.updateElement(this.buttonElement.uiElementId, update);
+      ui.updateElement(this.buttonElement.id, update);
       update = new api.UiElementUpdate();
       update.setVisible(visible);
-      ui.updateElement(this.captionElement.uiElementId, update);
+      ui.updateElement(this.captionElement.id, update);
     }
 
     configure(buttonOpacity, captionOpacity, distanceForward) {
       this.button.style.opacity = buttonOpacity;
       this.caption.style.opacity = captionOpacity;
 
-      let anim =
-          new api.Animation(this.buttonElement.uiElementId, ANIM_DURATION);
+      let anim = new api.Animation(this.buttonElement.id, ANIM_DURATION);
       anim.setTranslation(0, 0, distanceForward);
       ui.addAnimation(anim);
       ui.flush();
@@ -297,7 +296,7 @@ var vrShellUi = (function() {
       update.setSize(0.25, 0.1);
       update.setTranslation(0, -1.0, -1.0);
       update.setRotation(1, 0, 0, -0.8);
-      ui.updateElement(this.uiElement.uiElementId, update);
+      ui.updateElement(this.uiElement.id, update);
     }
 
     setEnabled(enabled) {
@@ -313,7 +312,7 @@ var vrShellUi = (function() {
     updateState() {
       let update = new api.UiElementUpdate();
       update.setVisible(this.enabled && this.devMode);
-      ui.updateElement(this.uiElement.uiElementId, update);
+      ui.updateElement(this.uiElement.id, update);
     }
   };
 
@@ -337,7 +336,7 @@ var vrShellUi = (function() {
       update.setHitTestable(false);
       update.setVisible(false);
       update.setLockToFieldOfView(true);
-      ui.updateElement(this.webVrSecureWarning.uiElementId, update);
+      ui.updateElement(this.webVrSecureWarning.id, update);
 
       // Temporary WebVR security warning. This warning is shown in the center
       // of the field of view, for a limited period of time.
@@ -348,7 +347,7 @@ var vrShellUi = (function() {
       update.setHitTestable(false);
       update.setVisible(false);
       update.setLockToFieldOfView(true);
-      ui.updateElement(this.transientWarning.uiElementId, update);
+      ui.updateElement(this.transientWarning.id, update);
     }
 
     setEnabled(enabled) {
@@ -379,16 +378,16 @@ var vrShellUi = (function() {
     showOrHideWarnings(visible) {
       let update = new api.UiElementUpdate();
       update.setVisible(visible);
-      ui.updateElement(this.webVrSecureWarning.uiElementId, update);
+      ui.updateElement(this.webVrSecureWarning.id, update);
       update = new api.UiElementUpdate();
       update.setVisible(visible);
-      ui.updateElement(this.transientWarning.uiElementId, update);
+      ui.updateElement(this.transientWarning.id, update);
     }
 
     onTransientTimer() {
       let update = new api.UiElementUpdate();
       update.setVisible(false);
-      ui.updateElement(this.transientWarning.uiElementId, update);
+      ui.updateElement(this.transientWarning.id, update);
       this.secureOriginTimer = null;
       ui.flush();
     }
@@ -409,7 +408,7 @@ var vrShellUi = (function() {
       // Initially invisible.
       let update = new api.UiElementUpdate();
       update.setVisible(false);
-      ui.updateElement(this.domUiElement.uiElementId, update);
+      ui.updateElement(this.domUiElement.id, update);
       this.nativeState.visible = false;
 
       // Pull some CSS properties so that Javascript can reconfigure the
@@ -530,14 +529,14 @@ var vrShellUi = (function() {
 
         // Fade-out or fade-in the box.
         let opacityAnimation =
-            new api.Animation(this.domUiElement.uiElementId, this.fadeTimeMs);
+            new api.Animation(this.domUiElement.id, this.fadeTimeMs);
         opacityAnimation.setOpacity(this.hidden ? 0.0 : this.opacity);
         ui.addAnimation(opacityAnimation);
 
         // Drop the position as it fades, or raise the position if appearing.
         let yOffset = this.hidden ? this.fadeYOffset : 0;
         let positionAnimation =
-            new api.Animation(this.domUiElement.uiElementId, this.fadeTimeMs);
+            new api.Animation(this.domUiElement.id, this.fadeTimeMs);
         positionAnimation.setTranslation(
             this.domUiElement.translationX,
             this.domUiElement.translationY + yOffset,
@@ -555,7 +554,7 @@ var vrShellUi = (function() {
       this.nativeState.visible = visible;
       let update = new api.UiElementUpdate();
       update.setVisible(visible);
-      ui.updateElement(this.domUiElement.uiElementId, update);
+      ui.updateElement(this.domUiElement.id, update);
       ui.flush();
     }
   };
@@ -670,7 +669,7 @@ var vrShellUi = (function() {
       // Initially invisible.
       let update = new api.UiElementUpdate();
       update.setVisible(true);
-      ui.updateElement(this.domUiElement.uiElementId, update);
+      ui.updateElement(this.domUiElement.id, update);
 
       // Field-clearing button.
       let clearButton = root.querySelector('#omnibox-clear-button');
@@ -711,7 +710,7 @@ var vrShellUi = (function() {
       this.enabled = enabled;
       let update = new api.UiElementUpdate();
       update.setVisible(enabled);
-      ui.updateElement(this.domUiElement.uiElementId, update);
+      ui.updateElement(this.domUiElement.id, update);
     }
 
     setURL(url) {
@@ -769,7 +768,7 @@ var vrShellUi = (function() {
       positionUpdate.setTranslation(
           0, TAB_CONTAINER_Y_OFFSET, TAB_CONTAINER_Z_OFFSET);
       positionUpdate.setVisible(false);
-      ui.updateElement(this.tabContainerElement.uiElementId, positionUpdate);
+      ui.updateElement(this.tabContainerElement.id, positionUpdate);
 
       // Add the new tab buttons to the native scene.
       let buttonConfigs = [
@@ -788,8 +787,8 @@ var vrShellUi = (function() {
         update.setTranslation(buttonConfig.x, 0.1, 0);
         update.setVisible(false);
         update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YTOP);
-        update.setParentId(this.tabContainerElement.uiElementId);
-        ui.updateElement(buttonElement.uiElementId, update);
+        update.setParentId(this.tabContainerElement.id);
+        ui.updateElement(buttonElement.id, update);
         buttonElement.domElement.addEventListener('click', function() {
           api.doAction(
               api.Action.OPEN_NEW_TAB, {'incognito': buttonConfig.incognito});
@@ -868,32 +867,41 @@ var vrShellUi = (function() {
     setEnabled(enabled) {
       let update = new api.UiElementUpdate();
       update.setVisible(enabled);
-      ui.updateElement(this.tabContainerElement.uiElementId, update);
+      ui.updateElement(this.tabContainerElement.id, update);
       this.buttonElements.forEach(function(buttonElement) {
         let update = new api.UiElementUpdate();
         update.setVisible(enabled);
-        ui.updateElement(buttonElement.uiElementId, update);
+        ui.updateElement(buttonElement.id, update);
       }, this);
     }
   };
 
   class VirtualKeyboard {
     constructor(contentQuadId) {
-      this.domUiElement = new DomUiElement('#vkb');
+      /** @const */ this.SCENE_GROUND_SIZE = 25.0;
+      /** @const */ this.SCALE = 1.8;
+      /** @const */ this.ANGLE_UP = Math.PI / 6;
+      /** @const */ this.Y_OFFSET = -1.0;
+      /** @const */ this.Z_OFFSET = -1.8;
+
+      this.element = new DomUiElement('#vkb');
       let update = new api.UiElementUpdate();
-      update.setParentId(contentQuadId);
-      update.setVisible(false);
-      update.setRotation(1.0, 0.0, 0.0, -0.9);
-      update.setScale(1.8, 1.8, 1.8);
-      update.setTranslation(0, -1.2, 0.1);
-      update.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
-      ui.updateElement(this.domUiElement.uiElementId, update);
+      update.setVisible(true);
+      update.setOpacity(0);
+      update.setRotation(1, 0, 0, -this.ANGLE_UP);
+      update.setScale(this.SCALE, this.SCALE, this.SCALE);
+      update.setTranslation(0, this.Y_OFFSET, this.Z_OFFSET);
+      ui.updateElement(this.element.id, update);
     }
 
     setEnabled(enabled) {
-      let update = new api.UiElementUpdate();
-      update.setVisible(enabled);
-      ui.updateElement(this.domUiElement.uiElementId, update);
+      let anim = new api.Animation(this.element.id, ANIM_DURATION);
+      anim.setOpacity(enabled ? 1 : 0);
+      ui.addAnimation(anim);
+      anim = new api.Animation(this.element.id, ANIM_DURATION);
+      let scale = enabled ? this.SCALE : 0;
+      anim.setScale(scale, scale, scale);
+      ui.addAnimation(anim);
     }
   };
 
@@ -955,7 +963,7 @@ var vrShellUi = (function() {
       this.tabContainer.setEnabled(mode == api.Mode.STANDARD && menuMode);
 
       this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
-      this.keyboard.setEnabled(mode == api.Mode.STANDARD);
+      this.keyboard.setEnabled(mode == api.Mode.STANDARD && menuMode);
 
       api.setUiCssSize(
           uiRootElement.clientWidth, uiRootElement.clientHeight, UI_DPR);
