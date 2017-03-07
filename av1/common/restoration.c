@@ -59,6 +59,7 @@ typedef void (*restore_func_highbd_type)(uint8_t *data8, int width, int height,
 int av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rst_info,
                                  int width, int height) {
   const int ntiles = av1_get_rest_ntiles(width, height, NULL, NULL, NULL, NULL);
+  rst_info->frame_restoration_type = RESTORE_NONE;
   aom_free(rst_info->restoration_type);
   CHECK_MEM_ERROR(cm, rst_info->restoration_type,
                   (RestorationType *)aom_malloc(
