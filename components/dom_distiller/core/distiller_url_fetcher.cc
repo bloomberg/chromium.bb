@@ -6,6 +6,7 @@
 
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -47,8 +48,39 @@ void DistillerURLFetcher::FetchURL(const std::string& url,
 std::unique_ptr<URLFetcher> DistillerURLFetcher::CreateURLFetcher(
     net::URLRequestContextGetter* context_getter,
     const std::string& url) {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("dom_distiller", R"(
+        semantics {
+          sender: "DOM Distiller"
+          description:
+            "Chromium provides Mobile-friendly view on Android phones when the "
+            "web page contains an article, and is not mobile-friendly. If the "
+            "user enters Mobile-friendly view, the main content would be "
+            "extracted and reflowed in a simple layout for better readability. "
+            "On iOS, apps can add URLs to the Reading List in Chromium. When "
+            "opening the entries in the Reading List with no or limited "
+            "network, the simple layout would be shown. DOM distiller is the "
+            "backend service for Mobile-friendly view and Reading List."
+          trigger:
+            "When the user enters Mobile-friendly view on Android phones, or "
+            "adds entries to the Reading List on iOS. Note that Reading List "
+            "entries can be added from other apps."
+          data:
+            "URLs of the required website resources to fetch."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting: "Users can enable or disable Mobile-friendly view by "
+          "toggling chrome://flags#reader-mode-heuristics in Chromium on "
+          "Android."
+          policy_exception_justification:
+            "Not implemented, considered not useful as no content is being "
+            "uploaded; this request merely downloads the resources on the web."
+        })");
   std::unique_ptr<net::URLFetcher> fetcher =
-      URLFetcher::Create(GURL(url), URLFetcher::GET, this);
+      URLFetcher::Create(GURL(url), URLFetcher::GET, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher.get(), data_use_measurement::DataUseUserData::DOM_DISTILLER);
   fetcher->SetRequestContext(context_getter);
