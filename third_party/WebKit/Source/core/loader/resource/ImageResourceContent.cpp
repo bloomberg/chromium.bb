@@ -40,7 +40,7 @@ class NullImageResourceInfo final
   float devicePixelRatioHeaderValue() const override { return 1.0; }
   const ResourceResponse& response() const override { return m_response; }
   ResourceStatus getStatus() const override { return ResourceStatus::Cached; }
-  bool isPlaceholder() const override { return false; }
+  bool shouldShowPlaceholder() const override { return false; }
   bool isCacheValidator() const override { return false; }
   bool schedulingReloadOrShouldReloadBrokenPlaceholder() const override {
     return false;
@@ -54,7 +54,6 @@ class NullImageResourceInfo final
   const ResourceError& resourceError() const override { return m_error; }
 
   void setDecodedSize(size_t) override {}
-  void setIsPlaceholder(bool) override {}
   void willAddClientOrObserver() override {}
   void didRemoveClientOrObserver() override {}
   void emulateLoadStartedForInspector(
@@ -298,37 +297,6 @@ void ImageResourceContent::clearImage() {
   m_sizeAvailable = Image::SizeUnavailable;
 }
 
-// Determines if |response| likely contains the entire resource for the purposes
-// of determining whether or not to show a placeholder, e.g. if the server
-// responded with a full 200 response or if the full image is smaller than the
-// requested range.
-static bool isEntireResource(const ResourceResponse& response) {
-  if (response.httpStatusCode() != 206)
-    return true;
-
-  int64_t firstBytePosition = -1, lastBytePosition = -1, instanceLength = -1;
-  return parseContentRangeHeaderFor206(
-             response.httpHeaderField("Content-Range"), &firstBytePosition,
-             &lastBytePosition, &instanceLength) &&
-         firstBytePosition == 0 && lastBytePosition + 1 == instanceLength;
-}
-
-static bool shouldShowFullImageInsteadOfPlaceholder(
-    const ResourceResponse& response,
-    const Image* image) {
-  if (!isEntireResource(response))
-    return false;
-  if (image && !image->isNull())
-    return true;
-
-  // Don't treat a complete and broken image as a placeholder if the response
-  // code is something other than a 4xx or 5xx error. This is done to prevent
-  // reissuing the request in cases like "204 No Content" responses to tracking
-  // requests triggered by <img> tags, and <img> tags used to preload non-image
-  // resources.
-  return response.httpStatusCode() < 400 || response.httpStatusCode() >= 600;
-}
-
 ImageResourceContent::UpdateImageResult ImageResourceContent::updateImage(
     PassRefPtr<SharedBuffer> data,
     UpdateImageOption updateImageOption,
@@ -374,11 +342,8 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::updateImage(
       if (m_sizeAvailable == Image::SizeUnavailable && !allDataReceived)
         return UpdateImageResult::NoDecodeError;
 
-      if (m_info->isPlaceholder() && allDataReceived) {
-        if (shouldShowFullImageInsteadOfPlaceholder(response(),
-                                                    m_image.get())) {
-          m_info->setIsPlaceholder(false);
-        } else if (m_image && !m_image->isNull()) {
+      if (m_info->shouldShowPlaceholder() && allDataReceived) {
+        if (m_image && !m_image->isNull()) {
           IntSize dimensions = m_image->size();
           clearImage();
           m_image = PlaceholderImage::create(this, dimensions);

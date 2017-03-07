@@ -33,7 +33,7 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
   virtual float devicePixelRatioHeaderValue() const = 0;
   virtual const ResourceResponse& response() const = 0;
   virtual ResourceStatus getStatus() const = 0;
-  virtual bool isPlaceholder() const = 0;
+  virtual bool shouldShowPlaceholder() const = 0;
   virtual bool isCacheValidator() const = 0;
   virtual bool schedulingReloadOrShouldReloadBrokenPlaceholder() const = 0;
   enum DoesCurrentFrameHaveSingleSecurityOrigin {
@@ -45,9 +45,6 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
       DoesCurrentFrameHaveSingleSecurityOrigin) const = 0;
   virtual bool hasCacheControlNoStoreHeader() const = 0;
   virtual const ResourceError& resourceError() const = 0;
-
-  // TODO(hiroshige): Remove this.
-  virtual void setIsPlaceholder(bool) = 0;
 
   // TODO(hiroshige): Remove this once MemoryCache becomes further weaker.
   virtual void setDecodedSize(size_t) = 0;
