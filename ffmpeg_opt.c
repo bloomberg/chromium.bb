@@ -121,6 +121,7 @@ int frame_bits_per_raw_sample = 0;
 float max_error_rate  = 2.0/3;
 int filter_nbthreads = 0;
 int filter_complex_nbthreads = 0;
+int vstats_version = 2;
 
 
 static int intra_only         = 0;
@@ -735,10 +736,6 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             // avformat_find_stream_info() doesn't set this for us anymore.
             ist->dec_ctx->framerate = st->avg_frame_rate;
 
-            ist->resample_height  = ist->dec_ctx->height;
-            ist->resample_width   = ist->dec_ctx->width;
-            ist->resample_pix_fmt = ist->dec_ctx->pix_fmt;
-
             MATCH_PER_STREAM_OPT(frame_rates, str, framerate, ic, st);
             if (framerate && av_parse_video_rate(&ist->framerate,
                                                  framerate) < 0) {
@@ -803,12 +800,6 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             ist->guess_layout_max = INT_MAX;
             MATCH_PER_STREAM_OPT(guess_layout_max, i, ist->guess_layout_max, ic, st);
             guess_input_channel_layout(ist);
-
-            ist->resample_sample_fmt     = ist->dec_ctx->sample_fmt;
-            ist->resample_sample_rate    = ist->dec_ctx->sample_rate;
-            ist->resample_channels       = ist->dec_ctx->channels;
-            ist->resample_channel_layout = ist->dec_ctx->channel_layout;
-
             break;
         case AVMEDIA_TYPE_DATA:
         case AVMEDIA_TYPE_SUBTITLE: {
@@ -2014,33 +2005,6 @@ static int init_complex_filters(void)
 
     for (i = 0; i < nb_filtergraphs; i++) {
         ret = init_complex_filtergraph(filtergraphs[i]);
-        if (ret < 0)
-            return ret;
-    }
-    return 0;
-}
-
-static int configure_complex_filters(void)
-{
-    int i, j, ret = 0;
-
-    for (i = 0; i < nb_filtergraphs; i++) {
-        FilterGraph *fg = filtergraphs[i];
-
-        if (filtergraph_is_simple(fg))
-            continue;
-
-        for (j = 0; j < fg->nb_inputs; j++) {
-            ret = ifilter_parameters_from_decoder(fg->inputs[j],
-                                                  fg->inputs[j]->ist->dec_ctx);
-            if (ret < 0) {
-                av_log(NULL, AV_LOG_ERROR,
-                       "Error initializing filtergraph %d input %d\n", i, j);
-                return ret;
-            }
-        }
-
-        ret = configure_filtergraph(filtergraphs[i]);
         if (ret < 0)
             return ret;
     }
@@ -3290,13 +3254,6 @@ int ffmpeg_parse_options(int argc, char **argv)
         goto fail;
     }
 
-    /* configure the complex filtergraphs */
-    ret = configure_complex_filters();
-    if (ret < 0) {
-        av_log(NULL, AV_LOG_FATAL, "Error configuring complex filters.\n");
-        goto fail;
-    }
-
 fail:
     uninit_parse_context(&octx);
     if (ret < 0) {
@@ -3547,6 +3504,8 @@ const OptionDef options[] = {
         "dump video coding statistics to file" },
     { "vstats_file",  OPT_VIDEO | HAS_ARG | OPT_EXPERT ,                         { .func_arg = opt_vstats_file },
         "dump video coding statistics to file", "file" },
+    { "vstats_version",  OPT_VIDEO | OPT_INT | HAS_ARG | OPT_EXPERT ,            { &vstats_version },
+        "Version of the vstats format to use."},
     { "vf",           OPT_VIDEO | HAS_ARG  | OPT_PERFILE | OPT_OUTPUT,           { .func_arg = opt_video_filters },
         "set video filters", "filter_graph" },
     { "intra_matrix", OPT_VIDEO | HAS_ARG | OPT_EXPERT  | OPT_STRING | OPT_SPEC |

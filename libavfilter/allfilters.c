@@ -172,6 +172,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(DEBAND,         deband,         vf);
     REGISTER_FILTER(DECIMATE,       decimate,       vf);
     REGISTER_FILTER(DEFLATE,        deflate,        vf);
+    REGISTER_FILTER(DEINTERLACE_VAAPI, deinterlace_vaapi, vf);
     REGISTER_FILTER(DEJUDDER,       dejudder,       vf);
     REGISTER_FILTER(DELOGO,         delogo,         vf);
     REGISTER_FILTER(DESHAKE,        deshake,        vf);
@@ -235,6 +236,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(MERGEPLANES,    mergeplanes,    vf);
     REGISTER_FILTER(MESTIMATE,      mestimate,      vf);
     REGISTER_FILTER(METADATA,       metadata,       vf);
+    REGISTER_FILTER(MIDEQUALIZER,   midequalizer,   vf);
     REGISTER_FILTER(MINTERPOLATE,   minterpolate,   vf);
     REGISTER_FILTER(MPDECIMATE,     mpdecimate,     vf);
     REGISTER_FILTER(NEGATE,         negate,         vf);
@@ -304,6 +306,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(SWAPUV,         swapuv,         vf);
     REGISTER_FILTER(TBLEND,         tblend,         vf);
     REGISTER_FILTER(TELECINE,       telecine,       vf);
+    REGISTER_FILTER(THRESHOLD,      threshold,      vf);
     REGISTER_FILTER(THUMBNAIL,      thumbnail,      vf);
     REGISTER_FILTER(TILE,           tile,           vf);
     REGISTER_FILTER(TINTERLACE,     tinterlace,     vf);
@@ -348,6 +351,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(NULLSINK,       nullsink,       vsink);
 
     /* multimedia filters */
+    REGISTER_FILTER(ABITSCOPE,      abitscope,      avf);
     REGISTER_FILTER(ADRAWGRAPH,     adrawgraph,     avf);
     REGISTER_FILTER(AHISTOGRAM,     ahistogram,     avf);
     REGISTER_FILTER(APHASEMETER,    aphasemeter,    avf);

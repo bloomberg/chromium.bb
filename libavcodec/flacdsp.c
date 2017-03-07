@@ -67,15 +67,15 @@ static void flac_lpc_16_c(int32_t *decoded, const int coeffs[32],
             c = coeffs[j];
         }
         s0 += c*d;
-        d = decoded[j] += s0 >> qlevel;
+        d = decoded[j] += (SUINT)(s0 >> qlevel);
         s1 += c*d;
-        decoded[j + 1] += s1 >> qlevel;
+        decoded[j + 1] += (SUINT)(s1 >> qlevel);
     }
     if (i < len) {
         int sum = 0;
         for (j = 0; j < pred_order; j++)
             sum += coeffs[j] * (SUINT)decoded[j];
-        decoded[j] += sum >> qlevel;
+        decoded[j] = decoded[j] + (unsigned)(sum >> qlevel);
     }
 }
 

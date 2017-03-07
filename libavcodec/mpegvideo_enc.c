@@ -64,6 +64,7 @@
 #include "bytestream.h"
 #include "wmv2.h"
 #include "rv10.h"
+#include "libxvid.h"
 #include <limits.h>
 #include "sp5x.h"
 
@@ -265,7 +266,8 @@ static void mpv_encode_defaults(MpegEncContext *s)
     s->picture_in_gop_number = 0;
 }
 
-av_cold int ff_dct_encode_init(MpegEncContext *s) {
+av_cold int ff_dct_encode_init(MpegEncContext *s)
+{
     if (ARCH_X86)
         ff_dct_encode_init_x86(s);
 
@@ -638,6 +640,15 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if ((s->mpv_flags & FF_MPV_FLAG_QP_RD) &&
         s->avctx->mb_decision != FF_MB_DECISION_RD) {
         av_log(avctx, AV_LOG_ERROR, "QP RD needs mbd=2\n");
+        return -1;
+    }
+
+    if ((s->mpv_flags & FF_MPV_FLAG_QP_RD) &&
+            (s->codec_id == AV_CODEC_ID_AMV ||
+             s->codec_id == AV_CODEC_ID_MJPEG)) {
+        // Used to produce garbage with MJPEG.
+        av_log(avctx, AV_LOG_ERROR,
+               "QP RD is no longer compatible with MJPEG or AMV\n");
         return -1;
     }
 
@@ -1027,8 +1038,31 @@ FF_ENABLE_DEPRECATION_WARNINGS
                           31, 0);
     }
 
+#if FF_API_RC_STRATEGY
+FF_DISABLE_DEPRECATION_WARNINGS
+    if (!s->rc_strategy)
+        s->rc_strategy = s->avctx->rc_strategy;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+
     if (ff_rate_control_init(s) < 0)
         return -1;
+
+#if FF_API_RC_STRATEGY
+    av_assert0(MPV_RC_STRATEGY_XVID == FF_RC_STRATEGY_XVID);
+#endif
+
+    if ((s->avctx->flags & AV_CODEC_FLAG_PASS2) && s->rc_strategy == MPV_RC_STRATEGY_XVID) {
+#if CONFIG_LIBXVID
+        ret = ff_xvid_rate_control_init(s);
+#else
+        ret = AVERROR(ENOSYS);
+        av_log(s->avctx, AV_LOG_ERROR,
+               "Xvid ratecontrol requires libavcodec compiled with Xvid support.\n");
+#endif
+        if (ret < 0)
+            return ret;
+    }
 
 #if FF_API_ERROR_RATE
     FF_DISABLE_DEPRECATION_WARNINGS
@@ -1123,6 +1157,10 @@ av_cold int ff_mpv_encode_end(AVCodecContext *avctx)
     int i;
 
     ff_rate_control_uninit(s);
+#if CONFIG_LIBXVID
+    if ((avctx->flags & AV_CODEC_FLAG_PASS2) && s->rc_strategy == MPV_RC_STRATEGY_XVID)
+        ff_xvid_rate_control_uninit(s);
+#endif
 
     ff_mpv_common_end(s);
     if (CONFIG_MJPEG_ENCODER &&
@@ -3629,8 +3667,15 @@ static int estimate_qp(MpegEncContext *s, int dry_run){
         s->current_picture.f->quality = s->next_lambda;
         if(!dry_run) s->next_lambda= 0;
     } else if (!s->fixed_qscale) {
+        int quality;
+#if CONFIG_LIBXVID
+        if ((s->avctx->flags & AV_CODEC_FLAG_PASS2) && s->rc_strategy == MPV_RC_STRATEGY_XVID)
+            quality = ff_xvid_rate_estimate_qscale(s, dry_run);
+        else
+#endif
+        quality = ff_rate_estimate_qscale(s, dry_run);
         s->current_picture_ptr->f->quality =
-        s->current_picture.f->quality = ff_rate_estimate_qscale(s, dry_run);
+        s->current_picture.f->quality = quality;
         if (s->current_picture.f->quality < 0)
             return -1;
     }
@@ -3897,7 +3942,7 @@ static int encode_picture(MpegEncContext *s, int picture_number)
     s->last_bits= put_bits_count(&s->pb);
     switch(s->out_format) {
     case FMT_MJPEG:
-        if (CONFIG_MJPEG_ENCODER)
+        if (CONFIG_MJPEG_ENCODER && s->huffman != HUFFMAN_TABLE_OPTIMAL)
             ff_mjpeg_encode_picture_header(s->avctx, &s->pb, &s->intra_scantable,
                                            s->pred, s->intra_matrix, s->chroma_intra_matrix);
         break;

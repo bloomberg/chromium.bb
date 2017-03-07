@@ -13,8 +13,9 @@ You can disable all the muxers with the configure option
 with the options @code{--enable-muxer=@var{MUXER}} /
 @code{--disable-muxer=@var{MUXER}}.
 
-The option @code{-formats} of the ff* tools will display the list of
-enabled muxers.
+The option @code{-muxers} of the ff* tools will display the list of
+enabled muxers. Use @code{-formats} to view a combined list of
+enabled demuxers and muxers.
 
 A description of some of the currently available muxers follows.
 
@@ -54,6 +55,39 @@ It accepts the following options:
 Set the muxer packet size. By tuning this setting you may reduce data
 fragmentation or muxer overhead depending on your source. Default value is
 3200, minimum is 100, maximum is 64k.
+
+@end table
+
+@anchor{avi}
+@section avi
+
+Audio Video Interleaved muxer.
+
+@subsection Options
+
+It accepts the following options:
+
+@table @option
+@item reserve_index_space
+Reserve the specified amount of bytes for the OpenDML master index of each
+stream within the file header. By default additional master indexes are
+embedded within the data packets if there is no space left in the first master
+index and are linked together as a chain of indexes. This index structure can
+cause problems for some use cases, e.g. third-party software strictly relying
+on the OpenDML index specification or when file seeking is slow. Reserving
+enough index space in the file header avoids these problems.
+
+The required index space depends on the output file size and should be about 16
+bytes per gigabyte. When this option is omitted or set to zero the necessary
+index space is guessed.
+
+@item write_channel_mask
+Write the channel layout mask into the audio stream header.
+
+This option is enabled by default. Disabling the channel mask can be useful in
+specific scenarios, e.g. when merging multiple audio streams into one for
+compatibility with software that only supports a single audio stream in AVI
+(see @ref{amerge,,the "amerge" section in the ffmpeg-filters manual,ffmpeg-filters}).
 
 @end table
 
@@ -408,9 +442,8 @@ parameters. Values containing @code{:} special characters must be
 escaped.
 
 @item hls_wrap @var{wrap}
-Set the number after which the segment filename number (the number
-specified in each segment file) wraps. If set to 0 the number will be
-never wrapped. Default value is 0.
+This is a deprecated option, you can use @code{hls_list_size}
+and @code{hls_flags delete_segments} instead it
 
 This option is useful to avoid to fill the disk with many segment
 files, and limits the maximum number of segment files written to disk
@@ -622,6 +655,11 @@ To get fixed width numbers with trailing zeroes, %%0xs format is available where
 Makes it possible to use segment duration (calculated  in microseconds) as %%t in hls_segment_filename
 expression besides date/time values when use_localtime is on.
 To get fixed width numbers with trailing zeroes, %%0xt format is available where x is the required width.
+
+@item temp_file
+Write segment data to filename.tmp and rename to filename only once the segment is complete. A webserver
+serving up segments can be configured to reject requests to *.tmp to prevent access to in-progress segments
+before they have been added to the m3u8 playlist.
 
 @example
 ffmpeg -i sample.mpeg \
@@ -1407,9 +1445,6 @@ Force the segmenter to only start a new segment if a packet reaches the muxer
 within the specified duration after the segmenting clock time. This way you
 can make the segmenter more resilient to backward local time jumps, such as
 leap seconds or transition to standard time from daylight savings time.
-
-Assuming that the delay between the packets of your source is less than 0.5
-second you can detect a leap second by specifying 0.5 as the duration.
 
 Default is the maximum possible duration which means starting a new segment
 regardless of the elapsed time since the last clock time.
