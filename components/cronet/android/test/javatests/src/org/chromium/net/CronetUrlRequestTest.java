@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.StrictMode;
 import android.support.test.filters.SmallTest;
-import android.test.MoreAsserts;
 import android.util.Log;
 
 import org.chromium.base.test.util.Feature;
@@ -558,11 +557,15 @@ public class CronetUrlRequestTest extends CronetTestBase {
         List<Map.Entry<String, String>> responseHeaders =
                 callback.mResponseInfo.getAllHeadersAsList();
 
-        MoreAsserts.assertContentsInOrder(responseHeaders,
-                new AbstractMap.SimpleEntry<>("Content-Type", "text/plain"),
-                new AbstractMap.SimpleEntry<>("Access-Control-Allow-Origin", "*"),
-                new AbstractMap.SimpleEntry<>("header-name", "header-value"),
-                new AbstractMap.SimpleEntry<>("multi-header-name", "header-value1"),
+        assertEquals(responseHeaders.get(0),
+                new AbstractMap.SimpleEntry<>("Content-Type", "text/plain"));
+        assertEquals(responseHeaders.get(1),
+                new AbstractMap.SimpleEntry<>("Access-Control-Allow-Origin", "*"));
+        assertEquals(responseHeaders.get(2),
+                new AbstractMap.SimpleEntry<>("header-name", "header-value"));
+        assertEquals(responseHeaders.get(3),
+                new AbstractMap.SimpleEntry<>("multi-header-name", "header-value1"));
+        assertEquals(responseHeaders.get(4),
                 new AbstractMap.SimpleEntry<>("multi-header-name", "header-value2"));
     }
 

@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 
 /**
@@ -202,7 +201,7 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
         try {
             connection.getResponseCode();
             fail();
-        } catch (ProtocolException e) {
+        } catch (IOException e) {
             // Expected.
         }
         connection.disconnect();
@@ -226,7 +225,7 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
             // On Lollipop, default implementation only triggers the error when reading response.
             connection.getInputStream();
             fail();
-        } catch (ProtocolException e) {
+        } catch (IOException e) {
             // Expected.
             assertEquals("expected " + (TestUtil.UPLOAD_DATA.length - 1) + " bytes but received "
                             + TestUtil.UPLOAD_DATA.length,
@@ -257,7 +256,7 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
             // On Lollipop, default implementation only triggers the error when reading response.
             connection.getInputStream();
             fail();
-        } catch (ProtocolException e) {
+        } catch (IOException e) {
             // Expected.
             String expectedVariant = "expected 0 bytes but received 1";
             String expectedVariantOnLollipop = "expected " + (TestUtil.UPLOAD_DATA.length - 1)

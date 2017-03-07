@@ -12,9 +12,9 @@ import org.chromium.net.CronetTestBase;
 import org.chromium.net.CronetTestFramework;
 import org.chromium.net.NativeTestServer;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 
 /**
@@ -323,7 +323,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         try {
             connection.getResponseCode();
             fail();
-        } catch (ProtocolException e) {
+        } catch (IOException e) {
             // Expected.
         }
         connection.disconnect();
@@ -354,7 +354,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
             // On Lollipop, default implementation only triggers the error when reading response.
             connection.getInputStream();
             fail();
-        } catch (ProtocolException e) {
+        } catch (IOException e) {
             assertEquals("exceeded content-length limit of " + (TestUtil.UPLOAD_DATA.length - 1)
                             + " bytes",
                     e.getMessage());
@@ -385,7 +385,7 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
             // On Lollipop, default implementation only triggers the error when reading response.
             connection.getInputStream();
             fail();
-        } catch (java.net.ProtocolException e) {
+        } catch (IOException e) {
             assertEquals("exceeded content-length limit of " + (TestUtil.UPLOAD_DATA.length - 1)
                             + " bytes",
                     e.getMessage());
