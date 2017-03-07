@@ -54,6 +54,7 @@ static base::File::Error LastFileError() {
 // latter can fail quietly without return an error result.
 static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
                                              std::vector<FilePath>* result) {
+  TRACE_EVENT0("leveldb", "ChromiumEnv::GetDirectoryEntries");
   base::ThreadRestrictions::AssertIOAllowed();
   result->clear();
 #if defined(OS_WIN)
@@ -168,6 +169,7 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
   virtual ~ChromiumSequentialFile() {}
 
   Status Read(size_t n, Slice* result, char* scratch) override {
+    TRACE_EVENT1("leveldb", "ChromiumSequentialFile::Read", "size", n);
     int bytes_read = file_.ReadAtCurrentPosNoBestEffort(scratch, n);
     if (bytes_read == -1) {
       base::File::Error error = LastFileError();
@@ -211,6 +213,8 @@ class ChromiumRandomAccessFile : public leveldb::RandomAccessFile {
               size_t n,
               Slice* result,
               char* scratch) const override {
+    TRACE_EVENT2("leveldb", "ChromiumRandomAccessFile::Read", "offset", offset,
+                 "size", n);
     Status s;
     int r = file_.Read(offset, scratch, n);
     *result = Slice(scratch, (r < 0) ? 0 : r);

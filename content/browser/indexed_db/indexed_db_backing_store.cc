@@ -992,6 +992,7 @@ bool IndexCursorOptions(
     blink::WebIDBCursorDirection direction,
     IndexedDBBackingStore::Cursor::CursorOptions* cursor_options,
     Status* status) {
+  IDB_TRACE("IndexedDBBackingStore::IndexCursorOptions");
   DCHECK(transaction);
   if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
     return false;
@@ -3233,13 +3234,15 @@ IndexedDBBackingStore::Cursor::~Cursor() {}
 
 bool IndexedDBBackingStore::Cursor::FirstSeek(Status* s) {
   iterator_ = transaction_->transaction()->CreateIterator();
-  if (cursor_options_.forward)
-    *s = iterator_->Seek(cursor_options_.low_key);
-  else
-    *s = iterator_->Seek(cursor_options_.high_key);
-  if (!s->ok())
-    return false;
-
+  {
+    IDB_TRACE("IndexedDBBackingStore::Cursor::FirstSeek::Seek");
+    if (cursor_options_.forward)
+      *s = iterator_->Seek(cursor_options_.low_key);
+    else
+      *s = iterator_->Seek(cursor_options_.high_key);
+    if (!s->ok())
+      return false;
+  }
   return Continue(0, READY, s);
 }
 
@@ -3256,6 +3259,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
                                              const IndexedDBKey* primary_key,
                                              IteratorState next_state,
                                              Status* s) {
+  IDB_TRACE("IndexedDBBackingStore::Cursor::Continue");
   DCHECK(!key || next_state == SEEK);
 
   if (cursor_options_.forward)

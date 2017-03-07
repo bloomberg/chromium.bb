@@ -80,6 +80,7 @@ IndexedDBTransaction::IndexedDBTransaction(
       connection_(std::move(connection)),
       transaction_(backing_store_transaction),
       ptr_factory_(this) {
+  IDB_ASYNC_TRACE_BEGIN("IndexedDBTransaction::lifetime", this);
   callbacks_ = connection_->callbacks();
   database_ = connection_->database();
 
@@ -89,6 +90,7 @@ IndexedDBTransaction::IndexedDBTransaction(
 }
 
 IndexedDBTransaction::~IndexedDBTransaction() {
+  IDB_ASYNC_TRACE_END("IndexedDBTransaction::lifetime", this);
   // It shouldn't be possible for this object to get deleted until it's either
   // complete or aborted.
   DCHECK_EQ(state_, FINISHED);

@@ -15,4 +15,9 @@
 #define IDB_ASYNC_TRACE_END(a, id) \
   TRACE_EVENT_ASYNC_END0("IndexedDB", (a), (id));
 
+#define IDB_TRACE_COUNTER1(a, value) TRACE_COUNTER1("IndexedDB", (a), (value))
+
+#define IDB_TRACE_COUNTER2(category, a, a_value, b, b_value) \
+  TRACE_COUNTER2("IndexedDB", (category), (a), (a_value), (b), (b_value))
+
 #endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TRACING_H_

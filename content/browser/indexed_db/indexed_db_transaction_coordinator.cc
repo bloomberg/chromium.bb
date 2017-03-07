@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 
 #include "base/logging.h"
+#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
@@ -93,6 +94,12 @@ IndexedDBTransactionCoordinator::GetTransactions() const {
   return result;
 }
 
+void IndexedDBTransactionCoordinator::RecordMetrics() const {
+  IDB_TRACE_COUNTER2("IndexedDBTransactionCoordinator", "StartedTransactions",
+                     started_transactions_.size(), "QueuedTransactions",
+                     queued_transactions_.size());
+}
+
 void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   if (queued_transactions_.empty())
     return;
@@ -134,6 +141,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
                           transaction->scope().end());
     }
   }
+  RecordMetrics();
 }
 
 template<typename T>

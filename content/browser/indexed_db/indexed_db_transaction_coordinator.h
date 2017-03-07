@@ -43,6 +43,8 @@ class CONTENT_EXPORT IndexedDBTransactionCoordinator {
  private:
   friend class IndexedDBTransactionCoordinatorTest;
 
+  void RecordMetrics() const;
+
   void ProcessQueuedTransactions();
   bool CanStartTransaction(IndexedDBTransaction* const transaction,
                            const std::set<int64_t>& locked_scope) const;
