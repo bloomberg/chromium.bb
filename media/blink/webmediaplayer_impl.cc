@@ -2105,9 +2105,11 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
 
 void WebMediaPlayerImpl::ScheduleIdlePauseTimer() {
   // Only schedule the pause timer if we're not paused or paused but going to
-  // resume when foregrounded, and are suspended.
-  if ((paused_ && !paused_when_hidden_) || !pipeline_controller_.IsSuspended())
+  // resume when foregrounded, and are suspended and have audio.
+  if ((paused_ && !paused_when_hidden_) ||
+      !pipeline_controller_.IsSuspended() || !hasAudio()) {
     return;
+  }
 
 #if defined(OS_ANDROID)
   // Remote players will be suspended and locally paused.

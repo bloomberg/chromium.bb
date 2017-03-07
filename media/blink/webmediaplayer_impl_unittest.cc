@@ -319,6 +319,16 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   void Pause() { wmpi_->pause(); }
 
+  void ScheduleIdlePauseTimer() { wmpi_->ScheduleIdlePauseTimer(); }
+
+  bool IsIdlePauseTimerRunning() {
+    return wmpi_->background_pause_timer_.IsRunning();
+  }
+
+  void SetSuspendState(bool is_suspended) {
+    wmpi_->SetSuspendState(is_suspended);
+  }
+
   // "Renderer" thread.
   base::MessageLoop message_loop_;
 
@@ -744,6 +754,23 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   // Foregrounding the player unsets the lock.
   ForegroundPlayer();
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
+}
+
+TEST_F(WebMediaPlayerImplTest, BackgroundIdlePauseTimerDependsOnAudio) {
+  InitializeWebMediaPlayerImpl(true);
+  SetSuspendState(true);
+  SetPaused(false);
+
+  ASSERT_TRUE(IsSuspended());
+
+  // Video-only players are not paused when suspended.
+  SetMetadata(false, true);
+  ScheduleIdlePauseTimer();
+  EXPECT_FALSE(IsIdlePauseTimerRunning());
+
+  SetMetadata(true, true);
+  ScheduleIdlePauseTimer();
+  EXPECT_TRUE(IsIdlePauseTimerRunning());
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest
