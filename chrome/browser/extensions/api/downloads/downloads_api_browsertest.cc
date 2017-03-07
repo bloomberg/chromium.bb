@@ -3999,7 +3999,7 @@ IN_PROC_BROWSER_TEST_F(
                           result_id)));
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 // This test is very flaky on Win XP and Aura. http://crbug.com/248438
 #define MAYBE_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume \
     DISABLED_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume
