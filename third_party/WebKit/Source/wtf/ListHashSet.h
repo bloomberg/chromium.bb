@@ -167,8 +167,8 @@ class ListHashSet
   const ValueType& front() const;
   void removeFirst();
 
-  ValueType& last();
-  const ValueType& last() const;
+  ValueType& back();
+  const ValueType& back() const;
   void removeLast();
 
   iterator find(ValuePeekInType);
@@ -828,13 +828,13 @@ inline const T& ListHashSet<T, inlineCapacity, U, V>::front() const {
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline T& ListHashSet<T, inlineCapacity, U, V>::last() {
+inline T& ListHashSet<T, inlineCapacity, U, V>::back() {
   DCHECK(!isEmpty());
   return m_tail->m_value;
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline const T& ListHashSet<T, inlineCapacity, U, V>::last() const {
+inline const T& ListHashSet<T, inlineCapacity, U, V>::back() const {
   DCHECK(!isEmpty());
   return m_tail->m_value;
 }

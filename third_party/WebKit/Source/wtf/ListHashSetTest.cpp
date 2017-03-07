@@ -55,13 +55,13 @@ TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
   list.insert(3);
 
   EXPECT_EQ(-1, list.front());
-  EXPECT_EQ(3, list.last());
+  EXPECT_EQ(3, list.back());
 
   list.removeFirst();
   EXPECT_EQ(0, list.front());
 
   list.removeLast();
-  EXPECT_EQ(2, list.last());
+  EXPECT_EQ(2, list.back());
 
   list.removeFirst();
   EXPECT_EQ(1, list.front());
@@ -111,10 +111,10 @@ TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastWithDuplicates) {
   EXPECT_EQ(3UL, list.size());
 
   // Appending 2 move it to the end.
-  EXPECT_EQ(3, list.last());
+  EXPECT_EQ(3, list.back());
   result = list.appendOrMoveToLast(2);
   EXPECT_FALSE(result.isNewEntry);
-  EXPECT_EQ(2, list.last());
+  EXPECT_EQ(2, list.back());
 
   // Inverse the list by moving each element to end end.
   result = list.appendOrMoveToLast(3);
@@ -316,7 +316,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator) {
   EXPECT_EQ(7u, set.size());
   set.remove(it);
   EXPECT_EQ(6u, set.size());
-  EXPECT_EQ(4, set.last());
+  EXPECT_EQ(4, set.back());
 }
 
 TYPED_TEST(ListOrLinkedHashSetTest, Swap) {

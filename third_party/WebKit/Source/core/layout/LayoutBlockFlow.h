@@ -372,7 +372,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   LayoutUnit nextFloatLogicalBottomBelowForBlock(LayoutUnit) const;
 
   FloatingObject* lastFloatFromPreviousLine() const {
-    return containsFloats() ? m_floatingObjects->set().last().get() : nullptr;
+    return containsFloats() ? m_floatingObjects->set().back().get() : nullptr;
   }
 
   void setShouldDoFullPaintInvalidationForFirstLine();

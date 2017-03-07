@@ -983,7 +983,7 @@ void LayoutBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState) {
   RootInlineBox* startLine = determineStartPosition(layoutState, resolver);
 
   if (containsFloats())
-    layoutState.setLastFloat(m_floatingObjects->set().last().get());
+    layoutState.setLastFloat(m_floatingObjects->set().back().get());
 
   // We also find the first clean line and extract these lines.  We will add
   // them back if we determine that we're able to synchronize after handling all
@@ -1061,7 +1061,7 @@ void LayoutBlockFlow::appendFloatsToLastLine(
     layoutState.setFloatIndex(layoutState.floatIndex() + 1);
   }
   layoutState.setLastFloat(
-      !floatingObjectSet.isEmpty() ? floatingObjectSet.last().get() : 0);
+      !floatingObjectSet.isEmpty() ? floatingObjectSet.back().get() : 0);
 }
 
 void LayoutBlockFlow::layoutRunsAndFloatsInRange(
@@ -1111,7 +1111,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
     const InlineIterator previousEndofLine = endOfLine;
     bool isNewUBAParagraph = layoutState.lineInfo().previousLineBrokeCleanly();
     FloatingObject* lastFloatFromPreviousLine =
-        (containsFloats()) ? m_floatingObjects->set().last().get() : 0;
+        (containsFloats()) ? m_floatingObjects->set().back().get() : 0;
 
     WordMeasurements wordMeasurements;
     endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(),

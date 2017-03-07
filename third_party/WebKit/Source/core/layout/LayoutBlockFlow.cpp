@@ -3597,13 +3597,13 @@ void LayoutBlockFlow::removeFloatingObjectsBelow(FloatingObject* lastFloat,
     return;
 
   const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-  FloatingObject* curr = floatingObjectSet.last().get();
+  FloatingObject* curr = floatingObjectSet.back().get();
   while (curr != lastFloat &&
          (!curr->isPlaced() || logicalTopForFloat(*curr) >= logicalOffset)) {
     m_floatingObjects->remove(curr);
     if (floatingObjectSet.isEmpty())
       break;
-    curr = floatingObjectSet.last().get();
+    curr = floatingObjectSet.back().get();
   }
 }
 
@@ -3617,7 +3617,7 @@ bool LayoutBlockFlow::placeNewFloats(LayoutUnit logicalTopMarginEdge,
     return false;
 
   // If all floats have already been positioned, then we have no work to do.
-  if (floatingObjectSet.last()->isPlaced())
+  if (floatingObjectSet.back()->isPlaced())
     return false;
 
   // Move backwards through our floating object list until we find a float that

@@ -239,8 +239,8 @@ class LinkedHashSet {
   const Value& front() const;
   void removeFirst();
 
-  Value& last();
-  const Value& last() const;
+  Value& back();
+  const Value& back() const;
   void removeLast();
 
   iterator find(ValuePeekInType);
@@ -718,13 +718,13 @@ inline void LinkedHashSet<T, U, V, W>::removeFirst() {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline T& LinkedHashSet<T, U, V, W>::last() {
+inline T& LinkedHashSet<T, U, V, W>::back() {
   DCHECK(!isEmpty());
   return lastNode()->m_value;
 }
 
 template <typename T, typename U, typename V, typename W>
-inline const T& LinkedHashSet<T, U, V, W>::last() const {
+inline const T& LinkedHashSet<T, U, V, W>::back() const {
   DCHECK(!isEmpty());
   return lastNode()->m_value;
 }

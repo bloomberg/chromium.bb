@@ -472,7 +472,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(
 
       // If no set was found, the offset is in the flow thread overflow.
       if (!adapter.result() && !m_multiColumnSetList.isEmpty())
-        columnSet = m_multiColumnSetList.last();
+        columnSet = m_multiColumnSetList.back();
       else
         columnSet = adapter.result();
     }
