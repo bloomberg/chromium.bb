@@ -162,11 +162,9 @@ void CallWithEmptyResults(const FetchDoneCallback& callback,
 
 CachedImageFetcher::CachedImageFetcher(
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
-    std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     PrefService* pref_service,
     RemoteSuggestionsDatabase* database)
     : image_fetcher_(std::move(image_fetcher)),
-      image_decoder_(std::move(image_decoder)),
       database_(database),
       thumbnail_requests_throttler_(
           pref_service,
@@ -214,9 +212,9 @@ void CachedImageFetcher::OnImageFetchedFromDatabase(
     const ContentSuggestion::ID& suggestion_id,
     const GURL& url,
     std::string data) {  // SnippetImageCallback requires by-value.
-  // |image_decoder_| is null in tests.
-  if (image_decoder_ && !data.empty()) {
-    image_decoder_->DecodeImage(
+  // The image decoder is null in tests.
+  if (image_fetcher_->GetImageDecoder() && !data.empty()) {
+    image_fetcher_->GetImageDecoder()->DecodeImage(
         data,
         // We're not dealing with multi-frame images.
         /*desired_image_frame_size=*/gfx::Size(),
@@ -269,7 +267,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     CategoryRanker* category_ranker,
     std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
-    std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     std::unique_ptr<RemoteSuggestionsDatabase> database,
     std::unique_ptr<RemoteSuggestionsStatusService> status_service)
     : RemoteSuggestionsProvider(observer),
@@ -282,7 +279,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       suggestions_fetcher_(std::move(suggestions_fetcher)),
       database_(std::move(database)),
       image_fetcher_(std::move(image_fetcher),
-                     std::move(image_decoder),
                      pref_service,
                      database_.get()),
       status_service_(std::move(status_service)),

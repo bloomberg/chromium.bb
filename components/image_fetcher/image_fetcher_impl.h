@@ -53,6 +53,8 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
       base::Callback<void(const std::string&, const gfx::Image&)> callback)
       override;
 
+  ImageDecoder* GetImageDecoder() override;
+
  private:
   using CallbackVector =
       std::vector<base::Callback<void(const std::string&, const gfx::Image&)>>;

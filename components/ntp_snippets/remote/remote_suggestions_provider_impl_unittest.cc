@@ -66,6 +66,7 @@ using testing::Mock;
 using testing::MockFunction;
 using testing::NiceMock;
 using testing::Not;
+using testing::Return;
 using testing::SaveArg;
 using testing::SizeIs;
 using testing::StartsWith;
@@ -347,6 +348,7 @@ class MockImageFetcher : public ImageFetcher {
       void(const std::string&,
            const GURL&,
            base::Callback<void(const std::string&, const gfx::Image&)>));
+  MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
 };
 
 class FakeImageDecoder : public image_fetcher::ImageDecoder {
@@ -395,7 +397,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         user_classifier_(/*pref_service=*/nullptr),
         suggestions_fetcher_(nullptr),
         image_fetcher_(nullptr),
-        image_decoder_(nullptr),
         database_(nullptr) {
     RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
         utils_.pref_service()->registry());
@@ -439,8 +440,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
     image_fetcher_ = image_fetcher.get();
     EXPECT_CALL(*image_fetcher, SetImageFetcherDelegate(_));
-    auto image_decoder = base::MakeUnique<FakeImageDecoder>();
-    image_decoder_ = image_decoder.get();
+    ON_CALL(*image_fetcher, GetImageDecoder())
+        .WillByDefault(Return(&image_decoder_));
     EXPECT_FALSE(observer_);
     observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
     auto database = base::MakeUnique<RemoteSuggestionsDatabase>(
@@ -449,7 +450,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     return base::MakeUnique<RemoteSuggestionsProviderImpl>(
         observer_.get(), utils_.pref_service(), "fr", category_ranker_.get(),
         std::move(suggestions_fetcher), std::move(image_fetcher),
-        std::move(image_decoder), std::move(database),
+        std::move(database),
         base::MakeUnique<RemoteSuggestionsStatusService>(
             utils_.fake_signin_manager(), utils_.pref_service()));
   }
@@ -513,7 +514,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   // TODO(tschumann): Make this a strict-mock. We want to avoid unneccesary
   // network requests.
   NiceMock<MockImageFetcher>* image_fetcher() { return image_fetcher_; }
-  FakeImageDecoder* image_decoder() { return image_decoder_; }
+  FakeImageDecoder* image_decoder() { return &image_decoder_; }
   PrefService* pref_service() { return utils_.pref_service(); }
   RemoteSuggestionsDatabase* database() { return database_; }
 
@@ -561,7 +562,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   std::unique_ptr<FakeContentSuggestionsProviderObserver> observer_;
   RemoteSuggestionsFetcher* suggestions_fetcher_;
   NiceMock<MockImageFetcher>* image_fetcher_;
-  FakeImageDecoder* image_decoder_;
+  FakeImageDecoder image_decoder_;
 
   base::ScopedTempDir database_dir_;
   RemoteSuggestionsDatabase* database_;

@@ -39,7 +39,6 @@ class Image;
 }  // namespace gfx
 
 namespace image_fetcher {
-class ImageDecoder;
 class ImageFetcher;
 }  // namespace image_fetcher
 
@@ -60,7 +59,6 @@ class CachedImageFetcher : public image_fetcher::ImageFetcherDelegate {
   // |pref_service| and |database| need to outlive the created image fetcher
   // instance.
   CachedImageFetcher(std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
-                     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
                      PrefService* pref_service,
                      RemoteSuggestionsDatabase* database);
   ~CachedImageFetcher() override;
@@ -94,7 +92,6 @@ class CachedImageFetcher : public image_fetcher::ImageFetcherDelegate {
                              const ImageFetchedCallback& callback);
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
-  std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
   RemoteSuggestionsDatabase* database_;
   // Request throttler for limiting requests to thumbnail images.
   RequestThrottler thumbnail_requests_throttler_;
@@ -120,7 +117,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       CategoryRanker* category_ranker,
       std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher,
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
-      std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
       std::unique_ptr<RemoteSuggestionsDatabase> database,
       std::unique_ptr<RemoteSuggestionsStatusService> status_service);
 

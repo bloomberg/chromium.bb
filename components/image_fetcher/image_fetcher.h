@@ -20,6 +20,8 @@ class Size;
 
 namespace image_fetcher {
 
+class ImageDecoder;
+
 // A class used to fetch server images. It can be called from any thread and the
 // callback will be called on the thread which initiated the fetch.
 class ImageFetcher {
@@ -50,8 +52,7 @@ class ImageFetcher {
       const GURL& image_url,
       base::Callback<void(const std::string&, const gfx::Image&)> callback) = 0;
 
-  // TODO(treib,markusheintz): Now that iOS uses the same ImageFetcherImpl (see
-  // crbug.com/689020), add a getter for the ImageDecoder here.
+  virtual ImageDecoder* GetImageDecoder() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageFetcher);

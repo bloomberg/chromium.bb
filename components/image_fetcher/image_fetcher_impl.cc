@@ -102,4 +102,8 @@ void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
   pending_net_requests_.erase(image_iter);
 }
 
+ImageDecoder* ImageFetcherImpl::GetImageDecoder() {
+  return image_decoder_.get();
+}
+
 }  // namespace image_fetcher

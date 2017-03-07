@@ -55,6 +55,7 @@ class MockImageFetcher : public ImageFetcher {
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
   MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
   MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
+  MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
 };
 
 class ImageManagerTest : public testing::Test {

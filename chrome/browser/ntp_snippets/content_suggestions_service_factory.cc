@@ -208,7 +208,6 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
       service->category_ranker(), std::move(suggestions_fetcher),
       base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
-      base::MakeUnique<ImageDecoderImpl>(),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
       base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
                                                        pref_service));

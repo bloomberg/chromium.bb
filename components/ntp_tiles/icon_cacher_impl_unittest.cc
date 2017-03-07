@@ -49,6 +49,7 @@ class MockImageFetcher : public image_fetcher::ImageFetcher {
                     base::Callback<void(const std::string& id,
                                         const gfx::Image& image)> callback));
   MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
+  MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
 };
 
 // This class provides methods to inject an image resource where a real resource

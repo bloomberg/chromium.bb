@@ -170,7 +170,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         base::MakeUnique<ImageFetcherImpl>(
             CreateIOSImageDecoder(web::WebThread::GetBlockingPool()),
             request_context.get()),
-        CreateIOSImageDecoder(task_runner),
         base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
         base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
                                                          prefs));
