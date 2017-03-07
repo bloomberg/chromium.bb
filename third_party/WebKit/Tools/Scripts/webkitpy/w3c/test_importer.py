@@ -22,6 +22,7 @@ from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.net.buildbot import current_build_link
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
+from webkitpy.layout_tests.port.base import Port
 from webkitpy.w3c.common import WPT_REPO_URL, CSS_REPO_URL, WPT_DEST_NAME, CSS_DEST_NAME, exportable_commits_since
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
@@ -245,15 +246,7 @@ class TestImporter(object):
 
         self.run(['git', 'add', '--all', 'LayoutTests/external/%s' % dest_dir_name])
 
-        _log.info('Deleting any orphaned baselines.')
-
-        is_baseline_filter = lambda fs, dirname, basename: self.is_baseline(basename)
-        previous_baselines = self.fs.files_under(dest_path, file_filter=is_baseline_filter)
-
-        for subpath in previous_baselines:
-            full_path = self.fs.join(dest_path, subpath)
-            if self.fs.glob(full_path.replace('-expected.txt', '*')) == [full_path]:
-                self.fs.remove(full_path)
+        self._delete_orphaned_baselines(dest_path)
 
         self._generate_manifest(dest_path)
 
@@ -276,9 +269,23 @@ class TestImporter(object):
                 'NOEXPORT=true' %
                 (import_commit, chromium_commit))
 
+    def _delete_orphaned_baselines(self, dest_path):
+        _log.info('Deleting any orphaned baselines.')
+        is_baseline_filter = lambda fs, dirname, basename: self.is_baseline(basename)
+        previous_baselines = self.fs.files_under(dest_path, file_filter=is_baseline_filter)
+        for sub_path in previous_baselines:
+            full_baseline_path = self.fs.join(dest_path, sub_path)
+            if not self._has_corresponding_test(full_baseline_path):
+                self.fs.remove(full_baseline_path)
+
+    def _has_corresponding_test(self, full_baseline_path):
+        base = full_baseline_path.replace('-expected.txt', '')
+        return any(self.fs.exists(base + ext) for ext in Port.supported_file_extensions)
+
     @staticmethod
     def is_baseline(basename):
         # TODO(qyearsley): Find a better, centralized place for this.
+        # Also, the name for this method should be is_text_baseline.
         return basename.endswith('-expected.txt')
 
     def run(self, cmd, exit_on_failure=True, cwd=None, stdin=''):

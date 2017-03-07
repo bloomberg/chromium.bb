@@ -194,3 +194,15 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual(
             TestImporter._cc_part(directory_owners),
             ['--cc=someone@chromium.org', '--cc=x@chromium.org', '--cc=y@chromium.org'])
+
+    def test_delete_orphaned_baselines(self):
+        host = MockHost()
+        dest_path = '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'
+        host.filesystem.write_text_file(dest_path + '/b-expected.txt', '')
+        host.filesystem.write_text_file(dest_path + '/b.x-expected.txt', '')
+        host.filesystem.write_text_file(dest_path + '/b.x.html', '')
+        importer = TestImporter(host)
+        importer._delete_orphaned_baselines(dest_path)
+        self.assertFalse(host.filesystem.exists(dest_path + '/b-expected.txt'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/b.x-expected.txt'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/b.x.html'))
