@@ -162,14 +162,8 @@ const base::Feature kMaterialDesignHistory{"MaterialDesignHistory",
 
 // Enables or disables the Material Design version of chrome://settings.
 // Also affects chrome://help.
-const base::Feature kMaterialDesignSettings {
-  "MaterialDesignSettings",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kMaterialDesignSettings{"MaterialDesignSettings",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Enables media content bitstream remoting, an optimization that can activate
