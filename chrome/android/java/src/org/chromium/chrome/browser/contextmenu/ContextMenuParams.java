@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.content_public.common.Referrer;
 
 /**
@@ -120,6 +121,16 @@ public class ContextMenuParams {
 
     public boolean canSaveMedia() {
         return mCanSavemedia;
+    }
+
+    /**
+     * @return Whether or not the context menu is been shown for a download item.
+     */
+    public boolean isFile() {
+        if (!TextUtils.isEmpty(mSrcUrl) && mSrcUrl.startsWith(UrlConstants.FILE_URL_PREFIX)) {
+            return true;
+        }
+        return false;
     }
 
     private ContextMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,

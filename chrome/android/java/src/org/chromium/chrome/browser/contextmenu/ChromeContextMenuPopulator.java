@@ -187,6 +187,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             setHeaderText(context, menu, params.getTitleText());
         }
 
+        if (params.isFile()) return;
+
         if (mMenuInflater == null) mMenuInflater = new MenuInflater(context);
 
         mMenuInflater.inflate(R.menu.chrome_context_menu, menu);
@@ -430,9 +432,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.menu_id_open_in_chrome) {
             mDelegate.onOpenInChrome(params.getLinkUrl(), params.getPageUrl());
         } else if (itemId == R.id.contextmenu_open_in_new_chrome_tab) {
-            mDelegate.onOpenInNewChromeTabFromCCT(params.getLinkUrl(), false);
+            mDelegate.onOpenInNewChromeTabFromCCT(getUrl(params), false);
         } else if (itemId == R.id.contextmenu_open_in_chrome_incognito_tab) {
-            mDelegate.onOpenInNewChromeTabFromCCT(params.getLinkUrl(), true);
+            mDelegate.onOpenInNewChromeTabFromCCT(getUrl(params), true);
         } else if (itemId == R.id.contextmenu_open_in_browser_id) {
             mDelegate.onOpenInDefaultBrowser(params.getLinkUrl());
         } else {
@@ -440,6 +442,19 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         return true;
+    }
+
+    /**
+     * The valid url of a link is stored in the linkUrl of ContextMenuParams while the
+     * valid url of a image or video is stored in the srcUrl of ContextMenuParams.
+     * @param params The parameters used to decide the type of the content.
+     */
+    private String getUrl(ContextMenuParams params) {
+        if (params.isImage() || params.isVideo()) {
+            return params.getSrcUrl();
+        } else {
+            return params.getLinkUrl();
+        }
     }
 
     private void setHeaderText(Context context, ContextMenu menu, String text) {
