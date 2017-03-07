@@ -281,7 +281,7 @@ public class MinidumpUploadService extends IntentService {
     }
 
     private static String getNewNameAfterSuccessfulUpload(String fileName) {
-        return fileName.replace("dmp", "up");
+        return fileName.replace("dmp", "up").replace("forced", "up");
     }
 
     @ProcessType
@@ -317,7 +317,7 @@ public class MinidumpUploadService extends IntentService {
                 }
             }
         } catch (IOException e) {
-            Log.w(TAG, "Error while reading crash file.", e.toString());
+            Log.w(TAG, "Error while reading crash file %s: %s", fileName, e.toString());
         } finally {
             StreamUtil.closeQuietly(fileReader);
         }
