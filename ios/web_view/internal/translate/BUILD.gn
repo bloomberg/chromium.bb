@@ -15,8 +15,6 @@ source_set("translate") {
     "web_view_translate_accept_languages_factory.h",
     "web_view_translate_client.h",
     "web_view_translate_client.mm",
-    "web_view_translate_ranker_factory.cc",
-    "web_view_translate_ranker_factory.h",
   ]
   deps = [
     "//base",
