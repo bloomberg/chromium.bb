@@ -109,8 +109,8 @@ void ProgressTracker::progressStarted(FrameLoadType type) {
   if (!m_frame->isLoading()) {
     localFrameClient()->didStartLoading(NavigationToDifferentDocument);
     m_frame->setIsLoading(true);
+    probe::frameStartedLoading(m_frame, type);
   }
-  probe::frameStartedLoading(m_frame, type);
 }
 
 void ProgressTracker::progressCompleted() {
