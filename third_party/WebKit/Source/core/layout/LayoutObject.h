@@ -2136,6 +2136,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutObject* slowPaintInvalidationParentForTesting() const;
 
   void invalidatePaintForSelection();
+  void applyPseudoStyleChanges(const ComputedStyle& oldStyle);
+  void applyFirstLineChanges(const ComputedStyle& oldStyle);
 
   RefPtr<ComputedStyle> m_style;
 

@@ -1930,6 +1930,36 @@ void LayoutObject::styleDidChange(StyleDifference diff,
         oldStyle->backgroundLayers() != styleRef().backgroundLayers())
       setBackgroundChangedSinceLastPaintInvalidation();
   }
+
+  if (oldStyle && oldStyle->styleType() == PseudoIdNone)
+    applyPseudoStyleChanges(*oldStyle);
+}
+
+void LayoutObject::applyPseudoStyleChanges(const ComputedStyle& oldStyle) {
+  if (oldStyle.hasPseudoStyle(PseudoIdFirstLine) ||
+      styleRef().hasPseudoStyle(PseudoIdFirstLine))
+    applyFirstLineChanges(oldStyle);
+
+  // TODO(rune@opera.com): Move the invalidation for ::selection here.
+  // Instead of having a PaintInvalidationSelectionOnly PaintInvalidationType
+  // used for the element diff, we should use PaintInvalidationObject diff on
+  // the pseudo element style here instead.
+}
+
+void LayoutObject::applyFirstLineChanges(const ComputedStyle& oldStyle) {
+  if (oldStyle.hasPseudoStyle(PseudoIdFirstLine)) {
+    RefPtr<ComputedStyle> oldPseudoStyle =
+        oldStyle.getCachedPseudoStyle(PseudoIdFirstLine);
+    if (styleRef().hasPseudoStyle(PseudoIdFirstLine) && oldPseudoStyle) {
+      RefPtr<ComputedStyle> newPseudoStyle =
+          uncachedFirstLineStyle(mutableStyle());
+      if (newPseudoStyle) {
+        firstLineStyleDidChange(*oldPseudoStyle, *newPseudoStyle);
+        return;
+      }
+    }
+  }
+  setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
 }
 
 void LayoutObject::propagateStyleToAnonymousChildren() {
