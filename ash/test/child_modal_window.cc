@@ -4,6 +4,7 @@
 
 #include "ash/test/child_modal_window.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -47,7 +48,7 @@ const SkColor kChildColor = SK_ColorWHITE;
 
 }  // namespace
 
-void CreateChildModalParent(gfx::NativeView context) {
+void CreateChildModalParent(aura::Window* context) {
   Widget::CreateWindowWithContextAndBounds(
       new ChildModalParent(context), context,
       gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight))
@@ -101,22 +102,21 @@ ui::ModalType ChildModalWindow::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-ChildModalParent::ChildModalParent(gfx::NativeView context)
-    : button_(new views::LabelButton(
+ChildModalParent::ChildModalParent(aura::Window* context)
+    : widget_(base::MakeUnique<Widget>()),
+      button_(new views::LabelButton(
           this,
           base::ASCIIToUTF16("Show/Hide Child Modal Window"))),
       textfield_(new views::Textfield),
       host_(new views::NativeViewHost),
-      modal_parent_(NULL),
-      child_(NULL) {
-  Widget* widget = new Widget;
+      child_(nullptr) {
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
-  widget->Init(params);
-  widget->GetRootView()->set_background(
+  widget_->Init(params);
+  widget_->GetRootView()->set_background(
       views::Background::CreateSolidBackground(kModalParentColor));
-  modal_parent_ = widget->GetNativeView();
-  widget->GetNativeView()->SetName("ModalParent");
+  widget_->GetNativeView()->SetName("ModalParent");
   AddChildView(button_);
   AddChildView(textfield_);
   AddChildView(host_);
@@ -130,14 +130,14 @@ void ChildModalParent::ShowChild() {
   child_->Show();
 }
 
-gfx::NativeWindow ChildModalParent::GetModalParent() const {
-  return modal_parent_;
+aura::Window* ChildModalParent::GetModalParent() const {
+  return widget_->GetNativeView();
 }
 
-gfx::NativeWindow ChildModalParent::GetChild() const {
+aura::Window* ChildModalParent::GetChild() const {
   if (child_)
     return child_->GetNativeView();
-  return NULL;
+  return nullptr;
 }
 
 Widget* ChildModalParent::CreateChild() {
@@ -179,7 +179,7 @@ void ChildModalParent::Layout() {
 void ChildModalParent::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
-    host_->Attach(modal_parent_);
+    host_->Attach(widget_->GetNativeWindow());
     GetWidget()->GetNativeView()->SetName("Parent");
   }
 }

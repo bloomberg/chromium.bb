@@ -5,6 +5,8 @@
 #ifndef ASH_TEST_CHILD_MODAL_WINDOW_H_
 #define ASH_TEST_CHILD_MODAL_WINDOW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -21,18 +23,18 @@ class Widget;
 namespace ash {
 namespace test {
 
-void CreateChildModalParent(gfx::NativeView context);
+void CreateChildModalParent(aura::Window* context);
 
 class ChildModalParent : public views::WidgetDelegateView,
                          public views::ButtonListener,
                          public views::WidgetObserver {
  public:
-  ChildModalParent(gfx::NativeView context);
+  ChildModalParent(aura::Window* context);
   ~ChildModalParent() override;
 
   void ShowChild();
-  gfx::NativeWindow GetModalParent() const;
-  gfx::NativeWindow GetChild() const;
+  aura::Window* GetModalParent() const;
+  aura::Window* GetChild() const;
 
  private:
   views::Widget* CreateChild();
@@ -53,6 +55,10 @@ class ChildModalParent : public views::WidgetDelegateView,
   // Overridden from WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  // This is the Widget this class creates to contain the child Views. This
+  // class is *not* the WidgetDelegateView for this Widget.
+  std::unique_ptr<views::Widget> widget_;
+
   // The button to toggle showing and hiding the child window. The child window
   // does not block input to this button.
   views::LabelButton* button_;
@@ -62,10 +68,6 @@ class ChildModalParent : public views::WidgetDelegateView,
 
   // The host for the modal parent.
   views::NativeViewHost* host_;
-
-  // The modal parent of the child window. The child window blocks input to this
-  // view.
-  gfx::NativeWindow modal_parent_;
 
   // The child window.
   views::Widget* child_;
