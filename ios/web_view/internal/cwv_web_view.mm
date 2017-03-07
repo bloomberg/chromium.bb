@@ -63,7 +63,6 @@
   self = [super initWithFrame:frame];
   if (self) {
     _configuration = [configuration copy];
-    _estimatedProgress = 0.0;
 
     web::WebState::CreateParams webStateCreateParams(
         [configuration.websiteDataStore browserState]);
