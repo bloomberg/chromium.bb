@@ -32,7 +32,11 @@
 
 #include <utility>
 
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/V8GCForContextDispose.h"
+#include "bindings/core/v8/V8PagePopupControllerBinding.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "v8/include/v8.h"
 #include "wtf/Assertions.h"
@@ -58,6 +62,37 @@ WindowProxy::WindowProxy(v8::Isolate* isolate,
       m_world(std::move(world)),
       m_lifecycle(Lifecycle::ContextUninitialized) {}
 
+void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
+  DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
+
+  if (behavior == DetachGlobal) {
+    v8::Local<v8::Context> context = m_scriptState->context();
+    // Clean up state on the global proxy, which will be reused.
+    if (!m_globalProxy.isEmpty()) {
+      // TODO(yukishiino): This DCHECK failed on Canary (M57) and Dev (M56).
+      // We need to figure out why m_globalProxy != context->Global().
+      DCHECK(m_globalProxy == context->Global());
+      DCHECK_EQ(toScriptWrappable(context->Global()),
+                toScriptWrappable(
+                    context->Global()->GetPrototype().As<v8::Object>()));
+      m_globalProxy.get().SetWrapperClassId(0);
+    }
+    V8DOMWrapper::clearNativeInfo(m_isolate, context->Global());
+    m_scriptState->detachGlobalObject();
+  }
+
+  m_scriptState->disposePerContextData();
+
+  // It's likely that disposing the context has created a lot of
+  // garbage. Notify V8 about this so it'll have a chance of cleaning
+  // it up when idle.
+  V8GCForContextDispose::instance().notifyContextDisposed(
+      m_frame->isMainFrame());
+
+  DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
+  m_lifecycle = Lifecycle::ContextDetached;
+}
+
 void WindowProxy::clearForClose() {
   disposeContext(DoNotDetachGlobal);
 }
@@ -67,15 +102,20 @@ void WindowProxy::clearForNavigation() {
 }
 
 v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
-  if (m_lifecycle == Lifecycle::ContextInitialized)
+  if (m_lifecycle == Lifecycle::ContextInitialized) {
+    DCHECK(m_scriptState->contextIsValid());
+    DCHECK(m_globalProxy == m_scriptState->context()->Global());
     return m_globalProxy.newLocal(m_isolate);
+  }
   return v8::Local<v8::Object>();
 }
 
 v8::Local<v8::Object> WindowProxy::releaseGlobal() {
   DCHECK(m_lifecycle != Lifecycle::ContextInitialized);
-  DLOG_IF(FATAL, m_isGlobalProxyAttached)
-      << "Context not detached by calling clearForNavigation()";
+  // Make sure the global object was detached from the proxy by calling
+  // clearForNavigation().
+  if (m_lifecycle == Lifecycle::ContextDetached)
+    ASSERT(m_scriptState->isGlobalObjectDetached());
 
   v8::Local<v8::Object> global = m_globalProxy.newLocal(m_isolate);
   m_globalProxy.clear();
@@ -135,6 +175,73 @@ void WindowProxy::initializeIfNeeded() {
   if (m_lifecycle != Lifecycle::ContextInitialized) {
     initialize();
   }
+}
+
+void WindowProxy::setupWindowPrototypeChain() {
+  // Associate the window wrapper object and its prototype chain with the
+  // corresponding native DOMWindow object.
+  // The full structure of the global object's prototype chain is as follows:
+  //
+  // global proxy object [1]
+  //   -- has prototype --> global object (window wrapper object) [2]
+  //   -- has prototype --> Window.prototype
+  //   -- has prototype --> WindowProperties [3]
+  //   -- has prototype --> EventTarget.prototype
+  //   -- has prototype --> Object.prototype
+  //   -- has prototype --> null
+  //
+  // [1] Global proxy object is as known as "outer global object".  It's an
+  //   empty object and remains after navigation.  When navigated, points to
+  //   a different global object as the prototype object.
+  // [2] Global object is as known as "inner global object" or "window wrapper
+  //   object".  The prototype chain between global proxy object and global
+  //   object is NOT observable from user JavaScript code.  All other
+  //   prototype chains are observable.  Global proxy object and global object
+  //   together appear to be the same single JavaScript object.  See also:
+  //     https://wiki.mozilla.org/Gecko:SplitWindow
+  //   global object (= window wrapper object) provides most of Window's DOM
+  //   attributes and operations.  Also global variables defined by user
+  //   JavaScript are placed on this object.  When navigated, a new global
+  //   object is created together with a new v8::Context, but the global proxy
+  //   object doesn't change.
+  // [3] WindowProperties is a named properties object of Window interface.
+
+  DOMWindow* window = m_frame->domWindow();
+  const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
+  v8::Local<v8::Context> context = m_scriptState->context();
+
+  // The global proxy object.  Note this is not the global object.
+  v8::Local<v8::Object> globalProxy = context->Global();
+  CHECK(m_globalProxy == globalProxy);
+  V8DOMWrapper::setNativeInfo(m_isolate, globalProxy, wrapperTypeInfo, window);
+  // Mark the handle to be traced by Oilpan, since the global proxy has a
+  // reference to the DOMWindow.
+  m_globalProxy.get().SetWrapperClassId(wrapperTypeInfo->wrapperClassId);
+
+  // The global object, aka window wrapper object.
+  v8::Local<v8::Object> windowWrapper =
+      globalProxy->GetPrototype().As<v8::Object>();
+  windowWrapper = V8DOMWrapper::associateObjectWithWrapper(
+      m_isolate, window, wrapperTypeInfo, windowWrapper);
+
+  // The prototype object of Window interface.
+  v8::Local<v8::Object> windowPrototype =
+      windowWrapper->GetPrototype().As<v8::Object>();
+  CHECK(!windowPrototype.IsEmpty());
+  V8DOMWrapper::setNativeInfo(m_isolate, windowPrototype, wrapperTypeInfo,
+                              window);
+
+  // The named properties object of Window interface.
+  v8::Local<v8::Object> windowProperties =
+      windowPrototype->GetPrototype().As<v8::Object>();
+  CHECK(!windowProperties.IsEmpty());
+  V8DOMWrapper::setNativeInfo(m_isolate, windowProperties, wrapperTypeInfo,
+                              window);
+
+  // TODO(keishi): Remove installPagePopupController and implement
+  // PagePopupController in another way.
+  V8PagePopupControllerBinding::installPagePopupController(context,
+                                                           windowWrapper);
 }
 
 }  // namespace blink

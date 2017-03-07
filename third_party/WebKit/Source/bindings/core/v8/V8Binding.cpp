@@ -819,7 +819,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context,
   return v8::Local<v8::Context>();
 }
 
-v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world) {
+v8::Local<v8::Context> toV8Context(Frame* frame, DOMWrapperWorld& world) {
   if (!frame)
     return v8::Local<v8::Context>();
   v8::Local<v8::Context> context = toV8ContextEvenIfDetached(frame, world);
@@ -833,10 +833,10 @@ v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world) {
   return v8::Local<v8::Context>();
 }
 
-v8::Local<v8::Context> toV8ContextEvenIfDetached(LocalFrame* frame,
+v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame* frame,
                                                  DOMWrapperWorld& world) {
   ASSERT(frame);
-  return frame->script().windowProxy(world)->contextIfInitialized();
+  return frame->windowProxy(world)->contextIfInitialized();
 }
 
 bool isValidEnum(const String& value,
