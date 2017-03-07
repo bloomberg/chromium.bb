@@ -25,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/env_test_helper.h"
+#include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
@@ -70,6 +71,8 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     // It is necessary to recreate the MusClient for each test,
     // since a new MessageLoop is created for each test.
     mus_client_ = test::MusClientTestApi::Create(connector, identity);
+    ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
+        &PlatformTestHelperMus::CreateNativeWidget, base::Unretained(this)));
   }
   ~PlatformTestHelperMus() override {
     aura::test::EnvTestHelper().SetWindowTreeClient(nullptr);
@@ -89,6 +92,22 @@ class PlatformTestHelperMus : public PlatformTestHelper {
   }
 
  private:
+  NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
+                                   internal::NativeWidgetDelegate* delegate) {
+    NativeWidget* native_widget =
+        mus_client_->CreateNativeWidget(init_params, delegate);
+    if (!native_widget)
+      return nullptr;
+
+    // Disable sending KeyEvents to IME as tests aren't set up to wait for an
+    // ack (and tests run concurrently).
+    aura::WindowTreeHostMus* window_tree_host_mus =
+        static_cast<aura::WindowTreeHostMus*>(
+            static_cast<DesktopNativeWidgetAura*>(native_widget)->host());
+    aura::InputMethodMusTestApi::Disable(window_tree_host_mus->input_method());
+    return native_widget;
+  }
+
   std::unique_ptr<MusClient> mus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);

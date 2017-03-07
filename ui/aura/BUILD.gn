@@ -234,6 +234,7 @@ static_library("test_support") {
     "test/input_method_glue.h",
     "test/mus/change_completion_waiter.cc",
     "test/mus/change_completion_waiter.h",
+    "test/mus/input_method_mus_test_api.h",
     "test/mus/test_window_tree.cc",
     "test/mus/test_window_tree.h",
     "test/mus/test_window_tree_client_setup.cc",

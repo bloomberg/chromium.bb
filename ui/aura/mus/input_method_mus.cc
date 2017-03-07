@@ -87,6 +87,9 @@ bool InputMethodMus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 
 void InputMethodMus::DispatchKeyEvent(ui::KeyEvent* event) {
   DispatchKeyEvent(event, nullptr);
+  // Mark the event as handled so that EventGenerator doesn't attempt to
+  // deliver event as well.
+  event->SetHandled();
 }
 
 void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {

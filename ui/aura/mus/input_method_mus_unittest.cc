@@ -6,6 +6,7 @@
 
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_delegate.h"
 
@@ -60,23 +61,6 @@ class TestInputMethod : public ui::mojom::InputMethod {
 }  // namespace
 
 using InputMethodMusTest = test::AuraTestBaseMus;
-
-class InputMethodMusTestApi {
- public:
-  static void SetInputMethod(InputMethodMus* input_method_mus,
-                             ui::mojom::InputMethod* input_method) {
-    input_method_mus->input_method_ = input_method;
-  }
-  static void CallSendKeyEventToInputMethod(
-      InputMethodMus* input_method_mus,
-      const ui::KeyEvent& event,
-      std::unique_ptr<EventResultCallback> ack_callback) {
-    input_method_mus->SendKeyEventToInputMethod(event, std::move(ack_callback));
-  }
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InputMethodMusTestApi);
-};
 
 namespace {
 
