@@ -19,7 +19,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/presentation_connection_message.h"
-#include "content/public/common/presentation_constants.h"
 
 namespace content {
 
@@ -30,37 +29,6 @@ const int kInvalidRequestSessionId = -1;
 int GetNextRequestSessionId() {
   static int next_request_session_id = 0;
   return ++next_request_session_id;
-}
-
-// Converts a PresentationConnectionMessage |input| to a ConnectionMessage.
-// |input|: The message to convert.
-// |pass_ownership|: If true, function may reuse strings or buffers from
-//     |input| without copying. |input| can be freely modified.
-blink::mojom::ConnectionMessagePtr ToMojoConnectionMessage(
-    content::PresentationConnectionMessage* input,
-    bool pass_ownership) {
-  DCHECK(input);
-  blink::mojom::ConnectionMessagePtr output(
-      blink::mojom::ConnectionMessage::New());
-  if (input->is_binary()) {
-    // binary data
-    DCHECK(input->data);
-    output->type = blink::mojom::PresentationMessageType::BINARY;
-    if (pass_ownership) {
-      output->data = std::move(*(input->data));
-    } else {
-      output->data = *(input->data);
-    }
-  } else {
-    // string message
-    output->type = blink::mojom::PresentationMessageType::TEXT;
-    if (pass_ownership) {
-      output->message = std::move(input->message);
-    } else {
-      output->message = input->message;
-    }
-  }
-  return output;
 }
 
 void InvokeNewSessionCallbackWithError(
@@ -409,21 +377,11 @@ void PresentationServiceImpl::SetPresentationConnection(
 
 void PresentationServiceImpl::OnConnectionMessages(
     const PresentationSessionInfo& session_info,
-    const std::vector<std::unique_ptr<PresentationConnectionMessage>>& messages,
-    bool pass_ownership) {
+    std::vector<PresentationConnectionMessage> messages) {
   DCHECK(client_);
 
   DVLOG(2) << "OnConnectionMessages [id]: " << session_info.presentation_id;
-  std::vector<blink::mojom::ConnectionMessagePtr> mojo_messages(
-      messages.size());
-  std::transform(
-      messages.begin(), messages.end(), mojo_messages.begin(),
-      [pass_ownership](
-          const std::unique_ptr<PresentationConnectionMessage>& message) {
-        return ToMojoConnectionMessage(message.get(), pass_ownership);
-      });
-
-  client_->OnConnectionMessagesReceived(session_info, std::move(mojo_messages));
+  client_->OnConnectionMessagesReceived(session_info, std::move(messages));
 }
 
 void PresentationServiceImpl::OnReceiverConnectionAvailable(

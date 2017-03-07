@@ -39,19 +39,9 @@ struct PresentationError {
   string message;
 };
 
-enum PresentationMessageType {
-  TEXT,
-  BINARY,
-};
-
-struct ConnectionMessage {
-  PresentationMessageType type;
-  // Used when message type is TEXT.
-  string? message;
-  // Used when message type is BINARY.
-  // TODO(lethalantidote): Make this a mojo union.
-  // See https://crbug.com/632623.
-  array<uint8>? data;
+union PresentationConnectionMessage {
+  string message;
+  array<uint8> data;
 };
 
 interface PresentationConnection {
@@ -59,7 +49,7 @@ interface PresentationConnection {
    // PresentationConnection.Send(). http://crbug.com/658474
 
    // Called when a message is sent by the target connection.
-   OnMessage(ConnectionMessage message) => (bool success);
+   OnMessage(PresentationConnectionMessage message) => (bool success);
 
    // Called when target connection notifies connection state change.
    DidChangeState(PresentationConnectionState state);
@@ -117,7 +107,6 @@ interface PresentationService {
       PresentationConnection& receiver_connection_request);
 
   //////////////////////////////////////////////////////////////////////////////
-
   // Called when close() is called by the frame.
   CloseConnection(url.mojom.Url presentation_url, string presentation_id);
 
@@ -165,7 +154,7 @@ interface PresentationServiceClient {
 
   // See PresentationService::ListenForConnectionMessages.
   OnConnectionMessagesReceived(PresentationSessionInfo sessionInfo,
-                            array<ConnectionMessage> messages);
+                               array<PresentationConnectionMessage> messages);
 
   // Called on a presentation receiver when presentation connection is available
   // from the controlling page.

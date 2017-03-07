@@ -121,12 +121,11 @@ class PresentationServiceDelegateImpl
       const content::PresentationSessionInfo& session,
       const content::PresentationConnectionMessageCallback& message_cb)
       override;
-  void SendMessage(
-      int render_process_id,
-      int render_frame_id,
-      const content::PresentationSessionInfo& session,
-      std::unique_ptr<content::PresentationConnectionMessage> message,
-      const SendMessageCallback& send_message_cb) override;
+  void SendMessage(int render_process_id,
+                   int render_frame_id,
+                   const content::PresentationSessionInfo& session,
+                   content::PresentationConnectionMessage message,
+                   const SendMessageCallback& send_message_cb) override;
   void ListenForConnectionStateChange(
       int render_process_id,
       int render_frame_id,

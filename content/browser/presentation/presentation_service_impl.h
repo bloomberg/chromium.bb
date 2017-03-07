@@ -102,7 +102,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   static const int kMaxNumQueuedSessionRequests = 10;
 
   using ConnectionMessagesCallback =
-      base::Callback<void(std::vector<blink::mojom::ConnectionMessagePtr>)>;
+      base::Callback<void(std::vector<PresentationConnectionMessage>)>;
 
   // Listener implementation owned by PresentationServiceImpl. An instance of
   // this is created when PresentationRequest.getAvailability() is resolved.
@@ -234,9 +234,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   // later invocation when session messages arrive.
   void OnConnectionMessages(
       const content::PresentationSessionInfo& session_info,
-      const std::vector<std::unique_ptr<PresentationConnectionMessage>>&
-          messages,
-      bool pass_ownership);
+      std::vector<content::PresentationConnectionMessage> messages);
 
   // A callback registered to OffscreenPresentationManager when
   // the PresentationServiceImpl for the presentation receiver is initialized.

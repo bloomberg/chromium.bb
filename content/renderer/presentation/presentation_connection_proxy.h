@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_CONNECTION_PROXY_H_
 
 #include "base/callback.h"
+#include "content/public/common/presentation_connection_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnectionProxy.h"
 #include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
@@ -74,12 +75,11 @@ class CONTENT_EXPORT PresentationConnectionProxy
 
   ~PresentationConnectionProxy() override;
 
-  virtual void SendConnectionMessage(
-      blink::mojom::ConnectionMessagePtr connection_message,
-      const OnMessageCallback& callback) const;
+  virtual void SendConnectionMessage(PresentationConnectionMessage message,
+                                     const OnMessageCallback& callback) const;
 
   // blink::mojom::PresentationConnection implementation
-  void OnMessage(blink::mojom::ConnectionMessagePtr message,
+  void OnMessage(PresentationConnectionMessage message,
                  const OnMessageCallback& callback) override;
   void DidChangeState(content::PresentationConnectionState state) override;
   void OnClose() override;

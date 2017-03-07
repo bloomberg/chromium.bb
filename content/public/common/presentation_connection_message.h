@@ -5,33 +5,43 @@
 #ifndef CONTENT_PUBLIC_COMMON_PRESENTATION_CONNECTION_MESSAGE_H_
 #define CONTENT_PUBLIC_COMMON_PRESENTATION_CONNECTION_MESSAGE_H_
 
+#include <stddef.h>  // For size_t
 #include <stdint.h>
 
-#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
-enum PresentationMessageType {
-  TEXT,
-  BINARY,
-};
+// The maximum number of bytes allowed in a presentation connection message.
+CONTENT_EXPORT extern const size_t kMaxPresentationConnectionMessageSize;
 
-// Represents a presentation connection message.
-// If this is a text message, |data| is null; otherwise, |message| is null.
-// Empty messages are allowed.
+// Represents a presentation connection message.  If this is a text message,
+// |data| is null; otherwise, |message| is null.  Empty messages are allowed.
 struct CONTENT_EXPORT PresentationConnectionMessage {
  public:
-  explicit PresentationConnectionMessage(PresentationMessageType type);
+  // Constructs a new, untyped message (for Mojo).  These messages are not valid
+  // and exactly one of |message| or |data| must be set.
+  PresentationConnectionMessage();
+  // PCM is a move-only type.
+  PresentationConnectionMessage(PresentationConnectionMessage&& other);
+  // Constructs a text message from |message|.
+  explicit PresentationConnectionMessage(std::string message);
+  // Constructs a binary message from |data|.
+  explicit PresentationConnectionMessage(std::vector<uint8_t> data);
   ~PresentationConnectionMessage();
 
   bool is_binary() const;
-  const PresentationMessageType type;
-  std::string message;
-  std::unique_ptr<std::vector<uint8_t>> data;
+
+  bool operator==(const PresentationConnectionMessage& other) const;
+  PresentationConnectionMessage& operator=(
+      PresentationConnectionMessage&& other);
+
+  base::Optional<std::string> message;
+  base::Optional<std::vector<uint8_t>> data;
 };
 
 }  // namespace content

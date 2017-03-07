@@ -19,6 +19,7 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/public/common/presentation_connection_message.h"
 #include "content/public/common/presentation_session.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -75,13 +76,13 @@ class CONTENT_EXPORT PresentationDispatcher
   struct SendMessageRequest {
     SendMessageRequest(
         const PresentationSessionInfo& session_info,
-        blink::mojom::ConnectionMessagePtr message,
+        PresentationConnectionMessage connection_message,
         const blink::WebPresentationConnectionProxy* connection_proxy);
 
     ~SendMessageRequest();
 
     PresentationSessionInfo session_info;
-    blink::mojom::ConnectionMessagePtr message;
+    PresentationConnectionMessage message;
     // Proxy of Blink connection object |connection| calling connection.send().
     // It does not take ownership of proxy object. Proxy object is owned by
     // Blink connection. Blink connection is destroyed after
@@ -89,15 +90,14 @@ class CONTENT_EXPORT PresentationDispatcher
     const blink::WebPresentationConnectionProxy* connection_proxy;
   };
 
-  static SendMessageRequest* CreateSendTextMessageRequest(
+  static std::unique_ptr<SendMessageRequest> CreateSendTextMessageRequest(
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       const blink::WebString& message,
       const blink::WebPresentationConnectionProxy* connection_proxy);
-  static SendMessageRequest* CreateSendBinaryMessageRequest(
+  static std::unique_ptr<SendMessageRequest> CreateSendBinaryMessageRequest(
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
-      blink::mojom::PresentationMessageType type,
       const uint8_t* data,
       size_t length,
       const blink::WebPresentationConnectionProxy* connection_proxy);
@@ -161,7 +161,7 @@ class CONTENT_EXPORT PresentationDispatcher
                           const std::string& message) override;
   void OnConnectionMessagesReceived(
       const PresentationSessionInfo& session_info,
-      std::vector<blink::mojom::ConnectionMessagePtr> messages) override;
+      std::vector<PresentationConnectionMessage> messages) override;
   void OnDefaultSessionStarted(
       const PresentationSessionInfo& session_info) override;
 

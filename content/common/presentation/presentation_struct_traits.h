@@ -6,11 +6,13 @@
 #define CONTENT_COMMON_PRESENTATION_PRESENTATION_STRUCT_TRAITS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "content/public/common/presentation_connection_message.h"
 #include "content/public/common/presentation_session.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
 #include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 #include "url/mojo/url.mojom.h"
 
@@ -151,22 +153,7 @@ struct StructTraits<blink::mojom::PresentationSessionInfoDataView,
   }
 
   static bool Read(blink::mojom::PresentationSessionInfoDataView data,
-                   content::PresentationSessionInfo* out) {
-    if (!data.ReadUrl(&(out->presentation_url)))
-      return false;
-
-    if (!data.ReadId(&(out->presentation_id)))
-      return false;
-
-    if (out->presentation_id.empty() ||
-        !base::IsStringASCII(out->presentation_id) ||
-        out->presentation_id.length() >
-            content::PresentationSessionInfo::kMaxIdLength) {
-      return false;
-    }
-
-    return true;
-  }
+                   content::PresentationSessionInfo* out);
 };
 
 template <>
@@ -182,19 +169,34 @@ struct StructTraits<blink::mojom::PresentationErrorDataView,
   }
 
   static bool Read(blink::mojom::PresentationErrorDataView data,
-                   content::PresentationError* out) {
-    if (!data.ReadErrorType(&(out->error_type)))
-      return false;
+                   content::PresentationError* out);
+};
 
-    if (!data.ReadMessage(&(out->message)))
-      return false;
-
-    if (!base::IsStringUTF8(out->message) ||
-        out->message.length() > content::PresentationError::kMaxMessageLength)
-      return false;
-
-    return true;
+template <>
+struct UnionTraits<blink::mojom::PresentationConnectionMessageDataView,
+                   content::PresentationConnectionMessage> {
+  static blink::mojom::PresentationConnectionMessageDataView::Tag GetTag(
+      const content::PresentationConnectionMessage& message) {
+    return message.is_binary()
+               ? blink::mojom::PresentationConnectionMessageDataView::Tag::DATA
+               : blink::mojom::PresentationConnectionMessageDataView::Tag::
+                     MESSAGE;
   }
+
+  static const std::string& message(
+      const content::PresentationConnectionMessage& message) {
+    DCHECK(!message.is_binary());
+    return message.message.value();
+  }
+
+  static const std::vector<uint8_t>& data(
+      const content::PresentationConnectionMessage& message) {
+    DCHECK(message.is_binary());
+    return message.data.value();
+  }
+
+  static bool Read(blink::mojom::PresentationConnectionMessageDataView data,
+                   content::PresentationConnectionMessage* out);
 };
 
 }  // namespace mojo

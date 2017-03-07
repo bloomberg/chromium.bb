@@ -27,12 +27,9 @@ using PresentationSessionStartedCallback =
 using PresentationSessionErrorCallback =
     base::Callback<void(const PresentationError&)>;
 
-// Param #0: a vector of messages that are received.
-// Param #1: tells the callback handler that it may reuse strings or buffers
-//           in the messages contained within param #0.
-using PresentationConnectionMessageCallback = base::Callback<void(
-    const std::vector<std::unique_ptr<content::PresentationConnectionMessage>>&,
-    bool)>;
+// Param: a vector of messages that are received.
+using PresentationConnectionMessageCallback =
+    base::Callback<void(std::vector<content::PresentationConnectionMessage>)>;
 
 struct PresentationConnectionStateChangeInfo {
   explicit PresentationConnectionStateChangeInfo(
@@ -200,12 +197,11 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
   // |message|: The message to send. The embedder takes ownership of |message|.
   //            Must not be null.
   // |send_message_cb|: Invoked after handling the send message request.
-  virtual void SendMessage(
-      int render_process_id,
-      int render_frame_id,
-      const content::PresentationSessionInfo& session,
-      std::unique_ptr<PresentationConnectionMessage> message,
-      const SendMessageCallback& send_message_cb) = 0;
+  virtual void SendMessage(int render_process_id,
+                           int render_frame_id,
+                           const content::PresentationSessionInfo& session,
+                           PresentationConnectionMessage message,
+                           const SendMessageCallback& send_message_cb) = 0;
 
   // Continuously listen for state changes for a PresentationConnection in a
   // frame.

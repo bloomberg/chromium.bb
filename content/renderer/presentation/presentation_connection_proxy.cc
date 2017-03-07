@@ -25,35 +25,23 @@ PresentationConnectionProxy::PresentationConnectionProxy(
 PresentationConnectionProxy::~PresentationConnectionProxy() = default;
 
 void PresentationConnectionProxy::SendConnectionMessage(
-    blink::mojom::ConnectionMessagePtr connection_message,
+    PresentationConnectionMessage message,
     const OnMessageCallback& callback) const {
   DCHECK(target_connection_ptr_);
-  target_connection_ptr_->OnMessage(std::move(connection_message), callback);
+  target_connection_ptr_->OnMessage(std::move(message), callback);
 }
 
 void PresentationConnectionProxy::OnMessage(
-    blink::mojom::ConnectionMessagePtr message,
+    PresentationConnectionMessage message,
     const OnMessageCallback& callback) {
   DCHECK(!callback.is_null());
 
-  switch (message->type) {
-    case blink::mojom::PresentationMessageType::TEXT: {
-      DCHECK(message->message);
-      source_connection_->didReceiveTextMessage(
-          blink::WebString::fromUTF8(message->message.value()));
-      break;
-    }
-    case blink::mojom::PresentationMessageType::BINARY: {
-      DCHECK(message->data);
-      source_connection_->didReceiveBinaryMessage(&(message->data->front()),
-                                                  message->data->size());
-      break;
-    }
-    default: {
-      callback.Run(false);
-      NOTREACHED();
-      return;
-    }
+  if (message.is_binary()) {
+    source_connection_->didReceiveBinaryMessage(&(message.data->front()),
+                                                message.data->size());
+  } else {
+    source_connection_->didReceiveTextMessage(
+        blink::WebString::fromUTF8(*(message.message)));
   }
 
   callback.Run(true);

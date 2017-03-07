@@ -71,15 +71,10 @@ class PresentationConnectionProxyTest : public ::testing::Test {
 
 TEST_F(PresentationConnectionProxyTest, TestSendString) {
   blink::WebString message = blink::WebString::fromUTF8("test message");
-  blink::mojom::ConnectionMessagePtr session_message =
-      blink::mojom::ConnectionMessage::New();
-  session_message->type = blink::mojom::PresentationMessageType::TEXT;
-  session_message->message = message.utf8();
-
   base::RunLoop run_loop;
   EXPECT_CALL(*receiver_connection_, didReceiveTextMessage(message));
   controller_connection_proxy_->SendConnectionMessage(
-      std::move(session_message),
+      PresentationConnectionMessage(message.utf8()),
       base::Bind(
           &PresentationConnectionProxyTest::ExpectSendConnectionMessageCallback,
           base::Unretained(this)));
@@ -91,11 +86,6 @@ TEST_F(PresentationConnectionProxyTest, TestSendArrayBuffer) {
   expected_data.push_back(42);
   expected_data.push_back(36);
 
-  blink::mojom::ConnectionMessagePtr session_message =
-      blink::mojom::ConnectionMessage::New();
-  session_message->type = blink::mojom::PresentationMessageType::BINARY;
-  session_message->data = expected_data;
-
   base::RunLoop run_loop;
   EXPECT_CALL(*receiver_connection_, didReceiveBinaryMessage(_, _))
       .WillOnce(::testing::Invoke(
@@ -105,7 +95,7 @@ TEST_F(PresentationConnectionProxyTest, TestSendArrayBuffer) {
           }));
 
   controller_connection_proxy_->SendConnectionMessage(
-      std::move(session_message),
+      PresentationConnectionMessage(expected_data),
       base::Bind(
           &PresentationConnectionProxyTest::ExpectSendConnectionMessageCallback,
           base::Unretained(this)));

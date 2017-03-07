@@ -14,6 +14,8 @@
 
 namespace media_router {
 
+// TODO(mfoltz): Replace with nearly-identical
+// content::PresentationConnectionMessage.
 struct RouteMessage {
   enum Type { TEXT, BINARY } type = TEXT;
   // Used when the |type| is TEXT.

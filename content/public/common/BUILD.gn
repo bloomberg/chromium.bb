@@ -183,8 +183,6 @@ source_set("common_sources") {
     "platform_notification_data.h",
     "presentation_connection_message.cc",
     "presentation_connection_message.h",
-    "presentation_constants.cc",
-    "presentation_constants.h",
     "presentation_session.cc",
     "presentation_session.h",
     "previews_state.h",

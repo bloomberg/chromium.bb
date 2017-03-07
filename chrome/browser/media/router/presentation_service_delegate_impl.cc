@@ -89,25 +89,19 @@ class PresentationSessionMessagesObserver : public RouteMessageObserver {
 
   void OnMessagesReceived(const std::vector<RouteMessage>& messages) final {
     DVLOG(2) << __func__ << ", number of messages : " << messages.size();
-    std::vector<std::unique_ptr<content::PresentationConnectionMessage>>
-        presentation_messages;
+    // TODO(mfoltz): Remove RouteMessage and replace with move-only
+    // PresentationConnectionMessage.
+    std::vector<content::PresentationConnectionMessage> presentation_messages;
     for (const RouteMessage& message : messages) {
       if (message.type == RouteMessage::TEXT && message.text) {
-        presentation_messages.push_back(
-            base::MakeUnique<content::PresentationConnectionMessage>(
-                content::PresentationMessageType::TEXT));
-        presentation_messages.back()->message = *message.text;
+        presentation_messages.emplace_back(message.text.value());
       } else if (message.type == RouteMessage::BINARY && message.binary) {
-        presentation_messages.push_back(
-            base::MakeUnique<content::PresentationConnectionMessage>(
-                content::PresentationMessageType::BINARY));
-        presentation_messages.back()->data.reset(
-            new std::vector<uint8_t>(*message.binary));
+        presentation_messages.emplace_back(message.binary.value());
+      } else {
+        NOTREACHED() << "Unknown route message type";
       }
     }
-    // TODO(miu): Remove second argument from PresentationSessionMessageCallback
-    // since it's always true now.
-    message_cb_.Run(presentation_messages, true);
+    message_cb_.Run(std::move(presentation_messages));
   }
 
  private:
@@ -951,7 +945,7 @@ void PresentationServiceDelegateImpl::SendMessage(
     int render_process_id,
     int render_frame_id,
     const content::PresentationSessionInfo& session,
-    std::unique_ptr<content::PresentationConnectionMessage> message,
+    content::PresentationConnectionMessage message,
     const SendMessageCallback& send_message_cb) {
   const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
       RenderFrameHostId(render_process_id, render_frame_id),
@@ -962,11 +956,14 @@ void PresentationServiceDelegateImpl::SendMessage(
     return;
   }
 
-  if (message->is_binary()) {
-    router_->SendRouteBinaryMessage(route_id, std::move(message->data),
-                                    send_message_cb);
+  if (message.is_binary()) {
+    router_->SendRouteBinaryMessage(
+        route_id,
+        base::MakeUnique<std::vector<uint8_t>>(std::move(message.data.value())),
+        send_message_cb);
   } else {
-    router_->SendRouteMessage(route_id, message->message, send_message_cb);
+    router_->SendRouteMessage(route_id, message.message.value(),
+                              send_message_cb);
   }
 }
 

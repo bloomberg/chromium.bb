@@ -3,16 +3,20 @@
 # found in the LICENSE file.
 
 mojom = "//third_party/WebKit/public/platform/modules/presentation/presentation.mojom"
-public_headers = [ "//content/public/common/presentation_session.h" ]
+public_headers = [
+  "//content/public/common/presentation_connection_message.h",
+  "//content/public/common/presentation_session.h",
+]
 traits_headers =
     [ "//content/common/presentation/presentation_struct_traits.h" ]
 deps = [
   "//url",
 ]
 type_mappings = [
-  "blink.mojom.PresentationErrorType=content::PresentationErrorType",
-  "blink.mojom.PresentationConnectionState=content::PresentationConnectionState",
   "blink.mojom.PresentationConnectionCloseReason=content::PresentationConnectionCloseReason",
-  "blink.mojom.PresentationSessionInfo=content::PresentationSessionInfo",
+  "blink.mojom.PresentationConnectionMessage=content::PresentationConnectionMessage[move_only]",
+  "blink.mojom.PresentationConnectionState=content::PresentationConnectionState",
   "blink.mojom.PresentationError=content::PresentationError",
+  "blink.mojom.PresentationErrorType=content::PresentationErrorType",
+  "blink.mojom.PresentationSessionInfo=content::PresentationSessionInfo",
 ]
