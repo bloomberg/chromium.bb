@@ -148,7 +148,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
   EXPECT_EQ(1, image->height());
 
   PaintRecorder recorder;
-  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
+  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
@@ -172,7 +172,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
   ASSERT_TRUE(image);
   PaintRecorder recorder;
-  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
+  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
   m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
@@ -180,7 +180,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   m_lazyDecoder->setData(m_data, true);
   image = m_lazyDecoder->createFrameAtIndex(0);
   ASSERT_TRUE(image);
-  tempCanvas = recorder.beginRecording(100, 100);
+  tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
   m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
@@ -203,7 +203,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
   EXPECT_EQ(1, image->height());
 
   PaintRecorder recorder;
-  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
+  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
@@ -303,7 +303,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize) {
 
   // The following code should not fail any assert.
   PaintRecorder recorder;
-  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
+  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);

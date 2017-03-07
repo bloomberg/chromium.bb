@@ -56,18 +56,16 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
   SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType,
                                        alphaType, colorSpace);
   SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-  m_surface = SkSurface::MakeRenderTarget(
+  m_surface = PaintSurface::MakeRenderTarget(
       grContext, SkBudgeted::kYes, info, 0 /* sampleCount */,
       Opaque == opacityMode ? nullptr : &disableLCDProps);
   if (!m_surface)
     return;
-
-  m_canvas = WTF::wrapUnique(new PaintCanvas(m_surface->getCanvas()));
   clear();
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
-  m_canvas->save();
+  m_surface->getCanvas()->save();
 }
 
 bool AcceleratedImageBufferSurface::isValid() const {
@@ -85,7 +83,7 @@ GLuint AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite() {
     return 0;
   return skia::GrBackendObjectToGrGLTextureInfo(
              m_surface->getTextureHandle(
-                 SkSurface::kDiscardWrite_TextureHandleAccess))
+                 PaintSurface::kDiscardWrite_TextureHandleAccess))
       ->fID;
 }
 

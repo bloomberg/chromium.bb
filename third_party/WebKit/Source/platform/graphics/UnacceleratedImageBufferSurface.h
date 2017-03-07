@@ -33,6 +33,7 @@
 
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintSurface.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -57,8 +58,7 @@ class PLATFORM_EXPORT UnacceleratedImageBufferSurface
   sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
 
  private:
-  sk_sp<SkSurface> m_surface;
-  std::unique_ptr<PaintCanvas> m_canvas;
+  sk_sp<PaintSurface> m_surface;
 };
 
 }  // namespace blink

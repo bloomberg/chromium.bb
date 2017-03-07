@@ -341,12 +341,11 @@ PP_Bool BrowserFontResource_Trusted::DrawTextAt(
       return result;
 
     SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
-    cc::PaintCanvas temp_canvas(bm, props);
+    SkCanvas temp_canvas(bm, props);
 
     DrawTextToCanvas(&temp_canvas, *text, position, color, clip);
   } else {
-    cc::PaintCanvas temp_canvas(canvas);
-    DrawTextToCanvas(&temp_canvas, *text, position, color, clip);
+    DrawTextToCanvas(canvas, *text, position, color, clip);
   }
 
   if (needs_unmapping)
@@ -415,7 +414,7 @@ int32_t BrowserFontResource_Trusted::PixelOffsetForCharacter(
 }
 
 void BrowserFontResource_Trusted::DrawTextToCanvas(
-    cc::PaintCanvas* destination,
+    SkCanvas* destination,
     const PP_BrowserFont_Trusted_TextRun& text,
     const PP_Point* position,
     uint32_t color,
@@ -425,7 +424,7 @@ void BrowserFontResource_Trusted::DrawTextToCanvas(
                              static_cast<float>(position->y));
   WebRect web_clip;
   if (!clip) {
-    // Use entire canvas. PaintCanvas doesn't have a size on it, so we just use
+    // Use entire canvas. SkCanvas doesn't have a size on it, so we just use
     // the current clip bounds.
     SkRect skclip = destination->getLocalClipBounds();
     web_clip = WebRect(skclip.fLeft, skclip.fTop, skclip.fRight - skclip.fLeft,

@@ -200,9 +200,9 @@ bool PdfMetafileSkia::FinishDocument() {
   }
 
   for (const Page& page : data_->pages_) {
-    cc::PaintCanvas canvas(
+    cc::PaintCanvas* canvas(
         doc->beginPage(page.size_.width(), page.size_.height()));
-    page.content_->playback(&canvas);
+    canvas->drawPicture(page.content_);
     doc->endPage();
   }
   doc->close();

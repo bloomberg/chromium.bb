@@ -5,54 +5,27 @@
 #ifndef CC_PAINT_PAINT_RECORD_H_
 #define CC_PAINT_PAINT_RECORD_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "cc/paint/paint_export.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 
 namespace cc {
 
-class PaintCanvas;
+using PaintRecord = SkPicture;
 
-// This class is only used by casting from an SkPicture in PaintRecorder.
-// This will be replaced with its own functionality in a future patch.
-class CC_PAINT_EXPORT PaintRecord : private SkPicture {
- public:
-  void playback(PaintCanvas* canvas);
-
-  using SkPicture::playback;
-  using SkPicture::approximateBytesUsed;
-  using SkPicture::approximateOpCount;
-  using SkPicture::cullRect;
-  using SkRefCnt::ref;
-  using SkRefCnt::unref;
-
- private:
-  friend class PaintRecorder;
-  friend const SkPicture* ToSkPicture(const PaintRecord* record);
-  friend SkPicture* ToSkPicture(PaintRecord* record);
-  friend sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record);
-  friend sk_sp<const SkPicture> ToSkPicture(sk_sp<const PaintRecord> record);
-
-  DISALLOW_COPY_AND_ASSIGN(PaintRecord);
-};
-
-ALWAYS_INLINE const SkPicture* ToSkPicture(const PaintRecord* record) {
-  return static_cast<const SkPicture*>(record);
+inline const SkPicture* ToSkPicture(const PaintRecord* record) {
+  return record;
 }
 
-ALWAYS_INLINE SkPicture* ToSkPicture(PaintRecord* record) {
-  return static_cast<SkPicture*>(record);
+inline SkPicture* ToSkPicture(PaintRecord* record) {
+  return record;
 }
 
-ALWAYS_INLINE sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record) {
-  return sk_ref_sp(ToSkPicture(record.get()));
+inline sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record) {
+  return record;
 }
 
-ALWAYS_INLINE sk_sp<const SkPicture> ToSkPicture(
-    sk_sp<const PaintRecord> record) {
-  return sk_ref_sp(ToSkPicture(record.get()));
+inline sk_sp<const SkPicture> ToSkPicture(sk_sp<const PaintRecord> record) {
+  return record;
 }
 
 }  // namespace cc

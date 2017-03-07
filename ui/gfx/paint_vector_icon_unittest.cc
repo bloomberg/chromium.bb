@@ -7,8 +7,6 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "cc/paint/paint_record.h"
-#include "cc/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -38,8 +36,8 @@ class MockCanvas : public SkCanvas {
 // Tests that a relative move to command (R_MOVE_TO) after a close command
 // (CLOSE) uses the correct starting point. See crbug.com/697497
 TEST(VectorIconTest, RelativeMoveToAfterClose) {
-  cc::PaintRecorder recorder;
-  Canvas canvas(recorder.beginRecording(100, 100), 1.0f);
+  MockCanvas mock(100, 100);
+  Canvas canvas(&mock, 1.0f);
 
   const PathElement elements[] = {
       MOVE_TO, 4, 5,
@@ -53,11 +51,6 @@ TEST(VectorIconTest, RelativeMoveToAfterClose) {
   const VectorIcon icon = {elements, nullptr};
 
   PaintVectorIcon(&canvas, icon, 100, SK_ColorMAGENTA);
-  sk_sp<cc::PaintRecord> record = recorder.finishRecordingAsPicture();
-
-  MockCanvas mock(100, 100);
-  record->playback(&mock);
-
   ASSERT_EQ(1U, mock.paths().size());
   SkPoint last_point;
   EXPECT_TRUE(mock.paths()[0].getLastPt(&last_point));

@@ -154,13 +154,13 @@ class ShelfButton::AppStatusIndicatorView
     // Fill the center.
     cc::PaintFlags flags;
     flags.setColor(kIndicatorColor);
-    flags.setAntiAlias(true);
+    flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
     canvas->DrawCircle(center, dsf * kIndicatorRadiusDip - kStrokeWidthPx,
                        flags);
 
     // Stroke the border.
     flags.setColor(SkColorSetA(SK_ColorBLACK, 0x4D));
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStyle(SkPaint::kStroke_Style);
     canvas->DrawCircle(
         center, dsf * kIndicatorRadiusDip - kStrokeWidthPx / 2.0f, flags);
   }

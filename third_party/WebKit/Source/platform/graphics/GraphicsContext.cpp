@@ -82,7 +82,7 @@ GraphicsContext::GraphicsContext(PaintController& paintController,
   if (contextDisabled()) {
     DEFINE_STATIC_LOCAL(SkCanvas*, nullSkCanvas,
                         (SkMakeNullCanvas().release()));
-    DEFINE_STATIC_LOCAL(PaintCanvas, nullCanvas, (nullSkCanvas));
+    DEFINE_STATIC_LOCAL(PaintCanvasPassThrough, nullCanvas, (nullSkCanvas));
     m_canvas = &nullCanvas;
   }
 }
@@ -267,7 +267,7 @@ void GraphicsContext::beginRecording(const FloatRect& bounds) {
     return;
 
   DCHECK(!m_canvas);
-  m_canvas = m_paintRecorder.beginRecording(bounds);
+  m_canvas = m_paintRecorder.beginRecording(bounds, nullptr);
   if (m_hasMetaData)
     m_canvas->getMetaData() = m_metaData;
 }
@@ -276,7 +276,7 @@ namespace {
 
 sk_sp<PaintRecord> createEmptyPaintRecord() {
   PaintRecorder recorder;
-  recorder.beginRecording(SkRect::MakeEmpty());
+  recorder.beginRecording(SkRect::MakeEmpty(), nullptr);
   return recorder.finishRecordingAsPicture();
 }
 
@@ -571,7 +571,7 @@ sk_sp<PaintRecord> recordMarker(
   PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(color);
-  flags.setStyle(PaintFlags::kStroke_Style);
+  flags.setStyle(SkPaint::kStroke_Style);
   flags.setStrokeWidth(kH * 1 / 2);
 
   PaintRecorder recorder;
@@ -656,9 +656,9 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt,
 
   PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setShader(WrapSkShader(
-      MakePaintShaderRecord(sk_ref_sp(marker), SkShader::kRepeat_TileMode,
-                            SkShader::kClamp_TileMode, &localMatrix, nullptr)));
+  flags.setShader(WrapSkShader(SkShader::MakePictureShader(
+      sk_ref_sp(marker), SkShader::kRepeat_TileMode, SkShader::kClamp_TileMode,
+      &localMatrix, nullptr)));
 
   // Apply the origin translation as a global transform.  This ensures that the
   // shader local matrix depends solely on zoom => Skia can reuse the same
@@ -1260,7 +1260,7 @@ void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect) {
   DCHECK(m_canvas);
 
   sk_sp<SkData> url(SkData::MakeWithCString(link.getString().utf8().data()));
-  PaintCanvasAnnotateRectWithURL(m_canvas, destRect, url.get());
+  SkAnnotateRectWithURL(m_canvas, destRect, url.get());
 }
 
 void GraphicsContext::setURLFragmentForRect(const String& destName,
@@ -1270,7 +1270,7 @@ void GraphicsContext::setURLFragmentForRect(const String& destName,
   DCHECK(m_canvas);
 
   sk_sp<SkData> skDestName(SkData::MakeWithCString(destName.utf8().data()));
-  PaintCanvasAnnotateLinkToDestination(m_canvas, rect, skDestName.get());
+  SkAnnotateLinkToDestination(m_canvas, rect, skDestName.get());
 }
 
 void GraphicsContext::setURLDestinationLocation(const String& name,
@@ -1280,7 +1280,7 @@ void GraphicsContext::setURLDestinationLocation(const String& name,
   DCHECK(m_canvas);
 
   sk_sp<SkData> skName(SkData::MakeWithCString(name.utf8().data()));
-  PaintCanvasAnnotateNamedDestination(
+  SkAnnotateNamedDestination(
       m_canvas, SkPoint::Make(location.x(), location.y()), skName.get());
 }
 

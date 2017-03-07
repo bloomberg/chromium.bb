@@ -140,16 +140,16 @@ bool PaintedOverlayScrollbarLayer::PaintThumbIfNeeded() {
 
   SkBitmap skbitmap;
   skbitmap.allocN32Pixels(paint_rect.width(), paint_rect.height());
-  PaintCanvas canvas(skbitmap);
+  SkCanvas skcanvas(skbitmap);
 
   SkRect content_skrect = RectToSkRect(paint_rect);
-  PaintFlags flags;
-  flags.setAntiAlias(false);
-  flags.setBlendMode(SkBlendMode::kClear);
-  canvas.drawRect(content_skrect, flags);
-  canvas.clipRect(content_skrect);
+  SkPaint paint;
+  paint.setAntiAlias(false);
+  paint.setBlendMode(SkBlendMode::kClear);
+  skcanvas.drawRect(content_skrect, paint);
+  skcanvas.clipRect(content_skrect);
 
-  scrollbar_->PaintPart(&canvas, THUMB, paint_rect);
+  scrollbar_->PaintPart(&skcanvas, THUMB, paint_rect);
   // Make sure that the pixels are no longer mutable to unavoid unnecessary
   // allocation and copying.
   skbitmap.setImmutable();
