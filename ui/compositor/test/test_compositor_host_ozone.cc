@@ -14,8 +14,46 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
+
+namespace {
+
+// Stub implementation of PlatformWindowDelegate that stores the
+// AcceleratedWidget.
+class StubPlatformWindowDelegate : public PlatformWindowDelegate {
+ public:
+  StubPlatformWindowDelegate() {}
+  ~StubPlatformWindowDelegate() override {}
+
+  gfx::AcceleratedWidget widget() const { return widget_; }
+
+  // PlatformWindowDelegate:
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+  void OnDamageRect(const gfx::Rect& damaged_region) override {}
+  void DispatchEvent(Event* event) override {}
+  void OnCloseRequest() override {}
+  void OnClosed() override {}
+  void OnWindowStateChanged(PlatformWindowState new_state) override {}
+  void OnLostCapture() override {}
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
+                                    float device_pixel_ratio) override {
+    widget_ = widget;
+  }
+  void OnAcceleratedWidgetDestroyed() override {
+    widget_ = gfx::kNullAcceleratedWidget;
+  }
+  void OnActivationChanged(bool active) override {}
+
+ private:
+  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
+
+  DISALLOW_COPY_AND_ASSIGN(StubPlatformWindowDelegate);
+};
 
 class TestCompositorHostOzone : public TestCompositorHost {
  public:
@@ -30,8 +68,9 @@ class TestCompositorHostOzone : public TestCompositorHost {
   ui::Compositor* GetCompositor() override;
 
   gfx::Rect bounds_;
-
   ui::Compositor compositor_;
+  std::unique_ptr<PlatformWindow> window_;
+  StubPlatformWindowDelegate window_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostOzone);
 };
@@ -49,14 +88,13 @@ TestCompositorHostOzone::TestCompositorHostOzone(
 TestCompositorHostOzone::~TestCompositorHostOzone() {}
 
 void TestCompositorHostOzone::Show() {
-  // Ozone should rightly have a backing native framebuffer
-  // An in-memory array draw into by OSMesa is a reasonble
-  // fascimile of a dumb framebuffer at present.
-  // GLSurface will allocate the array so long as it is provided
-  // with a non-0 widget.
-  // TODO(rjkroege): Use a "real" ozone widget when it is
-  // available: http://crbug.com/255128
-  compositor_.SetAcceleratedWidget(1);
+  // Create a PlatformWindow to get the AcceleratedWidget backing it.
+  window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
+      &window_delegate_, bounds_);
+  window_->Show();
+  DCHECK_NE(window_delegate_.widget(), gfx::kNullAcceleratedWidget);
+
+  compositor_.SetAcceleratedWidget(window_delegate_.widget());
   compositor_.SetScaleAndSize(1.0f, bounds_.size());
   compositor_.SetVisible(true);
 }
@@ -64,6 +102,8 @@ void TestCompositorHostOzone::Show() {
 ui::Compositor* TestCompositorHostOzone::GetCompositor() {
   return &compositor_;
 }
+
+}  // namespace
 
 // static
 TestCompositorHost* TestCompositorHost::Create(

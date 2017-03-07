@@ -13,6 +13,10 @@
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 #if defined(OS_WIN)
 #include "ui/display/win/dpi.h"
 #endif
@@ -28,6 +32,10 @@ CompositorTestSuite::~CompositorTestSuite() {}
 void CompositorTestSuite::Initialize() {
   base::TestSuite::Initialize();
   gl::GLSurfaceTestSupport::InitializeOneOff();
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitializeForUI();
+#endif
 
   gfx::RegisterPathProvider();
 
