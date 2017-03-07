@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <ostream>
 #include <string>
 
@@ -37,13 +38,13 @@ namespace gfx {
 class GFX_RANGE_EXPORT Range {
  public:
   // Creates an empty range {0,0}.
-  Range();
+  constexpr Range() : Range(0) {}
 
   // Initializes the range with a start and end.
-  Range(uint32_t start, uint32_t end);
+  constexpr Range(uint32_t start, uint32_t end) : start_(start), end_(end) {}
 
   // Initializes the range with the same start and end positions.
-  explicit Range(uint32_t position);
+  constexpr explicit Range(uint32_t position) : Range(position, position) {}
 
   // Platform constructors.
 #if defined(OS_MACOSX)
@@ -55,39 +56,55 @@ class GFX_RANGE_EXPORT Range {
 #endif
 
   // Returns a range that is invalid, which is {UINT32_MAX,UINT32_MAX}.
-  static const Range InvalidRange();
+  static constexpr Range InvalidRange() {
+    return Range(std::numeric_limits<uint32_t>::max());
+  }
 
   // Checks if the range is valid through comparison to InvalidRange().
-  bool IsValid() const;
+  constexpr bool IsValid() const { return *this != InvalidRange(); }
 
   // Getters and setters.
-  uint32_t start() const { return start_; }
+  constexpr uint32_t start() const { return start_; }
   void set_start(uint32_t start) { start_ = start; }
 
-  uint32_t end() const { return end_; }
+  constexpr uint32_t end() const { return end_; }
   void set_end(uint32_t end) { end_ = end; }
 
   // Returns the absolute value of the length.
-  uint32_t length() const {
-    return GetMax() - GetMin();
-  }
+  constexpr uint32_t length() const { return GetMax() - GetMin(); }
 
-  bool is_reversed() const { return start() > end(); }
-  bool is_empty() const { return start() == end(); }
+  constexpr bool is_reversed() const { return start() > end(); }
+  constexpr bool is_empty() const { return start() == end(); }
 
   // Returns the minimum and maximum values.
-  uint32_t GetMin() const;
-  uint32_t GetMax() const;
+  constexpr uint32_t GetMin() const {
+    return start() < end() ? start() : end();
+  }
+  constexpr uint32_t GetMax() const {
+    return start() > end() ? start() : end();
+  }
 
-  bool operator==(const Range& other) const;
-  bool operator!=(const Range& other) const;
-  bool EqualsIgnoringDirection(const Range& other) const;
+  constexpr bool operator==(const Range& other) const {
+    return start() == other.start() && end() == other.end();
+  }
+  constexpr bool operator!=(const Range& other) const {
+    return !(*this == other);
+  }
+  constexpr bool EqualsIgnoringDirection(const Range& other) const {
+    return GetMin() == other.GetMin() && GetMax() == other.GetMax();
+  }
 
   // Returns true if this range intersects the specified |range|.
-  bool Intersects(const Range& range) const;
+  constexpr bool Intersects(const Range& range) const {
+    return IsValid() && range.IsValid() &&
+           !(range.GetMax() < GetMin() || range.GetMin() >= GetMax());
+  }
 
   // Returns true if this range contains the specified |range|.
-  bool Contains(const Range& range) const;
+  constexpr bool Contains(const Range& range) const {
+    return IsValid() && range.IsValid() && GetMin() <= range.GetMin() &&
+           range.GetMax() <= GetMax();
+  }
 
   // Computes the intersection of this range with the given |range|.
   // If they don't intersect, it returns an InvalidRange().

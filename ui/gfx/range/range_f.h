@@ -5,6 +5,7 @@
 #ifndef UI_GFX_RANGE_RANGE_F_H_
 #define UI_GFX_RANGE_RANGE_F_H_
 
+#include <limits>
 #include <ostream>
 #include <string>
 
@@ -19,49 +20,60 @@ namespace gfx {
 class GFX_RANGE_EXPORT RangeF {
  public:
   // Creates an empty range {0,0}.
-  RangeF();
+  constexpr RangeF() : RangeF(0.f) {}
 
   // Initializes the range with a start and end.
-  RangeF(float start, float end);
+  constexpr RangeF(float start, float end) : start_(start), end_(end) {}
 
   // Initializes the range with the same start and end positions.
-  explicit RangeF(float position);
+  constexpr explicit RangeF(float position) : RangeF(position, position) {}
 
   // Returns a range that is invalid, which is {float_max,float_max}.
-  static const RangeF InvalidRange();
+  static constexpr RangeF InvalidRange() {
+    return RangeF(std::numeric_limits<float>::max());
+  }
 
   // Checks if the range is valid through comparison to InvalidRange().
-  bool IsValid() const;
+  constexpr bool IsValid() const { return *this != InvalidRange(); }
 
   // Getters and setters.
-  float start() const { return start_; }
+  constexpr float start() const { return start_; }
   void set_start(float start) { start_ = start; }
 
-  float end() const { return end_; }
+  constexpr float end() const { return end_; }
   void set_end(float end) { end_ = end; }
 
   // Returns the absolute value of the length.
-  float length() const {
-    const float length = end() - start();
-    return length >= 0 ? length : -length;
-  }
+  constexpr float length() const { return GetMax() - GetMin(); }
 
-  bool is_reversed() const { return start() > end(); }
-  bool is_empty() const { return start() == end(); }
+  constexpr bool is_reversed() const { return start() > end(); }
+  constexpr bool is_empty() const { return start() == end(); }
 
   // Returns the minimum and maximum values.
-  float GetMin() const;
-  float GetMax() const;
+  constexpr float GetMin() const { return start() < end() ? start() : end(); }
+  constexpr float GetMax() const { return start() > end() ? start() : end(); }
 
-  bool operator==(const RangeF& other) const;
-  bool operator!=(const RangeF& other) const;
-  bool EqualsIgnoringDirection(const RangeF& other) const;
+  constexpr bool operator==(const RangeF& other) const {
+    return start() == other.start() && end() == other.end();
+  }
+  constexpr bool operator!=(const RangeF& other) const {
+    return !(*this == other);
+  }
+  constexpr bool EqualsIgnoringDirection(const RangeF& other) const {
+    return GetMin() == other.GetMin() && GetMax() == other.GetMax();
+  }
 
   // Returns true if this range intersects the specified |range|.
-  bool Intersects(const RangeF& range) const;
+  constexpr bool Intersects(const RangeF& range) const {
+    return IsValid() && range.IsValid() &&
+           !(range.GetMax() < GetMin() || range.GetMin() >= GetMax());
+  }
 
   // Returns true if this range contains the specified |range|.
-  bool Contains(const RangeF& range) const;
+  constexpr bool Contains(const RangeF& range) const {
+    return IsValid() && range.IsValid() && GetMin() <= range.GetMin() &&
+           range.GetMax() <= GetMax();
+  }
 
   // Computes the intersection of this range with the given |range|.
   // If they don't intersect, it returns an InvalidRange().
