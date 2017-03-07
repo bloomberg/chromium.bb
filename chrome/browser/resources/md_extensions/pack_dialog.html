@@ -15,22 +15,39 @@
         border: none;
         border-radius: 2px;
         padding: 0;
+        width: 512px;
       }
 
       header {
+        -webkit-padding-end: 20px;
+        -webkit-padding-start: 24px;
         align-items: center;
         border-bottom: 1px solid var(--paper-grey-200);
-        color: var(--paper-grey-800);
+        color: #333;
         display: flex;
+        font-size: 16px;
         justify-content: space-between;
-        padding: 12px 20px;
+        padding-bottom: 16px;
+        padding-top: 16px;
+      }
+
+      #close-button {
+        height: 20px;
+        padding: 0;
+        width: 20px;
       }
 
       #main {
-        color: var(--paper-grey-800);
+        -webkit-margin-end: 16px;
+        -webkit-margin-start: 24px;
+        font-size: 13px;
         max-width: 800px;
-        padding: 20px;
-        width: 512px;
+        padding-bottom: 16px;
+        padding-top: 20px;
+      }
+
+      #description {
+        color: #333;
       }
 
       paper-button {
@@ -38,6 +55,7 @@
         border-radius: 2px;
         cursor: pointer;
         display: flex;
+        font-size: 13px;
         justify-content: center;
         padding: 8px 12px;
         text-transform: uppercase;
@@ -45,6 +63,9 @@
 
       .file-input {
         display: flex;
+        --paper-input-container-input: {
+          font-size: inherit;
+        };
       }
 
       .file-input paper-input {
@@ -60,6 +81,10 @@
         display: flex;
         justify-content: flex-end;
         padding: 20px;
+      }
+
+      #dismiss {
+        color: #5a5a5a;
       }
 
       #confirm {
@@ -78,7 +103,7 @@
         <div id="description">$i18n{packDialogContent}</div>
         <div class="file-input">
           <paper-input id="root-dir" label="$i18n{packDialogExtensionRoot}"
-              value="[[packDirectory_]]">
+              always-float-label value="[[packDirectory_]]">
           </paper-input>
           <paper-button id="root-dir-browse" on-tap="onRootBrowse_">
             $i18n{packDialogBrowse}
@@ -86,7 +111,7 @@
         </div>
         <div class="file-input">
           <paper-input id="key-file" label="$i18n{packDialogKeyFile}"
-              value="[[keyFile_]]">
+              always-float-label value="[[keyFile_]]">
           </paper-input>
           <paper-button id="key-file-browse" on-tap="onKeyBrowse_">
             $i18n{packDialogBrowse}
