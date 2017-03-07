@@ -457,7 +457,6 @@ void ArcSessionManager::Shutdown() {
   SetState(State::NOT_INITIALIZED);
 }
 
-
 void ArcSessionManager::ShutdownSession() {
   arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
@@ -595,12 +594,12 @@ void ArcSessionManager::RequestEnableImpl() {
     prefs->SetBoolean(prefs::kArcTermsAccepted, true);
   }
 
-  // If it is marked that sign in has been successfully done, then directly
-  // start ARC.
+  // If it is marked that sign in has been successfully done, if ARC has been
+  // set up to always start, then directly start ARC.
   // For testing, and for Kiosk mode, we also skip ToS negotiation procedure.
   // For backward compatibility, this check needs to be prior to the
   // kArcTermsAccepted check below.
-  if (prefs->GetBoolean(prefs::kArcSignedIn) ||
+  if (prefs->GetBoolean(prefs::kArcSignedIn) || ShouldArcAlwaysStart() ||
       IsArcOptInVerificationDisabled() || IsArcKioskMode()) {
     StartArc();
     // Check Android management in parallel.

@@ -55,6 +55,16 @@ bool IsArcAvailable() {
        base::FeatureList::IsEnabled(kEnableArcFeature));
 }
 
+bool ShouldArcAlwaysStart() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcAlwaysStart);
+}
+
+void SetArcAlwaysStartForTesting() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kArcAlwaysStart);
+}
+
 bool IsArcKioskAvailable() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
 

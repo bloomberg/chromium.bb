@@ -101,9 +101,14 @@ void ArcAppTest::SetUp(Profile* profile) {
   arc_app_list_pref_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
   run_loop.Run();
 
-  arc::SetArcPlayStoreEnabledForProfile(profile_, true);
   // Check initial conditions.
-  EXPECT_FALSE(arc_session_manager_->IsSessionRunning());
+  if (arc::ShouldArcAlwaysStart()) {
+    // When ARC first starts, it runs in opt-out mode of Play Store.
+    EXPECT_TRUE(arc_session_manager_->IsSessionRunning());
+  } else {
+    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
+    EXPECT_FALSE(arc_session_manager_->IsSessionRunning());
+  }
 
   app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
   arc_service_manager_->arc_bridge_service()->app()->SetInstance(

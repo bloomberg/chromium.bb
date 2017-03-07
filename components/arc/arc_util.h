@@ -26,6 +26,14 @@ namespace arc {
 // check, so it is ok to access them directly.
 bool IsArcAvailable();
 
+// Returns true if ARC should always start within the primary user session
+// (opted in user or not), and other supported mode such as guest and Kiosk
+// mode.
+bool ShouldArcAlwaysStart();
+
+// Enables to always start ARC for testing, by appending the command line flag.
+void SetArcAlwaysStartForTesting();
+
 // Returns true if ARC is installed and running ARC kiosk apps on the current
 // device is officially supported.
 // It doesn't follow that ARC is available for user sessions and

@@ -27,6 +27,7 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
@@ -117,12 +118,16 @@ class TestObserver : public NoteTakingHelper::Observer {
 
 }  // namespace
 
-class NoteTakingHelperTest : public BrowserWithTestWindowTest {
+class NoteTakingHelperTest : public BrowserWithTestWindowTest,
+                             public ::testing::WithParamInterface<bool> {
  public:
   NoteTakingHelperTest() = default;
   ~NoteTakingHelperTest() override = default;
 
   void SetUp() override {
+    if (GetParam())
+      arc::SetArcAlwaysStartForTesting();
+
     // This is needed to avoid log spam due to ArcSessionManager's
     // RemoveArcData() calls failing.
     if (DBusThreadManager::IsInitialized())
@@ -157,8 +162,8 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   };
 
   // Options that can be passed to Init().
-  enum InitFlags {
-    ENABLE_ARC = 1 << 0,
+  enum InitFlags : uint32_t {
+    ENABLE_PLAY_STORE = 1 << 0,
     ENABLE_PALETTE = 1 << 1,
   };
 
@@ -170,7 +175,8 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
     ASSERT_FALSE(initialized_);
     initialized_ = true;
 
-    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, flags & ENABLE_ARC);
+    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled,
+                                      flags & ENABLE_PLAY_STORE);
     arc_test_.SetUp(profile());
     arc::ArcServiceManager::Get()
         ->arc_bridge_service()
@@ -183,7 +189,8 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
     }
 
     // TODO(derat): Sigh, something in ArcAppTest appears to be re-enabling ARC.
-    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, flags & ENABLE_ARC);
+    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled,
+                                      flags & ENABLE_PLAY_STORE);
     NoteTakingHelper::Initialize();
     NoteTakingHelper::Get()->set_launch_chrome_app_callback_for_test(base::Bind(
         &NoteTakingHelperTest::LaunchChromeApp, base::Unretained(this)));
@@ -288,7 +295,9 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(NoteTakingHelperTest);
 };
 
-TEST_F(NoteTakingHelperTest, PaletteNotEnabled) {
+INSTANTIATE_TEST_CASE_P(, NoteTakingHelperTest, ::testing::Bool());
+
+TEST_P(NoteTakingHelperTest, PaletteNotEnabled) {
   // Without the palette enabled, IsAppAvailable() should return false.
   Init(0);
   auto extension =
@@ -297,7 +306,7 @@ TEST_F(NoteTakingHelperTest, PaletteNotEnabled) {
   EXPECT_FALSE(helper()->IsAppAvailable(profile()));
 }
 
-TEST_F(NoteTakingHelperTest, ListChromeApps) {
+TEST_P(NoteTakingHelperTest, ListChromeApps) {
   Init(ENABLE_PALETTE);
 
   // Start out without any note-taking apps installed.
@@ -359,7 +368,7 @@ TEST_F(NoteTakingHelperTest, ListChromeApps) {
 
 // Verify the note helper detects apps with "new_note" "action_handler" manifest
 // entries.
-TEST_F(NoteTakingHelperTest, CustomChromeApps) {
+TEST_P(NoteTakingHelperTest, CustomChromeApps) {
   Init(ENABLE_PALETTE);
 
   const extensions::ExtensionId kNewNoteId = crx_file::id_util::GenerateId("a");
@@ -389,7 +398,7 @@ TEST_F(NoteTakingHelperTest, CustomChromeApps) {
   EXPECT_EQ(GetAppString(kNewNoteId, kName, false), GetAppString(apps[0]));
 }
 
-TEST_F(NoteTakingHelperTest, WhitelistedAndCustomAppsShowOnlyOnce) {
+TEST_P(NoteTakingHelperTest, WhitelistedAndCustomAppsShowOnlyOnce) {
   Init(ENABLE_PALETTE);
 
   auto extension = CreateExtension(
@@ -405,7 +414,7 @@ TEST_F(NoteTakingHelperTest, WhitelistedAndCustomAppsShowOnlyOnce) {
             GetAppString(apps[0]));
 }
 
-TEST_F(NoteTakingHelperTest, LaunchChromeApp) {
+TEST_P(NoteTakingHelperTest, LaunchChromeApp) {
   Init(ENABLE_PALETTE);
   auto extension =
       CreateExtension(NoteTakingHelper::kProdKeepExtensionId, "Keep");
@@ -428,7 +437,7 @@ TEST_F(NoteTakingHelperTest, LaunchChromeApp) {
       static_cast<int>(LaunchResult::CHROME_SUCCESS), 1);
 }
 
-TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
+TEST_P(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
   Init(ENABLE_PALETTE);
   auto prod_extension =
       CreateExtension(NoteTakingHelper::kProdKeepExtensionId, "prod");
@@ -467,25 +476,28 @@ TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
       static_cast<int>(LaunchResult::CHROME_SUCCESS), 1);
 }
 
-TEST_F(NoteTakingHelperTest, ArcInitiallyDisabled) {
+TEST_P(NoteTakingHelperTest, PlayStoreInitiallyDisabled) {
   Init(ENABLE_PALETTE);
-  EXPECT_FALSE(helper()->android_enabled());
+  EXPECT_FALSE(helper()->play_store_enabled());
   EXPECT_FALSE(helper()->android_apps_received());
-
-  // When ARC is enabled, the helper's members should be updated accordingly.
+  // TODO(victorhsieh): Implement opt-in.
+  if (arc::ShouldArcAlwaysStart())
+    return;
+  // When Play Store is enabled, the helper's members should be updated
+  // accordingly.
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  EXPECT_TRUE(helper()->android_enabled());
+  EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_FALSE(helper()->android_apps_received());
 
   // After the callback to receive intent handlers has run, the "apps received"
   // member should be updated (even if there aren't any apps).
   helper()->OnIntentFiltersUpdated();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(helper()->android_enabled());
+  EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_TRUE(helper()->android_apps_received());
 }
 
-TEST_F(NoteTakingHelperTest, ListAndroidApps) {
+TEST_P(NoteTakingHelperTest, ListAndroidApps) {
   // Add two Android apps.
   std::vector<IntentHandlerInfoPtr> handlers;
   const std::string kName1 = "App 1";
@@ -499,14 +511,14 @@ TEST_F(NoteTakingHelperTest, ListAndroidApps) {
 
   // NoteTakingHelper should make an async request for Android apps when
   // constructed.
-  Init(ENABLE_PALETTE | ENABLE_ARC);
-  EXPECT_TRUE(helper()->android_enabled());
+  Init(ENABLE_PALETTE | ENABLE_PLAY_STORE);
+  EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_FALSE(helper()->android_apps_received());
   EXPECT_TRUE(helper()->GetAvailableApps(profile()).empty());
 
   // The apps should be listed after the callback has had a chance to run.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(helper()->android_enabled());
+  EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_TRUE(helper()->android_apps_received());
   EXPECT_TRUE(helper()->IsAppAvailable(profile()));
   std::vector<NoteTakingAppInfo> apps = helper()->GetAvailableApps(profile());
@@ -514,22 +526,26 @@ TEST_F(NoteTakingHelperTest, ListAndroidApps) {
   EXPECT_EQ(GetAppString(kPackage1, kName1, false), GetAppString(apps[0]));
   EXPECT_EQ(GetAppString(kPackage2, kName2, false), GetAppString(apps[1]));
 
-  // Disable ARC and check that the apps are no longer returned.
+  // TODO(victorhsieh): Opt-out on Persistent ARC is special.  Skip until
+  // implemented.
+  if (arc::ShouldArcAlwaysStart())
+    return;
+  // Disable Play Store and check that the apps are no longer returned.
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
-  EXPECT_FALSE(helper()->android_enabled());
+  EXPECT_FALSE(helper()->play_store_enabled());
   EXPECT_FALSE(helper()->android_apps_received());
   EXPECT_FALSE(helper()->IsAppAvailable(profile()));
   EXPECT_TRUE(helper()->GetAvailableApps(profile()).empty());
 }
 
-TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
+TEST_P(NoteTakingHelperTest, LaunchAndroidApp) {
   const std::string kPackage1 = "org.chromium.package1";
   std::vector<IntentHandlerInfoPtr> handlers;
   handlers.emplace_back(CreateIntentHandlerInfo("App 1", kPackage1));
   intent_helper_.SetIntentHandlers(NoteTakingHelper::kIntentAction,
                                    std::move(handlers));
 
-  Init(ENABLE_PALETTE | ENABLE_ARC);
+  Init(ENABLE_PALETTE | ENABLE_PLAY_STORE);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(helper()->IsAppAvailable(profile()));
 
@@ -572,14 +588,14 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
       NoteTakingHelper::kDefaultLaunchResultHistogramName, 0);
 }
 
-TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
+TEST_P(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
   const std::string kPackage = "org.chromium.package";
   std::vector<IntentHandlerInfoPtr> handlers;
   handlers.emplace_back(CreateIntentHandlerInfo("App", kPackage));
   intent_helper_.SetIntentHandlers(NoteTakingHelper::kIntentAction,
                                    std::move(handlers));
 
-  Init(ENABLE_PALETTE | ENABLE_ARC);
+  Init(ENABLE_PALETTE | ENABLE_PLAY_STORE);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(helper()->IsAppAvailable(profile()));
 
@@ -615,8 +631,8 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
       static_cast<int>(LaunchResult::ANDROID_FAILED_TO_CONVERT_PATH), 1);
 }
 
-TEST_F(NoteTakingHelperTest, NoAppsAvailable) {
-  Init(ENABLE_PALETTE | ENABLE_ARC);
+TEST_P(NoteTakingHelperTest, NoAppsAvailable) {
+  Init(ENABLE_PALETTE | ENABLE_PLAY_STORE);
 
   // When no note-taking apps are installed, the histograms should just be
   // updated.
@@ -630,16 +646,21 @@ TEST_F(NoteTakingHelperTest, NoAppsAvailable) {
       static_cast<int>(LaunchResult::NO_APPS_AVAILABLE), 1);
 }
 
-TEST_F(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {
-  Init(ENABLE_PALETTE | ENABLE_ARC);
+TEST_P(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {
+  Init(ENABLE_PALETTE | ENABLE_PLAY_STORE);
   TestObserver observer;
 
   // Let the app-fetching callback run and check that the observer is notified.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, observer.num_updates());
 
-  // Disabling and enabling ARC should also notify the observer (and enabling
-  // should request apps again).
+  // TODO(victorhsieh): Opt-out on Persistent ARC is special.  Skip until
+  // implemented.
+  if (arc::ShouldArcAlwaysStart())
+    return;
+
+  // Disabling and enabling Play Store should also notify the observer (and
+  // enabling should request apps again).
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
   EXPECT_EQ(2, observer.num_updates());
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
@@ -655,7 +676,7 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {
   EXPECT_EQ(4, observer.num_updates());
 }
 
-TEST_F(NoteTakingHelperTest, NotifyObserverAboutChromeApps) {
+TEST_P(NoteTakingHelperTest, NotifyObserverAboutChromeApps) {
   Init(ENABLE_PALETTE);
   TestObserver observer;
   ASSERT_EQ(0, observer.num_updates());

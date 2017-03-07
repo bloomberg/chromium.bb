@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -120,7 +121,7 @@ void ArcPlayStoreEnabledPreferenceHandler::UpdateArcSessionManager() {
         IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
   }
 
-  if (IsArcPlayStoreEnabledForProfile(profile_))
+  if (ShouldArcAlwaysStart() || IsArcPlayStoreEnabledForProfile(profile_))
     arc_session_manager_->RequestEnable();
   else
     arc_session_manager_->RequestDisable();

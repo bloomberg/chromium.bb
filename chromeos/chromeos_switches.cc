@@ -57,6 +57,10 @@ const char kAppAutoLaunched[] = "app-auto-launched";
 // Path for app's OEM manifest file.
 const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 
+// Always starts ARC after login screen without Play Store in almost all cases.
+// Secondary profile is an exception where ARC will not start.
+const char kArcAlwaysStart[] = "arc-always-start";
+
 // Signals ARC support status on this device. This can take one of the
 // following three values.
 // - none: ARC is not installed on this device. (default)

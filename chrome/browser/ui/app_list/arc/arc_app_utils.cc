@@ -22,6 +22,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -267,48 +268,50 @@ bool LaunchApp(content::BrowserContext* context,
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (app_info && !app_info->ready) {
     Profile* profile = Profile::FromBrowserContext(context);
-    bool play_store_activated = false;
-    if (!IsArcPlayStoreEnabledForProfile(profile)) {
-      if (!prefs->IsDefault(app_id)) {
-        NOTREACHED();
-        return false;
-      }
 
-      SetArcPlayStoreEnabledForProfile(profile, true);
-      if (!IsArcPlayStoreEnabledForProfile(profile)) {
-        NOTREACHED();
-        return false;
+    if (!IsArcPlayStoreEnabledForProfile(profile)) {
+      if (prefs->IsDefault(app_id)) {
+        // The setting can fail if the preference is managed.  However, the
+        // caller is responsible to not call this function in such case.  DCHECK
+        // is here to prevent possible mistake.
+        SetArcPlayStoreEnabledForProfile(profile, true);
+        DCHECK(IsArcPlayStoreEnabledForProfile(profile));
+
+        // PlayStore item has special handling for shelf controllers. In order
+        // to avoid unwanted initial animation for PlayStore item do not create
+        // deferred launch request when PlayStore item enables Google Play
+        // Store.
+        if (app_id == kPlayStoreAppId) {
+          prefs->SetLastLaunchTime(app_id, base::Time::Now());
+          return true;
+        }
+      } else {
+        // Only reachable when ARC always starts.
+        DCHECK(arc::ShouldArcAlwaysStart());
       }
-      play_store_activated = true;
     }
 
-    // PlayStore item has special handling for shelf controllers. In order to
-    // avoid unwanted initial animation for PlayStore item do not create
-    // deferred launch request when PlayStore item enables Google Play Store.
-    if (!play_store_activated || app_id != kPlayStoreAppId) {
-      ChromeLauncherController* chrome_controller =
-          ChromeLauncherController::instance();
-      DCHECK(chrome_controller || !ash::Shell::HasInstance());
-      if (chrome_controller) {
-        chrome_controller->GetArcDeferredLauncher()->RegisterDeferredLaunch(
-            app_id, event_flags);
+    ChromeLauncherController* chrome_controller =
+        ChromeLauncherController::instance();
+    DCHECK(chrome_controller || !ash::Shell::HasInstance());
+    if (chrome_controller) {
+      chrome_controller->GetArcDeferredLauncher()->RegisterDeferredLaunch(
+          app_id, event_flags);
 
-        // On some boards, ARC is booted with a restricted set of resources by
-        // default to avoid slowing down Chrome's user session restoration.
-        // However, the restriction should be lifted once the user explicitly
-        // tries to launch an ARC app.
-        VLOG(2) << "Prioritizing the instance";
-        chromeos::SessionManagerClient* session_manager_client =
-            chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-        session_manager_client->SetArcCpuRestriction(
-            login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND,
-            base::Bind(SetArcCpuRestrictionCallback));
-      }
+      // On some boards, ARC is booted with a restricted set of resources by
+      // default to avoid slowing down Chrome's user session restoration.
+      // However, the restriction should be lifted once the user explicitly
+      // tries to launch an ARC app.
+      VLOG(2) << "Prioritizing the instance";
+      chromeos::SessionManagerClient* session_manager_client =
+          chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+      session_manager_client->SetArcCpuRestriction(
+          login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND,
+          base::Bind(SetArcCpuRestrictionCallback));
     }
     prefs->SetLastLaunchTime(app_id, base::Time::Now());
     return true;
   }
-
   return (new LaunchAppWithoutSize(context, app_id, landscape_layout,
                                    event_flags))
       ->LaunchAndRelease();

@@ -82,6 +82,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/shell_surface.h"
@@ -877,7 +878,9 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
         std::vector<arc::mojom::AppInfo>());
   }
 
-  void EnableArc(bool enabled) {
+  // TODO(victorhsieh): Add test coverage for when ARC is started regardless
+  // Play Store opt-in status, and the followed opt-in and opt-out.
+  void EnablePlayStore(bool enabled) {
     arc::SetArcPlayStoreEnabledForProfile(profile(), enabled);
     base::RunLoop().RunUntilIdle();
   }
@@ -998,14 +1001,25 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 };
 
 class ChromeLauncherControllerImplWithArcTest
-    : public ChromeLauncherControllerImplTest {
+    : public ChromeLauncherControllerImplTest,
+      public ::testing::WithParamInterface<bool> {
  protected:
   ChromeLauncherControllerImplWithArcTest() { auto_start_arc_test_ = true; }
   ~ChromeLauncherControllerImplWithArcTest() override {}
 
+  void SetUp() override {
+    if (GetParam())
+      arc::SetArcAlwaysStartForTesting();
+    ChromeLauncherControllerImplTest::SetUp();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerImplWithArcTest);
 };
+
+INSTANTIATE_TEST_CASE_P(,
+                        ChromeLauncherControllerImplWithArcTest,
+                        ::testing::Bool());
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
 // the destruction of a V2 application.
@@ -1277,16 +1291,28 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
 };
 
 class ChromeLauncherControllerImplMultiProfileWithArcTest
-    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest {  // NOLINT(whitespace/line_length)
+    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,  // NOLINT(whitespace/line_length)
+      public ::testing::WithParamInterface<bool> {
  protected:
   ChromeLauncherControllerImplMultiProfileWithArcTest() {
     auto_start_arc_test_ = true;
   }
   ~ChromeLauncherControllerImplMultiProfileWithArcTest() override {}
 
+  void SetUp() override {
+    if (GetParam())
+      arc::SetArcAlwaysStartForTesting();
+    MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest::
+        SetUp();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerImplMultiProfileWithArcTest);
 };
+
+INSTANTIATE_TEST_CASE_P(,
+                        ChromeLauncherControllerImplMultiProfileWithArcTest,
+                        ::testing::Bool());
 
 TEST_F(ChromeLauncherControllerImplTest, DefaultApps) {
   InitLauncherController();
@@ -1304,7 +1330,7 @@ TEST_F(ChromeLauncherControllerImplTest, DefaultApps) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
 }
 
-TEST_F(ChromeLauncherControllerImplWithArcTest,
+TEST_P(ChromeLauncherControllerImplWithArcTest,
        ArcAppPinCrossPlatformWorkflow) {
   // Work on ARC disabled platform first.
   const std::string arc_app_id1 =
@@ -1382,7 +1408,10 @@ TEST_F(ChromeLauncherControllerImplWithArcTest,
   EXPECT_EQ(0U, app_service_->sync_items().size());
 
   // Move back to ARC disabled platform.
-  EnableArc(false);
+  // TODO(victorhsieh): Implement opt-out.
+  if (arc::ShouldArcAlwaysStart())
+    return;
+  EnablePlayStore(false);
   StartAppSyncService(copy_sync_list);
   RecreateChromeLauncher();
 
@@ -1398,7 +1427,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest,
   model_->Move(4, 2);
   launcher_controller_->UnpinAppWithID(extension2_->id());
   EXPECT_EQ("AppList, App3, Chrome, App1", GetPinnedAppStatus());
-  EnableArc(true);
+  EnablePlayStore(true);
 
   SendListOfArcApps();
 
@@ -1835,7 +1864,7 @@ TEST_F(ChromeLauncherControllerImplTest, CheckRunningAppOrder) {
   EXPECT_EQ("AppList, Chrome", GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
   RecreateChromeLauncher();
 
   const arc::mojom::AppInfo& app1 = arc_test_.fake_apps()[0];
@@ -1910,7 +1939,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
               (request1->IsForApp(app3) && request2->IsForApp(app2)));
 }
 
-TEST_F(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
+TEST_P(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
   SendListOfArcApps();
 
   InitLauncherController();
@@ -1982,7 +2011,7 @@ TEST_F(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
   arc_window3->CloseNow();
 }
 
-TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2025,7 +2054,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
 
 // Test race creation/deletion of ARC app.
 // TODO(khmel): Remove after moving everything to wayland protocol.
-TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
   InitLauncherController();
 
   const std::string arc_app_id1 =
@@ -2072,7 +2101,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
             launcher_controller_->GetShelfIDForAppID(arc_app_id2));
 }
 
-TEST_F(ChromeLauncherControllerImplWithArcTest, ArcWindowRecreation) {
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcWindowRecreation) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2101,7 +2130,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcWindowRecreation) {
 
 // Validate that ARC app is pinned correctly and pin is removed automatically
 // once app is uninstalled.
-TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2123,24 +2152,30 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
 
   EXPECT_EQ("AppList, Chrome, App1, Fake App 0, App2", GetPinnedAppStatus());
+  // In opt-out mode, only system apps are available and can't be uninstalled.
+  // Skip the rest of the test.
+  if (arc::ShouldArcAlwaysStart())
+    return;
   UninstallArcApps();
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
   SendListOfArcApps();
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 
   // Opt-Out/Opt-In remove item from the shelf.
   launcher_controller_->PinAppWithID(arc_app_id);
   EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
-  EnableArc(false);
+  EnablePlayStore(false);
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
-  EnableArc(true);
+  EnablePlayStore(true);
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
   SendListOfArcApps();
   EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
 }
 
 // Validates that ARC app pins persist across OptOut/OptIn.
-TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPinOptOutOptIn) {
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPinOptOutOptIn) {
   InitLauncherController();
 
   const std::string arc_app_id1 =
@@ -2164,7 +2199,10 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPinOptOutOptIn) {
   EXPECT_EQ("AppList, Chrome, App1, Fake App 1, App2, Fake App 0",
             GetPinnedAppStatus());
 
-  EnableArc(false);
+  // TODO(victorhsieh): Implement opt-out.
+  if (arc::ShouldArcAlwaysStart())
+    return;
+  EnablePlayStore(false);
 
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
@@ -2172,7 +2210,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPinOptOutOptIn) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id2));
 
-  EnableArc(true);
+  EnablePlayStore(true);
   SendListOfArcApps();
   base::RunLoop().RunUntilIdle();
 
@@ -3610,7 +3648,7 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
   EXPECT_EQ(1, app_icon_loader2->clear_count());
 }
 
-TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPinPolicy) {
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPinPolicy) {
   InitLauncherControllerWithBrowser();
   arc::mojom::AppInfo appinfo = CreateAppInfo(
       "Some App", "SomeActivity", "com.example.app", OrientationLock::NONE);
@@ -3629,10 +3667,14 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPinPolicy) {
             GetPinnableForAppID(app_id, profile()));
 }
 
-TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
+TEST_P(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
+  // TODO(victorhsieh): Implement opt-in and opt-out.
+  if (arc::ShouldArcAlwaysStart())
+    return;
+
   extension_service_->AddExtension(arc_support_host_.get());
   // Test enables ARC, so turn it off for initial values.
-  EnableArc(false);
+  EnablePlayStore(false);
 
   InitLauncherController();
 
@@ -3672,19 +3714,19 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
                    "AppList, Chrome, Play Store");
 
   // ARC is not managed and enabled, Play Store pin should be available.
-  EnableArc(true);
+  EnablePlayStore(true);
   ValidateArcState(true, false,
                    arc::ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
                    "AppList, Chrome, Play Store");
 
   // User disables ARC. ARC is not managed and disabled, Play Store pin should
   // be automatically removed.
-  EnableArc(false);
+  EnablePlayStore(false);
   ValidateArcState(false, false, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome");
 
   // Even if re-enable it again, Play Store pin does not appear automatically.
-  EnableArc(true);
+  EnablePlayStore(true);
   ValidateArcState(true, false,
                    arc::ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
                    "AppList, Chrome");
@@ -3766,14 +3808,21 @@ class ChromeLauncherControllerOrientationTest
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerOrientationTest);
 };
 
+INSTANTIATE_TEST_CASE_P(,
+                        ChromeLauncherControllerOrientationTest,
+                        ::testing::Bool());
+
 class ChromeLauncherControllerArcDefaultAppsTest
-    : public ChromeLauncherControllerImplTest {
+    : public ChromeLauncherControllerImplTest,
+      public ::testing::WithParamInterface<bool> {
  public:
   ChromeLauncherControllerArcDefaultAppsTest() {}
   ~ChromeLauncherControllerArcDefaultAppsTest() override {}
 
  protected:
   void SetUp() override {
+    if (GetParam())
+      arc::SetArcAlwaysStartForTesting();
     ArcDefaultAppList::UseTestAppsDirectory();
     ChromeLauncherControllerImplTest::SetUp();
   }
@@ -3782,14 +3831,18 @@ class ChromeLauncherControllerArcDefaultAppsTest
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerArcDefaultAppsTest);
 };
 
+INSTANTIATE_TEST_CASE_P(,
+                        ChromeLauncherControllerArcDefaultAppsTest,
+                        ::testing::Bool());
+
 }  // namespace
 
-TEST_F(ChromeLauncherControllerOrientationTest,
+TEST_P(ChromeLauncherControllerOrientationTest,
        ArcOrientationLockBeforeWindowReady) {
   ASSERT_TRUE(display::Display::HasInternalDisplay());
 
   extension_service_->AddExtension(arc_support_host_.get());
-  EnableArc(true);
+  EnablePlayStore(true);
 
   InitLauncherController();
 
@@ -3834,11 +3887,11 @@ TEST_F(ChromeLauncherControllerOrientationTest,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 }
 
-TEST_F(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
+TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   ASSERT_TRUE(display::Display::HasInternalDisplay());
 
   extension_service_->AddExtension(arc_support_host_.get());
-  EnableArc(true);
+  EnablePlayStore(true);
   EnableTabletMode(true);
 
   InitLauncherController();
@@ -3931,11 +3984,11 @@ TEST_F(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   EXPECT_FALSE(controller->rotation_locked());
 }
 
-TEST_F(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
+TEST_P(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
   ASSERT_TRUE(display::Display::HasInternalDisplay());
 
   extension_service_->AddExtension(arc_support_host_.get());
-  EnableArc(true);
+  EnablePlayStore(true);
   EnableTabletMode(true);
 
   InitLauncherController();
@@ -3992,13 +4045,13 @@ TEST_F(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 }
 
-TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
+TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
   ChromeLauncherController::set_instance_for_test(launcher_controller_.get());
 
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
-  EnableArc(false);
+  EnablePlayStore(false);
   EXPECT_FALSE(arc::IsArcPlayStoreEnabledForProfile(profile()));
   ASSERT_TRUE(prefs->GetAppIds().size());
 
@@ -4012,7 +4065,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
             launcher_controller_->GetShelfIDForAppID(app_id));
 
   // Stop ARC again. Shelf item should go away.
-  EnableArc(false);
+  EnablePlayStore(false);
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));
 

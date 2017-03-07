@@ -71,7 +71,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
     virtual ~Observer() = default;
 
     // Called when the list of available apps that will be returned by
-    // GetAvailableApps() changes or when |android_enabled_| changes state.
+    // GetAvailableApps() changes or when |play_store_enabled_| changes state.
     virtual void OnAvailableNoteTakingAppsUpdated() = 0;
   };
 
@@ -124,7 +124,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   static void Shutdown();
   static NoteTakingHelper* Get();
 
-  bool android_enabled() const { return android_enabled_; }
+  bool play_store_enabled() const { return play_store_enabled_; }
   bool android_apps_received() const { return android_apps_received_; }
 
   void set_launch_chrome_app_callback_for_test(
@@ -198,11 +198,11 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
       extensions::UnloadedExtensionInfo::Reason reason) override;
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
-  // True iff ARC is enabled (i.e. per the checkbox on the settings page). Note
-  // that ARC may not be fully started yet when this is true, but it is expected
-  // to start eventually. Similarly, ARC may not be fully shut down yet when
-  // this is false, but will be eventually.
-  bool android_enabled_ = false;
+  // True iff Play Store is enabled (i.e. per the checkbox on the settings
+  // page). Note that ARC may not be fully started yet when this is true, but it
+  // is expected to start eventually. Similarly, ARC may not be fully shut down
+  // yet when this is false, but will be eventually.
+  bool play_store_enabled_ = false;
 
   // This is set to true after |android_apps_| is updated.
   bool android_apps_received_ = false;

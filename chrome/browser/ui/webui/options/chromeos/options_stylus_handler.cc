@@ -108,8 +108,8 @@ void OptionsStylusHandler::UpdateNoteTakingApps() {
   base::ListValue apps_list;
 
   NoteTakingHelper* helper = NoteTakingHelper::Get();
-  if (helper->android_enabled() && !helper->android_apps_received()) {
-    // If Android is enabled but not ready yet, let the JS know so it can
+  if (helper->play_store_enabled() && !helper->android_apps_received()) {
+    // If Play Store is enabled but not ready yet, let the JS know so it can
     // disable the menu and display an explanatory message.
     waiting_for_android = true;
   } else {

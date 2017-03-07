@@ -1219,10 +1219,10 @@ void BrowserOptionsHandler::InitializePage() {
 
   if (arc::IsArcAllowedForProfile(profile) &&
       !arc::IsArcOptInVerificationDisabled()) {
-    base::Value is_arc_enabled(arc::IsArcPlayStoreEnabledForProfile(profile));
+    base::Value is_play_store_enabled(
+        arc::IsArcPlayStoreEnabledForProfile(profile));
     web_ui()->CallJavascriptFunctionUnsafe(
-        "BrowserOptions.showAndroidAppsSection",
-        is_arc_enabled);
+        "BrowserOptions.showAndroidAppsSection", is_play_store_enabled);
     // Get the initial state of Android Settings app readiness.
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
         ArcAppListPrefs::Get(profile)->GetApp(arc::kSettingsAppId);

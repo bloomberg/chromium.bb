@@ -24,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -149,6 +150,14 @@ void DeleteAppFolderFromFileThread(const base::FilePath& path) {
 bool IsArcAlive() {
   const auto* arc_session_manager = arc::ArcSessionManager::Get();
   return arc_session_manager && arc_session_manager->IsAllowed();
+}
+
+// Returns true if ARC Android instance is supposed to be enabled for the
+// profile.  This can happen for if the user has opted in for the given profile,
+// or when ARC always starts after login.
+bool IsArcAndroidEnabledForProfile(const Profile* profile) {
+  return arc::ShouldArcAlwaysStart() ||
+         arc::IsArcPlayStoreEnabledForProfile(profile);
 }
 
 bool GetInt64FromPref(const base::DictionaryValue* dict,
@@ -310,6 +319,12 @@ base::FilePath ArcAppListPrefs::GetIconPath(
 
 void ArcAppListPrefs::RequestIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor) {
+  // ArcSessionManager can be terminated during test tear down, before callback
+  // into this function.
+  // TODO(victorhsieh): figure out the best way/place to handle this situation.
+  if (arc::ArcSessionManager::Get() == nullptr)
+    return;
+
   if (!IsRegistered(app_id)) {
     VLOG(2) << "Request to load icon for non-registered app: " << app_id << ".";
     return;
@@ -401,7 +416,7 @@ bool ArcAppListPrefs::HasObserver(Observer* observer) {
 
 std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
     const std::string& package_name) const {
-  if (!IsArcAlive() || !arc::IsArcPlayStoreEnabledForProfile(profile_))
+  if (!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_))
     return nullptr;
 
   const base::DictionaryValue* package = nullptr;
@@ -433,7 +448,10 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
-  if (!IsArcAlive() || !arc::IsArcPlayStoreEnabledForProfile(profile_)) {
+  if (arc::ShouldArcAlwaysStart())
+    return GetAppIdsNoArcEnabledCheck();
+
+  if (!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) {
     // Default ARC apps available before OptIn.
     std::vector<std::string> ids;
     for (const auto& default_app : default_apps_.app_map()) {
@@ -447,7 +465,6 @@ std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
 
 std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
   std::vector<std::string> ids;
-
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   DCHECK(apps);
 
@@ -466,7 +483,7 @@ std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
 std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     const std::string& app_id) const {
   // Information for default app is available before ARC enabled.
-  if ((!IsArcAlive() || !arc::IsArcPlayStoreEnabledForProfile(profile_)) &&
+  if ((!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) &&
       !default_apps_.HasApp(app_id))
     return std::unique_ptr<AppInfo>();
 
@@ -522,7 +539,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 }
 
 bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
-  if ((!IsArcAlive() || !arc::IsArcPlayStoreEnabledForProfile(profile_)) &&
+  if ((!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) &&
       !default_apps_.HasApp(app_id))
     return false;
 
@@ -612,6 +629,10 @@ void ArcAppListPrefs::RemoveAllApps() {
 
 void ArcAppListPrefs::OnArcPlayStoreEnabledChanged(bool enabled) {
   UpdateDefaultAppsHiddenState();
+
+  // TODO(victorhsieh): Implement opt-in and opt-out.
+  if (arc::ShouldArcAlwaysStart())
+    return;
 
   if (enabled)
     NotifyRegisteredApps();
@@ -722,7 +743,7 @@ void ArcAppListPrefs::MaybeAddNonLaunchableApp(
     const base::Optional<std::string>& name,
     const std::string& package_name,
     const std::string& activity) {
-  DCHECK(arc::IsArcPlayStoreEnabledForProfile(profile_));
+  DCHECK(IsArcAndroidEnabledForProfile(profile_));
   if (IsRegistered(GetAppId(package_name, activity)))
     return;
 
@@ -859,7 +880,7 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
 
 void ArcAppListPrefs::AddOrUpdatePackagePrefs(
     PrefService* prefs, const arc::mojom::ArcPackageInfo& package) {
-  DCHECK(arc::IsArcPlayStoreEnabledForProfile(profile_));
+  DCHECK(IsArcAndroidEnabledForProfile(profile_));
   const std::string& package_name = package.package_name;
   default_apps_.MaybeMarkPackageUninstalled(package_name, false);
   if (package_name.empty()) {
@@ -882,7 +903,7 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
 
 void ArcAppListPrefs::RemovePackageFromPrefs(PrefService* prefs,
                                              const std::string& package_name) {
-  DCHECK(arc::IsArcPlayStoreEnabledForProfile(profile_));
+  DCHECK(IsArcAndroidEnabledForProfile(profile_));
   default_apps_.MaybeMarkPackageUninstalled(package_name, true);
   if (!default_apps_.HasPackage(package_name)) {
     DictionaryPrefUpdate update(prefs, prefs::kArcPackages);
@@ -899,7 +920,7 @@ void ArcAppListPrefs::RemovePackageFromPrefs(PrefService* prefs,
 
 void ArcAppListPrefs::OnAppListRefreshed(
     std::vector<arc::mojom::AppInfoPtr> apps) {
-  DCHECK(arc::IsArcPlayStoreEnabledForProfile(profile_));
+  DCHECK(IsArcAndroidEnabledForProfile(profile_));
   std::vector<std::string> old_apps = GetAppIds();
 
   ready_apps_.clear();
@@ -1188,7 +1209,7 @@ bool ArcAppListPrefs::IsUnknownPackage(const std::string& package_name) const {
 
 void ArcAppListPrefs::OnPackageAdded(
     arc::mojom::ArcPackageInfoPtr package_info) {
-  DCHECK(arc::IsArcPlayStoreEnabledForProfile(profile_));
+  DCHECK(IsArcAndroidEnabledForProfile(profile_));
 
   // Ignore packages installed by internal sync.
   DCHECK(sync_service_);
@@ -1206,7 +1227,7 @@ void ArcAppListPrefs::OnPackageAdded(
 
 void ArcAppListPrefs::OnPackageModified(
     arc::mojom::ArcPackageInfoPtr package_info) {
-  DCHECK(arc::IsArcPlayStoreEnabledForProfile(profile_));
+  DCHECK(IsArcAndroidEnabledForProfile(profile_));
   AddOrUpdatePackagePrefs(prefs_, *package_info);
   for (auto& observer : observer_list_)
     observer.OnPackageModified(*package_info);
@@ -1214,7 +1235,7 @@ void ArcAppListPrefs::OnPackageModified(
 
 void ArcAppListPrefs::OnPackageListRefreshed(
     std::vector<arc::mojom::ArcPackageInfoPtr> packages) {
-  DCHECK(arc::IsArcPlayStoreEnabledForProfile(profile_));
+  DCHECK(IsArcAndroidEnabledForProfile(profile_));
 
   const std::vector<std::string> old_packages(GetPackagesFromPrefs());
   std::unordered_set<std::string> current_packages;
@@ -1246,8 +1267,7 @@ std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs() const {
 std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs(
     bool installed) const {
   std::vector<std::string> packages;
-  if ((!IsArcAlive() || !arc::IsArcPlayStoreEnabledForProfile(profile_)) &&
-      installed)
+  if ((!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) && installed)
     return packages;
 
   const base::DictionaryValue* package_prefs =

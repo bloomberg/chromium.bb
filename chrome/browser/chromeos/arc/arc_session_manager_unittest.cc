@@ -35,6 +35,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -430,6 +431,45 @@ TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   arc_session_manager()->OnProvisioningFinished(
       ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
+}
+
+class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
+ public:
+  ArcSessionManagerArcAlwaysStartTest() = default;
+
+  void SetUp() override {
+    SetArcAlwaysStartForTesting();
+    ArcSessionManagerTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerArcAlwaysStartTest);
+};
+
+TEST_F(ArcSessionManagerArcAlwaysStartTest, BaseWorkflow) {
+  // TODO(victorhsieh): Consider also tracking sign-in activity, which is
+  // initiated from the Android side.
+  EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
+
+  arc_session_manager()->SetProfile(profile());
+
+  // By default ARC is not enabled.
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  // When ARC is always started, ArcSessionManager should always be in ACTIVE
+  // state.
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->StartArcForTesting();
+
+  EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
+
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  ASSERT_TRUE(arc_session_manager()->IsSessionRunning());
 
   arc_session_manager()->Shutdown();
 }
