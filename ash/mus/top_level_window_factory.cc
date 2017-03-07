@@ -172,7 +172,8 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
 
   aura::Window* window = new aura::Window(nullptr);
   aura::SetWindowType(window, window_type);
-  window->SetProperty(aura::client::kTopLevelWindowInWM, true);
+  window->SetProperty(aura::client::kEmbedType,
+                      aura::client::WindowEmbedType::TOP_LEVEL_IN_WM);
   ApplyProperties(window, property_converter, *properties);
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(bounds);

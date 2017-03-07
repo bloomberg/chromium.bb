@@ -22,6 +22,12 @@ enum class WindowType;
 namespace aura {
 namespace client {
 
+enum class WindowEmbedType {
+  NONE,
+  EMBED_IN_OWNER,
+  TOP_LEVEL_IN_WM,
+};
+
 // Alphabetical sort.
 
 // A property key to store whether accessibility focus falls back to widget or
@@ -119,8 +125,9 @@ AURA_EXPORT extern const aura::WindowProperty<SkColor>* const kTopViewColor;
 // A property key to store the window icon, typically 16x16 for title bars.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
 
-// Set to true if this window is a top level window in the window manager.
-AURA_EXPORT extern const aura::WindowProperty<bool>* const kTopLevelWindowInWM;
+// Indicates the type of embedding within the given window.
+AURA_EXPORT extern const aura::WindowProperty<WindowEmbedType>* const
+    kEmbedType;
 
 AURA_EXPORT extern const aura::WindowProperty<ui::mojom::WindowType>* const
     kWindowTypeKey;

@@ -1890,6 +1890,8 @@ void RenderWidgetHostViewAura::CreateAuraWindow(ui::wm::WindowType type) {
   DCHECK(!window_);
   window_ = new aura::Window(this);
   window_->SetName("RenderWidgetHostViewAura");
+  window_->SetProperty(aura::client::kEmbedType,
+                       aura::client::WindowEmbedType::EMBED_IN_OWNER);
   event_handler_->set_window(window_);
   window_observer_.reset(new WindowObserver(this));
 

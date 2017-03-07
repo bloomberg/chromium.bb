@@ -28,6 +28,9 @@ enum class WindowMusType {
   // NOTE: in the client that called Embed() the window type is LOCAL.
   EMBED,
 
+  // The window is an embedded client in an owner client.
+  EMBED_IN_OWNER,
+
   // The window was created by requesting a top level
   // (WindowTree::NewTopLevel()).
   // NOTE: in the window manager (the one responsible for actually creating the

@@ -21,6 +21,8 @@ DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, void*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, SkColor)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, int32_t)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, int64_t)
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT,
+                                        aura::client::WindowEmbedType)
 
 namespace aura {
 namespace client {
@@ -40,7 +42,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kDrawAttentionKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kHostWindowKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveFullscreenKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kMirroringEnabledKey, false);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTopLevelWindowInWM, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(WindowEmbedType,
+                             kEmbedType,
+                             WindowEmbedType::NONE);
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kNameKey, nullptr);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kPreferredSize, nullptr);

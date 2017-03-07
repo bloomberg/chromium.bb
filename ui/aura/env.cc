@@ -107,10 +107,20 @@ std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
     return base::MakeUnique<WindowPortLocal>(window);
 
   DCHECK(window_tree_client_);
-  WindowMusType window_mus_type =
-      window->GetProperty(aura::client::kTopLevelWindowInWM)
-          ? WindowMusType::TOP_LEVEL_IN_WM
-          : WindowMusType::LOCAL;
+  WindowMusType window_mus_type;
+  switch (window->GetProperty(aura::client::kEmbedType)) {
+    case aura::client::WindowEmbedType::NONE:
+      window_mus_type = WindowMusType::LOCAL;
+      break;
+    case aura::client::WindowEmbedType::TOP_LEVEL_IN_WM:
+      window_mus_type = WindowMusType::TOP_LEVEL_IN_WM;
+      break;
+    case aura::client::WindowEmbedType::EMBED_IN_OWNER:
+      window_mus_type = WindowMusType::EMBED_IN_OWNER;
+      break;
+    default:
+      NOTREACHED();
+  }
   // Use LOCAL as all other cases are created by WindowTreeClient explicitly.
   return base::MakeUnique<WindowPortMus>(window_tree_client_, window_mus_type);
 }
