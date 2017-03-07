@@ -46,8 +46,7 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
     : message_center_(message_center),
       settings_provider_(std::move(settings_provider)),
       system_observer_(this),
-      stats_collector_(message_center),
-      google_now_stats_collector_(message_center) {
+      stats_collector_(message_center) {
   message_center_->AddObserver(this);
   message_center_->SetNotifierSettingsProvider(settings_provider_.get());
 

@@ -3319,8 +3319,6 @@ split_static_library("browser") {
       "notifications/extension_welcome_notification_factory.h",
       "notifications/fullscreen_notification_blocker.cc",
       "notifications/fullscreen_notification_blocker.h",
-      "notifications/google_now_notification_stats_collector.cc",
-      "notifications/google_now_notification_stats_collector.h",
       "notifications/message_center_notification_manager.cc",
       "notifications/message_center_notification_manager.h",
       "notifications/message_center_settings_controller.cc",

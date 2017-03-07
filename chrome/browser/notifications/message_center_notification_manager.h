@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/notifications/google_now_notification_stats_collector.h"
 #include "chrome/browser/notifications/message_center_stats_collector.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_system_observer.h"
@@ -108,9 +107,6 @@ class MessageCenterNotificationManager
 
   // Keeps track of all notification statistics for UMA purposes.
   MessageCenterStatsCollector stats_collector_;
-
-  // Keeps track of notifications specific to Google Now for UMA purposes.
-  GoogleNowNotificationStatsCollector google_now_stats_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
 };
