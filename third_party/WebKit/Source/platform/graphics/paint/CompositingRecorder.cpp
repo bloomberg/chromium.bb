@@ -19,27 +19,12 @@ CompositingRecorder::CompositingRecorder(GraphicsContext& graphicsContext,
                                          const FloatRect* bounds,
                                          ColorFilter colorFilter)
     : m_client(client), m_graphicsContext(graphicsContext) {
-  beginCompositing(graphicsContext, m_client, xferMode, opacity, bounds,
-                   colorFilter);
-}
-
-CompositingRecorder::~CompositingRecorder() {
-  endCompositing(m_graphicsContext, m_client);
-}
-
-void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext,
-                                           const DisplayItemClient& client,
-                                           const SkBlendMode xferMode,
-                                           const float opacity,
-                                           const FloatRect* bounds,
-                                           ColorFilter colorFilter) {
   graphicsContext.getPaintController()
-      .createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity,
+      .createAndAppend<BeginCompositingDisplayItem>(m_client, xferMode, opacity,
                                                     bounds, colorFilter);
 }
 
-void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
-                                         const DisplayItemClient& client) {
+CompositingRecorder::~CompositingRecorder() {
   // If the end of the current display list is of the form
   // [BeginCompositingDisplayItem] [DrawingDisplayItem], then fold the
   // BeginCompositingDisplayItem into a new DrawingDisplayItem that replaces
@@ -47,7 +32,7 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
   // BeginCompositingDisplayItem represents a simple opacity/color that can be
   // merged into the opacity/color of the drawing. See crbug.com/628831 for more
   // details.
-  PaintController& paintController = graphicsContext.getPaintController();
+  PaintController& paintController = m_graphicsContext.getPaintController();
   const DisplayItem* lastDisplayItem = paintController.lastDisplayItem(0);
   const DisplayItem* secondToLastDisplayItem =
       paintController.lastDisplayItem(1);
@@ -69,14 +54,14 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
       // are combined into a new drawing.
       DisableListModificationCheck disabler;
 #endif
-      DrawingRecorder newRecorder(graphicsContext, displayItemClient,
+      DrawingRecorder newRecorder(m_graphicsContext, displayItemClient,
                                   displayItemType, cullRect);
       DCHECK(!DrawingRecorder::useCachedDrawingIfPossible(
-          graphicsContext, displayItemClient, displayItemType));
+          m_graphicsContext, displayItemClient, displayItemType));
 
-      secondToLastDisplayItem->replay(graphicsContext);
-      lastDisplayItem->replay(graphicsContext);
-      EndCompositingDisplayItem(client).replay(graphicsContext);
+      secondToLastDisplayItem->replay(m_graphicsContext);
+      lastDisplayItem->replay(m_graphicsContext);
+      EndCompositingDisplayItem(m_client).replay(m_graphicsContext);
 
       // Remove the DrawingDisplayItem.
       paintController.removeLastDisplayItem();
@@ -85,8 +70,8 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
     }
     paintController.endSkippingCache();
   } else {
-    graphicsContext.getPaintController().endItem<EndCompositingDisplayItem>(
-        client);
+    m_graphicsContext.getPaintController().endItem<EndCompositingDisplayItem>(
+        m_client);
   }
 }
 

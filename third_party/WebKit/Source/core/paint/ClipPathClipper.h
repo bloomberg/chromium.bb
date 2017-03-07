@@ -6,6 +6,7 @@
 #define ClipPathClipper_h
 
 #include "platform/graphics/paint/ClipPathRecorder.h"
+#include "platform/graphics/paint/CompositingRecorder.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -33,11 +34,26 @@ class ClipPathClipper {
   bool usingMask() const { return m_clipperState == ClipperState::AppliedMask; }
 
  private:
+  // Returns false if there is a problem drawing the mask.
+  bool prepareEffect(const FloatRect& targetBoundingBox,
+                     const FloatRect& visualRect,
+                     const FloatPoint& layerPositionOffset);
+  bool drawClipAsMask(const FloatRect& targetBoundingBox,
+                      const FloatRect& targetVisualRect,
+                      const AffineTransform&,
+                      const FloatPoint&);
+  void finishEffect();
+
   LayoutSVGResourceClipper* m_resourceClipper;
-  Optional<ClipPathRecorder> m_clipPathRecorder;
   ClipperState m_clipperState;
   const LayoutObject& m_layoutObject;
   GraphicsContext& m_context;
+
+  // TODO(pdr): This pattern should be cleaned up so that the recorders are just
+  // on the stack.
+  Optional<ClipPathRecorder> m_clipPathRecorder;
+  Optional<CompositingRecorder> m_maskClipRecorder;
+  Optional<CompositingRecorder> m_maskContentRecorder;
 };
 
 }  // namespace blink

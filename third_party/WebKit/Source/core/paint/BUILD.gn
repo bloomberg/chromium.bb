@@ -132,8 +132,6 @@ blink_core_sources("paint") {
     "RootInlineBoxPainter.h",
     "RoundedInnerRectClipper.cpp",
     "RoundedInnerRectClipper.h",
-    "SVGClipPainter.cpp",
-    "SVGClipPainter.h",
     "SVGContainerPainter.cpp",
     "SVGContainerPainter.h",
     "SVGFilterPainter.cpp",

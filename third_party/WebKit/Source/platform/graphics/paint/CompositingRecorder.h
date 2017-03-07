@@ -29,16 +29,6 @@ class PLATFORM_EXPORT CompositingRecorder {
 
   ~CompositingRecorder();
 
-  // FIXME: These helpers only exist to ease the transition to slimming paint
-  //        and should be removed once slimming paint is enabled by default.
-  static void beginCompositing(GraphicsContext&,
-                               const DisplayItemClient&,
-                               const SkBlendMode,
-                               const float opacity,
-                               const FloatRect* bounds = 0,
-                               ColorFilter = ColorFilterNone);
-  static void endCompositing(GraphicsContext&, const DisplayItemClient&);
-
  private:
   const DisplayItemClient& m_client;
   GraphicsContext& m_graphicsContext;
