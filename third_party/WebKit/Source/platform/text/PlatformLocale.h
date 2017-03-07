@@ -67,7 +67,7 @@ class PLATFORM_EXPORT Locale {
   // Remove characters from |input| if a character is not included in
   // locale-specific number characters and |standardChars|.
   String stripInvalidNumberCharacters(const String& input,
-                                      const String& standardChars) const;
+                                      const String& standardChars);
 
   // Returns localized decimal separator, e.g. "." for English, "," for French.
   String localizedDecimalSeparator();

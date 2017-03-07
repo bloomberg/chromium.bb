@@ -412,7 +412,8 @@ String Locale::convertFromLocalizedNumber(const String& localized) {
 }
 
 String Locale::stripInvalidNumberCharacters(const String& input,
-                                            const String& standardChars) const {
+                                            const String& standardChars) {
+  initializeLocaleData();
   StringBuilder builder;
   builder.reserveCapacity(input.length());
   for (unsigned i = 0; i < input.length(); ++i) {
