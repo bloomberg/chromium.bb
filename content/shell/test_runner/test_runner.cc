@@ -99,7 +99,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
 
   static void Install(base::WeakPtr<TestRunner> test_runner,
                       base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
-                      WebLocalFrame* frame);
+                      WebLocalFrame* frame,
+                      bool is_web_platform_tests_mode);
 
  private:
   explicit TestRunnerBindings(
@@ -304,7 +305,8 @@ gin::WrapperInfo TestRunnerBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
 void TestRunnerBindings::Install(
     base::WeakPtr<TestRunner> test_runner,
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
-    WebLocalFrame* frame) {
+    WebLocalFrame* frame,
+    bool is_web_platform_tests_mode) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
@@ -327,6 +329,35 @@ void TestRunnerBindings::Install(
   names.push_back("layoutTestController");
   for (size_t i = 0; i < names.size(); ++i)
     global->Set(gin::StringToV8(isolate, names[i].c_str()), v8_bindings);
+
+  // The web-platform-tests suite require that reference comparison is delayed
+  // for any test with a 'reftest-wait' class on the root element, until that
+  // class attribute is removed. To support this approach, we inject some
+  // JavaScript that implements the same behavior using TestRunner.
+  //
+  // See http://web-platform-tests.org/writing-tests/reftests.html for more
+  // details about reference tests in the web-platform-tests suite.
+  if (is_web_platform_tests_mode) {
+    frame->executeScript(blink::WebString(
+        R"(window.addEventListener('load', function() {
+          if (!window.testRunner) {
+            return;
+          }
+          const target = document.documentElement;
+          if (target != null && target.classList.contains('reftest-wait')) {
+            window.testRunner.waitUntilDone();
+            const observer = new MutationObserver(function(mutations) {
+              mutations.forEach(function(mutation) {
+                if (!target.classList.contains('reftest-wait')) {
+                  window.testRunner.notifyDone();
+                }
+              });
+            });
+            const config = {attributes: true};
+            observer.observe(target, config);
+          }
+        });)"));
+  }
 }
 
 TestRunnerBindings::TestRunnerBindings(
@@ -1626,7 +1657,7 @@ void TestRunner::Install(
     WebLocalFrame* frame,
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner) {
   TestRunnerBindings::Install(weak_factory_.GetWeakPtr(), view_test_runner,
-                              frame);
+                              frame, is_web_platform_tests_mode());
 }
 
 void TestRunner::SetDelegate(WebTestDelegate* delegate) {

@@ -1871,6 +1871,7 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_cue_line.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_cue_text.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_cue_text_while_paused.html [ Failure ]
+crbug.com/698256 external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_remove_cue_while_paused.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/enable_controls_reposition.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/evil/9_cues_overlapping_completely_all_cues_have_same_timestamp.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/evil/9_cues_overlapping_completely.html [ Failure ]
