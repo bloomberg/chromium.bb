@@ -100,12 +100,16 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 
   void TearDown() override {
     event_change_handler_.reset();
+    // Dispose all contexts now so we call WillReleaseScriptContext() on the
+    // bindings system.
+    DisposeAllContexts();
 
-    for (auto* context : raw_script_contexts_) {
-      bindings_system_->WillReleaseScriptContext(context);
-      script_context_set_->Remove(context);
-    }
+    // ScriptContexts are deleted asynchronously by the ScriptContextSet, so we
+    // need spin here to ensure we don't leak. See also
+    // ScriptContextSet::Remove().
     base::RunLoop().RunUntilIdle();
+
+    ASSERT_TRUE(raw_script_contexts_.empty());
     script_context_set_.reset();
     bindings_system_.reset();
     APIBindingTest::TearDown();
@@ -145,8 +149,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     return raw_script_context;
   }
 
-  void DisposeMainScriptContext() {
-    v8::Local<v8::Context> context = ContextLocal();
+  void OnWillDisposeContext(v8::Local<v8::Context> context) override {
     auto iter =
         std::find_if(raw_script_contexts_.begin(), raw_script_contexts_.end(),
                      [context](ScriptContext* script_context) {
@@ -154,7 +157,6 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
                      });
     ASSERT_TRUE(iter != raw_script_contexts_.end());
     bindings_system_->WillReleaseScriptContext(*iter);
-    DisposeContext();
     script_context_set_->Remove(*iter);
     raw_script_contexts_.erase(iter);
   }
@@ -194,7 +196,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -296,7 +298,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -338,7 +340,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, APIObjectsAreEqual) {
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -366,7 +368,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -379,7 +381,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   ASSERT_FALSE(first_idle_object.IsEmpty());
   EXPECT_TRUE(first_idle_object->IsObject());
 
-  DisposeMainScriptContext();
+  DisposeContext(context);
 
   // Check an API that was instantiated....
   v8::Local<v8::Value> second_idle_object =
@@ -422,7 +424,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -511,7 +513,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestSendRequestHook) {
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -547,7 +549,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -599,7 +601,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   RegisterExtension(app->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, app.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -638,7 +640,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -678,7 +680,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestLastError) {
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
@@ -721,7 +723,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestCustomProperties) {
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   ScriptContext* script_context = CreateScriptContext(
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);

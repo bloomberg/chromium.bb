@@ -62,7 +62,7 @@ class APIRequestHandlerTest : public APIBindingTest {
 // response.
 TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
@@ -97,7 +97,7 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
 // Tests that trying to run non-existent or invalided requests is a no-op.
 TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
@@ -132,10 +132,8 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
 
 TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context_a = ContextLocal();
-  v8::Local<v8::Context> context_b = v8::Context::New(isolate());
-  gin::ContextHolder holder_b(isolate());
-  holder_b.SetContext(context_b);
+  v8::Local<v8::Context> context_a = MainContext();
+  v8::Local<v8::Context> context_b = AddContext();
 
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
@@ -187,7 +185,7 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
 
 TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
@@ -233,7 +231,7 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
 // Test user gestures being curried around for API requests.
 TEST_F(APIRequestHandlerTest, UserGestureTest) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),

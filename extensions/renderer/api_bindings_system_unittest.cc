@@ -122,12 +122,14 @@ class APIBindingsSystemTestBase : public APIBindingTest {
   }
 
   void TearDown() override {
-    {
-      v8::HandleScope handle_scope(isolate());
-      bindings_system_->WillReleaseContext(ContextLocal());
-    }
+    // Dispose all contexts now so that we call WillReleaseContext().
+    DisposeAllContexts();
     bindings_system_.reset();
     APIBindingTest::TearDown();
+  }
+
+  void OnWillDisposeContext(v8::Local<v8::Context> context) override {
+    bindings_system_->WillReleaseContext(context);
   }
 
   // Checks that |last_request_| exists and was provided with the
@@ -230,7 +232,7 @@ void APIBindingsSystemTest::SetUp() {
 // triggering the callback for the request.
 TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
       kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
@@ -314,7 +316,7 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
 // Tests adding a custom hook to an API.
 TEST_F(APIBindingsSystemTest, TestCustomHooks) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
@@ -370,7 +372,7 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
 // Tests the setCustomCallback hook.
 TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   const char kHook[] =
       "(function(hooks) {\n"
@@ -425,7 +427,7 @@ TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
 // Test that references to other API's types works.
 TEST_F(APIBindingsSystemTest, CrossAPIReferences) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   // Instantiate gamma API. Note: It's important that we haven't instantiated
   // alpha API yet, since this tests that we can lazily populate the type
@@ -498,7 +500,7 @@ void APIBindingsSystemTestWithRealAPI::ExecuteScriptAndExpectError(
 // actual APIs.
 TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
 
   v8::Local<v8::Object> chrome = v8::Object::New(isolate());
   {

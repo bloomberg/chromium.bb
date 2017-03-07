@@ -125,6 +125,7 @@ void APIBindingsSystem::RegisterCustomType(const std::string& type_name,
 }
 
 void APIBindingsSystem::WillReleaseContext(v8::Local<v8::Context> context) {
+  request_handler_.InvalidateContext(context);
   event_handler_.InvalidateContext(context);
 }
 

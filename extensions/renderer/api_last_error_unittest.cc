@@ -46,7 +46,7 @@ using APILastErrorTest = APIBindingTest;
 // Test basic functionality of the lastError object.
 TEST_F(APILastErrorTest, TestLastError) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
   v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
 
   ParentList parents = {{context, parent_object}};
@@ -72,7 +72,7 @@ TEST_F(APILastErrorTest, TestLastError) {
 // Test throwing an error if the last error wasn't checked.
 TEST_F(APILastErrorTest, ReportIfUnchecked) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
   v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
 
   ParentList parents = {{context, parent_object}};
@@ -103,7 +103,7 @@ TEST_F(APILastErrorTest, ReportIfUnchecked) {
 // object.
 TEST_F(APILastErrorTest, NonLastErrorObject) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Context> context = MainContext();
   v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
 
   ParentList parents = {{context, parent_object}};
@@ -137,10 +137,8 @@ TEST_F(APILastErrorTest, NonLastErrorObject) {
 // Test lastError in multiple different contexts.
 TEST_F(APILastErrorTest, MultipleContexts) {
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context_a = ContextLocal();
-  v8::Local<v8::Context> context_b = v8::Context::New(isolate());
-  gin::ContextHolder holder_b(isolate());
-  holder_b.SetContext(context_b);
+  v8::Local<v8::Context> context_a = MainContext();
+  v8::Local<v8::Context> context_b = AddContext();
 
   v8::Local<v8::Object> parent_a = v8::Object::New(isolate());
   v8::Local<v8::Object> parent_b = v8::Object::New(isolate());

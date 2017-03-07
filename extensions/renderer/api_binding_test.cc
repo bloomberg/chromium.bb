@@ -40,60 +40,100 @@ void APIBindingTest::SetUp() {
   v8::Local<v8::Context> context =
       v8::Context::New(isolate(), GetV8ExtensionConfiguration());
   context->Enter();
-  context_holder_ = base::MakeUnique<gin::ContextHolder>(isolate());
-  context_holder_->SetContext(context);
+  main_context_holder_ = base::MakeUnique<gin::ContextHolder>(isolate());
+  main_context_holder_->SetContext(context);
 }
 
 void APIBindingTest::TearDown() {
-  auto run_garbage_collection = [this]() {
-    // '5' is a magic number stolen from Blink; arbitrarily large enough to
-    // hopefully clean up all the various paths.
-    for (int i = 0; i < 5; ++i) {
-      isolate()->RequestGarbageCollectionForTesting(
-          v8::Isolate::kFullGarbageCollection);
-    }
-  };
-
-  if (context_holder_) {
-    // Check for leaks - a weak handle to a context is invalidated on context
-    // destruction, so resetting the context should reset the handle.
-    v8::Global<v8::Context> weak_context;
-    {
-      v8::HandleScope handle_scope(isolate());
-      v8::Local<v8::Context> context = ContextLocal();
-      weak_context.Reset(isolate(), context);
-      weak_context.SetWeak();
-      context->Exit();
-    }
-    context_holder_.reset();
-
-    // Garbage collect everything so that we find any issues where we might be
-    // double-freeing.
-    run_garbage_collection();
-
-    // The context should have been deleted.
-    // (ASSERT_TRUE is not used, so that Isolate::Exit is still called.)
-    EXPECT_TRUE(weak_context.IsEmpty());
+  if (main_context_holder_ || !additional_context_holders_.empty()) {
+    DisposeAllContexts();
   } else {
     // The context was already deleted (as through DisposeContext()), but we
     // still need to garbage collect.
-    run_garbage_collection();
+    RunGarbageCollection();
   }
 
   isolate()->Exit();
   isolate_holder_.reset();
 }
 
-v8::Local<v8::Context> APIBindingTest::ContextLocal() {
-  return context_holder_->context();
+void APIBindingTest::DisposeAllContexts() {
+  auto dispose_and_check_context =
+      [this](std::unique_ptr<gin::ContextHolder>& holder, bool exit) {
+        // Check for leaks - a weak handle to a context is invalidated on
+        // context destruction, so resetting the context should reset the
+        // handle.
+        v8::Global<v8::Context> weak_context;
+        {
+          v8::HandleScope handle_scope(isolate());
+          v8::Local<v8::Context> context = holder->context();
+          weak_context.Reset(isolate(), context);
+          weak_context.SetWeak();
+          OnWillDisposeContext(context);
+          if (exit)
+            context->Exit();
+        }
+        holder.reset();
+
+        // Garbage collect everything so that we find any issues where we might
+        // be double-freeing.
+        RunGarbageCollection();
+
+        // The context should have been deleted.
+        // (ASSERT_TRUE is not used, so that Isolate::Exit is still called.)
+        EXPECT_TRUE(weak_context.IsEmpty());
+      };
+
+  for (auto& context_holder : additional_context_holders_)
+    dispose_and_check_context(context_holder, false);
+  additional_context_holders_.clear();
+
+  if (main_context_holder_)
+    dispose_and_check_context(main_context_holder_, true);
 }
 
-void APIBindingTest::DisposeContext() {
-  context_holder_.reset();
+v8::Local<v8::Context> APIBindingTest::AddContext() {
+  auto holder = base::MakeUnique<gin::ContextHolder>(isolate());
+  v8::Local<v8::Context> context =
+      v8::Context::New(isolate(), GetV8ExtensionConfiguration());
+  holder->SetContext(context);
+  additional_context_holders_.push_back(std::move(holder));
+  return context;
+}
+
+v8::Local<v8::Context> APIBindingTest::MainContext() {
+  return main_context_holder_->context();
+}
+
+void APIBindingTest::DisposeContext(v8::Local<v8::Context> context) {
+  if (main_context_holder_ && context == main_context_holder_->context()) {
+    OnWillDisposeContext(context);
+    main_context_holder_.reset();
+    return;
+  }
+
+  auto iter = std::find_if(
+      additional_context_holders_.begin(), additional_context_holders_.end(),
+      [context](const std::unique_ptr<gin::ContextHolder>& holder) {
+        return holder->context() == context;
+      });
+  ASSERT_TRUE(iter != additional_context_holders_.end())
+      << "Could not find context";
+  OnWillDisposeContext(context);
+  additional_context_holders_.erase(iter);
 }
 
 v8::Isolate* APIBindingTest::isolate() {
   return isolate_holder_->isolate();
+}
+
+void APIBindingTest::RunGarbageCollection() {
+  // '5' is a magic number stolen from Blink; arbitrarily large enough to
+  // hopefully clean up all the various paths.
+  for (int i = 0; i < 5; ++i) {
+    isolate()->RequestGarbageCollectionForTesting(
+        v8::Isolate::kFullGarbageCollection);
+  }
 }
 
 }  // namespace extensions

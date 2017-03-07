@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_API_BINDING_TEST_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -34,17 +35,33 @@ class APIBindingTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  v8::Local<v8::Context> ContextLocal();
-  void DisposeContext();
+  // Returns a local to the main context.
+  v8::Local<v8::Context> MainContext();
+
+  // Creates a new context (maintaining it with a holder in
+  // |additional_context_holders_| and returns a local.
+  v8::Local<v8::Context> AddContext();
+
+  // Disposes the context pointed to by |context|.
+  void DisposeContext(v8::Local<v8::Context> context);
+
+  // Disposes all contexts and checks for leaks.
+  void DisposeAllContexts();
+
+  // Allows subclasses to perform context disposal cleanup.
+  virtual void OnWillDisposeContext(v8::Local<v8::Context> context) {}
 
   // Returns the associated isolate. Defined out-of-line to avoid the include
   // for IsolateHolder in the header.
   v8::Isolate* isolate();
 
  private:
+  void RunGarbageCollection();
+
   base::MessageLoop message_loop_;
   std::unique_ptr<gin::IsolateHolder> isolate_holder_;
-  std::unique_ptr<gin::ContextHolder> context_holder_;
+  std::unique_ptr<gin::ContextHolder> main_context_holder_;
+  std::vector<std::unique_ptr<gin::ContextHolder>> additional_context_holders_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingTest);
 };
