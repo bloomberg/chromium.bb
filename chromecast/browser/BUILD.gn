@@ -160,41 +160,42 @@ source_set("browser") {
   }
 }
 
-# HOW THIS WORKS
 # This target generates an "overlay" interface spec, allowing the Cast build to
 # declare specific behavior and requirements for the "content_browser" service.
 # This is accomplished by generating a JSON file, which is packed into
-# cast_shell.pak, and loaded at runtime. This can be used to:
+# cast_shell.pak, and loaded at runtime. This can be used to host addtional
+# interfaces in "content_browser".
 #
-# 1) Host Cast-specific embedded services in the browser process.
-#    To host an embedded service, add the service's name to the list of
-#    "packages" in this target, and add the target that generates that service's
-#    manifest to "deps", like so:
-#
-#      packages = [ "foo" ]
-#      deps = [ "//path/to/foo/service:foo_manifest" ]
-#
-#    You must also register the "foo" service with the content client. See
-#    CastContentBrowserClient::RegisterInProcessServices() for details.
-#
-#    **NOTE**
-#    If your service's manifest is in chromecast/internal, do not add it here!
-#    Instead, add the service to the internal counterpart, which is referenced
-#    below.
-#
-# 2) Host an addtional interface in "content_browser" via a ConnectionFilter.
-#    In this case, nothing need be added to this file. Add your interface to the
-#    "provides" field in cast_content_browser_manifest_overlay.json, and use
-#    CastContentBrowserClient::AddConnectionFilters() to register bindings to it
-#    for incoming connections. Remember to add the provided interfaces to the
-#    "requires" field in the manifest of the service that needs them.
-#
+# NOTE: Do not add packaged_services here! packaged_services should instead be
+# added to "cast_content_packaged_services_manifest_overlay" below or
+# its internal counterpart. Please see that target for more details.
 service_manifest("cast_content_browser_manifest_overlay") {
   source = "cast_content_browser_manifest_overlay.json"
-  packaged_services = [ "//media/mojo/services:media_manifest" ]
 
   if (chromecast_branding != "public") {
     overlays = [ "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay" ]
+  }
+}
+
+# This target is for packaged services that will run in the main (browser)
+# process. To host an embedded service, add the service's manifest target to the
+# list of "packaged_services" in this target, like so:
+#
+#   package_services += [ "//path/to/foo/service:foo_manifest" ]
+#
+# You must also register the "foo" service with the content client. See
+# CastContentBrowserClient::RegisterInProcessServices() for details.
+#
+# NOTE: If your service's manifest is in chromecast/internal, do not add it
+# here! Instead, add the service to the internal counterpart, which is
+# referenced below.
+service_manifest("cast_content_packaged_services_manifest_overlay") {
+  source = "cast_content_packaged_services_manifest_overlay.json"
+
+  packaged_services = [ "//media/mojo/services:media_manifest" ]
+
+  if (chromecast_branding != "public") {
+    overlays = [ "//chromecast/internal/shell/browser:cast_content_packaged_services_internal_manifest_overlay" ]
   }
 }
 
@@ -213,6 +214,7 @@ grit("resources") {
 
   deps = [
     ":cast_content_browser_manifest_overlay",
+    ":cast_content_packaged_services_manifest_overlay",
   ]
 }
 
