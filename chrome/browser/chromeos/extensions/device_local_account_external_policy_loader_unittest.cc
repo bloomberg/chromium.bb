@@ -265,12 +265,6 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   content::WindowedNotificationObserver(
       extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       content::NotificationService::AllSources()).Wait();
-  // Temporary solution to mimic the old behavior of
-  // WindowedNotificationObserver.
-  // TODO(https://crbug.com/695073): Likely this has to be removed, and the
-  // IsIdleForTesting check at the end of this test has to be either changed to
-  // a more specific check or removed.
-  content::RunAllPendingInMessageLoop();
 
   // Verify that the downloader is attempting to download a CRX file.
   fetcher = factory.GetFetcherByID(

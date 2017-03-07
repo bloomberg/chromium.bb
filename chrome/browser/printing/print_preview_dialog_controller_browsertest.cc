@@ -266,9 +266,6 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
-  // Load stop may occure right after the reload commits, and the dialog is
-  // destroyed in a task posted during commit. Make sure that task is executed.
-  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(dialog_destroyed_observer.dialog_destroyed());
 
   // Try printing again.
