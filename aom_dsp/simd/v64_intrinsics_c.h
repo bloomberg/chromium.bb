@@ -596,8 +596,8 @@ SIMD_INLINE c_v64 c_v64_mulhi_s16(c_v64 a, c_v64 b) {
 
 SIMD_INLINE c_v64 c_v64_mullo_s32(c_v64 a, c_v64 b) {
   c_v64 t;
-  t.s32[0] = a.s32[0] * b.s32[0];
-  t.s32[1] = a.s32[1] * b.s32[1];
+  t.s32[0] = (int32_t)((int64_t)a.s32[0] * b.s32[0]);
+  t.s32[1] = (int32_t)((int64_t)a.s32[1] * b.s32[1]);
   return t;
 }
 
