@@ -113,6 +113,8 @@ class BluetoothTestMac : public BluetoothTestBase {
  protected:
   class ScopedMockCentralManager;
 
+  // Returns MockCBPeripheral from BluetoothDevice.
+  MockCBPeripheral* GetMockCBPeripheral(BluetoothDevice* device) const;
   // Returns MockCBPeripheral from BluetoothRemoteGattService.
   MockCBPeripheral* GetMockCBPeripheral(
       BluetoothRemoteGattService* service) const;
@@ -122,6 +124,9 @@ class BluetoothTestMac : public BluetoothTestBase {
   // Returns MockCBCharacteristic from BluetoothRemoteGattCharacteristic.
   MockCBCharacteristic* GetCBMockCharacteristic(
       BluetoothRemoteGattCharacteristic* characteristic) const;
+  // Adds services in MockCBPeripheral.
+  void AddServicesToDevice(BluetoothDevice* device,
+                           const std::vector<std::string>& uuids);
 
   // Utility function for finding CBUUIDs with relatively nice SHA256 hashes.
   std::string FindCBUUIDForHashTarget();
