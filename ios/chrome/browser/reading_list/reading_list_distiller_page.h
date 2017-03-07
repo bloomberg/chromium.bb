@@ -79,6 +79,15 @@ class ReadingListDistillerPage : public dom_distiller::DistillerPageIOS {
   // triggers a navigation to it. Stop distillation of the page there as the new
   // load will trigger a new distillation.
   bool HandleGoogleCachedAMPPageJavaScriptResult(id result, id error);
+
+  // Work around the fact that articles from wikipedia has the major part of the
+  // article hidden.
+  // IsWikipediaPage determines if the current page is a wikipedia article.
+  bool IsWikipediaPage();
+  // HandleWikipediaPage sets the style of collapsable parts of article to
+  // visible.
+  void HandleWikipediaPage();
+
   // Continue the distillation on the page that is currently loaded in
   // |CurrentWebState()|.
   void ContinuePageDistillation();
