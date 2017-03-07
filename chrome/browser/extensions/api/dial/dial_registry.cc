@@ -29,18 +29,16 @@ namespace extensions {
 namespace api {
 namespace dial {
 
-DialRegistry::DialRegistry(Observer* dial_api,
-                           const base::TimeDelta& refresh_interval,
-                           const base::TimeDelta& expiration,
+DialRegistry::DialRegistry(base::TimeDelta refresh_interval,
+                           base::TimeDelta expiration,
                            const size_t max_devices)
-  : num_listeners_(0),
-    registry_generation_(0),
-    last_event_registry_generation_(0),
-    label_count_(0),
-    refresh_interval_delta_(refresh_interval),
-    expiration_delta_(expiration),
-    max_devices_(max_devices),
-    dial_api_(dial_api) {
+    : num_listeners_(0),
+      registry_generation_(0),
+      last_event_registry_generation_(0),
+      label_count_(0),
+      refresh_interval_delta_(refresh_interval),
+      expiration_delta_(expiration),
+      max_devices_(max_devices) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(max_devices_, 0U);
   NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -85,6 +83,16 @@ void DialRegistry::OnListenerRemoved() {
   }
 }
 
+void DialRegistry::RegisterObserver(Observer* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  observers_.AddObserver(observer);
+}
+
+void DialRegistry::UnregisterObserver(Observer* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  observers_.RemoveObserver(observer);
+}
+
 GURL DialRegistry::GetDeviceDescriptionURL(const std::string& label) const {
   const auto device_it = device_by_label_map_.find(label);
   if (device_it != device_by_label_map_.end())
@@ -104,16 +112,16 @@ void DialRegistry::AddDeviceForTest(const DialDeviceData& device_data) {
 
 bool DialRegistry::ReadyToDiscover() {
   if (num_listeners_ == 0) {
-    dial_api_->OnDialError(DIAL_NO_LISTENERS);
+    OnDialError(DIAL_NO_LISTENERS);
     return false;
   }
   if (NetworkChangeNotifier::IsOffline()) {
-    dial_api_->OnDialError(DIAL_NETWORK_DISCONNECTED);
+    OnDialError(DIAL_NETWORK_DISCONNECTED);
     return false;
   }
   if (NetworkChangeNotifier::IsConnectionCellular(
           NetworkChangeNotifier::GetConnectionType())) {
-    dial_api_->OnDialError(DIAL_CELLULAR_NETWORK);
+    OnDialError(DIAL_CELLULAR_NETWORK);
     return false;
   }
   return true;
@@ -125,7 +133,7 @@ bool DialRegistry::DiscoverNow() {
     return false;
   }
   if (!dial_) {
-    dial_api_->OnDialError(DIAL_UNKNOWN);
+    OnDialError(DIAL_UNKNOWN);
     return false;
   }
 
@@ -235,7 +243,7 @@ void DialRegistry::SendEvent() {
        it != device_by_label_map_.end(); ++it) {
     device_list.push_back(*(it->second));
   }
-  dial_api_->OnDialDeviceEvent(device_list);
+  OnDialDeviceEvent(device_list);
 
   // Reset watermark.
   last_event_registry_generation_ = registry_generation_;
@@ -310,14 +318,14 @@ void DialRegistry::OnError(DialService* service,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (code) {
     case DialService::DIAL_SERVICE_SOCKET_ERROR:
-      dial_api_->OnDialError(DIAL_SOCKET_ERROR);
+      OnDialError(DIAL_SOCKET_ERROR);
       break;
     case DialService::DIAL_SERVICE_NO_INTERFACES:
-      dial_api_->OnDialError(DIAL_NO_INTERFACES);
+      OnDialError(DIAL_NO_INTERFACES);
       break;
     default:
       NOTREACHED();
-      dial_api_->OnDialError(DIAL_UNKNOWN);
+      OnDialError(DIAL_UNKNOWN);
       break;
   }
 }
@@ -329,7 +337,7 @@ void DialRegistry::OnNetworkChanged(
       if (dial_) {
         VLOG(2) << "Lost connection, shutting down discovery and clearing"
                 << " list.";
-        dial_api_->OnDialError(DIAL_NETWORK_DISCONNECTED);
+        OnDialError(DIAL_NETWORK_DISCONNECTED);
 
         StopPeriodicDiscovery();
         // TODO(justinlin): As an optimization, we can probably keep our device
@@ -352,6 +360,16 @@ void DialRegistry::OnNetworkChanged(
       }
       break;
   }
+}
+
+void DialRegistry::OnDialDeviceEvent(const DeviceList& devices) {
+  for (auto& observer : observers_)
+    observer.OnDialDeviceEvent(devices);
+}
+
+void DialRegistry::OnDialError(DialErrorCode type) {
+  for (auto& observer : observers_)
+    observer.OnDialError(type);
 }
 
 }  // namespace dial

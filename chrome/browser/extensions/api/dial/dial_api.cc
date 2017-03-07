@@ -56,8 +56,9 @@ DialRegistry* DialAPI::dial_registry() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!dial_registry_.get()) {
     dial_registry_.reset(new DialRegistry(
-        this, TimeDelta::FromSeconds(kDialRefreshIntervalSecs),
+        TimeDelta::FromSeconds(kDialRefreshIntervalSecs),
         TimeDelta::FromSeconds(kDialExpirationSecs), kDialMaxDevices));
+    dial_registry_->RegisterObserver(this);
     if (test_device_data_) {
       dial_registry_->AddDeviceForTest(*test_device_data_);
     }
@@ -230,7 +231,7 @@ void DialFetchDeviceDescriptionFunction::MaybeStartFetch(const GURL& url) {
   }
 
   device_description_fetcher_ = base::MakeUnique<DeviceDescriptionFetcher>(
-      url, Profile::FromBrowserContext(browser_context()),
+      url, Profile::FromBrowserContext(browser_context())->GetRequestContext(),
       base::BindOnce(&DialFetchDeviceDescriptionFunction::OnFetchComplete,
                      this),
       base::BindOnce(&DialFetchDeviceDescriptionFunction::OnFetchError, this));

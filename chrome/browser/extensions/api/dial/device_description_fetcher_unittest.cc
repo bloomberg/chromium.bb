@@ -47,7 +47,8 @@ class DeviceDescriptionFetcherTest : public testing::Test {
 
   net::TestURLFetcher* StartRequest() {
     fetcher_ = base::MakeUnique<DeviceDescriptionFetcher>(
-        url_, &profile_, std::move(success_cb_), std::move(error_cb_));
+        url_, profile_.GetRequestContext(), std::move(success_cb_),
+        std::move(error_cb_));
     fetcher_->Start();
     return factory_.GetFetcherByID(
         DeviceDescriptionFetcher::kURLFetcherIDForTest);

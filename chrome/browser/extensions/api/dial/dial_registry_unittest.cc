@@ -46,11 +46,10 @@ class MockDialService : public DialService {
 
 class MockDialRegistry : public DialRegistry {
  public:
-  MockDialRegistry(Observer* dial_api,
-                   const base::TimeDelta& refresh_interval,
+  MockDialRegistry(const base::TimeDelta& refresh_interval,
                    const base::TimeDelta& expiration,
                    const size_t max_devices)
-      : DialRegistry(dial_api, refresh_interval, expiration, max_devices),
+      : DialRegistry(refresh_interval, expiration, max_devices),
         time_(Time::Now()) {}
 
   ~MockDialRegistry() override {
@@ -94,8 +93,8 @@ class DialRegistryTest : public testing::Test {
         second_device_("second", GURL("http://127.0.0.2/dd.xml"), Time::Now()),
         third_device_("third", GURL("http://127.0.0.3/dd.xml"), Time::Now()) {
     registry_ = base::MakeUnique<MockDialRegistry>(
-        &mock_observer_, TimeDelta::FromSeconds(1000),
-        TimeDelta::FromSeconds(10), 10);
+        TimeDelta::FromSeconds(1000), TimeDelta::FromSeconds(10), 10);
+    registry_->RegisterObserver(&mock_observer_);
     list_with_first_device_.push_back(first_device_);
     list_with_second_device_.push_back(second_device_);
   }

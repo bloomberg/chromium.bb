@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/dial/dial_service.h"
@@ -57,9 +58,8 @@ class DialRegistry : public DialService::Observer,
 
   // Create the DIAL registry and pass a reference to allow it to notify on
   // DIAL device events.
-  DialRegistry(Observer* dial_api,
-               const base::TimeDelta& refresh_interval,
-               const base::TimeDelta& expiration,
+  DialRegistry(base::TimeDelta refresh_interval,
+               base::TimeDelta expiration,
                const size_t max_devices);
 
   ~DialRegistry() override;
@@ -69,6 +69,10 @@ class DialRegistry : public DialService::Observer,
   // last listener is removed.
   void OnListenerAdded();
   void OnListenerRemoved();
+
+  // This class does not take ownership of observer.
+  void RegisterObserver(Observer* observer);
+  void UnregisterObserver(Observer* observer);
 
   // Called by the DIAL API to try to kickoff a discovery if there is not one
   // already active.
@@ -110,6 +114,10 @@ class DialRegistry : public DialService::Observer,
   // net::NetworkChangeObserver:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // Notify all observers about DialDeviceEvent or DialError.
+  void OnDialDeviceEvent(const DeviceList& devices);
+  void OnDialError(DialErrorCode type);
 
   // Starts and stops periodic discovery.  Periodic discovery is done when there
   // are registered event listeners.
@@ -178,7 +186,7 @@ class DialRegistry : public DialService::Observer,
 
   // Interface from which the DIAL API is notified of DIAL device events. the
   // DIAL API owns this DIAL registry.
-  Observer* const dial_api_;
+  base::ObserverList<Observer> observers_;
 
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestAddRemoveListeners);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestNoDevicesDiscovered);
