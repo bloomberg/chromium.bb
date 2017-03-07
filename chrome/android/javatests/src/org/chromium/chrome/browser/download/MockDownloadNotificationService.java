@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import android.app.Notification;
 import android.content.Context;
+import android.util.Pair;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
@@ -53,6 +54,10 @@ public class MockDownloadNotificationService extends DownloadNotificationService
 
         return !mNotificationIds.isEmpty();
     }
+
+    @Override
+    void updateSummaryIcon(
+            int removedNotificationId, Pair<Integer, Notification> addedNotification) {}
 
     @Override
     void cancelSummaryNotification() {}

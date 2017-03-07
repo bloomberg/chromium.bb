@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.media.session.MediaSession;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.widget.RemoteViews;
 
@@ -88,6 +89,14 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     public ChromeNotificationBuilder setGroupSummary(boolean isGroupSummary) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
             mBuilder.setGroupSummary(isGroupSummary);
+        }
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder addExtras(Bundle extras) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            mBuilder.addExtras(extras);
         }
         return this;
     }

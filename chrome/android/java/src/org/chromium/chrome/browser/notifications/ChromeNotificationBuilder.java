@@ -8,6 +8,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
+import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.widget.RemoteViews;
 
@@ -36,6 +37,8 @@ public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setGroup(String group);
 
     ChromeNotificationBuilder setGroupSummary(boolean isGroupSummary);
+
+    ChromeNotificationBuilder addExtras(Bundle extras);
 
     ChromeNotificationBuilder setOngoing(boolean ongoing);
 
