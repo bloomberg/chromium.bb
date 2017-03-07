@@ -58,7 +58,7 @@
             disabled="[[!prefs.settings.enable_stylus_tools.value]]"
             on-change="onSelectedAppChanged_">
           <template is="dom-repeat" items="[[appChoices_]]">
-            <option value="[[item.value]]" selected$="[[item.preferred]]">
+            <option value="[[item.value]]" selected="[[item.preferred]]">
               [[item.name]]
             </option>
           </template>

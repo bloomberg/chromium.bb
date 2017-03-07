@@ -172,7 +172,7 @@
                 on-change="onZoomLevelChange_">
               <template is="dom-repeat" items="[[pageZoomLevels_]]">
                 <option value="[[item]]"
-                    selected$="[[zoomValuesEqual_(item, defaultZoom_)]]">
+                    selected="[[zoomValuesEqual_(item, defaultZoom_)]]">
                   [[formatZoom_(item)]]%
                 </option>
               </template>
