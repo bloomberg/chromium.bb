@@ -783,22 +783,17 @@ void Surface::UpdateSurface(bool full_damage) {
                           1.f / scaled_buffer_size.height());
   }
 
-  gfx::Rect damage_rect;
-  gfx::Rect output_rect = gfx::Rect(contents_surface_size);
-  if (full_damage) {
-    damage_rect = output_rect;
-  } else {
-    // pending_damage_ is in Surface coordinates.
-    gfx::Rect damage_rect = gfx::SkIRectToRect(pending_damage_.getBounds());
-    damage_rect.Intersect(output_rect);
-  }
+  // pending_damage_ is in Surface coordinates.
+  gfx::Rect damage_rect = full_damage
+                              ? gfx::Rect(contents_surface_size)
+                              : gfx::SkIRectToRect(pending_damage_.getBounds());
 
   const int kRenderPassId = 1;
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetNew(kRenderPassId, output_rect, damage_rect,
-                      gfx::Transform());
+  render_pass->SetNew(kRenderPassId, gfx::Rect(contents_surface_size),
+                      damage_rect, gfx::Transform());
 
-  gfx::Rect quad_rect = output_rect;
+  gfx::Rect quad_rect = gfx::Rect(contents_surface_size);
   cc::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->quad_layer_bounds = contents_surface_size;

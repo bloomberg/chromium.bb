@@ -75,10 +75,6 @@ TEST_F(SurfaceTest, Damage) {
   EXPECT_TRUE(surface->HasPendingDamageForTesting(gfx::Rect(0, 0, 10, 10)));
   EXPECT_TRUE(surface->HasPendingDamageForTesting(gfx::Rect(10, 10, 10, 10)));
   EXPECT_FALSE(surface->HasPendingDamageForTesting(gfx::Rect(5, 5, 10, 10)));
-
-  // Check that damage larger than contents is handled correctly at commit.
-  surface->Damage(gfx::Rect(gfx::ScaleToCeiledSize(buffer_size, 2.0f)));
-  surface->Commit();
 }
 
 void SetFrameTime(base::TimeTicks* result, base::TimeTicks frame_time) {
