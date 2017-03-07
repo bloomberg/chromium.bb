@@ -352,25 +352,36 @@ bool WindowTree::DeleteWindow(const ClientWindowId& window_id) {
   return tree && tree->DeleteWindowImpl(this, window);
 }
 
-bool WindowTree::SetModal(const ClientWindowId& window_id) {
+bool WindowTree::SetModalType(const ClientWindowId& window_id,
+                              ModalType modal_type) {
   ServerWindow* window = GetWindowByClientId(window_id);
-  if (window && access_policy_->CanSetModal(window)) {
-    WindowManagerDisplayRoot* display_root =
-        GetWindowManagerDisplayRoot(window);
-    if (window->transient_parent()) {
-      window->SetModal();
-    } else if (user_id_ != InvalidUserId()) {
-      if (display_root)
-        display_root->window_manager_state()->AddSystemModalWindow(window);
-    } else {
-      return false;
-    }
-    if (display_root)
-      display_root->window_manager_state()->ReleaseCaptureBlockedByModalWindow(
-          window);
+  if (!window || !access_policy_->CanSetModal(window))
+    return false;
+
+  if (window->modal_type() == modal_type)
     return true;
+
+  // TODO(moshayedi): crbug.com/697176. When modality of a window that used to
+  // be a system modal changes, notify window manager state.
+  auto* display_root = GetWindowManagerDisplayRoot(window);
+  switch (modal_type) {
+    case MODAL_TYPE_SYSTEM:
+      if (user_id_ == InvalidUserId() || !display_root)
+        return false;
+      window->SetModalType(modal_type);
+      display_root->window_manager_state()->AddSystemModalWindow(window);
+      break;
+    case MODAL_TYPE_NONE:
+    case MODAL_TYPE_WINDOW:
+    case MODAL_TYPE_CHILD:
+      window->SetModalType(modal_type);
+      break;
   }
-  return false;
+  if (display_root && modal_type != MODAL_TYPE_NONE) {
+    display_root->window_manager_state()->ReleaseCaptureBlockedByModalWindow(
+        window);
+  }
+  return true;
 }
 
 std::vector<const ServerWindow*> WindowTree::GetWindowTree(
@@ -1281,8 +1292,11 @@ void WindowTree::RemoveTransientWindowFromParent(uint32_t change_id,
   client()->OnChangeCompleted(change_id, success);
 }
 
-void WindowTree::SetModal(uint32_t change_id, Id window_id) {
-  client()->OnChangeCompleted(change_id, SetModal(ClientWindowId(window_id)));
+void WindowTree::SetModalType(uint32_t change_id,
+                              Id window_id,
+                              ModalType modal_type) {
+  client()->OnChangeCompleted(
+      change_id, SetModalType(ClientWindowId(window_id), modal_type));
 }
 
 void WindowTree::ReorderWindow(uint32_t change_id,

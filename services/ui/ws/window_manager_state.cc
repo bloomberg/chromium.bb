@@ -209,7 +209,6 @@ void WindowManagerState::EndDragDrop() {
 }
 
 void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
-  DCHECK(!window->transient_parent());
   event_dispatcher_.AddSystemModalWindow(window);
 }
 

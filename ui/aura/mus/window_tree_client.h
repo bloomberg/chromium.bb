@@ -233,7 +233,9 @@ class AURA_EXPORT WindowTreeClient
 
   // Called when a Window property changes. If |key| is handled internally
   // (maps to a function on WindowTree) returns true.
-  bool HandleInternalPropertyChanged(WindowMus* window, const void* key);
+  bool HandleInternalPropertyChanged(WindowMus* window,
+                                     const void* key,
+                                     int64_t old_value);
 
   // OnEmbed() calls into this. Exposed as a separate function for testing.
   void OnEmbedImpl(ui::mojom::WindowTree* window_tree,
@@ -281,6 +283,7 @@ class AURA_EXPORT WindowTreeClient
       const void* key);
   void OnWindowMusPropertyChanged(WindowMus* window,
                                   const void* key,
+                                  int64_t old_value,
                                   std::unique_ptr<ui::PropertyData> data);
 
   // Callback passed from WmPerformMoveLoop().

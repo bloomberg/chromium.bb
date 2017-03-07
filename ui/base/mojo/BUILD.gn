@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo_bindings") {
   sources = [
+    "ui_base_types.mojom",
     "window_open_disposition.mojom",
   ]
 }

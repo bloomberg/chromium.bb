@@ -231,18 +231,25 @@ void InFlightOpacityChange::Revert() {
   window()->SetOpacityFromServer(revert_opacity_);
 }
 
-// InFlightSetModalChange ------------------------------------------------------
+// InFlightSetModalTypeChange
+// ------------------------------------------------------
 
-InFlightSetModalChange::InFlightSetModalChange(WindowMus* window)
-    : InFlightChange(window, ChangeType::SET_MODAL) {}
+InFlightSetModalTypeChange::InFlightSetModalTypeChange(
+    WindowMus* window,
+    ui::ModalType revert_value)
+    : InFlightChange(window, ChangeType::SET_MODAL),
+      revert_modal_type_(revert_value) {}
 
-InFlightSetModalChange::~InFlightSetModalChange() {}
+InFlightSetModalTypeChange::~InFlightSetModalTypeChange() {}
 
-void InFlightSetModalChange::SetRevertValueFrom(const InFlightChange& change) {}
+void InFlightSetModalTypeChange::SetRevertValueFrom(
+    const InFlightChange& change) {
+  revert_modal_type_ =
+      static_cast<const InFlightSetModalTypeChange&>(change).revert_modal_type_;
+}
 
-void InFlightSetModalChange::Revert() {
-  // TODO: need to support more than just off. http://crbug.com/660073.
-  window()->GetWindow()->SetProperty(client::kModalKey, ui::MODAL_TYPE_NONE);
+void InFlightSetModalTypeChange::Revert() {
+  window()->GetWindow()->SetProperty(client::kModalKey, revert_modal_type_);
 }
 
 }  // namespace aura

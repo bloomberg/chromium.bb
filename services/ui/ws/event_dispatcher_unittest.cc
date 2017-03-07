@@ -1375,7 +1375,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalParent) {
   w2->SetBounds(gfx::Rect(50, 10, 10, 10));
 
   w1->AddTransientWindow(w2.get());
-  w2->SetModal();
+  w2->SetModalType(MODAL_TYPE_WINDOW);
 
   // Send event that is over |w1|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
@@ -1408,7 +1408,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalChild) {
   w2->SetBounds(gfx::Rect(50, 10, 10, 10));
 
   w1->AddTransientWindow(w2.get());
-  w2->SetModal();
+  w2->SetModalType(MODAL_TYPE_WINDOW);
 
   // Send event that is over |w2|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
@@ -1444,7 +1444,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnUnrelatedWindow) {
   w3->SetBounds(gfx::Rect(70, 10, 10, 10));
 
   w1->AddTransientWindow(w2.get());
-  w2->SetModal();
+  w2->SetModalType(MODAL_TYPE_WINDOW);
 
   // Send event that is over |w3|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
@@ -1481,7 +1481,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
   w2->SetBounds(gfx::Rect(50, 10, 10, 10));
 
   w1->AddTransientWindow(w2.get());
-  w2->SetModal();
+  w2->SetModalType(MODAL_TYPE_WINDOW);
 
   // Send event that is over |w11|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
@@ -1510,7 +1510,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnSystemModal) {
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
-  w1->SetModal();
+  w1->SetModalType(MODAL_TYPE_SYSTEM);
 
   // Send event that is over |w1|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
@@ -1539,7 +1539,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
-  w1->SetModal();
+  w1->SetModalType(MODAL_TYPE_SYSTEM);
   event_dispatcher()->AddSystemModalWindow(w1.get());
 
   // Send event that is over |w1|.
@@ -1576,7 +1576,7 @@ TEST_F(EventDispatcherTest, ModalWindowSetCaptureDescendantOfModalParent) {
   w2->SetBounds(gfx::Rect(50, 10, 10, 10));
 
   w1->AddTransientWindow(w2.get());
-  w2->SetModal();
+  w2->SetModalType(MODAL_TYPE_WINDOW);
 
   EXPECT_FALSE(event_dispatcher()->SetCaptureWindow(w11.get(), kClientAreaId));
   EXPECT_EQ(nullptr, event_dispatcher()->capture_window());
@@ -1594,7 +1594,7 @@ TEST_F(EventDispatcherTest, ModalWindowSetCaptureUnrelatedWindow) {
   w3->SetBounds(gfx::Rect(70, 10, 10, 10));
 
   w1->AddTransientWindow(w2.get());
-  w2->SetModal();
+  w2->SetModalType(MODAL_TYPE_WINDOW);
 
   EXPECT_TRUE(event_dispatcher()->SetCaptureWindow(w3.get(), kClientAreaId));
   EXPECT_EQ(w3.get(), event_dispatcher()->capture_window());

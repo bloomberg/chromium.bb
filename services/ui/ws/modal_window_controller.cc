@@ -18,7 +18,8 @@ const ServerWindow* GetModalChildForWindowAncestor(const ServerWindow* window) {
   for (const ServerWindow* ancestor = window; ancestor;
        ancestor = ancestor->parent()) {
     for (auto* transient_child : ancestor->transient_children()) {
-      if (transient_child->is_modal() && transient_child->IsDrawn())
+      if (transient_child->modal_type() != MODAL_TYPE_NONE &&
+          transient_child->IsDrawn())
         return transient_child;
     }
   }
@@ -48,7 +49,7 @@ void ModalWindowController::AddSystemModalWindow(ServerWindow* window) {
   DCHECK(window);
   DCHECK(!base::ContainsValue(system_modal_windows_, window));
 
-  window->SetModal();
+  window->SetModalType(ui::MODAL_TYPE_SYSTEM);
   system_modal_windows_.push_back(window);
   window_drawn_trackers_.insert(make_pair(
       window, base::MakeUnique<ServerWindowDrawnTracker>(window, this)));
@@ -62,8 +63,10 @@ bool ModalWindowController::IsWindowBlockedBy(
     const ServerWindow* modal_window) const {
   DCHECK(window);
   DCHECK(modal_window);
-  if (!modal_window->is_modal() || !modal_window->IsDrawn())
+  if (modal_window->modal_type() == MODAL_TYPE_NONE ||
+      !modal_window->IsDrawn()) {
     return false;
+  }
 
   if (modal_window->transient_parent() &&
       !modal_window->transient_parent()->Contains(window)) {
@@ -80,6 +83,8 @@ bool ModalWindowController::IsWindowBlocked(const ServerWindow* window) const {
 
 const ServerWindow* ModalWindowController::GetTargetForWindow(
     const ServerWindow* window) const {
+  // TODO(moshayedi): crbug.com/697127. Handle windows which are modal to
+  // children of their transient parent.
   ServerWindow* system_modal_window = GetActiveSystemModalWindow();
   if (system_modal_window)
     return system_modal_window;

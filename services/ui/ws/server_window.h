@@ -137,8 +137,8 @@ class ServerWindow {
 
   const Windows& transient_children() const { return transient_children_; }
 
-  bool is_modal() const { return is_modal_; }
-  void SetModal();
+  ModalType modal_type() const { return modal_type_; }
+  void SetModalType(ModalType modal_type);
 
   // Returns true if this contains |window| or is |window|.
   bool Contains(const ServerWindow* window) const;
@@ -245,7 +245,7 @@ class ServerWindow {
   ServerWindow* transient_parent_;
   Windows transient_children_;
 
-  bool is_modal_;
+  ModalType modal_type_;
   bool visible_;
   gfx::Rect bounds_;
   gfx::Insets client_area_;

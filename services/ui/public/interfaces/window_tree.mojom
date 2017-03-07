@@ -13,6 +13,7 @@ import "services/ui/public/interfaces/mus_constants.mojom";
 import "services/ui/public/interfaces/window_manager.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
+import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/platform_window/mojo/text_input_state.mojom";
@@ -179,13 +180,11 @@ interface WindowTree {
   // This does not change transient window's position in the window hierarchy.
   RemoveTransientWindowFromParent(uint32 change_id, uint32 transient_window_id);
 
-  // Sets |window_id| to be modal. If the window has a transient parent, then
-  // the window is modal to the transient parent. Otherwise, the window is modal
-  // to the system. This releases capture if necessary.
+  // Changes modality type of |window_id|. This releases capture if necessary.
   // This fails for any of the following reasons:
   // . |window_id| does not identify a valid window.
   // . Client does not have a valid user id (i.e., it is an embedded app).
-  SetModal(uint32 change_id, uint32 window_id);
+  SetModalType(uint32 change_id, uint32 window_id, ModalType type);
 
   // Reorders a window in its parent, relative to |relative_window_id| according
   // to |direction|. Only the connection that created the window's parent can

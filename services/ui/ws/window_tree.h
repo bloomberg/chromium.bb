@@ -173,7 +173,7 @@ class WindowTree : public mojom::WindowTree,
   bool AddTransientWindow(const ClientWindowId& window_id,
                           const ClientWindowId& transient_window_id);
   bool DeleteWindow(const ClientWindowId& window_id);
-  bool SetModal(const ClientWindowId& window_id);
+  bool SetModalType(const ClientWindowId& window_id, ModalType modal_type);
   std::vector<const ServerWindow*> GetWindowTree(
       const ClientWindowId& window_id) const;
   bool SetWindowVisibility(const ClientWindowId& window_id, bool visible);
@@ -391,7 +391,7 @@ class WindowTree : public mojom::WindowTree,
                           Id transient_window) override;
   void RemoveTransientWindowFromParent(uint32_t change_id,
                                        Id transient_window_id) override;
-  void SetModal(uint32_t change_id, Id window_id) override;
+  void SetModalType(uint32_t change_id, Id window_id, ModalType type) override;
   void ReorderWindow(uint32_t change_Id,
                      Id window_id,
                      Id relative_window_id,

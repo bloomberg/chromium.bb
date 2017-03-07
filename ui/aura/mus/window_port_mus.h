@@ -234,6 +234,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   std::unique_ptr<ui::PropertyData> OnWillChangeProperty(
       const void* key) override;
   void OnPropertyChanged(const void* key,
+                         int64_t old_value,
                          std::unique_ptr<ui::PropertyData> data) override;
 
   WindowTreeClient* window_tree_client_;

@@ -150,7 +150,9 @@ class TestWindowTree : public ui::mojom::WindowTree {
                           uint32_t transient_window_id) override;
   void RemoveTransientWindowFromParent(uint32_t change_id,
                                        uint32_t window_id) override;
-  void SetModal(uint32_t change_id, uint32_t window_id) override;
+  void SetModalType(uint32_t change_id,
+                    uint32_t window_id,
+                    ui::ModalType modal_type) override;
   void ReorderWindow(uint32_t change_id,
                      uint32_t window_id,
                      uint32_t relative_window_id,

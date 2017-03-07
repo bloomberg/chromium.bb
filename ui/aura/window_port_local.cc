@@ -86,6 +86,7 @@ std::unique_ptr<ui::PropertyData> WindowPortLocal::OnWillChangeProperty(
 
 void WindowPortLocal::OnPropertyChanged(
     const void* key,
+    int64_t old_value,
     std::unique_ptr<ui::PropertyData> data) {}
 
 }  // namespace aura

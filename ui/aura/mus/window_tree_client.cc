@@ -483,22 +483,16 @@ void WindowTreeClient::OnConnectionLost() {
 }
 
 bool WindowTreeClient::HandleInternalPropertyChanged(WindowMus* window,
-                                                     const void* key) {
+                                                     const void* key,
+                                                     int64_t old_value) {
   if (key != client::kModalKey)
     return false;
 
-  if (window->GetWindow()->GetProperty(client::kModalKey) ==
-      ui::MODAL_TYPE_NONE) {
-    // TODO: shouldn't early return, but explicitly tell server to turn off
-    // modality. http://crbug.com/660073.
-    return true;
-  }
-
   const uint32_t change_id =
-      ScheduleInFlightChange(base::MakeUnique<InFlightSetModalChange>(window));
-  // TODO: this is subtly different that explicitly specifying a type.
-  // http://crbug.com/660073.
-  tree_->SetModal(change_id, window->server_id());
+      ScheduleInFlightChange(base::MakeUnique<InFlightSetModalTypeChange>(
+          window, static_cast<ui::ModalType>(old_value)));
+  tree_->SetModalType(change_id, window->server_id(),
+                      window->GetWindow()->GetProperty(client::kModalKey));
   return true;
 }
 
@@ -739,8 +733,9 @@ WindowTreeClient::OnWindowMusWillChangeProperty(WindowMus* window,
 void WindowTreeClient::OnWindowMusPropertyChanged(
     WindowMus* window,
     const void* key,
+    int64_t old_value,
     std::unique_ptr<ui::PropertyData> data) {
-  if (HandleInternalPropertyChanged(window, key) || !data)
+  if (HandleInternalPropertyChanged(window, key, old_value) || !data)
     return;
 
   WindowPortPropertyDataMus* data_mus =

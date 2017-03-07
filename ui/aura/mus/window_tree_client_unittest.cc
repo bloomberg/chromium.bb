@@ -1748,7 +1748,7 @@ TEST_F(WindowTreeClientClientTest, TwoWindowTreesRequestCapture) {
   capture_client.reset();
 }
 
-TEST_F(WindowTreeClientClientTest, ModalFail) {
+TEST_F(WindowTreeClientClientTest, ModalTypeWindowFail) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetProperty(client::kModalKey, ui::MODAL_TYPE_WINDOW);
@@ -1758,19 +1758,51 @@ TEST_F(WindowTreeClientClientTest, ModalFail) {
   // Type should be back to MODAL_TYPE_NONE as the server didn't accept the
   // change.
   EXPECT_EQ(ui::MODAL_TYPE_NONE, window.GetProperty(client::kModalKey));
-  // There should be no more modal changes.
-  EXPECT_FALSE(
-      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, false));
+  // Server is told that the type is set back to MODAL_TYPE_NONE.
+  EXPECT_TRUE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, true));
+  // Type should still remain MODAL_TYPE_NONE.
+  EXPECT_EQ(ui::MODAL_TYPE_NONE, window.GetProperty(client::kModalKey));
 }
 
-TEST_F(WindowTreeClientClientTest, ModalSuccess) {
+TEST_F(WindowTreeClientClientTest, ModalTypeNoneFail) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
+  // First, set modality type to window sucessfully.
   window.SetProperty(client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  // Ack change as succeeding.
   ASSERT_TRUE(
       window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, true));
   EXPECT_EQ(ui::MODAL_TYPE_WINDOW, window.GetProperty(client::kModalKey));
+  // Now, set type to MODAL_TYPE_NONE, and have the server say it failed.
+  window.SetProperty(client::kModalKey, ui::MODAL_TYPE_NONE);
+  ASSERT_TRUE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, false));
+  // Type should be back to MODAL_TYPE_WINDOW as the server didn't accept the
+  // change.
+  EXPECT_EQ(ui::MODAL_TYPE_WINDOW, window.GetProperty(client::kModalKey));
+  // Server is told that the type is set back to MODAL_TYPE_WINDOW.
+  EXPECT_TRUE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, true));
+  // Type should still remain MODAL_TYPE_WINDOW.
+  EXPECT_EQ(ui::MODAL_TYPE_WINDOW, window.GetProperty(client::kModalKey));
+}
+
+TEST_F(WindowTreeClientClientTest, ModalTypeSuccess) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+
+  // Set modality type to MODAL_TYPE_WINDOW, MODAL_TYPE_SYSTEM, and then back to
+  // MODAL_TYPE_NONE, and make sure it succeeds each time.
+  ui::ModalType kModalTypes[] = {ui::MODAL_TYPE_WINDOW, ui::MODAL_TYPE_SYSTEM,
+                                 ui::MODAL_TYPE_NONE};
+  for (size_t i = 0; i < arraysize(kModalTypes); i++) {
+    window.SetProperty(client::kModalKey, kModalTypes[i]);
+    // Ack change as succeeding.
+    ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
+        WindowTreeChangeType::MODAL, true));
+    EXPECT_EQ(kModalTypes[i], window.GetProperty(client::kModalKey));
+  }
+
   // There should be no more modal changes.
   EXPECT_FALSE(
       window_tree()->AckSingleChangeOfType(WindowTreeChangeType::MODAL, false));

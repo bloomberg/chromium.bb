@@ -430,9 +430,9 @@ std::unique_ptr<ui::PropertyData> WindowPortMus::OnWillChangeProperty(
   return window_tree_client_->OnWindowMusWillChangeProperty(this, key);
 }
 
-void WindowPortMus::OnPropertyChanged(
-    const void* key,
-    std::unique_ptr<ui::PropertyData> data) {
+void WindowPortMus::OnPropertyChanged(const void* key,
+                                      int64_t old_value,
+                                      std::unique_ptr<ui::PropertyData> data) {
   // See comment in OnWillChangeProperty() as to why |window_| may be null.
   if (!window_)
     return;
@@ -444,7 +444,8 @@ void WindowPortMus::OnPropertyChanged(
   // we ever have a case where changing a property cascades into changing the
   // same property?
   if (!RemoveChangeByTypeAndData(ServerChangeType::PROPERTY, change_data))
-    window_tree_client_->OnWindowMusPropertyChanged(this, key, std::move(data));
+    window_tree_client_->OnWindowMusPropertyChanged(this, key, old_value,
+                                                    std::move(data));
 }
 
 }  // namespace aura

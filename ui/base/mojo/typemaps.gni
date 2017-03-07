@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//ui/base/mojo/window_open_disposition.typemap" ]
+typemaps = [
+  "//ui/base/mojo/ui_base_types.typemap",
+  "//ui/base/mojo/window_open_disposition.typemap",
+]

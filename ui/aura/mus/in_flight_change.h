@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -313,17 +314,19 @@ class InFlightOpacityChange : public InFlightChange {
   DISALLOW_COPY_AND_ASSIGN(InFlightOpacityChange);
 };
 
-class InFlightSetModalChange : public InFlightChange {
+class InFlightSetModalTypeChange : public InFlightChange {
  public:
-  explicit InFlightSetModalChange(WindowMus* window);
-  ~InFlightSetModalChange() override;
+  InFlightSetModalTypeChange(WindowMus* window, ui::ModalType revert_value);
+  ~InFlightSetModalTypeChange() override;
 
   // InFlightChange:
   void SetRevertValueFrom(const InFlightChange& change) override;
   void Revert() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InFlightSetModalChange);
+  ui::ModalType revert_modal_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(InFlightSetModalTypeChange);
 };
 
 }  // namespace aura

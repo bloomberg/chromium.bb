@@ -66,9 +66,9 @@ class AURA_EXPORT WindowPort {
 
   // Called after a property changes, but before observers are notified. |data|
   // is the return value from OnWillChangeProperty().
-  virtual void OnPropertyChanged(
-      const void* key,
-      std::unique_ptr<ui::PropertyData> data) = 0;
+  virtual void OnPropertyChanged(const void* key,
+                                 int64_t old_value,
+                                 std::unique_ptr<ui::PropertyData> data) = 0;
 
  protected:
   // Returns the WindowPort associated with a Window.

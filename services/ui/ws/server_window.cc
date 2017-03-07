@@ -30,7 +30,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),
-      is_modal_(false),
+      modal_type_(MODAL_TYPE_NONE),
       visible_(false),
       // Default to POINTER as CURSOR_NULL doesn't change the cursor, it leaves
       // the last non-null cursor.
@@ -231,10 +231,6 @@ ServerWindow* ServerWindow::GetChildWindow(const WindowId& window_id) {
 }
 
 bool ServerWindow::AddTransientWindow(ServerWindow* child) {
-  // A system modal window cannot become a transient child.
-  if (child->is_modal() && !child->transient_parent())
-    return false;
-
   if (child->transient_parent())
     child->transient_parent()->RemoveTransientWindow(child);
 
@@ -271,8 +267,8 @@ void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
     observer.OnTransientWindowRemoved(this, child);
 }
 
-void ServerWindow::SetModal() {
-  is_modal_ = true;
+void ServerWindow::SetModalType(ModalType modal_type) {
+  modal_type_ = modal_type;
 }
 
 bool ServerWindow::Contains(const ServerWindow* window) const {

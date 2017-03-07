@@ -656,7 +656,7 @@ void Window::AfterPropertyChange(const void* key,
                                  int64_t old_value,
                                  std::unique_ptr<ui::PropertyData> data) {
   if (port_)
-    port_->OnPropertyChanged(key, std::move(data));
+    port_->OnPropertyChanged(key, old_value, std::move(data));
   for (WindowObserver& observer : observers_)
     observer.OnWindowPropertyChanged(this, key, old_value);
 }
