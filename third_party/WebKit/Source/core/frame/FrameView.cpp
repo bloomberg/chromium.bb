@@ -186,7 +186,7 @@ FrameView::FrameView(LocalFrame& frame)
       m_didScrollTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
                        this,
                        &FrameView::didScrollTimerFired),
-      m_needsUpdateWidgetGeometries(false),
+      m_needsUpdateGeometries(false),
       m_horizontalScrollbarMode(ScrollbarAuto),
       m_verticalScrollbarMode(ScrollbarAuto),
       m_horizontalScrollbarLock(false),
@@ -1466,7 +1466,7 @@ void FrameView::removePart(LayoutPart* object) {
   m_parts.erase(object);
 }
 
-void FrameView::updateWidgetGeometries() {
+void FrameView::updateGeometries() {
   Vector<RefPtr<LayoutPart>> parts;
   copyToVector(m_parts, parts);
 
@@ -1480,11 +1480,11 @@ void FrameView::updateWidgetGeometries() {
       if (frameViewBase->isFrameView()) {
         FrameView* frameView = toFrameView(frameViewBase);
         bool didNeedLayout = frameView->needsLayout();
-        part->updateWidgetGeometry();
+        part->updateGeometry();
         if (!didNeedLayout && !frameView->shouldThrottleRendering())
           frameView->checkDoesNotNeedLayout();
       } else {
-        part->updateWidgetGeometry();
+        part->updateGeometry();
       }
     }
   }
@@ -2005,7 +2005,7 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded() {
   // change.  Update FrameViewBase and layer positions after scrolling, but only
   // if we're not inside of layout.
   if (!m_nestedLayoutCount) {
-    updateWidgetGeometries();
+    updateGeometries();
     LayoutViewItem layoutViewItem = this->layoutViewItem();
     if (!layoutViewItem.isNull())
       layoutViewItem.layer()->setNeedsCompositingInputsUpdate();
@@ -2442,7 +2442,7 @@ bool FrameView::updateWidgets() {
 
     if (element->needsWidgetUpdate())
       element->updateWidget();
-    object.updateWidgetGeometry();
+    object.updateGeometry();
 
     // Prevent plugins from causing infinite updates of themselves.
     // FIXME: Do we really need to prevent this?
@@ -2501,9 +2501,9 @@ void FrameView::performPostLayoutTasks() {
   // scheduling is moved from EventHandler to PageEventHandler.
   frame().localFrameRoot()->eventHandler().scheduleCursorUpdate();
 
-  updateWidgetGeometries();
+  updateGeometries();
 
-  // Plugins could have torn down the page inside updateWidgetGeometries().
+  // Plugins could have torn down the page inside updateGeometries().
   if (layoutViewItem().isNull())
     return;
 
@@ -2859,13 +2859,13 @@ void FrameView::visualViewportScrollbarsChanged() {
   }
 }
 
-void FrameView::updateWidgetGeometriesIfNeeded() {
-  if (!m_needsUpdateWidgetGeometries)
+void FrameView::updateGeometriesIfNeeded() {
+  if (!m_needsUpdateGeometries)
     return;
 
-  m_needsUpdateWidgetGeometries = false;
+  m_needsUpdateGeometries = false;
 
-  updateWidgetGeometries();
+  updateGeometries();
 }
 
 GeometryMapper& FrameView::geometryMapper() {
@@ -3338,7 +3338,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
   m_frame->document()->layoutView()->assertLaidOut();
 #endif
 
-  updateWidgetGeometriesIfNeeded();
+  updateGeometriesIfNeeded();
 
   if (lifecycle().state() < DocumentLifecycle::LayoutClean)
     lifecycle().advanceTo(DocumentLifecycle::LayoutClean);

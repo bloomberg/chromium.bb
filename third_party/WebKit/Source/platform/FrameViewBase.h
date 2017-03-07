@@ -110,7 +110,7 @@ class PLATFORM_EXPORT FrameViewBase
 
   virtual void frameRectsChanged() {}
 
-  virtual void widgetGeometryMayHaveChanged() {}
+  virtual void geometryMayHaveChanged() {}
 
   virtual IntRect convertToContainingFrameViewBase(const IntRect&) const;
   virtual IntRect convertFromContainingFrameViewBase(const IntRect&) const;

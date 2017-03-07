@@ -420,7 +420,7 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle,
     markAncestorChainForDescendantDependentFlagsUpdate();
 
   if (FrameView* frameView = layoutObject().document().view())
-    frameView->setNeedsUpdateWidgetGeometries();
+    frameView->setNeedsUpdateGeometries();
 }
 
 static PaintLayer* enclosingLayerForContainingBlock(PaintLayer* layer) {

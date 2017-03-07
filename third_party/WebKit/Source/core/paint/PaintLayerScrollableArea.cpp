@@ -405,7 +405,7 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
     layer()->updateLayerPositionsAfterOverflowScroll();
     // Update regions, scrolling may change the clip of a particular region.
     frameView->updateDocumentAnnotatedRegions();
-    frameView->setNeedsUpdateWidgetGeometries();
+    frameView->setNeedsUpdateGeometries();
     updateCompositingLayersAfterScroll();
   }
 

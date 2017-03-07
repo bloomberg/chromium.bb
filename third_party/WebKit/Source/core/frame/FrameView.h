@@ -157,9 +157,7 @@ class CORE_EXPORT FrameView final
   bool checkDoesNotNeedLayout() const;
   void setNeedsLayout();
 
-  void setNeedsUpdateWidgetGeometries() {
-    m_needsUpdateWidgetGeometries = true;
-  }
+  void setNeedsUpdateGeometries() { m_needsUpdateGeometries = true; }
 
   // Methods for getting/setting the size Blink should use to layout the
   // contents.
@@ -269,7 +267,7 @@ class CORE_EXPORT FrameView final
   void addPart(LayoutPart*);
   void removePart(LayoutPart*);
 
-  void updateWidgetGeometries();
+  void updateGeometries();
 
   void addPartToUpdate(LayoutEmbeddedObject&);
 
@@ -963,7 +961,7 @@ class CORE_EXPORT FrameView final
 
   void didChangeGlobalRootScroller() override;
 
-  void updateWidgetGeometriesIfNeeded();
+  void updateGeometriesIfNeeded();
 
   bool wasViewportResized();
   void sendResizeEventIfNeeded();
@@ -1119,7 +1117,7 @@ class CORE_EXPORT FrameView final
 
   Vector<IntRect> m_tickmarks;
 
-  bool m_needsUpdateWidgetGeometries;
+  bool m_needsUpdateGeometries;
 
 #if DCHECK_IS_ON()
   // Verified when finalizing.

@@ -295,7 +295,7 @@ void LayoutPart::updateOnWidgetChange() {
     return;
 
   if (!needsLayout())
-    updateWidgetGeometryInternal();
+    updateGeometryInternal();
 
   if (style()->visibility() != EVisibility::kVisible) {
     frameViewBase->hide();
@@ -307,7 +307,7 @@ void LayoutPart::updateOnWidgetChange() {
   }
 }
 
-void LayoutPart::updateWidgetGeometry() {
+void LayoutPart::updateGeometry() {
   FrameViewBase* frameViewBase = this->widget();
   if (!frameViewBase ||
       !node())  // Check the node in case destroy() has been called.
@@ -329,7 +329,7 @@ void LayoutPart::updateWidgetGeometry() {
       (boundsWillChange || frameView->needsScrollbarReconstruction()))
     frameView->setNeedsLayout();
 
-  updateWidgetGeometryInternal();
+  updateGeometryInternal();
 
   // If view needs layout, either because bounds have changed or possibly
   // indicating content size is wrong, we have to do a layout to set the right
@@ -337,10 +337,10 @@ void LayoutPart::updateWidgetGeometry() {
   if (frameView && frameView->needsLayout() && frameView->frame().page())
     frameView->layout();
 
-  frameViewBase->widgetGeometryMayHaveChanged();
+  frameViewBase->geometryMayHaveChanged();
 }
 
-void LayoutPart::updateWidgetGeometryInternal() {
+void LayoutPart::updateGeometryInternal() {
   FrameViewBase* frameViewBase = this->widget();
   DCHECK(frameViewBase);
 

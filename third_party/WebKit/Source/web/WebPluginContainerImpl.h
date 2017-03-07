@@ -91,7 +91,7 @@ class WEB_EXPORT WebPluginContainerImpl final
   void handleEvent(Event*) override;
   void frameRectsChanged() override;
   void setParentVisible(bool) override;
-  void widgetGeometryMayHaveChanged() override;
+  void geometryMayHaveChanged() override;
   bool isPluginContainer() const override { return true; }
   void eventListenersRemoved() override;
 

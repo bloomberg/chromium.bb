@@ -53,7 +53,7 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   LayoutRect replacedContentRect() const final;
 
   void updateOnWidgetChange();
-  void updateWidgetGeometry();
+  void updateGeometry();
 
   bool isLayoutPart() const final { return true; }
   virtual void paintContents(const PaintInfo&, const LayoutPoint&) const;
@@ -73,7 +73,7 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
       const PaintInvalidationState&) override;
 
  private:
-  void updateWidgetGeometryInternal();
+  void updateGeometryInternal();
   CompositingReasons additionalCompositingReasons() const override;
 
   void willBeDestroyed() final;

@@ -233,8 +233,8 @@ void WebPluginContainerImpl::frameRectsChanged() {
   reportGeometry();
 }
 
-void WebPluginContainerImpl::widgetGeometryMayHaveChanged() {
-  FrameViewBase::widgetGeometryMayHaveChanged();
+void WebPluginContainerImpl::geometryMayHaveChanged() {
+  FrameViewBase::geometryMayHaveChanged();
   reportGeometry();
 }
 
@@ -933,7 +933,7 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
 
   // Note: frameRect() for this plugin is equal to contentBoxRect, mapped to the
   // containing view space, and rounded off.
-  // See LayoutPart.cpp::updateWidgetGeometryInternal. To remove the lossy
+  // See LayoutPart.cpp::updateGeometryInternal. To remove the lossy
   // effect of rounding off, use contentBoxRect directly.
   LayoutRect unclippedAbsoluteRect(box->contentBoxRect());
   box->mapToVisualRectInAncestorSpace(rootView, unclippedAbsoluteRect);
