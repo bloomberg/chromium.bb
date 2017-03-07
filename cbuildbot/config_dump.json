@@ -7673,7 +7673,6 @@
     },
     "elm-chromium-pfq": {
         "_template": "chromium_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "elm"
         ],
@@ -18405,7 +18404,6 @@
     },
     "peach_pi-chrome-pfq": {
         "_template": "chrome_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "peach_pi"
         ],
@@ -18470,7 +18468,6 @@
     },
     "peach_pi-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "peach_pi"
         ],
@@ -23389,7 +23386,6 @@
     },
     "squawks-chromium-pfq": {
         "_template": "chromium_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "squawks"
         ],
@@ -23482,7 +23478,6 @@
     },
     "squawks-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "squawks"
         ],
@@ -24702,7 +24697,6 @@
     },
     "terra-chrome-pfq": {
         "_template": "chrome_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "terra"
         ],
@@ -24785,7 +24779,6 @@
     },
     "terra-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "terra"
         ],
@@ -25961,7 +25954,6 @@
     },
     "veyron_jaq-chrome-pfq": {
         "_template": "chrome_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_jaq"
         ],
@@ -26019,7 +26011,6 @@
     },
     "veyron_jaq-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_jaq"
         ],
@@ -26390,7 +26381,6 @@
     },
     "veyron_mickey-chromium-pfq": {
         "_template": "chromium_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_mickey"
         ],
@@ -26439,7 +26429,6 @@
     },
     "veyron_mickey-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_mickey"
         ],

@@ -674,12 +674,7 @@ _waterfall_config_map = {
         'kip-paladin',
         'lakitu_next-paladin',
         'loonix-paladin',
-        'peach_pi-paladin',
         'poppy-paladin',
-        'squawks-paladin',
-        'terra-paladin',
-        'veyron_jaq-paladin',
-        'veyron_mickey-paladin',
         'whirlwind-paladin',
 
         # Firmware Builders.
@@ -693,16 +688,6 @@ _waterfall_config_map = {
         # other builders or developer's local builds unless they specify the
         # same use flags.
         'chell-chrome-pfq',
-
-        # Temporary boards that are used as "dogfood" for the LLVM migration.
-        # Needed to generated clang/llvm prebuilds for these boards. Can be
-        # removed once migration is completed.
-        'elm-chromium-pfq',
-        'veyron_mickey-chromium-pfq',
-        'squawks-chromium-pfq',
-        'peach_pi-chrome-pfq',
-        'veyron_jaq-chrome-pfq',
-        'terra-chrome-pfq',
     ]),
 }
 
