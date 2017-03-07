@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
-#include "core/InputTypeNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/CharacterData.h"
@@ -689,10 +688,10 @@ Range* FrameSelection::firstRange() const {
 }
 
 bool FrameSelection::isInPasswordField() const {
-  TextControlElement* textControl = enclosingTextControl(
-      computeVisibleSelectionInDOMTreeDeprecated().start());
-  return isHTMLInputElement(textControl) &&
-         toHTMLInputElement(textControl)->type() == InputTypeNames::password;
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  return blink::isInPasswordField(computeVisibleSelectionInDOMTree().start());
 }
 
 void FrameSelection::notifyAccessibilityForSelectionChange() {

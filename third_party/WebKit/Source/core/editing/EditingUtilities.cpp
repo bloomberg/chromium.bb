@@ -27,6 +27,7 @@
 
 #include "core/HTMLElementFactory.h"
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -51,6 +52,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLParagraphElement.h"
 #include "core/html/HTMLSpanElement.h"
@@ -2071,6 +2073,12 @@ Position adjustedSelectionStartForStyleComputation(
   // otherwise, make sure to be at the start of the first selected node,
   // instead of possibly at the end of the last node before the selection
   return mostForwardCaretPosition(visiblePosition.deepEquivalent());
+}
+
+bool isInPasswordField(const Position& position) {
+  TextControlElement* textControl = enclosingTextControl(position);
+  return isHTMLInputElement(textControl) &&
+         toHTMLInputElement(textControl)->type() == InputTypeNames::password;
 }
 
 bool isTextSecurityNode(const Node* node) {
