@@ -302,7 +302,7 @@ external/wpt/orientation-event [ Skip ]
 external/wpt/payment-request [ Skip ]
 external/wpt/page-visibility [ Skip ]
 external/wpt/performance-timeline [ Skip ]
-## Owners: mustaq@chromium.org
+## Owners: nzolghadr@chromium.org,mustaq@chromium.org
 # external/wpt/pointerevents [ Pass ]
 external/wpt/pointerlock [ Skip ]
 external/wpt/presentation-api [ Skip ]
