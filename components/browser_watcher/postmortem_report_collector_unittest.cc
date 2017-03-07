@@ -25,6 +25,7 @@
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
+#include "components/browser_watcher/postmortem_report_extractor.h"
 #include "components/browser_watcher/stability_data_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,21 +114,14 @@ class MockPostmortemReportCollector : public PostmortemReportCollector {
   MockPostmortemReportCollector()
       : PostmortemReportCollector(kProductName, kVersionNumber, kChannelName) {}
 
-  // A function that returns a unique_ptr cannot be mocked, so mock a function
-  // that returns a raw pointer instead.
-  CollectionStatus Collect(const base::FilePath& debug_state_file,
-                           std::unique_ptr<StabilityReport>* report) override {
-    DCHECK_NE(nullptr, report);
-    report->reset(CollectRaw(debug_state_file));
-    return SUCCESS;
-  }
-
   MOCK_METHOD3(GetDebugStateFilePaths,
                std::vector<base::FilePath>(
                    const base::FilePath& debug_info_dir,
                    const base::FilePath::StringType& debug_file_pattern,
                    const std::set<base::FilePath>&));
-  MOCK_METHOD1(CollectRaw, StabilityReport*(const base::FilePath&));
+  MOCK_METHOD2(Collect,
+               CollectionStatus(const base::FilePath&,
+                                StabilityReport* report));
   MOCK_METHOD4(WriteReportToMinidump,
                bool(StabilityReport* report,
                     const crashpad::UUID& client_id,
@@ -180,12 +174,10 @@ class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
 
     EXPECT_CALL(database_, GetSettings()).Times(1).WillOnce(Return(nullptr));
 
-    // Expect collection to a proto of a single debug file.
-    // Note: caller takes ownership.
-    StabilityReport* stability_report = new StabilityReport();
-    EXPECT_CALL(collector_, CollectRaw(debug_file_))
+    // Expect a single collection call.
+    EXPECT_CALL(collector_, Collect(debug_file_, _))
         .Times(1)
-        .WillOnce(Return(stability_report));
+        .WillOnce(Return(SUCCESS));
 
     // Expect the call to write the proto to a minidump. This involves
     // requesting a report from the crashpad database, writing the report, then
@@ -203,8 +195,7 @@ class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
                         Return(CrashReportDatabase::kNoError)));
 
     EXPECT_CALL(collector_,
-                WriteReportToMinidump(stability_report, _, _,
-                                      minidump_file.GetPlatformFile()))
+                WriteReportToMinidump(_, _, _, minidump_file.GetPlatformFile()))
         .Times(1)
         .WillOnce(Return(true));
   }
@@ -306,9 +297,8 @@ TEST(PostmortemReportCollectorTest, CollectEmptyFile) {
   // Validate collection: an empty file cannot suppport an analyzer.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName);
-  std::unique_ptr<StabilityReport> report;
-  ASSERT_EQ(PostmortemReportCollector::ANALYZER_CREATION_FAILED,
-            collector.Collect(file_path, &report));
+  StabilityReport report;
+  ASSERT_EQ(ANALYZER_CREATION_FAILED, collector.Collect(file_path, &report));
 }
 
 TEST(PostmortemReportCollectorTest, CollectRandomFile) {
@@ -333,9 +323,8 @@ TEST(PostmortemReportCollectorTest, CollectRandomFile) {
   // stability data.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName);
-  std::unique_ptr<StabilityReport> report;
-  ASSERT_EQ(PostmortemReportCollector::DEBUG_FILE_NO_DATA,
-            collector.Collect(file_path, &report));
+  StabilityReport report;
+  ASSERT_EQ(DEBUG_FILE_NO_DATA, collector.Collect(file_path, &report));
 }
 
 namespace {
@@ -460,14 +449,12 @@ TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
   // Validate collection returns the expected report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName);
-  std::unique_ptr<StabilityReport> report;
-  ASSERT_EQ(PostmortemReportCollector::SUCCESS,
-            collector.Collect(debug_file_path(), &report));
-  ASSERT_NE(nullptr, report);
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
 
   // Validate the report.
-  ASSERT_EQ(1, report->process_states_size());
-  const ProcessState& process_state = report->process_states(0);
+  ASSERT_EQ(1, report.process_states_size());
+  const ProcessState& process_state = report.process_states(0);
   EXPECT_EQ(base::GetCurrentProcId(), process_state.process_id());
   ASSERT_EQ(1, process_state.threads_size());
 
@@ -559,15 +546,13 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName);
-  std::unique_ptr<StabilityReport> report;
-  ASSERT_EQ(PostmortemReportCollector::SUCCESS,
-            collector.Collect(debug_file_path(), &report));
-  ASSERT_NE(nullptr, report);
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
 
   // Validate the report's log content.
-  ASSERT_EQ(2, report->log_messages_size());
-  ASSERT_EQ("hello world", report->log_messages(0));
-  ASSERT_EQ("foo bar", report->log_messages(1));
+  ASSERT_EQ(2, report.log_messages_size());
+  ASSERT_EQ("hello world", report.log_messages(0));
+  ASSERT_EQ("foo bar", report.log_messages(1));
 }
 
 TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
@@ -591,13 +576,11 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName);
-  std::unique_ptr<StabilityReport> report;
-  ASSERT_EQ(PostmortemReportCollector::SUCCESS,
-            collector.Collect(debug_file_path(), &report));
-  ASSERT_NE(nullptr, report);
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
 
   // Validate the report's user data.
-  const auto& collected_data = report->global_data();
+  const auto& collected_data = report.global_data();
   ASSERT_EQ(12U, collected_data.size());
 
   ASSERT_TRUE(base::ContainsKey(collected_data, "raw"));
@@ -662,21 +645,19 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName);
-  std::unique_ptr<StabilityReport> report;
-  ASSERT_EQ(PostmortemReportCollector::SUCCESS,
-            collector.Collect(debug_file_path(), &report));
-  ASSERT_NE(nullptr, report);
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
 
   // Validate the report's experiment and global data.
-  ASSERT_EQ(2, report->field_trials_size());
-  EXPECT_NE(0U, report->field_trials(0).name_id());
-  EXPECT_NE(0U, report->field_trials(0).group_id());
-  EXPECT_NE(0U, report->field_trials(1).name_id());
-  EXPECT_EQ(report->field_trials(0).group_id(),
-            report->field_trials(1).group_id());
+  ASSERT_EQ(2, report.field_trials_size());
+  EXPECT_NE(0U, report.field_trials(0).name_id());
+  EXPECT_NE(0U, report.field_trials(0).group_id());
+  EXPECT_NE(0U, report.field_trials(1).name_id());
+  EXPECT_EQ(report.field_trials(0).group_id(),
+            report.field_trials(1).group_id());
 
   // Expect 5 key/value pairs (including product details).
-  const auto& collected_data = report->global_data();
+  const auto& collected_data = report.global_data();
   EXPECT_EQ(5U, collected_data.size());
   EXPECT_TRUE(base::ContainsKey(collected_data, "string"));
 }
@@ -705,14 +686,12 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   // Collect the stability report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName);
-  std::unique_ptr<StabilityReport> report;
-  ASSERT_EQ(PostmortemReportCollector::SUCCESS,
-            collector.Collect(debug_file_path(), &report));
-  ASSERT_NE(nullptr, report);
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, collector.Collect(debug_file_path(), &report));
 
   // Validate the report's modules content.
-  ASSERT_EQ(1, report->process_states_size());
-  const ProcessState& process_state = report->process_states(0);
+  ASSERT_EQ(1, report.process_states_size());
+  const ProcessState& process_state = report.process_states(0);
   ASSERT_EQ(1, process_state.modules_size());
 
   const CodeModule collected_module = process_state.modules(0);

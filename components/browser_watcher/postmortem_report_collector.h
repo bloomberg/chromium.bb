@@ -21,33 +21,24 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/browser_watcher/postmortem_report_extractor.h"
 #include "components/browser_watcher/stability_report.pb.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 
 namespace browser_watcher {
 
-// Collects unclean shutdown information and creates Crashpad minidumps.
+// Handles postmortem report collection by establishing the set of stability
+// files to collect, then for each file:
+//   - extracting a report protocol buffer
+//   - registering a crash report with the crash database
+//   - writing a minidump file for the report
 // TODO(manzagop): throttling, graceful handling of accumulating data.
-// TODO(manzagop): UMA metrics and some error logging.
 class PostmortemReportCollector {
  public:
-  // DO NOT CHANGE VALUES. This is logged persistently in a histogram.
-  enum CollectionStatus {
-    NONE = 0,
-    SUCCESS = 1,  // Successfully registered a report with Crashpad.
-    ANALYZER_CREATION_FAILED = 2,
-    DEBUG_FILE_NO_DATA = 3,
-    PREPARE_NEW_CRASH_REPORT_FAILED = 4,
-    WRITE_TO_MINIDUMP_FAILED = 5,
-    DEBUG_FILE_DELETION_FAILED = 6,
-    FINISHED_WRITING_CRASH_REPORT_FAILED = 7,
-    COLLECTION_STATUS_MAX = 8
-  };
-
   PostmortemReportCollector(const std::string& product_name,
                             const std::string& version_number,
                             const std::string& channel_name);
-  virtual ~PostmortemReportCollector() = default;
+  virtual ~PostmortemReportCollector();
 
   // Collects postmortem stability reports from files found in |debug_info_dir|,
   // relying on |debug_file_pattern| and |excluded_debug_files|. Reports are
@@ -96,13 +87,8 @@ class PostmortemReportCollector {
       const base::FilePath& file,
       crashpad::CrashReportDatabase* report_database);
 
-  // Virtual for unittesting.
-  // TODO(manzagop): move this for reuse in live scenario.
-  virtual CollectionStatus Collect(const base::FilePath& debug_state_file,
-                                   std::unique_ptr<StabilityReport>* report);
-  void CollectThread(
-      const base::debug::ThreadActivityAnalyzer::Snapshot& snapshot,
-      ThreadState* thread_state);
+  virtual CollectionStatus Collect(const base::FilePath& stability_file,
+                                   StabilityReport* report);
 
   virtual bool WriteReportToMinidump(StabilityReport* report,
                                      const crashpad::UUID& client_id,

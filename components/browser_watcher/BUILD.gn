@@ -63,6 +63,8 @@ if (is_win) {
     sources = [
       "postmortem_report_collector.cc",
       "postmortem_report_collector.h",
+      "postmortem_report_extractor.cc",
+      "postmortem_report_extractor.h",
     ]
     deps = [
       ":postmortem_minidump_writer",
