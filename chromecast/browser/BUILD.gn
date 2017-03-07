@@ -152,7 +152,10 @@ source_set("browser") {
       "android/jni_registrar.h",
     ]
 
-    deps += [ ":jni_headers" ]
+    deps += [
+      ":jni_headers",
+      "//components/cdm/browser",
+    ]
   }
 
   if (use_ozone) {

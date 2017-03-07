@@ -69,6 +69,7 @@
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
 #if defined(OS_ANDROID)
+#include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #else
 #include "chromecast/media/cdm/cast_cdm_factory.h"
@@ -231,6 +232,10 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
                     url_request_context_factory_->GetSystemGetter())),
       base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
                  base::Unretained(this), host->GetID()));
+
+#if defined(OS_ANDROID)
+  host->AddFilter(new cdm::CdmMessageFilterAndroid());
+#endif  // defined(OS_ANDROID)
 }
 
 void CastContentBrowserClient::AddNetworkHintsMessageFilter(

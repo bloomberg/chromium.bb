@@ -6,6 +6,7 @@ include_rules = [
   "+chromecast/media",
   "+chromecast/net",
   "+chromecast/service",
+  "+components/cdm/browser",
   "+components/crash",
   "+components/network_hints/browser",
   "+components/prefs",

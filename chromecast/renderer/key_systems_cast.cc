@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chromecast/media/base/key_systems_common.h"
+#include "components/cdm/renderer/android_key_systems.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_properties.h"
@@ -100,6 +101,9 @@ void AddChromecastKeySystems(
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
+#if defined(OS_ANDROID)
+  cdm::AddAndroidWidevine(key_systems_properties);
+#else
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
   ::media::SupportedCodecs codecs =
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
@@ -110,9 +114,6 @@ void AddChromecastKeySystems(
 #endif
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
       codecs,  // Regular codecs.
-#if defined(OS_ANDROID)
-      codecs,  // Hardware-secure codecs.
-#endif
       Robustness::HW_SECURE_ALL,  // Max audio robustness.
       Robustness::HW_SECURE_ALL,  // Max video robustness.
       enable_persistent_license_support
@@ -122,6 +123,7 @@ void AddChromecastKeySystems(
       // Note: On Chromecast, all CDMs may have persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED,    // Persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED));  // Distinctive identifier.
+#endif  // defined(OS_ANDROID)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 }
 
