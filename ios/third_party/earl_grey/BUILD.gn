@@ -110,6 +110,8 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Common/GREYError+Internal.h",
     "src/EarlGrey/Common/GREYError.h",
     "src/EarlGrey/Common/GREYError.m",
+    "src/EarlGrey/Common/GREYErrorConstants.h",
+    "src/EarlGrey/Common/GREYErrorConstants.m",
     "src/EarlGrey/Common/GREYExposed.h",
     "src/EarlGrey/Common/GREYFailureFormatter.h",
     "src/EarlGrey/Common/GREYFailureFormatter.m",
