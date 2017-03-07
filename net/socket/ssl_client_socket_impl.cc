@@ -1400,7 +1400,10 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
                        buf_len - total_bytes_read);
     if (ssl_ret > 0)
       total_bytes_read += ssl_ret;
-  } while (total_bytes_read < buf_len && ssl_ret > 0);
+    // Continue processing records as long as there is more data available
+    // synchronously.
+  } while (total_bytes_read < buf_len && ssl_ret > 0 &&
+           transport_adapter_->HasPendingReadData());
 
   // Although only the final SSL_read call may have failed, the failure needs to
   // processed immediately, while the information still available in OpenSSL's
