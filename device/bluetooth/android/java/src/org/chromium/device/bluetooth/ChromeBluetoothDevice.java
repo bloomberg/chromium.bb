@@ -10,7 +10,6 @@ import android.content.Context;
 import android.os.Build;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
@@ -144,7 +143,7 @@ final class ChromeBluetoothDevice {
                         "Bluetooth.Web.Android.onConnectionStateChange.Status.InvalidState",
                         status);
             }
-            ThreadUtils.runOnUiThread(new Runnable() {
+            Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (mNativeBluetoothDeviceAndroid != 0) {
@@ -159,7 +158,7 @@ final class ChromeBluetoothDevice {
         public void onServicesDiscovered(final int status) {
             Log.i(TAG, "onServicesDiscovered status:%d==%s", status,
                     status == android.bluetooth.BluetoothGatt.GATT_SUCCESS ? "OK" : "Error");
-            ThreadUtils.runOnUiThread(new Runnable() {
+            Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (mNativeBluetoothDeviceAndroid != 0) {
@@ -197,7 +196,7 @@ final class ChromeBluetoothDevice {
         public void onCharacteristicChanged(
                 final Wrappers.BluetoothGattCharacteristicWrapper characteristic) {
             Log.i(TAG, "device onCharacteristicChanged.");
-            ThreadUtils.runOnUiThread(new Runnable() {
+            Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic =
@@ -217,7 +216,7 @@ final class ChromeBluetoothDevice {
         public void onCharacteristicRead(
                 final Wrappers.BluetoothGattCharacteristicWrapper characteristic,
                 final int status) {
-            ThreadUtils.runOnUiThread(new Runnable() {
+            Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic =
@@ -239,7 +238,7 @@ final class ChromeBluetoothDevice {
         public void onCharacteristicWrite(
                 final Wrappers.BluetoothGattCharacteristicWrapper characteristic,
                 final int status) {
-            ThreadUtils.runOnUiThread(new Runnable() {
+            Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic =
@@ -260,7 +259,7 @@ final class ChromeBluetoothDevice {
         @Override
         public void onDescriptorRead(
                 final Wrappers.BluetoothGattDescriptorWrapper descriptor, final int status) {
-            ThreadUtils.runOnUiThread(new Runnable() {
+            Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     ChromeBluetoothRemoteGattDescriptor chromeDescriptor =
@@ -281,7 +280,7 @@ final class ChromeBluetoothDevice {
         @Override
         public void onDescriptorWrite(
                 final Wrappers.BluetoothGattDescriptorWrapper descriptor, final int status) {
-            ThreadUtils.runOnUiThread(new Runnable() {
+            Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     ChromeBluetoothRemoteGattDescriptor chromeDescriptor =

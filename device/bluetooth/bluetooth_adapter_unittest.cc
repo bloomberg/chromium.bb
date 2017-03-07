@@ -859,6 +859,7 @@ TEST_F(BluetoothTest, RemoveOutdatedDeviceGattConnect) {
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, adapter_->GetDevices().size());
   RemoveTimedOutDevices();
   EXPECT_EQ(0, observer.device_removed_count());

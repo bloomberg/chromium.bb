@@ -161,6 +161,11 @@ class BluetoothTestAndroid : public BluetoothTestBase {
       const base::android::JavaParamRef<jobject>& caller,
       const bool powered);
 
+  // Posts a task to be run on the current message loop.
+  void PostTaskFromJava(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& caller,
+                        const base::android::JavaParamRef<jobject>& runnable);
+
   base::android::ScopedJavaGlobalRef<jobject> j_fake_bluetooth_adapter_;
 
   int gatt_open_connections_ = 0;

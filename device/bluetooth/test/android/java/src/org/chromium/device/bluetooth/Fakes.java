@@ -75,6 +75,34 @@ class Fakes {
     }
 
     /**
+     * Sets the factory for ThreadUtilsWrapper to always post a task to the UI thread
+     * rather than running the task immediately. This simulates events arriving on a separate
+     * thread on Android.
+     * runOnUiThread uses nativePostTaskFromJava. This allows java to post tasks to the
+     * message loop that the test is using rather than to the Java message loop which
+     * is not running during tests.
+     */
+    @CalledByNative
+    public static void initFakeThreadUtilsWrapper(final long nativeBluetoothTestAndroid) {
+        Wrappers.ThreadUtilsWrapper.setFactory(new Wrappers.ThreadUtilsWrapper.Factory() {
+            @Override
+            public Wrappers.ThreadUtilsWrapper create() {
+                return new Wrappers.ThreadUtilsWrapper() {
+                    @Override
+                    public void runOnUiThread(Runnable r) {
+                        nativePostTaskFromJava(nativeBluetoothTestAndroid, r);
+                    }
+                };
+            }
+        });
+    }
+
+    @CalledByNative
+    public static void runRunnable(Runnable r) {
+        r.run();
+    }
+
+    /**
      * Fakes android.bluetooth.BluetoothAdapter.
      */
     static class FakeBluetoothAdapter extends Wrappers.BluetoothAdapterWrapper {
@@ -114,8 +142,7 @@ class Fakes {
                     uuids.add(ParcelUuid.fromString("00001800-0000-1000-8000-00805f9b34fb"));
                     uuids.add(ParcelUuid.fromString("00001801-0000-1000-8000-00805f9b34fb"));
 
-                    mFakeScanner.mScanCallback.onScanResult(
-                            ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(this, "01:00:00:90:1E:BE",
                                                        "FakeBluetoothDevice"),
                                     TestRSSI.LOWEST, uuids, TestTxPower.LOWEST));
@@ -126,8 +153,7 @@ class Fakes {
                     uuids.add(ParcelUuid.fromString("00001802-0000-1000-8000-00805f9b34fb"));
                     uuids.add(ParcelUuid.fromString("00001803-0000-1000-8000-00805f9b34fb"));
 
-                    mFakeScanner.mScanCallback.onScanResult(
-                            ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(this, "01:00:00:90:1E:BE",
                                                        "FakeBluetoothDevice"),
                                     TestRSSI.LOWER, uuids, TestTxPower.LOWER));
@@ -135,8 +161,7 @@ class Fakes {
                 }
                 case 3: {
                     ArrayList<ParcelUuid> uuids = null;
-                    mFakeScanner.mScanCallback.onScanResult(
-                            ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "01:00:00:90:1E:BE", ""),
                                     TestRSSI.LOW, uuids, NO_TX_POWER));
@@ -145,8 +170,7 @@ class Fakes {
                 }
                 case 4: {
                     ArrayList<ParcelUuid> uuids = null;
-                    mFakeScanner.mScanCallback.onScanResult(
-                            ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "02:00:00:8B:74:63", ""),
                                     TestRSSI.MEDIUM, uuids, NO_TX_POWER));
@@ -155,8 +179,7 @@ class Fakes {
                 }
                 case 5: {
                     ArrayList<ParcelUuid> uuids = null;
-                    mFakeScanner.mScanCallback.onScanResult(
-                            ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "01:00:00:90:1E:BE", null),
                                     TestRSSI.HIGH, uuids, NO_TX_POWER));
@@ -837,6 +860,9 @@ class Fakes {
 
     // ---------------------------------------------------------------------------------------------
     // BluetoothTestAndroid C++ methods declared for access from java:
+
+    // Bind to BluetoothTestAndroid::PostTaskFromJava.
+    private static native void nativePostTaskFromJava(long nativeBluetoothTestAndroid, Runnable r);
 
     // Binds to BluetoothTestAndroid::OnFakeAdapterStateChanged.
     private static native void nativeOnFakeAdapterStateChanged(

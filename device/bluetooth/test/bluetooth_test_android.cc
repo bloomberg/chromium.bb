@@ -9,6 +9,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "device/bluetooth/android/wrappers.h"
@@ -39,6 +40,8 @@ void BluetoothTestAndroid::SetUp() {
   // Set the permission to true so that we can use the API.
   Java_Fakes_setLocationServicesState(
       AttachCurrentThread(), true /* hasPermission */, true /* isEnabled */);
+  Java_Fakes_initFakeThreadUtilsWrapper(AttachCurrentThread(),
+                                        reinterpret_cast<intptr_t>(this));
 }
 
 void BluetoothTestAndroid::TearDown() {
@@ -47,7 +50,26 @@ void BluetoothTestAndroid::TearDown() {
     DeleteDevice(device);
   }
   EXPECT_EQ(0, gatt_open_connections_);
+
   BluetoothTestBase::TearDown();
+}
+
+static void RunJavaRunnable(
+    const base::android::ScopedJavaGlobalRef<jobject>& runnable_ref) {
+  Java_Fakes_runRunnable(AttachCurrentThread(), runnable_ref);
+}
+
+void BluetoothTestAndroid::PostTaskFromJava(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& caller,
+    const JavaParamRef<jobject>& runnable) {
+  base::android::ScopedJavaGlobalRef<jobject> runnable_ref;
+  // ScopedJavaGlobalRef does not hold onto the env reference, so it is safe to
+  // use it across threads. |RunJavaRunnable| will acquire a new JNIEnv before
+  // running the Runnable.
+  runnable_ref.Reset(env, runnable);
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&RunJavaRunnable, runnable_ref));
 }
 
 bool BluetoothTestAndroid::PlatformSupportsLowEnergy() {

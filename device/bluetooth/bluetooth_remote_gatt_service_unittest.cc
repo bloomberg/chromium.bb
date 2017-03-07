@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_gatt_service.h"
-
+#include "base/run_loop.h"
 #include "build/build_config.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +40,7 @@ TEST_F(BluetoothRemoteGattServiceTest, GetIdentifier) {
                                 GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device1);
   SimulateGattConnection(device2);
+  base::RunLoop().RunUntilIdle();
 
   // 2 duplicate UUIDs creating 2 service instances on each device.
   std::vector<std::string> services;
@@ -48,6 +49,7 @@ TEST_F(BluetoothRemoteGattServiceTest, GetIdentifier) {
   services.push_back(uuid);
   SimulateGattServicesDiscovered(device1, services);
   SimulateGattServicesDiscovered(device2, services);
+  base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattService* service1 = device1->GetGattServices()[0];
   BluetoothRemoteGattService* service2 = device1->GetGattServices()[1];
   BluetoothRemoteGattService* service3 = device2->GetGattServices()[0];
@@ -77,6 +79,7 @@ TEST_F(BluetoothRemoteGattServiceTest, GetUUID) {
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
 
   // Create multiple instances with the same UUID.
   BluetoothUUID uuid("00000000-0000-1000-8000-00805f9b34fb");
@@ -84,6 +87,7 @@ TEST_F(BluetoothRemoteGattServiceTest, GetUUID) {
   services.push_back(uuid.canonical_value());
   services.push_back(uuid.canonical_value());
   SimulateGattServicesDiscovered(device, services);
+  base::RunLoop().RunUntilIdle();
 
   // Each has the same UUID.
   EXPECT_EQ(uuid, device->GetGattServices()[0]->GetUUID());
@@ -103,11 +107,13 @@ TEST_F(BluetoothRemoteGattServiceTest, GetCharacteristics_FindNone) {
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
 
   // Simulate a service, with no Characteristics:
   std::vector<std::string> services;
   services.push_back("00000000-0000-1000-8000-00805f9b34fb");
   SimulateGattServicesDiscovered(device, services);
+  base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattService* service = device->GetGattServices()[0];
 
   EXPECT_EQ(0u, service->GetCharacteristics().size());
@@ -127,11 +133,13 @@ TEST_F(BluetoothRemoteGattServiceTest,
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
 
   // Simulate a service, with several Characteristics:
   std::vector<std::string> services;
   services.push_back("00000000-0000-1000-8000-00805f9b34fb");
   SimulateGattServicesDiscovered(device, services);
+  base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattService* service = device->GetGattServices()[0];
   std::string characteristic_uuid1 = "11111111-0000-1000-8000-00805f9b34fb";
   std::string characteristic_uuid2 = "22222222-0000-1000-8000-00805f9b34fb";
@@ -179,6 +187,7 @@ TEST_F(BluetoothRemoteGattServiceTest, GattCharacteristics_ObserversCalls) {
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
 
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -186,6 +195,7 @@ TEST_F(BluetoothRemoteGattServiceTest, GattCharacteristics_ObserversCalls) {
   std::vector<std::string> services;
   services.push_back("00000000-0000-1000-8000-00805f9b34fb");
   SimulateGattServicesDiscovered(device, services);
+  base::RunLoop().RunUntilIdle();
   BluetoothRemoteGattService* service = device->GetGattServices()[0];
   std::string characteristic_uuid1 = "11111111-0000-1000-8000-00805f9b34fb";
   std::string characteristic_uuid2 = "22222222-0000-1000-8000-00805f9b34fb";
@@ -250,6 +260,7 @@ TEST_F(BluetoothRemoteGattServiceTest, SimulateGattServiceRemove) {
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
 
   TestBluetoothAdapterObserver observer(adapter_);
 
