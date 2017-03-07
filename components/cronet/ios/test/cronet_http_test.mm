@@ -398,4 +398,21 @@ TEST_F(HttpTest, FileSchemeNotSupported) {
   EXPECT_TRUE([[delegate_ responseBody] containsString:fileData]);
 }
 
+TEST_F(HttpTest, DataSchemeNotSupported) {
+  NSString* testString = @"Hello, World!";
+  NSData* testData = [testString dataUsingEncoding:NSUTF8StringEncoding];
+  NSString* dataString =
+      [NSString stringWithFormat:@"data:text/plain;base64,%@",
+                                 [testData base64EncodedStringWithOptions:0]];
+  NSURL* url = [NSURL URLWithString:dataString];
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
+    EXPECT_TRUE(false) << "Block should not be called for unsupported requests";
+    return YES;
+  }];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([[delegate_ responseBody] containsString:testString]);
+}
+
 }  // namespace cronet

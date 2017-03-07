@@ -91,8 +91,7 @@ class CronetHttpProtocolHandlerDelegate
     NSString* scheme = [[request URL] scheme];
     if (!scheme)
       return false;
-    return [scheme caseInsensitiveCompare:@"data"] == NSOrderedSame ||
-           [scheme caseInsensitiveCompare:@"http"] == NSOrderedSame ||
+    return [scheme caseInsensitiveCompare:@"http"] == NSOrderedSame ||
            [scheme caseInsensitiveCompare:@"https"] == NSOrderedSame;
   }
 
