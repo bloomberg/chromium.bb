@@ -1753,11 +1753,8 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
     return;
   }
 
-  // Queue the packet with the appropriate stream.
-  DCHECK_GE(packet->stream_index, 0);
-  DCHECK_LT(packet->stream_index, static_cast<int>(streams_.size()));
-
-  // Defend against ffmpeg giving us a bad stream index.
+  // Queue the packet with the appropriate stream; we must defend against ffmpeg
+  // giving us a bad stream index.  See http://crbug.com/698549 for example.
   if (packet->stream_index >= 0 &&
       packet->stream_index < static_cast<int>(streams_.size()) &&
       streams_[packet->stream_index]) {
