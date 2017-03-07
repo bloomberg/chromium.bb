@@ -232,17 +232,27 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   void SetState(State state);
   void ShutdownSession();
-  void OnAndroidManagementPassed();
   void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
 
-  void StartArcAndroidManagementCheck();
-  void MaybeReenableArc();
+  // Starts Android management check. This is for first boot case (= Opt-in
+  // or OOBE flow case). In secondary or later ARC enabling, the check should
+  // run in background.
+  void StartAndroidManagementCheck();
 
   // Called when the Android management check is done in opt-in flow or
-  // re-auth flow.
+  // OOBE flow.
   void OnAndroidManagementChecked(
       policy::AndroidManagementClient::Result result);
+
+  // Starts Android management check in background (in parallel with starting
+  // ARC). This is for secondary or later ARC enabling.
+  // The reason running them in parallel is for performance. The secondary or
+  // later ARC enabling is typically on "logging into Chrome" for the user who
+  // already opted in to use Google Play Store. In such a case, network is
+  // typically not yet ready. Thus, if we block ARC boot, it delays several
+  // seconds, which is not very user friendly.
+  void StartBackgroundAndroidManagementCheck();
 
   // Called when the background Android management check is done. It is
   // triggered when the second or later ARC boot timing.
@@ -262,6 +272,12 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // ArcSessionRunner::Observer:
   void OnSessionStopped(ArcStopReason reason, bool restarting) override;
+
+  // On ARC session stopped and/or data removal completion, this is called
+  // so that, if necessary, ARC session is restarted.
+  // TODO(hidehiko): This can be removed after the racy state machine
+  // is fixed.
+  void MaybeReenableArc();
 
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
 

@@ -591,27 +591,15 @@ void ArcSessionManager::RequestEnableImpl() {
   if (prefs->GetBoolean(prefs::kArcSignedIn) ||
       IsArcOptInVerificationDisabled() || IsArcKioskMode()) {
     StartArc();
-
-    // Skip Android management check for testing.
-    // We also skip if Android management check for Kiosk mode,
-    // because there are no managed human users for Kiosk exist.
-    if (IsArcOptInVerificationDisabled() || IsArcKioskMode() ||
-        (g_disable_ui_for_testing &&
-         !g_enable_check_android_management_for_testing)) {
-      return;
-    }
-
     // Check Android management in parallel.
-    // Note: Because the callback may be called in synchronous way (i.e. called
-    // on the same stack), StartCheck() needs to be called *after* StartArc().
-    // Otherwise, SetArcPlayStoreEnabledForProfile() which may be called in
-    // OnBackgroundAndroidManagementChecked() could be ignored.
-    android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
-        profile_, context_->token_service(), context_->account_id(),
-        true /* retry_on_error */);
-    android_management_checker_->StartCheck(
-        base::Bind(&ArcSessionManager::OnBackgroundAndroidManagementChecked,
-                   weak_ptr_factory_.GetWeakPtr()));
+    // Note: StartBackgroundAndroidManagementCheck() may call
+    // OnBackgroundAndroidManagementChecked() synchronously (or
+    // asynchornously). In the callback, Google Play Store enabled preference
+    // can be set to false if managed, and it triggers RequestDisable() via
+    // ArcPlayStoreEnabledPreferenceHandler.
+    // Thus, StartArc() should be called so that disabling should work even
+    // if synchronous call case.
+    StartBackgroundAndroidManagementCheck();
     return;
   }
 
@@ -628,7 +616,7 @@ void ArcSessionManager::RequestEnableImpl() {
         support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE) {
       support_host_->ShowArcLoading();
     }
-    StartArcAndroidManagementCheck();
+    StartAndroidManagementCheck();
     return;
   }
 
@@ -704,21 +692,22 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
   if (support_host_ &&
       support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE)
     support_host_->ShowArcLoading();
-  StartArcAndroidManagementCheck();
+  StartAndroidManagementCheck();
 }
 
-void ArcSessionManager::StartArcAndroidManagementCheck() {
+void ArcSessionManager::StartAndroidManagementCheck() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(arc_session_runner_->IsStopped());
   DCHECK(state_ == State::SHOWING_TERMS_OF_SERVICE ||
          state_ == State::CHECKING_ANDROID_MANAGEMENT ||
          (state_ == State::STOPPED &&
           profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)));
+  DCHECK(!android_management_checker_);
   SetState(State::CHECKING_ANDROID_MANAGEMENT);
 
-  android_management_checker_.reset(new ArcAndroidManagementChecker(
+  android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
       profile_, context_->token_service(), context_->account_id(),
-      false /* retry_on_error */));
+      false /* retry_on_error */);
   android_management_checker_->StartCheck(
       base::Bind(&ArcSessionManager::OnAndroidManagementChecked,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -728,6 +717,8 @@ void ArcSessionManager::OnAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::CHECKING_ANDROID_MANAGEMENT);
+  DCHECK(android_management_checker_);
+  android_management_checker_.reset();
 
   switch (result) {
     case policy::AndroidManagementClient::Result::UNMANAGED:
@@ -740,7 +731,6 @@ void ArcSessionManager::OnAndroidManagementChecked(
       StartArc();
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
-      ShutdownSession();
       if (support_host_) {
         support_host_->ShowError(
             ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR, false);
@@ -748,7 +738,6 @@ void ArcSessionManager::OnAndroidManagementChecked(
       UpdateOptInCancelUMA(OptInCancelReason::ANDROID_MANAGEMENT_REQUIRED);
       break;
     case policy::AndroidManagementClient::Result::ERROR:
-      ShutdownSession();
       if (support_host_) {
         support_host_->ShowError(
             ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR, false);
@@ -758,9 +747,34 @@ void ArcSessionManager::OnAndroidManagementChecked(
   }
 }
 
+void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::ACTIVE);
+  DCHECK(!android_management_checker_);
+
+  // Skip Android management check for testing.
+  // We also skip if Android management check for Kiosk mode,
+  // because there are no managed human users for Kiosk exist.
+  if (IsArcOptInVerificationDisabled() || IsArcKioskMode() ||
+      (g_disable_ui_for_testing &&
+       !g_enable_check_android_management_for_testing)) {
+    return;
+  }
+
+  android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
+      profile_, context_->token_service(), context_->account_id(),
+      true /* retry_on_error */);
+  android_management_checker_->StartCheck(
+      base::Bind(&ArcSessionManager::OnBackgroundAndroidManagementChecked,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ArcSessionManager::OnBackgroundAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(android_management_checker_);
+  android_management_checker_.reset();
+
   switch (result) {
     case policy::AndroidManagementClient::Result::UNMANAGED:
       // Do nothing. ARC should be started already.
@@ -845,7 +859,7 @@ void ArcSessionManager::OnRetryClicked() {
     // For second or later boot, either ERROR_WITH_FEEDBACK case or ACTIVE
     // case must hit.
     support_host_->ShowArcLoading();
-    StartArcAndroidManagementCheck();
+    StartAndroidManagementCheck();
   }
 }
 
