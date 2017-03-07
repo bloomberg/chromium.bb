@@ -126,26 +126,27 @@ final class ChromeBluetoothDevice {
                     (newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED)
                             ? "Connected"
                             : "Disconnected");
-            if (newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED) {
-                RecordHistogram.recordSparseSlowlyHistogram(
-                        "Bluetooth.Web.Android.onConnectionStateChange.Status.Connected", status);
-                mBluetoothGatt.discoverServices();
-            } else if (newState == android.bluetooth.BluetoothProfile.STATE_DISCONNECTED) {
-                RecordHistogram.recordSparseSlowlyHistogram(
-                        "Bluetooth.Web.Android.onConnectionStateChange.Status.Disconnected",
-                        status);
-                if (mBluetoothGatt != null) {
-                    mBluetoothGatt.close();
-                    mBluetoothGatt = null;
-                }
-            } else {
-                RecordHistogram.recordSparseSlowlyHistogram(
-                        "Bluetooth.Web.Android.onConnectionStateChange.Status.InvalidState",
-                        status);
-            }
             Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    if (newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED) {
+                        RecordHistogram.recordSparseSlowlyHistogram(
+                                "Bluetooth.Web.Android.onConnectionStateChange.Status.Connected",
+                                status);
+                        mBluetoothGatt.discoverServices();
+                    } else if (newState == android.bluetooth.BluetoothProfile.STATE_DISCONNECTED) {
+                        RecordHistogram.recordSparseSlowlyHistogram(
+                                "Bluetooth.Web.Android.onConnectionStateChange.Status.Disconnected",
+                                status);
+                        if (mBluetoothGatt != null) {
+                            mBluetoothGatt.close();
+                            mBluetoothGatt = null;
+                        }
+                    } else {
+                        RecordHistogram.recordSparseSlowlyHistogram(
+                                "Bluetooth.Web.Android.onConnectionStateChange.Status.InvalidState",
+                                status);
+                    }
                     if (mNativeBluetoothDeviceAndroid != 0) {
                         nativeOnConnectionStateChange(mNativeBluetoothDeviceAndroid, status,
                                 newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED);

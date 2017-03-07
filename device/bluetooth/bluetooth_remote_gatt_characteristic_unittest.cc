@@ -2273,4 +2273,124 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GetDescriptorsByUUID) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
+#if defined(OS_ANDROID)
+// Tests that read requests after a device disconnects but before the disconnect
+// task has a chance to run result in an error.
+// macOS: Does not apply. All events arrive on the UI Thread.
+// TODO(crbug.com/694102): Enable this test on Windows.
+TEST_F(BluetoothRemoteGattCharacteristicTest, ReadDuringDisconnect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_READ));
+
+  SimulateGattDisconnection(device_);
+  // Do not yet call RunUntilIdle() to process the disconnect task.
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
+            last_gatt_error_code_);
+}
+#endif
+
+#if defined(OS_ANDROID)
+// Tests that write requests after a device disconnects but before the
+// disconnect task runs result in an error.
+// macOS: Does not apply. All events arrive on the UI Thread.
+// TODO(crbug.com/694102): Enable this test on Windows.
+TEST_F(BluetoothRemoteGattCharacteristicTest, WriteDuringDisconnect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+
+  SimulateGattDisconnection(device_);
+  // Do not yet call RunUntilIdle() to process the disconnect task.
+  characteristic1_->WriteRemoteCharacteristic(
+      std::vector<uint8_t>(), GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::EXPECTED));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
+            last_gatt_error_code_);
+}
+#endif
+
+#if defined(OS_ANDROID)
+// Tests that start notifications requests after a device disconnects but before
+// the disconnect task runs result in an error.
+// macOS: Does not apply. All events arrive on the UI Thread.
+// TODO(crbug.com/694102): Enable this test on Windows.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       StartNotifySessionDuringDisconnect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY));
+  SimulateGattDescriptor(
+      characteristic1_,
+      BluetoothRemoteGattDescriptor::ClientCharacteristicConfigurationUuid()
+          .canonical_value());
+
+  SimulateGattDisconnection(device_);
+  // Don't run the disconnect task.
+  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
+                                       GetGattErrorCallback(Call::EXPECTED));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
+            last_gatt_error_code_);
+}
+#endif
+
+#if defined(OS_ANDROID)
+// Tests that stop notifications requests after a device disconnects but before
+// the disconnect task runs do not result in a crash.
+// macOS: Does not apply. All events arrive on the UI Thread.
+// TODO(crbug.com/694102): Enable this test on Windows.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       StopNotifySessionDuringDisconnect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
+
+  SimulateGattDisconnection(device_);
+  // Don't run the disconnect task.
+  notify_sessions_[0]->Stop(GetStopNotifyCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
+}
+#endif
+
+#if defined(OS_ANDROID)
+// Tests that deleting notify sessions after a device disconnects but before the
+// disconnect task runs do not result in a crash.
+// macOS: Does not apply. All events arrive on the UI Thread.
+// TODO(crbug.com/694102): Enable this test on Windows.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       DeleteNotifySessionDuringDisconnect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
+
+  SimulateGattDisconnection(device_);
+  // Don't run the disconnect task.
+  notify_sessions_.clear();
+  base::RunLoop().RunUntilIdle();
+}
+#endif
 }  // namespace device

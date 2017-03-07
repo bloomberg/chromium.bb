@@ -640,4 +640,53 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_ReadPending) {
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+// Tests that read requests after a device disconnects but before the
+// disconnect task runs do not result in a crash.
+// macOS: Does not apply. All events arrive on the UI Thread.
+// TODO(crbug.com/694102): Enable this test on Windows.
+TEST_F(BluetoothRemoteGattDescriptorTest, ReadDuringDisconnect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
+
+  SimulateGattDisconnection(device_);
+  // Don't run the disconnect task.
+  descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::NOT_EXPECTED),
+                                     // TODO(crbug.com/621901): Expect an error.
+                                     GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  base::RunLoop().RunUntilIdle();
+  // TODO(crbug.com/621901): Test error callback was called.
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Tests that write requests after a device disconnects but before the
+// disconnect task runs do not result in a crash.
+// macOS: Does not apply. All events arrive on the UI Thread.
+// TODO(crbug.com/694102): Enable this test on Windows.
+TEST_F(BluetoothRemoteGattDescriptorTest, WriteDuringDisconnect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
+
+  SimulateGattDisconnection(device_);
+  // Don't run the disconnect task.
+  descriptor1_->WriteRemoteDescriptor(
+      std::vector<uint8_t>(), GetCallback(Call::NOT_EXPECTED),
+      // TODO(crbug.com/621901): Expect an error.
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  base::RunLoop().RunUntilIdle();
+  // TODO(crbug.com/621901): Test that an error was returned.
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace device
