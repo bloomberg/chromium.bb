@@ -125,7 +125,7 @@ bool TextTrackLoader::load(const KURL& url,
                            CrossOriginAttributeValue crossOrigin) {
   cancelLoad();
 
-  FetchRequest cueRequest(ResourceRequest(document().completeURL(url)),
+  FetchRequest cueRequest(ResourceRequest(url),
                           FetchInitiatorTypeNames::texttrack);
 
   if (crossOrigin != CrossOriginAttributeNotSet) {
