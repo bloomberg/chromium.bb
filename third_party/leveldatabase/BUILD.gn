@@ -140,7 +140,7 @@ static_library("leveldatabase") {
   }
 }
 
-if (!is_android) {
+if (!is_ios && !is_android) {
   test("env_chromium_unittests") {
     sources = [
       "env_chromium_unittest.cc",
@@ -299,6 +299,17 @@ if (!is_android) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     deps = [
       ":leveldb_testutil",
+    ]
+  }
+
+  executable("leveldb_leveldbutil") {
+    sources = [
+      "src/db/leveldbutil.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldatabase",
     ]
   }
 
