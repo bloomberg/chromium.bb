@@ -189,7 +189,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     ASSERT(m_parent || !prev);
     m_prev = prev;
   }
-  bool nextOnLineExists() const;
 
   virtual bool isLeaf() const { return true; }
 
@@ -418,8 +417,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
           m_hasEllipsisBoxOrHyphen(false),
           m_dirOverride(false),
           m_isText(false),
-          m_determinedIfNextOnLineExists(false),
-          m_nextOnLineExists(false),
           m_expansion(0) {}
 
     // Some of these bits are actually for subclasses and moved here to compact
@@ -463,27 +460,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     // Whether or not this object represents text with a non-zero height.
     // Includes non-image list markers, text boxes.
     ADD_BOOLEAN_BITFIELD(isText, IsText);
-
-   private:
-    mutable unsigned m_determinedIfNextOnLineExists : 1;
-
-   public:
-    bool determinedIfNextOnLineExists() const {
-      return m_determinedIfNextOnLineExists;
-    }
-    void setDeterminedIfNextOnLineExists(
-        bool determinedIfNextOnLineExists) const {
-      m_determinedIfNextOnLineExists = determinedIfNextOnLineExists;
-    }
-
-   private:
-    mutable unsigned m_nextOnLineExists : 1;
-
-   public:
-    bool nextOnLineExists() const { return m_nextOnLineExists; }
-    void setNextOnLineExists(bool nextOnLineExists) const {
-      m_nextOnLineExists = nextOnLineExists;
-    }
 
    private:
     unsigned m_expansion : 12;  // for justified text

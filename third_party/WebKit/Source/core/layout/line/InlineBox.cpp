@@ -258,20 +258,6 @@ RootInlineBox& InlineBox::root() {
   return static_cast<RootInlineBox&>(*this);
 }
 
-bool InlineBox::nextOnLineExists() const {
-  if (!m_bitfields.determinedIfNextOnLineExists()) {
-    m_bitfields.setDeterminedIfNextOnLineExists(true);
-
-    if (!parent())
-      m_bitfields.setNextOnLineExists(false);
-    else if (nextOnLine())
-      m_bitfields.setNextOnLineExists(true);
-    else
-      m_bitfields.setNextOnLineExists(parent()->nextOnLineExists());
-  }
-  return m_bitfields.nextOnLineExists();
-}
-
 InlineBox* InlineBox::nextLeafChild() const {
   InlineBox* leaf = nullptr;
   for (InlineBox* box = nextOnLine(); box && !leaf; box = box->nextOnLine())
