@@ -35,9 +35,9 @@ var vrShellUi = (function() {
       /** @const */ this.CSS_WIDTH_PIXELS = 960.0;
       /** @const */ this.CSS_HEIGHT_PIXELS = 640.0;
       /** @const */ this.DPR = 1.2;
-      /** @const */ this.MENU_MODE_SCREEN_DISTANCE = 1.2;
-      /** @const */ this.MENU_MODE_SCREEN_HEIGHT = 0.5;
-      /** @const */ this.MENU_MODE_SCREEN_ELEVATION = 0.1;
+      /** @const */ this.MENU_MODE_SCREEN_DISTANCE = 2.0;
+      /** @const */ this.MENU_MODE_SCREEN_HEIGHT = 0.8;
+      /** @const */ this.MENU_MODE_SCREEN_ELEVATION = 0.2;
       /** @const */ this.BACKGROUND_DISTANCE_MULTIPLIER = 1.414;
 
       this.menuMode = false;
@@ -878,10 +878,9 @@ var vrShellUi = (function() {
 
   class VirtualKeyboard {
     constructor(contentQuadId) {
-      /** @const */ this.SCENE_GROUND_SIZE = 25.0;
-      /** @const */ this.SCALE = 1.8;
-      /** @const */ this.ANGLE_UP = Math.PI / 6;
-      /** @const */ this.Y_OFFSET = -1.0;
+      /** @const */ this.SCALE = 1.4;
+      /** @const */ this.ANGLE_UP = Math.PI / 8;
+      /** @const */ this.Y_OFFSET = -0.9;
       /** @const */ this.Z_OFFSET = -1.8;
 
       this.element = new DomUiElement('#vkb');

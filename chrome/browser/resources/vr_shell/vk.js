@@ -262,7 +262,9 @@ var vrShellVK = (function() {
 
   function vkCh(button) {
     if (button.key || button.code) {
-      // TODO(asimjour): Change the focus to the omnibox.
+      // This code limits use of the HTML keyboard to the omnibox.
+      document.querySelector("#omnibox-input-field").focus();
+
       if (button.code != 'AltRight')
         sendKey('key', button.code, button.key);
       if (vkState.level == 1)
