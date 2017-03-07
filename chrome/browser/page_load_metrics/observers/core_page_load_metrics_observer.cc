@@ -212,6 +212,27 @@ const char kHistogramTotalBytes[] = "PageLoad.Experimental.Bytes.Total";
 const char kHistogramNetworkBytes[] = "PageLoad.Experimental.Bytes.Network";
 const char kHistogramCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
 
+const char kHistogramLoadTypeTotalBytesForwardBack[] =
+    "PageLoad.Experimental.Bytes.Total.LoadType.ForwardBackNavigation";
+const char kHistogramLoadTypeNetworkBytesForwardBack[] =
+    "PageLoad.Experimental.Bytes.Network.LoadType.ForwardBackNavigation";
+const char kHistogramLoadTypeCacheBytesForwardBack[] =
+    "PageLoad.Experimental.Bytes.Cache.LoadType.ForwardBackNavigation";
+
+const char kHistogramLoadTypeTotalBytesReload[] =
+    "PageLoad.Experimental.Bytes.Total.LoadType.Reload";
+const char kHistogramLoadTypeNetworkBytesReload[] =
+    "PageLoad.Experimental.Bytes.Network.LoadType.Reload";
+const char kHistogramLoadTypeCacheBytesReload[] =
+    "PageLoad.Experimental.Bytes.Cache.LoadType.Reload";
+
+const char kHistogramLoadTypeTotalBytesNewNavigation[] =
+    "PageLoad.Experimental.Bytes.Total.LoadType.NewNavigation";
+const char kHistogramLoadTypeNetworkBytesNewNavigation[] =
+    "PageLoad.Experimental.Bytes.Network.LoadType.NewNavigation";
+const char kHistogramLoadTypeCacheBytesNewNavigation[] =
+    "PageLoad.Experimental.Bytes.Cache.LoadType.NewNavigation";
+
 const char kHistogramTotalCompletedResources[] =
     "PageLoad.Experimental.CompletedResources.Total";
 const char kHistogramNetworkCompletedResources[] =
@@ -696,6 +717,37 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
   PAGE_BYTES_HISTOGRAM(internal::kHistogramNetworkBytes, network_bytes_);
   PAGE_BYTES_HISTOGRAM(internal::kHistogramCacheBytes, cache_bytes_);
   PAGE_BYTES_HISTOGRAM(internal::kHistogramTotalBytes, total_bytes);
+
+  switch (GetPageLoadType(transition_)) {
+    case LOAD_TYPE_RELOAD:
+      PAGE_BYTES_HISTOGRAM(internal::kHistogramLoadTypeNetworkBytesReload,
+                           network_bytes_);
+      PAGE_BYTES_HISTOGRAM(internal::kHistogramLoadTypeCacheBytesReload,
+                           cache_bytes_);
+      PAGE_BYTES_HISTOGRAM(internal::kHistogramLoadTypeTotalBytesReload,
+                           total_bytes);
+      break;
+    case LOAD_TYPE_FORWARD_BACK:
+      PAGE_BYTES_HISTOGRAM(internal::kHistogramLoadTypeNetworkBytesForwardBack,
+                           network_bytes_);
+      PAGE_BYTES_HISTOGRAM(internal::kHistogramLoadTypeCacheBytesForwardBack,
+                           cache_bytes_);
+      PAGE_BYTES_HISTOGRAM(internal::kHistogramLoadTypeTotalBytesForwardBack,
+                           total_bytes);
+      break;
+    case LOAD_TYPE_NEW_NAVIGATION:
+      PAGE_BYTES_HISTOGRAM(
+          internal::kHistogramLoadTypeNetworkBytesNewNavigation,
+          network_bytes_);
+      PAGE_BYTES_HISTOGRAM(internal::kHistogramLoadTypeCacheBytesNewNavigation,
+                           cache_bytes_);
+      PAGE_BYTES_HISTOGRAM(internal::kHistogramLoadTypeTotalBytesNewNavigation,
+                           total_bytes);
+      break;
+    case LOAD_TYPE_NONE:
+      NOTREACHED();
+      break;
+  }
 
   PAGE_RESOURCE_COUNT_HISTOGRAM(internal::kHistogramNetworkCompletedResources,
                                 num_network_resources_);

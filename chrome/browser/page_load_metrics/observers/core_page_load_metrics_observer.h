@@ -53,6 +53,18 @@ extern const char kHistogramTotalBytes[];
 extern const char kHistogramNetworkBytes[];
 extern const char kHistogramCacheBytes[];
 
+extern const char kHistogramLoadTypeTotalBytesForwardBack[];
+extern const char kHistogramLoadTypeNetworkBytesForwardBack[];
+extern const char kHistogramLoadTypeCacheBytesForwardBack[];
+
+extern const char kHistogramLoadTypeTotalBytesReload[];
+extern const char kHistogramLoadTypeNetworkBytesReload[];
+extern const char kHistogramLoadTypeCacheBytesReload[];
+
+extern const char kHistogramLoadTypeTotalBytesNewNavigation[];
+extern const char kHistogramLoadTypeNetworkBytesNewNavigation[];
+extern const char kHistogramLoadTypeCacheBytesNewNavigation[];
+
 extern const char kHistogramTotalCompletedResources[];
 extern const char kHistogramNetworkCompletedResources[];
 extern const char kHistogramCacheCompletedResources[];

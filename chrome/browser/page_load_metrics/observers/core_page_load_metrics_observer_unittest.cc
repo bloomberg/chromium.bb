@@ -403,7 +403,30 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
   GURL url(kDefaultTestUrl);
   NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_RELOAD);
   SimulateTimingUpdate(timing);
-  NavigateAndCommit(url);
+
+  page_load_metrics::ExtraRequestInfo resources[] = {
+      // Cached request.
+      {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       0 /* original_network_content_length */},
+      // Uncached non-proxied request.
+      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       1024 * 40 /* original_network_content_length */},
+  };
+
+  int64_t network_bytes = 0;
+  int64_t cache_bytes = 0;
+  for (const auto& request : resources) {
+    SimulateLoadedResource(request);
+    if (!request.was_cached) {
+      network_bytes += request.raw_body_bytes;
+    } else {
+      cache_bytes += request.raw_body_bytes;
+    }
+  }
+
+  NavigateToUntrackedUrl();
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintReload, 1);
@@ -423,6 +446,30 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
       internal::kHistogramLoadTypeParseStartForwardBack, 0);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeParseStartNewNavigation, 0);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeNetworkBytesReload,
+      static_cast<int>((network_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeNetworkBytesForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeNetworkBytesNewNavigation, 0);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeCacheBytesReload,
+      static_cast<int>((cache_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeCacheBytesForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeCacheBytesNewNavigation, 0);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeTotalBytesReload,
+      static_cast<int>((network_bytes + cache_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeTotalBytesForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeTotalBytesNewNavigation, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
@@ -441,7 +488,30 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
       url, ui::PageTransitionFromInt(ui::PAGE_TRANSITION_RELOAD |
                                      ui::PAGE_TRANSITION_FORWARD_BACK));
   SimulateTimingUpdate(timing);
-  NavigateAndCommit(url);
+
+  page_load_metrics::ExtraRequestInfo resources[] = {
+      // Cached request.
+      {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       0 /* original_network_content_length */},
+      // Uncached non-proxied request.
+      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       1024 * 40 /* original_network_content_length */},
+  };
+
+  int64_t network_bytes = 0;
+  int64_t cache_bytes = 0;
+  for (const auto& request : resources) {
+    SimulateLoadedResource(request);
+    if (!request.was_cached) {
+      network_bytes += request.raw_body_bytes;
+    } else {
+      cache_bytes += request.raw_body_bytes;
+    }
+  }
+
+  NavigateToUntrackedUrl();
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintReload, 0);
@@ -461,6 +531,30 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
       timing.parse_start.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeParseStartNewNavigation, 0);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeNetworkBytesForwardBack,
+      static_cast<int>((network_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeNetworkBytesNewNavigation, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeNetworkBytesReload, 0);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeCacheBytesForwardBack,
+      static_cast<int>((cache_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeCacheBytesNewNavigation, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeCacheBytesReload, 0);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeTotalBytesForwardBack,
+      static_cast<int>((network_bytes + cache_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeTotalBytesNewNavigation, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeTotalBytesReload, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
@@ -473,7 +567,30 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
   GURL url(kDefaultTestUrl);
   NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_LINK);
   SimulateTimingUpdate(timing);
-  NavigateAndCommit(url);
+
+  page_load_metrics::ExtraRequestInfo resources[] = {
+      // Cached request.
+      {true /*was_cached*/, 1024 * 20 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       0 /* original_network_content_length */},
+      // Uncached non-proxied request.
+      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       false /* data_reduction_proxy_used*/,
+       1024 * 40 /* original_network_content_length */},
+  };
+
+  int64_t network_bytes = 0;
+  int64_t cache_bytes = 0;
+  for (auto request : resources) {
+    SimulateLoadedResource(request);
+    if (!request.was_cached) {
+      network_bytes += request.raw_body_bytes;
+    } else {
+      cache_bytes += request.raw_body_bytes;
+    }
+  }
+
+  NavigateToUntrackedUrl();
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintReload, 0);
@@ -493,6 +610,30 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
   histogram_tester().ExpectBucketCount(
       internal::kHistogramLoadTypeParseStartNewNavigation,
       timing.parse_start.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeNetworkBytesNewNavigation,
+      static_cast<int>((network_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeNetworkBytesForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeNetworkBytesReload, 0);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeCacheBytesNewNavigation,
+      static_cast<int>((cache_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeCacheBytesForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeCacheBytesReload, 0);
+
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramLoadTypeTotalBytesNewNavigation,
+      static_cast<int>((network_bytes + cache_bytes) / 1024), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeTotalBytesForwardBack, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramLoadTypeTotalBytesReload, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, BytesAndResourcesCounted) {
