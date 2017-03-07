@@ -866,9 +866,15 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
 
   // Video is always paused when suspension is on and only if matches the
   // optimization criteria if the optimization is on.
+#if defined(OS_ANDROID)
   bool should_pause = IsMediaSuspendOn() ||
                       (IsBackgroundOptimizationOn() && matches_requirements);
   EXPECT_EQ(should_pause, ShouldPauseVideoWhenHidden());
+#else
+  // TODO(avayvod): Revert after merging into 58 so we keep getting data on the
+  // background video pause behavior on desktop. See https://crbug.com/699106.
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+#endif
 }
 
 TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
@@ -883,10 +889,16 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   EXPECT_EQ(IsBackgroundOptimizationOn() && matches_requirements,
             ShouldDisableVideoWhenHidden());
 
-  // Only pause audible videos on Android if both media suspend and resume
-  // background videos is on. On Desktop
+// Only pause audible videos if both media suspend and resume
+// background videos is on.
+#if defined(OS_ANDROID)
   EXPECT_EQ(IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled(),
             ShouldPauseVideoWhenHidden());
+#else
+  // TODO(avayvod): Revert after merging into 58 so we keep getting data on the
+  // background video pause behavior on desktop. See https://crbug.com/699106.
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+#endif
 }
 
 INSTANTIATE_TEST_CASE_P(BackgroundBehaviorTestInstances,
