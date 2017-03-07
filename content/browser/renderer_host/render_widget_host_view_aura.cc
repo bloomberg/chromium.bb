@@ -586,10 +586,6 @@ void RenderWidgetHostViewAura::Hide() {
 #endif
 }
 
-aura::Window* RenderWidgetHostViewAura::GetToplevelWindow() {
-  return window_->GetToplevelWindow();
-}
-
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
   // For a SetSize operation, we don't care what coordinate system the origin
   // of the window is in, it's only important to make sure that the origin
@@ -598,12 +594,21 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  display::Display display =
-      popup_parent_host_view_
-          ? display::Screen::GetScreen()->GetDisplayNearestWindow(
-                popup_parent_host_view_->window_)
-          : display::Screen::GetScreen()->GetDisplayMatching(rect);
-  GetToplevelWindow()->SetBoundsInScreen(rect, display);
+  gfx::Point relative_origin(rect.origin());
+
+  // RenderWidgetHostViewAura::SetBounds() takes screen coordinates, but
+  // Window::SetBounds() takes parent coordinates, so do the conversion here.
+  aura::Window* root = window_->GetRootWindow();
+  if (root) {
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(root);
+    if (screen_position_client) {
+      screen_position_client->ConvertPointFromScreen(window_->parent(),
+                                                     &relative_origin);
+    }
+  }
+
+  InternalSetBounds(gfx::Rect(relative_origin, rect.size()));
 }
 
 gfx::Vector2dF RenderWidgetHostViewAura::GetLastScrollOffset() const {

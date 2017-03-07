@@ -439,10 +439,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return event_handler()->pointer_state();
   }
 
-  // In this unit test, |window_| is directly added to the root and is
-  // toplevel.
-  aura::Window* GetToplevelWindow() override { return window(); }
-
   gfx::Size last_frame_size_;
   std::unique_ptr<cc::CopyOutputRequest> last_copy_request_;
   FakeWindowEventDispatcher* dispatcher_;
@@ -530,20 +526,6 @@ const WebInputEvent* GetInputEventFromMessage(const IPC::Message& message) {
   return reinterpret_cast<const WebInputEvent*>(data);
 }
 
-class MockRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
- public:
-  MockRenderWidgetHostViewAura(RenderWidgetHost* host, bool is_guest_view_hack)
-      : RenderWidgetHostViewAura(host, is_guest_view_hack) {}
-
-  ~MockRenderWidgetHostViewAura() override {}
-
- protected:
-  aura::Window* GetToplevelWindow() override { return window(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostViewAura);
-};
-
 }  // namespace
 
 class RenderWidgetHostViewAuraTest : public testing::Test {
@@ -569,8 +551,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
         ImageTransportFactory::GetInstance()->GetContextFactory(),
         ImageTransportFactory::GetInstance()->GetContextFactoryPrivate());
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
-    aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
-                                          &screen_position_client_);
 
     browser_context_.reset(new TestBrowserContext);
     process_host_ = new MockRenderProcessHost(browser_context_.get());
@@ -584,7 +564,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
                                             process_host_, routing_id, false);
     delegates_.back()->set_widget_host(parent_host_);
     parent_view_ =
-        new MockRenderWidgetHostViewAura(parent_host_, is_guest_view_hack_);
+        new RenderWidgetHostViewAura(parent_host_, is_guest_view_hack_);
     parent_view_->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
                                           aura_test_helper_->root_window(),
@@ -742,7 +722,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<BrowserContext> browser_context_;
   std::vector<std::unique_ptr<MockRenderWidgetHostDelegate>> delegates_;
-  wm::DefaultScreenPositionClient screen_position_client_;
   MockRenderProcessHost* process_host_;
 
   // Tests should set these to nullptr if they've already triggered their
@@ -1032,9 +1011,11 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusFullscreen) {
 // Checks that a popup is positioned correctly relative to its parent using
 // screen coordinates.
 TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
+  wm::DefaultScreenPositionClient screen_position_client;
 
   aura::Window* window = parent_view_->GetNativeView();
   aura::Window* root = window->GetRootWindow();
+  aura::client::SetScreenPositionClient(root, &screen_position_client);
 
   parent_view_->SetBounds(gfx::Rect(10, 10, 800, 600));
   gfx::Rect bounds_in_screen = parent_view_->GetViewBounds();
@@ -4177,7 +4158,7 @@ class RenderWidgetHostViewAuraWithViewHarnessTest
     // the RWHVA as the view.
     delete contents()->GetRenderViewHost()->GetWidget()->GetView();
     // This instance is destroyed in the TearDown method below.
-    view_ = new MockRenderWidgetHostViewAura(
+    view_ = new RenderWidgetHostViewAura(
         contents()->GetRenderViewHost()->GetWidget(), false);
   }
 
