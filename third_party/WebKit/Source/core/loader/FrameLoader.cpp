@@ -799,6 +799,8 @@ void FrameLoader::updateForSameDocumentNavigation(
     HistoryScrollRestorationType scrollRestorationType,
     FrameLoadType type,
     Document* initiatingDocument) {
+  TRACE_EVENT1("blink", "FrameLoader::updateForSameDocumentNavigation", "url",
+               newURL.getString().ascii().data());
   // Update the data source's request with the new URL to fake the URL change
   m_frame->document()->setURL(newURL);
   documentLoader()->setReplacesCurrentHistoryItem(type !=

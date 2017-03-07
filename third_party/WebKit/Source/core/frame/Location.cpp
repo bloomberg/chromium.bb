@@ -38,7 +38,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -177,7 +176,6 @@ void Location::setHash(LocalDOMWindow* currentWindow,
                        LocalDOMWindow* enteredWindow,
                        const String& hash,
                        ExceptionState& exceptionState) {
-  TRACE_EVENT0("blink", "Location::setHash");
   KURL url = document()->url();
   String oldFragmentIdentifier = url.fragmentIdentifier();
   String newFragmentIdentifier = hash;
