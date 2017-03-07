@@ -326,7 +326,6 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const {
       LayoutUnit remainingOuterLogicalHeight =
           enclosingFragmentationContext->remainingLogicalHeightAt(
               blockOffsetInEnclosingFragmentationContext());
-      ASSERT(remainingOuterLogicalHeight > 0);
       if (maxHeight > remainingOuterLogicalHeight)
         maxHeight = remainingOuterLogicalHeight;
     }

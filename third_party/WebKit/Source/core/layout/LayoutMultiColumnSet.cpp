@@ -88,11 +88,10 @@ LayoutMultiColumnSet::fragmentainerGroupAtVisualPoint(
 LayoutUnit LayoutMultiColumnSet::pageLogicalHeightForOffset(
     LayoutUnit offsetInFlowThread) const {
   const MultiColumnFragmentainerGroup& lastRow = lastFragmentainerGroup();
-  if (!lastRow.logicalHeight()) {
+  if (!lastRow.logicalHeight() && m_fragmentainerGroups.size() == 1) {
     // In the first layout pass of an auto-height multicol container, height
     // isn't set. No need to perform the series of complicated dance steps below
     // to figure out that we should simply return 0. Bail now.
-    ASSERT(m_fragmentainerGroups.size() == 1);
     return LayoutUnit();
   }
   if (offsetInFlowThread >=
@@ -137,8 +136,6 @@ LayoutUnit LayoutMultiColumnSet::pageRemainingLogicalHeightForOffset(
       fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread,
                                            pageBoundaryRule);
   LayoutUnit pageLogicalHeight = row.logicalHeight();
-  // It's not allowed to call this method if the height is unknown.
-  DCHECK(pageLogicalHeight);
   LayoutUnit pageLogicalBottom =
       row.columnLogicalTopForOffset(offsetInFlowThread) + pageLogicalHeight;
   LayoutUnit remainingLogicalHeight = pageLogicalBottom - offsetInFlowThread;
@@ -149,12 +146,11 @@ LayoutUnit LayoutMultiColumnSet::pageRemainingLogicalHeightForOffset(
     // part of the latter (i.e. one whole column length of remaining space).
     remainingLogicalHeight = intMod(remainingLogicalHeight, pageLogicalHeight);
   } else if (!remainingLogicalHeight) {
-    // When pageBoundaryRule is AssociateWithLatterPage, we should never return
-    // 0, because if there's no space left, it means that we should be at a
+    // When pageBoundaryRule is AssociateWithLatterPage, we shouldn't just
+    // return 0 if there's no space left, because in that case we're at a
     // column boundary, in which case we should return the amount of space
-    // remaining in the *next* column. But this is not true if the offset is
-    // "infinite" (saturated), so allow this to happen in that case.
-    ASSERT(offsetInFlowThread.mightBeSaturated());
+    // remaining in the *next* column. Note that the page height itself may be
+    // 0, though.
     remainingLogicalHeight = pageLogicalHeight;
   }
   return remainingLogicalHeight;
