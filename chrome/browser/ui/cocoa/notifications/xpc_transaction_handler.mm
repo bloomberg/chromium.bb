@@ -35,7 +35,7 @@
     NSUserNotificationCenter* notificationCenter =
         [NSUserNotificationCenter defaultUserNotificationCenter];
     NSUInteger showing = [[notificationCenter deliveredNotifications] count];
-    if (showing == 0) {
+    if (showing == 0 && transactionOpen_) {
       xpc_transaction_end();
       transactionOpen_ = false;
     }
