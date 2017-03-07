@@ -1478,6 +1478,8 @@ class CORE_EXPORT UseCounter {
     ScrollByWheel = 1848,
     ScheduledActionIgnored = 1849,
     GetCanvas2DContextAttributes = 1850,
+    V8HTMLInputElement_Capture_AttributeGetter = 1851,
+    V8HTMLInputElement_Capture_AttributeSetter = 1852,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

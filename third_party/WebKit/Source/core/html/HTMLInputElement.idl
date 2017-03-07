@@ -103,7 +103,7 @@ interface HTMLInputElement : HTMLElement {
 
     // HTML Media Capture
     // http://www.w3.org/TR/html-media-capture/
-    [RuntimeEnabled=MediaCapture, Reflect] attribute boolean capture;
+    [Measure, RuntimeEnabled=MediaCapture, Reflect] attribute boolean capture;
 
     // Non-standard APIs
     [Reflect, MeasureAs=PrefixedDirectoryAttribute] attribute boolean webkitdirectory;
