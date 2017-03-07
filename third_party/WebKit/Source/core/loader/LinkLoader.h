@@ -37,8 +37,6 @@
 #include "core/loader/resource/LinkPreloadResourceClients.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/PrerenderClient.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceOwner.h"
 #include "wtf/Optional.h"

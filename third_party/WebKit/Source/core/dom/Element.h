@@ -25,7 +25,6 @@
 #ifndef Element_h
 #define Element_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -36,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementData.h"
 #include "core/dom/SpaceSplitString.h"
-#include "core/html/CollectionType.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebFocusType.h"

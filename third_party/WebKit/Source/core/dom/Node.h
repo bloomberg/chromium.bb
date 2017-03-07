@@ -37,9 +37,6 @@
 #include "core/events/EventTarget.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/heap/Handle.h"
-#include "wtf/Compiler.h"
-#include "wtf/Forward.h"
 
 // This needs to be here because Element.cpp also depends on it.
 #define DUMP_NODE_STATISTICS 0
