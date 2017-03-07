@@ -101,14 +101,12 @@ SIMD_INLINE v64 v64_align(v64 a, v64 b, const unsigned int c) {
                  vext_s8(vreinterpret_s8_s64(b), vreinterpret_s8_s64(a), c))
            : b;
 #else
-  return c ? v64_from_64((uint64_t)b >> c * 8) | ((uint64_t)a << (8 - c) * 8)
+  return c ? v64_from_64(((uint64_t)b >> c * 8) | ((uint64_t)a << (8 - c) * 8))
            : b;
 #endif
 }
 
 SIMD_INLINE v64 v64_zero() { return vreinterpret_s64_u8(vdup_n_u8(0)); }
-
-SIMD_INLINE v64 v64_ones() { return vreinterpret_s64_u8(vdup_n_u8(-1)); }
 
 SIMD_INLINE v64 v64_dup_8(uint8_t x) {
   return vreinterpret_s64_u8(vdup_n_u8(x));

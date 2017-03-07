@@ -642,6 +642,12 @@ const mapping m[] = { MAP(v64_sad_u8),
                       MAP(v128_dup_32),
                       MAP(v128_unpacklo_u8_s16),
                       MAP(v128_unpackhi_u8_s16),
+                      MAP(u32_load_unaligned),
+                      MAP(u32_store_unaligned),
+                      MAP(v64_load_unaligned),
+                      MAP(v64_store_unaligned),
+                      MAP(v128_load_unaligned),
+                      MAP(v128_store_unaligned),
                       { NULL, NULL, NULL } };
 #undef MAP
 
