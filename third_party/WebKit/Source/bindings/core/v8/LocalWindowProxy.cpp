@@ -133,10 +133,7 @@ void LocalWindowProxy::initialize() {
 
 void LocalWindowProxy::createContext() {
   // Create a new v8::Context with the window object as the global object
-  // (aka the inner global).  Reuse the global proxy object (aka the outer
-  // global) if it already exists.  See the comments in
-  // setupWindowPrototypeChain for the structure of the prototype chain of
-  // the global object.
+  // (aka the inner global). Reuse the outer global proxy if it already exists.
   v8::Local<v8::ObjectTemplate> globalTemplate =
       V8Window::domTemplate(isolate(), *m_world)->InstanceTemplate();
   CHECK(!globalTemplate.IsEmpty());

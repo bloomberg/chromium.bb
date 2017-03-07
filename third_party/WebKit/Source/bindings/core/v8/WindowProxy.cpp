@@ -180,32 +180,6 @@ void WindowProxy::initializeIfNeeded() {
 void WindowProxy::setupWindowPrototypeChain() {
   // Associate the window wrapper object and its prototype chain with the
   // corresponding native DOMWindow object.
-  // The full structure of the global object's prototype chain is as follows:
-  //
-  // global proxy object [1]
-  //   -- has prototype --> global object (window wrapper object) [2]
-  //   -- has prototype --> Window.prototype
-  //   -- has prototype --> WindowProperties [3]
-  //   -- has prototype --> EventTarget.prototype
-  //   -- has prototype --> Object.prototype
-  //   -- has prototype --> null
-  //
-  // [1] Global proxy object is as known as "outer global object".  It's an
-  //   empty object and remains after navigation.  When navigated, points to
-  //   a different global object as the prototype object.
-  // [2] Global object is as known as "inner global object" or "window wrapper
-  //   object".  The prototype chain between global proxy object and global
-  //   object is NOT observable from user JavaScript code.  All other
-  //   prototype chains are observable.  Global proxy object and global object
-  //   together appear to be the same single JavaScript object.  See also:
-  //     https://wiki.mozilla.org/Gecko:SplitWindow
-  //   global object (= window wrapper object) provides most of Window's DOM
-  //   attributes and operations.  Also global variables defined by user
-  //   JavaScript are placed on this object.  When navigated, a new global
-  //   object is created together with a new v8::Context, but the global proxy
-  //   object doesn't change.
-  // [3] WindowProperties is a named properties object of Window interface.
-
   DOMWindow* window = m_frame->domWindow();
   const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
   v8::Local<v8::Context> context = m_scriptState->context();
