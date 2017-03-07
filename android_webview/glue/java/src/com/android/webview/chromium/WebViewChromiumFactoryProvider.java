@@ -385,7 +385,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     // lives in the ui/ layer. See ui/base/ui_base_paths.h
     private static final int DIR_RESOURCE_PAKS_ANDROID = 3003;
 
-    private void startChromiumLocked() {
+    protected void startChromiumLocked() {
         assert Thread.holdsLock(mLock) && ThreadUtils.runningOnUiThread();
 
         // The post-condition of this method is everything is ready, so notify now to cover all
