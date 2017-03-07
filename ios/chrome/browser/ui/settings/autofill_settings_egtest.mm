@@ -19,6 +19,7 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::NavigationBarDoneButton;
 
 namespace {
 
@@ -101,8 +102,7 @@ void ClearCountryValue() {
                                           nil)] performAction:grey_tap()];
 
   // Switch off edit mode.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -159,8 +159,7 @@ void ClearCountryValue() {
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
   // Wait for UI components to finish loading.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -206,8 +205,7 @@ void ClearCountryValue() {
         performAction:grey_typeText(expectation.user_typed_country)];
 
     // Switch off edit mode.
-    [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                            IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+    [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
         performAction:grey_tap()];
 
     // Verify that the country value was changed to canonical.

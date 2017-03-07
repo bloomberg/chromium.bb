@@ -28,6 +28,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::NavigationBarDoneButton;
+
 const CGFloat kScrollDisplacement = 50.0;
 
 // Test cases to verify that keyboard commands are and are not registered when
@@ -138,11 +140,7 @@ const CGFloat kScrollDisplacement = 50.0;
 
   [self verifyNoKeyboardCommandsAreRegistered];
 
-  // Close Settings
-  id<GREYMatcher> settingsDoneButton =
-      chrome_test_util::ButtonWithAccessibilityLabelId(
-          IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
-  [[EarlGrey selectElementWithMatcher:settingsDoneButton]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 

@@ -51,6 +51,7 @@
 #include "url/gurl.h"
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::NavigationBarDoneButton;
 
 namespace {
 
@@ -98,10 +99,6 @@ id<GREYMatcher> ClearSavedPasswordsButton() {
 // Matcher for the clear browsing data button on the clear browsing data panel.
 id<GREYMatcher> ClearBrowsingDataButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
-}
-// Matcher for the done button in the navigation bar.
-id<GREYMatcher> NavigationDoneButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
 }
 // Matcher for the Settings button in the tools menu.
 id<GREYMatcher> SettingsButton() {
@@ -305,9 +302,7 @@ bool IsCertificateCleared() {
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -331,7 +326,7 @@ bool IsCertificateCleared() {
 // Exits Settings by clicking on the Done button.
 - (void)dismissSettings {
   // Dismiss the settings.
-  [[EarlGrey selectElementWithMatcher:NavigationDoneButton()]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
   // Wait for UI components to finish loading.
@@ -812,7 +807,7 @@ bool IsCertificateCleared() {
       selectElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:NavigationDoneButton()]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
   chrome_test_util::CloseAllIncognitoTabs();
 }
@@ -823,9 +818,7 @@ bool IsCertificateCleared() {
   [[EarlGrey selectElementWithMatcher:SettingsButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -1007,9 +1000,7 @@ bool IsCertificateCleared() {
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
 
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 

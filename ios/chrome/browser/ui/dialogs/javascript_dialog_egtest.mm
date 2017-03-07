@@ -30,6 +30,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::NavigationBarDoneButton;
+
 namespace {
 
 // Enum specifying different types of JavaScript alerts:
@@ -458,9 +460,7 @@ void TapSuppressDialogsButton() {
   AssertJavaScriptAlertNotPresent();
 
   // Close the settings.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
   // Make sure the alert is present.

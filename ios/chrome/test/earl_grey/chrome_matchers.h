@@ -88,6 +88,9 @@ id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
 // a link.
 id<GREYMatcher> OpenLinkInNewTabMenuItem();
 
+// Matcher for the done button on the navigation bar.
+id<GREYMatcher> NavigationBarDoneButton();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

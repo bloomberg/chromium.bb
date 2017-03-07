@@ -31,6 +31,8 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
+using chrome_test_util::NavigationBarDoneButton;
+
 namespace {
 
 // URLs used in the tests.
@@ -91,9 +93,7 @@ void CloseSettings() {
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -275,9 +275,7 @@ class ScopedBlockPopupsException {
       selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
                                    IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON))]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON))]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Toggle the switch back on via the UI and make sure the exceptions are now

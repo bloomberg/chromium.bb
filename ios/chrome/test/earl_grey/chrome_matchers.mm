@@ -231,4 +231,8 @@ id<GREYMatcher> OpenLinkInNewTabMenuItem() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
 }
 
+id<GREYMatcher> NavigationBarDoneButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+}
+
 }  // namespace chrome_test_util

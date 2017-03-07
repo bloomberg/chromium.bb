@@ -14,6 +14,8 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 
+using chrome_test_util::NavigationBarDoneButton;
+
 namespace {
 // Displacement for scroll action.
 const CGFloat kScrollDisplacement = 50.0;
@@ -68,9 +70,7 @@ const CGFloat kScrollDisplacement = 50.0;
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 

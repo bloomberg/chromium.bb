@@ -42,6 +42,7 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OpenLinkInNewTabMenuItem;
 using chrome_test_util::WebViewContainingText;
 
@@ -81,15 +82,6 @@ id<GREYMatcher> HistoryEntry(const GURL& url, const std::string& title) {
 // Matcher for the history button in the tools menu.
 id<GREYMatcher> HistoryButton() {
   return ButtonWithAccessibilityLabelId(IDS_HISTORY_SHOW_HISTORY);
-}
-// Matcher for the done button in the navigation bar.
-id<GREYMatcher> NavigationDoneButton() {
-  // Include sufficientlyVisible condition for the case of the clear browsing
-  // dialog, which also has a "Done" button and is displayed over the history
-  // panel.
-  return grey_allOf(
-      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
-      grey_sufficientlyVisible(), nil);
 }
 // Matcher for the edit button in the navigation bar.
 id<GREYMatcher> NavigationEditButton() {
@@ -171,9 +163,7 @@ void MockSignIn() {
                  chrome_test_util::ButtonWithAccessibilityLabelId(
                      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON)]
       performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 }  // namespace
@@ -231,7 +221,7 @@ void MockSignIn() {
                                                               error:&error];
   // Dismiss history panel by pressing done, if present. Passing error prevents
   // failure if the element is not found.
-  [[EarlGrey selectElementWithMatcher:NavigationDoneButton()]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()
               error:&error];
 
@@ -299,7 +289,7 @@ void MockSignIn() {
       l10n_util::GetNSString(IDS_IOS_HISTORY_NO_SYNCED_RESULTS), &range);
   [[EarlGrey selectElementWithMatcher:grey_text(entriesMessage)]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:NavigationDoneButton()]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
   // Sign in and assert that the page indicates what type of history entries
@@ -409,7 +399,14 @@ void MockSignIn() {
       ClearBrowsingDataButton(),
       grey_not(grey_kindOfClass([MDCCollectionViewTextCell class])), nil);
   [[EarlGrey selectElementWithMatcher:confirmClear] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:NavigationDoneButton()]
+
+  // Include sufficientlyVisible condition for the case of the clear browsing
+  // dialog, which also has a "Done" button and is displayed over the history
+  // panel.
+  id<GREYMatcher> visibleDoneButton = grey_allOf(
+      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
+      grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:visibleDoneButton]
       performAction:grey_tap()];
 
   [self assertNoHistoryShown];
@@ -489,9 +486,7 @@ void MockSignIn() {
   [self openHistoryPanel];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   // Close history.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 

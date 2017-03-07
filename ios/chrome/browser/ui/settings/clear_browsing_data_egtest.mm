@@ -15,6 +15,7 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::NavigationBarDoneButton;
 
 @interface ClearBrowsingDataSettingsTestCase : ChromeTestCase
 @end
@@ -40,8 +41,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 }
 
 - (void)exitSettingsMenu {
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
   // Wait for UI components to finish loading.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];

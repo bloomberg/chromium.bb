@@ -637,9 +637,7 @@ void SelectTabUsingUI(NSString* title) {
   Wait(grey_accessibilityID(kPrivacyCollectionViewId),
        @"Privacy settings view.");
 
-  WaitAndTap(grey_accessibilityLabel(
-                 l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)),
-             @"Close settings");
+  WaitAndTap(chrome_test_util::NavigationBarDoneButton(), @"Close settings");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                           responses[slowURL])]
