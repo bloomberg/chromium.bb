@@ -24,6 +24,8 @@
  */
 
 #include "modules/device_orientation/DeviceOrientationData.h"
+
+#include "modules/device_orientation/DeviceOrientationEventInit.h"
 #include "public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 
 namespace blink {
@@ -38,6 +40,20 @@ DeviceOrientationData* DeviceOrientationData::create(
     const Nullable<double>& gamma,
     bool absolute) {
   return new DeviceOrientationData(alpha, beta, gamma, absolute);
+}
+
+DeviceOrientationData* DeviceOrientationData::create(
+    const DeviceOrientationEventInit& init) {
+  Nullable<double> alpha;
+  Nullable<double> beta;
+  Nullable<double> gamma;
+  if (init.hasAlpha())
+    alpha = init.alpha();
+  if (init.hasBeta())
+    beta = init.beta();
+  if (init.hasGamma())
+    gamma = init.gamma();
+  return DeviceOrientationData::create(alpha, beta, gamma, init.absolute());
 }
 
 DeviceOrientationData* DeviceOrientationData::create(

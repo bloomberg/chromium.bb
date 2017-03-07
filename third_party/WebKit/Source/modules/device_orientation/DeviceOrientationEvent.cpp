@@ -26,6 +26,7 @@
 #include "modules/device_orientation/DeviceOrientationEvent.h"
 
 #include "modules/device_orientation/DeviceOrientationData.h"
+#include "modules/device_orientation/DeviceOrientationEventInit.h"
 
 namespace blink {
 
@@ -33,6 +34,12 @@ DeviceOrientationEvent::~DeviceOrientationEvent() {}
 
 DeviceOrientationEvent::DeviceOrientationEvent()
     : m_orientation(DeviceOrientationData::create()) {}
+
+DeviceOrientationEvent::DeviceOrientationEvent(
+    const AtomicString& eventType,
+    const DeviceOrientationEventInit& initializer)
+    : Event(eventType, initializer),
+      m_orientation(DeviceOrientationData::create(initializer)) {}
 
 DeviceOrientationEvent::DeviceOrientationEvent(
     const AtomicString& eventType,

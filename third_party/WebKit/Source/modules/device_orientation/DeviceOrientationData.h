@@ -31,6 +31,7 @@
 
 namespace blink {
 
+class DeviceOrientationEventInit;
 class WebDeviceOrientationData;
 
 class DeviceOrientationData final
@@ -41,6 +42,7 @@ class DeviceOrientationData final
                                        const Nullable<double>& beta,
                                        const Nullable<double>& gamma,
                                        bool absolute);
+  static DeviceOrientationData* create(const DeviceOrientationEventInit&);
   static DeviceOrientationData* create(const WebDeviceOrientationData&);
   DEFINE_INLINE_TRACE() {}
 
