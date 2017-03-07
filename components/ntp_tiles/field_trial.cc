@@ -2,82 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/metrics/field_trial.h"
+#include "components/ntp_tiles/field_trial.h"
 
 #if defined(OS_ANDROID)
 #include <jni.h>
 #endif
+#include <string>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/ntp_tiles/field_trial.h"
 #include "components/ntp_tiles/switches.h"
-#include "components/variations/variations_associated_data.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "jni/MostVisitedSites_jni.h"
 #endif
 
-namespace {
-const char kPopularSiteDefaultGroup[] = "Default";
-const char kPopularSiteControlGroup[] = "Control";
-const char kPopularSiteEnabledGroup[] = "Enabled";
-const char kPopularSiteEnabledCommandLineSwitchGroup[] =
-    "EnabledWithCommandLineSwitch";
-const char kPopularSiteDisabledCommandLineSwitchGroup[] =
-    "DisabledWithCommandLineSwitch";
-}  // namespace
-
 namespace ntp_tiles {
-
-// On iOS it is not technically possible to prep the field trials on first
-// launch, the configuration file is downloaded too late. In order to run some
-// experiments that need to be active on first launch to be meaningful these
-// are hardcoded, but can be superceeded by a server side config on subsequent
-// launches.
-void SetUpFirstLaunchFieldTrial(bool is_stable_channel) {
-  // Check first if a server side config superceeded this experiment.
-  if (base::FieldTrialList::TrialExists(kPopularSitesFieldTrialName))
-    return;
-
-  // The experiment is only for stable channel, the other channels will simply
-  // get the default behavior.
-  if (!is_stable_channel)
-    return;
-
-  // Stable channels will run with 10% probability.
-  const base::FieldTrial::Probability kTotalProbability = 100;
-  const base::FieldTrial::Probability kEnabledAndControlProbability = 10;
-
-  // Experiment enabled until April 26, 2017.
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          kPopularSitesFieldTrialName, kTotalProbability,
-          kPopularSiteDefaultGroup, 2017, 4, 26,  // Apr 26, 2017
-          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(ntp_tiles::switches::kEnableNTPPopularSites)) {
-    trial->AppendGroup(kPopularSiteEnabledCommandLineSwitchGroup,
-                       kTotalProbability);
-  } else if (command_line->HasSwitch(
-                 ntp_tiles::switches::kDisableNTPPopularSites)) {
-    trial->AppendGroup(kPopularSiteDisabledCommandLineSwitchGroup,
-                       kTotalProbability);
-  } else {
-    trial->AppendGroup(kPopularSiteControlGroup, kEnabledAndControlProbability);
-    AssociateGoogleVariationID(variations::GOOGLE_WEB_PROPERTIES,
-                               kPopularSitesFieldTrialName,
-                               kPopularSiteControlGroup, 3312959);
-    trial->AppendGroup(kPopularSiteEnabledGroup, kEnabledAndControlProbability);
-    AssociateGoogleVariationID(variations::GOOGLE_WEB_PROPERTIES,
-                               kPopularSitesFieldTrialName,
-                               kPopularSiteEnabledGroup, 3312958);
-  }
-}
 
 bool ShouldShowPopularSites() {
   // Note: It's important to query the field trial state first, to ensure that
@@ -102,7 +45,7 @@ bool ShouldShowPopularSites() {
 #if defined(OS_IOS)
   // On iOS, if not enrolled in the experiment, the default is to enable the
   // feature.
-  if (group_name.empty() || (group_name == kPopularSiteDefaultGroup))
+  if (group_name.empty())
     return true;
 #endif
 

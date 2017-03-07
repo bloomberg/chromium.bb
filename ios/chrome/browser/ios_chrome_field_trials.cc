@@ -12,8 +12,4 @@
 void SetupIOSFieldTrials() {
   // Activate the iOS tab eviction dynamic field trials.
   base::FieldTrialList::FindValue("TabEviction");
-
-  // Setup a field trial for a first run experiment on Popular sites.
-  ntp_tiles::SetUpFirstLaunchFieldTrial(GetChannel() ==
-                                        version_info::Channel::STABLE);
 }

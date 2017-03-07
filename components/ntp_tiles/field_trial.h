@@ -7,8 +7,6 @@
 
 namespace ntp_tiles {
 
-void SetUpFirstLaunchFieldTrial(bool is_stable_channel);
-
 bool ShouldShowPopularSites();
 
 }  // namespace ntp_tiles
