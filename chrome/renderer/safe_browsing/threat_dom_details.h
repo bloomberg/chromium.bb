@@ -41,6 +41,13 @@ class ThreatDOMDetails : public content::RenderFrameObserver {
   // An upper limit on the number of nodes we collect. Not const for the test.
   static uint32_t kMaxNodes;
 
+  // An upper limit on the number of attributes to collect per node. Not const
+  // for the test.
+  static uint32_t kMaxAttributes;
+
+  // An upper limit on the length of an attribute string.
+  static uint32_t kMaxAttributeStringLength;
+
   static ThreatDOMDetails* Create(content::RenderFrame* render_frame);
   ~ThreatDOMDetails() override;
 

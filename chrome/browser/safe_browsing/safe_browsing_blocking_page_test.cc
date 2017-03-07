@@ -612,17 +612,24 @@ class SafeBrowsingBlockingPageBrowserTest
     EXPECT_EQ(expected_tag_name, actual_resource.tag_name());
   }
 
-  void VerifyElement(const ClientSafeBrowsingReportRequest& report,
-                     const HTMLElement& actual_element,
-                     const std::string& expected_url,
-                     const std::string& expected_tag_name,
-                     const int expected_child_ids_size) {
-    if (!expected_url.empty()) {
-      ASSERT_EQ(1, actual_element.attribute_size());
-      EXPECT_EQ(expected_url, actual_element.attribute(0).value());
-    }
+  void VerifyElement(
+      const ClientSafeBrowsingReportRequest& report,
+      const HTMLElement& actual_element,
+      const std::string& expected_tag_name,
+      const int expected_child_ids_size,
+      const std::vector<AttributeNameValue>& expected_attributes) {
     EXPECT_EQ(expected_tag_name, actual_element.tag());
     EXPECT_EQ(expected_child_ids_size, actual_element.child_ids_size());
+    ASSERT_EQ(static_cast<int>(expected_attributes.size()),
+              actual_element.attribute_size());
+    for (size_t i = 0; i < expected_attributes.size(); ++i) {
+      const AttributeNameValue& expected_attribute_pair =
+          expected_attributes[i];
+      const HTMLElement::Attribute& actual_attribute_pb =
+          actual_element.attribute(i);
+      EXPECT_EQ(expected_attribute_pair.first, actual_attribute_pb.name());
+      EXPECT_EQ(expected_attribute_pair.second, actual_attribute_pb.value());
+    }
   }
 
   void ExpectSecurityIndicatorDowngrade(content::WebContents* tab,
@@ -819,22 +826,19 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
     for (const HTMLElement& elem : report.dom()) {
       if (elem.tag() == "IFRAME") {
         iframe_node_id = elem.id();
-        VerifyElement(
-            report, elem,
-            net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe).spec(),
-            "IFRAME", /*child_size=*/0);
+        VerifyElement(report, elem, "IFRAME", /*child_size=*/0,
+                      std::vector<AttributeNameValue>());
         break;
       }
     }
     EXPECT_GT(iframe_node_id, -1);
 
     // Find the parent DIV that is the parent of the iframe.
-    // TODO(lpz): Test the identify of the DIV once we start collecting its
-    // attributes.
     for (const HTMLElement& elem : report.dom()) {
       if (elem.id() != iframe_node_id) {
         // Not the IIFRAME, so this is the parent DIV
-        VerifyElement(report, elem, /*url=*/"", "DIV", /*child_size=*/1);
+        VerifyElement(report, elem, "DIV", /*child_size=*/1,
+                      {std::make_pair("foo", "1")});
         // Make sure this DIV has the IFRAME as a child.
         EXPECT_EQ(iframe_node_id, elem.child_ids(0));
       }

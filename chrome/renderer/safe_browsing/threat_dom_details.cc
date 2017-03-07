@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
+#include "components/safe_browsing/common/safebrowsing_types.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -112,9 +113,22 @@ SafeBrowsingHostMsg_ThreatDOMDetails_Node* GetNodeForElement(
   return &(resources->at(resource_index));
 }
 
+std::string TruncateAttributeString(const std::string& input) {
+  if (input.length() <= ThreatDOMDetails::kMaxAttributeStringLength) {
+    return input;
+  }
+
+  std::string truncated;
+  base::TruncateUTF8ToByteSize(
+      input, ThreatDOMDetails::kMaxAttributeStringLength - 3, &truncated);
+  truncated.append("...");
+  return truncated;
+}
+
 // Handler for the various HTML elements that we extract URLs from.
 void HandleElement(
     const blink::WebElement& element,
+    const std::vector<TagAndAttributesItem>& tag_and_attributes_list,
     SafeBrowsingHostMsg_ThreatDOMDetails_Node* summary_node,
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources,
     safe_browsing::ElementToNodeMap* element_to_node_map) {
@@ -131,6 +145,28 @@ void HandleElement(
   child_node.url = child_url;
   child_node.tag_name = element.tagName().utf8();
   child_node.parent = summary_node->url;
+
+  // Populate the element's attributes, but only collect the ones that are
+  // configured in the finch study.
+  const auto& tag_attribute_iter = std::find_if(
+      tag_and_attributes_list.begin(), tag_and_attributes_list.end(),
+      TagNameIs(base::ToLowerASCII(child_node.tag_name)));
+  if (tag_attribute_iter != tag_and_attributes_list.end()) {
+    const std::vector<std::string> attributes_to_collect =
+        tag_attribute_iter->attributes;
+    for (const std::string& attribute : attributes_to_collect) {
+      blink::WebString attr_webstring = blink::WebString::fromASCII(attribute);
+      if (!element.hasAttribute(attr_webstring)) {
+        continue;
+      }
+      child_node.attributes.push_back(std::make_pair(
+          attribute, TruncateAttributeString(
+                         element.getAttribute(attr_webstring).ascii())));
+      if (child_node.attributes.size() == ThreatDOMDetails::kMaxAttributes) {
+        break;
+      }
+    }
+  }
 
   // Update the ID mapping. First generate the ID for the current node.
   // Then, if its parent is available, set the current node's parent ID, and
@@ -190,6 +226,7 @@ bool ShouldHandleElement(
   }
   return false;
 }
+
 }  // namespace
 
 TagAndAttributesItem::TagAndAttributesItem() {}
@@ -197,8 +234,9 @@ TagAndAttributesItem::TagAndAttributesItem(const TagAndAttributesItem& item)
     : tag_name(item.tag_name), attributes(item.attributes) {}
 TagAndAttributesItem::~TagAndAttributesItem() {}
 
-// An upper limit on the number of nodes we collect.
 uint32_t ThreatDOMDetails::kMaxNodes = 500;
+uint32_t ThreatDOMDetails::kMaxAttributes = 100;
+uint32_t ThreatDOMDetails::kMaxAttributeStringLength = 100;
 
 // static
 ThreatDOMDetails* ThreatDOMDetails::Create(content::RenderFrame* render_frame) {
@@ -250,7 +288,8 @@ void ThreatDOMDetails::ExtractResources(
   blink::WebElement element = elements.firstItem();
   for (; !element.isNull(); element = elements.nextItem()) {
     if (ShouldHandleElement(element, tag_and_attributes_list_)) {
-      HandleElement(element, &details_node, resources, &element_to_node_map);
+      HandleElement(element, tag_and_attributes_list_, &details_node, resources,
+                    &element_to_node_map);
       if (resources->size() >= kMaxNodes) {
         // We have reached kMaxNodes, exit early.
         resources->push_back(details_node);

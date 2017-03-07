@@ -283,6 +283,7 @@ void ThreatDetails::AddDomElement(
     const int element_node_id,
     const std::string& tagname,
     const int parent_element_node_id,
+    const std::vector<AttributeNameValue>& attributes,
     const ClientSafeBrowsingReportRequest::Resource* resource) {
   if (!base::FeatureList::IsEnabled(kFillDOMInThreatDetails)) {
     return;
@@ -299,13 +300,15 @@ void ThreatDetails::AddDomElement(
   if (!tag_name_upper.empty()) {
     cur_element->set_tag(tag_name_upper);
   }
+  for (const AttributeNameValue& attribute : attributes) {
+    HTMLElement::Attribute* attribute_pb = cur_element->add_attribute();
+    attribute_pb->set_name(attribute.first);
+    attribute_pb->set_value(attribute.second);
+  }
   bool is_frame = tag_name_upper == "IFRAME" || tag_name_upper == "FRAME";
 
   if (resource) {
     cur_element->set_resource_id(resource->id());
-    HTMLElement::Attribute* src_attribute = cur_element->add_attribute();
-    src_attribute->set_name("SRC");
-    src_attribute->set_value(resource->url());
 
     // For iframes, remember that this HTML Element represents an iframe with a
     // specific URL. Elements from a frame with this URL are children of this
@@ -503,7 +506,8 @@ void ThreatDetails::AddDOMDetails(
     // Check for a tag_name to avoid adding the summary node to the DOM.
     if (!node.tag_name.empty()) {
       AddDomElement(frame_tree_node_id, frame_url.spec(), node.node_id,
-                    node.tag_name, node.parent_node_id, resource);
+                    node.tag_name, node.parent_node_id, node.attributes,
+                    resource);
     }
   }
 }

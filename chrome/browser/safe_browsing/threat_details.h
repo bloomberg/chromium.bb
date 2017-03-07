@@ -23,6 +23,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/common/safebrowsing_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/completion_callback.h"
@@ -166,13 +167,15 @@ class ThreatDetails : public base::RefCountedThreadSafe<
   // from. |frame_url| is the URL that the render frame was handling.
   // |element_node_id| is a unique ID of the element within the render frame.
   // |tag_name| is the tag of the element. |parent_element_node_id| is the
-  // unique ID of the parent element with the render frame. |resource| is set if
-  // this element is a resource.
+  // unique ID of the parent element with the render frame. |attributes|
+  // containes the names and values of the element's attributes.|resource| is
+  // set if this element is a resource.
   void AddDomElement(const int frame_tree_node_id,
                      const std::string& frame_url,
                      const int element_node_id,
                      const std::string& tag_name,
                      const int parent_element_node_id,
+                     const std::vector<AttributeNameValue>& attributes,
                      const ClientSafeBrowsingReportRequest::Resource* resource);
 
   scoped_refptr<BaseUIManager> ui_manager_;

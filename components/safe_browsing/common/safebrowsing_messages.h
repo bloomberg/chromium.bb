@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "components/safe_browsing/common/safebrowsing_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
@@ -36,6 +37,9 @@ IPC_STRUCT_BEGIN(SafeBrowsingHostMsg_ThreatDOMDetails_Node)
 
   // The unique IDs of the child nodes. Can be empty if there are no children.
   IPC_STRUCT_MEMBER(std::vector<int>, child_node_ids)
+
+  // The node's attributes, as a collection of name-value pairs.
+  IPC_STRUCT_MEMBER(std::vector<safe_browsing::AttributeNameValue>, attributes)
 IPC_STRUCT_END()
 
 // SafeBrowsing client-side detection messages sent from the renderer to the
