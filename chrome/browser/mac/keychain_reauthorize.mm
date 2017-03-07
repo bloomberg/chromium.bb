@@ -54,12 +54,23 @@ bool KeychainReauthorize() {
       KeychainPassword::account_name, &pw_length, &password_data,
       storage_item.InitializeInto());
 
+  base::ScopedCFTypeRef<SecKeychainItemRef> backup_item;
+  std::string backup_service_name =
+      std::string(KeychainPassword::service_name) + ".bak";
   if (error != noErr) {
-    OSSTATUS_LOG(ERROR, error)
-        << "KeychainReauthorize failed. Cannot retrieve item.";
-    return false;
+    // If the main entry does not exist, nor does the backup, exit.
+    if (keychain.FindGenericPassword(
+            nullptr, backup_service_name.size(), backup_service_name.data(),
+            strlen(KeychainPassword::account_name),
+            KeychainPassword::account_name, &pw_length, &password_data,
+            backup_item.InitializeInto()) != noErr) {
+      OSSTATUS_LOG(ERROR, error)
+          << "KeychainReauthorize failed. Cannot retrieve item.";
+      return false;
+    }
   }
 
+  // At this point, a password was retrieved, either from the main or backup.
   ScopedVectorScrambler password;
   password.reset(new std::vector<uint8_t>(
       static_cast<uint8_t*>(password_data),
@@ -67,15 +78,25 @@ bool KeychainReauthorize() {
   memset(password_data, 0x11, pw_length);
   keychain.ItemFreeContent(nullptr, password_data);
 
-  error = keychain.ItemDelete(storage_item);
-  if (error != noErr) {
-    OSSTATUS_LOG(ERROR, error)
-        << "KeychainReauthorize failed. Cannot delete item.";
-    return false;
+  if (backup_item.get() == nullptr) {
+    // If writing the backup fails, still attempt the re-auth.
+    keychain.AddGenericPassword(
+        nullptr, backup_service_name.size(), backup_service_name.data(),
+        strlen(KeychainPassword::account_name), KeychainPassword::account_name,
+        password.get()->size(), password.get()->data(),
+        backup_item.InitializeInto());
+  }
+
+  if (storage_item) {
+    error = keychain.ItemDelete(storage_item);
+    if (error != noErr) {
+      OSSTATUS_LOG(WARNING, error)
+          << "KeychainReauthorize failed to delete item.";
+    }
   }
 
   error = keychain.AddGenericPassword(
-      NULL, strlen(KeychainPassword::service_name),
+      nullptr, strlen(KeychainPassword::service_name),
       KeychainPassword::service_name, strlen(KeychainPassword::account_name),
       KeychainPassword::account_name, password.get()->size(),
       password.get()->data(), nullptr);
@@ -84,6 +105,24 @@ bool KeychainReauthorize() {
     OSSTATUS_LOG(ERROR, error) << "Failed to re-add storage password.";
     return false;
   }
+
+  if (backup_item.get() == nullptr) {
+    // Attempt to get the backup entry in case one exists. Ignore return value.
+    // This could happen if Chrome crashed after writing the backup entry and
+    // before deleting the main entry.
+    keychain.FindGenericPassword(
+        nullptr, backup_service_name.size(), backup_service_name.data(),
+        strlen(KeychainPassword::account_name), KeychainPassword::account_name,
+        &pw_length, &password_data, backup_item.InitializeInto());
+  }
+
+  if (backup_item.get()) {
+    error = keychain.ItemDelete(backup_item);
+    if (error != noErr) {
+      OSSTATUS_LOG(WARNING, error) << "Deleting backup entry failed.";
+    }
+  }
+
   return true;
 }
 
