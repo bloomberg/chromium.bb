@@ -41,8 +41,7 @@ WebViewTranslateRankerFactory::BuildServiceInstanceFor(
   return base::MakeUnique<translate::TranslateRankerImpl>(
       translate::TranslateRankerImpl::GetModelPath(
           web_view_browser_state->GetStatePath()),
-      translate::TranslateRankerImpl::GetModelURL(),
-      nullptr /* ukm::UkmService */);
+      translate::TranslateRankerImpl::GetModelURL());
 }
 
 }  // namespace ios_web_view

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/translate/translate_ranker_factory.h"
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -38,7 +37,7 @@ KeyedService* TranslateRankerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   return new TranslateRankerImpl(
       TranslateRankerImpl::GetModelPath(browser_context->GetPath()),
-      TranslateRankerImpl::GetModelURL(), g_browser_process->ukm_service());
+      TranslateRankerImpl::GetModelURL());
 }
 
 content::BrowserContext* TranslateRankerFactory::GetBrowserContextToUse(

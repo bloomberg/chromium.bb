@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/metrics_hashes.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -27,8 +26,6 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_url_fetcher.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "components/ukm/ukm_entry_builder.h"
-#include "components/ukm/ukm_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "url/gurl.h"
 
@@ -135,9 +132,8 @@ void TranslateRankerFeatures::WriteTo(std::ostream& stream) const {
 }
 
 TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
-                                         const GURL& model_url,
-                                         ukm::UkmService* ukm_service)
-    : ukm_service_(ukm_service), weak_ptr_factory_(this) {
+                                         const GURL& model_url)
+    : weak_ptr_factory_(this) {
   if (IsQueryEnabled()) {
     model_loader_ = base::MakeUnique<RankerModelLoader>(
         base::Bind(&ValidateModel),
@@ -267,43 +263,12 @@ void TranslateRankerImpl::FlushTranslateEvents(
   event_cache_.clear();
 }
 
-void TranslateRankerImpl::SendEventToUKM(
-    const metrics::TranslateEventProto& event,
-    const GURL& url) {
-  if (!ukm_service_) {
-    DVLOG(3) << "No UKM service.";
-    return;
-  }
-  DVLOG(3) << "Sending event for url: " << url.spec();
-  int32_t source_id = ukm_service_->GetNewSourceID();
-  ukm_service_->UpdateSourceURL(source_id, url);
-  std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      ukm_service_->GetEntryBuilder(source_id, "Translate");
-  // TODO(hamelphi): Remove hashing functions once UKM accepts strings metrics.
-  builder->AddMetric("SourceLanguage",
-                     base::HashMetricName(event.source_language()));
-  builder->AddMetric("TargetLanguage",
-                     base::HashMetricName(event.target_language()));
-  builder->AddMetric("Country", base::HashMetricName(event.country()));
-  builder->AddMetric("AcceptCount", event.accept_count());
-  builder->AddMetric("DeclineCount", event.decline_count());
-  builder->AddMetric("IgnoreCount", event.ignore_count());
-  builder->AddMetric("RankerVersion", event.ranker_version());
-  builder->AddMetric("RankerResponse", event.ranker_response());
-  builder->AddMetric("EventType", event.event_type());
-}
-
 void TranslateRankerImpl::AddTranslateEvent(
-    const metrics::TranslateEventProto& event,
-    const GURL& url) {
+    const metrics::TranslateEventProto& event) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DVLOG(3) << "Adding translate ranker event.";
-  if (IsLoggingEnabled()) {
-    if (url.is_valid()) {
-      SendEventToUKM(event, url);
-    }
+  if (IsLoggingEnabled())
     event_cache_.push_back(event);
-  }
 }
 
 void TranslateRankerImpl::OnModelAvailable(std::unique_ptr<RankerModel> model) {
