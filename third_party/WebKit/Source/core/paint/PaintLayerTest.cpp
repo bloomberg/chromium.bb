@@ -74,6 +74,15 @@ TEST_P(PaintLayerTest, CompositedBoundsTransformedChild) {
             parentLayer->boundingBoxForCompositing());
 }
 
+TEST_P(PaintLayerTest, RootLayerCompositedBounds) {
+  setBodyInnerHTML(
+      "<style> body { width: 1000px; height: 1000px; margin: 0 } </style>");
+  EXPECT_EQ(RuntimeEnabledFeatures::rootLayerScrollingEnabled()
+                ? LayoutRect(0, 0, 800, 600)
+                : LayoutRect(0, 0, 1000, 1000),
+            layoutView().layer()->boundingBoxForCompositing());
+}
+
 TEST_P(PaintLayerTest, PaintingExtentReflection) {
   setBodyInnerHTML(
       "<div id='target' style='background-color: blue; position: absolute;"

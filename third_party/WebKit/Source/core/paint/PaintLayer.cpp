@@ -2503,16 +2503,16 @@ LayoutRect PaintLayer::boundingBoxForCompositingInternal(
       !hasVisibleDescendant())
     return LayoutRect();
 
-  // The root layer is the size of the document, plus any additional area due
-  // to layout viewport being different than initial containing block.
   if (isRootLayer()) {
-    IntRect documentRect = layoutObject().view()->documentRect();
-
-    if (FrameView* frameView = layoutObject().document().view()) {
-      documentRect.unite(IntRect(IntPoint(), frameView->visibleContentSize()));
-    }
-
-    return LayoutRect(documentRect);
+    // In root layer scrolling mode, the main GraphicsLayer is the size of the
+    // layout viewport. In non-RLS mode, it is the union of the layout viewport
+    // and the document's layout overflow rect.
+    IntRect result = IntRect();
+    if (FrameView* frameView = layoutObject().frameView())
+      result = IntRect(IntPoint(), frameView->visibleContentSize());
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+      result.unite(layoutObject().view()->documentRect());
+    return LayoutRect(result);
   }
 
   // The layer created for the LayoutFlowThread is just a helper for painting
