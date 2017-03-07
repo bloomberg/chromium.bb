@@ -501,7 +501,9 @@ void VrShell::DoUiAction(const UiAction action,
 
 void VrShell::RenderViewHostChanged(content::RenderViewHost* old_host,
                                     content::RenderViewHost* new_host) {
-  new_host->GetWidget()->GetView()->SetBackgroundColor(SK_ColorTRANSPARENT);
+  content::RenderWidgetHostView* view = new_host->GetWidget()->GetView();
+  view->SetBackgroundColor(SK_ColorTRANSPARENT);
+  view->SetIsInVR(true);
 }
 
 void VrShell::MainFrameWasResized(bool width_changed) {
