@@ -20,7 +20,7 @@ import java.util.ArrayList;
  * Robolectric tests for compact view button computation in {@link MediaNotificationManager}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config
+@Config(manifest = Config.NONE)
 public class MediaNotificationButtonComputationTest {
     @Test
     @Feature({"MediaNotification"})

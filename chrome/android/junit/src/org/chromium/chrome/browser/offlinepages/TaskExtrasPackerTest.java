@@ -13,6 +13,7 @@ import android.os.Bundle;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBackgroundService;
@@ -20,6 +21,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Unit tests for {@link TaskExtrasPacker}. */
 @RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class TaskExtrasPackerTest {
     @Test
     @Feature({"OfflinePages"})
