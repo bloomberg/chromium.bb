@@ -169,6 +169,9 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   void didFinishLoadingBlob(DOMArrayBuffer*);
   void didFailLoadingBlob(FileError::ErrorCode);
 
+  void tearDownFailedConnection();
+  bool shouldDisallowConnection(const KURL&);
+
   // m_handle is a handle of the connection.
   // m_handle == 0 means this channel is closed.
   std::unique_ptr<WebSocketHandle> m_handle;

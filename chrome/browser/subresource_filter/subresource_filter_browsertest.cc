@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
@@ -47,6 +48,8 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -255,8 +258,8 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  GURL GetTestUrl(const std::string& path) {
-    return embedded_test_server()->base_url().Resolve(path);
+  GURL GetTestUrl(const std::string& relative_url) {
+    return embedded_test_server()->base_url().Resolve(relative_url);
   }
 
   void ConfigureAsPhishingURL(const GURL& url) {
@@ -371,6 +374,49 @@ class SubresourceFilterWhitelistSiteOnReloadBrowserTest
  public:
   SubresourceFilterWhitelistSiteOnReloadBrowserTest()
       : SubresourceFilterBrowserTestImpl(false, true) {}
+};
+
+enum WebSocketCreationPolicy {
+  IN_MAIN_FRAME,
+  IN_WORKER,
+};
+class SubresourceFilterWebSocketBrowserTest
+    : public SubresourceFilterBrowserTestImpl,
+      public ::testing::WithParamInterface<WebSocketCreationPolicy> {
+ public:
+  SubresourceFilterWebSocketBrowserTest()
+      : SubresourceFilterBrowserTestImpl(false, false) {}
+
+  void SetUpOnMainThread() override {
+    SubresourceFilterBrowserTestImpl::SetUpOnMainThread();
+    websocket_test_server_ = base::MakeUnique<net::SpawnedTestServer>(
+        net::SpawnedTestServer::TYPE_WS, net::SpawnedTestServer::kLocalhost,
+        net::GetWebSocketTestDataDirectory());
+    ASSERT_TRUE(websocket_test_server_->Start());
+  }
+
+  net::SpawnedTestServer* websocket_test_server() {
+    return websocket_test_server_.get();
+  }
+
+  GURL GetWebSocketUrl(const std::string& path) {
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr("ws");
+    return websocket_test_server_->GetURL(path).ReplaceComponents(replacements);
+  }
+
+  void CreateWebSocketAndExpectResult(const GURL& url,
+                                      bool expect_connection_success) {
+    bool websocket_connection_succeeded = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::StringPrintf("connectWebSocket('%s');", url.spec().c_str()),
+        &websocket_connection_succeeded));
+    EXPECT_EQ(expect_connection_success, websocket_connection_succeeded);
+  }
+
+ private:
+  std::unique_ptr<net::SpawnedTestServer> websocket_test_server_;
 };
 
 // Tests -----------------------------------------------------------------------
@@ -645,6 +691,52 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ExpectParsedScriptElementLoadedStatusInFrames(
       std::vector<const char*>{"b", "d"}, {false, true});
 }
+
+IN_PROC_BROWSER_TEST_P(SubresourceFilterWebSocketBrowserTest, BlockWebSocket) {
+  GURL url(GetTestUrl(
+      base::StringPrintf("subresource_filter/page_with_websocket.html?%s",
+                         GetParam() == IN_WORKER ? "inWorker" : "")));
+  GURL websocket_url(GetWebSocketUrl("echo-with-no-extension"));
+  ConfigureAsPhishingURL(url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("echo-with-no-extension"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  CreateWebSocketAndExpectResult(websocket_url,
+                                 false /* expect_connection_success */);
+}
+
+IN_PROC_BROWSER_TEST_P(SubresourceFilterWebSocketBrowserTest,
+                       DoNotBlockWebSocketNoActivatedFrame) {
+  GURL url(GetTestUrl(
+      base::StringPrintf("subresource_filter/page_with_websocket.html?%s",
+                         GetParam() == IN_WORKER ? "inWorker" : "")));
+  GURL websocket_url(GetWebSocketUrl("echo-with-no-extension"));
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("echo-with-no-extension"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  CreateWebSocketAndExpectResult(websocket_url,
+                                 true /* expect_connection_success */);
+}
+
+IN_PROC_BROWSER_TEST_P(SubresourceFilterWebSocketBrowserTest,
+                       DoNotBlockWebSocketInActivatedFrameWithNoRule) {
+  GURL url(GetTestUrl(
+      base::StringPrintf("subresource_filter/page_with_websocket.html?%s",
+                         GetParam() == IN_WORKER ? "inWorker" : "")));
+  GURL websocket_url(GetWebSocketUrl("echo-with-no-extension"));
+  ConfigureAsPhishingURL(url);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  CreateWebSocketAndExpectResult(websocket_url,
+                                 true /* expect_connection_success */);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    SubresourceFilterWebSocketBrowserTest,
+    ::testing::Values(WebSocketCreationPolicy::IN_WORKER,
+                      WebSocketCreationPolicy::IN_MAIN_FRAME));
 
 // Tests checking how histograms are recorded. ---------------------------------
 

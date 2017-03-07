@@ -33,26 +33,32 @@
 #include <memory>
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/MixedContentChecker.h"
+#include "core/loader/SubresourceFilter.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "modules/websockets/InspectorWebSocketEvents.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketFrame.h"
 #include "modules/websockets/WebSocketHandleImpl.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/network/NetworkLog.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTraceLocation.h"
+#include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -184,6 +190,18 @@ bool DocumentWebSocketChannel::connect(const KURL& url,
     protocol.split(", ", true, protocols);
   }
 
+  // If the connection needs to be filtered, asynchronously fail. Synchronous
+  // failure blocks the worker thread which should be avoided. Note that
+  // returning "true" just indicates that this was not a mixed content error.
+  if (shouldDisallowConnection(url)) {
+    TaskRunnerHelper::get(TaskType::Networking, document())
+        ->postTask(
+            BLINK_FROM_HERE,
+            WTF::bind(&DocumentWebSocketChannel::tearDownFailedConnection,
+                      wrapPersistent(this)));
+    return true;
+  }
+
   // TODO(kinuko): document() should return nullptr if we don't
   // have valid document/frame that returns non-empty interface provider.
   if (document() && document()->frame() &&
@@ -296,10 +314,6 @@ void DocumentWebSocketChannel::fail(const String& reason,
                                     MessageLevel level,
                                     std::unique_ptr<SourceLocation> location) {
   NETWORK_DVLOG(1) << this << " fail(" << reason << ")";
-  // m_handle and m_client can be null here.
-
-  connection_handle_for_scheduler_.reset();
-
   if (document()) {
     probe::didReceiveWebSocketFrameError(document(), m_identifier, reason);
     const String message = "WebSocket connection to '" + m_url.elidedString() +
@@ -307,13 +321,9 @@ void DocumentWebSocketChannel::fail(const String& reason,
     document()->addConsoleMessage(ConsoleMessage::create(
         JSMessageSource, level, message, std::move(location)));
   }
-
-  if (m_client)
-    m_client->didError();
   // |reason| is only for logging and should not be provided for scripts,
-  // hence close reason must be empty.
-  handleDidClose(false, CloseEventCodeAbnormalClosure, String());
-  // handleDidClose may delete this object.
+  // hence close reason must be empty in tearDownFailedConnection.
+  tearDownFailedConnection();
 }
 
 void DocumentWebSocketChannel::disconnect() {
@@ -677,6 +687,28 @@ void DocumentWebSocketChannel::didFailLoadingBlob(
   // FIXME: Generate human-friendly reason message.
   failAsError("Failed to load Blob: error code = " + String::number(errorCode));
   // |this| can be deleted here.
+}
+
+void DocumentWebSocketChannel::tearDownFailedConnection() {
+  // m_handle and m_client can be null here.
+  connection_handle_for_scheduler_.reset();
+
+  if (m_client)
+    m_client->didError();
+
+  handleDidClose(false, CloseEventCodeAbnormalClosure, String());
+  // handleDidClose may delete this object.
+}
+
+bool DocumentWebSocketChannel::shouldDisallowConnection(const KURL& url) {
+  DCHECK(m_handle);
+  DocumentLoader* loader = document()->loader();
+  if (!loader)
+    return false;
+  SubresourceFilter* subresourceFilter = loader->subresourceFilter();
+  if (!subresourceFilter)
+    return false;
+  return !subresourceFilter->allowWebSocketConnection(url);
 }
 
 DEFINE_TRACE(DocumentWebSocketChannel) {

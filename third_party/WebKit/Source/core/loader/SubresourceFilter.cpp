@@ -4,8 +4,11 @@
 
 #include "core/loader/SubresourceFilter.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/DocumentLoader.h"
-#include "public/platform/WebDocumentSubresourceFilter.h"
+#include "platform/WebTaskRunner.h"
+#include "platform/weborigin/KURL.h"
+#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -32,20 +35,48 @@ bool SubresourceFilter::allowLoad(
   // Pair<url string, context> -> LoadPolicy.
   WebDocumentSubresourceFilter::LoadPolicy loadPolicy =
       m_subresourceFilter->getLoadPolicy(resourceUrl, requestContext);
-  if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
-    switch (loadPolicy) {
-      case WebDocumentSubresourceFilter::Allow:
-        break;
-      case WebDocumentSubresourceFilter::Disallow:
-        m_subresourceFilter->reportDisallowedLoad();
-      // fall through
-      case WebDocumentSubresourceFilter::WouldDisallow:
-        m_documentLoader->didObserveLoadingBehavior(
-            WebLoadingBehaviorSubresourceFilterMatch);
-        break;
-    }
-  }
+  if (reportingPolicy == SecurityViolationReportingPolicy::Report)
+    reportLoad(loadPolicy);
   return loadPolicy != WebDocumentSubresourceFilter::Disallow;
+}
+
+bool SubresourceFilter::allowWebSocketConnection(const KURL& url) {
+  // TODO(csharrison): Should probably have a new API for this in
+  // WebDocumentSubresourceFilter rather than sending subresource context.
+  // Alternatively, could augment the filter API so that we send a
+  // WebDocumentSubresourceFilterResourceType that matches
+  // subresource_filter::proto::ElementType.
+  WebDocumentSubresourceFilter::LoadPolicy loadPolicy =
+      m_subresourceFilter->getLoadPolicy(
+          url, WebURLRequest::RequestContextSubresource);
+
+  // Post a task to notify this load to avoid unduly blocking the worker
+  // thread. Note that this unconditionally calls reportLoad unlike allowLoad,
+  // because there aren't developer-invisible connections (like speculative
+  // preloads) happening here.
+  RefPtr<WebTaskRunner> taskRunner =
+      TaskRunnerHelper::get(TaskType::Networking, m_documentLoader->frame());
+  DCHECK(taskRunner->runsTasksOnCurrentThread());
+  taskRunner->postTask(BLINK_FROM_HERE,
+                       WTF::bind(&SubresourceFilter::reportLoad,
+                                 wrapPersistent(this), loadPolicy));
+  return loadPolicy != WebDocumentSubresourceFilter::Disallow;
+}
+
+void SubresourceFilter::reportLoad(
+    WebDocumentSubresourceFilter::LoadPolicy loadPolicy) {
+  // TODO(csharrison): log console errors here.
+  switch (loadPolicy) {
+    case WebDocumentSubresourceFilter::Allow:
+      break;
+    case WebDocumentSubresourceFilter::Disallow:
+      m_subresourceFilter->reportDisallowedLoad();
+    // fall through
+    case WebDocumentSubresourceFilter::WouldDisallow:
+      m_documentLoader->didObserveLoadingBehavior(
+          WebLoadingBehaviorSubresourceFilterMatch);
+      break;
+  }
 }
 
 }  // namespace blink
