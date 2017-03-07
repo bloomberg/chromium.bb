@@ -315,8 +315,10 @@ need to know a few things about Jekyll (http://jekyllrb.com/) and
 markdown, the markup that is used to edit the content. In order to
 update the site simply edit, commit and push.
 
-For the new release update the project web site. Add a post containing
-the current NEWS to the _posts directory.
+For the new release update the project web site.
+
+- Add a post containing the current NEWS to the _posts directory and
+- add the download artifacts to the download page
 
 ** Announce
 Send an announcement to the liblouis list
