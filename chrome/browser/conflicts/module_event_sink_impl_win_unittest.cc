@@ -7,7 +7,8 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_scheduler.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/common/conflicts/module_watcher_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,18 +27,13 @@ const uint64_t kInvalidLoadAddress = 0xDEADBEEF;
 class ModuleEventSinkImplTest : public testing::Test {
  protected:
   ModuleEventSinkImplTest()
-      : message_loop_(base::MakeUnique<base::MessageLoop>()),
-        module_database_(
-            base::MakeUnique<ModuleDatabase>(message_loop_->task_runner())) {}
+      : module_database_(base::MakeUnique<ModuleDatabase>(
+            base::SequencedTaskRunnerHandle::Get())) {}
 
   void CreateModuleSinkImpl() {
     module_event_sink_impl_ = base::MakeUnique<ModuleEventSinkImpl>(
         ::GetCurrentProcess(), content::PROCESS_TYPE_BROWSER,
         module_database_.get());
-  }
-
-  ModuleDatabase* module_database() {
-    return module_event_sink_impl_->module_database_;
   }
 
   const ModuleDatabase::ModuleMap& modules() {
@@ -50,7 +46,8 @@ class ModuleEventSinkImplTest : public testing::Test {
 
   uint32_t process_id() { return module_event_sink_impl_->process_id_; }
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  // Must be before |module_database_|.
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   std::unique_ptr<ModuleDatabase> module_database_;
   std::unique_ptr<ModuleEventSinkImpl> module_event_sink_impl_;
 
@@ -67,7 +64,6 @@ TEST_F(ModuleEventSinkImplTest, CallsForwardedAsExpected) {
   // Construction should immediately fire off a call to OnProcessStarted and
   // create a process entry in the module database.
   CreateModuleSinkImpl();
-  EXPECT_EQ(module_database_.get(), module_database());
   EXPECT_EQ(::GetCurrentProcessId(), process_id());
   EXPECT_EQ(0u, modules().size());
   EXPECT_EQ(1u, processes().size());

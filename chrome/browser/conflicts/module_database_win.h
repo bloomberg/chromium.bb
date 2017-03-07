@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/conflicts/module_info_win.h"
+#include "chrome/browser/conflicts/module_inspector_win.h"
 #include "content/public/common/process_type.h"
 
 // A class that keeps track of all modules loaded across Chrome processes.
@@ -142,11 +143,19 @@ class ModuleDatabase {
   // Deletes a process info entry.
   void DeleteProcessInfo(uint32_t process_id, uint64_t creation_time);
 
+  // Callback for ModuleInspector.
+  void OnModuleInspected(
+      const ModuleInfoKey& module_key,
+      std::unique_ptr<ModuleInspectionResult> inspection_result);
+
   // The task runner to which this object is bound.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // A map of all known modules.
   ModuleMap modules_;
+
+  // Inspects new modules on a blocking task runner.
+  ModuleInspector module_inspector_;
 
   // A map of all known running processes, and modules loaded/unloaded in
   // them.

@@ -9,6 +9,7 @@
 #include <fileapi.h>
 
 #include <memory>
+#include <tuple>
 
 #include "base/file_version_info.h"
 #include "base/i18n/case_conversion.h"
@@ -69,9 +70,8 @@ bool ModuleInfoKey::operator<(const ModuleInfoKey& mik) const {
   // The key consists of the triplet of
   // (module_path, module_size, module_time_date_stamp).
   // Use the std::tuple lexicographic comparison operator.
-  return std::make_tuple(module_path, module_size, module_time_date_stamp) <
-         std::make_tuple(mik.module_path, mik.module_size,
-                         mik.module_time_date_stamp);
+  return std::tie(module_path, module_size, module_time_date_stamp) <
+         std::tie(mik.module_path, mik.module_size, mik.module_time_date_stamp);
 }
 
 // ModuleInspectionResult ------------------------------------------------------

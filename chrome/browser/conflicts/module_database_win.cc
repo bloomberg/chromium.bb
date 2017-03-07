@@ -25,7 +25,12 @@ ModuleDatabase* g_instance = nullptr;
 
 ModuleDatabase::ModuleDatabase(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)), weak_ptr_factory_(this) {}
+    : task_runner_(std::move(task_runner)),
+      // ModuleDatabase owns |module_inspector_|, so it is safe to use
+      // base::Unretained().
+      module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
+                                   base::Unretained(this))),
+      weak_ptr_factory_(this) {}
 
 ModuleDatabase::~ModuleDatabase() {
   if (this == g_instance)
@@ -294,6 +299,10 @@ ModuleDatabase::ModuleInfo* ModuleDatabase::FindOrCreateModuleInfo(
                             modules_.size()),
       std::forward_as_tuple());
 
+  // New modules must be inspected.
+  if (result.second)
+    module_inspector_.AddModule(result.first->first);
+
   return &(*result.first);
 }
 
@@ -320,6 +329,16 @@ void ModuleDatabase::DeleteProcessInfo(uint32_t process_id,
                                        uint64_t creation_time) {
   ProcessInfoKey key(process_id, creation_time, content::PROCESS_TYPE_UNKNOWN);
   processes_.erase(key);
+}
+
+void ModuleDatabase::OnModuleInspected(
+    const ModuleInfoKey& module_key,
+    std::unique_ptr<ModuleInspectionResult> inspection_result) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  auto it = modules_.find(module_key);
+  if (it != modules_.end())
+    it->second.inspection_result = std::move(inspection_result);
 }
 
 // ModuleDatabase::ProcessInfoKey ----------------------------------------------

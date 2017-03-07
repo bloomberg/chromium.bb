@@ -3132,6 +3132,7 @@ test("unit_tests") {
     "../browser/conflicts/module_event_sink_impl_win_unittest.cc",
     "../browser/conflicts/module_info_util_win_unittest.cc",
     "../browser/conflicts/module_info_win_unittest.cc",
+    "../browser/conflicts/module_inspector_win_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
     "../browser/content_settings/content_settings_mock_observer.cc",
     "../browser/content_settings/content_settings_mock_observer.h",

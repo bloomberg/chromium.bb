@@ -272,6 +272,8 @@ split_static_library("browser") {
     "conflicts/module_info_util_win.h",
     "conflicts/module_info_win.cc",
     "conflicts/module_info_win.h",
+    "conflicts/module_inspector_win.cc",
+    "conflicts/module_inspector_win.h",
     "content_settings/chrome_content_settings_utils.cc",
     "content_settings/chrome_content_settings_utils.h",
     "content_settings/cookie_settings_factory.cc",
