@@ -196,6 +196,9 @@ final class ChromeBluetoothDevice {
         public void onCharacteristicChanged(
                 final Wrappers.BluetoothGattCharacteristicWrapper characteristic) {
             Log.i(TAG, "device onCharacteristicChanged.");
+            // Copy the characteristic's value for this event so that new notifications that
+            // arrive before the posted task runs do not affect this event's value.
+            final byte[] value = characteristic.getValue();
             Wrappers.ThreadUtilsWrapper.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -206,7 +209,7 @@ final class ChromeBluetoothDevice {
                         // when the event races object destruction.
                         Log.v(TAG, "onCharacteristicChanged when chromeCharacteristic == null.");
                     } else {
-                        chromeCharacteristic.onCharacteristicChanged();
+                        chromeCharacteristic.onCharacteristicChanged(value);
                     }
                 }
             });

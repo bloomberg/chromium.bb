@@ -2136,6 +2136,36 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, GattCharacteristicValueChanged) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
+#if defined(OS_ANDROID)
+// Tests that Characteristic value changes arriving consecutively result in
+// two notifications with correct values.
+// macOS: Does not apply. All events arrive on the UI Thread.
+// TODO(crbug.com/694102): Enable this test on Windows.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       TwoGattCharacteristicValueChanges) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  std::vector<uint8_t> test_vector1({111});
+  std::vector<uint8_t> test_vector2({222});
+
+  SimulateGattCharacteristicChanged(characteristic1_, test_vector1);
+  SimulateGattCharacteristicChanged(characteristic1_, test_vector2);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, observer.gatt_characteristic_value_changed_count());
+  EXPECT_EQ(test_vector2, characteristic1_->GetValue());
+  EXPECT_EQ(std::vector<std::vector<uint8_t>>({test_vector1, test_vector2}),
+            observer.previous_characteristic_value_changed_values());
+}
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_ANDROID) || defined(OS_WIN)
 // Tests Characteristic Value changing after a Notify Session and objects being
 // destroyed.

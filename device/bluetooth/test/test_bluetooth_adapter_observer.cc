@@ -60,6 +60,7 @@ void TestBluetoothAdapterObserver::Reset() {
   last_gatt_characteristic_id_.clear();
   last_gatt_characteristic_uuid_ = BluetoothUUID();
   last_changed_characteristic_value_.clear();
+  previous_characteristic_value_changed_values_.clear();
   last_gatt_descriptor_id_.clear();
   last_gatt_descriptor_uuid_ = BluetoothUUID();
   last_changed_descriptor_value_.clear();
@@ -302,6 +303,7 @@ void TestBluetoothAdapterObserver::GattCharacteristicValueChanged(
   last_gatt_characteristic_id_ = characteristic->GetIdentifier();
   last_gatt_characteristic_uuid_ = characteristic->GetUUID();
   last_changed_characteristic_value_ = value;
+  previous_characteristic_value_changed_values_.push_back(value);
 
   ASSERT_TRUE(characteristic->GetService());
   EXPECT_EQ(characteristic->GetService()->GetCharacteristic(

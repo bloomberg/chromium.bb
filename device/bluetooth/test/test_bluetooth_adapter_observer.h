@@ -143,6 +143,10 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   std::vector<uint8_t> last_changed_characteristic_value() const {
     return last_changed_characteristic_value_;
   }
+  std::vector<std::vector<uint8_t>>
+  previous_characteristic_value_changed_values() const {
+    return previous_characteristic_value_changed_values_;
+  }
   std::string last_gatt_descriptor_id() const {
     return last_gatt_descriptor_id_;
   }
@@ -198,6 +202,8 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   std::string last_gatt_characteristic_id_;
   BluetoothUUID last_gatt_characteristic_uuid_;
   std::vector<uint8_t> last_changed_characteristic_value_;
+  std::vector<std::vector<uint8_t>>
+      previous_characteristic_value_changed_values_;
   std::string last_gatt_descriptor_id_;
   BluetoothUUID last_gatt_descriptor_uuid_;
   std::vector<uint8_t> last_changed_descriptor_value_;
