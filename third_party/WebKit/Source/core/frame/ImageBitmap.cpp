@@ -472,10 +472,7 @@ static PassRefPtr<StaticBitmapImage> cropImageAndApplyColorSpaceConversion(
         static_cast<unsigned>(info.width()) * info.bytesPerPixel()));
   }
 
-  // TODO(ccameron): Canvas should operate in sRGB and not display space.
-  // https://crbug.com/667431
-  sk_sp<SkImage> skiaImage =
-      image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+  sk_sp<SkImage> skiaImage = image->imageForCurrentFrame();
   // Attempt to get raw unpremultiplied image data, executed only when skiaImage
   // is premultiplied.
   if ((((!parsedOptions.premultiplyAlpha && !skiaImage->isOpaque()) ||
@@ -578,10 +575,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image,
     return;
   // In the case where the source image is lazy-decoded, m_image may not be in
   // a decoded state, we trigger it here.
-  // TODO(ccameron): Canvas should operate in sRGB and not display space.
-  // https://crbug.com/667431
-  sk_sp<SkImage> skImage =
-      m_image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+  sk_sp<SkImage> skImage = m_image->imageForCurrentFrame();
   SkPixmap pixmap;
   if (!skImage->isTextureBacked() && !skImage->peekPixels(&pixmap)) {
     SkImageInfo imageInfo = SkImageInfo::Make(
@@ -677,11 +671,8 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
     return;
   if (isPremultiplyAlphaReverted) {
     parsedOptions.premultiplyAlpha = false;
-    // TODO(ccameron): Canvas should operate in sRGB and not display space.
-    // https://crbug.com/667431
-    m_image = StaticBitmapImage::create(premulSkImageToUnPremul(
-        m_image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget())
-            .get()));
+    m_image = StaticBitmapImage::create(
+        premulSkImageToUnPremul(m_image->imageForCurrentFrame().get()));
   }
   if (!m_image)
     return;
@@ -715,9 +706,8 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreenCanvas,
     return;
   if (isPremultiplyAlphaReverted) {
     parsedOptions.premultiplyAlpha = false;
-    m_image = StaticBitmapImage::create(premulSkImageToUnPremul(
-        m_image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget())
-            .get()));
+    m_image = StaticBitmapImage::create(
+        premulSkImageToUnPremul(m_image->imageForCurrentFrame().get()));
   }
   if (!m_image)
     return;
@@ -1081,12 +1071,8 @@ PassRefPtr<Uint8Array> ImageBitmap::copyBitmapData(AlphaDisposition alphaOp,
       (format == RGBAColorType) ? kRGBA_8888_SkColorType : kN32_SkColorType,
       (alphaOp == PremultiplyAlpha) ? kPremul_SkAlphaType
                                     : kUnpremul_SkAlphaType);
-  // TODO(ccameron): Canvas should operate in sRGB and not display space.
-  // https://crbug.com/667431
-  RefPtr<Uint8Array> dstPixels = copySkImageData(
-      m_image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget())
-          .get(),
-      info);
+  RefPtr<Uint8Array> dstPixels =
+      copySkImageData(m_image->imageForCurrentFrame().get(), info);
   return dstPixels.release();
 }
 
@@ -1143,9 +1129,8 @@ PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(
     return m_image;
   // Skia does not support drawing unpremul SkImage on SkCanvas.
   // Premultiply and return.
-  sk_sp<SkImage> premulSkImage = unPremulSkImageToPremul(
-      m_image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget())
-          .get());
+  sk_sp<SkImage> premulSkImage =
+      unPremulSkImageToPremul(m_image->imageForCurrentFrame().get());
   return StaticBitmapImage::create(premulSkImage);
 }
 

@@ -76,7 +76,7 @@ class BitmapImageTest : public ::testing::Test {
   void destroyDecodedData() { m_image->destroyDecodedData(); }
   size_t frameCount() { return m_image->frameCount(); }
   sk_sp<SkImage> frameAtIndex(size_t index) {
-    return m_image->frameAtIndex(index, m_image->m_cachedFrameColorBehavior);
+    return m_image->frameAtIndex(index);
   }
   void setCurrentFrame(size_t frame) { m_image->m_currentFrame = frame; }
   size_t frameDecodedSize(size_t frame) {
@@ -251,7 +251,7 @@ TEST_F(BitmapImageTest, recachingFrameAfterDataChanged) {
   m_image->dataChanged(true);
   EXPECT_EQ(0, lastDecodedSizeChange());
   // Recaching the first frame also shouldn't affect decoded size.
-  m_image->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting());
+  m_image->imageForCurrentFrame();
   EXPECT_EQ(0, lastDecodedSizeChange());
 }
 

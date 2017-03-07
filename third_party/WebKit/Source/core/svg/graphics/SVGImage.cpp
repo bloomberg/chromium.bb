@@ -265,10 +265,7 @@ void SVGImage::drawForContainer(PaintCanvas* canvas,
                ClampImageToSourceRect, url);
 }
 
-sk_sp<SkImage> SVGImage::imageForCurrentFrame(
-    const ColorBehavior& colorBehavior) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/667431
+sk_sp<SkImage> SVGImage::imageForCurrentFrame() {
   return imageForCurrentFrameForContainer(KURL(), size());
 }
 

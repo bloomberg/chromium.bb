@@ -34,7 +34,6 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsContext.h"

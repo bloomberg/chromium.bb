@@ -384,12 +384,9 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
 
   // Check that the pixel at (3, 3) is red.
   uint8_t pixel[4] = {};
-  ASSERT_TRUE(
-      newImageBitmap->bitmapImage()
-          ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
-          ->readPixels(SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType,
-                                         kPremul_SkAlphaType),
-                       &pixel, 4, 3, 3));
+  ASSERT_TRUE(newImageBitmap->bitmapImage()->imageForCurrentFrame()->readPixels(
+      SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType),
+      &pixel, 4, 3, 3));
   ASSERT_THAT(pixel, ::testing::ElementsAre(255, 0, 0, 255));
 }
 
@@ -422,12 +419,9 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmap) {
 
   // Check that the pixels are opaque red and green, respectively.
   uint8_t pixels[8] = {};
-  ASSERT_TRUE(
-      newImageBitmap->bitmapImage()
-          ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
-          ->readPixels(SkImageInfo::Make(2, 1, kRGBA_8888_SkColorType,
-                                         kPremul_SkAlphaType),
-                       &pixels, 8, 0, 0));
+  ASSERT_TRUE(newImageBitmap->bitmapImage()->imageForCurrentFrame()->readPixels(
+      SkImageInfo::Make(2, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType),
+      &pixels, 8, 0, 0));
   ASSERT_THAT(pixels, ::testing::ElementsAre(255, 0, 0, 255, 0, 255, 0, 255));
 }
 
@@ -489,8 +483,8 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
 
   // Check that the pixel at (3, 3) is red.
   uint8_t pixel[4] = {};
-  sk_sp<SkImage> newImage = newImageBitmap->bitmapImage()->imageForCurrentFrame(
-      ColorBehavior::transformToTargetForTesting());
+  sk_sp<SkImage> newImage =
+      newImageBitmap->bitmapImage()->imageForCurrentFrame();
   ASSERT_TRUE(newImage->readPixels(
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType),
       &pixel, 4, 3, 3));

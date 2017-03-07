@@ -1307,14 +1307,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
     ImageBitmapOptions options =
         prepareBitmapOptionsAndSetRuntimeFlags(colorSpaceConversion);
     ImageBitmap* imageBitmap = ImageBitmap::create(canvas, cropRect, options);
-    // ColorBehavior::ignore() is used instead of
-    // ColorBehavior::transformToTargetForTesting() to avoid color conversion to
-    // display color profile, as we want to solely rely on the color correction
-    // that happens in ImageBitmap create method.
     SkImage* convertedImage =
-        imageBitmap->bitmapImage()
-            ->imageForCurrentFrame(ColorBehavior::ignore())
-            .get();
+        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
 
     switch (colorSpaceConversion) {
       case ColorSpaceConversion::NONE:

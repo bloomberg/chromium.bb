@@ -264,8 +264,7 @@ void Image::drawPattern(GraphicsContext& context,
                         const FloatSize& repeatSpacing) {
   TRACE_EVENT0("skia", "Image::drawPattern");
 
-  sk_sp<SkImage> image =
-      imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+  sk_sp<SkImage> image = imageForCurrentFrame();
   if (!image)
     return;
 
@@ -336,8 +335,7 @@ PassRefPtr<Image> Image::imageForDefaultFrame() {
 bool Image::applyShader(PaintFlags& flags, const SkMatrix& localMatrix) {
   // Default shader impl: attempt to build a shader based on the current frame
   // SkImage.
-  sk_sp<SkImage> image =
-      imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+  sk_sp<SkImage> image = imageForCurrentFrame();
   if (!image)
     return false;
 

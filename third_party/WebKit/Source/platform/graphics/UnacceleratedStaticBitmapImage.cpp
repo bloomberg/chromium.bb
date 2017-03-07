@@ -39,10 +39,7 @@ void UnacceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
                                 m_image);
 }
 
-sk_sp<SkImage> UnacceleratedStaticBitmapImage::imageForCurrentFrame(
-    const ColorBehavior& colorBehavior) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/672306
+sk_sp<SkImage> UnacceleratedStaticBitmapImage::imageForCurrentFrame() {
   return m_image;
 }
 

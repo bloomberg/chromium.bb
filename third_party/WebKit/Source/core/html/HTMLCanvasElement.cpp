@@ -518,10 +518,7 @@ void HTMLCanvasElement::notifyListenersCanvasChanged() {
         FloatSize());
     if (status != NormalSourceImageStatus)
       return;
-    // TODO(ccameron): Canvas should produce sRGB images.
-    // https://crbug.com/672299
-    sk_sp<SkImage> image = sourceImage->imageForCurrentFrame(
-        ColorBehavior::transformToGlobalTarget());
+    sk_sp<SkImage> image = sourceImage->imageForCurrentFrame();
     for (CanvasDrawListener* listener : m_listeners) {
       if (listener->needsNewFrame()) {
         listener->sendNewFrame(image);
@@ -652,10 +649,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer,
     snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
   } else if (placeholderFrame()) {
     DCHECK(placeholderFrame()->originClean());
-    // TODO(ccameron): Canvas should produce sRGB images.
-    // https://crbug.com/672299
-    snapshot = placeholderFrame()->imageForCurrentFrame(
-        ColorBehavior::transformToGlobalTarget());
+    snapshot = placeholderFrame()->imageForCurrentFrame();
   }
 
   if (snapshot) {
@@ -1287,8 +1281,7 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
     }
     RefPtr<Image> image = renderingContext()->getImage(hint, reason);
     if (image) {
-      skImage =
-          image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+      skImage = image->imageForCurrentFrame();
     } else {
       skImage = createTransparentSkImage(size());
     }

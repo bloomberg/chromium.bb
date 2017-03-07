@@ -82,7 +82,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
   void advanceTime(double deltaTimeInSeconds) override;
 
-  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
+  sk_sp<SkImage> imageForCurrentFrame() override;
   PassRefPtr<Image> imageForDefaultFrame() override;
 
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
@@ -120,14 +120,14 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   size_t currentFrame() const { return m_currentFrame; }
   size_t frameCount();
 
-  sk_sp<SkImage> frameAtIndex(size_t, const ColorBehavior&);
+  sk_sp<SkImage> frameAtIndex(size_t);
 
   bool frameIsCompleteAtIndex(size_t) const;
   float frameDurationAtIndex(size_t) const;
   bool frameHasAlphaAtIndex(size_t);
   ImageOrientation frameOrientationAtIndex(size_t);
 
-  sk_sp<SkImage> decodeAndCacheFrame(size_t index, const ColorBehavior&);
+  sk_sp<SkImage> decodeAndCacheFrame(size_t index);
   void updateSize() const;
 
   // Returns the total number of bytes allocated for all framebuffers, i.e.
@@ -191,8 +191,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   sk_sp<SkImage>
       m_cachedFrame;  // A cached copy of the most recently-accessed frame.
   size_t m_cachedFrameIndex;  // Index of the frame that is cached.
-  ColorBehavior m_cachedFrameColorBehavior;  // Color behavior that created the
-                                             // cached frame.
 
   std::unique_ptr<Timer<BitmapImage>> m_frameTimer;
   int m_repetitionCount;  // How many total animation loops we should do.  This

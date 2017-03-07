@@ -44,7 +44,7 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
   // Assume that generated content has no decoded data we need to worry about
   void destroyDecodedData() override {}
 
-  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
+  sk_sp<SkImage> imageForCurrentFrame() override;
 
  protected:
   void drawPattern(GraphicsContext&,

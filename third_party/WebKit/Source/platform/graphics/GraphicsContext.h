@@ -30,7 +30,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Font.h"
-#include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextState.h"

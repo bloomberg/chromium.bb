@@ -87,7 +87,7 @@ class SVGImageForContainer final : public Image {
     return false;
   }
 
-  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
+  sk_sp<SkImage> imageForCurrentFrame() override;
 
  protected:
   void drawPattern(GraphicsContext&,

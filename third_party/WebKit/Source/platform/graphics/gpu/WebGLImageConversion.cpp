@@ -2739,10 +2739,7 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha,
   if (!m_image)
     return;
 
-  // TODO(ccameron): WebGL should operate in sRGB.
-  // https://crbug.com/672299
-  sk_sp<SkImage> skiaImage =
-      m_image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+  sk_sp<SkImage> skiaImage = m_image->imageForCurrentFrame();
   SkImageInfo info = skiaImage ? SkImageInfo::MakeN32Premul(m_image->width(),
                                                             m_image->height())
                                : SkImageInfo::MakeUnknown();

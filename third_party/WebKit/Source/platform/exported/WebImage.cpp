@@ -132,10 +132,7 @@ WebImage::WebImage(PassRefPtr<Image> image) {
   if (!image)
     return;
 
-  // TODO(ccameron): WebImage needs to be consistent about color spaces.
-  // https://crbug.com/672315
-  if (sk_sp<SkImage> skImage =
-          image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget()))
+  if (sk_sp<SkImage> skImage = image->imageForCurrentFrame())
     skImage->asLegacyBitmap(&m_bitmap, SkImage::kRO_LegacyBitmapMode);
 }
 

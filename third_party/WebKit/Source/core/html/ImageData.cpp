@@ -34,6 +34,7 @@
 #include "core/frame/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/ColorBehavior.h"
 
 namespace blink {
 

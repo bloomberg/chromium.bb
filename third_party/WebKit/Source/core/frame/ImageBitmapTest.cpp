@@ -127,24 +127,16 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   ImageBitmap* imageBitmapOutsideCrop = ImageBitmap::create(
       imageElement, cropRect, &(imageElement->document()), defaultOptions);
 
-  ASSERT_NE(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()));
-  ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()));
-  ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()));
+  ASSERT_NE(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 
   StaticBitmapImage* emptyImage = imageBitmapOutsideCrop->bitmapImage();
-  ASSERT_NE(emptyImage->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()));
+  ASSERT_NE(emptyImage->imageForCurrentFrame(),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
@@ -163,47 +155,31 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   // As we are applying color space conversion for the "default" mode,
   // this verifies that the color corrected image is not the same as the
   // source.
-  ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()),
-            originalImageResource->getImage()->imageForCurrentFrame(
-                ColorBehavior::transformToTargetForTesting()));
+  ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(),
+            originalImageResource->getImage()->imageForCurrentFrame());
 
   ImageResourceContent* newImageResource =
       ImageResourceContent::create(StaticBitmapImage::create(m_image2).get());
   image->setImageResource(newImageResource);
 
   {
-    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(
-                  ColorBehavior::transformToTargetForTesting()),
-              originalImageResource->getImage()->imageForCurrentFrame(
-                  ColorBehavior::transformToTargetForTesting()));
-    SkImage* image1 =
-        imageBitmap->bitmapImage()
-            ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
-            .get();
+    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(),
+              originalImageResource->getImage()->imageForCurrentFrame());
+    SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
     ASSERT_NE(image1, nullptr);
     SkImage* image2 =
-        originalImageResource->getImage()
-            ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
-            .get();
+        originalImageResource->getImage()->imageForCurrentFrame().get();
     ASSERT_NE(image2, nullptr);
     ASSERT_NE(image1, image2);
   }
 
   {
-    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(
-                  ColorBehavior::transformToTargetForTesting()),
-              newImageResource->getImage()->imageForCurrentFrame(
-                  ColorBehavior::transformToTargetForTesting()));
-    SkImage* image1 =
-        imageBitmap->bitmapImage()
-            ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
-            .get();
+    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(),
+              newImageResource->getImage()->imageForCurrentFrame());
+    SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
     ASSERT_NE(image1, nullptr);
     SkImage* image2 =
-        newImageResource->getImage()
-            ->imageForCurrentFrame(ColorBehavior::transformToTargetForTesting())
-            .get();
+        newImageResource->getImage()->imageForCurrentFrame().get();
     ASSERT_NE(image2, nullptr);
     ASSERT_NE(image1, image2);
   }
@@ -286,14 +262,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
     ImageBitmap* imageBitmap = ImageBitmap::create(
         imageElement, cropRect, &(imageElement->document()), options);
 
-    // ColorBehavior::ignore() is used instead of
-    // ColorBehavior::transformToTargetForTesting() to avoid color conversion to
-    // display color profile, as we want to solely rely on the color correction
-    // that happens in ImageBitmap create method.
     SkImage* convertedImage =
-        imageBitmap->bitmapImage()
-            ->imageForCurrentFrame(ColorBehavior::ignore())
-            .get();
+        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
 
     switch (colorSpaceConversion) {
       case ColorSpaceConversion::NONE:
@@ -385,14 +355,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
     options = prepareBitmapOptionsAndSetRuntimeFlags(colorSpaceConversion);
     ImageBitmap* imageBitmap =
         ImageBitmap::create(sourceImageBitmap, cropRect, options);
-    // ColorBehavior::ignore() is used instead of
-    // ColorBehavior::transformToTargetForTesting() to avoid color conversion to
-    // display color profile, as we want to solely rely on the color correction
-    // that happens in ImageBitmap create method.
     SkImage* convertedImage =
-        imageBitmap->bitmapImage()
-            ->imageForCurrentFrame(ColorBehavior::ignore())
-            .get();
+        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
 
     switch (colorSpaceConversion) {
       case ColorSpaceConversion::NONE:
@@ -475,14 +439,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
     ImageBitmap* imageBitmap = ImageBitmap::create(
         StaticBitmapImage::create(image), cropRect, options);
 
-    // ColorBehavior::ignore() is used instead of
-    // ColorBehavior::transformToTargetForTesting() to avoid color conversion to
-    // display color profile, as we want to solely rely on the color correction
-    // that happens in ImageBitmap create method.
     SkImage* convertedImage =
-        imageBitmap->bitmapImage()
-            ->imageForCurrentFrame(ColorBehavior::ignore())
-            .get();
+        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
 
     switch (colorSpaceConversion) {
       case ColorSpaceConversion::NONE:
@@ -556,14 +514,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
     ImageBitmap* imageBitmap =
         ImageBitmap::create(imageData, cropRect, options);
 
-    // ColorBehavior::ignore() is used instead of
-    // ColorBehavior::transformToTargetForTesting() to avoid color conversion to
-    // display color profile, as we want to solely rely on the color correction
-    // that happens in ImageBitmap create method.
     SkImage* convertedImage =
-        imageBitmap->bitmapImage()
-            ->imageForCurrentFrame(ColorBehavior::ignore())
-            .get();
+        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
 
     switch (colorSpaceConversion) {
       case ColorSpaceConversion::NONE:

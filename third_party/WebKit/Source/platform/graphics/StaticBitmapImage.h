@@ -22,7 +22,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // Methods overrided by all sub-classes
   virtual ~StaticBitmapImage() {}
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) = 0;
-  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) = 0;
+  sk_sp<SkImage> imageForCurrentFrame() = 0;
   void draw(PaintCanvas*,
             const PaintFlags&,
             const FloatRect& dstRect,

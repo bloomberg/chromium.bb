@@ -5425,10 +5425,7 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
     }
     return;
   }
-  // TODO(ccameron): WebGL should produce sRGB images.
-  // https://crbug.com/672299
-  sk_sp<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame(
-      ColorBehavior::transformToGlobalTarget());
+  sk_sp<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame();
   SkPixmap pixmap;
   uint8_t* pixelDataPtr = nullptr;
   RefPtr<Uint8Array> pixelData;

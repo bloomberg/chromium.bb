@@ -30,7 +30,7 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   IntSize size() const override { return m_size; }
 
-  sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
+  sk_sp<SkImage> imageForCurrentFrame() override;
 
   void draw(PaintCanvas*,
             const PaintFlags&,

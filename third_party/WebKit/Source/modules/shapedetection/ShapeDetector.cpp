@@ -113,9 +113,7 @@ ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
   uint8_t* pixelDataPtr = nullptr;
   WTF::CheckedNumeric<int> allocationSize = 0;
 
-  // TODO(ccameron): ShapeDetector can ignore color conversion.
-  sk_sp<SkImage> skImage =
-      image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+  sk_sp<SkImage> skImage = image->imageForCurrentFrame();
   // Use |skImage|'s pixels if it has direct access to them.
   if (skImage->peekPixels(&pixmap)) {
     pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
@@ -191,9 +189,7 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
     return promise;
   }
 
-  // TODO(ccameron): ShapeDetector can ignore color conversion.
-  const sk_sp<SkImage> image = blinkImage->imageForCurrentFrame(
-      ColorBehavior::transformToGlobalTarget());
+  const sk_sp<SkImage> image = blinkImage->imageForCurrentFrame();
   DCHECK_EQ(img->naturalWidth(), static_cast<unsigned>(image->width()));
   DCHECK_EQ(img->naturalHeight(), static_cast<unsigned>(image->height()));
 

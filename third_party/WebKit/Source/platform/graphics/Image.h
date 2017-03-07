@@ -31,7 +31,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageObserver.h"
@@ -152,7 +151,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
 
-  virtual sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) = 0;
+  virtual sk_sp<SkImage> imageForCurrentFrame() = 0;
   virtual PassRefPtr<Image> imageForDefaultFrame();
 
   enum ImageClampingMode {
