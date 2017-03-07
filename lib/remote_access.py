@@ -431,6 +431,7 @@ class RemoteAccess(object):
     kwargs.setdefault('debug_level', self.debug_level)
 
     ssh_cmd = ' '.join(self._GetSSHCmd())
+    # TODO(ihf): make '--compress' optional.
     rsync_cmd = ['rsync', '--perms', '--verbose', '--times', '--compress',
                  '--omit-dir-times', '--exclude', '.svn']
     rsync_cmd.append('--copy-links' if follow_symlinks else '--links')
@@ -686,7 +687,19 @@ class RemoteDevice(object):
     self.tempdir.Cleanup()
 
   def CopyToDevice(self, src, dest, mode=None, **kwargs):
-    """Copy path to device."""
+    """Copy path to device.
+
+    @param mode: can be either None, 'rsync' or 'scp'.
+        * Use rsync --compress when copying compressible (factor > 2, text/log)
+        files. This uses a quite a bit of CPU but preserves bandwidth.
+        * Use rsync without compression when delta transfering a whole directory
+        tree which exists at the destination and changed very little (say
+        telemetry directory or unpacked stateful or unpacked rootfs). It also
+        often works well for an uncompressed archive, copied over a previous
+        copy (which must exist at the destination) needing minor updates.
+        * Use scp when we have incompressible files (say already compressed),
+        especially if we know no previous version exist at the destination.
+    """
     msg = 'Could not copy %s to device.' % src
     if mode is None:
       # Use rsync by default if it exists.
@@ -702,7 +715,11 @@ class RemoteDevice(object):
     return RunCommandFuncWrapper(func, msg, src, dest, **kwargs)
 
   def CopyFromDevice(self, src, dest, mode=None, **kwargs):
-    """Copy path from device."""
+    """Copy path from device.
+
+    @param mode: See comment in CopyToDevice. But devices usually produce log
+        files so using 'rsync' with '--compress' might be a good choice here.
+    """
     msg = 'Could not copy %s from device.' % src
     if mode is None:
       # Use rsync by default if it exists.

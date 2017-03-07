@@ -458,13 +458,16 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       package_dir = os.path.join(self.tempdir, 'third_party')
       osutils.RmDir(package_dir, ignore_missing=True)
       for package in THIRD_PARTY_PKG_LIST:
+        # Filter python files from (binary) garbage.
         self._CopyPythonFilesToTemp(
             os.path.join(THIRD_PARTY_PKG_DIR, package),
             os.path.join(package_dir, package))
 
+        # Python packages are plain text files so we chose rsync --compress.
         self.device.CopyToDevice(
             os.path.join(package_dir, os.path.split(package)[0]),
-            third_party_host_dir, log_output=True, **self._cmd_kwargs)
+            third_party_host_dir, mode='rsync', log_output=True,
+            **self._cmd_kwargs)
     except cros_build_lib.RunCommandError as e:
       # There's a chance that the DUT doesn't have any basic lib before
       # provisioning, like python. These commands will fail first, but succeed
@@ -486,10 +489,13 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     logging.info('Copying devserver package to device...')
     src_dir = os.path.join(self.tempdir, 'src')
     osutils.RmDir(src_dir, ignore_missing=True)
+    # Filter python files from (binary) garbage.
     self._CopyPythonFilesToTemp(ds_wrapper.DEVSERVER_PKG_DIR, src_dir)
     # Make sure the device.work_dir exist after any installation and reboot.
     self._EnsureDeviceDirectory(self.device.work_dir)
-    self.device.CopyToWorkDir(src_dir, log_output=True, **self._cmd_kwargs)
+    # Python packages are plain text files so we chose rsync --compress.
+    self.device.CopyToWorkDir(src_dir, mode='rsync', log_output=True,
+                              **self._cmd_kwargs)
 
     if self.original_payload_dir:
       self._TransferRequiredPackage()
@@ -503,8 +509,11 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     self._EnsureDeviceDirectory(device_payload_dir)
     logging.info('Copying rootfs payload to device...')
     payload = os.path.join(self.payload_dir, ds_wrapper.ROOTFS_FILENAME)
-    self.device.CopyToDevice(payload, device_payload_dir, log_output=True,
-                             **self._cmd_kwargs)
+    # ROOTFS_FILENAME=update.gz is an already compressed file, can't use rsync.
+    # TODO(ihf): Expand update.gz after download to devserver and get rid of
+    # this scp below (use rsync probably without --compress).
+    self.device.CopyToDevice(payload, device_payload_dir, mode='scp',
+                             log_output=True, **self._cmd_kwargs)
 
   def TransferStatefulUpdate(self):
     """Transfer files for stateful update.
@@ -516,8 +525,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
                   'transferred to device...')
     need_transfer, stateful_update_bin = self._GetStatefulUpdateScript()
     if need_transfer:
-      self.device.CopyToWorkDir(stateful_update_bin, log_output=True,
-                                **self._cmd_kwargs)
+      # stateful_update is a tiny uncompressed text file, so use rsync.
+      self.device.CopyToWorkDir(stateful_update_bin, mode='rsync',
+                                log_output=True, **self._cmd_kwargs)
       self.stateful_update_bin = os.path.join(
           self.device.work_dir, os.path.basename(
               self.LOCAL_CHROOT_STATEFUL_UPDATE_PATH))
@@ -529,12 +539,18 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       original_payload = os.path.join(
           self.original_payload_dir, ds_wrapper.STATEFUL_FILENAME)
       self._EnsureDeviceDirectory(self.device_restore_dir)
+      # STATEFUL_FILENAME=stateful.tgz is an already compressed file tree, so
+      # can't use rsync.
+      # TODO(ihf): Expand stateful.tgz after download to devserver and get rid
+      # of the scp below (use rsync probably without --compress).
       self.device.CopyToDevice(original_payload, self.device_restore_dir,
-                               log_output=True, **self._cmd_kwargs)
+                               mode='scp', log_output=True, **self._cmd_kwargs)
 
     logging.info('Copying target stateful payload to device...')
     payload = os.path.join(self.payload_dir, ds_wrapper.STATEFUL_FILENAME)
-    self.device.CopyToWorkDir(payload, log_output=True, **self._cmd_kwargs)
+    # TODO(ihf): As above for now we use scp, but this should change to rsync.
+    self.device.CopyToWorkDir(payload, mode='scp', log_output=True,
+                              **self._cmd_kwargs)
 
   def RestoreStateful(self):
     """Restore stateful partition for device."""
@@ -668,6 +684,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     1. Check device's status to make sure it can be updated.
     2. Copy files to remote device needed for rootfs update.
     3. Do root updating.
+    TODO(ihf): Change this to:
+    2. Unpack rootfs here on server.
+    3. rsync from server rootfs to device rootfs to perform update
+       (do not use --compress).
     """
     self.SetupRootfsUpdate()
     # Copy payload for rootfs update.
@@ -679,6 +699,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
     1. Copy files to remote device needed by stateful update.
     2. Do stateful update.
+    TODO(ihf): Change this to:
+    1. Unpack stateful here on server.
+    2. rsync from server stateful to device stateful to update (do not
+       use --compress).
     """
     self.TransferStatefulUpdate()
     self.UpdateStateful()
