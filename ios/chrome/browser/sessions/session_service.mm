@@ -35,39 +35,74 @@
 
 const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
 
-@interface SessionWindowUnarchiver () {
-  ios::ChromeBrowserState* _browserState;
-}
+@interface SessionWindowUnarchiver ()
+
+// Register compatibility aliases to support loading serialised sessions
+// informations when the serialised classes are renamed.
++ (void)registerCompatibilityAliases;
 
 @end
 
 @implementation SessionWindowUnarchiver
 
-@synthesize browserState = _browserState;  // weak
+@synthesize browserState = _browserState;
 
-- (id)initForReadingWithData:(NSData*)data
-                browserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initForReadingWithData:(NSData*)data
+                          browserState:(ios::ChromeBrowserState*)browserState {
   if (self = [super initForReadingWithData:data]) {
     _browserState = browserState;
   }
   return self;
 }
 
+- (instancetype)initForReadingWithData:(NSData*)data {
+  return [self initForReadingWithData:data browserState:nullptr];
+}
+
++ (void)initialize {
+  [super initialize];
+  [self registerCompatibilityAliases];
+}
+
+// When adding a new compatibility alias here, create a new crbug to track its
+// removal and mark it with a release at least one year after the introduction
+// of the alias.
++ (void)registerCompatibilityAliases {
+  // TODO(crbug.com/661633): those aliases where introduced between M57 and
+  // M58, so remove them after M67 has shipped to stable.
+  [SessionWindowUnarchiver setClass:[CRWSessionCertificatePolicyManager class]
+                       forClassName:@"SessionCertificatePolicyManager"];
+  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
+                       forClassName:@"SessionController"];
+  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
+                       forClassName:@"CRWSessionController"];
+  [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
+                       forClassName:@"SessionEntry"];
+  [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
+                       forClassName:@"CRWSessionEntry"];
+  [SessionWindowUnarchiver setClass:[SessionWindowIOS class]
+                       forClassName:@"SessionWindow"];
+
+  // TODO(crbug.com/661633): this alias was introduced between M58 and M59, so
+  // remove it after M68 has shipped to stable.
+  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
+                       forClassName:@"CRWNavigationManagerStorage"];
+}
+
 @end
 
 @interface SessionServiceIOS () {
- @private
   // The SequencedTaskRunner on which File IO operations are performed.
-  scoped_refptr<base::SequencedTaskRunner> taskRunner_;
+  scoped_refptr<base::SequencedTaskRunner> _taskRunner;
 
   // Maps save directories to the pending SessionWindow for the delayed
   // save behavior.
-  base::scoped_nsobject<NSMutableDictionary> pendingWindows_;
+  base::scoped_nsobject<NSMutableDictionary> _pendingWindows;
 }
 
+// Saves the session corresponding to |directory| on the background
+// task runner |_taskRunner|.
 - (void)performSaveToDirectoryInBackground:(NSString*)directory;
-- (void)performSaveWindow:(SessionWindowIOS*)window
-              toDirectory:(NSString*)directory;
 @end
 
 @implementation SessionServiceIOS
@@ -80,12 +115,12 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
   return singleton;
 }
 
-- (id)init {
+- (instancetype)init {
   self = [super init];
   if (self) {
-    pendingWindows_.reset([[NSMutableDictionary alloc] init]);
+    _pendingWindows.reset([[NSMutableDictionary alloc] init]);
     auto* pool = web::WebThread::GetBlockingPool();
-    taskRunner_ = pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+    _taskRunner = pool->GetSequencedTaskRunner(pool->GetSequenceToken());
   }
   return self;
 }
@@ -98,7 +133,7 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
 // Do the work of saving on a background thread. Assumes |window| is threadsafe.
 - (void)performSaveToDirectoryInBackground:(NSString*)directory {
   DCHECK(directory);
-  DCHECK([pendingWindows_ objectForKey:directory] != nil);
+  DCHECK([_pendingWindows objectForKey:directory] != nil);
   UIBackgroundTaskIdentifier identifier = [[UIApplication sharedApplication]
       beginBackgroundTaskWithExpirationHandler:^{
       }];
@@ -107,10 +142,10 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
   // Put the window into a local var so it can be retained for the block, yet
   // we can remove it from the dictionary to allow queuing another save.
   SessionWindowIOS* localWindow =
-      [[pendingWindows_ objectForKey:directory] retain];
-  [pendingWindows_ removeObjectForKey:directory];
+      [[_pendingWindows objectForKey:directory] retain];
+  [_pendingWindows removeObjectForKey:directory];
 
-  taskRunner_->PostTask(
+  _taskRunner->PostTask(
       FROM_HERE, base::BindBlock(^{
         @try {
           [self performSaveWindow:localWindow toDirectory:directory];
@@ -179,10 +214,10 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
   // If there's an existing session window for |stashPath|, clear it before it's
   // replaced.
   SessionWindowIOS* pendingSession = base::mac::ObjCCast<SessionWindowIOS>(
-      [pendingWindows_ objectForKey:stashPath]);
+      [_pendingWindows objectForKey:stashPath]);
   [pendingSession clearSessions];
   // Set |window| as the pending save for |stashPath|.
-  [pendingWindows_ setObject:window forKey:stashPath];
+  [_pendingWindows setObject:window forKey:stashPath];
   if (immediately) {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self performSaveToDirectoryInBackground:stashPath];
@@ -207,23 +242,6 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
 
 - (SessionWindowIOS*)loadWindowFromPath:(NSString*)path
                         forBrowserState:(ios::ChromeBrowserState*)browserState {
-  // HACK: Handle the case where we had to change the class name of a persisted
-  // class on disk.
-  [SessionWindowUnarchiver setClass:[CRWSessionCertificatePolicyManager class]
-                       forClassName:@"SessionCertificatePolicyManager"];
-  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
-                       forClassName:@"SessionController"];
-  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
-                       forClassName:@"CRWSessionController"];
-  [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
-                       forClassName:@"CRWNavigationManagerStorage"];
-  [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
-                       forClassName:@"SessionEntry"];
-  [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
-                       forClassName:@"CRWSessionEntry"];
-  // TODO(crbug.com/661633): Remove this hack.
-  [SessionWindowUnarchiver setClass:[SessionWindowIOS class]
-                       forClassName:@"SessionWindow"];
   SessionWindowIOS* window = nil;
   @try {
     NSData* data = [NSData dataWithContentsOfFile:path];
@@ -234,7 +252,7 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
       window = [[[unarchiver decodeObjectForKey:@"root"] retain] autorelease];
     }
   } @catch (NSException* exception) {
-    DLOG(ERROR) << "Error loading session.plist";
+    DLOG(ERROR) << "Error loading session file.";
   }
   return window;
 }
@@ -243,7 +261,7 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
 // browserState directory.
 - (void)deleteLastSession:(NSString*)directory {
   NSString* sessionFile = [self sessionFilePathForDirectory:directory];
-  taskRunner_->PostTask(
+  _taskRunner->PostTask(
       FROM_HERE, base::BindBlock(^{
         base::ThreadRestrictions::AssertIOAllowed();
         NSFileManager* fileManager = [NSFileManager defaultManager];

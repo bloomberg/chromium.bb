@@ -41,17 +41,6 @@
 
 using web::WebStateImpl;
 
-// For some of the unit tests, we need to make sure the session is saved
-// immediately so we can read it back in to verify various attributes. This
-// is not a situation we normally expect to be in because we never
-// want the session being saved on the main thread in the production app.
-// We could expose this as part of the service's public API, but again that
-// might encourage use where we don't want it. As a result, just use the
-// known private-for-testing method directly.
-@interface SessionServiceIOS (Testing)
-- (void)performSaveWindow:(SessionWindowIOS*)window
-              toDirectory:(NSString*)directory;
-@end
 
 @interface TabModel (VisibleForTesting)
 - (SessionWindowIOS*)windowForSavingSession;

@@ -92,6 +92,8 @@ bundle_data("resources_unit_tests") {
   testonly = true
   sources = [
     "//ios/chrome/test/data/sessions/corrupted.plist",
+    "//ios/chrome/test/data/sessions/session_m57.plist",
+    "//ios/chrome/test/data/sessions/session_m58.plist",
   ]
   outputs = [
     "{{bundle_resources_dir}}/ios/chrome/test/data/sessions/{{source_file_part}}",

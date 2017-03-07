@@ -25,7 +25,8 @@ class ChromeBrowserState;
 // Inits exactly as initForReadingWithData: does, additionally setting
 // |browserState| on the receiver.
 - (instancetype)initForReadingWithData:(NSData*)data
-                          browserState:(ios::ChromeBrowserState*)browserState;
+                          browserState:(ios::ChromeBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -62,6 +63,17 @@ class ChromeBrowserState;
 
 // Returns the path of the session file.
 - (NSString*)sessionFilePathForDirectory:(NSString*)directory;
+
+@end
+
+@interface SessionServiceIOS (Testing)
+
+// For some of the unit tests, we need to make sure the session is saved
+// immediately so we can read it back in to verify various attributes. This
+// is not a situation we normally expect to be in because we never
+// want the session being saved on the main thread in the production app.
+- (void)performSaveWindow:(SessionWindowIOS*)window
+              toDirectory:(NSString*)directory;
 
 @end
 

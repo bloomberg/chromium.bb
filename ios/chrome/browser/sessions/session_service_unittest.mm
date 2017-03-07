@@ -24,33 +24,24 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
-@interface SessionServiceIOS (Testing)
-- (void)performSaveWindow:(SessionWindowIOS*)window
-              toDirectory:(NSString*)directory;
-@end
-
 namespace {
 
 // Fixture Class. Takes care of deleting the directory used to store test data.
 class SessionServiceTest : public PlatformTest {
- private:
-  base::ScopedTempDir test_dir_;
+ public:
+  SessionServiceTest() = default;
+  ~SessionServiceTest() override = default;
 
  protected:
   void SetUp() override {
+    PlatformTest::SetUp();
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-    //    directoryName_ = [NSString
-    //        stringWithCString:test_dir_.path().value().c_str()
-    //                 encoding:NSASCIIStringEncoding];
-
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPath(test_dir_.GetPath());
     chrome_browser_state_ = test_cbs_builder.Build();
-    directoryName_ =
-        base::SysUTF8ToNSString(chrome_browser_state_->GetStatePath().value());
+    directory_name_.reset([base::SysUTF8ToNSString(
+        chrome_browser_state_->GetStatePath().value()) copy]);
   }
-
-  void TearDown() override {}
 
   // Helper function to load a SessionWindowIOS from a given testdata
   // |filename|.  Returns nil if there was an error loading the session.
@@ -73,71 +64,97 @@ class SessionServiceTest : public PlatformTest {
                        forBrowserState:chrome_browser_state_.get()];
   }
 
-  NSString* directoryName_;
+  ios::ChromeBrowserState* chrome_browser_state() {
+    return chrome_browser_state_.get();
+  }
+
+  NSString* directory_name() { return directory_name_.get(); }
+
+ private:
+  base::ScopedTempDir test_dir_;
   web::TestWebThreadBundle thread_bundle_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<ios::ChromeBrowserState> chrome_browser_state_;
+  base::scoped_nsobject<NSString> directory_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionServiceTest);
 };
 
 TEST_F(SessionServiceTest, Singleton) {
   SessionServiceIOS* service = [SessionServiceIOS sharedService];
   EXPECT_TRUE(service != nil);
 
-  SessionServiceIOS* anotherService = [SessionServiceIOS sharedService];
-  EXPECT_TRUE(anotherService != nil);
+  SessionServiceIOS* another_service = [SessionServiceIOS sharedService];
+  EXPECT_TRUE(another_service != nil);
 
-  EXPECT_TRUE(service == anotherService);
+  EXPECT_TRUE(service == another_service);
 }
 
 TEST_F(SessionServiceTest, SaveWindowToDirectory) {
-  id sessionWindowMock =
+  id session_window_mock =
       [OCMockObject niceMockForClass:[SessionWindowIOS class]];
   SessionServiceIOS* service = [SessionServiceIOS sharedService];
-  [service performSaveWindow:sessionWindowMock toDirectory:directoryName_];
+  [service performSaveWindow:session_window_mock toDirectory:directory_name()];
 
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  EXPECT_TRUE([fileManager removeItemAtPath:directoryName_ error:NULL]);
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+  EXPECT_TRUE([file_manager removeItemAtPath:directory_name() error:nullptr]);
 }
 
 TEST_F(SessionServiceTest, SaveWindowToDirectoryAlreadyExistent) {
-  id sessionWindowMock =
+  id session_window_mock =
       [OCMockObject niceMockForClass:[SessionWindowIOS class]];
   EXPECT_TRUE([[NSFileManager defaultManager]
-            createDirectoryAtPath:directoryName_
+            createDirectoryAtPath:directory_name()
       withIntermediateDirectories:YES
                        attributes:nil
-                            error:NULL]);
+                            error:nullptr]);
 
   SessionServiceIOS* service = [SessionServiceIOS sharedService];
-  [service performSaveWindow:sessionWindowMock toDirectory:directoryName_];
+  [service performSaveWindow:session_window_mock toDirectory:directory_name()];
 
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  EXPECT_TRUE([fileManager removeItemAtPath:directoryName_ error:NULL]);
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+  EXPECT_TRUE([file_manager removeItemAtPath:directory_name() error:nullptr]);
 }
 
 TEST_F(SessionServiceTest, LoadEmptyWindowFromDirectory) {
   SessionServiceIOS* service = [SessionServiceIOS sharedService];
-  SessionWindowIOS* sessionWindow =
-      [service loadWindowForBrowserState:chrome_browser_state_.get()];
-  EXPECT_TRUE(sessionWindow == nil);
+  SessionWindowIOS* session_window =
+      [service loadWindowForBrowserState:chrome_browser_state()];
+  EXPECT_TRUE(session_window == nil);
 }
 
 TEST_F(SessionServiceTest, LoadWindowFromDirectory) {
   SessionServiceIOS* service = [SessionServiceIOS sharedService];
   base::scoped_nsobject<SessionWindowIOS> origSessionWindow(
       [[SessionWindowIOS alloc] init]);
-  [service performSaveWindow:origSessionWindow toDirectory:directoryName_];
+  [service performSaveWindow:origSessionWindow toDirectory:directory_name()];
 
-  SessionWindowIOS* sessionWindow =
-      [service loadWindowForBrowserState:chrome_browser_state_.get()];
-  EXPECT_TRUE(sessionWindow != nil);
-  EXPECT_EQ(NSNotFound, static_cast<NSInteger>(sessionWindow.selectedIndex));
-  EXPECT_EQ(0U, sessionWindow.sessions.count);
+  SessionWindowIOS* session_window =
+      [service loadWindowForBrowserState:chrome_browser_state()];
+  EXPECT_TRUE(session_window != nil);
+  EXPECT_EQ(NSNotFound, static_cast<NSInteger>(session_window.selectedIndex));
+  EXPECT_EQ(0U, session_window.sessions.count);
 }
 
 TEST_F(SessionServiceTest, LoadCorruptedWindow) {
-  SessionWindowIOS* sessionWindow =
+  SessionWindowIOS* session_window =
       LoadSessionFromTestDataFile(FILE_PATH_LITERAL("corrupted.plist"));
-  EXPECT_TRUE(sessionWindow == nil);
+  EXPECT_TRUE(session_window == nil);
+}
+
+// TODO(crbug.com/661633): remove this once M67 has shipped (i.e. once more
+// than a year has passed since the introduction of the compatibility code).
+TEST_F(SessionServiceTest, LoadM57Session) {
+  SessionWindowIOS* session_window =
+      LoadSessionFromTestDataFile(FILE_PATH_LITERAL("session_m57.plist"));
+  EXPECT_TRUE(session_window != nil);
+}
+
+// TODO(crbug.com/661633): remove this once M68 has shipped (i.e. once more
+// than a year has passed since the introduction of the compatibility code).
+TEST_F(SessionServiceTest, LoadM58Session) {
+  SessionWindowIOS* session_window =
+      LoadSessionFromTestDataFile(FILE_PATH_LITERAL("session_m58.plist"));
+  EXPECT_TRUE(session_window != nil);
 }
 
 }  // anonymous namespace
