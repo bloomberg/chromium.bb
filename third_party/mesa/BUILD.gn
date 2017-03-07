@@ -756,11 +756,6 @@ loadable_module("osmesa") {
     "//build/config/sanitizers:deps",
   ]
 
-  # Required for the allocator implementation, which is not used on Mac.
-  if (!is_mac) {
-    deps += [ "//base" ]
-  }
-
   if (is_win) {
     defines = [
       "BUILD_GL32",
