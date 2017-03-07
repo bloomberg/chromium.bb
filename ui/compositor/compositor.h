@@ -111,8 +111,10 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
                              const gfx::Size& size) = 0;
 
   // Set the output color profile into which this compositor should render.
-  virtual void SetDisplayColorSpace(ui::Compositor* compositor,
-                                    const gfx::ColorSpace& color_space) = 0;
+  virtual void SetDisplayColorSpace(
+      ui::Compositor* compositor,
+      const gfx::ColorSpace& blending_color_space,
+      const gfx::ColorSpace& output_color_space) = 0;
 
   virtual void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                              base::TimeDelta interval) = 0;
@@ -435,7 +437,8 @@ class COMPOSITOR_EXPORT Compositor
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;
   std::unique_ptr<ScopedAnimationDurationScaleMode> slow_animations_;
 
-  gfx::ColorSpace color_space_;
+  gfx::ColorSpace output_color_space_;
+  gfx::ColorSpace blending_color_space_;
 
   base::WeakPtrFactory<Compositor> weak_ptr_factory_;
 

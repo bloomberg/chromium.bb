@@ -70,7 +70,8 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void SetLocalSurfaceId(const LocalSurfaceId& id, float device_scale_factor);
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
-  void SetColorSpace(const gfx::ColorSpace& color_space);
+  void SetColorSpace(const gfx::ColorSpace& blending_color_space,
+                     const gfx::ColorSpace& device_color_space);
   void SetOutputIsSecure(bool secure);
 
   const SurfaceId& CurrentSurfaceId();
@@ -108,6 +109,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
+  gfx::ColorSpace blending_color_space_;
   gfx::ColorSpace device_color_space_;
   bool visible_ = false;
   bool swapped_since_resize_ = false;

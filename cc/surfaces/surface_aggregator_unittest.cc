@@ -2181,6 +2181,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTest) {
                          test::Pass(quads[1], arraysize(quads[1]), 1)};
   gfx::ColorSpace color_space1 = gfx::ColorSpace::CreateXYZD50();
   gfx::ColorSpace color_space2 = gfx::ColorSpace::CreateSRGB();
+  gfx::ColorSpace color_space3 = gfx::ColorSpace::CreateSCRGBLinear();
 
   SubmitCompositorFrame(&factory_, passes, arraysize(passes),
                         root_local_surface_id_);
@@ -2188,17 +2189,24 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTest) {
   SurfaceId surface_id(factory_.frame_sink_id(), root_local_surface_id_);
 
   CompositorFrame aggregated_frame;
-  aggregator_.SetOutputColorSpace(color_space1);
+  aggregator_.SetOutputColorSpace(color_space1, color_space1);
   aggregated_frame = aggregator_.Aggregate(surface_id);
   EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
 
-  aggregator_.SetOutputColorSpace(color_space2);
+  aggregator_.SetOutputColorSpace(color_space2, color_space2);
   aggregated_frame = aggregator_.Aggregate(surface_id);
   EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[1]->color_space);
+
+  aggregator_.SetOutputColorSpace(color_space1, color_space3);
+  aggregated_frame = aggregator_.Aggregate(surface_id);
+  EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
+  EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
+  EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
+  EXPECT_EQ(color_space3, aggregated_frame.render_pass_list[2]->color_space);
 }
 
 }  // namespace

@@ -163,10 +163,10 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.enable_color_correct_rendering =
       command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering) ||
-      command_line->HasSwitch(cc::switches::kEnableTrueColorRendering) ||
-      command_line->HasSwitch(switches::kEnableHDROutput);
+      command_line->HasSwitch(cc::switches::kEnableTrueColorRendering);
   settings.renderer_settings.enable_color_correct_rendering =
-      settings.enable_color_correct_rendering;
+      settings.enable_color_correct_rendering ||
+      command_line->HasSwitch(switches::kEnableHDROutput);
 
   // UI compositor always uses partial raster if not using zero-copy. Zero copy
   // doesn't currently support partial raster.
@@ -282,7 +282,8 @@ void Compositor::SetCompositorFrameSink(
   // to match the Compositor's.
   if (context_factory_private_) {
     context_factory_private_->SetDisplayVisible(this, host_->IsVisible());
-    context_factory_private_->SetDisplayColorSpace(this, color_space_);
+    context_factory_private_->SetDisplayColorSpace(this, blending_color_space_,
+                                                   output_color_space_);
   }
 }
 
@@ -354,19 +355,21 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
 }
 
 void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
+  blending_color_space_ = color_space;
+  output_color_space_ = color_space;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableHDROutput)) {
-    color_space_ = gfx::ColorSpace::CreateSCRGBLinear();
-  } else {
-    color_space_ = color_space;
+    blending_color_space_ = gfx::ColorSpace::CreateExtendedSRGB();
+    output_color_space_ = gfx::ColorSpace::CreateSCRGBLinear();
   }
-  // TODO(Hubbe): Should maybe be color_space_, but currently that crashes skia.
-  host_->SetDeviceColorSpace(color_space);
+  host_->SetDeviceColorSpace(blending_color_space_);
   // Color space is reset when the output surface is lost, so this must also be
   // updated then.
   // TODO(fsamuel): Get rid of this.
-  if (context_factory_private_)
-    context_factory_private_->SetDisplayColorSpace(this, color_space_);
+  if (context_factory_private_) {
+    context_factory_private_->SetDisplayColorSpace(this, blending_color_space_,
+                                                   output_color_space_);
+  }
 }
 
 void Compositor::SetBackgroundColor(SkColor color) {

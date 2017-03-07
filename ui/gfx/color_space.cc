@@ -201,6 +201,12 @@ ColorSpace ColorSpace::CreateSRGB() {
 }
 
 // static
+ColorSpace ColorSpace::CreateExtendedSRGB() {
+  return ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1_HDR,
+                    MatrixID::RGB, RangeID::FULL);
+}
+
+// static
 ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
                                     const SkColorSpaceTransferFn& fn) {
   ColorSpace result(ColorSpace::PrimaryID::CUSTOM,
@@ -272,7 +278,8 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
 bool ColorSpace::IsHDR() const {
   return transfer_ == TransferID::SMPTEST2084 ||
          transfer_ == TransferID::ARIB_STD_B67 ||
-         transfer_ == TransferID::LINEAR_HDR;
+         transfer_ == TransferID::LINEAR_HDR ||
+         transfer_ == TransferID::IEC61966_2_1_HDR;
 }
 
 bool ColorSpace::operator!=(const ColorSpace& other) const {
@@ -616,6 +623,7 @@ bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
       fn->fG = 2.222222222222f;
       return true;
     case ColorSpace::TransferID::IEC61966_2_1:
+    case ColorSpace::TransferID::IEC61966_2_1_HDR:
       fn->fA = 0.947867345704f;
       fn->fB = 0.052132654296f;
       fn->fC = 0.077399380805f;
@@ -649,6 +657,11 @@ bool ColorSpace::GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const {
     return false;
   *fn = SkTransferFnInverse(*fn);
   return true;
+}
+
+bool ColorSpace::HasExtendedSkTransferFn() const {
+  return transfer_ == TransferID::LINEAR_HDR ||
+         transfer_ == TransferID::IEC61966_2_1_HDR;
 }
 
 void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {

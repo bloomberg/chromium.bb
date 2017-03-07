@@ -425,8 +425,10 @@ bool GLRenderer::CanPartialSwap() {
 }
 
 ResourceFormat GLRenderer::BackbufferFormat() const {
-  // TODO(ccameron): If we are targeting high bit depth or HDR, we should use
-  // RGBA_F16 here.
+  if (current_frame()->current_render_pass->color_space.IsHDR() &&
+      resource_provider_->IsResourceFormatSupported(RGBA_F16)) {
+    return RGBA_F16;
+  }
   return resource_provider_->best_texture_format();
 }
 
@@ -1313,7 +1315,9 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
                     tex_coord_precision, sampler_type, shader_blend_mode,
                     params->use_aa ? USE_AA : NO_AA, mask_mode,
                     mask_for_background, params->use_color_matrix),
-                current_frame()->current_render_pass->color_space);
+                params->contents_resource_lock
+                    ? params->contents_resource_lock->color_space()
+                    : gfx::ColorSpace());
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {

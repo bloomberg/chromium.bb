@@ -63,12 +63,15 @@ class GFX_EXPORT ColorSpace {
     BT2020_12,
     SMPTEST2084,
     SMPTEST428_1,
-    ARIB_STD_B67,  // // AKA hybrid-log gamma, HLG.
+    ARIB_STD_B67,  // AKA hybrid-log gamma, HLG.
     // This is an ad-hoc transfer function that decodes SMPTE 2084 content
-    // into a 0-1 range more or less suitable for viewing on a non-hdr
+    // into a [0, 1] range more or less suitable for viewing on a non-hdr
     // display.
     SMPTEST2084_NON_HDR,
-    // Like LINEAR, but intended for HDR. (can go outside of 0-1)
+    // The same as IEC61966_2_1 on the interval [0, 1], with the nonlinear
+    // segment continuing beyond 1 and point symmetry defining values below 0.
+    IEC61966_2_1_HDR,
+    // The same as LINEAR but is defined for all real values.
     LINEAR_HDR,
     CUSTOM,
     LAST = CUSTOM,
@@ -124,10 +127,14 @@ class GFX_EXPORT ColorSpace {
   static ColorSpace CreateSRGB();
   static ColorSpace CreateCustom(const SkMatrix44& to_XYZD50,
                                  const SkColorSpaceTransferFn& fn);
-  // scRGB is like RGB, but linear and values outside of 0-1 are allowed.
-  // scRGB is normally used with fp16 textures.
-  static ColorSpace CreateSCRGBLinear();
   static ColorSpace CreateXYZD50();
+
+  // Extended sRGB matches sRGB for values in [0, 1], and extends the transfer
+  // function to all real values.
+  static ColorSpace CreateExtendedSRGB();
+  // scRGB uses the same primaries as sRGB but has a linear transfer function
+  // for all real values.
+  static ColorSpace CreateSCRGBLinear();
 
   // TODO: Remove these, and replace with more generic constructors.
   static ColorSpace CreateJpeg();
@@ -165,6 +172,10 @@ class GFX_EXPORT ColorSpace {
   void GetRangeAdjustMatrix(SkMatrix44* matrix) const;
 
  private:
+  // Returns true if the transfer function is defined by an
+  // SkColorSpaceTransferFn which is extended to all real values.
+  bool HasExtendedSkTransferFn() const;
+
   PrimaryID primaries_ = PrimaryID::INVALID;
   TransferID transfer_ = TransferID::INVALID;
   MatrixID matrix_ = MatrixID::INVALID;

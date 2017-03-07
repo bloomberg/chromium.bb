@@ -103,6 +103,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       format.VideoTransferFunction = DXVA2_VideoTransFunc_10;
       break;
     case gfx::ColorSpace::TransferID::IEC61966_2_1:
+    case gfx::ColorSpace::TransferID::IEC61966_2_1_HDR:
       format.VideoTransferFunction = DXVA2_VideoTransFunc_sRGB;
       break;
 

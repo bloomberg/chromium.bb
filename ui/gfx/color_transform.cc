@@ -25,6 +25,8 @@ extern "C" {
 };
 #endif
 
+using std::abs;
+using std::copysign;
 using std::exp;
 using std::log;
 using std::max;
@@ -371,15 +373,17 @@ class ColorTransformMatrix : public ColorTransformStep {
 
 class ColorTransformSkTransferFn : public ColorTransformStep {
  public:
-  explicit ColorTransformSkTransferFn(const SkColorSpaceTransferFn& fn)
-      : fn_(fn) {}
+  explicit ColorTransformSkTransferFn(const SkColorSpaceTransferFn& fn,
+                                      bool extended)
+      : fn_(fn), extended_(extended) {}
   ColorTransformSkTransferFn* GetSkTransferFn() override { return this; }
 
   bool Join(ColorTransformStep* next_untyped) override {
     ColorTransformSkTransferFn* next = next_untyped->GetSkTransferFn();
     if (!next)
       return false;
-    if (SkTransferFnsApproximatelyCancel(fn_, next->fn_)) {
+    if (!extended_ && !next->extended_ &&
+        SkTransferFnsApproximatelyCancel(fn_, next->fn_)) {
       // Set to be the identity.
       fn_.fA = 1;
       fn_.fB = 0;
@@ -397,15 +401,24 @@ class ColorTransformSkTransferFn : public ColorTransformStep {
 
   void Transform(ColorTransform::TriStim* colors, size_t num) const override {
     for (size_t i = 0; i < num; i++) {
-      colors[i].set_x(SkTransferFnEval(fn_, colors[i].x()));
-      colors[i].set_y(SkTransferFnEval(fn_, colors[i].y()));
-      colors[i].set_z(SkTransferFnEval(fn_, colors[i].z()));
+      ColorTransform::TriStim& c = colors[i];
+      if (extended_) {
+        c.set_x(copysign(SkTransferFnEval(fn_, abs(c.x())), c.x()));
+        c.set_y(copysign(SkTransferFnEval(fn_, abs(c.y())), c.y()));
+        c.set_z(copysign(SkTransferFnEval(fn_, abs(c.z())), c.z()));
+      } else {
+        c.set_x(SkTransferFnEval(fn_, c.x()));
+        c.set_y(SkTransferFnEval(fn_, c.y()));
+        c.set_z(SkTransferFnEval(fn_, c.z()));
+      }
     }
   }
 
   bool CanAppendShaderSource() override { return true; }
 
-  void AppendShaderSourceChannel(std::stringstream* result, const char* value) {
+  void AppendShaderSourceChannel(std::stringstream* result,
+                                 const std::string& value) {
+    std::string abs_value = "abs(" + value + ")";
     const float kEpsilon = 1.f / 1024.f;
 
     // Construct the linear segment
@@ -421,7 +434,7 @@ class ColorTransformSkTransferFn : public ColorTransformStep {
     //   nonlinear = pow(A * x + B, G) + E
     // Elide operations (especially the pow) that will be close to the
     // identity.
-    std::string nonlinear = value;
+    std::string nonlinear = extended_ ? abs_value : value;
     if (std::abs(fn_.fA - 1.f) > kEpsilon)
       nonlinear = Str(fn_.fA) + " * " + nonlinear;
     if (std::abs(fn_.fB) > kEpsilon)
@@ -430,10 +443,22 @@ class ColorTransformSkTransferFn : public ColorTransformStep {
       nonlinear = "pow(" + nonlinear + ", " + Str(fn_.fG) + ")";
     if (std::abs(fn_.fE) > kEpsilon)
       nonlinear = nonlinear + " + " + Str(fn_.fE);
+    if (extended_) {
+      if (nonlinear == abs_value)
+        nonlinear = value;
+      else
+        nonlinear = "sign(" + value + ") * (" + nonlinear + ")";
+    }
 
     // Add both parts, skpping the if clause if possible.
     if (fn_.fD > kEpsilon) {
-      *result << "  if (" << value << " < " << Str(fn_.fD) << ")" << std::endl;
+      if (extended_) {
+        *result << "  if (" << abs_value << " < " << Str(fn_.fD) << ")"
+                << std::endl;
+      } else {
+        *result << "  if (" << value << " < " << Str(fn_.fD) << ")"
+                << std::endl;
+      }
       *result << "    " << value << " = " << linear << ";" << std::endl;
       *result << "  else" << std::endl;
       *result << "    " << value << " = " << nonlinear << ";" << std::endl;
@@ -451,6 +476,9 @@ class ColorTransformSkTransferFn : public ColorTransformStep {
 
  private:
   SkColorSpaceTransferFn fn_;
+  // True if the transfer function is extended to be defined for all real
+  // values.
+  const bool extended_ = false;
 };
 
 class ColorTransformFromLinear : public ColorTransformStep {
@@ -683,8 +711,8 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
 
   SkColorSpaceTransferFn to_linear_fn;
   if (from.GetTransferFunction(&to_linear_fn)) {
-    steps_.push_back(
-        base::MakeUnique<ColorTransformSkTransferFn>(to_linear_fn));
+    steps_.push_back(base::MakeUnique<ColorTransformSkTransferFn>(
+        to_linear_fn, from.HasExtendedSkTransferFn()));
   } else {
     steps_.push_back(base::MakeUnique<ColorTransformToLinear>(from.transfer_));
   }
@@ -705,8 +733,8 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
 
   SkColorSpaceTransferFn from_linear_fn;
   if (to.GetInverseTransferFunction(&from_linear_fn)) {
-    steps_.push_back(
-        base::MakeUnique<ColorTransformSkTransferFn>(from_linear_fn));
+    steps_.push_back(base::MakeUnique<ColorTransformSkTransferFn>(
+        from_linear_fn, to.HasExtendedSkTransferFn()));
   } else {
     steps_.push_back(base::MakeUnique<ColorTransformFromLinear>(to.transfer_));
   }

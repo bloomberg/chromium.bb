@@ -47,7 +47,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // Set the color spaces for the created RenderPasses, which is propagated
   // to the output surface.
-  void SetOutputColorSpace(const gfx::ColorSpace& output_color_space);
+  void SetOutputColorSpace(const gfx::ColorSpace& blending_color_space,
+                           const gfx::ColorSpace& output_color_space);
 
  private:
   struct ClipData {
@@ -107,6 +108,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                         PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
   void CopyPasses(const CompositorFrame& frame, Surface* surface);
+  void AddColorConversionPass();
 
   // Remove Surfaces that were referenced before but aren't currently
   // referenced from the ResourceProvider.
@@ -134,7 +136,16 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   int next_render_pass_id_;
   const bool aggregate_only_damaged_;
   bool output_is_secure_;
+
+  // The color space for the root render pass. If this is different from
+  // |blending_color_space_|, then a final render pass to convert between
+  // the two will be added.
   gfx::ColorSpace output_color_space_;
+  // The color space in which blending is done, used for all non-root render
+  // passes.
+  gfx::ColorSpace blending_color_space_;
+  // The id for the final color conversion render pass.
+  int color_conversion_render_pass_id_ = 0;
 
   using SurfaceToResourceChildIdMap =
       std::unordered_map<SurfaceId, int, SurfaceIdHash>;

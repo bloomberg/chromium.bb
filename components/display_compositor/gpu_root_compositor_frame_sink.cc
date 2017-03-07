@@ -61,7 +61,7 @@ void GpuRootCompositorFrameSink::ResizeDisplay(const gfx::Size& size) {
 void GpuRootCompositorFrameSink::SetDisplayColorSpace(
     const gfx::ColorSpace& color_space) {
   DCHECK(display_);
-  display_->SetColorSpace(color_space);
+  display_->SetColorSpace(color_space, color_space);
 }
 
 void GpuRootCompositorFrameSink::SetOutputIsSecure(bool secure) {

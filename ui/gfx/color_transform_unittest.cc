@@ -24,17 +24,30 @@ ColorSpace::PrimaryID all_primaries[] = {
 };
 
 ColorSpace::TransferID all_transfers[] = {
-    ColorSpace::TransferID::BT709,        ColorSpace::TransferID::GAMMA22,
-    ColorSpace::TransferID::GAMMA28,      ColorSpace::TransferID::SMPTE170M,
-    ColorSpace::TransferID::SMPTE240M,    ColorSpace::TransferID::LINEAR,
-    ColorSpace::TransferID::LOG,          ColorSpace::TransferID::LOG_SQRT,
-    ColorSpace::TransferID::IEC61966_2_4, ColorSpace::TransferID::BT1361_ECG,
-    ColorSpace::TransferID::IEC61966_2_1, ColorSpace::TransferID::BT2020_10,
-    ColorSpace::TransferID::BT2020_12,    ColorSpace::TransferID::SMPTEST2084,
+    ColorSpace::TransferID::BT709,
+    ColorSpace::TransferID::GAMMA22,
+    ColorSpace::TransferID::GAMMA28,
+    ColorSpace::TransferID::SMPTE170M,
+    ColorSpace::TransferID::SMPTE240M,
+    ColorSpace::TransferID::LINEAR,
+    ColorSpace::TransferID::LOG,
+    ColorSpace::TransferID::LOG_SQRT,
+    ColorSpace::TransferID::IEC61966_2_4,
+    ColorSpace::TransferID::BT1361_ECG,
+    ColorSpace::TransferID::IEC61966_2_1,
+    ColorSpace::TransferID::BT2020_10,
+    ColorSpace::TransferID::BT2020_12,
+    ColorSpace::TransferID::SMPTEST2084,
     ColorSpace::TransferID::ARIB_STD_B67,
+    ColorSpace::TransferID::IEC61966_2_1_HDR,
     // This one is weird as the non-linear numbers are not between 0 and 1.
     // TODO(hubbe): Test this separately.
     //  ColorSpace::TransferID::SMPTEST428_1,
+};
+
+ColorSpace::TransferID extended_transfers[] = {
+    ColorSpace::TransferID::LINEAR_HDR,
+    ColorSpace::TransferID::IEC61966_2_1_HDR,
 };
 
 ColorSpace::MatrixID all_matrices[] = {
@@ -456,6 +469,37 @@ TEST_P(TransferTest, basicTest) {
 INSTANTIATE_TEST_CASE_P(ColorSpace,
                         TransferTest,
                         testing::ValuesIn(all_transfers));
+
+class ExtendedTransferTest
+    : public testing::TestWithParam<ColorSpace::TransferID> {};
+
+TEST_P(ExtendedTransferTest, extendedTest) {
+  gfx::ColorSpace space_with_transfer(ColorSpace::PrimaryID::BT709, GetParam(),
+                                      ColorSpace::MatrixID::RGB,
+                                      ColorSpace::RangeID::FULL);
+  gfx::ColorSpace space_linear(
+      ColorSpace::PrimaryID::BT709, ColorSpace::TransferID::LINEAR,
+      ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+
+  std::unique_ptr<ColorTransform> to_linear(ColorTransform::NewColorTransform(
+      space_with_transfer, space_linear,
+      ColorTransform::Intent::INTENT_ABSOLUTE));
+
+  std::unique_ptr<ColorTransform> from_linear(ColorTransform::NewColorTransform(
+      space_linear, space_with_transfer,
+      ColorTransform::Intent::INTENT_ABSOLUTE));
+
+  for (float x = -2.0f; x <= 2.0f; x += 1.0f / 32.0f) {
+    ColorTransform::TriStim tristim(x, x, x);
+    to_linear->Transform(&tristim, 1);
+    from_linear->Transform(&tristim, 1);
+    EXPECT_NEAR(x, tristim.x(), 0.001f);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(ColorSpace,
+                        ExtendedTransferTest,
+                        testing::ValuesIn(extended_transfers));
 
 typedef std::tr1::tuple<ColorSpace::PrimaryID,
                         ColorSpace::TransferID,

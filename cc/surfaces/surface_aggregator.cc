@@ -248,7 +248,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
     copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
                       source.transform_to_root_target, source.filters,
-                      source.background_filters, output_color_space_,
+                      source.background_filters, blending_color_space_,
                       source.has_transparent_background);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
@@ -321,6 +321,40 @@ void SurfaceAggregator::HandleSurfaceQuad(
   }
 
   referenced_surfaces_.erase(it);
+}
+
+void SurfaceAggregator::AddColorConversionPass() {
+  if (dest_pass_list_->empty())
+    return;
+
+  RenderPass* root_render_pass = dest_pass_list_->back().get();
+  if (root_render_pass->color_space == output_color_space_)
+    return;
+
+  gfx::Rect output_rect = root_render_pass->output_rect;
+  CHECK(root_render_pass->transform_to_root_target == gfx::Transform());
+
+  if (!color_conversion_render_pass_id_)
+    color_conversion_render_pass_id_ = next_render_pass_id_++;
+
+  std::unique_ptr<RenderPass> color_conversion_pass(RenderPass::Create(1, 1));
+  color_conversion_pass->SetNew(color_conversion_render_pass_id_, output_rect,
+                                root_render_pass->damage_rect,
+                                root_render_pass->transform_to_root_target);
+  color_conversion_pass->color_space = output_color_space_;
+
+  SharedQuadState* shared_quad_state =
+      color_conversion_pass->CreateAndAppendSharedQuadState();
+  shared_quad_state->quad_layer_bounds = output_rect.size();
+  shared_quad_state->visible_quad_layer_rect = output_rect;
+  shared_quad_state->opacity = 1.f;
+
+  RenderPassDrawQuad* quad =
+      color_conversion_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  quad->SetNew(shared_quad_state, output_rect, output_rect,
+               root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
+               gfx::Vector2dF(), gfx::PointF(), gfx::RectF());
+  dest_pass_list_->push_back(std::move(color_conversion_pass));
 }
 
 SharedQuadState* SurfaceAggregator::CopySharedQuadState(
@@ -492,7 +526,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
 
     copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
                       source.transform_to_root_target, source.filters,
-                      source.background_filters, output_color_space_,
+                      source.background_filters, blending_color_space_,
                       source.has_transparent_background);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
@@ -808,6 +842,7 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
   CopyPasses(root_surface_frame, surface);
   referenced_surfaces_.erase(it);
+  AddColorConversionPass();
 
   moved_pixel_passes_.clear();
   copy_request_passes_.clear();
@@ -866,7 +901,9 @@ void SurfaceAggregator::SetFullDamageForSurface(const SurfaceId& surface_id) {
 }
 
 void SurfaceAggregator::SetOutputColorSpace(
+    const gfx::ColorSpace& blending_color_space,
     const gfx::ColorSpace& output_color_space) {
+  blending_color_space_ = blending_color_space;
   output_color_space_ = output_color_space;
 }
 
