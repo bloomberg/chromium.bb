@@ -450,7 +450,6 @@ void BrowserContext::Initialize(
 
     ServiceManagerConnection* connection =
         connection_holder->service_manager_connection();
-    connection->Start();
 
     // New embedded service factories should be added to |connection| here.
 
@@ -463,6 +462,7 @@ void BrowserContext::Initialize(
                      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
       connection->AddEmbeddedService(file::mojom::kServiceName, info);
     }
+    connection->Start();
   }
 }
 

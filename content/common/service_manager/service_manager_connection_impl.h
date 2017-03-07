@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "content/common/content_export.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -22,9 +23,8 @@ class Connector;
 
 namespace content {
 
-class EmbeddedServiceRunner;
-
-class ServiceManagerConnectionImpl : public ServiceManagerConnection {
+class CONTENT_EXPORT ServiceManagerConnectionImpl
+    : public ServiceManagerConnection {
  public:
   explicit ServiceManagerConnectionImpl(
       service_manager::mojom::ServiceRequest request,
@@ -56,8 +56,6 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
   void OnConnectionLost();
   void OnConnect(const service_manager::ServiceInfo& local_info,
                  const service_manager::ServiceInfo& remote_info);
-  void CreateService(service_manager::mojom::ServiceRequest request,
-                     const std::string& name);
   void GetInterface(service_manager::mojom::InterfaceProvider* provider,
                     const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle request_handle);
@@ -71,9 +69,6 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
 
   base::Closure connection_lost_handler_;
 
-  std::unordered_map<std::string, std::unique_ptr<EmbeddedServiceRunner>>
-      embedded_services_;
-  std::unordered_map<std::string, ServiceRequestHandler> request_handlers_;
   int next_on_connect_handler_id_ = 0;
   std::map<int, OnConnectHandler> on_connect_handlers_;
 

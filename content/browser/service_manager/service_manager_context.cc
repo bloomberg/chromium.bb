@@ -53,40 +53,31 @@ base::LazyInstance<std::unique_ptr<service_manager::Connector>>::Leaky
 
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
-void StartUtilityProcessOnIOThread(
-    service_manager::mojom::ServiceFactoryRequest request,
+void StartServiceInUtilityProcess(
+    const std::string& service_name,
     const base::string16& process_name,
-    bool use_sandbox) {
+    bool use_sandbox,
+    service_manager::mojom::ServiceRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UtilityProcessHost* process_host =
       UtilityProcessHost::Create(nullptr, nullptr);
   process_host->SetName(process_name);
   if (!use_sandbox)
     process_host->DisableSandbox();
   process_host->Start();
-  process_host->GetRemoteInterfaces()->GetInterface(std::move(request));
-}
-
-void StartServiceInUtilityProcess(
-    const std::string& service_name,
-    const base::string16& process_name,
-    bool use_sandbox,
-    service_manager::mojom::ServiceRequest request) {
   service_manager::mojom::ServiceFactoryPtr service_factory;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&StartUtilityProcessOnIOThread,
-                 base::Passed(MakeRequest(&service_factory)), process_name,
-                 use_sandbox));
+  process_host->GetRemoteInterfaces()->GetInterface(
+      mojo::MakeRequest(&service_factory));
   service_factory->CreateService(std::move(request), service_name);
 }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 
 // Request service_manager::mojom::ServiceFactory from GPU process host. Must be
-// called on
-// IO thread.
-void RequestGpuServiceFactory(
-    service_manager::mojom::ServiceFactoryRequest request) {
+// called on IO thread.
+void StartServiceInGpuProcess(const std::string& service_name,
+                              service_manager::mojom::ServiceRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GpuProcessHost* process_host =
       GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
   if (!process_host) {
@@ -94,20 +85,13 @@ void RequestGpuServiceFactory(
     return;
   }
 
+  service_manager::mojom::ServiceFactoryPtr service_factory;
   // TODO(xhwang): It's possible that |process_host| is non-null, but the actual
   // process is dead. In that case, |request| will be dropped and application
   // load requests through ServiceFactory will also fail. Make sure we handle
   // these cases correctly.
-  process_host->GetRemoteInterfaces()->GetInterface(std::move(request));
-}
-
-void StartServiceInGpuProcess(const std::string& service_name,
-                              service_manager::mojom::ServiceRequest request) {
-  service_manager::mojom::ServiceFactoryPtr service_factory;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&RequestGpuServiceFactory,
-                 base::Passed(MakeRequest(&service_factory))));
+  process_host->GetRemoteInterfaces()->GetInterface(
+      mojo::MakeRequest(&service_factory));
   service_factory->CreateService(std::move(request), service_name);
 }
 
@@ -301,13 +285,12 @@ ServiceManagerContext::ServiceManagerContext() {
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
-  packaged_services_connection_->Start();
-  ServiceManagerConnection::GetForProcess()->Start();
 
   ServiceInfo device_info;
   device_info.factory =
       base::Bind(&device::CreateDeviceService,
                  BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+  device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
   packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,
                                                     device_info);
 
@@ -351,6 +334,8 @@ ServiceManagerContext::ServiceManagerContext() {
   packaged_services_connection_->AddServiceRequestHandler(
       "media", base::Bind(&StartServiceInGpuProcess, "media"));
 #endif
+  packaged_services_connection_->Start();
+  ServiceManagerConnection::GetForProcess()->Start();
 }
 
 ServiceManagerContext::~ServiceManagerContext() {
