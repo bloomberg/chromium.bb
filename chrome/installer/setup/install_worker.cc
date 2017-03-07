@@ -28,6 +28,7 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/persistent_histogram_storage.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -777,16 +778,18 @@ void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
 
 void AddCleanupDeprecatedPerUserRegistrationsWorkItems(const Product& product,
                                                        WorkItemList* list) {
-  BrowserDistribution* dist = product.distribution();
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), product.distribution());
 
   // This cleanup was added in M49. There are still enough active users on M48
   // and earlier today (M55 timeframe) to justify keeping this cleanup in-place.
   // Remove this when that population stops shrinking.
   VLOG(1) << "Adding unregistration items for per-user Metro keys.";
-  list->AddDeleteRegKeyWorkItem(
-      HKEY_CURRENT_USER, dist->GetRegistryPath() + L"\\Metro", KEY_WOW64_32KEY);
-  list->AddDeleteRegKeyWorkItem(
-      HKEY_CURRENT_USER, dist->GetRegistryPath() + L"\\Metro", KEY_WOW64_64KEY);
+  list->AddDeleteRegKeyWorkItem(HKEY_CURRENT_USER,
+                                install_static::GetRegistryPath() + L"\\Metro",
+                                KEY_WOW64_32KEY);
+  list->AddDeleteRegKeyWorkItem(HKEY_CURRENT_USER,
+                                install_static::GetRegistryPath() + L"\\Metro",
+                                KEY_WOW64_64KEY);
 }
 
 void AddActiveSetupWorkItems(const InstallerState& installer_state,

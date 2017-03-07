@@ -209,10 +209,7 @@
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
-#include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/helper.h"
-#include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/shell_util.h"
+#include "chrome/install_static/install_util.h"
 #include "components/crash/content/app/crashpad.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -773,8 +770,7 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
   // Cleanup the PreRead field trial registry key.
   // TODO(fdoray): Remove this when M56 hits stable.
   const base::string16 pre_read_field_trial_registry_path =
-      BrowserDistribution::GetDistribution()->GetRegistryPath() +
-      L"\\PreReadFieldTrial";
+      install_static::GetRegistryPath() + L"\\PreReadFieldTrial";
   base::win::RegKey(HKEY_CURRENT_USER,
                     pre_read_field_trial_registry_path.c_str(), KEY_SET_VALUE)
       .DeleteKey(L"");

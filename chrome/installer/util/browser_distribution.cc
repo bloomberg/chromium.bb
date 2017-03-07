@@ -20,7 +20,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
@@ -181,11 +180,6 @@ std::string BrowserDistribution::GetSafeBrowsingName() {
 
 base::string16 BrowserDistribution::GetDistributionData(HKEY root_key) {
   return L"";
-}
-
-base::string16 BrowserDistribution::GetRegistryPath() {
-  return base::string16(L"Software\\")
-      .append(install_static::GetChromeInstallSubDirectory());
 }
 
 base::string16 BrowserDistribution::GetUninstallRegPath() {

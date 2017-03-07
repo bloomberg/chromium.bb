@@ -13,7 +13,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/install_static/install_util.h"
 
 namespace safe_browsing {
 namespace platform_state_store {
@@ -22,8 +22,7 @@ namespace {
 
 // Returns the path to the registry key holding profile-specific state values.
 base::string16 GetStateStoreKeyName() {
-  return BrowserDistribution::GetDistribution()->GetRegistryPath().append(
-      L"\\IncidentsSent");
+  return install_static::GetRegistryPath().append(L"\\IncidentsSent");
 }
 
 // Returns the name of the registry value for |profile|'s state.

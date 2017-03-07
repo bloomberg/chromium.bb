@@ -80,10 +80,6 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   return base::string16();
 }
 
-base::string16 GetRegistryPath() {
-  return base::string16();
-}
-
 base::string16 GoogleChromeDistribution::GetUninstallRegPath() {
   return base::string16();
 }

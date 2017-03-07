@@ -117,7 +117,6 @@
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 #include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 #endif
 
@@ -530,8 +529,7 @@ base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
 
 base::string16 ChromeMetricsServiceClient::GetRegistryBackupKey() {
 #if defined(OS_WIN)
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  return distribution->GetRegistryPath().append(L"\\StabilityMetrics");
+  return install_static::GetRegistryPath().append(L"\\StabilityMetrics");
 #else
   return base::string16();
 #endif

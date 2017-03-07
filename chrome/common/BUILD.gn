@@ -623,7 +623,7 @@ if (is_win) {
 
     deps = [
       "//base",
-      "//chrome/installer/util:with_no_strings",
+      "//chrome/install_static:install_static_util",
     ]
   }
 }

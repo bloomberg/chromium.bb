@@ -25,7 +25,7 @@
 #include "components/user_prefs/tracked/tracked_preferences_migration.h"
 
 #if defined(OS_WIN)
-#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/install_static/install_util.h"
 #include "components/user_prefs/tracked/registry_hash_store_contents_win.h"
 #endif
 
@@ -221,7 +221,7 @@ ProfilePrefStoreManager::GetExternalVerificationPrefHashStorePair() {
                 *g_preference_validation_registry_path_for_testing,
                 profile_path_.BaseName().LossyDisplayName())
           : base::MakeUnique<RegistryHashStoreContentsWin>(
-                BrowserDistribution::GetDistribution()->GetRegistryPath(),
+                install_static::GetRegistryPath(),
                 profile_path_.BaseName().LossyDisplayName()));
 #else
   return std::make_pair(nullptr, nullptr);

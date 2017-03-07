@@ -57,6 +57,15 @@ bool IsSystemInstall();
 // Returns the string "[kCompanyPathName\]kProductPathName[install_suffix]"
 std::wstring GetChromeInstallSubDirectory();
 
+// Returns the path
+// "Software\[kCompanyPathName\]kProductPathName[install_suffix]". This subkey
+// of HKEY_CURRENT_USER can be used to save and restore state. With the
+// exception of data that is used by third parties (e.g., a subkey that
+// specifies the location of a native messaging host's manifest), state stored
+// in this key is removed during uninstall when the user chooses to also delete
+// their browsing data.
+std::wstring GetRegistryPath();
+
 // Returns the app GUID with which Chrome is registered with Google Update, or
 // an empty string if this brand does not integrate with Google Update. This is
 // a simple convenience wrapper around InstallDetails.

@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,6 +32,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_state.h"
@@ -588,20 +590,15 @@ void RemoveBlacklistState() {
                                  0);  // wow64_access
 }
 
-// Removes the persistent state for |distribution| for the current user. Note:
-// this will not remove the state for users other than the one uninstalling
-// Chrome on a system-level install; see RemoveBlacklistState for details.
-void RemoveDistributionRegistryState(BrowserDistribution* distribution) {
-  static const base::char16* const kKeysToPreserve[] = {
-      L"Extensions", L"NativeMessagingHosts",
-  };
+// Removes the browser's persistent state in the Windows registry for the
+// current user. Note: this will not remove the state for users other than the
+// one uninstalling Chrome on a system-level install; see RemoveBlacklistState
+// for details.
+void RemoveDistributionRegistryState() {
   // Delete the contents of the distribution key except for those parts used by
   // outsiders to configure Chrome.
-  DeleteRegistryKeyPartial(
-      HKEY_CURRENT_USER, distribution->GetRegistryPath(),
-      std::vector<base::string16>(
-          &kKeysToPreserve[0],
-          &kKeysToPreserve[arraysize(kKeysToPreserve) - 1]));
+  DeleteRegistryKeyPartial(HKEY_CURRENT_USER, install_static::GetRegistryPath(),
+                           {L"Extensions", L"NativeMessagingHosts"});
 }
 
 }  // namespace
@@ -1030,7 +1027,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   if (delete_profile) {
     DeleteUserDataDir(user_data_dir);
-    RemoveDistributionRegistryState(browser_dist);
+    RemoveDistributionRegistryState();
   }
 
   if (!force_uninstall && product_state) {

@@ -158,12 +158,6 @@ bool DirectoryExists(const std::wstring& path) {
   return (file_attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
-std::wstring GetChromeInstallRegistryPath() {
-  std::wstring registry_path = L"Software\\";
-  return AppendChromeInstallSubDirectory(
-      InstallDetails::Get().mode(), true /* include_suffix */, &registry_path);
-}
-
 // Returns true if the |source| string matches the |pattern|. The pattern
 // may contain wildcards like '?' which matches one character or a '*'
 // which matches 0 or more characters.
@@ -315,6 +309,13 @@ std::wstring GetChromeInstallSubDirectory() {
   return result;
 }
 
+std::wstring GetRegistryPath() {
+  std::wstring result(L"Software\\");
+  AppendChromeInstallSubDirectory(InstallDetails::Get().mode(),
+                                  true /* include_suffix */, &result);
+  return result;
+}
+
 const wchar_t* GetAppGuid() {
   return InstallDetails::Get().app_guid();
 }
@@ -347,7 +348,7 @@ bool GetCollectStatsConsent() {
 }
 
 bool GetCollectStatsInSample() {
-  std::wstring registry_path = GetChromeInstallRegistryPath();
+  std::wstring registry_path = GetRegistryPath();
 
   DWORD out_value = 0;
   if (!nt::QueryRegValueDWORD(nt::HKCU, nt::WOW6432, registry_path.c_str(),
@@ -360,7 +361,7 @@ bool GetCollectStatsInSample() {
 }
 
 bool SetCollectStatsInSample(bool in_sample) {
-  std::wstring registry_path = GetChromeInstallRegistryPath();
+  std::wstring registry_path = GetRegistryPath();
 
   HANDLE key_handle = INVALID_HANDLE_VALUE;
   if (!nt::CreateRegKey(nt::HKCU, registry_path.c_str(),

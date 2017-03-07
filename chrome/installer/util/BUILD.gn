@@ -26,12 +26,12 @@ import("//testing/test.gni")
 # with grit pak strings.
 #
 # In both of these cases, link to the ":with_no_strings" variant. However, this
-# is obviously a fragile and confusing situation. In the "I don't use strings
-# at all case", there is no definition of what works and doesn't work, and this
-# may also change over time. As an example at the time of this writing,
-# chrome.exe calls BrowserDistribution::GetRegistryPath. This function doesn't
-# use any strings, but lots of other functions in BrowserDistribution do use
-# localized strings.
+# is obviously a fragile and confusing situation. In the "I don't use strings at
+# all case", there is no definition of what works and doesn't work, and this may
+# also change over time. As an example at the time of this writing, chrome.exe
+# calls GoogleUpdateSettings::UpdateDidRunState. This function doesn't use any
+# strings, but lots of other functions in BrowserDistribution do use localized
+# strings.
 #
 # Ideally, this should be cleaved in two parts: the main "installer util" and
 # some kind of mini installer util that just contains the functions needed by

@@ -363,6 +363,26 @@ TEST_P(InstallStaticUtilTest, GetChromeInstallSubDirectory) {
               StrCaseEq(kInstallDirs[std::get<0>(GetParam())]));
 }
 
+TEST_P(InstallStaticUtilTest, GetRegistryPath) {
+#if defined(GOOGLE_CHROME_BUILD)
+  // The registry path strings for the brand's install modes; parallel to
+  // kInstallModes.
+  static constexpr const wchar_t* kRegistryPaths[] = {
+      L"Software\\Google\\Chrome", L"Software\\Google\\Chrome SxS",
+  };
+#else
+  // The registry path strings for the brand's install modes; parallel to
+  // kInstallModes.
+  static constexpr const wchar_t* kRegistryPaths[] = {
+      L"Software\\Chromium",
+  };
+#endif
+  static_assert(arraysize(kRegistryPaths) == NUM_INSTALL_MODES,
+                "kRegistryPaths out of date.");
+  EXPECT_THAT(GetRegistryPath(),
+              StrCaseEq(kRegistryPaths[std::get<0>(GetParam())]));
+}
+
 TEST_P(InstallStaticUtilTest, GetAppGuid) {
   // For brands that do not integrate with Omaha/Google Update, the app guid is
   // an empty string.

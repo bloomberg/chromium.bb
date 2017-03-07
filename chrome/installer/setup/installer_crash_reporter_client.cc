@@ -16,7 +16,6 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 InstallerCrashReporterClient::InstallerCrashReporterClient(
@@ -121,8 +120,8 @@ bool InstallerCrashReporterClient::GetCollectStatsConsent() {
 
 bool InstallerCrashReporterClient::GetCollectStatsInSample() {
   // TODO(grt): remove duplication of code.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::win::RegKey key(HKEY_CURRENT_USER, dist->GetRegistryPath().c_str(),
+  base::win::RegKey key(HKEY_CURRENT_USER,
+                        install_static::GetRegistryPath().c_str(),
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY);
   if (!key.Valid())
     return true;
