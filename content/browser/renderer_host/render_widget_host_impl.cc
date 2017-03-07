@@ -2111,7 +2111,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
 
 void RenderWidgetHostImpl::IncrementInFlightEventCount(
     blink::WebInputEvent::Type event_type) {
-  ++in_flight_event_count_;
+  increment_in_flight_event_count();
   if (!is_hidden_) {
     StartHangMonitorTimeout(
         hung_renderer_delay_, event_type,
@@ -2121,8 +2121,7 @@ void RenderWidgetHostImpl::IncrementInFlightEventCount(
 
 void RenderWidgetHostImpl::DecrementInFlightEventCount(
     InputEventAckSource ack_source) {
-  --in_flight_event_count_;
-  if (in_flight_event_count_ <= 0) {
+  if (decrement_in_flight_event_count() <= 0) {
     // Cancel pending hung renderer checks since the renderer is responsive.
     StopHangMonitorTimeout();
   } else {
