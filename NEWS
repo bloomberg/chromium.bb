@@ -1,5 +1,13 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.2.0 (2017-06-05)
+** New features
+** Bug fixes
+** Other changes
+** Braille table improvements
+** License changes
+** Backwards incompatible changes
+
 * Noteworthy changes in release 3.1.0 (2017-03-06)
 An influx of new contributors have made sure that liblouis continues
 to improve. Back translation has seen major improvements, there are
