@@ -1617,7 +1617,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // BrowsingInstance swap to occur on pages like view-source and extensions,
 // which broke chrome://crash and javascript: URLs.
 // See http://crbug.com/335503.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, RendererDebugURLsDontSwap) {
+// The test fails on Mac OSX with ASAN.
+// See http://crbug.com/699062.
+#if defined(OS_MACOSX) && defined(THREAD_SANITIZER)
+#define MAYBE_RendererDebugURLsDontSwap DISABLED_RendererDebugURLsDontSwap
+#else
+#define MAYBE_RendererDebugURLsDontSwap RendererDebugURLsDontSwap
+#endif
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       MAYBE_RendererDebugURLsDontSwap) {
   StartEmbeddedServer();
 
   GURL original_url(embedded_test_server()->GetURL("/title2.html"));
